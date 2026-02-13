@@ -1,14 +1,25 @@
 {
-  "next_project_number": 90,
+  "next_project_number": 91,
   "active_projects": [
+    {
+      "project_number": 90,
+      "project_name": "himalaya_protonmail_bidirectional_sync",
+      "status": "not_started",
+      "language": "general",
+      "created": "2026-02-13T22:37:30Z",
+      "last_updated": "2026-02-13T22:37:30Z",
+      "dependencies": [
+        89
+      ]
+    },
     {
       "project_number": 89,
       "project_name": "gmail_himalaya_folder_label_sync",
-      "status": "planned",
+      "status": "implementing",
       "language": "neovim",
       "created": "2026-02-13T22:03:59Z",
-      "last_updated": "2026-02-13T22:19:01Z",
-      "session_id": "sess_1771021054_87e62e",
+      "last_updated": "2026-02-13T22:35:55Z",
+      "session_id": "sess_1771022138_b33dd2",
       "artifacts": [
         {
           "type": "research",

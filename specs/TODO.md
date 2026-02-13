@@ -1,19 +1,27 @@
 ---
-next_project_number: 90
+next_project_number: 91
 ---
 
 # TODO
 
 ## Tasks
 
-### 89. Research Gmail label and folder synchronization with Himalaya
+### 90. Ensure bidirectional syncing for labels and folders for himalaya and Protonmail
 - **Effort**: TBD
-- **Status**: [PLANNED]
-- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: general
+- **Dependencies**: Task #89
+
+**Description**: Ensure bidirectional syncing for labels and folders for himalaya and the logos (protonmail) email account in an analogous manner to the himalaya and gmail account detailed in task 89.
+
+### 89. Research Gmail label and folder synchronization with Himalaya
+- **Effort**: 1 hour
+- **Status**: [IMPLEMENTING]
 - **Research Started**: 2026-02-13
 - **Research Completed**: 2026-02-13
 - **Planning Started**: 2026-02-13
 - **Planning Completed**: 2026-02-13
+- **Implementation Started**: 2026-02-13
 - **Language**: neovim
 - **Dependencies**: None
 - **Research**: [research-001.md](089_gmail_himalaya_folder_label_sync/reports/research-001.md)

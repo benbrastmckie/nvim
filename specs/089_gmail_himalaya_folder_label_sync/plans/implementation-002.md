@@ -1,7 +1,7 @@
 # Implementation Plan: Task #89 (Revised v002)
 
 - **Task**: 89 - gmail_himalaya_folder_label_sync
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: [research-001.md](../reports/research-001.md)
@@ -62,7 +62,7 @@ The mbsyncrc is managed by home-manager in:
 
 ## Implementation Phases
 
-### Phase 1: Modify home.nix for Wildcard Patterns [NOT STARTED]
+### Phase 1: Modify home.nix for Wildcard Patterns [COMPLETED]
 
 **Goal**: Update the gmail-folders channel in home.nix to use wildcard patterns with proper exclusions.
 
@@ -97,7 +97,7 @@ The mbsyncrc is managed by home-manager in:
 
 ---
 
-### Phase 2: Rebuild Home-Manager and Test Sync [NOT STARTED]
+### Phase 2: Rebuild Home-Manager and Test Sync [IN PROGRESS]
 
 **Goal**: Apply the new configuration and verify basic sync still works.
 
