@@ -4,11 +4,18 @@
     {
       "project_number": 91,
       "project_name": "himalaya_label_management_keybindings",
-      "status": "researching",
+      "status": "researched",
       "language": "neovim",
       "created": "2026-02-13T23:04:26Z",
-      "last_updated": "2026-02-13T23:05:51Z",
-      "session_id": "sess_1771023938_df2ce8"
+      "last_updated": "2026-02-13T23:09:24Z",
+      "session_id": "sess_1771023938_df2ce8",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/091_himalaya_label_management_keybindings/reports/research-001.md",
+          "summary": "Research report on Himalaya label/flag management commands and Neovim integration patterns"
+        }
+      ]
     },
     {
       "project_number": 90,

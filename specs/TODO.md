@@ -8,10 +8,12 @@ next_project_number: 92
 
 ### 91. Add Himalaya label management keybindings in Neovim
 - **Effort**: TBD
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Research Started**: 2026-02-13
+- **Research Completed**: 2026-02-13
 - **Language**: neovim
 - **Dependencies**: None
+- **Research**: [research-001.md](091_himalaya_label_management_keybindings/reports/research-001.md)
 
 **Description**: Implement keybindings in Neovim for Himalaya label management: (1) create/edit/delete labels with editing changing all emails the label is applied to, (2) mapping to label the email under cursor (if no selection), and (3) mapping to label all selected emails in visual mode.
 
