@@ -1,10 +1,17 @@
 ---
-next_project_number: 92
+next_project_number: 93
 ---
 
 # TODO
 
 ## Tasks
+
+### 92. Sync Wezterm terminal directory with Neovim session root
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: neovim
+
+**Description**: Change Wezterm terminal working directory to match Neovim session root directory on startup. Wezterm config is at /home/benjamin/.dotfiles/config/wezterm.lua but solution should likely be Neovim-driven.
 
 ### 91. Add Himalaya label management keybindings in Neovim
 - **Effort**: 2-3 hours

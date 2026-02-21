@@ -1,6 +1,14 @@
 {
-  "next_project_number": 92,
+  "next_project_number": 93,
   "active_projects": [
+    {
+      "project_number": 92,
+      "project_name": "sync_wezterm_directory_with_neovim_session",
+      "status": "not_started",
+      "language": "neovim",
+      "created": "2026-02-21T23:24:52Z",
+      "last_updated": "2026-02-21T23:24:52Z"
+    },
     {
       "project_number": 91,
       "project_name": "himalaya_label_management_keybindings",
