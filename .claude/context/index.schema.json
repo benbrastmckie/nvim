@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nvim.config/context/index.schema.json",
+  "title": "Context Index Schema",
+  "description": "Machine-readable index for .claude/context/ files enabling automated context discovery via jq queries",
+  "type": "object",
+  "required": ["version", "generated", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Schema version (semver format)",
+      "examples": ["1.0.0"]
+    },
+    "generated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when index was last generated"
+    },
+    "entries": {
+      "type": "array",
+      "description": "Array of indexed context file entries",
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": ["path", "domain", "summary", "line_count"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Relative path from .claude/context/ to the file",
+          "examples": ["core/orchestration/orchestration-core.md"]
+        },
+        "domain": {
+          "type": "string",
+          "enum": ["core", "project", "system"],
+          "description": "Top-level domain category"
+        },
+        "subdomain": {
+          "type": "string",
+          "description": "Subdomain within the domain (e.g., orchestration, neovim, latex)",
+          "examples": ["orchestration", "neovim", "latex", "typst", "meta"]
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Semantic topics covered by this file",
+          "examples": [["delegation", "session-management", "routing"]]
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Search keywords for discovery",
+          "examples": [["Task tool", "jq", "state.json"]]
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Brief summary of file contents (max 200 chars)"
+        },
+        "line_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Approximate line count for context budget estimation"
+        },
+        "load_when": {
+          "type": "object",
+          "description": "Conditions for automatic loading",
+          "additionalProperties": false,
+          "properties": {
+            "agents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Agents that should load this context",
+              "examples": [["neovim-research-agent", "planner-agent"]]
+            },
+            "commands": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Commands that should load this context",
+              "examples": [["/implement", "/plan"]]
+            },
+            "languages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Task languages that trigger loading",
+              "examples": [["neovim", "meta"]]
+            },
+            "always": {
+              "type": "boolean",
+              "description": "If true, always load this context for the specified domain"
+            }
+          }
+        },
+        "deprecated": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, file is deprecated and should be avoided"
+        },
+        "replacement": {
+          "type": "string",
+          "description": "Path to replacement file if deprecated"
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,8 @@
 **Updated**: 2026-01-28 (Task 702 - Added Typst context section)
 **Purpose**: Quick reference map for on-demand context loading following checkpoint-based execution
 
+> **DEPRECATION NOTICE** (2026-02-24): This file is being superseded by `index.json` for machine-readable context discovery. While this markdown file remains useful for human reference, agents should use `index.json` with jq queries for automated context discovery. See `.claude/context/core/patterns/context-discovery.md` for query patterns.
+
 ---
 
 ## Usage Pattern

@@ -1,6 +1,7 @@
 ---
 name: neovim-research-agent
 description: Research Neovim configuration and plugin tasks
+model: opus
 ---
 
 # Neovim Research Agent
@@ -50,6 +51,24 @@ Load these on-demand using @-references:
 - `@.claude/context/project/neovim/README.md` - Neovim context overview
 - `@.claude/context/project/neovim/domain/neovim-api.md` - vim.* API patterns
 - `@.claude/context/project/neovim/domain/plugin-ecosystem.md` - Plugin overview
+
+## Dynamic Context Discovery
+
+Use index.json for automated context discovery:
+
+```bash
+# Find all context files for this agent
+jq -r '.entries[] |
+  select(.load_when.agents[]? == "neovim-research-agent") |
+  .path' .claude/context/index.json
+
+# Find neovim-specific context with budget info
+jq -r '.entries[] |
+  select(.load_when.languages[]? == "neovim") |
+  "\(.line_count)\t\(.path)"' .claude/context/index.json
+```
+
+See `.claude/context/core/patterns/context-discovery.md` for additional query patterns.
 
 ## Research Strategy Decision Tree
 
@@ -180,6 +199,32 @@ Compile discovered information:
 - Potential conflicts or issues
 - Performance considerations
 
+### Stage 4.5: Context Gap Detection
+
+Check if research reveals gaps in project context documentation:
+
+1. **Query index.json for existing coverage**:
+   ```bash
+   jq -r '.entries[] | select(.subdomain == "neovim") | .topics[]' .claude/context/index.json
+   ```
+
+2. **Identify undocumented topics**:
+   - Topics discovered during research not in existing context files
+   - Patterns that would benefit future tasks
+   - Outdated information in existing context
+
+3. **Document gaps for report**:
+   - Note topic, gap description, and recommendation
+   - Do NOT create tasks for context gaps (disabled for all tasks)
+   - Include in "Context Extension Recommendations" section
+
+**Example gap identification**:
+```
+Topic: floating window API
+Existing coverage: Not in neovim-api.md topics
+Recommendation: Add section to domain/neovim-api.md
+```
+
 ### Stage 5: Create Research Report
 
 Create directory and write report:
@@ -230,10 +275,17 @@ Create directory and write report:
 ## Risks & Mitigations
 - {Potential issues and solutions}
 
+## Context Extension Recommendations
+- **Topic**: {topic not covered by existing context}
+- **Gap**: {description of missing documentation}
+- **Recommendation**: {suggested context file to create or update}
+
 ## Appendix
 - Search queries used
 - References to documentation
 ```
+
+**Note**: The Context Extension Recommendations section is populated based on Stage 4.5 findings. For meta tasks, this section should be omitted or set to "none".
 
 ### Stage 6: Write Metadata File
 

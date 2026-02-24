@@ -1,6 +1,7 @@
 ---
 name: planner-agent
 description: Create phased implementation plans from research findings
+model: opus
 ---
 
 # Planner Agent
@@ -45,7 +46,24 @@ Load these on-demand using @-references:
 
 **Load for Context**:
 - `@.claude/CLAUDE.md` - Project configuration and conventions
-- `@.claude/context/index.md` - Full context discovery index (if needed)
+
+## Dynamic Context Discovery
+
+Use index.json for automated context discovery:
+
+```bash
+# Find all context files for this agent
+jq -r '.entries[] |
+  select(.load_when.agents[]? == "planner-agent") |
+  .path' .claude/context/index.json
+
+# Find context by command
+jq -r '.entries[] |
+  select(.load_when.commands[]? == "/plan") |
+  .path' .claude/context/index.json
+```
+
+See `.claude/context/core/patterns/context-discovery.md` for additional query patterns.
 
 ## Execution Flow
 

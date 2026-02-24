@@ -48,6 +48,27 @@ Placeholders in path templates and content follow these conventions:
 
 - {Source with link if applicable}
 
+## Context Extension Recommendations
+
+{Optional section for identifying gaps in project context documentation}
+
+**Note**: This section is populated when research reveals topics not covered by existing context files. For meta tasks, this section should be omitted or set to "none" to avoid circular task creation.
+
+### Pattern for Context Gap Detection
+
+During research, agents should note when:
+- Information is discovered that would benefit future tasks
+- No relevant context file exists for a recurring topic
+- Existing context files are outdated or incomplete
+
+### Example Entry
+
+```
+- **Topic**: telescope.nvim advanced pickers
+- **Gap**: No context file covers custom picker creation
+- **Recommendation**: Add to `project/neovim/tools/telescope-guide.md` or create `project/neovim/patterns/telescope-pickers.md`
+```
+
 ## Next Steps
 
 {What to do next}

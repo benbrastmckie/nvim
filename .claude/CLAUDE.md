@@ -121,19 +121,21 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 
 ## Skill-to-Agent Mapping
 
-| Skill | Agent | Purpose |
-|-------|-------|---------|
-| skill-neovim-research | neovim-research-agent | Neovim/plugin research |
-| skill-neovim-implementation | neovim-implementation-agent | Neovim configuration implementation |
-| skill-researcher | general-research-agent | General web/codebase research |
-| skill-planner | planner-agent | Implementation plan creation |
-| skill-implementer | general-implementation-agent | General file implementation |
-| skill-latex-implementation | latex-implementation-agent | LaTeX document implementation |
-| skill-typst-implementation | typst-implementation-agent | Typst document implementation |
-| skill-meta | meta-builder-agent | System building and task creation |
-| skill-document-converter | document-converter-agent | Document format conversion |
-| skill-status-sync | (direct execution) | Atomic status updates |
-| skill-refresh | (direct execution) | Process and file cleanup |
+| Skill | Agent | Model | Purpose |
+|-------|-------|-------|---------|
+| skill-neovim-research | neovim-research-agent | opus | Neovim/plugin research |
+| skill-neovim-implementation | neovim-implementation-agent | - | Neovim configuration implementation |
+| skill-researcher | general-research-agent | opus | General web/codebase research |
+| skill-planner | planner-agent | opus | Implementation plan creation |
+| skill-implementer | general-implementation-agent | - | General file implementation |
+| skill-latex-implementation | latex-implementation-agent | - | LaTeX document implementation |
+| skill-typst-implementation | typst-implementation-agent | - | Typst document implementation |
+| skill-meta | meta-builder-agent | - | System building and task creation |
+| skill-document-converter | document-converter-agent | - | Document format conversion |
+| skill-status-sync | (direct execution) | - | Atomic status updates |
+| skill-refresh | (direct execution) | - | Process and file cleanup |
+
+**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. Research and planning agents use `opus` for superior reasoning. Implementation agents use default model. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 
 ## Rules References
 
@@ -144,6 +146,23 @@ Core rules (auto-applied by file path):
 - @.claude/rules/error-handling.md - Error recovery (.claude/**)
 - @.claude/rules/artifact-formats.md - Report/plan formats (specs/**)
 - @.claude/rules/workflows.md - Command lifecycle (.claude/**)
+
+## Context Discovery
+
+Agents use `index.json` for automated context discovery instead of hardcoded file lists:
+
+```bash
+# Find context files for an agent
+jq -r '.entries[] | select(.load_when.agents[]? == "neovim-research-agent") | .path' .claude/context/index.json
+
+# Find context by task language
+jq -r '.entries[] | select(.load_when.languages[]? == "neovim") | .path' .claude/context/index.json
+
+# Get line counts for budget calculation
+jq -r '.entries[] | select(.load_when.agents[]? == "planner-agent") | "\(.line_count)\t\(.path)"' .claude/context/index.json
+```
+
+See `.claude/context/core/patterns/context-discovery.md` for query patterns.
 
 ## Context Imports
 

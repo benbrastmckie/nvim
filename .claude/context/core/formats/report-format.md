@@ -22,7 +22,8 @@
 5. **Decisions** – explicit decisions made.
 6. **Recommendations** – prioritized list with owners/next steps.
 7. **Risks & Mitigations** – optional but recommended.
-8. **Appendix** – references, data, links.
+8. **Context Extension Recommendations (optional)** – identified gaps in project context documentation.
+9. **Appendix** – references, data, links.
 
 ## Project Context (optional)
 
@@ -84,6 +85,47 @@
 ## Risks & Mitigations
 - ...
 
+## Context Extension Recommendations
+- **Topic**: {topic not covered by existing context}
+- **Gap**: {description of missing documentation}
+- **Recommendation**: {suggested context file to create or update}
+
 ## Appendix
 - References: ...
 ```
+
+## Context Extension Recommendations Section
+
+**Purpose**: Identifies gaps in project context documentation discovered during research.
+
+**When to Include**: Include this section when research reveals:
+- Topics not covered by existing context files
+- Outdated or incomplete context documentation
+- Recurring patterns that would benefit from documentation
+
+**When to Omit**: Omit this section for:
+- Meta tasks (to avoid circular task creation)
+- Simple tasks where no context gaps are identified
+- Tasks where existing context is sufficient
+
+**Entry Format**:
+```markdown
+- **Topic**: {specific topic or pattern discovered}
+- **Gap**: {what is missing from current context}
+- **Recommendation**: {suggested action - create new file or update existing}
+```
+
+**Example**:
+```markdown
+## Context Extension Recommendations
+
+- **Topic**: telescope.nvim advanced picker creation
+- **Gap**: No context file covers custom picker implementation patterns
+- **Recommendation**: Create `project/neovim/patterns/telescope-pickers.md` or extend `project/neovim/tools/telescope-guide.md`
+
+- **Topic**: Neovim floating window API
+- **Gap**: `domain/neovim-api.md` does not cover floating window creation
+- **Recommendation**: Add floating window section to `domain/neovim-api.md`
+```
+
+**Note**: Context gap task creation is currently disabled. Agents should document gaps in reports for future manual review rather than automatically creating tasks.

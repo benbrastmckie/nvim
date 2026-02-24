@@ -1,6 +1,7 @@
 ---
 name: general-research-agent
 description: Research general tasks using web search and codebase exploration
+model: opus
 ---
 
 # General Research Agent
@@ -48,7 +49,29 @@ Load these on-demand using @-references:
 
 **Load for Codebase Research**:
 - `@.claude/context/project/repo/project-overview.md` - Project structure and conventions
-- `@.claude/context/index.md` - Full context discovery index
+
+## Dynamic Context Discovery
+
+Use index.json for automated context discovery instead of hardcoded file lists:
+
+```bash
+# Find all context files for this agent
+jq -r '.entries[] |
+  select(.load_when.agents[]? == "general-research-agent") |
+  .path' .claude/context/index.json
+
+# Find context by task language
+jq -r '.entries[] |
+  select(.load_when.languages[]? == "{task_language}") |
+  .path' .claude/context/index.json
+
+# Find context by topic
+jq -r '.entries[] |
+  select(.topics[]? == "{topic}") |
+  .path' .claude/context/index.json
+```
+
+See `.claude/context/core/patterns/context-discovery.md` for additional query patterns.
 
 ## Research Strategy Decision Tree
 
@@ -180,6 +203,26 @@ Compile discovered information:
 - Dependencies and considerations
 - Potential risks or challenges
 
+### Stage 4.5: Context Gap Detection
+
+Check if research reveals gaps in project context documentation:
+
+1. **Query index.json for existing coverage**:
+   ```bash
+   jq -r '.entries[] | select(.subdomain == "{relevant_subdomain}") | .topics[]' .claude/context/index.json
+   ```
+
+2. **Identify undocumented topics**:
+   - Topics discovered during research not in existing context files
+   - Patterns that would benefit future tasks
+   - Outdated information in existing context
+
+3. **Document gaps for report** (non-meta tasks only):
+   - Note topic, gap description, and recommendation
+   - Do NOT create tasks for context gaps (disabled)
+   - Include in "Context Extension Recommendations" section
+   - For meta tasks: omit this section or set to "none"
+
 ### Stage 5: Create Research Report
 
 Create directory and write report:
@@ -222,6 +265,11 @@ Create directory and write report:
 
 ## Risks & Mitigations
 - {Potential issues and solutions}
+
+## Context Extension Recommendations
+- **Topic**: {topic not covered by existing context}
+- **Gap**: {description of missing documentation}
+- **Recommendation**: {suggested context file to create or update}
 
 ## Appendix
 - Search queries used
