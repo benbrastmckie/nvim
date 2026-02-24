@@ -1,10 +1,17 @@
 ---
-next_project_number: 93
+next_project_number: 94
 ---
 
 # TODO
 
 ## Tasks
+
+### 93. Investigate agent system changes across repositories
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Investigate the recent changes to the agent systems in /home/benjamin/Projects/ProofChecker/.claude/ and /home/benjamin/Projects/Logos/Theory/.claude/ in their git histories and compare with the current .claude/ agent system for this repository to see if there are any new features that it would make sense to include in this agent system.
 
 ### 92. Sync Wezterm terminal directory with Neovim session root
 - **Effort**: 1.25 hours

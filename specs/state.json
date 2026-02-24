@@ -1,6 +1,14 @@
 {
-  "next_project_number": 93,
+  "next_project_number": 94,
   "active_projects": [
+    {
+      "project_number": 93,
+      "project_name": "investigate_agent_system_changes_cross_repo",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-02-24T14:55:21Z",
+      "last_updated": "2026-02-24T14:55:21Z"
+    },
     {
       "project_number": 92,
       "project_name": "sync_wezterm_directory_with_neovim_session",
