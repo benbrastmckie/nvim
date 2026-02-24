@@ -4,11 +4,11 @@
     {
       "project_number": 94,
       "project_name": "fix_wezterm_new_tab_spawn_directory_parent_shell_cwd",
-      "status": "planned",
+      "status": "completed",
       "language": "neovim",
       "created": "2026-02-24T16:50:31Z",
-      "last_updated": "2026-02-24T17:07:44Z",
-      "session_id": "sess_1771952720_c4ca9b",
+      "last_updated": "2026-02-24T17:15:40Z",
+      "session_id": "sess_1771953177_22adb0",
       "artifacts": [
         {
           "type": "research",
@@ -19,9 +19,16 @@
           "path": "specs/094_fix_wezterm_new_tab_spawn_directory_parent_shell_cwd/plans/implementation-001.md",
           "type": "plan",
           "summary": "1-phase implementation plan to replace Leader+c keybinding with action_callback that reads process CWD from /proc"
+        },
+        {
+          "type": "summary",
+          "path": "specs/094_fix_wezterm_new_tab_spawn_directory_parent_shell_cwd/summaries/implementation-summary-20260224.md",
+          "summary": "Implementation summary with verification steps"
         }
       ],
-      "planned": "2026-02-24T17:07:44Z"
+      "planned": "2026-02-24T17:07:44Z",
+      "completed": "2026-02-24T17:15:40Z",
+      "completion_summary": "Replaced WezTerm Leader+c keybinding with custom action_callback that reads the foreground process's actual CWD from /proc/PID/cwd, fixing stale OSC 7 metadata issue after exiting Neovim."
     },
     {
       "project_number": 93,

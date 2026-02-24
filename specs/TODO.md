@@ -8,14 +8,17 @@ next_project_number: 95
 
 ### 94. Fix WezTerm new tab spawn directory by using parent shell CWD
 - **Effort**: 0.5 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-02-24
 - **Research Completed**: 2026-02-24
 - **Planning Started**: 2026-02-24
 - **Planning Completed**: 2026-02-24
+- **Implementation Started**: 2026-02-24
+- **Implementation Completed**: 2026-02-24
 - **Language**: neovim
 - **Research**: [research-001.md](094_fix_wezterm_new_tab_spawn_directory_parent_shell_cwd/reports/research-001.md)
 - **Plan**: [implementation-001.md](094_fix_wezterm_new_tab_spawn_directory_parent_shell_cwd/plans/implementation-001.md)
+- **Summary**: [implementation-summary-20260224.md](094_fix_wezterm_new_tab_spawn_directory_parent_shell_cwd/summaries/implementation-summary-20260224.md)
 
 **Description**: Fix WezTerm new tab spawn directory by overriding Leader+c keybinding to use parent shell's actual $PWD instead of OSC 7 metadata. Context: Task 92 added a fish prompt hook that corrects OSC 7 after Neovim exits (keep this). But the real problem is that pressing Leader+c WHILE INSIDE Neovim spawns the new tab in Neovim's project directory because SpawnTab reads OSC 7 metadata (which Neovim set) rather than the shell's actual $PWD. The fix is to replace the Leader+c keybinding in /home/benjamin/.dotfiles/config/wezterm.lua with a wezterm.action_callback that: (1) calls pane:get_foreground_process_info() to get the foreground process (nvim) and its ppid (the fish shell), (2) if the foreground process is not a shell, calls wezterm.procinfo.current_working_dir_for_pid(ppid) to get the fish shell's actual cwd from /proc, (3) spawns the new tab via SpawnCommandInNewTab with that cwd, bypassing OSC 7 entirely, (4) falls back to default SpawnTab behavior if process info is unavailable. The WezTerm config is managed by home-manager at /home/benjamin/.dotfiles/config/wezterm.lua (symlinked).
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Fix WezTerm New Tab Spawn Directory
 
 - **Task**: 94 - Fix WezTerm new tab spawn directory by overriding Leader+c keybinding
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: [research-001.md](../reports/research-001.md)
