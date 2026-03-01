@@ -4,11 +4,11 @@
     {
       "project_number": 99,
       "project_name": "review_agent_systems_core_extensions",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "created": "2026-03-01T20:06:21Z",
-      "last_updated": "2026-03-01T20:13:50Z",
-      "session_id": "sess_1772395672_2919c8",
+      "last_updated": "2026-03-01T20:16:06Z",
+      "session_id": "sess_1772396147_5be007",
       "researched": "2026-03-01T20:13:50Z",
       "artifacts": [
         {
@@ -21,19 +21,25 @@
     {
       "project_number": 98,
       "project_name": "consolidate_context_index_to_json",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-01T19:58:07Z",
-      "last_updated": "2026-03-01T20:10:11Z",
-      "session_id": "sess_1772395561_4741f5",
+      "last_updated": "2026-03-01T20:18:41Z",
+      "session_id": "sess_1772396104_e262dc",
       "researched": "2026-03-01T20:10:11Z",
       "artifacts": [
         {
           "path": "specs/098_consolidate_context_index_to_json/reports/research-001.md",
           "type": "research",
           "summary": "Research report with categorized reference analysis and migration recommendations for index.md removal"
+        },
+        {
+          "path": "specs/098_consolidate_context_index_to_json/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan covering agent/skill updates, documentation updates, file deletion, and verification"
         }
-      ]
+      ],
+      "planned": "2026-03-01T20:18:41Z"
     },
     {
       "project_number": 97,
