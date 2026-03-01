@@ -4,12 +4,12 @@
     {
       "project_number": 99,
       "project_name": "review_agent_systems_core_extensions",
-      "status": "planned",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-01T20:06:21Z",
-      "last_updated": "2026-03-01T20:19:30Z",
-      "session_id": "sess_1772396147_5be007",
-      "researched": "2026-03-01T20:13:50Z",
+      "last_updated": "2026-03-01T21:15:00Z",
+      "session_id": "sess_1772397108_4b5462",
+      "researched": "2026-03-01T21:15:00Z",
       "artifacts": [
         {
           "path": "specs/099_review_agent_systems_core_extensions/reports/research-001.md",
@@ -19,10 +19,14 @@
         {
           "path": "specs/099_review_agent_systems_core_extensions/plans/implementation-001.md",
           "type": "plan",
-          "summary": "6-phase implementation plan covering 22 missing core features and extension architecture framework"
+          "summary": "6-phase implementation plan covering 22 missing core features and extension architecture framework (superseded by revised approach)"
+        },
+        {
+          "path": "specs/099_review_agent_systems_core_extensions/reports/research-002.md",
+          "type": "research",
+          "summary": "Supplementary research for direct integration extension architecture - file copying with manifest tracking, <leader>ae picker, Claude Code discovery analysis"
         }
-      ],
-      "planned": "2026-03-01T20:19:30Z"
+      ]
     },
     {
       "project_number": 98,
