@@ -2,7 +2,7 @@
 
 - **Task**: 104 - Fix /implement phase status live updates
 - **Version**: 002 (revised)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3-4 hours
 - **Dependencies**: None
 - **Research Inputs**: [research-002.md](../reports/research-002.md), [research-003.md](../reports/research-003.md)
@@ -48,7 +48,7 @@ This revised plan incorporates findings from research-003.md, which examined the
 
 ## Implementation Phases
 
-### Phase 1: Create Centralized Plan Status Script [NOT STARTED]
+### Phase 1: Create Centralized Plan Status Script [COMPLETED]
 
 **Goal**: Create `.claude/scripts/update-plan-status.sh` to handle all plan-level status updates from a single location.
 
