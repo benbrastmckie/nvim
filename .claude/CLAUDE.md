@@ -1,6 +1,6 @@
-# Neovim Configuration Management System
+# Agent System
 
-Task management and agent orchestration for Neovim configuration maintenance. For comprehensive documentation, see @.claude/README.md.
+Task management and agent orchestration for project development. For comprehensive documentation, see @.claude/README.md.
 
 ## Quick Reference
 
@@ -12,19 +12,22 @@ Task management and agent orchestration for Neovim configuration maintenance. Fo
 ## Project Structure
 
 ```
-.                         # Repository root (Neovim configuration)
-├── init.lua             # Entry point
-├── lua/                 # Lua modules
-│   ├── plugins/         # Plugin specifications
-│   ├── config/          # Core configuration
-│   └── utils/           # Utility functions
-├── after/               # Filetype-specific overrides
-│   └── ftplugin/        # Filetype plugins
-├── plugin/              # Auto-loaded plugins
-├── docs/                # Project documentation
+.                         # Repository root
 ├── specs/               # Task management artifacts
+│   ├── TODO.md         # Task list
+│   ├── state.json      # Task state
+│   └── {NNN}_{SLUG}/   # Task directories
 └── .claude/             # Claude Code configuration
+    ├── commands/       # Slash commands
+    ├── skills/         # Skill definitions
+    ├── agents/         # Agent definitions
+    ├── rules/          # Auto-applied rules
+    └── context/        # Domain knowledge
 ```
+
+**Project-specific structure**: See `.claude/context/project/repo/project-overview.md` for details about this repository's layout.
+
+**New repository setup**: If project-overview.md doesn't exist, see `.claude/context/project/repo/update-project.md` for guidance on generating project-appropriate documentation.
 
 ## Task Management
 
