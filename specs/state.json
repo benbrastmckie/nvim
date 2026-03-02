@@ -1,6 +1,14 @@
 {
-  "next_project_number": 110,
+  "next_project_number": 111,
   "active_projects": [
+    {
+      "project_number": 110,
+      "project_name": "separate_extension_files_from_core_agent_system",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-02T23:30:27Z",
+      "last_updated": "2026-03-02T23:30:27Z"
+    },
     {
       "project_number": 109,
       "project_name": "generic_agent_system_portability",

@@ -1,10 +1,18 @@
 ---
-next_project_number: 110
+next_project_number: 111
 ---
 
 # TODO
 
 ## Tasks
+
+### 110. Separate LaTeX/Typst extension files from core agent system for portability
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Restructure the .claude/ directory to exclude extension-specific files from the core agent system copied via `<leader>ac`. Files to move to extensions: `agents/document-converter-agent.md`, `agents/latex-implementation-agent.md`, `agents/typst-implementation-agent.md`, `context/project/typst/`, `context/project/latex/`, `skills/skill-latex-implementation/`, and `skills/skill-typst-implementation/`. Additionally, replace the neovim-specific `context/project/repo/project-overview.md` with a generic `agent-system.md` that applies to any repository using the .claude/ agent system, and include a mandate in documentation for users to create their own project-overview.md for project-specific details.
 
 ### 109. Make agent system portable for new repos by separating generic and project-specific content
 - **Effort**: 2-3 hours
