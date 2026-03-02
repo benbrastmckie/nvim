@@ -4,19 +4,25 @@
     {
       "project_number": 106,
       "project_name": "review_dotfiles_claude_nix_extension",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-02T20:05:29Z",
-      "last_updated": "2026-03-02T20:13:52Z",
-      "session_id": "sess_1772482064_f2479f",
+      "last_updated": "2026-03-02T20:26:19Z",
+      "session_id": "sess_1772482823_408057",
       "researched": "2026-03-02T20:13:52Z",
       "artifacts": [
         {
           "path": "specs/106_review_dotfiles_claude_nix_extension/reports/research-001.md",
           "type": "research",
           "summary": "Research report documenting dotfiles Nix agent system components (2 agents, 2 skills, 1 rule, 11 context files) and extension architecture requirements for nix/ extension"
+        },
+        {
+          "path": "specs/106_review_dotfiles_claude_nix_extension/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for nix/ extension with MCP-NixOS support (~20 files)"
         }
-      ]
+      ],
+      "planned": "2026-03-02T20:26:19Z"
     },
     {
       "project_number": 105,

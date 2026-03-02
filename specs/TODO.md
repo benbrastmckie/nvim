@@ -8,11 +8,14 @@ next_project_number: 107
 
 ### 106. Review dotfiles .claude agent system to add nix/ extension
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-02
 - **Research Completed**: 2026-03-02
+- **Planning Started**: 2026-03-02
+- **Planning Completed**: 2026-03-02
 - **Language**: meta
 - **Research**: [research-001.md](106_review_dotfiles_claude_nix_extension/reports/research-001.md)
+- **Plan**: [implementation-001.md](106_review_dotfiles_claude_nix_extension/plans/implementation-001.md)
 - **Dependencies**: Task #102, Task #105
 
 **Description**: Review /home/benjamin/.dotfiles/.claude/ agent system for NixOS to add nix/ extension to .claude/extensions/ (builds on tasks 102 and 105)
