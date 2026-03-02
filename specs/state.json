@@ -4,11 +4,11 @@
     {
       "project_number": 104,
       "project_name": "fix_implement_phase_status_live_updates",
-      "status": "researched",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-02T18:06:25Z",
-      "last_updated": "2026-03-02T18:13:23Z",
-      "session_id": "sess_1772474942_d351bc",
+      "last_updated": "2026-03-02T18:21:57Z",
+      "session_id": "sess_1772475699_9faf22",
       "artifacts": [
         {
           "type": "research",
@@ -20,11 +20,11 @@
     {
       "project_number": 103,
       "project_name": "compare_opencode_agent_systems_against_claude",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-02T17:57:51Z",
-      "last_updated": "2026-03-02T18:18:51Z",
-      "session_id": "sess_1772475231_4d7810",
+      "last_updated": "2026-03-02T18:25:04Z",
+      "session_id": "sess_1772475712_50f122",
       "researched": "2026-03-02T18:18:51Z",
       "artifacts": [
         {
@@ -36,8 +36,14 @@
           "path": "specs/103_compare_opencode_agent_systems_against_claude/reports/research-002.md",
           "type": "research",
           "summary": "Deep-dive into .claude/extensions/ architecture with roadmap for parallel .opencode/extensions/ system under <leader>ao"
+        },
+        {
+          "path": "specs/103_compare_opencode_agent_systems_against_claude/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for parallel .opencode/extensions/ system with web extension and shared Lua base"
         }
-      ]
+      ],
+      "planned": "2026-03-02T18:25:04Z"
     },
     {
       "project_number": 102,

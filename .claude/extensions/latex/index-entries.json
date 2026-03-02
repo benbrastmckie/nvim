@@ -1,15 +1,6 @@
 {
   "entries": [
     {
-      "path": "context/project/latex/domain/latex-basics.md",
-      "description": "LaTeX fundamentals and common packages",
-      "tags": ["latex", "basics", "packages"],
-      "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
-    },
-    {
       "path": "context/project/latex/patterns/document-structure.md",
       "description": "LaTeX document organization patterns",
       "tags": ["latex", "structure", "organization"],
@@ -19,12 +10,75 @@
       }
     },
     {
-      "path": "context/project/latex/tools/vimtex-guide.md",
-      "description": "VimTeX integration and usage",
-      "tags": ["latex", "vimtex", "neovim"],
+      "path": "context/project/latex/patterns/theorem-environments.md",
+      "description": "LaTeX theorem environment patterns",
+      "tags": ["latex", "theorems", "environments"],
       "load_when": {
         "languages": ["latex"],
         "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/patterns/cross-references.md",
+      "description": "Cross-reference patterns for LaTeX documents",
+      "tags": ["latex", "references", "labels"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent", "latex-research-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/standards/document-structure.md",
+      "description": "Document structure standards for LaTeX projects",
+      "tags": ["latex", "structure", "standards"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/standards/latex-style-guide.md",
+      "description": "LaTeX style guide and formatting conventions",
+      "tags": ["latex", "style", "formatting"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent", "latex-research-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/standards/notation-conventions.md",
+      "description": "Mathematical notation conventions for LaTeX",
+      "tags": ["latex", "notation", "math"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/standards/custom-macros.md",
+      "description": "Custom macro patterns and conventions",
+      "tags": ["latex", "macros", "notation"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/templates/subfile-template.md",
+      "description": "Subfile template for modular LaTeX documents",
+      "tags": ["latex", "templates", "subfiles"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/tools/compilation-guide.md",
+      "description": "LaTeX compilation workflow and troubleshooting",
+      "tags": ["latex", "compilation", "build"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent", "latex-research-agent"]
       }
     }
   ]

@@ -8,7 +8,7 @@ next_project_number: 105
 
 ### 104. Fix /implement phase status live updates
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [RESEARCHING]
 - **Research Started**: 2026-03-02
 - **Research Completed**: 2026-03-02
 - **Language**: meta
@@ -18,13 +18,16 @@ next_project_number: 105
 **Description**: Investigate and fix the /implement command's phase status update behavior. Currently, when running `/implement`, the plan status is correctly changed to '[IMPLEMENTING]' but the same status field is added to all phases simultaneously instead of updating each phase one at a time. The expected behavior is to cycle each phase header through '[NOT STARTED]' to '[IMPLEMENTING]' to '[COMPLETED]' (or '[BLOCKED]', '[PARTIAL]', etc.) sequentially, providing live feedback so users can follow the plan as a dashboard displaying progress.
 
 ### 103. Compare .opencode agent systems against .claude North Star
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Effort**: 9.5 hours
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-02
 - **Research Completed**: 2026-03-02
+- **Planning Started**: 2026-03-02
+- **Planning Completed**: 2026-03-02
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](103_compare_opencode_agent_systems_against_claude/reports/research-001.md), [research-002.md](103_compare_opencode_agent_systems_against_claude/reports/research-002.md)
+- **Plan**: [implementation-001.md](103_compare_opencode_agent_systems_against_claude/plans/implementation-001.md)
 
 **Description**: Compare the .opencode agent systems in /home/benjamin/Projects/Logos/Theory/.opencode/ and /home/benjamin/.config/nvim/.opencode/ to evaluate their capacities and determine which to prefer. Goal is to make these agent systems provide the same functionality as /home/benjamin/.config/nvim/.claude/, which serves as the North Star reference.
 
