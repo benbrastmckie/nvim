@@ -4,10 +4,11 @@
     {
       "project_number": 103,
       "project_name": "compare_opencode_agent_systems_against_claude",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-02T17:57:51Z",
-      "last_updated": "2026-03-02T17:57:51Z"
+      "last_updated": "2026-03-02T18:00:12Z",
+      "session_id": "sess_1772474368_3da282"
     },
     {
       "project_number": 102,
@@ -15,7 +16,7 @@
       "status": "implementing",
       "language": "meta",
       "created": "2026-03-02T17:18:50Z",
-      "last_updated": "2026-03-02T17:51:40Z",
+      "last_updated": "2026-03-02T18:04:47Z",
       "session_id": "sess_1772473877_d85125",
       "researched": "2026-03-02T17:42:12Z",
       "artifacts": [
@@ -33,6 +34,11 @@
           "path": "specs/102_review_extensions_populate_missing_resources/plans/implementation-001.md",
           "type": "plan",
           "summary": "8-phase implementation plan for extension population and restructuring (~83 new files, ~12 modified, 3 deleted)"
+        },
+        {
+          "type": "summary",
+          "path": "specs/102_review_extensions_populate_missing_resources/summaries/implementation-summary-20260302.md",
+          "summary": "Partial implementation summary: phases 1-3 of 8 completed (rename, remove neovim, populate lean)"
         }
       ],
       "planned": "2026-03-02T17:49:21Z",

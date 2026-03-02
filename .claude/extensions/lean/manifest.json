@@ -15,7 +15,7 @@
   },
   "merge_targets": {
     "claudemd": {
-      "source": "claudemd-section.md",
+      "source": "EXTENSION.md",
       "target": ".claude/CLAUDE.md",
       "section_id": "extension_lean"
     },
