@@ -1,10 +1,18 @@
 ---
-next_project_number: 106
+next_project_number: 107
 ---
 
 # TODO
 
 ## Tasks
+
+### 106. Review dotfiles .claude agent system to add nix/ extension
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: Task #102, Task #105
+
+**Description**: Review /home/benjamin/.dotfiles/.claude/ agent system for NixOS to add nix/ extension to .claude/extensions/ (builds on tasks 102 and 105)
 
 ### 105. Create web/ extension from Logos Website .claude configuration
 - **Effort**: 3 hours

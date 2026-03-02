@@ -1,6 +1,14 @@
 {
-  "next_project_number": 106,
+  "next_project_number": 107,
   "active_projects": [
+    {
+      "project_number": 106,
+      "project_name": "review_dotfiles_claude_nix_extension",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-02T20:05:29Z",
+      "last_updated": "2026-03-02T20:05:29Z"
+    },
     {
       "project_number": 105,
       "project_name": "create_web_extension",
