@@ -240,6 +240,7 @@ return {
 
       -- Claude AI commands
       { "<leader>ac", "<cmd>ClaudeCommands<CR>", desc = "claude commands", icon = "󰘳" },
+      { "<leader>ae", "<cmd>ClaudeExtensions<CR>", desc = "claude extensions", icon = "󰏗" },
       { "<leader>ac",
         function() require("neotex.plugins.ai.claude.core.visual").send_visual_to_claude_with_prompt() end,
         desc = "send selection to claude with prompt",

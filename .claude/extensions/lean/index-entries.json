@@ -1,0 +1,67 @@
+{
+  "entries": [
+    {
+      "path": "context/project/lean4/domain/lean4-basics.md",
+      "description": "Lean 4 language fundamentals and syntax",
+      "tags": ["lean4", "syntax", "basics"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-research-agent", "lean-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/lean4/domain/mathlib-overview.md",
+      "description": "Mathlib library organization and key modules",
+      "tags": ["lean4", "mathlib", "library"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-research-agent", "lean-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/lean4/patterns/proof-patterns.md",
+      "description": "Common proof patterns and tactics in Lean 4",
+      "tags": ["lean4", "proofs", "tactics"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/lean4/patterns/tactic-reference.md",
+      "description": "Comprehensive tactic reference for Lean 4",
+      "tags": ["lean4", "tactics", "reference"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-research-agent", "lean-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/lean4/tools/lake-guide.md",
+      "description": "Lake build system usage and configuration",
+      "tags": ["lean4", "lake", "build"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/lean4/tools/mcp-lean-lsp.md",
+      "description": "Lean LSP MCP server integration guide",
+      "tags": ["lean4", "mcp", "lsp"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-research-agent", "lean-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/lean4/standards/style-guide.md",
+      "description": "Lean 4 coding style and conventions",
+      "tags": ["lean4", "style", "conventions"],
+      "load_when": {
+        "languages": ["lean4"],
+        "agents": ["lean-implementation-agent"]
+      }
+    }
+  ]
+}

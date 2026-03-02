@@ -1,0 +1,31 @@
+{
+  "entries": [
+    {
+      "path": "context/project/latex/domain/latex-basics.md",
+      "description": "LaTeX fundamentals and common packages",
+      "tags": ["latex", "basics", "packages"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/patterns/document-structure.md",
+      "description": "LaTeX document organization patterns",
+      "tags": ["latex", "structure", "organization"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/latex/tools/vimtex-guide.md",
+      "description": "VimTeX integration and usage",
+      "tags": ["latex", "vimtex", "neovim"],
+      "load_when": {
+        "languages": ["latex"],
+        "agents": ["latex-implementation-agent"]
+      }
+    }
+  ]
+}

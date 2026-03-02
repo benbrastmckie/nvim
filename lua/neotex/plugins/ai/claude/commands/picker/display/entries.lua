@@ -580,6 +580,71 @@ function M.create_commands_entries(structure)
   return entries
 end
 
+--- Create entries for extensions section
+--- @return table Array of entries
+function M.create_extensions_entries()
+  local entries = {}
+
+  -- Try to load extensions module
+  local ok, extensions = pcall(require, "neotex.plugins.ai.claude.extensions")
+  if not ok then
+    return entries
+  end
+
+  local available = extensions.list_available()
+  if #available == 0 then
+    return entries
+  end
+
+  -- Sort by name
+  table.sort(available, function(a, b) return a.name < b.name end)
+
+  for i, ext in ipairs(available) do
+    local is_first = (i == 1)
+    local indent_char = helpers.get_tree_char(is_first)
+
+    local status_indicator
+    if ext.status == "active" then
+      status_indicator = "[active]"
+    elseif ext.status == "update-available" then
+      status_indicator = "[update]"
+    else
+      status_indicator = "[inactive]"
+    end
+
+    local display = string.format(
+      "  %s %-28s %-10s %s",
+      indent_char,
+      ext.name,
+      status_indicator,
+      ext.description or ""
+    )
+
+    table.insert(entries, {
+      display = display,
+      entry_type = "extension",
+      name = ext.name,
+      description = ext.description,
+      status = ext.status,
+      version = ext.version,
+      language = ext.language,
+      ordinal = "zzzz_extension_" .. ext.name,
+    })
+  end
+
+  if #entries > 0 then
+    table.insert(entries, {
+      is_heading = true,
+      name = "~~~extensions_heading",
+      display = string.format("%-40s %s", "[Extensions]", "Domain-specific capability packs"),
+      entry_type = "heading",
+      ordinal = "extensions"
+    })
+  end
+
+  return entries
+end
+
 --- Create special entries (help and load all)
 --- @return table Array of entries
 function M.create_special_entries()
@@ -627,7 +692,13 @@ function M.create_picker_entries(structure)
     table.insert(all_entries, entry)
   end
 
-  -- 2. Docs section
+  -- 2. Extensions section (after Load All)
+  local ext_entries = M.create_extensions_entries()
+  for _, entry in ipairs(ext_entries) do
+    table.insert(all_entries, entry)
+  end
+
+  -- 3. Docs section
   local docs = M.create_docs_entries()
   for _, entry in ipairs(docs) do
     table.insert(all_entries, entry)

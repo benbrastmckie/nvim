@@ -1,0 +1,28 @@
+{
+  "name": "latex",
+  "version": "1.0.0",
+  "description": "LaTeX document development with VimTeX integration",
+  "language": "latex",
+  "dependencies": [],
+  "provides": {
+    "agents": ["latex-implementation-agent.md"],
+    "skills": ["skill-latex-implementation"],
+    "commands": [],
+    "rules": [],
+    "context": ["project/latex"],
+    "scripts": [],
+    "hooks": []
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "claudemd-section.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_latex"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    }
+  },
+  "mcp_servers": {}
+}

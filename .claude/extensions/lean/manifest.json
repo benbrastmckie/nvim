@@ -1,0 +1,37 @@
+{
+  "name": "lean",
+  "version": "1.0.0",
+  "description": "Lean 4 theorem prover support with MCP integration for proof assistance",
+  "language": "lean4",
+  "dependencies": [],
+  "provides": {
+    "agents": ["lean-research-agent.md", "lean-implementation-agent.md"],
+    "skills": ["skill-lean-research", "skill-lean-implementation", "skill-lake-repair", "skill-lean-version"],
+    "commands": ["lake.md", "lean.md"],
+    "rules": ["lean4.md"],
+    "context": ["project/lean4"],
+    "scripts": ["setup-lean-mcp.sh", "verify-lean-mcp.sh"],
+    "hooks": []
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "claudemd-section.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_lean"
+    },
+    "settings": {
+      "source": "settings-fragment.json",
+      "target": ".claude/settings.local.json"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    }
+  },
+  "mcp_servers": {
+    "lean-lsp": {
+      "command": "npx",
+      "args": ["-y", "lean-lsp-mcp@latest"]
+    }
+  }
+}

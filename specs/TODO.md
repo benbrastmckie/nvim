@@ -8,15 +8,18 @@ next_project_number: 100
 
 ### 99. Review agent systems to identify core features and extensions architecture
 - **Effort**: 10-14 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-03-01
 - **Research Completed**: 2026-03-01
 - **Planning Started**: 2026-03-01
 - **Planning Completed**: 2026-03-01
+- **Implementation Started**: 2026-03-01
+- **Implementation Completed**: 2026-03-01
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](099_review_agent_systems_core_extensions/reports/research-001.md), [research-002.md](099_review_agent_systems_core_extensions/reports/research-002.md), [research-003.md](099_review_agent_systems_core_extensions/reports/research-003.md), [research-004.md](099_review_agent_systems_core_extensions/reports/research-004.md)
 - **Plan**: [implementation-003.md](099_review_agent_systems_core_extensions/plans/implementation-003.md)
+- **Summary**: [implementation-summary-20260301.md](099_review_agent_systems_core_extensions/summaries/implementation-summary-20260301.md)
 
 **Description**: Review .claude/ agent systems in ProofChecker/ and Theory/ directories to identify general-purpose features (commands, skills, agents, rules, context files) missing from the current nvim/.claude/ system. Design a core + extensions architecture where the core agent system is managed by `<leader>ac`, and extensions (e.g., Lean development support) are optional additions loadable through `<leader>ac` but not active by default. Goal: ProofChecker/ agent = core system + Lean extension.
 

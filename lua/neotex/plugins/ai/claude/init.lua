@@ -148,6 +148,13 @@ M.setup = function(opts)
     nargs = 0,
   })
 
+  vim.api.nvim_create_user_command("ClaudeExtensions", function()
+    require("neotex.plugins.ai.claude.extensions.picker").show()
+  end, {
+    desc = "Manage Claude extensions",
+    nargs = 0,
+  })
+
   -- Set up a timer to periodically sync state
   vim.defer_fn(function()
     local timer = vim.loop.new_timer()

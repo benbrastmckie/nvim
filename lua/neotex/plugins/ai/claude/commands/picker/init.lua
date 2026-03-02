@@ -130,6 +130,11 @@ function M.show_commands_picker(opts)
         elseif selection.value.entry_type == "agent" and selection.value.filepath then
           actions.close(prompt_bufnr)
           edit.edit_artifact_file(selection.value.filepath)
+        elseif selection.value.entry_type == "extension" then
+          -- Navigate to extension picker focused on this extension
+          actions.close(prompt_bufnr)
+          local ext_picker = require("neotex.plugins.ai.claude.extensions.picker")
+          ext_picker.show(opts)
         end
       end)
 
