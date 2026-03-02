@@ -7,23 +7,27 @@ next_project_number: 106
 ## Tasks
 
 ### 105. Create web/ extension from Logos Website .claude configuration
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
-- **Research Started**: 2026-03-02
-- **Research Completed**: 2026-03-02
-- **Language**: meta
-- **Dependencies**: None
-- **Research**: [research-001.md](105_create_web_extension/reports/research-001.md)
-
-**Description**: Create a .claude/extensions/web/ extension by carefully studying /home/benjamin/Projects/Logos/Website/.claude/ as the reference source. Follow the same pattern established in task 102 (populating lean, latex, typst, z3, python, formal extensions), adapting content to be project-agnostic. Include appropriate agents, skills, context files, rules, EXTENSION.md, and manifest.json.
-
-### 104. Fix /implement phase status live updates
-- **Effort**: 3-4 hours
+- **Effort**: 3 hours
 - **Status**: [PLANNED]
 - **Research Started**: 2026-03-02
 - **Research Completed**: 2026-03-02
 - **Planning Started**: 2026-03-02
 - **Planning Completed**: 2026-03-02
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [research-001.md](105_create_web_extension/reports/research-001.md)
+- **Plan**: [implementation-001.md](105_create_web_extension/plans/implementation-001.md)
+
+**Description**: Create a .claude/extensions/web/ extension by carefully studying /home/benjamin/Projects/Logos/Website/.claude/ as the reference source. Follow the same pattern established in task 102 (populating lean, latex, typst, z3, python, formal extensions), adapting content to be project-agnostic. Include appropriate agents, skills, context files, rules, EXTENSION.md, and manifest.json.
+
+### 104. Fix /implement phase status live updates
+- **Effort**: 3-4 hours
+- **Status**: [IMPLEMENTING]
+- **Research Started**: 2026-03-02
+- **Research Completed**: 2026-03-02
+- **Planning Started**: 2026-03-02
+- **Planning Completed**: 2026-03-02
+- **Implementation Started**: 2026-03-02
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-003.md](104_fix_implement_phase_status_live_updates/reports/research-003.md)

@@ -4,28 +4,34 @@
     {
       "project_number": 105,
       "project_name": "create_web_extension",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-02T19:26:39Z",
-      "last_updated": "2026-03-02T19:32:24Z",
-      "session_id": "sess_1772479684_427e3a",
+      "last_updated": "2026-03-02T19:37:00Z",
+      "session_id": "sess_1772480023_1a7f68",
       "researched": "2026-03-02T19:32:24Z",
       "artifacts": [
         {
           "path": "specs/105_create_web_extension/reports/research-001.md",
           "type": "research",
           "summary": "Complete inventory of 24 files for web extension: 2 agents, 2 skills, 1 rule, 18 context files covering Astro/Tailwind/TypeScript/Cloudflare, with generalization analysis and recommended structure"
+        },
+        {
+          "path": "specs/105_create_web_extension/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for web extension with 24 files covering agents, skills, rules, and context"
         }
-      ]
+      ],
+      "planned": "2026-03-02T19:37:00Z"
     },
     {
       "project_number": 104,
       "project_name": "fix_implement_phase_status_live_updates",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-02T18:06:25Z",
-      "last_updated": "2026-03-02T19:31:14Z",
-      "session_id": "sess_1772477587_9e0582",
+      "last_updated": "2026-03-02T19:35:04Z",
+      "session_id": "sess_1772480073_303fb4",
       "artifacts": [
         {
           "path": "specs/104_fix_implement_phase_status_live_updates/reports/research-003.md",
@@ -39,7 +45,8 @@
         }
       ],
       "researched": "2026-03-02T18:58:24Z",
-      "planned": "2026-03-02T19:31:14Z"
+      "planned": "2026-03-02T19:31:14Z",
+      "started": "2026-03-02T19:35:04Z"
     },
     {
       "project_number": 103,

@@ -92,10 +92,9 @@ During research, agents should note when:
 
 ## Phases
 
-### Phase 1: {Name}
+### Phase 1: {Name} [NOT STARTED]
 
 **Estimated effort**: {hours}
-**Status**: [NOT STARTED]
 
 **Objectives**:
 1. {Objective}
