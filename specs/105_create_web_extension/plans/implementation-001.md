@@ -72,7 +72,7 @@ Integrated findings from [research-001.md](../reports/research-001.md):
 
 ---
 
-### Phase 2: Agents [IN PROGRESS]
+### Phase 2: Agents [COMPLETED]
 
 - **Goal:** Create the two web agents (implementation and research) by adapting source agents to be project-agnostic with extension-relative paths
 - **Tasks:**
