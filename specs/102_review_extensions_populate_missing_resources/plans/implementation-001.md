@@ -235,9 +235,9 @@ Context files (18, adapted from ProofChecker/.claude/context/project/lean4/):
 
 ---
 
-### Phase 5: Populate Typst Extension [NOT STARTED]
+### Phase 5: Populate Typst Extension [COMPLETED]
 
-**Status**: [NOT STARTED]
+**Status**: [COMPLETED]
 **Estimated effort**: 0.75 hours
 
 **Objectives**:
