@@ -1,0 +1,58 @@
+{
+  "entries": [
+    {
+      "path": "context/project/typst/standards/typst-style-guide.md",
+      "description": "Typst coding style and conventions",
+      "tags": ["typst", "style", "conventions"],
+      "load_when": {
+        "languages": ["typst"],
+        "agents": ["typst-research-agent", "typst-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/typst/standards/notation-conventions.md",
+      "description": "Mathematical notation conventions in Typst",
+      "tags": ["typst", "math", "notation"],
+      "load_when": {
+        "languages": ["typst"],
+        "agents": ["typst-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/typst/patterns/theorem-environments.md",
+      "description": "Theorem, definition, and proof environments",
+      "tags": ["typst", "theorems", "environments"],
+      "load_when": {
+        "languages": ["typst"],
+        "agents": ["typst-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/typst/patterns/cross-references.md",
+      "description": "Cross-reference patterns in Typst",
+      "tags": ["typst", "references", "labels"],
+      "load_when": {
+        "languages": ["typst"],
+        "agents": ["typst-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/typst/patterns/fletcher-diagrams.md",
+      "description": "Fletcher package for commutative diagrams",
+      "tags": ["typst", "diagrams", "fletcher"],
+      "load_when": {
+        "languages": ["typst"],
+        "agents": ["typst-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/typst/tools/compilation-guide.md",
+      "description": "Typst compilation and tooling",
+      "tags": ["typst", "compile", "tools"],
+      "load_when": {
+        "languages": ["typst"],
+        "agents": ["typst-implementation-agent"]
+      }
+    }
+  ]
+}

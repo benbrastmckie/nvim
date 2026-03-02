@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "path": "context/project/python/domain/python-patterns.md",
+      "description": "Python design patterns and idioms",
+      "tags": ["python", "patterns", "idioms"],
+      "load_when": {
+        "languages": ["python"],
+        "agents": ["python-research-agent", "python-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/python/standards/code-style.md",
+      "description": "Python coding style and conventions",
+      "tags": ["python", "style", "conventions"],
+      "load_when": {
+        "languages": ["python"],
+        "agents": ["python-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/python/patterns/testing-patterns.md",
+      "description": "Pytest patterns and fixtures",
+      "tags": ["python", "pytest", "testing"],
+      "load_when": {
+        "languages": ["python"],
+        "agents": ["python-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/python/tools/development-setup.md",
+      "description": "Python development environment setup",
+      "tags": ["python", "setup", "development"],
+      "load_when": {
+        "languages": ["python"],
+        "agents": ["python-implementation-agent"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "entries": [
+    {
+      "path": "context/project/z3/domain/z3-api.md",
+      "description": "Z3 Python API reference and examples",
+      "tags": ["z3", "api", "python"],
+      "load_when": {
+        "languages": ["z3"],
+        "agents": ["z3-research-agent", "z3-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/z3/domain/smt-patterns.md",
+      "description": "SMT-LIB patterns and Z3 tactics",
+      "tags": ["z3", "smt", "tactics"],
+      "load_when": {
+        "languages": ["z3"],
+        "agents": ["z3-research-agent", "z3-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/z3/patterns/constraint-generation.md",
+      "description": "Constraint building patterns for Z3",
+      "tags": ["z3", "constraints", "patterns"],
+      "load_when": {
+        "languages": ["z3"],
+        "agents": ["z3-implementation-agent"]
+      }
+    },
+    {
+      "path": "context/project/z3/patterns/bitvector-operations.md",
+      "description": "BitVec state manipulation patterns",
+      "tags": ["z3", "bitvector", "state"],
+      "load_when": {
+        "languages": ["z3"],
+        "agents": ["z3-implementation-agent"]
+      }
+    }
+  ]
+}

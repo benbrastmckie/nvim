@@ -1,15 +1,15 @@
 {
-  "name": "latex",
+  "name": "python",
   "version": "1.0.0",
-  "description": "LaTeX document development with VimTeX integration",
-  "language": "latex",
+  "description": "Python development with pytest integration and type checking",
+  "language": "python",
   "dependencies": [],
   "provides": {
-    "agents": ["latex-implementation-agent.md", "latex-research-agent.md"],
-    "skills": ["skill-latex-implementation", "skill-latex-research"],
+    "agents": ["python-research-agent.md", "python-implementation-agent.md"],
+    "skills": ["skill-python-research", "skill-python-implementation"],
     "commands": [],
-    "rules": ["latex.md"],
-    "context": ["project/latex"],
+    "rules": [],
+    "context": ["project/python"],
     "scripts": [],
     "hooks": []
   },
@@ -17,7 +17,7 @@
     "claudemd": {
       "source": "claudemd-section.md",
       "target": ".claude/CLAUDE.md",
-      "section_id": "extension_latex"
+      "section_id": "extension_python"
     },
     "index": {
       "source": "index-entries.json",

@@ -1,15 +1,15 @@
 {
-  "name": "latex",
+  "name": "z3",
   "version": "1.0.0",
-  "description": "LaTeX document development with VimTeX integration",
-  "language": "latex",
+  "description": "Z3 SMT solver development with constraint pattern support",
+  "language": "z3",
   "dependencies": [],
   "provides": {
-    "agents": ["latex-implementation-agent.md", "latex-research-agent.md"],
-    "skills": ["skill-latex-implementation", "skill-latex-research"],
+    "agents": ["z3-research-agent.md", "z3-implementation-agent.md"],
+    "skills": ["skill-z3-research", "skill-z3-implementation"],
     "commands": [],
-    "rules": ["latex.md"],
-    "context": ["project/latex"],
+    "rules": [],
+    "context": ["project/z3"],
     "scripts": [],
     "hooks": []
   },
@@ -17,7 +17,7 @@
     "claudemd": {
       "source": "claudemd-section.md",
       "target": ".claude/CLAUDE.md",
-      "section_id": "extension_latex"
+      "section_id": "extension_z3"
     },
     "index": {
       "source": "index-entries.json",
