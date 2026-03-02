@@ -4,33 +4,34 @@
     {
       "project_number": 105,
       "project_name": "create_web_extension",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-02T19:26:39Z",
-      "last_updated": "2026-03-02T19:26:39Z"
+      "last_updated": "2026-03-02T19:28:35Z",
+      "session_id": "sess_1772479684_427e3a"
     },
     {
       "project_number": 104,
       "project_name": "fix_implement_phase_status_live_updates",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-02T18:06:25Z",
-      "last_updated": "2026-03-02T18:58:24Z",
+      "last_updated": "2026-03-02T19:31:14Z",
       "session_id": "sess_1772477587_9e0582",
       "artifacts": [
-        {
-          "path": "specs/104_fix_implement_phase_status_live_updates/plans/implementation-001.md",
-          "type": "plan",
-          "summary": "6-phase plan: fix templates, skill preflight/postflight sed patterns, command GATE OUT, and agent instructions for heading-only phase status"
-        },
         {
           "path": "specs/104_fix_implement_phase_status_live_updates/reports/research-003.md",
           "type": "research",
           "summary": "ProofChecker comparison, centralized script architecture, and [IN PROGRESS] vs [IMPLEMENTING] analysis"
+        },
+        {
+          "path": "specs/104_fix_implement_phase_status_live_updates/plans/implementation-002.md",
+          "type": "plan",
+          "summary": "6-phase revised plan: centralized update-plan-status.sh script, template fix, skill/command updates, agent instructions"
         }
       ],
       "researched": "2026-03-02T18:58:24Z",
-      "planned": "2026-03-02T18:38:37Z"
+      "planned": "2026-03-02T19:31:14Z"
     },
     {
       "project_number": 103,

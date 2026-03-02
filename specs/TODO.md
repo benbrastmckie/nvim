@@ -8,15 +8,16 @@ next_project_number: 106
 
 ### 105. Create web/ extension from Logos Website .claude configuration
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
+- **Research Started**: 2026-03-02
 - **Language**: meta
 - **Dependencies**: None
 
 **Description**: Create a .claude/extensions/web/ extension by carefully studying /home/benjamin/Projects/Logos/Website/.claude/ as the reference source. Follow the same pattern established in task 102 (populating lean, latex, typst, z3, python, formal extensions), adapting content to be project-agnostic. Include appropriate agents, skills, context files, rules, EXTENSION.md, and manifest.json.
 
 ### 104. Fix /implement phase status live updates
-- **Effort**: 3.5 hours
-- **Status**: [RESEARCHED]
+- **Effort**: 3-4 hours
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-02
 - **Research Completed**: 2026-03-02
 - **Planning Started**: 2026-03-02
@@ -24,7 +25,7 @@ next_project_number: 106
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-003.md](104_fix_implement_phase_status_live_updates/reports/research-003.md)
-- **Plan**: [implementation-001.md](104_fix_implement_phase_status_live_updates/plans/implementation-001.md)
+- **Plan**: [implementation-002.md](104_fix_implement_phase_status_live_updates/plans/implementation-002.md)
 
 **Description**: Investigate and fix the /implement command's phase status update behavior. Currently, when running `/implement`, the plan status is correctly changed to '[IMPLEMENTING]' but the same status field is added to all phases simultaneously instead of updating each phase one at a time. The expected behavior is to cycle each phase header through '[NOT STARTED]' to '[IMPLEMENTING]' to '[COMPLETED]' (or '[BLOCKED]', '[PARTIAL]', etc.) sequentially, providing live feedback so users can follow the plan as a dashboard displaying progress.
 
