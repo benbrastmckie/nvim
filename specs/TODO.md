@@ -8,10 +8,12 @@ next_project_number: 106
 
 ### 105. Create web/ extension from Logos Website .claude configuration
 - **Effort**: TBD
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-02
+- **Research Completed**: 2026-03-02
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [research-001.md](105_create_web_extension/reports/research-001.md)
 
 **Description**: Create a .claude/extensions/web/ extension by carefully studying /home/benjamin/Projects/Logos/Website/.claude/ as the reference source. Follow the same pattern established in task 102 (populating lean, latex, typst, z3, python, formal extensions), adapting content to be project-agnostic. Include appropriate agents, skills, context files, rules, EXTENSION.md, and manifest.json.
 

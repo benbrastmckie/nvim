@@ -4,11 +4,19 @@
     {
       "project_number": 105,
       "project_name": "create_web_extension",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-02T19:26:39Z",
-      "last_updated": "2026-03-02T19:28:35Z",
-      "session_id": "sess_1772479684_427e3a"
+      "last_updated": "2026-03-02T19:32:24Z",
+      "session_id": "sess_1772479684_427e3a",
+      "researched": "2026-03-02T19:32:24Z",
+      "artifacts": [
+        {
+          "path": "specs/105_create_web_extension/reports/research-001.md",
+          "type": "research",
+          "summary": "Complete inventory of 24 files for web extension: 2 agents, 2 skills, 1 rule, 18 context files covering Astro/Tailwind/TypeScript/Cloudflare, with generalization analysis and recommended structure"
+        }
+      ]
     },
     {
       "project_number": 104,
