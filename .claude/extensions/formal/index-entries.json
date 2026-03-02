@@ -1,0 +1,405 @@
+{
+  "entries": [
+    {
+      "path": ".claude/extensions/formal/context/project/logic/README.md",
+      "summary": "Logic context index and terminology conventions",
+      "category": "index",
+      "line_count": 40,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/kripke-semantics-overview.md",
+      "summary": "Kripke frame semantics for modal logic",
+      "category": "domain",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["modal", "kripke", "semantics", "accessibility"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/metalogic-concepts.md",
+      "summary": "Soundness, completeness, and decidability for modal logic",
+      "category": "domain",
+      "line_count": 150,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["soundness", "completeness", "decidability", "canonical"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/proof-theory-concepts.md",
+      "summary": "Proof-theoretic concepts: axioms, inference rules, sequent calculus",
+      "category": "domain",
+      "line_count": 120,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["proof", "sequent", "axiom", "inference"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/bilateral-propositions.md",
+      "summary": "Bilateral propositions with exact verifiers and falsifiers",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["bilateral", "verifier", "truthmaker", "hyperintensional"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/bilateral-semantics.md",
+      "summary": "Bilateral semantics framework for verifiers and falsifiers",
+      "category": "domain",
+      "line_count": 90,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["bilateral", "semantics", "verifier", "falsifier"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/counterfactual-semantics.md",
+      "summary": "Counterfactual conditional semantics with exact verification",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["counterfactual", "conditional", "lewis", "stalnaker"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/lattice-theory-concepts.md",
+      "summary": "Lattice structures in logical semantics",
+      "category": "domain",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["lattice", "boolean", "heyting", "bilattice"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/mereology-foundations.md",
+      "summary": "Part-whole relations for state spaces and truthmaker semantics",
+      "category": "domain",
+      "line_count": 90,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["mereology", "part", "fusion", "state"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/spatial-domain.md",
+      "summary": "Spatial logic with region connection calculus",
+      "category": "domain",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["spatial", "region", "topology", "rcc"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/task-semantics.md",
+      "summary": "Task-based model-theoretic framework combining modal and temporal logic",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["task", "model", "temporal", "history"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/domain/topological-foundations-domain.md",
+      "summary": "Topological semantics for modal and intuitionistic logic",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["topology", "interior", "closure", "stone"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/processes/modal-proof-strategies.md",
+      "summary": "Strategies and patterns for modal logic proofs",
+      "category": "processes",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["proof", "modal", "strategy", "axiom"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/processes/temporal-proof-strategies.md",
+      "summary": "Strategies for temporal logic proofs",
+      "category": "processes",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["proof", "temporal", "ltl", "ctl"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/processes/proof-construction.md",
+      "summary": "General workflow for constructing formal proofs",
+      "category": "processes",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["proof", "construction", "workflow"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/processes/verification-workflow.md",
+      "summary": "Workflow for verifying logical properties",
+      "category": "processes",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"],
+        "topics": ["verification", "safety", "liveness"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/standards/proof-conventions.md",
+      "summary": "Canonical proof style conventions for modal and temporal logic",
+      "category": "standards",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/standards/notation-standards.md",
+      "summary": "Notation standards for modal and temporal logic formulas",
+      "category": "standards",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/logic/standards/naming-conventions.md",
+      "summary": "Naming standards for identifiers in logic formalization",
+      "category": "standards",
+      "line_count": 60,
+      "load_when": {
+        "agents": ["logic-research-agent", "formal-research-agent"],
+        "languages": ["logic", "formal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/README.md",
+      "summary": "Math context index with subdirectory descriptions",
+      "category": "index",
+      "line_count": 30,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/algebra/groups-and-monoids.md",
+      "summary": "Group and monoid structures with Lean 4 definitions",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["group", "monoid", "algebra", "homomorphism"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/algebra/rings-and-fields.md",
+      "summary": "Ring and field structures with Lean 4 definitions",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["ring", "field", "algebra", "ideal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/lattice-theory/lattices.md",
+      "summary": "Lattice definitions, theorems, and Mathlib patterns",
+      "category": "domain",
+      "line_count": 150,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["lattice", "sup", "inf", "complete", "boolean"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/lattice-theory/bilattice-theory.md",
+      "summary": "Bilattice structures for multi-valued logic",
+      "category": "domain",
+      "line_count": 90,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["bilattice", "four-valued", "paraconsistent"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/order-theory/partial-orders.md",
+      "summary": "Partial orders, well-foundedness, and order-preserving maps",
+      "category": "domain",
+      "line_count": 120,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["order", "partial", "well-founded", "zorn"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/order-theory/monoidal-posets.md",
+      "summary": "Monoidal posets for resource semantics",
+      "category": "domain",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["monoidal", "poset", "resource", "linear"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/topology/topological-spaces.md",
+      "summary": "Topological space definitions and properties",
+      "category": "domain",
+      "line_count": 150,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["topology", "continuous", "compact", "connected"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/topology/scott-topology.md",
+      "summary": "Scott topology for domain theory",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["scott", "domain", "cpo", "continuous"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/category-theory/basics.md",
+      "summary": "Category theory fundamentals: categories, functors, natural transformations",
+      "category": "domain",
+      "line_count": 120,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["category", "functor", "natural", "limit"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/category-theory/monoidal-categories.md",
+      "summary": "Monoidal categories and tensor products",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["monoidal", "tensor", "symmetric", "closed"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/category-theory/enriched-categories.md",
+      "summary": "Categories enriched over monoidal categories",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["enriched", "weighted", "metric"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/category-theory/lawvere-metric-spaces.md",
+      "summary": "Metric spaces as enriched categories",
+      "category": "domain",
+      "line_count": 90,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["lawvere", "metric", "enriched", "distance"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/category-theory/cauchy-completion.md",
+      "summary": "Cauchy completion for enriched categories",
+      "category": "domain",
+      "line_count": 80,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["cauchy", "completion", "idempotent"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/category-theory/profunctors.md",
+      "summary": "Profunctors as generalized relations between categories",
+      "category": "domain",
+      "line_count": 100,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["profunctor", "bimodule", "weighted"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/math/foundations/dependent-type-theory.md",
+      "summary": "Dependent type theory foundations for Lean 4",
+      "category": "domain",
+      "line_count": 150,
+      "load_when": {
+        "agents": ["math-research-agent", "formal-research-agent"],
+        "languages": ["math", "formal"],
+        "topics": ["type", "dependent", "pi", "sigma", "identity"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/physics/README.md",
+      "summary": "Physics context index for dynamical systems",
+      "category": "index",
+      "line_count": 30,
+      "load_when": {
+        "agents": ["physics-research-agent", "formal-research-agent"],
+        "languages": ["physics", "formal"]
+      }
+    },
+    {
+      "path": ".claude/extensions/formal/context/project/physics/dynamical-systems/dynamical-systems.md",
+      "summary": "Dynamical systems: iteration, orbits, fixed points, flows",
+      "category": "domain",
+      "line_count": 200,
+      "load_when": {
+        "agents": ["physics-research-agent", "formal-research-agent"],
+        "languages": ["physics", "formal"],
+        "topics": ["dynamical", "orbit", "fixed", "flow", "ergodic", "chaos"]
+      }
+    }
+  ]
+}
