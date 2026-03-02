@@ -4,10 +4,18 @@
     {
       "project_number": 104,
       "project_name": "fix_implement_phase_status_live_updates",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-02T18:06:25Z",
-      "last_updated": "2026-03-02T18:06:25Z"
+      "last_updated": "2026-03-02T18:13:23Z",
+      "session_id": "sess_1772474942_d351bc",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/104_fix_implement_phase_status_live_updates/reports/research-001.md",
+          "summary": "Root cause analysis: overly broad sed patterns in skill preflight/postflight update ALL Status lines instead of just plan-level metadata. 3 bugs identified across 14 files with 5 recommendations."
+        }
+      ]
     },
     {
       "project_number": 103,
