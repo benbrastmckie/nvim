@@ -1205,6 +1205,19 @@
       }
     },
     {
+      "path": "project/repo/update-project.md",
+      "domain": "project",
+      "subdomain": "repo",
+      "topics": ["project-overview", "generation", "template"],
+      "keywords": ["project", "overview", "generation", "template", "new-repository"],
+      "summary": "Guide for generating project-overview.md in new repositories",
+      "line_count": 140,
+      "load_when": {
+        "agents": ["meta-builder-agent"],
+        "languages": ["meta"]
+      }
+    },
+    {
       "path": "project/repo/self-healing-implementation-details.md",
       "domain": "project",
       "subdomain": "repo",
