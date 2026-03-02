@@ -13,7 +13,7 @@ next_project_number: 103
 - **Research Completed**: 2026-03-02
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [research-001.md](102_review_extensions_populate_missing_resources/reports/research-001.md)
+- **Research**: [research-002.md](102_review_extensions_populate_missing_resources/reports/research-002.md)
 
 **Description**: Review the extensions in .claude/extensions/ to identify resources in /home/benjamin/Projects/Logos/Theory/.claude/, /home/benjamin/Projects/ModelChecker/.claude/, and /home/benjamin/Projects/ProofChecker/.claude/ that should be included but are not already. Fill all gaps such as missing commands (e.g., lean.md missing from lean/commands/).
 
