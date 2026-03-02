@@ -1,6 +1,14 @@
 {
-  "next_project_number": 100,
+  "next_project_number": 101,
   "active_projects": [
+    {
+      "project_number": 100,
+      "project_name": "fix_extension_picker_preview",
+      "status": "not_started",
+      "language": "neovim",
+      "created": "2026-03-02T01:01:32Z",
+      "last_updated": "2026-03-02T01:01:32Z"
+    },
     {
       "project_number": 99,
       "project_name": "review_agent_systems_core_extensions",
