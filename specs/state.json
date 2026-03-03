@@ -1,6 +1,14 @@
 {
-  "next_project_number": 112,
+  "next_project_number": 113,
   "active_projects": [
+    {
+      "project_number": 112,
+      "project_name": "fix_leader_ac_artifact_loader_project_overview",
+      "status": "not_started",
+      "language": "neovim",
+      "created": "2026-03-03T00:04:14Z",
+      "last_updated": "2026-03-03T00:04:14Z"
+    },
     {
       "project_number": 111,
       "project_name": "compare_opencode_agent_systems",
