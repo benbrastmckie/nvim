@@ -191,46 +191,47 @@ local function scan_all_artifacts(global_dir, project_dir, config)
     table.insert(artifacts.skills, file)
   end
 
-  -- .claude/-specific artifacts
+  -- Shared artifacts: scanned unconditionally for both .claude and .opencode
+  -- (scan_directory_for_sync returns empty array for non-existent directories)
+  artifacts.hooks = sync_scan("hooks", "*.sh")
+  artifacts.templates = sync_scan("templates", "*.yaml")
+  artifacts.docs = sync_scan("docs", "*.md")
+  artifacts.scripts = sync_scan("scripts", "*.sh")
+  artifacts.rules = sync_scan("rules", "*.md")
+
+  -- Context (multiple file types: md, json, yaml) - shared by both systems
+  local ctx_md = sync_scan("context", "*.md", true, CONTEXT_EXCLUDE_PATTERNS)
+  local ctx_json = sync_scan("context", "*.json")
+  local ctx_yaml = sync_scan("context", "*.yaml")
+  artifacts.context = {}
+  for _, files in ipairs({ ctx_md, ctx_json, ctx_yaml }) do
+    for _, file in ipairs(files) do
+      table.insert(artifacts.context, file)
+    end
+  end
+
+  -- Systemd (multiple file types: .service, .timer) - shared by both systems
+  local systemd_service = sync_scan("systemd", "*.service")
+  local systemd_timer = sync_scan("systemd", "*.timer")
+  artifacts.systemd = {}
+  for _, file in ipairs(systemd_service) do
+    table.insert(artifacts.systemd, file)
+  end
+  for _, file in ipairs(systemd_timer) do
+    table.insert(artifacts.systemd, file)
+  end
+
+  -- .claude-specific artifacts (directories that don't exist in .opencode/)
   if base_dir == ".claude" then
-    artifacts.hooks = sync_scan("hooks", "*.sh")
-    artifacts.templates = sync_scan("templates", "*.yaml")
     artifacts.lib = sync_scan("lib", "*.sh")
-    artifacts.docs = sync_scan("docs", "*.md")
-    artifacts.scripts = sync_scan("scripts", "*.sh")
     artifacts.tests = sync_scan("tests", "test_*.sh")
-    artifacts.rules = sync_scan("rules", "*.md")
-
-    -- Context (multiple file types: md, json, yaml)
-    local ctx_md = sync_scan("context", "*.md", true, CONTEXT_EXCLUDE_PATTERNS)
-    local ctx_json = sync_scan("context", "*.json")
-    local ctx_yaml = sync_scan("context", "*.yaml")
-    artifacts.context = {}
-    for _, files in ipairs({ ctx_md, ctx_json, ctx_yaml }) do
-      for _, file in ipairs(files) do
-        table.insert(artifacts.context, file)
-      end
-    end
-
-    -- Systemd (multiple file types: .service, .timer)
-    local systemd_service = sync_scan("systemd", "*.service")
-    local systemd_timer = sync_scan("systemd", "*.timer")
-    artifacts.systemd = {}
-    for _, file in ipairs(systemd_service) do
-      table.insert(artifacts.systemd, file)
-    end
-    for _, file in ipairs(systemd_timer) do
-      table.insert(artifacts.systemd, file)
-    end
-
-    -- Settings
     artifacts.settings = sync_scan("", "settings.json")
   end
 
   -- Root files vary by system
   local root_file_names
   if base_dir == ".opencode" then
-    root_file_names = { "OPENCODE.md", "settings.json" }
+    root_file_names = { "OPENCODE.md", "settings.json", ".gitignore", "README.md", "QUICK-START.md" }
   else
     root_file_names = { ".gitignore", "README.md", "CLAUDE.md", "settings.local.json" }
   end

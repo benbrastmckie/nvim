@@ -67,7 +67,7 @@ Research report `research-001.md` identified:
 
 ---
 
-### Phase 2: Remove .claude-only guard and make scanning unconditional [NOT STARTED]
+### Phase 2: Remove .claude-only guard and make scanning unconditional [COMPLETED]
 
 **Goal:** Move all artifact scanning outside the `if base_dir == ".claude"` guard so both systems get the same categories scanned.
 
