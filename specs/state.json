@@ -7,14 +7,19 @@
       "status": "researched",
       "language": "meta",
       "created": "2026-03-03T00:10:48Z",
-      "last_updated": "2026-03-03T00:18:27Z",
-      "session_id": "sess_1772496780_lh8tfy",
-      "researched": "2026-03-03T00:18:27Z",
+      "last_updated": "2026-03-03T00:26:12Z",
+      "session_id": "sess_1772497454_v4rb0v",
+      "researched": "2026-03-03T00:26:12Z",
       "artifacts": [
         {
           "path": "specs/113_review_proofchecker_opencode_virtues/reports/research-001.md",
           "type": "research",
           "summary": "Comprehensive research report identifying 15 ProofChecker virtues prioritized into 3 tiers (Critical, High, Medium value). Key findings: ADRs, TESTING.md, validation scripts, and domain context as extensions would most benefit nvim system."
+        },
+        {
+          "path": "specs/113_review_proofchecker_opencode_virtues/reports/research-002.md",
+          "type": "research",
+          "summary": "Extended research comparing Logos/Theory/.opencode/ (best system) with nvim/.claude/. Identified 10 features to port for feature parity: documentation suite, parity tracking, checkpoint organization, MCP safety docs, and more. 34-hour implementation roadmap provided."
         }
       ]
     },
