@@ -3,7 +3,7 @@
 - **Task**: 121 - clean_up_core_skills_directories
 - **Date**: 2026-03-03 (Revised)
 - **Feature**: Remove extension artifacts from core directories and simplify sync.lua
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Estimated Hours**: 2-3 hours
 - **Standards File**: /home/benjamin/.config/nvim/CLAUDE.md
 - **Research Reports**:
@@ -225,7 +225,7 @@ Three research reports inform this plan:
 
 ---
 
-### Phase 5: Testing [NOT STARTED]
+### Phase 5: Testing [COMPLETED]
 
 **Goal**: Verify the full system works correctly after cleanup.
 

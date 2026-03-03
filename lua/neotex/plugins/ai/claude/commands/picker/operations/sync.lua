@@ -1,14 +1,12 @@
 -- neotex.plugins.ai.claude.commands.picker.operations.sync
--- Load Core Agent System operation with simplified sync functionality
--- Excludes extension-owned artifacts from sync
+-- Load Core Agent System operation with clean-source sync
+-- Sources are already clean (no extension artifacts), so sync is a simple full-directory copy
 
 local M = {}
 
 -- Dependencies
 local scan = require("neotex.plugins.ai.claude.commands.picker.utils.scan")
 local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
-local shared_config = require("neotex.plugins.ai.shared.extensions.config")
-local shared_manifest = require("neotex.plugins.ai.shared.extensions.manifest")
 
 -- Files to exclude from context sync (repository-specific files that should not be copied)
 -- Note: update-project.md is intentionally NOT excluded as it is a guide/template
@@ -16,176 +14,6 @@ local CONTEXT_EXCLUDE_PATTERNS = {
   "project/repo/project-overview.md",
   "project/repo/self-healing-implementation-details.md",
 }
-
---- Build extension exclusion sets from all extension manifests
---- @param global_dir string Global directory path (e.g., ~/.config/nvim)
---- @param config table|nil Picker config with base_dir field
---- @return table Exclusion sets per category (agents, commands, rules, scripts, hooks, skills, context)
-local function build_extension_exclusions(global_dir, config)
-  local exclusions = {
-    agents = {},    -- Set of filenames to exclude
-    commands = {},  -- Set of filenames to exclude
-    rules = {},     -- Set of filenames to exclude
-    scripts = {},   -- Set of filenames to exclude
-    hooks = {},     -- Set of filenames to exclude
-    skills = {},    -- Set of directory names to exclude
-    context = {},   -- Array of directory prefixes to exclude
-  }
-
-  local base_dir = (config and config.base_dir) or ".claude"
-
-  -- Derive extension config from base_dir
-  local ext_config
-  if base_dir == ".opencode" then
-    ext_config = shared_config.opencode(global_dir)
-  else
-    ext_config = shared_config.claude(global_dir)
-  end
-
-  -- List all valid extensions
-  local extensions = shared_manifest.list_extensions(ext_config)
-  if #extensions == 0 then
-    return exclusions
-  end
-
-  -- Iterate over each extension's manifest provides field
-  for _, ext in ipairs(extensions) do
-    local provides = ext.manifest.provides
-    if provides then
-      -- Agents: store filenames (e.g., "lean-research-agent.md")
-      if provides.agents then
-        for _, filename in ipairs(provides.agents) do
-          exclusions.agents[filename] = true
-        end
-      end
-
-      -- Commands: store filenames
-      if provides.commands then
-        for _, filename in ipairs(provides.commands) do
-          exclusions.commands[filename] = true
-        end
-      end
-
-      -- Rules: store filenames
-      if provides.rules then
-        for _, filename in ipairs(provides.rules) do
-          exclusions.rules[filename] = true
-        end
-      end
-
-      -- Scripts: store filenames
-      if provides.scripts then
-        for _, filename in ipairs(provides.scripts) do
-          exclusions.scripts[filename] = true
-        end
-      end
-
-      -- Hooks: store filenames
-      if provides.hooks then
-        for _, filename in ipairs(provides.hooks) do
-          exclusions.hooks[filename] = true
-        end
-      end
-
-      -- Skills: store directory names (e.g., "skill-lean-research")
-      if provides.skills then
-        for _, dirname in ipairs(provides.skills) do
-          exclusions.skills[dirname] = true
-        end
-      end
-
-      -- Context: store directory prefixes (e.g., "project/lean4")
-      if provides.context then
-        for _, prefix in ipairs(provides.context) do
-          table.insert(exclusions.context, prefix)
-        end
-      end
-    end
-  end
-
-  return exclusions
-end
-
---- Filter file array by checking filename against exclusion set
---- Used for agents, commands, rules, scripts, hooks
---- @param files table Array of file sync info with name field
---- @param exclude_set table Set of filenames to exclude
---- @return table Filtered array of files
-local function filter_extension_files(files, exclude_set)
-  if vim.tbl_isempty(exclude_set) then
-    return files
-  end
-
-  local filtered = {}
-  for _, file in ipairs(files) do
-    if not exclude_set[file.name] then
-      table.insert(filtered, file)
-    end
-  end
-  return filtered
-end
-
---- Filter skill files by checking if path contains excluded skill directory
---- @param files table Array of file sync info with global_path field
---- @param skill_dirs_exclude table Set of skill directory names to exclude
---- @return table Filtered array of files
-local function filter_extension_skills(files, skill_dirs_exclude)
-  if vim.tbl_isempty(skill_dirs_exclude) then
-    return files
-  end
-
-  local filtered = {}
-  for _, file in ipairs(files) do
-    local is_excluded = false
-    for dirname, _ in pairs(skill_dirs_exclude) do
-      -- Match path segment: "/skill-name/" to avoid partial matches
-      if file.global_path:match("/" .. dirname .. "/") then
-        is_excluded = true
-        break
-      end
-    end
-    if not is_excluded then
-      table.insert(filtered, file)
-    end
-  end
-  return filtered
-end
-
---- Filter context files by checking if path relative to context/ starts with excluded prefix
---- @param files table Array of file sync info with global_path field
---- @param context_prefixes table Array of directory prefixes to exclude (e.g., {"project/lean4", "project/latex"})
---- @param base_dir string Base directory name (.claude or .opencode)
---- @return table Filtered array of files
-local function filter_extension_context(files, context_prefixes, base_dir)
-  if #context_prefixes == 0 then
-    return files
-  end
-
-  local filtered = {}
-  for _, file in ipairs(files) do
-    local is_excluded = false
-
-    -- Extract path relative to context/ directory
-    -- Pattern: /base_dir/context/relative/path/to/file.md
-    local context_pattern = "/" .. base_dir .. "/context/"
-    local _, context_start = file.global_path:find(context_pattern, 1, true)
-    if context_start then
-      local relative_path = file.global_path:sub(context_start + 1)
-      -- Check if relative path starts with any excluded prefix
-      for _, prefix in ipairs(context_prefixes) do
-        if relative_path:sub(1, #prefix) == prefix then
-          is_excluded = true
-          break
-        end
-      end
-    end
-
-    if not is_excluded then
-      table.insert(filtered, file)
-    end
-  end
-  return filtered
-end
 
 --- Count files by depth (top-level vs subdirectory)
 --- @param files table Array of file sync info with is_subdir field
@@ -325,7 +153,7 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir)
 end
 
 --- Scan all artifact types from global directory
---- Filters out extension-owned artifacts to sync only core system files
+--- Sources are already clean (no extension artifacts), so this is a simple full-directory scan
 --- @param global_dir string Global directory path
 --- @param project_dir string Project directory path
 --- @param config table|nil Picker config with base_dir field (defaults to .claude config)
@@ -334,9 +162,6 @@ local function scan_all_artifacts(global_dir, project_dir, config)
   local base_dir = (config and config.base_dir) or ".claude"
   local artifacts = {}
 
-  -- Build extension exclusion sets (filtering is a no-op when no extensions exist)
-  local exclusions = build_extension_exclusions(global_dir, config)
-
   -- Helper to scan with base_dir threaded through
   local function sync_scan(subdir, ext, recursive, exclude)
     return scan.scan_directory_for_sync(global_dir, project_dir, subdir, ext, recursive, exclude, base_dir)
@@ -344,7 +169,6 @@ local function scan_all_artifacts(global_dir, project_dir, config)
 
   -- Core artifacts common to both systems
   artifacts.commands = sync_scan("commands", "*.md")
-  artifacts.commands = filter_extension_files(artifacts.commands, exclusions.commands)
 
   -- Use config-provided agents_subdir (different for .claude vs .opencode)
   local agents_subdir = (config and config.agents_subdir) or "agents"
@@ -357,7 +181,6 @@ local function scan_all_artifacts(global_dir, project_dir, config)
       table.insert(artifacts.agents, file)
     end
   end
-  artifacts.agents = filter_extension_files(artifacts.agents, exclusions.agents)
 
   -- Skills (multiple file types)
   local skills_md = sync_scan("skills", "*.md")
@@ -369,23 +192,17 @@ local function scan_all_artifacts(global_dir, project_dir, config)
   for _, file in ipairs(skills_yaml) do
     table.insert(artifacts.skills, file)
   end
-  artifacts.skills = filter_extension_skills(artifacts.skills, exclusions.skills)
 
   -- Shared artifacts: scanned unconditionally for both .claude and .opencode
   -- (scan_directory_for_sync returns empty array for non-existent directories)
   artifacts.hooks = sync_scan("hooks", "*.sh")
-  artifacts.hooks = filter_extension_files(artifacts.hooks, exclusions.hooks)
-
   artifacts.templates = sync_scan("templates", "*.yaml")
   artifacts.docs = sync_scan("docs", "*.md")
-
   artifacts.scripts = sync_scan("scripts", "*.sh")
-  artifacts.scripts = filter_extension_files(artifacts.scripts, exclusions.scripts)
-
   artifacts.rules = sync_scan("rules", "*.md")
-  artifacts.rules = filter_extension_files(artifacts.rules, exclusions.rules)
 
   -- Context (multiple file types: md, json, yaml) - shared by both systems
+  -- CONTEXT_EXCLUDE_PATTERNS filters repository-specific files (project-overview.md, etc.)
   local ctx_md = sync_scan("context", "*.md", true, CONTEXT_EXCLUDE_PATTERNS)
   local ctx_json = sync_scan("context", "*.json")
   local ctx_yaml = sync_scan("context", "*.yaml")
@@ -395,7 +212,6 @@ local function scan_all_artifacts(global_dir, project_dir, config)
       table.insert(artifacts.context, file)
     end
   end
-  artifacts.context = filter_extension_context(artifacts.context, exclusions.context, base_dir)
 
   -- Systemd (multiple file types: .service, .timer) - shared by both systems
   local systemd_service = sync_scan("systemd", "*.service")

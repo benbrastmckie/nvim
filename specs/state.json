@@ -32,10 +32,10 @@
     {
       "project_number": 121,
       "project_name": "clean_up_core_skills_directories",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-03T22:30:00Z",
-      "last_updated": "2026-03-03T23:10:18Z",
+      "last_updated": "2026-03-03T23:15:35Z",
       "session_id": "sess_1772579391_d89627",
       "researched": "2026-03-03T23:30:00Z",
       "artifacts": [
@@ -58,10 +58,18 @@
           "path": "specs/121_clean_up_core_skills_directories/plans/implementation-002.md",
           "type": "plan",
           "summary": "Revised 5-phase plan: removes validation script, adds hooks/ context copy, preserves CONTEXT_EXCLUDE_PATTERNS"
+        },
+        {
+          "path": "specs/121_clean_up_core_skills_directories/summaries/implementation-summary-20260303.md",
+          "type": "summary",
+          "summary": "Implementation summary documenting cleanup of 25+ extension artifacts and sync.lua simplification"
         }
       ],
       "planned": "2026-03-03T23:06:24Z",
-      "started": "2026-03-03T23:10:18Z"
+      "started": "2026-03-03T23:10:18Z",
+      "completed": "2026-03-03T23:15:35Z",
+      "completion_summary": "Removed extension artifacts from core directories (.opencode/ and ~/.config/.claude/) and simplified sync.lua by removing 185 lines of extension filter code, establishing clean-source invariant where core artifacts exist only in core dirs and extension artifacts only in extension dirs.",
+      "claudemd_suggestions": "none"
     },
     {
       "project_number": 120,

@@ -22,8 +22,9 @@ next_project_number: 123
 
 ### 121. Clean up core skills directories to remove extension-specific skills
 - **Effort**: 30-60 minutes
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Implementation Started**: 2026-03-03
+- **Completed**: 2026-03-03
 - **Research Started**: 2026-03-03
 - **Research Completed**: 2026-03-03
 - **Planning Started**: 2026-03-03
@@ -32,6 +33,7 @@ next_project_number: 123
 - **Dependencies**: None
 - **Research**: [research-001.md](121_clean_up_core_skills_directories/reports/research-001.md), [research-002.md](121_clean_up_core_skills_directories/reports/research-002.md), [research-003.md](121_clean_up_core_skills_directories/reports/research-003.md)
 - **Plan**: [implementation-002.md](121_clean_up_core_skills_directories/plans/implementation-002.md)
+- **Summary**: [implementation-summary-20260303.md](121_clean_up_core_skills_directories/summaries/implementation-summary-20260303.md)
 
 **Description**: Extension-specific skills currently exist in the core skills directories and should be removed. Two locations need cleanup:
 
