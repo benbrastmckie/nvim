@@ -8,10 +8,12 @@ next_project_number: 123
 
 ### 122. Expand document-converter extension to filetypes extension
 - **Effort**: TBD
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-03
+- **Research Completed**: 2026-03-03
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [research-001.md](122_expand_document_converter_to_filetypes/reports/research-001.md)
 
 **Description**: Expand the document-converter extension (`~/.config/nvim/.opencode/extensions/document-converter/`) to be renamed `filetypes/` and include utilities for working with additional filetypes such as Excel and PowerPoint. Equip the agent system with agents, commands, skills, and context files for converting between and developing these filetypes.
 

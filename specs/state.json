@@ -4,11 +4,19 @@
     {
       "project_number": 122,
       "project_name": "expand_document_converter_to_filetypes",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-03T22:38:06Z",
-      "last_updated": "2026-03-03T22:49:59Z",
-      "session_id": "sess_1772578174_eae23e"
+      "last_updated": "2026-03-03T22:55:11Z",
+      "session_id": "sess_1772578174_eae23e",
+      "researched": "2026-03-03T22:55:11Z",
+      "artifacts": [
+        {
+          "path": "specs/122_expand_document_converter_to_filetypes/reports/research-001.md",
+          "type": "research",
+          "summary": "Comprehensive research on filetype conversion tools, pipelines, and architecture for expanding document-converter to filetypes extension with Excel, PowerPoint, and academic slide support"
+        }
+      ]
     },
     {
       "project_number": 121,
