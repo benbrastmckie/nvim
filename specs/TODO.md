@@ -7,13 +7,16 @@ next_project_number: 119
 ## Tasks
 
 ### 118. Redesign <leader>ao picker: rename 'Load All Artifacts' to 'Load Core Agent System'
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Effort**: 3-5 hours
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-03
 - **Research Completed**: 2026-03-03
+- **Planning Started**: 2026-03-03
+- **Planning Completed**: 2026-03-03
 - **Language**: neovim
 - **Dependencies**: None
 - **Research**: [research-001.md](118_redesign_leader_ao_load_core_agent_system/reports/research-001.md), [research-002.md](118_redesign_leader_ao_load_core_agent_system/reports/research-002.md)
+- **Plan**: [implementation-001.md](118_redesign_leader_ao_load_core_agent_system/plans/implementation-001.md)
 
 **Description**: Redesign the <leader>ao picker so that 'Load All Artifacts' is renamed to 'Load Core Agent System' where this loads everything NOT in an extension. Currently, the global .opencode/ directory has no separation between core system artifacts and extension-specific artifacts (agents/skills/commands). When 'Load All Artifacts' runs, it syncs ALL global content to the project including lean agents, formal agents, python skills, z3 skills, etc. that belong to opt-in extensions. The fix requires: (1) building an exclusion list from all extension manifest.json 'provides' fields to identify extension-owned files/directories, (2) modifying scan_all_artifacts() in sync.lua to skip content that belongs to any extension (checking agents, skills, commands, rules, context, scripts entries), (3) renaming the picker entry from 'Load All Artifacts' to 'Load Core Agent System', (4) verifying that after the change, syncing to /home/benjamin/Projects/ModelChecker/ only loads core system content (general-*, planner, meta-builder agents; core skills; system commands) not extension content (lean, formal, latex, python, nix, web, z3, typst, document-converter). Extensions should only be synced when explicitly loaded via the extension picker entries. Key files: lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (scan_all_artifacts), lua/neotex/plugins/ai/claude/commands/picker/init.lua (picker entry label), lua/neotex/plugins/ai/shared/picker/config.lua (config), the global .opencode/extensions/*/manifest.json files for building the exclusion list.
 

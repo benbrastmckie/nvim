@@ -4,11 +4,11 @@
     {
       "project_number": 118,
       "project_name": "redesign_leader_ao_load_core_agent_system",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-03-03T18:46:14Z",
-      "last_updated": "2026-03-03T19:12:26Z",
-      "session_id": "sess_1772564910_4a2c9c",
+      "last_updated": "2026-03-03T19:19:53Z",
+      "session_id": "sess_1772565353_1a7d67",
       "researched": "2026-03-03T19:12:26Z",
       "artifacts": [
         {
@@ -20,8 +20,14 @@
           "type": "research",
           "path": "specs/118_redesign_leader_ao_load_core_agent_system/reports/research-002.md",
           "summary": "Analysis of Claude Code picker extension/core loading, shared architecture, previewer gaps, and config threading requirements"
+        },
+        {
+          "type": "plan",
+          "path": "specs/118_redesign_leader_ao_load_core_agent_system/plans/implementation-001.md",
+          "summary": "5-phase plan to redesign Load All Artifacts into Load Core Agent System with extension exclusion filtering, previewer fix, and config threading"
         }
-      ]
+      ],
+      "planned": "2026-03-03T19:19:53Z"
     },
     {
       "project_number": 117,
