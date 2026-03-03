@@ -36,11 +36,12 @@ next_project_number: 114
 
 ### 111. Systematically compare opencode agent systems to evaluate virtues and preference
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-02
+- **Research Completed**: 2026-03-03
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [research-001.md](111_compare_opencode_agent_systems/reports/research-001.md)
+- **Research**: [research-001.md](111_compare_opencode_agent_systems/reports/research-001.md), [research-002.md](111_compare_opencode_agent_systems/reports/research-002.md)
 
 **Description**: Systematically compare the /home/benjamin/.config/nvim/.opencode/ and /home/benjamin/Projects/ProofChecker/.opencode/ agent systems in order to evaluate which has which virtues, and which I should prefer.
 
