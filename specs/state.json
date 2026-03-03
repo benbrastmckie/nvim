@@ -4,10 +4,19 @@
     {
       "project_number": 120,
       "project_name": "fix_pretooluse_hook_picker_display",
-      "status": "not_started",
+      "status": "researched",
       "language": "neovim",
       "created": "2026-03-03T21:03:14Z",
-      "last_updated": "2026-03-03T21:03:14Z"
+      "last_updated": "2026-03-03T21:15:00Z",
+      "session_id": "sess_1772572017_6e2be9",
+      "researched": "2026-03-03T21:15:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/120_fix_pretooluse_hook_picker_display/reports/research-001.md",
+          "summary": "Research report analyzing inline-command hook detection failure in build_hook_dependencies, with recommended combined fix approach for synthetic hook entries and event-level locality tracking"
+        }
+      ]
     },
     {
       "project_number": 119,
