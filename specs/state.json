@@ -20,6 +20,11 @@
           "path": "specs/122_expand_document_converter_to_filetypes/plans/implementation-001.md",
           "type": "plan",
           "summary": "5-phase plan covering extension rename, spreadsheet agent, presentation agent, dependency documentation, and validation"
+        },
+        {
+          "path": "specs/122_expand_document_converter_to_filetypes/reports/research-002.md",
+          "type": "research",
+          "summary": "Plan review and gap analysis: 6 findings including missing OpenCode parity, plan metadata fields, NixOS dependencies, task 121 soft dependency, untracked typst enhancement, and tool detection sequencing"
         }
       ],
       "planned": "2026-03-03T23:02:12Z"
@@ -27,11 +32,11 @@
     {
       "project_number": 121,
       "project_name": "clean_up_core_skills_directories",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-03T22:30:00Z",
-      "last_updated": "2026-03-03T23:06:24Z",
-      "session_id": "sess_1772578517_8a8729",
+      "last_updated": "2026-03-03T23:10:18Z",
+      "session_id": "sess_1772579391_d89627",
       "researched": "2026-03-03T23:30:00Z",
       "artifacts": [
         {
@@ -55,7 +60,8 @@
           "summary": "Revised 5-phase plan: removes validation script, adds hooks/ context copy, preserves CONTEXT_EXCLUDE_PATTERNS"
         }
       ],
-      "planned": "2026-03-03T23:06:24Z"
+      "planned": "2026-03-03T23:06:24Z",
+      "started": "2026-03-03T23:10:18Z"
     },
     {
       "project_number": 120,

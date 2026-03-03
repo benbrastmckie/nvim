@@ -53,7 +53,7 @@ Three research reports inform this plan:
 
 ## Implementation Phases
 
-### Phase 1: Context Directory Reconciliation [NOT STARTED]
+### Phase 1: Context Directory Reconciliation [COMPLETED]
 
 **Goal**: Ensure no files are lost before deleting contaminated context directories from `.opencode/context/project/`, and copy the missing `hooks/` directory.
 
@@ -84,7 +84,7 @@ Three research reports inform this plan:
 
 ---
 
-### Phase 2: Clean .opencode/ Source Directories [NOT STARTED]
+### Phase 2: Clean .opencode/ Source Directories [COMPLETED]
 
 **Goal**: Remove all extension-owned artifacts from `.opencode/` core directories, establishing the clean-source invariant.
 
@@ -150,7 +150,7 @@ Three research reports inform this plan:
 
 ---
 
-### Phase 3: Clean ~/.config/.claude/ Target Directory [NOT STARTED]
+### Phase 3: Clean ~/.config/.claude/ Target Directory [COMPLETED]
 
 **Goal**: Remove extension artifacts that were inadvertently synced to the `~/.config/.claude/` target directory.
 
@@ -187,7 +187,7 @@ Three research reports inform this plan:
 
 ---
 
-### Phase 4: Simplify sync.lua [NOT STARTED]
+### Phase 4: Simplify sync.lua [COMPLETED]
 
 **Goal**: Remove the extension filter machinery from sync.lua (~130 lines) since clean source directories make it unnecessary. Preserve `CONTEXT_EXCLUDE_PATTERNS` and its usage.
 

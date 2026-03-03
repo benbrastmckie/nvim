@@ -15,14 +15,15 @@ next_project_number: 123
 - **Planning Completed**: 2026-03-03
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [research-001.md](122_expand_document_converter_to_filetypes/reports/research-001.md)
+- **Research**: [research-001.md](122_expand_document_converter_to_filetypes/reports/research-001.md), [research-002.md](122_expand_document_converter_to_filetypes/reports/research-002.md)
 - **Plan**: [implementation-001.md](122_expand_document_converter_to_filetypes/plans/implementation-001.md)
 
 **Description**: Expand the document-converter extension (`~/.config/nvim/.opencode/extensions/document-converter/`) to be renamed `filetypes/` and include utilities for working with additional filetypes such as Excel and PowerPoint. Equip the agent system with agents, commands, skills, and context files for converting between and developing these filetypes.
 
 ### 121. Clean up core skills directories to remove extension-specific skills
 - **Effort**: 30-60 minutes
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
+- **Implementation Started**: 2026-03-03
 - **Research Started**: 2026-03-03
 - **Research Completed**: 2026-03-03
 - **Planning Started**: 2026-03-03
