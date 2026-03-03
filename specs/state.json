@@ -4,11 +4,11 @@
     {
       "project_number": 120,
       "project_name": "fix_pretooluse_hook_picker_display",
-      "status": "planned",
+      "status": "completed",
       "language": "neovim",
       "created": "2026-03-03T21:03:14Z",
-      "last_updated": "2026-03-03T21:32:00Z",
-      "session_id": "sess_1772573319_85f194",
+      "last_updated": "2026-03-03T22:05:11Z",
+      "session_id": "sess_1772573870_b86303",
       "researched": "2026-03-03T21:25:28Z",
       "artifacts": [
         {
@@ -25,9 +25,16 @@
           "path": "specs/120_fix_pretooluse_hook_picker_display/plans/implementation-001.md",
           "type": "plan",
           "summary": "5-phase implementation plan for inline hook detection, event locality tracking, previewer updates, and description consolidation"
+        },
+        {
+          "path": "specs/120_fix_pretooluse_hook_picker_display/summaries/implementation-summary-20260303.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results and technical approach notes"
         }
       ],
-      "planned": "2026-03-03T21:32:00Z"
+      "planned": "2026-03-03T21:32:00Z",
+      "completed": "2026-03-03T22:05:11Z",
+      "completion_summary": "Fixed PreToolUse and PostToolUse hook events displaying '*' marker in the Telescope picker by adding inline bash command detection to build_hook_dependencies, with event-level locality tracking. Consolidated duplicate hook event description tables from entries.lua and previewer.lua into a single HOOK_EVENT_DESCRIPTIONS table in registry.lua. Inline hooks now appear in the previewer with a truncated command snippet."
     },
     {
       "project_number": 119,
