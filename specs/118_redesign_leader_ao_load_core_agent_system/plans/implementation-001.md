@@ -1,7 +1,7 @@
 # Implementation Plan: Redesign leader ao picker - Load Core Agent System
 
 - **Task**: 118 - Redesign leader ao picker: Load All Artifacts -> Load Core Agent System
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3-5 hours
 - **Dependencies**: None
 - **Research Inputs**:
@@ -48,7 +48,7 @@ Research report 001 mapped the complete extension-owned inventory across 9 manif
 
 ## Implementation Phases
 
-### Phase 1: Build Extension Exclusion Infrastructure in sync.lua [NOT STARTED]
+### Phase 1: Build Extension Exclusion Infrastructure in sync.lua [COMPLETED]
 
 - **Goal:** Add functions to build per-category exclusion sets from extension manifests and filter scan results against those sets. This is the core logic that enables core-only sync.
 

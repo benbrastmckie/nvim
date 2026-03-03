@@ -8,11 +8,12 @@ next_project_number: 119
 
 ### 118. Redesign <leader>ao picker: rename 'Load All Artifacts' to 'Load Core Agent System'
 - **Effort**: 3-5 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Research Started**: 2026-03-03
 - **Research Completed**: 2026-03-03
 - **Planning Started**: 2026-03-03
 - **Planning Completed**: 2026-03-03
+- **Implementation Started**: 2026-03-03
 - **Language**: neovim
 - **Dependencies**: None
 - **Research**: [research-001.md](118_redesign_leader_ao_load_core_agent_system/reports/research-001.md), [research-002.md](118_redesign_leader_ao_load_core_agent_system/reports/research-002.md)
