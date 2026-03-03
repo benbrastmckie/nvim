@@ -7,7 +7,8 @@ local M = {}
 -- Dependencies
 local scan = require("neotex.plugins.ai.claude.commands.picker.utils.scan")
 local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
-local shared = require("neotex.plugins.ai.shared.extensions")
+local shared_config = require("neotex.plugins.ai.shared.extensions.config")
+local shared_manifest = require("neotex.plugins.ai.shared.extensions.manifest")
 
 -- Files to exclude from context sync (repository-specific files that should not be copied)
 -- Note: update-project.md is intentionally NOT excluded as it is a guide/template
@@ -36,13 +37,13 @@ local function build_extension_exclusions(global_dir, config)
   -- Derive extension config from base_dir
   local ext_config
   if base_dir == ".opencode" then
-    ext_config = shared.config.opencode(global_dir)
+    ext_config = shared_config.opencode(global_dir)
   else
-    ext_config = shared.config.claude(global_dir)
+    ext_config = shared_config.claude(global_dir)
   end
 
   -- List all valid extensions
-  local extensions = shared.manifest.list_extensions(ext_config)
+  local extensions = shared_manifest.list_extensions(ext_config)
   if #extensions == 0 then
     return exclusions
   end

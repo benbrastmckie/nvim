@@ -558,11 +558,12 @@ end
 --- @param entry table Telescope entry
 local function preview_extension(self, entry)
   local ext = entry.value
+  local lang = (type(ext.language) == "string") and ext.language or "any"
   local lines = {
     "# " .. ext.name .. " v" .. (ext.version or "unknown"),
     "",
     "**Status**: " .. (ext.status or "unknown"),
-    "**Language**: " .. (ext.language or "any"),
+    "**Language**: " .. lang,
     "",
     "## Description",
     ext.description or "No description",

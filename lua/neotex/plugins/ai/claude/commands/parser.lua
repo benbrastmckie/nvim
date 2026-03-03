@@ -352,7 +352,7 @@ function M.build_hook_dependencies(hooks, settings_path)
       if config.hooks then
         for _, hook_config in ipairs(config.hooks) do
           if hook_config.command then
-            local hook_name = hook_config.command:match("([^/]+%.sh)$")
+            local hook_name = hook_config.command:match("([^/%s]+%.sh)")
             if hook_name then
               table.insert(hook_events[event_name], hook_name)
             end

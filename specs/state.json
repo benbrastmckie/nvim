@@ -4,10 +4,18 @@
     {
       "project_number": 119,
       "project_name": "fix_hardcoded_paths_in_picker",
-      "status": "not_started",
+      "status": "researched",
       "language": "neovim",
       "created": "2026-03-03T20:19:29Z",
-      "last_updated": "2026-03-03T20:19:29Z"
+      "last_updated": "2026-03-03T20:25:17Z",
+      "session_id": "sess_1772569249_57d45f",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/119_fix_hardcoded_paths_in_picker/reports/research-001.md",
+          "summary": "Research report identifying 23 hardcoded .claude/ paths across 6 files with config-threading recommendations"
+        }
+      ]
     },
     {
       "project_number": 118,

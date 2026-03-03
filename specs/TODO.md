@@ -8,9 +8,12 @@ next_project_number: 120
 
 ### 119. Fix hardcoded paths in picker for config-aware directory scanning
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-03
+- **Research Completed**: 2026-03-03
 - **Language**: neovim
 - **Dependencies**: None
+- **Research**: [research-001.md](119_fix_hardcoded_paths_in_picker/reports/research-001.md)
 
 **Description**: Fix hardcoded `.claude/` paths in picker so all directory scanning adapts to the active config (base_dir). Functions `create_scripts_entries`, `create_tests_entries`, `create_lib_entries`, `create_docs_entries`, `create_templates_entries`, and `update_artifact_from_global` should use config.base_dir instead of hardcoded strings, working correctly for both `<leader>ac` (Claude) and `<leader>ao` (OpenCode).
 
