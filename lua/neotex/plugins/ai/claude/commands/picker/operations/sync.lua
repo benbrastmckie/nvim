@@ -324,6 +324,7 @@ local function execute_sync(project_dir, all_artifacts, merge_only, base_dir)
 end
 
 --- Scan all artifact types from global directory
+--- Filters out extension-owned artifacts to sync only core system files
 --- @param global_dir string Global directory path
 --- @param project_dir string Project directory path
 --- @param config table|nil Picker config with base_dir field (defaults to .claude config)
@@ -332,6 +333,9 @@ local function scan_all_artifacts(global_dir, project_dir, config)
   local base_dir = (config and config.base_dir) or ".claude"
   local artifacts = {}
 
+  -- Build extension exclusion sets (filtering is a no-op when no extensions exist)
+  local exclusions = build_extension_exclusions(global_dir, config)
+
   -- Helper to scan with base_dir threaded through
   local function sync_scan(subdir, ext, recursive, exclude)
     return scan.scan_directory_for_sync(global_dir, project_dir, subdir, ext, recursive, exclude, base_dir)
@@ -339,6 +343,7 @@ local function scan_all_artifacts(global_dir, project_dir, config)
 
   -- Core artifacts common to both systems
   artifacts.commands = sync_scan("commands", "*.md")
+  artifacts.commands = filter_extension_files(artifacts.commands, exclusions.commands)
 
   -- Use config-provided agents_subdir (different for .claude vs .opencode)
   local agents_subdir = (config and config.agents_subdir) or "agents"
@@ -351,6 +356,7 @@ local function scan_all_artifacts(global_dir, project_dir, config)
       table.insert(artifacts.agents, file)
     end
   end
+  artifacts.agents = filter_extension_files(artifacts.agents, exclusions.agents)
 
   -- Skills (multiple file types)
   local skills_md = sync_scan("skills", "*.md")
@@ -362,14 +368,21 @@ local function scan_all_artifacts(global_dir, project_dir, config)
   for _, file in ipairs(skills_yaml) do
     table.insert(artifacts.skills, file)
   end
+  artifacts.skills = filter_extension_skills(artifacts.skills, exclusions.skills)
 
   -- Shared artifacts: scanned unconditionally for both .claude and .opencode
   -- (scan_directory_for_sync returns empty array for non-existent directories)
   artifacts.hooks = sync_scan("hooks", "*.sh")
+  artifacts.hooks = filter_extension_files(artifacts.hooks, exclusions.hooks)
+
   artifacts.templates = sync_scan("templates", "*.yaml")
   artifacts.docs = sync_scan("docs", "*.md")
+
   artifacts.scripts = sync_scan("scripts", "*.sh")
+  artifacts.scripts = filter_extension_files(artifacts.scripts, exclusions.scripts)
+
   artifacts.rules = sync_scan("rules", "*.md")
+  artifacts.rules = filter_extension_files(artifacts.rules, exclusions.rules)
 
   -- Context (multiple file types: md, json, yaml) - shared by both systems
   local ctx_md = sync_scan("context", "*.md", true, CONTEXT_EXCLUDE_PATTERNS)
@@ -381,6 +394,7 @@ local function scan_all_artifacts(global_dir, project_dir, config)
       table.insert(artifacts.context, file)
     end
   end
+  artifacts.context = filter_extension_context(artifacts.context, exclusions.context, base_dir)
 
   -- Systemd (multiple file types: .service, .timer) - shared by both systems
   local systemd_service = sync_scan("systemd", "*.service")

@@ -81,7 +81,7 @@ Research report 001 mapped the complete extension-owned inventory across 9 manif
 
 ---
 
-### Phase 2: Integrate Exclusion Filtering into scan_all_artifacts() [NOT STARTED]
+### Phase 2: Integrate Exclusion Filtering into scan_all_artifacts() [COMPLETED]
 
 - **Goal:** Apply the exclusion filters after each scan category in `scan_all_artifacts()` so that the returned artifacts contain only core system files.
 
