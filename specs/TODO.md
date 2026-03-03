@@ -1,10 +1,18 @@
 ---
-next_project_number: 113
+next_project_number: 114
 ---
 
 # TODO
 
 ## Tasks
+
+### 113. Review the virtues of ProofChecker .opencode/ in order to incorporate any missing elements to improve the current .opencode/ agent system
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Review the virtues of /home/benjamin/Projects/ProofChecker/.opencode/ in order to incorporate any missing elements to improve the current .opencode/ agent system
 
 ### 112. Fix <leader>ac artifact loader still loading project-overview.md and clarify CLAUDE.md placement
 - **Effort**: TBD
