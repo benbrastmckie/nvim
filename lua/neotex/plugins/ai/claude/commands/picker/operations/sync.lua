@@ -167,7 +167,18 @@ local function scan_all_artifacts(global_dir, project_dir, config)
 
   -- Core artifacts common to both systems
   artifacts.commands = sync_scan("commands", "*.md")
-  artifacts.agents = sync_scan("agents", "*.md")
+
+  -- Use config-provided agents_subdir (different for .claude vs .opencode)
+  local agents_subdir = (config and config.agents_subdir) or "agents"
+  artifacts.agents = sync_scan(agents_subdir, "*.md")
+
+  -- For OpenCode, also sync orchestrator.md from agent/ root (outside subagents/)
+  if base_dir == ".opencode" then
+    local orchestrator_files = sync_scan("agent", "orchestrator.md", false)
+    for _, file in ipairs(orchestrator_files) do
+      table.insert(artifacts.agents, file)
+    end
+  end
 
   -- Skills (multiple file types)
   local skills_md = sync_scan("skills", "*.md")

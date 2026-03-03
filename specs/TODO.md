@@ -8,11 +8,12 @@ next_project_number: 116
 
 ### 115. Investigate <leader>ao Load All Artifacts shortcomings and achieve full feature parity with <leader>ac
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Research Started**: 2026-03-03
 - **Research Completed**: 2026-03-03
 - **Planning Started**: 2026-03-03
 - **Planning Completed**: 2026-03-03
+- **Implementation Started**: 2026-03-03
 - **Language**: neovim
 - **Dependencies**: None
 - **Research**: [research-001.md](115_investigate_leader_ao_load_all_feature_parity/reports/research-001.md)

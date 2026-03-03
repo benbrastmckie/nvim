@@ -47,7 +47,7 @@ Research report `research-001.md` identified:
 
 ## Implementation Phases
 
-### Phase 1: Fix agents path and orchestrator syncing [NOT STARTED]
+### Phase 1: Fix agents path and orchestrator syncing [COMPLETED]
 
 **Goal:** Make agents scanning use config-provided `agents_subdir` and add orchestrator.md syncing for OpenCode.
 

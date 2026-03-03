@@ -4,11 +4,11 @@
     {
       "project_number": 115,
       "project_name": "investigate_leader_ao_load_all_feature_parity",
-      "status": "planned",
+      "status": "implementing",
       "language": "neovim",
       "created": "2026-03-03T02:06:56Z",
-      "last_updated": "2026-03-03T02:23:42Z",
-      "session_id": "sess_1772504422_f7ea18",
+      "last_updated": "2026-03-03T02:26:42Z",
+      "session_id": "sess_1772504782_aa032c",
       "researched": "2026-03-03T02:17:09Z",
       "artifacts": [
         {
@@ -22,7 +22,8 @@
           "summary": "3-phase implementation plan to fix OpenCode Load All feature parity with Claude Load All"
         }
       ],
-      "planned": "2026-03-03T02:23:42Z"
+      "planned": "2026-03-03T02:23:42Z",
+      "started": "2026-03-03T02:26:42Z"
     },
     {
       "project_number": 114,
