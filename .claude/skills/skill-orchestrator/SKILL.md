@@ -42,11 +42,11 @@ Route to appropriate skill based on task language:
 | Language | Research Skill | Implementation Skill |
 |----------|---------------|---------------------|
 | neovim | skill-neovim-research | skill-neovim-implementation |
-| latex | skill-researcher | skill-latex-implementation |
-| typst | skill-researcher | skill-typst-implementation |
 | general | skill-researcher | skill-implementer |
 | meta | skill-researcher | skill-implementer |
 | markdown | skill-researcher | skill-implementer |
+
+**Note**: Additional languages (latex, typst) are available via extensions in `.claude/extensions/`.
 
 ### 3. Status Validation
 

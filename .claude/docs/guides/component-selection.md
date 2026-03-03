@@ -264,14 +264,16 @@ Creates: Agent only (skill routes to it)
 | /task | skill-status-sync |
 | /research | skill-researcher, skill-neovim-research |
 | /plan | skill-planner |
-| /implement | skill-implementer, skill-lean-implementation, skill-latex-implementation |
+| /implement | skill-implementer, skill-neovim-implementation |
 | /revise | skill-planner |
 | /review | (direct execution) |
 | /errors | (direct execution) |
 | /todo | (direct execution) |
-| /meta | (direct execution) |
+| /meta | skill-meta |
 
-### Skills (9)
+**Note**: Additional skills (latex, typst, document-converter) available via extensions.
+
+### Skills (Core)
 
 | Skill | Agent |
 |-------|-------|
@@ -282,19 +284,23 @@ Creates: Agent only (skill routes to it)
 | skill-neovim-research | neovim-research-agent |
 | skill-planner | planner-agent |
 | skill-implementer | general-implementation-agent |
-| skill-lean-implementation | lean-implementation-agent |
-| skill-latex-implementation | latex-implementation-agent |
+| skill-neovim-implementation | neovim-implementation-agent |
+| skill-meta | meta-builder-agent |
 
-### Agents (6)
+**Note**: Additional skills (latex, typst, document-converter) available via extensions.
+
+### Agents (Core)
 
 | Agent | Purpose |
 |-------|---------|
 | general-research-agent | General web/codebase research |
-| neovim-research-agent | Lean 4/Mathlib research |
+| neovim-research-agent | Neovim/plugin research |
 | planner-agent | Implementation planning |
 | general-implementation-agent | General file implementation |
-| lean-implementation-agent | Lean proof implementation |
-| latex-implementation-agent | LaTeX document implementation |
+| neovim-implementation-agent | Neovim configuration implementation |
+| meta-builder-agent | System building and task creation |
+
+**Note**: Additional agents (latex, typst, document-converter) available via extensions.
 
 ---
 

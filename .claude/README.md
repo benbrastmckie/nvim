@@ -909,7 +909,9 @@ agent: {subagent-name}        # Target subagent to spawn
 | skill-planner | planner-agent | Implementation planning |
 | skill-implementer | general-implementation-agent | General implementation |
 | skill-neovim-implementation | neovim-implementation-agent | Neovim configuration implementation |
-| skill-latex-implementation | latex-implementation-agent | LaTeX document implementation |
+| skill-meta | meta-builder-agent | System building and task creation |
+
+**Note**: Additional skills (latex, typst, document-converter) available via extensions in `.claude/extensions/`.
 
 ### Thin Wrapper Execution Flow
 

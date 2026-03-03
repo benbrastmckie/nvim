@@ -72,11 +72,11 @@ fi
 | Language | Research Agent | Implementation Agent | Notes |
 |----------|---------------|---------------------|-------|
 | `neovim` | `neovim-research-agent` | `neovim-implementation-agent` | Neovim plugin and configuration development |
-| `latex` | `researcher` | `latex-implementation-agent` | LaTeX document development |
-| `typst` | `researcher` | `typst-implementation-agent` | Typst document development |
 | `markdown` | `researcher` | `implementer` | Documentation and markdown files |
 | `meta` | `researcher` | `implementer` | System/meta configuration tasks |
 | `general` | `researcher` | `implementer` | Default for unspecified language |
+
+**Note**: Additional languages (latex, typst) are available via extensions in `.claude/extensions/`.
 
 **Critical**: Always extract language explicitly. DO NOT assume language without extraction.
 

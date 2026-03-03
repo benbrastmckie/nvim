@@ -54,10 +54,10 @@ specs/{NNN}_{SLUG}/
 | Language | Research Tools | Implementation Tools |
 |----------|----------------|---------------------|
 | `neovim` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash (nvim --headless) |
-| `latex` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash (pdflatex) |
-| `typst` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash (typst compile) |
 | `general` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash |
 | `meta` | Read, Grep, Glob | Write, Edit |
+
+**Note**: Additional languages (latex, typst) are available via extensions. Load extensions from `.claude/extensions/` to enable language-specific routing.
 
 ## Command Reference
 
@@ -131,14 +131,13 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | skill-researcher | general-research-agent | opus | General web/codebase research |
 | skill-planner | planner-agent | opus | Implementation plan creation |
 | skill-implementer | general-implementation-agent | - | General file implementation |
-| skill-latex-implementation | latex-implementation-agent | - | LaTeX document implementation |
-| skill-typst-implementation | typst-implementation-agent | - | Typst document implementation |
 | skill-meta | meta-builder-agent | - | System building and task creation |
-| skill-document-converter | document-converter-agent | - | Document format conversion |
 | skill-status-sync | (direct execution) | - | Atomic status updates |
 | skill-refresh | (direct execution) | - | Process and file cleanup |
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. Research and planning agents use `opus` for superior reasoning. Implementation agents use default model. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
+
+**Note**: Additional skills (latex, typst, document-converter) are available via extensions in `.claude/extensions/`.
 
 ## Rules References
 

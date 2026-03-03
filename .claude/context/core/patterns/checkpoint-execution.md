@@ -68,10 +68,11 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 **Language Routing**:
 | Language | Research | Planning | Implementation |
 |----------|----------|----------|----------------|
-| lean | skill-lean-research | skill-planner | skill-lean-implementation |
+| neovim | skill-neovim-research | skill-planner | skill-neovim-implementation |
 | general | skill-researcher | skill-planner | skill-implementer |
 | meta | skill-researcher | skill-planner | skill-implementer |
-| latex | skill-researcher | skill-planner | skill-latex-implementation |
+
+**Note**: Additional languages (latex, typst) available via extensions.
 
 ---
 

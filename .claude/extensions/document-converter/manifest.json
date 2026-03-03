@@ -1,0 +1,28 @@
+{
+  "name": "document-converter",
+  "version": "1.0.0",
+  "description": "Document format conversion between PDF/DOCX/Markdown",
+  "language": null,
+  "dependencies": [],
+  "provides": {
+    "agents": ["document-converter-agent.md"],
+    "skills": ["skill-document-converter"],
+    "commands": ["convert.md"],
+    "rules": [],
+    "context": [],
+    "scripts": [],
+    "hooks": []
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_document_converter"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    }
+  },
+  "mcp_servers": {}
+}

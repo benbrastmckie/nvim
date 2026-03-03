@@ -1,7 +1,7 @@
 # Implementation Plan: Task #110
 
 - **Task**: 110 - separate_extension_files_from_core_agent_system
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2-4 hours
 - **Dependencies**: Task #109 (completed)
 - **Research Inputs**: [research-001.md](../reports/research-001.md)
@@ -165,7 +165,7 @@ Research report `research-001.md` identified the complete inventory of 25 extens
 
 ---
 
-### Phase 4: Verification and Consistency Check [IN PROGRESS]
+### Phase 4: Verification and Consistency Check [COMPLETED]
 
 - **Goal:** Validate that the core system is self-consistent after all removals and updates, and that extensions can load cleanly without conflicts.
 

@@ -164,7 +164,7 @@ Skills implement three distinct architecture patterns based on their execution n
 
 ### Pattern A: Delegating Skills with Internal Postflight
 
-**Used by**: skill-researcher, skill-neovim-research, skill-planner, skill-implementer, skill-neovim-implementation, skill-latex-implementation, skill-meta, skill-document-converter (8 skills)
+**Used by**: skill-researcher, skill-neovim-research, skill-planner, skill-implementer, skill-neovim-implementation, skill-meta (6 core skills; extensions add more)
 
 **Characteristics**:
 - Frontmatter: `allowed-tools: Task, Bash, Edit, Read, Write`
@@ -383,7 +383,8 @@ Tasks route to specialized skills/agents based on their `language` field:
 | `neovim` | skill-neovim-research → neovim-research-agent | skill-planner → planner-agent | skill-neovim-implementation → neovim-implementation-agent |
 | `general` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-implementer → general-implementation-agent |
 | `meta` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-implementer → general-implementation-agent |
-| `latex` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-latex-implementation → latex-implementation-agent |
+
+**Note**: Additional languages (latex, typst) available via extensions in `.claude/extensions/`.
 
 ---
 
@@ -395,15 +396,16 @@ Complete mapping of all commands to their skill and agent paths:
 |---------|--------------|----------|----------|---------|
 | `/research` | Language-based | neovim: skill-neovim-research, other: skill-researcher | neovim-research-agent, general-research-agent | A |
 | `/plan` | Single | skill-planner | planner-agent | A |
-| `/implement` | Language-based | neovim: skill-neovim-implementation, latex: skill-latex-implementation, other: skill-implementer | neovim-implementation-agent, latex-implementation-agent, general-implementation-agent | A |
+| `/implement` | Language-based | neovim: skill-neovim-implementation, other: skill-implementer | neovim-implementation-agent, general-implementation-agent | A |
 | `/revise` | Single | skill-planner (new version) | planner-agent | A |
 | `/meta` | Single | skill-meta | meta-builder-agent | A |
-| `/convert` | Single | skill-document-converter | document-converter-agent | A |
 | `/review` | Direct | skill-orchestrator | (inline execution) | C |
 | `/errors` | Direct | skill-orchestrator | (inline execution) | C |
 | `/todo` | Direct | skill-orchestrator | (inline execution) | C |
 | `/task` | Direct | skill-orchestrator | (inline execution) | C |
 | `/refresh` | Direct | skill-refresh | (no agent) | B |
+
+**Note**: Additional commands (/convert) available via extensions in `.claude/extensions/`.
 
 **Pattern Legend**:
 - **A**: Delegating skill with internal postflight (spawns subagent)

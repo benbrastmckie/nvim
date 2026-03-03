@@ -105,7 +105,8 @@ Skills are thin wrappers that validate inputs and delegate to agents. They:
 | skill-planner | planner-agent | Create implementation plans |
 | skill-implementer | general-implementation-agent | General file implementation |
 | skill-neovim-implementation | neovim-implementation-agent | Neovim configuration implementation |
-| skill-latex-implementation | latex-implementation-agent | LaTeX document implementation |
+
+**Note**: Additional skills (latex, typst, document-converter) are available via extensions in `.claude/extensions/`.
 
 ### Agents (Layer 3)
 
@@ -183,9 +184,10 @@ Tasks route to specialized skills based on their `language` field:
 | `neovim` | skill-neovim-research | skill-neovim-implementation |
 | `general` | skill-researcher | skill-implementer |
 | `meta` | skill-researcher | skill-implementer |
-| `latex` | skill-researcher | skill-latex-implementation |
 
 The language is automatically detected from task description or can be set explicitly.
+
+**Note**: Additional languages (latex, typst) are available via extensions in `.claude/extensions/`.
 
 ---
 

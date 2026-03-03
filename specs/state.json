@@ -4,18 +4,19 @@
     {
       "project_number": 111,
       "project_name": "compare_opencode_agent_systems",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-02T23:58:29Z",
-      "last_updated": "2026-03-02T23:58:29Z"
+      "last_updated": "2026-03-02T23:59:47Z",
+      "session_id": "sess_1772495968_0f0d8a"
     },
     {
       "project_number": 110,
       "project_name": "separate_extension_files_from_core_agent_system",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-02T23:30:27Z",
-      "last_updated": "2026-03-02T23:51:53Z",
+      "last_updated": "2026-03-03T00:00:11Z",
       "session_id": "sess_1772495480_cc9033",
       "researched": "2026-03-02T23:42:48Z",
       "artifacts": [
@@ -28,10 +29,18 @@
           "path": "specs/110_separate_extension_files_from_core_agent_system/plans/implementation-001.md",
           "type": "plan",
           "summary": "4-phase implementation plan to remove 25 extension-specific files from core .claude/ and create document-converter extension"
+        },
+        {
+          "path": "specs/110_separate_extension_files_from_core_agent_system/summaries/implementation-summary-20260302.md",
+          "type": "summary",
+          "summary": "Implementation summary with full file change list and verification results"
         }
       ],
       "planned": "2026-03-02T23:48:00Z",
-      "started": "2026-03-02T23:51:53Z"
+      "started": "2026-03-02T23:51:53Z",
+      "completed": "2026-03-03T00:00:11Z",
+      "completion_summary": "Removed 25 extension-specific files from core .claude/ directory, created document-converter extension, and updated 14 reference files to point to extension system for latex/typst/document-converter capabilities.",
+      "claudemd_suggestions": "Removed latex/typst from CLAUDE.md routing tables and skill mappings. Added notes pointing to .claude/extensions/ for additional language support. Updated 14 files total including CLAUDE.md, README.md, routing.md, system-overview.md, and various docs/guides."
     },
     {
       "project_number": 109,

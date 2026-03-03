@@ -8,23 +8,26 @@ next_project_number: 112
 
 ### 111. Systematically compare opencode agent systems to evaluate virtues and preference
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
+- **Research Started**: 2026-03-02
 - **Language**: meta
 
 **Description**: Systematically compare the /home/benjamin/.config/nvim/.opencode/ and /home/benjamin/Projects/ProofChecker/.opencode/ agent systems in order to evaluate which has which virtues, and which I should prefer.
 
 ### 110. Separate LaTeX/Typst extension files from core agent system for portability
 - **Effort**: 2-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-03-02
 - **Research Completed**: 2026-03-02
 - **Planning Started**: 2026-03-02
 - **Planning Completed**: 2026-03-02
 - **Implementation Started**: 2026-03-02
+- **Implementation Completed**: 2026-03-02
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](110_separate_extension_files_from_core_agent_system/reports/research-001.md)
 - **Plan**: [implementation-001.md](110_separate_extension_files_from_core_agent_system/plans/implementation-001.md)
+- **Summary**: [implementation-summary-20260302.md](110_separate_extension_files_from_core_agent_system/summaries/implementation-summary-20260302.md)
 
 **Description**: Restructure the .claude/ directory to exclude extension-specific files from the core agent system copied via `<leader>ac`. Files to move to extensions: `agents/document-converter-agent.md`, `agents/latex-implementation-agent.md`, `agents/typst-implementation-agent.md`, `context/project/typst/`, `context/project/latex/`, `skills/skill-latex-implementation/`, and `skills/skill-typst-implementation/`. Additionally, replace the neovim-specific `context/project/repo/project-overview.md` with a generic `agent-system.md` that applies to any repository using the .claude/ agent system, and include a mandate in documentation for users to create their own project-overview.md for project-specific details.
 

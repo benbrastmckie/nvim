@@ -65,9 +65,9 @@ Execute implementation plan with automatic resume support by delegating to the a
 | Language | Skill to Invoke |
 |----------|-----------------|
 | `neovim` | `skill-neovim-implementation` |
-| `latex` | `skill-latex-implementation` |
-| `typst` | `skill-typst-implementation` |
 | `general`, `meta`, `markdown` | `skill-implementer` |
+
+**Note**: Additional languages (latex, typst) are available via extensions in `.claude/extensions/`.
 
 **Invoke the Skill tool NOW** with:
 ```
