@@ -1,5 +1,5 @@
 -- neotex.plugins.ai.claude.extensions.picker
--- Dedicated extension management picker (<leader>ae)
+-- Dedicated extension management picker (via :ClaudeExtensions command)
 
 local M = {}
 

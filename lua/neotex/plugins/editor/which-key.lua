@@ -257,11 +257,14 @@ return {
       -- { "<leader>ai", function() require("opencode").command("session.new") end, desc = "opencode init session", icon = "󰐕" },
       -- { "<leader>ap", function() require("opencode").prompt("@this") end, desc = "opencode prompt", icon = "󰏪", mode = { "n", "v" } },
 
-      -- OpenCode group
-      { "<leader>ao", group = "opencode", icon = "󰘳" },
-      { "<leader>aoc", "<cmd>OpencodeCommands<CR>", desc = "opencode commands", icon = "󰘳" },
-      { "<leader>aoe", "<cmd>OpencodeExtensions<CR>", desc = "opencode extensions", icon = "󰏗" },
-      { "<leader>aot", function() require("opencode").toggle() end, desc = "opencode toggle", icon = "󰚩" },
+      -- OpenCode commands (mirrors <leader>ac behavior)
+      { "<leader>ao", "<cmd>OpencodeCommands<CR>", desc = "opencode commands", icon = "󰘳" },
+      { "<leader>ao",
+        function() require("neotex.plugins.ai.opencode.core.visual").send_visual_to_opencode_with_prompt() end,
+        desc = "send selection to opencode with prompt",
+        mode = { "v" },
+        icon = "󰘳"
+      },
 
       -- TTS toggle - project-specific only (DISABLED: 2025-12-09 - User preference)
       -- { "<leader>at", function()

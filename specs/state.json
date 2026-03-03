@@ -4,11 +4,11 @@
     {
       "project_number": 114,
       "project_name": "make_leader_ao_identical_to_leader_ac",
-      "status": "planned",
+      "status": "completed",
       "language": "neovim",
       "created": "2026-03-03T01:33:11Z",
-      "last_updated": "2026-03-03T01:42:37Z",
-      "session_id": "sess_1772501976_5bfec3",
+      "last_updated": "2026-03-03T01:49:12Z",
+      "session_id": "sess_1772502326_534ae0",
       "researched": "2026-03-03T01:38:09Z",
       "artifacts": [
         {
@@ -20,9 +20,17 @@
           "path": "specs/114_make_leader_ao_identical_to_leader_ac/plans/implementation-001.md",
           "type": "plan",
           "summary": "3-phase implementation plan to unify leader-ao and leader-ac keymaps"
+        },
+        {
+          "type": "summary",
+          "path": "specs/114_make_leader_ao_identical_to_leader_ac/summaries/implementation-summary-20260302.md",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-03T01:42:37Z"
+      "planned": "2026-03-03T01:42:37Z",
+      "started": "2026-03-03T01:45:45Z",
+      "completed": "2026-03-03T01:49:12Z",
+      "completion_summary": "Unified <leader>ao keymaps to match <leader>ac behavior. Created OpenCode visual selection module. Normal mode opens OpencodeCommands picker, visual mode prompts user and sends selection to OpenCode. Removed <leader>aoc, <leader>aoe, <leader>aot subcommands."
     },
     {
       "project_number": 113,

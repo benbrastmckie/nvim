@@ -67,8 +67,11 @@ opencode_ext.load("lean", { confirm = true })
 
 ## Keymaps
 
-| Keymap | Command | Description |
-|--------|---------|-------------|
-| `<leader>ac` | `:ClaudeCommands` | Claude artifacts picker |
-| `<leader>aoc` | `:OpencodeCommands` | OpenCode artifacts picker |
-| `<leader>aoe` | `:OpencodeExtensions` | OpenCode extension manager |
+| Keymap | Mode | Command | Description |
+|--------|------|---------|-------------|
+| `<leader>ac` | Normal | `:ClaudeCommands` | Claude artifacts picker |
+| `<leader>ac` | Visual | (function) | Send selection to Claude with prompt |
+| `<leader>ao` | Normal | `:OpencodeCommands` | OpenCode artifacts picker |
+| `<leader>ao` | Visual | (function) | Send selection to OpenCode with prompt |
+
+**Note**: Extension pickers are available via commands (`:ClaudeExtensions`, `:OpencodeExtensions`) but no longer have dedicated keymaps.

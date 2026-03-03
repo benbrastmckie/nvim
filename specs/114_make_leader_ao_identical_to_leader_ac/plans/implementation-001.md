@@ -1,7 +1,7 @@
 # Implementation Plan: Task #114
 
 - **Task**: 114 - make_leader_ao_identical_to_leader_ac
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETE]
 - **Effort**: 1-2 hours
 - **Dependencies**: None
 - **Research Inputs**: [research-001.md](../reports/research-001.md)
@@ -53,7 +53,7 @@ The research report confirmed:
 
 ## Implementation Phases
 
-### Phase 1: Create OpenCode Visual Selection Module [NOT STARTED]
+### Phase 1: Create OpenCode Visual Selection Module [COMPLETED]
 
 **Goal**: Create a visual mode handler for OpenCode that mirrors the Claude visual module's prompt-and-send behavior, using the `opencode.prompt()` API.
 
@@ -74,7 +74,7 @@ The research report confirmed:
 
 ---
 
-### Phase 2: Update which-key Keymaps [NOT STARTED]
+### Phase 2: Update which-key Keymaps [COMPLETED]
 
 **Goal**: Replace the `<leader>ao` group with direct keymaps matching `<leader>ac` behavior, and remove `<leader>aoe`/`<leader>aot` subcommands.
 
@@ -95,7 +95,7 @@ The research report confirmed:
 
 ---
 
-### Phase 3: Clean Up Stale Comments and Documentation [NOT STARTED]
+### Phase 3: Clean Up Stale Comments and Documentation [COMPLETED]
 
 **Goal**: Remove stale keymap references from source comments and update MAPPINGS.md to reflect new keybindings.
 

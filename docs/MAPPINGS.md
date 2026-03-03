@@ -129,7 +129,8 @@ All leader-based mappings use `<Space>` as the leader key and are organized into
 | `<leader>aw` | Normal | Create new worktree with Claude session |
 | `<leader>ar` | Normal | Restore closed worktree session |
 | `<leader>ak` | Normal | Kill stale sessions |
-| `<leader>ao` | Normal | Open session |
+| `<leader>ao` | Normal | OpenCode commands |
+| `<leader>ao` | Visual | Send selection to OpenCode with prompt |
 | `<leader>aH` | Normal | Health check |
 
 See [Claude Code documentation](../lua/neotex/plugins/ai/claude/README.md) for complete feature details.

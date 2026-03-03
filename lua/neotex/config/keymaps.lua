@@ -21,7 +21,7 @@ Organization:
 AI/ASSISTANT GLOBAL KEYBINDINGS                | DESCRIPTION
 ----------------------------------------------------------------------------------
 <C-c>                                          | Toggle Claude Code (overridden in Telescope)
-<leader>aoo                                     | Toggle OpenCode interface (via which-key)
+<leader>ao                                      | OpenCode commands (via which-key)
 
 ----------------------------------------------------------------------------------
 TERMINAL MODE KEYBINDINGS                      | DESCRIPTION

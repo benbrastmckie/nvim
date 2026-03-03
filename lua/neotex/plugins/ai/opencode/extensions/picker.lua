@@ -1,5 +1,5 @@
 -- neotex.plugins.ai.opencode.extensions.picker
--- Dedicated extension management picker (<leader>aoe)
+-- Dedicated extension management picker (via :OpencodeExtensions command)
 
 local M = {}
 
