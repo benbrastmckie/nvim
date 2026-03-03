@@ -7,14 +7,19 @@
       "status": "researched",
       "language": "meta",
       "created": "2026-03-03T22:30:00Z",
-      "last_updated": "2026-03-03T22:45:00Z",
-      "session_id": "sess_1772576342_26731f",
-      "researched": "2026-03-03T22:45:00Z",
+      "last_updated": "2026-03-03T23:15:00Z",
+      "session_id": "sess_1772576988_8fdaec",
+      "researched": "2026-03-03T23:15:00Z",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/121_clean_up_core_skills_directories/reports/research-001.md",
           "summary": "Comprehensive analysis of extension artifact contamination across three directories (skills, agents, commands, rules) with manifest-driven cleanup approach"
+        },
+        {
+          "type": "research",
+          "path": "specs/121_clean_up_core_skills_directories/reports/research-002.md",
+          "summary": "Supplementary research on clean-source architecture redesign: removing extension artifacts from .opencode source directories and simplifying sync.lua by eliminating the exclusion filter machinery"
         }
       ]
     },

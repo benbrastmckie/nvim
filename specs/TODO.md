@@ -10,9 +10,10 @@ next_project_number: 122
 - **Effort**: 30-60 minutes
 - **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-03
+- **Research Completed**: 2026-03-03
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [research-001.md](121_clean_up_core_skills_directories/reports/research-001.md)
+- **Research**: [research-001.md](121_clean_up_core_skills_directories/reports/research-001.md), [research-002.md](121_clean_up_core_skills_directories/reports/research-002.md)
 
 **Description**: Extension-specific skills currently exist in the core skills directories and should be removed. Two locations need cleanup:
 
