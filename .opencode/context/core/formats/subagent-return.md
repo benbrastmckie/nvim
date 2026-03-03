@@ -1,17 +1,17 @@
 # Subagent Return Format Standard
 
 **IMPORTANT - FILE-BASED METADATA EXCHANGE (v2)**:
-As of Task 600, agents write metadata to files instead of returning JSON to the console. This enables reliable structured data exchange without console pollution. The schema below is now written to `specs/{NNN}_{SLUG}/.return-meta.json`, NOT returned as console output.
+As of Task 600, agents write metadata to files instead of returning JSON to the console. This enables reliable structured data exchange without console pollution. The schema below is now written to `specs/{N}_{SLUG}/.return-meta.json`, NOT returned as console output.
 
 See `.opencode/context/core/formats/return-metadata-file.md` for the file-based protocol.
 
 **CRITICAL WARNING - ANTI-STOP PATTERN**:
-Do NOT use `"status": "completed"` - it triggers Claude to stop execution prematurely. Use contextual values like `"researched"`, `"planned"`, `"implemented"` instead. See `.opencode/context/core/patterns/anti-stop-patterns.md` for full documentation.
+Do NOT use `"status": "completed"` - it triggers OpenCode to stop execution prematurely. Use contextual values like `"researched"`, `"planned"`, `"implemented"` instead. See `.opencode/context/core/patterns/anti-stop-patterns.md` for full documentation.
 
 ## Overview
 
 **v2 Pattern (Current)**:
-1. Agents write structured metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+1. Agents write structured metadata to `specs/{N}_{SLUG}/.return-meta.json`
 2. Agents return brief text summaries (3-6 bullets) to console
 3. Skills read metadata file during postflight
 4. Skills handle status updates, artifact linking, and git commits
@@ -78,7 +78,7 @@ All subagents MUST return this JSON structure:
 - `failed`: Task failed, no usable artifacts, cannot resume
 - `blocked`: Task blocked by external dependency, can retry later
 
-**Rationale**: The value "completed" was removed because Claude interprets it as a stop signal, causing workflow commands to halt prematurely after skill returns. Contextual values describe *what* was achieved rather than generic completion.
+**Rationale**: The value "completed" was removed because OpenCode interprets it as a stop signal, causing workflow commands to halt prematurely after skill returns. Contextual values describe *what* was achieved rather than generic completion.
 
 ### summary (required)
 **Type**: string  
@@ -183,19 +183,19 @@ If validation fails:
 ```json
 {
   "status": "failed",
-  "summary": "Research failed due to network timeout when accessing external API API. No research artifacts created.",
+  "summary": "Research failed due to network timeout when accessing LeanSearch API. No research artifacts created.",
   "artifacts": [],
   "metadata": {
     "session_id": "sess_1735460684_xyz789",
     "duration_seconds": 30,
-    "agent_type": "neovim-research-agent",
+    "agent_type": "lean-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "neovim-research-agent"]
+    "delegation_path": ["orchestrator", "research", "lean-research-agent"]
   },
   "errors": [
     {
       "type": "timeout",
-      "message": "external API API request timed out after 30s",
+      "message": "LeanSearch API request timed out after 30s",
       "recoverable": true,
       "recommendation": "Check network connection and retry with /research 245"
     }
@@ -212,12 +212,12 @@ If validation fails:
   "artifacts": [
     {
       "type": "implementation",
-      "path": "nvim/lua/plugins/lsp.lua",
+      "path": "src/module_a.lean",
       "summary": "Phase 1 implementation"
     },
     {
       "type": "implementation",
-      "path": "nvim/lua/plugins/treesitter.lua",
+      "path": "src/module_b.lean",
       "summary": "Phase 2 implementation"
     },
     {
@@ -229,9 +229,9 @@ If validation fails:
   "metadata": {
     "session_id": "sess_1735460684_abc123",
     "duration_seconds": 7200,
-    "agent_type": "neovim-implementation-agent",
+    "agent_type": "lean-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "lean-implementation-agent"]
   },
   "errors": [
     {
@@ -249,7 +249,7 @@ If validation fails:
 
 ### Problem Statement
 
-When orchestrator invokes subagents via task tool (e.g., researcher, planner, implementer), Claude does NOT automatically follow the JSON return format specified in the agent's markdown file. This causes validation failures in orchestrator Stage 4 because subagents return plain text instead of the required JSON structure.
+When orchestrator invokes subagents via task tool (e.g., researcher, planner, implementer), OpenCode does NOT automatically follow the JSON return format specified in the agent's markdown file. This causes validation failures in orchestrator Stage 4 because subagents return plain text instead of the required JSON structure.
 
 ### Solution: Explicit JSON Format Instruction
 

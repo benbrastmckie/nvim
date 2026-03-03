@@ -1,10 +1,10 @@
 # Command Workflows User Guide
 
-[Back to Docs](../README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
+[Back to Docs](../README.md) | [OPENCODE.md](../../OPENCODE.md) | [Architecture](../architecture/system-overview.md)
 
-A comprehensive guide to using the `.opencode/` task management system commands for ProofChecker development.
+A comprehensive guide to using the `.opencode/` task management system commands for Logos/Theory development.
 
-**Last Updated**: 2026-01-28
+**Last Updated**: 2026-02-28
 
 ---
 
@@ -26,7 +26,6 @@ A comprehensive guide to using the `.opencode/` task management system commands 
 4. [Utility Commands](#utility-commands)
    - [/meta](#meta-command)
    - [/learn](#learn-command)
-   - [/convert](#convert-command)
 5. [Quick Reference](#quick-reference)
 6. [Troubleshooting](#troubleshooting)
 
@@ -37,7 +36,7 @@ A comprehensive guide to using the `.opencode/` task management system commands 
 The `.opencode/` system provides structured task management for development workflows. The core cycle is:
 
 ```
-/task "Description" -> /research N -> /plan N -> /implement N -> /todo
+/task "Description" -> /research OC_N -> /plan OC_N -> /implement OC_N -> /todo
 ```
 
 ### Your First Workflow
@@ -46,23 +45,23 @@ The `.opencode/` system provides structured task management for development work
    ```
    /task "Add documentation for the modal logic evaluator"
    ```
-   Claude creates task #123 with status `[NOT STARTED]`.
+   Creates task OC_123 with status `[NOT STARTED]`.
 
 2. **Research the task** (optional but recommended):
    ```
-   /research 123
+   /research OC_123
    ```
    Creates a research report with findings and recommendations.
 
 3. **Create an implementation plan**:
    ```
-   /plan 123
+   /plan OC_123
    ```
    Generates a phased plan with steps and verification criteria.
 
 4. **Implement the plan**:
    ```
-   /implement 123
+   /implement OC_123
    ```
    Executes each phase, creating files and verifying results.
 
@@ -115,28 +114,30 @@ Create and manage tasks.
 **Language Detection**: The system automatically detects task language from keywords:
 - `lean`, `theorem`, `proof`, `lemma`, `Mathlib` -> `lean`
 - `meta`, `agent`, `command`, `skill`, `.opencode/` -> `meta`
+- `typst`, `.typ` -> `typst`
+- `latex`, `.tex` -> `latex`
 - Otherwise -> `general`
 
 #### Recover Archived Tasks
 
 ```
-/task --recover N        # Recover single task
-/task --recover N-M      # Recover task range
+/task --recover OC_N        # Recover single task
+/task --recover OC_N-M      # Recover task range
 ```
 
-Moves tasks from `specs/archive/` back to active status.
+Moves tasks from archive back to active status.
 
 #### Expand a Task
 
 ```
-/task --expand N [prompt]
+/task --expand OC_N [prompt]
 ```
 
 Breaks a large task into smaller subtasks. The original task gets status `[EXPANDED]`.
 
 **Example**:
 ```
-/task --expand 45 "Focus on separating soundness and completeness proofs"
+/task --expand OC_45 "Focus on separating soundness and completeness proofs"
 ```
 
 #### Synchronize State
@@ -150,19 +151,11 @@ Reconciles `specs/TODO.md` with `specs/state.json` if they become desynchronized
 #### Abandon a Task
 
 ```
-/task --abandon N        # Abandon single task
-/task --abandon N-M      # Abandon task range
+/task --abandon OC_N        # Abandon single task
+/task --abandon OC_N-M      # Abandon task range
 ```
 
 Marks tasks as `[ABANDONED]` and archives them.
-
-#### Review Task Completion
-
-```
-/task --review N
-```
-
-Reviews a completed task and optionally creates follow-up tasks for remaining work.
 
 ---
 
@@ -171,24 +164,24 @@ Reviews a completed task and optionally creates follow-up tasks for remaining wo
 Conduct research on a task and create reports.
 
 ```
-/research N [focus]
+/research OC_N [focus]
 ```
 
 **Arguments**:
-- `N` - Task number (required)
+- `OC_N` - Task number (required)
 - `focus` - Optional focus area for the research
 
 **Examples**:
 ```
-/research 123                          # General research
-/research 123 "focus on Mathlib lemmas for decidability"
+/research OC_123                          # General research
+/research OC_123 "focus on Mathlib lemmas for decidability"
 ```
 
 **Language Routing**:
 - `lean` tasks -> Uses Lean MCP tools (leansearch, loogle, leanfinder)
 - Other tasks -> Uses web search, documentation, codebase exploration
 
-**Output**: Creates `specs/{NNN}_{SLUG}/reports/research-{NNN}.md`
+**Output**: Creates `specs/OC_NNN_{SLUG}/reports/research-NNN.md`
 
 **Repeatable**: Yes. Run multiple times to gather additional research. Each run creates a new numbered report (001, 002, etc.).
 
@@ -199,12 +192,12 @@ Conduct research on a task and create reports.
 Create an implementation plan for a task.
 
 ```
-/plan N
+/plan OC_N
 ```
 
 **Prerequisites**: Task should exist (ideally researched first, but not required).
 
-**Output**: Creates `specs/{NNN}_{SLUG}/plans/implementation-{NNN}.md`
+**Output**: Creates `specs/OC_NNN_{SLUG}/plans/implementation-NNN.md`
 
 **Plan Structure**:
 - **Phases**: Logical groupings of related work
@@ -232,7 +225,7 @@ Create an implementation plan for a task.
 Create a new plan version or update task description.
 
 ```
-/revise N [reason]
+/revise OC_N [reason]
 ```
 
 **Behavior depends on task status**:
@@ -244,11 +237,11 @@ Create a new plan version or update task description.
 
 **Examples**:
 ```
-/revise 123 "Need to split into smaller phases"
-/revise 45   # Interactive revision
+/revise OC_123 "Need to split into smaller phases"
+/revise OC_45   # Interactive revision
 ```
 
-**Output for Plan Revision**: Creates `specs/{NNN}_{SLUG}/plans/implementation-{NNN}.md` with incremented version number.
+**Output for Plan Revision**: Creates `specs/OC_NNN_{SLUG}/plans/implementation-NNN.md` with incremented version number.
 
 ---
 
@@ -257,11 +250,11 @@ Create a new plan version or update task description.
 Execute an implementation plan.
 
 ```
-/implement N [--force]
+/implement OC_N [--force]
 ```
 
 **Arguments**:
-- `N` - Task number (required)
+- `OC_N` - Task number (required)
 - `--force` - Skip confirmation prompts (optional)
 
 **Language Routing**:
@@ -270,7 +263,7 @@ Execute an implementation plan.
 - `typst` -> Typst document implementation
 - Other -> General file implementation
 
-**Resume Support**: If interrupted, running `/implement N` again automatically resumes from the last incomplete phase.
+**Resume Support**: If interrupted, running `/implement OC_N` again automatically resumes from the last incomplete phase.
 
 **Phase Markers** (in plan file):
 - `[NOT STARTED]` -> Not yet begun
@@ -278,7 +271,7 @@ Execute an implementation plan.
 - `[COMPLETED]` -> Finished successfully
 - `[PARTIAL]` -> Partially complete (interrupted)
 
-**Output**: Creates `specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`
+**Output**: Creates `specs/OC_NNN_{SLUG}/summaries/implementation-summary-{DATE}.md`
 
 ---
 
@@ -302,14 +295,14 @@ Archive completed and abandoned tasks.
 2. Moves task directories to `specs/archive/`
 3. Updates `specs/TODO.md` and `specs/state.json`
 4. For non-meta tasks: Annotates `ROAD_MAP.md` with completion notes
-5. For meta tasks: Displays CLAUDE.md modification suggestions for review
+5. For meta tasks: Displays suggestions for review
 
 **Example Output**:
 ```
 Archived 3 tasks:
-- Task 120: Prove soundness theorem [COMPLETED]
-- Task 121: Add frame validation [COMPLETED]
-- Task 122: Old prototype code [ABANDONED]
+- Task OC_120: Prove soundness theorem [COMPLETED]
+- Task OC_121: Add frame validation [COMPLETED]
+- Task OC_122: Old prototype code [ABANDONED]
 ```
 
 ---
@@ -342,7 +335,7 @@ Analyze codebase and create review reports.
 
 ### /refresh Command
 
-Clean Claude Code resources.
+Clean resources.
 
 ```
 /refresh [--dry-run] [--force]
@@ -354,11 +347,8 @@ Clean Claude Code resources.
 
 **Actions**:
 1. Terminates orphaned processes
-2. Cleans old files in `~/.opencode/` directories
-3. Interactive age threshold selection:
-   - 8 hours (recent files)
-   - 2 days (older files)
-   - Clean slate (all non-essential files)
+2. Cleans old files
+3. Interactive age threshold selection
 
 ---
 
@@ -380,7 +370,7 @@ Run Lean build with automatic error repair.
 
 | Error Type | Automatic Fix |
 |------------|---------------|
-| Missing pattern match cases | Add `\| {case} => sorry` branches |
+| Missing pattern match cases | Add `| {case} => sorry` branches |
 | Unused variables | Rename to `_{name}` |
 | Unused imports | Remove import line |
 
@@ -436,7 +426,7 @@ Interactive system builder for `.opencode/` changes.
 
 | Mode | Syntax | Description |
 |------|--------|-------------|
-| Interactive | `/meta` | 7-stage interview process |
+| Interactive | `/meta` | Multi-stage interview process |
 | Prompt | `/meta "Add a /debug command"` | Abbreviated flow for direct requests |
 | Analyze | `/meta --analyze` | Read-only system analysis |
 
@@ -448,9 +438,9 @@ Interactive system builder for `.opencode/` changes.
 ```
 
 Creates tasks like:
-- Task 200: Create typst-implementation-agent
-- Task 201: Add /typst command
-- Task 202: Update language routing
+- Task OC_200: Create typst-implementation-agent
+- Task OC_201: Add /typst command
+- Task OC_202: Update language routing
 
 ---
 
@@ -489,32 +479,6 @@ Scan for FIX:/NOTE:/TODO: tags and create tasks.
 
 ---
 
-### /convert Command
-
-Convert documents between formats.
-
-```
-/convert SOURCE_PATH [OUTPUT_PATH]
-```
-
-**Supported Conversions**:
-
-| From | To |
-|------|-----|
-| PDF, DOCX, XLSX, PPTX, HTML | Markdown |
-| Markdown | PDF |
-
-**Tools Used**: markitdown, pandoc, typst
-
-**Examples**:
-```
-/convert paper.pdf                    # PDF -> Markdown (auto output name)
-/convert paper.pdf notes.md           # PDF -> Markdown (custom output)
-/convert README.md README.pdf         # Markdown -> PDF
-```
-
----
-
 ## Quick Reference
 
 ### Command Summary Table
@@ -522,15 +486,14 @@ Convert documents between formats.
 | Command | Syntax | Description |
 |---------|--------|-------------|
 | `/task` | `/task "Description"` | Create new task |
-| `/task` | `/task --recover N` | Recover archived task |
-| `/task` | `/task --expand N [prompt]` | Break into subtasks |
+| `/task` | `/task --recover OC_N` | Recover archived task |
+| `/task` | `/task --expand OC_N [prompt]` | Break into subtasks |
 | `/task` | `/task --sync` | Synchronize state files |
-| `/task` | `/task --abandon N` | Archive as abandoned |
-| `/task` | `/task --review N` | Review completion |
-| `/research` | `/research N [focus]` | Research task |
-| `/plan` | `/plan N` | Create implementation plan |
-| `/revise` | `/revise N [reason]` | Revise plan or description |
-| `/implement` | `/implement N [--force]` | Execute plan |
+| `/task` | `/task --abandon OC_N` | Archive as abandoned |
+| `/research` | `/research OC_N [focus]` | Research task |
+| `/plan` | `/plan OC_N` | Create implementation plan |
+| `/revise` | `/revise OC_N [reason]` | Revise plan or description |
+| `/implement` | `/implement OC_N [--force]` | Execute plan |
 | `/todo` | `/todo [--dry-run]` | Archive completed tasks |
 | `/review` | `/review [SCOPE] [--create-tasks]` | Analyze codebase |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean resources |
@@ -538,7 +501,6 @@ Convert documents between formats.
 | `/errors` | `/errors [--fix N]` | Analyze errors |
 | `/meta` | `/meta [PROMPT] \| --analyze` | System builder |
 | `/learn` | `/learn [PATH...]` | Extract tags to tasks |
-| `/convert` | `/convert SOURCE [OUTPUT]` | Convert documents |
 
 ### Status Transitions
 
@@ -566,8 +528,65 @@ Convert documents between formats.
 | `meta` | agent, command, skill, .opencode/ | Read, Grep, Glob | Write, Edit |
 | `latex` | latex, .tex, document | WebSearch, Read | pdflatex |
 | `typst` | typst, .typ | WebSearch, Read | typst compile |
-| `web` | web, website, html, css, javascript, react, frontend | WebSearch, WebFetch, Read | Write, Edit, Bash |
 | `general` | (default) | WebSearch, Read | Write, Edit, Bash |
+
+---
+
+## Optional Integrations
+
+### TTS (Text-to-Speech) Notifications
+
+OpenCode supports optional TTS notifications that announce when workflow commands complete. This helps you track task progress when working across multiple terminal tabs.
+
+**Features**:
+- Announces task completion: "Task 184 research complete"
+- Announces tab activity: "Tab 2: Task 184 complete"
+- Configurable cooldown to prevent spam
+- Graceful degradation when dependencies not installed
+
+**Requirements**:
+- [Piper TTS](https://github.com/rhasspy/piper) - Neural text-to-speech engine
+- `aplay` (ALSA) or `paplay` (PulseAudio) - Audio playback
+- Optional: [WezTerm](https://wezfurlong.org/wezterm/) - For tab-aware announcements
+
+**Installation** (NixOS):
+```nix
+environment.systemPackages = with pkgs; [
+  piper-tts
+  alsa-utils  # for aplay
+  pulseaudio  # for paplay (optional)
+];
+```
+
+**Configuration**:
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENCODE_TTS_ENABLED` | `1` | Enable/disable TTS notifications |
+| `PIPER_MODEL` | `~/.local/share/piper/en_US-lessac-medium.onnx` | Path to voice model |
+| `TTS_COOLDOWN` | `10` | Seconds between notifications |
+
+**Setup**:
+1. Download a Piper voice model:
+   ```bash
+   mkdir -p ~/.local/share/piper
+   cd ~/.local/share/piper
+   wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
+   wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json
+   ```
+
+2. Test the setup:
+   ```bash
+   echo "Task 1 complete" | piper --model ~/.local/share/piper/en_US-lessac-medium.onnx --output_file - | aplay
+   ```
+
+3. TTS notifications trigger automatically on workflow command completion
+
+**Disable TTS**:
+```bash
+export OPENCODE_TTS_ENABLED=0
+```
+
+For more details, see the full [TTS/STT Integration Guide](../../../.claude/docs/guides/tts-stt-integration.md).
 
 ---
 
@@ -577,12 +596,12 @@ Convert documents between formats.
 
 #### Task Not Found
 
-**Symptom**: "Task N not found" error
+**Symptom**: "Task OC_N not found" error
 
 **Solutions**:
 1. Check task exists: Look in `specs/TODO.md`
 2. Check if archived: Look in `specs/archive/`
-3. Recover if needed: `/task --recover N`
+3. Recover if needed: `/task --recover OC_N`
 4. Sync state: `/task --sync`
 
 #### Implementation Won't Start
@@ -591,15 +610,15 @@ Convert documents between formats.
 
 **Solutions**:
 1. Verify task is planned: Status should be `[PLANNED]`
-2. Check for missing plan: Run `/plan N` first
-3. Check plan file exists: `specs/{NNN}_{SLUG}/plans/implementation-001.md`
+2. Check for missing plan: Run `/plan OC_N` first
+3. Check plan file exists: `specs/OC_NNN_{SLUG}/plans/implementation-001.md`
 
 #### Stuck in Implementing Status
 
 **Symptom**: Task remains `[IMPLEMENTING]` after errors
 
 **Solutions**:
-1. Run `/implement N` again to resume
+1. Run `/implement OC_N` again to resume
 2. Check plan for `[PARTIAL]` phase markers
 3. Review errors: `/errors`
 4. If truly stuck, manually edit plan to mark phases `[COMPLETED]`
@@ -629,17 +648,16 @@ Convert documents between formats.
 
 **Solutions**:
 1. Verify Lean project builds: `lake build`
-2. Check MCP configuration in `~/.claude.json`
+2. Check MCP configuration in `~/.opencode.json`
 3. Run `/refresh` to clean orphaned processes
-4. Restart Claude Code session
+4. Restart opencode session
 
 ### Getting Help
 
 - **Architecture docs**: See [system-overview.md](../architecture/system-overview.md)
 - **Command details**: Check individual command files in `.opencode/commands/`
-- **Examples**: See [examples/](../examples/) for workflow walkthroughs
-- **CLAUDE.md**: Quick reference at [../../CLAUDE.md](../../CLAUDE.md)
+- **OPENCODE.md**: Quick reference at [../../OPENCODE.md](../../OPENCODE.md)
 
 ---
 
-[Back to Docs](../README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
+[Back to Docs](../README.md) | [OPENCODE.md](../../OPENCODE.md) | [Architecture](../architecture/system-overview.md)

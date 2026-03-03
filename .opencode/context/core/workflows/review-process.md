@@ -31,7 +31,7 @@ The /review command follows the standard 8-stage workflow defined in @.opencode/
 **Stage 7 (Postflight)**: Replace placeholders in review summary, delegate to status-sync-manager for atomic updates, create review task entry, git commit
 **Stage 8 (ReturnSuccess)**: Return brief summary and artifact path to user
 
-See @.opencode/command/review.md for complete stage specifications.
+See @.opencode/commands/review.md for complete stage specifications.
 
 ## Review-Specific Workflow Details
 
@@ -59,7 +59,7 @@ Create tasks via /task command for identified work:
 Follows @.opencode/context/core/orchestration/state-management.md:
 - Lazy directory creation (project root created when writing first file)
 - Only summaries/ subdirectory created (not reports/ or plans/)
-- Review summary artifact triggers project state.json creation via status-sync-manager
+- Review summary artifact triggers project specs/state.json creation via status-sync-manager
 
 ## Principles
 

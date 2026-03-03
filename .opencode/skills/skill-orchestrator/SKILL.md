@@ -1,121 +1,43 @@
 ---
 name: skill-orchestrator
-description: Route commands to appropriate workflows based on task language and status. Invoke when executing /task, /research, /plan, /implement commands.
+description: Route commands to appropriate workflows based on task language and status.
 allowed-tools: Read, Glob, Grep, Task
-# Context loaded on-demand via @-references (see Context Loading section)
 ---
 
 # Orchestrator Skill
 
-**DEPRECATED**: This skill is deprecated as of 2026-02-06. 
+Central routing for task workflows. Delegates to research, plan, implement, and meta skills based on task language.
 
-The routing architecture has changed: Commands now directly invoke skills (e.g., `skill-researcher`, `skill-planner`) which handle routing to subagents internally via the skill-internal postflight pattern.
+<context>
+  <system_context>OpenCode routing and task orchestration.</system_context>
+  <task_context>Route tasks to appropriate skills based on language and status.</task_context>
+</context>
 
-This skill is no longer used. Kept for reference only.
+<role>Routing skill for command workflows.</role>
 
-Central routing intelligence for the task management system (legacy).
+<task>Validate task context and route to the correct skill.</task>
+
+<execution>Follow Execution Flow steps for routing.</execution>
+
+<validation>Validate task status and language routing decisions.</validation>
+
+<return_format>Return structured routing result.</return_format>
 
 ## Context Loading
 
 Load context on-demand when needed:
-
 - `@.opencode/context/core/orchestration/orchestration-core.md` - Routing, delegation, session tracking
 - `@.opencode/context/core/orchestration/state-management.md` - Task lookup and status validation
-- `@.opencode/context/index.json` - Full context discovery index
+- `@.opencode/context/index.md` - Context discovery index
 
 ## Trigger Conditions
 
-This skill activates when:
-
 - A slash command needs language-based routing
-- Task context needs to be gathered before delegation
-- Multi-step workflows require coordination
-
-## Core Responsibilities
-
-### 1. Task Lookup
-
-Given a task number, retrieve full context:
-
-```
-1. Read specs/state.json
-2. Find task by project_number
-3. Extract: language, status, project_name, description, priority
-4. Read TODO.md for additional context if needed
-```
-
-### 2. Language-Based Routing
-
-Route to appropriate skill based on task language:
-
-| Language | Research Skill        | Implementation Skill        |
-| -------- | --------------------- | --------------------------- |
-| neovim   | skill-neovim-research | skill-neovim-implementation |
-| web      | skill-web-research    | skill-web-implementation    |
-| general  | skill-researcher      | skill-implementer           |
-| meta     | skill-researcher      | skill-implementer           |
-| markdown | skill-researcher      | skill-implementer           |
-| web      | skill-web-research    | skill-web-implementation    |
-
-### 3. Status Validation
-
-Before routing, validate task status allows the operation:
-
-| Operation | Allowed Statuses                           |
-| --------- | ------------------------------------------ |
-| research  | not_started, planned, partial, blocked     |
-| plan      | not_started, researched, partial           |
-| implement | planned, implementing, partial, researched |
-| revise    | planned, implementing, partial, blocked    |
-
-### 4. Context Preparation
-
-Prepare context package for delegated skill:
-
-```json
-{
-  "task_number": 259,
-  "task_name": "task_slug",
-  "language": "neovim",
-  "status": "planned",
-  "description": "Full task description",
-  "artifacts": {
-    "research": ["path/to/research.md"],
-    "plan": "path/to/plan.md"
-  },
-  "focus_prompt": "Optional user-provided focus"
-}
-```
+- Task context needs gathering before delegation
 
 ## Execution Flow
 
-```
-1. Receive command context (task number, operation type)
-2. Lookup task in state.json
-3. Validate status for operation
-4. Determine target skill by language
-5. Prepare context package
-6. Invoke target skill via Task tool
-7. Receive and validate result
-8. Return result to caller
-```
-
-## Return Format
-
-```json
-{
-  "status": "completed|partial|failed",
-  "routed_to": "skill-name",
-  "task_number": 259,
-  "result": {
-    "artifacts": [],
-    "summary": "..."
-  }
-}
-```
-
-## Error Handling
-
-- Task not found: Return clear error with suggestions
-- Invalid status: Return error with current status and allowed operations
-- Skill invocation failure: Return partial result with error details
+1. Lookup task in `specs/state.json`.
+2. Validate status for requested operation.
+3. Route to appropriate skill based on language.
+4. Return structured result to caller.

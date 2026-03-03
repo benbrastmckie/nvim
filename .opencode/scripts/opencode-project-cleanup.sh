@@ -242,7 +242,7 @@ display_survey() {
 
     echo ""
     echo -e "${CYAN}OpenCode Project Cleanup${NC}"
-    echo "==========================="
+    echo "========================="
     echo ""
     echo -e "Project: ${BLUE}$project_path${NC}"
     echo -e "Directory: ${BLUE}~/.opencode/projects/$(basename "$project_dir")/${NC}"
@@ -350,7 +350,7 @@ perform_cleanup() {
         echo "Would reclaim: $(format_size $deleted_size)"
     else
         echo -e "${GREEN}OpenCode Project Cleanup Complete${NC}"
-        echo "===================================="
+        echo "==============================="
         echo "Deleted files: $deleted_files"
         echo "Deleted dirs:  $deleted_dirs"
         echo "Failed:        $failed"

@@ -1,0 +1,16 @@
+[Unit]
+Description=Run OpenCode refresh hourly
+Documentation=https://github.com/opencode-ai/opencode
+
+[Timer]
+# Run every hour
+OnCalendar=hourly
+
+# Randomize start time within 5 minutes to avoid thundering herd
+RandomizedDelaySec=300
+
+# Run on boot if last run was missed
+Persistent=true
+
+[Install]
+WantedBy=timers.target

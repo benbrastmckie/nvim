@@ -1,6 +1,7 @@
 # Thin Wrapper Skill Template
 
 **Purpose**: Standard structure for skills that delegate to forked subagents
+**Version**: 1.0
 **Created**: 2026-01-12
 
 ---
@@ -66,7 +67,7 @@ This skill activates when:
 ### 1. Input Validation
 
 Validate required inputs:
-- `task_number` - Must be provided and exist in state.json
+- `task_number` - Must be provided and exist in specs/state.json
 - `focus_prompt` - Optional additional context
 
 ```bash
@@ -211,28 +212,28 @@ Return partial status if subagent times out.
 
 ```yaml
 ---
-name: skill-neovim-research
-description: Research Neovim plugins and configuration patterns.
+name: skill-lean-research
+description: Research Lean 4 and Mathlib for theorem proving tasks.
 allowed-tools: Task
 context: fork
-agent: neovim-research-agent
+agent: lean-research-agent
 ---
 ```
 
 ```markdown
-# Neovim Research Skill
+# Lean Research Skill
 
-Specialized research for Neovim configuration tasks.
+Specialized research for Lean 4 theorem proving tasks.
 
 ## Trigger Conditions
-- Task language is "neovim"
-- Research involves plugins, configuration, or Lua patterns
+- Task language is "lean"
+- Research involves Mathlib, theorems, or proofs
 
 ## Execution
 
 ### 1. Input Validation
 Extract task_number from arguments.
-Validate task exists in state.json.
+Validate task exists in specs/state.json.
 Extract optional focus_prompt.
 
 ### 2. Context Preparation
@@ -247,12 +248,12 @@ Prepare delegation context with task details.
 ```
 Tool: Task (NOT Skill)
 Parameters:
-  - subagent_type: "neovim-research-agent"
+  - subagent_type: "lean-research-agent"
   - prompt: [Include task_context, delegation_context, focus_prompt if present]
-  - description: "Execute Neovim research for task {N}"
+  - description: "Execute Lean research for task {N}"
 ```
 
-**DO NOT** use `Skill(neovim-research-agent)` - this will FAIL.
+**DO NOT** use `Skill(lean-research-agent)` - this will FAIL.
 
 ### 4. Return Validation
 Validate return matches subagent-return.md schema.

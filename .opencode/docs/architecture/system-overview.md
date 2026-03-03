@@ -1,14 +1,14 @@
-# System Architecture Overview
+# OpenCode System Architecture Overview
 
-**Last Verified**: 2026-01-19
+**Last Verified**: 2026-02-28
 
-This document provides a high-level overview of the Neovim Configuration agent system architecture for users and developers.
+This document provides a high-level overview of the Logos/Theory agent system architecture for users and developers.
 
 ---
 
 ## Three-Layer Architecture
 
-The agent system uses a three-layer architecture that separates user interaction, routing, and execution:
+The Logos/Theory agent system uses a three-layer architecture that separates user interaction, routing, and execution:
 
 ```
                            USER
@@ -31,7 +31,7 @@ The agent system uses a three-layer architecture that separates user interaction
     |                   LAYER 2: SKILLS                    |
     |                                                      |
     |   .opencode/skills/skill-*/SKILL.md                 |
-    |   ├── skill-neovim-research/   Validate inputs      |
+    |   ├── skill-lean-research/     Validate inputs      |
     |   ├── skill-researcher/        Prepare context      |
     |   ├── skill-planner/           Invoke agents        |
     |   └── ...                                            |
@@ -42,8 +42,8 @@ The agent system uses a three-layer architecture that separates user interaction
     +-----------------------------------------------------+
     |                   LAYER 3: AGENTS                    |
     |                                                      |
-    |   .opencode/agents/*.md                             |
-    |   ├── neovim-research-agent.md Full execution       |
+    |   .opencode/agent/subagents/*.md                    |
+    |   ├── lean-research-agent.md   Full execution       |
     |   ├── general-research-agent.md  Create artifacts   |
     |   ├── planner-agent.md         Return JSON          |
     |   └── ...                                            |
@@ -54,9 +54,9 @@ The agent system uses a three-layer architecture that separates user interaction
     +-----------------------------------------------------+
     |                     ARTIFACTS                        |
     |                                                      |
-    |   specs/{NNN}_{SLUG}/                                  |
+    |   specs/OC_NNN_{SLUG}/                               |
     |   ├── reports/research-001.md                       |
-    |   ├── plans/implementation-001.md                   |
+    |   ├── plans/implementation-001.md                 |
     |   └── summaries/implementation-summary-{DATE}.md    |
     +-----------------------------------------------------+
 ```
@@ -70,7 +70,6 @@ The agent system uses a three-layer architecture that separates user interaction
 **Location**: `.opencode/commands/`
 
 Commands are user-facing entry points invoked via `/command` syntax. They:
-
 - Parse user arguments
 - Route to appropriate skills based on task language
 - Contain minimal logic (routing only)
@@ -93,7 +92,6 @@ Commands are user-facing entry points invoked via `/command` syntax. They:
 **Location**: `.opencode/skills/skill-*/SKILL.md`
 
 Skills are thin wrappers that validate inputs and delegate to agents. They:
-
 - Validate task exists and arguments are correct
 - Prepare delegation context (session_id, depth tracking)
 - Invoke agents via the Task tool
@@ -102,19 +100,17 @@ Skills are thin wrappers that validate inputs and delegate to agents. They:
 **Key skills**:
 | Skill | Agent | Purpose |
 |-------|-------|---------|
-| skill-neovim-research | neovim-research-agent | Neovim/plugin research |
-| skill-web-research | web-research-agent | Web/Astro/Tailwind research |
-| skill-researcher | general-research-agent | General/meta/markdown research |
+| skill-lean-research | lean-research-agent | Lean 4/Mathlib research |
+| skill-researcher | general-research-agent | General web/codebase research |
 | skill-planner | planner-agent | Create implementation plans |
 | skill-implementer | general-implementation-agent | General file implementation |
-| skill-neovim-implementation | neovim-implementation-agent | Neovim configuration implementation |
+| skill-lean-implementation | lean-implementation-agent | Lean proof implementation |
 
 ### Agents (Layer 3)
 
-**Location**: `.opencode/agents/`
+**Location**: `.opencode/agent/subagents/`
 
 Agents are execution components that do the actual work. They:
-
 - Load context on-demand
 - Execute multi-step workflows
 - Create artifacts (reports, plans, summaries)
@@ -124,24 +120,24 @@ Agents are execution components that do the actual work. They:
 
 ## Execution Flow Example
 
-When you run `/research 1`:
+When you run `/research OC_259`:
 
 ```
 1. Command: research.md
-   - Parse: task_number = 1
-   - Lookup: language = "neovim" (from state.json)
-   - Route: skill-neovim-research
+   - Parse: task_number = OC_259
+   - Lookup: language = "lean" (from state.json)
+   - Route: skill-lean-research
 
-2. Skill: skill-neovim-research
+2. Skill: skill-lean-research
    - Generate session_id: sess_1736700000_abc123
    - Validate: task exists, status allows research
    - Prepare: delegation context
-   - Invoke: neovim-research-agent via Task tool
+   - Invoke: lean-research-agent via Task tool
 
-3. Agent: neovim-research-agent
-   - Load: Neovim context files
-   - Execute: Search documentation, analyze plugins
-   - Create: specs/1_{slug}/reports/research-001.md
+3. Agent: lean-research-agent
+   - Load: Lean 4 context files
+   - Execute: Use MCP tools (lean_leansearch, etc.)
+   - Create: specs/OC_259_{slug}/reports/research-001.md
    - Return: {"status": "researched", "artifacts": [...]}
 
 4. Postflight:
@@ -162,15 +158,14 @@ CHECKPOINT 1     -->     STAGE 2      -->     CHECKPOINT 2     -->   CHECKPOINT 
  (Preflight)           (Skill/Agent)         (Postflight)         (Git Commit)
 ```
 
-| Checkpoint | Purpose                                       |
-| ---------- | --------------------------------------------- |
-| GATE IN    | Validate task, update status to "in_progress" |
-| DELEGATE   | Route to skill, skill invokes agent           |
-| GATE OUT   | Validate result, update status to "success"   |
-| COMMIT     | Git commit with session tracking              |
+| Checkpoint | Purpose |
+|------------|---------|
+| GATE IN | Validate task, update status to "in_progress" |
+| DELEGATE | Route to skill, skill invokes agent |
+| GATE OUT | Validate result, update status to "success" |
+| COMMIT | Git commit with session tracking |
 
 This ensures:
-
 - Consistent state management
 - Traceability via session IDs
 - Recovery from interruptions
@@ -182,12 +177,13 @@ This ensures:
 
 Tasks route to specialized skills based on their `language` field:
 
-| Language  | Research              | Implementation              |
-| --------- | --------------------- | --------------------------- |
-| `neovim`  | skill-neovim-research | skill-neovim-implementation |
-| `web`     | skill-web-research    | skill-web-implementation    |
-| `general` | skill-researcher      | skill-implementer           |
-| `meta`    | skill-researcher      | skill-implementer           |
+| Language | Research | Implementation |
+|----------|----------|----------------|
+| `lean` | skill-lean-research | skill-lean-implementation |
+| `general` | skill-researcher | skill-implementer |
+| `meta` | skill-researcher | skill-implementer |
+| `latex` | skill-researcher | skill-latex-implementation |
+| `typst` | skill-typst-research | skill-typst-implementation |
 
 The language is automatically detected from task description or can be set explicitly.
 
@@ -197,13 +193,12 @@ The language is automatically detected from task description or can be set expli
 
 The system maintains dual state files that stay synchronized:
 
-| File               | Purpose                | Format   |
-| ------------------ | ---------------------- | -------- |
-| `specs/TODO.md`    | User-facing task list  | Markdown |
-| `specs/state.json` | Machine-readable state | JSON     |
+| File | Purpose | Format |
+|------|---------|--------|
+| `specs/TODO.md` | User-facing task list | Markdown |
+| `specs/state.json` | Machine-readable state | JSON |
 
 Updates use two-phase commit:
-
 1. Write state.json first
 2. Write TODO.md second
 3. Rollback both on any failure
@@ -219,12 +214,14 @@ Updates use two-phase commit:
 │   ├── plan.md
 │   └── ...
 ├── skills/             # Layer 2: Skills
-│   ├── skill-neovim-research/
+│   ├── skill-lean-research/
 │   │   └── SKILL.md
 │   └── ...
-├── agents/             # Layer 3: Agents
-│   ├── neovim-research-agent.md
-│   └── ...
+├── agent/              # Layer 3: Agents
+│   ├── orchestrator.md          # Primary agent
+│   └── subagents/                 # Execution agents
+│       ├── lean-research-agent.md
+│       └── ...
 ├── rules/              # Automatic behavior rules
 ├── context/            # Domain knowledge
 │   └── core/
@@ -247,7 +244,7 @@ Updates use two-phase commit:
 To add support for a new language (e.g., Python):
 
 1. Create skill: `.opencode/skills/skill-python-research/SKILL.md`
-2. Create agent: `.opencode/agents/python-research-agent.md`
+2. Create agent: `.opencode/agent/subagents/python-research-agent.md`
 3. Update routing in existing commands
 
 ### Adding New Commands
@@ -256,7 +253,7 @@ To add a new command (e.g., /analyze):
 
 1. Create command: `.opencode/commands/analyze.md`
 2. Create skill: `.opencode/skills/skill-analyzer/SKILL.md`
-3. Create agent: `.opencode/agents/analyzer-agent.md`
+3. Create agent: `.opencode/agent/subagents/analyzer-agent.md`
 
 See the guides in `.opencode/docs/guides/` for detailed instructions.
 
@@ -276,11 +273,12 @@ See the guides in `.opencode/docs/guides/` for detailed instructions.
 - [User Installation Guide](../guides/user-installation.md) - Getting started
 - [README](../README.md) - Documentation hub
 
-### Architecture Details
-
-- [README.md](../../README.md) - Detailed system architecture
-- [CLAUDE.md](../../CLAUDE.md) - Quick reference entry point
-
 ### Agent-Facing Documentation
 
-- [Agent System Overview](../../context/core/architecture/system-overview.md) - Detailed architecture for agents (includes skill patterns, command mapping matrix)
+- [Context Index](../../context/index.md) - Full context loading guide
+
+---
+
+**Document Version**: 1.0
+**Created**: 2026-02-28
+**Maintained By**: Logos/Theory Development Team

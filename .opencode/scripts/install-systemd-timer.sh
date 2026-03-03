@@ -36,7 +36,7 @@ for arg in "$@"; do
         --help|-h)
             echo "Usage: $0 [--uninstall] [--status]"
             echo ""
-            echo "Install a user-level systemd timer for automated Claude refresh."
+            echo "Install a user-level systemd timer for automated OpenCode refresh."
             echo ""
             echo "Options:"
             echo "  --uninstall  Remove the timer and service"
@@ -68,7 +68,7 @@ check_systemd() {
 # Show status
 show_status() {
     echo "OpenCode Refresh Timer Status"
-    echo "================================="
+    echo "=============================="
     echo ""
 
     if systemctl --user is-active "$TIMER_NAME" &> /dev/null; then
@@ -97,7 +97,7 @@ install_timer() {
     cat > "$USER_SYSTEMD_DIR/$SERVICE_NAME" << EOF
 [Unit]
 Description=OpenCode orphaned process refresh
-Documentation=https://github.com/anthropics/claude-code
+Documentation=https://github.com/opencode-ai/opencode
 
 [Service]
 Type=oneshot
@@ -154,16 +154,16 @@ uninstall_timer() {
     systemctl --user disable "$TIMER_NAME" 2>/dev/null || true
 
     # Stop and disable old style (for migration)
-    systemctl --user stop "opencode-cleanup.timer" 2>/dev/null || true
-    systemctl --user disable "opencode-cleanup.timer" 2>/dev/null || true
+    systemctl --user stop "claude-cleanup.timer" 2>/dev/null || true
+    systemctl --user disable "claude-cleanup.timer" 2>/dev/null || true
 
     # Remove new style files
     rm -f "$USER_SYSTEMD_DIR/$SERVICE_NAME"
     rm -f "$USER_SYSTEMD_DIR/$TIMER_NAME"
 
     # Remove old style files (for migration)
-    rm -f "$USER_SYSTEMD_DIR/opencode-cleanup.service"
-    rm -f "$USER_SYSTEMD_DIR/opencode-cleanup.timer"
+    rm -f "$USER_SYSTEMD_DIR/claude-cleanup.service"
+    rm -f "$USER_SYSTEMD_DIR/claude-cleanup.timer"
 
     # Reload systemd
     systemctl --user daemon-reload

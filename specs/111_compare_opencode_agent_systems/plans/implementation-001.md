@@ -55,7 +55,7 @@ Two research reports inform this plan:
 
 ## Implementation Phases
 
-### Phase 1: Backup and Prepare [NOT STARTED]
+### Phase 1: Backup and Prepare [COMPLETED]
 
 **Goal**: Preserve current nvim/.opencode/ state and extract files needed for porting before the replacement.
 
@@ -82,7 +82,7 @@ Two research reports inform this plan:
 
 ---
 
-### Phase 2: Copy Theory/.opencode/ as Base [NOT STARTED]
+### Phase 2: Copy Theory/.opencode/ as Base [COMPLETED]
 
 **Goal**: Replace nvim/.opencode/ with the entire Theory/.opencode/ directory, establishing the new base system.
 
@@ -108,7 +108,7 @@ Two research reports inform this plan:
 
 ---
 
-### Phase 3: Port Neovim-Specific Agents and Skills [NOT STARTED]
+### Phase 3: Port Neovim-Specific Agents and Skills [COMPLETED]
 
 **Goal**: Add neovim-research-agent and neovim-implementation-agent as subagents, and create corresponding skills.
 
@@ -138,7 +138,7 @@ Two research reports inform this plan:
 
 ---
 
-### Phase 4: Port Domain Context [NOT STARTED]
+### Phase 4: Port Domain Context [COMPLETED]
 
 **Goal**: Add neovim domain context files and optionally web domain context to the new system.
 
@@ -168,7 +168,7 @@ Two research reports inform this plan:
 
 ---
 
-### Phase 5: Update Configuration Files [NOT STARTED]
+### Phase 5: Update Configuration Files [COMPLETED]
 
 **Goal**: Adapt OPENCODE.md, settings.json, and project-overview.md from Theory's Lean/math focus to nvim's Neovim configuration management focus.
 
@@ -211,7 +211,7 @@ Two research reports inform this plan:
 
 ---
 
-### Phase 6: Validation and Cleanup [NOT STARTED]
+### Phase 6: Validation and Cleanup [COMPLETED]
 
 **Goal**: Verify the migrated system is consistent, remove temporary staging files, and confirm readiness for use.
 

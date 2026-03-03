@@ -13,48 +13,40 @@ All workflow commands follow a standardized 8-stage lifecycle:
 ### Orchestrator Stages (1-5, 8)
 
 **Stage 1 (PreflightValidation):**
-
 - Parse task number from $ARGUMENTS
-- Validate task exists in TODO.md
+- Validate task exists in specs/TODO.md
 - Extract task metadata
 
 **Stage 2 (DetermineRouting):**
-
-- Extract language from task entry (state.json or TODO.md)
+- Extract language from task entry (specs/state.json or specs/TODO.md)
 - Map language to appropriate subagent using routing table
 - Validate routing decision
 
 **Stage 3 (RegisterAndDelegate):**
-
 - Register session in session registry
 - Prepare delegation context
 - Invoke target subagent
 
 **Stage 4 (ValidateReturn):**
-
 - Validate return format per subagent-return-format.md
 - Verify artifacts exist and are non-empty
 - Extract metadata from return
 
 **Stage 5 (PostflightCleanup):**
-
 - Update session registry
 - Relay result to user
 
 **Stage 8 (Return):**
-
 - Subagent returns standardized result to orchestrator
 
 ### Subagent Stages (6-7)
 
 **Stage 6 (Execution):**
-
 - Subagent executes main workflow
 - Creates artifacts (research reports, plans, implementation files)
 - Validates artifacts
 
 **Stage 7 (Postflight):**
-
 - Update status to completion marker
 - Create git commit
 - Return standardized result
@@ -68,14 +60,12 @@ All workflow subagents (researcher, planner, implementer) follow a **two-phase s
 **When:** Before executing main workflow (Stage 0 or Step 0 in subagent)  
 **Purpose:** Signal that work has started  
 **Status Markers:**
-
 - `/research`: [RESEARCHING]
 - `/plan`: [PLANNING]
 - `/revise`: [REVISING]
 - `/implement`: [IMPLEMENTING]
 
 **Process:**
-
 1. Validate task exists and is valid for operation
 2. Verify task not [COMPLETED] or [ABANDONED]
 3. Verify task is in valid starting status
@@ -91,7 +81,6 @@ All workflow subagents (researcher, planner, implementer) follow a **two-phase s
 7. **Abort if status update fails** (critical error)
 
 **Error Handling:**
-
 - If status update fails: Return status "failed" with error
 - Error type: "status_update_failed"
 - Recommendation: "Check status-sync-manager logs and retry"
@@ -102,14 +91,12 @@ All workflow subagents (researcher, planner, implementer) follow a **two-phase s
 **When:** After completing main workflow (Stage 7 or Step 7 in subagent)  
 **Purpose:** Signal that work has completed  
 **Status Markers:**
-
 - `/research`: [RESEARCHED]
 - `/plan`: [PLANNED]
 - `/revise`: [REVISED]
 - `/implement`: [COMPLETED]
 
 **Process:**
-
 1. Validate artifacts created successfully
 2. Generate timestamp (ISO 8601 date: YYYY-MM-DD)
 3. Invoke status-sync-manager with:
@@ -126,10 +113,9 @@ All workflow subagents (researcher, planner, implementer) follow a **two-phase s
 7. Return standardized result
 
 **Error Handling:**
-
 - If status update fails: Log error (non-critical)
 - Work artifacts already created
-- Manual recovery: Update TODO.md and state.json manually
+- Manual recovery: Update specs/TODO.md and specs/state.json manually
 
 ## Status Transitions
 
@@ -172,25 +158,21 @@ All workflow subagents (researcher, planner, implementer) follow a **two-phase s
 ## Benefits of Two-Phase Pattern
 
 ### User Visibility
-
 - Users can see when work starts (in-progress markers)
 - Users can see when work completes (completion markers)
-- Clear progress tracking in TODO.md and state.json
+- Clear progress tracking in specs/TODO.md and specs/state.json
 
 ### Atomic Updates
-
-- status-sync-manager ensures atomic updates across TODO.md and state.json
+- status-sync-manager ensures atomic updates across specs/TODO.md and specs/state.json
 - Both files updated together or neither updated
 - No partial state updates
 
 ### Error Recovery
-
 - Preflight failure aborts work (prevents wasted effort)
 - Postflight failure logs warning (work already done, manual recovery possible)
 - Clear error messages guide users to recovery steps
 
 ### Consistency
-
 - All workflow subagents follow the same pattern
 - Predictable behavior across all commands
 - Easier to understand and maintain
@@ -222,7 +204,7 @@ All workflow subagents implement a `<step_0_preflight>` or `<stage_1_preflight>`
   <validation>
     - Task exists and is valid for operation
     - Status updated to [COMMAND-ING] atomically
-    - Timestamp added to TODO.md and state.json
+    - Timestamp added to specs/TODO.md and specs/state.json
   </validation>
   <error_handling>
     If status update fails:
@@ -244,7 +226,7 @@ All workflow subagents implement a `<step_7>` section for postflight:
   <action>Execute Stage 7 (Postflight) - Update status and create git commit</action>
   <process>
     STAGE 7: POSTFLIGHT (Subagent owns this stage)
-
+    
     STEP 7.1: INVOKE status-sync-manager
       PREPARE delegation context:
       - task_number
@@ -254,11 +236,11 @@ All workflow subagents implement a `<step_7>` section for postflight:
       - validated_artifacts
       - delegation_depth
       - delegation_path
-
+      
       INVOKE status-sync-manager with timeout (60s)
       VALIDATE return status == "completed"
-       VERIFY files_updated includes ["specs/TODO.md", "specs/state.json"]
-
+      VERIFY files_updated includes ["specs/TODO.md", "specs/state.json"]
+    
     STEP 7.2: INVOKE git-workflow-manager
       PREPARE delegation context with scope_files
       INVOKE git-workflow-manager with timeout (120s)
@@ -275,18 +257,16 @@ The `/task` command follows a different pattern from workflow commands since it 
 ### /task Command Lifecycle
 
 **Stage 1 (ParseAndValidate):**
-
 - Parse task description from $ARGUMENTS
 - Extract optional flags (--priority, --effort, --language)
 - Detect language from description keywords if not provided
 - Validate all inputs (description non-empty, priority valid, etc.)
 
 **Stage 2 (CreateTask):**
-
-- Read next_project_number from state.json using jq
-- Format TODO.md entry with proper metadata
-- Append to correct priority section in TODO.md
-- Update state.json (increment next_project_number, add to active_projects)
+- Read next_project_number from specs/state.json using jq
+- Format specs/TODO.md entry with proper metadata
+- Append to correct priority section in specs/TODO.md
+- Update specs/state.json (increment next_project_number, add to active_projects)
 - Verify updates succeeded
 - Return task number to user
 
@@ -298,7 +278,7 @@ Unlike /research and /implement which delegate to subagents, /task uses **inline
 # Read next project number
 next_number=$(jq -r '.next_project_number' specs/state.json)
 
-# Format TODO.md entry
+# Format specs/TODO.md entry
 entry="### ${next_number}. ${description}
 - **Effort**: ${effort}
 - **Status**: [NOT STARTED]
@@ -309,9 +289,9 @@ entry="### ${next_number}. ${description}
 
 ---"
 
-# Append to TODO.md (using Edit tool)
-# Update state.json (using jq)
-jq '.next_project_number = (.next_project_number + 1) |
+# Append to specs/TODO.md (using Edit tool)
+# Update specs/state.json (using jq)
+jq '.next_project_number = (.next_project_number + 1) | 
     .active_projects += [...]' specs/state.json
 ```
 
@@ -319,24 +299,22 @@ jq '.next_project_number = (.next_project_number + 1) |
 
 1. **No Two-Phase Status Update**: Task creation is atomic (single file update operation)
 2. **No Preflight/Postflight**: Task doesn't exist yet, so no status to update
-3. **No Git Commit**: Task creation doesn't create artifacts (only TODO.md + state.json updates)
+3. **No Git Commit**: Task creation doesn't create artifacts (only specs/TODO.md + specs/state.json updates)
 4. **Inline Implementation**: No delegation to subagent (executable pseudocode in command file)
-5. **Matches /research Pattern**: Stage 1 has executable logic that Claude can directly follow
+5. **Matches /research Pattern**: Stage 1 has executable logic that OpenCode can directly follow
 
 ### Atomic Updates
 
 /task ensures atomic updates by:
-
-- Reading state.json to get next_project_number
-- Updating TODO.md first (using Edit tool)
-- Updating state.json second (using jq)
+- Reading specs/state.json to get next_project_number
+- Updating specs/TODO.md first (using Edit tool)
+- Updating specs/state.json second (using jq)
 - Verifying both updates succeeded
-- If state.json update fails: Manual rollback required (documented in error message)
+- If specs/state.json update fails: Manual rollback required (documented in error message)
 
 ### Validation
 
 **Pre-execution:**
-
 - Description is non-empty
 - Priority is Low|Medium|High
 - Effort is TBD or time estimate
@@ -344,16 +322,15 @@ jq '.next_project_number = (.next_project_number + 1) |
 - Language field MANDATORY per tasks.md line 110
 
 **Post-execution:**
-
 - Task number allocated correctly
-- TODO.md contains new task entry
-- state.json next_project_number incremented
+- specs/TODO.md contains new task entry
+- specs/state.json next_project_number incremented
 - Language field is set
 - Metadata format uses `- **Field**:` pattern
 
 ### References
 
-- **Task Command:** `.opencode/command/task.md` (inline implementation)
+- **Task Command:** `.opencode/commands/task.md` (inline implementation)
 - **Task Standards:** `.opencode/context/core/standards/tasks.md`
 - **Original Implementation Plan:** `specs/task-command-improvement-plan.md`
 - **Fix Plan:** `specs/task-command-fix-plan.md`
@@ -362,9 +339,9 @@ jq '.next_project_number = (.next_project_number + 1) |
 
 ### The Continuation Marker Pattern
 
-Workflow commands (`/research`, `/plan`, `/implement`) use explicit continuation markers to ensure Claude executes the full checkpoint-based flow without stopping prematurely.
+Workflow commands (`/research`, `/plan`, `/implement`) use explicit continuation markers to ensure OpenCode executes the full checkpoint-based flow without stopping prematurely.
 
-**Problem**: Without explicit continuation markers, Claude may interpret skill invocation returns (JSON responses) as transaction boundaries and stop execution after GATE IN or DELEGATE, failing to complete the full workflow.
+**Problem**: Without explicit continuation markers, OpenCode may interpret skill invocation returns (JSON responses) as transaction boundaries and stop execution after GATE IN or DELEGATE, failing to complete the full workflow.
 
 **Solution**: Each checkpoint ends with an explicit continuation marker:
 
@@ -374,35 +351,32 @@ Workflow commands (`/research`, `/plan`, `/implement`) use explicit continuation
 
 ### Standard Continuation Markers
 
-| After                   | Marker Template                                                                                |
-| ----------------------- | ---------------------------------------------------------------------------------------------- |
-| CHECKPOINT 1 (GATE IN)  | `**On GATE IN success**: Status is [{STATUS}]. **IMMEDIATELY CONTINUE** to STAGE 2 below.`     |
-| STAGE 2 (DELEGATE)      | `**On DELEGATE success**: {Work} complete. **IMMEDIATELY CONTINUE** to CHECKPOINT 2 below.`    |
+| After | Marker Template |
+|-------|-----------------|
+| CHECKPOINT 1 (GATE IN) | `**On GATE IN success**: Status is [{STATUS}]. **IMMEDIATELY CONTINUE** to STAGE 2 below.` |
+| STAGE 2 (DELEGATE) | `**On DELEGATE success**: {Work} complete. **IMMEDIATELY CONTINUE** to CHECKPOINT 2 below.` |
 | CHECKPOINT 2 (GATE OUT) | `**On GATE OUT success**: Artifacts verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.` |
 
 ### Examples
 
 **In /research command**:
-
 ```markdown
 **On GATE IN success**: Status is [RESEARCHING]. **IMMEDIATELY CONTINUE** to STAGE 2 below.
 ```
 
 **In /plan command**:
-
 ```markdown
 **On DELEGATE success**: Plan created. **IMMEDIATELY CONTINUE** to CHECKPOINT 2 below.
 ```
 
 **In /implement command**:
-
 ```markdown
 **On GATE OUT success**: Artifacts verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.
 ```
 
 ### Why This Works
 
-1. **Explicit over implicit**: The marker explicitly tells Claude what to do next, removing ambiguity
+1. **Explicit over implicit**: The marker explicitly tells OpenCode what to do next, removing ambiguity
 2. **State confirmation**: The marker confirms the expected state (e.g., "Status is [RESEARCHING]")
 3. **Directional guidance**: "below" indicates the next section is in the same document
 4. **Imperative language**: "IMMEDIATELY CONTINUE" is unambiguous directive language
@@ -410,18 +384,16 @@ Workflow commands (`/research`, `/plan`, `/implement`) use explicit continuation
 ### Commands That Do Not Need Continuation Markers
 
 The `/meta` command does not require continuation markers because:
-
 - It has no preflight checkpoint (no intermediate skill returns before delegation)
 - It delegates directly to a skill without multiple return points
 
 ### Adding Continuation Markers to New Commands
 
 When creating new checkpoint-based commands:
-
 1. Add a continuation marker after each checkpoint that precedes another section
 2. Use the standard template format
 3. Include the expected state in the marker
-4. Test that Claude executes the full flow without stopping
+4. Test that OpenCode executes the full flow without stopping
 
 ## References
 
@@ -431,19 +403,17 @@ When creating new checkpoint-based commands:
 - **Planner:** `.opencode/agent/subagents/planner.md`
 - **Implementer:** `.opencode/agent/subagents/implementer.md`
 - **Task Creator:** `.opencode/agent/subagents/task-creator.md`
-- **Command Files:** `.opencode/command/{research,plan,revise,implement,task}.md`
+- **Command Files:** `.opencode/commands/{research,plan,revise,implement,task}.md`
 
 ## Validation
 
 ### Pre-execution Validation
-
 - Verify task_number is positive integer
-- Verify task exists in TODO.md
+- Verify task exists in specs/TODO.md
 - Verify task not [COMPLETED] or [ABANDONED]
 - Verify task in valid starting status
 
 ### Post-execution Validation
-
 - Verify preflight status update occurred
 - Verify artifacts created successfully
 - Verify postflight status update occurred
@@ -455,12 +425,12 @@ When testing workflow commands, verify:
 
 1. **Preflight Status Update:**
    - Status changes from starting status to in-progress marker
-   - Timestamp added to TODO.md and state.json
+   - Timestamp added to specs/TODO.md and specs/state.json
    - Both files updated atomically
 
 2. **Postflight Status Update:**
    - Status changes from in-progress marker to completion marker
-   - Timestamp updated in TODO.md and state.json
+   - Timestamp updated in specs/TODO.md and specs/state.json
    - Both files updated atomically
 
 3. **Error Cases:**
@@ -469,7 +439,7 @@ When testing workflow commands, verify:
    - Clear error messages with recovery instructions
 
 4. **Atomic Updates:**
-   - Both TODO.md and state.json updated together
+   - Both specs/TODO.md and specs/state.json updated together
    - No partial updates (both files or neither)
    - Rollback on failure
 

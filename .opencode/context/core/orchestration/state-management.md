@@ -1,5 +1,6 @@
 # State Management Standard
 
+**Version**: 3.0
 **Status**: Active
 **Created**: 2025-12-29
 **Updated**: 2026-01-17
@@ -9,7 +10,7 @@
 
 ## Overview
 
-This standard defines the complete state management system for ProofChecker:
+This standard defines the complete state management system for Logos/Theory:
 
 - **Status Markers**: Standardized markers for tracking task and phase progress
 - **State Schemas**: JSON schemas for distributed state tracking
@@ -24,7 +25,6 @@ This standard defines the complete state management system for ProofChecker:
 ### Standard Status Markers
 
 #### `[NOT STARTED]` → `[IN PROGRESS]` → `[COMPLETED]`
-
 - **NOT STARTED**: Work not yet begun
 - **IN PROGRESS**: Currently being worked on (requires `**Started**: YYYY-MM-DD`)
 - **BLOCKED**: Blocked by dependencies (requires blocking reason)
@@ -38,13 +38,13 @@ This standard defines the complete state management system for ProofChecker:
 
 ### Valid Transitions
 
-| From             | To               | Condition               |
-| ---------------- | ---------------- | ----------------------- |
-| `[NOT STARTED]`  | `[RESEARCHING]`  | `/research` starts      |
-| `[RESEARCHED]`   | `[PLANNING]`     | `/plan` starts          |
-| `[PLANNED]`      | `[IMPLEMENTING]` | `/implement` starts     |
-| `[IMPLEMENTING]` | `[COMPLETED]`    | Implementation finishes |
-| `[IMPLEMENTING]` | `[PARTIAL]`      | Timeout/error           |
+| From | To | Condition |
+|------|-----|-----------|
+| `[NOT STARTED]` | `[RESEARCHING]` | `/research` starts |
+| `[RESEARCHED]` | `[PLANNING]` | `/plan` starts |
+| `[PLANNED]` | `[IMPLEMENTING]` | `/implement` starts |
+| `[IMPLEMENTING]` | `[COMPLETED]` | Implementation finishes |
+| `[IMPLEMENTING]` | `[PARTIAL]` | Timeout/error |
 
 ---
 
@@ -54,12 +54,14 @@ This standard defines the complete state management system for ProofChecker:
 
 ```
 specs/
-├── state.json           # Main state (cross-references, health)
-├── TODO.md              # User-facing task list
-├── archive/state.json   # Archived project tracking
-└── NNN_project_name/
-    └── state.json       # Project-specific state
+├── specs/state.json           # Main state (cross-references, health)
+├── specs/TODO.md              # User-facing task list
+├── specs/archive/state.json   # Archived project tracking
+└── OC_NNN_project_name/       # Task directories use OC_ prefix
+    └── ...                    # Task artifacts
 ```
+
+**Directory Naming**: OpenCode tasks use `OC_NNN_slug` format (e.g., `OC_017_task_slug`). The `OC_` prefix distinguishes from Claude Code tasks.
 
 ### Main State File (`specs/state.json`)
 
@@ -74,6 +76,7 @@ specs/
       "project_name": "task_slug",
       "status": "planned",
       "language": "lean",
+      "priority": "high",
       "description": "Detailed task description (50-500 chars)",
       "created": "2025-12-29T09:00:00Z",
       "last_updated": "2025-12-29"
@@ -88,14 +91,13 @@ specs/
 ```
 
 **Key Fields**:
-
 - `project_number`: Unique task ID
 - `project_name`: Slug from task title
 - `status`: Current status (lowercase: `not_started`, `researching`, `planned`, etc.)
-- `language`: Task language (`web`, `neovim`, `general`, `meta`, `markdown`)
+- `language`: Task language (`lean`, `general`, `meta`, `markdown`, `latex`)
 - `description`: Task description (50-500 chars, optional for legacy tasks)
 
-### Archive State File (`specs/archive/state.json`)
+### Archive State File (`specs/specs/archive/state.json`)
 
 Tracks archived projects with timeline, artifacts, and impact metadata.
 
@@ -103,39 +105,53 @@ Tracks archived projects with timeline, artifacts, and impact metadata.
 
 ## Fast Lookup Patterns
 
-### Why state.json for Reads?
+### Why specs/state.json for Reads?
 
 - ✅ **8x faster**: JSON parsing (~12ms) vs markdown parsing (~100ms)
 - ✅ **Structured**: Direct field access with jq
 - ✅ **Reliable**: No regex/grep fragility
-- ✅ **Synchronized**: status-sync-manager keeps state.json ↔ TODO.md in sync
+- ✅ **Synchronized**: status-sync-manager keeps specs/state.json ↔ specs/TODO.md in sync
 
 ### Read/Write Separation
 
-- **Reads** (validation, routing): Use `state.json` (this document)
+- **Reads** (validation, routing): Use `specs/state.json` (this document)
 - **Writes** (status updates, artifacts): Use `skill-status-sync`
 - **Synchronization**: Automatic via skill-status-sync
 
 ### Pattern 1: Validate and Extract
 
 ```bash
-# 1. Lookup task
-task_data=$(jq -r --arg num "$task_number" \
+# 1. Parse task number (strip OC_ prefix if present)
+raw_input="$task_number"  # e.g., "OC_17" or "17"
+task_num=$(echo "$raw_input" | sed 's/^OC_//')  # strips prefix if present
+
+# 2. Lookup task (internal state uses integer project_number)
+task_data=$(jq -r --arg num "$task_num" \
   '.active_projects[] | select(.project_number == ($num | tonumber))' \
   specs/state.json)
 
-# 2. Validate exists
+# 3. Validate exists
 if [ -z "$task_data" ]; then
-  echo "Error: Task $task_number not found"
+  echo "Error: Task OC_$task_num not found"
   exit 1
 fi
 
-# 3. Extract metadata (single pass)
+# 4. Extract metadata (single pass)
 language=$(echo "$task_data" | jq -r '.language // "general"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
+
+# 5. Build display/path forms
+task_display="OC_$task_num"                           # e.g., OC_17
+task_dir="OC_$(printf '%03d' "$task_num")_$project_name"  # e.g., OC_017_task_slug
 ```
+
+**OC_ Prefix Convention**:
+- User input: Accept `OC_17` or `17` (strip prefix for lookup)
+- Display: Always show `OC_17` (unpadded)
+- Directories: Always use `OC_017_slug` (3-digit padded)
+- state.json: Store as integer `project_number: 17`
 
 **Performance**: ~12ms total
 
@@ -161,21 +177,19 @@ archival_tasks=$(jq -r '.active_projects[] |
   specs/state.json)
 ```
 
-**Performance**: ~15ms (vs ~200ms with TODO.md scanning)
+**Performance**: ~15ms (vs ~200ms with specs/TODO.md scanning)
 
 ---
 
 ## Timestamp Formats
 
-### TODO.md: Date Only
-
+### specs/TODO.md: Date Only
 ```markdown
 **Started**: 2025-12-20
 **Completed**: 2025-12-20
 ```
 
 ### State Files: ISO 8601
-
 ```json
 {
   "created": "2025-12-20T10:00:00Z",
@@ -184,7 +198,6 @@ archival_tasks=$(jq -r '.active_projects[] |
 ```
 
 ### Field Naming (NO `_at` suffix)
-
 - `started`, `completed`, `researched`, `planned` (NOT `started_at`, etc.)
 - `created`, `last_updated` (system timestamps)
 
@@ -195,7 +208,6 @@ archival_tasks=$(jq -r '.active_projects[] |
 ### Multi-File Synchronization
 
 Commands must keep status synchronized across:
-
 - `specs/TODO.md` (user-facing)
 - `specs/state.json` (machine-readable)
 - Plan files (phase markers)
@@ -209,15 +221,13 @@ All status updates must be **atomic** - all files updated or none.
 All writes go through `skill-status-sync` which provides:
 
 **Phase 1 (Prepare)**:
-
 1. Read all files
 2. Validate transition is allowed
 3. Prepare updates in memory
 4. If validation fails, abort
 
 **Phase 2 (Commit)**:
-
-1. Write state.json → TODO.md → plan (dependency order)
+1. Write specs/state.json → specs/TODO.md → plan (dependency order)
 2. Verify each write
 3. On failure, rollback all
 4. Atomic guarantee: all updated or none updated
@@ -237,19 +247,16 @@ skill-status-sync operation=postflight_update task_number=$N new_status=complete
 ## Validation
 
 ### Status Marker Validation
-
 - Format: `[STATUS]` (brackets required)
 - Case: Uppercase only
 - No extra whitespace
 
 ### Timestamp Validation
-
-- TODO.md: YYYY-MM-DD
+- specs/TODO.md: YYYY-MM-DD
 - State files: ISO 8601
 - Required for all status transitions
 
 ### Transition Validation
-
 - Must follow transition diagram
 - Blocking/abandonment reasons required
 - Timestamp order: Started < Completed
@@ -258,20 +265,20 @@ skill-status-sync operation=postflight_update task_number=$N new_status=complete
 
 ## Best Practices
 
-### 1. Use state.json for Reads
+### 1. Use specs/state.json for Reads
 
-✅ **Good**: Fast jq lookup
-
+✅ **Good**: Fast jq lookup with OC_ prefix handling
 ```bash
-task_data=$(jq -r --arg num "$task_number" \
+# Strip OC_ prefix before numeric lookup
+task_num=$(echo "$task_number" | sed 's/^OC_//')
+task_data=$(jq -r --arg num "$task_num" \
   '.active_projects[] | select(.project_number == ($num | tonumber))' \
   specs/state.json)
 ```
 
-❌ **Bad**: Slow TODO.md parsing
-
+❌ **Bad**: Slow specs/TODO.md parsing
 ```bash
-grep -A 20 "### ${task_number}\." specs/TODO.md
+grep -A 20 "### OC_${task_number}\." specs/TODO.md
 ```
 
 ### 2. Use skill-status-sync for Writes
@@ -324,11 +331,11 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 
 ### Command Mappings
 
-| Command    | Preflight    | Postflight           |
-| ---------- | ------------ | -------------------- |
-| /research  | RESEARCHING  | RESEARCHED           |
-| /plan      | PLANNING     | PLANNED              |
-| /revise    | REVISING     | REVISED              |
+| Command | Preflight | Postflight |
+|---------|-----------|------------|
+| /research | RESEARCHING | RESEARCHED |
+| /plan | PLANNING | PLANNED |
+| /revise | REVISING | REVISED |
 | /implement | IMPLEMENTING | COMPLETED or PARTIAL |
 
 ---
@@ -345,7 +352,6 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 ## Schema Versioning
 
 All state files include `"_schema_version": "MAJOR.MINOR.PATCH"` using Semantic Versioning:
-
 - **MAJOR**: Breaking changes requiring migration
 - **MINOR**: New optional fields (backward compatible)
 - **PATCH**: Documentation only

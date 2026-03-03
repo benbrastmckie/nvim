@@ -1,12 +1,12 @@
 # Component Selection Guide
 
-This guide helps you decide which component type to create when adding new capabilities to the Neovim Configuration agent system.
+This guide helps you decide which component type to create when adding new capabilities to the Logos/Theory agent system.
 
 ---
 
 ## Overview: Three-Layer Architecture
 
-The Neovim Configuration system uses a three-layer architecture where each layer has distinct responsibilities:
+The Logos/Theory system uses a three-layer architecture where each layer has distinct responsibilities:
 
 ```
 Layer 1: Commands         User-facing entry points (/research, /plan, /implement)
@@ -24,7 +24,7 @@ Layer 3: Agents           Full execution agents that do the actual work
 |-----------|----------|---------|--------------|
 | Command | `.opencode/commands/` | User invocation point | Yes |
 | Skill | `.opencode/skills/skill-*/SKILL.md` | Routing and validation | No |
-| Agent | `.opencode/agents/*.md` | Execution and artifact creation | No |
+| Agent | `.opencode/agent/subagents/*.md` | Execution and artifact creation | No |
 
 ---
 
@@ -109,9 +109,8 @@ You need to add routing logic or input validation for execution.
 **Examples**:
 | Skill | Purpose |
 |-------|---------|
-| `skill-neovim-research` | Neovim/plugin research via web search |
-| `skill-web-research` | Web/Astro/Tailwind research |
-| `skill-researcher` | General/meta/markdown research |
+| `skill-lean-research` | Lean 4/Mathlib research with MCP tools |
+| `skill-researcher` | General web/codebase research |
 | `skill-status-sync` | Atomic multi-file status updates |
 
 **Do NOT create a skill when**:
@@ -131,7 +130,7 @@ You need to implement actual execution logic that creates artifacts.
 **Examples**:
 | Agent | Purpose |
 |-------|---------|
-| `neovim-research-agent` | Neovim configuration research via web search |
+| `lean-research-agent` | Lean 4 research with MCP tools |
 | `general-implementation-agent` | General file implementation |
 | `planner-agent` | Implementation plan creation |
 
@@ -242,8 +241,9 @@ Creates: Agent only (skill routes to it)
 ├── skills/                      # Layer 2: Execution skills
 │   └── skill-{name}/
 │       └── SKILL.md
-└── agents/                      # Layer 3: Execution agents
-    └── {name}-agent.md
+└── agent/                       # Layer 3: Execution agents
+    └── subagents/
+        └── {name}-agent.md
 ```
 
 ### Naming Conventions
@@ -251,52 +251,74 @@ Creates: Agent only (skill routes to it)
 | Component | Pattern | Example |
 |-----------|---------|---------|
 | Command | `{verb}.md` | `research.md`, `implement.md` |
-| Skill | `skill-{purpose}/SKILL.md` | `skill-neovim-research/SKILL.md` |
-| Agent | `{domain}-{purpose}-agent.md` | `neovim-research-agent.md` |
+| Skill | `skill-{purpose}/SKILL.md` | `skill-lean-research/SKILL.md` |
+| Agent | `{domain}-{purpose}-agent.md` | `lean-research-agent.md` |
 
 ---
 
 ## Current Inventory
 
-### Commands (9)
+### Commands (15)
 
 | Command | Skill(s) Used |
 |---------|---------------|
-| /task | skill-status-sync |
-| /research | skill-researcher, skill-neovim-research |
-| /plan | skill-planner |
-| /implement | skill-implementer, skill-lean-implementation, skill-latex-implementation |
-| /revise | skill-planner |
-| /review | (direct execution) |
+| /convert | skill-document-converter |
 | /errors | (direct execution) |
+| /implement | skill-implementer, skill-lean-implementation, skill-latex-implementation, skill-typst-implementation |
+| /lake | skill-lake-repair |
+| /lean | skill-lean-version |
+| /learn | skill-learn |
+| /meta | skill-meta |
+| /plan | skill-planner |
+| /refresh | skill-refresh |
+| /research | skill-researcher, skill-lean-research, skill-latex-research, skill-typst-research |
+| /review | (direct execution) |
+| /revise | skill-planner |
+| /task | skill-status-sync, skill-git-workflow |
 | /todo | (direct execution) |
-| /meta | (direct execution) |
 
-### Skills (9)
+### Skills (20)
 
 | Skill | Agent |
 |-------|-------|
-| skill-orchestrator | (routing only) |
-| skill-status-sync | (direct execution) |
+| skill-document-converter | document-converter-agent |
 | skill-git-workflow | (direct execution) |
-| skill-researcher | general-research-agent |
-| skill-neovim-research | neovim-research-agent |
-| skill-planner | planner-agent |
 | skill-implementer | general-implementation-agent |
-| skill-lean-implementation | lean-implementation-agent |
+| skill-lake-repair | (direct execution) |
 | skill-latex-implementation | latex-implementation-agent |
+| skill-latex-research | latex-research-agent |
+| skill-lean-implementation | lean-implementation-agent |
+| skill-lean-research | lean-research-agent |
+| skill-lean-version | (direct execution) |
+| skill-learn | (direct execution) |
+| skill-logic-research | logic-research-agent |
+| skill-math-research | math-research-agent |
+| skill-meta | meta-builder-agent |
+| skill-orchestrator | (routing only) |
+| skill-planner | planner-agent |
+| skill-refresh | (direct execution) |
+| skill-researcher | general-research-agent |
+| skill-status-sync | (direct execution) |
+| skill-typst-implementation | typst-implementation-agent |
+| skill-typst-research | typst-research-agent |
 
-### Agents (6)
+### Agents (14)
 
 | Agent | Purpose |
 |-------|---------|
-| general-research-agent | General/meta/markdown research |
-| neovim-research-agent | Neovim/plugin research |
-| web-research-agent | Web/Astro/Tailwind research |
-| planner-agent | Implementation planning |
-| general-implementation-agent | General file implementation |
-| lean-implementation-agent | Lean proof implementation |
-| latex-implementation-agent | LaTeX document implementation |
+| `document-converter-agent` | Document format conversion |
+| `general-implementation-agent` | General file implementation |
+| `general-research-agent` | General web/codebase research |
+| `latex-implementation-agent` | LaTeX document implementation |
+| `latex-research-agent` | LaTeX documentation research |
+| `lean-implementation-agent` | Lean 4 proof implementation |
+| `lean-research-agent` | Lean 4/Mathlib research |
+| `logic-research-agent` | Mathematical logic research |
+| `math-research-agent` | Mathematical foundations research |
+| `meta-builder-agent` | System builder for .opencode/ changes |
+| `planner-agent` | Implementation planning |
+| `typst-implementation-agent` | Typst document implementation |
+| `typst-research-agent` | Typst documentation research |
 
 ---
 
@@ -396,10 +418,9 @@ Research completed successfully. Found 5 patterns.
 - [Creating Commands](creating-commands.md) - Command creation guide
 - [Creating Skills](creating-skills.md) - Skill creation guide
 - [Creating Agents](creating-agents.md) - Agent creation guide
-- [Integration Examples](../examples/research-flow-example.md) - End-to-end flow example
 
 ---
 
 **Document Version**: 1.0
-**Created**: 2026-01-12
-**Maintained By**: Neovim Configuration Development Team
+**Created**: 2026-02-28
+**Maintained By**: Logos/Theory Development Team

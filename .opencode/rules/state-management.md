@@ -6,24 +6,22 @@ paths: specs/**/*
 
 ## File Synchronization
 
-TODO.md and state.json MUST stay synchronized. Any update to one requires updating the other.
+specs/TODO.md and specs/state.json MUST stay synchronized. Any update to one requires updating the other.
 
 ### Canonical Sources
-
-- **state.json**: Machine-readable source of truth
+- **specs/state.json**: Machine-readable source of truth
   - next_project_number
-  - active_projects array with status, language
-  - Faster to query (12ms vs 100ms for TODO.md parsing)
+  - active_projects array with status, language, priority
+  - Faster to query (12ms vs 100ms for specs/TODO.md parsing)
 
-- **TODO.md**: User-facing source of truth
+- **specs/TODO.md**: User-facing source of truth
   - Human-readable task list with descriptions
   - Status markers in brackets: [STATUS]
-  - Single `## Tasks` section (new tasks prepended at top)
+  - Grouped by priority (High/Medium/Low)
 
 ## Status Transitions
 
 ### Valid Transitions
-
 ```
 [NOT STARTED] → [RESEARCHING] → [RESEARCHED]
 [RESEARCHED] → [PLANNING] → [PLANNED]
@@ -35,8 +33,10 @@ Any non-terminal → [EXPANDED] (when divided into subtasks)
 [IMPLEMENTING] → [PARTIAL] (on timeout/error)
 ```
 
-### Invalid Transitions
+**Checkpoint Reference**: Use `core/checkpoints/checkpoint-gate-in.md` and
+`core/checkpoints/checkpoint-gate-out.md` for preflight/postflight update flow.
 
+### Invalid Transitions
 - Cannot skip phases (e.g., NOT STARTED → PLANNED)
 - Cannot regress (e.g., PLANNED → RESEARCHED) except for revisions
 - Cannot mark COMPLETED without all phases done
@@ -46,34 +46,31 @@ Any non-terminal → [EXPANDED] (when divided into subtasks)
 When updating task status:
 
 ### Phase 1: Prepare
-
 ```
-1. Read current state.json
-2. Read current TODO.md
+1. Read current specs/state.json
+2. Read current specs/TODO.md
 3. Validate task exists in both
 4. Prepare updated content in memory
 5. Validate updates are consistent
 ```
 
 ### Phase 2: Commit
-
 ```
-1. Write state.json (machine state first)
-2. Write TODO.md (user-facing second)
+1. Write specs/state.json (machine state first)
+2. Write specs/TODO.md (user-facing second)
 3. Verify both writes succeeded
 4. If either fails: log error, preserve original state
 ```
 
 ## Task Entry Format
 
-### TODO.md Entry
-
+### specs/TODO.md Entry
 ```markdown
-### {NUMBER}. {TITLE}
-
+### OC_{NUMBER}. {TITLE}
 - **Effort**: {estimate}
 - **Status**: [{STATUS}]
-- **Language**: {neovim|general|meta|markdown|web}
+- **Priority**: {High|Medium|Low}
+- **Language**: {lean|general|meta|markdown}
 - **Started**: {ISO timestamp}
 - **Completed**: {ISO timestamp}
 - **Research**: [link to report]
@@ -82,21 +79,23 @@ When updating task status:
 **Description**: {full description}
 ```
 
-### state.json Entry
+**Note**: OpenCode tasks use `OC_` prefix (e.g., `OC_17`) to distinguish from Claude Code tasks. Internal state.json stores integer `project_number`; the prefix is display/path convention only.
 
+### specs/state.json Entry
 ```json
 {
   "project_number": 334,
   "project_name": "task_slug_here",
   "status": "planned",
-  "language": "neovim",
+  "language": "lean",
+  "priority": "high",
   "effort": "4 hours",
   "created": "2026-01-08T10:00:00Z",
   "last_updated": "2026-01-08T14:30:00Z",
   "artifacts": [
     {
       "type": "research",
-      "path": "specs/334_task_slug_here/reports/research-001.md",
+      "path": "specs/OC_017_task_slug_here/reports/research-001.md",
       "summary": "Brief 1-sentence description of artifact"
     }
   ],
@@ -105,51 +104,23 @@ When updating task status:
 }
 ```
 
-### Repository Health Section
-
-The `repository_health` section tracks repository-wide technical debt metrics:
-
-```json
-{
-  "repository_health": {
-    "last_assessed": "2026-01-29T18:38:22Z",
-    "sorry_count": 295,
-    "axiom_count": 10,
-    "build_errors": 0,
-    "status": "manageable"
-  }
-}
-```
-
-| Field           | Type   | Description                                                                      |
-| --------------- | ------ | -------------------------------------------------------------------------------- |
-| `last_assessed` | string | ISO8601 timestamp of last metrics update                                         |
-| `sorry_count`   | number | Total `sorry` occurrences in active Theories/ (excludes Boneyard/ and Examples/) |
-| `axiom_count`   | number | Total `axiom` declarations in Theories/                                          |
-| `build_errors`  | number | Current build error count (0 = clean build)                                      |
-| `status`        | string | Overall debt status: `manageable`, `concerning`, `critical`                      |
-
-**Update Mechanism**: The `/todo` command updates `repository_health` during postflight (Section 5.7). Values are computed via grep and synced to both state.json and TODO.md frontmatter.
-
 ### Completion Fields Schema
 
 When a task transitions to `status: "completed"`, these fields are populated:
 
-| Field                  | Type             | Required                 | Description                                                                         |
-| ---------------------- | ---------------- | ------------------------ | ----------------------------------------------------------------------------------- |
-| `completion_summary`   | string           | **Yes** (when completed) | 1-3 sentence description of what was accomplished                                   |
-| `roadmap_items`        | array of strings | No                       | Explicit list of ROAD_MAP.md item texts this task addresses (non-meta tasks only)   |
-| `claudemd_suggestions` | string           | **Yes** (meta only)      | Description of .opencode/ changes made, or `"none"` if no .opencode/ files modified |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `completion_summary` | string | **Yes** (when completed) | 1-3 sentence description of what was accomplished |
+| `roadmap_items` | array of strings | No | Explicit list of ROAD_MAP.md item texts this task addresses (non-meta tasks only) |
+| `claudemd_suggestions` | string | **Yes** (meta only) | Description of .opencode/ changes made, or `"none"` if no .opencode/ files modified |
 
 **Responsibility Split**:
-
 - **`/implement` (Producer)**: Reports what was changed factually. Always populates `claudemd_suggestions` for meta tasks describing .opencode/ modifications, or `"none"` if no .opencode/ files were modified.
 - **`/todo` (Consumer)**: Evaluates `claudemd_suggestions` content and decides what warrants CLAUDE.md updates. The filtering criteria belongs here, not in `/implement`.
 
-**Producer Responsibility**: The `/implement` command populates these fields in skill postflight (Stage 7) when a task is successfully completed. The agent generates `completion_data` in the metadata file, and the skill propagates it to state.json.
+**Producer Responsibility**: The `/implement` command populates these fields in skill postflight (Stage 7) when a task is successfully completed. The agent generates `completion_data` in the metadata file, and the skill propagates it to specs/state.json.
 
 **Consumer Usage**: The `/todo` command extracts these fields via `jq` to:
-
 - Match non-meta tasks against ROAD_MAP.md items for annotation (using `roadmap_items`)
 - Display CLAUDE.md modification suggestions for user review (using `claudemd_suggestions` from meta tasks)
 
@@ -157,15 +128,14 @@ When a task transitions to `status: "completed"`, these fields are populated:
 
 For meta tasks (language: "meta"), `claudemd_suggestions` is a **string** (not an object) that factually describes what .opencode/ files were modified:
 
-| Scenario                     | Value                                                                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Modified .opencode/ files    | Brief description of changes (e.g., "Added completion_data field to return-metadata-file.md, updated 3 agent definitions") |
-| No .opencode/ files modified | `"none"`                                                                                                                   |
+| Scenario | Value |
+|----------|-------|
+| Modified .opencode/ files | Brief description of changes (e.g., "Added completion_data field to return-metadata-file.md, updated 3 agent definitions") |
+| No .opencode/ files modified | `"none"` |
 
 **Examples**:
 
 Meta task with .opencode/ changes:
-
 ```json
 {
   "completion_summary": "Implemented new /debug command with MCP diagnostics.",
@@ -174,7 +144,6 @@ Meta task with .opencode/ changes:
 ```
 
 Meta task without .opencode/ changes:
-
 ```json
 {
   "completion_summary": "Created utility script for test automation.",
@@ -188,62 +157,60 @@ Meta task without .opencode/ changes:
 
 Each artifact in the `artifacts` array:
 
-| Field     | Type   | Required | Description                                       |
-| --------- | ------ | -------- | ------------------------------------------------- |
-| `type`    | string | Yes      | `research`, `plan`, `summary`, `implementation`   |
-| `path`    | string | Yes      | Relative path from project root                   |
-| `summary` | string | Yes      | Brief 1-sentence description of artifact contents |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | `research`, `plan`, `summary`, `implementation` |
+| `path` | string | Yes | Relative path from project root |
+| `summary` | string | Yes | Brief 1-sentence description of artifact contents |
 
 **Note**: The `summary` field enables skills to link artifacts with meaningful descriptions in postflight operations, without re-reading artifact contents.
 
 ## Status Values Mapping
 
-| TODO.md Marker | state.json status |
-| -------------- | ----------------- |
-| [NOT STARTED]  | not_started       |
-| [RESEARCHING]  | researching       |
-| [RESEARCHED]   | researched        |
-| [PLANNING]     | planning          |
-| [PLANNED]      | planned           |
-| [IMPLEMENTING] | implementing      |
-| [COMPLETED]    | completed         |
-| [BLOCKED]      | blocked           |
-| [ABANDONED]    | abandoned         |
-| [PARTIAL]      | partial           |
-| [EXPANDED]     | expanded          |
+| specs/TODO.md Marker | specs/state.json status |
+|----------------|-------------------|
+| [NOT STARTED] | not_started |
+| [RESEARCHING] | researching |
+| [RESEARCHED] | researched |
+| [PLANNING] | planning |
+| [PLANNED] | planned |
+| [IMPLEMENTING] | implementing |
+| [COMPLETED] | completed |
+| [BLOCKED] | blocked |
+| [ABANDONED] | abandoned |
+| [PARTIAL] | partial |
+| [EXPANDED] | expanded |
 
 ## Artifact Linking
 
-When creating artifacts, update TODO.md with links:
+When creating artifacts, update specs/TODO.md with links:
 
 ### Research Completion
-
 ```markdown
 - **Status**: [RESEARCHED]
-- **Research**: [specs/{NNN}_{SLUG}/reports/research-001.md]
+- **Research**: [specs/OC_{NNN}_{SLUG}/reports/research-001.md]
 ```
 
 ### Plan Completion
-
 ```markdown
 - **Status**: [PLANNED]
-- **Plan**: [specs/{NNN}_{SLUG}/plans/implementation-001.md]
+- **Plan**: [specs/OC_{NNN}_{SLUG}/plans/implementation-001.md]
 ```
 
 ### Implementation Completion
-
 ```markdown
 - **Status**: [COMPLETED]
 - **Completed**: 2026-01-08
-- **Summary**: [specs/{NNN}_{SLUG}/summaries/implementation-summary-20260108.md]
+- **Summary**: [specs/OC_{NNN}_{SLUG}/summaries/implementation-summary-20260108.md]
 ```
+
+**Note**: `{NNN}` is 3-digit padded (e.g., `017`), so directory paths are `specs/OC_017_task_slug/`.
 
 ## Directory Creation
 
 ### Lazy Directory Creation Rule
 
 Create task directories **lazily** - only when the first artifact is written:
-
 ```
 specs/{NUMBER}_{SLUG}/
 ├── reports/      # Created when research agent writes first report
@@ -252,7 +219,6 @@ specs/{NUMBER}_{SLUG}/
 ```
 
 **DO NOT** create directories at task creation time. The `/task` command only:
-
 1. Updates `specs/state.json` (adds task to active_projects)
 2. Updates `specs/TODO.md` (adds task entry)
 
@@ -261,7 +227,6 @@ specs/{NUMBER}_{SLUG}/
 **WHY**: Empty directories provide no value (git doesn't track them), clutter the filesystem, and make task creation unnecessarily complex.
 
 ### Correct Pattern
-
 ```bash
 # When writing an artifact (e.g., research report)
 mkdir -p "specs/${task_num}_${slug}/reports"
@@ -269,7 +234,6 @@ write "specs/${task_num}_${slug}/reports/research-001.md"
 ```
 
 ### Incorrect Pattern
-
 ```bash
 # DO NOT do this at task creation time
 mkdir -p "specs/${task_num}_${slug}"  # Wrong! Creates empty directory
@@ -278,14 +242,12 @@ mkdir -p "specs/${task_num}_${slug}"  # Wrong! Creates empty directory
 ## Error Handling
 
 ### On Write Failure
-
 1. Do not update either file partially
 2. Log error with context
 3. Preserve original state
 4. Return error to caller
 
 ### On Inconsistency Detection
-
 1. Log the inconsistency
 2. Use git blame to determine latest
 3. Sync to latest version

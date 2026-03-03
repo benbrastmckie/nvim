@@ -1,7 +1,8 @@
 # Implementation Workflow
 
+**Version**: 1.0.0  
 **Created**: 2025-12-29  
-**Purpose**: Detailed implementation workflow for project tasks
+**Purpose**: Detailed implementation workflow for Logos/Theory tasks
 
 ---
 
@@ -15,9 +16,8 @@ This document describes the complete implementation workflow executed by the imp
 
 ### Plan-Based Implementation (Phased)
 
-**When**: Task has existing plan in TODO.md  
+**When**: Task has existing plan in specs/TODO.md  
 **Characteristics**:
-
 - Multi-phase execution
 - Resume support
 - Per-phase git commits
@@ -25,7 +25,6 @@ This document describes the complete implementation workflow executed by the imp
 - Timeout recovery
 
 **Workflow**:
-
 1. Load plan file
 2. Parse phase status markers
 3. Find resume point (first [NOT STARTED] or [IN PROGRESS] phase)
@@ -38,14 +37,12 @@ This document describes the complete implementation workflow executed by the imp
 
 **When**: Task has no plan  
 **Characteristics**:
-
 - Single-pass execution
 - No phase tracking
 - Single git commit
 - No resume support (must re-execute if fails)
 
 **Workflow**:
-
 1. Read task description
 2. Determine files to modify/create
 3. Execute all changes
@@ -58,23 +55,22 @@ This document describes the complete implementation workflow executed by the imp
 
 ### Language Extraction
 
-Language is extracted from task entry in TODO.md:
+Language is extracted from task entry in specs/TODO.md:
 
 ```bash
-grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*Language\*\*: //'
+grep -A 20 "^### ${task_number}." specs/TODO.md | grep "Language" | sed 's/\*\*Language\*\*: //'
 ```
 
 **Fallback**: If extraction fails, defaults to "general" with warning logged.
 
 ### Routing Rules
 
-| Language   | Agent                         | Tools Available                       |
-| ---------- | ----------------------------- | ------------------------------------- |
-| `neovim`   | `neovim-implementation-agent` | nvim --headless, File operations, git |
-| `markdown` | `implementer`                 | File operations, git                  |
-| `web`      | `web-implementation-agent`    | File operations, Bash, git            |
-| `general`  | `implementer`                 | File operations, git                  |
-| `general`  | `implementer`                 | File operations, git                  |
+| Language | Agent | Tools Available |
+|----------|-------|----------------|
+| `lean` | `lean-implementation-agent` | lean-lsp-mcp, lake build, lean --version |
+| `markdown` | `implementer` | File operations, git |
+| `python` | `implementer` | File operations, git, python tools |
+| `general` | `implementer` | File operations, git |
 
 **Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses language-specific tooling.
 
@@ -87,10 +83,9 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Load task details and determine implementation mode
 
 **Process**:
-
-1. Read task from TODO.md using grep (selective loading):
+1. Read task from specs/TODO.md using grep (selective loading):
    ```bash
-   grep -A 50 "^### ${task_number}\." specs/TODO.md > /tmp/task-${task_number}.md
+   grep -A 50 "^### ${task_number}." specs/TODO.md > /tmp/task-${task_number}.md
    ```
 2. Extract task metadata:
    - Task number
@@ -117,30 +112,28 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Execute implementation phase by phase
 
 **Process**:
-
 1. For each phase (starting from resume point):
    a. Read phase description and tasks
    b. Update phase status: [NOT STARTED] → [IN PROGRESS]
    c. Execute phase implementation:
-   - Determine files to modify/create for this phase
-   - Execute changes
-   - Create phase artifacts
-     d. Validate phase completion against success criteria
-     e. Update phase status: [IN PROGRESS] → [COMPLETED]
-     f. Create git commit for phase:
-   ```bash
-   git add {phase_artifacts}
-   git commit -m "task {number} phase {N}: {phase_name}"
-   ```
+      - Determine files to modify/create for this phase
+      - Execute changes
+      - Create phase artifacts
+   d. Validate phase completion against success criteria
+   e. Update phase status: [IN PROGRESS] → [COMPLETED]
+   f. Create git commit for phase:
+      ```bash
+      git add {phase_artifacts}
+      git commit -m "task {number} phase {N}: {phase_name}"
+      ```
    g. If timeout occurs:
-   - Save current progress
-   - Update phase status to [IN PROGRESS]
-   - Return partial status with resume instructions
-   - Exit (user can resume later)
+      - Save current progress
+      - Update phase status to [IN PROGRESS]
+      - Return partial status with resume instructions
+      - Exit (user can resume later)
 2. Continue until all phases complete or timeout
 
 **Phase Execution Details**:
-
 - Each phase is independent
 - Phase artifacts are committed immediately
 - Phase status is updated in plan file
@@ -151,7 +144,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Execute implementation in single pass
 
 **Process**:
-
 1. Analyze task requirements:
    - Read description
    - Read acceptance criteria
@@ -178,15 +170,12 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Create implementation artifacts
 
 **Process**:
-
 1. Create implementation files (code, docs, configs):
    - Paths vary by language and task
-
-- Neovim: `nvim/lua/**/*.lua`, `after/ftplugin/**/*.lua`
-- Markdown: `docs/**/*.md`, `.opencode/**/*.md`
-- Web: `src/**/*.astro`, `src/**/*.ts`, `src/**/*.css`
-- Config: `**/*.json`, `**/*.yaml`, etc.
-
+   - Lean: `Logos/**/*.lean`, `LogosTest/**/*.lean`
+   - Markdown: `docs/**/*.md`, `.opencode/**/*.md`
+   - Python: `**/*.py`
+   - Config: `**/*.json`, `**/*.yaml`, etc.
 2. If multi-file output (>1 file modified/created):
    - Create implementation summary artifact
    - Path: `specs/{number}_{slug}/summaries/implementation-summary-{YYYYMMDD}.md`
@@ -202,7 +191,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Validate file formats
 
 **Artifact Naming**:
-
 - Implementation files: Follow project conventions
 - Summary: `implementation-summary-{YYYYMMDD}.md`
 - Directories created lazily (only when writing first artifact)
@@ -217,7 +205,6 @@ Multi-file implementations create N+1 artifacts (N implementation files + 1 summ
 **Action**: Update task status to [COMPLETED]
 
 **Process**:
-
 1. Delegate to status-sync-manager for atomic update:
    - Prepare update payload:
      ```json
@@ -236,11 +223,11 @@ Multi-file implementations create N+1 artifacts (N implementation files + 1 summ
    - Invoke status-sync-manager
    - Wait for return
 2. status-sync-manager performs atomic update:
-   - Update TODO.md:
+   - Update specs/TODO.md:
      - Status: [IMPLEMENTING] → [COMPLETED]
      - Add **Completed**: {date}
      - Add artifact links
-   - Update state.json:
+   - Update specs/state.json:
      - Update status and timestamps
      - Add artifact_paths
    - Update plan file (if phased):
@@ -252,7 +239,7 @@ Multi-file implementations create N+1 artifacts (N implementation files + 1 summ
    - Verify files updated on disk
 
 **Atomic Update Guarantee**:
-status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are updated atomically. If any update fails, all are rolled back.
+status-sync-manager ensures specs/TODO.md, specs/state.json, and plan file (if exists) are updated atomically. If any update fails, all are rolled back.
 
 **Checkpoint**: Status updated atomically
 
@@ -261,7 +248,6 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 **Action**: Create git commit for implementation
 
 **Process**:
-
 1. Delegate to git-workflow-manager:
    - Prepare commit payload:
      ```json
@@ -284,12 +270,10 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
    - Return success with warning
 
 **Commit Strategy**:
-
 - **Phased**: One commit per completed phase (created in Step 2)
 - **Direct**: One commit for entire task (created here)
 
 **Commit Message Format**:
-
 - Direct: `task {number}: {description}`
 - Phased: `task {number} phase {N}: {phase_name}` (per phase)
 
@@ -300,7 +284,6 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 **Action**: Format return object per subagent-return-format.md
 
 **Process**:
-
 1. Build return object:
    ```json
    {
@@ -345,7 +328,6 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 **Action**: Return to command
 
 **Process**:
-
 1. Return formatted object to command
 2. Command validates return
 3. Command relays to user
@@ -361,7 +343,6 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 **Automatic**: Implementer automatically detects incomplete phases and resumes
 
 **Process**:
-
 1. Load plan file
 2. Parse phase status markers
 3. Find first phase with [NOT STARTED] or [IN PROGRESS]
@@ -381,7 +362,6 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 ### Partial Return
 
 On timeout or failure:
-
 1. Save current phase progress
 2. Update phase status to [IN PROGRESS]
 3. Return partial status:
@@ -403,19 +383,18 @@ On timeout or failure:
 
 ## Status Transitions
 
-| From           | To             | Condition                             |
-| -------------- | -------------- | ------------------------------------- |
-| [NOT STARTED]  | [IMPLEMENTING] | Implementation started                |
-| [PLANNED]      | [IMPLEMENTING] | Implementation started                |
-| [REVISED]      | [IMPLEMENTING] | Implementation started                |
-| [IMPLEMENTING] | [COMPLETED]    | Implementation completed successfully |
-| [IMPLEMENTING] | [IMPLEMENTING] | Implementation failed or partial      |
-| [IMPLEMENTING] | [BLOCKED]      | Implementation blocked by dependency  |
+| From | To | Condition |
+|------|-----|-----------|
+| [NOT STARTED] | [IMPLEMENTING] | Implementation started |
+| [PLANNED] | [IMPLEMENTING] | Implementation started |
+| [REVISED] | [IMPLEMENTING] | Implementation started |
+| [IMPLEMENTING] | [COMPLETED] | Implementation completed successfully |
+| [IMPLEMENTING] | [IMPLEMENTING] | Implementation failed or partial |
+| [IMPLEMENTING] | [BLOCKED] | Implementation blocked by dependency |
 
-**Status Update**: Delegated to `status-sync-manager` for atomic synchronization across TODO.md and state.json.
+**Status Update**: Delegated to `status-sync-manager` for atomic synchronization across specs/TODO.md and specs/state.json.
 
 **Timestamps**:
-
 - `**Started**: {date}` added when status → [IMPLEMENTING]
 - `**Completed**: {date}` added when status → [COMPLETED]
 
@@ -426,26 +405,23 @@ On timeout or failure:
 ### Routing Stage (Command)
 
 Load minimal context for routing decisions:
-
 - `.opencode/context/system/routing-guide.md` (routing logic)
 
 ### Execution Stage (Implementer)
 
-Implementer loads context on-demand per `.opencode/context/index.json`:
-
+Implementer loads context on-demand per `.opencode/context/index.md`:
 - `core/standards/subagent-return-format.md` (return format)
 - `core/standards/status-markers.md` (status transitions)
 - `core/system/artifact-management.md` (lazy directory creation)
-- Task entry via `grep -A 50 "^### ${task_number}\." TODO.md` (~2KB vs 109KB full file)
-- `state.json` (project state)
+- Task entry via `grep -A 50 "^### ${task_number}." specs/TODO.md` (~2KB vs 109KB full file)
+- `specs/state.json` (project state)
 - Plan file if exists (for phase tracking and resume)
 
 **Language-specific context**:
-
-- If neovim: `project/neovim/tools/lazy-nvim-guide.md`, `project/neovim/patterns/plugin-spec.md`
+- If lean: `project/lean4/tools/lean-lsp-mcp.md`, `project/lean4/build-system.md`
 - If markdown: (no additional context)
 
-**Optimization**: Task extraction reduces context from 109KB (full TODO.md) to ~2KB (task entry only), 98% reduction.
+**Optimization**: Task extraction reduces context from 109KB to ~2KB, 98% reduction.
 
 ---
 
@@ -456,7 +432,7 @@ Implementer loads context on-demand per `.opencode/context/index.json`:
 ```
 Error: Task {task_number} not found in specs/TODO.md
 
-Recommendation: Verify task number exists in TODO.md
+Recommendation: Verify task number exists in specs/TODO.md
 ```
 
 ### Invalid Task Number
@@ -520,7 +496,7 @@ Warning: Could not extract language from task entry
 Defaulting to: general
 Agent: implementer
 
-Recommendation: Add **Language**: {language} to task entry in TODO.md
+Recommendation: Add **Language**: {language} to task entry in specs/TODO.md
 ```
 
 ---
@@ -530,18 +506,16 @@ Recommendation: Add **Language**: {language} to task entry in TODO.md
 ### Atomic Updates
 
 Status updates delegated to `status-sync-manager` for atomic synchronization:
-
 - `specs/TODO.md` (status, timestamps, artifact links)
-- `state.json` (status, timestamps, artifact_paths)
+- `specs/state.json` (status, timestamps, artifact_paths)
 - Plan file (phase status markers if plan exists)
-- Project state.json (lazy created if needed)
+- Project specs/state.json (lazy created if needed)
 
 Two-phase commit ensures consistency across all files.
 
 ### Lazy Directory Creation
 
 Directories created only when writing artifacts:
-
 - `specs/{task_number}_{slug}/` created when writing first artifact
 - `summaries/` subdirectory created when writing implementation-summary.md
 
@@ -550,9 +524,8 @@ No directories created during routing or validation stages.
 ### Git Workflow
 
 Git commits delegated to `git-workflow-manager` for standardized commits:
-
 - Commit message format: `task {number}: {description}`
-- Scope files: All implementation artifacts + TODO.md + state.json
+- Scope files: All implementation artifacts + specs/TODO.md + specs/state.json
 - Per-phase commits if plan exists
 - Single commit if no plan
 
@@ -568,18 +541,17 @@ Git commits delegated to `git-workflow-manager` for standardized commits:
 
 ### Task Extraction
 
-Extract only specific task entry from TODO.md to reduce context load:
+Extract only specific task entry from specs/TODO.md to reduce context load:
 
 ```bash
-grep -A 50 "^### ${task_number}\." specs/TODO.md > /tmp/task-${task_number}.md
+grep -A 50 "^### ${task_number}." specs/TODO.md > /tmp/task-${task_number}.md
 ```
 
-**Impact**: Reduces context from 109KB (full TODO.md) to ~2KB (task entry only), 98% reduction.
+**Impact**: Reduces context from 109KB (full specs/TODO.md) to ~2KB (task entry only), 98% reduction.
 
 ### Lazy Context Loading
 
 Load context on-demand:
-
 - Required context loaded upfront
 - Optional context loaded when needed
 - Language-specific context loaded only for that language
@@ -595,7 +567,7 @@ Load context on-demand:
 
 ## References
 
-- **Command**: `.opencode/command/implement.md`
+- **Command**: `.opencode/commands/implement.md`
 - **Subagent**: `.opencode/agent/subagents/implementer.md`
 - **Return Format**: `.opencode/context/core/standards/subagent-return-format.md`
 - **Status Markers**: `.opencode/context/core/standards/status-markers.md`

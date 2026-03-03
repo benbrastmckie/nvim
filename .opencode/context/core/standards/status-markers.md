@@ -1,18 +1,19 @@
 # Status Markers Convention
 
+**Version**: 1.0  
 **Status**: Active  
 **Created**: 2026-01-05  
-**Purpose**: Single source of truth for status markers across TODO.md and state.json
+**Purpose**: Single source of truth for status markers across specs/TODO.md and specs/state.json
 
 ---
 
 ## Overview
 
-This document defines the complete set of status markers used throughout the ProofChecker project for tracking task and phase progress. It serves as the authoritative reference for:
+This document defines the complete set of status markers used throughout the Logos/Theory project for tracking task and phase progress. It serves as the authoritative reference for:
 
 - **Status Marker Definitions**: All valid status markers and their meanings
-- **TODO.md Format**: How markers appear in TODO.md task entries
-- **state.json Format**: How status values appear in state.json
+- **specs/TODO.md Format**: How markers appear in specs/TODO.md task entries
+- **specs/state.json Format**: How status values appear in specs/state.json
 - **Valid Transitions**: Which status changes are allowed
 - **Command Mappings**: Which commands trigger which status changes
 
@@ -23,8 +24,8 @@ This document defines the complete set of status markers used throughout the Pro
 ### Standard Status Markers
 
 #### `[NOT STARTED]`
-**TODO.md Format**: `- **Status**: [NOT STARTED]`  
-**state.json Value**: `"status": "not_started"`  
+**specs/TODO.md Format**: `- **Status**: [NOT STARTED]`  
+**specs/state.json Value**: `"status": "not_started"`  
 **Meaning**: Task or phase has not yet begun.
 
 **Valid Transitions**:
@@ -34,8 +35,8 @@ This document defines the complete set of status markers used throughout the Pro
 - `[NOT STARTED]` → `[BLOCKED]` (blocked before starting)
 
 #### `[RESEARCHING]`
-**TODO.md Format**: `- **Status**: [RESEARCHING]`  
-**state.json Value**: `"status": "researching"`  
+**specs/TODO.md Format**: `- **Status**: [RESEARCHING]`  
+**specs/state.json Value**: `"status": "researching"`  
 **Meaning**: Research is actively underway.
 
 **Valid Transitions**:
@@ -46,8 +47,8 @@ This document defines the complete set of status markers used throughout the Pro
 **Timestamps**: Always include `- **Researched**: YYYY-MM-DD` when started
 
 #### `[RESEARCHED]`
-**TODO.md Format**: `- **Status**: [RESEARCHED]`  
-**state.json Value**: `"status": "researched"`  
+**specs/TODO.md Format**: `- **Status**: [RESEARCHED]`  
+**specs/state.json Value**: `"status": "researched"`  
 **Meaning**: Research completed, deliverables created.
 
 **Valid Transitions**:
@@ -55,11 +56,11 @@ This document defines the complete set of status markers used throughout the Pro
 - `[RESEARCHED]` → `[IMPLEMENTING]` (implementation begins, skip planning)
 - `[RESEARCHED]` → `[BLOCKED]` (blocked before next phase)
 
-**Required Artifacts**: Research report linked in TODO.md
+**Required Artifacts**: Research report linked in specs/TODO.md
 
 #### `[PLANNING]`
-**TODO.md Format**: `- **Status**: [PLANNING]`  
-**state.json Value**: `"status": "planning"`  
+**specs/TODO.md Format**: `- **Status**: [PLANNING]`  
+**specs/state.json Value**: `"status": "planning"`  
 **Meaning**: Implementation plan is being created.
 
 **Valid Transitions**:
@@ -70,8 +71,8 @@ This document defines the complete set of status markers used throughout the Pro
 **Timestamps**: Always include `- **Planned**: YYYY-MM-DD` when started
 
 #### `[PLANNED]`
-**TODO.md Format**: `- **Status**: [PLANNED]`  
-**state.json Value**: `"status": "planned"`  
+**specs/TODO.md Format**: `- **Status**: [PLANNED]`  
+**specs/state.json Value**: `"status": "planned"`  
 **Meaning**: Implementation plan completed, ready for implementation.
 
 **Valid Transitions**:
@@ -79,11 +80,11 @@ This document defines the complete set of status markers used throughout the Pro
 - `[PLANNED]` → `[IMPLEMENTING]` (implementation begins)
 - `[PLANNED]` → `[BLOCKED]` (blocked before implementation)
 
-**Required Artifacts**: Implementation plan linked in TODO.md
+**Required Artifacts**: Implementation plan linked in specs/TODO.md
 
 #### `[REVISING]`
-**TODO.md Format**: `- **Status**: [REVISING]`  
-**state.json Value**: `"status": "revising"`  
+**specs/TODO.md Format**: `- **Status**: [REVISING]`  
+**specs/state.json Value**: `"status": "revising"`  
 **Meaning**: Plan revision is in progress.
 
 **Valid Transitions**:
@@ -94,8 +95,8 @@ This document defines the complete set of status markers used throughout the Pro
 **Timestamps**: Always include `- **Revised**: YYYY-MM-DD` when started
 
 #### `[REVISED]`
-**TODO.md Format**: `- **Status**: [REVISED]`  
-**state.json Value**: `"status": "revised"`  
+**specs/TODO.md Format**: `- **Status**: [REVISED]`  
+**specs/state.json Value**: `"status": "revised"`  
 **Meaning**: Plan revision completed, new plan version created.
 
 **Valid Transitions**:
@@ -103,11 +104,11 @@ This document defines the complete set of status markers used throughout the Pro
 - `[REVISED]` → `[REVISING]` (another revision needed)
 - `[REVISED]` → `[BLOCKED]` (blocked before implementation)
 
-**Required Artifacts**: Revised plan linked in TODO.md (replaces previous plan link)
+**Required Artifacts**: Revised plan linked in specs/TODO.md (replaces previous plan link)
 
 #### `[IMPLEMENTING]`
-**TODO.md Format**: `- **Status**: [IMPLEMENTING]`  
-**state.json Value**: `"status": "implementing"`  
+**specs/TODO.md Format**: `- **Status**: [IMPLEMENTING]`  
+**specs/state.json Value**: `"status": "implementing"`  
 **Meaning**: Implementation work is actively underway.
 
 **Valid Transitions**:
@@ -119,8 +120,8 @@ This document defines the complete set of status markers used throughout the Pro
 **Timestamps**: Always include `- **Implemented**: YYYY-MM-DD` when started
 
 #### `[COMPLETED]`
-**TODO.md Format**: `- **Status**: [COMPLETED]`  
-**state.json Value**: `"status": "completed"`  
+**specs/TODO.md Format**: `- **Status**: [COMPLETED]`  
+**specs/state.json Value**: `"status": "completed"`  
 **Meaning**: Task is finished successfully.
 
 **Valid Transitions**: Terminal state (no further transitions)
@@ -130,8 +131,8 @@ This document defines the complete set of status markers used throughout the Pro
 - Do not add emojis; rely on status marker and text alone
 
 #### `[PARTIAL]`
-**TODO.md Format**: `- **Status**: [PARTIAL]`  
-**state.json Value**: `"status": "partial"`  
+**specs/TODO.md Format**: `- **Status**: [PARTIAL]`  
+**specs/state.json Value**: `"status": "partial"`  
 **Meaning**: Implementation partially completed (can resume).
 
 **Valid Transitions**:
@@ -140,8 +141,8 @@ This document defines the complete set of status markers used throughout the Pro
 - `[PARTIAL]` → `[ABANDONED]` (abandon partial work)
 
 #### `[BLOCKED]`
-**TODO.md Format**: `- **Status**: [BLOCKED]`  
-**state.json Value**: `"status": "blocked"`  
+**specs/TODO.md Format**: `- **Status**: [BLOCKED]`  
+**specs/state.json Value**: `"status": "blocked"`  
 **Meaning**: Task is blocked by dependencies or issues.
 
 **Valid Transitions**:
@@ -155,8 +156,8 @@ This document defines the complete set of status markers used throughout the Pro
 - `- **Blocking Reason**: {reason}` or `- **Blocked by**: {dependency}`
 
 #### `[ABANDONED]`
-**TODO.md Format**: `- **Status**: [ABANDONED]`  
-**state.json Value**: `"status": "abandoned"`  
+**specs/TODO.md Format**: `- **Status**: [ABANDONED]`  
+**specs/state.json Value**: `"status": "abandoned"`  
 **Meaning**: Task was started but abandoned without completion.
 
 **Valid Transitions**:
@@ -168,8 +169,8 @@ This document defines the complete set of status markers used throughout the Pro
 - `- **Abandonment Reason**: {reason}`
 
 #### `[EXPANDED]`
-**TODO.md Format**: `- **Status**: [EXPANDED]`
-**state.json Value**: `"status": "expanded"`
+**specs/TODO.md Format**: `- **Status**: [EXPANDED]`
+**specs/state.json Value**: `"status": "expanded"`
 **Meaning**: Parent task has been expanded into subtasks; work continues in subtasks.
 
 **Valid Transitions**:
@@ -181,14 +182,14 @@ This document defines the complete set of status markers used throughout the Pro
 **Note**: `[EXPANDED]` is terminal-like. The parent delegates work to subtasks.
 
 **Required Information**:
-- `- **Subtasks**: {list}` in TODO.md
-- `"subtasks": [...]` array in state.json
+- `- **Subtasks**: {list}` in specs/TODO.md
+- `"subtasks": [...]` array in specs/state.json
 
 ---
 
-## TODO.md vs state.json Mapping
+## specs/TODO.md vs specs/state.json Mapping
 
-| TODO.md Marker | state.json Value | Description |
+| specs/TODO.md Marker | specs/state.json Value | Description |
 |----------------|------------------|-------------|
 | `[NOT STARTED]` | `not_started` | Task not begun |
 | `[RESEARCHING]` | `researching` | Research in progress |
@@ -205,8 +206,8 @@ This document defines the complete set of status markers used throughout the Pro
 | `[EXPANDED]` | `expanded` | Task expanded into subtasks |
 
 **Conversion Rules**:
-- TODO.md uses uppercase with underscores in brackets: `[NOT STARTED]`
-- state.json uses lowercase with underscores: `"not_started"`
+- specs/TODO.md uses uppercase with underscores in brackets: `[NOT STARTED]`
+- specs/state.json uses lowercase with underscores: `"not_started"`
 - Conversion: Remove brackets, convert to lowercase
 
 ---
@@ -263,7 +264,7 @@ Any non-terminal ──(/task --expand)──> [EXPANDED] (delegates to subtasks
 
 **CRITICAL**: All status updates MUST be delegated to status-sync-manager for atomic synchronization.
 
-**DO NOT** update TODO.md or state.json directly.
+**DO NOT** update specs/TODO.md or specs/state.json directly.
 
 ### Preflight Status Update
 
@@ -310,8 +311,8 @@ Any non-terminal ──(/task --expand)──> [EXPANDED] (delegates to subtasks
 ## Atomic Synchronization
 
 status-sync-manager updates atomically:
-1. TODO.md (status marker, timestamps, artifact links)
-2. state.json (status field, timestamps, artifact_paths)
+1. specs/TODO.md (status marker, timestamps, artifact links)
+2. specs/state.json (status field, timestamps, artifact_paths)
 3. Plan file (phase status markers, if plan exists)
 
 **Atomic Write Pattern**: All files updated or none (uses temp files + atomic rename)
@@ -345,15 +346,15 @@ status-sync-manager updates atomically:
 
 **For `[BLOCKED]` status**:
 - MUST include `blocking_reason` or `blocked_by` parameter
-- MUST include `- **Blocked**: YYYY-MM-DD` timestamp in TODO.md
+- MUST include `- **Blocked**: YYYY-MM-DD` timestamp in specs/TODO.md
 
 **For `[ABANDONED]` status**:
 - MUST include `abandonment_reason` parameter
-- MUST include `- **Abandoned**: YYYY-MM-DD` timestamp in TODO.md
+- MUST include `- **Abandoned**: YYYY-MM-DD` timestamp in specs/TODO.md
 
 **For `[EXPANDED]` status**:
 - MUST include `subtasks` array with subtask numbers
-- MUST include `- **Subtasks**: {list}` in TODO.md
+- MUST include `- **Subtasks**: {list}` in specs/TODO.md
 
 **For completion statuses** (`[RESEARCHED]`, `[PLANNED]`, `[REVISED]`, `[COMPLETED]`):
 - MUST include `validated_artifacts` array with artifact paths
@@ -370,4 +371,4 @@ status-sync-manager updates atomically:
 ---
 
 **Last Updated**: 2026-01-05  
-**Maintained By**: ProofChecker Development Team
+**Maintained By**: Logos/Theory Development Team

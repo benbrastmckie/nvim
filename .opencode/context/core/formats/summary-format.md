@@ -8,6 +8,7 @@
 - **Started**: `{ISO8601}` when summary drafting begins
 - **Completed**: `{ISO8601}` when published
 - **Effort**: `{estimate}` (time to produce summary)
+- **Priority**: `High | Medium | Low`
 - **Dependencies**: `{list or None}`
 - **Artifacts**: list of linked artifacts summarized
 - **Standards**: status-markers.md, artifact-management.md, tasks.md, this file

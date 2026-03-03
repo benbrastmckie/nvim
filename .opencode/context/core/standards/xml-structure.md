@@ -1,5 +1,6 @@
 # XML Pattern Guide for Agent Prompts
 
+**Version**: 1.0.0  
 **Created**: 2025-12-29  
 **Purpose**: Define optimal XML structure patterns for agent prompts based on research-backed best practices
 
@@ -13,7 +14,7 @@ XML-structured prompts improve LLM performance through:
 - **Better parsing** by LLMs (clear semantic boundaries)
 - **Improved maintainability** (structured, predictable format)
 
-This guide defines the standard XML patterns for ProofChecker agents.
+This guide defines the standard XML patterns for Logos/Theory agents.
 
 ---
 
@@ -71,7 +72,7 @@ routing:  # Optional
   default: {default_agent}
 context_loading:
   strategy: lazy
-  index: ".opencode/context/index.json"
+  index: ".opencode/context/index.md"
   required:
     - "core/standards/subagent-return-format.md"
     - "{command_specific_context}"
@@ -214,7 +215,7 @@ permissions:
     - write: ["{protected_paths}"]
 context_loading:
   strategy: lazy
-  index: ".opencode/context/index.json"
+  index: ".opencode/context/index.md"
   required:
     - "{required_context_1}"
     - "{required_context_2}"
@@ -350,7 +351,7 @@ max_tokens: 2000
 timeout: 60
 context_loading:
   strategy: minimal
-  index: ".opencode/context/index.json"
+  index: ".opencode/context/index.md"
   required:
     - "core/standards/command-structure.md"
     - "system/routing-guide.md"
@@ -536,7 +537,7 @@ delegation:
 ```xml
 <context>
   <system_context>
-    This command is part of the ProofChecker system which is a comprehensive
+    This command is part of the Logos/Theory system which is a comprehensive
     proof checking and verification system built on Lean 4 that provides
     extensive capabilities for formal verification, theorem proving, and
     mathematical reasoning across multiple domains including logic, algebra,
@@ -639,7 +640,7 @@ Create implementation plans with phased breakdown.
     <action>Parse arguments and validate task</action>
     <process>
       1. Parse task number from $ARGUMENTS
-      2. Validate task exists in TODO.md
+      2. Validate task exists in specs/TODO.md
       3. Update status to [PLANNING]
     </process>
     <checkpoint>Task validated and status updated</checkpoint>
@@ -701,7 +702,7 @@ Use this checklist when creating or reviewing XML-structured agents:
 
 - **Research**: Stanford/Anthropic studies on XML-structured prompts
 - **Examples**: 
-  - Commands: `.opencode/command/review.md`, `todo.md`, `errors.md`
+  - Commands: `.opencode/commands/review.md`, `todo.md`, `errors.md`
   - Subagents: `.opencode/agent/subagents/planner.md`, `implementer.md`
   - Orchestrator: `.opencode/agent/orchestrator.md` (after Phase 2)
 - **Standards**: 

@@ -101,20 +101,20 @@ format_memory() {
     fi
 }
 
-# Get all Claude-related processes
-# Match: claude, node.*claude, anthropic
-get_claude_processes() {
-    ps aux 2>/dev/null | grep -E '[c]laude|[n]ode.*claude|[a]nthropic' | grep -v grep || true
+# Get all OpenCode-related processes
+# Match: opencode, node.*opencode, opencode-ai
+get_opencode_processes() {
+    ps aux 2>/dev/null | grep -E '[o]pencode|[n]ode.*opencode|[o]pencode-ai' | grep -v grep || true
 }
 
 # Get orphaned processes (TTY == "?")
 get_orphaned_processes() {
-    get_claude_processes | awk '$7 == "?" {print $0}'
+    get_opencode_processes | awk '$7 == "?" {print $0}'
 }
 
 # Get active processes (have a TTY)
 get_active_processes() {
-    get_claude_processes | awk '$7 != "?"'
+    get_opencode_processes | awk '$7 != "?"'
 }
 
 # Calculate total memory from process list
@@ -133,7 +133,7 @@ calculate_memory() {
 echo ""
 
 # Count processes - use wc -l with safeguard for empty strings
-all_procs=$(get_claude_processes)
+all_procs=$(get_opencode_processes)
 orphan_procs=$(get_orphaned_processes)
 active_procs=$(get_active_processes)
 
@@ -158,10 +158,10 @@ active_mem=$(echo "$active_procs" | calculate_memory)
 # No orphaned processes
 if [ "$orphan_count" -eq 0 ]; then
     echo -e "${GREEN}OpenCode Refresh${NC}"
-    echo "==================="
+    echo "================"
     echo ""
     echo "No orphaned processes found."
-    echo "All $active_count Claude processes are active sessions."
+    echo "All $active_count OpenCode processes are active sessions."
     exit 0
 fi
 
@@ -191,7 +191,7 @@ actual_orphan_count=${#orphan_pids[@]}
 
 if [ "$actual_orphan_count" -eq 0 ]; then
     echo -e "${GREEN}OpenCode Refresh${NC}"
-    echo "==================="
+    echo "================"
     echo ""
     echo "No orphaned processes found (excluded current session)."
     exit 0
@@ -201,7 +201,7 @@ fi
 # The skill handles confirmation via AskUserQuestion
 if ! $FORCE; then
     echo -e "${YELLOW}OpenCode Refresh${NC}"
-    echo "==================="
+    echo "================"
     echo ""
     echo "Found $actual_orphan_count orphaned processes using $(format_memory $orphan_mem):"
     echo ""
@@ -260,7 +260,7 @@ done
 
 echo ""
 echo -e "${GREEN}OpenCode Refresh Complete${NC}"
-echo "============================"
+echo "==========================="
 echo "Terminated: $terminated processes"
 echo "Failed:     $failed processes"
 echo "Memory reclaimed: ~$(format_memory $orphan_mem)"

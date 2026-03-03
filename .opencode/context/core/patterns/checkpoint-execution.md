@@ -1,5 +1,6 @@
 # Checkpoint Execution Pattern
 
+**Version**: 1.0
 **Created**: 2026-01-19
 **Purpose**: Quick reference for command checkpoint-based execution
 **Audience**: Command developers, skill implementers
@@ -32,9 +33,8 @@ All workflow commands (/research, /plan, /implement, /revise) follow a three-che
 **Purpose**: Validate preconditions and prepare for execution.
 
 **Operations**:
-
-1. Generate session*id: `sess*{timestamp}\_{random}`
-2. Validate task exists in state.json
+1. Generate session_id: `sess_{timestamp}_{random}`
+2. Validate task exists in specs/state.json
 3. Validate current status allows operation
 4. Update status to "in_progress" variant
 5. PROCEED or ABORT
@@ -48,7 +48,6 @@ All workflow commands (/research, /plan, /implement, /revise) follow a three-che
 | /revise | planned, researched | planning |
 
 **Session ID Generation**:
-
 ```bash
 session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
@@ -60,7 +59,6 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 **Purpose**: Route to appropriate skill/agent and execute work.
 
 **Operations**:
-
 1. Determine target skill by language
 2. Prepare delegation context (session_id, depth, path)
 3. Invoke skill
@@ -71,9 +69,10 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 **Language Routing**:
 | Language | Research | Planning | Implementation |
 |----------|----------|----------|----------------|
-| web | skill-web-research | skill-planner | skill-web-implementation |
+| lean | skill-lean-research | skill-planner | skill-lean-implementation |
 | general | skill-researcher | skill-planner | skill-implementer |
 | meta | skill-researcher | skill-planner | skill-implementer |
+| latex | skill-researcher | skill-planner | skill-latex-implementation |
 
 ---
 
@@ -82,12 +81,11 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 **Purpose**: Validate results and update state.
 
 **Operations**:
-
 1. Validate return structure (JSON schema)
 2. Verify artifacts exist on disk
 3. Update status to success variant
-4. Link artifacts to task in state.json
-5. Update TODO.md with artifact links
+4. Link artifacts to task in specs/state.json
+5. Update specs/TODO.md with artifact links
 6. PROCEED, RETRY, or PARTIAL
 
 **Status Transitions**:
@@ -99,7 +97,6 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
 **Idempotency Check**:
 Before adding artifact links, check if already present:
-
 ```bash
 existing=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .artifacts[] | select(.path == \"$artifact_path\")" specs/state.json)
 if [ -z "$existing" ]; then
@@ -114,20 +111,18 @@ fi
 **Purpose**: Finalize operation with git commit.
 
 **Operations**:
-
 1. Stage all changes: `git add -A`
 2. Create commit with session_id
 3. Handle commit failure (non-blocking)
 4. Return final result to user
 
 **Commit Message Format**:
-
 ```
 task {N}: {action}
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 **Action Values**:
@@ -143,73 +138,21 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ## Error Handling
 
 ### GATE IN Failure
-
 - Task not found: Return error immediately
 - Invalid status: Return error with current status
 - Validation failure: Do not proceed to DELEGATE
 
 ### DELEGATE Failure
-
 - Agent timeout: Return partial status
 - Agent error: Pass through error to GATE OUT
 - Keep status in "in_progress" variant
 
-### Handling Interrupted Agents
-
-When agent is interrupted (MCP abort, timeout, Claude Code abort), the early metadata pattern
-ensures a metadata file exists. Postflight should handle this gracefully:
-
-**Detection**: Metadata file exists but `status: "in_progress"`
-
-**Response**:
-
-1. Extract `partial_progress.stage` and `partial_progress.details`
-2. **Keep task status unchanged** (still "researching" or "implementing")
-3. Log error to errors.json:
-   ```json
-   {
-     "type": "delegation_interrupted",
-     "severity": "high",
-     "message": "Agent interrupted at stage: {stage}",
-     "context": {
-       "session_id": "{session_id}",
-       "task": {N},
-       "partial_progress": {
-         "stage": "{stage}",
-         "details": "{details}"
-       }
-     },
-     "recovery": {
-       "suggested_action": "Run command again to resume",
-       "auto_recoverable": true
-     }
-   }
-   ```
-4. Display guidance to user:
-   ```
-   Agent interrupted at {stage}: {details}
-   Run /research N or /implement N to resume.
-   ```
-5. Skip COMMIT checkpoint (nothing to commit)
-
-**Why keep status unchanged**: The task should remain in "researching" or "implementing" status
-so that:
-
-- Next invocation of the same command can resume
-- Task is not incorrectly marked as failed or completed
-- Partial progress is preserved
-
-See `.opencode/context/core/patterns/early-metadata-pattern.md` for details on how agents create
-early metadata, and `.opencode/rules/error-handling.md` for the `delegation_interrupted` error type.
-
 ### GATE OUT Failure
-
 - Missing artifacts: Log warning, return partial
 - State update failure: Log error, artifacts still exist
 - Keep operation recoverable
 
 ### COMMIT Failure
-
 - Git error: Log but don't fail operation
 - Artifacts and state already updated
 - Non-blocking
@@ -224,21 +167,17 @@ Skills that manage lifecycle include checkpoints inline:
 ## Execution
 
 ### 0. Preflight (GATE IN)
-
 Update task status before starting work.
 See: @.opencode/context/core/checkpoints/checkpoint-gate-in.md
 
 ### 1-4. Agent Delegation (DELEGATE)
-
 Invoke subagent and execute work.
 
 ### 5. Postflight (GATE OUT)
-
 Update task status after completion.
 See: @.opencode/context/core/checkpoints/checkpoint-gate-out.md
 
 ### 6. Return
-
 Return result (COMMIT happens in caller).
 ```
 
@@ -248,14 +187,14 @@ Return result (COMMIT happens in caller).
 
 Session ID links all operations in a single command execution:
 
-| Location       | Purpose                         |
-| -------------- | ------------------------------- |
-| GATE IN        | Generated, stored               |
-| DELEGATE       | Passed to skill/agent           |
+| Location | Purpose |
+|----------|---------|
+| GATE IN | Generated, stored |
+| DELEGATE | Passed to skill/agent |
 | Agent Metadata | Returned in metadata.session_id |
-| GATE OUT       | Verified match                  |
-| COMMIT         | Included in commit message      |
-| errors.json    | Logged for traceability         |
+| GATE OUT | Verified match |
+| COMMIT | Included in commit message |
+| errors.json | Logged for traceability |
 
 ---
 
@@ -264,6 +203,4 @@ Session ID links all operations in a single command execution:
 - @.opencode/context/core/checkpoints/ - Detailed checkpoint specifications
 - @.opencode/context/core/patterns/skill-lifecycle.md - Skill lifecycle pattern
 - @.opencode/context/core/patterns/inline-status-update.md - Status update patterns
-- @.opencode/context/core/patterns/early-metadata-pattern.md - Early metadata creation for interruption recovery
 - @.opencode/rules/git-workflow.md - Git commit conventions
-- @.opencode/rules/error-handling.md - Error types including delegation_interrupted

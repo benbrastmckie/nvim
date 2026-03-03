@@ -69,7 +69,7 @@ Examples:
 
 **Task Synchronization**:
 ```
-task: sync TODO.md and state.json for {count} tasks ({ranges or 'all'})
+task: sync specs/TODO.md and specs/state.json for {count} tasks ({ranges or 'all'})
 
 Conflict resolution:
 - Task {number}: {fields_count} fields resolved ({sources})
@@ -78,9 +78,9 @@ Conflict resolution:
 Total: {conflicts_count} conflicts resolved using git blame
 
 Examples:
-- task: sync TODO.md and state.json for 1 task (343)
-- task: sync TODO.md and state.json for 3 tasks (343-345)
-- task: sync TODO.md and state.json for 150 tasks (all)
+- task: sync specs/TODO.md and specs/state.json for 1 task (343)
+- task: sync specs/TODO.md and specs/state.json for 3 tasks (343-345)
+- task: sync specs/TODO.md and specs/state.json for 150 tasks (all)
 ```
 
 **Task Abandonment**:
@@ -156,7 +156,7 @@ Action: Log error, recommend manual resolution
 ## Integration with status-sync-manager
 
 status-sync-manager handles atomic state updates:
-- Two-phase commit for TODO.md and state.json
+- Two-phase commit for specs/TODO.md and specs/state.json
 - Rollback on failure
 - Validation of updates
 
@@ -183,7 +183,7 @@ User: /task --recover 343-345
    
 2. status-sync-manager:
    - Validate tasks exist in archive
-   - Update TODO.md, state.json, archive/state.json atomically
+   - Update specs/TODO.md, specs/state.json, specs/archive/state.json atomically
    - Return success with files_updated
    
 3. task.md Stage 4 (continued):
@@ -191,7 +191,7 @@ User: /task --recover 343-345
    - Wait for return (commit_hash: a1b2c3d)
    
 4. git-workflow-manager:
-   - Stage files: TODO.md, state.json
+   - Stage files: specs/TODO.md, specs/state.json
    - Create commit: "task: recover 3 tasks from archive (343-345)"
    - Return commit_hash
    

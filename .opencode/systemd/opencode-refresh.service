@@ -1,0 +1,26 @@
+[Unit]
+Description=OpenCode orphaned process refresh
+Documentation=https://github.com/opencode-ai/opencode
+
+[Service]
+Type=oneshot
+# Use the script from the ProofChecker project
+# Update this path if you install elsewhere
+ExecStart=%h/Projects/ProofChecker/.opencode/scripts/opencode-refresh.sh --force
+# Alternatively, if installed system-wide:
+# ExecStart=/usr/local/bin/opencode-refresh.sh --force
+
+# Run with normal user permissions
+User=%u
+
+# Environment
+Environment=HOME=%h
+Environment=PATH=/usr/bin:/bin
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=opencode-refresh
+
+[Install]
+WantedBy=default.target

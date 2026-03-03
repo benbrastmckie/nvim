@@ -1,5 +1,6 @@
 # Orchestration Reference
 
+**Version**: 1.0
 **Created**: 2026-01-19
 **Purpose**: Examples, troubleshooting, and quick reference for orchestration
 **Consolidates**: orchestrator.md (examples/troubleshooting), delegation.md (examples)
@@ -41,12 +42,12 @@ CHECKPOINT 3: COMMIT
 
 ### Status Flow by Command
 
-| Command    | Preflight Status | Postflight Status |
-| ---------- | ---------------- | ----------------- |
-| /research  | RESEARCHING      | RESEARCHED        |
-| /plan      | PLANNING         | PLANNED           |
-| /implement | IMPLEMENTING     | COMPLETED         |
-| /revise    | REVISING         | REVISED           |
+| Command | Preflight Status | Postflight Status |
+|---------|------------------|-------------------|
+| /research | RESEARCHING | RESEARCHED |
+| /plan | PLANNING | PLANNED |
+| /implement | IMPLEMENTING | COMPLETED |
+| /revise | REVISING | REVISED |
 
 ---
 
@@ -59,19 +60,19 @@ User: /research 197
 
 GATE IN:
 - Task 197 exists: YES
-- Language: neovim
+- Language: lean
 - Session: sess_1735460684_a1b2c3
 - Status update: [RESEARCHING]
 
 DELEGATE:
-- Route to: neovim-research-agent
+- Route to: lean-research-agent
 - Timeout: 3600s
 
 GATE OUT:
 - Status: implemented
 - Artifacts: research-001.md (2,450 bytes)
 - Status update: [RESEARCHED]
-- Artifact link: added to TODO.md
+- Artifact link: added to specs/TODO.md
 
 COMMIT:
 - Git commit: "task 197: complete research"
@@ -123,7 +124,7 @@ Validation:
 - Task 345: exists in archive: YES
 
 Result: 4 tasks recovered
-Files updated: TODO.md, state.json, archive/state.json
+Files updated: specs/TODO.md, specs/state.json, specs/archive/state.json
 ```
 
 ---
@@ -135,7 +136,6 @@ Files updated: TODO.md, state.json, archive/state.json
 **Cause**: Missing timeout or return validation
 
 **Fix**:
-
 1. Check timeout is set (default 3600s)
 2. Verify agent returns standardized format
 3. Check session_id tracking
@@ -146,7 +146,6 @@ Files updated: TODO.md, state.json, archive/state.json
 **Cause**: Cycle in delegation path
 
 **Fix**:
-
 1. Enable cycle detection
 2. Check delegation_path before routing
 3. Verify depth limit enforced (max 3)
@@ -157,14 +156,12 @@ Files updated: TODO.md, state.json, archive/state.json
 **Cause**: Agent returned status=completed but no artifacts
 
 **Detection**:
-
 ```
 [FAIL] Agent returned 'completed' status but created no artifacts
 Error: Phantom research detected
 ```
 
 **Fix**:
-
 1. Reset task status to [NOT STARTED]
 2. Re-run command
 3. Verify agent creates artifacts before returning
@@ -174,14 +171,12 @@ Error: Phantom research detected
 **Cause**: Language extraction failed or routing incorrect
 
 **Detection**:
-
 ```
 [FAIL] Routing validation failed: language=lean but agent=researcher
 ```
 
 **Fix**:
-
-1. Verify **Language** field in TODO.md
+1. Verify **Language** field in specs/TODO.md
 2. Check routing configuration
 3. Re-run after fixing language field
 
@@ -190,7 +185,6 @@ Error: Phantom research detected
 **Cause**: Agent not returning correct session_id
 
 **Detection**:
-
 ```
 [FAIL] Session ID mismatch
 Expected: sess_1735460684_a1b2c3
@@ -198,7 +192,6 @@ Got: sess_1735460685_different
 ```
 
 **Fix**:
-
 1. Check agent receives session_id in delegation context
 2. Verify agent returns same session_id in metadata
 3. Review agent return format
@@ -208,7 +201,6 @@ Got: sess_1735460685_different
 **Cause**: skill-status-sync failed or state desync
 
 **Detection**:
-
 ```
 [WARN] Postflight verification failed - status not updated
 Expected: completed
@@ -216,22 +208,21 @@ Actual: implementing
 ```
 
 **Fix**:
-
 1. Run `/task --sync {task_number}` to fix state
-2. Check TODO.md and state.json for inconsistencies
+2. Check specs/TODO.md and specs/state.json for inconsistencies
 3. Review skill-status-sync logs
 
 ---
 
 ## Delegation Registry Operations
 
-| Operation | When             | Purpose                   |
-| --------- | ---------------- | ------------------------- |
-| Register  | Delegation start | Add entry with session_id |
-| Monitor   | Every 60s        | Check for timeouts        |
-| Update    | Status changes   | Update status field       |
-| Complete  | Delegation done  | Mark completed            |
-| Cleanup   | Timeout/error    | Remove and log            |
+| Operation | When | Purpose |
+|-----------|------|---------|
+| Register | Delegation start | Add entry with session_id |
+| Monitor | Every 60s | Check for timeouts |
+| Update | Status changes | Update status field |
+| Complete | Delegation done | Mark completed |
+| Cleanup | Timeout/error | Remove and log |
 
 ---
 
@@ -268,15 +259,13 @@ For conflict resolution, git blame determines which file has more recent changes
 
 ```json
 {
-  "conflict_details": [
-    {
-      "task_number": 343,
-      "field": "status",
-      "winner": "specs/state.json",
-      "timestamp_state": "2026-01-07T10:00:00Z",
-      "timestamp_todo": "2026-01-06T09:00:00Z"
-    }
-  ]
+  "conflict_details": [{
+    "task_number": 343,
+    "field": "status",
+    "winner": "specs/state.json",
+    "timestamp_state": "2026-01-07T10:00:00Z",
+    "timestamp_todo": "2026-01-06T09:00:00Z"
+  }]
 }
 ```
 
@@ -287,8 +276,8 @@ For conflict resolution, git blame determines which file has more recent changes
 ### Routing Logs
 
 ```
-[INFO] Task 258 language: neovim
-[INFO] Routing to neovim-research-agent (language=neovim)
+[INFO] Task 258 language: lean
+[INFO] Routing to lean-research-agent (language=lean)
 [PASS] Routing validation succeeded
 ```
 

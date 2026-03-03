@@ -1,6 +1,6 @@
 # Creating Skills Guide
 
-This guide explains how to create new skills in the Neovim Configuration agent system using the thin wrapper pattern.
+This guide explains how to create new skills in the Logos/Theory agent system using the thin wrapper pattern.
 
 ---
 
@@ -384,7 +384,7 @@ The subagent will:
 - Search for Python-specific documentation
 - Analyze package dependencies
 - Review asyncio patterns and best practices
-- Create research report in `specs/{NNN}_{SLUG}/reports/`
+- Create research report in `specs/OC_NNN_{SLUG}/reports/`
 - Return standardized JSON result
 
 ### 4. Return Validation
@@ -413,7 +413,7 @@ Expected successful return:
   "artifacts": [
     {
       "type": "research",
-      "path": "specs/450_add_async_support/reports/research-001.md",
+      "path": "specs/OC_450_add_async_support/reports/research-001.md",
       "summary": "Python asyncio research report"
     }
   ],
@@ -423,7 +423,7 @@ Expected successful return:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "python-research-agent"]
   },
-  "next_steps": "Run /plan 450 to create implementation plan"
+  "next_steps": "Run /plan OC_450 to create implementation plan"
 }
 ```
 
@@ -463,7 +463,7 @@ Before finalizing a new skill, verify:
 - [ ] Error handling covers common cases
 
 ### Integration
-- [ ] Corresponding agent exists in `.opencode/agents/`
+- [ ] Corresponding agent exists in `.opencode/agent/subagents/`
 - [ ] Skill name follows `skill-{purpose}` pattern
 - [ ] No duplicate skills for same use case
 
@@ -527,11 +527,10 @@ allowed-tools: Task
 - [Component Selection](component-selection.md) - When to create a skill
 - [Creating Agents](creating-agents.md) - Creating the agent that skill delegates to
 - [Creating Commands](creating-commands.md) - Creating commands that invoke skills
-- `.opencode/context/core/templates/thin-wrapper-skill.md` - Skill template
 - `.opencode/context/core/formats/subagent-return.md` - Return format schema
 
 ---
 
 **Document Version**: 1.0
-**Created**: 2026-01-12
-**Maintained By**: Neovim Configuration Development Team
+**Created**: 2026-02-28
+**Maintained By**: Logos/Theory Development Team

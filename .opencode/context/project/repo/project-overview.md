@@ -1,159 +1,201 @@
-# Logos Laboratories Website Project
+# Neovim Configuration Project Context
 
 ## Project Overview
 
-This is the Logos Laboratories website project, built with Astro and Tailwind CSS v4, deployed to Cloudflare Pages. The site serves as the public-facing presence for Logos Laboratories, featuring static content pages, a blog/research section, and project showcases.
+**Neotex** is a comprehensive Neovim configuration for LaTeX/academic writing with Lua-based configuration, lazy.nvim plugin management, and extensive customization for technical writing workflows.
 
-**Purpose**: Maintain a modern, performant, and accessible website for Logos Laboratories using static-first web architecture.
+**Purpose**: Provide a productive Neovim environment optimized for academic writing, LaTeX document preparation, and general software development.
+
+**Repository**: ~/.config/nvim
 
 ## Technology Stack
 
-**Framework:** Astro (static-first, island architecture)
-**Styling:** Tailwind CSS v4 (CSS-first configuration)
-**Language:** TypeScript (strict mode)
-**Deployment:** Cloudflare Pages
-**Package Manager:** pnpm
-**Build Output:** Static HTML/CSS/JS
+**Primary Language:** Lua (Neovim Lua API)
+**Plugin Manager:** lazy.nvim
+**LSP Support:** Native Neovim LSP with nvim-lspconfig
+**Completion:** nvim-cmp with multiple sources
+**File Navigation:** Telescope.nvim
+**Syntax Highlighting:** Tree-sitter
 
 ## Project Structure
 
 ```
-src/                          # Astro source code
-├── pages/                   # Route-based pages (.astro)
-│   ├── index.astro          # Homepage
-│   ├── about.astro          # About page
-│   └── blog/                # Blog routes
-│       ├── index.astro      # Blog listing
-│       └── [...slug].astro  # Dynamic blog posts
-├── layouts/                 # Page layouts
-│   └── BaseLayout.astro     # Base HTML layout
-├── components/              # Reusable components
-│   ├── Header.astro         # Site header/navigation
-│   ├── Footer.astro         # Site footer
-│   └── ...                  # Feature components
-├── content/                 # Content collections
-│   ├── config.ts            # Collection schemas
-│   └── blog/                # Blog posts (Markdown/MDX)
-├── styles/                  # Global styles
-│   └── global.css           # Tailwind imports, @theme config
-├── assets/                  # Optimized assets (images, fonts)
-└── types/                   # TypeScript type definitions
+nvim/                      # Main configuration
+  init.lua                # Entry point
+  lua/                    # Lua modules
+    neotex/              # Main namespace
+      core/              # Core configuration
+        options.lua      # Editor options
+        keymaps.lua      # Key mappings
+        autocmds.lua     # Autocommands
+      plugins/           # Plugin specifications
+        lsp/             # LSP configurations
+        completion/      # Completion setup
+        editing/         # Editing enhancements
+        ui/              # UI components
+        tools/           # Development tools
+      utils/             # Utility functions
+  after/                 # Filetype-specific overrides
+    ftplugin/           # Filetype plugins
+      tex.lua           # LaTeX settings
+      markdown.lua      # Markdown settings
+      lua.lua           # Lua settings
+  plugin/               # Auto-loaded plugins
+    neotex.lua         # Configuration initialization
 
-public/                       # Static files (favicon, robots.txt)
-astro.config.mjs              # Astro configuration
-tsconfig.json                 # TypeScript configuration
-package.json                  # Dependencies and scripts
+docs/                    # Project documentation
+  README.md             # Usage guide
+  ARCHITECTURE.md       # Architecture overview
+  CODE_STANDARDS.md     # Coding conventions
 
-specs/                        # Task management
-├── TODO.md                  # Task list
-├── state.json               # Task state
-└── {NNN}_{SLUG}/              # Task artifacts
-    ├── reports/
-    ├── plans/
-    └── summaries/
-
-.opencode/                      # Claude Code configuration
-├── CLAUDE.md                # Main reference
-├── commands/                # Slash commands
-├── skills/                  # Skill definitions
-├── agents/                  # Agent definitions
-├── rules/                  # Auto-applied rules
-└── context/                 # Domain knowledge
+.opencode/              # AI agent system
+  agent/                # Primary agents + specialists
+  commands/             # Slash commands
+  context/              # Knowledge base for agents
+  specs/                # Project artifacts (plans, reports)
 ```
 
-## Web Architecture
+## Core Architecture
 
-### Astro Framework
+### lazy.nvim Plugin System
 
-The site uses Astro's static-first approach:
-- Server-rendered HTML with zero JavaScript by default
-- Island architecture for interactive components (`client:*` directives)
-- Content collections for type-safe Markdown/MDX content
-- File-based routing from `src/pages/`
+**Plugin Specifications**: Located in `lua/neotex/plugins/`
+- One file per plugin group (lsp.lua, completion.lua, etc.)
+- Return table of plugin specs
+- Use event-based lazy loading
 
-### Tailwind CSS v4
+**Lazy Loading Strategy**:
+- `event = "VeryLazy"` - Most plugins
+- `ft = "tex"` - LaTeX-specific
+- `cmd = "Command"` - Command-triggered
+- `keys = {...}` - Key-triggered
 
-Styling uses Tailwind CSS v4 with CSS-first configuration:
-- `@import "tailwindcss"` in global CSS (no JavaScript config file)
-- Theme customization via `@theme` directive
-- Automatic content detection (no `content` array needed)
-- Class ordering enforced by `prettier-plugin-tailwindcss`
+### Configuration Layers
 
-### Cloudflare Pages Deployment
-
-Deployment targets Cloudflare Pages:
-- Git-triggered builds from main branch
-- Edge-distributed static assets
-- Automatic HTTPS and CDN
-- Preview deployments for branches
+| Layer | Location | Purpose |
+|-------|----------|---------|
+| Core | `lua/neotex/core/` | Base options, keymaps, autocmds |
+| Plugins | `lua/neotex/plugins/` | Plugin specifications |
+| Filetype | `after/ftplugin/` | Language-specific settings |
+| Utils | `lua/neotex/utils/` | Shared utilities |
 
 ## Development Workflow
 
-### Standard Workflow
+### Standard Neovim Development
 
-1. **Identify Need**: Page to create, component to build, content to add
-2. **Research**: Review Astro docs, check existing patterns
-3. **Implement**: Create/modify Astro components and pages
-4. **Test**: Run dev server, verify in browser
-5. **Build**: Run production build, check for errors
-6. **Deploy**: Push to main branch
+1. **Research**: Explore plugin documentation, Neovim API
+2. **Design**: Plan plugin configuration, keymaps
+3. **Implementation**: Write Lua configuration
+4. **Validation**: Test with `nvim --headless`
+5. **Documentation**: Update inline comments
 
 ### AI-Assisted Workflow
 
-1. **Research**: `/research` - Gather framework docs, patterns
-2. **Planning**: `/plan` - Create implementation plan
-3. **Implementation**: `/implement` - Execute the plan
-4. **Review**: `/review` - Analyze code quality
+1. **Research**: `/research` - Plugin docs, Neovim API
+2. **Planning**: `/plan` - Create implementation plans
+3. **Implementation**: `/implement` - Execute configuration changes
+4. **Review**: `/review` - Analyze configuration quality
 
-## Common Tasks
+## Quality Standards
 
-### Creating a New Page
+### Lua Code Quality
 
-1. Create `.astro` file in `src/pages/`
-2. Import and use a layout component
-3. Define `interface Props` if the page accepts props
-4. Add navigation links as needed
+- **Style**: Follow lua-style-guide.md
+- **Module Structure**: Use local M = {} pattern
+- **Error Handling**: Use pcall for optional requires
+- **Documentation**: Inline comments for complex logic
+- **Naming**: snake_case for variables/functions
 
-### Creating a Component
+### Plugin Specifications
 
-1. Create `.astro` file in `src/components/`
-2. Define `interface Props` for component inputs
-3. Use scoped `<style>` for component-specific styles
-4. Add `client:*` directive only if interactivity is required
-
-### Adding Blog Content
-
-1. Create Markdown/MDX file in `src/content/blog/`
-2. Include required frontmatter (title, date, description)
-3. Content is type-checked against collection schema in `content/config.ts`
-
-### Modifying Styles
-
-1. Global theme changes go in `src/styles/global.css` via `@theme`
-2. Component styles use scoped `<style>` blocks
-3. Utility classes follow Tailwind's box-model ordering convention
-
-## Verification Commands
-
-```bash
-# Start development server
-pnpm dev
-
-# Production build (catches type errors, broken references)
-pnpm build
-
-# TypeScript + Astro diagnostics
-pnpm check
-
-# Preview production build locally
-pnpm preview
-
-# Format code
-pnpm format
+```lua
+-- Standard plugin spec
+{
+  'owner/plugin',
+  dependencies = { 'dep1' },
+  event = 'VeryLazy',
+  config = function()
+    require('plugin').setup({
+      -- options
+    })
+  end,
+}
 ```
 
-## Related Documentation
+### Keymap Conventions
 
-- `.opencode/context/project/web/` - Web domain knowledge (Astro, Tailwind, TypeScript, Cloudflare)
-- `.opencode/rules/web-astro.md` - Astro/Tailwind/TypeScript coding standards
-- `.opencode/context/project/web/README.md` - Web context directory overview
+```lua
+-- Always include description
+vim.keymap.set('n', '<leader>x', function()
+  -- action
+end, { desc = 'Action description' })
+```
+
+### Build Requirements
+
+- Configuration loads without errors: `nvim --headless -c 'qa!'`
+- Lua syntax valid: `luac -p file.lua`
+- Checkhealth passes: `:checkhealth`
+
+## Key Files
+
+**Core Configuration**:
+- `init.lua` - Entry point, loads neotex
+- `lua/neotex/init.lua` - Main module initialization
+- `lua/neotex/core/options.lua` - Editor options
+- `lua/neotex/core/keymaps.lua` - Key mappings
+
+**Plugin Management**:
+- `lua/neotex/plugins/` - Plugin specifications
+- `lazy-lock.json` - Plugin version lock
+
+**LSP Configuration**:
+- `lua/neotex/plugins/lsp/init.lua` - LSP setup
+- `lua/neotex/plugins/lsp/servers/` - Per-server configs
+
+## Common Commands
+
+**Validation**:
+```bash
+# Validate configuration loads
+nvim --headless -c 'qa!'
+
+# Validate Lua syntax
+luac -p lua/neotex/plugins/example.lua
+
+# Run checkhealth
+nvim --headless -c 'checkhealth' -c 'qa!'
+```
+
+**Development**:
+```bash
+# Clear plugin cache
+rm -rf ~/.local/share/nvim/lazy
+
+# Update plugins
+nvim --headless "+Lazy! sync" +qa
+
+# Check for errors
+nvim --headless -c 'lua print(vim.inspect(vim.diagnostic.get(0)))' -c 'qa!'
+```
+
+**AI System**:
+```bash
+# See .opencode/README.md for all AI commands
+/research <topic>            # Research plugins and patterns
+/plan <task>                 # Create implementation plan
+/implement <nums>            # Execute configuration changes
+/review                      # Analyze configuration quality
+```
+
+## Related Resources
+
+**Documentation**:
+- [Neovim Lua Guide](https://neovim.io/doc/user/lua-guide.html)
+- [lazy.nvim](https://github.com/folke/lazy.nvim)
+- [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)
+
+**AI System**:
+- [.opencode/README.md](../../README.md) - AI system overview
+- [.opencode/OPENCODE.md](../../OPENCODE.md) - Configuration reference
+- [.opencode/docs/guides/user-guide.md](../../docs/guides/user-guide.md) - User guide

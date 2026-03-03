@@ -57,7 +57,7 @@ In-progress variants:
 
 ### 5. Verify Status Update
 
-Re-read state.json and verify status changed:
+Re-read specs/state.json and verify status changed:
 
 ```bash
 new_status=$(jq -r --arg num "$task_number" \

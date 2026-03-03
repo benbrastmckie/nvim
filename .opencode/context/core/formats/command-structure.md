@@ -1,5 +1,6 @@
 # Command File Structure: Commands as Agents with Workflows
 
+**Version**: 1.0  
 **Created**: 2026-01-05  
 **Purpose**: Document command file anatomy and patterns  
 **Audience**: Command developers, meta-builder, system architects
@@ -8,7 +9,7 @@
 
 ## Overview
 
-In ProofChecker, **command files are agents with workflows**, not just entry points or routers. Each command file is an autonomous agent responsible for:
+In Logos/Theory, **command files are agents with workflows**, not just entry points or routers. Each command file is an autonomous agent responsible for:
 
 1. **Parsing and validating** user arguments
 2. **Orchestrating workflow execution** via subagent delegation
@@ -17,7 +18,6 @@ In ProofChecker, **command files are agents with workflows**, not just entry poi
 5. **Returning formatted responses** to the orchestrator
 
 This pattern enables:
-
 - **Modularity**: Commands compose reusable subagents
 - **Flexibility**: Workflows can be modified without changing routing
 - **Robustness**: Errors caught and handled at command level
@@ -28,24 +28,107 @@ This pattern enables:
 
 ## Command File Anatomy
 
+### YAML Frontmatter Rules
+
+To ensure proper parsing and loading of command files, strictly adhere to these YAML formatting rules:
+
+1.  **No Dashes in Argument Lists**: Use a flat list of key-value pairs for arguments. Do not use dashes (`-`) to start argument definitions.
+    *   **Correct**:
+        ```yaml
+        arguments:
+          name: arg1
+          type: string
+          required: true
+          description: Description 1
+          name: arg2
+          type: boolean
+          required: false
+          description: Description 2
+        ```
+    *   **Incorrect**:
+        ```yaml
+        arguments:
+          - name: arg1
+            type: string
+            ...
+        ```
+
+2.  **No Dashes in Permission Lists**: Use a dictionary (map) format for permissions.
+    *   **Correct**:
+        ```yaml
+        permissions:
+          read:
+            "**/*.md": "allow"
+            ".opencode/**/*": "allow"
+        ```
+    *   **Incorrect**:
+        ```yaml
+        permissions:
+          read:
+            - "**/*.md": "allow"
+        ```
+
+3.  **Single String for Required Context**: The `required` field in `context_loading` must be a single string, not a list.
+    *   **Correct**: `required: "core/workflows/command-lifecycle.md"`
+    *   **Incorrect**:
+        ```yaml
+        required:
+          - "core/workflows/command-lifecycle.md"
+        ```
+
+4.  **No Dashes in Flag Descriptions**: Do not include dashes in the flag name within the description field.
+    *   **Correct**: `description: Analyze existing system (flag: analyze)`
+    *   **Incorrect**: `description: Analyze existing system (flag: --analyze)`
+
+5.  **No Colons in Descriptions**: Do not use colons (`:`) within the description string unless the string is quoted. It is safer to avoid them entirely.
+    *   **Correct**: `description: Scan files for FIX, NOTE, TODO tags`
+    *   **Incorrect**: `description: Scan files for FIX:, NOTE:, TODO: tags`
+
 ### Complete Structure
 
 ```markdown
 ---
 command: plan
 description: Create implementation plan for a task
-version: 1.0
+version: "1.0"
+mode: command
+temperature: 0.2
 arguments:
-  - name: task_number
-    type: integer
-    required: true
-    description: Task number to create plan for
-  - name: research_report
-    type: string
-    required: false
-    description: Optional research report number to integrate
+  name: task_number
+  type: integer
+  required: true
+  description: Task number to create plan for
+  name: research_report
+  type: string
+  required: false
+  description: Optional research report number to integrate
+tools:
+  read: true
+  write: true
+  edit: true
+  glob: true
+  bash: true
+  skill: true
+permissions:
+  read:
+    "**/*.md": "allow"
+    ".opencode/**/*": "allow"
+    "specs/**/*": "allow"
+  write:
+    "specs/**/*": "allow"
+  bash:
+    "git:*": "allow"
+    "jq:*": "allow"
+    "*": "deny"
+allowed_tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit, Glob
+argument_hint: TASK_NUMBER [RESEARCH_REPORT]
 delegation_depth: 1
 max_delegation_depth: 3
+context_loading:
+  strategy: lazy
+  index: ".opencode/context/index.md"
+  required:
+    - "core/workflows/command-lifecycle.md"
 ---
 
 # Command: /plan
@@ -59,78 +142,94 @@ max_delegation_depth: 3
 ## Argument Parsing
 
 <argument_parsing>
-<step_1>
-Extract task_number from args[0]
-Validate task_number is positive integer
-If invalid: Return error "Invalid task number"
-</step_1>
-
-<step_2>
-Extract optional research_report from args[1]
-If provided: Validate research_report exists
-</step_2>
-
-<step_3>
-Load task context from state.json:
-task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" specs/state.json)
-    task_title=$(jq -r ".tasks[] | select(.number == $task_number) | .title" specs/state.json)
-</step_3>
-
-<step_4>
-Validate task is ready for planning: - Status must be "research_complete" or "ready" - Task must not already have a plan
-If not ready: Return error with current status
-</step_4>
+  <step_1>
+    Extract task_number from args[0]
+    Validate task_number is positive integer
+    If invalid: Return error "Invalid task number"
+  </step_1>
+  
+  <step_2>
+    Extract optional research_report from args[1]
+    If provided: Validate research_report exists
+  </step_2>
+  
+  <step_3>
+    Load task context from specs/state.json:
+    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .opencode/state.json)
+    task_title=$(jq -r ".tasks[] | select(.number == $task_number) | .title" .opencode/state.json)
+  </step_3>
+  
+  <step_4>
+    Validate task is ready for planning:
+    - Status must be "research_complete" or "ready"
+    - Task must not already have a plan
+    If not ready: Return error with current status
+  </step_4>
 </argument_parsing>
 
 ---
 
 ## Workflow Execution
 
-<workflow*execution>
-<step_1>
-<action>Delegate to planner subagent</action>
-<input> - task_number: {task_number} - task_title: {task_title} - research_report: {research_report} (if provided) - session_id: sess*{timestamp}\_{random} - delegation_depth: 2
-</input>
-<timeout>3600s</timeout>
-<expected_return>
-{
-"status": "planned",
-"artifacts": [{"type": "plan", "path": "..."}],
-"summary": "Plan created"
-}
-</expected_return>
-</step_1>
-
-<step_2>
-<action>Validate planner return</action>
-<validation> - status == "planned" (contextual success value) - artifacts array contains plan - plan file exists on disk
-</validation>
-<on_failure>
-Return error to orchestrator
-Do NOT proceed to step 3
-</on_failure>
-</step_2>
-
-<step_3>
-<action>Delegate to status-sync-manager</action>
-<input> - task_number: {task_number} - new_status: "planned" - artifact_path: {plan_path} - artifact_type: "plan" - session_id: {session_id} - delegation_depth: 2
-</input>
-<timeout>30s</timeout>
-<expected_return>
-{
-"status": "synced",
-"summary": "Status updated"
-}
-</expected_return>
-</step_3>
-
-<step_4>
-<action>Aggregate results and return</action>
-<output>
-Display: "Plan created: {plan_path}"
-Return to orchestrator
-</output>
-</step_4>
+<workflow_execution>
+  <step_1>
+    <action>Delegate to planner subagent</action>
+    <input>
+      - task_number: {task_number}
+      - task_title: {task_title}
+      - research_report: {research_report} (if provided)
+      - session_id: sess_{timestamp}_{random}
+      - delegation_depth: 2
+    </input>
+    <timeout>3600s</timeout>
+    <expected_return>
+      {
+        "status": "planned",
+        "artifacts": [{"type": "plan", "path": "..."}],
+        "summary": "Plan created"
+      }
+    </expected_return>
+  </step_1>
+  
+  <step_2>
+    <action>Validate planner return</action>
+    <validation>
+      - status == "planned" (contextual success value)
+      - artifacts array contains plan
+      - plan file exists on disk
+    </validation>
+    <on_failure>
+      Return error to orchestrator
+      Do NOT proceed to step 3
+    </on_failure>
+  </step_2>
+  
+  <step_3>
+    <action>Delegate to status-sync-manager</action>
+    <input>
+      - task_number: {task_number}
+      - new_status: "planned"
+      - artifact_path: {plan_path}
+      - artifact_type: "plan"
+      - session_id: {session_id}
+      - delegation_depth: 2
+    </input>
+    <timeout>30s</timeout>
+    <expected_return>
+      {
+        "status": "synced",
+        "summary": "Status updated"
+      }
+    </expected_return>
+  </step_3>
+  
+  <step_4>
+    <action>Aggregate results and return</action>
+    <output>
+      Display: "Plan created: {plan_path}"
+      Return to orchestrator
+    </output>
+  </step_4>
 </workflow_execution>
 
 ---
@@ -138,12 +237,19 @@ Return to orchestrator
 ## Error Handling
 
 <error_handling>
-<argument_errors> - Missing task_number → "Usage: /plan <task_number> [research_report]" - Invalid task_number → "Task number must be a positive integer" - Task not found → "Task {task_number} not found in state.json" - Task not ready → "Task {task_number} status is {status}, expected research_complete or ready"
-</argument_errors>
-
-<workflow_errors> - Planner failure → Display planner error, suggest retry - Status update failure → Log warning (non-critical), continue - Timeout → Return partial result, suggest resume
-</workflow_errors>
-
+  <argument_errors>
+    - Missing task_number → "Usage: /plan <task_number> [research_report]"
+    - Invalid task_number → "Task number must be a positive integer"
+    - Task not found → "Task {task_number} not found in specs/state.json"
+    - Task not ready → "Task {task_number} status is {status}, expected research_complete or ready"
+  </argument_errors>
+  
+  <workflow_errors>
+    - Planner failure → Display planner error, suggest retry
+    - Status update failure → Log warning (non-critical), continue
+    - Timeout → Return partial result, suggest resume
+  </workflow_errors>
+  
   <recovery>
     - Transient errors → Retry once
     - Permanent errors → Return error to orchestrator
@@ -156,11 +262,12 @@ Return to orchestrator
 ## State Management
 
 <state_management>
-<reads> # Fast, direct queries via jq
-task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" specs/state.json)
-    task_title=$(jq -r ".tasks[] | select(.number == $task_number) | .title" specs/state.json)
-</reads>
-
+  <reads>
+    # Fast, direct queries via jq
+    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .opencode/state.json)
+    task_title=$(jq -r ".tasks[] | select(.number == $task_number) | .title" .opencode/state.json)
+  </reads>
+  
   <writes>
     # All writes delegated to status-sync-manager
     Delegate to status-sync-manager with:
@@ -182,20 +289,18 @@ User → Orchestrator → Execution Agent
 ```
 
 **Problems**:
-
 - Orchestrator must parse arguments (mixing routing and parsing)
 - Execution agents must handle multiple responsibilities
 - Hard to compose complex workflows
 - Difficult to test
 
-### ProofChecker Pattern (Three-Layer)
+### Logos/Theory Pattern (Three-Layer)
 
 ```
 User → Orchestrator → Command File → Execution Subagent(s)
 ```
 
 **Benefits**:
-
 - Orchestrator only routes (pure router)
 - Command files orchestrate workflows (clear responsibility)
 - Execution subagents are specialized (single purpose)
@@ -206,7 +311,6 @@ User → Orchestrator → Command File → Execution Subagent(s)
 **Task**: Implement a feature (requires multiple steps)
 
 **Without Command Workflows** (two-layer):
-
 ```
 Orchestrator:
   - Parse task_number
@@ -217,11 +321,9 @@ Orchestrator:
   - Create git commit
   - Return result
 ```
-
 Problem: Orchestrator does too much, hard to test, inflexible
 
 **With Command Workflows** (three-layer):
-
 ```
 Orchestrator:
   - Route to /implement command
@@ -240,7 +342,6 @@ Subagents:
   - status-sync-manager: Update status
   - git-workflow-manager: Create commit
 ```
-
 Benefit: Clear separation, easy to test, flexible composition
 
 ---
@@ -255,7 +356,7 @@ Benefit: Clear separation, easy to test, flexible composition
    - Provide clear error messages for invalid arguments
 
 2. **Load Context**:
-   - Query state.json for task metadata
+   - Query specs/state.json for task metadata
    - Load related artifacts (plans, reports)
    - Validate preconditions
 
@@ -285,7 +386,7 @@ Benefit: Clear separation, easy to test, flexible composition
 1. **Execute Work Directly**:
    - ❌ Write implementation files directly
    - ❌ Create git commits directly
-   - ❌ Update state.json directly
+   - ❌ Update specs/state.json directly
    - ✅ Delegate to specialized subagents instead
 
 2. **Route to Other Commands**:
@@ -312,15 +413,15 @@ Benefit: Clear separation, easy to test, flexible composition
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to {subagent}
-Wait for return
-Validate return
-</step_1>
-
-<step_2>
-Return result to orchestrator
-</step_2>
+  <step_1>
+    Delegate to {subagent}
+    Wait for return
+    Validate return
+  </step_1>
+  
+  <step_2>
+    Return result to orchestrator
+  </step_2>
 </workflow_execution>
 ```
 
@@ -334,22 +435,22 @@ Return result to orchestrator
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to subagent_a
-Wait for return
-Validate return
-</step_1>
-
-<step_2>
-Delegate to subagent_b (using result from step 1)
-Wait for return
-Validate return
-</step_2>
-
-<step_3>
-Aggregate results
-Return to orchestrator
-</step_3>
+  <step_1>
+    Delegate to subagent_a
+    Wait for return
+    Validate return
+  </step_1>
+  
+  <step_2>
+    Delegate to subagent_b (using result from step 1)
+    Wait for return
+    Validate return
+  </step_2>
+  
+  <step_3>
+    Aggregate results
+    Return to orchestrator
+  </step_3>
 </workflow_execution>
 ```
 
@@ -363,23 +464,23 @@ Return to orchestrator
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Validate preconditions
-Determine which subagent to use
-</step_1>
-
-<step_2>
-If condition_a:
-Delegate to subagent_a
-Else if condition_b:
-Delegate to subagent_b
-Else:
-Return error
-</step_2>
-
-<step_3>
-Return result to orchestrator
-</step_3>
+  <step_1>
+    Validate preconditions
+    Determine which subagent to use
+  </step_1>
+  
+  <step_2>
+    If condition_a:
+      Delegate to subagent_a
+    Else if condition_b:
+      Delegate to subagent_b
+    Else:
+      Return error
+  </step_2>
+  
+  <step_3>
+    Return result to orchestrator
+  </step_3>
 </workflow_execution>
 ```
 
@@ -393,20 +494,20 @@ Return result to orchestrator
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Load items from state.json
-</step_1>
-
-<step_2>
-For each item:
-Delegate to subagent
-Collect result
-</step_2>
-
-<step_3>
-Aggregate all results
-Return to orchestrator
-</step_3>
+  <step_1>
+    Load items from specs/state.json
+  </step_1>
+  
+  <step_2>
+    For each item:
+      Delegate to subagent
+      Collect result
+  </step_2>
+  
+  <step_3>
+    Aggregate all results
+    Return to orchestrator
+  </step_3>
 </workflow_execution>
 ```
 
@@ -420,12 +521,12 @@ Return to orchestrator
 ## Workflow Execution
 
 <workflow_execution>
-<preflight>
-Delegate to status-sync-manager
-Update status to "in_progress"
-Log start time
-</preflight>
-
+  <preflight>
+    Delegate to status-sync-manager
+    Update status to "in_progress"
+    Log start time
+  </preflight>
+  
   <work>
     Delegate to execution subagent
     Wait for return
@@ -459,12 +560,12 @@ Log start time
 ## Argument Parsing
 
 <argument_parsing>
-<step_1>
-Extract arg from args[0]
-If missing: Return "Usage: /command <arg>"
-Validate arg format
-If invalid: Return "Invalid arg format"
-</step_1>
+  <step_1>
+    Extract arg from args[0]
+    If missing: Return "Usage: /command <arg>"
+    Validate arg format
+    If invalid: Return "Invalid arg format"
+  </step_1>
 </argument_parsing>
 ```
 
@@ -474,16 +575,16 @@ If invalid: Return "Invalid arg format"
 ## Argument Parsing
 
 <argument_parsing>
-<step_1>
-Extract required_arg from args[0]
-Validate required_arg
-</step_1>
-
-<step_2>
-Extract optional_arg from args[1]
-If provided: Validate optional_arg
-Else: Use default value
-</step_2>
+  <step_1>
+    Extract required_arg from args[0]
+    Validate required_arg
+  </step_1>
+  
+  <step_2>
+    Extract optional_arg from args[1]
+    If provided: Validate optional_arg
+    Else: Use default value
+  </step_2>
 </argument_parsing>
 ```
 
@@ -493,13 +594,18 @@ Else: Use default value
 ## Argument Parsing
 
 <argument_parsing>
-<step_1>
-Parse arguments: - Extract --flag values - Extract positional arguments - Validate all required arguments present
-</step_1>
-
-<step_2>
-Validate argument combinations: - Check mutually exclusive flags - Check required dependencies
-</step_2>
+  <step_1>
+    Parse arguments:
+    - Extract --flag values
+    - Extract positional arguments
+    - Validate all required arguments present
+  </step_1>
+  
+  <step_2>
+    Validate argument combinations:
+    - Check mutually exclusive flags
+    - Check required dependencies
+  </step_2>
 </argument_parsing>
 ```
 
@@ -509,24 +615,23 @@ Validate argument combinations: - Check mutually exclusive flags - Check require
 ## Argument Parsing
 
 <argument_parsing>
-<step_1>
-Extract task_number from args[0]
-Validate task_number is positive integer
-</step_1>
-
-<step_2>
-Load task context from state.json:
-task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" specs/state.json)
-
+  <step_1>
+    Extract task_number from args[0]
+    Validate task_number is positive integer
+  </step_1>
+  
+  <step_2>
+    Load task context from specs/state.json:
+    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .opencode/state.json)
+    
     If task not found: Return "Task {task_number} not found"
-
-</step_2>
-
-<step_3>
-Validate task status:
-If status not in [expected_statuses]:
-Return "Task status is {status}, expected {expected_statuses}"
-</step_3>
+  </step_2>
+  
+  <step_3>
+    Validate task status:
+    If status not in [expected_statuses]:
+      Return "Task status is {status}, expected {expected_statuses}"
+  </step_3>
 </argument_parsing>
 ```
 
@@ -542,7 +647,7 @@ Return "Task status is {status}, expected {expected_statuses}"
 <validation>
   <argument_validation>
     - task_number is positive integer
-    - task_number exists in state.json
+    - task_number exists in specs/state.json
     - task status is valid for this command
     - All required arguments provided
   </argument_validation>
@@ -590,12 +695,12 @@ Return "Task status is {status}, expected {expected_statuses}"
 
 ```markdown
 <error_handling>
-<argument_errors>
-If argument invalid:
-Display error message
-Display usage
-Return immediately (do NOT delegate)
-</argument_errors>
+  <argument_errors>
+    If argument invalid:
+      Display error message
+      Display usage
+      Return immediately (do NOT delegate)
+  </argument_errors>
 </error_handling>
 ```
 
@@ -603,13 +708,13 @@ Return immediately (do NOT delegate)
 
 ```markdown
 <error_handling>
-<subagent_errors>
-If subagent returns {status: "failed"}:
-Check if error is transient
-If transient: Retry once
-If permanent: Propagate error to orchestrator
-Include recovery recommendation
-</subagent_errors>
+  <subagent_errors>
+    If subagent returns {status: "failed"}:
+      Check if error is transient
+      If transient: Retry once
+      If permanent: Propagate error to orchestrator
+      Include recovery recommendation
+  </subagent_errors>
 </error_handling>
 ```
 
@@ -617,13 +722,13 @@ Include recovery recommendation
 
 ```markdown
 <error_handling>
-<partial_success>
-If subagent returns {status: "partial"}:
-Collect partial artifacts
-Decide: continue with next step or stop
-If stop: Return partial result with resume instructions
-If continue: Proceed with caution
-</partial_success>
+  <partial_success>
+    If subagent returns {status: "partial"}:
+      Collect partial artifacts
+      Decide: continue with next step or stop
+      If stop: Return partial result with resume instructions
+      If continue: Proceed with caution
+  </partial_success>
 </error_handling>
 ```
 
@@ -631,17 +736,23 @@ If continue: Proceed with caution
 
 ```markdown
 <error_handling>
-<critical_errors> # Errors that prevent task completion - Argument parsing failure - Subagent execution failure - State update failure (if critical)
-
+  <critical_errors>
+    # Errors that prevent task completion
+    - Argument parsing failure
+    - Subagent execution failure
+    - State update failure (if critical)
+    
     Action: Log to errors.json, return error to orchestrator
-
-</critical_errors>
-
-<non_critical_errors> # Warnings or recoverable errors - Git commit failure (if non-blocking) - Optional artifact creation failure - Performance warnings
-
+  </critical_errors>
+  
+  <non_critical_errors>
+    # Warnings or recoverable errors
+    - Git commit failure (if non-blocking)
+    - Optional artifact creation failure
+    - Performance warnings
+    
     Action: Log warning, continue execution
-
-</non_critical_errors>
+  </non_critical_errors>
 </error_handling>
 ```
 
@@ -655,11 +766,11 @@ If continue: Proceed with caution
 
 ```markdown
 <state_management>
-<read> # Fast, direct query via jq
-task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" specs/state.json)
-
+  <read>
+    # Fast, direct query via jq
+    task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" .opencode/state.json)
+    
     # No delegation needed for reads
-
   </read>
 </state_management>
 ```
@@ -668,12 +779,16 @@ task_status=$(jq -r ".tasks[] | select(.number == $task_number) | .status" specs
 
 ```markdown
 <state_management>
-<write> # All writes delegated to status-sync-manager
-Delegate to status-sync-manager with: - task_number: {task_number} - new_status: "completed" - session_id: {session_id} - delegation_depth: 2
-
+  <write>
+    # All writes delegated to status-sync-manager
+    Delegate to status-sync-manager with:
+      - task_number: {task_number}
+      - new_status: "completed"
+      - session_id: {session_id}
+      - delegation_depth: 2
+    
     # Wait for confirmation
     # Validate return status
-
   </write>
 </state_management>
 ```
@@ -682,9 +797,15 @@ Delegate to status-sync-manager with: - task_number: {task_number} - new_status:
 
 ```markdown
 <state_management>
-<artifact_linking> # Link artifact to task via status-sync-manager
-Delegate to status-sync-manager with: - task_number: {task_number} - artifact_path: {artifact_path} - artifact_type: "plan|research|implementation" - session_id: {session_id} - delegation_depth: 2
-</artifact_linking>
+  <artifact_linking>
+    # Link artifact to task via status-sync-manager
+    Delegate to status-sync-manager with:
+      - task_number: {task_number}
+      - artifact_path: {artifact_path}
+      - artifact_type: "plan|research|implementation"
+      - session_id: {session_id}
+      - delegation_depth: 2
+  </artifact_linking>
 </state_management>
 ```
 
@@ -697,141 +818,144 @@ Delegate to status-sync-manager with: - task_number: {task_number} - artifact_pa
 ### ❌ Mistake 1: Command Executes Work Directly
 
 **Wrong**:
-
-```markdown
-## Workflow Execution
-
-<workflow*execution>
-<step_1>
-Create implementation plan
-Write plan to file: specs/{task_number}*.../plan.md
-</step_1>
-
-<step_2>
-Update state.json directly:
-jq ".tasks[] | select(.number == $task_number) | .status = \"planned\"" state.json
-</step_2>
-</workflow_execution>
-```
-
-**Correct**:
-
 ```markdown
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to planner subagent
-Wait for return
-Validate return
-</step_1>
+  <step_1>
+    Create implementation plan
+    Write plan to file: specs/{task_number}_.../plan.md
+  </step_1>
+  
+  <step_2>
+    Update specs/state.json directly:
+    jq ".tasks[] | select(.number == $task_number) | .status = \"planned\"" specs/state.json
+  </step_2>
+</workflow_execution>
+```
 
-<step_2>
-Delegate to status-sync-manager
-Wait for confirmation
-</step_2>
+**Correct**:
+```markdown
+## Workflow Execution
+
+<workflow_execution>
+  <step_1>
+    Delegate to planner subagent
+    Wait for return
+    Validate return
+  </step_1>
+  
+  <step_2>
+    Delegate to status-sync-manager
+    Wait for confirmation
+  </step_2>
 </workflow_execution>
 ```
 
 ### ❌ Mistake 2: Skipping Validation
 
 **Wrong**:
-
 ```markdown
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to subagent # Assume success, don't validate return
-</step_1>
-
-<step_2>
-Proceed to next step
-</step_2>
+  <step_1>
+    Delegate to subagent
+    # Assume success, don't validate return
+  </step_1>
+  
+  <step_2>
+    Proceed to next step
+  </step_2>
 </workflow_execution>
 ```
 
 **Correct**:
-
 ```markdown
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to subagent
-Wait for return
-Validate return: - status == "completed" - artifacts present - files exist on disk
-If validation fails: Return error, do NOT proceed
-</step_1>
-
-<step_2>
-Proceed to next step (only if step 1 validated)
-</step_2>
+  <step_1>
+    Delegate to subagent
+    Wait for return
+    Validate return:
+      - status == "completed"
+      - artifacts present
+      - files exist on disk
+    If validation fails: Return error, do NOT proceed
+  </step_1>
+  
+  <step_2>
+    Proceed to next step (only if step 1 validated)
+  </step_2>
 </workflow_execution>
 ```
 
 ### ❌ Mistake 3: Updating State Directly
 
 **Wrong**:
-
 ```markdown
 ## State Management
 
 <state_management>
-<write> # Direct write to state.json
-jq ".tasks[] | select(.number == $task_number) | .status = \"completed\"" specs/state.json > tmp.json
-mv tmp.json specs/state.json
-</write>
+  <write>
+    # Direct write to specs/state.json
+    jq ".tasks[] | select(.number == $task_number) | .status = \"completed\"" .opencode/state.json > tmp.json
+    mv tmp.json .opencode/state.json
+  </write>
 </state_management>
 ```
 
 **Correct**:
-
 ```markdown
 ## State Management
 
 <state_management>
-<write> # Delegated write via status-sync-manager
-Delegate to status-sync-manager with: - task_number: {task_number} - new_status: "completed" - session_id: {session_id} - delegation_depth: 2
-</write>
+  <write>
+    # Delegated write via status-sync-manager
+    Delegate to status-sync-manager with:
+      - task_number: {task_number}
+      - new_status: "completed"
+      - session_id: {session_id}
+      - delegation_depth: 2
+  </write>
 </state_management>
 ```
 
 ### ❌ Mistake 4: Missing Error Handling
 
 **Wrong**:
-
 ```markdown
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to subagent # No error handling
-</step_1>
-
-<step_2>
-Return result
-</step_2>
+  <step_1>
+    Delegate to subagent
+    # No error handling
+  </step_1>
+  
+  <step_2>
+    Return result
+  </step_2>
 </workflow_execution>
 ```
 
 **Correct**:
-
 ```markdown
 ## Workflow Execution
 
 <workflow_execution>
-<step_1>
-Delegate to subagent
-If subagent returns {status: "failed"}:
-Log error
-Return error to orchestrator with recovery recommendation
-Do NOT proceed to step 2
-</step_1>
-
-<step_2>
-Return result (only if step 1 succeeded)
-</step_2>
+  <step_1>
+    Delegate to subagent
+    If subagent returns {status: "failed"}:
+      Log error
+      Return error to orchestrator with recovery recommendation
+      Do NOT proceed to step 2
+  </step_1>
+  
+  <step_2>
+    Return result (only if step 1 succeeded)
+  </step_2>
 </workflow_execution>
 ```
 
@@ -842,7 +966,6 @@ Return result (only if step 1 succeeded)
 ### Command File Template
 
 See `templates/command-template.md` for complete template with:
-
 - Frontmatter structure
 - Argument parsing section
 - Workflow execution section
@@ -864,7 +987,7 @@ See `templates/delegation-context.md` for delegation context format
 
 ### Three-Layer Pattern
 
-Command files are **Layer 2** in ProofChecker's three-layer architecture:
+Command files are **Layer 2** in Logos/Theory's three-layer architecture:
 
 ```
 Layer 1: Orchestrator (Pure Router)
@@ -875,7 +998,6 @@ Layer 3: Execution Subagent (Work Executor)
 ```
 
 **Command File Responsibilities in Three-Layer Pattern**:
-
 1. Receive arguments from orchestrator (Layer 1)
 2. Parse and validate arguments
 3. Orchestrate workflow via subagent delegation (Layer 3)
@@ -896,10 +1018,9 @@ Layer 3: Execution Subagent (Work Executor)
 4. ✅ **Commands validate** arguments and subagent returns
 5. ✅ **Commands aggregate** results from multiple subagents
 6. ✅ **Commands handle errors** and provide recovery recommendations
-7. ✅ **Commands use state.json** for fast reads, delegate writes
+7. ✅ **Commands use specs/state.json** for fast reads, delegate writes
 
 **Common Patterns**:
-
 - Simple delegation (one subagent)
 - Sequential delegation (multiple subagents)
 - Conditional delegation (branching)
@@ -907,9 +1028,8 @@ Layer 3: Execution Subagent (Work Executor)
 - Preflight/postflight (status updates)
 
 **Avoid**:
-
 - ❌ Executing work directly
-- ❌ Updating state.json directly
+- ❌ Updating specs/state.json directly
 - ❌ Skipping validation
 - ❌ Missing error handling
 
@@ -918,7 +1038,6 @@ Layer 3: Execution Subagent (Work Executor)
 ---
 
 **Related Documentation**:
-
 - `orchestration/architecture.md` - Three-layer delegation pattern
 - `orchestration/delegation.md` - Delegation patterns and depth tracking
 - `orchestration/state-management.md` - State management patterns

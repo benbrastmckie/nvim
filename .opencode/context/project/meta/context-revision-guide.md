@@ -1,5 +1,6 @@
 # Context File Revision Guide for Meta Agents
 
+**Version**: 1.0  
 **Last Updated**: 2026-01-08  
 **Purpose**: Guide meta agents on when and how to revise context files without bloat
 
@@ -27,7 +28,7 @@ Create a new context file when:
 - Concept is orthogonal to existing files
 - Topic deserves dedicated focus
 
-**Example**: Creating `project/neovim/plugin-optimization-patterns.md` for Neovim-specific patterns
+**Example**: Creating `project/lean/proof-automation-patterns.md` for Lean-specific patterns
 
 ### Split Existing File
 
@@ -114,9 +115,9 @@ Split an existing file when:
 
 ### Project Domain (`.opencode/context/project/{domain}/`)
 
-**When to revise**: Domain knowledge expands
-**Examples**: `lazy-nvim-guide.md`, `plugin-spec.md`, `keymap-patterns.md`
-**Revision pattern**: Create new files for new concepts
+**When to revise**: Domain knowledge expands  
+**Examples**: `proof-theory-concepts.md`, `kripke-semantics-overview.md`  
+**Revision pattern**: Create new files for new concepts  
 **Frequency**: High (per-task)
 
 ---
@@ -224,11 +225,11 @@ Split an existing file when:
 
 ### Scenario 3: New Domain Added
 
-**Situation**: Adding a new documentation domain (e.g., Typst)
-**Action**: Create new domain directory
+**Situation**: Adding formal verification domain  
+**Action**: Create new domain directory  
 **Steps**:
-1. Create `.opencode/context/project/typst/`
-2. Create domain-specific files (e.g., `typst-syntax.md`, `typst-templates.md`)
+1. Create `.opencode/context/project/formal-verification/`
+2. Create domain-specific files (e.g., `proof-strategies.md`)
 3. Update context index
 4. Update relevant agents to load new files
 

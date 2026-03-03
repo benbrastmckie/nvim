@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Documentation standards for the .opencode AI system and ProofChecker repository.
+Documentation standards for the .opencode AI system and Logos/Theory repository.
 These standards ensure documentation is clear, concise, accurate, and optimized for
 AI agent consumption.
 
@@ -236,7 +236,7 @@ Artifacts in `specs/` are organized by project:
 - Increment plan versions when revising
 - Keep summaries to 1-2 pages maximum
 - Link artifacts to specs/TODO.md tasks
-- Update state.json after operations
+- Update specs/state.json after operations
 
 ## Validation
 
@@ -285,7 +285,7 @@ Use this checklist when creating or updating documentation:
 
 ## Related Standards
 
-### ProofChecker Project
+### Logos/Theory Project
 - [DIRECTORY_README_STANDARD.md](../../../docs/development/DIRECTORY_README_STANDARD.md)
   - Directory-level README conventions for LEAN 4 projects
 - [DOC_QUALITY_CHECKLIST.md](../../../docs/development/DOC_QUALITY_CHECKLIST.md)

@@ -20,7 +20,7 @@ task {N}: complete research
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 **Plan:**
@@ -29,7 +29,7 @@ task {N}: create implementation plan
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 **Implementation (complete):**
@@ -38,7 +38,7 @@ task {N}: complete implementation
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 **Implementation (partial):**
@@ -47,7 +47,7 @@ task {N}: partial implementation (phases 1-{M} of {total})
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 **Implementation (phase):**
@@ -56,7 +56,7 @@ task {N} phase {P}: {phase_name}
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 ### 3. Create Commit

@@ -9,7 +9,7 @@ This document provides patterns for reading and writing metadata files between a
 ### Metadata File Location
 
 ```
-specs/{NNN}_{SLUG}/.return-meta.json
+specs/{N}_{SLUG}/.return-meta.json
 ```
 
 Where:
@@ -19,14 +19,13 @@ Where:
 ### Deriving the Path
 
 ```bash
-# Given task_number and task data from state.json
+# Given task_number and task data from specs/state.json
 task_number=259
 task_slug=$(jq -r --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num) | .project_name' \
   specs/state.json)
-padded_num=$(printf "%03d" "$task_number")
 
-metadata_path="specs/${padded_num}_${task_slug}/.return-meta.json"
+metadata_path="specs/${task_number}_${task_slug}/.return-meta.json"
 ```
 
 ## Writing Metadata (Agent Side)
@@ -37,11 +36,10 @@ For simple metadata without complex escaping:
 
 ```bash
 # Ensure directory exists
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${task_slug}"
+mkdir -p "specs/${task_number}_${task_slug}"
 
 # Write metadata using heredoc
-cat > "specs/${padded_num}_${task_slug}/.return-meta.json" << 'METADATA_EOF'
+cat > "specs/${task_number}_${task_slug}/.return-meta.json" << 'METADATA_EOF'
 {
   "status": "researched",
   "artifacts": [
@@ -89,19 +87,19 @@ jq \
   --arg agent "lean-research-agent" \
   --argjson depth 1 \
   '. + {metadata: {session_id: $sid, agent_type: $agent, delegation_depth: $depth}}' \
-  /tmp/meta_with_artifacts.json > "specs/${padded_num}_${task_slug}/.return-meta.json"
+  /tmp/meta_with_artifacts.json > "specs/${task_number}_${task_slug}/.return-meta.json"
 
 # Cleanup temp files
 rm -f /tmp/meta_base.json /tmp/meta_with_artifacts.json
 ```
 
-### Pattern 3: Claude Write Tool
+### Pattern 3: OpenCode Write Tool
 
-For agents using Claude tools directly:
+For agents using OpenCode tools directly:
 
 ```
 Use the Write tool to create the metadata file:
-- Path: specs/{NNN}_{SLUG}/.return-meta.json
+- Path: specs/{N}_{SLUG}/.return-meta.json
 - Content: Valid JSON matching the schema
 ```
 
@@ -110,7 +108,7 @@ Use the Write tool to create the metadata file:
 ### Pattern 1: Full Object Read
 
 ```bash
-metadata_file="specs/${padded_num}_${task_slug}/.return-meta.json"
+metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
 
 if [ -f "$metadata_file" ]; then
     # Read entire metadata
@@ -128,7 +126,7 @@ fi
 ### Pattern 2: Field Extraction
 
 ```bash
-metadata_file="specs/${padded_num}_${task_slug}/.return-meta.json"
+metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
 
 # Safe field extraction with defaults
 status=$(jq -r '.status // "failed"' "$metadata_file" 2>/dev/null)
@@ -147,7 +145,7 @@ artifacts=$(jq -c '.artifacts // []' "$metadata_file" 2>/dev/null)
 ### Pattern 3: Validation Before Read
 
 ```bash
-metadata_file="specs/${padded_num}_${task_slug}/.return-meta.json"
+metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
 
 # Check file exists and is valid JSON
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
@@ -171,7 +169,7 @@ fi
 
 ```bash
 # Remove metadata file after postflight completes
-rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
+rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
 ```
 
 ### With Verification
@@ -179,7 +177,7 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
 ```bash
 # Verify postflight succeeded before cleanup
 if [ "$postflight_success" = "true" ]; then
-    rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
+    rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
 else
     # Keep metadata for debugging
     echo "Warning: Keeping metadata file for debugging"
@@ -198,12 +196,12 @@ find specs -name ".return-meta.json" -delete
 ### Missing Metadata File
 
 ```bash
-metadata_file="specs/${padded_num}_${task_slug}/.return-meta.json"
+metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
 
 if [ ! -f "$metadata_file" ]; then
     # Agent may have failed before writing metadata
     # Check for partial artifacts
-    if [ -d "specs/${padded_num}_${task_slug}/reports" ]; then
+    if [ -d "specs/${task_number}_${task_slug}/reports" ]; then
         echo "Warning: Metadata missing but reports directory exists"
         status="partial"
     else
@@ -243,7 +241,7 @@ done
 
 ```bash
 # Read metadata
-metadata_file="specs/${padded_num}_${task_slug}/.return-meta.json"
+metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     # Extract metadata
@@ -253,7 +251,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     session_id=$(jq -r '.metadata.session_id // ""' "$metadata_file")
 
     if [ "$status" = "researched" ] || [ "$status" = "planned" ] || [ "$status" = "implemented" ]; then
-        # Update state.json
+        # Update specs/state.json
         jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
            --arg status "$status" \
           '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
@@ -261,7 +259,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
             last_updated: $ts
           }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
 
-        # Add artifact to state.json (if present)
+        # Add artifact to specs/state.json (if present)
         if [ -n "$artifact_path" ]; then
             jq --arg path "$artifact_path" \
                --arg type "$(jq -r '.artifacts[0].type' "$metadata_file")" \
@@ -278,12 +276,12 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
 
 Session: ${session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+Co-Authored-By: OpenCode Opus 4.5 <noreply@anthropic.com>"
 
         # Cleanup
         rm -f "$metadata_file"
-        rm -f "specs/${padded_num}_${task_slug}/.postflight-pending"
-        rm -f "specs/${padded_num}_${task_slug}/.postflight-loop-guard"
+        rm -f specs/.postflight-pending
+        rm -f specs/.postflight-loop-guard
 
         echo "Postflight complete: $status"
     else

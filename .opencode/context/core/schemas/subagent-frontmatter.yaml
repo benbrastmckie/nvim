@@ -52,7 +52,7 @@ timeout: 3600
 
 # Available tools for agent execution
 # Core tools: read, write, edit, bash, grep, glob, list
-# Specialized tools: webfetch, websearch (research)
+# Specialized tools: webfetch (research), lean-lsp-mcp_* (Lean agents)
 tools:
   - read
   - write
@@ -112,7 +112,7 @@ permissions:
     - read: [".env", "**/*.key", "**/*.pem", "**/*.p12", ".ssh/**/*", "**/.git/config"]
     
     # CRITICAL: Critical file modification (breaks system)
-    - write: [".git/**/*", "/etc/**/*", "/var/**/*"]
+    - write: [".git/**/*", "lakefile.lean", "lean-toolchain", "/etc/**/*", "/var/**/*"]
 
 # Permission evaluation:
 # 1. Check deny list first (deny takes precedence)
@@ -129,7 +129,7 @@ context_loading:
   strategy: lazy
   
   # Index file for lazy loading discovery
-  index: ".opencode/context/index.json"
+  index: ".opencode/context/index.md"
   
   # Required context files (relative to .opencode/context/)
   required:

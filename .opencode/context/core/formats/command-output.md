@@ -146,7 +146,7 @@ Recommendation: {recommendation}
 ### Example
 ```
 Status: Failed
-Research failed due to missing task entry in TODO.md
+Research failed due to missing task entry in specs/TODO.md
 
 Errors:
 - Task 999 not found in specs/TODO.md
@@ -172,7 +172,7 @@ Artifacts created:
 Task: 999
 
 Status: Failed
-Task not found in TODO.md
+Task not found in specs/TODO.md
 
 Errors:
 - Task 999 not found in specs/TODO.md
@@ -194,7 +194,7 @@ Artifacts created:
 ```
 Command: /todo
 
-TODO.md updated. Added 2 new tasks, updated 3 task statuses to [COMPLETED].
+specs/TODO.md updated. Added 2 new tasks, updated 3 task statuses to [COMPLETED].
 ```
 
 ## Implementation Notes

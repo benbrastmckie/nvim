@@ -19,7 +19,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 **When**: Command requires task_number parameter
 **Checks**:
 - Task number is integer (regex: `^\d+$`)
-- Task exists in TODO.md (grep `^### {number}\.`)
+- Task exists in specs/TODO.md (grep `^### {number}\.`)
 - Extract task status (for status transition validation)
 - Extract task language (for routing)
 
@@ -79,7 +79,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 - Plan file format/structure (let planner validate)
 - Research report completeness (let researcher validate)
 - Implementation correctness (let implementer validate)
-- Neovim config correctness (let neovim-implementation-agent validate)
+- Lean syntax correctness (let lean-implementation-agent validate)
 
 **Rationale**: Orchestrator shouldn't understand domain-specific formats  
 **Verdict**: ❌ Skip - Let agents handle
@@ -99,7 +99,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 ### Command File Stage 1: ParseAndValidate
 **Validates**:
 - Task number (if required)
-- Task exists in state.json
+- Task exists in specs/state.json
 - Task status allows operation
 - Argument syntax and types
 
@@ -123,7 +123,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 - Business logic correctness
 - Domain-specific rules
 
-**Implementation**: See `.opencode/command/*.md` Stage 3 for executable validation logic
+**Implementation**: See `.opencode/commands/*.md` Stage 3 for executable validation logic
 
 ## Error Handling
 
@@ -133,7 +133,7 @@ The orchestrator validates **structural correctness** and **safety constraints**
 **Agent validation fails** → Agent returns failed status with clear error message
 
 ### Error Messages
-**Good** (orchestrator): "Task 999 not found in TODO.md"  
+**Good** (orchestrator): "Task 999 not found in specs/TODO.md"  
 **Good** (agent): "Plan already exists at path/to/plan.md. Use /revise to update."
 
 **Bad** (orchestrator): "Plan already exists" (business logic, not orchestrator concern)  
@@ -222,18 +222,18 @@ validate_range() {
 
 **Timestamp Extraction and Comparison**:
 ```bash
-# Get git blame timestamp for TODO.md field
+# Get git blame timestamp for specs/TODO.md field
 get_todo_timestamp() {
   local task_number="$1"
   local field="$2"
   
   # Find task entry line range
-  start_line=$(grep -n "^### ${task_number}\." TODO.md | cut -d: -f1)
-  end_line=$(tail -n +$start_line TODO.md | grep -n "^---$" | head -1 | cut -d: -f1)
+  start_line=$(grep -n "^### ${task_number}\." specs/TODO.md | cut -d: -f1)
+  end_line=$(tail -n +$start_line specs/TODO.md | grep -n "^---$" | head -1 | cut -d: -f1)
   end_line=$((start_line + end_line - 1))
   
   # Get commit hash for field line
-  commit_hash=$(git blame -L ${start_line},${end_line} TODO.md | grep "$field" | awk '{print $1}')
+  commit_hash=$(git blame -L ${start_line},${end_line} specs/TODO.md | grep "$field" | awk '{print $1}')
   
   # Get commit timestamp
   timestamp=$(git show -s --format=%ct "$commit_hash")
@@ -241,12 +241,12 @@ get_todo_timestamp() {
   echo "$timestamp"
 }
 
-# Get git blame timestamp for state.json field
+# Get git blame timestamp for specs/state.json field
 get_state_timestamp() {
   local task_number="$1"
   
-  # Get last commit that modified this task in state.json
-  timestamp=$(git log -1 --format=%ct -S "\"project_number\": $task_number" -- state.json)
+  # Get last commit that modified this task in specs/state.json
+  timestamp=$(git log -1 --format=%ct -S "\"project_number\": $task_number" -- specs/state.json)
   
   echo "$timestamp"
 }
@@ -259,11 +259,11 @@ resolve_conflict() {
   local state_timestamp=$(get_state_timestamp "$task_number")
   
   if [ "$state_timestamp" -gt "$todo_timestamp" ]; then
-    echo "state.json"  # state.json wins
+    echo "specs/state.json"  # specs/state.json wins
   elif [ "$todo_timestamp" -gt "$state_timestamp" ]; then
-    echo "TODO.md"  # TODO.md wins
+    echo "specs/TODO.md"  # specs/TODO.md wins
   else
-    echo "state.json"  # Tie-breaker: state.json wins
+    echo "specs/state.json"  # Tie-breaker: specs/state.json wins
   fi
 }
 ```
@@ -281,12 +281,12 @@ validate_all_tasks() {
   
   for task_num in "${task_numbers[@]}"; do
     # Check task exists in archive (for --recover)
-    if ! jq -e ".archived_projects[] | select(.project_number == $task_num)" archive/state.json > /dev/null; then
+    if ! jq -e ".archived_projects[] | select(.project_number == $task_num)" specs/archive/state.json > /dev/null; then
       errors+=("Task $task_num not found in archive")
     fi
     
     # Check task not already active
-    if jq -e ".active_projects[] | select(.project_number == $task_num)" state.json > /dev/null; then
+    if jq -e ".active_projects[] | select(.project_number == $task_num)" specs/state.json > /dev/null; then
       errors+=("Task $task_num already active")
     fi
   done
@@ -339,20 +339,20 @@ validate_division() {
   local task_number="$1"
   
   # Check task exists
-  if ! jq -e ".active_projects[] | select(.project_number == $task_number)" state.json > /dev/null; then
+  if ! jq -e ".active_projects[] | select(.project_number == $task_number)" specs/state.json > /dev/null; then
     echo "[FAIL] Task $task_number not found in active_projects"
     exit 1
   fi
   
   # Check task status allows division
-  status=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .status" state.json)
+  status=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .status" specs/state.json)
   if [[ "$status" == "completed" || "$status" == "abandoned" ]]; then
     echo "[FAIL] Cannot divide $status task"
     exit 1
   fi
   
   # Check task has no existing dependencies
-  deps=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .dependencies | length" state.json)
+  deps=$(jq -r ".active_projects[] | select(.project_number == $task_number) | .dependencies | length" specs/state.json)
   if [ "$deps" -gt 0 ]; then
     echo "[FAIL] Task $task_number already has dependencies"
     exit 1
@@ -385,13 +385,13 @@ validate_subtask_count() {
 
 This standard defines validation rules for subagent returns, including return format validation and artifact verification.
 
-**ENFORCEMENT**: These validation rules are ENFORCED by command files (`.opencode/command/*.md`) in Stage 3 (ValidateReturn). All subagent returns are validated before relaying results to the user. Validation failures result in immediate error reporting to the user and workflow termination.
+**ENFORCEMENT**: These validation rules are ENFORCED by command files (`.opencode/commands/*.md`) in Stage 3 (ValidateReturn). All subagent returns are validated before relaying results to the user. Validation failures result in immediate error reporting to the user and workflow termination.
 
 **IMPLEMENTATION**: See command files for executable validation logic:
-- `.opencode/command/research.md` Stage 3 (ValidateReturn)
-- `.opencode/command/plan.md` Stage 3 (ValidateReturn)
-- `.opencode/command/revise.md` Stage 3 (ValidateReturn)
-- `.opencode/command/implement.md` Stage 3 (ValidateReturn)
+- `.opencode/commands/research.md` Stage 3 (ValidateReturn)
+- `.opencode/commands/plan.md` Stage 3 (ValidateReturn)
+- `.opencode/commands/revise.md` Stage 3 (ValidateReturn)
+- `.opencode/commands/implement.md` Stage 3 (ValidateReturn)
 
 **ARCHITECTURE NOTE**: In orchestrator v7.0 (pure router architecture), validation moved from orchestrator Stage 4 to command files Stage 3. This reflects the architectural shift from centralized orchestrator to distributed command files.
 
@@ -691,7 +691,7 @@ These validation rules are now ACTIVELY ENFORCED by command files Stage 3 (Valid
 
 ## See Also
 
-- **Command Files Stage 3**: `.opencode/command/*.md` Stage 3 (ValidateReturn) - Executable validation logic
+- **Command Files Stage 3**: `.opencode/commands/*.md` Stage 3 (ValidateReturn) - Executable validation logic
 - **Validation Template**: `specs/280_fix_orchestrator_stage_4_validation/validation-template.md` - Reusable validation section
 - Delegation Standard: `.opencode/context/core/standards/delegation.md`
 - Subagent Return Format: `.opencode/context/core/standards/subagent-return-format.md`

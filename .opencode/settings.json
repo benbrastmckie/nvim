@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(git:*)",
+      "Bash(nvim *)",
+      "Bash(luac *)",
       "Bash(lake *)",
+      "Bash(pdflatex *)",
+      "Bash(latexmk *)",
+      "Bash(bibtex *)",
+      "Bash(biber *)",
+      "Bash(pnpm *)",
+      "Bash(npx *)",
       "Bash(cd *)",
       "Bash(ls *)",
       "Bash(mkdir *)",
@@ -21,11 +29,14 @@
       "mcp__lean-lsp__*",
       "mcp__astro-docs__*",
       "mcp__context7__*",
-      "mcp__playwright__*",
-      "Bash(pnpm *)",
-      "Bash(npx *)"
+      "mcp__playwright__*"
     ],
-    "deny": ["Bash(rm -rf /)", "Bash(rm -rf ~)", "Bash(sudo *)", "Bash(chmod 777 *)"]
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ]
   },
   "hooks": {
     "PreToolUse": [
@@ -34,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'"
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'"
           }
         ]
       }
@@ -52,15 +63,6 @@
     ],
     "SessionStart": [
       {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .opencode/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      },
-      {
         "matcher": "startup",
         "hooks": [
           {
@@ -69,7 +71,25 @@
           },
           {
             "type": "command",
-            "command": "bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
+            "command": "bash .opencode/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .opencode/hooks/wezterm-clear-status.sh 2>/dev/null || echo '{}'",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "bash .opencode/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'",
+            "timeout": 5000
           }
         ]
       }
@@ -84,26 +104,13 @@
           },
           {
             "type": "command",
-            "command": "bash .opencode/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+            "command": "bash .opencode/hooks/wezterm-notify.sh 2>/dev/null || echo '{}'",
+            "timeout": 5000
           },
           {
             "type": "command",
-            "command": "bash .opencode/hooks/wezterm-notify.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .opencode/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
-          },
-          {
-            "type": "command",
-            "command": "bash .opencode/hooks/wezterm-clear-status.sh 2>/dev/null || echo '{}'"
+            "command": "bash .opencode/hooks/tts-notify.sh 2>/dev/null || echo '{}'",
+            "timeout": 10000
           }
         ]
       }
@@ -121,5 +128,5 @@
       }
     ]
   },
-  "theme": "gruvbox"
+  "model": "sonnet"
 }

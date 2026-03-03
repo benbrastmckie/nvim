@@ -1,5 +1,6 @@
 # Self-Healing Implementation Details
 
+**Version**: 1.0.0
 **Purpose**: Detailed implementation reference for self-healing infrastructure
 **Audience**: Developers debugging or extending self-healing functionality
 **Last Updated**: 2025-12-27
@@ -205,10 +206,10 @@ def count_by_priority(todo_data):
 ```python
 def ensure_state_json():
     """
-    Ensure state.json exists, auto-create if missing
+    Ensure specs/state.json exists, auto-create if missing
     
     This function is called by commands in their preflight stage.
-    It implements the core self-healing logic for state.json.
+    It implements the core self-healing logic for specs/state.json.
     """
     
     state_path = "specs/state.json"
@@ -221,11 +222,11 @@ def ensure_state_json():
             validate_state_schema(state)
             return state_path
         except Exception as e:
-            log_warning(f"state.json exists but invalid: {e}")
+            log_warning(f"specs/state.json exists but invalid: {e}")
             # Fall through to auto-creation
     
     # Self-healing: Auto-create from template
-    log_info("Self-healing: state.json missing or invalid, creating from template")
+    log_info("Self-healing: specs/state.json missing or invalid, creating from template")
     
     # 1. Load template
     template_path = ".opencode/context/core/templates/state-template.json"
@@ -242,10 +243,10 @@ def ensure_state_json():
     # 2. Gather data from specs/TODO.md
     todo_path = "specs/TODO.md"
     if not file_exists(todo_path):
-        log_error("Cannot auto-create state.json: specs/TODO.md missing")
+        log_error("Cannot auto-create specs/state.json: specs/TODO.md missing")
         raise FileNotFoundError(
             "Required file specs/TODO.md not found. "
-            "Self-healing can only create state.json when specs/TODO.md exists."
+            "Self-healing can only create specs/state.json when specs/TODO.md exists."
         )
     
     try:
@@ -261,7 +262,7 @@ def ensure_state_json():
     try:
         write_json_atomic(state_path, state)
     except Exception as e:
-        log_error(f"Failed to write state.json: {e}")
+        log_error(f"Failed to write specs/state.json: {e}")
         raise IOError(f"Could not write {state_path}: {e}")
     
     log_info(f"Self-healing: Created {state_path} successfully")
@@ -288,7 +289,7 @@ def populate_state_from_template(template, todo_data):
         "recent_activities": [
             {
                 "timestamp": current_timestamp(),
-                "activity": f"Auto-created state.json with self-healing - initialized from specs/TODO.md ({len(todo_data['tasks'])} tasks, {highest_task + 1} next number)"
+                "activity": f"Auto-created specs/state.json with self-healing - initialized from specs/TODO.md ({len(todo_data['tasks'])} tasks, {highest_task + 1} next number)"
             }
         ],
         "pending_tasks": extract_pending_tasks(todo_data),
@@ -325,10 +326,10 @@ def extract_pending_tasks(todo_data):
 ```python
 def create_minimal_state():
     """
-    Create minimal state.json when template unavailable
+    Create minimal specs/state.json when template unavailable
     
     This is a fallback for when the template file is missing or invalid.
-    It creates a minimal but functional state.json.
+    It creates a minimal but functional specs/state.json.
     """
     
     minimal_state = {
@@ -343,7 +344,7 @@ def create_minimal_state():
             "_comment": "Project numbers wrap around to 000 after 999. Ensure old projects are archived before reuse."
         },
         "state_references": {
-            "archive_state_path": "specs/archive/state.json",
+            "archive_state_path": "specs/specs/archive/state.json",
             "_comment": "References to specialized state files. These files are auto-created if missing."
         },
         "active_projects": [],
@@ -362,7 +363,7 @@ def create_minimal_state():
         "recent_activities": [
             {
                 "timestamp": current_timestamp(),
-                "activity": "Created minimal state.json - template unavailable (degraded mode)"
+                "activity": "Created minimal specs/state.json - template unavailable (degraded mode)"
             }
         ],
         "pending_tasks": [],
@@ -373,9 +374,9 @@ def create_minimal_state():
             "total_issues_found": 0
         },
         "archive_summary": {
-            "_comment": "Quick reference to archived projects - full details in archive/state.json",
+            "_comment": "Quick reference to archived projects - full details in specs/archive/state.json",
             "archive_location": "specs/archive/",
-            "archive_state_file": "specs/archive/state.json"
+            "archive_state_file": "specs/specs/archive/state.json"
         },
         "schema_info": {
             "version": "1.0.0",
@@ -389,12 +390,12 @@ def create_minimal_state():
     
     try:
         write_json_atomic("specs/state.json", minimal_state)
-        log_warning("Self-healing: Created minimal state.json (degraded mode)")
+        log_warning("Self-healing: Created minimal specs/state.json (degraded mode)")
         log_warning("  - Template file missing, using fallback minimal structure")
         log_warning("  - To restore full functionality, restore template from git:")
         log_warning("    git checkout HEAD -- .opencode/context/core/templates/state-template.json")
     except Exception as e:
-        log_error(f"Critical: Cannot create even minimal state.json: {e}")
+        log_error(f"Critical: Cannot create even minimal specs/state.json: {e}")
         raise IOError(f"Self-healing completely failed: {e}")
     
     return "specs/state.json"
@@ -404,24 +405,24 @@ def create_minimal_state():
 
 ## Testing Scenarios
 
-### Test Case 1: Missing state.json (Normal Case)
+### Test Case 1: Missing specs/state.json (Normal Case)
 
 ```bash
-# Setup: Remove state.json
+# Setup: Remove specs/state.json
 rm specs/state.json
 
 # Execute: Run any command
 /research 197
 
 # Expected behavior:
-# 1. Command detects missing state.json in preflight
+# 1. Command detects missing specs/state.json in preflight
 # 2. Calls ensure_state_json()
 # 3. Loads template from .opencode/context/core/templates/state-template.json
 # 4. Parses specs/TODO.md (must exist)
 # 5. Extracts task data (37 tasks found)
 # 6. Populates template fields
-# 7. Writes state.json atomically
-# 8. Logs: "Self-healing: Created state.json from template"
+# 7. Writes specs/state.json atomically
+# 8. Logs: "Self-healing: Created specs/state.json from template"
 # 9. Command continues normally
 
 # Verification:
@@ -432,7 +433,7 @@ cat specs/state.json | jq '.next_project_number'
 # Should show: 200 (one more than highest task in specs/TODO.md)
 
 cat specs/state.json | jq '.recent_activities[0].activity'
-# Should show: "Auto-created state.json..."
+# Should show: "Auto-created specs/state.json..."
 ```
 
 ### Test Case 2: Missing Template (Degraded Mode)
@@ -446,12 +447,12 @@ mv .opencode/context/core/templates/state-template.json \
 /research 197
 
 # Expected behavior:
-# 1. Command detects missing state.json
+# 1. Command detects missing specs/state.json
 # 2. Calls ensure_state_json()
 # 3. Attempts to load template - fails
 # 4. Falls back to create_minimal_state()
-# 5. Creates minimal but functional state.json
-# 6. Logs warning: "Created minimal state.json (degraded mode)"
+# 5. Creates minimal but functional specs/state.json
+# 6. Logs warning: "Created minimal specs/state.json (degraded mode)"
 # 7. Command continues in degraded mode
 
 # Verification:
@@ -476,7 +477,7 @@ mv specs/TODO.md specs/TODO.md.backup
 /research 197
 
 # Expected behavior:
-# 1. Command detects missing state.json
+# 1. Command detects missing specs/state.json
 # 2. Calls ensure_state_json()
 # 3. Loads template successfully
 # 4. Attempts to load specs/TODO.md - fails
@@ -485,7 +486,7 @@ mv specs/TODO.md specs/TODO.md.backup
 
 # Expected error:
 # Error: Required file specs/TODO.md not found
-# Self-healing can only create state.json when specs/TODO.md exists.
+# Self-healing can only create specs/state.json when specs/TODO.md exists.
 #
 # Recovery steps:
 # 1. Restore specs/TODO.md from git: git checkout HEAD -- specs/TODO.md
@@ -496,20 +497,20 @@ mv specs/TODO.md specs/TODO.md.backup
 mv specs/TODO.md.backup specs/TODO.md
 ```
 
-### Test Case 4: Corrupted state.json (Re-Creation)
+### Test Case 4: Corrupted specs/state.json (Re-Creation)
 
 ```bash
-# Setup: Corrupt state.json
+# Setup: Corrupt specs/state.json
 echo "{ invalid json }" > specs/state.json
 
 # Execute: Run command
 /research 197
 
 # Expected behavior:
-# 1. Command attempts to load state.json
+# 1. Command attempts to load specs/state.json
 # 2. JSON parsing fails
 # 3. Falls back to auto-creation
-# 4. Creates fresh state.json from template
+# 4. Creates fresh specs/state.json from template
 # 5. Logs warning about corruption
 # 6. Command continues normally
 
@@ -521,14 +522,14 @@ cat specs/state.json | jq '._schema_version'
 ### Test Case 5: Normal Operation (No Self-Healing)
 
 ```bash
-# Setup: state.json exists and valid
+# Setup: specs/state.json exists and valid
 # (No setup needed, this is the normal case)
 
 # Execute: Run command
 /research 197
 
 # Expected behavior:
-# 1. Command loads state.json successfully
+# 1. Command loads specs/state.json successfully
 # 2. No self-healing triggered
 # 3. No extra logging
 # 4. Command proceeds normally
@@ -547,7 +548,7 @@ cat specs/state.json | jq '.recent_activities[0].activity'
 ### Successful Auto-Creation
 
 ```
-[INFO] Self-healing: state.json missing, creating from template
+[INFO] Self-healing: specs/state.json missing, creating from template
 [INFO] Self-healing: Loaded template from .opencode/context/core/templates/state-template.json
 [INFO] Self-healing: Parsed specs/TODO.md successfully (37 tasks found)
 [INFO] Self-healing: Extracted 4 active projects, 2 completed projects
@@ -560,10 +561,10 @@ cat specs/state.json | jq '.recent_activities[0].activity'
 ### Degraded Mode Fallback
 
 ```
-[WARN] Self-healing: state.json missing, creating from template
+[WARN] Self-healing: specs/state.json missing, creating from template
 [ERROR] Self-healing failed: Template missing
 [WARN] Self-healing: Falling back to minimal state creation
-[WARN] Self-healing: Created minimal state.json (degraded mode)
+[WARN] Self-healing: Created minimal specs/state.json (degraded mode)
 [WARN]   - Template file missing, using fallback minimal structure
 [WARN]   - To restore full functionality, restore template from git:
 [WARN]     git checkout HEAD -- .opencode/context/core/templates/state-template.json
@@ -572,10 +573,10 @@ cat specs/state.json | jq '.recent_activities[0].activity'
 ### Failed Self-Healing
 
 ```
-[WARN] Self-healing: state.json missing, creating from template
+[WARN] Self-healing: specs/state.json missing, creating from template
 [INFO] Self-healing: Loaded template from .opencode/context/core/templates/state-template.json
-[ERROR] Cannot auto-create state.json: specs/TODO.md missing
-[ERROR] Required file specs/TODO.md not found. Self-healing can only create state.json when specs/TODO.md exists.
+[ERROR] Cannot auto-create specs/state.json: specs/TODO.md missing
+[ERROR] Required file specs/TODO.md not found. Self-healing can only create specs/state.json when specs/TODO.md exists.
 
 Error: Required file not found
 

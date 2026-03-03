@@ -198,7 +198,7 @@ User-facing guides and documentation.
 
 AI agent knowledge and operational standards.
 
-**Audience**: AI agents (Claude Code), developers maintaining the system
+**Audience**: AI agents (OpenCode), developers maintaining the system
 
 **Content types**:
 - Standards and conventions
@@ -238,4 +238,4 @@ Use relative paths from the current file location:
 
 - [documentation.md](documentation.md) - General documentation formatting standards
 - [DIRECTORY_README_STANDARD.md](../../../docs/development/DIRECTORY_README_STANDARD.md) -
-  Directory README conventions for the ProofChecker project
+  Directory README conventions for the Logos/Theory project

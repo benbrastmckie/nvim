@@ -14,17 +14,15 @@ Errors during command execution:
 
 ### State Errors
 Errors in state management:
-- `status_sync_failure` - TODO.md/state.json desync
+- `status_sync_failure` - specs/TODO.md/specs/state.json desync
 - `file_not_found` - Expected file missing
 - `parse_error` - JSON/YAML parse failure
 
 ### External Errors
 Errors from external systems:
 - `git_commit_failure` - Git operation failed
-- `build_error` - Build command failed
+- `build_error` - Lean/lake build failed
 - `tool_unavailable` - MCP tool not responding
-- `mcp_abort_error` - MCP tool aborted or timed out (error code -32001)
-- `delegation_interrupted` - Agent interrupted before completion (metadata shows in_progress)
 - `jq_parse_failure` - jq command parse error (often due to Issue #1132)
 
 ## Error Response Pattern
@@ -131,41 +129,12 @@ Return structured error:
 ```
 1. Capture jq error output (INVALID_CHARACTER, syntax error)
 2. Log to errors.json with original command
-3. Retry using "| not" pattern from jq-escaping-workarounds.md
+3. Retry using two-step pattern from jq-escaping-workarounds.md
 4. If retry succeeds, log recovery
 ```
 
-**Note**: jq failures are often caused by Claude Code Issue #1132 variants:
-- **Pipe injection**: `|` in quoted strings triggers `< /dev/null` injection
-- **`!=` escaping**: The `!=` operator gets escaped as `\!=`
-
-**Solution**: Use `select(.type == "X" | not)` instead of `select(.type != "X")`.
-See `.opencode/context/core/patterns/jq-escaping-workarounds.md` for full documentation.
-
-### MCP Abort Error Recovery
-```
-1. Log the error with tool name and context
-2. Retry once after 5-second delay
-3. Try alternative tool if available
-4. Write partial status to metadata file with partial_progress
-5. Continue with available information or return partial
-```
-
-**Note**: MCP AbortError -32001 is often caused by resource contention. Retry the operation
-after a brief delay.
-
-### Delegation Interrupted Recovery
-```
-1. Check metadata file for status="in_progress"
-2. Extract partial_progress to determine resume point
-3. Keep task status unchanged (still "researching" or "implementing")
-4. Log error with partial_progress context
-5. Display guidance: "Run command again to resume"
-```
-
-**Note**: Delegation interrupted occurs when an agent is terminated (by timeout, MCP error, or
-Claude Code abort) before writing final metadata. The early-metadata-pattern.md ensures
-metadata exists for recovery.
+**Note**: jq failures are often caused by OpenCode Issue #1132. Use the two-step jq pattern
+from `.opencode/context/core/patterns/jq-escaping-workarounds.md` to avoid these errors.
 
 ## Non-Blocking Errors
 

@@ -1,5 +1,6 @@
 # Research Workflow
 
+**Version**: 1.0.0  
 **Created**: 2025-12-29  
 **Purpose**: Detailed research workflow for conducting research and creating reports
 
@@ -18,21 +19,21 @@ This document describes the complete research workflow executed by the researche
 **When**: Task language is markdown, python, or general  
 **Agent**: researcher  
 **Tools**:
-
 - Web search
 - Documentation review
 - File analysis
 - API exploration
 
-### Neovim Research
+### Lean Research
 
-**When**: Task language is neovim
-**Agent**: neovim-research-agent
+**When**: Task language is lean  
+**Agent**: lean-research-agent  
 **Tools**:
-
-- WebSearch (plugin documentation)
-- WebFetch (plugin READMEs)
-- Read (codebase exploration)
+- LeanExplore (explore Mathlib)
+- Loogle (search by type signature)
+- LeanSearch (semantic search)
+- lean-lsp-mcp (LSP integration)
+- Web search
 - Documentation review
 
 ---
@@ -41,25 +42,24 @@ This document describes the complete research workflow executed by the researche
 
 ### Language Extraction
 
-Language is extracted from task entry in TODO.md:
+Language is extracted from task entry in specs/TODO.md:
 
 ```bash
-grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*Language\*\*: //'
+grep -A 20 "^### ${task_number}." specs/TODO.md | grep "Language" | sed 's/\*\*Language\*\*: //'
 ```
 
 **Fallback**: If extraction fails, defaults to "general" with warning logged.
 
 ### Routing Rules
 
-| Language   | Agent                   | Tools Available                                 |
-| ---------- | ----------------------- | ----------------------------------------------- |
-| `neovim`   | `neovim-research-agent` | WebSearch, WebFetch, Read, documentation review |
-| `markdown` | `researcher`            | Web search, documentation review                |
-| `python`   | `researcher`            | Web search, documentation review, API docs      |
-| `web`      | `researcher`            | Web search, documentation review                |
-| `general`  | `researcher`            | Web search, documentation review                |
+| Language | Agent | Tools Available |
+|----------|-------|----------------|
+| `lean` | `lean-research-agent` | LeanExplore, Loogle, LeanSearch, lean-lsp-mcp, web search |
+| `markdown` | `researcher` | Web search, documentation review |
+| `python` | `researcher` | Web search, documentation review, API docs |
+| `general` | `researcher` | Web search, documentation review |
 
-**Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses language-specific tooling.
+**Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses Lean-specific tooling.
 
 ---
 
@@ -70,10 +70,9 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Load task details and determine research scope
 
 **Process**:
-
-1. Read task from TODO.md using grep (selective loading):
+1. Read task from specs/TODO.md using grep (selective loading):
    ```bash
-   grep -A 50 "^### ${task_number}\." specs/TODO.md > /tmp/task-${task_number}.md
+   grep -A 50 "^### ${task_number}." specs/TODO.md > /tmp/task-${task_number}.md
    ```
 2. Extract task metadata:
    - Task number
@@ -104,7 +103,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Conduct research using general tools
 
 **Process**:
-
 1. Web search for relevant information:
    - Search for documentation
    - Search for tutorials
@@ -125,34 +123,37 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Best practices
    - Potential pitfalls
 
-#### For Neovim Research:
+#### For Lean Research:
 
-**Action**: Conduct research using Neovim-specific tools
+**Action**: Conduct research using Lean-specific tools
 
 **Process**:
-
-1. Use WebSearch to find plugin documentation:
-   - Search for plugin READMEs
-   - Find configuration examples
-   - Discover related plugins
-2. Use WebFetch to retrieve documentation:
-   - Fetch plugin documentation
-   - Get configuration guides
-   - Access API references
-3. Use Read to explore codebase:
-   - Analyze existing configuration
-   - Check module structure
+1. Use LeanExplore to explore Mathlib:
+   - Search for relevant modules
+   - Explore type hierarchies
+   - Find related theorems
+2. Use Loogle for type-based search:
+   - Search by type signature
+   - Find functions with specific types
+   - Discover relevant lemmas
+3. Use LeanSearch for semantic search:
+   - Search by natural language description
+   - Find theorems by concept
+   - Discover related proofs
+4. Use lean-lsp-mcp for code analysis:
+   - Analyze existing code
+   - Check type information
    - Explore dependencies
-4. Review Neovim documentation:
-   - Neovim API docs
-   - lazy.nvim guide
-   - Plugin documentation
-5. Synthesize findings:
-   - Relevant plugins
-   - Configuration patterns
-   - Lua module structure
-   - Keymap conventions
-   - API recommendations
+5. Review Lean documentation:
+   - Mathlib docs
+   - Lean 4 manual
+   - Theorem proving guides
+6. Synthesize findings:
+   - Relevant Mathlib modules
+   - Applicable theorems
+   - Proof strategies
+   - Type definitions
+   - Tactic recommendations
 
 **Checkpoint**: Research conducted
 
@@ -161,7 +162,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Write research report documenting findings
 
 **Process**:
-
 1. Create research report file:
    - Path: `specs/{number}_{slug}/reports/research-001.md`
    - Directory created lazily when writing
@@ -174,11 +174,11 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - **Technical Details**: Specific APIs, functions, theorems, etc.
    - **Considerations**: Potential issues, trade-offs, alternatives
    - **Next Steps**: Recommended actions
-3. For Neovim research, include:
-   - Plugins to use
-   - Configuration patterns
-   - Lua module structure
-   - Keymap conventions
+3. For Lean research, include:
+   - Mathlib modules to use
+   - Relevant theorems and lemmas
+   - Type definitions needed
+   - Tactic strategies
    - Example code snippets
 4. Validate report:
    - All research questions addressed
@@ -188,7 +188,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - NO EMOJI (per documentation standards)
 
 **Report Quality Standards**:
-
 - Comprehensive coverage of topic
 - Relevant documentation and references cited
 - Clear recommendations for implementation
@@ -202,7 +201,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Create summary artifact if needed
 
 **Process**:
-
 1. Determine if summary needed:
    - If report is long (>500 lines): Create summary
    - If report is concise (<500 lines): No summary needed
@@ -213,7 +211,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Purpose: Protect orchestrator context window
 
 **Summary vs Report**:
-
 - Summary: Brief overview for orchestrator (<100 tokens)
 - Report: Full findings for implementation (no token limit)
 
@@ -224,7 +221,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Update task status to [RESEARCHED]
 
 **Process**:
-
 1. Delegate to status-sync-manager for atomic update:
    - Prepare update payload:
      ```json
@@ -242,11 +238,11 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Invoke status-sync-manager
    - Wait for return
 2. status-sync-manager performs atomic update:
-   - Update TODO.md:
+   - Update specs/TODO.md:
      - Status: [NOT STARTED] → [RESEARCHED]
      - Add **Research**: {report_path}
      - Add **Completed**: {date}
-   - Update state.json:
+   - Update specs/state.json:
      - Update status and timestamps
      - Add research_path
      - Add research_metadata
@@ -260,7 +256,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Create git commit for research
 
 **Process**:
-
 1. Delegate to git-workflow-manager:
    - Prepare commit payload:
      ```json
@@ -273,7 +268,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Invoke git-workflow-manager
    - Wait for return
 2. git-workflow-manager creates commit:
-   - Stage report file, TODO.md, state.json
+   - Stage report file, specs/TODO.md, specs/state.json
    - Create commit
    - Verify commit created
 3. If commit fails:
@@ -290,7 +285,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Format return object per subagent-return-format.md
 
 **Process**:
-
 1. Build return object:
    ```json
    {
@@ -331,7 +325,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 **Action**: Return to command
 
 **Process**:
-
 1. Return formatted object to command
 2. Command validates return
 3. Command relays to user
@@ -345,7 +338,6 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 ### When to Use
 
 Use `--divide` flag when:
-
 - Research topic is broad
 - Multiple distinct sub-topics
 - Parallel research would be beneficial
@@ -373,7 +365,6 @@ Use `--divide` flag when:
    - Create unified recommendations
 
 **Example**:
-
 ```bash
 /research 197 --divide
 ```
@@ -381,7 +372,6 @@ Use `--divide` flag when:
 Topic: "LeanSearch API integration"
 
 Sub-topics:
-
 1. LeanSearch API documentation and capabilities
 2. Authentication and rate limiting
 3. Query syntax and best practices
@@ -392,17 +382,16 @@ Sub-topics:
 
 ## Status Transitions
 
-| From          | To            | Condition                       |
-| ------------- | ------------- | ------------------------------- |
-| [NOT STARTED] | [RESEARCHING] | Research started                |
-| [RESEARCHING] | [RESEARCHED]  | Research completed successfully |
-| [RESEARCHING] | [RESEARCHING] | Research failed or partial      |
-| [RESEARCHING] | [BLOCKED]     | Research blocked by dependency  |
+| From | To | Condition |
+|------|-----|-----------|
+| [NOT STARTED] | [RESEARCHING] | Research started |
+| [RESEARCHING] | [RESEARCHED] | Research completed successfully |
+| [RESEARCHING] | [RESEARCHING] | Research failed or partial |
+| [RESEARCHING] | [BLOCKED] | Research blocked by dependency |
 
-**Status Update**: Delegated to `status-sync-manager` for atomic synchronization across TODO.md and state.json.
+**Status Update**: Delegated to `status-sync-manager` for atomic synchronization across specs/TODO.md and specs/state.json.
 
 **Timestamps**:
-
 - `**Started**: {date}` added when status → [RESEARCHING]
 - `**Completed**: {date}` added when status → [RESEARCHED]
 
@@ -413,22 +402,19 @@ Sub-topics:
 ### Routing Stage (Command)
 
 Load minimal context for routing decisions:
-
 - `.opencode/context/system/routing-guide.md` (routing logic)
 
 ### Execution Stage (Researcher)
 
-Researcher loads context on-demand per `.opencode/context/index.json`:
-
+Researcher loads context on-demand per `.opencode/context/index.md`:
 - `core/standards/subagent-return-format.md` (return format)
 - `core/standards/status-markers.md` (status transitions)
 - `core/system/artifact-management.md` (lazy directory creation)
-- Task entry via `grep -A 50 "^### ${task_number}\." TODO.md` (~2KB vs 109KB full file)
-- `state.json` (project state)
+- Task entry via `grep -A 50 "^### ${task_number}." specs/TODO.md` (~2KB vs 109KB full file)
+- `specs/state.json` (project state)
 
 **Language-specific context**:
-
-- If neovim: `project/neovim/domain/neovim-api.md`, `project/neovim/patterns/plugin-spec.md`
+- If lean: `project/lean4/tools/leansearch-api.md`, `project/lean4/tools/loogle-api.md`
 - If markdown: (no additional context)
 
 **Optimization**: Task extraction reduces context from 109KB to ~2KB, 98% reduction.
@@ -442,7 +428,7 @@ Researcher loads context on-demand per `.opencode/context/index.json`:
 ```
 Error: Task {task_number} not found in specs/TODO.md
 
-Recommendation: Verify task number exists in TODO.md
+Recommendation: Verify task number exists in specs/TODO.md
 ```
 
 ### Invalid Task Number
@@ -494,8 +480,8 @@ Artifacts created:
 
 Manual recovery steps:
 1. Verify research artifact exists: {report_path}
-2. Manually update TODO.md status to [RESEARCHED]
-3. Manually update state.json status to "researched"
+2. Manually update specs/TODO.md status to [RESEARCHED]
+3. Manually update specs/state.json status to "researched"
 
 Or retry: /research {task_number}
 ```
@@ -536,7 +522,7 @@ Error: {git_error}
 ### Atomic Updates
 
 - Status updates delegated to status-sync-manager
-- Two-phase commit ensures atomicity across TODO.md and state.json
+- Two-phase commit ensures atomicity across specs/TODO.md and specs/state.json
 - Rollback on failure to maintain consistency
 
 ---
@@ -546,20 +532,19 @@ Error: {git_error}
 ### Lazy Directory Creation
 
 Directories created only when writing artifacts:
-
 - `specs/{task_number}_{slug}/` created when writing first artifact
 - `reports/` subdirectory created when writing research-001.md
 - `summaries/` NOT created (summary is metadata, not artifact)
 
 ### Task Extraction Optimization
 
-Extract only specific task entry from TODO.md to reduce context load:
+Extract only specific task entry from specs/TODO.md to reduce context load:
 
 ```bash
-grep -A 50 "^### ${task_number}\." specs/TODO.md > /tmp/task-${task_number}.md
+grep -A 50 "^### ${task_number}." specs/TODO.md > /tmp/task-${task_number}.md
 ```
 
-**Impact**: Reduces context from 109KB (full TODO.md) to ~2KB (task entry only), 98% reduction.
+**Impact**: Reduces context from 109KB (full specs/TODO.md) to ~2KB (task entry only), 98% reduction.
 
 ### Delegation Safety
 
@@ -570,39 +555,43 @@ grep -A 50 "^### ${task_number}\." specs/TODO.md > /tmp/task-${task_number}.md
 
 ---
 
-## Neovim-Specific Research Tools
+## Lean-Specific Research Tools
 
-### WebSearch
+### LeanExplore
 
-**Purpose**: Find plugin documentation and examples
-**Usage**: Search for plugin READMEs, configuration guides
-**Output**: Relevant documentation links
+**Purpose**: Explore Mathlib structure and contents  
+**Usage**: Browse modules, types, theorems  
+**Output**: Module structure, type hierarchies, theorem lists
 
-**Example**:
+### Loogle
 
-```
-Query: "telescope.nvim configuration"
-Results: Plugin README, wiki pages, configuration examples
-```
-
-### WebFetch
-
-**Purpose**: Retrieve plugin documentation
-**Usage**: Fetch README files, API documentation
-**Output**: Full documentation content
+**Purpose**: Search by type signature  
+**Usage**: Find functions/theorems with specific types  
+**Output**: Matching declarations with types and documentation
 
 **Example**:
-
 ```
-URL: https://github.com/nvim-telescope/telescope.nvim
-Results: Full README with configuration examples
+Query: Nat → Nat → Nat
+Results: Nat.add, Nat.mul, Nat.sub, etc.
 ```
 
-### Read
+### LeanSearch
 
-**Purpose**: Explore existing codebase
-**Usage**: Analyze configuration, check module structure
-**Output**: File contents for analysis
+**Purpose**: Semantic search for theorems  
+**Usage**: Search by natural language description  
+**Output**: Relevant theorems ranked by relevance
+
+**Example**:
+```
+Query: "commutativity of addition"
+Results: Nat.add_comm, Int.add_comm, etc.
+```
+
+### lean-lsp-mcp
+
+**Purpose**: LSP integration for code analysis  
+**Usage**: Type checking, go-to-definition, find references  
+**Output**: Type information, definitions, usage locations
 
 ---
 
@@ -610,18 +599,17 @@ Results: Full README with configuration examples
 
 ### Task Extraction
 
-Extract only specific task entry from TODO.md to reduce context load:
+Extract only specific task entry from specs/TODO.md to reduce context load:
 
 ```bash
-grep -A 50 "^### ${task_number}\." specs/TODO.md > /tmp/task-${task_number}.md
+grep -A 50 "^### ${task_number}." specs/TODO.md > /tmp/task-${task_number}.md
 ```
 
-**Impact**: Reduces context from 109KB (full TODO.md) to ~2KB (task entry only), 98% reduction.
+**Impact**: Reduces context from 109KB (full specs/TODO.md) to ~2KB (task entry only), 98% reduction.
 
 ### Lazy Context Loading
 
 Load context on-demand:
-
 - Required context loaded upfront
 - Optional context loaded when needed
 - Language-specific context loaded only for that language
@@ -629,24 +617,23 @@ Load context on-demand:
 ### Tool Selection
 
 Use most appropriate tool for each research task:
-
-- Plugin documentation → WebSearch
-- Full documentation → WebFetch
-- Codebase exploration → Read
-- Configuration patterns → Grep
-- General search → WebSearch
+- Type-based search → Loogle
+- Semantic search → LeanSearch
+- Module exploration → LeanExplore
+- Code analysis → lean-lsp-mcp
+- General search → Web search
 
 ---
 
 ## References
 
-- **Command**: `.opencode/command/research.md`
+- **Command**: `.opencode/commands/research.md`
 - **Subagent**: `.opencode/agent/subagents/researcher.md`
-- **Neovim Research Agent**: `.opencode/agent/subagents/neovim-research-agent.md`
+- **Lean Research Agent**: `.opencode/agent/subagents/lean-research-agent.md`
 - **Return Format**: `.opencode/context/core/standards/subagent-return-format.md`
 - **Status Markers**: `.opencode/context/core/standards/status-markers.md`
 - **Artifact Management**: `.opencode/context/core/system/artifact-management.md`
-- **Neovim Tools**:
-  - Neovim API: `.opencode/context/project/neovim/domain/neovim-api.md`
-  - Plugin Patterns: `.opencode/context/project/neovim/patterns/plugin-spec.md`
-  - lazy.nvim Guide: `.opencode/context/project/neovim/tools/lazy-nvim-guide.md`
+- **Lean Tools**:
+  - LeanSearch API: `.opencode/context/project/lean4/tools/leansearch-api.md`
+  - Loogle API: `.opencode/context/project/lean4/tools/loogle-api.md`
+  - LSP Integration: `.opencode/context/project/lean4/tools/lsp-integration.md`

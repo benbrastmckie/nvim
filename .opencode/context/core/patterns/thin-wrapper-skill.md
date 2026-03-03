@@ -1,5 +1,6 @@
 # Thin Wrapper Skill Pattern
 
+**Version**: 1.0
 **Created**: 2026-01-19
 **Purpose**: Quick reference for the thin wrapper skill pattern
 **Audience**: /meta agent, skill developers
@@ -113,20 +114,20 @@ Return validated result to caller without modification.
 
 ```markdown
 ---
-name: skill-neovim-research
-description: Research Neovim plugins and configuration patterns tasks.
+name: skill-lean-research
+description: Research Lean 4 and Mathlib for theorem proving tasks.
 allowed-tools: Task
 context: fork
-agent: neovim-research-agent
+agent: lean-research-agent
 ---
 
-# Neovim Research Skill
+# Lean Research Skill
 
-Specialized research for Neovim configuration tasks.
+Specialized research for Lean 4 theorem proving tasks.
 
 ## Trigger Conditions
-- Task language is "neovim"
-- Research involves plugins, LSP, or configuration patterns
+- Task language is "lean"
+- Research involves Mathlib, theorems, or proofs
 
 ## Execution
 
@@ -137,7 +138,7 @@ Extract task_number. Validate task exists.
 Generate session_id. Prepare delegation context.
 
 ### 3. Invoke Subagent
-Use Task tool with subagent_type: neovim-research-agent
+Use Task tool with subagent_type: lean-research-agent
 
 ### 4. Return Validation
 Validate return matches subagent-return.md schema.
@@ -159,10 +160,6 @@ Direct execution skills use:
 ```yaml
 allowed-tools: Bash, Edit, Read
 ```
-
-### Neovim Skills (Standard Pattern)
-
-The Neovim skills (`skill-neovim-research`, `skill-neovim-implementation`) follow the standard thin wrapper pattern, delegating to `neovim-research-agent` and `neovim-implementation-agent` respectively.
 
 ---
 

@@ -272,15 +272,15 @@ survey_all() {
 
     echo ""
     echo -e "${CYAN}OpenCode Directory Cleanup${NC}"
-    echo "============================="
+    echo "============================"
     echo ""
     echo -e "Target: ${BLUE}~/.opencode/${NC}"
     echo ""
 
     # Get total ~/.opencode size
-    local claude_total_size
-    claude_total_size=$(du -sb "$OPENCODE_DIR" 2>/dev/null | cut -f1 || echo 0)
-    echo "Current total size: $(format_size $claude_total_size)"
+    local opencode_total_size
+    opencode_total_size=$(du -sb "$OPENCODE_DIR" 2>/dev/null | cut -f1 || echo 0)
+    echo "Current total size: $(format_size $opencode_total_size)"
     echo ""
 
     if [[ "$AGE_HOURS" == "0" ]]; then

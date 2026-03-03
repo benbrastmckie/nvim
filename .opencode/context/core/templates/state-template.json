@@ -1,6 +1,6 @@
 {
   "_comment_purpose": "Template for auto-creating specs/state.json if missing. Self-healing commands use this template to bootstrap state tracking.",
-  "_comment_usage": "Copy this template to specs/state.json and replace placeholder values with actual data from TODO.md",
+  "_comment_usage": "Copy this template to specs/state.json and replace placeholder values with actual data from specs/TODO.md",
   "_schema_version": "1.0.0",
   "_comment": "Main state tracking file for project .opencode system. Auto-created from template. Links to specialized state files for archives and maintenance.",
   "_last_updated": "{CURRENT_TIMESTAMP}",
@@ -9,16 +9,19 @@
     "min": 0,
     "max": 999,
     "policy": "increment_modulo_1000",
-    "_comment": "Project numbers wrap around to 000 after 999. Ensure old projects are archived before reuse."
+    "_comment": "Project numbers wrap around to 000 after 999. Ensure old projects are archived before reuse.",
+    "display_format": "OC_{N}",
+    "directory_format": "OC_{NNN}_{SLUG}",
+    "_comment_prefix": "OC_ prefix distinguishes OpenCode tasks from Claude Code tasks. Internal storage uses integer; prefix is display/path convention."
   },
   "state_references": {
-    "archive_state_path": "specs/archive/state.json",
+    "archive_state_path": "specs/specs/archive/state.json",
     "_comment": "References to specialized state files. These files are auto-created if missing."
   },
   "active_projects": [],
-  "_comment_active_projects": "Populated from TODO.md tasks with status [IN PROGRESS], [PLANNED], [RESEARCHED], [BLOCKED]. Each entry should have: project_number, project_name, type, phase, status, language, created, started, last_updated, and optional fields like plan_path, research_completed, blocked, etc.",
+  "_comment_active_projects": "Populated from specs/TODO.md tasks with status [IN PROGRESS], [PLANNED], [RESEARCHED], [BLOCKED]. Each entry should have: project_number (integer, no OC_ prefix), project_name, type, phase, status, priority, language, created, started, last_updated, and optional fields like plan_path, research_completed, blocked, etc. Display as OC_{N}, directories as OC_{NNN}_{slug}.",
   "completed_projects": [],
-  "_comment_completed_projects": "Populated from TODO.md tasks with status [COMPLETED]. Each entry should have: project_number, project_name, type, completed, summary.",
+  "_comment_completed_projects": "Populated from specs/TODO.md tasks with status [COMPLETED]. Each entry should have: project_number, project_name, type, completed, summary.",
   "repository_health": {
     "last_assessed": "{CURRENT_TIMESTAMP}",
     "overall_score": 0,
@@ -27,6 +30,9 @@
     "blocked_tasks": "{COUNT_BLOCKED_TASKS}",
     "in_progress_tasks": "{COUNT_IN_PROGRESS_TASKS}",
     "not_started_tasks": "{COUNT_NOT_STARTED_TASKS}",
+    "high_priority_tasks": "{COUNT_HIGH_PRIORITY}",
+    "medium_priority_tasks": "{COUNT_MEDIUM_PRIORITY}",
+    "low_priority_tasks": "{COUNT_LOW_PRIORITY}",
     "production_readiness": "unknown",
     "technical_debt": {
       "sorry_count": 0,
@@ -38,12 +44,12 @@
   "recent_activities": [
     {
       "timestamp": "{CURRENT_TIMESTAMP}",
-      "activity": "Auto-created state.json from template - initialized with self-healing from TODO.md"
+      "activity": "Auto-created specs/state.json from template - initialized with self-healing from specs/TODO.md"
     }
   ],
   "_comment_recent_activities": "Track up to 50 most recent activities. Prepend new activities to maintain chronological order (newest first).",
   "pending_tasks": [],
-  "_comment_pending_tasks": "Populated from TODO.md tasks with status [NOT STARTED]. Each entry should have: project_number, title, status, language.",
+  "_comment_pending_tasks": "Populated from specs/TODO.md tasks with status [NOT STARTED]. Each entry should have: project_number, title, status, priority, language.",
   "reviews_summary": {
     "_comment": "Quick reference to review status - full history in reviews/state.json",
     "last_review": null,
@@ -51,9 +57,9 @@
     "total_issues_found": 0
   },
   "archive_summary": {
-    "_comment": "Quick reference to archived projects - full details in archive/state.json",
+    "_comment": "Quick reference to archived projects - full details in specs/archive/state.json",
     "archive_location": "specs/archive/",
-    "archive_state_file": "specs/archive/state.json"
+    "archive_state_file": "specs/specs/archive/state.json"
   },
   "schema_info": {
     "version": "1.0.0",

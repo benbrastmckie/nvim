@@ -1,5 +1,6 @@
 # Routing Guide - Lightweight Command Routing Context
 
+**Version**: 1.0
 **Created**: 2025-12-29 (Task 244 Phase 1)
 **Purpose**: Lightweight routing context for orchestrator Stages 1-3 (command parsing and delegation preparation)
 
@@ -43,7 +44,7 @@ Commands that invoke agents directly without command-lifecycle.md:
 
 | Command | Agent | Description |
 |---------|-------|-------------|
-| `/status` | `status-sync-manager` | Synchronize task status across TODO.md and state.json |
+| `/status` | `status-sync-manager` | Synchronize task status across specs/TODO.md and specs/state.json |
 | `/commit` | `git-workflow-manager` | Create targeted git commits for task artifacts |
 
 ---
@@ -52,7 +53,7 @@ Commands that invoke agents directly without command-lifecycle.md:
 
 ### Language Extraction
 
-Extract language from task entry in TODO.md:
+Extract language from task entry in specs/TODO.md:
 
 ```bash
 # Extract language field from task entry
@@ -71,10 +72,9 @@ fi
 
 | Language | Research Agent | Implementation Agent | Notes |
 |----------|---------------|---------------------|-------|
-| `neovim` | `neovim-research-agent` | `neovim-implementation-agent` | Neovim plugin and configuration development |
+| `lean` | `lean-research-agent` | `lean-implementation-agent` | Lean 4 proof development with LSP/Loogle/LeanSearch |
 | `markdown` | `researcher` | `implementer` | Documentation and markdown files |
 | `python` | `researcher` | `implementer` | Python code (future: python-specific agents) |
-| `web` | `researcher` | `web-implementation-agent` | Web development tasks |
 | `general` | `researcher` | `implementer` | Default for unspecified language |
 
 **Critical**: Always extract language explicitly. DO NOT assume language without extraction.
@@ -84,14 +84,14 @@ fi
 Before delegating to agent, verify routing is correct:
 
 ```bash
-# Validate neovim routing
-if [ "$language" == "neovim" ] && [[ ! "$agent" =~ ^neovim- ]]; then
-  echo "[FAIL] Routing validation failed: language=neovim but agent=${agent}"
+# Validate lean routing
+if [ "$language" == "lean" ] && [[ ! "$agent" =~ ^lean- ]]; then
+  echo "[FAIL] Routing validation failed: language=lean but agent=${agent}"
   exit 1
 fi
 
-# Validate non-neovim routing
-if [ "$language" != "neovim" ] && [[ "$agent" =~ ^neovim- ]]; then
+# Validate non-lean routing
+if [ "$language" != "lean" ] && [[ "$agent" =~ ^lean- ]]; then
   echo "[FAIL] Routing validation failed: language=${language} but agent=${agent}"
   exit 1
 fi
@@ -102,8 +102,8 @@ echo "[PASS] Routing validation succeeded"
 ### Implementation Status
 
 **Stage 2 (DetermineRouting) Implementation:**
-- ✅ Language extraction from state.json (Priority 1)
-- ✅ Language extraction from TODO.md (Priority 2)
+- ✅ Language extraction from specs/state.json (Priority 1)
+- ✅ Language extraction from specs/TODO.md (Priority 2)
 - ✅ Default to "general" fallback (Priority 3)
 - ✅ Routing table lookup from command frontmatter
 - ✅ Agent file existence validation
@@ -117,8 +117,8 @@ echo "[PASS] Routing validation succeeded"
 - ✅ Validation logging ([PASS]/[FAIL])
 
 **Commands with Language-Based Routing:**
-- ✅ /research (neovim → neovim-research-agent, default → researcher)
-- ✅ /implement (neovim → neovim-implementation-agent, default → implementer)
+- ✅ /research (lean → lean-research-agent, default → researcher)
+- ✅ /implement (lean → lean-implementation-agent, default → implementer)
 
 ---
 
@@ -207,9 +207,9 @@ if ! [[ "$task_number" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-# Verify task exists in TODO.md
+# Verify task exists in specs/TODO.md
 if ! grep -q "^### ${task_number}\." specs/TODO.md; then
-  echo "[FAIL] Task ${task_number} not found in TODO.md"
+  echo "[FAIL] Task ${task_number} not found in specs/TODO.md"
   exit 1
 fi
 ```
@@ -225,7 +225,7 @@ Some commands support flags:
 | `/implement` | `--resume` | Resume from incomplete phase |
 | `/task` | `--recover` | Unarchive tasks from archive/ (supports ranges/lists) |
 | `/task` | `--expand` | Expand existing task into subtasks (single task only) |
-| `/task` | `--sync` | Synchronize TODO.md and state.json (git blame conflict resolution) |
+| `/task` | `--sync` | Synchronize specs/TODO.md and specs/state.json (git blame conflict resolution) |
 | `/task` | `--abandon` | Abandon tasks to archive/ (supports ranges/lists) |
 
 ### /task Flag-Based Routing
@@ -332,7 +332,7 @@ Commands update task status using text-based markers:
 }
 ```
 
-**DO NOT** update TODO.md or state.json directly. Always delegate to status-sync-manager.
+**DO NOT** update specs/TODO.md or specs/state.json directly. Always delegate to status-sync-manager.
 
 ---
 
@@ -342,7 +342,7 @@ Commands update task status using text-based markers:
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| Task not found | Task number doesn't exist in TODO.md | Verify task number, check TODO.md |
+| Task not found | Task number doesn't exist in specs/TODO.md | Verify task number, check specs/TODO.md |
 | Invalid language | Language extraction failed | Default to "general", log warning |
 | Routing mismatch | Language doesn't match agent | Abort with validation error |
 | Missing agent | Command frontmatter missing `agent:` field | Add frontmatter to command file |
@@ -354,10 +354,10 @@ Commands update task status using text-based markers:
 ```json
 {
   "status": "failed",
-  "summary": "Routing failed: Task 244 not found in TODO.md",
+  "summary": "Routing failed: Task 244 not found in specs/TODO.md",
   "errors": [{
     "type": "validation",
-    "message": "Task 244 not found in TODO.md",
+    "message": "Task 244 not found in specs/TODO.md",
     "code": "TASK_NOT_FOUND",
     "recoverable": false,
     "recommendation": "Verify task number exists in specs/TODO.md"
@@ -390,7 +390,7 @@ Commands update task status using text-based markers:
 
 **Load**: Context files needed for specific workflow
 
-See `.opencode/context/index.json` for execution context loading patterns.
+See `.opencode/context/index.md` for execution context loading patterns.
 
 ---
 
@@ -399,7 +399,7 @@ See `.opencode/context/index.json` for execution context loading patterns.
 ### Routing Checklist
 
 - [ ] Parse command and extract task number
-- [ ] Validate task exists in TODO.md
+- [ ] Validate task exists in specs/TODO.md
 - [ ] Extract language from task entry
 - [ ] Determine target agent based on command + language
 - [ ] Validate routing (language matches agent)
@@ -442,125 +442,26 @@ Error: Phantom research detected: status=completed but no artifacts
 
 ### Language Routing Mismatch
 
-**Symptom:** Neovim task routed to general researcher (or vice versa).
+**Symptom:** Lean task routed to general researcher (or vice versa).
 
 **Root Cause:** Language extraction failed or routing validation skipped.
 
 **Detection:** Stage 2 routing validation catches this:
 ```
-[FAIL] Routing validation failed: language=neovim but agent=researcher
-Error: Routing mismatch: Neovim task must route to neovim-* agent
+[FAIL] Routing validation failed: language=lean but agent=researcher
+Error: Routing mismatch: Lean task must route to lean-* agent
 ```
 
 **Prevention:** Orchestrator Stage 2 now validates:
-1. If language="neovim": Agent must start with "neovim-"
-2. If language!="neovim": Agent must NOT start with "neovim-"
+1. If language="lean": Agent must start with "lean-"
+2. If language!="lean": Agent must NOT start with "lean-"
 
 **Recovery:**
-1. Verify **Language** field in TODO.md task entry
-2. Verify routing configuration in command frontmatter
-3. Re-run command after fixing language field
-
-### Language Extraction Failed
-
-**Symptom:** Warning message "Language not found for task {N}, defaulting to 'general'".
-
-**Root Cause:** Task entry missing **Language** field in TODO.md.
-
-**Detection:** Stage 2 language extraction logs warning:
-```
-[WARN] Language not found for task 258, defaulting to 'general'
-```
-
-**Fix:**
-1. Add **Language** field to task entry in TODO.md:
-   ```markdown
-   ### 258. Resolve Truth.neovim sorries
-   - **Status**: [NOT STARTED]
-   - **Language**: neovim
-   ```
-2. Re-run command
-
-### Agent File Not Found
-
-**Symptom:** Error "Agent file not found: {agent}".
-
-**Root Cause:** Routing configuration references non-existent agent.
-
-**Detection:** Stage 2 agent file validation:
-```
-[FAIL] Agent file not found: neovim-research-agent
-```
-
-**Fix:**
-1. Verify agent file exists: `.opencode/agent/subagents/{agent}.md`
-2. Fix routing configuration in command frontmatter
-3. Create missing agent file if needed
-
-### Routing Logs
-
-**Example successful routing (Neovim task):**
-```
-[INFO] Task 258 language: neovim
-[INFO] Routing to neovim-research-agent (language=neovim)
-[PASS] Routing validation succeeded
-```
-
-**Example successful routing (Markdown task):**
-```
-[INFO] Task 256 language: markdown
-[INFO] Routing to researcher (language=markdown)
-[PASS] Routing validation succeeded
-```
-
-**Example failed routing (mismatch):**
-```
-[INFO] Task 258 language: neovim
-[INFO] Routing to researcher (language=neovim)
-[FAIL] Routing validation failed: language=neovim but agent=researcher
-Error: Routing mismatch: Neovim task must route to neovim-* agent
-```
-
----
-
-**End of Routing Guide**
-# Routing Logic Standard
-
-## Overview
-
-This standard defines how the orchestrator determines which agent to route commands to, including language-based routing for Neovim-specific tasks.
-
-## Language Extraction
-
-For commands with `routing.language_based: true`, extract language from task metadata.
-
-### Priority Order
-
-1. **Priority 1**: Project state.json (task-specific)
-2. **Priority 2**: TODO.md task entry (**Language** field)
-3. **Priority 3**: Default "general" (fallback)
-
-### Implementation
-
-#### Priority 1: Project state.json
-
-```bash
-# Find task directory
-padded_num=$(printf "%03d" "$task_number")
-task_dir=$(find specs -maxdepth 1 -type d -name "${padded_num}_*" | head -n 1)
-
-# Extract language from state.json
-if [ -n "$task_dir" ] && [ -f "${task_dir}/state.json" ]; then
-  language=$(jq -r '.language // empty' "${task_dir}/state.json")
-  
-  if [ -n "$language" ]; then
-    echo "[INFO] Language extracted from state.json: ${language}"
-    # Use this language, skip to agent mapping
-  fi
-fi
-```
-
-#### Priority 2: TODO.md task entry
+1. Verify **Language** field in specs/TODO.md task entry
+**Root Cause:** Task entry missing **Language** field in specs/TODO.md.
+1. Add **Language** field to task entry in specs/TODO.md:
+2. **Priority 2**: specs/TODO.md task entry (**Language** field)
+#### Priority 2: specs/TODO.md task entry
 
 ```bash
 # Extract task entry (20 lines after task header)
@@ -570,7 +471,7 @@ task_entry=$(grep -A 20 "^### ${task_number}\." specs/TODO.md)
 language=$(echo "$task_entry" | grep "Language" | sed 's/\*\*Language\*\*: //' | tr -d ' ')
 
 if [ -n "$language" ]; then
-  echo "[INFO] Language extracted from TODO.md: ${language}"
+  echo "[INFO] Language extracted from specs/TODO.md: ${language}"
   # Use this language, skip to agent mapping
 fi
 ```
@@ -595,7 +496,7 @@ Commands define routing in frontmatter:
 ```yaml
 routing:
   language_based: true
-  neovim: neovim-research-agent      # Agent for Neovim tasks
+  lean: lean-research-agent      # Agent for Lean tasks
   default: researcher             # Agent for all other tasks
 ```
 
@@ -603,13 +504,13 @@ routing:
 
 ```bash
 # Read routing table from command frontmatter
-neovim_agent=$(yq '.routing.neovim' .opencode/command/${command}.md)
-default_agent=$(yq '.routing.default' .opencode/command/${command}.md)
+lean_agent=$(yq '.routing.lean' .opencode/commands/${command}.md)
+default_agent=$(yq '.routing.default' .opencode/commands/${command}.md)
 
 # Map language to agent
-if [ "$language" == "neovim" ]; then
-  target_agent="$neovim_agent"
-  echo "[INFO] Routing to ${target_agent} (language=neovim)"
+if [ "$language" == "lean" ]; then
+  target_agent="$lean_agent"
+  echo "[INFO] Routing to ${target_agent} (language=lean)"
 else
   target_agent="$default_agent"
   echo "[INFO] Routing to ${target_agent} (language=${language})"
@@ -620,13 +521,13 @@ fi
 
 | Command | Language | Agent |
 |---------|----------|-------|
-| /research | neovim | neovim-research-agent |
+| /research | lean | lean-research-agent |
 | /research | general | researcher |
-| /plan | neovim | neovim-planner |
+| /plan | lean | lean-planner |
 | /plan | general | planner |
-| /revise | neovim | neovim-planner |
+| /revise | lean | lean-planner |
 | /revise | general | planner |
-| /implement | neovim | neovim-implementation-agent |
+| /implement | lean | lean-implementation-agent |
 | /implement | general | implementer |
 | /review | any | reviewer (no language-based routing) |
 
@@ -650,17 +551,17 @@ Validate routing decision before delegation.
 
 2. **Verify language matches agent capabilities**
    ```bash
-   # Neovim tasks must route to neovim-* agents
-   if [ "$language" == "neovim" ] && [[ ! "$target_agent" =~ ^neovim- ]]; then
-     echo "[FAIL] Routing validation failed: language=neovim but agent=${target_agent}"
-     echo "Error: Neovim task must route to neovim-* agent"
+   # Lean tasks must route to lean-* agents
+   if [ "$language" == "lean" ] && [[ ! "$target_agent" =~ ^lean- ]]; then
+     echo "[FAIL] Routing validation failed: language=lean but agent=${target_agent}"
+     echo "Error: Lean task must route to lean-* agent"
      exit 1
    fi
    
-   # Non-neovim tasks must NOT route to neovim-* agents
-   if [ "$language" != "neovim" ] && [[ "$target_agent" =~ ^neovim- ]]; then
+   # Non-lean tasks must NOT route to lean-* agents
+   if [ "$language" != "lean" ] && [[ "$target_agent" =~ ^lean- ]]; then
      echo "[FAIL] Routing validation failed: language=${language} but agent=${target_agent}"
-     echo "Error: Non-neovim task cannot route to neovim-* agent"
+     echo "Error: Non-lean task cannot route to lean-* agent"
      exit 1
    fi
    
@@ -680,7 +581,7 @@ For commands with `routing.language_based: false`, use direct routing.
 
 ```bash
 # Read target_agent from command frontmatter
-target_agent=$(yq '.routing.target_agent' .opencode/command/${command}.md)
+target_agent=$(yq '.routing.target_agent' .opencode/commands/${command}.md)
 
 # Verify agent file exists
 agent_file=".opencode/agent/subagents/${target_agent}.md"
@@ -706,7 +607,7 @@ echo "[INFO] Routing to ${target_agent} (direct command)"
 
 ### Language Extraction Failed
 
-**Symptom**: Cannot extract language from state.json or TODO.md
+**Symptom**: Cannot extract language from specs/state.json or specs/TODO.md
 
 **Action**: Default to "general" and log warning
 
@@ -715,9 +616,9 @@ language=${language:-general}
 echo "[WARN] Language not found for task ${task_number}, defaulting to 'general'"
 ```
 
-**Impact**: Task routes to general agent instead of Neovim-specific agent
+**Impact**: Task routes to general agent instead of Lean-specific agent
 
-**Resolution**: Add **Language** field to task entry in TODO.md
+**Resolution**: Add **Language** field to task entry in specs/TODO.md
 
 ### Agent File Not Found
 
@@ -742,7 +643,7 @@ exit 1
 
 ```bash
 echo "[FAIL] Routing validation failed: language=${language} but agent=${target_agent}"
-echo "Error: Neovim task must route to neovim-* agent"
+echo "Error: Lean task must route to lean-* agent"
 exit 1
 ```
 
@@ -763,9 +664,9 @@ All routing decisions are logged for debugging.
 ### Example Log
 
 ```
-[INFO] Task 258 language: neovim
-[INFO] Routing to neovim-research-agent (language=neovim)
-[PASS] Agent file exists: .opencode/agent/subagents/neovim-research-agent.md
+[INFO] Task 258 language: lean
+[INFO] Routing to lean-research-agent (language=lean)
+[PASS] Agent file exists: .opencode/agent/subagents/lean-research-agent.md
 [PASS] Routing validation succeeded
 ```
 

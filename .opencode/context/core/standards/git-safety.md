@@ -1,5 +1,6 @@
 # Git Safety Guide
 
+**Version**: 1.0.0  
 **Created**: 2025-12-29  
 **Purpose**: Define git-based safety patterns for risky operations (NO backup files)
 
@@ -7,7 +8,7 @@
 
 ## Overview
 
-ProofChecker uses **git as the primary safety mechanism** for all risky operations.
+Logos/Theory uses **git as the primary safety mechanism** for all risky operations.
 
 **Core Principle**: Never create `.bak` files. Use git commits for safety.
 
@@ -18,7 +19,7 @@ ProofChecker uses **git as the primary safety mechanism** for all risky operatio
 Create safety commits before:
 
 1. **Bulk deletions** - Archiving tasks, removing files
-2. **State modifications** - Updating TODO.md, state.json
+2. **State modifications** - Updating specs/TODO.md, specs/state.json
 3. **Multi-file atomic operations** - Operations that modify multiple files
 4. **Irreversible operations** - Operations that can't be easily undone
 
@@ -209,9 +210,9 @@ Create safety commits before:
   <process>
     **Phase 1 (Prepare)**:
     1. Backup current state:
-       - Backup TODO.md → TODO.md.bak
-       - Backup state.json → state.json.bak
-       - Backup archive/state.json → archive/state.json.bak
+       - Backup specs/TODO.md → specs/TODO.md.bak
+       - Backup specs/state.json → specs/state.json.bak
+       - Backup specs/archive/state.json → specs/archive/state.json.bak
     2. Validate all updates
     
     **Phase 2 (Commit)**:
@@ -236,7 +237,7 @@ Create safety commits before:
        ```bash
        git add specs/TODO.md
        git add specs/state.json
-       git add specs/archive/state.json
+       git add specs/specs/archive/state.json
        ```
     2. Create safety commit:
        ```bash
@@ -257,9 +258,9 @@ Create safety commits before:
     2. Verify all target paths are writable
     
     **Phase 2 (Commit)**:
-    1. Write updated TODO.md
-    2. Write updated state.json
-    3. Write updated archive/state.json
+    1. Write updated specs/TODO.md
+    2. Write updated specs/state.json
+    3. Write updated specs/archive/state.json
     4. Move project directories
     5. If any operation fails:
        - Execute git_rollback()
@@ -568,4 +569,4 @@ When removing .bak files and adding git safety:
 - **Command Structure**: `.opencode/context/core/standards/command-structure.md`
 - **Subagent Structure**: `.opencode/context/core/standards/subagent-structure.md`
 - **Error Handling**: `.opencode/context/core/standards/error-handling.md`
-- **Example**: `.opencode/command/todo.md` (after Phase 4 conversion)
+- **Example**: `.opencode/commands/todo.md` (after Phase 4 conversion)

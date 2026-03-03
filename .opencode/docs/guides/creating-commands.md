@@ -2,16 +2,16 @@
 
 ## Overview
 
-This guide provides a streamlined walkthrough for creating new task-based commands in the Neovim Configuration .opencode system.
+This guide provides a streamlined walkthrough for creating new task-based commands in the Logos/Theory opencode system.
 
 ## Prerequisites
 
 Before creating a new command, understand:
 
-1. **Task-Based Pattern**: Neovim Configuration uses task numbers from TODO.md, not topics
+1. **Task-Based Pattern**: Logos/Theory uses task numbers from TODO.md
 2. **Orchestrator-Mediated**: All task-based commands route through orchestrator
 3. **Hybrid Architecture**: Orchestrator validates, subagents execute
-4. **Language Routing**: Neovim tasks route to neovim-specific agents
+4. **Language Routing**: Lean tasks route to lean-specific agents
 
 **Required Reading**:
 - `.opencode/skills/skill-orchestrator/SKILL.md` - Orchestrator skill
@@ -19,31 +19,17 @@ Before creating a new command, understand:
 - [Creating Skills](creating-skills.md) - For skill delegation patterns
 - [Creating Agents](creating-agents.md) - For agent implementation
 
-## Neovim Configuration vs OpenAgents
-
-**IMPORTANT**: Neovim Configuration has a different command pattern than OpenAgents.
-
-| Aspect | Neovim Configuration | OpenAgents |
-|--------|--------------|------------|
-| **Arguments** | Task numbers (integers) | Topics (natural language) |
-| **Workflow** | Task exists first | Creates new projects |
-| **Validation** | TODO.md lookup required | No validation needed |
-| **Routing** | Language-based (neovim vs general) | Keyword-based |
-| **Example** | `/research 259` | `/research "modal logic"` |
-
-**You cannot copy OpenAgents patterns directly to Neovim Configuration.**
-
 ## Step-by-Step Process
 
 ### Step 1: Understand the Hybrid Architecture
 
-Neovim Configuration uses a **hybrid architecture** (v6.1):
+Logos/Theory uses a **hybrid architecture**:
 
 **Orchestrator Responsibilities**:
 1. Extract task number from `$ARGUMENTS`
 2. Validate task exists in TODO.md
 3. Extract language from task metadata
-4. Route to appropriate subagent (neovim vs general)
+4. Route to appropriate subagent (lean vs general)
 5. Pass validated context to subagent
 
 **Subagent Responsibilities**:
@@ -72,7 +58,7 @@ description: "{Brief description with status}"
 timeout: 3600
 routing:
   language_based: true
-  neovim: neovim-{command}-agent
+  lean: lean-{command}-agent
   default: {command}er
 ---
 
@@ -83,9 +69,9 @@ routing:
 ## Usage
 
 \`\`\`bash
-/{command-name} TASK_NUMBER [PROMPT]
-/{command-name} 196
-/{command-name} 196 "Custom focus"
+/{command-name} OC_N [PROMPT]
+/{command-name} OC_196
+/{command-name} OC_196 "Custom focus"
 \`\`\`
 
 ## What This Does
@@ -100,14 +86,14 @@ routing:
 
 | Language | Agent | Tools |
 |----------|-------|-------|
-| neovim | neovim-{command}-agent | {neovim-specific tools} |
+| lean | lean-{command}-agent | {lean-specific tools} |
 | general | {command}er | {general tools} |
 
-See `.opencode/agents/{agent}.md` for details.
+See `.opencode/agent/subagents/{agent}.md` for details.
 ```
 
 **Key Points**:
-- **MUST use `agent: orchestrator`** (not `agent: implementer` or direct agent!)
+- **MUST use `agent: orchestrator`** (not direct agent!)
 - Include `routing` configuration for language-based routing
 - Keep documentation concise (<50 lines)
 
@@ -125,7 +111,7 @@ If creating a new subagent, follow this pattern:
        - task_number: Integer (already validated to exist in TODO.md)
        - language: String (already extracted from task metadata)
        - task_description: String (already extracted from TODO.md)
-       - Example: task_number=259, language="neovim", task_description="..."
+       - Example: task_number=259, language="lean", task_description="..."
        
        NOTE: Orchestrator has already:
        - Validated task_number exists in TODO.md
@@ -149,7 +135,7 @@ If creating a new subagent, follow this pattern:
 
 Implement your specific workflow. Subagent has access to:
 - `task_number`: Validated integer
-- `language`: String ("neovim", "general", etc.)
+- `language`: String ("lean", "general", etc.)
 - `task_description`: Full description from TODO.md
 
 **Return Format**:
@@ -181,7 +167,7 @@ Test your new command:
 grep "^###" specs/TODO.md | head -5
 
 # Test command
-/{command-name} {task-number}
+/{command-name} OC_{task-number}
 
 # Verify:
 # 1. Orchestrator extracts task number from $ARGUMENTS
@@ -196,31 +182,31 @@ grep "^###" specs/TODO.md | head -5
 
 ## Architecture Flow
 
-### How Commands Work (v6.1 Hybrid)
+### How Commands Work (Hybrid)
 
 ```
-User types: /implement 259
+User types: /implement OC_259
   ↓
-OpenCode reads command file: agent: orchestrator
+opencode reads command file: agent: orchestrator
   ↓
-OpenCode invokes orchestrator with $ARGUMENTS = "259"
+opencode invokes orchestrator with $ARGUMENTS = "OC_259"
   ↓
 Orchestrator Stage 1 (ExtractAndValidate):
-  - Parse task_number from $ARGUMENTS: 259
-  - Validate task 259 exists in TODO.md
-  - Extract language: "neovim"
-  - Extract task_description: "Configure LSP settings"
+  - Parse task_number from $ARGUMENTS: OC_259
+  - Validate task OC_259 exists in TODO.md
+  - Extract language: "lean"
+  - Extract task_description: "Implement automation tactics"
   ↓
 Orchestrator Stage 2 (Route):
   - Check routing config: language_based = true
-  - Map language "neovim" → agent "neovim-implementation-agent"
+  - Map language "lean" → agent "lean-implementation-agent"
   - Prepare delegation context
   ↓
 Orchestrator Stage 3 (Delegate):
-  - Invoke neovim-implementation-agent with validated context:
-    * task_number = 259
-    * language = "neovim"
-    * task_description = "Configure LSP settings"
+  - Invoke lean-implementation-agent with validated context:
+    * task_number = OC_259
+    * language = "lean"
+    * task_description = "Implement automation tactics"
   ↓
 Subagent Step 0:
   - Extract validated inputs from delegation context
@@ -239,7 +225,7 @@ Orchestrator relays result to user
 3. **No Re-Parsing**: Subagent uses validated context, doesn't re-parse prompts
 4. **Language Routing**: Orchestrator extracts language, routes to correct agent
 5. **Clean Separation**: Orchestrator validates/routes, subagent executes
-6. **No Version History**: NEVER add version history sections to commands or agents (useless cruft)
+6. **No Version History**: NEVER add version history sections to commands or agents
 
 ## Common Mistakes
 
@@ -252,7 +238,7 @@ agent: implementer  # WRONG! Bypasses orchestrator
 ---
 ```
 
-**Problem**: OpenCode directly invokes implementer, bypassing orchestrator.
+**Problem**: opencode directly invokes implementer, bypassing orchestrator.
 Implementer has no access to `$ARGUMENTS`, cannot extract task number.
 
 ### ❌ WRONG: Subagent Parses Prompt
@@ -276,7 +262,7 @@ name: implement
 agent: orchestrator  # CORRECT! Routes through orchestrator
 routing:
   language_based: true
-  neovim: neovim-implementation-agent
+  lean: lean-implementation-agent
   default: implementer
 ---
 ```
@@ -300,8 +286,8 @@ See existing implementations:
 - `.opencode/commands/plan.md` - Language-based command
 - `.opencode/skills/skill-orchestrator/SKILL.md` - Orchestrator skill
 - `.opencode/skills/skill-implementer/SKILL.md` - General implementer skill
-- `.opencode/agents/general-implementation-agent.md` - General implementation agent
-- `.opencode/agents/neovim-implementation-agent.md` - Neovim-specific agent
+- `.opencode/agent/subagents/general-implementation-agent.md` - General implementation agent
+- `.opencode/agent/subagents/lean-implementation-agent.md` - Lean-specific agent
 
 ## Related Guides
 

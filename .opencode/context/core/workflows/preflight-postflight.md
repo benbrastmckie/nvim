@@ -1,5 +1,6 @@
 # Preflight/Postflight Workflow Standards
 
+**Version**: 2.0  
 **Updated**: 2026-01-07  
 **Purpose**: Command-level status update patterns  
 **Audience**: Command developers, workflow designers
@@ -84,7 +85,7 @@ Commands update task status to "in_progress" BEFORE delegating to subagents, ens
           - Extract error message: error_msg=$(echo "$sync_return" | jq -r '.errors[0].message')
           - Return error to user: "Failed to update status: ${error_msg}"
           - ABORT - do NOT proceed to delegation
-       d. Verify files_updated includes TODO.md and state.json
+       d. Verify files_updated includes specs/TODO.md and specs/state.json
     
     4. Verify status was actually updated (defense in depth):
        actual_status=$(jq -r --arg num "$task_number" \
@@ -101,8 +102,8 @@ Commands update task status to "in_progress" BEFORE delegating to subagents, ens
   </process>
   <validation>
     - status-sync-manager returned "completed" status
-    - TODO.md and state.json were updated
-    - state.json status field verified on disk
+    - specs/TODO.md and specs/state.json were updated
+    - specs/state.json status field verified on disk
   </validation>
   <checkpoint>Status verified before delegation</checkpoint>
 </stage>
@@ -126,7 +127,7 @@ Commands update task status to "in_progress" BEFORE delegating to subagents, ens
     1. Generate session_id
     2. Delegate to status-sync-manager with new_status: "researching"
     3. Validate return
-    4. Verify status in state.json
+    4. Verify status in specs/state.json
     5. Proceed to Stage 2 (Delegate to researcher)
   </process>
 </stage>
@@ -205,7 +206,7 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
           - Log warning: "Postflight failed: status-sync-manager returned ${sync_status}"
           - Log: "Work completed but status update failed"
           - Continue (work is done, just status update failed)
-       d. Verify files_updated includes TODO.md and state.json
+       d. Verify files_updated includes specs/TODO.md and specs/state.json
     
     5. Verify status and artifact links (defense in depth):
        actual_status=$(jq -r --arg num "$task_number" \
@@ -217,7 +218,7 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
        
        for artifact_path in $(echo "$artifacts_json" | jq -r '.[].path'); do
          if ! grep -q "$artifact_path" specs/TODO.md; then
-           echo "WARNING: Artifact not linked in TODO.md: $artifact_path"
+           echo "WARNING: Artifact not linked in specs/TODO.md: $artifact_path"
          fi
        done
     
@@ -239,8 +240,8 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
   <validation>
     - Artifacts validated on disk before status update
     - status-sync-manager returned "completed" status
-    - state.json status field verified on disk
-    - Artifact links verified in TODO.md
+    - specs/state.json status field verified on disk
+    - Artifact links verified in specs/TODO.md
     - Git commit created (or warning logged)
   </validation>
   <checkpoint>Status and artifacts verified before return</checkpoint>
@@ -266,7 +267,7 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
     2. Validate artifacts exist on disk
     3. Delegate to status-sync-manager with new_status: "researched" and validated_artifacts
     4. Validate return
-    5. Verify status and artifact links in state.json and TODO.md
+    5. Verify status and artifact links in specs/state.json and specs/TODO.md
     6. Delegate to git-workflow-manager for commit
     7. Proceed to Stage 4 (RelayResult)
   </process>
@@ -287,7 +288,7 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
 ### What Subagents DON'T DO
 
 - ❌ Update status (command responsibility)
-- ❌ Link artifacts to TODO.md/state.json (command responsibility)
+- ❌ Link artifacts to specs/TODO.md/specs/state.json (command responsibility)
 - ❌ Create git commits (command responsibility)
 - ❌ Delegate to status-sync-manager (command responsibility)
 
@@ -341,7 +342,7 @@ Delegate → Proceed (without verification) ← WRONG
   <step_1>Delegate to subagent</step_1>
   <step_2>Wait for return</step_2>
   <step_3>Verify return (status, artifacts, metadata)</step_3>
-  <step_4>Verify on disk (status in state.json, artifacts exist)</step_4>
+  <step_4>Verify on disk (status in specs/state.json, artifacts exist)</step_4>
   <step_5>Proceed to next stage (only if verification passed)</step_5>
 </validation_gate>
 ```
@@ -353,7 +354,7 @@ Delegate → Proceed (without verification) ← WRONG
   <delegate>Delegate to status-sync-manager</delegate>
   <wait>Wait for return</wait>
   <verify_return>Check status == "completed"</verify_return>
-  <verify_disk>Check status in state.json</verify_disk>
+  <verify_disk>Check status in specs/state.json</verify_disk>
   <proceed>Proceed to delegation (only if verified)</proceed>
 </preflight_gate>
 

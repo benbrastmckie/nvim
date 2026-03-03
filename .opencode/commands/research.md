@@ -1,148 +1,185 @@
 ---
-description: Research a task and create reports
-allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit, Read(/tmp/*.json), Bash(rm:*)
-argument-hint: TASK_NUMBER [FOCUS]
+description: Research a task and create a research report
 ---
 
-# /research Command
+Research the given task and write a research report. Do NOT implement anything.
 
-Conduct research for a task by delegating to the appropriate research skill.
+**Input**: $ARGUMENTS
 
-## Arguments
+---
 
-- `$1` - Task number (required)
-- Remaining args - Optional focus/prompt for research direction
+## Parse Input
 
-## Execution
+- First token: task number — accepts `OC_N` or `N` (strip `OC_` prefix to get integer N)
+- Remaining tokens: optional focus prompt
+- If invalid: "Usage: /research <OC_N> [focus]"
 
-### CHECKPOINT 1: GATE IN
+---
 
-1. **Generate Session ID**
-   ```
-   session_id = sess_{timestamp}_{random}
-   ```
+## Steps
 
-2. **Lookup Task**
-   ```bash
-   task_data=$(jq -r --arg num "$task_number" \
-     '.active_projects[] | select(.project_number == ($num | tonumber))' \
-     specs/state.json)
-   ```
+### 1. Look up task
 
-3. **Validate**
-   - Task exists (ABORT if not)
-   - Status allows research: not_started, planned, partial, blocked, researched
-   - If completed/abandoned: ABORT with recommendation
-
-**ABORT** if any validation fails.
-
-**On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to STAGE 2 below.
-
-### STAGE 2: DELEGATE
-
-**EXECUTE NOW**: After CHECKPOINT 1 passes, immediately invoke the Skill tool.
-
-**Language-Based Routing**:
-
-| Language | Skill to Invoke |
-|----------|-----------------|
-| `neovim` | `skill-neovim-research` |
-| `web` | `skill-web-research` |
-| `general`, `meta`, `markdown` | `skill-researcher` |
-
-**Invoke the Skill tool NOW** with:
+Strip `OC_` prefix, find task in `specs/state.json`:
+```bash
+jq --arg n "N" '.active_projects[] | select(.project_number == ($n | tonumber))' specs/state.json
 ```
-skill: "{skill-name from table above}"
-args: "task_number={N} focus={focus_prompt} session_id={session_id}"
+If not found: "Task OC_N not found in state.json"
+
+Extract: `language`, `status`, `project_name`, `description`
+
+Zero-pad N to 3 digits for paths: `NNN` (e.g. 174 → 174, keep as-is if already ≥3 digits... use printf "%03d")
+
+Directory: `specs/OC_NNN_<project_name>/`
+
+### 2. Validate status
+
+- `not_started`, `partial`, `researched`: proceed
+- `researching`: warn "already researching, proceeding anyway"
+- `abandoned`: error "task is abandoned, use /task --recover first"
+- `completed`: warn "already completed, re-researching"
+
+### 3. Display task header
+
+Print a visual header showing the active task:
+
+```
+╔══════════════════════════════════════════════════════════╗
+║  Task OC_N: <project_name>                               ║
+║  Action: RESEARCHING                                     ║
+╚══════════════════════════════════════════════════════════╝
 ```
 
-The skill will:
-1. Update status to [RESEARCHING] (preflight)
-2. Spawn the appropriate research agent
-3. Create a research report
-4. Update status to [RESEARCHED] (postflight)
-5. Link artifacts in state.json
-6. Git commit
+This header appears at the start of the research command to clearly indicate which task is being worked on.
 
-**On DELEGATE success**: Research complete. **IMMEDIATELY CONTINUE** to CHECKPOINT 2 below.
+### 4. Update status to RESEARCHING
 
-### CHECKPOINT 2: GATE OUT
+Edit `specs/state.json`: set `status` to `"researching"` and update `last_updated` for this task.
 
-1. **Validate Return**
-   - Skill should return: status, summary
-   - Status should be "researched"
+Edit `specs/TODO.md`: change `[NOT STARTED]` (or current status marker) to `[RESEARCHING]` on the `### OC_N.` entry.
 
-2. **Verify Artifacts**
-   Check that research report exists:
-   ```bash
-   report_path=$(jq -r --arg num "$task_number" \
-     '.active_projects[] | select(.project_number == ($num | tonumber)) | .artifacts[] | select(.type == "research") | .path' \
-     specs/state.json)
-   
-   if [ -f "$report_path" ]; then
-     echo "Research report verified: $report_path"
-   else
-     echo "Warning: Research report not found at expected path"
-   fi
-   ```
+### 5. Execute research
 
-3. **Verify Status Updated**
-   Confirm status is now "researched" in state.json:
-   ```bash
-   current_status=$(jq -r --arg num "$task_number" \
-     '.active_projects[] | select(.project_number == ($num | tonumber)) | .status' \
-     specs/state.json)
-   
-   if [ "$current_status" = "researched" ]; then
-     echo "Status confirmed: [RESEARCHED]"
-   else
-     echo "Warning: Status is $current_status, expected researched"
-   fi
-   ```
+Based on `language`:
+- **meta**: Focus on existing `.opencode/` and `.claude/` files, conventions, patterns
+- **lean**: Search codebase for existing proofs, check Lean/Mathlib patterns
+- **typst/latex**: Read existing documents, check style and structure
+- **general**: Web search + codebase exploration
 
-**RETRY** skill if validation fails.
+Research strategy (always in this order):
+1. Read task description carefully — understand what needs to be built
+2. Explore codebase: use Glob/Grep/Read to find related files and patterns
+3. Read relevant context files in `.opencode/context/` if applicable
+4. Web search for external best practices if needed
+5. Synthesize findings into actionable recommendations
 
-**On GATE OUT success**: Artifacts verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.
+If a focus prompt was given, prioritize that aspect.
 
-### CHECKPOINT 3: COMMIT
+### 6. Write research report
+
+Create directory: `mkdir -p specs/OC_NNN_<project_name>/reports/`
+
+Write `specs/OC_NNN_<project_name>/reports/research-001.md`:
+
+```markdown
+# Research Report: Task #N
+
+**Task**: OC_N - <title>
+**Date**: YYYY-MM-DD
+**Language**: <language>
+**Focus**: <focus or "general">
+
+## Summary
+
+<2-3 sentence overview of findings and recommended approach>
+
+## Findings
+
+### <Topic 1>
+<Details>
+
+### <Topic 2>
+<Details>
+
+## Recommendations
+
+1. <Actionable recommendation>
+2. <Actionable recommendation>
+
+## Risks & Considerations
+
+- <Risk or consideration>
+
+## Next Steps
+
+Run `/plan OC_N` to create an implementation plan.
+```
+
+### 7. Update status to RESEARCHED
+
+Edit `specs/state.json`:
+- Set `status` to `"researched"`
+- Update `last_updated`
+- Add to `artifacts` array:
+```json
+{
+  "type": "research",
+  "path": "specs/OC_NNN_<project_name>/reports/research-001.md",
+  "summary": "<one sentence>"
+}
+```
+
+Edit `specs/TODO.md` on the `### OC_N.` entry:
+- Change `[RESEARCHING]` to `[RESEARCHED]`
+- Add line: `- **Research**: [research-001.md](OC_NNN_<project_name>/reports/research-001.md)`
+
+### 8. Commit changes
+
+Create a targeted commit with only the changed files:
 
 ```bash
-git add -A
-git commit -m "$(cat <<'EOF'
-task {N}: complete research
+# Generate session ID
+session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
-Session: {session_id}
+# Get list of changed files
+git status --porcelain | awk '{print $NF}' > /tmp/changed_files_$$.txt
+changed_files=$(cat /tmp/changed_files_$$.txt | tr '\n' ' ')
 
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
+# Commit if there are changes
+if [ -n "$changed_files" ]; then
+    git add $changed_files
+    git commit -m "task OC_${N}: complete research
+
+Session: ${session_id}
+
+Co-Authored-By: OpenCode <noreply@opencode.ai>" || echo "Warning: Commit failed but research completed"
+fi
+
+# Cleanup
+rm -f /tmp/changed_files_$$.txt
 ```
 
-Commit failure is non-blocking (log and continue).
+**Files committed**:
+- `specs/OC_NNN_<project_name>/reports/research-001.md` - Research report
+- `specs/state.json` - Status and artifact updates
+- `specs/TODO.md` - Status marker and research link
 
-## Output
+**Error handling**: Commit failures are non-blocking. Log a warning and continue.
 
-```
-Research completed for Task #{N}
+### 9. Report to user
 
-Report: {artifact_path from skill result}
+Show a brief summary:
+- Task researched
+- Key findings (3-5 bullets)
+- Report path
+- Next step: `/plan OC_N`
 
-Summary: {summary from skill result}
+---
 
-Status: [RESEARCHED]
-Next: /plan {N}
-```
+## Rules
 
-## Error Handling
-
-### GATE IN Failure
-- Task not found: Return error with guidance
-- Invalid status: Return error with current status
-
-### DELEGATE Failure
-- Skill fails: Keep [RESEARCHING], log error
-- Timeout: Partial research preserved, user can re-run
-
-### GATE OUT Failure
-- Missing artifacts: Log warning, continue with available
-- Link failure: Non-blocking warning
+- Write the report BEFORE updating status to RESEARCHED
+- Never fabricate findings — only report what you actually discovered
+- Keep the report focused and actionable
+- Directories use 3-digit padded number: `OC_174_slug` not `OC_17_slug`
+- Commit changes after completing research (non-blocking — log warning if commit fails)

@@ -73,17 +73,17 @@ The artifact_link operation includes idempotency check:
 if grep -q "$artifact_path" specs/TODO.md; then
   echo "Link already exists, skipping"
 else
-  # Add link to TODO.md
+  # Add link to specs/TODO.md
 fi
 ```
 
 ### 5. Verify All Updates
 
 Re-read both files and verify:
-- state.json has correct status
-- state.json artifacts array includes new artifacts
-- TODO.md has status marker updated
-- TODO.md has artifact links
+- specs/state.json has correct status
+- specs/state.json artifacts array includes new artifacts
+- specs/TODO.md has status marker updated
+- specs/TODO.md has artifact links
 
 ## Decision
 

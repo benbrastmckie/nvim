@@ -1,5 +1,6 @@
 # Orchestrator Design
 
+**Version**: 5.0
 **Created**: 2025-12-29
 **Purpose**: Document the smart coordinator pattern and orchestrator architecture
 
@@ -48,7 +49,7 @@ It does NOT handle:
 
 **Checks**:
 - Task number is valid integer
-- Task exists in TODO.md
+- Task exists in specs/TODO.md
 - Delegation depth < 3
 - No cycles in delegation path
 - Session ID is unique
@@ -63,9 +64,9 @@ It does NOT handle:
 **Purpose**: Determine target agent based on command configuration
 
 **For Language-Based Routing** (routing.language_based: true):
-1. Extract language from state.json (fast lookup):
+1. Extract language from specs/state.json (fast lookup):
    ```bash
-   # Lookup task in state.json (8x faster than TODO.md)
+   # Lookup task in specs/state.json (8x faster than specs/TODO.md)
    task_data=$(jq -r --arg num "$task_number" \
      '.active_projects[] | select(.project_number == ($num | tonumber))' \
      specs/state.json)
@@ -74,11 +75,11 @@ It does NOT handle:
    language=$(echo "$task_data" | jq -r '.language // "general"')
    ```
    
-   **Performance**: ~12ms for state.json vs ~100ms for TODO.md (8x faster)
+   **Performance**: ~12ms for specs/state.json vs ~100ms for specs/TODO.md (8x faster)
 
 2. Map language to agent:
-   - /research: neovim → neovim-research-agent, default → researcher
-   - /implement: neovim → neovim-implementation-agent, default → implementer
+   - /research: lean → lean-research-agent, default → researcher
+   - /implement: lean → lean-implementation-agent, default → implementer
 
 **For Direct Routing** (routing.language_based: false):
 - Use routing.target_agent from command frontmatter
@@ -86,7 +87,7 @@ It does NOT handle:
 
 **Output**: Target agent name
 
-**Note**: Command files now use state.json for all task lookups. See `state-management.md` for patterns.
+**Note**: Command files now use specs/state.json for all task lookups. See `state-management.md` for patterns.
 
 ---
 
@@ -185,7 +186,7 @@ Without loading:
 
 ## Language Extraction Logic
 
-### Priority 1: Project state.json
+### Priority 1: Project specs/state.json
 **Path**: `specs/{task_number}_{slug}/state.json`
 
 **Field**: `language`
@@ -199,11 +200,11 @@ Without loading:
 }
 ```
 
-**When to use**: Task has project directory with state.json
+**When to use**: Task has project directory with specs/state.json
 
 ---
 
-### Priority 2: TODO.md
+### Priority 2: specs/TODO.md
 **Path**: `specs/TODO.md`
 
 **Field**: `**Language**:` in task entry
@@ -214,14 +215,14 @@ Without loading:
 - **Language**: lean
 ```
 
-**When to use**: Task exists in TODO.md (always)
+**When to use**: Task exists in specs/TODO.md (always)
 
 ---
 
 ### Priority 3: Default
 **Value**: "general"
 
-**When to use**: Language not found in state.json or TODO.md (rare)
+**When to use**: Language not found in specs/state.json or specs/TODO.md (rare)
 
 ---
 
@@ -287,7 +288,7 @@ All delegations have timeouts:
 ## Validation Strategy
 
 ### What Orchestrator Validates
-✅ Task exists in TODO.md  
+✅ Task exists in specs/TODO.md  
 ✅ Task number format  
 ✅ Delegation safety (cycles, depth)  
 ✅ Return format (JSON schema)  
@@ -309,7 +310,7 @@ See `core/system/validation-strategy.md` for detailed philosophy.
 ### Validation Errors
 **When**: Preflight validation fails  
 **Action**: Return error immediately, don't delegate  
-**Example**: "Task 999 not found in TODO.md"
+**Example**: "Task 999 not found in specs/TODO.md"
 
 ### Agent Errors
 **When**: Agent returns failed status  
@@ -385,6 +386,7 @@ Agents own workflows, orchestrator just coordinates
 - `.opencode/agent/orchestrator.md` - Orchestrator implementation
 # Orchestrator Guide - Examples and Troubleshooting
 
+**Version**: 1.0  
 **Created**: 2025-12-29 (Task 245 Phase 5)  
 **Purpose**: Examples, troubleshooting, and detailed guidance for orchestrator usage
 
@@ -795,14 +797,14 @@ If validation fails:
 1. Check command_stages tracking in registry
 2. Verify stage_7_completed flag
 3. Check status-sync-manager invocation
-4. Validate TODO.md and state.json updates
+4. Validate specs/TODO.md and specs/state.json updates
 
 ### Symptom: Wrong Agent Routed
 
 **Cause**: Language extraction failed or routing logic incorrect
 
 **Fix**:
-1. Verify language extracted from TODO.md
+1. Verify language extracted from specs/TODO.md
 2. Check routing-guide.md for correct mapping
 3. Log routing decision for debugging
 4. Validate language field in task entry
@@ -817,8 +819,8 @@ If validation fails:
 User: /research 197
 
 Orchestrator:
-1. Load command file: .opencode/command/research.md
-2. Extract language from TODO.md: "lean"
+1. Load command file: .opencode/commands/research.md
+2. Extract language from specs/TODO.md: "lean"
 3. Route to: lean-research-agent
 4. Generate session_id: sess_1703606400_a1b2c3
 5. Register delegation in registry
@@ -835,8 +837,8 @@ Orchestrator:
 User: /implement 191
 
 Orchestrator:
-1. Load command file: .opencode/command/implement.md
-2. Extract language from TODO.md: "markdown"
+1. Load command file: .opencode/commands/implement.md
+2. Extract language from specs/TODO.md: "markdown"
 3. Check for plan: Yes (plan-001.md)
 4. Route to: task-executor
 5. Generate session_id: sess_1703606401_d4e5f6
@@ -855,7 +857,7 @@ Orchestrator:
 User: /implement 192 (complex delegation chain)
 
 Orchestrator:
-1. Load command file: .opencode/command/implement.md
+1. Load command file: .opencode/commands/implement.md
 2. Route to: task-executor
 3. task-executor delegates to: implementer
 4. implementer delegates to: git-workflow-manager

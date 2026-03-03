@@ -6,23 +6,24 @@ paths: .opencode/**/*
 
 ## Command Lifecycle
 
-Every command follows this pattern:
+Every command follows the checkpoint lifecycle. Reference `core/checkpoints/` for the
+current gate-in/gate-out/commit model.
 
-### 1. Preflight
+### 1. Preflight (GATE IN)
 Before starting work:
 - Parse and validate arguments
 - Check task exists and status allows operation
 - Update status to "in progress" variant
 - Log session start
 
-### 2. Execute
+### 2. Execute (DELEGATE)
 Perform the actual work:
 - Route to appropriate skill by language
 - Execute steps/phases
 - Track progress
 - Handle errors gracefully
 
-### 3. Postflight
+### 3. Postflight (GATE OUT + COMMIT)
 After completing work:
 - Update status to completed variant
 - Create artifacts

@@ -44,7 +44,7 @@ The marker can appear anywhere in the commit message:
 |-------------|------------|--------|
 | Research reports (.md) | No | No build impact |
 | Implementation plans (.md) | No | No build impact |
-| TODO.md / state.json | No | Task management only |
+| specs/TODO.md / specs/state.json | No | Task management only |
 | CLAUDE.md updates | No | Configuration only |
 | Context files (.opencode/context/) | No | Documentation only |
 | Skills/agents (.opencode/skills/, .opencode/agents/) | No | Orchestration only |
@@ -68,7 +68,6 @@ The marker can appear anywhere in the commit message:
 | `lean` | Trigger CI (modifies source) |
 | `meta` | Skip (modifies orchestration) |
 | `markdown` | Skip (documentation only) |
-| `web` | Case-by-case |
 | `general` | Case-by-case |
 
 ## Examples
@@ -78,7 +77,7 @@ The marker can appear anywhere in the commit message:
 ```
 task 423: complete research
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 CI result: Skipped on push
@@ -88,7 +87,7 @@ CI result: Skipped on push
 ```
 task 334: complete implementation [ci]
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: OpenCode <noreply@opencode.ai>
 ```
 
 CI result: Runs build, test, and lint

@@ -1,6 +1,6 @@
 # Creating Agents Guide
 
-This guide explains how to create new agents in the Neovim Configuration agent system that handle full workflow execution and artifact creation.
+This guide explains how to create new agents in the Logos/Theory agent system that handle full workflow execution and artifact creation.
 
 ---
 
@@ -67,15 +67,15 @@ All agents MUST return valid JSON. Plain text responses cause validation failure
 
 ## Agent File Location
 
-Agents are located in `.opencode/agents/{name}-agent.md`:
+Agents are located in `.opencode/agent/subagents/{name}-agent.md`:
 
 ```
-.opencode/agents/
+.opencode/agent/subagents/
 ├── general-research-agent.md
-├── neovim-research-agent.md
+├── lean-research-agent.md
 ├── planner-agent.md
 ├── general-implementation-agent.md
-├── neovim-implementation-agent.md
+├── lean-implementation-agent.md
 └── latex-implementation-agent.md
 ```
 
@@ -125,8 +125,8 @@ Load these on-demand using @-references:
 - `@.opencode/context/core/formats/subagent-return.md` - Return format schema
 
 **Load When Creating Artifacts**:
+- `@.claude/context/core/formats/plan-format.md` (for planning)
 - `@.opencode/context/core/formats/report-format.md` (for research)
-- `@.opencode/context/core/standards/plan.md` (for planning)
 ```
 
 ### 8-Stage Workflow Section
@@ -142,7 +142,7 @@ Extract from input:
 ```json
 {
   "task_context": {
-    "task_number": 412,
+    "task_number": OC_412,
     "task_name": "create_agent",
     "description": "...",
     "language": "meta"
@@ -173,7 +173,7 @@ Based on task language and purpose:
 ### Stage 5: Artifact Creation
 
 Create directory and write artifacts:
-- Path: `specs/{NNN}_{SLUG}/{type}/`
+- Path: `specs/OC_NNN_{SLUG}/{type}/`
 - Verify artifacts are non-empty
 
 ### Stage 6: Return Structured JSON
@@ -200,7 +200,7 @@ Release resources and log completion.
 
 ### Step 1: Create Agent File
 
-Create `.opencode/agents/{name}-agent.md`:
+Create `.opencode/agent/subagents/{name}-agent.md`:
 
 ```markdown
 # {Name} Agent
@@ -251,8 +251,8 @@ List context files to load on-demand:
 
 **Load When Needed**:
 - `@.opencode/context/core/formats/report-format.md` (for research)
-- `@.opencode/context/core/standards/plan.md` (for planning)
-- `@.opencode/context/project/neovim/tools/lazy-nvim-guide.md` (for Lean)
+- `@.claude/context/core/formats/plan-format.md` (for planning)
+- `@.opencode/context/project/lean4/tools/mcp-tools-guide.md` (for Lean)
 ```
 
 ### Step 4: Implement 8-Stage Workflow
@@ -268,7 +268,7 @@ Extract from input:
 ```json
 {
   "task_context": {
-    "task_number": 450,
+    "task_number": OC_450,
     "task_name": "add_async_support",
     "description": "Add async/await support to API client",
     "language": "python"
@@ -293,7 +293,7 @@ Load context based on task language:
 | Language | Context Files |
 |----------|---------------|
 | python | `project/python/tools.md` |
-| neovim | `project/neovim/tools/lazy-nvim-guide.md` |
+| lean | `project/lean4/tools/mcp-tools-guide.md` |
 | general | `project/repo/project-overview.md` |
 ```
 
@@ -331,7 +331,7 @@ Format outputs according to standards:
 - Include findings, recommendations, risks
 
 **Implementation Summary**:
-- Follow `summary.md` structure
+- Follow `plan-format.md` structure
 - List files modified, verification results
 ```
 
@@ -342,11 +342,11 @@ Format outputs according to standards:
 
 Create directory structure:
 ```
-specs/{NNN}_{SLUG}/
+specs/OC_NNN_{SLUG}/
 ├── reports/
-│   └── research-{NNN}.md
+│   └── research-NNN.md
 ├── plans/
-│   └── implementation-{NNN}.md
+│   └── implementation-NNN.md
 └── summaries/
     └── implementation-summary-{DATE}.md
 ```
@@ -371,7 +371,7 @@ Return ONLY valid JSON matching this schema:
   "artifacts": [
     {
       "type": "report|plan|summary|implementation",
-      "path": "specs/{NNN}_{SLUG}/{type}/{file}.md",
+      "path": "specs/OC_NNN_{SLUG}/{type}/{file}.md",
       "summary": "Brief artifact description"
     }
   ],
@@ -416,8 +416,7 @@ This stage is mandatory. Missing status updates cause synchronization issues.
 
 4. **Create Git Commit** (if appropriate):
    - Stage artifact files
-   - Commit with message: `task {N}: {action}`
-   - Include Co-Authored-By line
+   - Commit with message: `task OC_N: {action}`
 
 **Error Handling**:
 - Artifact validation failure -> Return failed status
@@ -481,7 +480,7 @@ Include complete examples:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/412_create_agent/reports/research-001.md",
+      "path": "specs/OC_412_create_agent/reports/research-001.md",
       "summary": "Research report with 8 findings"
     }
   ],
@@ -493,7 +492,7 @@ Include complete examples:
     "delegation_path": ["orchestrator", "research", "general-research-agent"],
     "findings_count": 8
   },
-  "next_steps": "Run /plan 412 to create implementation plan"
+  "next_steps": "Run /plan OC_412 to create implementation plan"
 }
 ```
 
@@ -502,7 +501,7 @@ Include complete examples:
 ```json
 {
   "status": "failed",
-  "summary": "Research failed: Task 999 not found in state.json.",
+  "summary": "Research failed: Task OC_999 not found in state.json.",
   "artifacts": [],
   "metadata": {
     "session_id": "sess_1736689200_xyz789",
@@ -514,7 +513,7 @@ Include complete examples:
   "errors": [
     {
       "type": "validation",
-      "message": "Task 999 not found in state.json",
+      "message": "Task OC_999 not found in state.json",
       "recoverable": false,
       "recommendation": "Verify task number with /task --sync"
     }
@@ -665,12 +664,11 @@ Research completed successfully. Found 5 patterns. See report at ...
 
 | Agent | Purpose | Invoked By |
 |-------|---------|------------|
-| `general-research-agent` | General/meta/markdown research | skill-researcher |
-| `neovim-research-agent` | Neovim/plugin research | skill-neovim-research |
-| `web-research-agent` | Web/Astro/Tailwind research | skill-web-research |
+| `general-research-agent` | Web/codebase research | skill-researcher |
+| `lean-research-agent` | Lean 4/Mathlib research | skill-lean-research |
 | `planner-agent` | Implementation planning | skill-planner |
 | `general-implementation-agent` | General file implementation | skill-implementer |
-| `neovim-implementation-agent` | Neovim configuration implementation | skill-neovim-implementation |
+| `lean-implementation-agent` | Lean proof implementation | skill-lean-implementation |
 | `latex-implementation-agent` | LaTeX document implementation | skill-latex-implementation |
 
 ---
@@ -681,10 +679,9 @@ Research completed successfully. Found 5 patterns. See report at ...
 - [Creating Skills](creating-skills.md) - Creating the skill that invokes agent
 - [Creating Commands](creating-commands.md) - Creating commands that invoke skills
 - `.opencode/context/core/formats/subagent-return.md` - Return format schema
-- `.opencode/docs/templates/agent-template.md` - Agent template
 
 ---
 
 **Document Version**: 1.0
-**Created**: 2026-01-12
-**Maintained By**: Neovim Configuration Development Team
+**Created**: 2026-02-28
+**Maintained By**: Logos/Theory Development Team

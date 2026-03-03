@@ -1,10 +1,10 @@
-# Anti-Stop Patterns for Claude Code Agent Systems
+# Anti-Stop Patterns for OpenCode Agent Systems
 
 ## Critical Background
 
-Claude interprets certain words and phrases as signals to stop execution immediately. This causes workflow delegation to fail when subagents return these patterns, because the orchestrator's postflight (status updates, git commits) never runs.
+OpenCode interprets certain words and phrases as signals to stop execution immediately. This causes workflow delegation to fail when subagents return these patterns, because the orchestrator's postflight (status updates, git commits) never runs.
 
-**Root Cause**: Claude Code treats certain return values as "conversation complete" signals, halting execution before the calling skill/orchestrator can continue.
+**Root Cause**: OpenCode treats certain return values as "conversation complete" signals, halting execution before the calling skill/orchestrator can continue.
 
 **Impact**: Workflow commands like /research, /plan, /implement stop prematurely, leaving tasks in inconsistent states (e.g., [RESEARCHING] instead of [RESEARCHED]).
 
@@ -101,7 +101,7 @@ Each agent file's Critical Requirements section includes anti-stop rules:
 ```markdown
 **MUST NOT**:
 ...
-8. Return the word "completed" as a status value (triggers Claude stop behavior)
+8. Return the word "completed" as a status value (triggers OpenCode stop behavior)
 9. Use phrases like "task is complete", "work is done", or "finished" in summaries
 10. Assume your return ends the workflow (orchestrator continues with postflight)
 ```
@@ -135,7 +135,7 @@ grep -r "Task complete" .opencode/skills/
 grep '"completed|partial|failed"' .opencode/agents/*.md
 
 # Verify anti-stop language is present
-grep "triggers Claude stop behavior" .opencode/agents/*.md | wc -l
+grep "triggers OpenCode stop behavior" .opencode/agents/*.md | wc -l
 # Expected: 6 (one per agent file)
 ```
 
@@ -155,7 +155,7 @@ fi
 
 ### GitHub Issues
 
-- **Issue #6159**: Documents Claude's stop behavior with certain return values
+- **Issue #6159**: Documents OpenCode's stop behavior with certain return values
 - **Issue #599**: Reports subagent early termination patterns
 
 ### Internal Documentation

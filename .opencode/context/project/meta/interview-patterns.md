@@ -1,6 +1,8 @@
 # Interview Patterns for Meta-Programming
 
 **Purpose**: Patterns for conducting effective interactive interviews during system building
+
+**Version**: 1.0  
 **Last Updated**: 2025-12-29
 
 ---
@@ -221,4 +223,4 @@ Build shared context incrementally throughout the interview.
 
 ---
 
-**Maintained By**: ProofChecker Development Team
+**Maintained By**: Logos/Theory Development Team

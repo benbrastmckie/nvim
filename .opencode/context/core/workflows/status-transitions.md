@@ -61,7 +61,7 @@
 
 **CRITICAL**: All status updates MUST be delegated to status-sync-manager for atomic synchronization.
 
-**DO NOT** update TODO.md or state.json directly.
+**DO NOT** update specs/TODO.md or specs/state.json directly.
 
 ```json
 {
@@ -78,9 +78,9 @@
 ## Atomic Synchronization
 
 status-sync-manager updates atomically:
-1. TODO.md (status marker, timestamps, artifact links)
-2. state.json (status field, timestamps, artifact_paths)
-3. Project state.json (if exists)
+1. specs/TODO.md (status marker, timestamps, artifact links)
+2. specs/state.json (status field, timestamps, artifact_paths)
+3. Project specs/state.json (if exists)
 4. Plan file (phase status markers, if plan exists)
 
 **Two-phase commit**: All files updated or all rolled back on failure.

@@ -1,128 +1,87 @@
 # User Installation Guide
 
-[Back to Docs](../README.md) | [Detailed Installation](../../../docs/installation/README.md)
+[Back to Docs](../README.md)
 
-A quick-start guide for installing Claude Code and using it to work with Neovim configuration projects.
+A quick-start guide for installing opencode and using it to work with Logos/Theory.
 
 ---
 
 ## What This Guide Covers
 
 This guide helps you:
-1. Install Claude Code (Anthropic's AI CLI)
-2. Set up a Neovim configuration project
-3. Set up Claude agent commands (optional)
-4. Work with Neovim configuration files
-5. Set up GitHub CLI for issue reporting
+1. Set up the Logos/Theory project
+2. Install Lean 4 and Mathlib
+3. Work with Lean 4 proofs
+4. Understand the opencode agent system
 
 **New to the terminal?** See your operating system's documentation for terminal basics.
 
 ---
 
-## Installing Claude Code
+## Installing Lean 4
 
-Claude Code is Anthropic's command-line interface for AI-assisted development.
-
-### Quick Installation
-
-**macOS:**
-```bash
-brew install anthropics/claude/claude-code
-```
-
-**Windows (PowerShell as Administrator):**
-```powershell
-irm https://raw.githubusercontent.com/anthropics/claude-code/main/install.ps1 | iex
-```
-
-**Linux:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/anthropics/claude-code/main/install.sh | sh
-```
-
-### Verify Installation
+Logos/Theory requires Lean 4 and Mathlib. Install elan (Lean version manager):
 
 ```bash
-claude --version
+# macOS/Linux
+curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
+
+# Windows - download from https://github.com/leanprover/elan/releases
 ```
 
-You should see a version number.
-
----
-
-## Authentication
-
-Before using Claude Code, authenticate with your Anthropic account:
+After installation, restart your terminal and verify:
 
 ```bash
-claude auth login
-```
-
-This opens a browser window. Log in with your Anthropic account and authorize Claude Code.
-
-**Verify authentication:**
-```bash
-claude auth status
+elan --version
+lake --version
 ```
 
 ---
 
-## Setting Up a Neovim Configuration Project with Claude Code
+## Setting Up Logos/Theory
 
-### Step 1: Navigate to Your Configuration
-
-```bash
-cd ~/.config/nvim
-# Or wherever your Neovim configuration lives
-```
-
-### Step 2: Initialize Git (if not already done)
+### Step 1: Clone the Repository
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
+mkdir -p ~/Documents/Projects
+cd ~/Documents/Projects
+git clone https://github.com/benbrastmckie/Logos.git
+cd Logos/Theory
 ```
 
-### Step 3: Start Claude Code
+### Step 2: Build the Project
 
 ```bash
-claude
+cd ~/Documents/Projects/Logos/Theory
+lake build
 ```
 
-### Step 4: Verify Setup
+This may take several minutes on first build as it downloads Mathlib cache.
 
-Ask Claude:
+### Step 3: Verify Setup
 
+Test the Lean setup:
+
+```bash
+lake build
 ```
-Please verify my Neovim configuration by:
-1. Checking the overall structure of the configuration
-2. Identifying the plugin manager in use
-3. Confirming the Lua modules are properly organized
-```
+
+Should complete without errors.
 
 ---
 
-## Setting Up Claude Agent Commands (Optional)
+## Using the OpenCode Agent System
 
-The repository includes a `.opencode/` agent system that provides enhanced task management and workflow commands for Claude Code.
+The Logos/Theory repository includes a `.opencode/` agent system that provides enhanced task management and workflow commands.
 
 ### What the Agent System Provides
 
 - **Task Management**: Create, track, and archive development tasks
 - **Structured Workflow**: `/research` -> `/plan` -> `/implement` cycle
-- **Specialized Skills**: Language-specific agents for Neovim development
-- **Context Files**: Domain knowledge for Neovim, plugins, and Lua
-- **State Persistence**: Track progress across Claude Code sessions
-
-### After Installation
-
-1. **Restart Claude Code** - Exit and restart for commands to be available
-2. **Test the setup** - Try creating a test task:
-   ```
-   /task "Test task"
-   ```
-3. **Learn the commands** - See the Commands Reference
+- **Specialized Skills**: Language-specific agents for Lean 4 development
+- **Context Files**: Domain knowledge for logic, semantics, and theorem proving
+- **State Persistence**: Track progress across sessions
+- **Lean MCP Tools**: Integration with lean-lsp for proof assistance
 
 ### Available Commands
 
@@ -134,60 +93,60 @@ The repository includes a `.opencode/` agent system that provides enhanced task 
 | `/implement` | Execute implementation |
 | `/todo` | Archive completed tasks |
 
-For complete documentation, see the [Commands Reference](../commands/README.md).
+For complete documentation, see the [User Guide](user-guide.md).
 
 ---
 
-## Working with Neovim Configuration
+## Working with Lean 4 Proofs
 
-Once your configuration is set up, use Claude Code to assist with Neovim development.
+Once Logos/Theory is set up, use the agent system to assist with theorem proving.
 
 ### Explore the Codebase
 
-In Claude Code, ask:
+Ask about the project structure:
 
 ```
-Show me the structure of my Neovim configuration and explain
-how the modules are organized.
+Show me the structure of the Theories/ directory and explain
+the organization of the modal logic system.
 ```
 
-Claude will:
-1. Navigate the lua/ directory structure
-2. Explain the plugin specifications
-3. Show how keymaps and options are configured
+### Working on Proofs
 
-### Working on Configuration
-
-Ask Claude to help with specific configurations:
+Ask for help with specific proofs:
 
 ```
-Help me understand how the LSP is configured in my
-nvim/lua/plugins/lsp.lua file
+Help me understand the proof of Deduction Theorem in
+Theories/Modal/Logic.lean
 ```
 
 Or:
 
 ```
-I want to add a new plugin for git integration. Can you help me
-find popular options and configure one?
+I'm trying to prove a modal logic theorem. Can you help me
+find relevant lemmas in Mathlib using leansearch?
 ```
+
+### Using Lean MCP Tools
+
+The agent system has access to specialized Lean tools:
+
+| Tool | Purpose |
+|------|---------|
+| `lean_goal` | See proof state at a position |
+| `lean_hover_info` | Get type signatures |
+| `lean_leansearch` | Search Mathlib by natural language |
+| `lean_loogle` | Search by type signature |
+| `lake build` | Check for compiler errors (via Bash) |
+
+**Note**: Some MCP tools are blocked due to known bugs. See `.opencode/context/core/patterns/blocked-mcp-tools.md` for details.
 
 ---
 
 ## GitHub CLI Setup
 
-The GitHub CLI (`gh`) allows Claude Code to create issues and pull requests. This is helpful for reporting bugs or contributing.
+The GitHub CLI (`gh`) allows creating issues and pull requests. This is helpful for reporting bugs or contributing.
 
 ### Installing GitHub CLI
-
-Ask Claude:
-
-```
-Please install the GitHub CLI (gh) for my system and help me
-authenticate with GitHub.
-```
-
-**Or manually:**
 
 **macOS:**
 ```bash
@@ -219,54 +178,84 @@ gh auth status
 
 ---
 
+## Opening Issues on Logos/Theory
+
+When you encounter bugs or have suggestions, you can create issues.
+
+### Using the Agent System
+
+```
+I'm getting an error when building the project.
+Help me create an issue on the Logos/Theory repository
+with the error details.
+```
+
+### Manual Issue Creation
+
+```bash
+gh issue create --repo benbrastmckie/Logos \
+  --title "Brief description" \
+  --body "Detailed description of the issue"
+```
+
+### What to Include in Issues
+
+- Lean version (`lean --version`)
+- Lake version (`lake --version`)
+- Operating system
+- Steps to reproduce
+- Expected vs actual behavior
+- Error messages (if any)
+
+---
+
 ## Example Workflows
 
 ### Complete First-Time Setup
 
 ```bash
-# Install Claude Code (see platform commands above)
-claude --version
+# Install Lean 4 (see commands above)
+elan --version
 
-# Authenticate
-claude auth login
+# Clone and set up project
+mkdir -p ~/Documents/Projects && cd ~/Documents/Projects
+git clone https://github.com/benbrastmckie/Logos.git
+cd Logos/Theory
 
-# Navigate to your configuration
-cd ~/.config/nvim
-
-# Start Claude
-claude
+# Build (first time takes a while)
+lake build
 ```
 
-In Claude Code:
+Then use the agent system:
 ```
 Please help me:
-1. Verify my Neovim configuration is properly structured
-2. Explore the lua/ directory and identify plugins
-3. Check for any common issues or improvements
+1. Verify the Lean 4 setup is working
+2. Explore the Theories/ directory structure
+3. Run diagnostics on a sample proof file
 ```
 
-### Adding a New Plugin
-
-```bash
-cd ~/.config/nvim
-claude
-```
-
-Ask Claude:
-```
-Help me add telescope.nvim to my configuration with
-proper keybindings for file finding and live grep.
-```
-
-### Debugging Configuration Issues
+### Working with Existing Proofs
 
 ```bash
-cd ~/.config/nvim
-claude
+cd ~/Documents/Projects/Logos/Theory
+# Launch your AI assistant with the project
+```
+
+Ask about the project:
+```
+Review Theories/Modal/Logic.lean and explain the key theorems
+and how they relate to Kripke semantics.
+```
+
+### Debugging Build Issues
+
+```bash
+cd ~/Documents/Projects/Logos/Theory
+# Launch your AI assistant
 ```
 
 ```
-I'm getting an error when Neovim starts.
+I ran lake build and got an error.
 Please diagnose the issue and suggest fixes.
 ```
 
@@ -274,34 +263,28 @@ Please diagnose the issue and suggest fixes.
 
 ## Troubleshooting
 
-### Claude Code Issues
+### Lean/Lake Issues
 
-**"Command not found":**
-- Restart your terminal
-- Check installation: `which claude`
-- Reinstall using platform instructions
+**"lake: command not found":**
+- Ensure elan is installed
+- Restart terminal after elan installation
+- Check: `elan show` to see installed toolchains
 
-**Authentication failed:**
-```bash
-claude auth logout
-claude auth login
-```
+**Build errors:**
+- Run `lake clean` then `lake build`
+- Ensure you're using the correct Lean version (check `lean-toolchain`)
+- Download Mathlib cache: `lake exe cache get`
 
-### Neovim Issues
+**Slow builds:**
+- First builds are slow due to Mathlib compilation
+- Use `lake exe cache get` to download prebuilt cache
 
-**Plugins not loading:**
-- Run `:Lazy sync` to update plugins
-- Check for errors: `:messages`
-- Verify plugin specifications are correct
+### Lean LSP Issues
 
-**LSP not working:**
-- Check LSP is installed: `:LspInfo`
-- Ensure language servers are installed via Mason
-- Check for errors: `:LspLog`
-
-**Configuration errors:**
-- Run `nvim --headless -c 'checkhealth' -c 'qa'` to check health
-- Look for syntax errors in lua files
+**MCP tools not working:**
+- Ensure the lean-lsp MCP server is configured
+- Check your AI assistant settings for MCP configuration
+- Verify Lean project builds successfully first
 
 ---
 
@@ -309,13 +292,14 @@ claude auth login
 
 ### Documentation
 
-- **[Architecture](../../README.md)** - System architecture overview
-- **[CLAUDE.md](../../CLAUDE.md)** - Quick reference for the agent system
-- **[Commands Reference](../commands/README.md)** - Full command documentation
+- **[Architecture](../architecture/system-overview.md)** - System architecture overview
+- **[User Guide](user-guide.md)** - Comprehensive command reference
+- **[OPENCODE.md](../../OPENCODE.md)** - Quick reference
 
 ### Project Documentation
 
-- **[nvim/](../../../nvim/)** - Neovim configuration source
+- **[docs/](../../../docs/)** - Project documentation
+- **[Theories/](../../../Theories/)** - Lean 4 source code
 
 ### Contributing
 
@@ -324,4 +308,4 @@ claude auth login
 
 ---
 
-[Back to Docs](../README.md) | [Copy .opencode/ Directory](copy-claude-directory.md)
+[Back to Docs](../README.md)

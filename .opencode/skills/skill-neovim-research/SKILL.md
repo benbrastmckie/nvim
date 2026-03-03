@@ -1,228 +1,50 @@
 ---
 name: skill-neovim-research
-description: Conduct Neovim configuration research using plugin docs and codebase exploration. Invoke for neovim research tasks.
-allowed-tools: Task, Bash, Edit, Read, Write, Read(/tmp/*.json), Bash(rm:*)
+description: Research Neovim plugins, Lua configuration, and vimscript. Invoke for neovim-language research.
+allowed-tools: Task, Bash, Edit, Read, Write
+context: fork
+agent: neovim-research-agent
 ---
 
 # Neovim Research Skill
 
-Thin wrapper that delegates Neovim research to `neovim-research-agent` subagent.
+Thin wrapper that delegates Neovim research to `neovim-research-agent`.
 
-**IMPORTANT**: This skill implements the skill-internal postflight pattern. After the subagent returns,
-this skill handles all postflight operations (status update, artifact linking, git commit) before returning.
+<context>
+  <system_context>OpenCode Neovim research skill wrapper.</system_context>
+  <task_context>Delegate Neovim research and coordinate postflight updates.</task_context>
+</context>
+
+<role>Delegation skill for Neovim research workflows.</role>
+
+<task>Validate inputs, delegate Neovim research, and update status/artifacts.</task>
+
+<execution>See Execution Flow for preflight/delegation/postflight steps.</execution>
+
+<validation>Validate metadata file, report artifact, and state updates.</validation>
+
+<return_format>Brief text summary; metadata file in `specs/{N}_{SLUG}/.return-meta.json`.</return_format>
 
 ## Context References
 
 Reference (do not load eagerly):
 - Path: `.opencode/context/core/formats/return-metadata-file.md` - Metadata file schema
 - Path: `.opencode/context/core/patterns/postflight-control.md` - Marker file protocol
-- Path: `.opencode/context/core/patterns/jq-escaping-workarounds.md` - jq escaping patterns
+- Path: `.opencode/context/core/patterns/file-metadata-exchange.md` - Metadata handling
+- Path: `.opencode/context/core/patterns/jq-escaping-workarounds.md` - jq workaround patterns
+- Path: `.opencode/context/index.md` - Context discovery index
 
 ## Trigger Conditions
 
-This skill activates when:
-- Task language is "neovim"
-- Research is needed for Neovim configuration
-- Plugin documentation or patterns need to be gathered
-
----
+- Task language is neovim
+- /research command invoked
 
 ## Execution Flow
 
-### Stage 1: Input Validation
-
-Validate required inputs:
-- `task_number` - Must be provided and exist in state.json
-- `focus_prompt` - Optional focus for research direction
-
-```bash
-# Lookup task
-task_data=$(jq -r --argjson num "$task_number" \
-  '.active_projects[] | select(.project_number == $num)' \
-  specs/state.json)
-
-# Validate exists
-if [ -z "$task_data" ]; then
-  return error "Task $task_number not found"
-fi
-
-# Extract fields
-language=$(echo "$task_data" | jq -r '.language // "neovim"')
-status=$(echo "$task_data" | jq -r '.status')
-project_name=$(echo "$task_data" | jq -r '.project_name')
-description=$(echo "$task_data" | jq -r '.description // ""')
-```
-
----
-
-### Stage 2: Preflight Status Update
-
-Update task status to "researching" BEFORE invoking subagent.
-
-**Update state.json**:
-```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researching" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
-```
-
-**Update TODO.md**: Use Edit tool to change status marker to `[RESEARCHING]`.
-
----
-
-### Stage 3: Create Postflight Marker
-
-```bash
-padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
-
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
-{
-  "session_id": "${session_id}",
-  "skill": "skill-neovim-research",
-  "task_number": ${task_number},
-  "operation": "research",
-  "reason": "Postflight pending: status update, artifact linking, git commit",
-  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
-```
-
----
-
-### Stage 4: Prepare Delegation Context
-
-```json
-{
-  "session_id": "sess_{timestamp}_{random}",
-  "delegation_depth": 1,
-  "delegation_path": ["orchestrator", "research", "skill-neovim-research"],
-  "timeout": 3600,
-  "task_context": {
-    "task_number": N,
-    "task_name": "{project_name}",
-    "description": "{description}",
-    "language": "neovim"
-  },
-  "focus_prompt": "{optional focus}",
-  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
-}
-```
-
----
-
-### Stage 5: Invoke Subagent
-
-**CRITICAL**: You MUST use the **Task** tool to spawn the subagent.
-
-```
-Tool: Task (NOT Skill)
-Parameters:
-  - subagent_type: "neovim-research-agent"
-  - prompt: [Include task_context, delegation_context, focus_prompt, metadata_file_path]
-  - description: "Execute Neovim research for task {N}"
-```
-
-The subagent will:
-- Search local Neovim configuration
-- Search web for plugin documentation
-- Analyze findings and synthesize recommendations
-- Create research report
-- Write metadata file
-- Return brief text summary
-
----
-
-### Stage 6: Parse Subagent Return
-
-```bash
-metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
-
-if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
-    status=$(jq -r '.status' "$metadata_file")
-    artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
-    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
-    artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
-else
-    status="failed"
-fi
-```
-
----
-
-### Stage 7: Update Task Status (Postflight)
-
-If status is "researched", update state.json and TODO.md.
-
----
-
-### Stage 8: Link Artifacts
-
-Add artifact to state.json with summary.
-
-**Update TODO.md**: Add research artifact link.
-
-**Strip specs/ prefix for TODO.md** (TODO.md is inside specs/): `todo_link_path="${artifact_path#specs/}"`
-
-```markdown
-- **Research**: [research-{NNN}.md]({todo_link_path})
-```
-
----
-
-### Stage 9: Git Commit
-
-```bash
-git add -A
-git commit -m "task ${task_number}: complete research
-
-Session: ${session_id}
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
-```
-
----
-
-### Stage 10: Cleanup
-
-```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
-```
-
----
-
-### Stage 11: Return Brief Summary
-
-```
-Research completed for task {N}:
-- Found plugin configuration patterns
-- Identified lazy loading strategy
-- Created report at specs/{NNN}_{SLUG}/reports/research-{NNN}.md
-- Status updated to [RESEARCHED]
-- Changes committed
-```
-
----
-
-## Error Handling
-
-### Input Validation Errors
-Return immediately if task not found.
-
-### Metadata File Missing
-Keep status as "researching" for resume.
-
-### Git Commit Failure
-Non-blocking: Log failure but continue.
-
----
-
-## Return Format
-
-Brief text summary (NOT JSON).
+1. Validate task and status.
+2. Update status to researching.
+3. Create postflight marker file.
+4. Delegate to `neovim-research-agent` via Task tool.
+5. Read metadata file and update state + TODO.
+6. Link research artifact and commit.
+7. Clean up marker and metadata files.

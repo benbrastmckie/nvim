@@ -57,11 +57,11 @@
     {
       "project_number": 111,
       "project_name": "compare_opencode_agent_systems",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-02T23:58:29Z",
-      "last_updated": "2026-03-03T00:38:17Z",
-      "session_id": "sess_1772498088_92954c",
+      "last_updated": "2026-03-03T00:48:23Z",
+      "session_id": "sess_1772498376_223740",
       "researched": "2026-03-03T00:45:00Z",
       "artifacts": [
         {
@@ -78,9 +78,18 @@
           "path": "specs/111_compare_opencode_agent_systems/plans/implementation-001.md",
           "type": "plan",
           "summary": "6-phase migration plan to replace nvim/.opencode/ with Theory/.opencode/ base, porting neovim-specific agents, skills, and domain context"
+        },
+        {
+          "path": "specs/111_compare_opencode_agent_systems/summaries/implementation-summary-20260303.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results: 321 files, 17 agents, 22 skills"
         }
       ],
-      "planned": "2026-03-03T00:38:17Z"
+      "planned": "2026-03-03T00:38:17Z",
+      "started": "2026-03-03T00:39:54Z",
+      "completed": "2026-03-03T00:48:23Z",
+      "completion_summary": "Migrated nvim/.opencode/ to Theory/.opencode/ base, porting neovim-specific agents (3), skills (2), and domain context (17 files). Updated OPENCODE.md and settings.json for nvim project. Final system: 321 files, 17 agents, 22 skills.",
+      "claudemd_suggestions": "Created nvim/.opencode/ with Theory base plus neovim-specific agents/skills/context. Modified OPENCODE.md, settings.json, orchestration-core.md, index.md, project-overview.md, and added neovim-lua.md rules."
     },
     {
       "project_number": 110,

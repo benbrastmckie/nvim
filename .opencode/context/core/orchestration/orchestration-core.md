@@ -1,5 +1,6 @@
 # Orchestration Core
 
+**Version**: 1.0
 **Created**: 2026-01-19
 **Purpose**: Essential orchestration patterns for delegation, session tracking, and routing
 **Consolidates**: orchestrator.md, delegation.md (partial), routing.md (partial), sessions.md (partial)
@@ -8,7 +9,7 @@
 
 ## Overview
 
-This document defines the core orchestration patterns for Neovim Configuration's command-skill-agent architecture:
+This document defines the core orchestration patterns for Logos/Theory's command-skill-agent architecture:
 
 - **Session Tracking**: Unique identifiers for delegation chains
 - **Delegation Safety**: Depth limits, cycle detection, timeouts
@@ -180,9 +181,9 @@ Every delegation MUST include this context:
 
 | Command | Language-Based | Agent(s) |
 |---------|---------------|----------|
-| /research | Yes | neovim: neovim-research-agent, web: web-research-agent, default: general-research-agent |
+| /research | Yes | lean: lean-research-agent, neovim: neovim-research-agent, default: general-research-agent |
 | /plan | No | planner-agent |
-| /implement | Yes | neovim: neovim-implementation-agent, default: general-implementation-agent |
+| /implement | Yes | lean: lean-implementation-agent, neovim: neovim-implementation-agent, default: general-implementation-agent |
 | /revise | No | planner-agent |
 | /review | No | reviewer-agent |
 | /meta | No | meta-builder-agent |
@@ -191,14 +192,14 @@ Every delegation MUST include this context:
 
 Priority order for extracting task language:
 
-1. **state.json** (fast, ~12ms):
+1. **specs/state.json** (fast, ~12ms):
    ```bash
    language=$(jq -r --arg num "$task_number" \
      '.active_projects[] | select(.project_number == ($num | tonumber)) | .language // "general"' \
      specs/state.json)
    ```
 
-2. **TODO.md** (fallback, ~100ms):
+2. **specs/TODO.md** (fallback, ~100ms):
    ```bash
    language=$(grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/.*: //')
    ```
@@ -210,6 +211,12 @@ Priority order for extracting task language:
 Validate language/agent compatibility before delegation:
 
 ```bash
+# Lean tasks must route to lean-* agents
+if [ "$language" == "lean" ] && [[ ! "$agent" =~ ^lean- ]]; then
+  echo "Error: Lean task must route to lean-* agent"
+  exit 1
+fi
+
 # Neovim tasks must route to neovim-* agents
 if [ "$language" == "neovim" ] && [[ ! "$agent" =~ ^neovim- ]]; then
   echo "Error: Neovim task must route to neovim-* agent"
@@ -223,7 +230,7 @@ fi
 
 ### Preflight Checklist
 - [ ] Parse task number from arguments
-- [ ] Validate task exists in state.json
+- [ ] Validate task exists in specs/state.json
 - [ ] Extract language for routing
 - [ ] Generate session_id
 - [ ] Prepare delegation context

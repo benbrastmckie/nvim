@@ -1,6 +1,6 @@
 # Meta-System Builder Guide
 
-Complete guide for using the `/meta` command to create and modify agents and commands in the ProofChecker system.
+Complete guide for using the `/meta` command to create and modify agents and commands in the Logos/Theory system.
 
 ## Overview
 
@@ -40,11 +40,11 @@ This launches an interactive interview that guides you through:
 ├── workflows/
 │   ├── {workflow-1}.md
 │   └── {workflow-2}.md
-├── command/
+├── commands/
 │   ├── {command-1}.md
 │   └── {command-2}.md
 ├── README.md                         # System overview
-├── README.md                   # Architecture guide
+├── docs/architecture/system-overview.md  # Architecture guide
 ├── TESTING.md                        # Testing checklist
 └── QUICK-START.md                    # Usage examples
 ```
@@ -381,11 +381,13 @@ After generation, you can customize:
 ## Performance Expectations
 
 ### Context Efficiency
+
 - 80% of tasks use Level 1 context (isolation)
 - 20% of tasks use Level 2 context (filtered)
 - Level 3 context (windowed) is rare
 
 ### Quality Improvements
+
 - **Routing Accuracy**: +20% (LLM-based decisions)
 - **Consistency**: +25% (XML structure)
 - **Context Efficiency**: 80% reduction in overhead
@@ -409,7 +411,7 @@ After generation, you can customize:
 
 ### Getting Help
 
-1. Review generated documentation (README.md, README.md)
+1. Review generated documentation (README.md, docs/architecture/system-overview.md)
 2. Check TESTING.md for testing guidance
 3. Review QUICK-START.md for usage examples
 4. Examine template files for patterns
@@ -452,7 +454,7 @@ After your system is generated:
 
 - **Templates**: `.opencode/context/core/templates/`
 - **Meta Agent**: `.opencode/agent/subagents/meta.md`
-- **Documentation**: `.opencode/README.md`, `.opencode/README.md`
+- **Documentation**: `.opencode/README.md`, `.opencode/docs/architecture/system-overview.md`
 - **Patterns**: Review template files for best practices
 
 ---

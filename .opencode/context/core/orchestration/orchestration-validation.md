@@ -1,5 +1,6 @@
 # Orchestration Validation
 
+**Version**: 1.0
 **Created**: 2026-01-19
 **Purpose**: Return validation, artifact verification, and validation strategy
 **Consolidates**: validation.md, subagent-validation.md (partial)

@@ -3,7 +3,7 @@
 #
 # Usage: ./postflight-plan.sh TASK_NUMBER ARTIFACT_PATH [ARTIFACT_SUMMARY]
 #
-# This script updates state.json after plan creation using the
+# This script updates specs/state.json after plan creation using the
 # two-step jq pattern to avoid Issue #1132 (OpenCode Bash tool escaping bug).
 #
 # See: .opencode/context/core/patterns/jq-escaping-workarounds.md
@@ -37,7 +37,7 @@ task_exists=$(jq -r --argjson num "$task_number" \
   "$state_file")
 
 if [ -z "$task_exists" ]; then
-    echo "Error: Task $task_number not found in state.json"
+    echo "Error: Task $task_number not found in specs/state.json"
     exit 1
 fi
 
