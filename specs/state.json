@@ -4,11 +4,11 @@
     {
       "project_number": 113,
       "project_name": "review_proofchecker_opencode_virtues",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-03T00:10:48Z",
-      "last_updated": "2026-03-03T00:59:19Z",
-      "session_id": "sess_1772499174_58092a",
+      "last_updated": "2026-03-03T01:07:53Z",
+      "session_id": "sess_1772499790_75e838",
       "researched": "2026-03-03T00:59:19Z",
       "artifacts": [
         {
@@ -25,8 +25,14 @@
           "path": "specs/113_review_proofchecker_opencode_virtues/reports/research-003.md",
           "type": "research",
           "summary": "Feature parity analysis identifying 11 gap categories between .opencode/ and .claude/, with 9 prioritized recommendations"
+        },
+        {
+          "path": "specs/113_review_proofchecker_opencode_virtues/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for opencode feature parity including extension system, shared picker architecture, and context index"
         }
-      ]
+      ],
+      "planned": "2026-03-03T01:07:53Z"
     },
     {
       "project_number": 112,
