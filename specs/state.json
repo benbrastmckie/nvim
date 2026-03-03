@@ -4,10 +4,10 @@
     {
       "project_number": 116,
       "project_name": "verify_opencode_implement_extension_parity",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-03T02:34:37Z",
-      "last_updated": "2026-03-03T04:39:48Z",
+      "last_updated": "2026-03-03T04:44:05Z",
       "session_id": "sess_1772512407_108851",
       "researched": "2026-03-03T04:39:48Z",
       "artifacts": [
@@ -17,17 +17,17 @@
           "summary": "Comprehensive parity analysis: ModelChecker copy mostly complete, formal/lean extensions incomplete (missing agents, skills, context), 7 .claude extensions have no .opencode equivalent (document-converter, latex, nix, python, typst, web, z3)"
         },
         {
-          "path": "specs/116_verify_opencode_implement_extension_parity/plans/implementation-001.md",
-          "type": "plan",
-          "summary": "6-phase implementation plan to achieve full .opencode extension parity with .claude extensions (9 extensions, ~202 files)"
-        },
-        {
           "path": "specs/116_verify_opencode_implement_extension_parity/reports/research-002.md",
           "type": "research",
           "summary": "Supplementary research analyzing Logos/Theory, ProofChecker, and dotfiles .opencode/ systems for reusable extension components"
+        },
+        {
+          "path": "specs/116_verify_opencode_implement_extension_parity/plans/implementation-002.md",
+          "type": "plan",
+          "summary": "Revised 6-phase plan with category-based approach (A/B/C) and mechanical translation patterns from research-002"
         }
       ],
-      "planned": "2026-03-03T02:45:33Z"
+      "planned": "2026-03-03T04:44:05Z"
     },
     {
       "project_number": 115,
