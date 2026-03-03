@@ -653,9 +653,10 @@ function M.create_extensions_entries(config)
   return entries
 end
 
---- Create special entries (help and load all)
+--- Create special entries (help and load core agent system)
+--- @param config table|nil Picker configuration for threading to previewer
 --- @return table Array of entries
-function M.create_special_entries()
+function M.create_special_entries(config)
   local entries = {}
 
   table.insert(entries, {
@@ -663,11 +664,12 @@ function M.create_special_entries()
     name = "~~~load_all",
     display = string.format(
       "%-40s %s",
-      "[Load All Artifacts]",
-      "Sync commands, hooks, skills, agents, docs, lib"
+      "[Load Core Agent System]",
+      "Sync core system artifacts (excludes extensions)"
     ),
     command = nil,
-    entry_type = "special"
+    entry_type = "special",
+    config = config,  -- Thread config for previewer access
   })
 
   table.insert(entries, {
@@ -679,7 +681,8 @@ function M.create_special_entries()
       "Help"
     ),
     command = nil,
-    entry_type = "special"
+    entry_type = "special",
+    config = config,  -- Thread config for previewer access
   })
 
   return entries
@@ -696,7 +699,7 @@ function M.create_picker_entries(structure, config)
   -- Insert in reverse order (last inserted appears first with descending sort)
 
   -- 1. Special entries (appear at bottom)
-  local special = M.create_special_entries()
+  local special = M.create_special_entries(config)
   for _, entry in ipairs(special) do
     table.insert(all_entries, entry)
   end

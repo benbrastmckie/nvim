@@ -109,7 +109,7 @@ Research report 001 mapped the complete extension-owned inventory across 9 manif
 
 ---
 
-### Phase 3: Rename Picker Entry and Thread Config to Special Entries [NOT STARTED]
+### Phase 3: Rename Picker Entry and Thread Config to Special Entries [COMPLETED]
 
 - **Goal:** Rename "[Load All Artifacts]" to "[Load Core Agent System]" in the picker display, update the description text, and thread picker config through to `create_special_entries()` for system-appropriate labeling.
 
