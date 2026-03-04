@@ -61,7 +61,7 @@ Load these on-demand using @-references:
 
 **Always Load**:
 - `@.opencode/context/core/formats/return-metadata-file.md` - Metadata file schema
-- `@.claude/context/core/formats/plan-format.md` - Plan artifact structure and REQUIRED metadata fields
+- `@.opencode/context/core/formats/plan-format.md` - Plan artifact structure and REQUIRED metadata fields
 
 **Load When Creating Plan**:
 - `@.opencode/context/core/workflows/task-breakdown.md` - Task decomposition guidelines
@@ -205,7 +205,7 @@ Write plan file following plan-format.md structure:
 - **Dependencies**: {deps or None}
 - **Research Inputs**: {research report path or None}
 - **Artifacts**: plans/implementation-{NNN}.md (this file)
-- **Standards**: .claude/context/core/formats/plan-format.md, .claude/context/core/standards/status-markers.md, .claude/context/core/system/artifact-management.md, .claude/context/core/standards/tasks.md
+- **Standards**: .opencode/context/core/formats/plan-format.md, .opencode/context/core/standards/status-markers.md, .opencode/context/core/standards/documentation-standards.md, .opencode/context/core/standards/task-management.md
 - **Type**: {language}
 - **Lean Intent**: {true if lean, false otherwise}
 

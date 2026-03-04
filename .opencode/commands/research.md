@@ -61,7 +61,7 @@ Edit `specs/TODO.md`: change `[NOT STARTED]` (or current status marker) to `[RES
 ### 5. Execute research
 
 Based on `language`:
-- **meta**: Focus on existing `.opencode/` and `.claude/` files, conventions, patterns
+- **meta**: Focus on existing `.opencode/` files, conventions, patterns
 - **lean**: Search codebase for existing proofs, check Lean/Mathlib patterns
 - **typst/latex**: Read existing documents, check style and structure
 - **general**: Web search + codebase exploration

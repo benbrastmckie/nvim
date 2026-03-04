@@ -113,7 +113,7 @@ fi
 If any custom instructions were given in $ARGUMENTS, incorporate them.
 
 **Language-specific guidance**:
-- **meta**: Edit `.opencode/` or `.claude/` files, create/update agent and command definitions
+- **meta**: Edit `.opencode/` files, create/update agent and command definitions
 - **lean**: Write Lean 4 proofs, use `lake build` to verify
 - **typst**: Write Typst markup, use `typst compile` to verify
 - **latex**: Write LaTeX, use `pdflatex` to verify

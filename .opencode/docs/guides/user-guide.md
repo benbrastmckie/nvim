@@ -586,7 +586,7 @@ environment.systemPackages = with pkgs; [
 export OPENCODE_TTS_ENABLED=0
 ```
 
-For more details, see the full [TTS/STT Integration Guide](../../../.claude/docs/guides/tts-stt-integration.md).
+For more details, see the full [TTS/STT Integration Guide](tts-stt-integration.md).
 
 ---
 

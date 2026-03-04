@@ -2,7 +2,7 @@
 
 **Version**: 5.0
 **Created**: 2025-12-23
-**Updated**: 2026-02-28 (Task 167 - Feature Parity with .claude/)
+**Updated**: 2026-02-28 (Task 167 - Feature Parity with Claude Code)
 **Purpose**: Quick reference map for on-demand context loading following checkpoint-based execution
 
 ---
@@ -576,7 +576,7 @@ Language-specific:
 ```
 Stage 4 loads:
 - @.opencode/context/core/orchestration/orchestration-core.md
-- @.claude/context/core/formats/plan-format.md
+- @.opencode/context/core/formats/plan-format.md
 - @.opencode/context/core/orchestration/state-management.md
 - grep -A 50 "^### {task_number}\." specs/TODO.md
 - @specs/state.json

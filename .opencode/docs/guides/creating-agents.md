@@ -125,7 +125,7 @@ Load these on-demand using @-references:
 - `@.opencode/context/core/formats/subagent-return.md` - Return format schema
 
 **Load When Creating Artifacts**:
-- `@.claude/context/core/formats/plan-format.md` (for planning)
+- `@.opencode/context/core/formats/plan-format.md` (for planning)
 - `@.opencode/context/core/formats/report-format.md` (for research)
 ```
 
@@ -251,7 +251,7 @@ List context files to load on-demand:
 
 **Load When Needed**:
 - `@.opencode/context/core/formats/report-format.md` (for research)
-- `@.claude/context/core/formats/plan-format.md` (for planning)
+- `@.opencode/context/core/formats/plan-format.md` (for planning)
 - `@.opencode/context/project/lean4/tools/mcp-tools-guide.md` (for Lean)
 ```
 
