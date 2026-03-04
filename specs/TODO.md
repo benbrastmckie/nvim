@@ -8,7 +8,8 @@ next_project_number: 134
 
 ### OC_133. Fix planner agent not following plan-format.md specification
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research**: [research-001.md](OC_133_fix_planner_agent_not_following_plan_format_specification/reports/research-001.md)
 - **Language**: meta
 
 **Description**: When running `/plan 132`, the created plan file at `specs/132_create_context_loading_best_practices_guide/plans/implementation-001.md` fails to follow the format specified in `.opencode/context/core/formats/plan-format.md`. This has happened repeatedly despite multiple attempts to fix it. The root cause may be: (1) planner agent not loading the plan-format.md context, (2) planner agent loading context but not following it, (3) skill-planner not properly injecting context via <context_injection> blocks, or (4) general-implementation-agent not passing plan-format requirements to the planner subagent. The solution requires investigating the context loading chain from skill-planner → planner-agent → plan file creation to ensure the plan-format.md specification is actually being read and applied.
