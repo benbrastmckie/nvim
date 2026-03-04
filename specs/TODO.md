@@ -56,11 +56,12 @@ next_project_number: 134
 
 ### OC_129. Fix plan format in implementation-001.md to follow plan-format.md standards
 - **Effort**: 2-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Research**: [research-001.md](129_fix_plan_format_in_implementation_001_md/reports/research-001.md)
 - **Research**: [research-002.md](129_fix_plan_format_in_implementation_001_md/reports/research-002.md)
 - **Plan**: [implementation-001.md](129_fix_plan_format_in_implementation_001_md/plans/implementation-001.md)
+- **Summary**: [implementation-summary-20260304.md](129_fix_plan_format_in_implementation_001_md/summaries/implementation-summary-20260304.md)
 - **Language**: meta
 
 **Description**: The plan file /home/benjamin/.config/nvim/specs/128_ensure_task_command_only_creates_tasks_and_never_implements_solutions_automatically/plans/implementation-001.md was created with incorrect format. It contains `**Status**: [STATUS]` metadata lines after each phase heading instead of the correct format from plan-format.md which requires status markers ONLY in the phase headings (e.g., `### Phase N: Name [STATUS]`). Need to update the file to follow the standard format with status only in headings and no separate metadata lines per phase.
