@@ -1,10 +1,3 @@
-# DEPRECATED
-
-> **DEPRECATION NOTICE**: This file is deprecated. Use `.claude/context/core/formats/plan-format.md` instead.
-> The OpenCode system now uses the Claude format specification for all plan artifacts.
-
----
-
 # Plan Artifact Standard
 
 **Scope:** All plan artifacts produced by /plan, /revise, /implement (phase planning), /review (when drafting follow-on work), and related agents.
@@ -12,9 +5,9 @@
 ## Metadata (Markdown block, required)
 - Use a single **Status** field with status markers (`[NOT STARTED]`, `[IN PROGRESS]`, `[BLOCKED]`, `[ABANDONED]`, `[COMPLETED]`) per status-markers.md.
 - Do **not** use YAML front matter. Use a Markdown metadata block at the top of the plan.
-- Required fields: Task, Status, Effort, Priority, Dependencies, Research Inputs, Artifacts, Standards, Type, Lean Intent.
+- Required fields: Task, Status, Effort, Dependencies, Research Inputs, Artifacts, Standards, Type.
 - Status timestamps belong where transitions happen (e.g., in phases or a short Started/Completed line under the status). Avoid null placeholder fields.
-- Standards must reference this file plus status-markers.md.
+- Standards must reference this file plus status-markers.md, documentation-standards.md, and task-management.md.
 
 ### Example Metadata Block
 ```
@@ -22,20 +15,20 @@
 - **Task**: {id} - {title}
 - **Status**: [NOT STARTED]
 - **Effort**: 3 hours
-- **Priority**: Medium
 - **Dependencies**: None
 - **Research Inputs**: None
 - **Artifacts**: plans/implementation-001.md
 - **Standards**:
-  - .claude/context/core/formats/plan-format.md
-  - .claude/context/core/standards/status-markers.md
+  - .opencode/context/core/formats/plan-format.md
+  - .opencode/context/core/standards/status-markers.md
+  - .opencode/context/core/standards/documentation-standards.md
+  - .opencode/context/core/standards/task-management.md
 - **Type**: markdown
-- **Lean Intent**: false
 ```
 
 ## Plan Metadata Schema
 
-Plans may include a `plan_metadata` object in specs/state.json tracking plan characteristics:
+Plans may include a `plan_metadata` object in state.json tracking plan characteristics:
 
 ```json
 {
@@ -105,13 +98,11 @@ Plans may include a `plan_metadata` object in specs/state.json tracking plan cha
 - **Task**: {id} - {title}
 - **Status**: [NOT STARTED]
 - **Effort**: 3 hours
-- **Priority**: High
 - **Dependencies**: None
 - **Research Inputs**: None
 - **Artifacts**: plans/implementation-001.md (this file)
-- **Standards**: plan.md; status-markers.md; artifact-management.md; tasks.md
+- **Standards**: plan-format.md; status-markers.md; documentation-standards.md; task-management.md
 - **Type**: markdown
-- **Lean Intent**: false
 
 ## Overview
 {summary}

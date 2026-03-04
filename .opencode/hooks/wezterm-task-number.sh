@@ -30,13 +30,11 @@ HOOK_INPUT=$(cat)
 # Parse user prompt from JSON input
 PROMPT=$(echo "$HOOK_INPUT" | jq -r '.prompt // ""' 2>/dev/null || echo "")
 
-# Extract task number from OpenCode commands
-# Matches: /research OC_N, /plan OC_N, /implement OC_N, /revise OC_N
-# Also accepts plain numbers for backward compatibility
+# Extract task number from Claude commands
+# Matches: /research N, /plan N, /implement N, /revise N
 TASK_NUMBER=""
-if [[ "$PROMPT" =~ ^[[:space:]]*/?(research|plan|implement|revise)[[:space:]]+(OC_)?([0-9]+) ]]; then
-    # Capture the numeric part (with or without OC_ prefix)
-    TASK_NUMBER="OC_${BASH_REMATCH[3]}"
+if [[ "$PROMPT" =~ ^[[:space:]]*/?(research|plan|implement|revise)[[:space:]]+([0-9]+) ]]; then
+    TASK_NUMBER="${BASH_REMATCH[2]}"
 fi
 
 # Get the TTY for the current pane from WezTerm CLI
@@ -55,7 +53,7 @@ if [[ -n "$TASK_NUMBER" ]]; then
     TASK_VALUE=$(echo -n "$TASK_NUMBER" | base64 | tr -d '\n')
     printf '\033]1337;SetUserVar=TASK_NUMBER=%s\007' "$TASK_VALUE" > "$PANE_TTY"
 else
-    # Clear TASK_NUMBER on non-workflow commands
+    # Clear TASK_NUMBER on non-workflow commands (task 795)
     # This implements the correct behavior:
     # - Workflow commands (/research N, /plan N, /implement N, /revise N) -> Set
     # - Non-workflow commands (anything else) -> Clear

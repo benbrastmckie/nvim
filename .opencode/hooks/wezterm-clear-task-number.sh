@@ -2,6 +2,7 @@
 # Clear TASK_NUMBER user variable for WezTerm tab title
 # Called from SessionStart hook to reset task number on session events
 #
+# Related: Task 802 - Fix WezTerm tab task number clearing
 # Related: wezterm-task-number.sh - Sets task number on workflow commands
 set -euo pipefail
 

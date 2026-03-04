@@ -1,25 +1,44 @@
 #!/bin/bash
-# TTS notification hook for OpenCode completion
-# Announces task completion via Piper TTS when OpenCode workflow commands finish
+# TTS notification hook for Claude Code events
+# Announces WezTerm tab number via Piper TTS when Claude stops or needs input
 #
-# Integration: Called from Stop hook in .opencode/settings.json
-# Requirements: piper-tts, aplay (alsa-utils), jq, wezterm (optional)
+# Integration: Called from Stop and Notification hooks in .opencode/settings.json
+# Requirements: piper-tts, aplay (alsa-utils), jq, wezterm
+#
+# Supported Events:
+#   Stop - Claude finished responding: "Tab N"
+#   Notification (permission_prompt, idle_prompt, elicitation_dialog) - "Tab N"
 #
 # Configuration:
-#   OPENCODE_TTS_ENABLED - Enable/disable TTS (default: 1)
 #   PIPER_MODEL - Path to piper voice model (default: ~/.local/share/piper/en_US-lessac-medium.onnx)
 #   TTS_COOLDOWN - Seconds between notifications (default: 10)
-#
-# Features:
-#   - Reads specs/state.json to find active tasks for task-aware announcements
-#   - Announces: "Task N [command] complete" or "Tab N: OpenCode complete"
+#   TTS_ENABLED - Set to "0" to disable (default: 1)
 
 set -uo pipefail
 
 # Configuration with defaults
-OPENCODE_TTS_ENABLED="${OPENCODE_TTS_ENABLED:-1}"
 PIPER_MODEL="${PIPER_MODEL:-$HOME/.local/share/piper/en_US-lessac-medium.onnx}"
 TTS_COOLDOWN="${TTS_COOLDOWN:-10}"
+TTS_ENABLED="${TTS_ENABLED:-1}"
+
+# Read stdin JSON (hooks provide context via stdin)
+# Use timeout to avoid hanging if no stdin is available
+STDIN_JSON=""
+if read -t 0.1 -r line; then
+    STDIN_JSON="$line"
+    # Read any remaining lines
+    while read -t 0.1 -r more; do
+        STDIN_JSON="${STDIN_JSON}${more}"
+    done
+fi
+
+# Parse event type and notification type from stdin JSON
+HOOK_EVENT_NAME=""
+NOTIFICATION_TYPE=""
+if [[ -n "$STDIN_JSON" ]] && command -v jq &>/dev/null; then
+    HOOK_EVENT_NAME=$(echo "$STDIN_JSON" | jq -r '.hook_event_name // empty' 2>/dev/null || echo "")
+    NOTIFICATION_TYPE=$(echo "$STDIN_JSON" | jq -r '.notification_type // empty' 2>/dev/null || echo "")
+fi
 
 # State files
 LAST_NOTIFY_FILE="/tmp/opencode-tts-last-notify"
@@ -37,7 +56,7 @@ exit_success() {
 }
 
 # Check if TTS is disabled
-if [[ "$OPENCODE_TTS_ENABLED" != "1" ]]; then
+if [[ "$TTS_ENABLED" != "1" ]]; then
     exit_success
 fi
 
@@ -64,29 +83,6 @@ if [[ -f "$LAST_NOTIFY_FILE" ]]; then
     fi
 fi
 
-# Get active task info from state.json for task-aware announcements
-TASK_INFO=""
-STATE_FILE="${PWD}/specs/state.json"
-if [[ -f "$STATE_FILE" ]]; then
-    # Find tasks with active workflow statuses
-    ACTIVE_TASK=$(jq -r '.active_projects[] | select(.status == "researching" or .status == "planning" or .status == "implementing") | "\(.project_number):\(.status)"' "$STATE_FILE" 2>/dev/null | head -1)
-    
-    if [[ -n "$ACTIVE_TASK" ]]; then
-        TASK_NUM=$(echo "$ACTIVE_TASK" | cut -d':' -f1)
-        TASK_STATUS=$(echo "$ACTIVE_TASK" | cut -d':' -f2)
-        
-        # Map status to command type
-        case "$TASK_STATUS" in
-            "researching") CMD_TYPE="research" ;;
-            "planning") CMD_TYPE="plan" ;;
-            "implementing") CMD_TYPE="implementation" ;;
-            *) CMD_TYPE="complete" ;;
-        esac
-        
-        TASK_INFO="Task ${TASK_NUM} ${CMD_TYPE} complete"
-    fi
-fi
-
 # Get WezTerm tab info
 TAB_LABEL=""
 if [[ -n "${WEZTERM_PANE:-}" ]] && command -v wezterm &>/dev/null; then
@@ -96,9 +92,10 @@ if [[ -n "${WEZTERM_PANE:-}" ]] && command -v wezterm &>/dev/null; then
     # Get the tab_id for the current pane
     CURRENT_TAB_ID=$(echo "$ALL_PANES" | jq -r ".[] | select(.pane_id == $WEZTERM_PANE) | .tab_id" 2>/dev/null || echo "")
 
-    # Check if we got a valid tab_id
+    # Check if we got a valid tab_id (workaround for != escaping bug)
     if [[ -n "$CURRENT_TAB_ID" ]] && ! [[ "$CURRENT_TAB_ID" == "null" ]]; then
         # Get list of unique tab_ids in the order they appear
+        # WezTerm lists panes in tab order, so first occurrence gives us the position
         UNIQUE_TAB_IDS=$(echo "$ALL_PANES" | jq -r '[.[].tab_id] | unique | .[]')
 
         # Find the position (0-indexed) of current tab
@@ -114,21 +111,17 @@ if [[ -n "${WEZTERM_PANE:-}" ]] && command -v wezterm &>/dev/null; then
 
         # Convert to 1-indexed for display
         TAB_NUM=$((POSITION + 1))
-        TAB_LABEL="Tab ${TAB_NUM}: "
+        TAB_LABEL="Tab $TAB_NUM: "
     fi
 fi
 
-# Build the announcement message
-if [[ -n "$TASK_INFO" ]]; then
-    # Task-aware announcement takes priority
-    MESSAGE="${TAB_LABEL}${TASK_INFO}"
-else
-    # Fallback to generic OpenCode completion
-    MESSAGE="${TAB_LABEL}OpenCode complete"
+# Build message based on event type
+TAB_PREFIX="${TAB_LABEL%: }"  # Strip ": " suffix if present
+if [[ -z "$TAB_PREFIX" ]]; then
+    TAB_PREFIX="Tab"  # Fallback if tab detection failed
 fi
 
-# Clean up the message (remove trailing colons/spaces)
-MESSAGE=$(echo "$MESSAGE" | sed 's/: *$//')
+MESSAGE="$TAB_PREFIX"
 
 # Speak using piper with paplay (background, tolerant of errors)
 if command -v paplay &>/dev/null; then

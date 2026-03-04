@@ -36,7 +36,7 @@ The integration enables:
 
 ### wezterm-notify.sh
 
-**Path**: `.claude/hooks/wezterm-notify.sh`
+**Path**: `.opencode/hooks/wezterm-notify.sh`
 **Hook Event**: `Stop`
 **Purpose**: Set amber tab notification when Claude awaits input
 
@@ -44,7 +44,7 @@ Sets `CLAUDE_STATUS=needs_input` via OSC 1337 to the pane TTY. The WezTerm `form
 
 ### wezterm-clear-status.sh
 
-**Path**: `.claude/hooks/wezterm-clear-status.sh`
+**Path**: `.opencode/hooks/wezterm-clear-status.sh`
 **Hook Event**: `UserPromptSubmit`
 **Purpose**: Clear notification when user submits a prompt
 
@@ -52,7 +52,7 @@ Clears `CLAUDE_STATUS` by setting it to an empty value, restoring normal tab app
 
 ### wezterm-task-number.sh
 
-**Path**: `.claude/hooks/wezterm-task-number.sh`
+**Path**: `.opencode/hooks/wezterm-task-number.sh`
 **Hook Event**: `UserPromptSubmit`
 **Purpose**: Extract and display task number in tab title
 
@@ -97,7 +97,7 @@ Hooks are registered in `.claude/settings.json`:
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "bash .claude/hooks/wezterm-notify.sh 2>/dev/null || echo '{}'"
+        "command": "bash .opencode/hooks/wezterm-notify.sh 2>/dev/null || echo '{}'"
       }]
     }],
     "UserPromptSubmit": [{
@@ -105,11 +105,11 @@ Hooks are registered in `.claude/settings.json`:
       "hooks": [
         {
           "type": "command",
-          "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
+          "command": "bash .opencode/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
         },
         {
           "type": "command",
-          "command": "bash .claude/hooks/wezterm-clear-status.sh 2>/dev/null || echo '{}'"
+          "command": "bash .opencode/hooks/wezterm-clear-status.sh 2>/dev/null || echo '{}'"
         }
       ]
     }]
@@ -216,4 +216,4 @@ This separation (task 795) ensures:
 
 - **WezTerm configuration**: `~/.dotfiles/docs/terminal.md`
 - **Neovim integration**: `~/.config/nvim/lua/neotex/config/README.md`
-- **Hook source files**: `.claude/hooks/wezterm-*.sh`
+- **Hook source files**: `.opencode/hooks/wezterm-*.sh`
