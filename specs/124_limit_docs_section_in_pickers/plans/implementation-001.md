@@ -46,7 +46,7 @@ Research report (research-001.md) identified that `create_docs_entries()` curren
 
 ## Implementation Phases
 
-### Phase 1: Modify create_docs_entries [NOT STARTED]
+### Phase 1: Modify create_docs_entries [COMPLETED]
 
 **Goal**: Replace the directory-scanning logic in `create_docs_entries()` with direct README.md file detection, so only `{base_dir}/docs/README.md` appears in the [Docs] section.
 
@@ -126,7 +126,7 @@ end
 
 ---
 
-### Phase 2: Verification and Testing [NOT STARTED]
+### Phase 2: Verification and Testing [COMPLETED]
 
 **Goal**: Validate the change works correctly across both pickers and does not regress other sections.
 
