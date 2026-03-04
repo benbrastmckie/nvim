@@ -1,6 +1,30 @@
 {
-  "next_project_number": 131,
+  "next_project_number": 133,
   "active_projects": [
+    {
+      "project_number": 132,
+      "project_name": "create_context_loading_best_practices_guide",
+      "status": "researching",
+      "language": "meta",
+      "created": "2026-03-04T18:35:00Z",
+      "last_updated": "2026-03-04T19:07:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 131,
+      "project_name": "sync_state_todo_plan_during_implementation",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-04T18:30:00Z",
+      "last_updated": "2026-03-04T19:05:02.053Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_131_sync_state_todo_plan_during_implementation/reports/research-001.md",
+          "summary": "Research report identifying existing status synchronization infrastructure and gaps in phase-level tracking enforcement during implementation"
+        }
+      ]
+    },
     {
       "project_number": 130,
       "project_name": "make_opencode_self_contained",
