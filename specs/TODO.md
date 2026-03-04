@@ -8,10 +8,11 @@ next_project_number: 131
 
 ### OC_130. Make .opencode system self-contained
 - **Effort**: 2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Research**: [research-001.md](130_make_opencode_self_contained/reports/research-001.md)
 - **Plan**: [implementation-001.md](130_make_opencode_self_contained/plans/implementation-001.md)
+- **Summary**: [implementation-summary-20260304.md](130_make_opencode_self_contained/summaries/implementation-summary-20260304.md)
 
 **Description**: The .opencode system should be self-contained and not rely on references to .claude/ directories or files. Currently, files like `plan-format.md` are deprecated and claim to use Claude format specifications. The goal is to remove all references to `.claude/` within `.opencode/` and ensure `.opencode/` uses its own format specifications and is fully self-contained.
 
