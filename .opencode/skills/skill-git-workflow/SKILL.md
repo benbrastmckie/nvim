@@ -13,11 +13,29 @@ Direct execution skill for git operations, file change tracking, and targeted co
   <task_context>Create targeted commits for task workflows, tracking only changed files.</task_context>
 </context>
 
+<context_injection>
+  <file path=".opencode/context/core/standards/git-safety.md" variable="git_safety" />
+  <file path=".opencode/context/core/standards/git-workflow.md" variable="git_workflow" />
+</context_injection>
+
 <role>Direct execution skill for git operations and file tracking.</role>
 
 <task>Track file changes and create targeted commits following git workflow rules.</task>
 
-<execution>Use the Execution Flow and Functions sections to track changes and create commits.</execution>
+<execution>
+  <stage id="1" name="LoadContext">
+    <action>Load {git_safety} rules and {git_workflow} standards</action>
+  </stage>
+  <stage id="2" name="TrackChanges">
+    <action>Capture baseline and detect changed files per git-workflow standards</action>
+  </stage>
+  <stage id="3" name="Commit">
+    <action>Stage only changed files and create targeted commit following {git_safety}</action>
+  </stage>
+  <stage id="4" name="Report">
+    <action>Return structured commit summary with SHA and changed files</action>
+  </stage>
+</execution>
 
 <validation>Confirm commit formatting, staged file scope, and change tracking accuracy.</validation>
 

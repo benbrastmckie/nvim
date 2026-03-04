@@ -15,11 +15,31 @@ Thin wrapper that delegates Neovim research to `neovim-research-agent`.
   <task_context>Delegate Neovim research and coordinate postflight updates.</task_context>
 </context>
 
+<context_injection>
+  <file path=".opencode/context/core/formats/return-metadata-file.md" variable="return_metadata" />
+  <file path=".opencode/context/core/patterns/postflight-control.md" variable="postflight_control" />
+  <file path=".opencode/context/core/patterns/file-metadata-exchange.md" variable="file_metadata" />
+  <file path=".opencode/context/core/patterns/jq-escaping-workarounds.md" variable="jq_workarounds" />
+</context_injection>
+
 <role>Delegation skill for Neovim research workflows.</role>
 
 <task>Validate inputs, delegate Neovim research, and update status/artifacts.</task>
 
-<execution>See Execution Flow for preflight/delegation/postflight steps.</execution>
+<execution>
+  <stage id="1" name="LoadContext">
+    <action>Read context files defined in <context_injection></action>
+  </stage>
+  <stage id="2" name="Preflight">
+    <action>Validate task and status using {return_metadata} and {postflight_control}</action>
+  </stage>
+  <stage id="3" name="Delegate">
+    <action>Invoke neovim-research-agent with injected context</action>
+  </stage>
+  <stage id="4" name="Postflight">
+    <action>Update state and link artifacts using {file_metadata} and {jq_workarounds}</action>
+  </stage>
+</execution>
 
 <validation>Validate metadata file, report artifact, and state updates.</validation>
 

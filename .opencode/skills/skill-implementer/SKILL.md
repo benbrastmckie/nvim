@@ -15,11 +15,31 @@ Thin wrapper that delegates implementation to `general-implementation-agent`.
   <task_context>Delegate implementation and coordinate postflight updates.</task_context>
 </context>
 
+<context_injection>
+  <file path=".opencode/context/core/formats/return-metadata-file.md" variable="return_metadata" />
+  <file path=".opencode/context/core/patterns/postflight-control.md" variable="postflight_control" />
+  <file path=".opencode/context/core/patterns/file-metadata-exchange.md" variable="file_metadata" />
+  <file path=".opencode/context/core/patterns/jq-escaping-workarounds.md" variable="jq_workarounds" />
+</context_injection>
+
 <role>Delegation skill for general implementation workflows.</role>
 
 <task>Validate inputs, delegate implementation, and update status/artifacts.</task>
 
-<execution>See Execution Flow for preflight/delegation/postflight steps.</execution>
+<execution>
+  <stage id="1" name="LoadContext">
+    <action>Read context files defined in <context_injection></action>
+  </stage>
+  <stage id="2" name="Preflight">
+    <action>Validate status and prepare for delegation using {return_metadata} and {postflight_control}</action>
+  </stage>
+  <stage id="3" name="Delegate">
+    <action>Invoke general-implementation-agent with injected context</action>
+  </stage>
+  <stage id="4" name="Postflight">
+    <action>Update state and link artifacts using {file_metadata} and {jq_workarounds} patterns</action>
+  </stage>
+</execution>
 
 <validation>Validate metadata file, summary artifact, and state updates.</validation>
 

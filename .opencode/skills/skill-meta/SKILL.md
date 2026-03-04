@@ -15,11 +15,30 @@ Thin wrapper that delegates system building to `meta-builder-agent`.
   <task_context>Delegate system analysis and task creation.</task_context>
 </context>
 
+<context_injection>
+  <file path=".opencode/context/core/formats/return-metadata-file.md" variable="return_metadata" />
+  <file path=".opencode/context/core/patterns/postflight-control.md" variable="postflight_control" />
+  <file path=".opencode/context/core/patterns/file-metadata-exchange.md" variable="file_metadata" />
+</context_injection>
+
 <role>Delegation skill for meta workflows.</role>
 
 <task>Determine mode, delegate to meta-builder agent, and coordinate postflight.</task>
 
-<execution>See Execution Flow for delegation and postflight steps.</execution>
+<execution>
+  <stage id="1" name="LoadContext">
+    <action>Read context files defined in <context_injection></action>
+  </stage>
+  <stage id="2" name="DetermineMode">
+    <action>Determine mode (interactive/prompt/analyze)</action>
+  </stage>
+  <stage id="3" name="Delegate">
+    <action>Invoke meta-builder-agent with injected context using {return_metadata} and {postflight_control}</action>
+  </stage>
+  <stage id="4" name="Postflight">
+    <action>If tasks created, perform postflight updates and commit using {file_metadata}</action>
+  </stage>
+</execution>
 
 <validation>Validate metadata file and created tasks.</validation>
 

@@ -13,11 +13,30 @@ Direct execution skill for atomic status synchronization across specs/TODO.md an
   <task_context>Synchronize specs/TODO.md and specs/state.json statuses.</task_context>
 </context>
 
+<context_injection>
+  <file path="specs/TODO.md" variable="todo_file" />
+  <file path="specs/state.json" variable="state_file" />
+  <file path=".opencode/context/core/patterns/jq-escaping-workarounds.md" variable="jq_workarounds" />
+</context_injection>
+
 <role>Direct execution skill for status updates.</role>
 
 <task>Update specs/state.json and specs/TODO.md atomically.</task>
 
-<execution>Use the Operation sections for status updates.</execution>
+<execution>
+  <stage id="1" name="LoadContext">
+    <action>Load {todo_file}, {state_file}, and {jq_workarounds} patterns</action>
+  </stage>
+  <stage id="2" name="Analyze">
+    <action>Compare statuses between TODO.md and state.json</action>
+  </stage>
+  <stage id="3" name="Synchronize">
+    <action>Apply atomic updates using jq patterns from {jq_workarounds}</action>
+  </stage>
+  <stage id="4" name="Validate">
+    <action>Confirm state/TODO updates and return JSON result</action>
+  </stage>
+</execution>
 
 <validation>Confirm state/TODO updates and artifact links.</validation>
 
