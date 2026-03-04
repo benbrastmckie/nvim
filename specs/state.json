@@ -84,18 +84,6 @@
         }
       ]
     },
-        {
-          "type": "research",
-          "path": "specs/125_epidemiology_r_extension/reports/research-001.md",
-          "summary": "Comprehensive research on extension structure for R-based epidemiology workflows, identifying rmcp and mcptools MCP servers, standard extension patterns, and epidemiology-specific requirements for data analysis, statistical modeling, and visualization"
-        },
-        {
-          "type": "research",
-          "path": "specs/125_epidemiology_r_extension/reports/research-002.md",
-          "summary": "Focused research on common epidemiology tools for agent workflows in 2026, highlighting EpiModel, epidemia (Stan), EpiNow2, EpiEstim, epiparameter, and MCP options rmcp/mcptools"
-        }
-      ]
-    },
     {
       "project_number": 87,
       "project_name": "investigate_wezterm_terminal_directory_change",
