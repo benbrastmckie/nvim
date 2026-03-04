@@ -1,17 +1,28 @@
 ---
-next_project_number: 127
+next_project_number: 128
 ---
 
 # TODO
 
 ## Tasks
 
+### 127. Migrate OPENCODE.md to README.md and rename QUICK-START.md to INSTALLATION.md
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHING]
+- **Language**: meta
+- **Research Started**: 2026-03-03
+
+**Description**: Migrate /home/benjamin/.config/nvim/.opencode/OPENCODE.md into /home/benjamin/.config/nvim/.opencode/README.md to provide a single README.md file with systematic coverage of all features of the core .opencode/ agent system as well as the various extensions provided and cross links to relevant README.md files scattered throughout the subdirectories. Rename /home/benjamin/.config/nvim/.opencode/QUICK-START.md to INSTALLATION.md which should focus entirely on what is needed to install all dependencies.
+
+---
+
 ### 126. Fix <leader>ao picker to load extensions into correct subdirectory
 - **Effort**: 2-4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](126_fix_ao_picker_extension_loading_path/reports/research-001.md)
+- **Plan**: [implementation-001.md](126_fix_ao_picker_extension_loading_path/plans/implementation-001.md)
 
 **Description**: Fix the `<leader>ao` picker to load extensions into the correct `.opencode/agents/subagents/` subdirectory instead of directly into `.opencode/agents/`. Currently, when loading extensions via `<leader>ao` in `/home/benjamin/Projects/Logos/Theory/`, files are being placed at `.opencode/agents/formal-research-agent.md` instead of the desired `.opencode/agents/subagents/`. This functionality must be distinct from `<leader>ac` which should continue loading directly into `.claude/agents/`.
 

@@ -1,18 +1,32 @@
 {
-  "next_project_number": 127,
+  "next_project_number": 128,
   "active_projects": [
+    {
+      "project_number": 127,
+      "project_name": "migrate_opencode_md_to_readme_and_rename_quick_start_to_installation",
+      "status": "researching",
+      "language": "meta",
+      "created": "2026-03-03T17:50:00Z",
+      "last_updated": "2026-03-03T17:55:00Z",
+      "artifacts": []
+    },
     {
       "project_number": 126,
       "project_name": "fix_ao_picker_extension_loading_path",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-04T01:24:10Z",
-      "last_updated": "2026-03-04T01:24:59Z",
+      "last_updated": "2026-03-04T01:26:10Z",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/126_fix_ao_picker_extension_loading_path/reports/research-001.md",
           "summary": "Research identifying extension loader path mismatch: missing agents_subdir in extension config causes files to be placed in agents/ instead of agent/subagents/ for OpenCode"
+        },
+        {
+          "type": "plan",
+          "path": "specs/126_fix_ao_picker_extension_loading_path/plans/implementation-001.md",
+          "summary": "4-phase plan to add agents_subdir config and update loader functions to respect subdirectory paths for OpenCode extensions"
         }
       ]
     },
