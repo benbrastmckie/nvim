@@ -54,15 +54,15 @@ Analysis of the current system shows a heavy reliance on "Pull" context loading 
 
 ## Implementation Phases
 
-### Phase 1: Design & Standards Update [NOT STARTED]
+### Phase 1: Design & Standards Update [COMPLETED]
 
 **Goal**: Define the "Push Context" pattern and update documentation.
 
 **Tasks**:
-- [ ] Analyze current context dependencies for all core skills.
-- [ ] Define a standard "Push Context" block structure (e.g., XML format in `SKILL.md`).
-- [ ] Update `.opencode/context/core/formats/skill-structure.md` to reflect the new model.
-- [ ] Create a template for the new `SKILL.md` structure.
+- [x] Analyze current context dependencies for all core skills.
+- [x] Define a standard "Push Context" block structure (e.g., XML format in `SKILL.md`).
+- [x] Update `.opencode/context/core/formats/skill-structure.md` to reflect the new model.
+- [x] Create a template for the new `SKILL.md` structure.
 
 **Timing**: 1 hour
 
@@ -71,18 +71,18 @@ Analysis of the current system shows a heavy reliance on "Pull" context loading 
 - `.opencode/context/core/templates/thin-wrapper-skill.md` (if applicable)
 
 **Verification**:
-- Verify the new standard is clear and covers all use cases.
+- [x] Verify the new standard is clear and covers all use cases.
 
 ---
 
-### Phase 2: Core Workflow Migration (Batch 1) [NOT STARTED]
+### Phase 2: Core Workflow Migration (Batch 1) [COMPLETED]
 
 **Goal**: Migrate the primary workflow skills (Orchestrator, Research, Plan).
 
 **Tasks**:
-- [ ] Migrate `skill-orchestrator`: Inject routing rules and state management context.
-- [ ] Migrate `skill-planner`: Inject planning format and task breakdown guidelines.
-- [ ] Migrate `skill-researcher`: Inject research format and analysis framework.
+- [x] Migrate `skill-orchestrator`: Inject routing rules and state management context. [ALREADY COMPLETED - has context_injection]
+- [x] Migrate `skill-planner`: Inject planning format and task breakdown guidelines. [ALREADY COMPLETED - has context_injection]
+- [x] Migrate `skill-researcher`: Inject research format and analysis framework. [ALREADY COMPLETED - has context_injection]
 
 **Timing**: 1.5 hours
 
@@ -96,14 +96,14 @@ Analysis of the current system shows a heavy reliance on "Pull" context loading 
 
 ---
 
-### Phase 3: Core Workflow Migration (Batch 2) [NOT STARTED]
+### Phase 3: Core Workflow Migration (Batch 2) [COMPLETED]
 
 **Goal**: Migrate the implementation and meta skills.
 
 **Tasks**:
-- [ ] Migrate `skill-implementer`: Inject implementation standards and coding guidelines.
-- [ ] Migrate `skill-meta`: Inject system architecture and meta-guide.
-- [ ] Migrate `skill-learn`: Inject learning patterns and TODO management.
+- [x] Migrate `skill-implementer`: Inject implementation standards and coding guidelines. [ADDED context_injection with return-metadata, postflight-control, file-metadata, jq-workarounds]
+- [x] Migrate `skill-meta`: Inject system architecture and meta-guide. [ADDED context_injection with return-metadata, postflight-control, file-metadata]
+- [x] Migrate `skill-learn`: Inject learning patterns and TODO management. [ADDED context_injection with TODO.md and state.json]
 
 **Timing**: 1 hour
 
@@ -117,15 +117,15 @@ Analysis of the current system shows a heavy reliance on "Pull" context loading 
 
 ---
 
-### Phase 4: Utility Skill Migration (Batch 3) [NOT STARTED]
+### Phase 4: Utility Skill Migration (Batch 3) [COMPLETED]
 
 **Goal**: Migrate the remaining utility skills.
 
 **Tasks**:
-- [ ] Migrate `skill-refresh`: Inject cleanup rules.
-- [ ] Migrate `skill-status-sync`: Inject status transition rules.
-- [ ] Migrate `skill-git-workflow`: Inject git safety protocols.
-- [ ] Migrate `skill-neovim-research` & `skill-neovim-implementation`: Inject Neovim-specific context.
+- [x] Migrate `skill-refresh`: Inject cleanup rules. [ADDED context_injection with postflight-control]
+- [x] Migrate `skill-status-sync`: Inject status transition rules. [ADDED context_injection with TODO.md, state.json, jq-workarounds]
+- [x] Migrate `skill-git-workflow`: Inject git safety protocols. [ADDED context_injection with git-safety, git-workflow]
+- [x] Migrate `skill-neovim-research` & `skill-neovim-implementation`: Inject Neovim-specific context. [ADDED context_injection with return-metadata, postflight-control, file-metadata, jq-workarounds]
 
 **Timing**: 0.5 hours
 

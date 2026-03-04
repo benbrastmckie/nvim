@@ -40,7 +40,9 @@ next_project_number: 131
 - **Implementation Completed**: 2026-03-04
 - **Research**: [research-001.md](128_ensure_task_command_only_creates_tasks_and_never_implements_solutions_automatically/reports/research-001.md)
 - **Plan**: [implementation-001.md](128_ensure_task_command_only_creates_tasks_and_never_implements_solutions_automatically/plans/implementation-001.md)
+- **Plan**: [implementation-002.md](128_ensure_task_command_only_creates_tasks_and_never_implements_solutions_automatically/plans/implementation-002.md)
 - **Summary**: [implementation-summary-20260304.md](128_ensure_task_command_only_creates_tasks_and_never_implements_solutions_automatically/summaries/implementation-summary-20260304.md)
+- **Summary**: [implementation-summary-push-context-20260304.md](128_ensure_task_command_only_creates_tasks_and_never_implements_solutions_automatically/summaries/implementation-summary-push-context-20260304.md)
 
 **Description**: Ensure /task command only creates tasks and never implements solutions automatically.
 
