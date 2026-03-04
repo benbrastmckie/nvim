@@ -269,7 +269,7 @@ Write plan file following plan-format.md structure:
 
 Re-read the plan file and verify ALL these fields exist (per plan-format.md line 8):
 - `- **Task**: {N} - {title}` - Task identifier
-- `- **Status**: [NOT STARTED]` - **REQUIRED** - Must be present in plan header
+- `- **Status**: [NOT STARTED]` - **REQUIRED** - Must be present in plan header (NOT in phase headings)
 - `- **Effort**:` - Time estimate
 - `- **Dependencies**:` - Dependencies or "None"
 - `- **Research Inputs**:` - Research report path or "None"
@@ -284,15 +284,45 @@ Also verify these required sections exist:
 - `## Testing & Validation` - Test criteria and validation steps
 - `## Rollback/Contingency` - Rollback plan if implementation fails
 
-**Phase Format Verification**:
-Verify phase headings use correct format:
-- `### Phase N: {Name} [STATUS]` - Status marker in heading, not separate line
-- Each phase includes: **Goal**, **Tasks**, **Timing** subsections
+**Phase Format Verification (CRITICAL)**:
+Verify phase headings and content use EXACT format per plan-format.md:
 
-**If any required field or section is missing**:
-1. Edit the plan file to add the missing field/section
-2. Re-read the plan file to confirm additions
-3. Only proceed to write success metadata after ALL requirements are met
+**CORRECT phase format**:
+```markdown
+### Phase 1: Foundation & Formats [NOT STARTED]
+
+**Goal**: Replace deprecated format files
+
+**Tasks**:
+- [ ] Read .claude format file
+- [ ] Write to .opencode location
+
+**Timing**: 1 hour
+```
+
+**INCORRECT phase format (do NOT use)**:
+```markdown
+### Phase 1: Foundation & Formats  <- WRONG: missing [STATUS]
+
+**Status**: [NOT STARTED]  <- WRONG: separate status line
+**Objectives**: ...  <- WRONG: should be **Goal**
+**Estimated effort**: 1 hour  <- WRONG: should be **Timing**
+
+---  <- WRONG: separator not allowed
+```
+
+**Verification Checklist**:
+- [ ] Phase headings have format: `### Phase N: {Name} [STATUS]` (status IN heading)
+- [ ] NO separate `**Status**: [STATUS]` lines exist in phases
+- [ ] NO `**Objectives**:` fields (use **Goal** instead)
+- [ ] NO `**Estimated effort**:` fields (use **Timing** instead)
+- [ ] NO `---` separators between phases
+- [ ] Each phase includes: **Goal**, **Tasks**, **Timing** subsections
+
+**If any phase format is incorrect**:
+1. Edit the plan file to fix the phase format
+2. Re-read the plan file to confirm corrections
+3. Only proceed to write success metadata after ALL phase formats are correct
 
 #### 6b. Write Metadata File
 

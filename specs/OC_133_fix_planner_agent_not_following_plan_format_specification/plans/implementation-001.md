@@ -72,7 +72,7 @@ The research identified that planner-agent.md contains Stage 5 template and Stag
 
 ---
 
-### Phase 2: Fix planner-agent.md Stage 6a Verification [IN PROGRESS]
+### Phase 2: Fix planner-agent.md Stage 6a Verification [COMPLETED]
 
 **Goal**: Update verification instructions to explicitly check for correct patterns
 
@@ -99,7 +99,7 @@ The research identified that planner-agent.md contains Stage 5 template and Stag
 
 ---
 
-### Phase 3: Fix Example Templates in planner-agent.md [NOT STARTED]
+### Phase 3: Fix Example Templates in planner-agent.md [IN PROGRESS]
 
 **Goal**: Remove or correct example templates that show wrong format
 
