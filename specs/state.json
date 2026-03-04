@@ -1,6 +1,21 @@
 {
-  "next_project_number": 134,
+  "next_project_number": 135,
   "active_projects": [
+    {
+      "project_number": 134,
+      "project_name": "fix_workflow_command_header_display",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-04T22:00:00Z",
+      "last_updated": "2026-03-04T22:15:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_134_fix_workflow_command_header_display/reports/research-001.md",
+          "summary": "Research report identifying that workflow command header display is documented in command specs but not implemented in skill preflight stages"
+        }
+      ]
+    },
     {
       "project_number": 133,
       "project_name": "fix_planner_agent_not_following_plan_format_specification",

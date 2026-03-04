@@ -1,10 +1,20 @@
 ---
-next_project_number: 134
+next_project_number: 135
 ---
 
 # TODO
 
 ## Tasks
+
+### OC_134. Fix workflow command header not showing task number and name
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Research**: [research-001.md](OC_134_fix_workflow_command_header_display/reports/research-001.md)
+
+**Description**: When running the workflow commands /research, /plan, /revise, or /implement, the header doesn't correctly show the task number and name. The header should display "OC_N. Task Name" at the beginning of the output to clearly identify which task is being processed, but this is currently not working. Need to identify the root cause and plan an elegant solution.
+
+---
 
 ### OC_133. Fix planner agent not following plan-format.md specification
 - **Effort**: 2-3 hours
