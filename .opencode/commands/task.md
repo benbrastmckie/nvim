@@ -4,7 +4,57 @@ description: Create, recover, expand, sync, or abandon tasks
 
 Manage tasks in specs/TODO.md and specs/state.json. Do NOT implement the task — only manage the task entry.
 
-**Input**: $ARGUMENTS
+## CRITICAL: DO NOT IMPLEMENT
+
+When processing /task command:
+- **ONLY** create task entries in specs/TODO.md and specs/state.json
+- **NEVER** write code, scripts, or solutions
+- **NEVER** create files outside of specs/TODO.md and specs/state.json
+- **NEVER** interpret problem descriptions as requests to fix the problem
+
+If the task description mentions a problem or bug, create the task entry ONLY.
+Let the user decide later if they want to research/plan/implement via separate commands.
+
+### Agent Role for /task
+
+You are a **task administrator**, not a problem solver. Your job is to:
+- Record tasks in the tracking system
+- Update task statuses
+- Manage task lifecycle (create, abandon, recover, expand, sync)
+
+You do NOT:
+- Write implementation code
+- Create scripts or tools
+- Research solutions
+- Execute plans
+
+Stay within the boundaries of task management only. If a task description 
+describes a problem, your only action is to create the task entry.
+
+## Workflow Phases
+
+The agent system follows a strict phased workflow. Each command corresponds to 
+a specific phase. **Never skip phases.**
+
+| Phase | Command | Purpose | Creates Artifacts? |
+|-------|---------|---------|-------------------|
+| 1 | `/task` | Create tracking entry only | No (only TODO.md/state.json) |
+| 2 | `/research OC_N` | Investigate and document findings | Yes (research-NNN.md) |
+| 3 | `/plan OC_N` | Create implementation strategy | Yes (implementation-NNN.md) |
+| 4 | `/implement OC_N` | Execute the solution | Yes (code files, summaries) |
+
+### Key Principle
+
+**Creating a task does NOT imply researching, planning, or implementing it.**
+
+When a user runs `/task "Fix the login bug"`, they are saying:
+- "I want to track this problem"
+- NOT "Fix this problem now"
+
+The user will explicitly invoke subsequent commands when ready:
+- `/research OC_N` when they want investigation
+- `/plan OC_N` when they want a strategy
+- `/implement OC_N` when they want execution
 
 ---
 
@@ -26,6 +76,24 @@ Strip the `OC_` prefix to get the integer N for state.json lookups.
 - Display / TODO.md heading: `OC_N` (unpadded, e.g. `OC_174`)
 - Directory name: `OC_NNN_slug` (3-digit padded, e.g. `OC_174_slug`)
 - state.json internal: plain integer `N` (e.g. `174`)
+
+### CREATE Mode: Input Validation
+
+Before processing a task creation request, check:
+
+**CHECK**: Does the description mention a problem that needs fixing?  
+**ACTION**: Create task entry ONLY. Do NOT attempt to fix the problem.  
+**WHY**: /task creates tracking entries. Use /research, /plan, /implement to solve problems.
+
+**CHECK**: Does the user seem to be asking for code, scripts, or solutions?  
+**ACTION**: Create task entry with the description as-is. Do NOT write the code.  
+**WHY**: Let the user explicitly invoke /implement when they're ready.
+
+**CHECK**: Is the user describing a bug or issue they want tracked?  
+**ACTION**: Create task entry. Do NOT investigate or fix the bug.  
+**WHY**: Investigation belongs in /research phase, fixes in /implement phase.
+
+**STOP**: If you find yourself wanting to write code, create scripts, or implement solutions, STOP. Your role is task administration only.
 
 1. Read `specs/state.json` to get `next_project_number` (call it N)
 2. Generate slug from title: lowercase, spaces→underscores, strip punctuation
