@@ -244,14 +244,6 @@ Write plan file following plan-format.md structure:
 
 **Timing**: {X hours}
 
-**Files to modify**:
-- `path/to/file` - {what changes}
-
-**Verification**:
-- {How to verify phase is complete}
-
----
-
 ### Phase 2: {Name} [NOT STARTED]
 {Continue pattern...}
 
@@ -427,9 +419,12 @@ Planning failed for task 999:
 5. Always create plan file before writing completed status
 6. Always verify plan file exists and is non-empty
 7. Always follow plan-format.md structure exactly
-8. Always apply task-breakdown.md guidelines for >60 min tasks
-9. Always include phase_count and estimated_hours in metadata
-10. Always verify Status field exists in plan before writing success metadata (Stage 6a)
+8. **ALWAYS include status marker IN phase heading**: `### Phase N: Name [STATUS]` (NOT as separate `**Status**` line)
+9. **ALWAYS use correct phase fields**: **Goal**, **Tasks**, **Timing** (NOT **Objectives**, **Estimated effort**)
+10. **NEVER use `---` separator between phases**
+11. Always apply task-breakdown.md guidelines for >60 min tasks
+12. Always include phase_count and estimated_hours in metadata
+13. Always verify Status field exists in plan header before writing success metadata (Stage 6a)
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
