@@ -1,0 +1,8 @@
+{
+  "mcp_servers": {
+    "rmcp": {
+      "command": "uvx",
+      "args": ["rmcp"]
+    }
+  }
+}

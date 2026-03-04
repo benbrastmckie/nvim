@@ -254,6 +254,32 @@
         "languages": ["general"],
         "agents": ["general-research-agent"]
       }
+    },
+    {
+      "path": "project/epidemiology/README.md",
+      "domain": "project",
+      "subdomain": "epidemiology",
+      "topics": ["epidemiology", "r-modeling", "infectious-disease"],
+      "keywords": ["epidemiology", "EpiModel", "Stan", "R"],
+      "summary": "Epidemiology domain overview and R-based research workflows",
+      "line_count": 100,
+      "load_when": {
+        "languages": ["r", "epidemiology"],
+        "agents": ["epidemiology-research-agent", "epidemiology-implementation-agent"]
+      }
+    },
+    {
+      "path": "project/epidemiology/tools/r-packages.md",
+      "domain": "project",
+      "subdomain": "epidemiology",
+      "topics": ["EpiModel", "epidemia", "EpiNow2", "EpiEstim"],
+      "keywords": ["packages", "r-packages", "modeling-tools"],
+      "summary": "Documentation for key R epidemiology packages",
+      "line_count": 150,
+      "load_when": {
+        "languages": ["r", "epidemiology"],
+        "agents": ["epidemiology-implementation-agent"]
+      }
     }
   ]
 }

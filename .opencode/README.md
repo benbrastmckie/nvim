@@ -94,6 +94,7 @@ The system supports 9 language/domain-specific extensions:
 | **web** | Web development | [README](extensions/web/context/project/web/README.md) |
 | **filetypes** | File format conversion | [README](extensions/filetypes/context/project/filetypes/README.md) |
 | **z3** | Z3 theorem prover | [README](extensions/z3/context/project/z3/README.md) |
+| **epidemiology** | Epidemiology research and R modeling | [README](extensions/epidemiology/context/project/epidemiology/README.md) |
 
 ## Directory Structure
 
