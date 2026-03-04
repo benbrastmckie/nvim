@@ -1,10 +1,18 @@
 ---
-next_project_number: 125
+next_project_number: 126
 ---
 
 # TODO
 
 ## Tasks
+
+### 125. Add epidemiology research extension for R and related tooling
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Add an extension for conducting epidemiology research using R and any other standard software, MCP servers, agents, skills, and commands that would help to streamline the workflow. The same extension should be added to both .opencode/extensions/ and .claude/extensions/
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
