@@ -4,19 +4,25 @@
     {
       "project_number": 124,
       "project_name": "limit_docs_section_in_pickers",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-03-04T00:25:31Z",
-      "last_updated": "2026-03-04T00:31:17Z",
-      "session_id": "sess_1772583982_9a8cc3",
+      "last_updated": "2026-03-04T00:38:18Z",
+      "session_id": "sess_1772584524_86de22",
       "researched": "2026-03-04T00:31:17Z",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/124_limit_docs_section_in_pickers/reports/research-001.md",
           "summary": "Research report documenting picker architecture, docs entry generation flow, and recommended implementation approach"
+        },
+        {
+          "path": "specs/124_limit_docs_section_in_pickers/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan to replace docs scanning with direct README.md detection"
         }
-      ]
+      ],
+      "planned": "2026-03-04T00:38:18Z"
     },
     {
       "project_number": 123,
