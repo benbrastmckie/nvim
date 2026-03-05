@@ -1,10 +1,48 @@
 ---
-next_project_number: 138
+next_project_number: 141
 ---
 
 # TODO
 
 ## Tasks
+
+### OC_140. Document progressive disclosure patterns in context-loading guide
+- **Effort**: 1 hour
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: OC_137 (completed)
+- **Research**: [research-001.md](OC_140_document_progressive_disclosure_patterns/reports/research-001.md) - Documentation needed for stage-progressive loading, conditional injection, discovery-layer pattern, context budgets, and troubleshooting
+- **Plan**: Needed
+
+**Description**: Follow-up to OC_137 Phase 8. Update context-loading-best-practices.md with progressive disclosure patterns: stage-progressive loading, conditional context injection, discovery-layer pattern, context budget guidelines (keep under 800 lines), and troubleshooting section for context injection verification.
+
+**Required Documentation**:
+1. Stage-Progressive Loading Pattern - tiered loading by stage
+2. Conditional Context Injection - when to inject vs when to skip
+3. Discovery-Layer Pattern - context awareness without bloat
+4. Context Budget Guidelines - measurable limits (800 lines, <10% for routing)
+5. Troubleshooting - verifying context loading, debugging injection failures
+
+---
+
+### OC_139. Implement stage-progressive loading demonstration in skill-planner
+- **Effort**: 1.5 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: OC_137 (completed)
+- **Research**: [research-001.md](OC_139_implement_stage_progressive_loading_demo/reports/research-001.md) - Proof-of-concept for progressive context loading in skill-planner
+- **Plan**: Needed
+
+**Description**: Follow-up to OC_137 Phase 7. Implement stage-progressive context loading in skill-planner as proof-of-concept: load status-markers.md in Stage 1 (for preflight validation), defer plan-format.md and task-breakdown.md to Stage 3 (for plan creation). Expected ~40-50% reduction in initial context window usage.
+
+**Implementation**:
+- Modify skill-planner/SKILL.md execution stages
+- Stage 1: Load minimal context (status-markers only)
+- Stage 2: Preflight validation
+- Stage 3: Load format context (plan-format.md, task-breakdown.md)
+- Stage 4: Delegate to planner-agent with full context
+
+---
 
 ### OC_138. Fix plan metadata status synchronization
 - **Effort**: 2-3 hours
@@ -30,35 +68,41 @@ next_project_number: 138
 
 ### OC_137. Investigate and fix planner-agent format compliance issue
 - **Effort**: 3-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-001.md) - Initial analysis of context injection failures
   - [research-002.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-002.md) - **CRITICAL FINDING**: Embedded non-compliant templates in plan.md are the root cause
   - [research-003.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-003.md) - Context injection optimization: 5 recommendations for progressive disclosure improvement
 - **Plan**: [implementation-001.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-001.md) - Original 6-phase plan
-  - [implementation-002.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-002.md) - **REVISED: 9-phase comprehensive plan incorporating all research findings**
+  - [implementation-002.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-002.md) - **REVISED: 9-phase comprehensive plan**
+- **Summary**: [implementation-summary-20260306.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/summaries/implementation-summary-20260306.md)
 
-**Description**: Investigation into why implementation plans created by opencode do not follow the plan-format.md specification, despite task OC_133 supposedly fixing this issue. OC_136 plan (created today) has wrong format while OC_135 plans (created after OC_133) have correct format.
+**Description**: Investigation into why implementation plans created by opencode do not follow the plan-format.md specification. OC_136 plan had wrong format while OC_135 plans had correct format.
 
-**Root Cause Hypotheses**:
-1. Regression in planner-agent.md after OC_133 fix
-2. Context injection not working properly
-3. Template still has wrong format embedded
-4. Verification steps not being executed
-5. Different invocation paths produce different results
+**Root Causes Identified & Fixed**:
+1. ✅ **revise.md lacked context injection** (CRITICAL) - Fixed by adding `<context_injection>` block with plan-format.md
+2. ✅ **plan.md contained embedded non-compliant template** - Fixed by removing template, delegating to planner-agent
+3. ✅ **planner-agent fell back to embedded templates** - Fixed by implementing discovery-layer pattern with context prioritization
 
-**Required Investigation**:
-1. Audit planner-agent.md current state vs plan-format.md requirements
-2. Compare compliant (OC_135) vs non-compliant (OC_136) plans
-3. Verify context injection is working
-4. Test plan creation via different paths
-5. Identify why verification isn't catching non-compliance
+**Phases Completed**:
+- Phase 1: Removed embedded template from plan.md
+- Phase 2 & 3: Audited all command specs (only plan.md had templates)
+- Phase 4: Added context injection to revise.md (CRITICAL FIX)
+- Phase 5: Implemented discovery-layer pattern in planner-agent.md
+- Phase 6: Verified status-marker injection (already optimized)
+- Phase 9: Testing and validation
 
-**Expected Outcome**:
-- All plans must follow plan-format.md specification
-- Automated verification prevents non-compliant plans
-- Clear documentation of proper invocation path
+**Deferred to Follow-up Tasks**:
+- Phase 7: Stage-progressive loading → OC_139
+- Phase 8: Documentation updates → OC_140
+
+**Files Modified**:
+- `.opencode/commands/revise.md` - Context injection added
+- `.opencode/commands/plan.md` - Embedded template removed
+- `.opencode/agent/subagents/planner-agent.md` - Discovery-layer pattern
+
+**Outcome**: Both /plan and /revise now have consistent context injection ensuring all future plans follow plan-format.md specification.
 
 ### OC_136. Design and implement `/remember` command for intelligent memory management
 - **Effort**: 6-8 hours

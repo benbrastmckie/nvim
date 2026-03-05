@@ -1,6 +1,38 @@
 {
-  "next_project_number": 139,
+  "next_project_number": 141,
   "active_projects": [
+    {
+      "project_number": 140,
+      "project_name": "document_progressive_disclosure_patterns",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-06T16:30:00Z",
+      "last_updated": "2026-03-06T16:30:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_140_document_progressive_disclosure_patterns/reports/research-001.md",
+          "summary": "Documentation needed for progressive disclosure patterns from OC_137: stage-progressive loading, conditional context injection, discovery-layer pattern, context budget guidelines, and troubleshooting. Updates required to context-loading-best-practices.md"
+        }
+      ],
+      "description": "Follow-up to OC_137 Phase 8. Update context-loading-best-practices.md with progressive disclosure patterns: stage-progressive loading, conditional injection, discovery-layer pattern, context budgets, and troubleshooting guidance."
+    },
+    {
+      "project_number": 139,
+      "project_name": "implement_stage_progressive_loading_demo",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-06T16:30:00Z",
+      "last_updated": "2026-03-06T16:30:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_139_implement_stage_progressive_loading_demo/reports/research-001.md",
+          "summary": "Follow-up to OC_137 Phase 7. Implement stage-progressive loading in skill-planner as proof-of-concept: load status-markers in Stage 1, defer plan-format.md and task-breakdown.md to Stage 3. Expected 40-50% context reduction."
+        }
+      ],
+      "description": "Follow-up to OC_137 Phase 7. Demonstrate stage-progressive context loading in skill-planner: load minimal context in Stage 1 (status-markers only), defer format specs to Stage 3. Proof-of-concept for ~40-50% context reduction."
+    },
     {
       "project_number": 138,
       "project_name": "fix_plan_metadata_status_synchronization",
