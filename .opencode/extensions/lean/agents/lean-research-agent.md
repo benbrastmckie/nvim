@@ -12,27 +12,6 @@ tools:
   bash: true
   task: false
   mcp__lean-lsp__*: true
-permissions:
-  read:
-    "**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-    "**/*.md": "allow"
-    "**/*.lean": "allow"
-  bash:
-    "rg": "allow"
-    "find": "allow"
-    "ls": "allow"
-    "cat": "allow"
-    "pwd": "allow"
-    "jq": "allow"
-    "sed": "allow"
-    "awk": "allow"
-    "mkdir": "allow"
-    "rm -rf": "deny"
-    "sudo": "deny"
-    "chmod +x": "deny"
-    "dd": "deny"
 ---
 
 # Lean Research Agent

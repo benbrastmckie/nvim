@@ -19,6 +19,11 @@ Thin wrapper that delegates plan creation to `planner-agent`.
   <file path=".opencode/context/core/formats/plan-format.md" variable="plan_format" />
   <file path=".opencode/context/core/standards/status-markers.md" variable="status_markers" />
   <file path=".opencode/context/core/workflows/task-breakdown.md" variable="task_breakdown" />
+  
+  **Task Context** (provided at invocation):
+  - Task number: `{N}` - The integer task number (e.g., 146)
+  - Task display: `OC_{N}` - The formatted task identifier (e.g., OC_146)
+  - Project name: `{project_name}` - The task slug from state.json
 </context_injection>
 
 <role>Delegation skill for planning workflows.</role>

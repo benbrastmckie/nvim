@@ -17,7 +17,16 @@ Thin wrapper that delegates research to `general-research-agent`.
 
 <context_injection>
   <file path=".opencode/context/core/formats/report-format.md" variable="report_format" />
+  <file path=".opencode/context/core/formats/return-metadata-file.md" variable="return_metadata" />
+  <file path=".opencode/context/core/workflows/postflight-control.md" variable="postflight_control" />
+  <file path=".opencode/context/core/workflows/file-metadata-exchange.md" variable="file_metadata" />
   <file path=".opencode/context/core/standards/status-markers.md" variable="status_markers" />
+  <file path=".opencode/context/core/standards/jq-escaping-workarounds.md" variable="jq_workarounds" />
+  
+  **Task Context** (provided at invocation):
+  - Task number: `{N}` - The integer task number (e.g., 146)
+  - Task display: `OC_{N}` - The formatted task identifier (e.g., OC_146)
+  - Project name: `{project_name}` - The task slug from state.json
 </context_injection>
 
 <role>Delegation skill for general research workflows.</role>

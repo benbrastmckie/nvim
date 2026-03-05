@@ -11,33 +11,6 @@ tools:
   grep: true
   bash: true
   task: false
-permissions:
-  read:
-    "**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-    "nvim/**/*": "allow"
-    "lua/**/*": "allow"
-    "after/**/*": "allow"
-    "plugin/**/*": "allow"
-    "**/*.lua": "allow"
-    "**/*.md": "allow"
-  bash:
-    "rg": "allow"
-    "find": "allow"
-    "ls": "allow"
-    "cat": "allow"
-    "pwd": "allow"
-    "jq": "allow"
-    "sed": "allow"
-    "awk": "allow"
-    "mkdir": "allow"
-    "nvim --headless": "allow"
-    "luac": "allow"
-    "rm -rf": "deny"
-    "sudo": "deny"
-    "chmod +x": "deny"
-    "dd": "deny"
 ---
 
 # Neovim Implementation Agent

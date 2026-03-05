@@ -11,21 +11,6 @@ tools:
   grep: true
   bash: true
   task: false
-permissions:
-  read:
-    "**/*.md": "allow"
-    ".opencode/**/*": "allow"
-    "specs/**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-  bash:
-    "mkdir": "allow"
-    "ls": "allow"
-    "jq": "allow"
-    "find": "allow"
-    "grep": "allow"
-    "wc": "allow"
-    "*": "deny"
 ---
 
 # Meta Builder Agent

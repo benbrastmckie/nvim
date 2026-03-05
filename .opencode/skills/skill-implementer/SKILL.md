@@ -20,6 +20,11 @@ Thin wrapper that delegates implementation to `general-implementation-agent`.
   <file path=".opencode/context/core/patterns/postflight-control.md" variable="postflight_control" />
   <file path=".opencode/context/core/patterns/file-metadata-exchange.md" variable="file_metadata" />
   <file path=".opencode/context/core/patterns/jq-escaping-workarounds.md" variable="jq_workarounds" />
+  
+  **Task Context** (provided at invocation):
+  - Task number: `{N}` - The integer task number (e.g., 146)
+  - Task display: `OC_{N}` - The formatted task identifier (e.g., OC_146)
+  - Project name: `{project_name}` - The task slug from state.json
 </context_injection>
 
 <role>Delegation skill for general implementation workflows.</role>

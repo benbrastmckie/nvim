@@ -11,16 +11,6 @@ tools:
   grep: true
   task: false
   bash: true
-permissions:
-  read:
-    "**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-    "**/*.md": "allow"
-  bash:
-    "mkdir": "allow"
-    "ls": "allow"
-    "*": "deny"
 ---
 
 # Planner Agent

@@ -12,30 +12,6 @@ tools:
   bash: true
   task: false
   mcp__lean-lsp__*: true
-permissions:
-  read:
-    "**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-    "**/*.lean": "allow"
-    "**/*.md": "allow"
-  bash:
-    "lake": "allow"
-    "rg": "allow"
-    "find": "allow"
-    "ls": "allow"
-    "cat": "allow"
-    "pwd": "allow"
-    "jq": "allow"
-    "sed": "allow"
-    "awk": "allow"
-    "mkdir": "allow"
-    "mv": "allow"
-    "cp": "allow"
-    "rm -rf": "deny"
-    "sudo": "deny"
-    "chmod +x": "deny"
-    "dd": "deny"
 ---
 
 # Lean Implementation Agent

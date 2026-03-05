@@ -8,9 +8,6 @@ tools:
   glob: true
   grep: true
   task: false
-permissions:
-  read:
-    "**/*": "allow"
 ---
 
 # Code Reviewer Agent

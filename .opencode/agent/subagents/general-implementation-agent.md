@@ -11,29 +11,6 @@ tools:
   grep: true
   bash: true
   task: false
-permissions:
-  read:
-    "**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-    "**/*.md": "allow"
-  bash:
-    "rg": "allow"
-    "find": "allow"
-    "ls": "allow"
-    "cat": "allow"
-    "pwd": "allow"
-    "jq": "allow"
-    "sed": "allow"
-    "awk": "allow"
-    "mkdir": "allow"
-    "mv": "allow"
-    "cp": "allow"
-    "git": "allow"
-    "rm -rf": "deny"
-    "sudo": "deny"
-    "chmod +x": "deny"
-    "dd": "deny"
 ---
 
 # General Implementation Agent

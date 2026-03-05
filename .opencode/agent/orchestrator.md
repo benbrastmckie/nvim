@@ -11,15 +11,6 @@ tools:
   grep: true
   bash: false
   task: false
-permissions:
-  read:
-    "**/*": "allow"
-  write:
-    "*": "deny"
-  edit:
-    "*": "deny"
-  bash:
-    "*": "deny"
 ---
 
 # Chat Agent

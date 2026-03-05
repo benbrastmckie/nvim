@@ -22,14 +22,6 @@ tools:
   glob: true
   grep: true
   bash: false
-permissions:
-  read:
-    "**/*.md": "allow"
-    ".opencode/**/*": "allow"
-  write:
-    "specs/**/*": "allow"
-  bash:
-    "*": "deny"
 ---
 ```
 
