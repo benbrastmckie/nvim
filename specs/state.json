@@ -4,10 +4,10 @@
     {
       "project_number": 136,
       "project_name": "design_and_implement_remember_command_for_intelligent_memory_management",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-05T22:00:00Z",
-      "last_updated": "2026-03-06T00:45:00Z",
+      "last_updated": "2026-03-06T01:15:00Z",
       "artifacts": [
         {
           "type": "research",
@@ -28,6 +28,11 @@
           "type": "research",
           "path": "specs/OC_136_design_and_implement_remember_command_for_intelligent_memory_management/reports/research-004.md",
           "summary": "Simplified design research: .opencode/memory/ vault structure, MCP server integration, --remember flag for /research, minimal viable implementation approach"
+        },
+        {
+          "type": "plan",
+          "path": "specs/OC_136_design_and_implement_remember_command_for_intelligent_memory_management/plans/implementation-001.md",
+          "summary": "4-phase implementation plan: vault structure, basic /remember command with yes/no approval, MCP integration with --remember flag, testing and documentation. Simple approach using direct execution pattern and MCP built-in search."
         }
       ],
       "description": "Design and implement a `/remember` command for intelligent memory management that takes prompts or file paths, analyzes content, compares with existing memory files, conducts research when needed, and proposes additions via interactive checkboxes"

@@ -8,11 +8,13 @@ next_project_number: 136
 
 ### OC_136. Design and implement `/remember` command for intelligent memory management
 - **Effort**: 6-8 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Researched**: 2026-03-05
+- **Planned**: 2026-03-06
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_136_design_and_implement_remember_command_for_intelligent_memory_management/reports/research-001.md), [research-002.md](OC_136_design_and_implement_remember_command_for_intelligent_memory_management/reports/research-002.md), [research-003.md](OC_136_design_and_implement_remember_command_for_intelligent_memory_management/reports/research-003.md), [research-004.md](OC_136_design_and_implement_remember_command_for_intelligent_memory_management/reports/research-004.md)
+- **Plan**: [implementation-001.md](OC_136_design_and_implement_remember_command_for_intelligent_memory_management/plans/implementation-001.md)
 
 **Description**: Design and implement a `/remember` command that takes either a prompt or file path as input, learns what it can from what has been passed in, compares existing content in the `.opencode/context/memory/` files, conducts further research online if more information would be helpful, identifies key additions to make to the memory files in a natural and well-orchestrated way, then proposes these additions for the user to approve with interactive checkboxes.
 
