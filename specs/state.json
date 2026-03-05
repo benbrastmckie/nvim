@@ -1,6 +1,52 @@
 {
-  "next_project_number": 142,
+  "next_project_number": 146,
   "active_projects": [
+    {
+      "project_number": 145,
+      "project_name": "restore_settings_json_and_state_sync",
+      "status": "pending",
+      "language": "meta",
+      "created": "2026-03-07T12:00:00Z",
+      "last_updated": "2026-03-07T12:00:00Z",
+      "artifacts": [],
+      "description": "Fix the settings.json format change that removed critical PreToolUse and PostToolUse hooks. The new format removed permissions object and validation hooks that ensured TODO.md and state.json stayed synchronized after writes. Need to restore either the old format or adapt the hooks to work with the new format."
+    },
+    {
+      "project_number": 144,
+      "project_name": "fix_systemic_metadata_delegation",
+      "status": "pending",
+      "language": "meta",
+      "created": "2026-03-07T12:00:00Z",
+      "last_updated": "2026-03-07T12:00:00Z",
+      "artifacts": [],
+      "description": "Implement systemic fix for metadata delegation across all 6 skill/agent pairs. Currently, when skills delegate to agents via Task tool, the metadata_file_path parameter is missing from the delegation prompt. This causes agents to not know where to write .return-meta.json files, which breaks the postflight artifact linking system."
+    },
+    {
+      "project_number": 143,
+      "project_name": "fix_skill_researcher_todo_linking",
+      "status": "pending",
+      "language": "meta",
+      "created": "2026-03-07T12:00:00Z",
+      "last_updated": "2026-03-07T12:00:00Z",
+      "artifacts": [],
+      "description": "Fix the specific regression in skill-researcher where research reports are not being linked in TODO.md. Root cause is missing metadata_file_path parameter in the delegation prompt to general-research-agent. When the agent completes research, it doesn't know where to write the return metadata file."
+    },
+    {
+      "project_number": 142,
+      "project_name": "implement_knowledge_capture_system",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-07T12:00:00Z",
+      "last_updated": "2026-03-05T13:45:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_142_implement_knowledge_capture_system/reports/research-001.md",
+          "summary": "Comprehensive analysis of three knowledge capture features: /learn rename to /fix, /remember task mode for artifact review with interactive classification, /todo CHANGE_LOG.md integration. All three commands analyzed with current implementation details, architecture patterns, integration requirements, and implementation strategy."
+        }
+      ],
+      "description": "Implement a comprehensive knowledge capture system with three integrated features: (1) Rename /learn to /fix, (2) Add task mode to /remember for artifact review with interactive classification, (3) Enhance /todo with auto CHANGE_LOG.md updates and memory harvest suggestions."
+    },
     {
       "project_number": 140,
       "project_name": "document_progressive_disclosure_patterns",

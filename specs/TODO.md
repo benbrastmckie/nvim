@@ -1,10 +1,125 @@
 ---
-next_project_number: 142
+next_project_number: 146
 ---
 
 # TODO
 
 ## Tasks
+
+### OC_145. Restore settings.json format and state sync validation
+- **Effort**: medium
+- **Status**: [PENDING]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Fix the settings.json format change that removed critical PreToolUse and PostToolUse hooks. The new format removed `permissions` object and validation hooks that ensured TODO.md and state.json stayed synchronized after writes. Need to restore either the old format or adapt the hooks to work with the new format. Without these hooks, state synchronization fails silently, causing TODO.md entries to not match state.json statuses.
+
+**Key Issues to Fix**:
+1. Restore PreToolUse hook that validates state.json writes before they happen
+2. Restore PostToolUse hook that runs validate-state-sync.sh after state.json writes
+3. Either restore the detailed permissions.allow/permissions.deny structure or ensure new format supports equivalent functionality
+4. The `$schema` field was added - determine if this is required or optional
+
+**Files to Modify**:
+- .opencode/settings.json - Restore hooks and proper format
+- May need to update .opencode/hooks/validate-state-sync.sh if format changed
+
+---
+
+### OC_144. Fix systemic metadata delegation across all skills
+- **Effort**: large  
+- **Status**: [PENDING]
+- **Language**: meta
+- **Dependencies**: OC_145 (if settings issues block testing)
+
+**Description**: Implement systemic fix for metadata delegation across all 6 skill/agent pairs. Currently, when skills delegate to agents via Task tool, the `metadata_file_path` parameter is missing from the delegation prompt. This causes agents to not know where to write `.return-meta.json` files, which breaks the postflight artifact linking system. Without proper metadata files, TODO.md cannot be updated with Research/Plan/Summary links.
+
+**Skills/Agents to Fix**:
+1. skill-implementer → general-implementation-agent
+2. skill-planner → planner-agent  
+3. skill-meta → meta-builder-agent
+4. skill-neovim-implementation → neovim-implementation-agent
+5. skill-neovim-research → neovim-research-agent
+6. skill-researcher → general-research-agent (see OC_143)
+
+**Changes Required Per Skill**:
+- Update Stage 3 delegation prompt to include metadata_file_path
+- Add preflight validation that metadata_file_path is present
+- Add postflight fallback logic when metadata files are missing
+- Update agent documentation to require metadata_file_path validation
+
+**Files to Modify**:
+- .opencode/skills/skill-*/SKILL.md (6 files)
+- .opencode/agent/subagents/*-agent.md (6 files)
+
+---
+
+### OC_143. Fix skill-researcher TODO.md linking regression
+- **Effort**: medium
+- **Status**: [PENDING]
+- **Language**: meta
+- **Dependencies**: OC_144 (part of systemic fix, but can be done separately)
+
+**Description**: Fix the specific regression in skill-researcher where research reports are not being linked in TODO.md. Root cause is missing `metadata_file_path` parameter in the delegation prompt to general-research-agent. When the agent completes research, it doesn't know where to write the return metadata file, so postflight cannot extract artifact information to update TODO.md with the Research link.
+
+**Changes Required**:
+- Update skill-researcher Stage 3 delegation prompt to include metadata_file_path
+- Add fallback logic in postflight for when metadata file is missing
+- Update general-research-agent documentation to validate metadata_file_path
+- May need to audit TODO.md and manually fix any missing Research links from past tasks
+
+**Files to Modify**:
+- .opencode/skills/skill-researcher/SKILL.md
+- .opencode/agent/subagents/general-research-agent.md
+
+---
+
+### OC_142. Implement knowledge capture system
+- **Effort**: large
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: OC_143, OC_144 (need working metadata delegation first)
+
+**Description**: Implement a comprehensive knowledge capture system with three integrated features that were lost when reverting. This system enables capturing, classifying, and organizing knowledge from completed tasks and codebase scans.
+
+**Phase 1: Rename /learn to /fix (1-2 hours)**
+- Rename command from `/learn` to `/fix` for clarity
+- Rename skill from `skill-learn` to `skill-fix`
+- Update all documentation references (8+ files)
+- Update command description and user guides
+
+**Phase 2: Add task mode to /remember (3-4 hours)**
+- Add mode detection to /remember command (task mode vs content mode)
+- Implement task artifact collection from specs/OC_N_{name}/ directories
+- Create knowledge classification algorithm (context vs memory vs project intelligence)
+- Build interactive checkbox picker for routing knowledge to appropriate destinations
+- Update skill-remember to handle both modes
+- Create templates for context/, memory/, and project-intelligence/ entries
+
+**Phase 3: Enhance /todo with auto features (2-3 hours)**
+- Add automatic CHANGE_LOG.md updates when archiving tasks
+- Extract completion_summary from state.json for changelog entries
+- Add memory suggestions picker using interactive checkbox pattern
+- Create classification logic for determining what knowledge to suggest
+- Integrate with skill-remember for memory creation
+
+**Phase 4: Documentation and templates (1-2 hours)**
+- Create knowledge capture documentation explaining the three commands
+- Create templates for context/, memory/, PI file formats
+- Document decision framework: when to use context vs memory vs PI
+- Update user guide with examples
+
+**Files to Create/Modify**:
+- .opencode/commands/fix.md (rename from learn.md)
+- .opencode/skills/skill-fix/SKILL.md (rename from skill-learn)
+- .opencode/commands/remember.md (add task mode)
+- .opencode/skills/skill-remember/SKILL.md (add task mode stages)
+- .opencode/commands/todo.md (add changelog and memory features)
+- .opencode/context/core/templates/context-pattern-template.md
+- .opencode/docs/guides/user-guide.md (add knowledge capture section)
+- Multiple README and guide updates
+
+---
 
 ### OC_141. Fix agent delegation system failure
 - **Summary**: [implementation-summary-20260306.md](OC_141_fix_agent_delegation_system_failure/summaries/implementation-summary-20260306.md)
