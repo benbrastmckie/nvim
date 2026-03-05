@@ -17,8 +17,12 @@ Thin wrapper that delegates plan creation to `planner-agent`.
 
 <context_injection>
   <file path=".opencode/context/core/formats/plan-format.md" variable="plan_format" />
+  <file path=".opencode/context/core/formats/return-metadata-file.md" variable="return_metadata" />
+  <file path=".opencode/context/core/workflows/postflight-control.md" variable="postflight_control" />
+  <file path=".opencode/context/core/workflows/file-metadata-exchange.md" variable="file_metadata" />
   <file path=".opencode/context/core/standards/status-markers.md" variable="status_markers" />
   <file path=".opencode/context/core/workflows/task-breakdown.md" variable="task_breakdown" />
+  <file path=".opencode/context/core/standards/jq-escaping-workarounds.md" variable="jq_workarounds" />
   
   **Task Context** (provided at invocation):
   - Task number: `{N}` - The integer task number (e.g., 146)
