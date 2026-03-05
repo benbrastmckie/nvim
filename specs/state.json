@@ -43,7 +43,12 @@
         {
           "type": "plan",
           "path": "specs/OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-001.md",
-          "summary": "6-phase plan to remove embedded templates from command specs and strengthen context injection: Phase 1 removes plan.md template, Phase 2 audits other commands, Phase 3 removes found templates, Phase 4 enhances planner-agent context priority, Phase 5 adds context to revise flow, Phase 6 validates compliance"
+          "summary": "Original 6-phase plan to remove embedded templates and strengthen context injection"
+        },
+        {
+          "type": "plan",
+          "path": "specs/OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-002.md",
+          "summary": "REVISED: 9-phase comprehensive plan covering all research findings - template removal, context injection strengthening, progressive disclosure optimization, and conditional status-marker injection"
         }
       ],
       "description": "Investigate why implementation plans do not follow plan-format.md specification. OC_136 plan has wrong format despite OC_133 supposedly fixing this. Need to audit planner-agent.md, verify context injection, and ensure all future plans are compliant."

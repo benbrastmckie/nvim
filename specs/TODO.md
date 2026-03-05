@@ -36,7 +36,8 @@ next_project_number: 138
 - **Research**: [research-001.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-001.md) - Initial analysis of context injection failures
   - [research-002.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-002.md) - **CRITICAL FINDING**: Embedded non-compliant templates in plan.md are the root cause
   - [research-003.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-003.md) - Context injection optimization: 5 recommendations for progressive disclosure improvement
-- **Plan**: [implementation-001.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-001.md) - 6-phase plan to remove embedded templates and strengthen context injection
+- **Plan**: [implementation-001.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-001.md) - Original 6-phase plan
+  - [implementation-002.md](OC_137_investigate_and_fix_planner_agent_format_compliance_issue/plans/implementation-002.md) - **REVISED: 9-phase comprehensive plan incorporating all research findings**
 
 **Description**: Investigation into why implementation plans created by opencode do not follow the plan-format.md specification, despite task OC_133 supposedly fixing this issue. OC_136 plan (created today) has wrong format while OC_135 plans (created after OC_133) have correct format.
 
