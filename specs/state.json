@@ -1,6 +1,22 @@
 {
-  "next_project_number": 138,
+  "next_project_number": 139,
   "active_projects": [
+    {
+      "project_number": 138,
+      "project_name": "fix_plan_metadata_status_synchronization",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-06T11:05:00Z",
+      "last_updated": "2026-03-06T11:05:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_138_fix_plan_metadata_status_synchronization/reports/research-001.md",
+          "summary": "Root cause identified: synchronization protocol only updates state.json and TODO.md, missing plan file line 4 metadata status. Plan files have TWO status levels (plan-level and phase-level), but only phase-level is synchronized."
+        }
+      ],
+      "description": "Fix the three-way status synchronization gap. When tasks complete, plan file line 4 status metadata is not updated while state.json and TODO.md are correctly synchronized. Need to update phase-synchronization.md protocol and skill-implementer to include plan metadata status updates."
+    },
     {
       "project_number": 137,
       "project_name": "investigate_and_fix_planner_agent_format_compliance_issue",

@@ -1,10 +1,32 @@
 ---
-next_project_number: 137
+next_project_number: 138
 ---
 
 # TODO
 
 ## Tasks
+
+### OC_138. Fix plan metadata status synchronization
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [research-001.md](OC_138_fix_plan_metadata_status_synchronization/reports/research-001.md) - Root cause: synchronization protocol only updates state.json and TODO.md, missing plan file line 4 metadata status
+- **Plan**: Needed
+
+**Description**: Fix the three-way status synchronization gap identified during OC_136 implementation. When tasks complete, the plan file's line 4 status metadata (`- **Status**: [NOT STARTED]`) is not updated, while state.json and TODO.md are correctly synchronized. This creates confusion and has persisted through multiple previous fix attempts.
+
+**Root Cause**: Plan files have TWO levels of status - plan-level (line 4) and phase-level (within phases). Current synchronization protocol (phase-synchronization.md) only addresses state.json, TODO.md, and phase-level statuses, completely missing the plan-level status on line 4.
+
+**Required Changes**:
+1. Update phase-synchronization.md protocol to include plan metadata status
+2. Update skill-implementer/SKILL.md Stage 4 (Postflight) to update plan file line 4
+3. Add verification step to ensure all three locations are synchronized
+
+**Expected Outcome**: When a task completes, ALL three locations show completed status:
+- state.json: `"status": "completed"` ✓
+- TODO.md: `[COMPLETED]` ✓  
+- Plan file line 4: `[COMPLETED]` ✓ (currently missing!)
 
 ### OC_137. Investigate and fix planner-agent format compliance issue
 - **Effort**: 3-4 hours
