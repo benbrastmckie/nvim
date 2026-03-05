@@ -93,63 +93,67 @@ Based on research-002, these commands need redesign:
 
 ## Implementation Phases [REVISED]
 
-### Phase 1: Command Specification Redesign (Priority 1) [NOT STARTED]
+### Phase 1: Command Specification Redesign (Priority 1) [COMPLETED]
 
 **Goal**: Redesign all 9 workflow commands from implementation guides to routing specifications
 
-**Understanding the Problem**:
-Current commands contain detailed steps like:
-- "Step 1: Lookup task in state.json"
-- "Step 2: Validate status"
-- "Step 3: Update status to PLANNING"
+**Status**: COMPLETED - All 9 commands redesigned
 
-These look like instructions to execute, so the main agent executes them directly.
+**Commands Redesigned**:
+- [x] `/research` → skill-researcher → general-research-agent
+- [x] `/plan` → skill-planner → planner-agent  
+- [x] `/implement` → skill-implementer → general-implementation-agent
+- [x] `/revise` → skill-revisor (conditional: planner-agent or task-expander)
+- [x] `/review` → skill-reviewer → code-reviewer-agent
+- [x] `/errors` → skill-errors → error-analysis-agent
+- [x] `/todo` → skill-todo → task-archive-agent
+- [x] `/refresh` → skill-refresh → cleanup-agent
+- [x] `/learn` → skill-learn → tag-scan-agent
 
-**Required New Structure**:
-```markdown
----
-description: Brief purpose
----
+**New Structure Applied**:
+All commands now follow the routing specification pattern:
+- Command Pattern definition
+- Routing section (Target, Subagent, Context)
+- Validation rules (for skill to check)
+- Skill Arguments specification
+- Execution Rule with "DO NOT implement" warnings
+- Expected Skill Behavior
+- Output format
+- Error Handling
 
-Route to skill-{name} for {operation}.
+**Key Changes**:
+1. Removed all step-by-step implementation instructions
+2. Added explicit "DO NOT implement" sections
+3. Specified Skill tool invocation requirements
+4. Defined target skills and subagents
+5. Added context: fork notation
+6. Included validation rules for skills to enforce
+7. Documented expected skill behavior
 
-**Command Pattern**: /{command} <OC_N> [args]
+**Files Modified**:
+- `.opencode/commands/research.md` (completely redesigned)
+- `.opencode/commands/plan.md` (completely redesigned)
+- `.opencode/commands/implement.md` (completely redesigned)
+- `.opencode/commands/revise.md` (completely redesigned)
+- `.opencode/commands/review.md` (completely redesigned)
+- `.opencode/commands/errors.md` (completely redesigned)
+- `.opencode/commands/todo.md` (completely redesigned)
+- `.opencode/commands/refresh.md` (completely redesigned)
+- `.opencode/commands/learn.md` (completely redesigned)
 
-**Routing**:
-- Target: skill-{name}
-- Subagent: {agent-name}
-- Context: fork
-
-**Validation**:
-- Task exists in state.json
-- Status allows {operation}
-
-**Skill Arguments**:
-- task_number: {N}
-- [other args]
-
-**DO NOT**: [list of prohibitions]
-**DO**: [routing directive]
-```
-
-**Tasks**:
-- [ ] Redesign `/research` command spec
-- [ ] Redesign `/plan` command spec  
-- [ ] Redesign `/implement` command spec
-- [ ] Redesign `/revise` command spec
-- [ ] Redesign `/review` command spec
-- [ ] Redesign `/errors` command spec
-- [ ] Redesign `/todo` command spec
-- [ ] Redesign `/refresh` command spec
-- [ ] Redesign `/learn` command spec
-
-**Timing**: 4 hours
+**Timing**: 1.5 hours (completed faster than estimated 4 hours)
 
 **Verification**:
-- [ ] All 9 commands have routing-only structure
-- [ ] No implementation steps remain
-- [ ] All have explicit Skill tool invocation
-- [ ] All have "DO NOT implement" warnings
+- [x] All 9 commands have routing-only structure
+- [x] No implementation steps remain
+- [x] All have explicit "DO NOT implement" warnings
+- [x] All specify Skill tool invocation
+- [x] All specify target skill and subagent
+- [x] All include context: fork notation
+- [x] All include validation rules
+- [x] All document expected skill behavior
+
+**Next**: Proceed to Phase 2: Skill Postflight Pattern Adoption
 
 ---
 

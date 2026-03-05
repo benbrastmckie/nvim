@@ -2,216 +2,116 @@
 description: Analyze errors and create fix plans
 ---
 
-# Command: /errors
+Route to skill-errors for error pattern analysis and fix task creation.
 
-**Purpose**: Analyze errors.json, identify patterns, and create fix plans  
-**Layer**: 2 (Command File - Argument Parsing Agent)  
-**Delegates To**: Task (for creating fix tasks)
+**Input**: $ARGUMENTS
 
----
-
-## Argument Parsing
-
-<argument_parsing>
-  <step_1>
-    Parse arguments:
-    - No args: Analysis mode
-    - --fix OC_N or --fix N: Fix mode for specific task number (strip OC_ prefix for state.json lookup)
-
-    Extract fix_task_number if --fix flag present; strip OC_ prefix to get integer
-  </step_1>
-</argument_parsing>
+**Command Pattern**: `/errors [--fix <OC_N>]`
 
 ---
 
-## Workflow Execution
+## Routing
 
-<analysis_mode>
-  <step_1>
-    <action>Load Error Data</action>
-    <process>
-      Read specs/errors.json if exists, initialize if missing:
-      ```json
-      {
-        "errors": [],
-        "_schema_version": "1.0.0"
-      }
-      ```
-      
-      Extract error array and metadata.
-    </process>
-  </step_1>
+**Target**: skill-errors  
+**Subagent**: error-analysis-agent  
+**Context**: fork  
+**Delegation**: Task tool with subagent_type="error-analysis-agent"
 
-  <step_2>
-    <action>Analyze Patterns</action>
-    <process>
-      Group errors by:
-      - Type: delegation_hang, timeout, build_error, etc.
-      - Severity: critical, high, medium, low
-      - Recurrence: How often each error repeats
-      - Context: Which commands/agents trigger them
-      
-      Identify:
-      - Most frequent error types
-      - Highest severity unfixed errors
-      - Patterns suggesting root causes
-      - Quick wins (easy fixes)
-    </process>
-  </step_2>
+---
 
-  <step_3>
-    <action>Create Analysis Report</action>
-    <process>
-      Write to specs/errors/analysis-{DATE}.md
-      
-      Include sections:
-      - Summary (total, unfixed, fixed counts)
-      - Summary by type table
-      - Critical errors (unfixed)
-      - Pattern analysis
-      - Recommended fix plan (prioritized)
-      - Suggested tasks
-    </process>
-  </step_3>
+## Validation (Performed by Skill)
 
-  <step_4>
-    <action>Create Fix Tasks</action>
-    <process>
-      For significant error patterns:
-      
-      Use TodoWrite to create tasks:
-      ```
-      /task "Fix: {error description} ({N} occurrences)"
-      ```
-      
-      Track created task numbers in report.
-    </process>
-  </step_4>
+- `specs/errors.json` exists or can be initialized
+- If --fix flag: Task exists in state.json
+- Valid task number format (OC_N or N)
 
-  <step_5>
-    <action>Output Results</action>
-    <process>
-      Display summary:
-      - Report location
-      - Error statistics
-      - Top patterns
-      - Created tasks
-      
-      Return to orchestrator
-    </process>
-  </step_5>
-</analysis_mode>
+---
 
-<fix_mode>
-  <step_1>
-    <action>Load Fix Task</action>
-    <process>
-      Read task {fix_task_number} from specs/state.json
-      Verify it's an error-fix task by checking title for "Fix:"
-      
-      Extract task metadata (description, context).
-    </process>
-  </step_1>
+## Skill Arguments
 
-  <step_2>
-    <action>Identify Related Errors</action>
-    <process>
-      Find errors in errors.json linked to this task:
-      - By task number in context
-      - By matching task description patterns
-      - By error type mentioned in task
-      
-      Build list of errors to fix.
-    </process>
-  </step_2>
+- **fix_task_number**: Task to fix (int, optional - if --fix flag present)
+- **analysis_mode**: True if no --fix flag (bool, auto-detected)
+- **session_id**: Generated session identifier (string, required)
 
-  <step_3>
-    <action>Delegate to Task Creation</action>
-    <process>
-      For each error pattern needing fix:
-      
-      Delegate to Task to create subtask:
-      ```
-      Delegate to Task with:
-      - description: "Fix error: {error_type} - {error_message}"
-      - priority: based on error severity
-      - context: error details and fix approach
-      ```
-    </process>
-  </step_3>
+---
 
-  <step_4>
-    <action>Update Error Status</action>
-    <process>
-      For errors being addressed:
-      Update errors.json entries:
-      ```json
-      {
-        "fix_status": "in_progress",
-        "fix_task": {fix_task_number},
-        "fix_date": "ISO_DATE"
-      }
-      ```
-      
-      Use jq for safe updates.
-    </process>
-  </step_4>
+## Execution Rule
 
-  <step_5>
-    <action>Git Commit</action>
-    <process>
-      ```bash
-      git add specs/
-      git commit -m "errors: create fix tasks for task {fix_task_number}"
-      ```
-    </process>
-  </step_5>
+**CRITICAL**: This command MUST be handled by skill delegation. DO NOT implement directly.
 
-  <step_6>
-    <action>Output Results</action>
-    <process>
-      Display fix summary:
-      - Task being fixed
-      - Errors identified
-      - Fix tasks created
-      - Next steps
-      
-      Return to orchestrator
-    </process>
-  </step_6>
-</fix_mode>
-</workflow_execution>
+### DO NOT:
+- Parse arguments yourself
+- Load errors.json yourself
+- Analyze error patterns yourself
+- Group errors by type/severity yourself
+- Create analysis reports yourself
+- Create fix tasks yourself
+- Run fix implementations yourself
+- Update error status yourself
+- Commit changes yourself
+
+### DO:
+- Extract --fix flag and task number (if present) from input
+- Generate session_id for tracking
+- Invoke Skill(skill-errors, args)
+- Return skill result to user
+
+**Skill handles**: Error loading, pattern analysis, report generation, fix task creation, implementation, status updates, commits
+
+---
+
+## Expected Skill Behavior
+
+The skill-errors will:
+1. Parse arguments (determine analysis vs fix mode)
+2. Load `specs/errors.json` (initialize if missing)
+3. **Analysis Mode** (no --fix flag):
+   - Delegate to error-analysis-agent
+   - Group errors by type, severity, recurrence
+   - Identify patterns and root causes
+   - Create analysis report at `specs/errors/analysis-{DATE}.md`
+   - Create fix tasks for significant patterns
+   - Update review state
+   - Commit changes
+4. **Fix Mode** (--fix OC_N):
+   - Load specific task error data
+   - Analyze error context and history
+   - Delegate to error-analysis-agent for fix implementation
+   - Run fix procedures
+   - Verify fixes
+   - Update error status to "fixed"
+   - Commit changes
+5. Return summary to user
+
+---
+
+## Output
+
+Skill returns (Analysis Mode):
+- Total/unfixed/fixed error counts
+- Errors by type table
+- Critical unfixed errors list
+- Pattern analysis summary
+- Created task recommendations
+
+Skill returns (Fix Mode):
+- Task analyzed
+- Errors fixed count
+- Verification results
+- Status updates
 
 ---
 
 ## Error Handling
 
-<error_handling>
-  <argument_errors>
-    - Invalid task number -> Return error with guidance
-    - Task not found -> Return error message
-  </argument_errors>
-  
-  <execution_errors>
-    - jq failures -> Return error with technical details
-    - File permission errors -> Return error with guidance
-    - Git commit failures -> Log warning, continue
-    - TodoWrite failures -> Log error, continue with analysis
-  </execution_errors>
-</error_handling>
+Handled by skill:
+- Invalid --fix argument → Error with guidance
+- Missing errors.json → Initialize empty
+- No errors found → Inform user, no error
+- Analysis failure → Log warning, continue with partial results
+- Fix failure → Keep error status "unfixed", report issue
 
 ---
 
-## State Management
-
-<state_management>
-  <reads>
-    specs/errors.json
-    specs/state.json
-  </reads>
-  
-  <writes>
-    specs/errors/analysis-{DATE}.md
-    specs/errors.json (status updates)
-  </writes>
-</state_management>
+**Note**: This is a routing specification. All implementation details are delegated to skill-errors.
+**Redesigned**: 2026-03-05 as part of OC_135 command routing enforcement

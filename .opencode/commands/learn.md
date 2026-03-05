@@ -2,94 +2,118 @@
 description: Scan files for FIX, NOTE, TODO tags and create structured tasks interactively
 ---
 
-# Command: /learn
+Route to skill-learn for codebase tag scanning and task creation.
 
-**Purpose**: Scans codebase files for embedded tags (`FIX:`, `NOTE:`, `TODO:`) and creates structured tasks based on user selection  
-**Layer**: 2 (Command File - Argument Parsing Agent)  
-**Delegates To**: skill-learn
+**Input**: $ARGUMENTS
 
----
-
-## Argument Parsing
-
-<argument_parsing>
-  <step_1>
-    Parse arguments:
-    paths = remaining args (optional)
-    
-    If no paths: Scan entire project
-    If paths provided: Scan specified files/directories
-  </step_1>
-</argument_parsing>
+**Command Pattern**: `/learn [PATH...]`
 
 ---
 
-## Workflow Execution
+## Routing
 
-<workflow_execution>
-  <step_1>
-    <action>Delegate to Learn Skill</action>
-    <input>
-      - skill: "skill-learn"
-      - args: "paths={paths}"
-    </input>
-    <expected_return>
-      {
-        "status": "completed",
-        "tags_found": {...},
-        "tasks_created": [...],
-        "interactive_selection": {...}
-      }
-    </expected_return>
-  </step_1>
+**Target**: skill-learn  
+**Subagent**: tag-scan-agent  
+**Context**: fork  
+**Delegation**: Task tool with subagent_type="tag-scan-agent"
 
-  <step_2>
-    <action>Present Results</action>
-    <process>
-      Display tag scan results:
-      - FIX: tags found
-      - NOTE: tags found  
-      - TODO: tags found
-      
-      Display task creation results:
-      - Tasks created by type
-      - Task numbers and paths
-      - Next step guidance
-      
-      Return to orchestrator
-    </process>
-  </step_2>
-</workflow_execution>
+---
+
+## Validation (Performed by Skill)
+
+- Paths exist (if provided)
+- Project structure accessible
+
+---
+
+## Skill Arguments
+
+- **paths**: Files/directories to scan (array of strings, optional - default: entire project)
+- **session_id**: Generated session identifier (string, required)
+
+---
+
+## Execution Rule
+
+**CRITICAL**: This command MUST be handled by skill delegation. DO NOT implement directly.
+
+### DO NOT:
+- Parse arguments yourself
+- Scan files for tags yourself
+- Identify FIX:/NOTE:/TODO: markers yourself
+- Group tags by type yourself
+- Present interactive selection yourself
+- Create tasks yourself
+- Update state.json yourself
+- Update TODO.md yourself
+- Commit changes yourself
+
+### DO:
+- Extract paths from input (if any)
+- Generate session_id for tracking
+- Invoke Skill(skill-learn, args)
+- Return skill result to user
+
+**Skill handles**: File scanning, tag detection, interactive user selection, task creation, state updates, commits
+
+---
+
+## Expected Skill Behavior
+
+The skill-learn will:
+1. Parse paths (if none provided, scan entire project)
+2. Delegate to tag-scan-agent via Task tool with forked context
+3. tag-scan-agent will:
+   - Scan specified paths for tags:
+     * `FIX:` - Issues needing fixes
+     * `NOTE:` - Important notes/documentation
+     * `TODO:` - Tasks to complete
+   - Group tags by type and file
+   - Remove duplicates
+   - Present interactive selection to user (AskUserQuestion multiSelect)
+   - Get user confirmation
+   - For selected items: Create tasks using /task
+   - Group related items into single tasks where appropriate
+4. Update state.json with new tasks
+5. Update TODO.md with new entries
+6. Commit changes
+7. Return summary to user
+
+---
+
+## Output
+
+Skill returns:
+- Tags found by type (FIX, NOTE, TODO)
+- Selected items count
+- Tasks created count
+- Task numbers and paths
+- Next step guidance
 
 ---
 
 ## Error Handling
 
-<error_handling>
-  <argument_errors>
-    - Invalid paths -> Return error with guidance
-  </argument_errors>
-  
-  <execution_errors>
-    - Skill failure -> Return error message
-    - No tags found -> Inform user, no error
-  </execution_errors>
-  
-  <interactive_errors>
-    - User cancels selection -> Exit gracefully
-  </interactive_errors>
-</error_handling>
+Handled by skill:
+- Invalid paths → Error with guidance
+- No tags found → Inform user, no error
+- User cancels selection → Exit gracefully
+- Task creation failure → Log error, continue with others
+- Git failures → Log warning, continue
 
 ---
 
-## State Management
+## Interactive Flow
 
-<state_management>
-  <reads>
-    Specified paths (or entire project)
-  </reads>
-  
-  <writes>
-    None (skill handles task creation via TodoWrite)
-  </writes>
-</state_management>
+**User Experience** (handled by skill):
+1. Scanning notification
+2. Tag summary display
+3. Interactive selection prompt (multiSelect)
+4. Confirmation dialog
+5. Task creation progress
+6. Completion summary
+
+---
+
+**Note**: This is a routing specification. All implementation details including interactive flow are delegated to skill-learn.
+**Redesigned**: 2026-03-05 as part of OC_135 command routing enforcement

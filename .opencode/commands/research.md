@@ -2,184 +2,97 @@
 description: Research a task and create a research report
 ---
 
-Research the given task and write a research report. Do NOT implement anything.
+Route to skill-researcher for comprehensive task research.
 
 **Input**: $ARGUMENTS
 
----
-
-## Parse Input
-
-- First token: task number — accepts `OC_N` or `N` (strip `OC_` prefix to get integer N)
-- Remaining tokens: optional focus prompt
-- If invalid: "Usage: /research <OC_N> [focus]"
+**Command Pattern**: `/research <OC_N> [focus]`
 
 ---
 
-## Steps
+## Routing
 
-### 1. Look up task
+**Target**: skill-researcher  
+**Subagent**: general-research-agent  
+**Context**: fork  
+**Delegation**: Task tool with subagent_type="general-research-agent"
 
-Strip `OC_` prefix, find task in `specs/state.json`:
-```bash
-jq --arg n "N" '.active_projects[] | select(.project_number == ($n | tonumber))' specs/state.json
-```
-If not found: "Task OC_N not found in state.json"
+---
 
-Extract: `language`, `status`, `project_name`, `description`
+## Validation (Performed by Skill)
 
-Zero-pad N to 3 digits for paths: `NNN` (e.g. 174 → 174, keep as-is if already ≥3 digits... use printf "%03d")
+- Task exists in `specs/state.json`
+- Status allows research: `not_started`, `partial`, `researched`
+- Valid task number format (OC_N or N)
 
-Directory: `specs/OC_NNN_<project_name>/`
+---
 
-### 2. Validate status
+## Skill Arguments
 
-- `not_started`, `partial`, `researched`: proceed
-- `researching`: warn "already researching, proceeding anyway"
-- `abandoned`: error "task is abandoned, use /task --recover first"
-- `completed`: warn "already completed, re-researching"
+- **task_number**: Task number (int, required)
+- **focus**: Optional research focus/prompt (string, optional)
+- **session_id**: Generated session identifier (string, required)
 
-### 3. Display task header
+---
 
-The skill displays a visual header during its Preflight stage to show the active task:
+## Execution Rule
 
-```
-╔══════════════════════════════════════════════════════════╗
-║  Task OC_N: <project_name>                               ║
-║  Action: RESEARCHING                                     ║
-╚══════════════════════════════════════════════════════════╝
-```
+**CRITICAL**: This command MUST be handled by skill delegation. DO NOT implement directly.
 
-This header appears at the start of the research command (after validation, before delegation) to clearly indicate which task is being worked on. The header is displayed by the skill-researcher before invoking the general-research-agent subagent.
+### DO NOT:
+- Parse arguments yourself
+- Lookup task in state.json yourself  
+- Validate status yourself
+- Update state.json or TODO.md yourself
+- Execute research queries yourself
+- Write research reports yourself
+- Commit changes yourself
 
-### 4. Update status to RESEARCHING
+### DO:
+- Extract task number and focus from input
+- Generate session_id for tracking
+- Invoke Skill(skill-researcher, args)
+- Return skill result to user
 
-Edit `specs/state.json`: set `status` to `"researching"` and update `last_updated` for this task.
+**Skill handles**: Validation, status updates, research execution, report writing, artifact linking, commits
 
-Edit `specs/TODO.md`: change `[NOT STARTED]` (or current status marker) to `[RESEARCHING]` on the `### OC_N.` entry.
+---
 
-### 5. Execute research
+## Expected Skill Behavior
 
-Based on `language`:
-- **meta**: Focus on existing `.opencode/` files, conventions, patterns
-- **lean**: Search codebase for existing proofs, check Lean/Mathlib patterns
-- **typst/latex**: Read existing documents, check style and structure
-- **general**: Web search + codebase exploration
+The skill-researcher will:
+1. Validate task and update status to RESEARCHING
+2. Display task header
+3. Execute research based on task language:
+   - **meta**: Explore `.opencode/` files, conventions, patterns
+   - **lean**: Search codebase for proofs, check Lean/Mathlib patterns
+   - **typst/latex**: Read existing documents, check style
+   - **general**: Web search + codebase exploration
+4. Write research report to `specs/OC_NNN_{SLUG}/reports/research-001.md`
+5. Update status to RESEARCHED
+6. Commit changes
+7. Return summary to user
 
-Research strategy (always in this order):
-1. Read task description carefully — understand what needs to be built
-2. Explore codebase: use Glob/Grep/Read to find related files and patterns
-3. Read relevant context files in `.opencode/context/` if applicable
-4. Web search for external best practices if needed
-5. Synthesize findings into actionable recommendations
+---
 
-If a focus prompt was given, prioritize that aspect.
+## Output
 
-### 6. Write research report
-
-Create directory: `mkdir -p specs/OC_NNN_<project_name>/reports/`
-
-Write `specs/OC_NNN_<project_name>/reports/research-001.md`:
-
-```markdown
-# Research Report: Task #N
-
-**Task**: OC_N - <title>
-**Date**: YYYY-MM-DD
-**Language**: <language>
-**Focus**: <focus or "general">
-
-## Summary
-
-<2-3 sentence overview of findings and recommended approach>
-
-## Findings
-
-### <Topic 1>
-<Details>
-
-### <Topic 2>
-<Details>
-
-## Recommendations
-
-1. <Actionable recommendation>
-2. <Actionable recommendation>
-
-## Risks & Considerations
-
-- <Risk or consideration>
-
-## Next Steps
-
-Run `/plan OC_N` to create an implementation plan.
-```
-
-### 7. Update status to RESEARCHED
-
-Edit `specs/state.json`:
-- Set `status` to `"researched"`
-- Update `last_updated`
-- Add to `artifacts` array:
-```json
-{
-  "type": "research",
-  "path": "specs/OC_NNN_<project_name>/reports/research-001.md",
-  "summary": "<one sentence>"
-}
-```
-
-Edit `specs/TODO.md` on the `### OC_N.` entry:
-- Change `[RESEARCHING]` to `[RESEARCHED]`
-- Add line: `- **Research**: [research-001.md](OC_NNN_<project_name>/reports/research-001.md)`
-
-### 8. Commit changes
-
-Create a targeted commit with only the changed files:
-
-```bash
-# Generate session ID
-session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
-
-# Get list of changed files
-git status --porcelain | awk '{print $NF}' > /tmp/changed_files_$$.txt
-changed_files=$(cat /tmp/changed_files_$$.txt | tr '\n' ' ')
-
-# Commit if there are changes
-if [ -n "$changed_files" ]; then
-    git add $changed_files
-    git commit -m "task OC_${N}: complete research
-
-Session: ${session_id}
-
-Co-Authored-By: OpenCode <noreply@opencode.ai>" || echo "Warning: Commit failed but research completed"
-fi
-
-# Cleanup
-rm -f /tmp/changed_files_$$.txt
-```
-
-**Files committed**:
-- `specs/OC_NNN_<project_name>/reports/research-001.md` - Research report
-- `specs/state.json` - Status and artifact updates
-- `specs/TODO.md` - Status marker and research link
-
-**Error handling**: Commit failures are non-blocking. Log a warning and continue.
-
-### 9. Report to user
-
-Show a brief summary:
-- Task researched
-- Key findings (3-5 bullets)
-- Report path
+Skill returns:
+- Research report path
+- Key findings summary
+- Recommendations
 - Next step: `/plan OC_N`
 
 ---
 
-## Rules
+## Error Handling
 
-- Write the report BEFORE updating status to RESEARCHED
-- Never fabricate findings — only report what you actually discovered
-- Keep the report focused and actionable
-- Directories use 3-digit padded number: `OC_174_slug` not `OC_17_slug`
-- Commit changes after completing research (non-blocking — log warning if commit fails)
+Handled by skill:
+- Task not found → Error with guidance
+- Invalid status → Error with current status
+- Research failures → Logged, partial results preserved
+
+---
+
+**Note**: This is a routing specification. All implementation details are delegated to skill-researcher.
+**Redesigned**: 2026-03-05 as part of OC_135 command routing enforcement

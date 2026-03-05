@@ -1,235 +1,105 @@
 ---
-description: Review code and create analysis reports
+description: Analyze codebase, identify issues, and optionally create tasks
 ---
 
-# Command: /review
+Route to skill-reviewer for comprehensive codebase analysis.
 
-**Purpose**: Analyze codebase, identify issues, and optionally create tasks  
-**Layer**: 2 (Command File - Argument Parsing Agent)  
-**Delegates To**: None (Direct execution)
+**Input**: $ARGUMENTS
 
----
-
-## Argument Parsing
-
-<argument_parsing>
-  <step_1>
-    Parse arguments:
-    scope = $1 or "all"
-    create_tasks = "--create-tasks" in $ARGUMENTS
-    
-    Determine review scope:
-    - If file path: Review that file
-    - If directory: Review all files in directory
-    - If "all": Review entire codebase
-  </step_1>
-</argument_parsing>
+**Command Pattern**: `/review [scope] [--create-tasks]`
 
 ---
 
-## Workflow Execution
+## Routing
 
-<workflow_execution>
-  <step_1>
-    <action>Load Review State</action>
-    <process>
-      Read existing specs/reviews/state.json
-      Initialize if missing
-    </process>
-  </step_1>
-  
-  <step_2>
-    <action>Gather Context</action>
-    <process>
-      For Lean files (.lean):
-      - Run lean_diagnostic_messages
-      - Check for sorry, axioms, admitted proofs
-      - Identify incomplete theorems
-      - Check import organization
-      
-      For general code:
-      - Check for TODO/FIXME comments
-      - Identify code smells
-      - Check for security issues
-      - Review error handling
-      
-      For documentation:
-      - Check for outdated information
-      - Identify missing documentation
-      - Verify links work
-    </process>
-  </step_2>
-  
-  <step_3>
-    <action>Roadmap Integration</action>
-    <process>
-      Load roadmap-format.md for parsing patterns
-      Parse specs/ROAD_MAP.md:
-      - Phase headers: ## Phase {N}: {Title} ({Priority})
-      - Checkboxes: - [ ] and - [x]
-      - Status tables: Component/Status/Location
-      - Priority markers
-      
-      Build roadmap_state structure
-      Cross-reference with project state
-      Generate matches with confidence levels
-    </process>
-  </step_3>
-  
-  <step_4>
-    <action>Analyze Findings</action>
-    <process>
-      Categorize issues:
-      - Critical: Broken functionality, security vulnerabilities
-      - High: Missing features, significant bugs
-      - Medium: Code quality issues, incomplete implementations
-      - Low: Style issues, minor improvements
-    </process>
-  </step_4>
-  
-  <step_5>
-    <action>Create Review Report</action>
-    <process>
-      Write to specs/reviews/review-{DATE}.md
-      
-      Include sections:
-      - Summary with issue counts
-      - Critical, High, Medium, Low issues
-      - Code quality metrics
-      - Roadmap progress
-      - Recommendations
-    </process>
-  </step_5>
-  
-  <step_6>
-    <action>Annotate Completed Roadmap Items</action>
-    <process>
-      For high-confidence matches:
-      Update ROAD_MAP.md checkboxes:
-      - [x] item *(Completed: Task {N}, {DATE})*
-      
-      Update status tables for verified components
-      
-      Track changes in review state
-    </process>
-  </step_6>
-  
-  <step_7>
-    <action>Update Review State</action>
-    <process>
-      Generate review entry with metadata
-      Add to reviews array
-      Update statistics
-      Update _last_updated timestamp
-    </process>
-  </step_7>
-  
-  <step_8>
-    <action>Create Tasks (if --create-tasks)</action>
-    <process>
-      For each High/Critical issue:
-      Create task with /tool-task
-      
-      Update review state with created task numbers
-      Increment statistics.total_tasks_created
-    </process>
-  </step_8>
-  
-  <step_9>
-    <action>Generate Roadmap Task Recommendations</action>
-    <process>
-      Identify current goals from incomplete roadmap items
-      Score items by priority and position
-      Select top 5-7 recommendations
-      Present to user for selection
-      Create selected tasks
-    </process>
-  </step_9>
-  
-  <step_10>
-    <action>Commit Changes</action>
-    <process>
-      Create targeted commit with only changed files:
-      
-      ```bash
-      # Generate session ID
-      session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
-      
-      # Get list of changed files
-      git status --porcelain | awk '{print $NF}' > /tmp/changed_files_$$.txt
-      changed_files=$(cat /tmp/changed_files_$$.txt | tr '\n' ' ')
-      
-      # Commit if there are changes
-      if [ -n "$changed_files" ]; then
-          git add $changed_files
-          git commit -m "review: analyze ${scope} (task OC_${N})
+**Target**: skill-reviewer  
+**Subagent**: code-reviewer-agent  
+**Context**: fork  
+**Delegation**: Task tool with subagent_type="code-reviewer-agent"
 
-Session: ${session_id}
+---
 
-Co-Authored-By: OpenCode <noreply@opencode.ai>" || echo "Warning: Commit failed but review completed"
-      fi
-      
-      # Cleanup
-      rm -f /tmp/changed_files_$$.txt
-      ```
-      
-      **Files committed** (when modified):
-      - `specs/reviews/review-{DATE}.md` - Review report
-      - `specs/reviews/state.json` - Review state updates
-      - `specs/ROAD_MAP.md` - Roadmap annotations (if modified)
-      - `specs/TODO.md` - Task updates (if status changes)
-      
-      **Error handling**: Commit failures are non-blocking. Log a warning and continue.
-    </process>
-  </step_10>
+## Validation (Performed by Skill)
 
-  <step_11>
-    <action>Output Results</action>
-    <process>
-      Display comprehensive summary:
-      - Issue statistics
-      - Roadmap progress
-      - Created tasks
-      - Recommendations
-      
-      Return to orchestrator
-    </process>
-  </step_11>
-</workflow_execution>
+- Scope is valid (file path, directory, or "all")
+- Review state is accessible: `specs/reviews/state.json`
+
+---
+
+## Skill Arguments
+
+- **scope**: Review scope - file, directory, or "all" (string, default: "all")
+- **create_tasks**: Whether to create tasks for issues found (bool, default: false)
+- **session_id**: Generated session identifier (string, required)
+
+---
+
+## Execution Rule
+
+**CRITICAL**: This command MUST be handled by skill delegation. DO NOT implement directly.
+
+### DO NOT:
+- Parse arguments yourself
+- Scan for archivable tasks yourself
+- Detect orphaned directories yourself
+- Load review state yourself
+- Analyze codebase yourself
+- Check for TODO/FIXME comments yourself
+- Create analysis reports yourself
+- Create tasks yourself
+- Update ROAD_MAP.md yourself
+- Commit changes yourself
+
+### DO:
+- Extract scope and --create-tasks flag from input
+- Generate session_id for tracking
+- Invoke Skill(skill-reviewer, args)
+- Return skill result to user
+
+**Skill handles**: Codebase analysis, issue detection, report generation, task creation, roadmap updates, commits
+
+---
+
+## Expected Skill Behavior
+
+The skill-reviewer will:
+1. Parse scope and flags
+2. Load or initialize `specs/reviews/state.json`
+3. Delegate to code-reviewer-agent via Task tool with forked context
+4. code-reviewer-agent will:
+   - Gather context (Lean diagnostics, TODO/FIXME detection, etc.)
+   - Integrate with roadmap if applicable
+   - Analyze findings by category
+   - Create review report at `specs/reviews/review-{DATE}.md`
+   - Annotate completed roadmap items in `specs/ROAD_MAP.md` (if applicable)
+5. Update review state
+6. If --create-tasks: Create tasks for High/Critical issues
+7. Commit changes
+8. Return comprehensive summary to user
+
+---
+
+## Output
+
+Skill returns:
+- Issue statistics by category (Critical, High, Medium, Low)
+- Review report path
+- Code quality metrics
+- Created task count (if --create-tasks)
+- Roadmap progress updates (if applicable)
 
 ---
 
 ## Error Handling
 
-<error_handling>
-  <parsing_errors>
-    - Invalid scope -> Return error with guidance
-    - Missing review files -> Initialize with defaults
-  </parsing_errors>
-  
-  <execution_errors>
-    - Lean diagnostics failure -> Log warning, continue
-    - Roadmap parsing errors -> Log warning, skip roadmap integration
-    - File permission errors -> Return error with guidance
-    - Git commit failures -> Log warning, continue
-  </execution_errors>
-</error_handling>
+Handled by skill:
+- Invalid scope → Error with guidance
+- Missing review files → Initialize with defaults
+- Lean diagnostics failure → Log warning, continue
+- Roadmap parsing errors → Log warning, skip integration
+- Git failures → Log warning, continue
 
 ---
 
-## State Management
-
-<state_management>
-  <reads>
-    specs/reviews/state.json
-    specs/ROAD_MAP.md
-    specs/TODO.md
-    specs/state.json
-  </reads>
-  
-  <writes>
-    specs/reviews/review-{DATE}.md
-    specs/reviews/state.json
-    specs/ROAD_MAP.md (if annotating)
-  </writes>
-</state_management>
+**Note**: This is a routing specification. All implementation details are delegated to skill-reviewer.
+**Redesigned**: 2026-03-05 as part of OC_135 command routing enforcement

@@ -2,202 +2,118 @@
 description: Execute implementation with resume support
 ---
 
-Execute the implementation plan for the given task, phase by phase.
+Route to skill-implementer for phase-by-phase plan execution.
 
 **Input**: $ARGUMENTS
 
----
-
-## Parse Input
-
-- First token: task number — accepts `OC_N` or `N` (strip `OC_` prefix to get integer N)
-- `--force`: skip status validation
-- Remaining tokens: optional custom instructions
-- If invalid: "Usage: /implement <OC_N> [--force] [instructions]"
+**Command Pattern**: `/implement <OC_N> [--force] [instructions]`
 
 ---
 
-## Steps
+## Routing
 
-### 1. Look up task
+**Target**: skill-implementer  
+**Subagent**: general-implementation-agent  
+**Context**: fork  
+**Delegation**: Task tool with subagent_type="general-implementation-agent"
 
-Strip `OC_` prefix, find task in `specs/state.json`:
-```bash
-jq --arg n "N" '.active_projects[] | select(.project_number == ($n | tonumber))' specs/state.json
-```
-If not found: "Task OC_N not found in state.json"
+---
 
-Extract: `language`, `status`, `project_name`, `description`
+## Validation (Performed by Skill)
 
-Zero-pad N to 3 digits: `NNN`
+- Task exists in `specs/state.json`
+- Status allows implementation: `planned`, `partial`, `researched`, `not_started`
+- Implementation plan exists: `specs/OC_NNN_{SLUG}/plans/implementation-*.md`
+- Valid task number format (OC_N or N)
+- `--force` flag can override status validation
 
-Directory: `specs/OC_NNN_<project_name>/`
+---
 
-### 2. Validate status (unless --force)
+## Skill Arguments
 
-- `planned`, `partial`, `researched`, `not_started`: proceed
-- `implementing`: warn "already implementing, resuming"
-- `abandoned`: error "task is abandoned, use /task --recover first"
-- `completed`: error "already completed, use --force to re-implement"
+- **task_number**: Task number (int, required)
+- **force**: Skip status validation if true (bool, optional)
+- **instructions**: Optional custom instructions for implementation (string, optional)
+- **session_id**: Generated session identifier (string, required)
 
-### 3. Display task header
+---
 
-The skill displays a visual header during its Preflight stage to show the active task:
+## Execution Rule
 
-```
-╔══════════════════════════════════════════════════════════╗
-║  Task OC_N: <project_name>                               ║
-║  Action: IMPLEMENTING                                     ║
-╚══════════════════════════════════════════════════════════╝
-```
+**CRITICAL**: This command MUST be handled by skill delegation. DO NOT implement directly.
 
-This header appears at the start of the implement command (after validation, before delegation) to clearly indicate which task is being implemented. The header is displayed by the skill-implementer before invoking the general-implementation-agent subagent.
+### DO NOT:
+- Parse arguments yourself
+- Lookup task in state.json yourself
+- Validate status yourself
+- Read implementation plans yourself
+- Execute phases yourself
+- Modify files yourself
+- Update phase status yourself
+- Commit changes yourself
+- Mark task completed yourself
 
-### 4. Find implementation plan
+### DO:
+- Extract task number, force flag, and instructions from input
+- Generate session_id for tracking
+- Invoke Skill(skill-implementer, args)
+- Return skill result to user
 
-Look for `specs/OC_NNN_<project_name>/plans/implementation-*.md` — use the highest version.
+**Skill handles**: Validation, plan reading, phase execution, file modifications, status updates, commits, completion
 
-If no plan found: "No plan found. Run `/plan OC_N` first."
+---
 
-Read the plan to understand all phases and their current status (`[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`, `[PARTIAL]`).
+## Expected Skill Behavior
 
-### 5. Update status to IMPLEMENTING
+The skill-implementer will:
+1. Validate task and update status to IMPLEMENTING
+2. Display task header
+3. Read implementation plan (highest version)
+4. For each phase with status [NOT STARTED] or [PARTIAL]:
+   - Update phase to [IN PROGRESS]
+   - Delegate to general-implementation-agent via Task tool
+   - Execute phase steps
+   - Verify phase completion
+   - Update phase to [COMPLETED]
+   - Commit phase changes
+5. Write implementation summary to `specs/OC_NNN_{SLUG}/summaries/implementation-summary-YYYYMMDD.md`
+6. Update status to COMPLETED
+7. Link summary artifact
+8. Commit final changes
+9. Return summary to user
 
-Edit `specs/state.json`: set `status` to `"implementing"`, update `last_updated`.
+---
 
-Edit `specs/TODO.md`: change current status marker to `[IMPLEMENTING]` on the `### OC_N.` entry.
+## Output
 
-### 6. Execute phases
-
-For each phase with status `[NOT STARTED]` or `[PARTIAL]` (skip `[COMPLETED]`):
-
-1. **Track changes** - Capture baseline git state before phase execution
-2. Update phase status to `[IN PROGRESS]` in the plan file
-3. Execute the phase steps
-4. Verify the phase (run verification steps from the plan)
-5. Update phase status to `[COMPLETED]` in the plan file
-6. **Commit phase changes** - Stage and commit only files modified in this phase
-7. Briefly report phase completion before moving to next
-
-**IMPORTANT**: Phase status in the plan file is the **source of truth** for resume points. If implementation is interrupted, the next `/implement` call will use the phase status markers to determine which phases remain. Always keep phase statuses synchronized with actual progress.
-
-**Phase Status Lifecycle**:
-```
-[NOT STARTED] → [IN PROGRESS] → [COMPLETED] (success)
-                              ↘ [PARTIAL] (blocked/failed)
-```
-
-**Status Definitions**:
-- `[NOT STARTED]` - Phase not yet begun
-- `[IN PROGRESS]` - Phase currently being executed (only one phase should be IN PROGRESS at a time)
-- `[COMPLETED]` - Phase successfully finished with all verification criteria met
-- `[PARTIAL]` - Phase started but could not complete (blocking issue or failure)
-
-**Per-phase commit**:
-```bash
-# After phase completion, commit only changed files
-git status --porcelain | awk '{print $NF}' > /tmp/phase_files_$$.txt
-phase_files=$(cat /tmp/phase_files_$$.txt | tr '\n' ' ')
-
-if [ -n "$phase_files" ]; then
-    git add $phase_files
-    git commit -m "task OC_${N} phase {P}: {phase_name}
-
-Session: ${session_id}
-
-Co-Authored-By: OpenCode <noreply@opencode.ai>" || echo "Warning: Phase commit failed"
-fi
-
-rm -f /tmp/phase_files_$$.txt
-```
-
-**Commit-on-block** (when phase fails and cannot complete):
-```bash
-# Create partial report if not exists, then commit
-if [ -n "$phase_files" ]; then
-    git add $phase_files
-    git commit -m "task OC_${N}: partial implementation (blocked phase {P})
-
-Session: ${session_id}
-
-Co-Authored-By: OpenCode <noreply@opencode.ai>" || echo "Warning: Blocked commit failed"
-fi
-```
-
-If any custom instructions were given in $ARGUMENTS, incorporate them.
-
-**Language-specific guidance**:
-- **meta**: Edit `.opencode/` files, create/update agent and command definitions
-- **lean**: Write Lean 4 proofs, use `lake build` to verify
-- **typst**: Write Typst markup, use `typst compile` to verify
-- **latex**: Write LaTeX, use `pdflatex` to verify
-- **general**: Follow the plan steps using appropriate tools
-
-### 7. Write implementation summary
-
-Create directory: `mkdir -p specs/OC_NNN_<project_name>/summaries/`
-
-Write `specs/OC_NNN_<project_name>/summaries/implementation-summary-YYYYMMDD.md`:
-
-```markdown
-# Implementation Summary: Task #N
-
-**Completed**: YYYY-MM-DD
-**Language**: <language>
-
-## Changes Made
-
-<Overview of what was implemented>
-
-## Files Modified
-
-- `path/to/file` - <what changed>
-
-## Verification
-
-- <What was verified and how>
-
-## Notes
-
-<Any important notes or follow-up items>
-```
-
-### 8. Update status to COMPLETED
-
-Edit `specs/state.json`:
-- Set `status` to `"completed"`
-- Update `last_updated`
-- Add `completion_summary`: 1-3 sentence description of what was accomplished
-- Add to `artifacts` array:
-```json
-{
-  "type": "summary",
-  "path": "specs/OC_NNN_<project_name>/summaries/implementation-summary-YYYYMMDD.md",
-  "summary": "<one sentence>"
-}
-```
-
-Edit `specs/TODO.md` on the `### OC_N.` entry:
-- Change `[IMPLEMENTING]` to `[COMPLETED]`
-- Add line: `- **Summary**: [implementation-summary-YYYYMMDD.md](OC_NNN_<project_name>/summaries/implementation-summary-YYYYMMDD.md)`
-
-### 9. Report to user
-
-Show:
+Skill returns:
 - Phases completed
 - Files changed
 - Summary path
-- Any follow-up suggestions
+- Status: [COMPLETED]
+- Follow-up suggestions if any
 
 ---
 
-## Rules
+## Error Handling
 
-- Execute phases in order — do not skip ahead
-- Mark each phase `[COMPLETED]` in the plan file as you finish it
-- If a phase fails, mark it `[PARTIAL]` in the plan and stop — do not mark task completed
-- Write the summary BEFORE updating status to COMPLETED
-- Directories use 3-digit padded number: `OC_174_slug` not `OC_17_slug`
-- For Lean tasks, always verify with `lake build` after each phase
-- **Commit after each phase completion** — stage only files modified in that phase
-- **Commit when blocked** — if phase fails, commit partial progress before stopping
+Handled by skill:
+- Task not found → Error with guidance
+- Invalid status → Error (or warning with --force)
+- No plan found → Error: "Run `/plan OC_N` first"
+- Phase failure → Mark [PARTIAL], commit progress, report blockage
+- Git failures → Logged, non-blocking
+
+---
+
+## Resume Support
+
+If implementation is interrupted:
+- Phase status markers in plan file determine resume point
+- Next `/implement OC_N` call continues from incomplete phases
+- Partial progress is preserved and committed
+
+---
+
+**Note**: This is a routing specification. All implementation details are delegated to skill-implementer.
+**Redesigned**: 2026-03-05 as part of OC_135 command routing enforcement
