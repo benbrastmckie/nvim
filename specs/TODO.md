@@ -31,34 +31,6 @@ next_project_number: 148
 
 ---
 
-### OC_145. Restore settings.json format and state sync validation
-- **Effort**: medium
-- **Status**: [RESEARCHED]
-- **Language**: meta
-- **Dependencies**: None
-
-**Description**: Fix the settings.json format change that removed critical PreToolUse and PostToolUse hooks. The new format removed `permissions` object and validation hooks that ensured TODO.md and state.json stayed synchronized after writes. Need to restore either the old format or adapt the hooks to work with the new format. Without these hooks, state synchronization fails silently, causing TODO.md entries to not match state.json statuses.
-
-**Key Issues to Fix**:
-1. Restore PreToolUse hook that validates state.json writes before they happen
-2. Restore PostToolUse hook that runs validate-state-sync.sh after state.json writes
-3. Either restore the detailed permissions.allow/permissions.deny structure or ensure new format supports equivalent functionality
-4. The `$schema` field was added - determine if this is required or optional
-
-**Files to Modify**:
-- .opencode/settings.json - Restore hooks and proper format
-- May need to update .opencode/hooks/validate-state-sync.sh if format changed
-
-**Key Findings**:
-- Settings.json format is COMPLETE - contains permissions (allow/deny) and all hooks (PreToolUse, PostToolUse, SessionStart, UserPromptSubmit, Stop, SubagentStop)
-- validate-state-sync.sh exists and validates state.json and TODO.md exist + JSON validity
-- State synchronization is currently working (task shows consistent status in both files)
-- Task description appears OUTDATED - claims format was removed but it's intact
-
-**Recommendation**: Task appears resolved. Current implementation is complete. If there are specific issues, they need to be identified.
-
----
-
 ### OC_143. Fix skill-researcher TODO.md linking regression
 - **Effort**: medium
 - **Status**: [PENDING]
