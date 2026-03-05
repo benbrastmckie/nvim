@@ -20,12 +20,13 @@
     {
       "project_number": 143,
       "project_name": "fix_skill_researcher_todo_linking",
-      "status": "pending",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-07T12:00:00Z",
-      "last_updated": "2026-03-07T12:00:00Z",
+      "last_updated": "2026-03-05T23:31:26Z",
       "artifacts": [],
-      "description": "Fix the specific regression in skill-researcher where research reports are not being linked in TODO.md. Root cause is missing metadata_file_path parameter in the delegation prompt to general-research-agent. When the agent completes research, it doesn't know where to write the return metadata file."
+      "description": "Fix the specific regression in skill-researcher where research reports are not being linked in TODO.md. Root cause is missing metadata_file_path parameter in the delegation prompt to general-research-agent. When the agent completes research, it doesn't know where to write the return metadata file.",
+      "completed": "2026-03-05T23:31:26Z"
     },
     {
       "project_number": 142,

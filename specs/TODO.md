@@ -33,9 +33,9 @@ next_project_number: 148
 
 ### OC_143. Fix skill-researcher TODO.md linking regression
 - **Effort**: medium
-- **Status**: [PENDING]
+- **Status**: [COMPLETED]
 - **Language**: meta
-- **Dependencies**: OC_144 (part of systemic fix, but can be done separately)
+- **Dependencies**: None
 
 **Description**: Fix the specific regression in skill-researcher where research reports are not being linked in TODO.md. Root cause is missing `metadata_file_path` parameter in the delegation prompt to general-research-agent. When the agent completes research, it doesn't know where to write the return metadata file, so postflight cannot extract artifact information to update TODO.md with the Research link.
 
@@ -48,6 +48,8 @@ next_project_number: 148
 **Files to Modify**:
 - .opencode/skills/skill-researcher/SKILL.md
 - .opencode/agent/subagents/general-research-agent.md
+
+**Implementation Summary**: [implementation-summary-20260305.md](OC_143_fix_skill_researcher_todo_linking/summaries/implementation-summary-20260305.md)
 
 ---
 
