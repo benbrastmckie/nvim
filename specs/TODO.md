@@ -8,7 +8,7 @@ next_project_number: 148
 
 ### OC_147. Fix artifact metadata linking in TODO.md
 - **Effort**: 4-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
 
@@ -22,7 +22,12 @@ next_project_number: 148
 
 The goal is to ensure artifact metadata flows correctly from subagent → metadata file → state.json → TODO.md without requiring the primary agent to read artifacts directly.
 
----
+**Key Findings**:
+- **Root Cause**: Inconsistent skill postflight implementations - skill-researcher lacks detailed postflight patterns found in skill-implementer
+- **Metadata Flow**: Core architecture working - agents create `.return-meta.json`, state.json IS populated
+- **TODO.md Gap**: Artifact links appear inconsistently due to missing standardized postflight instructions
+- **Solution**: Update skill-researcher and skill-planner with file-metadata-exchange.md and jq-escaping-workarounds.md patterns
+- **Research**: [specs/OC_147_fix_artifact_metadata_linking_in_todo/reports/research-001.md](specs/OC_147_fix_artifact_metadata_linking_in_todo/reports/research-001.md)
 
 ### OC_146. Research and implement subagent workflow best practices
 - **Effort**: 6-8 hours

@@ -4,11 +4,17 @@
     {
       "project_number": 147,
       "project_name": "fix_artifact_metadata_linking_in_todo",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-05T15:00:00Z",
       "last_updated": "2026-03-05T15:00:00Z",
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_147_fix_artifact_metadata_linking_in_todo/reports/research-001.md",
+          "summary": "Comprehensive research report identifying root cause of artifact metadata linking issues: inconsistent skill postflight implementations, missing file-metadata-exchange patterns in skill-researcher, and need for standardized TODO.md artifact linking format"
+        }
+      ]
     },
     {
       "project_number": 146,
