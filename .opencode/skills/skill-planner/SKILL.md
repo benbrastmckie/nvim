@@ -92,6 +92,94 @@ Thin wrapper that delegates plan creation to `planner-agent`.
      """
 
 4. **Postflight**:
-   - Read metadata file and update state + TODO.
-   - Link plan artifact and commit.
-   - Clean up marker and metadata files.
+
+   **Stage 5: Parse Subagent Return**
+   - Read metadata file and validate JSON:
+     ```bash
+     metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
+     if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
+         status=$(jq -r '.status' "$metadata_file")
+         artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
+         artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+         artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+     fi
+     ```
+
+   **Stage 6: Update Task Status in state.json**
+   - Update status to "planned" with timestamp:
+     ```bash
+     jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        --arg status "planned" \
+       '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+         status: $status,
+         last_updated: $ts,
+         planned: $ts
+       }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+     ```
+
+   **Stage 6a: Update TODO.md Status**
+   - Edit TODO.md to change status marker:
+     ```
+     Edit file: specs/${padded_num}_${project_name}/TODO.md
+     oldString: "- Status: [IN PROGRESS]"
+     newString: "- Status: [PLANNED]"
+     ```
+
+   **Stage 7: Link Artifacts in state.json**
+   - Use two-step jq pattern to avoid Issue #1132:
+     ```bash
+     # Step 1: Filter out existing plan artifacts
+     jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+         [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "plan" | not)]' \
+       specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+     
+     # Step 2: Add new plan artifact
+     jq --arg path "$artifact_path" \
+        --arg type "$artifact_type" \
+        --arg summary "$artifact_summary" \
+       '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+       specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+     ```
+
+   **Stage 7a: Update TODO.md Artifacts**
+   - Add artifact link to TODO.md:
+     ```
+     Edit file: specs/${padded_num}_${project_name}/TODO.md
+     Add to Artifacts section:
+     "- [${artifact_path}](${artifact_path}) - ${artifact_summary}"
+     ```
+
+   **Stage 8: Git Commit**
+   - Stage all changes and commit:
+     ```bash
+     git add -A
+     git commit -m "task ${task_number}: create implementation plan
+
+     Session: ${session_id}
+
+     Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+     ```
+
+   **Stage 9: Cleanup**
+   - Remove marker and metadata files:
+     ```bash
+     rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
+     rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
+     rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+     ```
+
+   **Stage 10: Return Brief Summary**
+   - Return concise text summary (3-6 bullet points):
+     ```
+     Planning completed for task {N}:
+     - Status updated to [PLANNED]
+     - Plan created at: {artifact_path}
+     - Artifacts linked in state.json and TODO.md
+     - Git commit: task {N}: create implementation plan
+     ```
+
+   **Error Handling**:
+   - If metadata file missing or invalid JSON: Log error, skip artifact linking
+   - If jq command fails: Log error, preserve original state.json
+   - If git commit fails: Log warning, continue (don't block on git)
+   - If TODO.md edit fails: Log error, state.json still updated
