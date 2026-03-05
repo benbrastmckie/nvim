@@ -6,6 +6,15 @@ next_project_number: 135
 
 ## Tasks
 
+### OC_135. Enforce workflow command delegation to prevent direct implementation
+- **Effort**: 3-4 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: When the user types workflow commands like `/plan N`, `/research N`, or `/implement N`, the AI is currently executing these directly instead of routing them through the skill system with proper delegation to subagents. This causes the main agent to implement when it should only plan, or research when it should delegate. The root cause is missing command interception/routing infrastructure that should detect workflow commands and ensure they are processed by the appropriate skill with forked subagent delegation. Need to design and implement a command routing system that enforces proper delegation boundaries.
+
+---
+
 ### OC_134. Fix workflow command header not showing task number and name
 - **Effort**: 2-3 hours
 - **Status**: [COMPLETED]
