@@ -72,16 +72,20 @@ Based on research-001.md, the root cause is a gap between skill loading and skil
 - **Report:** [audit-commands.md](../reports/audit-commands.md)
 - **Findings:** ROOT CAUSE IDENTIFIED - Commands describe skill invocation but don't execute skills. Skills are displayed instead of executed.
 
-### Phase 2: Audit Skill Definitions [NOT STARTED]
+### Phase 2: Audit Skill Definitions [COMPLETED]
+- **Started:** 2026-03-06T19:00:00Z
+- **Completed:** 2026-03-06T19:15:00Z
 - **Goal:** Understand how skills define execution workflows and verify they are executable
 - **Tasks:**
-  - [ ] Read all 11+ skill definitions (.opencode/skills/skill-*/SKILL.md)
-  - [ ] Document <execution> stage definitions
-  - [ ] Check for <context_injection> configurations
-  - [ ] Identify agent delegation points in each skill
-  - [ ] Verify subagent types referenced exist
-  - [ ] Document findings in audit report
+  - [x] Read all 11+ skill definitions (.opencode/skills/skill-*/SKILL.md)
+  - [x] Document <execution> stage definitions
+  - [x] Check for <context_injection> configurations
+  - [x] Identify agent delegation points in each skill
+  - [x] Verify subagent types referenced exist
+  - [x] Document findings in audit report
 - **Timing:** 1 hour
+- **Report:** [audit-skills.md](../reports/audit-skills.md)
+- **Findings:** ALL SKILLS ARE CORRECTLY DESIGNED! Skills correctly use Task tool with subagent_type. Problem is upstream in command invocation.
 
 ### Phase 3: Test Current Behavior [NOT STARTED]
 - **Goal:** Confirm the exact failure mode and identify where execution stops
