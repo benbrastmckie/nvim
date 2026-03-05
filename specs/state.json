@@ -29,6 +29,11 @@
           "type": "research",
           "path": "specs/OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-001.md",
           "summary": "Comprehensive analysis of plan format non-compliance: OC_135 plans follow format correctly, OC_136 plans do not. Root cause appears to be context injection failure in certain invocation paths. Agent falls back to incorrect template when plan-format.md context unavailable."
+        },
+        {
+          "type": "research",
+          "path": "specs/OC_137_investigate_and_fix_planner_agent_format_compliance_issue/reports/research-002.md",
+          "summary": "Follow-up research identifying embedded non-compliant templates in plan.md as primary root cause. OC_133 only fixed planner-agent.md but missed embedded templates in command specifications that override correct behavior."
         }
       ],
       "description": "Investigate why implementation plans do not follow plan-format.md specification. OC_136 plan has wrong format despite OC_133 supposedly fixing this. Need to audit planner-agent.md, verify context injection, and ensure all future plans are compliant."
