@@ -11,8 +11,9 @@ Research the given task and write a research report. Do NOT implement anything.
 ## Parse Input
 
 - First token: task number — accepts `OC_N` or `N` (strip `OC_` prefix to get integer N)
+- `--remember` flag: include memory vault search in research context
 - Remaining tokens: optional focus prompt
-- If invalid: "Usage: /research <OC_N> [focus]"
+- If invalid: "Usage: /research <OC_N> [--remember] [focus]"
 
 ---
 
@@ -58,7 +59,35 @@ Edit `specs/state.json`: set `status` to `"researching"` and update `last_update
 
 Edit `specs/TODO.md`: change `[NOT STARTED]` (or current status marker) to `[RESEARCHING]` on the `### OC_N.` entry.
 
-### 5. Execute research
+### 5. Memory Search (if --remember flag present)
+
+If `--remember` was passed in arguments:
+
+**Build search query**:
+- Extract keywords from task description
+- Add focus prompt keywords if provided
+- Limit to 3-5 most significant terms
+
+**Query memory vault**:
+- Use MCP tool: `search_notes`
+- Query: extracted keywords
+- Limit: 5 results
+
+**Process results**:
+- If results found: Read full content of top 3 memories
+- If no results: Note "No relevant memories found"
+
+**Include in research context**:
+- Add "## Prior Knowledge from Memory Vault" section to research report
+- Include memory summaries (truncated to 1000 chars each)
+- List memory IDs for reference
+- Mark report as "memory_augmented: true"
+
+**Graceful degradation**:
+- If MCP unavailable: Skip memory search, continue with standard research
+- If no memories found: Note in report, continue
+
+### 6. Execute research
 
 Based on `language`:
 - **meta**: Focus on existing `.opencode/` files, conventions, patterns
@@ -75,7 +104,7 @@ Research strategy (always in this order):
 
 If a focus prompt was given, prioritize that aspect.
 
-### 6. Write research report
+### 7. Write research report
 
 Create directory: `mkdir -p specs/OC_NNN_<project_name>/reports/`
 
@@ -101,6 +130,16 @@ Write `specs/OC_NNN_<project_name>/reports/research-001.md`:
 ### <Topic 2>
 <Details>
 
+## Prior Knowledge from Memory Vault
+
+*This section appears when --remember flag is used and relevant memories are found*
+
+**Relevant Memories**:
+- **MEM-YYYY-MM-DD-001**: Title (truncated content summary)
+- **MEM-YYYY-MM-DD-002**: Title (truncated content summary)
+
+**Memory-Augmented**: true
+
 ## Recommendations
 
 1. <Actionable recommendation>
@@ -115,7 +154,7 @@ Write `specs/OC_NNN_<project_name>/reports/research-001.md`:
 Run `/plan OC_N` to create an implementation plan.
 ```
 
-### 7. Update status to RESEARCHED
+### 8. Update status to RESEARCHED
 
 Edit `specs/state.json`:
 - Set `status` to `"researched"`
@@ -133,7 +172,7 @@ Edit `specs/TODO.md` on the `### OC_N.` entry:
 - Change `[RESEARCHING]` to `[RESEARCHED]`
 - Add line: `- **Research**: [research-001.md](OC_NNN_<project_name>/reports/research-001.md)`
 
-### 8. Commit changes
+### 9. Commit changes
 
 Create a targeted commit with only the changed files:
 

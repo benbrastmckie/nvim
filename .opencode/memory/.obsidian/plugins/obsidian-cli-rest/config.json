@@ -1,0 +1,10 @@
+{
+  "port": 27124,
+  "host": "127.0.0.1",
+  "authentication": {
+    "type": "bearer"
+  },
+  "commands": {
+    "enabled": ["*"]
+  }
+}
