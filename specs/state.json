@@ -20,10 +20,10 @@
     {
       "project_number": 139,
       "project_name": "implement_stage_progressive_loading_demo",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-06T16:30:00Z",
-      "last_updated": "2026-03-05T17:00:00Z",
+      "last_updated": "2026-03-05T17:30:00Z",
       "artifacts": [
         {
           "type": "research",
@@ -34,6 +34,11 @@
           "type": "research",
           "path": "specs/OC_139_implement_stage_progressive_loading_demo/reports/research-002.md",
           "summary": "Systematic review of entire .opencode/ agent system for progressive context disclosure improvements. Identified optimization opportunities across 11 skills with 30-60% potential reduction per skill through stage-progressive loading, context consolidation, and 2026 best practices."
+        },
+        {
+          "type": "plan",
+          "path": "specs/OC_139_implement_stage_progressive_loading_demo/plans/implementation-001.md",
+          "summary": "3-phase implementation plan: baseline measurement, stage-progressive loading implementation in skill-planner/SKILL.md, testing and validation. Expected 40-50% Stage 1 context reduction."
         }
       ],
       "description": "Follow-up to OC_137 Phase 7. Demonstrate stage-progressive context loading in skill-planner: load minimal context in Stage 1 (status-markers only), defer format specs to Stage 3. Proof-of-concept for ~40-50% context reduction."
@@ -521,6 +526,23 @@
           "summary": "Migrated all 11 skills to Push Context model with <context_injection> blocks: skill-implementer, skill-meta, skill-learn, skill-refresh, skill-status-sync, skill-git-workflow, skill-neovim-research, skill-neovim-implementation plus existing 3 core skills"
         }
       ]
+    }
+  ],
+    {
+      "project_number": 141,
+      "project_name": "fix_agent_delegation_system_failure",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-06T18:00:00Z",
+      "last_updated": "2026-03-06T18:00:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_141_fix_agent_delegation_system_failure/reports/research-001.md",
+          "summary": "Critical system failure: Skills displayed instead of executed. Root cause is missing Task tool invocation in command specifications."
+        }
+      ],
+      "description": "Skills are being displayed instead of executed. When /plan command invokes skill-planner, the skill specification content is output rather than delegating to planner-agent via Task tool. Need to audit all skill-command integration points and fix the delegation mechanism system-wide."
     }
   ],
   "repository_health": {
