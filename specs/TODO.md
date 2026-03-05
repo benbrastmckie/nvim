@@ -7,8 +7,9 @@ next_project_number: 142
 ## Tasks
 
 ### OC_141. Fix agent delegation system failure
+- **Summary**: [implementation-summary-20260306.md](OC_141_fix_agent_delegation_system_failure/summaries/implementation-summary-20260306.md)
 - **Effort**: 4-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None (foundational fix)
 - **Research**: [research-001.md](OC_141_fix_agent_delegation_system_failure/reports/research-001.md) - Critical system failure: Skills displayed instead of executed
@@ -30,7 +31,7 @@ next_project_number: 142
 
 ### OC_140. Document progressive disclosure patterns in context-loading guide
 - **Effort**: 1 hour
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: OC_137 (completed)
 - **Research**: [research-001.md](OC_140_document_progressive_disclosure_patterns/reports/research-001.md) - Documentation needed for stage-progressive loading, conditional injection, discovery-layer pattern, context budgets, and troubleshooting
@@ -49,7 +50,7 @@ next_project_number: 142
 
 ### OC_139. Implement stage-progressive loading demonstration in skill-planner
 - **Effort**: 1.5 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: OC_137 (completed)
 - **Research**: [research-001.md](OC_139_implement_stage_progressive_loading_demo/reports/research-001.md) - Initial POC for progressive context loading in skill-planner
@@ -75,7 +76,7 @@ next_project_number: 142
 
 ### OC_138. Fix plan metadata status synchronization
 - **Effort**: 2-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_138_fix_plan_metadata_status_synchronization/reports/research-001.md) - Root cause: synchronization protocol only updates state.json and TODO.md, missing plan file line 4 metadata status
@@ -364,7 +365,7 @@ Confirmation & Summary
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-02-13
 - **Research Completed**: 2026-02-13
 - **Language**: neovim
@@ -375,7 +376,7 @@ Confirmation & Summary
 
 ### 78. Fix Himalaya SMTP authentication failure when sending emails
 - **Effort**: 1-2 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-02-13
 - **Research Completed**: 2026-02-13
 - **Planning Started**: 2026-02-13
