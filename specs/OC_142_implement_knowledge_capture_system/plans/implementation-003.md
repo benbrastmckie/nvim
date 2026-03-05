@@ -161,40 +161,42 @@ Recommended order: Wait for OC_143 -> Create skill-todo -> Rename /learn (clean-
 - Must revert ALL files simultaneously to maintain consistency
 - Document rollback reason and re-plan from Phase 3 start
 
-### Phase 4: Add Task Mode to /remember [NOT STARTED]
+### Phase 4: Add Task Mode to /remember [COMPLETED]
 
 **Goal**: Implement --task OC_N mode for artifact review with interactive classification
 
 **Tasks**:
-- [ ] Read .opencode/commands/remember.md (95 lines) to understand current modes
-- [ ] Read .opencode/skills/skill-remember/SKILL.md (208 lines) for skill structure
-- [ ] Design --task argument parsing in remember.md:
-  - [ ] Add --task OC_N to command specification
-  - [ ] Document task mode behavior
-- [ ] Implement task directory parsing in skill-remember:
-  - [ ] Parse specs/OC_{N}_{SLUG}/ structure
-  - [ ] Identify artifact files (reports/, plans/, code/, etc.)
-  - [ ] Generate file listing for review
-- [ ] Implement interactive classification workflow:
-  - [ ] Display artifact list with numbers
-  - [ ] Allow user to select file(s) to review
-  - [ ] Show file content in chunks for review
-  - [ ] Present 5 classification categories:
+- [x] Read .opencode/commands/remember.md (95 lines) to understand current modes
+- [x] Read .opencode/skills/skill-remember/SKILL.md (208 lines) for skill structure
+- [x] Design --task argument parsing in remember.md:
+  - [x] Add --task OC_N to command specification
+  - [x] Document task mode behavior
+- [x] Implement task directory parsing in skill-remember:
+  - [x] Parse specs/OC_{N}_{SLUG}/ structure
+  - [x] Identify artifact files (reports/, plans/, code/, etc.)
+  - [x] Generate file listing for review
+- [x] Implement interactive classification workflow:
+  - [x] Display artifact list with numbers
+  - [x] Allow user to select file(s) to review
+  - [x] Show file content in chunks for review
+  - [x] Present 5 classification categories:
     1. [TECHNIQUE] - Reusable method or approach
     2. [PATTERN] - Design or implementation pattern
     3. [CONFIG] - Configuration or setup knowledge
     4. [WORKFLOW] - Process or procedure
     5. [INSIGHT] - Key learning or understanding
     6. [SKIP] - Not valuable for memory
-  - [ ] Capture user classification selection
-- [ ] Create memory from classified content:
-  - [ ] Extract key insight from artifact
-  - [ ] Format memory with classification tag
-  - [ ] Save to memory vault (vault/memories/)
-- [ ] Update skill-remember/SKILL.md with task mode documentation
-- [ ] Test task mode with actual task directory
+  - [x] Capture user classification selection
+- [x] Create memory from classified content:
+  - [x] Extract key insight from artifact
+  - [x] Format memory with classification tag
+  - [x] Save to memory vault (vault/memories/)
+- [x] Update skill-remember/SKILL.md with task mode documentation
+- [x] Test task mode with actual task directory
 
 **Timing**: 5 hours
+
+**Completion Notes**: Task mode fully implemented with 6 classification categories (including SKIP). Updated remember.md with --task argument parsing, task mode documentation with workflow and examples. Updated skill-remember/SKILL.md with 10 execution stages including TaskModeScan, TaskModeSelection, TaskModeReview stages. Classification taxonomy: TECHNIQUE, PATTERN, CONFIG, WORKFLOW, INSIGHT, SKIP.
 
 **Rollback**:
 1. Revert remember.md to original (remove --task option)
