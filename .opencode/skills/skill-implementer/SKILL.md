@@ -61,6 +61,13 @@ Reference (do not load eagerly):
 
 1. **LoadContext**: Read injected context files.
 2. **Preflight**: Validate task and status using {return_metadata} and {postflight_control}.
+   - **Display Task Header**: Print the following header to show which task is being implemented:
+     ```
+     ╔══════════════════════════════════════════════════════════╗
+     ║  Task OC_{N}: {project_name}                             ║
+     ║  Action: IMPLEMENTING                                    ║
+     ╚══════════════════════════════════════════════════════════╝
+     ```
    - Update status to implementing.
    - Create postflight marker file.
 3. **Delegate**: Invoke general-implementation-agent via Task tool with injected context.

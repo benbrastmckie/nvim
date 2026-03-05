@@ -56,6 +56,13 @@ Thin wrapper that delegates research to `general-research-agent`.
 
 2. **Preflight**:
    - Validate task and status using `{status_markers}`.
+   - **Display Task Header**: Print the following header to show which task is being researched:
+     ```
+     ╔══════════════════════════════════════════════════════════╗
+     ║  Task OC_{N}: {project_name}                             ║
+     ║  Action: RESEARCHING                                     ║
+     ╚══════════════════════════════════════════════════════════╝
+     ```
    - Update status to researching.
    - Create postflight marker file.
 

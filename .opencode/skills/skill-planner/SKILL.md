@@ -58,6 +58,13 @@ Thin wrapper that delegates plan creation to `planner-agent`.
 
 2. **Preflight**:
    - Validate task and status using `{status_markers}`.
+   - **Display Task Header**: Print the following header to show which task is being planned:
+     ```
+     ╔══════════════════════════════════════════════════════════╗
+     ║  Task OC_{N}: {project_name}                             ║
+     ║  Action: PLANNING                                        ║
+     ╚══════════════════════════════════════════════════════════╝
+     ```
    - Update status to planning.
    - Create postflight marker file.
 
