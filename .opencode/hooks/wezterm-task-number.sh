@@ -33,7 +33,9 @@ PROMPT=$(echo "$HOOK_INPUT" | jq -r '.prompt // ""' 2>/dev/null || echo "")
 # Extract task number from Claude commands
 # Matches: /research N, /plan N, /implement N, /revise N
 TASK_NUMBER=""
+TASK_ACTION=""
 if [[ "$PROMPT" =~ ^[[:space:]]*/?(research|plan|implement|revise)[[:space:]]+([0-9]+) ]]; then
+    TASK_ACTION="${BASH_REMATCH[1]}"
     TASK_NUMBER="${BASH_REMATCH[2]}"
 fi
 
@@ -52,13 +54,40 @@ if [[ -n "$TASK_NUMBER" ]]; then
     # Format: OSC 1337 ; SetUserVar=name=base64_value ST
     TASK_VALUE=$(echo -n "$TASK_NUMBER" | base64 | tr -d '\n')
     printf '\033]1337;SetUserVar=TASK_NUMBER=%s\007' "$TASK_VALUE" > "$PANE_TTY"
+    
+    # Look up task name from state.json and set TASK_NAME
+    TASK_NAME=$(jq -r --arg n "$TASK_NUMBER" \
+        '.active_projects[] | select(.project_number == ($n | tonumber)) | .project_name' \
+        specs/state.json 2>/dev/null || echo "")
+    
+    if [[ -n "$TASK_NAME" ]]; then
+        NAME_VALUE=$(echo -n "$TASK_NAME" | base64 | tr -d '\n')
+        printf '\033]1337;SetUserVar=TASK_NAME=%s\007' "$NAME_VALUE" > "$PANE_TTY"
+    fi
+    
+    # Set TASK_ACTION (uppercase the action for display)
+    if [[ -n "$TASK_ACTION" ]]; then
+        ACTION_UPPER=$(echo "$TASK_ACTION" | tr '[:lower:]' '[:upper:]')
+        # Add "ING" suffix for present participle form
+        case "$ACTION_UPPER" in
+            "RESEARCH") ACTION_DISPLAY="RESEARCHING" ;;
+            "PLAN") ACTION_DISPLAY="PLANNING" ;;
+            "IMPLEMENT") ACTION_DISPLAY="IMPLEMENTING" ;;
+            "REVISE") ACTION_DISPLAY="REVISING" ;;
+            *) ACTION_DISPLAY="${ACTION_UPPER}ING" ;;
+        esac
+        ACTION_VALUE=$(echo -n "$ACTION_DISPLAY" | base64 | tr -d '\n')
+        printf '\033]1337;SetUserVar=TASK_ACTION=%s\007' "$ACTION_VALUE" > "$PANE_TTY"
+    fi
 else
-    # Clear TASK_NUMBER on non-workflow commands (task 795)
+    # Clear all task variables on non-workflow commands (task 795)
     # This implements the correct behavior:
     # - Workflow commands (/research N, /plan N, /implement N, /revise N) -> Set
     # - Non-workflow commands (anything else) -> Clear
     # - Claude output (no UserPromptSubmit event) -> No change (preserves)
     printf '\033]1337;SetUserVar=TASK_NUMBER=\007' > "$PANE_TTY"
+    printf '\033]1337;SetUserVar=TASK_NAME=\007' > "$PANE_TTY"
+    printf '\033]1337;SetUserVar=TASK_ACTION=\007' > "$PANE_TTY"
 fi
 
 exit_success

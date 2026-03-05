@@ -8,7 +8,7 @@ next_project_number: 135
 
 ### OC_134. Fix workflow command header not showing task number and name
 - **Effort**: 2-3 hours
-- **Status**: [PLANNED]
+- **Status**: [IN PROGRESS]
 - **Language**: meta
 - **Research**: [research-001.md](OC_134_fix_workflow_command_header_display/reports/research-001.md), [research-002.md](OC_134_fix_workflow_command_header_display/reports/research-002.md)
 - **Plan**: [implementation-001.md](OC_134_fix_workflow_command_header_display/plans/implementation-001.md)
