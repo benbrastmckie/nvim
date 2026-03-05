@@ -6,6 +6,37 @@ next_project_number: 148
 
 ## Tasks
 
+### OC_148. Fix status updates during implementation phases
+- **Effort**: 3-4 hours
+- **Status**: [RESEARCHED]
+- **Researched**: 2026-03-05
+- **Language**: meta
+- **Dependencies**: None
+- **Artifacts**:
+  - [specs/OC_148_fix_status_updates_in_implementations/reports/research-001.md](specs/OC_148_fix_status_updates_in_implementations/reports/research-001.md) - Research report identifying 6 specific status update gaps in skill-implementer and general-implementation-agent with detailed recommendations and file references
+
+**Description**: Fix status update gaps in skill-implementer and general-implementation-agent. During OC_147 implementation, observed that:
+
+1. **Phase Status**: Phases are NOT marked [IN PROGRESS] before starting work (though they ARE marked [COMPLETED] after finishing - this part works)
+2. **Task Status Transition**: Task status in TODO.md, state.json, and plan file was NOT updated to [IMPLEMENTING] before starting work
+3. **Task Status Completion**: Task status was NOT updated to [COMPLETED] after finishing all phases
+
+The skill-implementer SKILL.md has preflight that updates status to implementing, and the agent should mark phases as IN PROGRESS before starting each phase. Need to ensure:
+- Each phase is marked [IN PROGRESS] at the start of execution
+- Task status transitions to [IMPLEMENTING] when /implement begins
+- Task status transitions to [COMPLETED] when all phases finish
+- Plan file phase statuses stay synchronized with actual progress
+
+**Key Findings**:
+- **Gap 1**: skill-implementer preflight lacks explicit jq commands to update status to implementing
+- **Gap 2**: skill-implementer postflight lacks detailed stages for status transitions (implementing -> completed/partial)
+- **Gap 3**: Missing TODO.md status update instructions in skill-implementer
+- **Gap 4**: implement.md command has duplicate status update description that may conflict with skill
+- **Gap 5**: Phase verification exists but doesn't catch [NOT STARTED] phases during active work
+- **Solution**: Add detailed preflight/postflight stages to skill-implementer matching skill-researcher pattern
+
+---
+
 ### OC_147. Fix artifact metadata linking in TODO.md
 - **Effort**: 4-6 hours
 - **Status**: [RESEARCHED]

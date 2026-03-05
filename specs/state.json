@@ -1,6 +1,22 @@
 {
-  "next_project_number": 148,
+  "next_project_number": 149,
   "active_projects": [
+    {
+      "project_number": 148,
+      "project_name": "fix_status_updates_in_implementations",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-05T20:00:00Z",
+      "last_updated": "2026-03-05T21:30:00Z",
+      "researched": "2026-03-05T21:30:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_148_fix_status_updates_in_implementations/reports/research-001.md",
+          "summary": "Research report identifying 6 specific status update gaps in skill-implementer and general-implementation-agent with detailed recommendations and file references"
+        }
+      ]
+    },
     {
       "project_number": 147,
       "project_name": "fix_artifact_metadata_linking_in_todo",
