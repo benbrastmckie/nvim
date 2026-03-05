@@ -101,15 +101,19 @@ Based on research-001.md, the root cause is a gap between skill loading and skil
 - **Report:** [test-behavior.md](../reports/test-behavior.md)
 - **Findings:** CONFIRMED - Skills displayed, not executed. Task tool never invoked.
 
-### Phase 4: Design Fix Approach [NOT STARTED]
+### Phase 4: Design Fix Approach [COMPLETED]
+- **Started:** 2026-03-06T19:20:00Z
+- **Completed:** 2026-03-06T19:30:00Z
 - **Goal:** Determine the minimal fix that makes skills execute their workflows
 - **Tasks:**
-  - [ ] Review audit findings from Phases 1-3
-  - [ ] Compare Option A (explicit tool calls) vs Option D (direct delegation)
-  - [ ] Design fix that minimizes changes to existing infrastructure
-  - [ ] Document the chosen approach with rationale
-  - [ ] Identify which files need modification
+  - [x] Review audit findings from Phases 1-3
+  - [x] Compare Option A (explicit tool calls) vs Option D (direct delegation)
+  - [x] Design fix that minimizes changes to existing infrastructure
+  - [x] Document the chosen approach with rationale
+  - [x] Identify which files need modification
 - **Timing:** 30 minutes
+- **Report:** [fix-approach.md](../reports/fix-approach.md)
+- **Decision**: **OPTION A** - Add explicit skill tool calls to commands. Minimal, safe, leverages existing correct skill designs.
 
 ### Phase 5: Implement Command-Skill Integration Fix [NOT STARTED]
 - **Goal:** Add proper Task tool invocation to make skills execute
