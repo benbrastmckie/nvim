@@ -11,10 +11,8 @@ next_project_number: 147
 - **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [research-001.md](OC_146_subagent_invocation_consistency_in_opencode_system/reports/research-001.md) - Comprehensive analysis of subagent invocation patterns
-  - [research-002.md](OC_146_subagent_invocation_consistency_in_opencode_system/reports/research-002.md) - Verification of no changes since original research
 
-**Description**: Research and implement best practices for using subagents with isolated context windows and careful metadata passing in the .opencode/ agent system. Currently all research is conducted by the primary agent rather than being delegated to research subagents. Need to investigate 2026 best practices for:
+*Description**: Research and implement best practices for using subagents with isolated context windows and careful metadata passing in the .opencode/ agent system. Currently all research is conducted by the primary agent rather than being delegated to research subagents. Need to investigate 2026 best practices for:
 
 1. **Isolated Context Windows**: How to properly delegate to subagents with clean, isolated context to prevent context pollution and reduce token usage
 2. **Metadata Passing**: Careful passing of task metadata (task number, description, requirements) between primary agent and subagents
@@ -23,11 +21,13 @@ next_project_number: 147
 5. **Integration with Skills**: How subagent delegation should work within the existing skill-based architecture (skill-researcher, skill-implementer, skill-planner)
 
 **Key Findings**:
-- All workflow commands correctly invoke subagents via Task tool
-- OC_145 metadata_file_path fix is complete and working
-- Only structural inconsistency: /revise uses advanced pattern while others use simple pattern
-- **System is working correctly - no implementation required**
-- All delegation chains remain intact and functional
+- **System Architecture**: Three-layer delegation (Command → Skill → Agent) is working correctly
+- **Isolated Context**: Uses `context: fork` mode with Task tool and `<context_injection>` blocks for clean, isolated context windows
+- **Metadata Passing**: File-based metadata exchange via `.return-meta.json` files is reliable and avoids console pollution
+- **Result Aggregation**: Skills use postflight pattern to read metadata, validate artifacts, update state, and commit changes
+- **Error Handling**: Comprehensive patterns with early metadata creation, validation gates, timeout handling, and fallback chains
+- **Gap Identified**: Primary agent currently performs research directly instead of delegating to research subagents - this is the core issue to address
+- **Report**: [specs/OC_146_research_implement_subagent_workflow_best_practices/reports/research-001.md](specs/OC_146_research_implement_subagent_workflow_best_practices/reports/research-001.md)
 
 ---
 
