@@ -94,11 +94,8 @@ Before processing a task creation request, check:
 
 ---
 
-### Step 3: Execute Preflight
+### Step 3: Calculate Task Details
 
-**CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
-
-**Calculate task details**:
 1. Read `specs/state.json` to get `next_project_number` (call it N)
 2. Generate slug from title: lowercase, spaces→underscores, strip punctuation
 3. Infer language: `lean` (proofs/theorems/Lean), `typst` (Typst docs), `latex` (LaTeX docs), `meta` (.opencode/.claude/ changes), `general` (everything else)
@@ -106,88 +103,58 @@ Before processing a task creation request, check:
 5. Zero-pad N to 3 digits: `NNN` (e.g. `printf "%03d" N`)
 6. Directory will be: `specs/OC_NNN_<project_name>/`
 
-**Update state.json to creating**:
-```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "creating" \
-  '(.active_projects[] | select(.project_number == N)) |= . + {
-    status: $status,
-    last_updated: $ts,
-    creating: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
-**Update TODO.md to [CREATING]**:
-- Edit file: `specs/TODO.md`
-- Find line: `- **Status**: [NOT STARTED]` (or current status) for task OC_N
-- Change to: `- **Status**: [CREATING]`
-
-**Create task-creating marker file**:
-```bash
-touch "specs/OC_NNN_<project_name>/.task-creating"
-```
-
 ---
 
-### Step 4: Delegate to Task Agent
+### Step 4: Create Task Entry (DIRECT)
 
-**Call skill tool** to load skill context and delegate to task-creation agent:
-
-```
-→ Tool: skill
-→ Name: skill-task
-→ Prompt: Create task entry for task {N} with description "...", language {language}, effort {effort}
-```
-
-The skill-task will:
-1. Load context files (return-metadata-file.md, postflight-control.md, etc.)
-2. **Call Task tool with `subagent_type="task-creation-agent"`** to create the task entry
-3. Return results (subagent writes .return-meta.json)
-
-**CRITICAL**: The skill tool ONLY loads skill definitions. It does NOT execute preflight/postflight workflows. This command MUST execute status updates before and after delegation.
-
----
-
-### Step 5: Execute Postflight
-
-**CRITICAL**: Commands must execute postflight AFTER agents return. The skill tool does NOT execute workflows.
-
-**Step 5a: Read metadata file**:
+**Create the task directory**:
 ```bash
-metadata_file="specs/OC_NNN_<project_name>/.return-meta.json"
-if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
-    status=$(jq -r '.status' "$metadata_file")
-    task_number=$(jq -r '.metadata.task_number // 0' "$metadata_file")
-    project_name=$(jq -r '.metadata.project_name // ""' "$metadata_file")
-fi
+mkdir -p "specs/OC_NNN_<project_name>/plans"
 ```
 
-**Step 5b: Determine final status**:
-- If `status` == "created": final_status="not_started"
-- If `status` == "partial": final_status="partial"
-- Otherwise: final_status="not_started" (default)
-
-**Step 5c: Update state.json**:
+**Update state.json** (increment next_project_number and add task to active_projects):
 ```bash
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "$final_status" \
-  '(.active_projects[] | select(.project_number == N)) |= . + {
-    status: $status,
-    last_updated: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+   --arg project_name "<project_slug>" \
+   --arg language "<inferred_language>" \
+   --argjson n N \
+   '{
+     version: .version,
+     next_project_number: (.next_project_number + 1),
+     active_projects: [
+       {
+         project_number: $n,
+         project_name: $project_name,
+         status: "not_started",
+         language: $language,
+         created: $ts,
+         last_updated: $ts,
+         artifacts: []
+       }
+     ] + .active_projects,
+     completed_projects: .completed_projects,
+     repository_health: .repository_health
+   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
-**Step 5d: Update TODO.md**:
+**Update TODO.md** (prepend new task to ## Tasks section):
 - Edit file: `specs/TODO.md`
-- Find line: `- **Status**: [CREATING]` for task OC_N
-- Change to: `- **Status**: [NOT STARTED]` (or [PARTIAL] if final_status is "partial")
+- Find line: `## Tasks`
+- Replace with:
+```markdown
+## Tasks
 
-**Step 5e: Verify task entry**:
-- Verify task entry exists in state.json
-- Verify task entry exists in TODO.md
-- Verify task directory was created
+### OC_N. <Task Title>
+- **Effort**: <estimated_effort>
+- **Status**: [NOT STARTED]
+- **Language**: <inferred_language>
 
-**Step 5f: Git commit**:
+**Description**: <task_description>
+
+---
+```
+
+**Git commit**:
 ```bash
 git add -A
 git commit -m "task N: create task entry
@@ -195,47 +162,10 @@ git commit -m "task N: create task entry
 Session: ${session_id}"
 ```
 
-**Step 5g: Cleanup**:
-```bash
-rm -f "specs/OC_NNN_<project_name>/.task-creating"
-rm -f "specs/OC_NNN_<project_name>/.return-meta.json"
-```
-
-**Step 5h: Report results**:
-- Show: Task number, status, directory path
-
----
-
-## CREATE Mode: Task Entry Details
-
-The task-creation-agent follows these steps to create the task entry:
-
-1. **Write state.json**: Increment `next_project_number`, append to `active_projects`:
-```json
-{
-  "project_number": N,
-  "project_name": "slug_here",
-  "status": "not_started",
-  "language": "general",
-  "created": "2026-01-01T00:00:00Z",
-  "last_updated": "2026-01-01T00:00:00Z",
-  "artifacts": []
-}
-```
-
-2. **Prepend to the `## Tasks` section of TODO.md** (before existing tasks):
-```markdown
-### OC_N. Title Here
-- **Effort**: X hours
-- **Status**: [NOT STARTED]
-- **Language**: general
-
-**Description**: Full description here.
-
----
-```
-
-3. **Report**: "Created task OC_N: Title"
+**Report results**:
+- Task number: OC_N
+- Status: [NOT STARTED]
+- Directory: specs/OC_NNN_<project_name>/
 
 ---
 

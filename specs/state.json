@@ -4,12 +4,13 @@
     {
       "project_number": 159,
       "project_name": "require_planner_agent_for_plan_command",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-06T03:50:00Z",
-      "last_updated": "2026-03-06T03:50:00Z",
+      "last_updated": "2026-03-06T03:50:14Z",
       "artifacts": [],
-      "description": "The /plan command currently uses the general agent instead of the planner agent, as seen when it shows General Task instead of delegating to the planner-agent. Need to fix the command routing to ensure /plan always calls the planner-agent, and similarly ensure other workflow commands (/research, /implement) call their respective specialized agents instead of falling back to the general agent."
+      "description": "The /plan command currently uses the general agent instead of the planner agent, as seen when it shows General Task instead of delegating to the planner-agent. Need to fix the command routing to ensure /plan always calls the planner-agent, and similarly ensure other workflow commands (/research, /implement) call their respective specialized agents instead of falling back to the general agent.",
+      "researching": "2026-03-06T03:50:14Z"
     },
     {
       "project_number": 153,

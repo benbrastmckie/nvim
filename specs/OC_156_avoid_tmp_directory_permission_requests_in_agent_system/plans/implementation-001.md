@@ -81,7 +81,7 @@ The `specs/tmp/` directory already exists and is user-owned, making it the ideal
 - All 4 files updated with `specs/tmp/state.json`
 - Grep returns zero results for `/tmp/state.json` in commands/ directory
 
-### Phase 2: Core Skills [NOT STARTED]
+### Phase 2: Core Skills [COMPLETED]
 
 **Goal**: Update 4 core skill files (12 occurrences total)
 

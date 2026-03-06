@@ -71,13 +71,13 @@ Reference (do not load eagerly):
 2. **Preflight**: Validate task and status using {return_metadata} and {postflight_control}.
     - **Update state.json to creating**:
       ```bash
-      jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-         --arg status "creating" \
-        '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-          status: $status,
-          last_updated: $ts,
-          creating: $ts
-        }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --arg status "creating" \
+         '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+           status: $status,
+           last_updated: $ts,
+           creating: $ts
+         }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
       ```
     
     - **Update TODO.md to [CREATING]**:
@@ -117,12 +117,12 @@ Reference (do not load eagerly):
    - Update state.json with timestamp:
      ```bash
      final_status="not_started"
-     jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        --arg status "$final_status" \
-       '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-         status: $status,
-         last_updated: $ts
-       }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+         --arg status "$final_status" \
+        '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+          status: $status,
+          last_updated: $ts
+        }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      ```
 
    **Stage 4c: Update TODO.md Status**:

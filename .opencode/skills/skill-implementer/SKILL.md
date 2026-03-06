@@ -72,13 +72,13 @@ Reference (do not load eagerly):
 2. **Preflight**: Validate task and status using {return_metadata} and {postflight_control}.
     - **Update state.json to implementing**:
       ```bash
-      jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-         --arg status "implementing" \
-        '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-          status: $status,
-          last_updated: $ts,
-          implementing: $ts
-        }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --arg status "implementing" \
+         '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+           status: $status,
+           last_updated: $ts,
+           implementing: $ts
+         }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
       ```
     
     - **Update TODO.md to [IMPLEMENTING]**:
@@ -147,13 +147,13 @@ newString: "### Phase {N}: {Name} [IN PROGRESS]"
    - Update state.json with timestamp:
      ```bash
      final_status="completed"  # or "partial" based on logic above
-     jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        --arg status "$final_status" \
-       '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-         status: $status,
-         last_updated: $ts,
-         ${final_status}: $ts
-       }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+         --arg status "$final_status" \
+        '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+          status: $status,
+          last_updated: $ts,
+          ${final_status}: $ts
+        }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      ```
 
    **Stage 6a: Update TODO.md Status**
@@ -168,16 +168,16 @@ newString: "### Phase {N}: {Name} [IN PROGRESS]"
    - Use two-step jq pattern to avoid Issue #1132:
      ```bash
      # Step 1: Filter out existing summary artifacts
-     jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-         [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
-       specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+          [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
+        specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      
      # Step 2: Add new summary artifact
-     jq --arg path "$artifact_path" \
-        --arg type "$artifact_type" \
-        --arg summary "$artifact_summary" \
-       '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-       specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg path "$artifact_path" \
+         --arg type "$artifact_type" \
+         --arg summary "$artifact_summary" \
+        '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+        specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      ```
 
    **Stage 7a: Update TODO.md Artifacts**

@@ -119,13 +119,13 @@ Thin wrapper that delegates research to `general-research-agent`.
    **Stage 6: Update Task Status in state.json**
    - Update status to "researched" with timestamp:
      ```bash
-     jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        --arg status "researched" \
-       '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-         status: $status,
-         last_updated: $ts,
-         researched: $ts
-       }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+         --arg status "researched" \
+        '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+          status: $status,
+          last_updated: $ts,
+          researched: $ts
+        }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      ```
 
    **Stage 6a: Update TODO.md Status**
@@ -140,16 +140,16 @@ Thin wrapper that delegates research to `general-research-agent`.
    - Use two-step jq pattern to avoid Issue #1132:
      ```bash
      # Step 1: Filter out existing research artifacts
-     jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-         [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)]' \
-       specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+          [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "research" | not)]' \
+        specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      
      # Step 2: Add new research artifact
-     jq --arg path "$artifact_path" \
-        --arg type "$artifact_type" \
-        --arg summary "$artifact_summary" \
-       '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-       specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+jq --arg path "$artifact_path" \
+         --arg type "$artifact_type" \
+         --arg summary "$artifact_summary" \
+        '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+        specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
      ```
 
    **Stage 7a: Update TODO.md Artifacts**

@@ -8,7 +8,7 @@ next_project_number: 159
 
 ### OC_159. Require planner agent for /plan command and similar workflow commands
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: None
 
