@@ -127,16 +127,16 @@ execute_command_research() {
   local timestamp_iso=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   local session_id="research_$(date +%s)_$(openssl rand -hex 2 2>/dev/null || echo "dead")"
   
-  jq --arg num "$task_number" \
+jq --arg num "$task_number" \
      --arg status "researching" \
      --arg ts "$timestamp_iso" \
      --arg session_id "$session_id" \
-     '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
-       status: $status,
-       last_updated: $ts,
-       researching: $ts,
-       session_id: $session_id
-     }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+      '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+        status: $status,
+        last_updated: $ts,
+        researching: $ts,
+        session_id: $session_id
+      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
   
   # TODO: Delegate to appropriate research agent based on language
   # For now, create a research report placeholder
@@ -183,18 +183,18 @@ EOF
   echo "TODO.md would be updated with research status"
   
   # Update task status to "researched"
-  jq --arg num "$task_number" \
+jq --arg num "$task_number" \
      --arg status "researched" \
      --arg summary "Research completed for task #$task_number" \
      --arg ts "$timestamp_iso" \
      --argjson artifacts "[{\"path\": \"$report_file\", \"type\": \"research\", \"summary\": \"Research report\"}]" \
-     '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
-       status: $status,
-       last_updated: $ts,
-       researched: $ts,
-       research_summary: $summary,
-       artifacts: .artifacts + $artifacts
-     }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+      '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+        status: $status,
+        last_updated: $ts,
+        researched: $ts,
+        research_summary: $summary,
+        artifacts: .artifacts + $artifacts
+      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
   
   echo "✓ Task #$task_number marked as [RESEARCHED]"
 }
@@ -326,16 +326,16 @@ EOF
   echo "Plan: $plan_file"
   
   # Update task status
-  jq --arg num "$task_number" \
+jq --arg num "$task_number" \
      --arg status "planned" \
      --arg ts "$timestamp_iso" \
      --argjson artifacts "[{\"path\": \"$plan_file\", \"type\": \"plan\", \"summary\": \"Implementation plan\"}]" \
-     '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
-       status: $status,
-       last_updated: $ts,
-       planned: $ts,
-       artifacts: .artifacts + $artifacts
-     }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+      '(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+        status: $status,
+        last_updated: $ts,
+        planned: $ts,
+        artifacts: .artifacts + $artifacts
+      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
   
   echo "✓ Task #$task_number marked as [PLANNED]"
 }

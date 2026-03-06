@@ -151,11 +151,11 @@ task_json=$(jq '.active_projects[] | select(.project_number == '$task_number')' 
 
 # Step 2: Add to archive
 jq --argjson task "$task_json" \
-  '.archived_projects += [$task]' specs/archive/state.json > /tmp/state.json && mv /tmp/state.json specs/archive/state.json
+  '.archived_projects += [$task]' specs/archive/state.json > specs/tmp/archive-state.json && mv specs/tmp/archive-state.json specs/archive/state.json
 
 # Step 3: Remove from active
 jq 'del(.active_projects[] | select(.project_number == '$task_number'))' \
-  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
 ## Testing Checklist
@@ -195,7 +195,7 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     status: $status,
     last_updated: $ts,
     researched: $ts
-  }' /tmp/test-specs/state.json > /tmp/test-out.json && mv /tmp/test-out.json /tmp/test-specs/state.json
+  }' /tmp/test-specs/state.json > /tmp/test-specs/state.json.tmp && mv /tmp/test-specs/state.json.tmp /tmp/test-specs/state.json
 
 # Step 2
 jq --arg path "$artifact_path" \

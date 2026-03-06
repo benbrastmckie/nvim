@@ -257,7 +257,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
           '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
             status: $status,
             last_updated: $ts
-          }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+          }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 
         # Add artifact to specs/state.json (if present)
         if [ -n "$artifact_path" ]; then
@@ -267,7 +267,7 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
               '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
                 ([(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] ] +
                  [{"path": $path, "type": $type, "summary": $summary}])' \
-              specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+              specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
         fi
 
         # Git commit
