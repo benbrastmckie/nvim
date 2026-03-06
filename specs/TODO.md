@@ -8,7 +8,7 @@ next_project_number: 155
 
 ### OC_154. Task command fails to create entries - not a specs/ directory issue
 - **Effort**: 2-4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Research Started**: 2026-03-06
 - **Research Completed**: 2026-03-06
 - **Language**: meta
@@ -70,8 +70,9 @@ next_project_number: 155
 
 ### OC_152. Fix git commit co-author attribution showing Claude Opus instead of actual model
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research**: [research-001.md](OC_152_fix_git_commit_co_author_attribution/reports/research-001.md) - Research report identifying 14 files with incorrect 'Claude Opus 4.5' co-author attribution that should be standardized to 'OpenCode'
+- **Plan**: [implementation-001.md](OC_152_fix_git_commit_co_author_attribution/plans/implementation-001.md) - 3-phase implementation plan for removing co-author attribution from 15 files
 - **Language**: meta
 - **Dependencies**: None
 
@@ -79,6 +80,7 @@ next_project_number: 155
 
 **Artifacts**:
 - [research-001.md](OC_152_fix_git_commit_co_author_attribution/reports/research-001.md) - Research report identifying 14 files with incorrect 'Claude Opus 4.5' co-author attribution
+- [implementation-001.md](OC_152_fix_git_commit_co_author_attribution/plans/implementation-001.md) - 3-phase implementation plan for removing co-author attribution from 15 files
 
 ---
 
