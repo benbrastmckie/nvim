@@ -6,9 +6,20 @@ next_project_number: 156
 
 ## Tasks
 
-### OC_155. Review .opencode/ agent system for <leader>ao picker improvements
+### OC_156. Avoid tmp directory permission requests in agent system
 - **Effort**: 2-3 hours
 - **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Avoid permission requests for /tmp directory in opencode agent system. When using jq to update state.json, the current implementation writes to /tmp/state.json and moves it back, causing permission prompts. Use specs/tmp/ exclusively throughout .opencode/ agent system or find an elegant way to avoid temporary files altogether.
+
+---
+
+### OC_155. Review .opencode/ agent system for <leader>ao picker improvements
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHING]
+- **Research Started**: 2026-03-06
 - **Language**: meta
 - **Dependencies**: None
 

@@ -1,5 +1,5 @@
 {
-  "next_project_number": 156,
+  "next_project_number": 157,
   "active_projects": [
     {
       "project_number": 153,
@@ -168,12 +168,24 @@
     {
       "project_number": 155,
       "project_name": "review_opencode_agent_system_leader_ao_picker",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-06T03:08:57Z",
-      "last_updated": "2026-03-06T03:11:27Z",
+      "last_updated": "2026-03-06T03:13:42Z",
       "creating": "2026-03-06T03:08:57Z",
       "description": "Review .opencode/ agent system to identify improvements for the <leader>ao picker for managing the agent system. Many changes have been made and need to verify everything is tracked correctly.",
+      "artifacts": [],
+      "researching": "2026-03-06T03:13:42Z"
+    },
+    {
+      "project_number": 156,
+      "project_name": "avoid_tmp_directory_permission_requests_in_agent_system",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-06T03:13:31Z",
+      "last_updated": "2026-03-06T03:14:39Z",
+      "creating": "2026-03-06T03:13:31Z",
+      "description": "Avoid permission requests for /tmp directory in opencode agent system. When using jq to update state.json, the current implementation writes to /tmp/state.json and moves it back, causing permission prompts. Use specs/tmp/ exclusively throughout .opencode/ agent system or find an elegant way to avoid temporary files altogether.",
       "artifacts": []
     }
   ],
