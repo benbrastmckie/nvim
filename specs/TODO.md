@@ -52,12 +52,16 @@ next_project_number: 153
 
 ### OC_151. Rename /remember command to /learn
 - **Effort**: 1-2 hours
-- **Status**: [PLANNING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_151_rename_remember_command_to_learn/reports/research-001.md) - Comprehensive research report identifying 47+ references to skill-remember and /remember across the OpenCode system. Categorized by priority and provided clean-break rename recommendations based on OC_142 precedent.
 
 **Description**: Rename the /remember command to /learn throughout the OpenCode system. This involves updating the skill definition (skill-remember → skill-learn), command registration, and all documentation references.
+
+**Artifacts**:
+- [research-001.md](OC_151_rename_remember_command_to_learn/reports/research-001.md) - Comprehensive research report identifying 47+ references to skill-remember and /remember across the OpenCode system
+- [implementation-001.md](OC_151_rename_remember_command_to_learn/plans/implementation-001.md) - 6-phase implementation plan for clean-break rename with no backward compatibility aliases
 
 ---
 ### 87. Investigate terminal directory change when opening neovim in wezterm

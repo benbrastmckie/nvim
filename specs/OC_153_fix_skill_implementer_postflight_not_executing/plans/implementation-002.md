@@ -121,7 +121,7 @@ This plan implements the findings from research-001.md and research-002.md, whic
 - [ ] research.md contains postflight with status="researched"
 - [ ] research.md links created research report to TODO.md
 
-### Phase 4: Skill Documentation Updates [IN PROGRESS]
+### Phase 4: Skill Documentation Updates [COMPLETED]
 
 **Goal**: Clarify skill files to indicate they are context definitions only
 
@@ -139,7 +139,7 @@ This plan implements the findings from research-001.md and research-002.md, whic
 - [ ] Each skill file has clear notice: "This file defines context injection patterns only"
 - [ ] Each skill file states: "Commands must execute status updates, not this skill"
 
-### Phase 5: OC_151 Status Remediation [NOT STARTED]
+### Phase 5: OC_151 Status Remediation [IN PROGRESS]
 
 **Goal**: Fix OC_151 which is stuck in "planning" status despite being completed
 
