@@ -81,7 +81,7 @@ This plan implements the findings from research-001.md and research-002.md, whic
 - [ ] implement.md updates status to "completed" after successful implementation
 - [ ] implement.md links artifacts to state.json and TODO.md
 
-### Phase 2: plan.md Command Update [IN PROGRESS]
+### Phase 2: plan.md Command Update [COMPLETED]
 
 **Goal**: Apply same preflight/postflight pattern to plan.md
 
@@ -101,7 +101,7 @@ This plan implements the findings from research-001.md and research-002.md, whic
 - [ ] plan.md contains postflight with status="planned"
 - [ ] plan.md links created plan file to TODO.md
 
-### Phase 3: research.md Command Update [NOT STARTED]
+### Phase 3: research.md Command Update [IN PROGRESS]
 
 **Goal**: Apply same preflight/postflight pattern to research.md
 

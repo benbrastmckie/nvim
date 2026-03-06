@@ -53,11 +53,38 @@ The skill displays a visual header during its Preflight stage to show the active
 
 This header appears at the start of the research command (after validation, before delegation) to clearly indicate which task is being worked on. The header is displayed by the skill-researcher before invoking the general-research-agent subagent.
 
-### 4. Update status to RESEARCHING
+### 4. Execute Preflight
 
-Edit `specs/state.json`: set `status` to `"researching"` and update `last_updated` for this task.
+**CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
 
-Edit `specs/TODO.md`: change `[NOT STARTED]` (or current status marker) to `[RESEARCHING]` on the `### OC_N.` entry.
+**Display task header**:
+```
+╔══════════════════════════════════════════════════════════╗
+║  Task OC_N: <project_name>                               ║
+║  Action: RESEARCHING                                     ║
+╚══════════════════════════════════════════════════════════╝
+```
+
+**Update state.json to researching**:
+```bash
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg status "researching" \
+  '(.active_projects[] | select(.project_number == N)) |= . + {
+    status: $status,
+    last_updated: $ts,
+    researching: $ts
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Update TODO.md to [RESEARCHING]**:
+- Edit file: `specs/TODO.md`
+- Find line: `- **Status**: [NOT STARTED]` (or current status) for task OC_N
+- Change to: `- **Status**: [RESEARCHING]`
+
+**Create postflight marker file**:
+```bash
+touch "specs/OC_NNN_<project_name>/.postflight-pending"
+```
 
 ### 5. Memory Search (if --remember flag present)
 
@@ -87,9 +114,9 @@ If `--remember` was passed in arguments:
 - If MCP unavailable: Skip memory search, continue with standard research
 - If no memories found: Note in report, continue
 
-### 6. Invoke skill-researcher
+### 6. Delegate to Research Agent
 
-**Call skill tool** to execute the research workflow:
+**Call skill tool** to load skill context and delegate to research agent:
 
 ```
 → Tool: skill
@@ -98,21 +125,87 @@ If `--remember` was passed in arguments:
 ```
 
 The skill-researcher will:
-1. Load context files
-2. Execute preflight (validate, display header, update status to RESEARCHING)
-3. **Call Task tool with `subagent_type="general-research-agent"`** (or specialized agent based on language)
-4. Execute postflight (update state.json to RESEARCHED, update TODO.md, commit changes)
-5. Return results
+1. Load context files (report-format.md, status-markers.md)
+2. **Call Task tool with `subagent_type="general-research-agent"`** (or specialized agent based on language)
+3. Return results (subagent writes .return-meta.json)
 
-**CRITICAL**: Do NOT implement research logic in this command. All research logic belongs in skill-researcher and general-research-agent.
+**CRITICAL**: The skill tool ONLY loads skill definitions. It does NOT execute preflight/postflight workflows. This command MUST execute status updates before and after delegation.
 
-**Research strategy** (handled by skill/agent based on language):
+**Research strategy** (handled by agent based on language):
 - **meta**: Focus on existing `.opencode/` files, conventions, patterns
 - **lean**: Search codebase for existing proofs, check Lean/Mathlib patterns
 - **typst/latex**: Read existing documents, check style and structure
 - **general**: Web search + codebase exploration
 
-### 7. Report results
+### 7. Execute Postflight
+
+**CRITICAL**: Commands must execute postflight AFTER agents return. The skill tool does NOT execute workflows.
+
+**Step 7a: Read metadata file**:
+```bash
+metadata_file="specs/OC_NNN_<project_name>/.return-meta.json"
+if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
+    status=$(jq -r '.status' "$metadata_file")
+    artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
+    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+    artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+fi
+```
+
+**Step 7b: Update state.json to researched**:
+```bash
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg status "researched" \
+  '(.active_projects[] | select(.project_number == N)) |= . + {
+    status: $status,
+    last_updated: $ts,
+    researched: $ts
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Step 7c: Update TODO.md**:
+- Edit file: `specs/TODO.md`
+- Find line: `- **Status**: [RESEARCHING]` for task OC_N
+- Change to: `- **Status**: [RESEARCHED]`
+
+**Step 7d: Link artifacts in state.json**:
+```bash
+# Step 1: Filter out existing research artifacts
+jq '(.active_projects[] | select(.project_number == N)).artifacts =
+    [(.active_projects[] | select(.project_number == N)).artifacts // [] | .[] | select(.type == "research" | not)]' \
+  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+
+# Step 2: Add new research artifact
+jq --arg path "$artifact_path" \
+   --arg type "$artifact_type" \
+   --arg summary "$artifact_summary" \
+  '(.active_projects[] | select(.project_number == N)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Step 7e: Add artifact to TODO.md**:
+- Edit file: `specs/TODO.md`
+- Find "Artifacts" section for task OC_N
+- Add line: `- [$artifact_path]($artifact_path) - $artifact_summary`
+
+**Step 7f: Git commit**:
+```bash
+git add -A
+git commit -m "task N: complete research
+
+Session: ${session_id}
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
+
+**Step 7g: Cleanup**:
+```bash
+rm -f "specs/OC_NNN_<project_name>/.postflight-pending"
+rm -f "specs/OC_NNN_<project_name>/.postflight-loop-guard"
+rm -f "specs/OC_NNN_<project_name>/.return-meta.json"
+```
+
+### 8. Report results
 
 Show a brief summary:
 - Task researched
@@ -124,9 +217,23 @@ Show a brief summary:
 
 ## Rules
 
-- The skill-researcher handles ALL research logic - do not implement in command
+- This command executes preflight (status → researching) BEFORE delegating to skill-researcher
+- This command executes postflight (status → researched, link artifacts) AFTER skill-researcher returns
+- The skill-researcher only loads context and delegates to general-research-agent — it does NOT execute workflows
 - Write the report BEFORE updating status to RESEARCHED
 - Never fabricate findings — only report what you actually discovered
 - Keep the report focused and actionable
 - Directories use 3-digit padded number: `OC_174_slug` not `OC_17_slug`
 - Commit changes after completing research (non-blocking — log warning if commit fails)
+
+## Critical Notes
+
+**The skill tool only loads SKILL.md content — it does NOT execute preflight/postflight workflows.**
+
+Commands must execute these workflows themselves:
+1. **Preflight** (Step 4): Display header, update state.json to "researching", TODO.md to [RESEARCHING], create marker file
+2. **Memory Search** (Step 5): Search memory vault if --remember flag present
+3. **Delegation** (Step 6): Call skill-researcher to load context and invoke general-research-agent
+4. **Postflight** (Step 7): Read .return-meta.json, update state.json to "researched", update TODO.md to [RESEARCHED], link artifacts, commit, cleanup
+
+This pattern ensures status updates happen automatically without orchestrator intervention.
