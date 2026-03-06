@@ -21,11 +21,18 @@
     {
       "project_number": 149,
       "project_name": "review_update_opencode_documentation_readme_files",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-05T00:00:00Z",
       "last_updated": "2026-03-06T00:00:00Z",
-      "artifacts": []
+      "researched": "2026-03-06T00:00:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/OC_149_review_update_opencode_documentation_readme_files/reports/research-001.md",
+          "summary": "Comprehensive audit of .opencode/ directory: 177 directories, only 20 have README.md (11.3%), 157 need creation. Critical gaps in core system directories and extensions. Docs directory needs organization (4 loose files). Navigation patterns inconsistent."
+        }
+      ]
     },
     {
       "project_number": 140,

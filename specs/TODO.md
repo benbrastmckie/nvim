@@ -40,9 +40,10 @@ The /todo command's Stage 3 (ScanTasks) only looks for tasks with status "comple
 
 ### OC_149. Review and update .opencode/ documentation with comprehensive README files
 - **Effort**: 3-4 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [research-001.md](OC_149_review_update_opencode_documentation_readme_files/reports/research-001.md) - Comprehensive audit of .opencode/ directory: 177 directories, only 20 have README.md (11.3%), 157 need creation
 
 **Description**: Review and systematically update the documentation in .opencode/ so that every subdirectory has a README.md that fully reports the contents of that directory and links to the README.md files in any further subdirectories that it contains as well as backlinking. Also, organize the markdown files in /home/benjamin/.config/nvim/.opencode/docs/ into appropriate subdirectories (aside from README.md which should live in that docs/ directory to report on the subdirectories it contains).
 
