@@ -1,6 +1,32 @@
 {
   "completed_projects": [
     {
+      "project_number": 158,
+      "project_name": "ensure_workflow_command_uniformity_prevent_research_failure",
+      "status": "abandoned",
+      "language": "meta",
+      "created": "2026-03-06T03:24:12Z",
+      "last_updated": "2026-03-06T18:25:27Z",
+      "creating": "2026-03-06T03:24:12Z",
+      "description": "Prevent /research command from failing to call the research agent, making task workflow commands /research, /plan, /revise, and /implement uniform. Sometimes /research fails to call the research agent, conducting the research by the primary agent instead.",
+      "researching": "2026-03-06T03:26:15Z",
+      "researched": "2026-03-06T18:25:27Z",
+      "artifacts": [
+        {
+          "path": "specs/OC_158_ensure_workflow_command_uniformity_prevent_research_failure/reports/research-001.md",
+          "type": "research",
+          "summary": "Comprehensive analysis of workflow command delegation patterns. Identified root cause: /research has extra MCP tool dependency (search_notes) and broken step numbering that can prevent proper delegation to research agent. Recommended standardizing all commands to have identical pre-delegation structure and moving MCP calls to research agent instead of command."
+        },
+        {
+          "path": "specs/OC_158_ensure_workflow_command_uniformity_prevent_research_failure/reports/research-002.md",
+          "type": "research",
+          "summary": "Follow-up research comparing task 158 findings against task 159 implementation, concluding task 158 is superseded"
+        }
+      ],
+      "session_id": "sess_1772821351_c6ff73",
+      "abandoned": "2026-03-06T18:29:03Z"
+    },
+    {
       "project_number": 150,
       "project_name": "fix_todo_orphan_detection_completed_tasks",
       "status": "completed",

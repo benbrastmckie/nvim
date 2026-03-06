@@ -23,20 +23,6 @@ next_project_number: 159
 
 ---
 
-### OC_158. Ensure workflow command uniformity - prevent /research from failing to call research agent
-- **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
-- **Language**: meta
-- **Dependencies**: None
-
-**Description**: Prevent /research command from failing to call the research agent, making task workflow commands /research, /plan, /revise, and /implement uniform. Sometimes /research fails to call the research agent, conducting the research by the primary agent instead.
-
-**Artifacts**:
-- [research-001.md](OC_158_ensure_workflow_command_uniformity_prevent_research_failure/reports/research-001.md) - Comprehensive analysis of workflow command delegation patterns. Identified root cause: /research has extra MCP tool dependency (search_notes) and broken step numbering that can prevent proper delegation to research agent. Recommended standardizing all commands to have identical pre-delegation structure and moving MCP calls to research agent instead of command.
-- [research-002.md](OC_158_ensure_workflow_command_uniformity_prevent_research_failure/reports/research-002.md) - Follow-up research comparing task 158 findings against task 159 implementation, concluding task 158 is superseded by task 159's delegation enforcement.
-
----
-
 ### OC_157. Fix task-creation-agent not found error
 - **Effort**: 1-2 hours
 - **Status**: [COMPLETED]
