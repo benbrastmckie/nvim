@@ -28,12 +28,25 @@ next_project_number: 157
 
 ### OC_155. Review .opencode/ agent system for <leader>ao picker improvements
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-06
+- **Research Completed**: 2026-03-06
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [research-001.md](OC_155_review_opencode_agent_system_leader_ao_picker/reports/research-001.md) - Comprehensive analysis of .opencode/ agent system and <leader>ao picker identifying 6 major gaps: context files (90+ not surfaced), memory system not integrated, rules directory not exposed, no task status visibility, architectural coupling risks, and incomplete docs coverage.
 
 **Description**: Review my .opencode/ agent system to see what improvements could be made to the <leader>ao picker for managing my agent system since I have made many changes and worry not everything is tracked as it should be.
+
+**Key Findings**:
+1. **Context files** (90+ files) - NOT surfaced in picker
+2. **Memory system** (.opencode/memory/) - no picker integration  
+3. **Rules directory** (6 files) - not accessible via picker
+4. **Task status** - no visibility into specs/state.json
+5. **Architectural risk** - picker uses shared Claude implementation
+6. **Docs coverage** - only shows README.md, missing guides/architecture
+
+**Artifacts**:
+- [research-001.md](OC_155_review_opencode_agent_system_leader_ao_picker/reports/research-001.md) - Comprehensive analysis identifying 6 major gaps and 6 prioritized recommendations
 
 ---
 

@@ -168,14 +168,21 @@
     {
       "project_number": 155,
       "project_name": "review_opencode_agent_system_leader_ao_picker",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-06T03:08:57Z",
-      "last_updated": "2026-03-06T03:13:42Z",
+      "last_updated": "2026-03-06T03:18:34Z",
       "creating": "2026-03-06T03:08:57Z",
       "description": "Review .opencode/ agent system to identify improvements for the <leader>ao picker for managing the agent system. Many changes have been made and need to verify everything is tracked correctly.",
-      "artifacts": [],
-      "researching": "2026-03-06T03:13:42Z"
+      "artifacts": [
+        {
+          "path": "specs/OC_155_review_opencode_agent_system_leader_ao_picker/reports/research-001.md",
+          "type": "research",
+          "summary": "Comprehensive analysis of .opencode/ agent system and <leader>ao picker identifying 6 major gaps: context files (90+ not surfaced), memory system not integrated, rules directory not exposed, no task status visibility, architectural coupling risks, and incomplete docs coverage. Includes 6 prioritized recommendations for picker enhancements."
+        }
+      ],
+      "researching": "2026-03-06T03:13:42Z",
+      "researched": "2026-03-06T03:18:34Z"
     },
     {
       "project_number": 156,
