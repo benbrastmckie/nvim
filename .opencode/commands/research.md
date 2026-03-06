@@ -40,30 +40,9 @@ Directory: `specs/OC_NNN_<project_name>/`
 - `abandoned`: error "task is abandoned, use /task --recover first"
 - `completed`: warn "already completed, re-researching"
 
-### 3. Display task header
-
-The skill displays a visual header during its Preflight stage to show the active task:
-
-```
-╔══════════════════════════════════════════════════════════╗
-║  Task OC_N: <project_name>                               ║
-║  Action: RESEARCHING                                     ║
-╚══════════════════════════════════════════════════════════╝
-```
-
-This header appears at the start of the research command (after validation, before delegation) to clearly indicate which task is being worked on. The header is displayed by the skill-researcher before invoking the general-research-agent subagent.
-
-### 4. Execute Preflight
+### 3. Execute Preflight
 
 **CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
-
-**Display task header**:
-```
-╔══════════════════════════════════════════════════════════╗
-║  Task OC_N: <project_name>                               ║
-║  Action: RESEARCHING                                     ║
-╚══════════════════════════════════════════════════════════╝
-```
 
 **Update state.json to researching**:
 ```bash

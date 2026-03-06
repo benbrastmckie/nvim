@@ -34,10 +34,10 @@
     {
       "project_number": 152,
       "project_name": "fix_git_commit_co_author_attribution",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-05T00:00:00Z",
-      "last_updated": "2026-03-06T02:40:47Z",
+      "last_updated": "2026-03-06T02:41:56Z",
       "artifacts": [
         {
           "path": "specs/OC_152_fix_git_commit_co_author_attribution/reports/research-001.md",
@@ -54,7 +54,8 @@
       "researching": "2026-03-06T02:32:47Z",
       "researched": "2026-03-06T02:36:13Z",
       "planning": "2026-03-06T02:38:57Z",
-      "planned": "2026-03-06T02:40:47Z"
+      "planned": "2026-03-06T02:40:47Z",
+      "implementing": "2026-03-06T02:41:56Z"
     },
     {
       "project_number": 151,
@@ -134,10 +135,10 @@
     {
       "project_number": 154,
       "project_name": "task_command_fails_to_create_entries_not_specs_directory_issue",
-      "status": "planning",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-06T02:30:00Z",
-      "last_updated": "2026-03-06T02:39:31Z",
+      "last_updated": "2026-03-06T02:41:35Z",
       "researching": "2026-03-06T02:38:00Z",
       "researched": "2026-03-06T02:45:00Z",
       "artifacts": [
@@ -145,10 +146,16 @@
           "type": "research",
           "path": "specs/OC_154_task_command_fails_to_create_entries_not_specs_directory_issue/reports/research-001.md",
           "summary": "Comprehensive analysis identifying root cause: /task is a direct execution command (no skill delegation) while other commands delegate to skills. Agents interpret problem descriptions as requests to solve rather than following task.md CREATE mode steps. Task 151 success proves system works when agents follow instructions."
+        },
+        {
+          "path": "specs/OC_154_task_command_fails_to_create_entries_not_specs_directory_issue/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for fixing /task command behavioral issues"
         }
       ],
       "description": "The /task command fails to create task entries even when specs/ directory exists with TODO.md and state.json. Initial diagnosis assumed the issue was missing specs/ directory when copying .opencode/ to other directories, but the command also fails in the current directory where specs/ is present. This indicates a deeper issue with the task command implementation or the agent's interpretation of the command rules.",
-      "planning": "2026-03-06T02:39:31Z"
+      "planning": "2026-03-06T02:39:31Z",
+      "planned": "2026-03-06T02:41:35Z"
     }
   ],
   "repository_health": {
