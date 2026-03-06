@@ -62,12 +62,13 @@ next_project_number: 158
 
 ### OC_155. Review .opencode/ agent system for <leader>ao picker improvements
 - **Effort**: 2-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-03-06
 - **Research Completed**: 2026-03-06
 - **Planning Started**: 2026-03-06
 - **Planning Completed**: 2026-03-06
 - **Implementation Started**: 2026-03-06
+- **Implementation Completed**: 2026-03-06
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_155_review_opencode_agent_system_leader_ao_picker/reports/research-001.md) - Comprehensive analysis of .opencode/ agent system and <leader>ao picker identifying 6 major gaps: context files (90+ not surfaced), memory system not integrated, rules directory not exposed, no task status visibility, architectural coupling risks, and incomplete docs coverage.
@@ -83,8 +84,17 @@ next_project_number: 158
 5. **Architectural risk** - picker uses shared Claude implementation
 6. **Docs coverage** - only shows README.md, missing guides/architecture
 
+**Implementation Summary**:
+- Added context/, memory/, and rules/ integration to the <leader>ao picker
+- Created scan_context_directory() for recursive context file scanning
+- Added create_context_entries() with hierarchical category grouping
+- Implemented create_memory_entries() for reverse-chronological memory display
+- Added create_rules_entries() for rules directory access
+- Integrated metadata parsers for all new entry types
+
 **Artifacts**:
 - [research-001.md](OC_155_review_opencode_agent_system_leader_ao_picker/reports/research-001.md) - Comprehensive analysis identifying 6 major gaps and 6 prioritized recommendations
+- [implementation-001.md](OC_155_review_opencode_agent_system_leader_ao_picker/plans/implementation-001.md) - 6-phase implementation plan
 
 ---
 
