@@ -17,9 +17,14 @@ This directory contains the documentation for the `.opencode/` agent system. The
 │   ├── component-selection.md  # When to create command vs skill vs agent
 │   ├── creating-commands.md    # How to create commands
 │   ├── creating-skills.md      # How to create skills
-│   └── creating-agents.md      # How to create agents
-└── architecture/               # Architecture documentation
-    └── system-overview.md      # Three-layer architecture overview
+│   ├── creating-agents.md      # How to create agents
+│   ├── memory-setup.md         # Memory system setup
+│   ├── memory-troubleshooting.md # Memory troubleshooting
+│   └── remember-usage.md       # Memory usage guide
+├── architecture/               # Architecture documentation
+│   └── system-overview.md      # Three-layer architecture overview
+└── examples/                   # Example files
+    └── README.md               # Examples overview
 ```
 
 ---

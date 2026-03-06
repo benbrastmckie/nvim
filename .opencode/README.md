@@ -98,9 +98,9 @@ The memory system provides:
 - **Markdown Format**: Plain text with YAML frontmatter
 
 **Quick Links**:
-- [Memory Vault](../memory/README.md) - Organization and usage
-- [Usage Guide](docs/remember-usage.md) - Detailed examples
-- [MCP Setup](docs/memory-setup.md) - Server configuration
+- [Memory Vault](memory/README.md) - Organization and usage
+- [Usage Guide](docs/guides/remember-usage.md) - Detailed examples
+- [MCP Setup](docs/guides/memory-setup.md) - Server configuration
 
 For detailed command documentation, see [commands/README.md](commands/README.md).
 

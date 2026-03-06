@@ -22,9 +22,9 @@
           "summary": "Comparative analysis of .claude/ and .opencode/ /todo implementations, identifying filesystem-first orphan detection pattern and TODO.md cross-referencing strategy"
         },
         {
-          "path": "OC_150_fix_todo_orphan_detection/plans/implementation-001.md",
+          "path": "specs/OC_150_fix_todo_orphan_detection/plans/implementation-002.md",
           "type": "plan",
-          "summary": "7-phase implementation plan for TODO.md orphan detection in /todo command"
+          "summary": "5-phase implementation plan for fixing /todo orphan detection"
         }
       ],
       "description": "Fix /todo command's orphan detection to properly handle completed tasks that appear in TODO.md but have been manually removed from state.json. Currently, tasks like OC_138, OC_139, OC_140 are marked [COMPLETED] in TODO.md and have directories in specs/, but are not being archived because they're not in state.json's active_projects array. The fix should scan TODO.md for completed/abandoned entries and cross-reference with both state.json and filesystem to identify orphans.",
