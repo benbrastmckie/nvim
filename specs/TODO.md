@@ -74,7 +74,7 @@ next_project_number: 155
 
 ### OC_152. Fix git commit co-author attribution showing Claude Opus instead of actual model
 - **Effort**: 1-2 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Research**: [research-001.md](OC_152_fix_git_commit_co_author_attribution/reports/research-001.md) - Research report identifying 14 files with incorrect 'Claude Opus 4.5' co-author attribution that should be standardized to 'OpenCode'
 - **Plan**: [implementation-001.md](OC_152_fix_git_commit_co_author_attribution/plans/implementation-001.md) - 3-phase implementation plan for removing co-author attribution from 15 files
 - **Language**: meta
@@ -85,6 +85,7 @@ next_project_number: 155
 **Artifacts**:
 - [research-001.md](OC_152_fix_git_commit_co_author_attribution/reports/research-001.md) - Research report identifying 14 files with incorrect 'Claude Opus 4.5' co-author attribution
 - [implementation-001.md](OC_152_fix_git_commit_co_author_attribution/plans/implementation-001.md) - 3-phase implementation plan for removing co-author attribution from 15 files
+- [implementation-summary-001.md](OC_152_fix_git_commit_co_author_attribution/summaries/implementation-summary-001.md) - Implementation summary with file list and verification results
 
 ---
 

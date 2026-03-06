@@ -34,10 +34,10 @@
     {
       "project_number": 152,
       "project_name": "fix_git_commit_co_author_attribution",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-05T00:00:00Z",
-      "last_updated": "2026-03-06T02:41:56Z",
+      "last_updated": "2026-03-06T02:46:34Z",
       "artifacts": [
         {
           "path": "specs/OC_152_fix_git_commit_co_author_attribution/reports/research-001.md",
@@ -48,6 +48,11 @@
           "path": "specs/OC_152_fix_git_commit_co_author_attribution/plans/implementation-001.md",
           "type": "plan",
           "summary": "3-phase implementation plan for removing co-author attribution from 15 files"
+        },
+        {
+          "path": "specs/OC_152_fix_git_commit_co_author_attribution/summaries/implementation-summary-001.md",
+          "type": "summary",
+          "summary": "Implementation summary with file list and verification results"
         }
       ],
       "description": "Fix git commit co-author attribution showing 'Co-Authored-By: Claude Opus 4.5' when using Kimi K2.5 in OpenCode. The commit messages incorrectly attribute co-authorship to Claude Opus when the actual model being used is Kimi K2.5. Need to investigate where this attribution is coming from and either correct it to reflect the actual model or remove it entirely.",
@@ -55,7 +60,8 @@
       "researched": "2026-03-06T02:36:13Z",
       "planning": "2026-03-06T02:38:57Z",
       "planned": "2026-03-06T02:40:47Z",
-      "implementing": "2026-03-06T02:41:56Z"
+      "implementing": "2026-03-06T02:41:56Z",
+      "completed": "2026-03-06T02:46:34Z"
     },
     {
       "project_number": 151,
