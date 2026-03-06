@@ -1,5 +1,5 @@
 {
-  "next_project_number": 155,
+  "next_project_number": 156,
   "active_projects": [
     {
       "project_number": 153,
@@ -164,6 +164,17 @@
       "planned": "2026-03-06T02:52:41Z",
       "implementing": "2026-03-06T02:56:27Z",
       "completed": "2026-03-06T03:04:25Z"
+    },
+    {
+      "project_number": 155,
+      "project_name": "review_opencode_agent_system_leader_ao_picker",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-06T03:08:57Z",
+      "last_updated": "2026-03-06T03:11:27Z",
+      "creating": "2026-03-06T03:08:57Z",
+      "description": "Review .opencode/ agent system to identify improvements for the <leader>ao picker for managing the agent system. Many changes have been made and need to verify everything is tracked correctly.",
+      "artifacts": []
     }
   ],
   "repository_health": {

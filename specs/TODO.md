@@ -1,10 +1,20 @@
 ---
-next_project_number: 155
+next_project_number: 156
 ---
 
 # TODO
 
 ## Tasks
+
+### OC_155. Review .opencode/ agent system for <leader>ao picker improvements
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Review my .opencode/ agent system to see what improvements could be made to the <leader>ao picker for managing my agent system since I have made many changes and worry not everything is tracked as it should be.
+
+---
 
 ### OC_154. Task command fails to create entries - not a specs/ directory issue
 - **Effort**: 2-4 hours
