@@ -8,7 +8,7 @@ next_project_number: 158
 
 ### OC_158. Ensure workflow command uniformity - prevent /research from failing to call research agent
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: None
 
@@ -18,7 +18,7 @@ next_project_number: 158
 
 ### OC_157. Fix task-creation-agent not found error
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 
@@ -31,12 +31,15 @@ next_project_number: 158
 
 ### OC_156. Avoid tmp directory permission requests in agent system
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-06
 - **Research Completed**: 2026-03-06
+- **Planning Started**: 2026-03-06
+- **Planning Completed**: 2026-03-06
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_156_avoid_tmp_directory_permission_requests_in_agent_system/reports/research-001.md) - Comprehensive analysis identifying 85+ occurrences of /tmp/state.json pattern across .opencode/ system. Recommended solution: replace with specs/tmp/state.json using existing project-local tmp directory.
+- **Plan**: [implementation-001.md](OC_156_avoid_tmp_directory_permission_requests_in_agent_system/plans/implementation-001.md) - 8-phase implementation plan for migrating /tmp/state.json to specs/tmp/state.json across 85+ occurrences in 21 files
 
 **Description**: Avoid permission requests for /tmp directory in opencode agent system. When using jq to update state.json, the current implementation writes to /tmp/state.json and moves it back, causing permission prompts. Use specs/tmp/ exclusively throughout .opencode/ agent system or find an elegant way to avoid temporary files altogether.
 
@@ -49,16 +52,18 @@ next_project_number: 158
 
 **Artifacts**:
 - [research-001.md](OC_156_avoid_tmp_directory_permission_requests_in_agent_system/reports/research-001.md) - Comprehensive analysis and implementation plan
+- [implementation-001.md](OC_156_avoid_tmp_directory_permission_requests_in_agent_system/plans/implementation-001.md) - 8-phase implementation plan for migrating /tmp/state.json to specs/tmp/state.json across 85+ occurrences in 21 files
 
 ---
 
 ### OC_155. Review .opencode/ agent system for <leader>ao picker improvements
 - **Effort**: 2-3 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Research Started**: 2026-03-06
 - **Research Completed**: 2026-03-06
 - **Planning Started**: 2026-03-06
 - **Planning Completed**: 2026-03-06
+- **Implementation Started**: 2026-03-06
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_155_review_opencode_agent_system_leader_ao_picker/reports/research-001.md) - Comprehensive analysis of .opencode/ agent system and <leader>ao picker identifying 6 major gaps: context files (90+ not surfaced), memory system not integrated, rules directory not exposed, no task status visibility, architectural coupling risks, and incomplete docs coverage.

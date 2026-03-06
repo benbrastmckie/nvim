@@ -168,10 +168,10 @@
     {
       "project_number": 155,
       "project_name": "review_opencode_agent_system_leader_ao_picker",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-06T03:08:57Z",
-      "last_updated": "2026-03-06T03:23:34Z",
+      "last_updated": "2026-03-06T03:25:32Z",
       "creating": "2026-03-06T03:08:57Z",
       "description": "Review .opencode/ agent system to identify improvements for the <leader>ao picker for managing the agent system. Many changes have been made and need to verify everything is tracked correctly.",
       "artifacts": [
@@ -189,15 +189,16 @@
       "researching": "2026-03-06T03:13:42Z",
       "researched": "2026-03-06T03:18:34Z",
       "planning": "2026-03-06T03:21:20Z",
-      "planned": "2026-03-06T03:23:34Z"
+      "planned": "2026-03-06T03:23:34Z",
+      "implementing": "2026-03-06T03:25:32Z"
     },
     {
       "project_number": 156,
       "project_name": "avoid_tmp_directory_permission_requests_in_agent_system",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-06T03:13:31Z",
-      "last_updated": "2026-03-06T03:23:54Z",
+      "last_updated": "2026-03-06T03:28:54Z",
       "creating": "2026-03-06T03:13:31Z",
       "description": "Avoid permission requests for /tmp directory in opencode agent system. When using jq to update state.json, the current implementation writes to /tmp/state.json and moves it back, causing permission prompts. Use specs/tmp/ exclusively throughout .opencode/ agent system or find an elegant way to avoid temporary files altogether.",
       "artifacts": [
@@ -205,18 +206,25 @@
           "path": "specs/OC_156_avoid_tmp_directory_permission_requests_in_agent_system/reports/research-001.md",
           "type": "research",
           "summary": "Comprehensive analysis identifying 85+ occurrences of /tmp/state.json pattern across .opencode/ system. Recommended solution: replace with specs/tmp/state.json using existing project-local tmp directory."
+        },
+        {
+          "path": "specs/OC_156_avoid_tmp_directory_permission_requests_in_agent_system/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "8-phase implementation plan for migrating /tmp/state.json to specs/tmp/state.json across 85+ occurrences in 21 files"
         }
       ],
       "researching": "2026-03-06T03:22:08Z",
-      "researched": "2026-03-06T03:23:54Z"
+      "researched": "2026-03-06T03:23:54Z",
+      "planning": "2026-03-06T03:25:59Z",
+      "planned": "2026-03-06T03:28:54Z"
     },
     {
       "project_number": 157,
       "project_name": "fix_task_creation_agent_not_found_error",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-06T03:16:07Z",
-      "last_updated": "2026-03-06T03:22:31Z",
+      "last_updated": "2026-03-06T03:29:30Z",
       "creating": "2026-03-06T03:16:07Z",
       "description": "Fix task-creation-agent not found error. The skill-task.md references an agent type task-creation-agent that does not exist, causing Error: Unknown agent type: task-creation-agent is not a valid agent type. Need to either create the agent, update the skill to use general agent, or fix the reference.",
       "artifacts": [
@@ -227,17 +235,20 @@
         }
       ],
       "researching": "2026-03-06T03:19:30Z",
-      "researched": "2026-03-06T03:22:31Z"
+      "researched": "2026-03-06T03:22:31Z",
+      "planning": "2026-03-06T03:27:06Z",
+      "planned": "2026-03-06T03:29:30Z"
     },
     {
       "project_number": 158,
       "project_name": "ensure_workflow_command_uniformity_prevent_research_failure",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-06T03:24:12Z",
-      "last_updated": "2026-03-06T03:24:42Z",
+      "last_updated": "2026-03-06T03:26:15Z",
       "creating": "2026-03-06T03:24:12Z",
-      "description": "Prevent /research command from failing to call the research agent, making task workflow commands /research, /plan, /revise, and /implement uniform. Sometimes /research fails to call the research agent, conducting the research by the primary agent instead."
+      "description": "Prevent /research command from failing to call the research agent, making task workflow commands /research, /plan, /revise, and /implement uniform. Sometimes /research fails to call the research agent, conducting the research by the primary agent instead.",
+      "researching": "2026-03-06T03:26:15Z"
     }
   ],
   "repository_health": {

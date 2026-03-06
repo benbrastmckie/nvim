@@ -77,6 +77,291 @@ local function format_command(command, indent_char, is_dependent)
   end
 end
 
+--- Create entries for context section
+--- Scans .opencode/context/ for all markdown files
+--- @param config table|nil Picker configuration for config-aware path construction
+--- @return table Array of entries
+function M.create_context_entries(config)
+  local entries = {}
+  local project_dir = vim.fn.getcwd()
+  local global_dir = config and config.global_source_dir or scan.get_global_dir()
+  local base_dir = config and config.base_dir or ".claude"
+
+  local context_files = scan.scan_context_directory(base_dir, project_dir, global_dir)
+
+  if #context_files > 0 then
+    -- Group files by category
+    local by_category = {}
+    for _, file in ipairs(context_files) do
+      if not by_category[file.category] then
+        by_category[file.category] = {}
+      end
+      table.insert(by_category[file.category], file)
+    end
+
+    -- Process categories in order
+    local categories = { "core", "project" }
+    local all_entries_added = {}
+
+    for _, category in ipairs(categories) do
+      local files = by_category[category]
+      if files and #files > 0 then
+        -- Add subheading for this category
+        local category_display = category:sub(1, 1):upper() .. category:sub(2)
+
+        -- Add entries for this category
+        for i, file in ipairs(files) do
+          local is_last = (i == #files)
+          local indent_char = helpers.get_tree_char(is_last)
+          local display_name = file.subpath:gsub("/", " > ")
+          local description = metadata.parse_context_description(file.filepath)
+
+          table.insert(all_entries_added, {
+            display = helpers.format_display(
+              file.is_local and "*" or " ",
+              " " .. indent_char,
+              display_name,
+              description
+            ),
+            entry_type = "context",
+            name = file.name,
+            filepath = file.filepath,
+            category = file.category,
+            subpath = file.subpath,
+            is_local = file.is_local,
+            ordinal = "zzzz_context_" .. category .. "_" .. file.subpath:gsub("/", "_")
+          })
+        end
+
+        -- Insert category subheading (will appear before entries due to reverse order)
+        table.insert(all_entries_added, {
+          is_subheading = true,
+          name = "~~~context_" .. category .. "_heading",
+          display = string.format("  %s", category_display),
+          entry_type = "subheading",
+          ordinal = "zzzz_context_sub_" .. category
+        })
+      end
+    end
+
+    -- Reverse to maintain correct order (since create_picker_entries reverses everything)
+    for i = #all_entries_added, 1, -1 do
+      table.insert(entries, all_entries_added[i])
+    end
+
+    -- Add main heading
+    table.insert(entries, {
+      is_heading = true,
+      name = "~~~context_heading",
+      display = string.format("%-40s %s", "[Context]", "Knowledge base and standards"),
+      entry_type = "heading",
+      ordinal = "context",
+      config = config,
+    })
+  end
+
+  return entries
+end
+
+--- Create entries for memory section
+--- Scans .opencode/memory/10-Memories/ and 20-Indices/
+--- @param config table|nil Picker configuration for config-aware path construction
+--- @return table Array of entries
+function M.create_memory_entries(config)
+  local entries = {}
+  local project_dir = vim.fn.getcwd()
+  local global_dir = config and config.global_source_dir or scan.get_global_dir()
+  local base_dir = config and config.base_dir or ".claude"
+
+  -- Scan 10-Memories/ for MEM-*.md files
+  local local_memories = {}
+  local global_memories = {}
+
+  local local_mem_path = project_dir .. "/" .. base_dir .. "/memory/10-Memories"
+  local global_mem_path = global_dir .. "/" .. base_dir .. "/memory/10-Memories"
+
+  -- Scan local memories
+  if vim.fn.isdirectory(local_mem_path) == 1 then
+    local files = vim.fn.glob(local_mem_path .. "/MEM-*.md", false, true)
+    for _, filepath in ipairs(files) do
+      local filename = vim.fn.fnamemodify(filepath, ":t")
+      local date_str, num = filename:match("MEM%-(%d%d%d%d%-%d%d%-%d%d)%-(%d+)%.md$")
+      if date_str then
+        table.insert(local_memories, {
+          name = filename:gsub("%.md$", ""),
+          filepath = filepath,
+          date = date_str,
+          num = tonumber(num),
+          is_local = true,
+        })
+      end
+    end
+  end
+
+  -- Scan global memories
+  if vim.fn.isdirectory(global_mem_path) == 1 then
+    local files = vim.fn.glob(global_mem_path .. "/MEM-*.md", false, true)
+    for _, filepath in ipairs(files) do
+      local filename = vim.fn.fnamemodify(filepath, ":t")
+      local date_str, num = filename:match("MEM%-(%d%d%d%d%-%d%d%-%d%d)%-(%d+)%.md$")
+      if date_str then
+        -- Check if already in local
+        local exists = false
+        for _, local_mem in ipairs(local_memories) do
+          if local_mem.name == filename:gsub("%.md$", "") then
+            exists = true
+            break
+          end
+        end
+        if not exists then
+          table.insert(global_memories, {
+            name = filename:gsub("%.md$", ""),
+            filepath = filepath,
+            date = date_str,
+            num = tonumber(num),
+            is_local = false,
+          })
+        end
+      end
+    end
+  end
+
+  -- Merge memories
+  local all_memories = {}
+  vim.list_extend(all_memories, local_memories)
+  vim.list_extend(all_memories, global_memories)
+
+  -- Sort reverse-chronologically (newest first)
+  table.sort(all_memories, function(a, b)
+    if a.date ~= b.date then
+      return a.date > b.date  -- Reverse chronological
+    end
+    return a.num > b.num
+  end)
+
+  -- Check for index.md in 20-Indices/
+  local index_entries = {}
+  local local_index = project_dir .. "/" .. base_dir .. "/memory/20-Indices/index.md"
+  local global_index = global_dir .. "/" .. base_dir .. "/memory/20-Indices/index.md"
+  local index_path = nil
+  local index_is_local = false
+
+  if vim.fn.filereadable(local_index) == 1 then
+    index_path = local_index
+    index_is_local = true
+  elseif vim.fn.filereadable(global_index) == 1 then
+    index_path = global_index
+    index_is_local = false
+  end
+
+  if index_path then
+    table.insert(index_entries, {
+      display = helpers.format_display(
+        index_is_local and "*" or " ",
+        " ├─",
+        "Index",
+        "Memory index and navigation"
+      ),
+      entry_type = "memory",
+      name = "index",
+      filepath = index_path,
+      is_local = index_is_local,
+      ordinal = "zzzz_memory_index"
+    })
+  end
+
+  -- Create memory entries
+  if #all_memories > 0 then
+    for i, mem in ipairs(all_memories) do
+      local is_last = (i == #all_memories)
+      local indent_char = helpers.get_tree_char(is_last)
+      local title = metadata.parse_memory_title(mem.filepath)
+      local display_name = mem.date .. ": " .. title
+
+      table.insert(entries, {
+        display = helpers.format_display(
+          mem.is_local and "*" or " ",
+          " " .. indent_char,
+          display_name,
+          ""
+        ),
+        entry_type = "memory",
+        name = mem.name,
+        filepath = mem.filepath,
+        date = mem.date,
+        is_local = mem.is_local,
+        ordinal = "zzzz_memory_" .. mem.date .. "_" .. string.format("%03d", mem.num)
+      })
+    end
+
+    -- Add index entry if exists
+    for _, idx_entry in ipairs(index_entries) do
+      table.insert(entries, idx_entry)
+    end
+
+    table.insert(entries, {
+      is_heading = true,
+      name = "~~~memories_heading",
+      display = string.format("%-40s %s", "[Memories]", "Knowledge memories"),
+      entry_type = "heading",
+      ordinal = "memories",
+      config = config,
+    })
+  end
+
+  return entries
+end
+
+--- Create entries for rules section
+--- Scans .opencode/rules/ for *.md files
+--- @param config table|nil Picker configuration for config-aware path construction
+--- @return table Array of entries
+function M.create_rules_entries(config)
+  local entries = {}
+  local project_dir = vim.fn.getcwd()
+  local global_dir = config and config.global_source_dir or scan.get_global_dir()
+  local base_dir = config and config.base_dir or ".claude"
+
+  local local_rules = scan.scan_directory(project_dir .. "/" .. base_dir .. "/rules", "*.md")
+  local global_rules = scan.scan_directory(global_dir .. "/" .. base_dir .. "/rules", "*.md")
+  local all_rules = scan.merge_artifacts(local_rules, global_rules)
+
+  if #all_rules > 0 then
+    table.sort(all_rules, function(a, b) return a.name < b.name end)
+
+    for i, rule in ipairs(all_rules) do
+      local is_first = (i == 1)
+      local indent_char = helpers.get_tree_char(is_first)
+      local description = metadata.parse_rule_description(rule.filepath)
+
+      table.insert(entries, {
+        display = helpers.format_display(
+          rule.is_local and "*" or " ",
+          " " .. indent_char,
+          rule.name,
+          description
+        ),
+        entry_type = "rule",
+        name = rule.name,
+        filepath = rule.filepath,
+        is_local = rule.is_local,
+        ordinal = "zzzz_rule_" .. rule.name
+      })
+    end
+
+    table.insert(entries, {
+      is_heading = true,
+      name = "~~~rules_heading",
+      display = string.format("%-40s %s", "[Rules]", "Behavioral rules and standards"),
+      entry_type = "heading",
+      ordinal = "rules",
+      config = config,
+    })
+  end
+
+  return entries
+end
+
 --- Create entries for docs section
 --- Only shows docs/README.md (not all .md files in docs/)
 --- @param config table|nil Picker configuration for config-aware path construction
@@ -753,7 +1038,13 @@ function M.create_picker_entries(structure, config)
     table.insert(all_entries, entry)
   end
 
-  -- 3. Lib section
+  -- 4. Context section
+  local context = M.create_context_entries(config)
+  for _, entry in ipairs(context) do
+    table.insert(all_entries, entry)
+  end
+
+  -- 5. Lib section
   local lib = M.create_lib_entries(config)
   for _, entry in ipairs(lib) do
     table.insert(all_entries, entry)
@@ -777,7 +1068,19 @@ function M.create_picker_entries(structure, config)
     table.insert(all_entries, entry)
   end
 
-  -- 7. Hooks section
+  -- 7. Rules section
+  local rules = M.create_rules_entries(config)
+  for _, entry in ipairs(rules) do
+    table.insert(all_entries, entry)
+  end
+
+  -- 8. Memory section
+  local memories = M.create_memory_entries(config)
+  for _, entry in ipairs(memories) do
+    table.insert(all_entries, entry)
+  end
+
+  -- 9. Hooks section
   local hooks = M.create_hooks_entries(structure, config)
   for _, entry in ipairs(hooks) do
     table.insert(all_entries, entry)

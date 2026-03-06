@@ -202,4 +202,71 @@ function M.scan_artifacts_for_picker(type_config, base_dir)
   return M.merge_artifacts(local_artifacts, global_artifacts)
 end
 
+--- Scan context directory recursively for markdown files
+--- @param base_dir string Base directory (".claude" or ".opencode")
+--- @param project_dir string Project directory to scan
+--- @param global_dir string Global directory to scan
+--- @return table Array of context files grouped by category
+function M.scan_context_directory(base_dir, project_dir, global_dir)
+  base_dir = base_dir or ".claude"
+  local context_files = {}
+  local seen = {}
+
+  -- Categories to scan (only top-level directories under context/)
+  local categories = { "core", "project" }
+
+  for _, category in ipairs(categories) do
+    local local_path = project_dir .. "/" .. base_dir .. "/context/" .. category
+    local global_path = global_dir .. "/" .. base_dir .. "/context/" .. category
+
+    -- Scan local context files first
+    if vim.fn.isdirectory(local_path) == 1 then
+      local local_files = vim.fn.glob(local_path .. "/**/*.md", false, true)
+      for _, filepath in ipairs(local_files) do
+        local filename = vim.fn.fnamemodify(filepath, ":t")
+        local rel_path = filepath:sub(#local_path + 2)
+        if filename ~= "README.md" and not seen[rel_path] then
+          seen[rel_path] = true
+          table.insert(context_files, {
+            name = filename:gsub("%.md$", ""),
+            filepath = filepath,
+            category = category,
+            subpath = rel_path:gsub("%.md$", ""),
+            is_local = true,
+          })
+        end
+      end
+    end
+
+    -- Scan global context files
+    if vim.fn.isdirectory(global_path) == 1 then
+      local global_files = vim.fn.glob(global_path .. "/**/*.md", false, true)
+      for _, filepath in ipairs(global_files) do
+        local filename = vim.fn.fnamemodify(filepath, ":t")
+        local rel_path = filepath:sub(#global_path + 2)
+        if filename ~= "README.md" and not seen[rel_path] then
+          seen[rel_path] = true
+          table.insert(context_files, {
+            name = filename:gsub("%.md$", ""),
+            filepath = filepath,
+            category = category,
+            subpath = rel_path:gsub("%.md$", ""),
+            is_local = false,
+          })
+        end
+      end
+    end
+  end
+
+  -- Sort by category then subpath
+  table.sort(context_files, function(a, b)
+    if a.category ~= b.category then
+      return a.category < b.category
+    end
+    return a.subpath < b.subpath
+  end)
+
+  return context_files
+end
+
 return M
