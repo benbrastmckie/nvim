@@ -52,19 +52,46 @@ The skill displays a visual header during its Preflight stage to show the active
 
 This header appears at the start of the plan command (after validation, before delegation) to clearly indicate which task is being planned. The header is displayed by the skill-planner before invoking the planner-agent subagent.
 
-### 4. Update status to PLANNING
+### 4. Execute Preflight
 
-Edit `specs/state.json`: set `status` to `"planning"`, update `last_updated`.
+**CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
 
-Edit `specs/TODO.md`: change current status marker to `[PLANNING]` on the `### OC_N.` entry.
+**Display task header**:
+```
+╔══════════════════════════════════════════════════════════╗
+║  Task OC_N: <project_name>                               ║
+║  Action: PLANNING                                        ║
+╚══════════════════════════════════════════════════════════╝
+```
+
+**Update state.json to planning**:
+```bash
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg status "planning" \
+  '(.active_projects[] | select(.project_number == N)) |= . + {
+    status: $status,
+    last_updated: $ts,
+    planning: $ts
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Update TODO.md to [PLANNING]**:
+- Edit file: `specs/TODO.md`
+- Find line: `- **Status**: [RESEARCHED]` (or current status) for task OC_N
+- Change to: `- **Status**: [PLANNING]`
+
+**Create postflight marker file**:
+```bash
+touch "specs/OC_NNN_<project_name>/.postflight-pending"
+```
 
 ### 5. Read existing research
 
 Check for `specs/OC_NNN_<project_name>/reports/research-001.md`. If it exists, read it for context. If not, plan from the task description alone.
 
-### 6. Invoke skill-planner
+### 6. Delegate to Planning Agent
 
-**Call skill tool** to execute the planning workflow:
+**Call skill tool** to load skill context and delegate to planning agent:
 
 ```
 → Tool: skill
@@ -74,14 +101,80 @@ Check for `specs/OC_NNN_<project_name>/reports/research-001.md`. If it exists, r
 
 The skill-planner will:
 1. Load context files (plan-format.md, status-markers.md, task-breakdown.md)
-2. Execute preflight (validate, display header, update status to PLANNING)
-3. **Call Task tool with `subagent_type="planner-agent"`** to create the plan
-4. Execute postflight (update state.json to PLANNED, update TODO.md, commit changes)
-5. Return results
+2. **Call Task tool with `subagent_type="planner-agent"`** to create the plan
+3. Return results (subagent writes .return-meta.json)
 
-**CRITICAL**: Do NOT implement planning logic in this command. All planning logic belongs in skill-planner and planner-agent.
+**CRITICAL**: The skill tool ONLY loads skill definitions. It does NOT execute preflight/postflight workflows. This command MUST execute status updates before and after delegation.
 
-### 7. Report results
+### 7. Execute Postflight
+
+**CRITICAL**: Commands must execute postflight AFTER agents return. The skill tool does NOT execute workflows.
+
+**Step 7a: Read metadata file**:
+```bash
+metadata_file="specs/OC_NNN_<project_name>/.return-meta.json"
+if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
+    status=$(jq -r '.status' "$metadata_file")
+    artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
+    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+    artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+fi
+```
+
+**Step 7b: Update state.json to planned**:
+```bash
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg status "planned" \
+  '(.active_projects[] | select(.project_number == N)) |= . + {
+    status: $status,
+    last_updated: $ts,
+    planned: $ts
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Step 7c: Update TODO.md**:
+- Edit file: `specs/TODO.md`
+- Find line: `- **Status**: [PLANNING]` for task OC_N
+- Change to: `- **Status**: [PLANNED]`
+
+**Step 7d: Link artifacts in state.json**:
+```bash
+# Step 1: Filter out existing plan artifacts
+jq '(.active_projects[] | select(.project_number == N)).artifacts =
+    [(.active_projects[] | select(.project_number == N)).artifacts // [] | .[] | select(.type == "plan" | not)]' \
+  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+
+# Step 2: Add new plan artifact
+jq --arg path "$artifact_path" \
+   --arg type "$artifact_type" \
+   --arg summary "$artifact_summary" \
+  '(.active_projects[] | select(.project_number == N)).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Step 7e: Add artifact to TODO.md**:
+- Edit file: `specs/TODO.md`
+- Find "Artifacts" section for task OC_N
+- Add line: `- [$artifact_path]($artifact_path) - $artifact_summary`
+
+**Step 7f: Git commit**:
+```bash
+git add -A
+git commit -m "task N: create implementation plan
+
+Session: ${session_id}
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
+
+**Step 7g: Cleanup**:
+```bash
+rm -f "specs/OC_NNN_<project_name>/.postflight-pending"
+rm -f "specs/OC_NNN_<project_name>/.postflight-loop-guard"
+rm -f "specs/OC_NNN_<project_name>/.return-meta.json"
+```
+
+### 8. Report results
 
 Show:
 - Plan path
@@ -92,9 +185,23 @@ Show:
 
 ## Rules
 
-- The skill-planner handles ALL planning logic - do not implement in command
+- This command executes preflight (status → planning) BEFORE delegating to skill-planner
+- This command executes postflight (status → planned, link artifacts) AFTER skill-planner returns
+- The skill-planner only loads context and delegates to planner-agent — it does NOT execute workflows
 - Phases should be granular enough to be resumable if interrupted
 - Directories use 3-digit padded number: `OC_174_slug` not `OC_17_slug`
 - If plan already exists, create `implementation-002.md` (increment version)
 - **NEVER use embedded plan templates** - always delegate to planner-agent with injected plan-format.md context
 - **NO EMBEDDED TEMPLATES**: Do not include example plan structures in this file - they violate plan-format.md
+
+## Critical Notes
+
+**The skill tool only loads SKILL.md content — it does NOT execute preflight/postflight workflows.**
+
+Commands must execute these workflows themselves:
+1. **Preflight** (Step 4): Display header, update state.json to "planning", TODO.md to [PLANNING], create marker file
+2. **Research** (Step 5): Read research report if available
+3. **Delegation** (Step 6): Call skill-planner to load context and invoke planner-agent
+4. **Postflight** (Step 7): Read .return-meta.json, update state.json to "planned", update TODO.md to [PLANNED], link artifacts, commit, cleanup
+
+This pattern ensures status updates happen automatically without orchestrator intervention.

@@ -59,7 +59,7 @@ This plan implements the findings from research-001.md and research-002.md, whic
 
 ## Implementation Phases
 
-### Phase 1: implement.md Command Update [IN PROGRESS]
+### Phase 1: implement.md Command Update [COMPLETED]
 
 **Goal**: Commands incorrectly expect skills to execute postflight - add explicit command-level execution using skill-status-sync skill
 
@@ -81,7 +81,7 @@ This plan implements the findings from research-001.md and research-002.md, whic
 - [ ] implement.md updates status to "completed" after successful implementation
 - [ ] implement.md links artifacts to state.json and TODO.md
 
-### Phase 2: plan.md Command Update [NOT STARTED]
+### Phase 2: plan.md Command Update [IN PROGRESS]
 
 **Goal**: Apply same preflight/postflight pattern to plan.md
 
