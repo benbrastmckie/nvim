@@ -1,10 +1,19 @@
 ---
-next_project_number: 160
+next_project_number: 161
 ---
 
 # TODO
 
 ## Tasks
+
+### 160. Fix 'Load Core Agent System' in which-key picker to include missing core files
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: neovim
+
+**Description**: Fix the 'Load Core Agent System' action in the which-key `<leader>ao` picker to include 9 missing core files that should be part of the portable agent system: `context/core/patterns/early-metadata-pattern.md`, `context/core/troubleshooting/workflow-interruptions.md`, `context/index.schema.json`, `docs/reference/standards/agent-frontmatter-standard.md`, `docs/reference/standards/multi-task-creation-standard.md`, `docs/templates/agent-template.md`, `docs/templates/command-template.md`, `scripts/update-plan-status.sh`, and `scripts/validate-context-index.sh`.
+
+---
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD

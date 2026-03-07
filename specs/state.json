@@ -1,6 +1,14 @@
 {
-  "next_project_number": 160,
+  "next_project_number": 161,
   "active_projects": [
+    {
+      "project_number": 160,
+      "project_name": "fix_load_core_agent_system_missing_files",
+      "status": "not_started",
+      "language": "neovim",
+      "created": "2026-03-07T20:55:49Z",
+      "last_updated": "2026-03-07T20:55:49Z"
+    },
     {
       "project_number": 87,
       "project_name": "investigate_wezterm_terminal_directory_change",
