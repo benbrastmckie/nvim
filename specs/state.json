@@ -4,11 +4,11 @@
     {
       "project_number": 161,
       "project_name": "fix_opencode_source_missing_files_and_scan_bugs",
-      "status": "planned",
+      "status": "implementing",
       "language": "neovim",
       "created": "2026-03-07T21:28:55Z",
-      "last_updated": "2026-03-07T21:41:24Z",
-      "session_id": "sess_1772919499_e668f1",
+      "last_updated": "2026-03-07T21:43:35Z",
+      "session_id": "sess_1772919788_b73b3c",
       "artifacts": [
         {
           "type": "research",

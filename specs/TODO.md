@@ -8,11 +8,12 @@ next_project_number: 162
 
 ### 161. Fix nvim/.opencode/ source directory to include missing core files and fix scan bugs
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Research Started**: 2026-03-07
 - **Research Completed**: 2026-03-07
 - **Planning Started**: 2026-03-07
 - **Planning Completed**: 2026-03-07
+- **Implementation Started**: 2026-03-07
 - **Language**: neovim
 - **Research**: [research-001.md](161_fix_opencode_source_missing_files_and_scan_bugs/reports/research-001.md)
 - **Plan**: [implementation-001.md](161_fix_opencode_source_missing_files_and_scan_bugs/plans/implementation-001.md)

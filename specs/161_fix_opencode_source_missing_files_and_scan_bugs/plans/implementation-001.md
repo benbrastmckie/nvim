@@ -1,7 +1,7 @@
 # Implementation Plan: Task #161
 
 - **Task**: 161 - fix_opencode_source_missing_files_and_scan_bugs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1-2 hours
 - **Dependencies**: None
 - **Research Inputs**: [research-001.md](../reports/research-001.md)
@@ -46,7 +46,7 @@ Research confirmed: (1) all 9 files exist in `.claude/` and are absent from `.op
 
 ## Implementation Phases
 
-### Phase 1: Fix templates scan and subdir_map [NOT STARTED]
+### Phase 1: Fix templates scan and subdir_map [COMPLETED]
 
 **Goal**: Make the templates scanner discover both `*.yaml` and `*.json` files, and fix the `update_artifact_from_global` function to reconstruct template filenames correctly.
 

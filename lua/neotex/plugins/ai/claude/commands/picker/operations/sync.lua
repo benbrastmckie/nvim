@@ -196,7 +196,18 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
   -- Shared artifacts: scanned unconditionally for both .claude and .opencode
   -- (scan_directory_for_sync returns empty array for non-existent directories)
   artifacts.hooks = sync_scan("hooks", "*.sh")
-  artifacts.templates = sync_scan("templates", "*.yaml")
+
+  -- Templates (multiple file types: yaml, json)
+  local templates_yaml = sync_scan("templates", "*.yaml")
+  local templates_json = sync_scan("templates", "*.json")
+  artifacts.templates = {}
+  for _, file in ipairs(templates_yaml) do
+    table.insert(artifacts.templates, file)
+  end
+  for _, file in ipairs(templates_json) do
+    table.insert(artifacts.templates, file)
+  end
+
   artifacts.docs = sync_scan("docs", "*.md")
   artifacts.scripts = sync_scan("scripts", "*.sh")
   artifacts.rules = sync_scan("rules", "*.md")
@@ -387,7 +398,7 @@ function M.update_artifact_from_global(artifact, artifact_type, silent, picker_c
     hook_event = { dir = "hooks", ext = ".sh" },
     lib = { dir = "lib", ext = ".sh" },
     doc = { dir = "docs", ext = ".md" },
-    template = { dir = "templates", ext = ".yaml" },
+    template = { dir = "templates", ext = "" },  -- Templates: name includes extension (.yaml/.json)
     script = { dir = "scripts", ext = ".sh" },
     test = { dir = "tests", ext = ".sh" },
     skill = { dir = "skills", ext = ".md" },
