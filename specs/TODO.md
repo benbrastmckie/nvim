@@ -8,11 +8,14 @@ next_project_number: 161
 
 ### 160. Fix 'Load Core Agent System' in which-key picker to include missing core files
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-07
 - **Research Completed**: 2026-03-07
+- **Planning Started**: 2026-03-07
+- **Planning Completed**: 2026-03-07
 - **Language**: neovim
 - **Research**: [research-001.md](160_fix_load_core_agent_system_missing_files/reports/research-001.md)
+- **Plan**: [implementation-001.md](160_fix_load_core_agent_system_missing_files/plans/implementation-001.md)
 
 **Description**: Fix the 'Load Core Agent System' action in the which-key `<leader>ao` picker to include 9 missing core files that should be part of the portable agent system: `context/core/patterns/early-metadata-pattern.md`, `context/core/troubleshooting/workflow-interruptions.md`, `context/index.schema.json`, `docs/reference/standards/agent-frontmatter-standard.md`, `docs/reference/standards/multi-task-creation-standard.md`, `docs/templates/agent-template.md`, `docs/templates/command-template.md`, `scripts/update-plan-status.sh`, and `scripts/validate-context-index.sh`.
 

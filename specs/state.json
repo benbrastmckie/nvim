@@ -4,18 +4,24 @@
     {
       "project_number": 160,
       "project_name": "fix_load_core_agent_system_missing_files",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-03-07T20:55:49Z",
-      "last_updated": "2026-03-07T21:05:30Z",
-      "session_id": "sess_1772917141_9974bc",
+      "last_updated": "2026-03-07T21:13:06Z",
+      "session_id": "sess_1772917837_ae754c",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/160_fix_load_core_agent_system_missing_files/reports/research-001.md",
           "summary": "Research report identifying dual scan implementation bug: previewer uses non-recursive top-level-only scan missing nested files and entire categories (agents, context, root_files)"
+        },
+        {
+          "type": "plan",
+          "path": "specs/160_fix_load_core_agent_system_missing_files/plans/implementation-001.md",
+          "summary": "3-phase implementation plan to fix previewer scan in Load Core Agent System picker"
         }
-      ]
+      ],
+      "planned": "2026-03-07T21:13:06Z"
     },
     {
       "project_number": 87,
