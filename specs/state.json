@@ -1,6 +1,14 @@
 {
-  "next_project_number": 162,
+  "next_project_number": 163,
   "active_projects": [
+    {
+      "project_number": 162,
+      "project_name": "deck_command_skill_agent_typst_pitchdeck",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-09T18:31:24Z",
+      "last_updated": "2026-03-09T18:31:24Z"
+    },
     {
       "project_number": 161,
       "project_name": "fix_opencode_source_missing_files_and_scan_bugs",

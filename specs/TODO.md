@@ -1,10 +1,19 @@
 ---
-next_project_number: 162
+next_project_number: 163
 ---
 
 # TODO
 
 ## Tasks
+
+### 162. Create /deck command-skill-agent for typst pitch deck generation
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Create a /deck command-skill-agent following the existing pattern used in this claude agent system by drawing on https://www.ycombinator.com/library/2u-how-to-build-your-seed-round-pitch-deck and https://www.ycombinator.com/library/4T-how-to-design-a-better-pitch-deck as resources to draw on a prompt or file-path to create a clear 10 slide deck for presenting to startup investors. The decks should be generated using typst. It is important to conduct careful research into deck guides and into how best to generate slides with typst before designing the deck command-skill-agent to include in this .claude/ agent system. It is also important that this be included in the /home/benjamin/.config/nvim/.claude/extensions/filetypes/ extension rather than in the core agent system, populating appropriate resources including context files to add to that extension.
+
+---
 
 ### 161. Fix nvim/.opencode/ source directory to include missing core files and fix scan bugs
 - **Effort**: TBD
