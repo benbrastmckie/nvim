@@ -23,16 +23,16 @@
   "merge_targets": {
     "opencode_md": {
       "source": "EXTENSION.md",
-      "target": ".opencode/OPENCODE.md",
+      "target": ".claude/OPENCODE.md",
       "section_id": "extension_oc_epidemiology"
     },
     "index": {
       "source": "index-entries.json",
-      "target": ".opencode/context/index.json"
+      "target": ".claude/context/index.json"
     },
     "settings": {
       "source": "settings-fragment.json",
-      "target": ".opencode/settings.local.json"
+      "target": ".claude/settings.local.json"
     }
   }
 }

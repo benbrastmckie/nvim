@@ -1,182 +1,282 @@
-[
-  {
-    "path": ".claude/extensions/web/context/project/web/README.md",
-    "description": "Web context overview with directory structure and loading strategy",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+{
+  "entries": [
+    {
+      "path": ".claude/extensions/web/context/project/web/README.md",
+      "description": "Web context overview with directory structure and loading strategy",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 110
     },
-    "line_count": 110
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/domain/astro-framework.md",
-    "description": "Astro 5/6 framework reference with .astro file format and islands architecture",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/domain/astro-framework.md",
+      "description": "Astro 5/6 framework reference with .astro file format and islands architecture",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 287
     },
-    "line_count": 287
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/domain/tailwind-v4.md",
-    "description": "Tailwind CSS v4 CSS-first configuration with @theme directive",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/domain/tailwind-v4.md",
+      "description": "Tailwind CSS v4 CSS-first configuration with @theme directive",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 225
     },
-    "line_count": 225
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/domain/cloudflare-pages.md",
-    "description": "Cloudflare Pages deployment platform and edge CDN reference",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/domain/cloudflare-pages.md",
+      "description": "Cloudflare Pages deployment platform and edge CDN reference",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 203
     },
-    "line_count": 203
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/domain/typescript-web.md",
-    "description": "TypeScript configuration and patterns for type-safe Astro development",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/domain/typescript-web.md",
+      "description": "TypeScript configuration and patterns for type-safe Astro development",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 304
     },
-    "line_count": 304
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/patterns/astro-component.md",
-    "description": "Common patterns for building Astro components",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/patterns/astro-component.md",
+      "description": "Common patterns for building Astro components",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 315
     },
-    "line_count": 315
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/patterns/astro-layout.md",
-    "description": "Patterns for building layout components that wrap pages",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/patterns/astro-layout.md",
+      "description": "Patterns for building layout components that wrap pages",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 278
     },
-    "line_count": 278
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/patterns/astro-content-collections.md",
-    "description": "Patterns for defining, querying, and rendering type-safe content collections",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/patterns/astro-content-collections.md",
+      "description": "Patterns for defining, querying, and rendering type-safe content collections",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 317
     },
-    "line_count": 317
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/patterns/tailwind-patterns.md",
-    "description": "UI component patterns with Tailwind CSS v4",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/patterns/tailwind-patterns.md",
+      "description": "UI component patterns with Tailwind CSS v4",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 200
     },
-    "line_count": 200
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/patterns/accessibility-patterns.md",
-    "description": "Semantic HTML, ARIA, and keyboard navigation patterns",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/patterns/accessibility-patterns.md",
+      "description": "Semantic HTML, ARIA, and keyboard navigation patterns",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 200
     },
-    "line_count": 200
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/standards/web-style-guide.md",
-    "description": "Naming conventions, structure, and coding standards",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/standards/web-style-guide.md",
+      "description": "Naming conventions, structure, and coding standards",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 150
     },
-    "line_count": 150
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/standards/performance-standards.md",
-    "description": "Core Web Vitals targets and performance optimization rules",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/standards/performance-standards.md",
+      "description": "Core Web Vitals targets and performance optimization rules",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 150
     },
-    "line_count": 150
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/standards/accessibility-standards.md",
-    "description": "WCAG 2.2 AA compliance requirements",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/standards/accessibility-standards.md",
+      "description": "WCAG 2.2 AA compliance requirements",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 150
     },
-    "line_count": 150
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/tools/astro-cli-guide.md",
-    "description": "Astro CLI commands and development workflow",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/tools/astro-cli-guide.md",
+      "description": "Astro CLI commands and development workflow",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 120
     },
-    "line_count": 120
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/tools/pnpm-guide.md",
-    "description": "pnpm package manager commands and best practices",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/tools/pnpm-guide.md",
+      "description": "pnpm package manager commands and best practices",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 100
     },
-    "line_count": 100
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/tools/cloudflare-deploy-guide.md",
-    "description": "Wrangler deployment workflow for Cloudflare Pages",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/tools/cloudflare-deploy-guide.md",
+      "description": "Wrangler deployment workflow for Cloudflare Pages",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 120
     },
-    "line_count": 120
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md",
-    "description": "CI/CD pipeline configuration and deployment debugging",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md",
+      "description": "CI/CD pipeline configuration and deployment debugging",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 150
     },
-    "line_count": 150
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/tools/debugging-utilities.md",
-    "description": "CLI debugging and optimization tools (optipng, httpie, dig, etc.)",
-    "load_when": {
-      "agents": ["web-research-agent", "web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/tools/debugging-utilities.md",
+      "description": "CLI debugging and optimization tools (optipng, httpie, dig, etc.)",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 150
     },
-    "line_count": 150
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/templates/astro-page-template.md",
-    "description": "Page boilerplate variations",
-    "load_when": {
-      "agents": ["web-implementation-agent"],
-      "languages": ["web"]
+    {
+      "path": ".claude/extensions/web/context/project/web/templates/astro-page-template.md",
+      "description": "Page boilerplate variations",
+      "load_when": {
+        "agents": [
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 100
     },
-    "line_count": 100
-  },
-  {
-    "path": ".claude/extensions/web/context/project/web/templates/astro-component-template.md",
-    "description": "Component boilerplate variations",
-    "load_when": {
-      "agents": ["web-implementation-agent"],
-      "languages": ["web"]
-    },
-    "line_count": 100
-  }
-]
+    {
+      "path": ".claude/extensions/web/context/project/web/templates/astro-component-template.md",
+      "description": "Component boilerplate variations",
+      "load_when": {
+        "agents": [
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 100
+    }
+  ]
+}

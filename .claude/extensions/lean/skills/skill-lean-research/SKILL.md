@@ -14,7 +14,7 @@ this skill handles all postflight operations (status update, artifact linking, g
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "lean"
+- Task language is "lean4" or "lean" (either accepted)
 - Research involves Mathlib, theorems, or proofs
 - Lean-specific MCP tools are needed
 

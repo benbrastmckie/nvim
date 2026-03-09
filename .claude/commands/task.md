@@ -111,6 +111,15 @@ When $ARGUMENTS contains a description (no flags).
 4. **Detect language** from keywords:
    - "neovim", "plugin", "nvim", "lua" → neovim
    - "meta", "agent", "command", "skill" → meta
+   - "lean", "lean4", "mathlib", "theorem", "proof" → lean4
+   - "latex", "tex", "document", "typeset" → latex
+   - "typst" → typst
+   - "python", "pytest", "pip" → python
+   - "z3", "smt", "solver", "constraint" → z3
+   - "nix", "nixos", "home-manager", "flake" → nix
+   - "web", "astro", "tailwind", "cloudflare" → web
+   - "epidemiology", "epimodel", "stan", "infectious" → epidemiology
+   - "formal", "logic", "math", "physics", "modal", "kripke" → formal
    - Otherwise → general
 
 5. **Create slug** from description:
