@@ -4,18 +4,24 @@
     {
       "project_number": 172,
       "project_name": "investigate_opencode_core_content_loss_on_reload",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-03-10T21:41:27Z",
-      "last_updated": "2026-03-10T14:53:12-07:00",
+      "last_updated": "2026-03-10T14:57:45-07:00",
       "researched": "2026-03-10T14:53:12-07:00",
       "artifacts": [
         {
           "path": "specs/172_investigate_opencode_core_content_loss_on_reload/reports/research-001.md",
           "type": "research",
           "summary": "Root cause: inject_section creates empty OPENCODE.md when file missing, no mechanism to include core content. Fix: create global OPENCODE.md in nvim config so sync can restore it."
+        },
+        {
+          "path": "specs/172_investigate_opencode_core_content_loss_on_reload/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "3-phase plan: create global OPENCODE.md, harden merge.lua inject_section, verify full reload cycle"
         }
-      ]
+      ],
+      "planned": "2026-03-10T14:57:45-07:00"
     },
     {
       "project_number": 171,

@@ -7,10 +7,12 @@ next_project_number: 173
 ## Tasks
 
 ### 172. Investigate OPENCODE.md core content loss on <leader>ao reload
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-03-10
+- **Planning Completed**: 2026-03-10
 - **Language**: neovim
 - **Research**: [research-001.md](172_investigate_opencode_core_content_loss_on_reload/reports/research-001.md)
+- **Plan**: [implementation-001.md](172_investigate_opencode_core_content_loss_on_reload/plans/implementation-001.md)
 
 **Description**: Investigate why OPENCODE.md loses core content after reload via `<leader>ao`. Root cause analysis of whether the issue is in the agent system structure or the loader itself. Task 171 merged core README.md content into OPENCODE.md but a subsequent reload via `<leader>ao` reverted the file back to extension-only content (starting with `extension_oc_epidemiology` marker). This is the second occurrence: task 170 phase 2 applied the same fix and it was also lost. The loader appears to be regenerating OPENCODE.md from extension sections only, ignoring or overwriting the core content. Need to: (1) trace the `<leader>ao` loader code path that writes OPENCODE.md, (2) understand whether the loader assembles OPENCODE.md from `.opencode_core/README.md` + extension sections or only from extension sections, (3) determine why core content is being dropped, (4) implement a fix either in the loader (to include core content when generating OPENCODE.md) or in the agent system structure (e.g., make OPENCODE.md the source of truth and stop overwriting it).
 
