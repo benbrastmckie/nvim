@@ -4,10 +4,19 @@
     {
       "project_number": 165,
       "project_name": "review_opencode_extension_language_routing",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-10T15:38:08Z",
-      "last_updated": "2026-03-10T15:38:08Z"
+      "last_updated": "2026-03-10T16:38:21Z",
+      "session_id": "sess_1773160275_51cf46",
+      "researched": "2026-03-10T16:38:21Z",
+      "artifacts": [
+        {
+          "path": "specs/165_review_opencode_extension_language_routing/reports/research-001.md",
+          "type": "research",
+          "summary": "Research report documenting 8 findings on extension language routing gaps with 3 fix options"
+        }
+      ]
     },
     {
       "project_number": 164,

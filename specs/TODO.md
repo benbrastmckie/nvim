@@ -8,8 +8,11 @@ next_project_number: 166
 
 ### 165. Review .opencode/ agent system extension language routing for correct agent and context loading
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-10
+- **Research Completed**: 2026-03-10
 - **Language**: meta
+- **Research**: [research-001.md](165_review_opencode_extension_language_routing/reports/research-001.md)
 
 **Description**: Review .opencode/ agent system to ensure that when extensions are added, the range of available language types for tasks is correctly updated so that the correct agents are called when running tasks with those types and the context files for those languages are loaded by the correct specialist agents.
 
