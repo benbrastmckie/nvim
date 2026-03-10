@@ -76,19 +76,19 @@ Load these on-demand using @-references.
 
 ### Always Load
 
-- `@.claude/extensions/formal/context/project/physics/README.md` - Physics context index (load FIRST)
+- `@.claude/context/project/physics/README.md` - Physics context index (load FIRST)
 - `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 ### Load By Topic
 
 **Dynamical Systems**:
-- `@.claude/extensions/formal/context/project/physics/dynamical-systems/dynamical-systems.md`
+- `@.claude/context/project/physics/dynamical-systems/dynamical-systems.md`
 
 ### Related Context (Cross-Domain)
 
 **Math Domain** (load when needed):
-- `@.claude/extensions/formal/context/project/math/topology/topological-spaces.md` - Topological foundations
-- `@.claude/extensions/formal/context/project/math/order-theory/partial-orders.md` - Well-foundedness
+- `@.claude/context/project/math/topology/topological-spaces.md` - Topological foundations
+- `@.claude/context/project/math/order-theory/partial-orders.md` - Well-foundedness
 
 ## Research Strategy Decision Tree
 

@@ -62,26 +62,26 @@ Load these on-demand using @-references following hierarchical pattern.
 
 ### Always Load
 
-- `@.claude/extensions/formal/context/project/logic/README.md` - Logic context index (load FIRST)
+- `@.claude/context/project/logic/README.md` - Logic context index (load FIRST)
 - `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 ### Load By Topic
 
 **Modal Logic / Kripke Semantics**:
-- `@.claude/extensions/formal/context/project/logic/domain/kripke-semantics-overview.md`
-- `@.claude/extensions/formal/context/project/logic/processes/modal-proof-strategies.md`
+- `@.claude/context/project/logic/domain/kripke-semantics-overview.md`
+- `@.claude/context/project/logic/processes/modal-proof-strategies.md`
 
 **Metalogic**:
-- `@.claude/extensions/formal/context/project/logic/domain/metalogic-concepts.md`
+- `@.claude/context/project/logic/domain/metalogic-concepts.md`
 
 **Proof Theory**:
-- `@.claude/extensions/formal/context/project/logic/domain/proof-theory-concepts.md`
-- `@.claude/extensions/formal/context/project/logic/processes/proof-construction.md`
+- `@.claude/context/project/logic/domain/proof-theory-concepts.md`
+- `@.claude/context/project/logic/processes/proof-construction.md`
 
 **Standards**:
-- `@.claude/extensions/formal/context/project/logic/standards/proof-conventions.md`
-- `@.claude/extensions/formal/context/project/logic/standards/notation-standards.md`
-- `@.claude/extensions/formal/context/project/logic/standards/naming-conventions.md`
+- `@.claude/context/project/logic/standards/proof-conventions.md`
+- `@.claude/context/project/logic/standards/notation-standards.md`
+- `@.claude/context/project/logic/standards/naming-conventions.md`
 
 ## Research Strategy Decision Tree
 

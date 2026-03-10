@@ -73,10 +73,10 @@ Load these on-demand using @-references:
 - Check your project's research report format documentation
 
 **Load for Web Research**:
-- `@.claude/extensions/web/context/project/web/README.md` - Web context overview and loading strategy
-- `@.claude/extensions/web/context/project/web/domain/astro-framework.md` - Astro framework reference
-- `@.claude/extensions/web/context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 configuration
-- `@.claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
+- `@.claude/context/project/web/README.md` - Web context overview and loading strategy
+- `@.claude/context/project/web/domain/astro-framework.md` - Astro framework reference
+- `@.claude/context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 configuration
+- `@.claude/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
 
 ## Research Strategy Decision Tree
 
@@ -111,12 +111,12 @@ Use this decision tree to select the right search approach:
    -> Local build first (pnpm check && pnpm build)
    -> Wrangler CLI for deployment status (wrangler pages deployment list)
    -> CI/CD job logs for pipeline failures
-   -> @.claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md for patterns
+   -> @.claude/context/project/web/tools/cicd-pipeline-guide.md for patterns
 ```
 
 **Search Priority**:
 1. Local project files (existing patterns in src/)
-2. Project context files (documented patterns in .claude/extensions/web/context/project/web/)
+2. Project context files (documented patterns in .claude/context/project/web/)
 3. MCP tools (Astro Docs MCP for Astro, Context7 for library APIs) -- preferred for real-time docs
 4. Official framework docs via WebSearch/WebFetch (astro.build, tailwindcss.com, developers.cloudflare.com)
 5. Community resources (web.dev, MDN, Stack Overflow)
@@ -200,7 +200,7 @@ Based on task description, categorize as:
 - `Read` existing components and configurations
 
 **Step 2: Context File Review**
-- Load relevant context from `.claude/extensions/web/context/project/web/`
+- Load relevant context from `.claude/context/project/web/`
 - Check patterns, standards, tools guides per the README loading strategy
 
 **Step 3: Framework Documentation**

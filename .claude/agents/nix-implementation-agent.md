@@ -57,19 +57,19 @@ Load these on-demand using @-references:
 - `@.claude/context/core/formats/summary-format.md` - Summary structure
 
 **Load for Nix Implementation**:
-- `@.claude/extensions/nix/context/project/nix/README.md` - Nix context overview
-- `@.claude/extensions/nix/context/project/nix/domain/nix-language.md` - Nix syntax fundamentals
-- `@.claude/extensions/nix/context/project/nix/standards/nix-style-guide.md` - Formatting conventions
-- `@.claude/extensions/nix/rules/nix.md` - Nix development rules
+- `@.claude/context/project/nix/README.md` - Nix context overview
+- `@.claude/context/project/nix/domain/nix-language.md` - Nix syntax fundamentals
+- `@.claude/context/project/nix/standards/nix-style-guide.md` - Formatting conventions
+- `@.claude/rules/nix.md` - Nix development rules
 
 **Load Based on Task Type**:
 | Task Type | Context Files |
 |-----------|--------------|
-| Package tasks | `@.claude/extensions/nix/context/project/nix/patterns/derivation-patterns.md`, `@.claude/extensions/nix/context/project/nix/patterns/overlay-patterns.md` |
-| NixOS module tasks | `@.claude/extensions/nix/context/project/nix/domain/nixos-modules.md`, `@.claude/extensions/nix/context/project/nix/patterns/module-patterns.md` |
-| Home Manager tasks | `@.claude/extensions/nix/context/project/nix/domain/home-manager.md`, `@.claude/extensions/nix/context/project/nix/patterns/module-patterns.md` |
-| Flake tasks | `@.claude/extensions/nix/context/project/nix/domain/flakes.md` |
-| Build/deploy tasks | `@.claude/extensions/nix/context/project/nix/tools/nixos-rebuild-guide.md`, `@.claude/extensions/nix/context/project/nix/tools/home-manager-guide.md` |
+| Package tasks | `@.claude/context/project/nix/patterns/derivation-patterns.md`, `@.claude/context/project/nix/patterns/overlay-patterns.md` |
+| NixOS module tasks | `@.claude/context/project/nix/domain/nixos-modules.md`, `@.claude/context/project/nix/patterns/module-patterns.md` |
+| Home Manager tasks | `@.claude/context/project/nix/domain/home-manager.md`, `@.claude/context/project/nix/patterns/module-patterns.md` |
+| Flake tasks | `@.claude/context/project/nix/domain/flakes.md` |
+| Build/deploy tasks | `@.claude/context/project/nix/tools/nixos-rebuild-guide.md`, `@.claude/context/project/nix/tools/home-manager-guide.md` |
 
 ## Execution Flow
 

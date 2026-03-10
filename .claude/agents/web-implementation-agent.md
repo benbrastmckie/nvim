@@ -66,27 +66,27 @@ These tools are available when the corresponding MCP servers are configured in `
 Load these on-demand using @-references:
 
 **Load for Web Work**:
-- `@.claude/extensions/web/context/project/web/domain/astro-framework.md` - Astro 5/6 reference
-- `@.claude/extensions/web/context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 reference
-- `@.claude/extensions/web/context/project/web/standards/web-style-guide.md` - Naming and conventions
-- `@.claude/extensions/web/context/project/web/patterns/astro-component.md` - Component patterns
-- `@.claude/extensions/web/context/project/web/patterns/tailwind-patterns.md` - UI patterns
+- `@.claude/context/project/web/domain/astro-framework.md` - Astro 5/6 reference
+- `@.claude/context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 reference
+- `@.claude/context/project/web/standards/web-style-guide.md` - Naming and conventions
+- `@.claude/context/project/web/patterns/astro-component.md` - Component patterns
+- `@.claude/context/project/web/patterns/tailwind-patterns.md` - UI patterns
 
 **Load for Specific Tasks**:
-- `@.claude/extensions/web/context/project/web/patterns/astro-layout.md` - Layout patterns
-- `@.claude/extensions/web/context/project/web/patterns/astro-content-collections.md` - Content collections
-- `@.claude/extensions/web/context/project/web/patterns/accessibility-patterns.md` - Accessibility
-- `@.claude/extensions/web/context/project/web/standards/accessibility-standards.md` - WCAG 2.2 AA
-- `@.claude/extensions/web/context/project/web/standards/performance-standards.md` - Core Web Vitals
-- `@.claude/extensions/web/context/project/web/templates/astro-page-template.md` - Page boilerplate
-- `@.claude/extensions/web/context/project/web/templates/astro-component-template.md` - Component boilerplate
-- `@.claude/extensions/web/context/project/web/domain/typescript-web.md` - TypeScript in Astro
-- `@.claude/extensions/web/context/project/web/domain/cloudflare-pages.md` - Cloudflare deployment
-- `@.claude/extensions/web/context/project/web/tools/pnpm-guide.md` - pnpm package manager
-- `@.claude/extensions/web/context/project/web/tools/astro-cli-guide.md` - Astro CLI commands
-- `@.claude/extensions/web/context/project/web/tools/cloudflare-deploy-guide.md` - Wrangler deployment
-- `@.claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
-- `@.claude/extensions/web/context/project/web/tools/debugging-utilities.md` - CLI debugging and optimization tools
+- `@.claude/context/project/web/patterns/astro-layout.md` - Layout patterns
+- `@.claude/context/project/web/patterns/astro-content-collections.md` - Content collections
+- `@.claude/context/project/web/patterns/accessibility-patterns.md` - Accessibility
+- `@.claude/context/project/web/standards/accessibility-standards.md` - WCAG 2.2 AA
+- `@.claude/context/project/web/standards/performance-standards.md` - Core Web Vitals
+- `@.claude/context/project/web/templates/astro-page-template.md` - Page boilerplate
+- `@.claude/context/project/web/templates/astro-component-template.md` - Component boilerplate
+- `@.claude/context/project/web/domain/typescript-web.md` - TypeScript in Astro
+- `@.claude/context/project/web/domain/cloudflare-pages.md` - Cloudflare deployment
+- `@.claude/context/project/web/tools/pnpm-guide.md` - pnpm package manager
+- `@.claude/context/project/web/tools/astro-cli-guide.md` - Astro CLI commands
+- `@.claude/context/project/web/tools/cloudflare-deploy-guide.md` - Wrangler deployment
+- `@.claude/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
+- `@.claude/context/project/web/tools/debugging-utilities.md` - CLI debugging and optimization tools
 
 ## Execution Flow
 
@@ -544,7 +544,7 @@ Every implementation must follow:
 
 ## Debugging and Optimization Utilities
 
-CLI tools for debugging, optimizing, and verifying web implementations. Load `@.claude/extensions/web/context/project/web/tools/debugging-utilities.md` for detailed usage.
+CLI tools for debugging, optimizing, and verifying web implementations. Load `@.claude/context/project/web/tools/debugging-utilities.md` for detailed usage.
 
 ### When to Use Debugging Utilities
 
@@ -646,7 +646,7 @@ pnpm exec wrangler pages deployment tail --project-name=my-website
 pnpm exec wrangler pages deployment rollback <deployment-id> --project-name=my-website
 ```
 
-Load `@.claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md` for detailed CI/CD patterns, common failure modes, and environment variable security.
+Load `@.claude/context/project/web/tools/cicd-pipeline-guide.md` for detailed CI/CD patterns, common failure modes, and environment variable security.
 
 ## Verification Commands
 

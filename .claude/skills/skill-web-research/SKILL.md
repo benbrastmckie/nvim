@@ -14,8 +14,8 @@ this skill handles all postflight operations (status update, artifact linking, g
 ## Context References
 
 Reference (do not load eagerly):
-- Path: `.claude/extensions/web/context/project/web/README.md` - Web context overview
-- Path: `.claude/extensions/web/context/project/web/domain/astro-framework.md` - Astro reference
+- Path: `.claude/context/project/web/README.md` - Web context overview
+- Path: `.claude/context/project/web/domain/astro-framework.md` - Astro reference
 
 ## Trigger Conditions
 

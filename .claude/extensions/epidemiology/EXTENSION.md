@@ -30,6 +30,6 @@ Load context files on-demand:
 
 ```
 Epidemiology domain:
-@.claude/extensions/epidemiology/context/project/epidemiology/README.md
-@.claude/extensions/epidemiology/context/project/epidemiology/tools/r-packages.md
+@.claude/context/project/epidemiology/README.md
+@.claude/context/project/epidemiology/tools/r-packages.md
 ```

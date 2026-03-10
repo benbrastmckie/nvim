@@ -87,7 +87,7 @@ Parameters:
 **DO NOT** use `Skill(physics-research-agent)` - this will FAIL.
 
 The subagent will:
-- Load domain context files from `.claude/extensions/formal/context/project/physics/`
+- Load domain context files from `.claude/context/project/physics/`
 - Search codebase for existing patterns
 - Use Mathlib lookup tools
 - Execute web research for physics/dynamical systems literature

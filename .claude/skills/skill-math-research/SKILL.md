@@ -87,7 +87,7 @@ Parameters:
 **DO NOT** use `Skill(math-research-agent)` - this will FAIL.
 
 The subagent will:
-- Load domain context files from `.claude/extensions/formal/context/project/math/`
+- Load domain context files from `.claude/context/project/math/`
 - Search codebase for existing patterns
 - Use Mathlib lookup tools
 - Execute web research for mathematical literature

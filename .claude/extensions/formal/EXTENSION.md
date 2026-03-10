@@ -47,14 +47,14 @@ Load context files on-demand:
 
 ```
 Logic domain:
-@.claude/extensions/formal/context/project/logic/README.md
-@.claude/extensions/formal/context/project/logic/domain/kripke-semantics-overview.md
+@.claude/context/project/logic/README.md
+@.claude/context/project/logic/domain/kripke-semantics-overview.md
 
 Math domain:
-@.claude/extensions/formal/context/project/math/README.md
-@.claude/extensions/formal/context/project/math/lattice-theory/lattices.md
+@.claude/context/project/math/README.md
+@.claude/context/project/math/lattice-theory/lattices.md
 
 Physics domain:
-@.claude/extensions/formal/context/project/physics/README.md
-@.claude/extensions/formal/context/project/physics/dynamical-systems/dynamical-systems.md
+@.claude/context/project/physics/README.md
+@.claude/context/project/physics/dynamical-systems/dynamical-systems.md
 ```

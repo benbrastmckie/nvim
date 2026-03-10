@@ -64,9 +64,9 @@ Load these on-demand using @-references.
 
 ### Index Files (Load Based on Domain)
 
-- `@.claude/extensions/formal/context/project/logic/README.md` - Logic domain index
-- `@.claude/extensions/formal/context/project/math/README.md` - Math domain index
-- `@.claude/extensions/formal/context/project/physics/README.md` - Physics domain index
+- `@.claude/context/project/logic/README.md` - Logic domain index
+- `@.claude/context/project/math/README.md` - Math domain index
+- `@.claude/context/project/physics/README.md` - Physics domain index
 
 ### Always Load
 

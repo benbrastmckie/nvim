@@ -15,9 +15,9 @@ This eliminates the "continue" prompt issue between skill return and orchestrato
 ## Context References
 
 Reference (do not load eagerly):
-- Path: `.claude/extensions/web/context/project/web/README.md` - Web context overview
-- Path: `.claude/extensions/web/context/project/web/domain/astro-framework.md` - Astro reference
-- Path: `.claude/extensions/web/context/project/web/domain/tailwind-v4.md` - Tailwind v4 reference
+- Path: `.claude/context/project/web/README.md` - Web context overview
+- Path: `.claude/context/project/web/domain/astro-framework.md` - Astro reference
+- Path: `.claude/context/project/web/domain/tailwind-v4.md` - Tailwind v4 reference
 
 Note: This skill is a thin wrapper with internal postflight. Context is loaded by the delegated agent.
 

@@ -106,7 +106,7 @@ Research report 001 confirmed the sync mechanism works correctly and identified 
 
 ---
 
-### Phase 3: Remove Extension Artifact Files and Update Manifests [NOT STARTED]
+### Phase 3: Remove Extension Artifact Files and Update Manifests [COMPLETED]
 
 - **Goal:** Remove duplicated files from extensions/ subdirectories so core is the single source of truth. Update manifests to reference core paths. Update the extension loader to resolve files from core.
 

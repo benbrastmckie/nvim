@@ -64,7 +64,7 @@ specs/{NNN}_{SLUG}/
 | `general` | `skill-researcher` | `skill-implementer` | WebSearch, WebFetch, Read, Write, Edit, Bash |
 | `meta` | `skill-researcher` | `skill-implementer` | Read, Grep, Glob, Write, Edit |
 
-**Note**: Extension skills (neovim, z3, etc.) are located in `.claude/extensions/{ext}/skills/`. Claude Code discovers these automatically.
+**Note**: All skills including extension-provided skills (neovim, z3, etc.) are in `.claude/skills/`. Extension metadata is in `.claude/extensions/`.
 
 ## Command Reference
 
@@ -142,7 +142,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. Research and planning agents use `opus` for superior reasoning. Implementation agents use default model. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 
-**Note**: Additional skills (neovim, latex, typst, z3, etc.) are available via extensions in `.claude/extensions/`.
+**Note**: All skills including extension-provided skills (neovim, latex, typst, z3, etc.) are in `.claude/skills/`.
 
 ## Rules References
 
@@ -153,7 +153,7 @@ Core rules (auto-applied by file path):
 - @.claude/rules/artifact-formats.md - Report/plan formats (specs/**)
 - @.claude/rules/workflows.md - Command lifecycle (.claude/**)
 
-**Note**: Extension rules (neovim-lua.md, etc.) are provided by extensions in `.claude/extensions/`.
+**Note**: All rules including extension-provided rules (neovim-lua.md, etc.) are in `.claude/rules/`.
 
 ## Context Discovery
 
@@ -172,14 +172,14 @@ jq -r '.entries[] | select(.load_when.agents[]? == "planner-agent") | "\(.line_c
 
 See `.claude/context/core/patterns/context-discovery.md` for query patterns.
 
-**Note**: Extension context files (neovim, z3, etc.) have their own index-entries.json in `.claude/extensions/{ext}/`.
+**Note**: All context files including extension-provided context are in `.claude/context/`. Extension metadata (index-entries.json) remains in `.claude/extensions/{ext}/` for reference.
 
 ## Context Imports
 
 Domain knowledge (load as needed):
 - @.claude/context/project/repo/project-overview.md
 
-**Note**: Extension context imports (neovim, z3, etc.) are documented in each extension's EXTENSION.md file.
+**Note**: All context imports are available directly from `.claude/context/project/`. Extension EXTENSION.md files document extension capabilities for reference.
 
 ## Multi-Task Creation Standards
 

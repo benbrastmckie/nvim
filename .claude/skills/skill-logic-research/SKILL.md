@@ -105,7 +105,7 @@ Parameters:
 **DO NOT** use `Skill(logic-research-agent)` - this will FAIL.
 
 The subagent will:
-- Load domain context files from `.claude/extensions/formal/context/project/logic/`
+- Load domain context files from `.claude/context/project/logic/`
 - Search codebase for existing patterns
 - Use Mathlib lookup tools (lean_leansearch, lean_loogle, lean_leanfinder, lean_local_search)
 - Execute web research for mathematical logic literature

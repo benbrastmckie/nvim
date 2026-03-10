@@ -630,7 +630,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/README.md",
+      "path": ".claude/context/project/nix/README.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -648,7 +648,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/domain/nix-language.md",
+      "path": ".claude/context/project/nix/domain/nix-language.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -666,7 +666,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/domain/flakes.md",
+      "path": ".claude/context/project/nix/domain/flakes.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -684,7 +684,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/domain/nixos-modules.md",
+      "path": ".claude/context/project/nix/domain/nixos-modules.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -702,7 +702,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/domain/home-manager.md",
+      "path": ".claude/context/project/nix/domain/home-manager.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -720,7 +720,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/patterns/module-patterns.md",
+      "path": ".claude/context/project/nix/patterns/module-patterns.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -738,7 +738,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/patterns/overlay-patterns.md",
+      "path": ".claude/context/project/nix/patterns/overlay-patterns.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -756,7 +756,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/patterns/derivation-patterns.md",
+      "path": ".claude/context/project/nix/patterns/derivation-patterns.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -774,7 +774,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/standards/nix-style-guide.md",
+      "path": ".claude/context/project/nix/standards/nix-style-guide.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -792,7 +792,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/tools/nixos-rebuild-guide.md",
+      "path": ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -810,7 +810,7 @@
       }
     },
     {
-      "path": ".claude/extensions/nix/context/project/nix/tools/home-manager-guide.md",
+      "path": ".claude/context/project/nix/tools/home-manager-guide.md",
       "domain": "project",
       "subdomain": "nix",
       "topics": [],
@@ -828,7 +828,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/README.md",
+      "path": ".claude/context/project/web/README.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -846,7 +846,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/domain/astro-framework.md",
+      "path": ".claude/context/project/web/domain/astro-framework.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -864,7 +864,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/domain/tailwind-v4.md",
+      "path": ".claude/context/project/web/domain/tailwind-v4.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -882,7 +882,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/domain/cloudflare-pages.md",
+      "path": ".claude/context/project/web/domain/cloudflare-pages.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -900,7 +900,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/domain/typescript-web.md",
+      "path": ".claude/context/project/web/domain/typescript-web.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -918,7 +918,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/patterns/astro-component.md",
+      "path": ".claude/context/project/web/patterns/astro-component.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -936,7 +936,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/patterns/astro-layout.md",
+      "path": ".claude/context/project/web/patterns/astro-layout.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -954,7 +954,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/patterns/astro-content-collections.md",
+      "path": ".claude/context/project/web/patterns/astro-content-collections.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -972,7 +972,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/patterns/tailwind-patterns.md",
+      "path": ".claude/context/project/web/patterns/tailwind-patterns.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -990,7 +990,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/patterns/accessibility-patterns.md",
+      "path": ".claude/context/project/web/patterns/accessibility-patterns.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1008,7 +1008,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/standards/web-style-guide.md",
+      "path": ".claude/context/project/web/standards/web-style-guide.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1026,7 +1026,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/standards/performance-standards.md",
+      "path": ".claude/context/project/web/standards/performance-standards.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1044,7 +1044,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/standards/accessibility-standards.md",
+      "path": ".claude/context/project/web/standards/accessibility-standards.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1062,7 +1062,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/tools/astro-cli-guide.md",
+      "path": ".claude/context/project/web/tools/astro-cli-guide.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1080,7 +1080,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/tools/pnpm-guide.md",
+      "path": ".claude/context/project/web/tools/pnpm-guide.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1098,7 +1098,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/tools/cloudflare-deploy-guide.md",
+      "path": ".claude/context/project/web/tools/cloudflare-deploy-guide.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1116,7 +1116,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/tools/cicd-pipeline-guide.md",
+      "path": ".claude/context/project/web/tools/cicd-pipeline-guide.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1134,7 +1134,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/tools/debugging-utilities.md",
+      "path": ".claude/context/project/web/tools/debugging-utilities.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1152,7 +1152,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/templates/astro-page-template.md",
+      "path": ".claude/context/project/web/templates/astro-page-template.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1169,7 +1169,7 @@
       }
     },
     {
-      "path": ".claude/extensions/web/context/project/web/templates/astro-component-template.md",
+      "path": ".claude/context/project/web/templates/astro-component-template.md",
       "domain": "project",
       "subdomain": "web",
       "topics": [],
@@ -1186,7 +1186,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/README.md",
+      "path": ".claude/context/project/logic/README.md",
       "domain": "project",
       "subdomain": "index",
       "topics": [],
@@ -1205,7 +1205,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/kripke-semantics-overview.md",
+      "path": ".claude/context/project/logic/domain/kripke-semantics-overview.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1229,7 +1229,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/metalogic-concepts.md",
+      "path": ".claude/context/project/logic/domain/metalogic-concepts.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1253,7 +1253,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/proof-theory-concepts.md",
+      "path": ".claude/context/project/logic/domain/proof-theory-concepts.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1277,7 +1277,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/bilateral-propositions.md",
+      "path": ".claude/context/project/logic/domain/bilateral-propositions.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1301,7 +1301,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/bilateral-semantics.md",
+      "path": ".claude/context/project/logic/domain/bilateral-semantics.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1325,7 +1325,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/counterfactual-semantics.md",
+      "path": ".claude/context/project/logic/domain/counterfactual-semantics.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1349,7 +1349,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/lattice-theory-concepts.md",
+      "path": ".claude/context/project/logic/domain/lattice-theory-concepts.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1373,7 +1373,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/mereology-foundations.md",
+      "path": ".claude/context/project/logic/domain/mereology-foundations.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1397,7 +1397,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/spatial-domain.md",
+      "path": ".claude/context/project/logic/domain/spatial-domain.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1421,7 +1421,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/task-semantics.md",
+      "path": ".claude/context/project/logic/domain/task-semantics.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1445,7 +1445,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/domain/topological-foundations-domain.md",
+      "path": ".claude/context/project/logic/domain/topological-foundations-domain.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1469,7 +1469,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/processes/modal-proof-strategies.md",
+      "path": ".claude/context/project/logic/processes/modal-proof-strategies.md",
       "domain": "project",
       "subdomain": "processes",
       "topics": [
@@ -1493,7 +1493,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/processes/temporal-proof-strategies.md",
+      "path": ".claude/context/project/logic/processes/temporal-proof-strategies.md",
       "domain": "project",
       "subdomain": "processes",
       "topics": [
@@ -1517,7 +1517,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/processes/proof-construction.md",
+      "path": ".claude/context/project/logic/processes/proof-construction.md",
       "domain": "project",
       "subdomain": "processes",
       "topics": [
@@ -1540,7 +1540,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/processes/verification-workflow.md",
+      "path": ".claude/context/project/logic/processes/verification-workflow.md",
       "domain": "project",
       "subdomain": "processes",
       "topics": [
@@ -1563,7 +1563,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/standards/proof-conventions.md",
+      "path": ".claude/context/project/logic/standards/proof-conventions.md",
       "domain": "project",
       "subdomain": "standards",
       "topics": [],
@@ -1582,7 +1582,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/standards/notation-standards.md",
+      "path": ".claude/context/project/logic/standards/notation-standards.md",
       "domain": "project",
       "subdomain": "standards",
       "topics": [],
@@ -1601,7 +1601,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/logic/standards/naming-conventions.md",
+      "path": ".claude/context/project/logic/standards/naming-conventions.md",
       "domain": "project",
       "subdomain": "standards",
       "topics": [],
@@ -1620,7 +1620,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/README.md",
+      "path": ".claude/context/project/math/README.md",
       "domain": "project",
       "subdomain": "index",
       "topics": [],
@@ -1639,7 +1639,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/algebra/groups-and-monoids.md",
+      "path": ".claude/context/project/math/algebra/groups-and-monoids.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1663,7 +1663,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/algebra/rings-and-fields.md",
+      "path": ".claude/context/project/math/algebra/rings-and-fields.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1687,7 +1687,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/lattice-theory/lattices.md",
+      "path": ".claude/context/project/math/lattice-theory/lattices.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1712,7 +1712,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/lattice-theory/bilattice-theory.md",
+      "path": ".claude/context/project/math/lattice-theory/bilattice-theory.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1735,7 +1735,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/order-theory/partial-orders.md",
+      "path": ".claude/context/project/math/order-theory/partial-orders.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1759,7 +1759,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/order-theory/monoidal-posets.md",
+      "path": ".claude/context/project/math/order-theory/monoidal-posets.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1783,7 +1783,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/topology/topological-spaces.md",
+      "path": ".claude/context/project/math/topology/topological-spaces.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1807,7 +1807,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/topology/scott-topology.md",
+      "path": ".claude/context/project/math/topology/scott-topology.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1831,7 +1831,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/category-theory/basics.md",
+      "path": ".claude/context/project/math/category-theory/basics.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1855,7 +1855,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/category-theory/monoidal-categories.md",
+      "path": ".claude/context/project/math/category-theory/monoidal-categories.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1879,7 +1879,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/category-theory/enriched-categories.md",
+      "path": ".claude/context/project/math/category-theory/enriched-categories.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1902,7 +1902,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/category-theory/lawvere-metric-spaces.md",
+      "path": ".claude/context/project/math/category-theory/lawvere-metric-spaces.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1926,7 +1926,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/category-theory/cauchy-completion.md",
+      "path": ".claude/context/project/math/category-theory/cauchy-completion.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1949,7 +1949,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/category-theory/profunctors.md",
+      "path": ".claude/context/project/math/category-theory/profunctors.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1972,7 +1972,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/math/foundations/dependent-type-theory.md",
+      "path": ".claude/context/project/math/foundations/dependent-type-theory.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [
@@ -1997,7 +1997,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/physics/README.md",
+      "path": ".claude/context/project/physics/README.md",
       "domain": "project",
       "subdomain": "index",
       "topics": [],
@@ -2016,7 +2016,7 @@
       }
     },
     {
-      "path": ".claude/extensions/formal/context/project/physics/dynamical-systems/dynamical-systems.md",
+      "path": ".claude/context/project/physics/dynamical-systems/dynamical-systems.md",
       "domain": "project",
       "subdomain": "domain",
       "topics": [

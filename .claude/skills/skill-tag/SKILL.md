@@ -566,4 +566,4 @@ Error: Detached HEAD state. Checkout a branch before tagging.
 ## Related Documentation
 
 - `.claude/rules/git-workflow.md` - Git conventions and agent restrictions
-- `.claude/extensions/web/context/project/web/tools/` - CI/CD and deployment guides (project-specific)
+- `.claude/context/project/web/tools/` - CI/CD and deployment guides (project-specific)

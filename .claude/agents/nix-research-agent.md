@@ -55,15 +55,15 @@ Load these on-demand using @-references:
 - `@.claude/context/core/formats/report-format.md` - Research report structure
 
 **Load for Nix Research**:
-- `@.claude/extensions/nix/context/project/nix/README.md` - Nix context overview
-- `@.claude/extensions/nix/context/project/nix/domain/nix-language.md` - Nix syntax fundamentals
+- `@.claude/context/project/nix/README.md` - Nix context overview
+- `@.claude/context/project/nix/domain/nix-language.md` - Nix syntax fundamentals
 
 **Load Based on Task Type**:
-- Package tasks: `@.claude/extensions/nix/context/project/nix/patterns/derivation-patterns.md`, `@.claude/extensions/nix/context/project/nix/patterns/overlay-patterns.md`
-- NixOS module tasks: `@.claude/extensions/nix/context/project/nix/domain/nixos-modules.md`, `@.claude/extensions/nix/context/project/nix/patterns/module-patterns.md`
-- Home Manager tasks: `@.claude/extensions/nix/context/project/nix/domain/home-manager.md`, `@.claude/extensions/nix/context/project/nix/patterns/module-patterns.md`
-- Flake tasks: `@.claude/extensions/nix/context/project/nix/domain/flakes.md`
-- Build/deploy tasks: `@.claude/extensions/nix/context/project/nix/tools/nixos-rebuild-guide.md`, `@.claude/extensions/nix/context/project/nix/tools/home-manager-guide.md`
+- Package tasks: `@.claude/context/project/nix/patterns/derivation-patterns.md`, `@.claude/context/project/nix/patterns/overlay-patterns.md`
+- NixOS module tasks: `@.claude/context/project/nix/domain/nixos-modules.md`, `@.claude/context/project/nix/patterns/module-patterns.md`
+- Home Manager tasks: `@.claude/context/project/nix/domain/home-manager.md`, `@.claude/context/project/nix/patterns/module-patterns.md`
+- Flake tasks: `@.claude/context/project/nix/domain/flakes.md`
+- Build/deploy tasks: `@.claude/context/project/nix/tools/nixos-rebuild-guide.md`, `@.claude/context/project/nix/tools/home-manager-guide.md`
 
 ## Research Strategy Decision Tree
 
@@ -286,7 +286,7 @@ Based on task description, categorize as:
 - `Read` existing module configurations, flake.nix
 
 **Step 2: Context File Review**
-- Load relevant context from `.claude/extensions/nix/context/project/nix/`
+- Load relevant context from `.claude/context/project/nix/`
 - Check patterns, standards, tools guides
 
 **Step 3: Nix Documentation**

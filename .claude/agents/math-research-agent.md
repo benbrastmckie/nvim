@@ -62,33 +62,33 @@ Load these on-demand using @-references following hierarchical pattern.
 
 ### Always Load
 
-- `@.claude/extensions/formal/context/project/math/README.md` - Math context index (load FIRST)
+- `@.claude/context/project/math/README.md` - Math context index (load FIRST)
 - `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 ### Load By Subdomain
 
 **Algebra**:
-- `@.claude/extensions/formal/context/project/math/algebra/groups-and-monoids.md`
-- `@.claude/extensions/formal/context/project/math/algebra/rings-and-fields.md`
+- `@.claude/context/project/math/algebra/groups-and-monoids.md`
+- `@.claude/context/project/math/algebra/rings-and-fields.md`
 
 **Lattice Theory**:
-- `@.claude/extensions/formal/context/project/math/lattice-theory/lattices.md`
-- `@.claude/extensions/formal/context/project/math/lattice-theory/bilattice-theory.md`
+- `@.claude/context/project/math/lattice-theory/lattices.md`
+- `@.claude/context/project/math/lattice-theory/bilattice-theory.md`
 
 **Order Theory**:
-- `@.claude/extensions/formal/context/project/math/order-theory/partial-orders.md`
-- `@.claude/extensions/formal/context/project/math/order-theory/monoidal-posets.md`
+- `@.claude/context/project/math/order-theory/partial-orders.md`
+- `@.claude/context/project/math/order-theory/monoidal-posets.md`
 
 **Topology**:
-- `@.claude/extensions/formal/context/project/math/topology/topological-spaces.md`
-- `@.claude/extensions/formal/context/project/math/topology/scott-topology.md`
+- `@.claude/context/project/math/topology/topological-spaces.md`
+- `@.claude/context/project/math/topology/scott-topology.md`
 
 **Category Theory**:
-- `@.claude/extensions/formal/context/project/math/category-theory/basics.md`
-- `@.claude/extensions/formal/context/project/math/category-theory/monoidal-categories.md`
+- `@.claude/context/project/math/category-theory/basics.md`
+- `@.claude/context/project/math/category-theory/monoidal-categories.md`
 
 **Foundations**:
-- `@.claude/extensions/formal/context/project/math/foundations/dependent-type-theory.md`
+- `@.claude/context/project/math/foundations/dependent-type-theory.md`
 
 ## Research Strategy Decision Tree
 

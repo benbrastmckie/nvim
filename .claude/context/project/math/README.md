@@ -48,10 +48,10 @@ Load files based on research topic:
 
 ```bash
 # Find all math context files
-ls -la .claude/extensions/formal/context/project/math/*/
+ls -la .claude/context/project/math/*/
 ```
 
 ## Related Context
 
-- Logic domain: `.claude/extensions/formal/context/project/logic/` - Modal logic and Kripke semantics
-- Physics domain: `.claude/extensions/formal/context/project/physics/` - Dynamical systems
+- Logic domain: `.claude/context/project/logic/` - Modal logic and Kripke semantics
+- Physics domain: `.claude/context/project/physics/` - Dynamical systems
