@@ -51,20 +51,18 @@ specs/{NNN}_{SLUG}/
 
 ### Language-Based Routing
 
+**Core Languages** (always available):
+
 | Language | Research Skill | Implementation Skill | Tools |
 |----------|----------------|---------------------|-------|
-| `lean4` | `skill-lean-research` | `skill-lean-implementation` | MCP (lean-lsp), Read, Write, Edit |
-| `latex` | `skill-latex-research` | `skill-latex-implementation` | WebSearch, Read, Write, Edit, Bash |
-| `typst` | `skill-typst-research` | `skill-typst-implementation` | WebSearch, Read, Write, Edit, Bash |
-| `python` | `skill-python-research` | `skill-python-implementation` | WebSearch, Read, Write, Edit, Bash |
-| `nix` | `skill-nix-research` | `skill-nix-implementation` | MCP (mcp-nixos), Read, Write, Edit, Bash |
-| `web` | `skill-web-research` | `skill-web-implementation` | WebSearch, WebFetch, Read, Write, Edit, Bash |
-| `epidemiology` | `skill-epidemiology-research` | `skill-epidemiology-implementation` | WebSearch, Read, Write, Edit, Bash |
-| `formal`, `logic`, `math`, `physics` | `skill-formal-research` | `skill-implementer` | WebSearch, Read, Write, Edit |
 | `general` | `skill-researcher` | `skill-implementer` | WebSearch, WebFetch, Read, Write, Edit, Bash |
 | `meta` | `skill-researcher` | `skill-implementer` | Read, Grep, Glob, Write, Edit |
 
-**Note**: All skills including extension-provided skills (neovim, z3, etc.) are in `.claude/skills/`. Extension metadata is in `.claude/extensions/`.
+**Extension Languages** (available when extensions are loaded via `<leader>ac`):
+
+Extensions provide additional language support (neovim, lean4, latex, typst, python, nix, web, z3, epidemiology, formal, etc.). See `.claude/extensions/*/manifest.json` for available extensions and their capabilities.
+
+When an extension is loaded, its routing entries are merged into the command tables and context index.
 
 ## Command Reference
 
@@ -142,7 +140,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. Research and planning agents use `opus` for superior reasoning. Implementation agents use default model. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 
-**Note**: All skills including extension-provided skills (neovim, latex, typst, z3, etc.) are in `.claude/skills/`.
+**Extension Skills**: When extensions are loaded, additional skill-to-agent mappings are added (e.g., skill-neovim-research -> neovim-research-agent).
 
 ## Rules References
 
@@ -153,7 +151,7 @@ Core rules (auto-applied by file path):
 - @.claude/rules/artifact-formats.md - Report/plan formats (specs/**)
 - @.claude/rules/workflows.md - Command lifecycle (.claude/**)
 
-**Note**: All rules including extension-provided rules (neovim-lua.md, etc.) are in `.claude/rules/`.
+**Extension Rules**: When extensions are loaded, additional rules are added (e.g., neovim-lua.md for Lua development).
 
 ## Context Discovery
 
@@ -172,14 +170,15 @@ jq -r '.entries[] | select(.load_when.agents[]? == "planner-agent") | "\(.line_c
 
 See `.claude/context/core/patterns/context-discovery.md` for query patterns.
 
-**Note**: All context files including extension-provided context are in `.claude/context/`. Extension metadata (index-entries.json) remains in `.claude/extensions/{ext}/` for reference.
+**Extension Context**: When extensions are loaded, their index entries are merged into `index.json`, enabling dynamic context discovery for extension-specific agents and languages.
 
 ## Context Imports
 
-Domain knowledge (load as needed):
+Core context (always available):
 - @.claude/context/project/repo/project-overview.md
+- @.claude/context/project/meta/meta-guide.md
 
-**Note**: All context imports are available directly from `.claude/context/project/`. Extension EXTENSION.md files document extension capabilities for reference.
+**Extension Context**: Available when extensions are loaded via `<leader>ac`. Query `index.json` for extension-specific context files.
 
 ## Multi-Task Creation Standards
 

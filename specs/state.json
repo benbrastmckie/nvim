@@ -4,11 +4,11 @@
     {
       "project_number": 169,
       "project_name": "verify_agent_systems_wired_after_reload",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-10T19:14:19Z",
-      "last_updated": "2026-03-10T21:00:00Z",
-      "session_id": "sess_1773171815_2953a4",
+      "last_updated": "2026-03-10T19:51:07Z",
+      "session_id": "sess_1773172241_2db079",
       "researched": "2026-03-10T20:15:00Z",
       "planned": "2026-03-10T21:00:00Z",
       "artifacts": [
@@ -27,7 +27,8 @@
           "type": "plan",
           "summary": "6-phase plan to establish clean core/extension boundary, fix index.json as adaptive registry, and add post-load verification"
         }
-      ]
+      ],
+      "started": "2026-03-10T19:51:07Z"
     },
     {
       "project_number": 168,

@@ -72,7 +72,7 @@ Research identified three critical issues with the agent systems wiring: (1) ext
 
 ---
 
-### Phase 2: Clean Core Systems [NOT STARTED]
+### Phase 2: Clean Core Systems [COMPLETED]
 
 - **Goal:** Remove all extension-provided elements from the core `.claude/` and `.opencode/` systems so only core elements remain. Extension loader will re-add them when extensions are loaded.
 

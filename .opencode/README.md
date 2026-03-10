@@ -42,15 +42,16 @@ Terminal states: `[BLOCKED]`, `[ABANDONED]`, `[PARTIAL]`, `[EXPANDED]`
 
 ### Language Routing
 
+**Core Languages** (always available):
+
 | Language | Research Tools | Implementation Tools |
 |----------|----------------|---------------------|
-| `lean` | lean_leansearch, lean_loogle, lean_leanfinder | lean_goal, lean_hover_info, lean_multi_attempt |
-| `latex` | skill-latex-research (LaTeX context) | Read, Write, Edit, Bash (pdflatex) |
-| `typst` | skill-typst-research (Typst context) | Read, Write, Edit, Bash (typst compile) |
 | `general` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash |
 | `meta` | Read, Grep, Glob | Write, Edit |
 
-**Note**: Extension languages (neovim, z3, etc.) are provided by extensions in `extensions/`.
+**Extension Languages** (available when extensions are loaded via `<leader>ao`):
+
+Extensions provide specialized routing for additional languages: lean4, latex, typst, neovim, python, nix, web, z3, epidemiology, formal/logic/math/physics. See `extensions/*/manifest.json` for available extensions.
 
 ### Checkpoint Execution
 
@@ -191,26 +192,22 @@ TODO.md and state.json must stay synchronized. Update state.json first (machine 
 
 ## Skill-to-Agent Mapping
 
+**Core Skills** (always available):
+
 | Skill | Agent | Purpose |
 |-------|-------|---------|
-| skill-lean-research | lean-research-agent | Lean 4/Mathlib research |
-| skill-lean-implementation | lean-implementation-agent | Lean proof implementation |
-| skill-logic-research | logic-research-agent | Mathematical logic research |
-| skill-math-research | math-research-agent | Mathematical foundations research |
-| skill-latex-research | latex-research-agent | LaTeX documentation research |
 | skill-researcher | general-research-agent | General web/codebase research |
 | skill-planner | planner-agent | Implementation plan creation |
 | skill-implementer | general-implementation-agent | General file implementation |
-| skill-latex-implementation | latex-implementation-agent | LaTeX document implementation |
-| skill-typst-implementation | typst-implementation-agent | Typst document implementation |
-| skill-typst-research | typst-research-agent | Typst documentation research |
 | skill-meta | meta-builder-agent | System building and task creation |
-| skill-filetypes | filetypes-router-agent | File format conversion |
 | skill-status-sync | (direct execution) | Atomic status updates |
 | skill-refresh | (direct execution) | Process and file cleanup |
 | skill-git-workflow | (direct execution) | Scoped git commits |
 | skill-fix | (direct execution) | Scan for FIX:/NOTE:/TODO: tags |
+| skill-todo | (direct execution) | Archive completed tasks |
 | skill-orchestrator | (direct execution) | Route commands to workflows |
+
+**Extension Skills**: When extensions are loaded via `<leader>ao`, additional skill-to-agent mappings are available (e.g., skill-lean-research -> lean-research-agent, skill-neovim-research -> neovim-research-agent).
 
 ## Rules and Conventions
 
