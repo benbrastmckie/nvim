@@ -1,6 +1,14 @@
 {
-  "next_project_number": 174,
+  "next_project_number": 175,
   "active_projects": [
+    {
+      "project_number": 174,
+      "project_name": "study_opencode_memory_extension",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-10T23:21:15Z",
+      "last_updated": "2026-03-10T23:21:15Z"
+    },
     {
       "project_number": 87,
       "project_name": "investigate_wezterm_terminal_directory_change",

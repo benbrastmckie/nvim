@@ -1,10 +1,20 @@
 ---
-next_project_number: 174
+next_project_number: 175
 ---
 
 # TODO
 
 ## Tasks
+
+### 174. Study .opencode/memory/ systems for memory extension creation
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Study the .opencode/memory/ systems and related commands, skills, agents, rules, context files, etc., in order to move this to a memory/ extension that I can selectively load. Carefully review the existing extensions and how they are loaded in order to identify exactly how to proceed, and what changes if any are required to be made to the extension system for memory/ to be an extension.
+
+---
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
