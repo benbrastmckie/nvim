@@ -4,10 +4,10 @@
     {
       "project_number": 169,
       "project_name": "verify_agent_systems_wired_after_reload",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-10T19:14:19Z",
-      "last_updated": "2026-03-10T19:51:07Z",
+      "last_updated": "2026-03-10T20:04:12Z",
       "session_id": "sess_1773172241_2db079",
       "researched": "2026-03-10T20:15:00Z",
       "planned": "2026-03-10T21:00:00Z",
@@ -26,9 +26,17 @@
           "path": "specs/169_verify_agent_systems_wired_after_reload/plans/implementation-001.md",
           "type": "plan",
           "summary": "6-phase plan to establish clean core/extension boundary, fix index.json as adaptive registry, and add post-load verification"
+        },
+        {
+          "path": "specs/169_verify_agent_systems_wired_after_reload/summaries/implementation-summary-20260310.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "started": "2026-03-10T19:51:07Z"
+      "started": "2026-03-10T19:51:07Z",
+      "completed": "2026-03-10T20:04:12Z",
+      "completion_summary": "Established clean core/extension separation for both agent systems. Core systems now contain only 4 agents, 10 skills, 5 rules, with extensions providing domain-specific content. Added post-load verification module and wiring validation script.",
+      "claudemd_suggestions": "Updated .claude/CLAUDE.md to reflect core-only routing tables and extension notes. Created .claude/extensions/README.md with extension authoring guide and path format requirements."
     },
     {
       "project_number": 168,
