@@ -172,23 +172,10 @@ function M.create(config)
       return false, "Extension already loaded: " .. extension_name
     end
 
-    -- Check for conflicts
+    -- Check for conflicts (used in confirmation dialog)
     local conflicts = loader_mod.check_conflicts(ext_manifest, target_dir)
-    if #conflicts > 0 and confirm then
-      local conflict_msg = "The following files would be overwritten:\n"
-      for _, c in ipairs(conflicts) do
-        conflict_msg = conflict_msg .. "  - " .. c.category .. "/" .. c.file .. "\n"
-      end
-      conflict_msg = conflict_msg .. "\nProceed anyway?"
 
-      local choice = vim.fn.confirm(conflict_msg, "&Yes\n&No", 2)
-      if choice ~= 1 then
-        helpers.notify("Extension load cancelled", "INFO")
-        return false, "Cancelled by user"
-      end
-    end
-
-    -- Confirmation dialog
+    -- Single merged confirmation dialog
     if confirm then
       local provides_summary = ""
       if ext_manifest.provides then
@@ -199,12 +186,19 @@ function M.create(config)
         end
       end
 
+      -- Include conflict info in the message if conflicts exist
+      local conflict_note = ""
+      if #conflicts > 0 then
+        conflict_note = string.format("\n\nNote: %d existing file(s) will be overwritten.", #conflicts)
+      end
+
       local message = string.format(
-        "Load extension '%s' v%s?\n\n%s\n%s",
+        "Load extension '%s' v%s?\n\n%s\n%s%s",
         extension_name,
         ext_manifest.version,
         ext_manifest.description,
-        provides_summary ~= "" and "\nFiles to install:\n" .. provides_summary or ""
+        provides_summary ~= "" and "\nFiles to install:\n" .. provides_summary or "",
+        conflict_note
       )
 
       local choice = vim.fn.confirm(message, "&Load\n&Cancel", 2)

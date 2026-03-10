@@ -23,7 +23,7 @@
     ],
     "rules": [],
     "context": [
-      "context/project/filetypes"
+      "project/filetypes"
     ],
     "scripts": [],
     "hooks": []
