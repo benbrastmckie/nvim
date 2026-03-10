@@ -3,7 +3,7 @@
 - **Task**: 171 - Re-audit agent systems after core reload and extension re-load
 - **Date**: 2026-03-10
 - **Feature**: Fix OPENCODE.md missing core content after extension reload
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Estimated Hours**: 0.25-0.5 hours
 - **Standards File**: /home/benjamin/.config/nvim/CLAUDE.md
 - **Research Reports**: [research-001.md](../reports/research-001.md)
@@ -41,7 +41,7 @@ The research audit found that after reloading extensions, OPENCODE.md in `/home/
 
 ## Implementation Phases
 
-### Phase 1: Merge Core Content into OPENCODE.md [NOT STARTED]
+### Phase 1: Merge Core Content into OPENCODE.md [COMPLETED]
 
 **Goal**: OPENCODE.md should have core README.md content followed by extension sections.
 
@@ -64,7 +64,7 @@ The research audit found that after reloading extensions, OPENCODE.md in `/home/
 
 ---
 
-### Phase 2: Final Validation [NOT STARTED]
+### Phase 2: Final Validation [COMPLETED]
 
 **Goal**: Confirm the fix is complete and system is functional.
 

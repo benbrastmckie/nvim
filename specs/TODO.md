@@ -8,11 +8,13 @@ next_project_number: 172
 
 ### 171. Re-audit agent systems after core reload and extension re-load
 - **Effort**: 0.25-0.5 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-03-10
 - **Research Completed**: 2026-03-10
 - **Planning Started**: 2026-03-10
 - **Planning Completed**: 2026-03-10
+- **Completed**: 2026-03-10
+- **Summary**: Merged core README.md content into OPENCODE.md in Vision project. File now has 833 lines with core content followed by 11 extension sections.
 - **Language**: meta
 - **Research**: [research-001.md](171_re_audit_agent_systems_post_reload/reports/research-001.md)
 - **Plan**: [implementation-001.md](171_re_audit_agent_systems_post_reload/plans/implementation-001.md)
