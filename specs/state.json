@@ -4,10 +4,19 @@
     {
       "project_number": 173,
       "project_name": "rename_learn_command_to_fix_it",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-10T22:22:38Z",
-      "last_updated": "2026-03-10T22:22:38Z"
+      "last_updated": "2026-03-10T22:30:00Z",
+      "session_id": "sess_1773181454_f6f0e4",
+      "researched": "2026-03-10T22:30:00Z",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/173_rename_learn_command_to_fix_it/reports/research-001.md",
+          "summary": "Comprehensive inventory of 7 files and ~67 references to /learn and skill-learn requiring updates for rename to /fix-it"
+        }
+      ]
     },
     {
       "project_number": 172,
