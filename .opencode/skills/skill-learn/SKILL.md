@@ -1,326 +1,1005 @@
 ---
 name: skill-learn
-description: Add a memory to the vault with checkbox-based multi-select confirmation
-allowed-tools: Bash, Edit, Read, Write, Grep, AskUserQuestion, Glob
+description: Scan codebase for FIX:/NOTE:/TODO:/QUESTION: tags and create structured tasks with interactive selection. Invoke for /learn command.
+allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion
 ---
 
-# Learn Skill
+# Learn Skill (Direct Execution)
 
-Direct execution skill for adding memories to the vault using checkbox-based interactive confirmation.
+Direct execution skill for scanning files, presenting findings interactively, and creating user-selected tasks. Replaces the previous delegation-based approach with synchronous execution and AskUserQuestion prompts.
 
-<context>
-  <system_context>OpenCode memory management with interactive multi-select.</system_context>
-  <task_context>Add text, file content, or task artifacts as memory entry with user-guided actions.</task_context>
-</context>
+**Key behavior**: Users always see tag scan results BEFORE any tasks are created. Users select which task types to create via interactive prompts.
 
-<role>Direct execution skill for memory creation with checkbox-based confirmation. Supports standard mode (text/file input) and task mode (artifact review with classification).</role>
+## Context References
 
-<task>Parse input, generate memory entry, search for similar memories, present checkbox options, execute selected actions. In task mode, scan task artifacts and classify memories interactively.</task>
+Reference (do not load eagerly):
+- Path: `@specs/TODO.md` - Current task list
+- Path: `@specs/state.json` - Machine state
 
-<execution>
-  <stage id="1" name="ParseInput">
-    <action>Determine mode and parse input</action>
-    <process>
-      1. Check if mode is "task" (--task OC_N provided)
-      2. If task mode:
-         - Extract task number
-         - Validate task directory exists: specs/OC_{N}_*/
-      3. If standard mode:
-         - Check if input argument is an existing file path
-         - If file exists: read file content, use filename as title base
-         - If file doesn't exist: treat input as text content, use first line as title
-    </process>
-  </stage>
-  
-  <stage id="2" name="TaskModeScan" condition="mode == task">
-    <action>Scan task directory for artifacts</action>
-    <process>
-      1. Locate task directory: specs/OC_{N}_*/
-      2. Scan for artifact files in subdirectories:
-         - reports/*.md - Research reports
-         - plans/*.md - Implementation plans
-         - summaries/*.md - Completion summaries
-         - code/* - Code artifacts
-         - Any other files in task directory
-      3. Build artifact list with:
-         - File path
-         - File type (report/plan/summary/code/other)
-         - File size (for chunking large files)
-      4. If no artifacts found, return error
-    </process>
-  </stage>
-  
-  <stage id="3" name="TaskModeSelection" condition="mode == task">
-    <action>Present artifacts for user selection</action>
-    <process>
-      1. Display artifact list with numbers:
-         ```
-         Artifacts found for Task OC_{N}:
-         
-         1. reports/research-001.md (Research Report)
-         2. plans/implementation-003.md (Implementation Plan)
-         3. summaries/implementation-summary-20260118.md (Summary)
-         ```
-      
-      2. Use AskUserQuestion with multiSelect:
-         ```json
-         {
-           "question": "Select artifacts to review for memory extraction:",
-           "options": [
-             {"label": "1. reports/research-001.md", "value": "reports/research-001.md"},
-             {"label": "2. plans/implementation-003.md", "value": "plans/implementation-003.md"},
-             {"label": "Select all", "value": "all"}
-           ],
-           "multiple": true
-         }
-         ```
-      
-      3. Store selected artifacts for review
-    </process>
-  </stage>
-  
-  <stage id="4" name="TaskModeReview" condition="mode == task">
-    <action>Review selected artifacts and classify</action>
-    <process>
-      For each selected artifact:
-      1. Read file content
-      2. For large files (>5000 chars), show in chunks with navigation
-      3. Display content preview:
-         ```
-         Reviewing: plans/implementation-003.md
-         ─────────────────────────────────────────
-         [File content preview - first 1000 chars]
-         ...
-         ─────────────────────────────────────────
-         ```
-      
-      4. Present classification options with multiSelect:
-         ```json
-         {
-           "question": "Classify this artifact for memory creation (Task OC_{N} - {filename}):",
-           "options": [
-             {"label": "[TECHNIQUE] - Reusable method or approach", "value": "TECHNIQUE"},
-             {"label": "[PATTERN] - Design or implementation pattern", "value": "PATTERN"},
-             {"label": "[CONFIG] - Configuration or setup knowledge", "value": "CONFIG"},
-             {"label": "[WORKFLOW] - Process or procedure", "value": "WORKFLOW"},
-             {"label": "[INSIGHT] - Key learning or understanding", "value": "INSIGHT"},
-             {"label": "[SKIP] - Not valuable for memory", "value": "SKIP"}
-           ],
-           "multiple": false
-         }
-         ```
-      
-      5. Store classification per artifact
-      6. If SKIP selected, skip to next artifact
-    </process>
-  </stage>
-  
-  <stage id="5" name="GenerateID">
-    <action>Generate unique memory ID</action>
-    <process>
-      1. Scan .opencode/memory/10-Memories/ for existing MEM-YYYY-MM-DD-*.md files
-      2. Extract sequence numbers for today's date
-      3. Generate next number (001, 002, etc.)
-      4. Format: MEM-YYYY-MM-DD-NNN (e.g., MEM-2026-03-06-001)
-    </process>
-  </stage>
-  
-  <stage id="6" name="CreateEntry">
-    <action>Create memory entry from template</action>
-    <process>
-      1. Load template from .opencode/memory/30-Templates/memory-template.md
-      2. Extract metadata:
-         - Title: First line of text or filename
-         - Date: Current date (YYYY-MM-DD)
-         - Source: "user input", file path, or "Task OC_{N}"
-         - Tags: Empty (for future auto-extraction)
-         - Classification: Selected category (task mode only)
-      3. Fill template placeholders:
-         - {{date}} → current date
-         - {{sequence}} → sequence number (001, 002, etc.)
-         - {{title}} → extracted title
-         - {{tags}} → empty or comma-separated tags
-         - {{source}} → source description
-         - {{content}} → full content
-         - {{classification}} → category tag (task mode only)
-      4. Generate markdown content
-    </process>
-  </stage>
-  
-  <stage id="7" name="FindSimilar">
-    <action>Search for similar existing memories</action>
-    <process>
-      1. Extract keywords from title/content
-      2. Search .opencode/memory/10-Memories/ for matching content
-      3. If MCP server available, use search_notes tool for better results
-      4. Extract top 3 similar memories with IDs and titles
-      5. Store for display in confirmation dialog
-    </process>
-  </stage>
-  
-  <stage id="8" name="InteractiveConfirm">
-    <action>Show preview and present checkbox options</action>
-    <process>
-      1. Display memory preview:
-         ```
-         Memory Preview:
-         ─────────────────────────────────────────
-         ID: MEM-2026-03-06-001
-         Title: Neovim LSP Configuration Best Practices
-         Source: user input
-         Date: 2026-03-06
-         Classification: [CONFIG] (task mode only)
-         
-         Content Preview (first 300 chars):
-         When configuring LSP servers in Neovim, it's important to...
-         ─────────────────────────────────────────
-         
-         Similar Memories Found:
-         - MEM-2026-03-05-042: "LSP server setup guide"
-         - MEM-2026-03-04-038: "Neovim configuration tips"
-         ```
-      
-      2. Present checkbox options using AskUserQuestion with multiSelect:
-         ```json
-         {
-           "question": "What would you like to do with this memory?",
-           "options": [
-             {"label": "Add as new memory", "value": "add_new"},
-             {"label": "Update existing similar memory", "value": "update_existing"},
-             {"label": "Edit content before saving", "value": "edit_content"},
-             {"label": "Skip - don't save", "value": "skip"}
-           ],
-           "multiple": true
-         }
-         ```
-      
-      3. Handle user selections
-    </process>
-  </stage>
-  
-  <stage id="9" name="ExecuteActions">
-    <action>Execute selected actions</action>
-    <process>
-      Based on user selections:
-      
-      **If "skip" selected (only option or with others)**:
-      - Cancel operation for this memory
-      - Return success with no actions taken
-      
-      **If "edit_content" selected**:
-      - Open content in editable buffer
-      - Allow user modifications
-      - Use modified content for subsequent actions
-      
-      **If "add_new" selected**:
-      - Generate filename: MEM-YYYY-MM-DD-NNN-slugified-title.md
-      - Write to .opencode/memory/10-Memories/
-      - Append link to .opencode/memory/20-Indices/index.md
-      - Record "added" action
-      
-      **If "update_existing" selected**:
-      - Display list of similar memories found in Stage 7
-      - Let user select which memory to update
-      - Read existing memory file
-      - Append new content under "## Update History" section
-      - Add timestamp: `### Update: YYYY-MM-DD HH:MM`
-      - Record "updated" action
-      
-      **Handle multiple selections**:
-      - Execute "edit_content" first (if selected)
-      - Then execute "add_new" and/or "update_existing"
-      - Support merge scenarios (add AND update in one flow)
-    </process>
-  </stage>
-  
-  <stage id="10" name="CommitAndReport">
-    <action>Commit changes and report results</action>
-    <process>
-      1. Stage modified files with git add
-      2. Create commit with descriptive message:
-         - Single action: "memory: add MEM-2026-03-06-001"
-         - Multiple actions: "memory: add MEM-2026-03-06-001, update MEM-2026-03-05-042"
-         - Task mode: "memory: harvest from Task OC_{N} - {N} memories created"
-      3. Generate success report:
-         ```
-         Memory Operations Completed:
-         ✓ Added: MEM-2026-03-06-001 (.opencode/memory/10-Memories/...)
-         ✓ Updated: MEM-2026-03-05-042 (appended new content)
-         ✓ Index updated with 1 new link
-         
-         Git commit: <commit-hash>
-         ```
-      4. Return JSON with status, actions_taken, and memory IDs
-    </process>
-  </stage>
-</execution>
+---
 
-<validation>Validate checkbox confirmation, file creation, index updates, and task mode classification.</validation>
+## Execution
 
-<return_format>Return JSON: {"status": "completed", "mode": "task|standard", "memory_id": "...", "actions_taken": [...], "file_path": "...", "artifacts_reviewed": [...]}</return_format>
+### Step 1: Parse Arguments
 
-## Example Usage Flows
+Extract paths from command input:
 
-### Standard Mode
-```
-1. User: /learn "neovim lsp configuration best practices"
-2. Skill: Generates ID, creates entry from template
-3. Skill: Searches for similar memories
-4. Skill: Shows preview + finds 2 similar memories
-5. Skill: Displays checkbox:
-   - [x] Add as new memory
-   - [ ] Update existing similar memory
-   - [ ] Edit content before saving
-   - [ ] Skip - don't save
-6. User selects: Add as new
-7. Skill: Writes file to 10-Memories/
-8. Skill: Updates index.md
-9. Skill: Git commit
-10. Skill: Returns success
+```bash
+# Parse from command input
+paths="$ARGUMENTS"
+
+# Default to project root if no paths specified
+if [ -z "$paths" ]; then
+  paths="."
+fi
 ```
 
-### Task Mode
+**Note**: The `--dry-run` flag is no longer supported. The interactive flow is inherently "preview first" - users always see findings before any tasks are created.
+
+### Step 2: Generate Session ID
+
+Generate session ID for tracking:
+
+```bash
+session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ```
-1. User: /learn --task 142
-2. Skill: Scans specs/OC_142_*/ for artifacts
-3. Skill: Finds: research-002.md, implementation-003.md, summary-001.md
-4. Skill: Presents checkbox selection
-5. User selects: All three artifacts
-6. Skill: Reviews each artifact:
-   - research-002.md → [INSIGHT]
-   - implementation-003.md → [PATTERN]
-   - summary-001.md → [WORKFLOW]
-7. Skill: Creates 3 memories with classification tags
-8. Skill: Updates index.md with all 3
-9. Skill: Git commit: "memory: harvest from Task OC_142 - 3 memories"
-10. Skill: Returns success with artifact list
+
+### Step 3: Execute Tag Extraction
+
+Scan for tags using file-type-specific patterns. Use Bash with grep for consistent output parsing.
+
+#### 3.1: Extract FIX: Tags
+
+**Lua files (Neovim config)**:
+```bash
+grep -rn --include="*.lua" "-- FIX:" $paths 2>/dev/null || true
 ```
+
+**LaTeX files**:
+```bash
+grep -rn --include="*.tex" "% FIX:" $paths 2>/dev/null || true
+```
+
+**Markdown files**:
+```bash
+grep -rn --include="*.md" "<!-- FIX:" $paths 2>/dev/null || true
+```
+
+**Python/Shell/YAML files**:
+```bash
+grep -rn --include="*.py" --include="*.sh" --include="*.yaml" --include="*.yml" "# FIX:" $paths 2>/dev/null || true
+```
+
+#### 3.2: Extract NOTE: Tags
+
+Same patterns as above, replacing `FIX:` with `NOTE:`.
+
+#### 3.3: Extract TODO: Tags
+
+Same patterns as above, replacing `FIX:` with `TODO:`.
+
+#### 3.4: Extract QUESTION: Tags
+
+**Lua files (Neovim config)**:
+```bash
+grep -rn --include="*.lua" "-- QUESTION:" $paths 2>/dev/null || true
+```
+
+**LaTeX files**:
+```bash
+grep -rn --include="*.tex" "% QUESTION:" $paths 2>/dev/null || true
+```
+
+**Markdown files**:
+```bash
+grep -rn --include="*.md" "<!-- QUESTION:" $paths 2>/dev/null || true
+```
+
+**Python/Shell/YAML files**:
+```bash
+grep -rn --include="*.py" --include="*.sh" --include="*.yaml" --include="*.yml" "# QUESTION:" $paths 2>/dev/null || true
+```
+
+#### 3.5: Parse Results
+
+For each grep match, extract:
+- File path
+- Line number
+- Tag type (FIX, NOTE, TODO, QUESTION)
+- Tag content (text after the tag)
+
+Example raw output:
+```
+nvim/lua/plugins/telescope.lua:67:-- TODO: Add custom picker for git worktrees
+docs/KEYMAPS.md:89:<!-- FIX: Update keymap table with new bindings -->
+nvim/lua/config/lsp.lua:45:-- QUESTION: What is the best way to configure LSP hover windows?
+```
+
+Categorize into four arrays:
+- `fix_tags[]` - All FIX: tags
+- `note_tags[]` - All NOTE: tags
+- `todo_tags[]` - All TODO: tags
+- `question_tags[]` - All QUESTION: tags
+
+### Step 4: Display Tag Summary
+
+Present findings to user BEFORE any selection:
+
+```
+## Tag Scan Results
+
+**Files Scanned**: {paths}
+**Tags Found**: {total_count}
+
+### FIX: Tags ({count})
+- `{file}:{line}` - {content}
+- ...
+
+### NOTE: Tags ({count})
+- `{file}:{line}` - {content}
+- ...
+
+### TODO: Tags ({count})
+- `{file}:{line}` - {content}
+- ...
+
+### QUESTION: Tags ({count})
+- `{file}:{line}` - {content}
+- ...
+```
+
+### Step 5: Handle Edge Cases
+
+#### No Tags Found
+
+If no tags found:
+```
+## No Tags Found
+
+Scanned files in: {paths}
+No FIX:, NOTE:, TODO:, or QUESTION: tags detected.
+
+Nothing to create.
+```
+
+Exit gracefully without prompts.
+
+#### Only Certain Tag Types
+
+Only show task type options for tag types that exist:
+- FIX: tags exist -> offer "fix-it task"
+- NOTE: tags exist -> offer "fix-it task" AND "learn-it task"
+- TODO: tags exist -> offer "TODO tasks"
+- QUESTION: tags exist -> offer "Research tasks"
+
+### Step 6: Task Type Selection
+
+If tags were found, prompt user to select task types:
+
+```json
+{
+  "question": "Which task types should be created?",
+  "header": "Task Types",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "fix-it task",
+      "description": "Combine {N} FIX:/NOTE: tags into single task"
+    },
+    {
+      "label": "learn-it task",
+      "description": "Update context from {N} NOTE: tags"
+    },
+    {
+      "label": "TODO tasks",
+      "description": "Create tasks for {N} TODO: items"
+    },
+    {
+      "label": "Research tasks",
+      "description": "Create research tasks for {N} QUESTION: items"
+    }
+  ]
+}
+```
+
+**Important**: Only include options where the tag type exists:
+- Include "fix-it task" only if FIX: or NOTE: tags exist
+- Include "learn-it task" only if NOTE: tags exist
+- Include "TODO tasks" only if TODO: tags exist
+- Include "Research tasks" only if QUESTION: tags exist
+
+If user selects nothing, exit gracefully:
+```
+No task types selected. No tasks created.
+```
+
+### Step 7: Individual TODO Selection
+
+If "TODO tasks" was selected AND there are TODO: tags:
+
+#### Standard Case (<=20 TODOs)
+
+```json
+{
+  "question": "Select TODO items to create as tasks:",
+  "header": "TODO Selection",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "{content truncated to 50 chars}",
+      "description": "{file}:{line}"
+    },
+    ...
+  ]
+}
+```
+
+#### Large Number of TODOs (>20)
+
+Add a "Select all" option at the top:
+
+```json
+{
+  "question": "Select TODO items to create as tasks:",
+  "header": "TODO Selection (many items)",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "Select all ({N} items)",
+      "description": "Create a task for every TODO tag"
+    },
+    {
+      "label": "{content truncated to 50 chars}",
+      "description": "{file}:{line}"
+    },
+    ...
+  ]
+}
+```
+
+If "Select all" is chosen, include all TODOs. Otherwise, only selected items.
+
+### Step 7.5: Topic Grouping for TODO Items
+
+**Condition**: User selected "TODO tasks" AND selected more than 1 TODO item
+
+If only 1 TODO item was selected, skip to Step 8 (no grouping benefit).
+
+#### 7.5.1: Extract Topic Indicators
+
+For each selected TODO item, extract topic indicators:
+
+**Key Terms**: Extract significant words from the TODO content (nouns, verbs). Ignore stop words (the, a, is, to, for, etc.).
+
+**File Section**: Group by file path prefix (e.g., `Logos/Layer1/` vs `Logos/Shared/`).
+
+**Action Type**: Identify common action patterns:
+- "Add/Implement/Create" → implementation tasks
+- "Fix/Handle/Correct" → fix tasks
+- "Document/Update docs" → documentation tasks
+- "Test/Verify" → testing tasks
+- "Refactor/Optimize" → improvement tasks
+
+Example extraction:
+```
+TODO: "Add custom picker for worktrees" at nvim/lua/plugins/telescope.lua:67
+  → key_terms: ["picker", "worktrees", "telescope"]
+  → file_section: "nvim/lua/plugins/"
+  → action_type: "implementation"
+
+TODO: "Add preview window for worktrees" at nvim/lua/plugins/telescope.lua:89
+  → key_terms: ["preview", "worktrees", "telescope"]
+  → file_section: "nvim/lua/plugins/"
+  → action_type: "implementation"
+
+TODO: "Optimize lazy loading" at nvim/lua/config/lazy.lua:23
+  → key_terms: ["optimize", "lazy", "loading"]
+  → file_section: "nvim/lua/config/"
+  → action_type: "improvement"
+```
+
+#### 7.5.2: Cluster TODOs by Shared Terms
+
+Group TODOs that share **2 or more significant terms** or share **file section + action type**.
+
+**Clustering algorithm**:
+1. Start with first TODO as initial group
+2. For each remaining TODO:
+   - If shares 2+ key terms with existing group → add to group
+   - If shares file_section AND action_type with existing group → add to group
+   - Otherwise → start new group
+3. Generate topic label from most common shared terms in group
+
+**Example clustering**:
+```
+Group 1: "Telescope Worktrees" (shared: worktrees, telescope, nvim/lua/plugins/, implementation)
+  - Add custom picker for worktrees
+  - Add preview window for worktrees
+
+Group 2: "Config Optimization" (shared: nvim/lua/config/, improvement)
+  - Optimize lazy loading
+```
+
+**Single-item groups**: If a TODO doesn't cluster with others, it becomes its own single-item group.
+
+#### 7.5.3: Store Grouped Topics
+
+Store the topic groups for use in Step 7.5.4:
+
+```
+topic_groups = [
+  {
+    label: "Telescope Worktrees",
+    items: [
+      {file: "nvim/lua/plugins/telescope.lua", line: 67, content: "Add custom picker for worktrees"},
+      {file: "nvim/lua/plugins/telescope.lua", line: 89, content: "Add preview window for worktrees"}
+    ],
+    shared_terms: ["worktrees", "telescope"],
+    action_type: "implementation"
+  },
+  {
+    label: "Config Optimization",
+    items: [
+      {file: "nvim/lua/config/lazy.lua", line: 23, content: "Optimize lazy loading"}
+    ],
+    shared_terms: [],
+    action_type: "improvement"
+  }
+]
+```
+
+### Step 7.5.4: Topic Group Confirmation
+
+**Condition**: topic_groups contains at least one group with 2+ items
+
+If all groups have only 1 item, skip to Step 8 (no grouping benefit).
+
+Present topic groups via AskUserQuestion:
+
+```json
+{
+  "question": "How should TODO items be grouped into tasks?",
+  "header": "TODO Topic Grouping",
+  "multiSelect": false,
+  "options": [
+    {
+      "label": "Accept suggested topic groups",
+      "description": "Creates {N} grouped tasks: {group_summaries}"
+    },
+    {
+      "label": "Keep as separate tasks",
+      "description": "Creates {M} individual tasks (one per TODO item)"
+    },
+    {
+      "label": "Create single combined task",
+      "description": "Creates 1 task containing all {M} TODO items"
+    }
+  ]
+}
+```
+
+Where:
+- `{N}` = number of topic groups
+- `{M}` = total number of selected TODO items
+- `{group_summaries}` = comma-separated list like "S5 Theorems (2 items), Utility Optimization (1 item)"
+
+**Store user choice**: `grouping_mode = "grouped" | "separate" | "combined"`
+
+### Step 7.6: Individual QUESTION Selection
+
+**Condition**: User selected "Research tasks" in Step 6 AND QUESTION: tags exist
+
+If "Research tasks" was selected AND there are QUESTION: tags:
+
+#### Standard Case (<=20 QUESTIONs)
+
+```json
+{
+  "question": "Select QUESTION items to create as research tasks:",
+  "header": "QUESTION Selection",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "{content truncated to 50 chars}",
+      "description": "{file}:{line}"
+    },
+    ...
+  ]
+}
+```
+
+#### Large Number of QUESTIONs (>20)
+
+Add a "Select all" option at the top:
+
+```json
+{
+  "question": "Select QUESTION items to create as research tasks:",
+  "header": "QUESTION Selection (many items)",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "Select all ({N} items)",
+      "description": "Create a research task for every QUESTION tag"
+    },
+    {
+      "label": "{content truncated to 50 chars}",
+      "description": "{file}:{line}"
+    },
+    ...
+  ]
+}
+```
+
+If "Select all" is chosen, include all QUESTIONs. Otherwise, only selected items.
+
+### Step 7.7: Topic Grouping for QUESTION Items
+
+**Condition**: User selected "Research tasks" AND selected more than 1 QUESTION item
+
+If only 1 QUESTION item was selected, skip to Step 8 (no grouping benefit).
+
+#### 7.7.1: Extract Topic Indicators
+
+For each selected QUESTION item, extract topic indicators. Use the **same algorithm as Step 7.5.1** (TODO topic extraction):
+
+**Key Terms**: Extract significant words from the QUESTION content (nouns, verbs). Ignore stop words (the, a, is, to, for, etc.).
+
+**File Section**: Group by file path prefix (e.g., `nvim/lua/plugins/` vs `nvim/lua/config/`).
+
+**Action Type**: For QUESTION tags, action_type defaults to "research" for all items (since all are questions to be researched).
+
+Example extraction:
+```
+QUESTION: "What is the best way to configure LSP hover windows?" at nvim/lua/config/lsp.lua:45
+  → key_terms: ["configure", "LSP", "hover", "windows"]
+  → file_section: "nvim/lua/config/"
+  → action_type: "research"
+
+QUESTION: "How do I add custom LSP handlers?" at nvim/lua/config/lsp.lua:89
+  → key_terms: ["custom", "LSP", "handlers"]
+  → file_section: "nvim/lua/config/"
+  → action_type: "research"
+
+QUESTION: "What telescope extensions are available for git worktrees?" at nvim/lua/plugins/telescope.lua:23
+  → key_terms: ["telescope", "extensions", "git", "worktrees"]
+  → file_section: "nvim/lua/plugins/"
+  → action_type: "research"
+```
+
+#### 7.7.2: Cluster QUESTIONs by Shared Terms
+
+Use the **same clustering algorithm as Step 7.5.2** (TODO clustering).
+
+Group QUESTIONs that share **2 or more significant terms** or share **file section** (action_type is always "research" for questions, so only file_section matters for secondary matching).
+
+**Example clustering**:
+```
+Group 1: "LSP Configuration" (shared: LSP, nvim/lua/config/)
+  - What is the best way to configure LSP hover windows?
+  - How do I add custom LSP handlers?
+
+Group 2: "Telescope Extensions" (shared: nvim/lua/plugins/)
+  - What telescope extensions are available for git worktrees?
+```
+
+**Single-item groups**: If a QUESTION doesn't cluster with others, it becomes its own single-item group.
+
+#### 7.7.3: Store Grouped Topics
+
+Store the topic groups for use in Step 7.7.4:
+
+```
+question_topic_groups = [
+  {
+    label: "LSP Configuration",
+    items: [
+      {file: "nvim/lua/config/lsp.lua", line: 45, content: "What is the best way to configure LSP hover windows?"},
+      {file: "nvim/lua/config/lsp.lua", line: 89, content: "How do I add custom LSP handlers?"}
+    ],
+    shared_terms: ["LSP"],
+    action_type: "research"
+  },
+  {
+    label: "Telescope Extensions",
+    items: [
+      {file: "nvim/lua/plugins/telescope.lua", line: 23, content: "What telescope extensions are available for git worktrees?"}
+    ],
+    shared_terms: [],
+    action_type: "research"
+  }
+]
+```
+
+### Step 7.7.4: QUESTION Topic Group Confirmation
+
+**Condition**: question_topic_groups contains at least one group with 2+ items
+
+If all groups have only 1 item, skip to Step 8 (no grouping benefit).
+
+Present topic groups via AskUserQuestion:
+
+```json
+{
+  "question": "How should QUESTION items be grouped into research tasks?",
+  "header": "QUESTION Topic Grouping",
+  "multiSelect": false,
+  "options": [
+    {
+      "label": "Accept suggested topic groups",
+      "description": "Creates {N} grouped research tasks: {group_summaries}"
+    },
+    {
+      "label": "Keep as separate tasks",
+      "description": "Creates {M} individual research tasks (one per QUESTION item)"
+    },
+    {
+      "label": "Create single combined task",
+      "description": "Creates 1 research task containing all {M} QUESTION items"
+    }
+  ]
+}
+```
+
+Where:
+- `{N}` = number of topic groups
+- `{M}` = total number of selected QUESTION items
+- `{group_summaries}` = comma-separated list like "LSP Configuration (2 items), Telescope Extensions (1 item)"
+
+**Store user choice**: `question_grouping_mode = "grouped" | "separate" | "combined"`
+
+### Step 8: Create Selected Tasks
+
+For each selected task type, create the task. **Important**: When NOTE: tags exist and both fix-it and learn-it tasks are selected, create learn-it FIRST so fix-it can depend on it.
+
+#### 8.1: Get Next Task Number
+
+```bash
+next_num=$(jq -r '.next_project_number' specs/state.json)
+```
+
+#### 8.2: Dependency-Aware Task Creation Order
+
+**Check for NOTE: dependency condition**:
+```
+has_note_dependency = (NOTE: tags exist) AND (user selected both "fix-it task" AND "learn-it task")
+```
+
+**If has_note_dependency is TRUE**:
+- Create learn-it task FIRST (Step 8.2a)
+- Store learn-it task number as `learn_it_task_num`
+- Create fix-it task SECOND with dependency (Step 8.2b)
+
+**If has_note_dependency is FALSE**:
+- Create fix-it task first (if selected)
+- Create learn-it task second (if selected)
+- No dependency relationship
+
+#### 8.2a: Learn-It Task (when created first for dependency)
+
+**Condition**: has_note_dependency is TRUE
+
+```json
+{
+  "title": "Update context files from NOTE: tags",
+  "description": "Update {N} context files based on learnings:\n\n{grouped by target context}",
+  "language": "meta",
+  "effort": "1-2 hours"
+}
+```
+
+Store the task number: `learn_it_task_num = next_num`
+Increment: `next_num = next_num + 1`
+
+#### 8.2b: Fix-It Task (with dependency when has_note_dependency)
+
+**Condition**: User selected "fix-it task" AND (FIX: or NOTE: tags exist)
+
+**When has_note_dependency is TRUE**:
+```json
+{
+  "title": "Fix issues from FIX:/NOTE: tags",
+  "description": "Address {N} items from embedded tags:\n\n{list of items with file:line references}\n\n**Important**: When making changes, remove the FIX: and NOTE: tags from the source files. Leave TODO: tags untouched (they create separate tasks).",
+  "language": "{predominant language from source files}",
+  "effort": "2-4 hours",
+  "dependencies": [learn_it_task_num]
+}
+```
+
+**When has_note_dependency is FALSE**:
+```json
+{
+  "title": "Fix issues from FIX:/NOTE: tags",
+  "description": "Address {N} items from embedded tags:\n\n{list of items with file:line references}\n\n**Important**: When making changes, remove the FIX: and NOTE: tags from the source files. Leave TODO: tags untouched (they create separate tasks).",
+  "language": "{predominant language from source files}",
+  "effort": "2-4 hours"
+}
+```
+
+**Language Detection**:
+```
+if majority of tags from .lean files -> "lean"
+elif majority from .tex files -> "latex"
+elif majority from .claude/ files -> "meta"
+else -> "general"
+```
+
+#### 8.3: Learn-It Task (when created without dependency)
+
+**Condition**: User selected "learn-it task" AND NOTE: tags exist AND has_note_dependency is FALSE
+
+```json
+{
+  "title": "Update context files from NOTE: tags",
+  "description": "Update {N} context files based on learnings:\n\n{grouped by target context}",
+  "language": "meta",
+  "effort": "1-2 hours"
+}
+```
+
+#### 8.4: Todo-Tasks (if selected)
+
+**Condition**: User selected "TODO tasks" AND user selected specific TODO items
+
+**Check grouping_mode** (from Step 7.5.4, defaults to "separate" if Step 7.5.4 was skipped):
+
+##### 8.4.1: Grouped Mode (grouping_mode == "grouped")
+
+For each topic group in `topic_groups`:
+
+```json
+{
+  "title": "{topic_label}: {item_count} TODO items",
+  "description": "Address TODO items related to {topic_label}:\n\n{item_list}\n\n---\n\nShared context: {shared_terms_description}",
+  "language": "{detected from majority file type in group}",
+  "effort": "{scaled_effort}"
+}
+```
+
+Where:
+- `{topic_label}` = generated label (e.g., "Telescope Worktrees")
+- `{item_count}` = number of items in group
+- `{item_list}` = formatted list of items:
+  ```
+  - [ ] {content} (`{file}:{line}`)
+  - [ ] {content} (`{file}:{line}`)
+  ```
+- `{shared_terms_description}` = brief description of why items are grouped (e.g., "Related to telescope worktree functionality")
+
+**Effort Scaling Formula**:
+```
+base_effort = 1 hour
+scaled_effort = base_effort + (30 min * (item_count - 1))
+
+Examples:
+  1 item  → 1 hour
+  2 items → 1.5 hours (1h + 30min)
+  3 items → 2 hours (1h + 60min)
+  4 items → 2.5 hours (1h + 90min)
+```
+
+##### 8.4.2: Combined Mode (grouping_mode == "combined")
+
+Create single task containing all selected TODO items:
+
+```json
+{
+  "title": "Address {item_count} TODO items",
+  "description": "Combined TODO items from scan:\n\n{all_items_list}\n\n---\n\nFiles: {unique_files_list}",
+  "language": "{detected from majority file type}",
+  "effort": "{scaled_effort}"
+}
+```
+
+Where:
+- `{item_count}` = total number of selected TODO items
+- `{all_items_list}` = formatted list of all items with checkboxes
+- `{unique_files_list}` = comma-separated list of unique files involved
+
+**Effort Scaling**: Same formula as grouped mode.
+
+##### 8.4.3: Separate Mode (grouping_mode == "separate" or default)
+
+For each selected TODO item individually:
+
+```json
+{
+  "title": "{tag content, truncated to 60 chars}",
+  "description": "{full tag content}\n\nSource: {file}:{line}",
+  "language": "{detected from file type}",
+  "effort": "1 hour"
+}
+```
+
+**Language Detection for Todo-Task** (all modes):
+```
+.lua (nvim/) -> "neovim"
+.tex  -> "latex"
+.md   -> "markdown"
+.py/.sh -> "general"
+.claude/* -> "meta"
+```
+
+#### 8.5: Research-Tasks (if selected)
+
+**Condition**: User selected "Research tasks" AND user selected specific QUESTION items
+
+**Check question_grouping_mode** (from Step 7.7.4, defaults to "separate" if Step 7.7.4 was skipped):
+
+##### 8.5.1: Content-Based Language Detection for Research Tasks
+
+**IMPORTANT**: Research task language is detected from the **content** of the question, NOT the source file type. This ensures questions are routed to the appropriate research agent based on what is being asked.
+
+**Keyword-to-Language Mapping**:
+
+```
+neovim_keywords = ["nvim", "neovim", "plugin", "lazy", "telescope", "treesitter", "lsp", "buffer", "window", "keymap", "autocmd", "filetype", "lua"]
+latex_keywords = ["theorem", "proof", "lemma", "axiom", "logic", "formula", "derivation", "proposition", "corollary", "latex", "tex"]
+meta_keywords = [".claude", "command", "agent", "skill", "workflow", "state.json", "TODO.md", "specs/"]
+
+function detect_research_language(question_content):
+    content_lower = question_content.lower()
+
+    # Check for neovim keywords
+    for keyword in neovim_keywords:
+        if keyword in content_lower:
+            return "neovim"
+
+    # Check for latex keywords
+    for keyword in latex_keywords:
+        if keyword in content_lower:
+            return "latex"
+
+    # Check for meta keywords
+    for keyword in meta_keywords:
+        if keyword in content_lower:
+            return "meta"
+
+    # Default to general for all other cases
+    return "general"
+```
+
+**Examples**:
+- "What is the best way to configure LSP hover windows?" → neovim (contains "LSP")
+- "How do I prove this theorem about completeness?" → latex (contains "theorem")
+- "What is the difference between a skill and an agent?" → meta (contains "skill", "agent")
+- "What are the best practices for API design?" → general (no matching keywords)
+
+##### 8.5.2: Grouped Mode (question_grouping_mode == "grouped")
+
+For each topic group in `question_topic_groups`:
+
+```json
+{
+  "title": "{topic_label}: {item_count} research questions",
+  "description": "Research questions related to {topic_label}:\n\n{question_list}\n\n---\n\nShared context: {shared_terms_description}",
+  "language": "{detected from majority question content in group}",
+  "effort": "{scaled_effort}"
+}
+```
+
+Where:
+- `{topic_label}` = generated label (e.g., "LSP Configuration")
+- `{item_count}` = number of items in group
+- `{question_list}` = formatted list of questions using blockquote syntax:
+  ```
+  > {question text}
+  > Source: `{file}:{line}`
+
+  > {question text}
+  > Source: `{file}:{line}`
+  ```
+- `{shared_terms_description}` = brief description of why questions are grouped
+
+**Effort Scaling Formula** (research tasks use slightly higher base):
+```
+base_effort = 1.5 hours (research requires more exploration)
+scaled_effort = base_effort + (30 min * (item_count - 1))
+
+Examples:
+  1 item  → 1-2 hours
+  2 items → 2 hours (1.5h + 30min)
+  3 items → 2.5 hours (1.5h + 60min)
+  4 items → 3 hours (1.5h + 90min)
+```
+
+**Language Detection for Grouped Mode**: Analyze all question content in the group, use the most frequently detected language. If tie, default to "general".
+
+##### 8.5.3: Combined Mode (question_grouping_mode == "combined")
+
+Create single task containing all selected QUESTION items:
+
+```json
+{
+  "title": "Research: {item_count} questions",
+  "description": "Research questions from scan:\n\n{all_questions_list}\n\n---\n\nFiles: {unique_files_list}",
+  "language": "{detected from majority question content}",
+  "effort": "{scaled_effort}"
+}
+```
+
+Where:
+- `{item_count}` = total number of selected QUESTION items
+- `{all_questions_list}` = formatted list of all questions with blockquotes
+- `{unique_files_list}` = comma-separated list of unique source files
+
+**Effort Scaling**: Same formula as grouped mode.
+
+##### 8.5.4: Separate Mode (question_grouping_mode == "separate" or default)
+
+For each selected QUESTION item individually:
+
+```json
+{
+  "title": "Research: {question content, truncated to 60 chars}",
+  "description": "> {full question text}\n\nSource: `{file}:{line}`",
+  "language": "{detected from question content}",
+  "effort": "1-2 hours"
+}
+```
+
+**Language Detection**: Apply content-based detection (Step 8.5.1) to the individual question.
+
+### Step 9: Update State Files
+
+For each task created:
+
+#### 9.1: Update state.json
+
+Read current state, add new task entry, increment next_project_number:
+
+```bash
+# Create slug from title
+slug=$(echo "$title" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd 'a-z0-9_' | cut -c1-50)
+
+# Read current state
+current=$(cat specs/state.json)
+
+# Add task using jq (use two-step pattern to avoid escaping issues)
+# Step 1: Write task data to temp file
+# Step 2: Use jq with slurpfile
+```
+
+**For fix-it task when has_note_dependency is TRUE**, include dependencies array:
+```json
+{
+  "project_number": {N},
+  "project_name": "{slug}",
+  "status": "not_started",
+  "language": "{language}",
+  "dependencies": [learn_it_task_num]
+}
+```
+
+**For all other tasks**, no dependencies field needed.
+
+#### 9.2: Update TODO.md
+
+Prepend new task entry to `## Tasks` section (new tasks at top):
+
+**Standard format (no dependency)**:
+```markdown
+### {N}. {Title}
+- **Effort**: {estimate}
+- **Status**: [NOT STARTED]
+- **Language**: {language}
+- **Started**: {timestamp}
+
+**Description**: {description}
+
+---
+```
+
+**Fix-it task format when has_note_dependency is TRUE**:
+```markdown
+### {N}. {Title}
+- **Effort**: {estimate}
+- **Status**: [NOT STARTED]
+- **Language**: {language}
+- **Dependencies**: {learn_it_task_num}
+- **Started**: {timestamp}
+
+**Description**: {description}
+
+---
+```
+
+### Step 10: Display Results
+
+Show summary of created tasks:
+
+```
+## Tasks Created from Tags
+
+**Tags Processed**: {N} across scanned files
+
+### Created Tasks
+
+| # | Type | Title | Language |
+|---|------|-------|----------|
+| {N} | fix-it | Fix issues from FIX:/NOTE: tags | {lang} |
+| {N+1} | learn-it | Update context files from NOTE: tags | meta |
+| {N+2} | todo | {title} | {lang} |
+| {N+3} | research | Research: {question title} | {lang} |
+
+---
+
+**Next Steps**:
+1. Review tasks in TODO.md
+2. Run `/research {first_task}` to begin
+3. Progress through /research -> /plan -> /implement cycle
+```
+
+### Step 11: Git Commit (Postflight)
+
+If tasks were created, commit changes:
+
+```bash
+task_count={number of tasks created}
+git add specs/TODO.md specs/state.json
+git commit -m "learn: create $task_count tasks from tags
+
+Session: $session_id
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
+
+---
 
 ## Error Handling
 
-- **File not found**: Return error with guidance
-- **Empty content**: Warn user, ask to confirm
-- **MCP unavailable**: Continue with file-based search
-- **User cancels**: Exit gracefully, no changes
-- **Git errors**: Log warning, continue
-- **Task not found**: Return error "Task directory not found"
-- **No artifacts**: Return error "No artifacts found for task"
+### Path Access Errors
 
-## Similar Memories Detection
+When paths don't exist or can't be accessed:
+1. Log warning for each invalid path
+2. Continue with valid paths
+3. If no valid paths remain, report and exit
 
-Uses simple keyword matching on titles and content:
-1. Extract words from title (3+ characters)
-2. Count matches in existing memory files
-3. Return top 3 with most matches
-4. If MCP available, use search_notes for better results
+### No Tags Found
 
-## Classification Taxonomy (Task Mode)
+This is NOT an error condition:
+- Report informatively
+- Exit without prompts
 
-| Category | Description | Example |
-|----------|-------------|---------|
-| TECHNIQUE | Reusable method or approach | "Three-phase debugging process" |
-| PATTERN | Design or implementation pattern | "Agent delegation wrapper pattern" |
-| CONFIG | Configuration or setup knowledge | "Neovim LSP keymap configuration" |
-| WORKFLOW | Process or procedure | "Code review checklist workflow" |
-| INSIGHT | Key learning or understanding | "Root cause of race condition" |
-| SKIP | Not valuable for memory | N/A - skip this artifact |
+### state.json Update Failure
+
+If jq fails:
+1. Log error with command and output
+2. Try two-step jq pattern
+3. If still failing, report partial success (tags found but tasks not created)
+
+### TODO.md Parse Error
+
+If TODO.md format is corrupted:
+1. Log error
+2. Skip TODO.md update
+3. State.json update may still succeed
+4. Report partial success
+
+### Git Commit Failure
+
+Non-blocking:
+1. Log the failure
+2. Tasks are still created successfully
+3. Report that commit failed but tasks exist
+
+---
+
+## Standards Reference
+
+This skill implements the multi-task creation pattern. See `.claude/docs/reference/standards/multi-task-creation-standard.md` for the complete standard.
+
+**Compliance Level**: Full (all required components)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Discovery | Yes | Tag scanning (FIX:, NOTE:, TODO:, QUESTION:) |
+| Selection | Yes | AskUserQuestion with multiSelect |
+| Grouping | Yes | Topic clustering (Step 7.5 for TODO, Step 7.7 for QUESTION) |
+| Dependencies | Partial | Internal only (learn-it -> fix-it in Step 8.2) |
+| Ordering | No | Sequential creation |
+| Visualization | No | Not implemented |
+| Confirmation | Yes | Implicit via selection |
+| State Updates | Yes | Atomic updates (Step 9) |
+
+**Limitation**: External dependencies (TODO tasks depending on existing tasks) not implemented. Consider as future enhancement.

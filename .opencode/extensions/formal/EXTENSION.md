@@ -47,14 +47,14 @@ Load context files on-demand:
 
 ```
 Logic domain:
-@.opencode/extensions/formal/context/project/logic/README.md
-@.opencode/extensions/formal/context/project/logic/domain/kripke-semantics-overview.md
+@.opencode/context/project/logic/README.md
+@.opencode/context/project/logic/domain/kripke-semantics-overview.md
 
 Math domain:
-@.opencode/extensions/formal/context/project/math/README.md
-@.opencode/extensions/formal/context/project/math/lattice-theory/lattices.md
+@.opencode/context/project/math/README.md
+@.opencode/context/project/math/lattice-theory/lattices.md
 
 Physics domain:
-@.opencode/extensions/formal/context/project/physics/README.md
-@.opencode/extensions/formal/context/project/physics/dynamical-systems/dynamical-systems.md
+@.opencode/context/project/physics/README.md
+@.opencode/context/project/physics/dynamical-systems/dynamical-systems.md
 ```

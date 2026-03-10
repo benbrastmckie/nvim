@@ -36,6 +36,6 @@ This project includes Neovim configuration development support via the nvim exte
 ### Context Imports
 
 Domain knowledge (load as needed):
-- @.opencode/extensions/nvim/context/project/neovim/domain/neovim-api.md
-- @.opencode/extensions/nvim/context/project/neovim/patterns/plugin-spec.md
-- @.opencode/extensions/nvim/context/project/neovim/tools/lazy-nvim-guide.md
+- @.opencode/context/project/neovim/domain/neovim-api.md
+- @.opencode/context/project/neovim/patterns/plugin-spec.md
+- @.opencode/context/project/neovim/tools/lazy-nvim-guide.md

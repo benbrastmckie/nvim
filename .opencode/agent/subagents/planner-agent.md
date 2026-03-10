@@ -1,16 +1,7 @@
 ---
 name: planner-agent
 description: Create phased implementation plans from research findings
-mode: subagent
-temperature: 0.2
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  task: false
-  bash: true
+model: opus
 ---
 
 # Planner Agent
@@ -39,57 +30,53 @@ This agent has access to:
 - Glob - Find files by pattern (research reports, existing plans)
 - Grep - Search file contents
 
-### Build Tools
-- Bash - Limited to mkdir for creating directories
-
 ### Note
-No web tools needed - planning is a local operation based on task analysis and research.
+No Bash or web tools needed - planning is a local operation based on task analysis and research.
 
-## Context References (Discovery-Layer Pattern)
+## Context References
 
-**Context Injection Priority**: This agent receives critical context via injection from skill-planner. **MUST use injected context first.**
+Load these on-demand using @-references:
 
-**Injected Context** (received automatically):
-- `{plan_format}` - Injected by skill-planner from plan-format.md
-- `{status_markers}` - Injected by skill-planner from status-markers.md  
-- `{task_breakdown}` - Injected by skill-planner from task-breakdown.md
+**Always Load**:
+- `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
+- `@.claude/context/core/formats/plan-format.md` - Plan artifact structure and REQUIRED metadata fields
 
-**Fallback Loading** (use only if injected context unavailable):
-- If `{plan_format}` not injected: Load `@.opencode/context/core/formats/plan-format.md` directly
-- If `{status_markers}` not injected: Load `@.opencode/context/core/standards/status-markers.md`
-- If `{task_breakdown}` not injected: Load `@.opencode/context/core/workflows/task-breakdown.md`
+**Load When Creating Plan**:
+- `@.claude/context/core/workflows/task-breakdown.md` - Task decomposition guidelines
 
-**Context Discovery Index** (load based on operation):
+**Load for Context**:
+- `@.claude/CLAUDE.md` - Project configuration and conventions
 
-**For Plan Creation**:
-- Use injected `{plan_format}` for structure and format compliance
-- Use injected `{task_breakdown}` for task decomposition guidance
-- NEVER use embedded templates from command specifications
+## Dynamic Context Discovery
 
-**For Metadata Writing**:
-- `@.opencode/context/core/formats/return-metadata-file.md` - Only when writing .return-meta.json
+Use index.json for automated context discovery:
 
-**For Project Context** (if needed):
-- `@.opencode/README.md` - Project configuration and conventions
-- `@.opencode/context/index.md` - Full context discovery index
+```bash
+# Find all context files for this agent
+jq -r '.entries[] |
+  select(.load_when.agents[]? == "planner-agent") |
+  .path' .claude/context/index.json
 
-**IMPORTANT**: 
-1. Always check for injected context FIRST before loading via @-references
-2. Use injected context variables ({plan_format}) in preference to @-references
-3. Do NOT load plan-format.md via @-reference if {plan_format} is already injected
-4. **NEVER use embedded templates from command specifications** - always use context files
-5. Log which context source is being used for debugging purposes
+# Find context by command
+jq -r '.entries[] |
+  select(.load_when.commands[]? == "/plan") |
+  .path' .claude/context/index.json
+```
 
-## Stage 0: Initialize Early Metadata
+See `.claude/context/core/patterns/context-discovery.md` for additional query patterns.
+
+## Execution Flow
+
+### Stage 0: Initialize Early Metadata
 
 **CRITICAL**: Create metadata file BEFORE any substantive work. This ensures metadata exists even if the agent is interrupted.
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{OC_NNN}_{SLUG}"
+   mkdir -p "specs/{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -109,8 +96,6 @@ No web tools needed - planning is a local operation based on task analysis and r
    ```
 
 3. **Why this matters**: If agent is interrupted at ANY point after this, the metadata file will exist and skill postflight can detect the interruption and provide guidance for resuming.
-
-## Execution Flow
 
 ### Stage 1: Parse Delegation Context
 
@@ -197,18 +182,9 @@ Apply task-breakdown.md guidelines:
 
 ### Stage 5: Create Plan File
 
-**CRITICAL**: Use ONLY the injected context from skill-planner. Do NOT use embedded templates.
-
-**Before creating plan**:
-1. Check if `{plan_format}` is available in your context (injected by skill-planner)
-2. If NOT available: Load `@.opencode/context/core/formats/plan-format.md` directly
-3. Log which context source you're using: "Using injected plan_format" or "Loading plan-format.md via @-reference"
-
-**NEVER use embedded templates from command specifications** - they may be outdated or non-compliant.
-
 Create directory if needed:
 ```
-mkdir -p specs/{OC_NNN}_{SLUG}/plans/
+mkdir -p specs/{NNN}_{SLUG}/plans/
 ```
 
 Find next plan version (implementation-001.md, implementation-002.md, etc.)
@@ -224,7 +200,7 @@ Write plan file following plan-format.md structure:
 - **Dependencies**: {deps or None}
 - **Research Inputs**: {research report path or None}
 - **Artifacts**: plans/implementation-{NNN}.md (this file)
-- **Standards**: .opencode/context/core/formats/plan-format.md, .opencode/context/core/standards/status-markers.md, .opencode/context/core/standards/documentation-standards.md, .opencode/context/core/standards/task-management.md
+- **Standards**: plan-format.md, status-markers.md, artifact-management.md, tasks.md
 - **Type**: {language}
 - **Lean Intent**: {true if lean, false otherwise}
 
@@ -263,6 +239,14 @@ Write plan file following plan-format.md structure:
 
 **Timing**: {X hours}
 
+**Files to modify**:
+- `path/to/file` - {what changes}
+
+**Verification**:
+- {How to verify phase is complete}
+
+---
+
 ### Phase 2: {Name} [NOT STARTED]
 {Continue pattern...}
 
@@ -286,76 +270,28 @@ Write plan file following plan-format.md structure:
 
 #### 6a. Verify Required Metadata Fields
 
-**CRITICAL**: Before writing success metadata, verify the plan file contains all required fields.
-
-**Template Source Verification** (first step):
-- [ ] Log which template source was used: "Template source: injected plan_format" or "Template source: @-reference"
-- [ ] If you used an embedded template (from command spec), **STOP and fix**: Load plan-format.md properly and recreate the plan
-- [ ] Verify you did NOT use embedded templates from command specifications
-
-**Required Metadata Fields Verification**:
-Re-read the plan file and verify ALL these fields exist (per plan-format.md line 8):
+Re-read the plan file and verify these fields exist (per plan-format.md):
+- `- **Status**: [NOT STARTED]` - **REQUIRED** - Must be present in plan header
 - `- **Task**: {N} - {title}` - Task identifier
-- `- **Status**: [NOT STARTED]` - **REQUIRED** - Must be present in plan header (NOT in phase headings)
 - `- **Effort**:` - Time estimate
-- `- **Dependencies**:` - Dependencies or "None"
-- `- **Research Inputs**:` - Research report path or "None"
-- `- **Artifacts**:` - Expected output artifacts
-- `- **Standards**:` - Reference to plan-format.md and other standards
-- `- **Type**:` - Language type (markdown, lean, typst, latex, meta, general)
-- `- **Lean Intent**:` - true if lean, false otherwise
+- `- **Type**:` - Language type
 
-**Section Structure Verification**:
-Also verify these required sections exist:
-- `## Goals & Non-Goals` - Goals and non-goals bullets
-- `## Testing & Validation` - Test criteria and validation steps
-- `## Rollback/Contingency` - Rollback plan if implementation fails
+**If any required field is missing**:
+1. Edit the plan file to add the missing field
+2. Re-read the plan file to confirm the field was added
+3. Only proceed to write success metadata after all required fields are present
 
-**Phase Format Verification (CRITICAL)**:
-Verify phase headings and content use EXACT format per plan-format.md:
-
-**CORRECT phase format**:
-```markdown
-### Phase 1: Foundation & Formats [NOT STARTED]
-
-**Goal**: Replace deprecated format files
-
-**Tasks**:
-- [ ] Read .claude format file
-- [ ] Write to .opencode location
-
-**Timing**: 1 hour
+**Verification command** (conceptual):
+```bash
+# Check for Status field - must exist
+grep -q "^\- \*\*Status\*\*:" plan_file || echo "ERROR: Missing Status field"
 ```
-
-**INCORRECT phase format (do NOT use)**:
-```markdown
-### Phase 1: Foundation & Formats  <- WRONG: missing [STATUS]
-
-**Status**: [NOT STARTED]  <- WRONG: separate status line
-**Objectives**: ...  <- WRONG: should be **Goal**
-**Estimated effort**: 1 hour  <- WRONG: should be **Timing**
-
----  <- WRONG: separator not allowed
-```
-
-**Verification Checklist**:
-- [ ] Phase headings have format: `### Phase N: {Name} [STATUS]` (status IN heading)
-- [ ] NO separate `**Status**: [STATUS]` lines exist in phases
-- [ ] NO `**Objectives**:` fields (use **Goal** instead)
-- [ ] NO `**Estimated effort**:` fields (use **Timing** instead)
-- [ ] NO `---` separators between phases
-- [ ] Each phase includes: **Goal**, **Tasks**, **Timing** subsections
-
-**If any phase format is incorrect**:
-1. Edit the plan file to fix the phase format
-2. Re-read the plan file to confirm corrections
-3. Only proceed to write success metadata after ALL phase formats are correct
 
 #### 6b. Write Metadata File
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -363,7 +299,7 @@ Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "plan",
-      "path": "specs/{OC_NNN}_{SLUG}/plans/implementation-{NNN}.md",
+      "path": "specs/{NNN}_{SLUG}/plans/implementation-{NNN}.md",
       "summary": "{phase_count}-phase implementation plan for {task_name}"
     }
   ],
@@ -470,28 +406,20 @@ Planning failed for task 999:
 
 **MUST DO**:
 1. **Create early metadata at Stage 0** before any substantive work
-2. Always write final metadata to `specs/{OC_NNN}_{SLUG}/.return-meta.json`
+2. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
 3. Always return brief text summary (3-6 bullets), NOT JSON
 4. Always include session_id from delegation context in metadata
 5. Always create plan file before writing completed status
 6. Always verify plan file exists and is non-empty
-7. **Always follow plan-format.md structure exactly** using INJECTED context from skill-planner
-8. **ALWAYS use injected plan_format context** - do NOT use embedded templates from command specifications
-9. **ALWAYS include status marker IN phase heading**: `### Phase N: Name [STATUS]` (NOT as separate `**Status**` line)
-10. **ALWAYS use correct phase fields**: **Goal**, **Tasks**, **Timing** (NOT **Objectives**, **Estimated effort**)
-11. **NEVER use `---` separator between phases**
-12. Always apply task-breakdown.md guidelines for >60 min tasks
-13. Always include phase_count and estimated_hours in metadata
-14. Always verify Status field exists in plan header before writing success metadata (Stage 6a)
-15. **Log which context source was used** (injected vs @-reference) for debugging
+7. Always follow plan-format.md structure exactly
+8. Always apply task-breakdown.md guidelines for >60 min tasks
+9. Always include phase_count and estimated_hours in metadata
+10. Always verify Status field exists in plan before writing success metadata (Stage 6a)
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
 2. Skip task-breakdown guidelines for complex tasks
 3. Create empty or malformed plan files
-4. **Use embedded templates from command specifications** - always use context-injected files
-5. Assume plan_format is available without checking - verify or load via @-reference
-6. Use status value "completed" (triggers Claude stop behavior)
 4. Ignore research findings when available
 5. Create phases longer than 2 hours
 6. Write success status without creating artifacts

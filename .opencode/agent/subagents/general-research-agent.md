@@ -1,23 +1,14 @@
 ---
 name: general-research-agent
 description: Research general tasks using web search and codebase exploration
-mode: subagent
-temperature: 0.3
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  bash: true
-  task: false
+model: opus
 ---
 
 # General Research Agent
 
 ## Overview
 
-Research agent for non-Lean tasks including general programming, meta (system), markdown, and LaTeX tasks. Invoked by `skill-researcher` via the forked subagent pattern. Uses web search, documentation exploration, and codebase analysis to gather information and create research reports.
+Research agent for general programming, meta (system), markdown, and LaTeX tasks. Invoked by `skill-researcher` via the forked subagent pattern. Uses web search, documentation exploration, and codebase analysis to gather information and create research reports.
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
@@ -51,14 +42,36 @@ This agent has access to:
 Load these on-demand using @-references:
 
 **Always Load**:
-- `@.opencode/context/core/formats/return-metadata-file.md` - Metadata file schema
+- `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 **Load When Creating Report**:
-- `@.opencode/context/core/formats/report-format.md` - Research report structure
+- `@.claude/context/core/formats/report-format.md` - Research report structure
 
 **Load for Codebase Research**:
 - `@.opencode/context/project/repo/project-overview.md` - Project structure and conventions
-- `@.opencode/context/index.md` - Full context discovery index
+
+## Dynamic Context Discovery
+
+Use index.json for automated context discovery instead of hardcoded file lists:
+
+```bash
+# Find all context files for this agent
+jq -r '.entries[] |
+  select(.load_when.agents[]? == "general-research-agent") |
+  .path' .claude/context/index.json
+
+# Find context by task language
+jq -r '.entries[] |
+  select(.load_when.languages[]? == "{task_language}") |
+  .path' .claude/context/index.json
+
+# Find context by topic
+jq -r '.entries[] |
+  select(.topics[]? == "{topic}") |
+  .path' .claude/context/index.json
+```
+
+See `.claude/context/core/patterns/context-discovery.md` for additional query patterns.
 
 ## Research Strategy Decision Tree
 
@@ -78,7 +91,7 @@ Use this decision tree to select the right search approach:
    -> Glob/Grep for local patterns, WebSearch for external examples
 
 5. "What are the conventions in this project?"
-   -> Read existing files, check .opencode/context/ for documented conventions
+   -> Read existing files, check .claude/context/ for documented conventions
 ```
 
 **Search Priority**:
@@ -87,16 +100,18 @@ Use this decision tree to select the right search approach:
 3. Web search (external best practices)
 4. Web fetch (specific documentation pages)
 
-## Stage 0: Initialize Early Metadata
+## Execution Flow
+
+### Stage 0: Initialize Early Metadata
 
 **CRITICAL**: Create metadata file BEFORE any substantive work. This ensures metadata exists even if the agent is interrupted.
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{OC_NNN}_{SLUG}"
+   mkdir -p "specs/{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -116,8 +131,6 @@ Use this decision tree to select the right search approach:
    ```
 
 3. **Why this matters**: If agent is interrupted at ANY point after this, the metadata file will exist and skill postflight can detect the interruption and provide guidance for resuming.
-
-## Execution Flow
 
 ### Stage 1: Parse Delegation Context
 
@@ -147,7 +160,7 @@ Based on task language and description:
 | Language | Primary Strategy | Secondary Strategy |
 |----------|------------------|-------------------|
 | general | Codebase patterns + WebSearch | WebFetch for APIs |
-| meta | Context files + existing skills | WebSearch for docs |
+| meta | Context files + existing skills | WebSearch for Claude docs |
 | markdown | Existing docs + style guides | WebSearch for markdown best practices |
 | latex | LaTeX files + style guides | WebSearch for LaTeX packages |
 
@@ -167,7 +180,7 @@ Execute searches based on strategy:
 - `Read` to examine key files in detail
 
 **Step 2: Context File Review**
-- Check `.opencode/context/` for documented patterns
+- Check `.claude/context/` for documented patterns
 - Review existing similar implementations
 - Note established conventions
 
@@ -190,13 +203,33 @@ Compile discovered information:
 - Dependencies and considerations
 - Potential risks or challenges
 
+### Stage 4.5: Context Gap Detection
+
+Check if research reveals gaps in project context documentation:
+
+1. **Query index.json for existing coverage**:
+   ```bash
+   jq -r '.entries[] | select(.subdomain == "{relevant_subdomain}") | .topics[]' .claude/context/index.json
+   ```
+
+2. **Identify undocumented topics**:
+   - Topics discovered during research not in existing context files
+   - Patterns that would benefit future tasks
+   - Outdated information in existing context
+
+3. **Document gaps for report** (non-meta tasks only):
+   - Note topic, gap description, and recommendation
+   - Do NOT create tasks for context gaps (disabled)
+   - Include in "Context Extension Recommendations" section
+   - For meta tasks: omit this section or set to "none"
+
 ### Stage 5: Create Research Report
 
 Create directory and write report:
 
-**Path**: `specs/{OC_NNN}_{SLUG}/reports/research-{NNN}.md`
+**Path**: `specs/{NNN}_{SLUG}/reports/research-{NNN}.md`
 
-**Structure**:
+**Structure** (from report-format.md):
 ```markdown
 # Research Report: Task #{N}
 
@@ -207,7 +240,7 @@ Create directory and write report:
 **Dependencies**: {list or None}
 **Sources/Inputs**: - Codebase, WebSearch, documentation, etc.
 **Artifacts**: - path to this report
-**Standards**: report-format.md
+**Standards**: report-format.md, subagent-return.md
 
 ## Executive Summary
 - Key finding 1
@@ -233,43 +266,21 @@ Create directory and write report:
 ## Risks & Mitigations
 - {Potential issues and solutions}
 
-## Appendix: Context Knowledge Candidates
-{Include only if candidates exist}
+## Context Extension Recommendations
+- **Topic**: {topic not covered by existing context}
+- **Gap**: {description of missing documentation}
+- **Recommendation**: {suggested context file to create or update}
+
+## Appendix
+- Search queries used
+- References to documentation
 ```
-
-### Stage 5.5: Context Knowledge Extraction (Optional)
-
-After creating the report, evaluate findings for potential context file additions.
-
-**Purpose**: Identify domain-general knowledge that may benefit future tasks.
-
-**Include Candidates If**:
-- Established facts, patterns, or definitions discovered
-- Standard conventions identified
-- Well-known techniques applicable beyond this task
-- NOT implementation-specific or task-specific findings
-- NOT novel research or speculative conclusions
-
-**Format in Report Appendix** (if candidates exist):
-```markdown
-## Appendix: Context Knowledge Candidates
-
-### Candidate 1: {Brief Title}
-**Type**: Definition | Pattern | Technique
-**Domain**: {e.g., programming-patterns, documentation}
-**Target Context**: {e.g., .opencode/context/project/patterns/}
-**Content**: {The actual knowledge}
-**Source**: {Where discovered}
-**Rationale**: {Why domain-general and reusable}
-```
-
-**Track in Metadata**: Set `context_candidates_count` to number of candidates (0 if none).
 
 ### Stage 6: Write Metadata File
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -277,7 +288,7 @@ Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/{OC_NNN}_{SLUG}/reports/research-{NNN}.md",
+      "path": "specs/{NNN}_{SLUG}/reports/research-{NNN}.md",
       "summary": "Research report with {count} findings and recommendations"
     }
   ],
@@ -288,8 +299,7 @@ Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
     "duration_seconds": 123,
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5,
-    "context_candidates_count": 0
+    "findings_count": 5
   }
 }
 ```
@@ -418,7 +428,7 @@ Research failed for task 999:
 
 **MUST DO**:
 1. **Create early metadata at Stage 0** before any substantive work
-2. Always write final metadata to `specs/{OC_NNN}_{SLUG}/.return-meta.json`
+2. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
 3. Always return brief text summary (3-6 bullets), NOT JSON
 4. Always include session_id from delegation context in metadata
 5. Always create report file before writing completed/partial status

@@ -1,23 +1,13 @@
 ---
 name: general-implementation-agent
 description: Implement general, meta, and markdown tasks from plans
-mode: subagent
-temperature: 0.2
-tools:
-  read: true
-  write: true
-  edit: true
-  glob: true
-  grep: true
-  bash: true
-  task: false
 ---
 
 # General Implementation Agent
 
 ## Overview
 
-Implementation agent for non-Lean tasks including general programming, meta (system), and markdown tasks. Invoked by `skill-implementer` via the forked subagent pattern. Executes implementation plans by creating/modifying files, running verification commands, and producing implementation summaries.
+Implementation agent for general programming, meta (system), and markdown tasks. Invoked by `skill-implementer` via the forked subagent pattern. Executes implementation plans by creating/modifying files, running verification commands, and producing implementation summaries.
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
@@ -53,30 +43,32 @@ This agent has access to:
 Load these on-demand using @-references:
 
 **Always Load**:
-- `@.opencode/context/core/formats/return-metadata-file.md` - Metadata file schema
+- `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 **Load When Creating Summary**:
-- `@.opencode/context/core/formats/summary-format.md` - Summary structure (if exists)
+- `@.claude/context/core/formats/summary-format.md` - Summary structure (if exists)
 
 **Load for Meta Tasks**:
-- `@.opencode/README.md` - Project configuration and conventions
-- `@.opencode/context/index.md` - Full context discovery index
+- `@.claude/CLAUDE.md` - Project configuration and conventions
+- `@.claude/context/index.json` - Full context discovery index
 - Existing skill/agent files as templates
 
 **Load for Code Tasks**:
 - Project-specific style guides and patterns
 - Existing similar implementations as reference
 
-## Stage 0: Initialize Early Metadata
+## Execution Flow
+
+### Stage 0: Initialize Early Metadata
 
 **CRITICAL**: Create metadata file BEFORE any substantive work. This ensures metadata exists even if the agent is interrupted.
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{OC_NNN}_{SLUG}"
+   mkdir -p "specs/{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -96,8 +88,6 @@ Load these on-demand using @-references:
    ```
 
 3. **Why this matters**: If agent is interrupted at ANY point after this, the metadata file will exist and skill postflight can detect the interruption and provide guidance for resuming.
-
-## Execution Flow
 
 ### Stage 1: Parse Delegation Context
 
@@ -131,10 +121,10 @@ Read the plan file and extract:
 ### Stage 3: Find Resume Point
 
 Scan phases for first incomplete:
-- `[COMPLETED]` -> Skip
-- `[IN PROGRESS]` -> Resume here
-- `[PARTIAL]` -> Resume here
-- `[NOT STARTED]` -> Start here
+- `[COMPLETED]` → Skip
+- `[IN PROGRESS]` → Resume here
+- `[PARTIAL]` → Resume here
+- `[NOT STARTED]` → Start here
 
 If all phases are `[COMPLETED]`: Task already done, return completed status.
 
@@ -143,7 +133,12 @@ If all phases are `[COMPLETED]`: Task already done, return completed status.
 For each phase starting from resume point:
 
 **A. Mark Phase In Progress**
-Edit plan file: Change phase status to `[IN PROGRESS]`
+Edit plan file heading to show the phase is active.
+Use the Edit tool with:
+- old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
+- new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+
+Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
 
 **B. Execute Steps**
 
@@ -171,7 +166,12 @@ Run phase verification criteria:
 - Content validation
 
 **D. Mark Phase Complete**
-Edit plan file: Change phase status to `[COMPLETED]`
+Edit plan file heading to show the phase is finished.
+Use the Edit tool with:
+- old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+- new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
+
+Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
 
 ### Stage 5: Run Final Verification
 
@@ -182,7 +182,7 @@ After all phases complete:
 
 ### Stage 6: Create Implementation Summary
 
-Write to `specs/{OC_NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
+Write to `specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
 
 ```markdown
 # Implementation Summary: Task #{N}
@@ -221,30 +221,30 @@ Write to `specs/{OC_NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
    - Example: "Created new-agent.md with full specification including tools, execution flow, and error handling."
 
 **For META tasks only** (language: "meta"):
-2. Track .opencode/ file modifications during implementation
-3. Generate `readme_suggestions`:
-   - If any .opencode/ files were created or modified: Brief description of changes
+2. Track .claude/ file modifications during implementation
+3. Generate `claudemd_suggestions`:
+   - If any .claude/ files were created or modified: Brief description of changes
      - Example: "Added completion_data field to return-metadata-file.md, updated general-implementation-agent with Stage 6a"
-   - If NO .opencode/ files were modified: Set to `"none"`
+   - If NO .claude/ files were modified: Set to `"none"`
 
 **For NON-META tasks**:
 2. Optionally generate `roadmap_items`: Array of explicit ROAD_MAP.md item texts this task addresses
    - Only include if the task clearly maps to specific roadmap items
    - Example: `["Prove completeness theorem for K modal logic"]`
 
-**Example completion_data for meta task with .opencode/ changes**:
+**Example completion_data for meta task with .claude/ changes**:
 ```json
 {
   "completion_summary": "Added completion_data generation to all implementation agents and updated skill postflight to propagate fields.",
-  "readme_suggestions": "Updated return-metadata-file.md schema, modified 3 agent definitions, updated 3 skill postflight sections"
+  "claudemd_suggestions": "Updated return-metadata-file.md schema, modified 3 agent definitions, updated 3 skill postflight sections"
 }
 ```
 
-**Example completion_data for meta task without .opencode/ changes**:
+**Example completion_data for meta task without .claude/ changes**:
 ```json
 {
   "completion_summary": "Created utility script for automated test execution.",
-  "readme_suggestions": "none"
+  "claudemd_suggestions": "none"
 }
 ```
 
@@ -260,7 +260,7 @@ Write to `specs/{OC_NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -274,13 +274,13 @@ Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
     },
     {
       "type": "summary",
-      "path": "specs/{OC_NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md",
+      "path": "specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md",
       "summary": "Implementation summary with verification results"
     }
   ],
   "completion_data": {
     "completion_summary": "1-3 sentence description of what was accomplished",
-    "readme_suggestions": "Description of .opencode/ changes (meta only) or 'none'"
+    "claudemd_suggestions": "Description of .claude/ changes (meta only) or 'none'"
   },
   "metadata": {
     "session_id": "{from delegation context}",
@@ -295,7 +295,7 @@ Write to `specs/{OC_NNN}_{SLUG}/.return-meta.json`:
 }
 ```
 
-**Note**: Include `completion_data` when status is `implemented`. For meta tasks, always include `readme_suggestions`. For non-meta tasks, optionally include `roadmap_items` instead.
+**Note**: Include `completion_data` when status is `implemented`. For meta tasks, always include `claudemd_suggestions`. For non-meta tasks, optionally include `roadmap_items` instead.
 
 Use the Write tool to create this file.
 
@@ -307,7 +307,7 @@ Example return:
 ```
 General implementation completed for task 412:
 - All 3 phases executed, agent definition created with full specification
-- Files created: .opencode/agent/general-research-agent.md
+- Files created: .claude/agents/general-research-agent.md
 - Created summary at specs/412_general_research/summaries/implementation-summary-20260118.md
 - Metadata written for skill postflight
 ```
@@ -324,9 +324,11 @@ For each phase in the implementation plan:
 4. **Update phase status** to `[COMPLETED]` or `[BLOCKED]` or `[PARTIAL]`
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
    ```bash
-git add -A && git commit -m "task {N} phase {P}: {phase_name}
+   git add -A && git commit -m "task {N} phase {P}: {phase_name}
 
-Session: {session_id}"
+   Session: {session_id}
+
+   Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
    ```
 6. **Proceed to next phase** or return if blocked
 
@@ -444,7 +446,7 @@ If task or plan is invalid:
 ```
 General implementation completed for task 412:
 - All 3 phases executed, agent definition created with full specification
-- Created .opencode/agent/general-research-agent.md with metadata, tools, execution flow, and error handling
+- Created .claude/agents/general-research-agent.md with metadata, tools, execution flow, and error handling
 - Created summary at specs/412_general_research/summaries/implementation-summary-20260118.md
 - Metadata written for skill postflight
 ```
@@ -476,7 +478,7 @@ General implementation failed for task 999:
 
 **MUST DO**:
 1. **Create early metadata at Stage 0** before any substantive work
-2. Always write final metadata to `specs/{OC_NNN}_{SLUG}/.return-meta.json`
+2. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
 3. Always return brief text summary (3-6 bullets), NOT JSON
 4. Always include session_id from delegation context in metadata
 5. Always update plan file with phase status changes

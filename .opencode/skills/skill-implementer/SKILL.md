@@ -1,287 +1,402 @@
 ---
 name: skill-implementer
-description: Execute general implementation tasks following a plan. Invoke for non-Lean implementation work.
+description: Execute general implementation tasks following a plan. Invoke for general implementation work.
 allowed-tools: Task, Bash, Edit, Read, Write
-context: fork
-agent: general-implementation-agent
+# Original context (now loaded by subagent):
+#   - .claude/context/core/formats/summary-format.md
+#   - .claude/context/core/standards/code-patterns.md
+# Original tools (now used by subagent):
+#   - Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Implementer Skill
 
-**WARNING**: This file defines context injection patterns ONLY. Commands must execute status updates themselves — this skill does NOT execute workflows.
+Thin wrapper that delegates general implementation to `general-implementation-agent` subagent.
 
-Thin wrapper that delegates implementation to `general-implementation-agent`.
-
-<context>
-  <system_context>OpenCode implementation skill wrapper.</system_context>
-  <task_context>Delegate implementation and coordinate postflight updates.</task_context>
-</context>
-
-<context_injection>
-  <file path=".opencode/context/core/formats/return-metadata-file.md" variable="return_metadata" />
-  <file path=".opencode/context/core/patterns/postflight-control.md" variable="postflight_control" />
-  <file path=".opencode/context/core/patterns/file-metadata-exchange.md" variable="file_metadata" />
-  <file path=".opencode/context/core/patterns/jq-escaping-workarounds.md" variable="jq_workarounds" />
-  
-  **Task Context** (provided at invocation):
-  - Task number: `{N}` - The integer task number (e.g., 146)
-  - Task display: `OC_{N}` - The formatted task identifier (e.g., OC_146)
-  - Project name: `{project_name}` - The task slug from state.json
-</context_injection>
-
-<role>Delegation skill for general implementation workflows.</role>
-
-<task>Validate inputs, delegate implementation, and update status/artifacts.</task>
-
-<execution>
-  <stage id="1" name="LoadContext">
-    <action>Read context files defined in <context_injection></action>
-  </stage>
-  <stage id="2" name="Preflight">
-    <action>Validate status and prepare for delegation using {return_metadata} and {postflight_control}</action>
-  </stage>
-  <stage id="3" name="Delegate">
-    <action>Invoke general-implementation-agent with injected context</action>
-  </stage>
-  <stage id="4" name="Postflight">
-    <action>Update state and link artifacts using {file_metadata} and {jq_workarounds} patterns</action>
-  </stage>
-  <stage id="5" name="PostflightVerification">
-    <action>Verify phase status consistency between plan file and metadata</action>
-  </stage>
-</execution>
-
-<validation>Validate metadata file, summary artifact, state updates, and phase status consistency.</validation>
-
-<return_format>Brief text summary; metadata file in `specs/{N}_{SLUG}/.return-meta.json`.</return_format>
+**IMPORTANT**: This skill implements the skill-internal postflight pattern. After the subagent returns,
+this skill handles all postflight operations (status update, artifact linking, git commit) before returning.
+This eliminates the "continue" prompt issue between skill return and orchestrator.
 
 ## Context References
 
 Reference (do not load eagerly):
-- Path: `.opencode/context/core/formats/return-metadata-file.md` - Metadata file schema
-- Path: `.opencode/context/core/patterns/postflight-control.md` - Marker file protocol
-- Path: `.opencode/context/core/patterns/file-metadata-exchange.md` - Metadata file handling
-- Path: `.opencode/context/core/patterns/jq-escaping-workarounds.md` - jq workaround patterns
-- Path: `.opencode/context/index.md` - Context discovery index
+- Path: `.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
+- Path: `.claude/context/core/patterns/postflight-control.md` - Marker file protocol
+- Path: `.claude/context/core/patterns/file-metadata-exchange.md` - File I/O helpers
+- Path: `.claude/context/core/patterns/jq-escaping-workarounds.md` - jq escaping patterns (Issue #1132)
 
-## Execution Flow
-
-**IMPORTANT**: The skill tool only LOADS this skill definition. It does NOT execute the workflow below. Commands must implement preflight/postflight logic themselves.
-
-1. **LoadContext**: Read injected context files.
-2. **Preflight**: Validate task and status using {return_metadata} and {postflight_control}.
-    - **Update state.json to implementing**:
-      ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-          --arg status "implementing" \
-         '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-           status: $status,
-           last_updated: $ts,
-           implementing: $ts
-         }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-      ```
-    
-    - **Update TODO.md to [IMPLEMENTING]**:
-      ```
-      Edit file: specs/${padded_num}_${project_name}/TODO.md
-      oldString: "- **Status**: [PLANNED]"
-      newString: "- **Status**: [IMPLEMENTING]"
-      ```
-    
-    - **Create postflight marker file**:
-      ```bash
-      touch "specs/${padded_num}_${project_name}/.postflight-pending"
-      ```
-
-### 2a. Verify Phase Status
-
-**Purpose**: Ensure the current implementation phase is marked [IN PROGRESS] before delegation.
-
-**Process**:
-1. Read the plan file from `specs/${padded_num}_${project_name}/plans/implementation-*.md` (highest version)
-2. Extract all phase headings using regex: `### Phase \d+: .*? \[(NOT STARTED|IN PROGRESS|COMPLETED|PARTIAL)\]`
-3. Find the first phase that is not [COMPLETED]
-4. Verify it shows [IN PROGRESS]
-5. If it shows [NOT STARTED]:
-   - Update the phase status to [IN PROGRESS] using Edit tool
-   - Log warning: "Phase {N} was [NOT STARTED], updated to [IN PROGRESS]"
-6. If it shows [PARTIAL]:
-   - Keep as [PARTIAL] (resuming from partial state)
-   - Log info: "Resuming Phase {N} from [PARTIAL]"
-
-**Auto-Correction Logic**:
-```
-Edit file: specs/${padded_num}_${project_name}/plans/implementation-{NNN}.md
-oldString: "### Phase {N}: {Name} [NOT STARTED]"
-newString: "### Phase {N}: {Name} [IN PROGRESS]"
-```
-
-**Why This Matters**:
-- Catches cases where agent fails to update phase status
-- Provides early warning for status synchronization issues
-- Ensures plan file is accurate resume point source of truth
-
-3. **Delegate**:
-
-   **EXECUTE NOW**: You MUST invoke the Task tool with the following parameters. This is a NON-OPTIONAL requirement.
-
-   **CRITICAL**: Do NOT execute implementation phases directly. You MUST delegate to `general-implementation-agent` via the Task tool. Failure to invoke the Task tool means this skill has FAILED.
-
-   - Call `Task` tool with `subagent_type="general-implementation-agent"`
-   - Pass all {variables} from context_injection.
-
-   **FAILURE CONDITION**: If you do not call the Task tool with `subagent_type="general-implementation-agent"`, this skill invocation has FAILED. Implementation must be executed by the specialized general-implementation-agent, not by the primary agent.
-4. **Postflight**: Read metadata file and update state + TODO using {file_metadata} and {jq_workarounds}.
-
-   **Stage 5: Parse Subagent Return**
-   - Read metadata file and validate JSON:
-     ```bash
-     metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
-     if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
-         status=$(jq -r '.status' "$metadata_file")
-         phases_completed=$(jq -r '.metadata.phases_completed // 0' "$metadata_file")
-         phases_total=$(jq -r '.metadata.phases_total // 0' "$metadata_file")
-         artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
-         artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
-         artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
-     fi
-     ```
-
-   **Stage 6: Update Task Status in state.json**
-   - Determine final status based on metadata:
-     - If `status` == "implemented" and `phases_completed` == `phases_total`: use "completed"
-     - If `status` == "partial": use "partial"
-     - Otherwise: keep "implementing"
-   - Update state.json with timestamp:
-     ```bash
-     final_status="completed"  # or "partial" based on logic above
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-         --arg status "$final_status" \
-        '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-          status: $status,
-          last_updated: $ts,
-          ${final_status}: $ts
-        }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-     ```
-
-   **Stage 6a: Update TODO.md Status**
-   - Edit TODO.md to change status marker:
-     ```
-     Edit file: specs/${padded_num}_${project_name}/TODO.md
-     oldString: "- **Status**: [IMPLEMENTING]"
-     newString: "- **Status**: [COMPLETED]"  # or [PARTIAL] based on final_status
-     ```
-
-   **Stage 7: Link Artifacts in state.json**
-   - Use two-step jq pattern to avoid Issue #1132:
-     ```bash
-     # Step 1: Filter out existing summary artifacts
-jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
-          [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
-        specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-     
-     # Step 2: Add new summary artifact
-jq --arg path "$artifact_path" \
-         --arg type "$artifact_type" \
-         --arg summary "$artifact_summary" \
-        '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
-        specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-     ```
-
-   **Stage 7a: Update TODO.md Artifacts**
-   - Add artifact link to TODO.md:
-     ```
-     Edit file: specs/${padded_num}_${project_name}/TODO.md
-     Add to Artifacts section:
-     "- [${artifact_path}](${artifact_path}) - ${artifact_summary}"
-     ```
-
-   **Stage 8: Git Commit**
-   - Stage all changes and commit:
-     ```bash
-     git add -A
-git commit -m "task ${task_number}: complete implementation
-
-Session: ${session_id}"
-     ```
-
-   **Stage 9: Cleanup**
-   - Remove marker and metadata files:
-     ```bash
-     rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-     rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-     rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
-     ```
-
-   **Stage 10: Return Brief Summary**
-   - Return concise text summary (3-6 bullet points):
-     ```
-     Implementation completed for task {N}:
-     - Status updated to [COMPLETED] (or [PARTIAL])
-     - Phases completed: {phases_completed}/{phases_total}
-     - Summary created at: {artifact_path}
-     - Artifacts linked in state.json and TODO.md
-     - Git commit: task {N}: complete implementation
-     ```
-
-   **Error Handling**:
-   - If metadata file missing or invalid JSON: Log error, skip artifact linking
-   - If jq command fails: Log error, preserve original state.json
-   - If git commit fails: Log warning, continue (do not block on git)
-   - If TODO.md edit fails: Log error, state.json still updated
-
-5. **PostflightVerification**: Verify phase status consistency.
-
-   **Purpose**: Ensure plan.md phase status markers stay synchronized with actual implementation progress.
-
-   **Process**:
-   1. Read the plan file from the path specified in metadata
-   2. Extract all phase status markers using regex: `### Phase \d+:.*?\[(NOT STARTED|IN PROGRESS|COMPLETED|PARTIAL)\]`
-   3. Count phases by status:
-      - completed_count = number of [COMPLETED] phases
-      - in_progress_count = number of [IN PROGRESS] phases
-      - partial_count = number of [PARTIAL] phases
-      - not_started_count = number of [NOT STARTED] phases
-   4. Compare with metadata.phases_completed
-   5. Apply recovery logic to correct mismatches
-   6. Log all corrections for audit trail
-
-   **Recovery Logic**:
-
-   1. **Completed Phase Recovery**:
-      - If metadata.phases_completed > plan [COMPLETED] phases: 
-        - Update plan to mark additional phases as [COMPLETED]
-        - Log: "Corrected {N} phases to [COMPLETED] based on metadata"
-      - If metadata.phases_completed < plan [COMPLETED] phases: 
-        - Log warning but do not downgrade (completed is final)
-        - Log: "Warning: Plan shows more completed phases than metadata"
-
-   2. **In Progress Phase Recovery**:
-      - If metadata.phases_completed indicates active work but no [IN PROGRESS] phase found:
-        - Find first [NOT STARTED] phase after completed phases
-        - Update to [IN PROGRESS]
-        - Log: "Corrected Phase {N} to [IN PROGRESS] based on active work"
-
-   3. **Partial Phase Recovery**:
-      - If metadata.status == "partial" and no [PARTIAL] phase found:
-        - Find the phase at metadata.phases_completed + 1
-        - If it shows [NOT STARTED] or [IN PROGRESS], update to [PARTIAL]
-        - Log: "Marked Phase {N} as [PARTIAL] based on partial completion"
-
-   4. **Not Started During Active Work**:
-      - If metadata.phases_completed > 0 but current phase shows [NOT STARTED]:
-        - Update to [IN PROGRESS] (work has begun on this phase)
-        - Log: "Corrected Phase {N} from [NOT STARTED] to [IN PROGRESS]"
-
-## Validation Checklist
-
-- [ ] Metadata file exists and is valid JSON
-- [ ] Summary artifact created at correct path
-- [ ] state.json updated with correct status
-- [ ] TODO.md updated with status and summary link
-- [ ] Phase status markers in plan file match metadata.phases_completed
+Note: This skill is a thin wrapper with internal postflight. Context is loaded by the delegated agent.
 
 ## Trigger Conditions
 
-- Task language is general, meta, markdown
-- /implement command invoked
+This skill activates when:
+- Task language is "general", "meta", or "markdown"
+- /implement command is invoked
+- Plan exists and task is ready for implementation
+
+---
+
+## Execution Flow
+
+### Stage 1: Input Validation
+
+Validate required inputs:
+- `task_number` - Must be provided and exist in state.json
+- Task status must allow implementation (planned, implementing, partial)
+
+```bash
+# Lookup task
+task_data=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num)' \
+  specs/state.json)
+
+# Validate exists
+if [ -z "$task_data" ]; then
+  return error "Task $task_number not found"
+fi
+
+# Extract fields
+language=$(echo "$task_data" | jq -r '.language // "general"')
+status=$(echo "$task_data" | jq -r '.status')
+project_name=$(echo "$task_data" | jq -r '.project_name')
+description=$(echo "$task_data" | jq -r '.description // ""')
+
+# Validate status
+if [ "$status" = "completed" ]; then
+  return error "Task already completed"
+fi
+```
+
+---
+
+### Stage 2: Preflight Status Update
+
+Update task status to "implementing" BEFORE invoking subagent.
+
+**Update state.json**:
+```bash
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg status "implementing" \
+   --arg sid "$session_id" \
+  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+    status: $status,
+    last_updated: $ts,
+    session_id: $sid,
+    started: $ts
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+**Update TODO.md**: Use Edit tool to change status marker from `[PLANNED]` to `[IMPLEMENTING]`.
+
+**Update plan file** (if exists): Update the Status field in plan metadata:
+```bash
+.claude/scripts/update-plan-status.sh "$task_number" "$project_name" "IMPLEMENTING"
+```
+
+---
+
+### Stage 3: Create Postflight Marker
+
+Create the marker file to prevent premature termination:
+
+```bash
+# Ensure task directory exists
+padded_num=$(printf "%03d" "$task_number")
+mkdir -p "specs/${padded_num}_${project_name}"
+
+cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
+{
+  "session_id": "${session_id}",
+  "skill": "skill-implementer",
+  "task_number": ${task_number},
+  "operation": "implement",
+  "reason": "Postflight pending: status update, artifact linking, git commit",
+  "created": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "stop_hook_active": false
+}
+EOF
+```
+
+---
+
+### Stage 4: Prepare Delegation Context
+
+Prepare delegation context for the subagent:
+
+```json
+{
+  "session_id": "sess_{timestamp}_{random}",
+  "delegation_depth": 1,
+  "delegation_path": ["orchestrator", "implement", "skill-implementer"],
+  "timeout": 7200,
+  "task_context": {
+    "task_number": N,
+    "task_name": "{project_name}",
+    "description": "{description}",
+    "language": "{language}"
+  },
+  "plan_path": "specs/{NNN}_{SLUG}/plans/implementation-{NNN}.md",
+  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
+}
+```
+
+---
+
+### Stage 5: Invoke Subagent
+
+**CRITICAL**: You MUST use the **Task** tool to spawn the subagent.
+
+**Required Tool Invocation**:
+```
+Tool: Task (NOT Skill)
+Parameters:
+  - subagent_type: "general-implementation-agent"
+  - prompt: [Include task_context, delegation_context, plan_path, metadata_file_path]
+  - description: "Execute implementation for task {N}"
+```
+
+**DO NOT** use `Skill(general-implementation-agent)` - this will FAIL.
+
+The subagent will:
+- Load implementation context files
+- Parse plan and find resume point
+- Execute phases sequentially
+- Create/modify files as needed
+- Create implementation summary
+- Write metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+- Return a brief text summary (NOT JSON)
+
+---
+
+### Stage 5a: Validate Subagent Return Format
+
+**IMPORTANT**: Check if subagent accidentally returned JSON to console (v1 pattern) instead of writing to file (v2 pattern).
+
+If the subagent's text return parses as valid JSON, log a warning:
+
+```bash
+# Check if subagent return looks like JSON (starts with { and is valid JSON)
+subagent_return="$SUBAGENT_TEXT_RETURN"
+if echo "$subagent_return" | grep -q '^{' && echo "$subagent_return" | jq empty 2>/dev/null; then
+    echo "WARNING: Subagent returned JSON to console instead of writing metadata file."
+    echo "This indicates the agent may have outdated instructions (v1 pattern instead of v2)."
+    echo "The skill will continue by reading the metadata file, but this should be fixed."
+fi
+```
+
+This validation:
+- Does NOT fail the operation (continues to read metadata file)
+- Logs a warning for debugging
+- Indicates the subagent instructions need updating
+- Allows graceful handling of mixed v1/v2 agents
+
+---
+
+### Stage 6: Parse Subagent Return (Read Metadata File)
+
+After subagent returns, read the metadata file:
+
+```bash
+metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
+
+if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
+    status=$(jq -r '.status' "$metadata_file")
+    artifact_path=$(jq -r '.artifacts[0].path // ""' "$metadata_file")
+    artifact_type=$(jq -r '.artifacts[0].type // ""' "$metadata_file")
+    artifact_summary=$(jq -r '.artifacts[0].summary // ""' "$metadata_file")
+    phases_completed=$(jq -r '.metadata.phases_completed // 0' "$metadata_file")
+    phases_total=$(jq -r '.metadata.phases_total // 0' "$metadata_file")
+
+    # Extract completion_data fields (if present)
+    completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
+    claudemd_suggestions=$(jq -r '.completion_data.claudemd_suggestions // ""' "$metadata_file")
+    roadmap_items=$(jq -c '.completion_data.roadmap_items // []' "$metadata_file")
+else
+    echo "Error: Invalid or missing metadata file"
+    status="failed"
+fi
+```
+
+---
+
+### Stage 7: Update Task Status (Postflight)
+
+**If status is "implemented"**:
+
+Update state.json to "completed" and add completion_data fields:
+```bash
+# Step 1: Update status and timestamps
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg status "completed" \
+  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+    status: $status,
+    last_updated: $ts,
+    completed: $ts
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+
+# Step 2: Add completion_summary (always required for completed tasks)
+if [ -n "$completion_summary" ]; then
+    jq --arg summary "$completion_summary" \
+      '(.active_projects[] | select(.project_number == '$task_number')).completion_summary = $summary' \
+      specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+fi
+
+# Step 3: Add language-specific completion fields
+# For meta tasks: add claudemd_suggestions
+if [ "$language" = "meta" ] && [ -n "$claudemd_suggestions" ]; then
+    jq --arg suggestions "$claudemd_suggestions" \
+      '(.active_projects[] | select(.project_number == '$task_number')).claudemd_suggestions = $suggestions' \
+      specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+fi
+
+# For non-meta tasks: add roadmap_items (if present and non-empty)
+if [ "$language" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_items" ]; then
+    jq --argjson items "$roadmap_items" \
+      '(.active_projects[] | select(.project_number == '$task_number')).roadmap_items = $items' \
+      specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+fi
+```
+
+Update TODO.md: Change status marker from `[IMPLEMENTING]` to `[COMPLETED]`.
+
+**Update plan file** (if exists): Update the Status field to `[COMPLETED]`:
+```bash
+.claude/scripts/update-plan-status.sh "$task_number" "$project_name" "COMPLETED"
+```
+
+**If status is "partial"**:
+
+Keep status as "implementing" but update resume point:
+```bash
+jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   --argjson phase "$phases_completed" \
+  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
+    last_updated: $ts,
+    resume_phase: ($phase + 1)
+  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+```
+
+TODO.md stays as `[IMPLEMENTING]`.
+
+**Update plan file** (if exists): Update the Status field to `[PARTIAL]`:
+```bash
+.claude/scripts/update-plan-status.sh "$task_number" "$project_name" "PARTIAL"
+```
+
+**On failed**: Keep status as "implementing" for retry. Do not update plan file (leave as `[IMPLEMENTING]` for retry).
+
+---
+
+### Stage 8: Link Artifacts
+
+Add artifact to state.json with summary.
+
+**IMPORTANT**: Use two-step jq pattern to avoid Issue #1132 escaping bug. See `jq-escaping-workarounds.md`.
+
+```bash
+if [ -n "$artifact_path" ]; then
+    # Step 1: Filter out existing summary artifacts (use "| not" pattern to avoid != escaping - Issue #1132)
+    jq '(.active_projects[] | select(.project_number == '$task_number')).artifacts =
+        [(.active_projects[] | select(.project_number == '$task_number')).artifacts // [] | .[] | select(.type == "summary" | not)]' \
+      specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+
+    # Step 2: Add new summary artifact
+    jq --arg path "$artifact_path" \
+       --arg type "$artifact_type" \
+       --arg summary "$artifact_summary" \
+      '(.active_projects[] | select(.project_number == '$task_number')).artifacts += [{"path": $path, "type": $type, "summary": $summary}]' \
+      specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+fi
+```
+
+**Update TODO.md** (if implemented): Add summary artifact link:
+```markdown
+- **Summary**: [implementation-summary-{DATE}.md]({artifact_path})
+```
+
+---
+
+### Stage 9: Git Commit
+
+Commit changes with session ID:
+
+```bash
+git add -A
+git commit -m "task ${task_number}: complete implementation
+
+Session: ${session_id}
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
+
+---
+
+### Stage 10: Cleanup
+
+Remove marker and metadata files:
+
+```bash
+rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
+rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
+rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+```
+
+---
+
+### Stage 11: Return Brief Summary
+
+Return a brief text summary (NOT JSON). Example:
+
+```
+Implementation completed for task {N}:
+- All {phases_total} phases executed successfully
+- Key changes: {summary of changes}
+- Created summary at specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md
+- Status updated to [COMPLETED]
+- Changes committed
+```
+
+---
+
+## Error Handling
+
+### Input Validation Errors
+Return immediately with error message if task not found or status invalid.
+
+### Metadata File Missing
+If subagent didn't write metadata file:
+1. Keep status as "implementing"
+2. Do not cleanup postflight marker
+3. Report error to user
+
+### Git Commit Failure
+Non-blocking: Log failure but continue with success response.
+
+### Subagent Timeout
+Return partial status if subagent times out (default 7200s).
+Keep status as "implementing" for resume.
+
+---
+
+## Return Format
+
+This skill returns a **brief text summary** (NOT JSON). The JSON metadata is written to the file and processed internally.
+
+Example successful return:
+```
+Implementation completed for task 350:
+- All 5 phases executed successfully
+- Created new feature component with tests
+- Created summary at specs/350_feature/summaries/implementation-summary-20260118.md
+- Status updated to [COMPLETED]
+- Changes committed with session sess_1736700000_abc123
+```
+
+Example partial return:
+```
+Implementation partially completed for task 350:
+- Phases 1-3 of 5 executed
+- Phase 4 failed: TypeScript compilation error
+- Partial summary at specs/350_feature/summaries/implementation-summary-20260118.md
+- Status remains [IMPLEMENTING] - run /implement 350 to resume
+```
