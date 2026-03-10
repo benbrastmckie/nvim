@@ -46,7 +46,7 @@ Research identified three critical issues with the agent systems wiring: (1) ext
 
 ## Implementation Phases
 
-### Phase 1: Audit and Document Core Inventory [NOT STARTED]
+### Phase 1: Audit and Document Core Inventory [COMPLETED]
 
 - **Goal:** Produce a definitive list of core-only elements (agents, skills, rules, context, index entries, CLAUDE.md sections) vs extension-provided elements, and verify no core command or agent references extension-only elements without a fallback.
 
