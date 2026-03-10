@@ -7,7 +7,7 @@
       "status": "planned",
       "language": "meta",
       "created": "2026-03-10T18:25:28Z",
-      "last_updated": "2026-03-10T18:52:12Z",
+      "last_updated": "2026-03-10T18:57:22Z",
       "artifacts": [
         {
           "type": "research",
@@ -21,8 +21,8 @@
         },
         {
           "type": "plan",
-          "path": "specs/168_verify_core_agent_system_loading/plans/implementation-001.md",
-          "summary": "5-phase plan: fix index paths, add loader normalization, fix manifests, update routing, validation testing"
+          "path": "specs/168_verify_core_agent_system_loading/plans/implementation-002.md",
+          "summary": "6-phase plan with explicit system independence requirements"
         }
       ]
     },

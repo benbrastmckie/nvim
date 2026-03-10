@@ -16,7 +16,7 @@ next_project_number: 169
 - **Planning Completed**: 2026-03-10
 - **Language**: meta
 - **Research**: [research-001.md](168_verify_core_agent_system_loading/reports/research-001.md), [research-002.md](168_verify_core_agent_system_loading/reports/research-002.md)
-- **Plan**: [implementation-001.md](168_verify_core_agent_system_loading/plans/implementation-001.md)
+- **Plan**: [implementation-002.md](168_verify_core_agent_system_loading/plans/implementation-002.md)
 
 **Description**: Verify that the core agent systems reloaded in .claude/ and .opencode/ in /home/benjamin/Projects/Logos/Vision/ contain no missing elements and are wired together correctly. These should ONLY include the core agent systems without extensions, where just the task types covered by the core system are available, and agents have access to an appropriate index of the context files included in the core agent systems.
 
