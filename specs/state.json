@@ -4,19 +4,25 @@
     {
       "project_number": 166,
       "project_name": "move_neovim_elements_to_nvim_extension",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-10T16:58:21Z",
-      "last_updated": "2026-03-10T17:06:19Z",
-      "session_id": "sess_1773161947_deabaf",
+      "last_updated": "2026-03-10T17:12:32Z",
+      "session_id": "sess_1773162479_902b1a",
       "researched": "2026-03-10T17:06:19Z",
       "artifacts": [
         {
           "path": "specs/166_move_neovim_elements_to_nvim_extension/reports/research-001.md",
           "type": "research",
           "summary": "Research report with complete inventory of neovim elements, extension structure pattern, wiring points, and structural differences between .claude/ and .opencode/"
+        },
+        {
+          "path": "specs/166_move_neovim_elements_to_nvim_extension/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan for moving neovim elements to nvim extension in both .claude/ and .opencode/ systems"
         }
-      ]
+      ],
+      "planned": "2026-03-10T17:12:32Z"
     },
     {
       "project_number": 165,
