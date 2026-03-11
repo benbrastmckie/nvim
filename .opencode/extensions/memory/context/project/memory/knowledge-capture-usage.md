@@ -50,82 +50,103 @@ The `/fix` command scans files for embedded tags (FIX:, NOTE:, TODO:) and create
 
 ---
 
-## /learn Task Mode Examples
+## /learn Command Examples
 
-The `/learn --task OC_N` command reviews task artifacts and creates classified memories.
+The `/learn` command adds knowledge to the memory vault with four input modes.
 
-### Example 1: Review All Task Artifacts
+### Example 1: Add Text Memory
+
+```bash
+/learn "Use pcall() in Lua for safe function calls"
+```
+
+**Workflow:**
+1. Content mapped as single segment (<500 tokens)
+2. Memory search finds related memories
+3. User selects operation (UPDATE/EXTEND/CREATE)
+4. Memory created or updated with topic assignment
+
+### Example 2: Add File Content
+
+```bash
+/learn ~/notes/telescope-tips.md
+```
+
+**Workflow:**
+1. File content segmented at heading boundaries
+2. Each segment searched against vault
+3. User reviews overlap scores and recommendations
+4. Operations executed (mix of UPDATE/EXTEND/CREATE)
+
+### Example 3: Scan Directory
+
+```bash
+/learn ./lua/plugins/
+```
+
+**Workflow:**
+1. Recursive scan with exclusion patterns
+2. Two-tier text detection (extensions + MIME type)
+3. User selects files to process (multiSelect)
+4. Files segmented and routed through pipeline
+5. Operations summary: "3 updates, 5 extends, 14 creates"
+
+### Example 4: Review Task Artifacts
 
 ```bash
 /learn --task 142
 ```
 
 **Workflow:**
-1. Scans specs/OC_142_implement_knowledge_capture_system/ for artifacts
+1. Scans specs/142_task_name/ for artifacts
 2. Displays found files:
    ```
-   Artifacts found for Task OC_142:
-   
+   Artifacts found for Task 142:
+
    1. reports/research-002.md (Research Report)
    2. plans/implementation-003.md (Implementation Plan)
    3. summaries/implementation-summary-20260305.md (Summary)
    ```
-3. User selects artifacts to review (e.g., selects all)
-4. Reviews each artifact with classification:
+3. User selects artifacts to review
+4. Content mapped and searched
+5. Classification for each segment:
    ```
-   Reviewing: plans/implementation-003.md
-   
-   Classify this artifact:
+   Classify this segment:
    - [x] [PATTERN] - Design or implementation pattern
    - [ ] [TECHNIQUE] - Reusable method
-   - [ ] [CONFIG] - Configuration knowledge
-   - [ ] [WORKFLOW] - Process or procedure
-   - [ ] [INSIGHT] - Key learning
    - [ ] [SKIP] - Not valuable
    ```
-5. Creates memory with classification tag
-6. Updates memory vault index
+6. Memories created with classification tags and topic
 
-### Example 2: Create Memory from Research Report
+### Example 5: Extract Pattern from Research
 
 ```bash
 /learn --task 146
 ```
 
-**Scenario:** Task OC_146 is a research task on subagent workflows.
+**Scenario:** Task 146 contains research on subagent workflows.
 
 **Workflow:**
-1. Finds research-001.md with comprehensive findings
-2. User reviews and classifies as [INSIGHT]
-3. Memory created:
+1. Research report segmented (3 segments)
+2. Segment 1: 55% match to existing memory -> EXTEND
+3. Segment 2: 15% match -> CREATE (classified as [INSIGHT])
+4. Segment 3: 70% match -> UPDATE existing
+5. Result:
    ```markdown
    # Memory: Subagent Workflow Best Practices
-   
+
    **Category**: [INSIGHT]
-   **Source**: Task OC_146 - reports/research-001.md
-   **Date**: 2026-03-05
-   
+   **Topic**: meta/agents/subagents
+   **Source**: Task 146 - reports/research-001.md
+
    Key findings on isolated context windows and metadata passing...
    ```
-
-### Example 3: Extract Pattern from Implementation
-
-```bash
-/learn --task 139
-```
-
-**Scenario:** Task OC_139 demonstrated stage-progressive loading.
-
-**Workflow:**
-1. Reviews implementation-001.md
-2. Classifies as [PATTERN]
-3. Memory captures reusable pattern for context loading
 
 ---
 
 ## /todo Examples
 
-The enhanced `/todo` command now includes CHANGE_LOG updates and memory harvest suggestions.
+The enhanced `/todo` command includes CHANGE_LOG updates and memory harvest suggestions.
 
 ### Example 1: Archive with CHANGE_LOG Update
 
@@ -136,24 +157,15 @@ The enhanced `/todo` command now includes CHANGE_LOG updates and memory harvest 
 **Workflow:**
 1. Scans for completed tasks
 2. Archives tasks to specs/archive/
-3. Updates specs/CHANGE_LOG.md:
-   ```markdown
-   ### 2026-03-05
-   
-   **Task OC_142: implement_knowledge_capture_system**
-   - Status: completed
-   - Type: meta
-   - Summary: Implemented knowledge capture system
-   ```
-4. Commits all changes
+3. Updates specs/CHANGE_LOG.md
+4. Suggests memory harvest from completed work
+5. Commits all changes
 
 ### Example 2: Preview Before Archiving
 
 ```bash
 /todo --dry-run
 ```
-
-**Use Case:** Preview what would be archived without making changes.
 
 **Output:**
 ```
@@ -164,90 +176,139 @@ Dry Run - Would Archive:
 - 5 memory harvest suggestions available
 ```
 
-### Example 3: Memory Harvest Suggestions
-
-When archiving tasks, /todo now suggests memory creation:
-
-```
-Memory Harvest Suggestions from Completed Tasks:
-
-From Task OC_142:
-- [x] [PATTERN] - Clean-break approach for command renaming
-- [x] [TECHNIQUE] - Skill extraction from embedded logic
-- [ ] [CONFIG] - CHANGE_LOG.md format
-
-Create selected memories? [Yes/No]
-```
-
 ---
 
 ## Cross-Feature Workflow Example
 
-Complete workflow demonstrating all three features working together:
+Complete workflow demonstrating all features working together:
 
 ### Step 1: Scan for Issues
+
 ```bash
 /fix src/
 ```
+
 Finds 3 FIXME tags in source code, creates tasks.
 
 ### Step 2: Research a Task
+
 ```bash
-/research OC_150
+/research 150
 ```
+
 Creates comprehensive research report.
 
 ### Step 3: Create Memories from Research
+
 ```bash
 /learn --task 150
 ```
-Reviews research report, classifies findings as [INSIGHT] and [TECHNIQUE].
+
+**Workflow:**
+1. Reviews research report (segmented into 4 chunks)
+2. Searches vault for each segment
+3. Operations:
+   - Segment 1: UPDATE existing memory (72% overlap)
+   - Segment 2: CREATE as [INSIGHT]
+   - Segment 3: EXTEND existing memory (45% overlap)
+   - Segment 4: CREATE as [TECHNIQUE]
+4. Topics assigned based on content analysis
 
 ### Step 4: Implement the Task
+
 ```bash
-/implement OC_150
+/implement 150
 ```
+
 Executes plan, creates implementation.
 
 ### Step 5: Archive and Update
+
 ```bash
 /todo
 ```
+
 - Archives completed task
 - Updates ROAD_MAP.md with completion annotation
 - Updates CHANGE_LOG.md with entry
-- Suggests harvesting implementation patterns
+- Suggests reviewing implementation for additional memories
 
 ---
 
-## Migration Guide: /learn to /fix
+## Content Mapping Examples
 
-If you were using `/learn` before the rename:
+### Markdown File Segmentation
 
-| Old Command | New Command | Notes |
-|-------------|-------------|-------|
-| `/learn` | `/fix` | Same functionality |
-| `/learn src/` | `/fix src/` | No change in behavior |
-| `/learn file.lua` | `/fix file.lua` | Same tag scanning |
+**Input:** `research-report.md` (2500 tokens)
 
-**What Changed:**
-- Command name only
-- All functionality identical
-- No aliases or fallbacks (clean-break approach)
+```markdown
+# Research Report
 
-**How to Adapt:**
-1. Replace muscle memory: type `/fix` instead of `/learn`
-2. Update any scripts or documentation referencing `/learn`
-3. Use `/fix --help` for reference
+## Summary
+Brief overview...
+
+## Finding 1: MCP Integration
+Details about MCP...
+
+## Finding 2: Grep Fallback
+Details about fallback...
+
+## Recommendations
+Action items...
+```
+
+**Content Map:**
+```json
+{
+  "segments": [
+    {"id": "seg-001", "topic": "meta/research", "summary": "Summary overview", "tokens": 150},
+    {"id": "seg-002", "topic": "meta/mcp", "summary": "MCP Integration patterns", "tokens": 800},
+    {"id": "seg-003", "topic": "meta/search", "summary": "Grep fallback strategy", "tokens": 600},
+    {"id": "seg-004", "topic": "meta/process", "summary": "Recommendations", "tokens": 450}
+  ]
+}
+```
+
+### Directory Scan Flow
+
+**Input:** `/learn ./lua/plugins/`
+
+**Scan Results:**
+```
+Files found: 15
+After size filter: 12
+After text detection: 12
+
+Select files to process:
+[x] telescope.lua (2.3KB) - 3 segments expected
+[x] lsp.lua (4.1KB) - 5 segments expected
+[ ] unused.lua (0.5KB) - 1 segment expected
+[x] keymaps.lua (1.8KB) - 2 segments expected
+```
+
+**Processing:**
+```
+Processing telescope.lua...
+  Segment 1: "Telescope setup" -> CREATE (18% overlap)
+  Segment 2: "Custom pickers" -> UPDATE MEM-2026-03-05-042 (68% overlap)
+  Segment 3: "Key mappings" -> EXTEND MEM-2026-03-04-038 (42% overlap)
+
+Processing lsp.lua...
+  [...]
+```
 
 ---
 
 ## Summary
 
-These examples demonstrate the integrated knowledge capture system:
+The integrated knowledge capture system provides:
 
 - **`/fix`** - Capture issues and TODOs from code
-- **`/learn --task`** - Harvest knowledge from completed work
+- **`/learn`** - Add knowledge from text, files, directories, or task artifacts
+  - Content mapping for intelligent segmentation
+  - MCP/grep search for deduplication
+  - Three operations: UPDATE, EXTEND, CREATE
+  - Topic-based organization
 - **`/todo`** - Archive with CHANGE_LOG tracking and memory suggestions
 
 Together, they create a continuous knowledge loop: discover -> document -> harvest -> archive.

@@ -6,9 +6,12 @@ This project includes the memory vault extension for knowledge capture and retri
 
 | Command | Usage | Description |
 |---------|-------|-------------|
-| `/learn` | `/learn "text"` | Add text as memory |
+| `/learn` | `/learn "text"` | Add text as memory (with content mapping and deduplication) |
 | `/learn` | `/learn /path/to/file` | Add file content as memory |
+| `/learn` | `/learn /path/to/dir/` | Scan directory for learnable content |
 | `/learn` | `/learn --task N` | Review task artifacts and create memories |
+
+All input modes flow through content mapping, MCP-based memory search (or grep fallback), and three memory operations (UPDATE, EXTEND, CREATE).
 
 ### Memory-Augmented Research
 
@@ -33,15 +36,18 @@ When the memory extension is loaded, this flag:
 
 ### MCP Integration
 
-The `obsidian-memory` MCP server provides:
-- `search_notes` - Search memories by keywords
-- `read_note` - Retrieve full memory content
-- `write_note` - Create new memory
-- `list_notes` - Enumerate all memories
+The `obsidian-memory` MCP server provides memory search via the two-tool pattern:
+
+| Tool | Usage | Description |
+|------|-------|-------------|
+| `execute("search", {...})` | `execute("search", {query: "...", vault: ".memory", limit: 5})` | Search memories by keywords |
+| `execute("read", {...})` | `execute("read", {path: "..."})` | Retrieve full memory content |
+| `execute("write", {...})` | `execute("write", {path: "...", content: "..."})` | Create new memory |
+| `execute("list", {...})` | `execute("list", {vault: ".memory"})` | Enumerate all memories |
 
 **Setup**: See memory-setup.md context file for MCP server configuration.
 
-**Graceful Degradation**: If MCP is unavailable, direct file access still works.
+**Graceful Degradation**: If MCP is unavailable, grep-based search on .memory/10-Memories/*.md still works.
 
 ### Memory Vault Structure
 
@@ -63,3 +69,23 @@ When using `/learn --task N`, memories are classified into categories:
 - **[CONFIG]** - Configuration or setup knowledge
 - **[WORKFLOW]** - Process or procedure
 - **[INSIGHT]** - Key learning or understanding
+
+### Memory Operations
+
+The `/learn` command uses three memory operations based on overlap scoring:
+
+| Operation | Overlap | Description |
+|-----------|---------|-------------|
+| **UPDATE** | >60% | Replace existing memory content (old content preserved in History section) |
+| **EXTEND** | 30-60% | Append dated section to existing memory |
+| **CREATE** | <30% | Create new memory file |
+
+### Topic Organization
+
+Memories now include a `topic` field in frontmatter with slash-separated hierarchical paths:
+
+```yaml
+topic: "neovim/plugins/telescope"
+```
+
+The index.md includes both "By Category" and "By Topic" sections for navigation.

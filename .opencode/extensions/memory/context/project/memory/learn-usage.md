@@ -1,191 +1,300 @@
 # /learn Command Usage Guide
 
-## Basic Usage
+## Overview
 
-### Adding Text Memories
+The `/learn` command adds knowledge to the memory vault from four input sources: text, files, directories, or task artifacts. All inputs flow through content mapping, MCP-based memory search, and three memory operations (UPDATE, EXTEND, CREATE).
 
-```
-/learn "Your text content here"
-```
+## Input Modes
 
-**Example**:
-```
-/learn "Use pcall() in Lua to safely call functions that might error"
-```
+### Text Mode
 
-### Adding File Memories
+Add quoted text directly as memory:
 
-```
-/learn /path/to/file.md
+```bash
+/learn "Use pcall() in Lua for safe function calls"
+/learn "Pattern: always use explicit returns in modules"
 ```
 
-**Example**:
-```
-/learn ~/notes/neovim-tips.md
-```
+### File Mode
 
-## Checkbox Confirmation Options
+Add content from a single file:
 
-When you run `/learn`, you'll see a preview and checkbox options:
-
-```
-Memory Preview:
-─────────────────────────────────────────
-ID: MEM-2026-03-06-001
-Title: Use pcall() in Lua
-Source: user input
-Date: 2026-03-06
-
-Content Preview (first 300 chars):
-Use pcall() in Lua to safely call functions...
-─────────────────────────────────────────
-
-Similar Memories Found:
-- MEM-2026-03-05-042: "Lua error handling patterns"
-
-What would you like to do with this memory?
-[ ] Add as new memory
-[ ] Update existing similar memory
-[ ] Edit content before saving
-[ ] Skip - don't save
+```bash
+/learn /path/to/notes.md
+/learn ~/docs/neovim-tips.txt
 ```
 
-### Option Descriptions
+### Directory Mode
 
-**Add as new memory**: Creates a new memory file in `.memory/10-Memories/`
+Scan a directory tree for learnable content:
 
-**Update existing**: If similar memories exist, appends content to the selected memory
-
-**Edit content**: Opens the content in an editor before saving/updating
-
-**Skip**: Cancels the operation without making changes
-
-### Multiple Selection
-
-You can select multiple options:
-- **Add + Update**: Merge scenario - creates new memory AND updates existing
-- **Edit + Add**: Modify content first, then create new memory
-- **Edit + Update**: Modify content, then append to existing memory
-
-## Memory-Augmented Research
-
-### Using --remember Flag
-
-Enhance research with prior knowledge from the memory vault:
-
-```
-/research OC_136 --remember
+```bash
+/learn ./src/utils/
+/learn ~/notes/neovim/
 ```
 
-With focus prompt:
+**Features**:
+- Recursive scanning with exclusion patterns (.git/, node_modules/, etc.)
+- Two-tier text detection: extension whitelist + MIME-type fallback
+- Size limits: 100KB per file, warning at 50 files, hard limit at 200 files
+- Interactive file selection before processing
+
+### Task Mode
+
+Review artifacts from a completed task:
+
+```bash
+/learn --task 142
+/learn --task 142 --category PATTERN
 ```
-/research OC_136 "MCP server integration" --remember
+
+**Workflow**:
+1. Scan task directory for artifacts (reports/, plans/, summaries/)
+2. Select artifacts to review
+3. Classify each segment (TECHNIQUE, PATTERN, CONFIG, WORKFLOW, INSIGHT, SKIP)
+4. Create memories with classification tags
+
+---
+
+## Content Mapping
+
+For inputs over 500 tokens, content is segmented into topic-aligned chunks:
+
+```
+Input: Large markdown file (2500 tokens)
+       |
+       v
+Content Map:
+  - Segment 1: "Telescope picker creation" (350 tokens)
+  - Segment 2: "Custom sorter patterns" (280 tokens)
+  - Segment 3: "Attach mappings usage" (420 tokens)
 ```
 
-### How It Works
+**Segmentation by file type**:
+- Markdown: Split at heading boundaries
+- Code: Split at function/class boundaries
+- Text: Split at paragraph boundaries
 
-1. Research extracts keywords from task description
-2. Searches memory vault for relevant entries
-3. Includes top 3 matching memories in research context
-4. Research report includes "Prior Knowledge from Memory Vault" section
+**Small inputs** (<500 tokens) bypass segmentation and become a single segment.
 
-### Example Research Report Section
+---
 
-```markdown
-## Prior Knowledge from Memory Vault
+## Memory Search
 
-**Relevant Memories**:
-- **MEM-2026-03-05-042**: Lua error handling patterns
-- **MEM-2026-03-04-038**: Neovim configuration tips
+Each segment is matched against existing memories:
 
-**Memory-Augmented**: true
 ```
+Segment: "Telescope picker creation"
+Key terms: telescope, picker, finders, sorters, attach_mappings
+
+Related Memories:
+1. MEM-2026-03-05-042 (72% overlap) -> UPDATE recommended
+2. MEM-2026-03-04-038 (45% overlap) -> EXTEND recommended
+3. (no match) -> CREATE recommended
+```
+
+**Search methods**:
+- **MCP path**: `execute("search", {query: key_terms})`
+- **Grep fallback**: `grep -l -i keyword .memory/10-Memories/*.md`
+
+---
+
+## Memory Operations
+
+### UPDATE (>60% overlap)
+
+Replace existing memory content:
+
+```
+Before: MEM-2026-03-05-042 "Telescope basics"
+After:  MEM-2026-03-05-042 "Telescope picker creation"
+        - Old content moved to ## History section
+        - last_updated field updated
+```
+
+### EXTEND (30-60% overlap)
+
+Append new section to existing memory:
+
+```
+Before: MEM-2026-03-04-038 "Neovim plugin patterns"
+After:  MEM-2026-03-04-038 with new:
+        ## Extension (2026-03-11)
+        [new content about telescope]
+```
+
+### CREATE (<30% overlap)
+
+Create new memory file:
+
+```
+New: MEM-2026-03-11-001 "Telescope picker creation"
+     - Fresh memory with topic and tags
+     - Added to index (category + topic sections)
+```
+
+---
+
+## Topic Organization
+
+Memories include a `topic` field with slash-separated paths:
+
+```yaml
+topic: "neovim/plugins/telescope"
+```
+
+**Topic inference priority**:
+1. Source directory path
+2. Keyword analysis
+3. Related memory topics
+4. User override
+
+**Index organization**:
+```
+## By Topic
+
+### neovim/
+  - neovim/plugins/telescope - 3 memories
+  - neovim/config - 5 memories
+
+### meta/
+  - meta/commands - 2 memories
+```
+
+---
+
+## Interactive Flow
+
+### Step 1: Content Preview
+
+```
+Segment: Use pcall() in Lua for safe function calls
+Topic: neovim/lua
+Key terms: pcall, lua, safe, function, error
+
+Related Memories Found:
+- MEM-2026-03-05-042: "Lua error handling" (65% match)
+```
+
+### Step 2: Operation Selection
+
+```
+What would you like to do with this segment?
+[ ] UPDATE MEM-2026-03-05-042 (replace content)
+[ ] EXTEND MEM-2026-03-05-042 (append section)
+[ ] CREATE new memory
+[ ] SKIP - don't save
+```
+
+### Step 3: Confirmation
+
+```
+Operation: UPDATE MEM-2026-03-05-042
+Topic: neovim/lua (confirm or modify)
+
+Proceed? [Yes/No]
+```
+
+---
+
+## Examples
+
+### Example 1: Simple Text
+
+```bash
+/learn "vim.keymap.set accepts a table with silent and buffer options"
+```
+
+Flow:
+1. Single segment (under 500 tokens)
+2. Search finds MEM-2026-03-05-042 (45% match)
+3. User selects EXTEND
+4. Memory updated with new section
+
+### Example 2: File Import
+
+```bash
+/learn ~/docs/telescope-notes.md
+```
+
+Flow:
+1. File segmented into 3 topic chunks
+2. Each segment searched against vault
+3. Segment 1: UPDATE existing
+4. Segment 2: EXTEND existing
+5. Segment 3: CREATE new
+
+### Example 3: Directory Scan
+
+```bash
+/learn ./lua/plugins/
+```
+
+Flow:
+1. Recursive scan finds 12 files
+2. User selects 8 files (multiSelect)
+3. Files segmented (22 segments total)
+4. Search and classify each
+5. Result: 3 updates, 5 extends, 14 creates
+
+### Example 4: Task Artifact Review
+
+```bash
+/learn --task 142
+```
+
+Flow:
+1. Scan specs/142_task_name/ for artifacts
+2. Select research-001.md and summary
+3. Classify as [INSIGHT] and [PATTERN]
+4. Create memories with tags
+
+---
+
+## Quick Reference
+
+| Command | Mode | Description |
+|---------|------|-------------|
+| `/learn "text"` | Text | Add text as memory |
+| `/learn /path/file` | File | Add file content |
+| `/learn /path/dir/` | Directory | Scan directory |
+| `/learn --task N` | Task | Review task artifacts |
+
+| Operation | Overlap | Action |
+|-----------|---------|--------|
+| UPDATE | >60% | Replace memory content |
+| EXTEND | 30-60% | Append dated section |
+| CREATE | <30% | Create new memory |
+
+---
 
 ## Best Practices
 
 ### Writing Good Memories
 
-1. **Use descriptive first lines** - The first line becomes the title
-2. **Keep content focused** - One concept per memory
-3. **Use natural language** - Write for future you
-4. **Include context** - Source, date, why it's important
+1. **Use descriptive content** - Clear, focused knowledge
+2. **One concept per memory** - Keep memories atomic
+3. **Include context** - Source and date are auto-captured
+4. **Use consistent topics** - Follow existing topic hierarchy
 
 ### Managing the Vault
 
-1. **Review index.md** - Use it to navigate your memories
-2. **Update existing** - Rather than creating many similar memories
-3. **Use tags** - (Coming in Phase 2) Organize by topic
-4. **Commit regularly** - `git add .memory/ && git commit`
+1. **Review index.md** - Navigate by category and topic
+2. **Prefer UPDATE/EXTEND** - Consolidate related knowledge
+3. **Use directory mode** - Batch import notes efficiently
+4. **Review after /learn** - Verify topic assignments
 
-### Git Workflow
+### Topic Guidelines
 
-```bash
-# After adding memories
-git add .memory/
-git commit -m "memory: add neovim configuration tips"
+1. **Use existing topics** when possible (check index.md)
+2. **Create new paths** for genuinely new domains
+3. **Keep hierarchy shallow** - 2-3 levels is typical
+4. **Be consistent** - neovim/plugins not plugins/neovim
 
-# Push to sync with remote
-git push
-```
-
-## Examples
-
-### Example 1: Simple Add
-
-```
-/learn "vim.keymap.set accepts a table of options including silent and buffer"
-```
-
-Select: `[x] Add as new memory`
-
-**Result**: New memory file created with ID MEM-2026-03-06-001
-
-### Example 2: Update Existing
-
-```
-/learn "Additional keymap tip: use noremap=true to prevent recursion"
-```
-
-Similar memories found:
-- MEM-2026-03-05-042: "vim-keymap-configuration.md"
-
-Select: `[x] Update existing similar memory`
-Choose: "vim-keymap-configuration.md"
-
-**Result**: Content appended to existing memory with update history
-
-### Example 3: Edit Before Save
-
-```
-/learn /tmp/draft.md
-```
-
-Select: `[x] Edit content before saving`
-
-(Edit in buffer - add formatting, headers)
-
-Then select: `[x] Add as new memory`
-
-**Result**: Edited content saved as new memory
-
-### Example 4: Research with Memory
-
-```
-/research OC_137 --remember
-```
-
-**Result**: Research report includes relevant prior knowledge from memory vault
-
-## Quick Reference
-
-| Command | Purpose |
-|---------|---------|
-| `/learn "text"` | Add text as memory |
-| `/learn /path` | Add file as memory |
-| `/research OC_N --remember` | Research with memory augmentation |
+---
 
 ## See Also
 
-- [Memory Vault README](../memory/README.md) - Vault organization
-- [MCP Setup Guide](../docs/memory-setup.md) - MCP server configuration
-- [Memory Troubleshooting](./memory-troubleshooting.md) - Common issues
+- [Memory Vault Structure](../../../data/.memory/20-Indices/index.md)
+- [Memory Template](../../../data/.memory/30-Templates/memory-template.md)
+- [Knowledge Capture Usage](./knowledge-capture-usage.md)
