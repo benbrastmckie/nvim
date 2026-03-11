@@ -1,10 +1,20 @@
 ---
-next_project_number: 184
+next_project_number: 185
 ---
 
 # TODO
 
 ## Tasks
+
+### 184. Revise /learn command input modes
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Revise /learn command in .opencode/ to accept file path, directory path, prompt text, or --task N flag for extracting memories from different sources.
+
+---
 
 ### 183. Manage opencode.json via extension system
 - **Effort**: TBD

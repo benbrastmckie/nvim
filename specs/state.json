@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 184,
+  "next_project_number": 185,
   "active_projects": [
+    {
+      "project_number": 184,
+      "project_name": "revise_learn_command_input_modes",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-11T20:43:13Z",
+      "last_updated": "2026-03-11T20:43:13Z"
+    },
     {
       "project_number": 183,
       "project_name": "manage_opencode_json_via_extension_system",
