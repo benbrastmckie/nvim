@@ -270,10 +270,10 @@
     {
       "project_number": 181,
       "project_name": "fix_website_opencode_missing_agent_files",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-11T03:30:58Z",
-      "last_updated": "2026-03-11T03:45:30Z",
+      "last_updated": "2026-03-11T04:44:49Z",
       "artifacts": [
         {
           "path": "specs/181_fix_website_opencode_missing_agent_files/reports/research-001.md",
@@ -284,10 +284,19 @@
           "path": "specs/181_fix_website_opencode_missing_agent_files/plans/implementation-001.md",
           "type": "plan",
           "summary": "2-phase plan: extract old agent content from git history, create 5 missing files, validate opencode startup"
+        },
+        {
+          "path": "specs/181_fix_website_opencode_missing_agent_files/summaries/implementation-summary-20260310.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
       "researched": "2026-03-11T03:32:06Z",
-      "session_id": "sess_1773200671_0327f0"
+      "session_id": "sess_1773204009_3df462",
+      "started": "2026-03-11T04:40:28Z",
+      "completed": "2026-03-11T04:44:49Z",
+      "completion_summary": "Created 5 missing agent files in Website repository to fix opencode startup failure. Files extracted from git history and adapted to new frontmatter format. All agents validated via opencode agent list.",
+      "claudemd_suggestions": "none"
     }
   ],
   "completed_projects": [],

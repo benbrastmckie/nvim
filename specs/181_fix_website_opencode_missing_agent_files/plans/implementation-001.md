@@ -1,7 +1,7 @@
 # Implementation Plan: Task #181
 
 - **Task**: 181 - Fix Website opencode missing agent files
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1-2 hours
 - **Dependencies**: None
 - **Research Inputs**: [research-001.md](../reports/research-001.md)
@@ -48,7 +48,7 @@ The Website project at `/home/benjamin/Projects/Logos/Website/` fails to start o
 
 ## Implementation Phases
 
-### Phase 1: Extract and Create Agent Files [NOT STARTED]
+### Phase 1: Extract and Create Agent Files [COMPLETED]
 
 **Goal**: Create all 5 missing agent files by extracting old content from git history and adapting to the new format.
 
@@ -77,7 +77,7 @@ The Website project at `/home/benjamin/Projects/Logos/Website/` fails to start o
 
 ---
 
-### Phase 2: Validate opencode Startup [NOT STARTED]
+### Phase 2: Validate opencode Startup [COMPLETED]
 
 **Goal**: Confirm opencode starts without file reference errors.
 
