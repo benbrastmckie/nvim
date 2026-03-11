@@ -1,10 +1,20 @@
 ---
-next_project_number: 176
+next_project_number: 177
 ---
 
 # TODO
 
 ## Tasks
+
+### 176. Port Vision memory system changes to neovim configuration
+- **Effort**: 4-6 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Review the recent changes to /home/benjamin/Projects/Logos/Vision/ where the obsidian memory system was successfully implemented. Note the change from .opencode/memory/ to .memory/ directory structure (matching the specs/ location outside both agent systems). Review the recent changes and git commits in Vision to port all those changes to this neovim configuration system, keeping in mind that neovim contains the memory extension itself which gets loaded elsewhere in other repos using <leader>ao for opencode.
+
+---
 
 ### 175. Port memory/ extension to .claude/ agent system
 - **Effort**: TBD

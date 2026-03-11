@@ -1,6 +1,14 @@
 {
-  "next_project_number": 176,
+  "next_project_number": 177,
   "active_projects": [
+    {
+      "project_number": 176,
+      "project_name": "port_vision_memory_system_changes_to_neovim",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-10T20:00:00Z",
+      "last_updated": "2026-03-10T20:00:00Z"
+    },
     {
       "project_number": 175,
       "project_name": "port_memory_extension_to_claude",
