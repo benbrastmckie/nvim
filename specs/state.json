@@ -1,7 +1,30 @@
 {
   "version": "1.0.0",
-  "next_project_number": 178,
+  "next_project_number": 179,
   "active_projects": [
+    {
+      "project_number": 178,
+      "project_name": "fix_memory_extension_mcp_port",
+      "status": "planned",
+      "language": "meta",
+      "created": "2026-03-10T23:00:00Z",
+      "last_updated": "2026-03-11T01:33:25Z",
+      "researched": "2026-03-10T23:00:00Z",
+      "artifacts": [
+        {
+          "path": "specs/178_fix_memory_extension_mcp_port/reports/research-001.md",
+          "type": "research",
+          "summary": "Research report documenting MCP port mismatch (3000 vs 27124) and required fixes for memory extension --remember flag"
+        },
+        {
+          "path": "specs/178_fix_memory_extension_mcp_port/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for fixing MCP port configuration (3000 -> 27124)"
+        }
+      ],
+      "planning": "2026-03-11T01:31:18Z",
+      "planned": "2026-03-11T01:33:25Z"
+    },
     {
       "project_number": 177,
       "project_name": "remove_model_preferences_from_opencode",

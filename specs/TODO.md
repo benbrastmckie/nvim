@@ -1,10 +1,22 @@
 ---
-next_project_number: 178
+next_project_number: 179
 ---
 
 # TODO
 
 ## Tasks
+
+### 178. Fix memory extension MCP server port configuration
+- **Effort**: 0.5 hours
+- **Status**: [PLANNED]
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [research-001.md](178_fix_memory_extension_mcp_port/reports/research-001.md)
+- **Plan**: [implementation-001.md](178_fix_memory_extension_mcp_port/plans/implementation-001.md)
+
+**Description**: Fix the memory extension's `--remember` flag which fails because the research command attempts to connect to the MCP server on port 3000 instead of the correct port 27124. The Obsidian CLI REST plugin runs on port 27124, causing all memory-augmented research to silently fail with "MCP unavailable". Required fixes: 1) Update research command to use port 27124, 2) Add MCP server configuration to settings.local.json, 3) Document user setup requirements (Obsidian plugin installation, API key configuration).
+
+---
 
 ### 177. Remove all model preferences from opencode system
 - **Effort**: 1-2 hours
