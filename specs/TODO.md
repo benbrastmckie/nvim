@@ -7,8 +7,8 @@ next_project_number: 185
 ## Tasks
 
 ### 184. Revise /learn command input modes
-- **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Effort**: 4-6 hours
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-11
 - **Research Completed**: 2026-03-11
 - **Planning Started**: 2026-03-11
@@ -16,7 +16,7 @@ next_project_number: 185
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-002.md](184_revise_learn_command_input_modes/reports/research-002.md) - MCP tools, recursive scanning, content mapping, memory deduplication, topic organization
-- **Plan**: [implementation-001.md](184_revise_learn_command_input_modes/plans/implementation-001.md)
+- **Plan**: [implementation-002.md](184_revise_learn_command_input_modes/plans/implementation-002.md)
 
 **Description**: Revise /learn command in .opencode/ to accept file path, directory path, prompt text, or --task N flag for extracting memories from different sources.
 

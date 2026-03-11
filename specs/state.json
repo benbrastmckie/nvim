@@ -5,25 +5,25 @@
     {
       "project_number": 184,
       "project_name": "revise_learn_command_input_modes",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-11T20:43:13Z",
-      "last_updated": "2026-03-11T21:10:07Z",
-      "session_id": "sess_1773263049_00576b",
+      "last_updated": "2026-03-11T21:18:42Z",
+      "session_id": "sess_1773263653_810dac",
       "researched": "2026-03-11T21:10:07Z",
       "artifacts": [
-        {
-          "path": "specs/184_revise_learn_command_input_modes/plans/implementation-001.md",
-          "type": "plan",
-          "summary": "3-phase implementation plan for adding directory scanning mode to /learn command"
-        },
         {
           "path": "specs/184_revise_learn_command_input_modes/reports/research-002.md",
           "type": "research",
           "summary": "Research report covering MCP tool architecture, recursive directory scanning, content mapping, memory deduplication, and topic-based organization for revised /learn command"
+        },
+        {
+          "path": "specs/184_revise_learn_command_input_modes/plans/implementation-002.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan for comprehensive /learn command redesign with content mapping, MCP search, and topic-based organization"
         }
       ],
-      "planned": "2026-03-11T20:55:02Z"
+      "planned": "2026-03-11T21:18:42Z"
     },
     {
       "project_number": 183,
