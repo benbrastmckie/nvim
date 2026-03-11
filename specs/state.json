@@ -4,10 +4,19 @@
     {
       "project_number": 175,
       "project_name": "port_memory_extension_to_claude",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-10T23:56:29Z",
-      "last_updated": "2026-03-10T23:56:29Z"
+      "last_updated": "2026-03-11T00:03:20Z",
+      "session_id": "sess_1773187097_625264",
+      "researched": "2026-03-11T00:03:20Z",
+      "artifacts": [
+        {
+          "path": "specs/175_port_memory_extension_to_claude/reports/research-001.md",
+          "type": "research",
+          "summary": "Comprehensive comparison of .opencode/ and .claude/ extension systems with file-by-file porting checklist identifying 4 key areas: manifest merge targets, path references, config file names, and task format conventions"
+        }
+      ]
     },
     {
       "project_number": 174,

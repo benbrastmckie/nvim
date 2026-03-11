@@ -8,9 +8,12 @@ next_project_number: 176
 
 ### 175. Port memory/ extension to .claude/ agent system
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-10
+- **Research Completed**: 2026-03-10
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [research-001.md](175_port_memory_extension_to_claude/reports/research-001.md)
 
 **Description**: Port the memory/ extension included in .opencode/ over to .claude/ while respecting any differences that may exist for proper integration into the .claude/ agent system.
 
