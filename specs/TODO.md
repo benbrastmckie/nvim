@@ -1,22 +1,34 @@
 ---
-next_project_number: 177
+next_project_number: 178
 ---
 
 # TODO
 
 ## Tasks
 
+### 177. Remove all model preferences from opencode system
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Remove all model preferences from the opencode agent system to fix ProviderModelNotFoundError when invoking planner-agent. The issue is that agent files (like planner-agent.md) specify `model: opus` in their frontmatter, but settings.json only has `"model": "sonnet"` with no `models` configuration section. This causes delegation to fail when the system cannot find a provider for "opus". Systematically remove all model preferences from:
+1. `.opencode/settings.json` - remove `"model": "sonnet"`
+2. All agent files in `.opencode/agent/subagents/*.md` - remove `model:` from frontmatter
+3. Any other files that specify model preferences
+
+This ensures the system uses the default model without provider lookup failures.
+
+---
+
 ### 176. Port Vision memory system changes to neovim configuration
-- **Effort**: 4-6 hours
-- **Status**: [PLANNED]
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-10
 - **Research Completed**: 2026-03-10
-- **Planning Started**: 2026-03-10
-- **Planning Completed**: 2026-03-10
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](176_port_vision_memory_system_changes_to_neovim/reports/research-001.md)
-- **Plan**: [implementation-001.md](176_port_vision_memory_system_changes_to_neovim/plans/implementation-001.md)
 
 **Description**: Review the recent changes to /home/benjamin/Projects/Logos/Vision/ where the obsidian memory system was successfully implemented. Note the change from .opencode/memory/ to .memory/ directory structure (matching the specs/ location outside both agent systems). Review the recent changes and git commits in Vision to port all those changes to this neovim configuration system, keeping in mind that neovim contains the memory extension itself which gets loaded elsewhere in other repos using <leader>ao for opencode.
 

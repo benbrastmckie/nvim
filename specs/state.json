@@ -1,26 +1,29 @@
 {
-  "next_project_number": 177,
+  "version": "1.0.0",
+  "next_project_number": 178,
   "active_projects": [
+    {
+      "project_number": 177,
+      "project_name": "remove_model_preferences_from_opencode",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-11T00:58:51Z",
+      "last_updated": "2026-03-11T00:58:51Z",
+      "artifacts": []
+    },
     {
       "project_number": 176,
       "project_name": "port_vision_memory_system_changes_to_neovim",
-      "status": "planned",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-10T20:00:00Z",
-      "last_updated": "2026-03-10T21:15:00Z",
-      "researched": "2026-03-10T20:30:00Z",
-      "planning": "2026-03-10T21:00:00Z",
-      "planned": "2026-03-10T21:15:00Z",
+      "last_updated": "2026-03-10T22:00:00Z",
+      "researched": "2026-03-10T22:00:00Z",
       "artifacts": [
         {
           "path": "specs/176_port_vision_memory_system_changes_to_neovim/reports/research-001.md",
           "type": "research",
-          "summary": "Comprehensive analysis of Vision repository memory system changes documenting 7 key change areas: directory structure (.opencode/memory/ -> .memory/), path references, skill-memory creation, command updates, context files, extensions.json, and verification checklist"
-        },
-        {
-          "path": "specs/176_port_vision_memory_system_changes_to_neovim/plans/implementation-001.md",
-          "type": "plan",
-          "summary": "6-phase implementation plan covering directory structure move, skill-memory creation, context documentation, command updates, extension configuration, and verification with 4-6 hour total effort estimate"
+          "summary": "Corrected research: memory extension already exists at .opencode/extensions/memory/. Task is to UPDATE the extension configuration by moving .opencode/memory/ to .memory/ and updating all path references in extension files."
         }
       ]
     },
@@ -122,23 +125,12 @@
       "last_updated": "2026-02-12T19:03:20Z"
     }
   ],
+  "completed_projects": [],
   "repository_health": {
     "last_assessed": "2026-03-10T22:47:06Z",
     "todo_count": 0,
     "fixme_count": 0,
     "build_errors": 0,
     "status": "healthy"
-  },
-  "artifacts": [
-    {
-      "path": "specs/052_protonmail_bridge_systemd_autostart/reports/research-001.md",
-      "type": "research",
-      "summary": "Research on systemd user service configuration for ProtonMail Bridge auto-start, covering best practices, home-manager integration patterns, and implementation recommendations"
-    },
-    {
-      "path": "specs/052_protonmail_bridge_systemd_autostart/plans/implementation-001.md",
-      "type": "plan",
-      "summary": "4-phase plan covering service verification, integration testing, and documentation for ProtonMail Bridge systemd user service"
-    }
-  ]
+  }
 }
