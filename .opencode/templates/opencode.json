@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/config.schema.json",
+  "_managed_by": "neotex-extensions",
+  "_managed_version": "1.0.0",
+  "default_agent": "build",
+  "agent": {
+    "build": {
+      "description": "Default agent for general code tasks",
+      "mode": "default"
+    },
+    "plan": {
+      "description": "Creates implementation plans from research",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/planner-agent.md}",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
+    },
+    "task-planner": {
+      "description": "Creates implementation plans from research (alias)",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/planner-agent.md}",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
+    },
+    "general-research": {
+      "description": "Research general tasks using web search and codebase exploration",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/general-research-agent.md}",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "WebSearch", "WebFetch"]
+    },
+    "general-implementation": {
+      "description": "Implement general, meta, and markdown tasks from plans",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/general-implementation-agent.md}",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
+    },
+    "meta-builder": {
+      "description": "System builder for .claude and .opencode changes",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/meta-builder-agent.md}",
+      "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]
+    },
+    "code-reviewer": {
+      "description": "Reviews code for quality, patterns, and best practices",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/code-reviewer-agent.md}",
+      "tools": ["Read", "Glob", "Grep", "Bash"]
+    }
+  },
+  "command": {},
+  "tools": {}
+}
