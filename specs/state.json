@@ -270,18 +270,24 @@
     {
       "project_number": 181,
       "project_name": "fix_website_opencode_missing_agent_files",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-11T03:30:58Z",
-      "last_updated": "2026-03-11T03:32:06Z",
+      "last_updated": "2026-03-11T03:45:30Z",
       "artifacts": [
         {
           "path": "specs/181_fix_website_opencode_missing_agent_files/reports/research-001.md",
           "type": "research",
           "summary": "Root cause: incomplete agent directory refactoring left 5 agent files missing from .opencode/agent/subagents/; opencode.json references them via {file:...} which fails at startup"
+        },
+        {
+          "path": "specs/181_fix_website_opencode_missing_agent_files/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "2-phase plan: extract old agent content from git history, create 5 missing files, validate opencode startup"
         }
       ],
-      "researched": "2026-03-11T03:32:06Z"
+      "researched": "2026-03-11T03:32:06Z",
+      "session_id": "sess_1773200671_0327f0"
     }
   ],
   "completed_projects": [],
