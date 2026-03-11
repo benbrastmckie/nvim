@@ -441,13 +441,21 @@
     {
       "project_number": 186,
       "project_name": "filter_extension_artifacts_from_core_sync",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "effort": "3-5 hours",
       "created": "2026-03-11T22:39:19Z",
-      "last_updated": "2026-03-11T22:39:19Z",
+      "last_updated": "2026-03-11T22:46:52Z",
       "dependencies": [],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/186_filter_extension_artifacts_from_core_sync/reports/research-001.md",
+          "type": "research",
+          "summary": "Research report with 6 major findings on sync filtering for extension artifacts"
+        }
+      ],
+      "session_id": "sess_1773268880_b4b907",
+      "researched": "2026-03-11T22:46:52Z"
     }
   ],
   "completed_projects": [],
