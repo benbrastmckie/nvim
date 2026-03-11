@@ -5,11 +5,12 @@
     {
       "project_number": 179,
       "project_name": "fix_memory_extension_data_directory_loading",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-03-11T01:38:33Z",
-      "last_updated": "2026-03-11T02:00:00Z",
+      "last_updated": "2026-03-11T03:10:00Z",
       "researched": "2026-03-11T01:38:33Z",
+      "planned": "2026-03-11T03:10:00Z",
       "artifacts": [
         {
           "path": "specs/179_fix_memory_extension_data_directory_loading/reports/research-001.md",
@@ -20,8 +21,14 @@
           "path": "specs/179_fix_memory_extension_data_directory_loading/reports/research-002.md",
           "type": "research",
           "summary": "Revised research identifying TWO bugs: copy_data_dirs parameter (target_dir vs project_dir) AND manifest naming (memory vs .memory)"
+        },
+        {
+          "path": "specs/179_fix_memory_extension_data_directory_loading/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for fixing memory extension data directory loading"
         }
-      ]
+      ],
+      "session_id": "sess_1773198306_70d362"
     },
     {
       "project_number": 178,
@@ -217,10 +224,10 @@
     {
       "project_number": 180,
       "project_name": "investigate_opencode_claude_dependency",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "created": "2026-03-11T01:45:56Z",
-      "last_updated": "2026-03-11T02:08:00Z",
+      "last_updated": "2026-03-11T03:05:45Z",
       "researched": "2026-03-11T01:45:56Z",
       "artifacts": [
         {
@@ -228,7 +235,9 @@
           "type": "research",
           "summary": "CORRECTED: Path configuration error in opencode.json - agents exist at .opencode/agent/subagents/ but config references wrong path .opencode/agents/"
         }
-      ]
+      ],
+      "planning": "2026-03-11T03:05:45Z",
+      "session_id": "sess_1773198312_501b8e"
     }
   ],
   "completed_projects": [],

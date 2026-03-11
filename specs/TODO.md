@@ -8,7 +8,7 @@ next_project_number: 181
 
 ### 180. Investigate .opencode/ dependency on .claude/ MCP server settings
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](180_investigate_opencode_claude_dependency/reports/research-001.md)
@@ -19,10 +19,11 @@ next_project_number: 181
 
 ### 179. Fix memory extension data directory loading location
 - **Effort**: 0.5 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: neovim
 - **Dependencies**: None
 - **Research**: [research-001.md](179_fix_memory_extension_data_directory_loading/reports/research-001.md)
+- **Plan**: [implementation-001.md](179_fix_memory_extension_data_directory_loading/plans/implementation-001.md)
 
 **Description**: When loading the memory extension via `<leader>ao`, the data directory is incorrectly placed at `.opencode/memory/` instead of the project root `.memory/`. This happens because `copy_data_dirs()` in `lua/neotex/plugins/ai/shared/extensions/init.lua:297` is called with `target_dir` (which is `.opencode/`) instead of `project_dir` (which is the project root). The loader function expects `project_dir` but receives `target_dir`, causing the vault to be created in the wrong location. Additionally, verify that existing `.memory/` directories are not overwritten - the merge-copy semantics should preserve existing user data. Required fix: Change line 297 parameter from `target_dir` to `project_dir`.
 
@@ -82,9 +83,8 @@ This ensures the system uses the default model without provider lookup failures.
 
 ### 175. Port memory/ extension to .claude/ agent system
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [RESEARCHING]
 - **Research Started**: 2026-03-10
-- **Research Completed**: 2026-03-11
 - **Language**: meta
 - **Dependencies**: Task 176
 - **Research**: [research-001.md](175_port_memory_extension_to_claude/reports/research-001.md), [research-002.md](175_port_memory_extension_to_claude/reports/research-002.md) - Updated for Vision architecture changes
