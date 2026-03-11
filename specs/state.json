@@ -5,25 +5,34 @@
     {
       "project_number": 177,
       "project_name": "remove_model_preferences_from_opencode",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-11T00:58:51Z",
-      "last_updated": "2026-03-11T00:58:51Z",
-      "artifacts": []
+      "last_updated": "2026-03-11T01:02:08Z",
+      "artifacts": [],
+      "researching": "2026-03-11T01:02:08Z",
+      "session_id": "sess_1773190928_trbcmw"
     },
     {
       "project_number": 176,
       "project_name": "port_vision_memory_system_changes_to_neovim",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-10T20:00:00Z",
-      "last_updated": "2026-03-10T22:00:00Z",
+      "last_updated": "2026-03-11T01:10:00Z",
       "researched": "2026-03-10T22:00:00Z",
+      "planning": "2026-03-11T01:05:00Z",
+      "planned": "2026-03-11T01:10:00Z",
       "artifacts": [
         {
           "path": "specs/176_port_vision_memory_system_changes_to_neovim/reports/research-002.md",
           "type": "research",
           "summary": "Corrected research: memory extension already exists at .opencode/extensions/memory/. Task is to UPDATE the extension configuration by moving .opencode/memory/ to .memory/ and updating all path references in extension files."
+        },
+        {
+          "path": "specs/176_port_vision_memory_system_changes_to_neovim/plans/implementation-002.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan: move memory vault directory, update commands/skills, update extension docs, update context docs, verification. Total effort: 2.5 hours."
         }
       ]
     },
