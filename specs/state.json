@@ -5,11 +5,11 @@
     {
       "project_number": 184,
       "project_name": "revise_learn_command_input_modes",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-11T20:43:13Z",
-      "last_updated": "2026-03-11T21:18:42Z",
-      "session_id": "sess_1773263653_810dac",
+      "last_updated": "2026-03-11T21:29:43Z",
+      "session_id": "sess_1773264072_a4ddee",
       "researched": "2026-03-11T21:10:07Z",
       "artifacts": [
         {
@@ -21,9 +21,18 @@
           "path": "specs/184_revise_learn_command_input_modes/plans/implementation-002.md",
           "type": "plan",
           "summary": "7-phase implementation plan for comprehensive /learn command redesign with content mapping, MCP search, and topic-based organization"
+        },
+        {
+          "path": "specs/184_revise_learn_command_input_modes/summaries/implementation-summary-20260311.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results for /learn redesign"
         }
       ],
-      "planned": "2026-03-11T21:18:42Z"
+      "planned": "2026-03-11T21:18:42Z",
+      "started": "2026-03-11T21:21:38Z",
+      "completed": "2026-03-11T21:29:43Z",
+      "completion_summary": "Redesigned /learn command with four input modes (text, file, directory, task), content mapping engine for intelligent segmentation, MCP-based memory search with overlap scoring, and three memory operations (UPDATE/EXTEND/CREATE). Added topic-based organization to memory frontmatter and index.",
+      "claudemd_suggestions": "Updated memory extension files in .opencode/extensions/memory/: template, index, command, skill, extension manifest, and context documentation. No changes to root CLAUDE.md needed."
     },
     {
       "project_number": 183,
