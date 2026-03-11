@@ -445,17 +445,17 @@
       "language": "meta",
       "effort": "3-5 hours",
       "created": "2026-03-11T22:39:19Z",
-      "last_updated": "2026-03-11T22:46:52Z",
+      "last_updated": "2026-03-11T22:58:40Z",
       "dependencies": [],
       "artifacts": [
         {
-          "path": "specs/186_filter_extension_artifacts_from_core_sync/reports/research-001.md",
+          "path": "specs/186_filter_extension_artifacts_from_core_sync/reports/research-002.md",
           "type": "research",
-          "summary": "Research report with 6 major findings on sync filtering for extension artifacts"
+          "summary": "Copy-based agent loader design: clean global directory, manifest exclusion, unified picker flow"
         }
       ],
-      "session_id": "sess_1773268880_b4b907",
-      "researched": "2026-03-11T22:46:52Z"
+      "session_id": "sess_1773269504_d48f9b",
+      "researched": "2026-03-11T22:58:40Z"
     }
   ],
   "completed_projects": [],

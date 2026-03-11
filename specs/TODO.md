@@ -11,7 +11,7 @@ next_project_number: 187
 - **Status**: [RESEARCHED]
 - **Research Started**: 2026-03-11
 - **Research Completed**: 2026-03-11
-- **Research**: [research-001.md](186_filter_extension_artifacts_from_core_sync/reports/research-001.md)
+- **Research**: [research-002.md](186_filter_extension_artifacts_from_core_sync/reports/research-002.md)
 - **Language**: meta
 - **Dependencies**: None
 
