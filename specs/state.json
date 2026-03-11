@@ -237,10 +237,10 @@
     {
       "project_number": 180,
       "project_name": "investigate_opencode_claude_dependency",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-11T01:45:56Z",
-      "last_updated": "2026-03-11T03:21:45Z",
+      "last_updated": "2026-03-11T03:24:46Z",
       "researched": "2026-03-11T01:45:56Z",
       "artifacts": [
         {
@@ -252,12 +252,20 @@
           "path": "specs/180_investigate_opencode_claude_dependency/plans/implementation-001.md",
           "type": "plan",
           "summary": "2-phase plan to fix opencode.json agent path references and verify extension requirements"
+        },
+        {
+          "path": "specs/180_investigate_opencode_claude_dependency/summaries/implementation-summary-20260310.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results and extension requirements"
         }
       ],
       "planning": "2026-03-11T03:05:45Z",
       "planned": "2026-03-11T03:15:00Z",
       "session_id": "sess_1773199280_4f00b3",
-      "implementing": "2026-03-11T03:21:45Z"
+      "implementing": "2026-03-11T03:21:45Z",
+      "completed": "2026-03-11T03:24:46Z",
+      "completion_summary": "Fixed broken agent path references in Website opencode.json. Updated 9 paths from .opencode/agents/{name}.md to .opencode/agent/subagents/{name}-agent.md. Verified 7 core/web agents exist; documented that nvim and filetypes extensions required for remaining 3 agents.",
+      "claudemd_suggestions": "none"
     }
   ],
   "completed_projects": [],
