@@ -15,7 +15,7 @@ Implemented opencode.json management in the extension system, allowing extension
 - `lua/neotex/plugins/ai/opencode/core/init.lua` - Created new file with `install_base_opencode_json()` function for template installation with backup strategy
 
 ### Templates
-- `.opencode/templates/opencode.json` - Created base template with `_managed_by` marker and core agent definitions (build, plan, task-planner, general-research, general-implementation, meta-builder, code-reviewer)
+- `.opencode/templates/opencode.json` - Created base template with core agent definitions (build, plan, task-planner, general-research, general-implementation, meta-builder, code-reviewer). Tools use lowercase bool objects (`{"read": true, "write": false}`), not arrays.
 
 ### Extension Agent Definitions (11 new files)
 - `.claude/extensions/epidemiology/opencode-agents.json`
@@ -39,11 +39,12 @@ Implemented opencode.json management in the extension system, allowing extension
 - OpenCode extensions module loads without errors: Passed
 - OpenCode core module loads without errors: Passed
 - `install_base_opencode_json` installs template: Passed
-- `_managed_by` marker present in installed template: Passed
+- Managed state tracked via sidecar file (`opencode.json.managed`): Passed
 - `merge_opencode_agents` adds agent keys: Passed
 - `unmerge_opencode_agents` removes tracked keys: Passed
-- Backup strategy creates .user-backup for unmanaged files: Passed
-- All JSON files valid: Passed
+- Backup strategy creates `.user-backup` for unmanaged files: Passed
+- All JSON files valid (tools as objects, not arrays): Passed
+- Template installed automatically on "Load Core Agent System": Passed
 
 ## Architecture
 
@@ -54,18 +55,27 @@ Implemented opencode.json management in the extension system, allowing extension
 - Supports both `{agent: {...}}` object format and bare object format in source files
 
 ### Template Installation
-- Checks for `_managed_by: "neotex-extensions"` marker
-- If file exists and is managed: overwrite with template
-- If file exists and is not managed: backup to `.user-backup`, then install template
-- If file doesn't exist: install template
+- Checks for sidecar file `opencode.json.managed` to detect managed state
+  (opencode schema rejects `_managed_by` as an unrecognized top-level key)
+- If file exists and is managed: overwrite with template, recreate sidecar
+- If file exists and is not managed: backup to `opencode.json.user-backup`, install template, create sidecar
+- If file doesn't exist: install template, create sidecar
+- **Automatically triggered** via `on_load_all` callback in opencode picker config
 
 ### Extension Lifecycle
-- On extension load: merge_opencode_agents adds agent definitions
-- On extension unload: unmerge_opencode_agents removes tracked keys
+- On "Load Core Agent System": `install_base_opencode_json()` runs automatically
+- On extension load: `merge_opencode_agents` adds agent definitions to opencode.json
+- On extension unload: `unmerge_opencode_agents` removes tracked keys
 - Core agents are preserved across extension load/unload cycles
+
+### opencode.json Schema Notes
+- `tools` field must be an object with lowercase keys and booleans: `{"read": true, "write": false}`
+  Arrays like `["Read", "Write"]` are rejected by opencode schema validation
+- `mode` valid values: `"primary"`, `"subagent"`, `"all"` (not `"default"`)
+- Top-level unrecognized keys (like `_managed_by`) are rejected by schema validation
 
 ## Notes
 
-- The base template installation is not automatically triggered; it can be called via `require('neotex.plugins.ai.opencode.core').install_base_opencode_json()`
 - Agent definitions in extensions use `{file:.opencode/agent/subagents/...}` paths that reference the location after extension agents are copied
 - The `agents_subdir` configuration for OpenCode is `agent/subagents`, so extension agents are copied there
+- `opencode.json.managed` sidecar file must be preserved alongside `opencode.json`; deleting it causes the next "Load Core Agent System" to backup and reinstall the template
