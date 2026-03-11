@@ -92,6 +92,10 @@ function M.show_commands_picker(opts, config)
         -- Load All special entry
         if selection.value.is_load_all then
           local loaded = sync.load_all_globally(config)
+          -- Run post-load hook if configured (e.g., opencode installs base opencode.json)
+          if config and config.on_load_all then
+            config.on_load_all()
+          end
           if loaded > 0 then
             actions.close(prompt_bufnr)
             vim.defer_fn(function()

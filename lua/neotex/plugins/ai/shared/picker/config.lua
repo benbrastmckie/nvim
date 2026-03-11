@@ -47,6 +47,9 @@ function M.create(opts)
 
     -- Global source directory (defaults to ~/.config/nvim)
     global_source_dir = opts.global_source_dir or vim.fn.expand("~/.config/nvim"),
+
+    -- Optional callback run after Load Core Agent System completes
+    on_load_all = opts.on_load_all,
   }
 end
 
@@ -85,6 +88,14 @@ function M.opencode(global_dir)
     user_command = "OpencodeCommands",
     extensions_module = "neotex.plugins.ai.opencode.extensions",
     global_source_dir = global_dir or vim.fn.expand("~/.config/nvim"),
+    on_load_all = function()
+      local core = require("neotex.plugins.ai.opencode.core")
+      local ok, msg = core.install_base_opencode_json()
+      local helpers_mod = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
+      if ok then
+        helpers_mod.notify("opencode.json: " .. (msg or "installed"), "INFO")
+      end
+    end,
   })
 end
 
