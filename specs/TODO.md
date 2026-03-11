@@ -7,11 +7,12 @@ next_project_number: 181
 ## Tasks
 
 ### 180. Investigate .opencode/ dependency on .claude/ MCP server settings
-- **Effort**: 1-2 hours
-- **Status**: [PLANNING]
+- **Effort**: 0.5-1 hours
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](180_investigate_opencode_claude_dependency/reports/research-001.md)
+- **Plan**: [implementation-001.md](180_investigate_opencode_claude_dependency/plans/implementation-001.md)
 
 **Description**: Investigation of cross-system dependency between .opencode/ and .claude/ agent systems. When loading the memory extension in the Website repo, the opencode.json references agents (web-research, neovim-research, etc.) that don't exist. The memory extension only provides memory-specific functionality (commands, skills, context, data) and does NOT provide general-purpose agents. This creates a dependency issue where repos with custom opencode.json configurations expect a full agent system that the memory extension doesn't provide. Documented findings and proposed solutions: 1) Create missing agents directly in Website repo, 2) Create separate "core" extension for general agents, 3) Modify Website repo to not reference non-existent agents.
 

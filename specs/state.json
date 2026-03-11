@@ -224,19 +224,25 @@
     {
       "project_number": 180,
       "project_name": "investigate_opencode_claude_dependency",
-      "status": "planning",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-11T01:45:56Z",
-      "last_updated": "2026-03-11T03:05:45Z",
+      "last_updated": "2026-03-11T03:15:00Z",
       "researched": "2026-03-11T01:45:56Z",
       "artifacts": [
         {
           "path": "specs/180_investigate_opencode_claude_dependency/reports/research-001.md",
           "type": "research",
           "summary": "CORRECTED: Path configuration error in opencode.json - agents exist at .opencode/agent/subagents/ but config references wrong path .opencode/agents/"
+        },
+        {
+          "path": "specs/180_investigate_opencode_claude_dependency/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "2-phase plan to fix opencode.json agent path references and verify extension requirements"
         }
       ],
       "planning": "2026-03-11T03:05:45Z",
+      "planned": "2026-03-11T03:15:00Z",
       "session_id": "sess_1773198312_501b8e"
     }
   ],
