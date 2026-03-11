@@ -8,9 +8,12 @@ next_project_number: 184
 
 ### 183. Manage opencode.json via extension system
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-11
+- **Research Completed**: 2026-03-11
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [research-001.md](183_manage_opencode_json_via_extension_system/reports/research-001.md)
 
 **Description**: Design and implement opencode.json management in the `<leader>ao` extension system. Currently opencode.json is not managed by the extension loader, creating a fragile dependency where agents referenced via `{file:...}` in opencode.json fail at startup if the required extensions haven't been loaded. The fix: the core agent system should install a base opencode.json (backing up any existing one), and extensions should be able to add agent definitions to opencode.json when loaded and remove them when unloaded — similar to how extensions currently merge into AGENTS.md. This makes opencode.json a fully managed artifact with clean extension lifecycle semantics.
 

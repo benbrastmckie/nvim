@@ -5,10 +5,20 @@
     {
       "project_number": 183,
       "project_name": "manage_opencode_json_via_extension_system",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-11T18:53:13Z",
-      "last_updated": "2026-03-11T18:53:13Z"
+      "last_updated": "2026-03-11T19:00:57Z",
+      "researching": "2026-03-11T18:59:00Z",
+      "session_id": "sess_1773255516_7041ea",
+      "researched": "2026-03-11T19:00:57Z",
+      "artifacts": [
+        {
+          "path": "specs/183_manage_opencode_json_via_extension_system/reports/research-001.md",
+          "type": "research",
+          "summary": "Design for opencode.json management: base template, opencode_json merge target, merge/unmerge functions, backup strategy"
+        }
+      ]
     },
     {
       "project_number": 179,
