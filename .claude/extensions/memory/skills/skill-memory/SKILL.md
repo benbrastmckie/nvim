@@ -247,8 +247,8 @@ Replace memory content while preserving structure:
 
 ```
 1. Read existing memory file
-2. Preserve frontmatter: id, date (original), tags, topic
-3. Update frontmatter: last_updated = today
+2. Preserve frontmatter: created (original), tags, topic
+3. Update frontmatter: modified = today
 4. Move current content to ## History section with date marker
 5. Replace main content with new segment content
 6. Preserve ## Connections section
@@ -259,13 +259,12 @@ Template for UPDATE:
 
 ```markdown
 ---
-id: {existing_id}
 title: "{new_title_from_segment}"
-date: {original_date}
+created: {original_created}
 tags: {merged_tags}
 topic: "{existing_or_updated_topic}"
 source: "{new_source}"
-last_updated: {today}
+modified: {today}
 ---
 
 # {new_title}
@@ -274,7 +273,7 @@ last_updated: {today}
 
 ## History
 
-### Previous Version ({original_date})
+### Previous Version ({original_created})
 
 {previous_content}
 
@@ -290,7 +289,7 @@ Append new dated section without modifying existing content:
 1. Read existing memory file
 2. Find insertion point (before ## Connections, or end of file)
 3. Add dated extension section
-4. Update frontmatter: last_updated = today
+4. Update frontmatter: modified = today
 5. Optionally update tags if new topics introduced
 6. Write updated memory
 ```
@@ -310,35 +309,63 @@ Template for EXTEND:
 Generate new memory from segment:
 
 ```
-1. Generate memory ID: MEM-{today}-{unix_ms}-{random_4}
-   - {today} = date in YYYY-MM-DD format
-   - {unix_ms} = 13-digit Unix timestamp in milliseconds
-   - {random_4} = 4 hex characters from /dev/urandom
+1. Generate semantic slug from topic and title:
 
-   Generation algorithm:
-   today=$(date +%Y-%m-%d)
-   unix_ms=$(date +%s%N | head -c13)
-   random_4=$(od -An -N2 -tx1 /dev/urandom | tr -d ' ')
-   memory_id="MEM-${today}-${unix_ms}-${random_4}"
+   generate_slug() {
+     local topic="$1"
+     local title="$2"
+     local base=""
 
-2. Generate slug from topic/summary: {topic}-{first_words}
-3. Apply memory template with all fields
-4. Infer and apply topic
-5. Add to index (both category and topic sections)
-6. Write new memory file
+     # Priority 1: Topic path (most specific segment)
+     if [ -n "$topic" ]; then
+       base=$(echo "$topic" | rev | cut -d'/' -f1 | rev)
+     fi
+
+     # Priority 2: First 2-3 words of title
+     local title_slug=$(echo "$title" | tr '[:upper:]' '[:lower:]' | \
+       sed 's/[^a-z0-9 ]/-/g' | tr ' ' '-' | \
+       cut -d'-' -f1-3 | sed 's/-$//')
+
+     # Combine
+     if [ -n "$base" ]; then
+       slug="${base}-${title_slug}"
+     else
+       slug="$title_slug"
+     fi
+
+     # Sanitize and truncate to 50 chars
+     slug=$(echo "$slug" | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-50)
+
+     # Handle collision - NOTE: MEM- prefix preserved for grep discoverability
+     local final_slug="$slug"
+     local counter=2
+     while [ -f ".memory/10-Memories/MEM-${final_slug}.md" ]; do
+       final_slug="${slug}-${counter}"
+       counter=$((counter + 1))
+     done
+
+     echo "$final_slug"
+   }
+
+   slug=$(generate_slug "$topic" "$title")
+   filename="MEM-${slug}.md"
+
+2. Apply memory template with all fields
+3. Infer and apply topic
+4. Add to index (both category and topic sections)
+5. Write new memory file
 ```
 
 Template for CREATE:
 
 ```markdown
 ---
-id: MEM-{today}-{unix_ms}-{random_4}
 title: "{segment.summary}"
-date: {today}
+created: {today}
 tags: {inferred_tags}
 topic: "{segment.topic}"
 source: "{segment.source_file or 'user input'}"
-last_updated: {today}
+modified: {today}
 ---
 
 # {segment.summary}
@@ -348,6 +375,8 @@ last_updated: {today}
 ## Connections
 <!-- Add links to related memories using [[filename]] syntax -->
 ```
+
+**Note**: The MEM- prefix is preserved for grep discoverability (`grep -r "MEM-" .memory/`). Filenames follow the pattern `MEM-{semantic-slug}.md` (e.g., `MEM-telescope-custom-pickers.md`).
 
 ### Topic Inference
 
