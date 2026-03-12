@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 190,
+  "next_project_number": 191,
   "active_projects": [
+    {
+      "project_number": 190,
+      "project_name": "investigate_ux_inconsistencies_and_improve_command_outputs",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-12T16:52:24Z",
+      "last_updated": "2026-03-12T16:52:24Z"
+    },
     {
       "project_number": 87,
       "project_name": "investigate_wezterm_terminal_directory_change",
