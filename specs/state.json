@@ -5,10 +5,19 @@
     {
       "project_number": 189,
       "project_name": "improve_memory_naming_and_deduplication",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-12T15:52:24Z",
-      "last_updated": "2026-03-12T15:52:24Z"
+      "last_updated": "2026-03-12T15:57:25Z",
+      "session_id": "sess_1773330795_8eaff9",
+      "researched": "2026-03-12T15:57:25Z",
+      "artifacts": [
+        {
+          "path": "specs/189_improve_memory_naming_and_deduplication/reports/research-001.md",
+          "type": "research",
+          "summary": "Research report with 5 major findings covering current naming patterns, deduplication system analysis, external best practices, and implementation recommendations"
+        }
+      ]
     },
     {
       "project_number": 188,
