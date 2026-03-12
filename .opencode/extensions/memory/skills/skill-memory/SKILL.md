@@ -8,7 +8,10 @@ allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion
 
 Direct execution skill for memory vault management. Handles memory creation, similarity search, classification, and index maintenance through content mapping, MCP-based deduplication, and three memory operations (UPDATE, EXTEND, CREATE).
 
-**Key behavior**: Users always see memory preview and options BEFORE any files are created.
+**MANDATORY INTERACTIVE REQUIREMENT — DO NOT SKIP**:
+- STOP at Step 4 and call AskUserQuestion to show files. Write NOTHING to disk until user responds.
+- STOP at Memory Search and call AskUserQuestion for each segment. Write NOTHING to disk until user responds.
+- These are not optional. Running autonomously without user input is a critical failure.
 
 ## Context References
 
@@ -201,7 +204,9 @@ Where:
 | 30-60% | MEDIUM | EXTEND - Append new section |
 | <30% | LOW | CREATE - New memory |
 
-### Search Result Presentation
+### Search Result Presentation — MANDATORY STOP
+
+**YOU MUST call AskUserQuestion for EACH segment before writing anything. Do NOT infer what the user wants. Do NOT skip segments. Do NOT write memory files without explicit user confirmation per segment.**
 
 Present each segment with related memories via AskUserQuestion:
 
@@ -358,13 +363,26 @@ Infer topic using four-source priority:
 
 ### Index Maintenance
 
-After each operation, update index.md:
+After each operation, update both `index.md` and `.memory/10-Memories/README.md`:
 
+**index.md**:
 ```
 1. Add/update entry in "## By Category" under appropriate tag
 2. Add/update entry in "## By Topic" under topic path
 3. Update "## Recent Memories" (prepend, keep last 10)
 4. Update "## Statistics" counts
+```
+
+**`.memory/10-Memories/README.md`** — regenerate the full file listing:
+```
+1. List all MEM-*.md files in the directory (ls .memory/10-Memories/MEM-*.md)
+2. For each file, extract: id, title, topic, tags from frontmatter
+3. Rewrite README.md with updated count and one entry per memory:
+   ### [MEM-YYYY-MM-DD-NNN](MEM-YYYY-MM-DD-NNN.md)
+   **Title**: {title}
+   **Topic**: {topic}
+   **Tags**: {tags}
+4. Keep "## Navigation" section at the bottom
 ```
 
 ---
@@ -527,19 +545,67 @@ if [ ${#files[@]} -gt 200 ]; then
 fi
 ```
 
-### Step 4: File Selection
+### Step 4: File Selection (Paginated) — MANDATORY STOP
 
-Present via AskUserQuestion with file sizes:
+**YOU MUST call AskUserQuestion here. Do NOT skip to Step 5. Do NOT process any files until the user has made their selection.**
 
+Present files in pages of 10 to avoid overwhelming the display. Accumulate selections across all pages before processing.
+
+```
+selected_files = []
+page_size = 10
+total_files = len(files)
+page = 0
+
+while page * page_size < total_files:
+  start = page * page_size
+  end = min(start + page_size, total_files)
+  page_files = files[start:end]
+  remaining = total_files - end
+  page_num = page + 1
+  total_pages = ceil(total_files / page_size)
+
+  # Build options for this page
+  options = [{"label": relative_path, "description": file_size} for each file in page_files]
+
+  # Add navigation options at the bottom
+  if remaining > 0:
+    options.append({"label": "--- Continue to next page ---", "description": f"{remaining} more files remaining"})
+
+  AskUserQuestion({
+    "question": f"Select files to include (page {page_num}/{total_pages}, showing {start+1}-{end} of {total_files}):",
+    "header": f"Directory Scan: {directory_path}",
+    "multiSelect": true,
+    "options": options
+  })
+
+  # Add any selected files (excluding the navigation option) to accumulated list
+  selected_files.extend(user_selections excluding navigation option)
+
+  # If user selected "Continue to next page" OR there are more pages, advance
+  # If user did NOT select "Continue to next page" on the last page, stop
+  if "--- Continue to next page ---" not in user_selections and remaining > 0:
+    # User is done selecting (didn't ask for more)
+    break
+
+  page += 1
+
+# After all pages processed, confirm total selection
+if len(selected_files) == 0:
+  print("No files selected. Exiting.")
+  exit
+```
+
+Example page 1 of 3:
 ```json
 {
-  "question": "Select files to process for memory extraction:",
-  "header": "Directory Scan Results: {directory_path}",
+  "question": "Select files to include (page 1/3, showing 1-10 of 28):",
+  "header": "Directory Scan: /home/user/project/",
   "multiSelect": true,
   "options": [
-    {"label": "src/utils.lua", "description": "2.3KB"},
-    {"label": "src/config.lua", "description": "1.8KB"},
-    {"label": "README.md", "description": "4.1KB"}
+    {"label": "README.md", "description": "4.1KB"},
+    {"label": "src/main.lua", "description": "2.3KB"},
+    {"label": "--- Continue to next page ---", "description": "18 more files remaining"}
   ]
 }
 ```

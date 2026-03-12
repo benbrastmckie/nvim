@@ -8,6 +8,8 @@ description: Add memories from text, files, directories, or task artifacts with 
 **Layer**: 2 (Command File - Argument Parsing Agent)
 **Delegates To**: skill-memory (direct execution)
 
+**Input**: $ARGUMENTS
+
 ---
 
 ## Argument Parsing
@@ -18,9 +20,12 @@ description: Add memories from text, files, directories, or task artifacts with 
 
     **Mode Priority Chain** (first match wins):
     1. `--task N` -> Task mode
-    2. Directory path (ends with `/` or `-d test` passes) -> Directory mode
-    3. File path (`-f test` passes) -> File mode
+    2. Directory path (ends with `/`, starts with `-d `, or filesystem check passes) -> Directory mode
+    3. File path (starts with `-f `, has file extension, or filesystem check passes) -> File mode
     4. Quoted text or remaining args -> Text mode
+
+    **CRITICAL**: Check string patterns FIRST before any filesystem checks. A trailing `/`
+    unambiguously signals directory mode regardless of whether you can verify the path exists.
 
     ```
     task_mode = "--task" in $ARGUMENTS
@@ -29,15 +34,15 @@ description: Add memories from text, files, directories, or task artifacts with 
     If not task_mode:
       input = remaining args joined with spaces
 
-      # Priority 2: Directory
-      if [ -d "$input" ]; then
+      # Priority 2: Directory - string check first, no bash needed
+      if input ends with "/" OR input starts with "-d " OR [ -d "$input" ]; then
         mode = "directory"
-        directory_path = "$input"
+        directory_path = strip leading "-d " flag from input if present
 
-      # Priority 3: File
-      elif [ -f "$input" ]; then
+      # Priority 3: File - string check first
+      elif input starts with "-f " OR [ -f "$input" ]; then
         mode = "file"
-        file_path = "$input"
+        file_path = strip leading "-f " flag from input if present
 
       # Priority 4: Text
       else

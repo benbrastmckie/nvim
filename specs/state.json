@@ -5,10 +5,19 @@
     {
       "project_number": 187,
       "project_name": "port_memory_extension_to_claude",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-12T00:27:50Z",
-      "last_updated": "2026-03-12T00:27:50Z"
+      "last_updated": "2026-03-12T00:42:28Z",
+      "session_id": "sess_1773360000_a7b8c9",
+      "researched": "2026-03-12T00:42:28Z",
+      "artifacts": [
+        {
+          "path": "specs/187_port_memory_extension_to_claude/reports/research-001.md",
+          "type": "research",
+          "summary": "Complete file-by-file porting checklist with 23 files, exact transformations, and MCP configuration strategy"
+        }
+      ]
     },
     {
       "project_number": 176,
