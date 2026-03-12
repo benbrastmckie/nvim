@@ -1,6 +1,31 @@
 {
   "completed_projects": [
     {
+      "project_number": 176,
+      "project_name": "port_vision_memory_system_changes_to_neovim",
+      "status": "abandoned",
+      "language": "meta",
+      "created": "2026-03-10T20:00:00Z",
+      "last_updated": "2026-03-11T01:15:00Z",
+      "researched": "2026-03-10T22:00:00Z",
+      "planning": "2026-03-11T01:05:00Z",
+      "planned": "2026-03-11T01:10:00Z",
+      "implementing": "2026-03-11T01:15:00Z",
+      "artifacts": [
+        {
+          "path": "specs/176_port_vision_memory_system_changes_to_neovim/reports/research-002.md",
+          "type": "research",
+          "summary": "Corrected research: memory extension already exists at .opencode/extensions/memory/. Task is to UPDATE the extension configuration by moving .opencode/memory/ to .memory/ and updating all path references in extension files."
+        },
+        {
+          "path": "specs/176_port_vision_memory_system_changes_to_neovim/plans/implementation-002.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan: move memory vault directory, update commands/skills, update extension docs, update context docs, verification. Total effort: 2.5 hours."
+        }
+      ],
+      "abandoned": "2026-03-12T16:31:12Z"
+    },
+    {
       "project_number": 158,
       "project_name": "ensure_workflow_command_uniformity_prevent_research_failure",
       "status": "abandoned",
