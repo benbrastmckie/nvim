@@ -63,19 +63,6 @@ next_project_number: 190
 
 ---
 
-### 175. Port memory/ extension to .claude/ agent system
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
-- **Research Started**: 2026-03-10
-- **Research Completed**: 2026-03-11
-- **Language**: meta
-- **Dependencies**: Task 176
-- **Research**: [research-001.md](175_port_memory_extension_to_claude/reports/research-001.md), [research-002.md](175_port_memory_extension_to_claude/reports/research-002.md), [research-003.md](175_port_memory_extension_to_claude/reports/research-003.md) - Claude Code MCP and Obsidian integration
-
-**Description**: Port the memory/ extension included in .opencode/ over to .claude/ while respecting any differences that may exist for proper integration into the .claude/ agent system.
-
----
-
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
 - **Status**: [RESEARCHED]
