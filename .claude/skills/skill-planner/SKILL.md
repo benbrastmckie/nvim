@@ -267,7 +267,7 @@ Return a brief text summary (NOT JSON). Example:
 Plan created for task {N}:
 - {phase_count} phases defined, {estimated_hours} hours estimated
 - Key phases: {phase names}
-- Created plan at specs/{NNN}_{SLUG}/plans/implementation-{NNN}.md
+- Created plan at specs/OC_{NNN}_{SLUG}/plans/implementation-{NNN}.md
 - Status updated to [PLANNED]
 - Changes committed
 ```
@@ -324,7 +324,7 @@ Example successful return:
 Plan created for task 414:
 - 5 phases defined, 2.5 hours estimated
 - Covers: agent structure, execution flow, error handling, examples, verification
-- Created plan at specs/414_create_planner_agent/plans/implementation-001.md
+- Created plan at specs/OC_414_create_planner_agent/plans/implementation-001.md
 - Status updated to [PLANNED]
 - Changes committed with session sess_1736700000_abc123
 ```
@@ -333,6 +333,6 @@ Example partial return:
 ```
 Plan partially created for task 414:
 - 3 of 5 phases defined before timeout
-- Partial plan saved at specs/414_create_planner_agent/plans/implementation-001.md
+- Partial plan saved at specs/OC_414_create_planner_agent/plans/implementation-001.md
 - Status remains [PLANNING] - run /plan 414 to complete
 ```
