@@ -196,7 +196,7 @@ Critical finding: Claude Code and opencode are separate systems. The `--dangerou
 
 ---
 
-### Phase 6: Migrate Hooks [NOT STARTED]
+### Phase 6: Migrate Hooks [COMPLETED]
 
 **Goal**: Update runtime hook files
 

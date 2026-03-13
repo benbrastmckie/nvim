@@ -41,8 +41,8 @@ if [[ -n "$STDIN_JSON" ]] && command -v jq &>/dev/null; then
 fi
 
 # State files
-LAST_NOTIFY_FILE="/tmp/claude-tts-last-notify"
-LOG_FILE="/tmp/claude-tts-notify.log"
+LAST_NOTIFY_FILE="specs/tmp/claude-tts-last-notify"
+LOG_FILE="specs/tmp/claude-tts-notify.log"
 
 # Helper: log message
 log() {
@@ -126,7 +126,7 @@ MESSAGE="$TAB_PREFIX"
 # Speak using piper with paplay (background, tolerant of errors)
 if command -v paplay &>/dev/null; then
     # paplay available (PulseAudio) - need to write to temp file first
-    TEMP_WAV="/tmp/claude-tts-$$.wav"
+    TEMP_WAV="specs/tmp/claude-tts-$$.wav"
     (timeout 10s bash -c "echo '$MESSAGE' | piper --model '$PIPER_MODEL' --output_file '$TEMP_WAV' 2>/dev/null && paplay '$TEMP_WAV' 2>/dev/null; rm -f '$TEMP_WAV'" &) || true
 elif command -v aplay &>/dev/null; then
     # aplay available (ALSA)
