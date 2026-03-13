@@ -5,11 +5,11 @@
     {
       "project_number": 202,
       "project_name": "debounce_tts_session_idle",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "created": "2026-03-13T19:34:58Z",
-      "last_updated": "2026-03-13T19:40:09Z",
-      "session_id": "sess_1741894540_a3c8f2",
+      "last_updated": "2026-03-13T19:46:59Z",
+      "session_id": "sess_1741894598_b4d9e3",
       "researched": "2026-03-13T19:40:09Z",
       "artifacts": [
         {
@@ -22,10 +22,10 @@
     {
       "project_number": 201,
       "project_name": "fix_header_display_plan_implement_revise",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-13T19:29:29Z",
-      "last_updated": "2026-03-13T19:44:45Z",
+      "last_updated": "2026-03-13T19:47:21Z",
       "session_id": "sess_1741894560_c2f8e3",
       "researched": "2026-03-13T19:32:56Z",
       "artifacts": [
@@ -38,10 +38,18 @@
           "path": "specs/OC_201_fix_header_display_plan_implement_revise/plans/02_header-fix-plan.md",
           "type": "plan",
           "summary": "4-phase implementation plan to add header instruction blocks to /plan, /implement, and /revise commands"
+        },
+        {
+          "path": "specs/OC_201_fix_header_display_plan_implement_revise/summaries/03_header-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
       "planned": "2026-03-13T19:36:41Z",
-      "started": "2026-03-13T19:44:45Z"
+      "started": "2026-03-13T19:44:45Z",
+      "completed": "2026-03-13T19:47:21Z",
+      "completion_summary": "Added header instruction blocks to /plan, /implement, and /revise commands to ensure consistent task header display format across all workflow commands, matching the existing /research command pattern.",
+      "claudemd_suggestions": "none"
     },
     {
       "project_number": 200,
