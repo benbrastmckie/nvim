@@ -279,7 +279,7 @@ Neovim implementation completed for task 412:
 - Added keymaps for find_files, live_grep, buffers
 - Configured lazy loading via cmd and keys
 - Verified startup and module loading pass
-- Created summary at specs/OC_412_onfigure_telescope/summaries/implementation-summary-20260202.md
+- Created summary at specs/OC_412_onfigure_telescope/summaries/01_telescope-config-summary.md
 - Metadata written for skill postflight
 ```
 

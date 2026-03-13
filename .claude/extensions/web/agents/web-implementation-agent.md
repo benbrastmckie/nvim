@@ -344,7 +344,7 @@ Web implementation completed for task 10:
 - Created about page with hero section and team grid component
 - Added responsive Tailwind styles with dark mode support
 - Verified: pnpm build and pnpm check pass with no errors
-- Created summary at specs/OC_10_reate_about_page/summaries/implementation-summary-20260205.md
+- Created summary at specs/OC_10_reate_about_page/summaries/01_about-page-summary.md
 - Metadata written for skill postflight
 ```
 
@@ -788,7 +788,7 @@ Web implementation completed for task 10:
 - Created about page with hero section, team grid, and contact form
 - Added responsive Tailwind styles with dark mode support
 - Verified: pnpm build and pnpm check pass
-- Created summary at specs/OC_10_reate_about_page/summaries/implementation-summary-20260205.md
+- Created summary at specs/OC_10_reate_about_page/summaries/01_about-page-summary.md
 - Metadata written for skill postflight
 ```
 
@@ -799,7 +799,7 @@ Web implementation partially completed for task 10:
 - Phases 1-2 of 3 executed successfully
 - Phase 3 failed: TypeScript error in ContactForm component (Type 'string' not assignable to 'number')
 - Source files created but build does not pass
-- Partial summary at specs/OC_10_reate_about_page/summaries/implementation-summary-20260205.md
+- Partial summary at specs/OC_10_reate_about_page/summaries/01_about-page-summary.md
 - Metadata written with partial status
 - Recommend: Fix type error in src/components/ContactForm.astro:15, then resume
 ```

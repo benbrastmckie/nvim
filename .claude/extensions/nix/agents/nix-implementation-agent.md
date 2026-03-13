@@ -299,7 +299,7 @@ Nix implementation completed for task 412:
 - Added Home Manager configuration for user shell
 - Configured flake with new module import
 - Verified flake check and nixos-rebuild build pass
-- Created summary at specs/OC_412_onfigure_nginx_module/summaries/implementation-summary-20260203.md
+- Created summary at specs/OC_412_onfigure_nginx_module/summaries/01_nginx-module-summary.md
 - Metadata written for skill postflight
 ```
 
