@@ -41,7 +41,7 @@ if [[ ! -d "$plan_dir" ]]; then
 fi
 
 # Get latest plan file
-plan_file=$(ls -t "$plan_dir"/implementation-*.md 2>/dev/null | head -1)
+plan_file=$(ls -t "$plan_dir"/*.md 2>/dev/null | head -1)
 if [[ -z "$plan_file" ]]; then
     echo "No plan file found in $plan_dir" >&2
     exit 1

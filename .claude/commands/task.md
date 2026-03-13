@@ -340,7 +340,7 @@ fi
 plan_file=""
 if [ -n "$task_dir" ]; then
   plan_dir="${task_dir}/plans"
-  plan_file=$(ls -t "$plan_dir"/implementation-*.md 2>/dev/null | head -1)
+  plan_file=$(ls -t "$plan_dir"/*.md 2>/dev/null | head -1)
 fi
 
 if [ -z "$plan_file" ]; then
