@@ -144,6 +144,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | skill-meta | meta-builder-agent | - | System building and task creation |
 | skill-status-sync | (direct execution) | - | Atomic status updates |
 | skill-refresh | (direct execution) | - | Process and file cleanup |
+| skill-todo | (direct execution) | - | Archive completed tasks with CHANGE_LOG updates |
 | skill-tag | (user-only) | - | Semantic version tagging for deployment |
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. Research and planning agents use `opus` for superior reasoning. Implementation agents use default model. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
