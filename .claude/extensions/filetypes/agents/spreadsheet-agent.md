@@ -130,7 +130,7 @@ import pandas as pd
 
 # Read Excel and write to temporary CSV
 df = pd.read_excel("source.xlsx", sheet_name=sheet_name or 0)
-df.to_csv("/tmp/temp_data.csv", index=False)
+df.to_csv("specs/tmp/temp_data.csv", index=False)
 
 # Generate Typst table code
 typst_code = f'''#import "@preview/tabut:0.3.0": *
