@@ -2,14 +2,6 @@
 description: Create a phased implementation plan for a task
 ---
 
-**DO NOT start with a markdown heading.** Your first output must be a plain line using the actual argument value. If $ARGUMENTS is `72` or `OC_72`, output:
-
-[Planning] Task OC_72: (project_name once known from state.json)
-
-Substitute the real integer from $ARGUMENTS — never output "OC_N" or "OC_NN" literally.
-
----
-
 Create an implementation plan for the given task. Do NOT implement anything.
 
 **Input**: $ARGUMENTS
@@ -50,12 +42,6 @@ Directory: `specs/OC_NNN_<project_name>/`
 ### 3. Execute Preflight
 
 **CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
-
-**Display header** — output this line immediately using the actual task number and project name extracted in step 1:
-
-[Planning] Task OC_N: project_name
-
-(e.g. if N=200 and project_name="my_task", output: `[Planning] Task OC_200: my_task`)
 
 **Update state.json to planning**:
 ```bash

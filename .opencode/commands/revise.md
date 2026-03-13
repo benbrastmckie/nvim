@@ -2,14 +2,6 @@
 description: Create new version of implementation plan, or update task description if no plan exists
 ---
 
-**DO NOT start with a markdown heading.** Your first output must be a plain line using the actual argument value. If $ARGUMENTS is `72` or `OC_72`, output:
-
-[Revising] Task OC_72: (project_name once known from state.json)
-
-Substitute the real integer from $ARGUMENTS — never output "OC_N" or "OC_NN" literally.
-
----
-
 **Task Input (required):** $ARGUMENTS
 
 <context>
@@ -67,14 +59,8 @@ Substitute the real integer from $ARGUMENTS — never output "OC_N" or "OC_NN" l
          - project_name=$(echo "$task_data" | jq -r '.project_name')
          - description=$(echo "$task_data" | jq -r '.description // ""')
          - priority=$(echo "$task_data" | jq -r '.priority')
-
-      5. Display header — output this line immediately using the actual values from steps 3-4:
-
-         [Revising] Task OC_N: project_name
-
-         (e.g. if N=200 and project_name="my_task", output: `[Revising] Task OC_200: my_task`)
-
-      6. Check for existing implementation plan
+       
+      5. Check for existing implementation plan
          - Find latest plan: `specs/OC_{NNN}_{SLUG}/plans/implementation-{LATEST}.md`
          - If plan exists:
               plan_exists=true
@@ -82,8 +68,8 @@ Substitute the real integer from $ARGUMENTS — never output "OC_N" or "OC_NN" l
          - Else:
               plan_exists=false
               plan_path=""
-
-      7. Validate task status allows revision
+       
+      6. Validate task status allows revision
          case "$status" in
            "completed"|"implemented")
              if [ -n "$reason" ]; then
