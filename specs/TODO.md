@@ -8,7 +8,7 @@ next_project_number: 198
 
 ### OC_197. Fix workflow command task number header display
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: None
 

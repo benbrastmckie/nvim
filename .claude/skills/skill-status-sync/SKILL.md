@@ -98,7 +98,7 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}" \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     status: $status,
     last_updated: $ts
-  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
 3. **Update TODO.md status marker**:
@@ -129,7 +129,7 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}" \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     status: $status,
     last_updated: $ts
-  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
 2. **Add artifacts to state.json** (for each artifact):
@@ -141,13 +141,13 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg status "{target_status}" \
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     last_updated: $ts
-  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 
 # Step 2: Add artifact (append to array)
 jq --arg path "{artifact_path}" \
    --arg type "{artifact_type}" \
   '(.active_projects[] | select(.project_number == {task_number})).artifacts += [{"path": $path, "type": $type}]' \
-  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
 3. **Update TODO.md status marker**:
@@ -191,13 +191,13 @@ fi
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   '(.active_projects[] | select(.project_number == {task_number})) |= . + {
     last_updated: $ts
-  }' specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 
 # Step 2: Add artifact (append to array)
 jq --arg path "{artifact_path}" \
    --arg type "{artifact_type}" \
   '(.active_projects[] | select(.project_number == {task_number})).artifacts += [{"path": $path, "type": $type}]' \
-  specs/state.json > /tmp/state.json && mv /tmp/state.json specs/state.json
+  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
 3. **Add link to TODO.md** using Edit tool:
