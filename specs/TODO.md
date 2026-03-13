@@ -1,10 +1,20 @@
 ---
-next_project_number: 201
+next_project_number: 202
 ---
 
 # TODO
 
 ## Tasks
+
+### 201. Fix header display in /plan, /implement, and /revise commands to match working /research pattern
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Fix header display in /plan, /implement, and /revise commands to match working /research pattern. The /research command now correctly shows the task number in its response header (e.g. "# Research OC_072 task: ..."). The /plan, /implement, and /revise commands need the same fix applied consistently. Study the current working research.md to understand what makes it work, then apply the same pattern to plan.md, implement.md, and revise.md in .opencode/commands/.
+
+---
 
 ### OC_200. Review .opencode/ and .claude/ agent systems for feature gaps and improvements
 - **Effort**: 4-6 hours

@@ -1,14 +1,22 @@
 {
   "version": "1.0.0",
-  "next_project_number": 201,
+  "next_project_number": 202,
   "active_projects": [
+    {
+      "project_number": 201,
+      "project_name": "fix_header_display_plan_implement_revise",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-13T19:29:29Z",
+      "last_updated": "2026-03-13T19:29:29Z"
+    },
     {
       "project_number": 200,
       "project_name": "review_opencode_claude_agent_systems_feature_gaps",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-13T18:39:43Z",
-      "last_updated": "2026-03-13T19:13:47Z",
+      "last_updated": "2026-03-13T19:29:45Z",
       "artifacts": [
         {
           "path": "specs/OC_200_review_opencode_claude_agent_systems_feature_gaps/reports/research-001.md",
@@ -31,7 +39,8 @@
       "planning": "2026-03-13T18:45:37Z",
       "planned": "2026-03-13T18:47:15Z",
       "revised": "2026-03-13T19:11:26Z",
-      "implementing": "2026-03-13T19:13:47Z"
+      "implementing": "2026-03-13T19:13:47Z",
+      "completed": "2026-03-13T19:29:45Z"
     },
     {
       "project_number": 199,
