@@ -2,11 +2,11 @@
 description: Execute implementation with resume support
 ---
 
-**FIRST**: The task number is the first token of $ARGUMENTS (strip `OC_` prefix if present to get integer N). Output this as your very first line before doing anything else:
+**DO NOT start with a markdown heading.** Your first output must be a plain line using the actual argument value. If $ARGUMENTS is `72` or `OC_72`, output:
 
-[Implementing] Task OC_N: project_name
+[Implementing] Task OC_72: (project_name once known from state.json)
 
-Where N is the integer task number from $ARGUMENTS and project_name comes from state.json after lookup. If project_name is not yet known, output just `[Implementing] Task OC_N` and update once known.
+Substitute the real integer from $ARGUMENTS — never output "OC_N" or "OC_NN" literally.
 
 ---
 
