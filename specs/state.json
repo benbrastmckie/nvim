@@ -14,12 +14,19 @@
     {
       "project_number": 192,
       "project_name": "bypass_opencode_permission_requests",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-13T16:50:08Z",
-      "last_updated": "2026-03-13T16:54:49Z",
-      "artifacts": [],
-      "researching": "2026-03-13T16:54:49Z"
+      "last_updated": "2026-03-13T16:58:23Z",
+      "artifacts": [
+        {
+          "path": "specs/192_bypass_opencode_permission_requests/reports/research-001.md",
+          "type": "research",
+          "summary": "Comprehensive research report on opencode permission system with 4 approaches identified and recommended PreToolUse hook implementation"
+        }
+      ],
+      "researching": "2026-03-13T16:54:49Z",
+      "researched": "2026-03-13T16:58:23Z"
     },
     {
       "project_number": 191,
