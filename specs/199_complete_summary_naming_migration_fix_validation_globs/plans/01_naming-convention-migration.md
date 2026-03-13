@@ -152,7 +152,7 @@ This looks like a single global sequence, but the text says "Reports: 01, 02, 03
 
 ---
 
-### Phase 5: Update Extension Skill Examples [NOT STARTED]
+### Phase 5: Update Extension Skill Examples [COMPLETED]
 
 **Goal**: Update example return text in extension skills to use new naming format with per-type numbering
 

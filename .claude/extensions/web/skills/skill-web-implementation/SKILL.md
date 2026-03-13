@@ -333,7 +333,7 @@ Example successful return:
 Web implementation completed for task 10:
 - All 3 phases executed, build passes cleanly
 - Created about page with hero section and team grid
-- Created summary at specs/10_create_about_page/summaries/implementation-summary-20260205.md
+- Created summary at specs/10_create_about_page/summaries/01_web-feature-summary.md
 - Status updated to [COMPLETED]
 - Changes committed with session sess_1770319142_a293c5
 ```
@@ -343,7 +343,7 @@ Example partial return:
 Web implementation partially completed for task 10:
 - Phases 1-2 of 3 executed
 - Phase 3 blocked: TypeScript error in ContactForm component
-- Partial summary at specs/10_create_about_page/summaries/implementation-summary-20260205.md
+- Partial summary at specs/10_create_about_page/summaries/01_web-feature-summary.md
 - Status remains [IMPLEMENTING] - run /implement 10 to resume
 ```
 

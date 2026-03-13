@@ -332,7 +332,7 @@ Example successful return:
 Nix implementation completed for task 412:
 - All 3 phases executed, flake check passes
 - Created NixOS module at modules/myservice.nix
-- Created summary at specs/412_configure_nginx/summaries/implementation-summary-20260203.md
+- Created summary at specs/412_configure_nginx/summaries/01_nix-module-summary.md
 - Status updated to [COMPLETED]
 - Changes committed with session sess_1736700000_abc123
 ```
@@ -342,7 +342,7 @@ Example partial return:
 Nix implementation partially completed for task 412:
 - Phases 1-2 of 3 executed
 - Phase 3 blocked: attribute 'missingPkg' missing
-- Partial summary at specs/412_configure_nginx/summaries/implementation-summary-20260203.md
+- Partial summary at specs/412_configure_nginx/summaries/01_nix-module-summary.md
 - Status remains [IMPLEMENTING] - run /implement 412 to resume
 ```
 
