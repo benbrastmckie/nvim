@@ -5,11 +5,19 @@
     {
       "project_number": 201,
       "project_name": "fix_header_display_plan_implement_revise",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-13T19:29:29Z",
-      "last_updated": "2026-03-13T19:30:42Z",
-      "session_id": "sess_1741894200_a3f9c2"
+      "last_updated": "2026-03-13T19:32:56Z",
+      "session_id": "sess_1741894200_a3f9c2",
+      "researched": "2026-03-13T19:32:56Z",
+      "artifacts": [
+        {
+          "path": "specs/OC_201_fix_header_display_plan_implement_revise/reports/01_header-display-fix.md",
+          "type": "research",
+          "summary": "Research report documenting the header display fix pattern with exact code to add to each command"
+        }
+      ]
     },
     {
       "project_number": 200,
