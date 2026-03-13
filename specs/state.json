@@ -5,12 +5,19 @@
     {
       "project_number": 200,
       "project_name": "review_opencode_claude_agent_systems_feature_gaps",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-13T18:39:43Z",
-      "last_updated": "2026-03-13T18:40:35Z",
-      "artifacts": [],
-      "researching": "2026-03-13T18:40:35Z"
+      "last_updated": "2026-03-13T18:43:26Z",
+      "artifacts": [
+        {
+          "path": "specs/OC_200_review_opencode_claude_agent_systems_feature_gaps/reports/research-001.md",
+          "type": "report",
+          "summary": "Comprehensive comparison of .opencode/ and .claude/ systems identifying 10 feature gaps, naming inconsistencies, and 9 specific improvement recommendations"
+        }
+      ],
+      "researching": "2026-03-13T18:40:35Z",
+      "researched": "2026-03-13T18:43:26Z"
     },
     {
       "project_number": 199,
