@@ -5,10 +5,10 @@
     {
       "project_number": 200,
       "project_name": "review_opencode_claude_agent_systems_feature_gaps",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "created": "2026-03-13T18:39:43Z",
-      "last_updated": "2026-03-13T18:43:26Z",
+      "last_updated": "2026-03-13T18:45:37Z",
       "artifacts": [
         {
           "path": "specs/OC_200_review_opencode_claude_agent_systems_feature_gaps/reports/research-001.md",
@@ -17,24 +17,31 @@
         }
       ],
       "researching": "2026-03-13T18:40:35Z",
-      "researched": "2026-03-13T18:43:26Z"
+      "researched": "2026-03-13T18:43:26Z",
+      "planning": "2026-03-13T18:45:37Z"
     },
     {
       "project_number": 199,
       "project_name": "complete_summary_naming_migration_fix_validation_globs",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-13T18:37:34Z",
-      "last_updated": "2026-03-13T18:41:34Z",
-      "session_id": "sess_1773427098_3d4630",
+      "last_updated": "2026-03-13T18:46:05Z",
+      "session_id": "sess_1773427409_7182dc",
       "researched": "2026-03-13T18:41:34Z",
       "artifacts": [
         {
           "path": "specs/199_complete_summary_naming_migration_fix_validation_globs/reports/01_naming-migration-gaps.md",
           "type": "research",
           "summary": "Research report identifying 28 files with old naming conventions across 6 priority categories"
+        },
+        {
+          "path": "specs/199_complete_summary_naming_migration_fix_validation_globs/plans/02_naming-convention-migration.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan for completing artifact naming convention migration"
         }
-      ]
+      ],
+      "planned": "2026-03-13T18:46:05Z"
     },
     {
       "project_number": 198,
