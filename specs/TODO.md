@@ -8,9 +8,10 @@ next_project_number: 199
 
 ### 198. Review recent .claude/ commits for consistency
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: None
+- **Research Started**: 2026-03-13
 
 **Description**: Review the recent commits which make changes to .claude/ to ensure these are correct and consistent, making any natural improvements.
 

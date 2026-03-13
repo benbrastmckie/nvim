@@ -5,10 +5,11 @@
     {
       "project_number": 198,
       "project_name": "review_recent_claude_commits_consistency",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-13T18:05:18Z",
-      "last_updated": "2026-03-13T18:05:18Z"
+      "last_updated": "2026-03-13T18:06:04Z",
+      "session_id": "sess_1773425150_78541b"
     },
     {
       "project_number": 197,
@@ -30,11 +31,12 @@
     {
       "project_number": 196,
       "project_name": "port_wezterm_tab_integration_from_claude_to_opencode",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-13T17:31:45Z",
-      "last_updated": "2026-03-13T17:31:45Z",
-      "artifacts": []
+      "last_updated": "2026-03-13T18:06:03Z",
+      "artifacts": [],
+      "researching": "2026-03-13T18:06:03Z"
     },
     {
       "project_number": 195,
