@@ -99,13 +99,26 @@ mv vosk-model-small-en-us-0.15 vosk-model-small-en-us
 
 Claude Code triggers `tts-notify.sh` via hooks when:
 
-1. **Stop Event**: Claude finishes responding - announces "Tab N"
-2. **Notification Events** (input-needed): `permission_prompt`, `idle_prompt`, `elicitation_dialog` - announces "Tab N"
+1. **Stop Event**: Claude finishes responding - announces "Tab N" (after 1.5s trailing delay)
+2. **Notification Events** (input-needed): `permission_prompt`, `idle_prompt`, `elicitation_dialog` - announces "Tab N" immediately
 
 The script:
 1. Checks a 10-second cooldown to prevent notification spam
 2. Detects the WezTerm tab number via `wezterm cli list`
 3. Speaks "Tab N" using Piper TTS
+
+### Trailing-Edge Debounce
+
+TTS notifications for session idle events use trailing-edge debounce (default 1.5 seconds). This prevents premature announcements when sub-agents complete mid-operation.
+
+**How it works**:
+- When `session.idle` fires, a 1.5-second timer starts
+- If another `session.idle` or `session.status` (non-idle) event fires before the timer expires, the timer resets or cancels
+- TTS only announces when the session stays idle for the full delay period
+
+**Why trailing-edge?** Multi-agent operations (like `/research` or `/implement`) spawn sub-agents that each fire `session.idle` when they complete. With leading-edge debounce, TTS would announce the first sub-agent completion. With trailing-edge, TTS waits until all sub-agents finish and the session is truly idle.
+
+**Exception**: Permission and question prompts (`permission.asked`, `question.asked`) fire TTS immediately since they require user input and should not be delayed.
 
 ### Plugin Configuration
 
@@ -129,8 +142,9 @@ WezTerm OSC 1337 and piper TTS logic.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PIPER_MODEL` | `~/.local/share/piper/en_US-lessac-medium.onnx` | Path to Piper voice model |
-| `TTS_COOLDOWN` | `10` | Seconds between notifications |
+| `TTS_COOLDOWN` | `10` | Seconds between notifications (in tts-notify.sh script) |
 | `TTS_ENABLED` | `1` | Set to `0` to disable notifications |
+| `TTS_TRAILING_DELAY` | `1500` | Milliseconds to wait before TTS fires on session.idle (trailing-edge debounce) |
 
 ### Examples
 
@@ -143,6 +157,12 @@ export PIPER_MODEL=~/.local/share/piper/en_GB-alba-medium.onnx
 
 # Reduce cooldown to 5 seconds
 export TTS_COOLDOWN=5
+
+# Increase trailing delay to 2.5 seconds for longer multi-agent operations
+export TTS_TRAILING_DELAY=2500
+
+# Reduce trailing delay to 500ms for faster feedback
+export TTS_TRAILING_DELAY=500
 ```
 
 ### Notification Event Types
@@ -167,8 +187,13 @@ export TTS_COOLDOWN=5
 - Test CLI: `wezterm cli list --format=json`
 
 **Notifications too frequent/infrequent**:
-- Adjust `TTS_COOLDOWN` environment variable
+- Adjust `TTS_COOLDOWN` environment variable (script-level cooldown)
+- Adjust `TTS_TRAILING_DELAY` for session.idle trailing delay (default 1500ms)
 - Check `/tmp/claude-tts-last-notify` timestamp
+
+**TTS fires mid-operation (sub-agents)**:
+- Increase `TTS_TRAILING_DELAY` (try 2500ms or higher)
+- This can happen if sub-agents have long pauses between completion events
 
 **View logs**:
 ```bash
