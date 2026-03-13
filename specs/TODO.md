@@ -34,10 +34,12 @@ next_project_number: 199
 
 ### OC_196. Port wezterm tab integration features from .claude/ to .opencode/
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research Started**: 2026-03-13
+- **Research Completed**: 2026-03-13
+- **Research**: [research-001.md](OC_196_port_wezterm_tab_integration_from_claude_to_opencode/reports/research-001.md)
 
 **Description**: Port wezterm tab integration features from the .claude/ agent system to .opencode/. The .claude/ system currently: (1) updates wezterm tabs to show the task number immediately upon running a task-number-based command, and (2) announces the tab number when Claude Code finishes, needs input, or asks a question. These features need to be adapted for opencode-specific details while maintaining the same functionality. This involves examining how .claude/ implements these features (likely through OSC escape sequences or wezterm CLI commands) and creating equivalent functionality in .opencode/.
 

@@ -39,12 +39,19 @@
     {
       "project_number": 196,
       "project_name": "port_wezterm_tab_integration_from_claude_to_opencode",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-13T17:31:45Z",
-      "last_updated": "2026-03-13T18:06:03Z",
-      "artifacts": [],
-      "researching": "2026-03-13T18:06:03Z"
+      "last_updated": "2026-03-13T18:10:13Z",
+      "artifacts": [
+        {
+          "path": "specs/OC_196_port_wezterm_tab_integration_from_claude_to_opencode/reports/research-001.md",
+          "type": "research",
+          "summary": "Comprehensive research report comparing .claude/ and .opencode/ wezterm integration implementations. Found that most features are already ported (and enhanced in .opencode/), but Notification hook and claude-ready-signal are missing from .opencode/settings.json. Includes detailed technical implementation details, OSC sequence documentation, and specific recommendations for completing the port."
+        }
+      ],
+      "researching": "2026-03-13T18:06:03Z",
+      "researched": "2026-03-13T18:10:13Z"
     },
     {
       "project_number": 195,
