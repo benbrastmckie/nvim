@@ -33,7 +33,13 @@ return {
 
       -- Events configuration
       reload_on_edit = true, -- Auto-reload buffer when opencode edits files
-      permission_requests = "notify", -- Show permission requests as notifications
+      events = {
+        enabled = true,
+        reload = true,
+        permissions = {
+          enabled = false, -- Disable permission UI to prevent prompts
+        },
+      },
 
       -- UI providers
       input_provider = "snacks",

@@ -117,10 +117,10 @@
     {
       "project_number": 192,
       "project_name": "bypass_opencode_permission_requests",
-      "status": "researched",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-13T16:50:08Z",
-      "last_updated": "2026-03-13T17:42:48Z",
+      "last_updated": "2026-03-13T17:58:01Z",
       "artifacts": [
         {
           "path": "specs/192_bypass_opencode_permission_requests/reports/research-001.md",
@@ -156,7 +156,8 @@
       "researching": "2026-03-13T17:35:35Z",
       "researched": "2026-03-13T17:42:48Z",
       "planning": "2026-03-13T17:00:03Z",
-      "planned": "2026-03-13T17:02:46Z"
+      "planned": "2026-03-13T17:02:46Z",
+      "implementing": "2026-03-13T17:58:01Z"
     },
     {
       "project_number": 191,
