@@ -43,6 +43,11 @@ Directory: `specs/OC_NNN_<project_name>/`
 
 **CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
 
+**Display header**:
+```
+[Planning] Task OC_{N}: {project_name}
+```
+
 **Update state.json to planning**:
 ```bash
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \

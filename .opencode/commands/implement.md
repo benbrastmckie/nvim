@@ -52,6 +52,11 @@ Read the plan to understand all phases and their current status (`[NOT STARTED]`
 
 **CRITICAL**: Commands must execute preflight BEFORE delegating to agents. The skill tool only loads skill definitions but does NOT execute workflows.
 
+**Display header**:
+```
+[Implementing] Task OC_{N}: {project_name}
+```
+
 **Update state.json to implementing**:
 ```bash
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -274,7 +279,7 @@ Show:
 **The skill tool only loads SKILL.md content — it does NOT execute preflight/postflight workflows.**
 
 Commands must execute these workflows themselves:
-1. **Preflight** (Step 4): Update state.json to "implementing", TODO.md to [IMPLEMENTING], create marker file
+1. **Preflight** (Step 4): Display header, update state.json to "implementing", TODO.md to [IMPLEMENTING], create marker file
 2. **Delegation** (Step 5): Call skill-implementer to load context and invoke general-implementation-agent
 3. **Postflight** (Step 6): Read .return-meta.json, update state.json to "completed"/"partial", update TODO.md, link artifacts, commit, cleanup
 
