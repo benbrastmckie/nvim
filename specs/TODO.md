@@ -1,10 +1,20 @@
 ---
-next_project_number: 194
+next_project_number: 195
 ---
 
 # TODO
 
 ## Tasks
+
+### OC_194. Standardize OpenCode task naming consistency
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: When creating tasks in OpenCode, sometimes they use the OC_N for tasks in TODO.md and specs.json where project directories require padding as in OC_NNN_, but other times OpenCode uses N for tasks in TODO.md and specs.json where project directories are numbered NNN_. Improve consistency so that OC_ is always used for OpenCode tasks. Note: user still wants to be able to run `/research NNN` instead of only being able to run `/research OC_NNN` for an OpenCode created task.
+
+---
 
 ### 193. Set default opencode model to Kimi K2.5 OpenCode Go
 - **Effort**: 1-2 hours
