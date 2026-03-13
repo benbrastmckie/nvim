@@ -562,18 +562,18 @@ context_loading:
 #!/bin/bash
 # Track context file sizes
 
-echo "=== Context Size Report ===" > /tmp/context-sizes.txt
-echo "Generated: $(date)" >> /tmp/context-sizes.txt
-echo "" >> /tmp/context-sizes.txt
+echo "=== Context Size Report ===" > specs/tmp/context-sizes.txt
+echo "Generated: $(date)" >> specs/tmp/context-sizes.txt
+echo "" >> specs/tmp/context-sizes.txt
 
 for dir in orchestration formats standards workflows templates; do
-  echo "## $dir/" >> /tmp/context-sizes.txt
+  echo "## $dir/" >> specs/tmp/context-sizes.txt
   find .claude/context/core/$dir -name "*.md" -exec wc -l {} + | \
-    sort -n >> /tmp/context-sizes.txt
-  echo "" >> /tmp/context-sizes.txt
+    sort -n >> specs/tmp/context-sizes.txt
+  echo "" >> specs/tmp/context-sizes.txt
 done
 
-cat /tmp/context-sizes.txt
+cat specs/tmp/context-sizes.txt
 ```
 
 ### 6.3 Performance Monitoring

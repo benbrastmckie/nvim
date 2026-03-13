@@ -244,7 +244,7 @@ ls -la ~/.local/share/piper/en_US-lessac-medium.onnx
 
 **Check logs**:
 ```bash
-tail -20 /tmp/claude-tts-notify.log
+tail -20 specs/tmp/claude-tts-notify.log
 ```
 
 ## Architecture

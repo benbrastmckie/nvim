@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 198,
+  "next_project_number": 199,
   "active_projects": [
+    {
+      "project_number": 198,
+      "project_name": "review_recent_claude_commits_consistency",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-13T18:05:18Z",
+      "last_updated": "2026-03-13T18:05:18Z"
+    },
     {
       "project_number": 197,
       "project_name": "fix_workflow_command_task_number_header_display",
