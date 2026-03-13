@@ -219,7 +219,7 @@ EOF
 
 # Test the two-step pattern
 task_number=100
-artifact_path="specs/100_test/reports/research-001.md"
+artifact_path="specs/100_test/reports/01_research-findings.md"
 
 # Step 1
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -251,7 +251,7 @@ Reusable shell scripts are available in `.claude/scripts/` that encapsulate corr
 
 Example usage:
 ```bash
-.claude/scripts/postflight-plan.sh 607 "specs/607_task/plans/implementation-001.md" "9-phase implementation plan"
+.claude/scripts/postflight-plan.sh 607 "specs/607_task/plans/02_implementation-plan.md" "9-phase implementation plan"
 ```
 
 ## References

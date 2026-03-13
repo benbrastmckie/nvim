@@ -483,7 +483,7 @@ Include complete examples:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/412_create_agent/reports/research-001.md",
+      "path": "specs/412_create_agent/reports/01_create-agent-research.md",
       "summary": "Research report with 8 findings"
     }
   ],

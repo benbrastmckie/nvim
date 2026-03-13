@@ -96,7 +96,7 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
   },
-  "plan_path": "specs/OC_412_onfigure_telescope/plans/implementation-001.md",
+  "plan_path": "specs/OC_412_onfigure_telescope/plans/02_telescope-config-plan.md",
   "metadata_file_path": "specs/OC_412_onfigure_telescope/.return-meta.json"
 }
 ```

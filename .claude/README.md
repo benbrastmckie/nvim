@@ -362,8 +362,8 @@ All returns validated against subagent-return-format.md:
 - **Language**: markdown
 - **Started**: 2025-12-20T10:00:00Z
 - **Completed**: 2025-12-26T18:00:00Z
-- **Plan**: [implementation-001.md](191_fix_subagent_delegation_hang/plans/implementation-001.md)
-- **Research**: [research-001.md](191_fix_subagent_delegation_hang/reports/research-001.md)
+- **Plan**: [02_implementation-plan.md](191_fix_subagent_delegation_hang/plans/02_implementation-plan.md)
+- **Research**: [01_research-findings.md](191_fix_subagent_delegation_hang/reports/01_research-findings.md)
 ```
 
 **Status Markers**:
@@ -419,7 +419,7 @@ All returns validated against subagent-return-format.md:
       },
       "message": "Command hung waiting for subagent return",
       "fix_status": "resolved",
-      "fix_plan_ref": "191_fix_subagent_delegation_hang/plans/implementation-001.md",
+      "fix_plan_ref": "191_fix_subagent_delegation_hang/plans/02_fix-delegation-hang.md",
       "fix_task_ref": 191,
       "recurrence_count": 1,
       "first_seen": "2025-12-20T10:00:00Z",
@@ -431,7 +431,7 @@ All returns validated against subagent-return-format.md:
 
 ### Plan Files
 
-**Location**: `specs/{task_number}_{topic_slug}/plans/implementation-{version:03d}.md`
+**Location**: `specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md`
 
 **Purpose**: Phased implementation plans with status tracking
 
@@ -1051,5 +1051,5 @@ After any MCP configuration changes, restart Claude Code for changes to take eff
 - Documentation Hub: `.claude/docs/README.md`
 - Orchestration Core: `.claude/context/core/orchestration/orchestration-core.md`
 - Return Format Standard: `.claude/context/core/formats/subagent-return.md`
-- Task 191 Research: `specs/191_fix_subagent_delegation_hang/reports/research-001.md`
-- Task 191 Plan: `specs/191_fix_subagent_delegation_hang/plans/implementation-001.md`
+- Task 191 Research: `specs/191_fix_subagent_delegation_hang/reports/01_fix-delegation-hang.md`
+- Task 191 Plan: `specs/191_fix_subagent_delegation_hang/plans/02_fix-delegation-hang.md`

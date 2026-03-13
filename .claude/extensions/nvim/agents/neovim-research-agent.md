@@ -324,7 +324,7 @@ Research completed for task 412:
 - Documented plugin dependencies (plenary.nvim, fzf-native)
 - Identified lazy loading strategy using cmd and keys
 - Found recommended keymaps from community configs
-- Created report at specs/OC_412_onfigure_telescope/reports/research-001.md
+- Created report at specs/OC_412_onfigure_telescope/reports/01_telescope-config-research.md
 - Metadata written for skill postflight
 ```
 

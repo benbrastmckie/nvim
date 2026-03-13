@@ -136,7 +136,7 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "implement", "web-implementation-agent"]
   },
-  "plan_path": "specs/OC_10_reate_about_page/plans/implementation-001.md",
+  "plan_path": "specs/OC_10_reate_about_page/plans/02_implementation-plan.md",
   "metadata_file_path": "specs/OC_10_reate_about_page/.return-meta.json"
 }
 ```
@@ -808,7 +808,7 @@ Web implementation partially completed for task 10:
 
 ```
 Web implementation failed for task 10:
-- Plan file not found: specs/OC_10_reate_about_page/plans/implementation-001.md
+- Plan file not found: specs/OC_10_reate_about_page/plans/02_implementation-plan.md
 - Cannot proceed without valid implementation plan
 - No artifacts created
 - Metadata written with failed status

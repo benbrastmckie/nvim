@@ -300,7 +300,7 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
   "artifacts": [
     {
       "type": "research_report",
-      "path": "specs/123_topic/reports/research-001.md",
+      "path": "specs/123_topic/reports/01_research-findings.md",
       "summary": "Research findings",
       "validated": true
     }

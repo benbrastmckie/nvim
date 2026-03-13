@@ -57,7 +57,7 @@ After completing work:
          ▼
 ┌─────────────────┐
 │ Create report   │
-│ research-NNN.md │
+│ MM_{slug}.md    │
 └────────┬────────┘
          │
          ▼
@@ -98,7 +98,7 @@ After completing work:
          ▼
 ┌─────────────────┐
 │ Write plan file │
-│ impl-NNN.md     │
+│ MM_{slug}.md    │
 └────────┬────────┘
          │
          ▼

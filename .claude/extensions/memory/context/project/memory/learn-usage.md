@@ -245,7 +245,7 @@ Flow:
 
 Flow:
 1. Scan specs/142_task_name/ for artifacts
-2. Select research-001.md and summary
+2. Select research report and summary
 3. Classify as [INSIGHT] and [PATTERN]
 4. Create memories with tags
 

@@ -55,9 +55,9 @@ The agent system uses a three-layer architecture that separates user interaction
     |                     ARTIFACTS                        |
     |                                                      |
     |   specs/{NNN}_{SLUG}/                                  |
-    |   ├── reports/research-001.md                       |
-    |   ├── plans/implementation-001.md                   |
-    |   └── summaries/MM_{short-slug}-summary.md    |
+    |   ├── reports/01_{short-slug}.md                    |
+    |   ├── plans/02_{short-slug}.md                      |
+    |   └── summaries/03_{short-slug}-summary.md          |
     +-----------------------------------------------------+
 ```
 
@@ -139,7 +139,7 @@ When you run `/research 1`:
 3. Agent: neovim-research-agent
    - Load: Neovim context files
    - Execute: Search documentation, analyze plugins
-   - Create: specs/1_{slug}/reports/research-001.md
+   - Create: specs/001_{slug}/reports/01_{short-slug}.md
    - Return: {"status": "researched", "artifacts": [...]}
 
 4. Postflight:

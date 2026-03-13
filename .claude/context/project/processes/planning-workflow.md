@@ -17,7 +17,7 @@ This document describes the complete planning workflow executed by the planner s
 
 **When**: Task has no existing plan  
 **Characteristics**:
-- Creates first plan version (implementation-001.md)
+- Creates first plan version (e.g., 02_implementation-plan.md)
 - Integrates research findings if available
 - Breaks work into phases
 - Estimates effort
@@ -27,7 +27,7 @@ This document describes the complete planning workflow executed by the planner s
 
 **When**: Task has existing plan that needs updating  
 **Characteristics**:
-- Creates new plan version (implementation-002.md, etc.)
+- Creates new plan version (sequential numbering)
 - Preserves previous plan versions
 - Incorporates new information
 - Adjusts approach based on learnings
@@ -338,9 +338,9 @@ Revise plans when:
    - Preserve previous plan link in history
 
 **Version Numbering**:
-- First plan: `implementation-001.md`
-- First revision: `implementation-002.md`
-- Second revision: `implementation-003.md`
+- First plan: `02_implementation-plan.md`
+- First revision: `03_revised-plan.md`
+- Second revision: `04_second-revision.md`
 - etc.
 
 ---
@@ -485,7 +485,7 @@ Two-phase commit ensures consistency across all files.
 
 Directories created only when writing artifacts:
 - `specs/{task_number}_{slug}/` created when writing plan
-- `plans/` subdirectory created when writing implementation-001.md
+- `plans/` subdirectory created when writing first plan artifact
 
 No directories created during routing or validation stages.
 

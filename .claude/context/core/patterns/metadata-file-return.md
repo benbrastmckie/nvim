@@ -37,7 +37,7 @@ Example: `specs/259_prove_completeness/.return-meta.json`
   "artifacts": [
     {
       "type": "report|plan|summary|implementation",
-      "path": "specs/259_name/reports/research-001.md",
+      "path": "specs/259_name/reports/01_research-findings.md",
       "summary": "Brief 1-sentence description"
     }
   ],

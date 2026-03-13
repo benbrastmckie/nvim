@@ -45,7 +45,7 @@ cat > "specs/OC_${padded_num}_${task_slug}/.return-meta.json" << 'METADATA_EOF'
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/259_prove_completeness/reports/research-001.md",
+      "path": "specs/259_prove_completeness/reports/01_completeness-research.md",
       "summary": "Research report with theorem findings"
     }
   ],

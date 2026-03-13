@@ -11,7 +11,7 @@ Placeholders in path templates and content follow these conventions:
 | Placeholder | Format | Usage | Examples |
 |-------------|--------|-------|----------|
 | `{N}` | Unpadded integer | Task numbers in text, commits | `389`, `task 389:` |
-| `{NNN}` | 3-digit padded | Directory numbers, artifact versions | `014`, `research-001.md`, `{NNN}_{SLUG}` |
+| `{NNN}` | 3-digit padded | Directory numbers | `014`, `{NNN}_{SLUG}` |
 | `{P}` | Unpadded integer | Phase numbers | `1`, `phase 1:` |
 | `{DATE}` | YYYYMMDD | Date stamps in filenames | `20260111` |
 | `{ISO_DATE}` | YYYY-MM-DD | ISO dates in content | `2026-01-11` |

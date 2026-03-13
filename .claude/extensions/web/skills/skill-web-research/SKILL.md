@@ -250,7 +250,7 @@ Example successful return:
 Research completed for task 412:
 - Found Astro component patterns and Tailwind v4 styling approaches
 - Identified accessibility requirements for interactive elements
-- Created report at specs/412_add_blog_section/reports/research-001.md
+- Created report at specs/412_add_blog_section/reports/01_blog-section-research.md
 - Status updated to [RESEARCHED]
 - Changes committed with session sess_1736700000_abc123
 ```
@@ -260,6 +260,6 @@ Example partial return:
 Research partially completed for task 412:
 - Found local project patterns
 - Web search failed due to network error
-- Partial report created at specs/412_add_blog_section/reports/research-001.md
+- Partial report created at specs/412_add_blog_section/reports/01_blog-section-research.md
 - Status remains [RESEARCHING] - run /research 412 to continue
 ```

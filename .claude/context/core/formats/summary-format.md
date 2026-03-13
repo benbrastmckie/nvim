@@ -37,7 +37,7 @@
 - **Status**: [COMPLETED]
 - **Started**: 2025-12-22T10:00:00Z
 - **Completed**: 2025-12-22T10:20:00Z
-- **Artifacts**: plans/implementation-001.md
+- **Artifacts**: plans/MM_{short-slug}.md
 
 ## Overview
 ...

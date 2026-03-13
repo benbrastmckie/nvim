@@ -328,7 +328,7 @@ Commands update task status using text-based markers:
   "new_status": "researched",
   "timestamp": "2025-12-29T08:13:37Z",
   "artifacts": [
-    "specs/244_phase_1_context_index_and_research_frontmatter_prototype/reports/research-001.md"
+    "specs/244_phase_1_context_index_and_research_frontmatter_prototype/reports/01_context-index-research.md"
   ]
 }
 ```

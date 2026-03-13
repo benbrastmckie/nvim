@@ -54,7 +54,7 @@ task 334: complete research
 Modified:
   specs/TODO.md
   specs/state.json
-  specs/334_task_slug/reports/research-001.md
+  specs/334_task_slug/reports/01_research-findings.md
 ```
 
 ### Multi-Task Operations

@@ -90,7 +90,7 @@ When updating task status:
   "artifacts": [
     {
       "type": "research",
-      "path": "specs/334_task_slug_here/reports/research-001.md",
+      "path": "specs/334_task_slug_here/reports/01_research-findings.md",
       "summary": "Brief 1-sentence description of artifact"
     }
   ],
@@ -230,20 +230,20 @@ When creating artifacts, update TODO.md with links:
 ### Research Completion
 ```markdown
 - **Status**: [RESEARCHED]
-- **Research**: [research-001.md]({NNN}_{SLUG}/reports/research-001.md)
+- **Research**: [01_research-findings.md]({NNN}_{SLUG}/reports/01_research-findings.md)
 ```
 
 ### Plan Completion
 ```markdown
 - **Status**: [PLANNED]
-- **Plan**: [implementation-001.md]({NNN}_{SLUG}/plans/implementation-001.md)
+- **Plan**: [02_implementation-plan.md]({NNN}_{SLUG}/plans/02_implementation-plan.md)
 ```
 
 ### Implementation Completion
 ```markdown
 - **Status**: [COMPLETED]
 - **Completed**: 2026-01-08
-- **Summary**: [implementation-summary-20260108.md]({NNN}_{SLUG}/summaries/implementation-summary-20260108.md)
+- **Summary**: [03_execution-summary.md]({NNN}_{SLUG}/summaries/03_execution-summary.md)
 ```
 
 ## Directory Creation
@@ -274,8 +274,8 @@ naturally have 4 digits.
 ```bash
 # When writing an artifact (e.g., research report)
 padded_num=$(printf "%03d" "$task_num")
-mkdir -p "specs/OC_${padded_num}_${slug}/reports"
-write "specs/${padded_num}_${slug}/reports/research-001.md"
+mkdir -p "specs/${padded_num}_${slug}/reports"
+write "specs/${padded_num}_${slug}/reports/01_research-findings.md"
 ```
 
 ### Incorrect Pattern

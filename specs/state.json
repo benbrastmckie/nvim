@@ -5,11 +5,11 @@
     {
       "project_number": 198,
       "project_name": "review_recent_claude_commits_consistency",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-13T18:05:18Z",
-      "last_updated": "2026-03-13T18:13:34Z",
-      "session_id": "sess_1773425456_780cab",
+      "last_updated": "2026-03-13T18:24:09Z",
+      "session_id": "sess_1773425707_344f8d",
       "researched": "2026-03-13T18:09:13Z",
       "artifacts": [
         {
@@ -21,9 +21,18 @@
           "path": "specs/198_review_recent_claude_commits_consistency/plans/02_complete-naming-migration.md",
           "type": "plan",
           "summary": "4-phase plan covering rules, README, format specs, and remaining context files"
+        },
+        {
+          "path": "specs/198_review_recent_claude_commits_consistency/summaries/03_naming-migration-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with file modification list and verification results"
         }
       ],
-      "planned": "2026-03-13T18:13:34Z"
+      "planned": "2026-03-13T18:13:34Z",
+      "started": "2026-03-13T18:15:24Z",
+      "completed": "2026-03-13T18:24:09Z",
+      "completion_summary": "Migrated all artifact naming references from old convention (research-001.md, implementation-001.md) to new MM_{short-slug}.md format across 45+ files including rules, documentation, context patterns, workflows, and extension agents.",
+      "claudemd_suggestions": "Updated artifact naming examples in rules/state-management.md, rules/artifact-formats.md, rules/workflows.md, rules/git-workflow.md, README.md, docs/architecture/system-overview.md, and 20+ context/extension files"
     },
     {
       "project_number": 197,

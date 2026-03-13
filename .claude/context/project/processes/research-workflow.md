@@ -158,7 +158,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 
 **Process**:
 1. Create research report file:
-   - Path: `specs/{number}_{slug}/reports/research-001.md`
+   - Path: `specs/{NNN}_{slug}/reports/MM_{short-slug}.md`
    - Directory created lazily when writing
 2. Write report sections:
    - **Overview**: Research objective and scope
@@ -528,7 +528,7 @@ Error: {git_error}
 
 Directories created only when writing artifacts:
 - `specs/{task_number}_{slug}/` created when writing first artifact
-- `reports/` subdirectory created when writing research-001.md
+- `reports/` subdirectory created when writing first research artifact
 - `summaries/` NOT created (summary is metadata, not artifact)
 
 ### Task Extraction Optimization

@@ -561,7 +561,7 @@ Convert documents between formats.
 **Solutions**:
 1. Verify task is planned: Status should be `[PLANNED]`
 2. Check for missing plan: Run `/plan N` first
-3. Check plan file exists: `specs/{NNN}_{SLUG}/plans/implementation-001.md`
+3. Check plan file exists: `specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md`
 
 #### Stuck in Implementing Status
 

@@ -298,7 +298,7 @@ User: "/research 259"
           │
           ▼
 ┌───────────────────┐
-│ 7. Agent creates  │  specs/259_{slug}/reports/research-001.md
+│ 7. Agent creates  │  specs/259_{slug}/reports/01_research-findings.md
 │    artifacts      │
 └─────────┬─────────┘
           │

@@ -185,12 +185,12 @@ line=$(grep -n "^### $task_number\." specs/TODO.md | cut -d: -f1)
 
 Research artifact:
 ```markdown
-- **Research**: [research-001.md]({NNN}_{SLUG}/reports/research-001.md)
+- **Research**: [01_research-findings.md]({NNN}_{SLUG}/reports/01_research-findings.md)
 ```
 
 Plan artifact:
 ```markdown
-- **Plan**: [implementation-001.md]({NNN}_{SLUG}/plans/implementation-001.md)
+- **Plan**: [02_implementation-plan.md]({NNN}_{SLUG}/plans/02_implementation-plan.md)
 ```
 
 Summary artifact:

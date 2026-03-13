@@ -117,7 +117,7 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "implement", "nix-implementation-agent"]
   },
-  "plan_path": "specs/OC_412_onfigure_nginx_module/plans/implementation-001.md",
+  "plan_path": "specs/OC_412_onfigure_nginx_module/plans/02_nginx-module-plan.md",
   "metadata_file_path": "specs/OC_412_onfigure_nginx_module/.return-meta.json"
 }
 ```

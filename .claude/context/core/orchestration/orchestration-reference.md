@@ -69,7 +69,7 @@ DELEGATE:
 
 GATE OUT:
 - Status: implemented
-- Artifacts: research-001.md (2,450 bytes)
+- Artifacts: 01_research-findings.md (2,450 bytes)
 - Status update: [RESEARCHED]
 - Artifact link: added to TODO.md
 
@@ -293,7 +293,7 @@ For conflict resolution, git blame determines which file has more recent changes
 ### Error Logs
 
 ```
-[FAIL] Artifact not found: specs/197/reports/research-001.md
+[FAIL] Artifact not found: specs/197/reports/01_research-findings.md
 Error: Subagent claimed to create artifact but file does not exist
 Recommendation: Verify researcher writes artifacts to correct paths
 ```

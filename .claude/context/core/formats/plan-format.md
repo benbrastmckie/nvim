@@ -17,7 +17,7 @@
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: None
-- **Artifacts**: plans/implementation-001.md
+- **Artifacts**: plans/MM_{short-slug}.md
 - **Standards**:
   - .claude/context/core/standards/plan.md
   - .claude/context/core/standards/status-markers.md
@@ -39,7 +39,7 @@ Plans may include a `plan_metadata` object in state.json tracking plan character
   "plan_version": 1,
   "reports_integrated": [
     {
-      "path": "reports/research-001.md",
+      "path": "reports/01_{short-slug}.md",
       "integrated_in_plan_version": 1,
       "integrated_date": "2026-01-05"
     }
@@ -56,7 +56,7 @@ Plans may include a `plan_metadata` object in state.json tracking plan character
 - `reports_integrated`: Array tracking which research reports were integrated into which plan versions
 
 **reports_integrated Schema**:
-- `path`: Relative path to research report (e.g., "reports/research-001.md")
+- `path`: Relative path to research report (e.g., "reports/01_{short-slug}.md")
 - `integrated_in_plan_version`: Plan version that integrated this report
 - `integrated_date`: Date report was integrated (YYYY-MM-DD format)
 
@@ -100,7 +100,7 @@ Plans may include a `plan_metadata` object in state.json tracking plan character
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: None
-- **Artifacts**: plans/implementation-001.md (this file)
+- **Artifacts**: plans/MM_{short-slug}.md (this file)
 - **Standards**: plan.md; status-markers.md; artifact-management.md; tasks.md
 - **Type**: markdown
 
@@ -128,8 +128,8 @@ Plans may include a `plan_metadata` object in state.json tracking plan character
 - [ ] ...
 
 ## Artifacts & Outputs
-- plans/implementation-001.md
-- summaries/implementation-summary-YYYYMMDD.md
+- plans/MM_{short-slug}.md
+- summaries/NN_{short-slug}-summary.md
 
 ## Rollback/Contingency
 - ...

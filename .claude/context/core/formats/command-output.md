@@ -71,7 +71,7 @@ Next: /{command} {N}
 ```
 Research completed for Task #258
 
-Report: specs/258_modal_logic/reports/research-001.md
+Report: specs/258_modal_logic/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
@@ -239,7 +239,7 @@ The output already provides task/command context. Adding a conclusion like "Task
 ```
 Research completed for Task #258
 
-Report: specs/258_modal_logic_automation/reports/research-001.md
+Report: specs/258_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
@@ -249,7 +249,7 @@ Next: /plan 258
 ```
 Research completed for Task #258
 
-Report: specs/258_modal_logic_automation/reports/research-001.md
+Report: specs/258_modal_logic_automation/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
@@ -264,8 +264,8 @@ Task 258 research completed successfully.  ← REDUNDANT, DO NOT ADD
 Use labeled paths for console output:
 
 ```
-Report: specs/258_modal_logic/reports/research-001.md
-Plan: specs/258_modal_logic/plans/implementation-001.md
+Report: specs/258_modal_logic/reports/01_modal-logic-research.md
+Plan: specs/258_modal_logic/plans/02_modal-logic-plan.md
 Summary: specs/258_modal_logic/summaries/implementation-summary-20260312.md
 ```
 
@@ -274,8 +274,8 @@ Summary: specs/258_modal_logic/summaries/implementation-summary-20260312.md
 Use markdown links in files (reports, plans, summaries):
 
 ```markdown
-- [research-001.md](../reports/research-001.md)
-- [implementation-001.md](../plans/implementation-001.md)
+- [01_research-findings.md](../reports/01_research-findings.md)
+- [02_implementation-plan.md](../plans/02_implementation-plan.md)
 ```
 
 ## Error Display
@@ -306,7 +306,7 @@ Recommendation: Verify task number and retry
 ```
 Research completed for Task #258
 
-Report: specs/258_modal_logic/reports/research-001.md
+Report: specs/258_modal_logic/reports/01_modal-logic-research.md
 
 Status: [RESEARCHED]
 Next: /plan 258
@@ -316,7 +316,7 @@ Next: /plan 258
 ```
 Plan created for Task #258
 
-Plan: specs/258_modal_logic/plans/implementation-001.md
+Plan: specs/258_modal_logic/plans/02_modal-logic-plan.md
 
 Phases: 3
 Estimated effort: 4-6 hours

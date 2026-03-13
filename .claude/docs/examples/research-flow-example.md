@@ -45,7 +45,7 @@ User Input: /research 427
        |
        | Agent -> Skill -> Orchestrator -> User
        v
-Output: Research report created at specs/427_document.../reports/research-001.md
+Output: Research report created at specs/427_document.../reports/01_research-findings.md
 ```
 
 ---
@@ -225,7 +225,7 @@ formed 4 recommendations.
 
 ```bash
 mkdir -p specs/427_document_command_skill_subagent_framework/reports/
-write research-001.md
+write 01_research-findings.md
 ```
 
 **Agent Stage 6: Update Status**
@@ -251,7 +251,7 @@ jq '.active_projects |= map(
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/427_document_command_skill_subagent_framework/reports/research-001.md",
+      "path": "specs/427_document_command_skill_subagent_framework/reports/01_research-findings.md",
       "summary": "Research report with 8 findings and 4 recommendations"
     }
   ],
@@ -289,7 +289,7 @@ User sees:
 ```
 Research completed for task 427.
 
-Created: specs/427_document_command_skill_subagent_framework/reports/research-001.md
+Created: specs/427_document_command_skill_subagent_framework/reports/01_research-findings.md
 
 Next steps: Run /plan 427 to create implementation plan
 ```
@@ -347,7 +347,7 @@ specs/
 ├── TODO.md                    # Updated: task 427 [RESEARCHED] with link
 └── 427_document_command_skill_subagent_framework/
     └── reports/
-        └── research-001.md    # Created: research report
+        └── 01_research-findings.md    # Created: research report
 ```
 
 ---

@@ -53,7 +53,7 @@ project_name=$(echo "$task_data" | jq -r '.project_name')
 
 # Find plan file (use padded directory number)
 padded_num=$(printf "%03d" "$task_number")
-plan_path="specs/OC_${padded_num}_${project_name}/plans/implementation-001.md"
+plan_path="specs/OC_${padded_num}_${project_name}/plans/02_implementation-plan.md"
 if [ ! -f "$plan_path" ]; then
   return error "Plan not found: $plan_path"
 fi
@@ -119,7 +119,7 @@ EOF
     "description": "{description}",
     "language": "neovim"
   },
-  "plan_path": "specs/OC_{NNN}_{SLUG}/plans/implementation-001.md",
+  "plan_path": "specs/OC_{NNN}_{SLUG}/plans/02_implementation-plan.md",
   "metadata_file_path": "specs/OC_{NNN}_{SLUG}/.return-meta.json"
 }
 ```

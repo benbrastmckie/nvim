@@ -282,7 +282,7 @@ Research completed for task 412:
 - Used lean_leansearch to find Banach fixed point theorem in Mathlib
 - Loaded dynamical-systems.md context
 - Cross-referenced topology context for continuous systems
-- Created report at specs/OC_412_ormalize_fixed_points/reports/research-001.md
+- Created report at specs/OC_412_ormalize_fixed_points/reports/01_fixed-points-research.md
 - Metadata written for skill postflight
 ```
 

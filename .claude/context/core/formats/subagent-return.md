@@ -162,7 +162,7 @@ If validation fails:
   "artifacts": [
     {
       "type": "plan",
-      "path": "specs/244_context_refactor/plans/implementation-001.md",
+      "path": "specs/244_context_refactor/plans/02_context-refactor-plan.md",
       "summary": "3-phase implementation plan"
     }
   ],

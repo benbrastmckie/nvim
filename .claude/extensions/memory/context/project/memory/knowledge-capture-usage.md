@@ -137,7 +137,7 @@ The `/learn` command adds knowledge to the memory vault with four input modes.
 
    **Category**: [INSIGHT]
    **Topic**: meta/agents/subagents
-   **Source**: Task 146 - reports/research-001.md
+   **Source**: Task 146 - reports/01_research-findings.md
 
    Key findings on isolated context windows and metadata passing...
    ```

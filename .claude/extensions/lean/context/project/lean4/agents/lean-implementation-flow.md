@@ -25,7 +25,7 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "implement", "lean-implementation-agent"]
   },
-  "plan_path": "specs/123_theorem/plans/implementation-001.md",
+  "plan_path": "specs/123_theorem/plans/02_theorem-implementation.md",
   "metadata_file_path": "specs/123_theorem/.return-meta.json"
 }
 ```

@@ -300,7 +300,7 @@ Research completed for task 412:
 - Found existing modal semantics patterns in source files
 - Used lean_leansearch to find 5 relevant Mathlib theorems
 - Loaded kripke-semantics-overview.md and modal-proof-strategies.md context
-- Created report at specs/OC_412_rove_modal_completeness/reports/research-001.md
+- Created report at specs/OC_412_rove_modal_completeness/reports/01_modal-completeness-research.md
 - Metadata written for skill postflight
 ```
 

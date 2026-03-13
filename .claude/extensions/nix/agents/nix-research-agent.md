@@ -406,7 +406,7 @@ Research completed for task 412:
 - Documented available options from home-manager manual
 - Identified module dependencies (programs.git requires pkgs.git)
 - Found recommended configuration from NixOS Discourse
-- Created report at specs/OC_412_onfigure_home_manager_module/reports/research-001.md
+- Created report at specs/OC_412_onfigure_home_manager_module/reports/01_home-manager-research.md
 - Metadata written for skill postflight
 ```
 

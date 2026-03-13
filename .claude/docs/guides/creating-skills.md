@@ -413,7 +413,7 @@ Expected successful return:
   "artifacts": [
     {
       "type": "research",
-      "path": "specs/450_add_async_support/reports/research-001.md",
+      "path": "specs/450_add_async_support/reports/01_asyncio-patterns.md",
       "summary": "Python asyncio research report"
     }
   ],

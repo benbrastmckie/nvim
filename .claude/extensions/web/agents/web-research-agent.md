@@ -323,7 +323,7 @@ Research completed for task 412:
 - Documented Tailwind v4 styling approach for responsive layout
 - Identified accessibility requirements (WCAG 2.2 AA keyboard nav)
 - Found Core Web Vitals optimization strategies
-- Created report at specs/OC_412_dd_blog_section/reports/research-001.md
+- Created report at specs/OC_412_dd_blog_section/reports/01_blog-section-research.md
 - Metadata written for skill postflight
 ```
 

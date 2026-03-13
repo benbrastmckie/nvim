@@ -24,7 +24,7 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
   "artifacts": [
     {
       "type": "report|plan|summary|implementation",
-      "path": "specs/1_setup_lsp_config/reports/research-001.md",
+      "path": "specs/001_setup_lsp_config/reports/01_lsp-config-research.md",
       "summary": "Brief 1-sentence description of artifact"
     }
   ],
@@ -188,7 +188,7 @@ mkdir -p "specs/OC_${padded_num}_${task_slug}"
 Research completed for task 1:
 - Found 5 relevant lazy.nvim plugin patterns
 - Identified configuration strategy using modular approach
-- Created report at specs/1_setup_lsp_config/reports/research-001.md
+- Created report at specs/001_setup_lsp_config/reports/01_lsp-config-research.md
 ```
 
 ### Reading Metadata (Skill Postflight)
@@ -223,7 +223,7 @@ rm -f "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/1_setup_lsp_config/reports/research-001.md",
+      "path": "specs/001_setup_lsp_config/reports/01_lsp-config-research.md",
       "summary": "Research report with 5 plugin patterns and configuration strategy"
     }
   ],
@@ -387,7 +387,7 @@ rm -f "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
   "artifacts": [
     {
       "type": "plan",
-      "path": "specs/1_setup_lsp_config/plans/implementation-001.md",
+      "path": "specs/001_setup_lsp_config/plans/02_lsp-config-plan.md",
       "summary": "4-phase implementation plan for LSP configuration"
     }
   ],
@@ -437,7 +437,7 @@ Written after significant progress, before completion:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/1_setup_lsp_config/reports/research-001.md",
+      "path": "specs/001_setup_lsp_config/reports/01_lsp-config-research.md",
       "summary": "Partial research report (in progress)"
     }
   ],
