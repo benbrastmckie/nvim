@@ -18,12 +18,15 @@ next_project_number: 196
 
 ### OC_194. Standardize OpenCode task naming consistency
 - **Effort**: 2-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-13
 - **Research Completed**: 2026-03-13
+- **Planning Started**: 2026-03-13
+- **Planning Completed**: 2026-03-13
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [research-001.md](OC_194_standardize_opencode_task_naming_consistency/reports/research-001.md), [research-002.md](OC_194_standardize_opencode_task_naming_consistency/reports/research-002.md)
+- **Plan**: [implementation-001.md](OC_194_standardize_opencode_task_naming_consistency/plans/implementation-001.md)
 
 **Description**: When creating tasks in OpenCode, sometimes they use the OC_N for tasks in TODO.md and specs.json where project directories require padding as in OC_NNN_, but other times OpenCode uses N for tasks in TODO.md and specs.json where project directories are numbered NNN_. Improve consistency so that OC_ is always used for OpenCode tasks. Note: user still wants to be able to run `/research NNN` instead of only being able to run `/research OC_NNN` for an OpenCode created task.
 
