@@ -8,7 +8,7 @@ next_project_number: 202
 
 ### 201. Fix header display in /plan, /implement, and /revise commands to match working /research pattern
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: None
 
@@ -18,7 +18,9 @@ next_project_number: 202
 
 ### OC_200. Review .opencode/ and .claude/ agent systems for feature gaps and improvements
 - **Effort**: 4-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-13
+- **Summary**: [implementation-summary-20260313.md](OC_200_review_opencode_claude_agent_systems_feature_gaps/summaries/implementation-summary-20260313.md)
 - **Language**: meta
 - **Dependencies**: Task OC_199 (artifact naming conventions)
 - **Research Started**: 2026-03-13
