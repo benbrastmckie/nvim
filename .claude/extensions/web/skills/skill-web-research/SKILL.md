@@ -78,9 +78,9 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")
-mkdir -p "specs/${padded_num}_${project_name}"
+mkdir -p "specs/OC_${padded_num}_${project_name}"
 
-cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
+cat > "specs/OC_${padded_num}_${project_name}/.postflight-pending" << EOF
 {
   "session_id": "${session_id}",
   "skill": "skill-web-research",
@@ -109,7 +109,7 @@ EOF
     "language": "web"
   },
   "focus_prompt": "{optional focus}",
-  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
+  "metadata_file_path": "specs/OC_{NNN}_{SLUG}/.return-meta.json"
 }
 ```
 
@@ -140,7 +140,7 @@ The subagent will:
 ### Stage 6: Parse Subagent Return
 
 ```bash
-metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${project_name}/.return-meta.json"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     status=$(jq -r '.status' "$metadata_file")
@@ -208,9 +208,9 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ### Stage 10: Cleanup
 
 ```bash
-rm -f "specs/${padded_num}_${project_name}/.postflight-pending"
-rm -f "specs/${padded_num}_${project_name}/.postflight-loop-guard"
-rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
+rm -f "specs/OC_${padded_num}_${project_name}/.postflight-pending"
+rm -f "specs/OC_${padded_num}_${project_name}/.postflight-loop-guard"
+rm -f "specs/OC_${padded_num}_${project_name}/.return-meta.json"
 ```
 
 ---

@@ -65,10 +65,10 @@ Load these on-demand using @-references:
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
+   mkdir -p "specs/OC_{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -105,8 +105,8 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "plan_path": "specs/412_general_research/plans/implementation-001.md",
-  "metadata_file_path": "specs/412_general_research/.return-meta.json"
+  "plan_path": "specs/OC_412_general_research/plans/implementation-001.md",
+  "metadata_file_path": "specs/OC_412_general_research/.return-meta.json"
 }
 ```
 
@@ -182,7 +182,7 @@ After all phases complete:
 
 ### Stage 6: Create Implementation Summary
 
-Write to `specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
+Write to `specs/OC_{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
 
 ```markdown
 # Implementation Summary: Task #{N}
@@ -260,7 +260,7 @@ Write to `specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -274,7 +274,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
     },
     {
       "type": "summary",
-      "path": "specs/{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md",
+      "path": "specs/OC_{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md",
       "summary": "Implementation summary with verification results"
     }
   ],
@@ -308,7 +308,7 @@ Example return:
 General implementation completed for task 412:
 - All 3 phases executed, agent definition created with full specification
 - Files created: .claude/agents/general-research-agent.md
-- Created summary at specs/412_general_research/summaries/implementation-summary-20260118.md
+- Created summary at specs/OC_412_general_research/summaries/implementation-summary-20260118.md
 - Metadata written for skill postflight
 ```
 
@@ -447,7 +447,7 @@ If task or plan is invalid:
 General implementation completed for task 412:
 - All 3 phases executed, agent definition created with full specification
 - Created .claude/agents/general-research-agent.md with metadata, tools, execution flow, and error handling
-- Created summary at specs/412_general_research/summaries/implementation-summary-20260118.md
+- Created summary at specs/OC_412_general_research/summaries/implementation-summary-20260118.md
 - Metadata written for skill postflight
 ```
 
@@ -458,7 +458,7 @@ General implementation partially completed for task 350:
 - Phases 1-2 of 3 executed successfully
 - Phase 3 failed: npm build error (Type 'string' is not assignable to type 'number')
 - Files created but build does not pass
-- Partial summary at specs/350_feature/summaries/implementation-summary-20260118.md
+- Partial summary at specs/OC_350_feature/summaries/implementation-summary-20260118.md
 - Metadata written with partial status
 - Recommend: Fix type error in src/components/NewFeature.tsx:42, then resume
 ```

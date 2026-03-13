@@ -529,7 +529,7 @@ for position, task_idx in enumerate(sorted_indices):
 
 **TODO.md Entry Format**:
 ```markdown
-### {N}. {Title}
+### OC_{N}. {Title}
 - **Effort**: {estimate}
 - **Status**: [NOT STARTED]
 - **Language**: {language}
@@ -560,7 +560,7 @@ for position, task_idx in enumerate(sorted_indices):
         dep_str = "None"
 
     # Build entry
-    entry = f"""### {task_num}. {task['title']}
+    entry = f"""### OC_{task_num}. {task['title']}
 - **Effort**: {task['effort']}
 - **Status**: [NOT STARTED]
 - **Language**: {task['language']}
@@ -871,9 +871,9 @@ Created 3 task(s) for dependency visualization:
 
 | # | Task | Depends On | Path |
 |---|------|------------|------|
-| 37 | Add topological sorting | None | specs/037_add_topological_sorting/ |
-| 38 | Update TODO insertion | #37 | specs/038_update_todo_insertion/ |
-| 39 | Enhance visualization | #38 | specs/039_enhance_visualization/ |
+| 37 | Add topological sorting | None | specs/OC_037_add_topological_sorting/ |
+| 38 | Update TODO insertion | #37 | specs/OC_038_update_todo_insertion/ |
+| 39 | Enhance visualization | #38 | specs/OC_039_enhance_visualization/ |
 
 **Dependency Graph**:
 ```
@@ -910,10 +910,10 @@ Created 4 task(s) for feature implementation:
 
 | # | Task | Depends On | Path |
 |---|------|------------|------|
-| 37 | Core API | None | specs/037_core_api/ |
-| 38 | Parser module | #37 | specs/038_parser_module/ |
-| 39 | Validator module | #37 | specs/039_validator_module/ |
-| 40 | Integration layer | #38, #39 | specs/040_integration_layer/ |
+| 37 | Core API | None | specs/OC_037_core_api/ |
+| 38 | Parser module | #37 | specs/OC_038_parser_module/ |
+| 39 | Validator module | #37 | specs/OC_039_validator_module/ |
+| 40 | Integration layer | #38, #39 | specs/OC_040_integration_layer/ |
 
 **Dependency Graph**:
 ```
@@ -957,8 +957,8 @@ Created 2 task(s) for build system:
 
 | # | Task | Depends On | Path |
 |---|------|------------|------|
-| 37 | Add build scripts | #35 | specs/037_add_build_scripts/ |
-| 38 | Configure CI | #37 | specs/038_configure_ci/ |
+| 37 | Add build scripts | #35 | specs/OC_037_add_build_scripts/ |
+| 38 | Configure CI | #37 | specs/OC_038_configure_ci/ |
 
 **Dependency Graph**:
 ```

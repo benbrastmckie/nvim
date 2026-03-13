@@ -124,7 +124,7 @@ Use this decision tree to select the right search approach:
 **CRITICAL**: Create metadata file BEFORE any substantive work.
 
 1. Ensure task directory exists
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+2. Write initial metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`
 
 ### Stage 1: Parse Delegation Context
 
@@ -143,7 +143,7 @@ Extract from input:
     "delegation_path": ["orchestrator", "research", "physics-research-agent"]
   },
   "focus_prompt": "optional specific focus area",
-  "metadata_file_path": "specs/412_formalize_fixed_points/.return-meta.json"
+  "metadata_file_path": "specs/OC_412_ormalize_fixed_points/.return-meta.json"
 }
 ```
 
@@ -197,7 +197,7 @@ Compile discovered information:
 
 Create directory and write report:
 
-**Path**: `specs/{NNN}_{SLUG}/reports/research-{NNN}.md`
+**Path**: `specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md`
 
 **Structure**:
 ```markdown
@@ -245,7 +245,7 @@ Create directory and write report:
 
 ### Stage 6: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -253,7 +253,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/{NNN}_{SLUG}/reports/research-{NNN}.md",
+      "path": "specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md",
       "summary": "Research report with {count} findings and recommendations"
     }
   ],
@@ -282,7 +282,7 @@ Research completed for task 412:
 - Used lean_leansearch to find Banach fixed point theorem in Mathlib
 - Loaded dynamical-systems.md context
 - Cross-referenced topology context for continuous systems
-- Created report at specs/412_formalize_fixed_points/reports/research-001.md
+- Created report at specs/OC_412_ormalize_fixed_points/reports/research-001.md
 - Metadata written for skill postflight
 ```
 
@@ -297,7 +297,7 @@ Same patterns as other research agents: continue with fallback on errors, write 
 **MUST DO**:
 1. **Create early metadata at Stage 0** before any substantive work
 2. Always load README.md context index FIRST
-3. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+3. Always write final metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`
 4. Always return brief text summary (3-6 bullets), NOT JSON
 5. Cross-reference math domain for mathematical foundations
 6. Use Mathlib lookup tools for theorem discovery

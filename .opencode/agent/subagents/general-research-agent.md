@@ -107,10 +107,10 @@ Use this decision tree to select the right search approach:
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
+   mkdir -p "specs/OC_{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -148,7 +148,7 @@ Extract from input:
     "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
   "focus_prompt": "optional specific focus area",
-  "metadata_file_path": "specs/412_create_general_research_agent/.return-meta.json"
+  "metadata_file_path": "specs/OC_412_create_general_research_agent/.return-meta.json"
 }
 ```
 
@@ -226,7 +226,7 @@ Check if research reveals gaps in project context documentation:
 
 Create directory and write report:
 
-**Path**: `specs/{NNN}_{SLUG}/reports/research-{NNN}.md`
+**Path**: `specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md`
 
 **Structure** (from report-format.md):
 ```markdown
@@ -279,7 +279,7 @@ Create directory and write report:
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -287,7 +287,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/{NNN}_{SLUG}/reports/research-{NNN}.md",
+      "path": "specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md",
       "summary": "Research report with {count} findings and recommendations"
     }
   ],
@@ -315,7 +315,7 @@ Research completed for task 412:
 - Found 8 relevant patterns for agent implementation
 - Identified lazy context loading and skill-to-agent mapping patterns
 - Documented report-format.md standard for research reports
-- Created report at specs/412_create_general_research_agent/reports/research-001.md
+- Created report at specs/OC_412_create_general_research_agent/reports/research-001.md
 - Metadata written for skill postflight
 ```
 
@@ -408,7 +408,7 @@ Research completed for task 412:
 Research partially completed for task 412:
 - Found 4 codebase patterns
 - WebSearch failed due to network error
-- Partial report saved at specs/412_create_general_research_agent/reports/research-001.md
+- Partial report saved at specs/OC_412_create_general_research_agent/reports/research-001.md
 - Metadata written with partial status
 - Recommend: retry research or proceed with codebase-only findings
 ```

@@ -14,19 +14,26 @@
     {
       "project_number": 195,
       "project_name": "standardize_artifact_naming_convention_mm_padded_slug",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-13T17:23:59Z",
-      "last_updated": "2026-03-13T17:34:45Z",
+      "last_updated": "2026-03-13T17:42:53Z",
       "artifacts": [
         {
           "path": "specs/195_standardize_artifact_naming_convention_mm_padded_slug/reports/research-001.md",
           "type": "report",
           "summary": "Comprehensive research report identifying 53 files requiring changes for artifact naming standardization from research-NNN.md format to MM_short-slug.md format"
+        },
+        {
+          "path": "specs/OC_195_standardize_artifact_naming_convention_mm_padded_slug/plans/implementation-001.md",
+          "type": "plan",
+          "summary": "9-phase implementation plan for standardizing artifact naming convention to MM_padded_slug format across 53+ files"
         }
       ],
       "researching": "2026-03-13T17:31:59Z",
-      "researched": "2026-03-13T17:34:45Z"
+      "researched": "2026-03-13T17:34:45Z",
+      "planning": "2026-03-13T17:40:21Z",
+      "planned": "2026-03-13T17:42:53Z"
     },
     {
       "project_number": 194,
@@ -96,7 +103,7 @@
       "status": "researched",
       "language": "meta",
       "created": "2026-03-13T16:50:08Z",
-      "last_updated": "2026-03-13T17:19:46Z",
+      "last_updated": "2026-03-13T17:42:48Z",
       "artifacts": [
         {
           "path": "specs/192_bypass_opencode_permission_requests/reports/research-001.md",
@@ -117,10 +124,15 @@
           "path": "specs/192_bypass_opencode_permission_requests/plans/implementation-002.md",
           "type": "plan",
           "summary": "8-phase migration plan to move .claude/ from /tmp/ to specs/tmp/ (161 occurrences, 30+ files)"
+        },
+        {
+          "path": "specs/192_bypass_opencode_permission_requests/reports/research-003.md",
+          "type": "research",
+          "summary": "Comprehensive analysis of permission systems in Claude Code vs opencode, root cause analysis, and recommended fixes"
         }
       ],
-      "researching": "2026-03-13T17:16:25Z",
-      "researched": "2026-03-13T17:19:46Z",
+      "researching": "2026-03-13T17:35:35Z",
+      "researched": "2026-03-13T17:42:48Z",
       "planning": "2026-03-13T17:00:03Z",
       "planned": "2026-03-13T17:02:46Z"
     },

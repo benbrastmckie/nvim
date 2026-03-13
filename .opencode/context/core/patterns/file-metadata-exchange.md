@@ -25,7 +25,7 @@ task_slug=$(jq -r --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num) | .project_name' \
   specs/state.json)
 
-metadata_path="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_path="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 ```
 
 ## Writing Metadata (Agent Side)
@@ -36,10 +36,10 @@ For simple metadata without complex escaping:
 
 ```bash
 # Ensure directory exists
-mkdir -p "specs/${task_number}_${task_slug}"
+mkdir -p "specs/OC_${padded_num}_${task_slug}"
 
 # Write metadata using heredoc
-cat > "specs/${task_number}_${task_slug}/.return-meta.json" << 'METADATA_EOF'
+cat > "specs/OC_${padded_num}_${task_slug}/.return-meta.json" << 'METADATA_EOF'
 {
   "status": "researched",
   "artifacts": [
@@ -87,7 +87,7 @@ jq \
   --arg agent "lean-research-agent" \
   --argjson depth 1 \
   '. + {metadata: {session_id: $sid, agent_type: $agent, delegation_depth: $depth}}' \
-  /tmp/meta_with_artifacts.json > "specs/${task_number}_${task_slug}/.return-meta.json"
+  /tmp/meta_with_artifacts.json > "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 # Cleanup temp files
 rm -f /tmp/meta_base.json /tmp/meta_with_artifacts.json
@@ -108,7 +108,7 @@ Use the Write tool to create the metadata file:
 ### Pattern 1: Full Object Read
 
 ```bash
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 if [ -f "$metadata_file" ]; then
     # Read entire metadata
@@ -126,7 +126,7 @@ fi
 ### Pattern 2: Field Extraction
 
 ```bash
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 # Safe field extraction with defaults
 status=$(jq -r '.status // "failed"' "$metadata_file" 2>/dev/null)
@@ -145,7 +145,7 @@ artifacts=$(jq -c '.artifacts // []' "$metadata_file" 2>/dev/null)
 ### Pattern 3: Validation Before Read
 
 ```bash
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 # Check file exists and is valid JSON
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
@@ -169,7 +169,7 @@ fi
 
 ```bash
 # Remove metadata file after postflight completes
-rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
+rm -f "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 ```
 
 ### With Verification
@@ -177,7 +177,7 @@ rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
 ```bash
 # Verify postflight succeeded before cleanup
 if [ "$postflight_success" = "true" ]; then
-    rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
+    rm -f "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 else
     # Keep metadata for debugging
     echo "Warning: Keeping metadata file for debugging"
@@ -196,12 +196,12 @@ find specs -name ".return-meta.json" -delete
 ### Missing Metadata File
 
 ```bash
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 if [ ! -f "$metadata_file" ]; then
     # Agent may have failed before writing metadata
     # Check for partial artifacts
-    if [ -d "specs/${task_number}_${task_slug}/reports" ]; then
+    if [ -d "specs/OC_${padded_num}_${task_slug}/reports" ]; then
         echo "Warning: Metadata missing but reports directory exists"
         status="partial"
     else
@@ -241,7 +241,7 @@ done
 
 ```bash
 # Read metadata
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     # Extract metadata

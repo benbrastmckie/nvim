@@ -155,7 +155,7 @@ Subagent writes metadata to `.return-meta.json` and returns brief summary.
 \`\`\`bash
 rm -f specs/.postflight-pending
 rm -f specs/.postflight-loop-guard
-rm -f specs/${task_number}_*/. return-meta.json
+rm -f specs/OC_${padded_num}_*/.return-meta.json
 \`\`\`
 
 ### Stage 6: Return Brief Summary

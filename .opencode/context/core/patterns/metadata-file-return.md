@@ -96,10 +96,10 @@ Use contextual status values based on operation:
 
 ```bash
 # Ensure directory exists
-mkdir -p "specs/${task_number}_${task_slug}"
+mkdir -p "specs/OC_${padded_num}_${task_slug}"
 
 # Write metadata file
-cat > "specs/${task_number}_${task_slug}/.return-meta.json" << 'EOF'
+cat > "specs/OC_${padded_num}_${task_slug}/.return-meta.json" << 'EOF'
 {
   "status": "researched",
   "artifacts": [...],
@@ -120,7 +120,7 @@ Write tool:
 ## Skill Reading Pattern
 
 ```bash
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 
 if [ -f "$metadata_file" ]; then
     status=$(jq -r '.status' "$metadata_file")
@@ -135,7 +135,7 @@ fi
 Delete metadata file after successful postflight:
 
 ```bash
-rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
+rm -f "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 ```
 
 ---

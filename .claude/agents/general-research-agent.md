@@ -108,10 +108,10 @@ Use this decision tree to select the right search approach:
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
+   mkdir -p "specs/OC_{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -149,7 +149,7 @@ Extract from input:
     "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
   "focus_prompt": "optional specific focus area",
-  "metadata_file_path": "specs/412_create_general_research_agent/.return-meta.json"
+  "metadata_file_path": "specs/OC_412_create_general_research_agent/.return-meta.json"
 }
 ```
 
@@ -227,7 +227,7 @@ Check if research reveals gaps in project context documentation:
 
 Create directory and write report:
 
-**Path**: `specs/{NNN}_{SLUG}/reports/research-{NNN}.md`
+**Path**: `specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md`
 
 **Structure** (from report-format.md):
 ```markdown
@@ -280,7 +280,7 @@ Create directory and write report:
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -288,7 +288,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/{NNN}_{SLUG}/reports/research-{NNN}.md",
+      "path": "specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md",
       "summary": "Research report with {count} findings and recommendations"
     }
   ],
@@ -428,7 +428,7 @@ Research failed for task 999:
 
 **MUST DO**:
 1. **Create early metadata at Stage 0** before any substantive work
-2. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+2. Always write final metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`
 3. Always return brief text summary (3-6 bullets), NOT JSON
 4. Always include session_id from delegation context in metadata
 5. Always create report file before writing completed/partial status

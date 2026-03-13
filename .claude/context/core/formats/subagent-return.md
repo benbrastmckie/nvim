@@ -1,7 +1,7 @@
 # Subagent Return Format Standard
 
 **IMPORTANT - FILE-BASED METADATA EXCHANGE (v2)**:
-As of Task 600, agents write metadata to files instead of returning JSON to the console. This enables reliable structured data exchange without console pollution. The schema below is now written to `specs/{NNN}_{SLUG}/.return-meta.json`, NOT returned as console output.
+As of Task 600, agents write metadata to files instead of returning JSON to the console. This enables reliable structured data exchange without console pollution. The schema below is now written to `specs/OC_{NNN}_{SLUG}/.return-meta.json`, NOT returned as console output.
 
 See `.claude/context/core/formats/return-metadata-file.md` for the file-based protocol.
 
@@ -11,7 +11,7 @@ Do NOT use `"status": "completed"` - it triggers Claude to stop execution premat
 ## Overview
 
 **v2 Pattern (Current)**:
-1. Agents write structured metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+1. Agents write structured metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`
 2. Agents return brief text summaries (3-6 bullets) to console
 3. Skills read metadata file during postflight
 4. Skills handle status updates, artifact linking, and git commits

@@ -42,9 +42,9 @@ cat .claude/logs/subagent-postflight.log
 1. Ensure skill creates marker before subagent invocation:
 ```bash
 # Ensure task directory exists
-mkdir -p "specs/${task_number}_${project_name}"
+mkdir -p "specs/OC_${padded_num}_${project_name}"
 
-cat > "specs/${task_number}_${project_name}/.postflight-pending" << EOF
+cat > "specs/OC_${padded_num}_${project_name}/.postflight-pending" << EOF
 {
   "session_id": "${session_id}",
   "skill": "skill-name",
@@ -109,8 +109,8 @@ find specs -maxdepth 3 -name ".postflight-loop-guard" -delete
 **Permanent Fix**:
 1. Verify skill removes marker after postflight:
 ```bash
-rm -f "specs/${task_number}_${project_name}/.postflight-pending"
-rm -f "specs/${task_number}_${project_name}/.postflight-loop-guard"
+rm -f "specs/OC_${padded_num}_${project_name}/.postflight-pending"
+rm -f "specs/OC_${padded_num}_${project_name}/.postflight-loop-guard"
 ```
 
 2. Verify loop guard is working (max 3 continuations)
@@ -141,7 +141,7 @@ ls -la "specs/${task_num}_${task_slug}/.return-meta.json"
 
 **Fix**:
 1. Check agent instructions include:
-   - "Write metadata to `specs/{NNN}_{SLUG}/.return-meta.json`"
+   - "Write metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`"
    - "Return brief text summary, NOT JSON"
 
 2. Verify agent loaded correct context:

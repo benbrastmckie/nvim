@@ -215,7 +215,7 @@ Add this to agent execution flow after Stage 1 (Parse Delegation Context):
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
+   mkdir -p "specs/OC_{NNN}_{SLUG}"
    ```
 
 2. Write initial metadata:

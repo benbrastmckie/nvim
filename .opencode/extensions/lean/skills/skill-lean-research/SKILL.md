@@ -121,7 +121,7 @@ The subagent will:
 After subagent returns, read the metadata file:
 
 ```bash
-metadata_file="specs/${task_number}_${project_name}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${project_name}/.return-meta.json"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
     status=$(jq -r '.status' "$metadata_file")
@@ -181,8 +181,8 @@ Commit changes with session ID:
 
 ```bash
 git add \
-  "specs/${task_number}_${project_name}/reports/" \
-  "specs/${task_number}_${project_name}/.return-meta.json" \
+  "specs/OC_${padded_num}_${project_name}/reports/" \
+  "specs/OC_${padded_num}_${project_name}/.return-meta.json" \
   "specs/TODO.md" \
   "specs/state.json"
 git commit -m "task ${task_number}: complete research

@@ -79,7 +79,7 @@ Load these on-demand using @-references.
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
+   mkdir -p "specs/OC_{NNN}_{SLUG}"
    ```
 
 2. Write initial metadata with agent_type: "formal-research-agent"
@@ -101,7 +101,7 @@ Extract from input:
     "delegation_path": ["orchestrator", "research", "formal-research-agent"]
   },
   "focus_prompt": "optional specific focus area",
-  "metadata_file_path": "specs/412_prove_modal_completeness/.return-meta.json"
+  "metadata_file_path": "specs/OC_412_rove_modal_completeness/.return-meta.json"
 }
 ```
 
@@ -137,7 +137,7 @@ Execute research directly using the appropriate domain's context files:
 
 Create directory and write report:
 
-**Path**: `specs/{NNN}_{SLUG}/reports/research-{NNN}.md`
+**Path**: `specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md`
 
 **Structure**:
 ```markdown
@@ -177,7 +177,7 @@ Create directory and write report:
 
 ### Stage 5: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -185,7 +185,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "report",
-      "path": "specs/{NNN}_{SLUG}/reports/research-{NNN}.md",
+      "path": "specs/OC_{NNN}_{SLUG}/reports/research-{NNN}.md",
       "summary": "Research report covering {domains} with {count} findings"
     }
   ],
@@ -215,7 +215,7 @@ Research completed for task 412:
 - Found Kripke frame patterns using lattice theory foundations
 - Loaded context from both logic and math domains
 - Used Mathlib lookup for complete lattice theorems
-- Created report at specs/412_prove_modal_completeness/reports/research-001.md
+- Created report at specs/OC_412_rove_modal_completeness/reports/research-001.md
 - Metadata written for skill postflight
 ```
 
@@ -230,7 +230,7 @@ Same patterns as other research agents: continue with fallback on errors, write 
 **MUST DO**:
 1. **Create early metadata at Stage 0** before any substantive work
 2. Analyze task for domain routing
-3. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+3. Always write final metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`
 4. Always return brief text summary (3-6 bullets), NOT JSON
 5. Use Mathlib lookup tools for theorem discovery
 6. Cross-reference domains when task spans multiple areas

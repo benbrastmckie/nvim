@@ -72,10 +72,10 @@ See `.claude/context/core/patterns/context-discovery.md` for additional query pa
 
 1. Ensure task directory exists:
    ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
+   mkdir -p "specs/OC_{NNN}_{SLUG}"
    ```
 
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
+2. Write initial metadata to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
    ```json
    {
      "status": "in_progress",
@@ -112,8 +112,8 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "plan", "skill-planner"]
   },
-  "research_path": "specs/414_slug/reports/research-001.md",
-  "metadata_file_path": "specs/414_slug/.return-meta.json"
+  "research_path": "specs/OC_414_slug/reports/research-001.md",
+  "metadata_file_path": "specs/OC_414_slug/.return-meta.json"
 }
 ```
 
@@ -183,7 +183,7 @@ Apply task-breakdown.md guidelines:
 
 Create directory if needed:
 ```
-mkdir -p specs/{NNN}_{SLUG}/plans/
+mkdir -p specs/OC_{NNN}_{SLUG}/plans/
 ```
 
 Find next plan version (implementation-001.md, implementation-002.md, etc.)
@@ -290,7 +290,7 @@ grep -q "^\- \*\*Status\*\*:" plan_file || echo "ERROR: Missing Status field"
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/OC_{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
 {
@@ -298,7 +298,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
   "artifacts": [
     {
       "type": "plan",
-      "path": "specs/{NNN}_{SLUG}/plans/implementation-{NNN}.md",
+      "path": "specs/OC_{NNN}_{SLUG}/plans/implementation-{NNN}.md",
       "summary": "{phase_count}-phase implementation plan for {task_name}"
     }
   ],
@@ -327,7 +327,7 @@ Plan created for task 414:
 - 5 phases defined, 2.5 hours estimated
 - Covers: agent structure, execution flow, error handling, examples, verification
 - Integrated research findings on subagent patterns
-- Created plan at specs/414_create_planner_agent/plans/implementation-001.md
+- Created plan at specs/OC_414_create_planner_agent/plans/implementation-001.md
 - Metadata written for skill postflight
 ```
 
@@ -387,7 +387,7 @@ Partial plan created for task 414:
 - 3 of 5 phases defined before timeout
 - Phases completed: agent structure, execution flow, error handling
 - Phases pending: examples, verification
-- Partial plan saved at specs/414_create_planner_agent/plans/implementation-001.md
+- Partial plan saved at specs/OC_414_create_planner_agent/plans/implementation-001.md
 - Metadata written with partial status
 ```
 

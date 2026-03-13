@@ -344,12 +344,12 @@ Use Task tool with subagent_type: lean-research-agent
 
 **Wrong**: Creating directory at task creation time
 ```bash
-mkdir -p specs/{NNN}_{SLUG}/  # at task creation
+mkdir -p specs/OC_{NNN}_{SLUG}/  # at task creation
 ```
 
 **Right**: Create lazily when writing first artifact
 ```bash
-mkdir -p specs/{NNN}_{SLUG}/reports/  # when agent writes report
+mkdir -p specs/OC_{NNN}_{SLUG}/reports/  # when agent writes report
 ```
 
 ---

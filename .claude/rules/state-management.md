@@ -274,7 +274,7 @@ naturally have 4 digits.
 ```bash
 # When writing an artifact (e.g., research report)
 padded_num=$(printf "%03d" "$task_num")
-mkdir -p "specs/${padded_num}_${slug}/reports"
+mkdir -p "specs/OC_${padded_num}_${slug}/reports"
 write "specs/${padded_num}_${slug}/reports/research-001.md"
 ```
 

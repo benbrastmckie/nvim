@@ -170,7 +170,7 @@ At the end of execution, agents MUST:
 
 1. Create the metadata file:
 ```bash
-mkdir -p "specs/${task_number}_${task_slug}"
+mkdir -p "specs/OC_${padded_num}_${task_slug}"
 ```
 
 2. Write the JSON:
@@ -197,7 +197,7 @@ Skills read the metadata file during postflight:
 
 ```bash
 # Read metadata file
-metadata_file="specs/${task_number}_${task_slug}/.return-meta.json"
+metadata_file="specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 if [ -f "$metadata_file" ]; then
     status=$(jq -r '.status' "$metadata_file")
     artifact_path=$(jq -r '.artifacts[0].path' "$metadata_file")
@@ -210,7 +210,7 @@ fi
 After postflight, delete the metadata file:
 
 ```bash
-rm -f "specs/${task_number}_${task_slug}/.return-meta.json"
+rm -f "specs/OC_${padded_num}_${task_slug}/.return-meta.json"
 ```
 
 ## Examples
@@ -485,7 +485,7 @@ This file-based format complements `subagent-return.md`:
 | Aspect | subagent-return.md | return-metadata-file.md |
 |--------|-------------------|------------------------|
 | Purpose | Console JSON return | File-based metadata |
-| Location | Agent's stdout | `specs/{NNN}_{SLUG}/.return-meta.json` |
+| Location | Agent's stdout | `specs/OC_{NNN}_{SLUG}/.return-meta.json` |
 | Consumer | Skill validation logic | Skill postflight operations |
 | When | Before file-based pattern | With file-based pattern |
 | Cneovimup | N/A | Deleted after postflight |

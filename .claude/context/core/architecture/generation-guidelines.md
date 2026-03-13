@@ -428,7 +428,7 @@ When generating components, ensure integration with:
 
 ### State Management
 - Read task data from `specs/state.json`
-- Task artifacts go in `specs/{NNN}_{SLUG}/`
+- Task artifacts go in `specs/OC_{NNN}_{SLUG}/`
 - Use skill-status-sync for status updates
 
 ### Git Workflow

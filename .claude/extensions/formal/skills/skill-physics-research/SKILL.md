@@ -65,7 +65,7 @@ Prepare delegation context for the subagent:
     "language": "physics"
   },
   "focus_prompt": "{optional focus}",
-  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
+  "metadata_file_path": "specs/OC_{NNN}_{SLUG}/.return-meta.json"
 }
 ```
 
