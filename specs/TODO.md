@@ -8,12 +8,15 @@ next_project_number: 199
 
 ### 198. Review recent .claude/ commits for consistency
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research Started**: 2026-03-13
 - **Research Completed**: 2026-03-13
+- **Planning Started**: 2026-03-13
+- **Planning Completed**: 2026-03-13
 - **Research**: [01_claude-commit-review.md](198_review_recent_claude_commits_consistency/reports/01_claude-commit-review.md)
+- **Plan**: [02_complete-naming-migration.md](198_review_recent_claude_commits_consistency/plans/02_complete-naming-migration.md)
 
 **Description**: Review the recent commits which make changes to .claude/ to ensure these are correct and consistent, making any natural improvements.
 
@@ -21,11 +24,12 @@ next_project_number: 199
 
 ### OC_197. Fix workflow command task number header display
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Language**: meta
 - **Dependencies**: None
 - **Research Started**: 2026-03-13
 - **Research Completed**: 2026-03-13
+- **Planning Started**: 2026-03-13
 - **Research**: [research-001.md](OC_197_fix_workflow_command_task_number_header_display/reports/research-001.md)
 
 **Description**: When running workflow commands in opencode that have task numbers, the header does not always update to show the actual task number. When it does update, it shows generic placeholder 'OC_NNN' instead of the actual task number like 'OC_193'. This appears to be a display/UI bug in the workflow command output formatting. Investigate and fix the task number substitution in workflow command headers.
@@ -34,11 +38,12 @@ next_project_number: 199
 
 ### OC_196. Port wezterm tab integration features from .claude/ to .opencode/
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Language**: meta
 - **Dependencies**: None
 - **Research Started**: 2026-03-13
 - **Research Completed**: 2026-03-13
+- **Planning Started**: 2026-03-13
 - **Research**: [research-001.md](OC_196_port_wezterm_tab_integration_from_claude_to_opencode/reports/research-001.md)
 
 **Description**: Port wezterm tab integration features from the .claude/ agent system to .opencode/. The .claude/ system currently: (1) updates wezterm tabs to show the task number immediately upon running a task-number-based command, and (2) announces the tab number when Claude Code finishes, needs input, or asks a question. These features need to be adapted for opencode-specific details while maintaining the same functionality. This involves examining how .claude/ implements these features (likely through OSC escape sequences or wezterm CLI commands) and creating equivalent functionality in .opencode/.

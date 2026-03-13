@@ -5,27 +5,33 @@
     {
       "project_number": 198,
       "project_name": "review_recent_claude_commits_consistency",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-13T18:05:18Z",
-      "last_updated": "2026-03-13T18:09:13Z",
-      "session_id": "sess_1773425150_78541b",
+      "last_updated": "2026-03-13T18:13:34Z",
+      "session_id": "sess_1773425456_780cab",
       "researched": "2026-03-13T18:09:13Z",
       "artifacts": [
         {
           "path": "specs/198_review_recent_claude_commits_consistency/reports/01_claude-commit-review.md",
           "type": "research",
           "summary": "Analysis of commits for tasks 192, 195, 197 with findings on incomplete artifact naming migration"
+        },
+        {
+          "path": "specs/198_review_recent_claude_commits_consistency/plans/02_complete-naming-migration.md",
+          "type": "plan",
+          "summary": "4-phase plan covering rules, README, format specs, and remaining context files"
         }
-      ]
+      ],
+      "planned": "2026-03-13T18:13:34Z"
     },
     {
       "project_number": 197,
       "project_name": "fix_workflow_command_task_number_header_display",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "created": "2026-03-13T17:59:57Z",
-      "last_updated": "2026-03-13T18:05:23Z",
+      "last_updated": "2026-03-13T18:12:53Z",
       "artifacts": [
         {
           "path": "specs/OC_197_fix_workflow_command_task_number_header_display/reports/research-001.md",
@@ -34,15 +40,16 @@
         }
       ],
       "researching": "2026-03-13T18:02:28Z",
-      "researched": "2026-03-13T18:05:23Z"
+      "researched": "2026-03-13T18:05:23Z",
+      "planning": "2026-03-13T18:12:53Z"
     },
     {
       "project_number": 196,
       "project_name": "port_wezterm_tab_integration_from_claude_to_opencode",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "created": "2026-03-13T17:31:45Z",
-      "last_updated": "2026-03-13T18:10:13Z",
+      "last_updated": "2026-03-13T18:12:50Z",
       "artifacts": [
         {
           "path": "specs/OC_196_port_wezterm_tab_integration_from_claude_to_opencode/reports/research-001.md",
@@ -51,7 +58,8 @@
         }
       ],
       "researching": "2026-03-13T18:06:03Z",
-      "researched": "2026-03-13T18:10:13Z"
+      "researched": "2026-03-13T18:10:13Z",
+      "planning": "2026-03-13T18:12:50Z"
     },
     {
       "project_number": 195,
