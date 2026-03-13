@@ -5,11 +5,19 @@
     {
       "project_number": 198,
       "project_name": "review_recent_claude_commits_consistency",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-13T18:05:18Z",
-      "last_updated": "2026-03-13T18:06:04Z",
-      "session_id": "sess_1773425150_78541b"
+      "last_updated": "2026-03-13T18:09:13Z",
+      "session_id": "sess_1773425150_78541b",
+      "researched": "2026-03-13T18:09:13Z",
+      "artifacts": [
+        {
+          "path": "specs/198_review_recent_claude_commits_consistency/reports/01_claude-commit-review.md",
+          "type": "research",
+          "summary": "Analysis of commits for tasks 192, 195, 197 with findings on incomplete artifact naming migration"
+        }
+      ]
     },
     {
       "project_number": 197,
