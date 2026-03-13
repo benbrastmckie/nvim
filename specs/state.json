@@ -5,18 +5,20 @@
     {
       "project_number": 203,
       "project_name": "remove_oc_prefix_from_claude_task_directories",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-13T19:51:01Z",
-      "last_updated": "2026-03-13T19:51:01Z"
+      "last_updated": "2026-03-13T19:54:36Z",
+      "session_id": "sess_1773431656_f570e5",
+      "researching": "2026-03-13T19:54:36Z"
     },
     {
       "project_number": 202,
       "project_name": "debounce_tts_session_idle",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-13T19:34:58Z",
-      "last_updated": "2026-03-13T19:51:12Z",
+      "last_updated": "2026-03-13T19:55:25Z",
       "session_id": "sess_1773431439_5ea40e",
       "researched": "2026-03-13T19:40:09Z",
       "artifacts": [
@@ -29,10 +31,18 @@
           "path": "specs/OC_202_debounce_tts_session_idle/plans/02_tts-debounce-plan.md",
           "type": "plan",
           "summary": "3-phase implementation plan for trailing-edge TTS debounce"
+        },
+        {
+          "path": "specs/OC_202_debounce_tts_session_idle/summaries/03_tts-debounce-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
       "planned": "2026-03-13T19:49:22Z",
-      "started": "2026-03-13T19:51:12Z"
+      "started": "2026-03-13T19:51:12Z",
+      "completed": "2026-03-13T19:55:25Z",
+      "completion_summary": "Replaced leading-edge debounce with trailing-edge debounce in opencode wezterm-hooks.js plugin. TTS now waits 1.5s after session.idle before firing, cancels if session becomes busy, and fires immediately for permission/question prompts.",
+      "claudemd_suggestions": "none"
     },
     {
       "project_number": 201,

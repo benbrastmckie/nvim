@@ -8,8 +8,9 @@ next_project_number: 204
 
 ### 203. Remove OC_ prefix from .claude/ task directory naming
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
+- **Research Started**: 2026-03-13
 
 **Description**: Remove OC_ prefix from .claude/ system task directory creation so that only .opencode/-created tasks use the OC_ prefix. Task 194 incorrectly standardized OC_ across both systems. Fix: update .claude/ skills (skill-researcher, skill-planner, skill-implementer, skill-todo) and any related agents/commands to use plain `{NNN}_{SLUG}` directories. Keep OC_ in .opencode/ skills unchanged. Also add documentation clarifying the distinction to prevent future confusion (e.g., CLAUDE.md, AGENTS.md, or a dedicated conventions doc).
 
@@ -17,7 +18,8 @@ next_project_number: 204
 
 ### 202. Implement trailing-edge debounce for TTS session.idle notifications
 - **Effort**: 1-2 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-13
 - **Language**: meta
 - **Dependencies**: None
 - **Research Started**: 2026-03-13
@@ -27,6 +29,7 @@ next_project_number: 204
 - **Implementation Started**: 2026-03-13
 - **Research**: [01_tts-debounce-research.md](OC_202_debounce_tts_session_idle/reports/01_tts-debounce-research.md)
 - **Plan**: [02_tts-debounce-plan.md](OC_202_debounce_tts_session_idle/plans/02_tts-debounce-plan.md)
+- **Summary**: [03_tts-debounce-summary.md](OC_202_debounce_tts_session_idle/summaries/03_tts-debounce-summary.md)
 
 **Description**: Implement trailing-edge delay for TTS notifications to prevent premature announcements during sub-agent operations. The problem is session.idle fires for sub-agents mid-operation (e.g., each agent step briefly goes idle before the next starts). The fix is a trailing-edge delay: when session.idle fires, wait 1.5 seconds and cancel if session.status:busy fires again before the timer expires.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #202
 
 - **Task**: 202 - Implement trailing-edge debounce for TTS session.idle notifications
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETE]
 - **Effort**: 1-2 hours
 - **Dependencies**: None
 - **Research Inputs**: [01_tts-debounce-research.md](../reports/01_tts-debounce-research.md)
@@ -45,7 +45,7 @@ Key findings from research report:
 
 ## Implementation Phases
 
-### Phase 1: Implement Trailing-Edge Debounce [NOT STARTED]
+### Phase 1: Implement Trailing-Edge Debounce [COMPLETED]
 
 **Goal**: Replace leading-edge debounce with trailing-edge debounce in wezterm-hooks.js
 
@@ -69,7 +69,7 @@ Key findings from research report:
 
 ---
 
-### Phase 2: Update Documentation [NOT STARTED]
+### Phase 2: Update Documentation [COMPLETED]
 
 **Goal**: Document the new trailing-edge debounce behavior
 
@@ -91,7 +91,7 @@ Key findings from research report:
 
 ---
 
-### Phase 3: Test and Verify [NOT STARTED]
+### Phase 3: Test and Verify [COMPLETED]
 
 **Goal**: Verify the implementation works correctly in real usage
 
