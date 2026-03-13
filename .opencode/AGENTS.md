@@ -94,6 +94,7 @@ All commands use checkpoint-based execution: GATE IN -> DELEGATE -> GATE OUT -> 
 | skill-git-workflow | (direct execution) | Scoped git commits |
 | skill-fix-it | (direct execution) | Scan for FIX:/NOTE:/TODO:/QUESTION: tags with topic grouping |
 | skill-todo | (direct execution) | Archive completed tasks |
+| skill-tag | (user-only) | Semantic version tagging for deployment |
 | skill-orchestrator | (direct execution) | Route commands to workflows |
 
 **Extension Skills**: When extensions are loaded via `<leader>ao`, additional skill-to-agent mappings are available.

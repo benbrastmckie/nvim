@@ -175,7 +175,7 @@ This plan assumes task 199 will complete the naming convention work, allowing th
 
 ---
 
-### Phase 4: Port Missing Agent Types to .claude/ [IN PROGRESS]
+### Phase 4: Port Missing Agent Types to .claude/ [COMPLETED]
 
 **Goal**: Add atomic-task-numberer, git-workflow-manager, and task-executor agents to .claude/
 
@@ -203,7 +203,7 @@ This plan assumes task 199 will complete the naming convention work, allowing th
 
 ---
 
-### Phase 5: Documentation Improvements [NOT STARTED]
+### Phase 5: Documentation Improvements [IN PROGRESS]
 
 **Goal**: Create missing documentation and improve existing documentation
 

@@ -1,15 +1,20 @@
-# TTS/STT Integration for Claude Code and Neovim
+# TTS/STT Integration for OpenCode and Neovim
 
-This document describes the integration of text-to-speech (TTS) notifications for Claude Code and speech-to-text (STT) input for Neovim.
+This document describes the integration of text-to-speech (TTS) notifications for OpenCode and speech-to-text (STT) input for Neovim.
 
 ## Overview
 
 The integration provides two independent features:
 
-1. **TTS Notifications**: Claude Code announces events via Piper TTS with WezTerm tab identification
+1. **TTS Notifications**: OpenCode announces events via Piper TTS with WezTerm tab identification
 2. **STT Input**: Neovim voice recording and transcription via Vosk for inserting text at cursor
 
 Both features work completely offline with no cloud APIs required.
+
+> **Architecture note**: OpenCode uses a JavaScript plugin system (`@opencode-ai/plugin`),
+> not Claude Code's shell hook system. The `.opencode/settings.json` `hooks:` section is
+> Claude Code format and is ignored by opencode. The plugin at
+> `.opencode/plugins/wezterm-hooks.js` is the opencode equivalent.
 
 ## Prerequisites
 
