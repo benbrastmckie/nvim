@@ -21,9 +21,17 @@
 export const WeztermHooksPlugin = async ({ $, directory }) => {
   const hookDir = `${directory}/.opencode/hooks`;
 
+  // Debounce TTS: multiple session.idle events fire when interrupting
+  // (one per sub-agent). Only fire TTS once per burst.
+  let lastTtsMs = 0;
+  const TTS_DEBOUNCE_MS = 3000;
+
   return {
     event: async ({ event }) => {
       if (event.type === "session.idle") {
+        const now = Date.now();
+        if (now - lastTtsMs < TTS_DEBOUNCE_MS) return;
+        lastTtsMs = now;
         // Opencode finished responding - TTS + wezterm amber tab
         await $`bash ${hookDir}/tts-notify.sh`.cwd(directory).quiet().nothrow();
         await $`bash ${hookDir}/wezterm-notify.sh`.cwd(directory).quiet().nothrow();
