@@ -59,10 +59,10 @@ The skill automatically creates/updates `specs/CHANGE_LOG.md` with entries for e
 **Task OC_142: implement_knowledge_capture_system**
 - Status: completed
 - Type: meta
-- Summary: Implemented comprehensive knowledge capture system with /fix command, /remember task mode, and enhanced /todo features
+- Summary: Implemented comprehensive knowledge capture system with /fix-it command, /remember task mode, and enhanced /todo features
 
 Artifacts:
-- .opencode/commands/fix.md - Renamed from learn.md
+- .opencode/commands/fix-it.md - Tag scanning and task creation
 - .opencode/skills/skill-todo/SKILL.md - New skill definition
 - specs/CHANGE_LOG.md - New changelog file
 ```

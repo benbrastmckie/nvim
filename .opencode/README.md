@@ -75,7 +75,7 @@ All commands follow the same lifecycle:
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync metrics |
 | `/errors` | `/errors` | Analyze error patterns, create fix plans |
 | `/meta` | `/meta` | System builder for .opencode/ changes |
-| `/fix` | `/fix [PATH...]` | Scan for FIX:/NOTE:/TODO: tags |
+| `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean orphaned processes and files |
 | `/convert` | `/convert FILE --to FORMAT` | Convert document formats |
 
@@ -203,7 +203,7 @@ TODO.md and state.json must stay synchronized. Update state.json first (machine 
 | skill-status-sync | (direct execution) | Atomic status updates |
 | skill-refresh | (direct execution) | Process and file cleanup |
 | skill-git-workflow | (direct execution) | Scoped git commits |
-| skill-fix | (direct execution) | Scan for FIX:/NOTE:/TODO: tags |
+| skill-fix-it | (direct execution) | Scan for FIX:/NOTE:/TODO:/QUESTION: tags with topic grouping |
 | skill-todo | (direct execution) | Archive completed tasks |
 | skill-orchestrator | (direct execution) | Route commands to workflows |
 

@@ -4,24 +4,25 @@ Example workflows for the knowledge capture system commands.
 
 ---
 
-## /fix Command Examples
+## /fix-it Command Examples
 
-The `/fix` command scans files for embedded tags (FIX:, NOTE:, TODO:) and creates structured tasks.
+The `/fix-it` command scans files for embedded tags (FIX:, NOTE:, TODO:, QUESTION:) and creates structured tasks.
 
 ### Example 1: Scan Entire Project
 
 ```bash
-/fix
+/fix-it
 ```
 
 **Workflow:**
-1. Scans entire project for FIX:/NOTE:/TODO: tags
+1. Scans entire project for FIX:/NOTE:/TODO:/QUESTION: tags
 2. Displays summary:
    ```
    Tags Found:
    - FIX: 3 tags
    - NOTE: 5 tags
    - TODO: 12 tags
+   - QUESTION: 2 tags
    ```
 3. Presents interactive selection with checkboxes
 4. User selects which tags to convert to tasks
@@ -30,7 +31,7 @@ The `/fix` command scans files for embedded tags (FIX:, NOTE:, TODO:) and create
 ### Example 2: Scan Specific Directory
 
 ```bash
-/fix src/core/
+/fix-it src/core/
 ```
 
 **Use Case:** Focus on a specific module or component without scanning the entire codebase.
@@ -43,7 +44,7 @@ The `/fix` command scans files for embedded tags (FIX:, NOTE:, TODO:) and create
 ### Example 3: Scan Multiple Paths
 
 ```bash
-/fix src/core.lua src/utils/ config/
+/fix-it src/core.lua src/utils/ config/
 ```
 
 **Use Case:** Review multiple specific files and directories in one operation.
@@ -185,7 +186,7 @@ Complete workflow demonstrating all features working together:
 ### Step 1: Scan for Issues
 
 ```bash
-/fix src/
+/fix-it src/
 ```
 
 Finds 3 FIXME tags in source code, creates tasks.
@@ -303,7 +304,7 @@ Processing lsp.lua...
 
 The integrated knowledge capture system provides:
 
-- **`/fix`** - Capture issues and TODOs from code
+- **`/fix-it`** - Capture issues, TODOs, and research questions from code
 - **`/learn`** - Add knowledge from text, files, directories, or task artifacts
   - Content mapping for intelligent segmentation
   - MCP/grep search for deduplication

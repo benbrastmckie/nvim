@@ -5,10 +5,10 @@
     {
       "project_number": 200,
       "project_name": "review_opencode_claude_agent_systems_feature_gaps",
-      "status": "revised",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-13T18:39:43Z",
-      "last_updated": "2026-03-13T19:11:26Z",
+      "last_updated": "2026-03-13T19:13:47Z",
       "artifacts": [
         {
           "path": "specs/OC_200_review_opencode_claude_agent_systems_feature_gaps/reports/research-001.md",
@@ -30,16 +30,17 @@
       "researched": "2026-03-13T18:43:26Z",
       "planning": "2026-03-13T18:45:37Z",
       "planned": "2026-03-13T18:47:15Z",
-      "revised": "2026-03-13T19:11:26Z"
+      "revised": "2026-03-13T19:11:26Z",
+      "implementing": "2026-03-13T19:13:47Z"
     },
     {
       "project_number": 199,
       "project_name": "complete_summary_naming_migration_fix_validation_globs",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "created": "2026-03-13T18:37:34Z",
-      "last_updated": "2026-03-13T18:46:05Z",
-      "session_id": "sess_1773427409_7182dc",
+      "last_updated": "2026-03-13T19:12:35Z",
+      "session_id": "sess_1773429128_abca27",
       "researched": "2026-03-13T18:41:34Z",
       "artifacts": [
         {
@@ -53,7 +54,8 @@
           "summary": "7-phase implementation plan for completing artifact naming convention migration"
         }
       ],
-      "planned": "2026-03-13T18:46:05Z"
+      "planned": "2026-03-13T18:46:05Z",
+      "started": "2026-03-13T19:12:35Z"
     },
     {
       "project_number": 198,

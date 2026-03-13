@@ -61,7 +61,7 @@
 
 **Check QUICK-START.md**:
 - [ ] Verify all listed commands exist in `.opencode/commands/`
-- [ ] Valid commands: `/task`, `/research`, `/plan`, `/implement`, `/todo`, `/lake`, `/lean`, `/meta`, `/convert`, `/errors`, `/fix`, `/refresh`, `/review`, `/revise`
+- [ ] Valid commands: `/task`, `/research`, `/plan`, `/implement`, `/todo`, `/lake`, `/lean`, `/meta`, `/convert`, `/errors`, `/fix-it`, `/refresh`, `/review`, `/revise`
 - [ ] If invalid commands found: Remove or add deprecation notice
 
 **Check user guides**:

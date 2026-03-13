@@ -75,7 +75,7 @@ All commands use checkpoint-based execution: GATE IN -> DELEGATE -> GATE OUT -> 
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync metrics |
 | `/errors` | `/errors` | Analyze error patterns, create fix plans |
 | `/meta` | `/meta` | System builder for .opencode/ changes |
-| `/fix` | `/fix [PATH...]` | Scan for FIX:/NOTE:/TODO: tags |
+| `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean orphaned processes and files |
 | `/convert` | `/convert FILE --to FORMAT` | Convert document formats |
 
@@ -92,7 +92,7 @@ All commands use checkpoint-based execution: GATE IN -> DELEGATE -> GATE OUT -> 
 | skill-status-sync | (direct execution) | Atomic status updates |
 | skill-refresh | (direct execution) | Process and file cleanup |
 | skill-git-workflow | (direct execution) | Scoped git commits |
-| skill-fix | (direct execution) | Scan for FIX:/NOTE:/TODO: tags |
+| skill-fix-it | (direct execution) | Scan for FIX:/NOTE:/TODO:/QUESTION: tags with topic grouping |
 | skill-todo | (direct execution) | Archive completed tasks |
 | skill-orchestrator | (direct execution) | Route commands to workflows |
 
@@ -156,6 +156,18 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 Claude Code Issue #1132 causes jq parse errors when using `!=` operator.
 
 **Safe pattern**: Use `select(.type == "X" | not)` instead of `select(.type != "X")`
+
+## Command Migration Notes
+
+### `/fix` renamed to `/fix-it`
+
+The `/fix` command has been renamed to `/fix-it` to align with the .claude/ agent system naming convention. The new command includes:
+- Support for `QUESTION:` tags (research tasks)
+- Topic grouping for TODO and QUESTION items
+- Dependency handling between learn-it and fix-it tasks
+- Content-based language detection for research tasks
+
+**Update your workflows**: Replace all occurrences of `/fix` with `/fix-it` in scripts and documentation.
 
 ## Important Notes
 

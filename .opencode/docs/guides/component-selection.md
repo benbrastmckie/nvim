@@ -267,7 +267,7 @@ Creates: Agent only (skill routes to it)
 | /implement | skill-implementer, skill-lean-implementation, skill-latex-implementation, skill-typst-implementation |
 | /lake | skill-lake-repair |
 | /lean | skill-lean-version |
-| /fix | skill-fix |
+| /fix-it | skill-fix-it |
 | /meta | skill-meta |
 | /plan | skill-planner |
 | /refresh | skill-refresh |
@@ -290,7 +290,7 @@ Creates: Agent only (skill routes to it)
 | skill-lean-implementation | lean-implementation-agent |
 | skill-lean-research | lean-research-agent |
 | skill-lean-version | (direct execution) |
-| skill-fix | (direct execution) |
+| skill-fix-it | (direct execution) |
 | skill-logic-research | logic-research-agent |
 | skill-math-research | math-research-agent |
 | skill-meta | meta-builder-agent |

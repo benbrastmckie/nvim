@@ -141,7 +141,7 @@ This document describes the complete planning workflow executed by the planner s
 
 **Process**:
 1. Create plan file:
-   - Path: `specs/{number}_{slug}/plans/implementation-{version:03d}.md`
+   - Path: `specs/{number}_{slug}/plans/MM_{short-slug}.md`
    - Version: 001 for initial plan, incremented for revisions
    - Directory created lazily when writing
 2. Write plan metadata (frontmatter):

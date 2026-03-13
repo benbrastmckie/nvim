@@ -25,7 +25,7 @@ A comprehensive guide to using the `.opencode/` task management system commands 
    - [/errors](#errors-command)
 4. [Utility Commands](#utility-commands)
    - [/meta](#meta-command)
-   - [/fix](#fix-command)
+    - [/fix-it](#fix-it-command)
 5. [Quick Reference](#quick-reference)
 6. [Troubleshooting](#troubleshooting)
 
@@ -444,23 +444,23 @@ Creates tasks like:
 
 ---
 
-### /fix Command
+### /fix-it Command
 
-Scan for FIX:/NOTE:/TODO: tags and create tasks.
+Scan for FIX:/NOTE:/TODO:/QUESTION: tags and create tasks.
 
 ```
-/fix [PATH...]
+/fix-it [PATH...]
 ```
 
 **Arguments**:
 - `PATH...` - Optional paths to scan (default: entire project)
 
 **Interactive Flow**:
-1. Scans files for tags (`FIX:`, `NOTE:`, `TODO:`)
+1. Scans files for tags (`FIX:`, `NOTE:`, `TODO:`, `QUESTION:`)
 2. Displays tag summary with counts
 3. Prompts for task type selection
-4. Optional: Select specific TODOs to process
-5. Optional: Group TODOs by topic
+4. Optional: Select specific TODOs/QUESTIONs to process
+5. Optional: Group items by topic
 6. Creates selected tasks
 
 **Tag Types**:
@@ -468,15 +468,18 @@ Scan for FIX:/NOTE:/TODO: tags and create tasks.
 | Tag | Task Type | Behavior |
 |-----|-----------|----------|
 | `FIX:` | fix-it-task | Grouped into single task |
-| `NOTE:` | fix-it-task + note-task | Creates task with dependency |
+| `NOTE:` | fix-it-task + learn-it-task | Creates task with dependency |
 | `TODO:` | todo-task | Individual or grouped by topic |
+| `QUESTION:` | research-task | Content-based language detection |
 
 **Example**:
 ```
-/fix                           # Scan entire project
-/fix src/                      # Scan specific directory
-/fix src/core.lua src/utils/   # Scan multiple paths
+/fix-it                           # Scan entire project
+/fix-it src/                      # Scan specific directory
+/fix-it src/core.lua src/utils/   # Scan multiple paths
 ```
+
+**Migration Note**: This command was previously `/fix`. It has been renamed to `/fix-it` to align with the .claude/ system.
 
 ---
 
@@ -501,7 +504,7 @@ Scan for FIX:/NOTE:/TODO: tags and create tasks.
 | `/lake` | `/lake [--clean] [--max-retries N]` | Build with repair |
 | `/errors` | `/errors [--fix N]` | Analyze errors |
 | `/meta` | `/meta [PROMPT] \| --analyze` | System builder |
-| `/fix` | `/fix [PATH...]` | Extract tags to tasks |
+| `/fix-it` | `/fix-it [PATH...]` | Extract tags to tasks |
 
 ### Status Transitions
 

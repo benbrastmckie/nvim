@@ -179,7 +179,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
    - Config: `**/*.json`, `**/*.yaml`, etc.
 2. If multi-file output (>1 file modified/created):
    - Create implementation summary artifact
-   - Path: `specs/{number}_{slug}/summaries/implementation-summary-{YYYYMMDD}.md`
+   - Path: `specs/{number}_{slug}/summaries/MM_{short-slug}-summary.md`
    - Content:
      - What was implemented
      - Files modified/created
@@ -193,7 +193,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 
 **Artifact Naming**:
 - Implementation files: Follow project conventions
-- Summary: `implementation-summary-{YYYYMMDD}.md`
+- Summary: `MM_{short-slug}-summary.md`
 - Directories created lazily (only when writing first artifact)
 
 **Token Limit Rationale**:

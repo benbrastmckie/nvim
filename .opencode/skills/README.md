@@ -6,7 +6,7 @@ Skill definitions for the OpenCode system. Skills provide specialized capabiliti
 
 ### Subdirectories
 
-- [skill-fix/](skill-fix/README.md) - Scan for FIX:/NOTE:/TODO: tags
+- [skill-fix-it/](skill-fix-it/README.md) - Scan for FIX:/NOTE:/TODO:/QUESTION: tags with topic grouping
 - [skill-git-workflow/](skill-git-workflow/README.md) - Git workflow operations
 - [skill-implementer/](skill-implementer/README.md) - General implementation tasks
 - [skill-meta/](skill-meta/README.md) - System building and meta tasks

@@ -8,7 +8,7 @@ next_project_number: 201
 
 ### OC_200. Review .opencode/ and .claude/ agent systems for feature gaps and improvements
 - **Effort**: 4-6 hours
-- **Status**: [REVISED]
+- **Status**: [IMPLEMENTING]
 - **Language**: meta
 - **Dependencies**: Task OC_199 (artifact naming conventions)
 - **Research Started**: 2026-03-13
@@ -25,13 +25,14 @@ next_project_number: 201
 
 ### 199. Complete summary naming migration and fix validation globs missed by task 198
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Language**: meta
 - **Dependencies**: None
 - **Research Started**: 2026-03-13
 - **Research Completed**: 2026-03-13
 - **Planning Started**: 2026-03-13
 - **Planning Completed**: 2026-03-13
+- **Implementation Started**: 2026-03-13
 - **Research**: [01_naming-migration-gaps.md](199_complete_summary_naming_migration_fix_validation_globs/reports/01_naming-migration-gaps.md)
 - **Plan**: [01_naming-convention-migration.md](199_complete_summary_naming_migration_fix_validation_globs/plans/01_naming-convention-migration.md)
 

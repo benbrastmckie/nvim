@@ -44,7 +44,7 @@ Execute implementation plan with automatic resume support by delegating to the a
    - If abandoned: ABORT "Recover task first"
 
 4. **Load Implementation Plan**
-   Find latest: `specs/{NNN}_{SLUG}/plans/implementation-{LATEST}.md`
+   Find latest: `specs/{NNN}_{SLUG}/plans/*.md` (sorted by version)
 
    If no plan: ABORT "No implementation plan found. Run /plan {N} first."
 
@@ -138,7 +138,7 @@ The skill will spawn the appropriate agent which executes plan phases sequential
    project_name=$(jq -r --argjson num "$task_number" \
      '.active_projects[] | select(.project_number == $num) | .project_name' \
      specs/state.json)
-   plan_file=$(ls -1 "specs/${padded_num}_${project_name}/plans/implementation-"*.md 2>/dev/null | sort -V | tail -1)
+   plan_file=$(ls -1 "specs/${padded_num}_${project_name}/plans/"*.md 2>/dev/null | sort -V | tail -1)
 
    if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
        # Check if plan file has [COMPLETED] status

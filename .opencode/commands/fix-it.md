@@ -1,12 +1,12 @@
 ---
-description: Scan files for FIX, NOTE, TODO tags and create structured tasks interactively
+description: Scan files for FIX, NOTE, TODO, QUESTION tags and create structured tasks interactively
 ---
 
-# Command: /fix
+# Command: /fix-it
 
-**Purpose**: Scans codebase files for embedded tags (`FIX:`, `NOTE:`, `TODO:`) and creates structured tasks based on user selection. This command helps capture and track issues, notes, and pending work found in code comments.  
+**Purpose**: Scans codebase files for embedded tags (`FIX:`, `NOTE:`, `TODO:`, `QUESTION:`) and creates structured tasks based on user selection. This command helps capture and track issues, notes, pending work, and research questions found in code comments.  
 **Layer**: 2 (Command File - Argument Parsing Agent)  
-**Delegates To**: skill-fix
+**Delegates To**: skill-fix-it
 
 ---
 
@@ -28,9 +28,9 @@ description: Scan files for FIX, NOTE, TODO tags and create structured tasks int
 
 <workflow_execution>
   <step_1>
-    <action>Delegate to Fix Skill</action>
+    <action>Delegate to Fix-It Skill</action>
     <input>
-      - skill: "skill-fix"
+      - skill: "skill-fix-it"
       - args: "paths={paths}"
     </input>
     <expected_return>
@@ -50,6 +50,7 @@ description: Scan files for FIX, NOTE, TODO tags and create structured tasks int
       - FIX: tags found
       - NOTE: tags found  
       - TODO: tags found
+      - QUESTION: tags found
       
       Display task creation results:
       - Tasks created by type
@@ -99,7 +100,15 @@ description: Scan files for FIX, NOTE, TODO tags and create structured tasks int
 ## Examples
 
 ```bash
-/fix                           # Scan entire project for tags
-/fix src/                      # Scan specific directory
-/fix src/core.lua src/utils/   # Scan multiple paths
+/fix-it                           # Scan entire project for tags
+/fix-it src/                      # Scan specific directory
+/fix-it src/core.lua src/utils/   # Scan multiple paths
 ```
+
+---
+
+## Migration Notes
+
+**Command Renamed**: This command was previously `/fix`. It has been renamed to `/fix-it` to align with the .claude/ system and to better reflect the interactive "fix-it" workflow.
+
+**Backward Compatibility**: Existing scripts and documentation should be updated to use `/fix-it`. The old `/fix` command is no longer available.

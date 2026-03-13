@@ -50,7 +50,7 @@ Create a new version of an implementation plan, or update task description if no
 For tasks with existing plans (planned, implementing, partial, blocked):
 
 1. **Load Current Context**
-   - Current plan from `specs/{NNN}_{SLUG}/plans/implementation-{LATEST}.md`
+   - Current plan from `specs/{NNN}_{SLUG}/plans/*.md` (latest version)
      (Check padded directory first, fall back to unpadded for legacy tasks)
    - Research reports if any
    - Implementation progress (phase statuses)
