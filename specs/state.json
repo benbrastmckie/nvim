@@ -14,10 +14,10 @@
     {
       "project_number": 195,
       "project_name": "standardize_artifact_naming_convention_mm_padded_slug",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-13T17:23:59Z",
-      "last_updated": "2026-03-13T17:50:34Z",
+      "last_updated": "2026-03-13T17:56:00Z",
       "artifacts": [
         {
           "path": "specs/195_standardize_artifact_naming_convention_mm_padded_slug/reports/research-001.md",
@@ -28,13 +28,21 @@
           "path": "specs/OC_195_standardize_artifact_naming_convention_mm_padded_slug/plans/implementation-001.md",
           "type": "plan",
           "summary": "9-phase implementation plan for standardizing artifact naming convention to MM_padded_slug format across 53+ files"
+        },
+        {
+          "path": "specs/OC_195_standardize_artifact_naming_convention_mm_padded_slug/summaries/03_implementation-summary.md",
+          "type": "summary",
+          "summary": "Comprehensive implementation summary documenting all 43+ file changes for artifact naming standardization"
         }
       ],
       "researching": "2026-03-13T17:31:59Z",
       "researched": "2026-03-13T17:34:45Z",
       "planning": "2026-03-13T17:40:21Z",
       "planned": "2026-03-13T17:42:53Z",
-      "implementing": "2026-03-13T17:50:34Z"
+      "implementing": "2026-03-13T17:50:34Z",
+      "completed": "2026-03-13T17:56:00Z",
+      "completion_summary": "Standardized artifact naming convention across the OpenCode agent system, updating 43+ files to use MM_{short-slug}.md format instead of sequential numeric patterns. Changes include core agents (3), core skills (3), commands (5), extension agents (14+), extension skills (14+), and documentation (4+).",
+      "claudemd_suggestions": "Updated .claude/agents/* with new naming examples, updated .claude/skills/*/SKILL.md postflight patterns, updated .claude/commands/* with new output examples, updated .claude/CLAUDE.md Artifact Paths section, updated .claude/rules/artifact-formats.md with new naming convention documentation"
     },
     {
       "project_number": 194,
