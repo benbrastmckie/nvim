@@ -6,6 +6,17 @@ next_project_number: 217
 
 ## Tasks
 
+### 217. Revise /grant workflow order: --draft and --budget before /plan
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+- **Created**: 2026-03-16
+
+**Description**: Revise the /grant command and related utilities in the present/ extension so that the recommended workflow places --draft and --budget before /plan N. The correct order is: (1) /grant "Description", (2) /research N, (3) /grant N --draft, (4) /grant N --budget, (5) /plan N, (6) /implement N. This means drafting and budgeting happen as part of exploratory work that informs the formal plan, and /plan N creates the implementation plan based on the draft/budget artifacts before /implement N assembles everything into grants/{N}_{slug}/. Update all references to the recommended workflow in grant.md, skill-grant/SKILL.md, grant-agent.md, and EXTENSION.md.
+
+---
+
 ### 216. Refactor /grant command to output final materials via /implement to grants/ directory
 - **Effort**: 2-3 hours
 - **Status**: [COMPLETED]

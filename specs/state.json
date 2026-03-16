@@ -1,7 +1,18 @@
 {
   "version": "1.0.0",
-  "next_project_number": 217,
+  "next_project_number": 218,
   "active_projects": [
+    {
+      "project_number": 217,
+      "project_name": "revise_grant_workflow_order_draft_budget_before_plan",
+      "status": "not_started",
+      "language": "meta",
+      "effort": "1-2 hours",
+      "created": "2026-03-16T00:00:00Z",
+      "last_updated": "2026-03-16T00:00:00Z",
+      "dependencies": [],
+      "artifacts": []
+    },
     {
       "project_number": 216,
       "project_name": "refactor_grant_implement_output_to_grants_dir",
