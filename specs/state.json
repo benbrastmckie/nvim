@@ -5,12 +5,12 @@
     {
       "project_number": 204,
       "project_name": "create_grant_extension_scaffold",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-15T12:00:00Z",
-      "last_updated": "2026-03-16T02:22:03Z",
-      "session_id": "sess_1773627505_9f3d42",
+      "last_updated": "2026-03-16T02:37:09Z",
+      "session_id": "sess_1773628460_4106c1",
       "dependencies": [],
       "artifacts": [
         {
@@ -22,9 +22,15 @@
           "type": "research",
           "path": "specs/204_create_grant_extension_scaffold/reports/02_grant-best-practices.md",
           "summary": "Supplemental research on grant application best practices, SFF structure analysis, and context file recommendations"
+        },
+        {
+          "type": "plan",
+          "path": "specs/204_create_grant_extension_scaffold/plans/01_extension-scaffold-plan.md",
+          "summary": "7-phase implementation plan for grant extension scaffold with manifest.json and placeholder files"
         }
       ],
-      "researched": "2026-03-16T02:22:03Z"
+      "researched": "2026-03-16T02:22:03Z",
+      "planned": "2026-03-16T02:37:09Z"
     },
     {
       "project_number": 205,

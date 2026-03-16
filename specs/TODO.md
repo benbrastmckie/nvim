@@ -63,13 +63,16 @@ next_project_number: 210
 
 ### 204. Create grant extension scaffold with manifest.json
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-15
 - **Research Completed**: 2026-03-15
+- **Planning Started**: 2026-03-15
+- **Planning Completed**: 2026-03-15
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-15
 - **Research**: [01_extension-scaffold-patterns.md](204_create_grant_extension_scaffold/reports/01_extension-scaffold-patterns.md), [02_grant-best-practices.md](204_create_grant_extension_scaffold/reports/02_grant-best-practices.md)
+- **Plan**: [01_extension-scaffold-plan.md](204_create_grant_extension_scaffold/plans/01_extension-scaffold-plan.md)
 
 **Description**: Create the foundational grant/ extension directory structure following existing extension patterns (nvim, lean). Create manifest.json with extension metadata including name, version, description, provides arrays (commands, skills, agents), and merge_targets for context index integration.
 
