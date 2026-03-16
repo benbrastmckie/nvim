@@ -120,11 +120,11 @@
     {
       "project_number": 214,
       "project_name": "restructure_context_grant_to_present",
-      "status": "planning",
+      "status": "planned",
       "language": "meta",
       "effort": "1 hour",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T20:59:02Z",
+      "last_updated": "2026-03-16T21:01:01Z",
       "session_id": "sess_1742072800_e5f1a3",
       "dependencies": [
         212
@@ -134,9 +134,15 @@
           "path": "specs/214_restructure_context_grant_to_present/reports/01_context-restructure-research.md",
           "type": "research",
           "summary": "Research report documenting 16 index-entries.json paths, 6 grant-agent.md references, 4 EXTENSION.md references, 1 manifest.json entry, and 1 SKILL.md reference"
+        },
+        {
+          "path": "specs/214_restructure_context_grant_to_present/plans/01_context-restructure-plan.md",
+          "type": "plan",
+          "summary": "3-phase implementation plan for restructuring grant context to present"
         }
       ],
-      "researched": "2026-03-16T20:57:40Z"
+      "researched": "2026-03-16T20:57:40Z",
+      "planned": "2026-03-16T21:01:01Z"
     },
     {
       "project_number": 204,

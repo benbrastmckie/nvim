@@ -63,11 +63,12 @@ next_project_number: 215
 
 ### 214. Restructure context/project/grant/ to context/project/present/
 - **Effort**: 1 hour
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #212
 - **Created**: 2026-03-16
 - **Research**: [01_context-restructure-research.md](214_restructure_context_grant_to_present/reports/01_context-restructure-research.md)
+- **Plan**: [01_context-restructure-plan.md](214_restructure_context_grant_to_present/plans/01_context-restructure-plan.md)
 
 **Description**: Rename the context subdirectory from `context/project/grant/` to `context/project/present/` within the present/ extension. Update all 16 path entries in `index-entries.json` from `project/grant/` to `project/present/` (including README and all domain/patterns/standards/templates/tools files). Update `grant-agent.md` all `@context/project/grant/` @-references to `@context/project/present/`. Update any `@.claude/context/project/grant/` references in `EXTENSION.md` to `@.claude/context/project/present/`. Update the `provides.context` field in `manifest.json` from "project/grant" to "project/present".
 
