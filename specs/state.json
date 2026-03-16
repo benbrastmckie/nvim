@@ -44,16 +44,23 @@
     {
       "project_number": 205,
       "project_name": "create_grant_agent",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "effort": "2-3 hours",
       "created": "2026-03-15T12:00:00Z",
-      "last_updated": "2026-03-15T12:00:00Z",
-      "session_id": "sess_1741992000_a7f3c2",
+      "last_updated": "2026-03-16T04:39:51Z",
+      "session_id": "sess_1773635794_da187e",
       "dependencies": [
         204
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/205_create_grant_agent/reports/01_grant-agent-patterns.md",
+          "summary": "Research report covering agent frontmatter standards, execution stages, context loading patterns, workflow routing, and integration with skill-grant"
+        }
+      ],
+      "researched": "2026-03-16T04:39:51Z"
     },
     {
       "project_number": 206,
