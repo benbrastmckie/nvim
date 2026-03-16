@@ -50,10 +50,11 @@ next_project_number: 215
 
 ### 213. Clean up filetypes/ extension after deck migration
 - **Effort**: 30 min
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: Task #211
 - **Created**: 2026-03-16
+- **Research**: [01_filetypes-cleanup-research.md](213_cleanup_filetypes_extension_after_deck_migration/reports/01_filetypes-cleanup-research.md)
 
 **Description**: Remove all deck-related references from the filetypes/ extension after deck components have been moved to present/. Remove "deck-agent.md" from `manifest.json` agents array, "skill-deck" from skills array, and "deck.md" from commands array. Remove the deck documentation section from `EXTENSION.md`. Remove the two deck context entries (pitch-deck-structure.md, touying-pitch-deck-template.md) from `index-entries.json`.
 
@@ -61,7 +62,7 @@ next_project_number: 215
 
 ### 214. Restructure context/project/grant/ to context/project/present/
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: Task #212
 - **Created**: 2026-03-16

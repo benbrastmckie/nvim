@@ -93,26 +93,33 @@
     {
       "project_number": 213,
       "project_name": "cleanup_filetypes_extension_after_deck_migration",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "effort": "30 min",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T14:00:00Z",
-      "session_id": "sess_1741898400_d4e5f6",
+      "last_updated": "2026-03-16T20:57:02Z",
+      "session_id": "sess_1741902976_a3b7c1",
       "dependencies": [
         211
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/213_cleanup_filetypes_extension_after_deck_migration/reports/01_filetypes-cleanup-research.md",
+          "type": "research",
+          "summary": "Identified 3 manifest.json entries, 65+ lines in EXTENSION.md, and 2 index-entries.json entries to remove"
+        }
+      ],
+      "researched": "2026-03-16T20:57:02Z"
     },
     {
       "project_number": 214,
       "project_name": "restructure_context_grant_to_present",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "effort": "1 hour",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T14:00:00Z",
-      "session_id": "sess_1741898400_d4e5f6",
+      "last_updated": "2026-03-16T20:55:19Z",
+      "session_id": "sess_1742072400_c4d9e2",
       "dependencies": [
         212
       ],
