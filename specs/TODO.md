@@ -8,10 +8,11 @@ next_project_number: 217
 
 ### 216. Refactor /grant command to output final materials via /implement to grants/ directory
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-16
+- **Research**: [01_grant-implement-routing.md](216_refactor_grant_implement_output_to_grants_dir/reports/01_grant-implement-routing.md)
 
 **Description**: Remove the `--finish` flag from the /grant command and update the grant workflow so that running `/implement N` on a grant task assembles all intermediate artifacts (drafts, budgets from `specs/{NNN}_{SLUG}/`) and writes the final grant output to a new `grants/{NN}_{grant-slug}/` directory in the project root. Files to modify: (1) `grant.md` command — remove Finish Mode section and update recommended workflow output; (2) `skill-grant/SKILL.md` — remove finish workflow type from routing table, validation, and all case statements; (3) `grant-agent.md` — remove finish workflow execution and update routing table; (4) `EXTENSION.md` — update documentation to reflect new workflow ending with `/implement N`; and the grant-specific implementation handling needs to be added so that `/implement N` on a grant task generates the final assembled output in `grants/{NN}_{grant-slug}/`.
 

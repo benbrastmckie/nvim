@@ -5,13 +5,21 @@
     {
       "project_number": 216,
       "project_name": "refactor_grant_implement_output_to_grants_dir",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "effort": "2-3 hours",
       "created": "2026-03-16T00:00:00Z",
-      "last_updated": "2026-03-16T00:00:00Z",
+      "last_updated": "2026-03-16T22:57:10Z",
       "dependencies": [],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/216_refactor_grant_implement_output_to_grants_dir/reports/01_grant-implement-routing.md",
+          "type": "report",
+          "summary": "Research report analyzing /implement routing for grant tasks, identifying all files needing modification, and recommending assemble workflow pattern"
+        }
+      ],
+      "session_id": "sess_1773701629_4dd5b9",
+      "researched": "2026-03-16T22:57:10Z"
     },
     {
       "project_number": 215,
