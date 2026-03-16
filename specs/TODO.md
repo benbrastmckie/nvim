@@ -22,11 +22,13 @@ next_project_number: 215
 
 ### 211. Move deck elements from filetypes/ to present/
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: Task #210
 - **Created**: 2026-03-16
+- **Completed**: 2026-03-16
 - **Plan**: [01_move-deck-files.md](211_move_deck_elements_to_present/plans/01_move-deck-files.md)
+- **Summary**: [01_move-deck-summary.md](211_move_deck_elements_to_present/summaries/01_move-deck-summary.md)
 
 **Description**: Move deck-related files from the filetypes/ extension into the renamed present/ extension. Files to move: `agents/deck-agent.md`, `commands/deck.md`, `skills/skill-deck/SKILL.md`, and context patterns `context/project/filetypes/patterns/pitch-deck-structure.md` and `context/project/filetypes/patterns/touying-pitch-deck-template.md`. Move context patterns to `context/project/present/patterns/` in the present/ extension.
 

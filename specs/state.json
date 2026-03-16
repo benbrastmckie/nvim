@@ -33,12 +33,12 @@
     {
       "project_number": 211,
       "project_name": "move_deck_elements_to_present",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T20:41:23Z",
-      "session_id": "sess_1741900000_c4d5e6",
+      "last_updated": "2026-03-16T20:46:22Z",
+      "session_id": "sess_1741900400_d5e6f7",
       "dependencies": [
         210
       ],
@@ -47,9 +47,18 @@
           "path": "specs/211_move_deck_elements_to_present/plans/01_move-deck-files.md",
           "type": "plan",
           "summary": "5-phase implementation plan for moving deck files from filetypes/ to present/ extension"
+        },
+        {
+          "path": "specs/211_move_deck_elements_to_present/summaries/01_move-deck-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-16T20:41:23Z"
+      "planned": "2026-03-16T20:41:23Z",
+      "started": "2026-03-16T20:43:23Z",
+      "completed": "2026-03-16T20:46:22Z",
+      "completion_summary": "Moved 5 deck-related files from filetypes/ to present/ extension using git mv, preserving git history. Created patterns/ directory structure. All moves verified and staged.",
+      "claudemd_suggestions": "Moved deck-agent.md, deck.md, skill-deck/, and 2 pattern files to .claude/extensions/present/. No CLAUDE.md updates needed - internal reference updates in tasks 212-213."
     },
     {
       "project_number": 212,
