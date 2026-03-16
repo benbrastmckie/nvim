@@ -5,13 +5,21 @@
     {
       "project_number": 215,
       "project_name": "revise_grant_command_design",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "effort": "2-3 hours",
       "created": "2026-03-16T21:56:27Z",
-      "last_updated": "2026-03-16T21:56:27Z",
+      "last_updated": "2026-03-16T22:09:04Z",
       "dependencies": [],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/215_revise_grant_command_design/reports/01_grant-command-design.md",
+          "type": "research",
+          "summary": "Comprehensive analysis recommending Option C (Hybrid) design for /grant command"
+        }
+      ],
+      "session_id": "sess_1741904200_d6e0f4",
+      "researched": "2026-03-16T22:09:04Z"
     },
     {
       "project_number": 210,

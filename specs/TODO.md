@@ -8,10 +8,11 @@ next_project_number: 216
 
 ### 215. Revise /grant command design for elegant integration with core agent system
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-16
+- **Research**: [01_grant-command-design.md](215_revise_grant_command_design/reports/01_grant-command-design.md)
 
 **Description**: Revise the /grant command to work like the /task command except that it should create a task with the type set to 'grant'. Review the best options for an elegant design that avoids redundancy with /research, /plan, and /implement commands while maintaining modularity. Consider whether /grant should support --draft and --budget flags for grant-specific stages, or whether these should be separate commands. The design should integrate naturally with the existing core agent system while fitting in among the other extensions.
 
