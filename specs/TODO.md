@@ -36,10 +36,11 @@ next_project_number: 215
 
 ### 212. Update present/ extension metadata for deck integration
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #211
 - **Created**: 2026-03-16
+- **Plan**: [01_update-metadata.md](212_update_present_extension_metadata_for_deck/plans/01_update-metadata.md)
 
 **Description**: Update present/ extension configuration to register the newly moved deck components. Update `manifest.json` provides arrays: add "deck-agent.md" to agents, "skill-deck" to skills, "deck.md" to commands. Update `EXTENSION.md`: add a deck documentation section and revise the title to reflect both grant writing and presentation capabilities. Update `index-entries.json`: add the two deck context entries (pitch-deck-structure.md, touying-pitch-deck-template.md) with correct present/ paths and load_when referencing deck-agent and /deck command. Update `deck-agent.md` to change all `@context/project/filetypes/patterns/` references to `@context/project/present/patterns/`.
 

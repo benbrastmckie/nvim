@@ -63,16 +63,23 @@
     {
       "project_number": 212,
       "project_name": "update_present_extension_metadata_for_deck",
-      "status": "not_started",
+      "status": "planned",
       "language": "meta",
       "effort": "1 hour",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T14:00:00Z",
-      "session_id": "sess_1741898400_d4e5f6",
+      "last_updated": "2026-03-16T20:49:19Z",
+      "session_id": "sess_1741901000_e6f7g8",
       "dependencies": [
         211
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/212_update_present_extension_metadata_for_deck/plans/01_update-metadata.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for updating present extension metadata"
+        }
+      ],
+      "planned": "2026-03-16T20:49:19Z"
     },
     {
       "project_number": 213,
