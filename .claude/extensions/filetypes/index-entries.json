@@ -72,26 +72,6 @@
       "languages": [],
       "commands": []
     }
-  },
-  {
-    "path": "project/filetypes/patterns/pitch-deck-structure.md",
-    "description": "YC pitch deck structure, slide content guidelines, and design principles",
-    "line_count": 253,
-    "load_when": {
-      "agents": ["deck-agent"],
-      "languages": [],
-      "commands": ["/deck"]
-    }
-  },
-  {
-    "path": "project/filetypes/patterns/touying-pitch-deck-template.md",
-    "description": "Touying 0.6.3 template for investor pitch decks with customization patterns",
-    "line_count": 396,
-    "load_when": {
-      "agents": ["deck-agent"],
-      "languages": [],
-      "commands": ["/deck"]
-    }
   }
   ]
 }

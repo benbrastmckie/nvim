@@ -35,10 +35,10 @@ Structured proposal development, budget planning, and funder-specific guidance f
 ### Context Imports
 
 Domain knowledge (load as needed):
-- @.claude/context/project/grant/README.md
-- @.claude/context/project/grant/domain/
-- @.claude/context/project/grant/templates/
-- @.claude/context/project/grant/patterns/
+- @.claude/context/project/present/README.md
+- @.claude/context/project/present/domain/
+- @.claude/context/project/present/templates/
+- @.claude/context/project/present/patterns/
 
 ---
 

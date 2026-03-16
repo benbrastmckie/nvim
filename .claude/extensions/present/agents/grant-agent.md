@@ -45,13 +45,13 @@ Load these on-demand using @-references:
 - `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 **Load for Grant Tasks**:
-- `@.claude/extensions/grant/context/project/grant/README.md` - Grant domain overview
+- `@.claude/extensions/present/context/project/present/README.md` - Grant domain overview
 
 **Load On-Demand by Workflow**:
-- Funder research: `project/grant/domain/funder-types.md` (when available)
-- Proposal draft: `project/grant/templates/proposal-template.md` (when available)
-- Budget develop: `project/grant/templates/budget-template.md` (when available)
-- Progress track: `project/grant/patterns/progress-tracking.md` (when available)
+- Funder research: `project/present/domain/funder-types.md` (when available)
+- Proposal draft: `project/present/templates/proposal-template.md` (when available)
+- Budget develop: `project/present/templates/budget-template.md` (when available)
+- Progress track: `project/present/patterns/progress-tracking.md` (when available)
 
 ## Dynamic Context Discovery
 

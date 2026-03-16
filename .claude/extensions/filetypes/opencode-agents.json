@@ -51,19 +51,6 @@
         "grep": true,
         "bash": true
       }
-    },
-    "deck": {
-      "description": "Create presentation decks from markdown",
-      "mode": "subagent",
-      "prompt": "{file:.opencode/agent/subagents/deck-agent.md}",
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "glob": true,
-        "grep": true,
-        "bash": true
-      }
     }
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Cleanup Filetypes Extension After Deck Migration
 
 - **Task**: 213 - cleanup_filetypes_extension_after_deck_migration
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5-1 hour
 - **Dependencies**: Task 212 (deck components moved to present/ extension)
 - **Research Inputs**: specs/213_cleanup_filetypes_extension_after_deck_migration/reports/01_cleanup-filetypes-research.md
@@ -48,7 +48,7 @@ Research identified 7 specific items to remove across 3 files:
 
 ## Implementation Phases
 
-### Phase 1: Update manifest.json [NOT STARTED]
+### Phase 1: Update manifest.json [COMPLETED]
 
 **Goal**: Remove deck entries from the manifest.json provides section
 
@@ -69,7 +69,7 @@ Research identified 7 specific items to remove across 3 files:
 
 ---
 
-### Phase 2: Update EXTENSION.md [NOT STARTED]
+### Phase 2: Update EXTENSION.md [COMPLETED]
 
 **Goal**: Remove all deck documentation from EXTENSION.md
 
@@ -91,7 +91,7 @@ Research identified 7 specific items to remove across 3 files:
 
 ---
 
-### Phase 3: Update index-entries.json [NOT STARTED]
+### Phase 3: Update index-entries.json [COMPLETED]
 
 **Goal**: Remove deck context entries from index-entries.json
 
@@ -112,7 +112,7 @@ Research identified 7 specific items to remove across 3 files:
 
 ---
 
-### Phase 4: Final Verification [NOT STARTED]
+### Phase 4: Final Verification [COMPLETED]
 
 **Goal**: Confirm complete removal of deck references
 

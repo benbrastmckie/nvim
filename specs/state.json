@@ -93,12 +93,12 @@
     {
       "project_number": 213,
       "project_name": "cleanup_filetypes_extension_after_deck_migration",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "effort": "30 min",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T20:59:52Z",
-      "session_id": "sess_1741903200_b4c8d2",
+      "last_updated": "2026-03-16T21:15:25Z",
+      "session_id": "sess_1741903500_c5d9e3",
       "dependencies": [
         211
       ],
@@ -115,17 +115,21 @@
         }
       ],
       "researched": "2026-03-16T20:57:02Z",
-      "planned": "2026-03-16T20:59:52Z"
+      "planned": "2026-03-16T20:59:52Z",
+      "started": "2026-03-16T21:11:27Z",
+      "completed": "2026-03-16T21:15:25Z",
+      "completion_summary": "Cleaned up filetypes extension by removing all deck-related references (4 files modified) after deck components were migrated to present/ extension in task 212.",
+      "claudemd_suggestions": "Removed deck entries from filetypes extension manifest.json, EXTENSION.md, index-entries.json, and opencode-agents.json"
     },
     {
       "project_number": 214,
       "project_name": "restructure_context_grant_to_present",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "effort": "1 hour",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T21:01:01Z",
-      "session_id": "sess_1742072800_e5f1a3",
+      "last_updated": "2026-03-16T21:15:12Z",
+      "session_id": "sess_1742073200_f6g2b4",
       "dependencies": [
         212
       ],
@@ -139,10 +143,19 @@
           "path": "specs/214_restructure_context_grant_to_present/plans/01_context-restructure-plan.md",
           "type": "plan",
           "summary": "3-phase implementation plan for restructuring grant context to present"
+        },
+        {
+          "path": "specs/214_restructure_context_grant_to_present/summaries/01_context-restructure-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with full change log and verification results"
         }
       ],
       "researched": "2026-03-16T20:57:40Z",
-      "planned": "2026-03-16T21:01:01Z"
+      "planned": "2026-03-16T21:01:01Z",
+      "started": "2026-03-16T21:11:36Z",
+      "completed": "2026-03-16T21:15:12Z",
+      "completion_summary": "Restructured present extension context by renaming project/grant/ to project/present/, moving 16 files to merge with existing deck content. Updated 28 path references across index-entries.json, grant-agent.md, EXTENSION.md, manifest.json, and skill-grant SKILL.md, including 2 typo fixes.",
+      "claudemd_suggestions": "Modified .claude/extensions/present/ structure: consolidated context/project/grant/ into context/project/present/, updated index-entries.json paths and subdomains, updated agent and skill @-references"
     },
     {
       "project_number": 204,

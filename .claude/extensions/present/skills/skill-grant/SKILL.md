@@ -3,7 +3,7 @@ name: skill-grant
 description: Grant proposal research and drafting with funder analysis. Invoke for grant tasks.
 allowed-tools: Task, Bash, Edit, Read, Write
 # Context (loaded by subagent):
-#   - .claude/extensions/grant/context/project/grant/README.md
+#   - .claude/extensions/present/context/project/present/README.md
 # Tools (used by subagent):
 #   - Read, Write, Edit, Glob, Grep, WebSearch, WebFetch
 ---

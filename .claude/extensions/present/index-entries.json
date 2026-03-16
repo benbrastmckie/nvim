@@ -29,9 +29,9 @@
       }
     },
     {
-      "path": "project/grant/README.md",
+      "path": "project/present/README.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["grant", "proposal", "funding", "research"],
       "keywords": ["grant", "proposal", "funder", "budget"],
       "summary": "Grant writing domain overview and extension capabilities",
@@ -43,9 +43,9 @@
       }
     },
     {
-      "path": "project/grant/domain/funder-types.md",
+      "path": "project/present/domain/funder-types.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["funders", "ai-safety", "sbir", "nsf", "nih", "foundations"],
       "keywords": ["funder", "foundation", "federal", "open-philanthropy", "sff", "ltff"],
       "summary": "Funder categories including AI Safety, SBIR, Foundation, and Academic funders",
@@ -57,9 +57,9 @@
       }
     },
     {
-      "path": "project/grant/domain/proposal-components.md",
+      "path": "project/present/domain/proposal-components.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["proposal", "sections", "executive-summary", "budget", "evaluation"],
       "keywords": ["proposal", "narrative", "budget", "timeline", "evaluation"],
       "summary": "Standard grant proposal sections with purpose and content guidance",
@@ -71,9 +71,9 @@
       }
     },
     {
-      "path": "project/grant/domain/grant-terminology.md",
+      "path": "project/present/domain/grant-terminology.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["terminology", "definitions", "acronyms", "federal"],
       "keywords": ["terminology", "glossary", "definitions", "acronyms", "cfda", "sam"],
       "summary": "Key grant writing terms, definitions, and common acronyms",
@@ -85,9 +85,9 @@
       }
     },
     {
-      "path": "project/grant/patterns/proposal-structure.md",
+      "path": "project/present/patterns/proposal-structure.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["structure", "organization", "sections", "formatting"],
       "keywords": ["structure", "outline", "sections", "nsf", "nih", "foundation"],
       "summary": "Proposal structural patterns by funder type with section hierarchy",
@@ -99,9 +99,9 @@
       }
     },
     {
-      "path": "project/grant/patterns/budget-patterns.md",
+      "path": "project/present/patterns/budget-patterns.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["budget", "personnel", "travel", "equipment", "indirect"],
       "keywords": ["budget", "justification", "personnel", "fringe", "indirect", "mtdc"],
       "summary": "Budget formats and justification templates for NSF, NIH, SBIR, Foundation",
@@ -113,9 +113,9 @@
       }
     },
     {
-      "path": "project/grant/patterns/evaluation-patterns.md",
+      "path": "project/present/patterns/evaluation-patterns.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["evaluation", "logic-model", "outcomes", "indicators", "measurement"],
       "keywords": ["evaluation", "logic-model", "outcomes", "indicators", "process", "impact"],
       "summary": "Evaluation frameworks including logic models and measurement approaches",
@@ -127,9 +127,9 @@
       }
     },
     {
-      "path": "project/grant/patterns/narrative-patterns.md",
+      "path": "project/present/patterns/narrative-patterns.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["narrative", "writing", "impact", "problem-framing"],
       "keywords": ["narrative", "impact", "active-voice", "specificity", "evidence"],
       "summary": "Writing patterns for impact statements, problem framing, and persuasion",
@@ -141,9 +141,9 @@
       }
     },
     {
-      "path": "project/grant/standards/writing-standards.md",
+      "path": "project/present/standards/writing-standards.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["writing", "style", "voice", "formatting"],
       "keywords": ["writing", "style", "active-voice", "formatting", "consistency"],
       "summary": "Grant writing style guide covering voice, precision, and formatting",
@@ -155,9 +155,9 @@
       }
     },
     {
-      "path": "project/grant/standards/character-limits.md",
+      "path": "project/present/standards/character-limits.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["limits", "character-count", "page-limits", "formatting"],
       "keywords": ["character-limit", "page-limit", "nsf", "nih", "sbir", "word-count"],
       "summary": "Funder-specific character and page limits for proposal sections",
@@ -169,9 +169,9 @@
       }
     },
     {
-      "path": "project/grant/templates/executive-summary.md",
+      "path": "project/present/templates/executive-summary.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["executive-summary", "abstract", "template"],
       "keywords": ["executive-summary", "abstract", "overview", "template", "ai-safety"],
       "summary": "Executive summary templates for Foundation, Research, AI Safety, SBIR",
@@ -183,9 +183,9 @@
       }
     },
     {
-      "path": "project/grant/templates/budget-justification.md",
+      "path": "project/present/templates/budget-justification.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["budget", "justification", "personnel", "equipment", "travel"],
       "keywords": ["budget", "justification", "personnel", "fringe", "equipment", "travel"],
       "summary": "Budget justification templates for all standard cost categories",
@@ -197,9 +197,9 @@
       }
     },
     {
-      "path": "project/grant/templates/evaluation-plan.md",
+      "path": "project/present/templates/evaluation-plan.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["evaluation", "plan", "logic-model", "data-collection"],
       "keywords": ["evaluation", "plan", "logic-model", "indicators", "data-collection"],
       "summary": "Evaluation plan templates with logic model and data collection guidance",
@@ -211,9 +211,9 @@
       }
     },
     {
-      "path": "project/grant/templates/submission-checklist.md",
+      "path": "project/present/templates/submission-checklist.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["checklist", "submission", "compliance", "attachments"],
       "keywords": ["checklist", "submission", "nsf", "nih", "sbir", "foundation"],
       "summary": "Pre-submission verification checklists for federal and foundation grants",
@@ -225,9 +225,9 @@
       }
     },
     {
-      "path": "project/grant/tools/funder-research.md",
+      "path": "project/present/tools/funder-research.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["research", "funders", "990", "databases", "due-diligence"],
       "keywords": ["funder", "research", "990", "database", "candid", "grants-gov"],
       "summary": "Systematic funder research process with tracking templates",
@@ -239,9 +239,9 @@
       }
     },
     {
-      "path": "project/grant/tools/web-resources.md",
+      "path": "project/present/tools/web-resources.md",
       "domain": "project",
-      "subdomain": "grant",
+      "subdomain": "present",
       "topics": ["resources", "databases", "tools", "training"],
       "keywords": ["resources", "grants-gov", "candid", "nsf", "nih", "training"],
       "summary": "Curated list of grant research databases, writing tools, and training",

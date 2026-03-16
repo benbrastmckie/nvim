@@ -9,7 +9,7 @@
     "skills": ["skill-grant", "skill-deck"],
     "commands": ["grant.md", "deck.md"],
     "rules": [],
-    "context": ["project/grant", "project/present"],
+    "context": ["project/present"],
     "scripts": [],
     "hooks": []
   },

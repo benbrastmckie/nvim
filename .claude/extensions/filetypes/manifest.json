@@ -9,20 +9,17 @@
       "filetypes-router-agent.md",
       "document-agent.md",
       "spreadsheet-agent.md",
-      "presentation-agent.md",
-      "deck-agent.md"
+      "presentation-agent.md"
     ],
     "skills": [
       "skill-filetypes",
       "skill-spreadsheet",
-      "skill-presentation",
-      "skill-deck"
+      "skill-presentation"
     ],
     "commands": [
       "convert.md",
       "table.md",
-      "slides.md",
-      "deck.md"
+      "slides.md"
     ],
     "rules": [],
     "context": [
