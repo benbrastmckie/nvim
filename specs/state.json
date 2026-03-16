@@ -9,7 +9,7 @@
       "language": "meta",
       "effort": "2-3 hours",
       "created": "2026-03-16T00:00:00Z",
-      "last_updated": "2026-03-16T23:00:37Z",
+      "last_updated": "2026-03-16T23:06:03Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -21,6 +21,11 @@
           "path": "specs/216_refactor_grant_implement_output_to_grants_dir/plans/02_grant-refactor-plan.md",
           "type": "plan",
           "summary": "7-phase implementation plan for refactoring grant workflow to use /implement for final assembly"
+        },
+        {
+          "path": "specs/216_refactor_grant_implement_output_to_grants_dir/reports/03_grant-revise-flag.md",
+          "type": "report",
+          "summary": "Supplemental research for --revise flag: grant numbering, parent_grant field, revision workflow pattern"
         }
       ],
       "session_id": "sess_1773701864_6fb5ff",
