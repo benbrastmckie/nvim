@@ -50,13 +50,16 @@ next_project_number: 210
 
 ### 206. Create skill-grant thin wrapper
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-15
 - **Research Completed**: 2026-03-15
+- **Planning Started**: 2026-03-15
+- **Planning Completed**: 2026-03-15
 - **Language**: meta
 - **Dependencies**: Task #205
 - **Created**: 2026-03-15
 - **Research**: [01_skill-wrapper-patterns.md](206_create_skill_grant_wrapper/reports/01_skill-wrapper-patterns.md)
+- **Plan**: [01_skill-grant-plan.md](206_create_skill_grant_wrapper/plans/01_skill-grant-plan.md)
 
 **Description**: Create grant/skills/skill-grant/SKILL.md as a thin wrapper that validates inputs, prepares delegation context, invokes grant-agent via the Agent tool, validates the return, and propagates results. Follow the skill-meta pattern for internal postflight handling.
 

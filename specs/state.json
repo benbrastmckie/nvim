@@ -80,12 +80,12 @@
     {
       "project_number": 206,
       "project_name": "create_skill_grant_wrapper",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-15T12:00:00Z",
-      "last_updated": "2026-03-16T05:13:15Z",
-      "session_id": "sess_1773637808_c37314",
+      "last_updated": "2026-03-16T05:18:24Z",
+      "session_id": "sess_1773638139_0b62f9",
       "dependencies": [
         205
       ],
@@ -94,9 +94,15 @@
           "type": "research",
           "path": "specs/206_create_skill_grant_wrapper/reports/01_skill-wrapper-patterns.md",
           "summary": "Comprehensive research report documenting skill wrapper patterns, 11-stage execution flow, delegation context structure, and implementation recommendations"
+        },
+        {
+          "type": "plan",
+          "path": "specs/206_create_skill_grant_wrapper/plans/01_skill-grant-plan.md",
+          "summary": "Implementation plan for skill-grant thin wrapper with workflow type routing and skill-internal postflight pattern"
         }
       ],
-      "researched": "2026-03-16T05:13:15Z"
+      "researched": "2026-03-16T05:13:15Z",
+      "planned": "2026-03-16T05:18:24Z"
     },
     {
       "project_number": 207,
