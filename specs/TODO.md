@@ -1,10 +1,19 @@
 ---
-next_project_number: 217
+next_project_number: 219
 ---
 
 # TODO
 
 ## Tasks
+
+### 218. Implement `--team` flag for `/research` command
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Implement `--team` flag for `/research` command to enable parallel multi-agent research using the research-coordinator pattern. Root cause: `--team` is silently ignored — passed as part of the focus prompt text with no flag parsing in research.md. Fix requires: (1) add `--team` flag parsing to research.md, (2) add team routing for the grant language (and other languages), (3) implement or wire up research-coordinator pattern for parallel multi-agent research. Investigation found `--team` was planned in archived task 093 but never implemented.
+
+---
 
 ### 217. Revise /grant workflow order: --draft and --budget before /plan
 - **Effort**: 1-2 hours

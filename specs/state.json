@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 218,
+  "next_project_number": 219,
   "active_projects": [
+    {
+      "project_number": 218,
+      "project_name": "implement_team_flag_for_research_command",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-16T23:56:00Z",
+      "last_updated": "2026-03-16T23:56:00Z"
+    },
     {
       "project_number": 217,
       "project_name": "revise_grant_workflow_order_draft_budget_before_plan",
