@@ -5,11 +5,11 @@
     {
       "project_number": 217,
       "project_name": "revise_grant_workflow_order_draft_budget_before_plan",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-16T00:00:00Z",
-      "last_updated": "2026-03-16T23:33:54Z",
+      "last_updated": "2026-03-16T23:40:57Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -21,11 +21,20 @@
           "path": "specs/217_revise_grant_workflow_order_draft_budget_before_plan/plans/02_workflow-improvements.md",
           "type": "plan",
           "summary": "6-phase implementation plan to correct grant workflow order and improve documentation"
+        },
+        {
+          "path": "specs/217_revise_grant_workflow_order_draft_budget_before_plan/summaries/03_workflow-improvements-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "session_id": "sess_1773703889_768e45",
+      "session_id": "sess_1773704188_0f90b8",
       "researched": "2026-03-16T23:30:14Z",
-      "planned": "2026-03-16T23:33:54Z"
+      "planned": "2026-03-16T23:33:54Z",
+      "started": "2026-03-16T23:36:41Z",
+      "completed": "2026-03-16T23:40:57Z",
+      "completion_summary": "Corrected grant workflow order documentation across 4 extension files to show draft/budget as exploratory phases before planning. Updated routing tables, Next step guidance, and prerequisite validation notes.",
+      "claudemd_suggestions": "Updated present extension workflow documentation in commands/grant.md, EXTENSION.md, skills/skill-grant/SKILL.md, and agents/grant-agent.md"
     },
     {
       "project_number": 216,

@@ -136,9 +136,9 @@ When $ARGUMENTS is a description without flags.
 
    Recommended workflow:
    1. /research {N} - Research funders and requirements
-   2. /plan {N} - Create proposal plan
-   3. /grant {N} --draft - Draft narrative sections
-   4. /grant {N} --budget - Develop budget
+   2. /grant {N} --draft - Draft narrative sections (exploratory)
+   3. /grant {N} --budget - Develop budget (exploratory)
+   4. /plan {N} - Create plan informed by drafts
    5. /implement {N} - Assemble grant materials to grants/{N}_{slug}/
    ```
 
@@ -174,8 +174,10 @@ Execute proposal drafting workflow.
 3. **Validate Task**
    - Task must exist (ABORT if not)
    - Language must be "grant" (ABORT with message if not)
-   - Status must allow drafting: researched, planned, partial
+   - Status must allow drafting: researched, planned, partial, not_started
    - If completed/abandoned: ABORT with appropriate message
+
+**Note**: Draft mode is an exploratory phase that can start after research (status: researched) or even before research (status: not_started) for rapid prototyping. Drafts inform the subsequent planning phase.
 
 4. **Extract optional prompt**
    - Parse quoted text after --draft flag
@@ -210,7 +212,7 @@ Grant proposal draft created for Task #{N}
 Draft: specs/{NNN}_{SLUG}/drafts/{MM}_narrative-draft.md
 
 Status: [PLANNED]
-Next: /grant {N} --budget
+Next: /grant {N} --budget, then /plan {N}
 ```
 
 ---
@@ -257,7 +259,7 @@ Grant budget developed for Task #{N}
 Budget: specs/{NNN}_{SLUG}/budgets/{MM}_line-item-budget.md
 
 Status: [PLANNED]
-Next: /implement {N}
+Next: /plan {N} (to create implementation plan informed by drafts and budget)
 ```
 
 ---
@@ -415,10 +417,10 @@ Tasks with language="grant" route through core commands:
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
 | `/research N` | skill-grant (funder_research) | Research funders |
-| `/plan N` | skill-grant (proposal_draft) | Create proposal plan |
-| `/implement N` | skill-grant | Execute plan phases |
+| `/plan N` | skill-planner | Create implementation plan (informed by drafts/budgets) |
+| `/implement N` | skill-grant (assemble) | Assemble grant materials |
 
-This routing is configured in the extension's manifest.json.
+**Note**: `/plan N` creates an implementation plan using the standard planner, not a proposal draft. The plan should reference existing draft and budget artifacts when available. This routing is configured in the extension's manifest.json.
 
 ---
 
@@ -449,9 +451,9 @@ Language: grant
 
 Recommended workflow:
 1. /research {N} - Research funders and requirements
-2. /plan {N} - Create proposal plan
-3. /grant {N} --draft - Draft narrative sections
-4. /grant {N} --budget - Develop budget
+2. /grant {N} --draft - Draft narrative sections (exploratory)
+3. /grant {N} --budget - Develop budget (exploratory)
+4. /plan {N} - Create plan informed by drafts
 5. /implement {N} - Assemble grant materials to grants/{N}_{slug}/
 ```
 

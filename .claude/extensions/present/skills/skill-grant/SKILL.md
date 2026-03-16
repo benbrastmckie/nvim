@@ -496,7 +496,7 @@ Proposal draft created for task {N}:
 - Focus applied: "{focus_prompt}" (if provided)
 - Created draft at specs/{NNN}_{SLUG}/drafts/{MM}_narrative-draft.md
 - Status updated to [PLANNED]
-- Recommend: Run /grant {N} --budget next
+- Recommend: Run /grant {N} --budget next, then /plan {N}
 ```
 
 **Budget Development Success**:
@@ -507,7 +507,7 @@ Budget developed for task {N}:
 - Focus applied: "{focus_prompt}" (if provided)
 - Created budget at specs/{NNN}_{SLUG}/budgets/{MM}_line-item-budget.md
 - Status updated to [PLANNED]
-- Changes committed with session {session_id}
+- Recommend: Run /plan {N} to create implementation plan
 ```
 
 **Assemble Success**:

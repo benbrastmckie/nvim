@@ -1,7 +1,7 @@
 # Implementation Plan: Task #217
 
 - **Task**: 217 - Revise grant workflow order and address other improvements
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETE]
 - **Effort**: 2-3 hours
 - **Dependencies**: None
 - **Research Inputs**: [01_grant-improvements.md](../reports/01_grant-improvements.md)
@@ -45,7 +45,7 @@ Integrated findings from `01_grant-improvements.md`:
 
 ## Implementation Phases
 
-### Phase 1: Update grant.md Workflow Order [NOT STARTED]
+### Phase 1: Update grant.md Workflow Order [COMPLETED]
 
 **Goal**: Correct workflow order in main command documentation
 
@@ -65,7 +65,7 @@ Integrated findings from `01_grant-improvements.md`:
 
 ---
 
-### Phase 2: Update EXTENSION.md Workflow Order [NOT STARTED]
+### Phase 2: Update EXTENSION.md Workflow Order [COMPLETED]
 
 **Goal**: Correct workflow order in user-facing extension documentation
 
@@ -84,7 +84,7 @@ Integrated findings from `01_grant-improvements.md`:
 
 ---
 
-### Phase 3: Update Next Step Guidance [NOT STARTED]
+### Phase 3: Update Next Step Guidance [COMPLETED]
 
 **Goal**: Make "Next:" suggestions context-aware
 
@@ -104,7 +104,7 @@ Integrated findings from `01_grant-improvements.md`:
 
 ---
 
-### Phase 4: Update SKILL.md Return Messages [NOT STARTED]
+### Phase 4: Update SKILL.md Return Messages [COMPLETED]
 
 **Goal**: Align skill return messages with corrected workflow
 
@@ -124,7 +124,7 @@ Integrated findings from `01_grant-improvements.md`:
 
 ---
 
-### Phase 5: Update grant-agent.md Documentation [NOT STARTED]
+### Phase 5: Update grant-agent.md Documentation [COMPLETED]
 
 **Goal**: Align agent documentation with corrected workflow
 
@@ -143,7 +143,7 @@ Integrated findings from `01_grant-improvements.md`:
 
 ---
 
-### Phase 6: Final Verification [NOT STARTED]
+### Phase 6: Final Verification [COMPLETED]
 
 **Goal**: Verify all changes are consistent across files
 

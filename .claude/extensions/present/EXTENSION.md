@@ -31,9 +31,9 @@ Language: grant
 
 Recommended workflow:
 1. /research 500 - Research funders and requirements
-2. /plan 500 - Create proposal plan
-3. /grant 500 --draft - Draft narrative sections
-4. /grant 500 --budget - Develop budget
+2. /grant 500 --draft - Draft narrative sections (exploratory)
+3. /grant 500 --budget - Develop budget (exploratory)
+4. /plan 500 - Create plan informed by drafts
 5. /implement 500 - Assemble grant materials to grants/500_{slug}/
 ```
 
@@ -114,8 +114,8 @@ Legacy workflow_type syntax is deprecated but still supported:
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
 | `/research N` | skill-grant (funder_research) | Research funders |
-| `/plan N` | skill-grant | Create proposal plan |
-| `/implement N` | skill-grant | Execute plan phases |
+| `/plan N` | skill-planner | Create implementation plan (informed by drafts/budgets) |
+| `/implement N` | skill-grant (assemble) | Assemble grant materials |
 
 ### Skill-Agent Mapping
 
@@ -127,9 +127,9 @@ Legacy workflow_type syntax is deprecated but still supported:
 
 1. **Create task**: `/grant "Research NSF CAREER funding for AI interpretability"`
 2. **Research funders**: `/research 500` (routes to skill-grant)
-3. **Create plan**: `/plan 500` (routes to skill-grant)
-4. **Draft narrative**: `/grant 500 --draft ["focus prompt"]`
-5. **Develop budget**: `/grant 500 --budget ["budget guidance"]`
+3. **Draft narrative**: `/grant 500 --draft ["focus prompt"]` (exploratory)
+4. **Develop budget**: `/grant 500 --budget ["budget guidance"]` (exploratory)
+5. **Create plan**: `/plan 500` (informed by drafts and budget)
 6. **Assemble materials**: `/implement 500` (creates grants/500_{slug}/)
 
 ### Grant Output Directory

@@ -8,12 +8,14 @@ next_project_number: 217
 
 ### 217. Revise /grant workflow order: --draft and --budget before /plan
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-16
+- **Completed**: 2026-03-16
 - **Research**: [01_grant-improvements.md](217_revise_grant_workflow_order_draft_budget_before_plan/reports/01_grant-improvements.md)
 - **Plan**: [02_workflow-improvements.md](217_revise_grant_workflow_order_draft_budget_before_plan/plans/02_workflow-improvements.md)
+- **Summary**: [03_workflow-improvements-summary.md](217_revise_grant_workflow_order_draft_budget_before_plan/summaries/03_workflow-improvements-summary.md)
 
 **Description**: Revise the /grant command and related utilities in the present/ extension so that the recommended workflow places --draft and --budget before /plan N. The correct order is: (1) /grant "Description", (2) /research N, (3) /grant N --draft, (4) /grant N --budget, (5) /plan N, (6) /implement N. This means drafting and budgeting happen as part of exploratory work that informs the formal plan, and /plan N creates the implementation plan based on the draft/budget artifacts before /implement N assembles everything into grants/{N}_{slug}/. Update all references to the recommended workflow in grant.md, skill-grant/SKILL.md, grant-agent.md, and EXTENSION.md.
 

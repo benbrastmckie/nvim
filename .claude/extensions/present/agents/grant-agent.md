@@ -443,7 +443,7 @@ Proposal draft created for task 501:
 - Executive summary and methodology sections ready for review
 - Budget section marked as placeholder (needs separate workflow)
 - Created draft at specs/501_ai_safety_proposal/drafts/01_narrative-draft.md
-- Recommend: Run budget_develop workflow next
+- Recommend: Run budget_develop workflow next, then create plan
 ```
 
 **Assemble** (new grant):
@@ -537,7 +537,7 @@ Proposal draft created for task 501:
 - Executive summary and methodology sections ready for review
 - Budget section marked as placeholder (needs budget_develop workflow)
 - Created draft at specs/501_ai_safety_proposal/drafts/01_narrative-draft.md
-- Recommend: Run budget_develop workflow next
+- Recommend: Run budget_develop workflow next, then /plan 501
 ```
 
 ### Partial Result (Text Summary)
