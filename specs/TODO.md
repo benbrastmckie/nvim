@@ -8,11 +8,13 @@ next_project_number: 215
 
 ### 210. Rename grant/ extension directory to present/
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-16
+- **Completed**: 2026-03-16
 - **Plan**: [01_rename-extension-dir.md](210_rename_grant_extension_to_present/plans/01_rename-extension-dir.md)
+- **Summary**: [01_rename-extension-summary.md](210_rename_grant_extension_to_present/summaries/01_rename-extension-summary.md)
 
 **Description**: Rename the extension directory from `.claude/extensions/grant/` to `.claude/extensions/present/`. Update manifest.json: change `name` field from "grant" to "present", `language` field from "grant" to "present", and `merge_targets.claudemd.section_id` from "extension_grant" to "extension_present". This is the foundational rename that all subsequent tasks depend on.
 

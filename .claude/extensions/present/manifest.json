@@ -1,8 +1,8 @@
 {
-  "name": "grant",
+  "name": "present",
   "version": "1.0.0",
   "description": "Grant writing support with structured proposal development, budget planning, and funder-specific guidance",
-  "language": "grant",
+  "language": "present",
   "dependencies": [],
   "provides": {
     "agents": ["grant-agent.md"],
@@ -17,7 +17,7 @@
     "claudemd": {
       "source": "EXTENSION.md",
       "target": ".claude/CLAUDE.md",
-      "section_id": "extension_grant"
+      "section_id": "extension_present"
     },
     "index": {
       "source": "index-entries.json",

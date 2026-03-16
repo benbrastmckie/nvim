@@ -5,21 +5,30 @@
     {
       "project_number": 210,
       "project_name": "rename_grant_extension_to_present",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "effort": "1 hour",
       "created": "2026-03-16T14:00:00Z",
-      "last_updated": "2026-03-16T20:30:58Z",
-      "session_id": "sess_1741899200_a2b3c4",
+      "last_updated": "2026-03-16T20:38:01Z",
+      "session_id": "sess_1741899600_b3c4d5",
       "dependencies": [],
       "artifacts": [
         {
           "path": "specs/210_rename_grant_extension_to_present/plans/01_rename-extension-dir.md",
           "type": "plan",
           "summary": "3-phase implementation plan for renaming grant extension to present"
+        },
+        {
+          "path": "specs/210_rename_grant_extension_to_present/summaries/01_rename-extension-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-16T20:30:58Z"
+      "planned": "2026-03-16T20:30:58Z",
+      "started": "2026-03-16T20:35:43Z",
+      "completed": "2026-03-16T20:38:01Z",
+      "completion_summary": "Renamed grant extension directory to present using git mv, and updated manifest.json core fields (name, language, merge_targets.claudemd.section_id) from 'grant' to 'present'. Git history preserved.",
+      "claudemd_suggestions": "Renamed .claude/extensions/grant/ to .claude/extensions/present/, updated manifest.json with new extension name fields"
     },
     {
       "project_number": 211,
