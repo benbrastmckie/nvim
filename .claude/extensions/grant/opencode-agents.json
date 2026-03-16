@@ -1,0 +1,19 @@
+{
+  "agent": {
+    "grant": {
+      "description": "Research funders and draft grant proposals",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/agent/subagents/grant-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "webfetch": true,
+        "websearch": true
+      }
+    }
+  }
+}

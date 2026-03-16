@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "path": "project/grant/README.md",
+      "domain": "project",
+      "subdomain": "grant",
+      "topics": ["grant", "proposal", "funding", "research"],
+      "keywords": ["grant", "proposal", "funder", "budget"],
+      "summary": "Grant writing domain overview and extension capabilities",
+      "line_count": 100,
+      "load_when": {
+        "languages": ["grant"],
+        "agents": ["grant-agent"],
+        "commands": ["/grant"]
+      }
+    }
+  ]
+}

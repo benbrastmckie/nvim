@@ -1,0 +1,32 @@
+{
+  "name": "grant",
+  "version": "1.0.0",
+  "description": "Grant writing support with structured proposal development, budget planning, and funder-specific guidance",
+  "language": "grant",
+  "dependencies": [],
+  "provides": {
+    "agents": ["grant-agent.md"],
+    "skills": ["skill-grant"],
+    "commands": [],
+    "rules": [],
+    "context": ["project/grant"],
+    "scripts": [],
+    "hooks": []
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_grant"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    },
+    "opencode_json": {
+      "source": "opencode-agents.json",
+      "target": "opencode.json"
+    }
+  },
+  "mcp_servers": {}
+}
