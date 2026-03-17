@@ -8,10 +8,11 @@ next_project_number: 223
 
 ### 222. Document memory extension usage patterns and expectations
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_memory-extension-analysis.md](222_document_memory_extension_usage/reports/01_memory-extension-analysis.md)
+- **Plan**: [02_implementation-plan.md](222_document_memory_extension_usage/plans/02_implementation-plan.md)
 
 **Description**: Understand how the memory extension works and create detailed documentation in .claude/extensions/memory/README.md to inform expectations and usage patterns.
 
