@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 222,
+  "next_project_number": 223,
   "active_projects": [
+    {
+      "project_number": 222,
+      "project_name": "document_memory_extension_usage",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-17T23:01:29Z",
+      "last_updated": "2026-03-17T23:01:29Z"
+    },
     {
       "project_number": 221,
       "project_name": "fix_phase_status_markers_implementation_agents",

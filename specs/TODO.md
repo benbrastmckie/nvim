@@ -1,10 +1,20 @@
 ---
-next_project_number: 222
+next_project_number: 223
 ---
 
 # TODO
 
 ## Tasks
+
+### 222. Document memory extension usage patterns and expectations
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Understand how the memory extension works and create detailed documentation in .claude/extensions/memory/README.md to inform expectations and usage patterns.
+
+---
 
 ### 221. Fix phase status marker updates in grant-agent, skill-grant, and latex/typst implementation agents
 - **Effort**: 2.25 hours
