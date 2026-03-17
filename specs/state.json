@@ -5,21 +5,27 @@
     {
       "project_number": 220,
       "project_name": "add_fix_it_flag_to_grant_command",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "effort": "3-5 hours",
       "created": "2026-03-17T02:00:22Z",
-      "last_updated": "2026-03-17T02:05:29Z",
+      "last_updated": "2026-03-17T02:13:13Z",
       "dependencies": [],
-      "session_id": "sess_1773712901_265cf3",
+      "session_id": "sess_1773713356_0fc141",
       "researched": "2026-03-17T02:05:29Z",
       "artifacts": [
         {
           "path": "specs/220_add_fix_it_flag_to_grant_command/reports/01_fix-it-flag-research.md",
           "type": "research",
           "summary": "Research report covering /fix-it patterns, /grant structure, and recommended implementation approach using fix_it_scan workflow"
+        },
+        {
+          "path": "specs/220_add_fix_it_flag_to_grant_command/plans/02_implementation-plan.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for adding --fix-it flag to /grant command"
         }
-      ]
+      ],
+      "planned": "2026-03-17T02:13:13Z"
     },
     {
       "project_number": 219,
