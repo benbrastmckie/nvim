@@ -56,12 +56,43 @@ Extract phases, .typ files to create/modify, verification criteria.
 Scan phases for first incomplete.
 
 ### Stage 4: Execute Typst Development Loop
-For each phase:
-1. Mark phase `[IN PROGRESS]`
-2. Create/modify .typ files
-3. Run `typst compile`
-4. Check compilation result
-5. Mark phase `[COMPLETED]` or `[PARTIAL]`
+
+For each phase starting from resume point:
+
+**A. Mark Phase In Progress**
+Edit plan file heading to show the phase is active.
+Use the Edit tool with:
+- old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
+- new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+
+Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+
+**B. Execute Steps**
+1. Create/modify .typ files per plan instructions
+2. Run `typst compile document.typ` to compile
+3. Check for compilation errors
+4. Fix errors iteratively
+
+**C. Verify Phase Completion**
+- Compilation must succeed
+- All specified files must exist
+
+**D. Mark Phase Complete**
+Edit plan file heading to show the phase is finished.
+Use the Edit tool with:
+- old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+- new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
+
+Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+
+**E. Git Commit Phase**
+```bash
+git add -A && git commit -m "task {N} phase {P}: {phase_name}
+
+Session: {session_id}
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+```
 
 ### Stage 5: Final Compilation Verification
 ```bash
@@ -75,6 +106,24 @@ Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`
 Write to `specs/{N}_{SLUG}/.return-meta.json`
 
 ### Stage 8: Return Brief Text Summary
+
+## Phase Checkpoint Protocol
+
+For each phase in the implementation plan:
+
+1. **Read plan file**, identify current phase
+2. **Update phase status** to `[IN PROGRESS]` in plan file
+3. **Execute phase steps** as documented
+4. **Update phase status** to `[COMPLETED]` or `[BLOCKED]` or `[PARTIAL]`
+5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
+6. **Proceed to next phase** or return if blocked
+
+**This ensures**:
+- Resume point is always discoverable from plan file
+- Git history reflects phase-level progress
+- Failed phases can be retried from beginning
+
+---
 
 ## Typst vs LaTeX Differences
 

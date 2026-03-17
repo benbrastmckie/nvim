@@ -280,7 +280,7 @@ For each phase in the implementation plan:
 
 ---
 
-### Phase 4: Expand phase marker instructions in typst-implementation-agent.md [NOT STARTED]
+### Phase 4: Expand phase marker instructions in typst-implementation-agent.md [COMPLETED]
 
 **Goal**: Replace condensed Stage 4 with detailed Edit tool patterns and add Phase Checkpoint Protocol
 
