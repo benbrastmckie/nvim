@@ -1,10 +1,20 @@
 ---
-next_project_number: 221
+next_project_number: 222
 ---
 
 # TODO
 
 ## Tasks
+
+### 221. Fix phase status marker updates in grant-agent, skill-grant, and latex/typst implementation agents
+- **Effort**: 2.25 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Fix phase status marker updates across implementation agents in the Vision repository. Three issues to address: (1) grant-agent lacks Phase Checkpoint Protocol - does not update plan-level or phase-level status markers ([NOT STARTED] -> [IN PROGRESS] -> [COMPLETED]) during the assemble workflow, unlike general-implementation-agent which has Stage 4A (mark phase in progress) and Stage 4D (mark phase complete) with per-phase git commits; (2) skill-grant lacks calls to update-plan-status.sh at preflight and postflight, unlike skill-implementer which calls this script; (3) latex-implementation-agent and typst-implementation-agent have incomplete phase marker instructions - they mention updates but lack detailed Edit tool patterns and a Phase Checkpoint Protocol section. Fix all three by: adding a Phase Checkpoint Protocol section to grant-agent mirroring general-implementation-agent, adding update-plan-status.sh calls to skill-grant, and expanding phase marker instructions in latex/typst implementation agents. All agents should update TODO.md, state.json, plan file phase headers, and plan metadata consistently.
+
+---
 
 ### 220. Add `--fix-it` flag to `/grant` command with grant directory scanning
 - **Effort**: 3-5 hours
