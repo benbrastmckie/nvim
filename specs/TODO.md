@@ -8,11 +8,13 @@ next_project_number: 220
 
 ### 219. Incorporate ProofChecker documentation, patterns, and /merge command into nvim .claude/ system
 - **Effort**: 6-8 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Started**: 2026-03-16
+- **Completed**: 2026-03-16
 - **Language**: meta
 - **Research**: [01_proofchecker-integration.md](219_incorporate_proofchecker_docs_and_patterns/reports/01_proofchecker-integration.md)
 - **Plan**: [02_implementation-plan.md](219_incorporate_proofchecker_docs_and_patterns/plans/02_implementation-plan.md)
+- **Summary**: [03_implementation-summary.md](219_incorporate_proofchecker_docs_and_patterns/summaries/03_implementation-summary.md)
 
 **Description**: Incorporate missing documentation, patterns, format schemas, and commands from ProofChecker's `.claude/` system to make the nvim agent system more complete and portable across both GitHub and GitLab repositories. Specifically: (1) Add `blocked-mcp-tools.md` to the lean extension's context as a standalone doc with the unblocking procedure (currently only embedded in mcp-tools-guide.md without formal recovery steps); (2) Create `context/core/reference/state-json-schema.md` — a complete schema reference for state.json; (3) Create `context/core/reference/skill-agent-mapping.md` — maps skills to agents and routing rules (currently only in CLAUDE.md); (4) Create `context/core/patterns/early-metadata-pattern.md` — pattern for writing metadata early to enable recovery from interrupted delegation; (5) Create `context/core/patterns/mcp-tool-recovery.md` — structured retry/fallback patterns for MCP tool failures; (6) Create `context/core/formats/handoff-artifact.md` — schema for teammate handoff documents enabling context-efficient continuation (needed for --team successor pattern); (7) Create `context/core/formats/progress-file.md` — schema for progress-tracking JSON files supporting resumable work; (8) Update `context/index.json` with entries for all new files so agents can discover them; (9) Create `/merge` command in core `.claude/commands/merge.md` — adapt ProofChecker's GitLab-only `/merge` command to auto-detect whether the current repo is GitHub or GitLab (check for `.git/config` remote URL patterns or `gh`/`glab` auth status) and use the appropriate CLI (`gh pr create` for GitHub, `glab mr create` for GitLab), supporting --draft, --title, --body flags and providing unified MR/PR workflow regardless of platform. The reference source is `/home/benjamin/Projects/ProofChecker/.claude/` — read each ProofChecker file, adapt it to the nvim extension-based architecture (removing ProofChecker-specific content, generalizing for a multi-extension/multi-platform system), and place in the correct location.
 

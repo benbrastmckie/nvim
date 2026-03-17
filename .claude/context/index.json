@@ -1447,6 +1447,68 @@
           "web"
         ]
       }
+    },
+    {
+      "path": "core/reference/state-json-schema.md",
+      "domain": "core",
+      "subdomain": "reference",
+      "topics": ["state", "schema", "json"],
+      "keywords": ["state.json", "schema", "projects", "status"],
+      "summary": "Complete state.json schema reference with field specifications",
+      "line_count": 150,
+      "load_when": {
+        "commands": ["/task", "/todo", "/implement", "/research"],
+        "agents": ["meta-builder-agent"]
+      }
+    },
+    {
+      "path": "core/reference/skill-agent-mapping.md",
+      "domain": "core",
+      "subdomain": "reference",
+      "topics": ["skills", "agents", "routing"],
+      "keywords": ["skill", "agent", "mapping", "delegation"],
+      "summary": "Skill-to-agent routing and delegation reference",
+      "line_count": 120,
+      "load_when": {
+        "agents": ["orchestrator", "meta-builder-agent"],
+        "languages": ["meta"]
+      }
+    },
+    {
+      "path": "core/patterns/mcp-tool-recovery.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "topics": ["mcp", "recovery", "error-handling"],
+      "keywords": ["mcp", "abort", "timeout", "recovery"],
+      "summary": "MCP tool failure recovery strategies and fallback patterns",
+      "line_count": 180,
+      "load_when": {
+        "agents": ["general-implementation-agent", "general-research-agent"]
+      }
+    },
+    {
+      "path": "core/formats/handoff-artifact.md",
+      "domain": "core",
+      "subdomain": "formats",
+      "topics": ["handoff", "context-exhaustion", "team-mode"],
+      "keywords": ["handoff", "context", "successor", "team"],
+      "summary": "Handoff artifact schema for context exhaustion recovery",
+      "line_count": 180,
+      "load_when": {
+        "agents": ["skill-team-research", "skill-team-plan", "skill-team-implement"]
+      }
+    },
+    {
+      "path": "core/formats/progress-file.md",
+      "domain": "core",
+      "subdomain": "formats",
+      "topics": ["progress", "phases", "team-mode"],
+      "keywords": ["progress", "phases", "objectives", "resume"],
+      "summary": "Progress file schema for phase tracking and resume",
+      "line_count": 200,
+      "load_when": {
+        "agents": ["skill-team-research", "skill-team-plan", "skill-team-implement"]
+      }
     }
   ]
 }

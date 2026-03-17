@@ -5,11 +5,11 @@
     {
       "project_number": 219,
       "project_name": "incorporate_proofchecker_docs_and_patterns",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-17T00:41:13Z",
-      "last_updated": "2026-03-17T00:57:06Z",
-      "session_id": "sess_1773708833_c558eb",
+      "last_updated": "2026-03-17T01:07:27Z",
+      "session_id": "sess_1773709105_2af108",
       "researched": "2026-03-17T00:49:18Z",
       "artifacts": [
         {
@@ -21,9 +21,18 @@
           "path": "specs/219_incorporate_proofchecker_docs_and_patterns/plans/02_implementation-plan.md",
           "type": "plan",
           "summary": "7-phase implementation plan for porting ProofChecker documentation, patterns, and /merge command"
+        },
+        {
+          "path": "specs/219_incorporate_proofchecker_docs_and_patterns/summaries/03_implementation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-17T00:57:06Z"
+      "planned": "2026-03-17T00:57:06Z",
+      "started": "2026-03-17T00:59:00Z",
+      "completed": "2026-03-17T01:07:27Z",
+      "completion_summary": "Incorporated 6 documentation files from ProofChecker, created skill-agent-mapping.md reference, and built unified /merge command with GitHub/GitLab platform auto-detection. All content generalized for extension architecture.",
+      "claudemd_suggestions": "Added core/reference/ directory with state-json-schema.md and skill-agent-mapping.md. Created mcp-tool-recovery.md pattern, handoff-artifact.md and progress-file.md formats. Added /merge command. Updated index.json with 5 new entries and lean extension index-entries.json with 2 entries."
     },
     {
       "project_number": 218,
