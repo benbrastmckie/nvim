@@ -29,6 +29,20 @@
       }
     },
     {
+      "path": "project/present/patterns/yc-compliance-checklist.md",
+      "domain": "project",
+      "subdomain": "present",
+      "topics": ["deck", "yc", "compliance", "validation", "enforcement"],
+      "keywords": ["yc", "compliance", "checklist", "validation", "font-size", "legibility", "simplicity"],
+      "summary": "YC compliance checklist with PASS/FAIL enforcement rules for pitch decks",
+      "line_count": 289,
+      "load_when": {
+        "languages": ["deck"],
+        "agents": ["deck-agent"],
+        "commands": ["/deck"]
+      }
+    },
+    {
       "path": "project/present/README.md",
       "domain": "project",
       "subdomain": "present",
