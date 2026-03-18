@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 234,
+  "next_project_number": 235,
   "active_projects": [
+    {
+      "project_number": 234,
+      "project_name": "upgrade_founder_extension_workflow",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-18T18:54:28Z",
+      "last_updated": "2026-03-18T18:54:28Z"
+    },
     {
       "project_number": 233,
       "project_name": "research_gstack_founder_extension",
