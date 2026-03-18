@@ -3,7 +3,7 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/domain/business-frameworks.md",
       "summary": "TAM/SAM/SOM market sizing frameworks, business model canvas, unit economics",
-      "line_count": 180,
+      "line_count": 240,
       "load_when": {
         "agents": ["market-agent", "analyze-agent", "strategy-agent"],
         "languages": ["founder"],
@@ -13,7 +13,7 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/domain/strategic-thinking.md",
       "summary": "CEO cognitive patterns, YC principles, completeness principle",
-      "line_count": 120,
+      "line_count": 214,
       "load_when": {
         "agents": ["market-agent", "analyze-agent", "strategy-agent"],
         "languages": ["founder"],
@@ -23,7 +23,7 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/patterns/forcing-questions.md",
       "summary": "Forcing question framework for specificity, anti-patterns to detect",
-      "line_count": 100,
+      "line_count": 221,
       "load_when": {
         "agents": ["market-agent", "analyze-agent", "strategy-agent"],
         "languages": ["founder"],
@@ -33,7 +33,7 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/patterns/decision-making.md",
       "summary": "Two-way doors, inversion, focus as subtraction decision frameworks",
-      "line_count": 90,
+      "line_count": 276,
       "load_when": {
         "agents": ["market-agent", "analyze-agent", "strategy-agent"],
         "languages": ["founder"],
@@ -43,17 +43,17 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/patterns/mode-selection.md",
       "summary": "Operational modes pattern for scope control (LAUNCH, SCALE, PIVOT, EXPAND)",
-      "line_count": 70,
+      "line_count": 239,
       "load_when": {
-        "agents": ["strategy-agent"],
+        "agents": ["market-agent", "analyze-agent", "strategy-agent"],
         "languages": ["founder"],
-        "commands": ["/strategy"]
+        "commands": ["/market", "/analyze", "/strategy"]
       }
     },
     {
       "path": ".claude/extensions/founder/context/project/founder/templates/market-sizing.md",
       "summary": "TAM/SAM/SOM market sizing artifact template with concentric circles diagram",
-      "line_count": 120,
+      "line_count": 250,
       "load_when": {
         "agents": ["market-agent"],
         "languages": ["founder"],
@@ -63,7 +63,7 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/templates/competitive-analysis.md",
       "summary": "Competitive analysis template with 2x2 positioning map, battle cards",
-      "line_count": 130,
+      "line_count": 273,
       "load_when": {
         "agents": ["analyze-agent"],
         "languages": ["founder"],
@@ -73,7 +73,7 @@
     {
       "path": ".claude/extensions/founder/context/project/founder/templates/gtm-strategy.md",
       "summary": "Go-to-market strategy template with positioning, channels, 90-day plan",
-      "line_count": 150,
+      "line_count": 303,
       "load_when": {
         "agents": ["strategy-agent"],
         "languages": ["founder"],
