@@ -1176,19 +1176,25 @@
     {
       "project_number": 236,
       "project_name": "refactor_founder_commands",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-18T21:44:00Z",
-      "last_updated": "2026-03-18T21:44:00Z",
+      "last_updated": "2026-03-18T21:48:30Z",
       "researched": "2026-03-18T21:44:00Z",
-      "session_id": "sess_1742316200_f6g7h8",
+      "session_id": "sess_1742316500_g7h8i9",
       "artifacts": [
         {
           "path": "specs/236_refactor_founder_commands/reports/01_workflow-analysis.md",
           "type": "research",
           "summary": "Workflow analysis: commands auto-proceed through plan+implement; fix requires splitting into research-only phase"
+        },
+        {
+          "path": "specs/236_refactor_founder_commands/plans/01_workflow-refactor.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for refactoring founder commands to stop at research stage"
         }
-      ]
+      ],
+      "planned": "2026-03-18T21:48:30Z"
     }
   ],
   "completed_projects": [],
