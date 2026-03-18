@@ -1129,19 +1129,25 @@
     {
       "project_number": 235,
       "project_name": "research_integrate_mcp_founder",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-18T20:17:00Z",
-      "last_updated": "2026-03-18T20:17:00Z",
-      "session_id": "sess_1742313418_f3a2b1",
+      "last_updated": "2026-03-18T20:08:12Z",
+      "session_id": "sess_1742313600_a1b2c3",
       "researched": "2026-03-18T20:17:00Z",
       "artifacts": [
         {
           "path": "specs/235_research_integrate_mcp_founder/reports/01_meta-research.md",
           "type": "research",
           "summary": "Auto-generated research from /meta interview covering MCP tools for market research and business strategy"
+        },
+        {
+          "path": "specs/235_research_integrate_mcp_founder/plans/01_mcp-tools-integration.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for MCP tool research and founder extension integration"
         }
-      ]
+      ],
+      "planned": "2026-03-18T20:08:12Z"
     }
   ],
   "completed_projects": [],
