@@ -284,3 +284,10 @@
 [2026-03-18T13:26:56-07:00] Notification sent: Tab 6
 [2026-03-18T13:27:58-07:00] Notification sent: Tab 6
 [2026-03-18T13:30:37-07:00] Notification sent: Tab 6
+[2026-03-18T13:38:02-07:00] Notification sent: Tab 6
+[2026-03-18T13:39:03-07:00] Notification sent: Tab 6
+[2026-03-18T14:44:26-07:00] Notification sent: Tab 6
+[2026-03-18T14:49:02-07:00] Notification sent: Tab 6
+[2026-03-18T14:50:04-07:00] Notification sent: Tab 6
+[2026-03-18T14:50:09-07:00] Cooldown active: 5s < 10s - skipping notification
+[2026-03-18T14:51:09-07:00] Notification sent: Tab 8

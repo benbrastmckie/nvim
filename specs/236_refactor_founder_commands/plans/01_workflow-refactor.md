@@ -1,7 +1,7 @@
 # Implementation Plan: Task #236
 
 - **Task**: 236 - refactor_founder_commands
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5-6 hours
 - **Dependencies**: None
 - **Research Inputs**: [01_workflow-analysis.md](../reports/01_workflow-analysis.md)

@@ -18,11 +18,14 @@ next_project_number: 238
 
 ### 236. Refactor founder extension commands to research-stop workflow
 - **Effort**: 4-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
+- **Started**: 2026-03-18
+- **Completed**: 2026-03-18
 - **Research**: [01_workflow-analysis.md](236_refactor_founder_commands/reports/01_workflow-analysis.md)
 - **Plan**: [01_workflow-refactor.md](236_refactor_founder_commands/plans/01_workflow-refactor.md)
+- **Summary**: [01_workflow-refactor-summary.md](236_refactor_founder_commands/summaries/01_workflow-refactor-summary.md)
 
 **Description**: Refactor `/market`, `/analyze`, and `/strategy` commands so each stops after producing a research report (status [RESEARCHED]) rather than auto-proceeding through plan+implement. Forcing questions happen at research time; plan reads the report; implement generates the final `strategy/` output. Applies uniformly across all three commands, their skills, and their agents. Also updates `founder-plan-agent` to read the research report instead of asking redundant questions, and `founder-implement-agent` to support an optional output path argument.
 

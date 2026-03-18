@@ -1187,12 +1187,12 @@
     {
       "project_number": 236,
       "project_name": "refactor_founder_commands",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-18T21:44:00Z",
-      "last_updated": "2026-03-18T21:48:30Z",
+      "last_updated": "2026-03-18T22:04:24Z",
       "researched": "2026-03-18T21:44:00Z",
-      "session_id": "sess_1742316500_g7h8i9",
+      "session_id": "sess_1773870689_230d4f",
       "artifacts": [
         {
           "path": "specs/236_refactor_founder_commands/reports/01_workflow-analysis.md",
@@ -1203,9 +1203,18 @@
           "path": "specs/236_refactor_founder_commands/plans/01_workflow-refactor.md",
           "type": "plan",
           "summary": "6-phase implementation plan for refactoring founder commands to stop at research stage"
+        },
+        {
+          "path": "specs/236_refactor_founder_commands/summaries/01_workflow-refactor-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-18T21:48:30Z"
+      "planned": "2026-03-18T21:48:30Z",
+      "started": "2026-03-18T21:51:42Z",
+      "completed": "2026-03-18T22:04:24Z",
+      "completion_summary": "Refactored founder extension workflow from auto-proceed to three-stage pattern. Modified 11 files: 5 agents, 3 skills, 3 commands. Forcing questions now happen once during research phase, with answers captured in research reports.",
+      "claudemd_suggestions": "Modified .claude/extensions/founder/ directory: 5 agents (market, analyze, strategy, founder-plan, founder-implement), 3 skills (skill-market, skill-analyze, skill-strategy), 3 commands (market, analyze, strategy)"
     }
   ],
   "completed_projects": [],
