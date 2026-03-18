@@ -85,6 +85,11 @@
           "path": "specs/230_touying_template_simplification/reports/01_meta-research.md",
           "type": "research",
           "summary": "Template simplification patterns for YC-compliant layouts"
+        },
+        {
+          "path": "specs/230_touying_template_simplification/plans/01_template-simplification.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for simplifying touying pitch deck template"
         }
       ],
       "planned": "2026-03-18T16:51:19Z"
