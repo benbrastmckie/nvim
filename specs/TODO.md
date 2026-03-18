@@ -1,10 +1,19 @@
 ---
-next_project_number: 233
+next_project_number: 234
 ---
 
 # TODO
 
 ## Tasks
+
+### 233. Research gstack for founder extension integration
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Research https://github.com/garrytan/gstack to see what elements would make sense to integrate into my agent system as a new founder/ extension.
+
+---
 
 ### 232. Update example templates to be YC compliant
 - **Effort**: 3-4 hours
@@ -47,13 +56,15 @@ next_project_number: 233
 
 ### 229. Update deck-agent with strict YC enforcement
 - **Effort**: 3-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-18
 - **Language**: meta
 - **Dependencies**: Task #228
 - **Research**:
   - [01_meta-research.md](229_deck_agent_enforcement/reports/01_meta-research.md)
   - [02_deck-agent-research.md](229_deck_agent_enforcement/reports/02_deck-agent-research.md)
 - **Plan**: [01_deck-agent-enforcement.md](229_deck_agent_enforcement/plans/01_deck-agent-enforcement.md)
+- **Summary**: [01_implementation-summary.md](229_deck_agent_enforcement/summaries/01_implementation-summary.md)
 
 **Description**: Update `.claude/extensions/present/agents/deck-agent.md` to enforce YC compliance. Add hard limit of 10 slides max, enforce minimum font sizes (24pt body, 40pt titles) in generated Typst, add content density validation (one idea per slide), simplify default layouts by removing multi-column grids, and add YC compliance validation before returning with compliance_passed boolean in metadata.
 
