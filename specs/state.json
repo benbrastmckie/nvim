@@ -1,7 +1,18 @@
 {
   "version": "1.0.0",
-  "next_project_number": 237,
+  "next_project_number": 238,
   "active_projects": [
+    {
+      "project_number": 237,
+      "project_name": "add_typst_output_founder_implementation",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-18T21:49:51Z",
+      "last_updated": "2026-03-18T21:49:51Z",
+      "dependencies": [
+        236
+      ]
+    },
     {
       "project_number": 234,
       "project_name": "upgrade_founder_extension_workflow",

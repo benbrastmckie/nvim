@@ -1,10 +1,20 @@
 ---
-next_project_number: 237
+next_project_number: 238
 ---
 
 # TODO
 
 ## Tasks
+
+### 237. Add typst output generation to founder task implementation
+- **Effort**: 4-6 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: Task #236
+
+**Description**: Enhance `/implement` for founder tasks to generate typst output in `founder/` directory at the repository root. The implementation should use templates and formatting assets from the founder extension (`.claude/extensions/founder/`) to produce professionally formatted strategy documents from the markdown reports created by `/market`, `/analyze`, and `/strategy` commands.
+
+---
 
 ### 236. Refactor founder extension commands to research-stop workflow
 - **Effort**: 4-6 hours
