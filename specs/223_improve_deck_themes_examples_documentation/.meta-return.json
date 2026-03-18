@@ -1,0 +1,26 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 consolidated task (#223) for improving /deck slide themes: research polished investor pitch themes online, create examples/ directory with theme samples, and create present/README.md documentation.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "specs/TODO.md",
+      "summary": "Task #223 added to TODO.md"
+    },
+    {
+      "type": "state_entry",
+      "path": "specs/state.json",
+      "summary": "Task #223 added to active_projects"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1742220600_a3f2c1",
+    "duration_seconds": 180,
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "tasks_created": 1
+  },
+  "next_steps": "Run /research 223 to begin online research for polished investor pitch slide themes"
+}
