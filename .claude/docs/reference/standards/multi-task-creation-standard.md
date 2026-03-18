@@ -6,6 +6,24 @@ This document defines the standard patterns for commands, skills, and agents tha
 
 Multi-task creation involves discovering potential work items, presenting them to users for selection, organizing them into coherent tasks, establishing dependencies, and inserting them into state.json/TODO.md in the correct order.
 
+## Task Minimization Principle
+
+**Fewer, well-scoped tasks are better than many fragmented ones.**
+
+Multi-task creators should proactively analyze user-provided items and suggest consolidation opportunities. This principle applies because:
+
+1. **Reduced Context Switching**: Each task requires research, planning, and implementation phases. Consolidating related work reduces overhead.
+2. **Better Coherence**: Related changes implemented together are more likely to be consistent and well-integrated.
+3. **Clearer Progress**: Fewer tasks make TODO.md more navigable and progress more visible.
+4. **Dependency Simplification**: Consolidated tasks have simpler dependency graphs.
+
+**Implementation**: Commands should implement automatic topic clustering (like `/meta`'s Stage 3.5 and `/fix-it`'s topic grouping) to identify related items and offer consolidation options before task creation.
+
+**User Control**: Consolidation should always be presented as a suggestion with three options:
+- Accept suggested groups (recommended for related items)
+- Keep as separate tasks (user preference)
+- Customize groupings (fine-grained control)
+
 ## Core Components
 
 Multi-task creators implement these 8 components. Components marked **Required** must be implemented; **Optional** components enhance the user experience but may be omitted based on context.
@@ -65,9 +83,14 @@ Use AskUserQuestion with multiSelect for item selection.
 }
 ```
 
-### 3. Topic Grouping (Optional)
+### 3. Topic Grouping (Optional but Recommended)
 
-Cluster related items into coherent task groups when 2+ items are selected.
+Cluster related items into coherent task groups when 2+ items are selected. This implements the **Task Minimization Principle** - proactively suggesting consolidation opportunities rather than passively accepting user-provided breakdowns.
+
+**Automatic Topic Clustering** (implemented by `/meta` Stage 3.5 and `/fix-it`):
+- Extract topic indicators: key terms, component type, affected area, action type
+- Cluster by shared indicators (2+ key terms OR same component_type AND affected_area)
+- Present consolidation options before task creation
 
 **Clustering Algorithm**:
 ```
@@ -335,32 +358,43 @@ For any command/skill/agent that creates multiple tasks:
 
 ## Reference Implementation
 
-The `/meta` command and `meta-builder-agent` implement all 8 components:
+The `/meta` command and `meta-builder-agent` implement all 8 components plus enhanced features:
 
 | Component | Implementation Location |
 |-----------|-------------------------|
 | Discovery | Interview Stage 2-3 (GatherDomainInfo, IdentifyUseCases) |
 | Selection | Interview Stage 5 (ReviewAndConfirm with task list) |
-| Grouping | Interview Stage 3 (user-defined groupings) |
+| **Topic Clustering** | **Interview Stage 3.5 (AnalyzeTopics - automatic clustering)** |
+| Grouping | Interview Stage 3.5 (automatic) + Stage 3 (user refinement) |
 | Dependencies | Interview Stage 3 Question 5 (dependency interview) |
 | Ordering | Interview Stage 6 (Kahn's algorithm) |
 | Visualization | Interview Stage 7 (DeliverSummary with graph) |
 | Confirmation | Interview Stage 5 (mandatory confirmation) |
-| State Updates | Interview Stage 6 (batch insertion) |
+| **Research Generation** | **Interview Stage 5.5 (GenerateResearchArtifacts)** |
+| State Updates | Interview Stage 6 (batch insertion with RESEARCHED status) |
+
+**Enhanced Stages** (added for Task Minimization Principle):
+- **Stage 3.5 (AnalyzeTopics)**: Extracts topic indicators, clusters by shared terms/components, presents consolidation picker
+- **Stage 5.5 (GenerateResearchArtifacts)**: Creates `01_meta-research.md` from interview context for each task
 
 See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 
 ## Current Compliance Status
 
-| Command | Required | Grouping | Dependencies | Ordering | Visualization |
-|---------|----------|----------|--------------|----------|---------------|
-| `/meta` | Yes | Yes | Full DAG | Kahn's | Linear/Layered |
-| `/fix-it` | Yes | Yes | Internal only | No | No |
-| `/review` | Yes | Yes | No | No | No |
-| `/errors` | Partial* | No | No | No | No |
-| `/task --review` | Yes | No | parent_task | No | No |
+| Command | Required | Grouping | Dependencies | Ordering | Visualization | Research Gen |
+|---------|----------|----------|--------------|----------|---------------|--------------|
+| `/meta` | Yes | **Automatic** | Full DAG | Kahn's | Linear/Layered | **Yes** |
+| `/fix-it` | Yes | Yes | Internal only | No | No | No |
+| `/review` | Yes | Yes | No | No | No | No |
+| `/errors` | Partial* | No | No | No | No | No |
+| `/task --review` | Yes | No | parent_task | No | No | No |
 
 *`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
+
+**Enhanced `/meta` Features**:
+- **Automatic Topic Clustering** (Stage 3.5): Proactively analyzes user-provided task breakdown and suggests consolidation opportunities
+- **Research Artifact Generation** (Stage 5.5): Creates lightweight research reports from interview context
+- **RESEARCHED Status**: Tasks start in `researched` status, enabling immediate `/plan N` without separate `/research N`
 
 ## Gaps and Future Enhancements
 
