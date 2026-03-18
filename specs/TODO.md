@@ -6,17 +6,6 @@ next_project_number: 240
 
 ## Tasks
 
-### 239. Implement user access approval workflow for protected content
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
-- **Started**: 2026-03-18
-- **Research**: [01_user-access-approval.md](239_implement_user_access_approval_workflow/reports/01_user-access-approval.md)
-- **Language**: web
-
-**Description**: When new users attempt to login to the site to access protected content, I want a request to be sent (which I should receive by email) that I have to approve before access is granted. Once access is granted, users will be able to sign on from any device using the same username.
-
----
-
 ### 238. Fix founder extension /implement to generate typst files using templates
 - **Effort**: 2-3 hours
 - **Status**: [PLANNED]
