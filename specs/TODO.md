@@ -19,11 +19,13 @@ next_project_number: 233
 
 ### 231. Update pitch-deck-structure with stricter guidelines
 - **Effort**: 2-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-18
 - **Language**: meta
 - **Dependencies**: Task #228
 - **Research**: [01_meta-research.md](231_pitch_deck_structure_update/reports/01_meta-research.md)
 - **Plan**: [01_pitch-deck-enforcement.md](231_pitch_deck_structure_update/plans/01_pitch-deck-enforcement.md)
+- **Summary**: [02_pitch-deck-enforcement-summary.md](231_pitch_deck_structure_update/summaries/02_pitch-deck-enforcement-summary.md)
 
 **Description**: Update `.claude/extensions/present/context/project/present/patterns/pitch-deck-structure.md` with mandatory enforcement language. Add "Content Density Rules" section (max 1 idea per slide, max 5 bullets), "Typography Enforcement" section (min 24pt body, min 40pt titles), strengthen anti-patterns from advisory to PROHIBITED, and add validation checklist with pass/fail criteria.
 
@@ -43,7 +45,7 @@ next_project_number: 233
 
 ### 229. Update deck-agent with strict YC enforcement
 - **Effort**: 3-4 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Language**: meta
 - **Dependencies**: Task #228
 - **Research**:

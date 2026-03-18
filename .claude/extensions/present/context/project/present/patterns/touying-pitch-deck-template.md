@@ -296,35 +296,6 @@ Two-column layouts should ONLY be used for the Team slide where showing founders
 Caption or description below.
 ```
 
-### Chart Placeholder Pattern
-
-For the Traction slide, replace the placeholder with actual chart code:
-
-```typst
-// Using cetz for charts
-#import "@preview/cetz:0.2.2"
-
-#cetz.canvas({
-  import cetz.plot
-  import cetz.draw: *
-
-  plot.plot(
-    size: (10, 5),
-    x-tick-step: 1,
-    y-tick-step: 100,
-    x-label: "Month",
-    y-label: "Revenue ($K)",
-    {
-      plot.add(
-        ((1, 10), (2, 25), (3, 45), (4, 80), (5, 120), (6, 200)),
-        mark: "o",
-        style: (stroke: rgb("#4a9960"), mark: (fill: rgb("#4a9960"))),
-      )
-    },
-  )
-})
-```
-
 ## Compilation
 
 ```bash
@@ -339,14 +310,112 @@ typst watch pitch-deck.typ
 
 Before presenting, verify:
 
-- [ ] All text is readable at 24pt or larger
+- [ ] All text is 28pt or larger (32pt body, 48pt titles)
 - [ ] Each slide has one main idea
+- [ ] No multi-column layouts (except Team slide)
+- [ ] No decorative panels, cards, or colored boxes
 - [ ] No jargon or unexplained acronyms
-- [ ] Charts are simple with clear labels
+- [ ] Charts are simple images (no inline chart code)
 - [ ] Team slide shows relevant experience only
 - [ ] Ask slide has specific amount and milestones
 - [ ] Total slides: 10 or fewer
 - [ ] Tested with someone unfamiliar with the product
+
+## Prohibited Patterns (DO NOT USE)
+
+The following patterns violate YC design principles and should NOT be used in pitch decks:
+
+### Font Sizes Below 28pt
+
+**DO NOT USE** font sizes smaller than 28pt. Small text is unreadable during presentations and signals lack of confidence.
+
+```typst
+// PROHIBITED - too small
+#text(size: 24pt)[...]
+#text(size: 22pt)[...]
+#text(size: 20pt)[...]
+#text(size: 18pt)[...]
+```
+
+**Rationale**: YC recommends "legibility over density" - every word must be readable from the back of the room.
+
+### Multi-Column Grids (Except Team Slide)
+
+**DO NOT USE** grid layouts for content slides. Multi-column layouts split attention and reduce readability.
+
+```typst
+// PROHIBITED - grid for content
+#grid(
+  columns: (1fr, 1fr),
+  [Left content],
+  [Right content],
+)
+```
+
+**Exception**: Team slide may use two columns for founder bios.
+
+**Rationale**: YC recommends "one idea per slide" - grids encourage cramming multiple ideas.
+
+### Decorative Panels and Cards
+
+**DO NOT USE** block elements with fill colors, borders, or radius for visual decoration.
+
+```typst
+// PROHIBITED - decorative boxes
+#block(
+  fill: rgb("#f0f0f0"),
+  radius: 8pt,
+  inset: 20pt,
+)[content]
+
+// PROHIBITED - metric cards
+#rect(fill: blue.lighten(80%))[Metric: $X]
+```
+
+**Rationale**: YC recommends "clarity over aesthetics" - decorative elements distract from content.
+
+### Nested Circles for Market Sizing
+
+**DO NOT USE** TAM/SAM/SOM circles or concentric visualizations.
+
+```typst
+// PROHIBITED - circle stacks
+#circle(radius: 80pt, fill: green.lighten(80%))[TAM]
+#circle(radius: 50pt, fill: green.lighten(60%))[SAM]
+```
+
+**Rationale**: These visualizations rarely communicate scale accurately and waste slide space. Use simple text with numbers instead.
+
+### Complex Chart Code
+
+**DO NOT USE** inline cetz or other charting libraries. Complex chart code is fragile and hard to maintain.
+
+```typst
+// PROHIBITED - inline chart code
+#cetz.canvas({
+  import cetz.plot
+  plot.plot(size: (10, 5), ...)
+})
+```
+
+**Instead**: Use pre-generated chart images or simple text descriptions of metrics.
+
+**Rationale**: Chart code breaks frequently with package updates and distracts from slide content.
+
+### Nested Align Patterns
+
+**DO NOT USE** deeply nested alignment wrappers.
+
+```typst
+// PROHIBITED - nested alignment
+#align(center)[
+  #align(horizon)[
+    #align(center)[content]
+  ]
+]
+```
+
+**Rationale**: Nested alignment creates unnecessary complexity. Use simple single-level alignment.
 
 ## Related Context
 
