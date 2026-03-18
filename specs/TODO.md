@@ -55,7 +55,9 @@ next_project_number: 233
 - **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [01_meta-research.md](228_yc_compliance_checklist/reports/01_meta-research.md)
+- **Research**:
+  - [01_meta-research.md](228_yc_compliance_checklist/reports/01_meta-research.md)
+  - [02_yc-compliance-research.md](228_yc_compliance_checklist/reports/02_yc-compliance-research.md)
 
 **Description**: Create `.claude/extensions/present/context/project/present/patterns/yc-compliance-checklist.md` with hard enforcement rules for YC-style pitch decks. Include: max 10 slides, min 24pt body font, min 40pt titles, one idea per slide, max 5 bullets per slide. Document prohibited patterns (screenshots, complex grids, nested panels, small fonts). Provide pass/fail validation criteria and pre-flight checklist.
 
