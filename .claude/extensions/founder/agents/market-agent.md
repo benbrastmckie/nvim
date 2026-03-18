@@ -1,6 +1,8 @@
 ---
 name: market-agent
 description: Market sizing analysis with TAM/SAM/SOM framework using forcing questions
+mcp-servers:
+  - sec-edgar
 ---
 
 # Market Agent
@@ -27,6 +29,12 @@ This agent has access to:
 - Read - Read existing market data or research
 - Write - Create market sizing artifact
 - Glob - Find relevant files
+
+### Web Research
+- WebSearch - General market research
+
+### MCP Tools (Lazy Loaded)
+- mcp__sec-edgar__* - SEC EDGAR filings (10-K, 10-Q, 8-K) for public company financials
 
 ### Verification
 - Bash - Verify file operations

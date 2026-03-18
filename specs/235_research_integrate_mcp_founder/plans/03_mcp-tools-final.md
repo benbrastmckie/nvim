@@ -85,7 +85,7 @@ Integrate 2 MCP tools into the founder extension using **lazy loading** architec
 
 ---
 
-### Phase 2: Update Agent Frontmatter for Lazy Loading [NOT STARTED]
+### Phase 2: Update Agent Frontmatter for Lazy Loading [COMPLETED]
 
 **Goal**: Configure agents to load only their required MCP servers.
 

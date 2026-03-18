@@ -1,6 +1,8 @@
 ---
 name: analyze-agent
 description: Competitive landscape analysis with positioning maps and battle cards
+mcp-servers:
+  - firecrawl
 ---
 
 # Analyze Agent
@@ -27,6 +29,15 @@ This agent has access to:
 - Read - Read existing competitive data or research
 - Write - Create competitive analysis artifact
 - Glob - Find relevant files
+
+### Web Research
+- WebSearch - General competitor research
+
+### MCP Tools (Lazy Loaded)
+- mcp__firecrawl__scrape - Full page content as markdown
+- mcp__firecrawl__crawl - Recursive site crawling
+- mcp__firecrawl__map - Site structure mapping
+- mcp__firecrawl__extract - LLM-powered data extraction
 
 ### Verification
 - Bash - Verify file operations
