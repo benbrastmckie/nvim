@@ -93,7 +93,7 @@ Key findings from research report 01_meta-enhancement-patterns.md:
 
 ---
 
-### Phase 3: Add Research Artifact Generation [IN PROGRESS]
+### Phase 3: Add Research Artifact Generation [COMPLETED]
 
 **Goal**: Implement Stage 4.5 (GenerateResearchArtifacts) to create lightweight research reports
 
@@ -116,7 +116,7 @@ Key findings from research report 01_meta-enhancement-patterns.md:
 
 ---
 
-### Phase 4: Update State Entry for RESEARCHED Status [NOT STARTED]
+### Phase 4: Update State Entry for RESEARCHED Status [IN PROGRESS]
 
 **Goal**: Modify Stage 6 (CreateTasks) to set status="researched" and link research artifacts
 

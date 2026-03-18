@@ -587,7 +587,107 @@ Options per task:
 
 **If user selects "Cancel"**: Return completed status with cancelled flag.
 **If user selects "Revise"**: Go back to Stage 3.
-**If user selects "Yes"**: Proceed to Stage 6.
+**If user selects "Yes"**: Proceed to Stage 5.5 (Research Artifact Generation).
+
+### Interview Stage 5.5: GenerateResearchArtifacts
+
+**Trigger**: User confirmed task creation in Stage 5 ("Yes, create tasks")
+
+**Purpose**: Generate lightweight research reports from interview context so tasks start in RESEARCHED status. This enables users to immediately run `/plan N` without requiring separate `/research N` calls for well-understood tasks.
+
+**5.5.1: For Each Task to Be Created**
+
+Create task directory and research report:
+
+```bash
+# Get next task number from state.json
+next_num=$(jq '.next_project_number' specs/state.json)
+padded_num=$(printf "%03d" "$next_num")
+slug={generated_slug_from_title}
+
+# Create task directory with reports subdirectory
+mkdir -p "specs/${padded_num}_${slug}/reports"
+```
+
+**5.5.2: Generate Research Report Template**
+
+Write to `specs/{NNN}_{slug}/reports/01_meta-research.md`:
+
+```markdown
+# Research Report: Task #{N}
+
+**Task**: {N} - {title}
+**Generated**: {ISO_DATE}
+**Source**: /meta interview (auto-generated)
+**Status**: Pre-populated from interview context
+
+---
+
+## Context Summary
+
+**Purpose**: {purpose from Stage 2}
+**Scope**: {scope from Stage 2}
+**Affected Components**: {affected_components}
+**Domain**: {detected_domain from Stage 2.5}
+**Language**: {language}
+
+## Task Requirements
+
+{task_description - either user-provided or consolidated from multiple items}
+
+{If consolidated task, list original items:}
+### Original Items (Consolidated)
+1. {original_item_1}
+2. {original_item_2}
+...
+
+## Integration Points
+
+- **Component Type**: {component_type from Stage 3.5 extraction}
+- **Affected Area**: {affected_area}
+- **Action Type**: {action_type}
+- **Related Files**: {file_list if identified during interview}
+
+## Dependencies
+
+{If dependencies exist:}
+- Task #{dep_num}: {dep_title}
+{If no dependencies:}
+None - this task can be started independently.
+
+## Interview Context
+
+### User-Provided Information
+{Any additional context captured during interview stages 2-4}
+
+### Effort Assessment
+- **Estimated Effort**: {effort from Stage 4}
+- **Complexity Notes**: {any notes about complexity}
+
+---
+
+*This research report was auto-generated during task creation via /meta command.*
+*For deeper investigation, run `/research {N} [focus]` with a specific focus prompt.*
+```
+
+**5.5.3: Artifact Tracking**
+
+For each generated report, track in interview state:
+```python
+research_artifacts.append({
+  "task_num": next_num,
+  "path": f"specs/{padded_num}_{slug}/reports/01_meta-research.md",
+  "summary": "Auto-generated research from /meta interview"
+})
+```
+
+**5.5.4: Proceed to Stage 6**
+
+After all research artifacts are generated, proceed to Stage 6 (CreateTasks) with:
+- `status = "researched"` for all tasks (instead of "not_started")
+- `artifacts` array populated with research report references
+
+---
 
 ### Interview Stage 6: CreateTasks
 
