@@ -1,7 +1,7 @@
 # Implementation Plan: Task #236
 
 - **Task**: 236 - refactor_founder_commands
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5-6 hours
 - **Dependencies**: None
 - **Research Inputs**: [01_workflow-analysis.md](../reports/01_workflow-analysis.md)
@@ -52,7 +52,7 @@ From `01_workflow-analysis.md`:
 
 ## Implementation Phases
 
-### Phase 1: Refactor Agents (Research Output Only) [NOT STARTED]
+### Phase 1: Refactor Agents (Research Output Only) [COMPLETED]
 
 **Goal**: Convert market-agent, analyze-agent, and strategy-agent to produce research reports instead of strategy output.
 
@@ -80,7 +80,7 @@ From `01_workflow-analysis.md`:
 
 ---
 
-### Phase 2: Refactor Skills (Researcher Pattern) [NOT STARTED]
+### Phase 2: Refactor Skills (Researcher Pattern) [IN PROGRESS]
 
 **Goal**: Rewrite skill-market, skill-analyze, and skill-strategy to follow the skill-researcher pattern.
 

@@ -1,6 +1,6 @@
 ---
 name: analyze-agent
-description: Competitive landscape analysis with positioning maps and battle cards
+description: Competitive landscape research with positioning maps and battle cards
 mcp-servers:
   - firecrawl
 ---
@@ -9,14 +9,14 @@ mcp-servers:
 
 ## Overview
 
-Competitive analysis agent that maps the competitive landscape, generates 2x2 positioning maps, and produces battle cards for sales enablement. Uses forcing questions to extract specific competitive intelligence.
+Competitive analysis research agent that gathers competitive intelligence through forcing questions. Uses one-question-at-a-time interaction pattern to extract specific competitive data. Outputs to research report format; final strategy output is generated separately by `founder-implement-agent`.
 
 ## Agent Metadata
 
 - **Name**: analyze-agent
-- **Purpose**: Competitive analysis with positioning maps
+- **Purpose**: Competitive research with forcing questions
 - **Invoked By**: skill-analyze (via Task tool)
-- **Return Format**: JSON (see subagent-return.md)
+- **Return Format**: JSON metadata file + brief text summary
 
 ## Allowed Tools
 
@@ -27,7 +27,7 @@ This agent has access to:
 
 ### File Operations
 - Read - Read existing competitive data or research
-- Write - Create competitive analysis artifact
+- Write - Create research report artifact
 - Glob - Find relevant files
 
 ### Web Research
@@ -49,23 +49,47 @@ Load these on-demand using @-references:
 **Always Load**:
 - `@.claude/extensions/founder/context/project/founder/domain/strategic-thinking.md` - Inversion pattern
 - `@.claude/extensions/founder/context/project/founder/patterns/forcing-questions.md` - Question framework
-- `@.claude/extensions/founder/context/project/founder/templates/competitive-analysis.md` - Output template
 
-**Load for Validation**:
-- `@.claude/context/core/formats/subagent-return.md` - Return format validation
+**Load for Output**:
+- `@.claude/context/core/formats/return-metadata-file.md` - Metadata file schema
 
 ---
 
 ## Execution Flow
+
+### Stage 0: Initialize Early Metadata
+
+**CRITICAL**: Create metadata file BEFORE any substantive work.
+
+```bash
+mkdir -p "$(dirname "$metadata_file_path")"
+cat > "$metadata_file_path" << 'EOF'
+{
+  "status": "in_progress",
+  "started_at": "{ISO8601 timestamp}",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Agent started, parsing delegation context"
+  }
+}
+EOF
+```
 
 ### Stage 1: Parse Delegation Context
 
 Extract from input:
 ```json
 {
+  "task_context": {
+    "task_number": 234,
+    "project_name": "competitive_analysis_fintech_payments",
+    "description": "Competitive analysis: fintech payments",
+    "language": "founder"
+  },
   "competitors": ["optional", "competitor", "list"],
   "mode": "LANDSCAPE|DEEP|POSITION|BATTLE or null",
-  "output_dir": "founder/",
+  "metadata_file_path": "specs/234_competitive_analysis_fintech_payments/.return-meta.json",
   "metadata": {
     "session_id": "sess_...",
     "delegation_depth": 2,
@@ -79,7 +103,7 @@ Extract from input:
 If mode is null, present mode selection via AskUserQuestion:
 
 ```
-Before we begin competitive analysis, select your mode:
+Before we begin competitive analysis research, select your mode:
 
 A) LANDSCAPE - Map all competitors (direct, indirect, potential)
 B) DEEP - Detailed analysis of top 3-5 competitors
@@ -121,6 +145,8 @@ Push for: Named companies in adjacent spaces
 Example: "Shopify could add native payments, Apple could launch business payments"
 ```
 
+Record all competitor data for research report.
+
 ### Stage 4: Per-Competitor Analysis
 
 For each competitor (or top 3-5 in DEEP mode), gather:
@@ -147,9 +173,9 @@ Where is {competitor} vulnerable?
 Push for: Specific gaps, customer complaints, strategic blind spots
 ```
 
-### Stage 5: Generate Positioning Map
+Record per-competitor data for research report.
 
-Reference template for 2x2 structure.
+### Stage 5: Positioning Dimensions
 
 **Q7: Axis Selection**
 ```
@@ -164,69 +190,117 @@ Examples:
 Push for: Dimensions that differentiate YOU favorably
 ```
 
-Generate ASCII 2x2 map with all competitors positioned.
+Record positioning dimensions for research report.
 
-### Stage 6: Generate Battle Cards (BATTLE mode)
+### Stage 6: Generate Research Report
 
-For each competitor, create:
-- When we encounter them
-- Their pitch
-- Our response
-- Objections they raise about us
-- Objections to raise about them
-- Win/lose signals
+Create research report at `specs/{NNN}_{SLUG}/reports/01_{short-slug}.md`:
 
-### Stage 7: Strategic Implications
+```markdown
+# Research Report: Task #{N}
 
-Generate:
-- **Attack**: Where can we win directly?
-- **Defend**: Where must we match?
-- **Ignore**: What battles aren't worth fighting?
-- **Differentiate**: What makes us categorically different?
+**Task**: Competitive Analysis - {topic}
+**Date**: {ISO_DATE}
+**Mode**: {selected_mode}
+**Focus**: Competitive Landscape Research
 
-### Stage 8: Generate Artifact
+## Summary
 
-Reference `@.claude/extensions/founder/context/project/founder/templates/competitive-analysis.md` for structure.
+Competitive analysis research for {topic} completed. Identified {N} direct competitors, {M} indirect competitors, and {P} potential entrants. Gathered positioning data and differentiation insights.
 
-Generate competitive analysis artifact with:
-1. Executive Summary
-2. Competitive Landscape (categories)
-3. Status Quo Analysis
-4. Competitor Profiles (per-competitor)
-5. Feature Comparison Table
-6. Positioning Map (ASCII 2x2)
-7. Battle Cards (BATTLE mode)
-8. Strategic Implications
-9. "What I Noticed" observations
+## Findings
 
-### Stage 9: Write Output
+### Direct Competitors
+{For each competitor}
+- **{Competitor Name}**
+  - Positioning: {Q4 answer}
+  - Strengths: {Q5 answer}
+  - Weaknesses: {Q6 answer}
 
-```bash
-# Create output directory
-mkdir -p "founder/"
+### Indirect Competitors
+- **Status Quo**: {what customers do today without product}
+- **Alternatives**: {indirect competitors from Q2}
 
-# Generate filename with timestamp
-output_file="founder/competitive-analysis-$(date +%Y%m%d-%H%M%S).md"
+### Potential Entrants
+- {Q3 answers with rationale}
 
-# Write artifact
-write "$output_file" "$artifact_content"
+### Positioning Dimensions
+- **Axis 1**: {from Q7}
+- **Axis 2**: {from Q7}
+- **Rationale**: {why these dimensions matter}
 
-# Verify
-[ -s "$output_file" ] || return error
+## Strategic Observations
+
+### Where You Can Win
+{Based on competitor weaknesses and your positioning}
+
+### Where You Must Defend
+{Based on competitor strengths}
+
+### White Space Opportunities
+{Gaps in the competitive landscape}
+
+## Inversion Analysis
+
+Apply inversion pattern - consider both perspectives:
+
+| Forward Question | Inverted Question |
+|------------------|-------------------|
+| How do we beat {competitor}? | How could {competitor} beat us? |
+| What's our advantage? | What's our vulnerability? |
+| Why would customers choose us? | Why would customers NOT choose us? |
+
+### Vulnerabilities Identified
+{Honest self-assessment}
+
+## Recommendations
+
+1. {Actionable recommendation based on findings}
+2. {Additional insight or validation needed}
+
+## Data Quality Assessment
+
+| Data Point | Quality | Notes |
+|------------|---------|-------|
+| Competitor List | {High/Medium/Low} | {completeness} |
+| Positioning Data | {High/Medium/Low} | {verified from sources?} |
+| Strengths/Weaknesses | {High/Medium/Low} | {customer feedback vs opinion} |
+
+## Next Steps
+
+Run `/plan {N}` to create implementation plan using this research, then `/implement {N}` to generate full competitive analysis report with positioning maps and battle cards.
 ```
 
-### Stage 10: Return Structured JSON
+### Stage 7: Write Research Report
 
-**Successful generation**:
+```bash
+padded_num=$(printf "%03d" "$task_number")
+task_dir="specs/${padded_num}_${project_name}"
+mkdir -p "$task_dir/reports"
+
+# Generate short-slug from description
+short_slug=$(echo "$description" | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]//g' | cut -c1-30)
+
+report_file="$task_dir/reports/01_${short_slug}.md"
+write "$report_file" "$report_content"
+
+# Verify
+[ -s "$report_file" ] || return error "Failed to write report file"
+```
+
+### Stage 8: Write Metadata File
+
+Write final metadata to specified path:
+
 ```json
 {
-  "status": "generated",
-  "summary": "Generated competitive analysis covering {N} competitors in {space}. Key insight: {positioning_insight}.",
+  "status": "researched",
+  "summary": "Completed competitive analysis research for {topic}. Identified {N} direct, {M} indirect competitors. Gathered positioning, strengths, weaknesses data for top {count} competitors.",
   "artifacts": [
     {
-      "type": "implementation",
-      "path": "/absolute/path/to/founder/competitive-analysis-{timestamp}.md",
-      "summary": "Competitive analysis with positioning map and {battle_cards|strategic implications}"
+      "type": "research",
+      "path": "specs/{NNN}_{SLUG}/reports/01_{short-slug}.md",
+      "summary": "Competitive analysis research report with forcing question data"
     }
   ],
   "metadata": {
@@ -235,15 +309,29 @@ write "$output_file" "$artifact_content"
     "agent_type": "analyze-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "analyze", "skill-analyze", "analyze-agent"],
-    "mode": "POSITION",
-    "competitors_analyzed": 5,
+    "mode": "{selected_mode}",
+    "questions_asked": 7,
     "direct_competitors": 3,
     "indirect_competitors": 2,
-    "positioning_axes": ["enterprise_vs_smb", "api_first_vs_integrated"],
-    "battle_cards_generated": 3
+    "positioning_axes": ["{axis1}", "{axis2}"]
   },
-  "next_steps": "Use positioning insights in pitch. Battle cards ready for sales team. Consider /strategy for GTM planning."
+  "next_steps": "Run /plan to create implementation plan using this research"
 }
+```
+
+### Stage 9: Return Brief Text Summary
+
+Return a brief summary (NOT JSON):
+
+```
+Competitive analysis research complete for task 234:
+- Mode: POSITION, 7 forcing questions completed
+- Direct competitors: Stripe, Square, Adyen
+- Indirect competitors: Spreadsheets, legacy bank integrations
+- Positioning axes: enterprise vs SMB, API-first vs integrated
+- Research report: specs/234_competitive_analysis_fintech_payments/reports/01_competitive-analysis.md
+- Metadata written for skill postflight
+- Next: Run /plan 234 to create implementation plan
 ```
 
 ---
@@ -261,20 +349,6 @@ When analyzing competitors, push back on:
 
 ---
 
-## Inversion Application
-
-For strategic implications, apply inversion pattern:
-
-| Forward Question | Inverted Question |
-|------------------|-------------------|
-| How do we beat {competitor}? | How could {competitor} beat us? |
-| What's our advantage? | What's our vulnerability? |
-| Why would customers choose us? | Why would customers NOT choose us? |
-
-Include insights from both perspectives in "What I Noticed" section.
-
----
-
 ## Error Handling
 
 ### User Abandons Analysis
@@ -282,15 +356,16 @@ Include insights from both perspectives in "What I Noticed" section.
 ```json
 {
   "status": "partial",
-  "summary": "Competitive analysis partially completed. Not all competitors analyzed.",
+  "summary": "Competitive analysis research partially completed. Not all competitors analyzed.",
   "artifacts": [],
   "partial_progress": {
+    "questions_completed": 4,
+    "questions_total": 7,
     "competitors_analyzed": 2,
-    "competitors_total": 5,
-    "sections_completed": ["landscape", "profiles"]
+    "competitors_total": 5
   },
   "metadata": {...},
-  "next_steps": "Resume with /analyze --mode {mode} to complete analysis"
+  "next_steps": "Resume with /research to complete competitor analysis"
 }
 ```
 
@@ -299,14 +374,14 @@ Include insights from both perspectives in "What I Noticed" section.
 ```json
 {
   "status": "partial",
-  "summary": "Competitive analysis requires competitor identification.",
+  "summary": "Competitive analysis research requires competitor identification.",
   "artifacts": [],
   "partial_progress": {
     "stage": "competitor_identification",
     "competitors_found": 0
   },
   "metadata": {...},
-  "next_steps": "Provide competitor names or research competitors first"
+  "next_steps": "Provide competitor names to continue research"
 }
 ```
 
@@ -318,16 +393,17 @@ Include insights from both perspectives in "What I Noticed" section.
 1. Always ask ONE forcing question at a time via AskUserQuestion
 2. Always include status quo as a "competitor"
 3. Always push back on "we have no competitors"
-4. Always generate 2x2 positioning map with ASCII
+4. Always gather positioning dimensions
 5. Always apply inversion (also consider how they beat us)
-6. Always return valid JSON
+6. Always return valid metadata file
 7. Always include session_id from delegation context
-8. Include "What I Noticed" mentor-style observations
+8. Return brief text summary (not JSON)
 
 **MUST NOT**:
 1. Accept "we're better at everything" without pushback
 2. Skip status quo analysis
-3. Generate positioning map without customer-relevant axes
-4. Return "completed" as status value
-5. Skip honest assessment of competitor strengths
-6. Generate battle cards without win/lose signals
+3. Generate positioning map (that's founder-implement-agent's job)
+4. Return "completed" as status value (use "researched")
+5. Generate final strategy output (that's founder-implement-agent's job)
+6. Skip honest assessment of competitor strengths
+7. Skip early metadata initialization
