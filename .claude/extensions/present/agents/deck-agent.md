@@ -37,6 +37,7 @@ Load these on-demand using @-references:
 **Always Load**:
 - `@context/project/present/patterns/pitch-deck-structure.md` - YC slide structure and design principles
 - `@context/project/present/patterns/touying-pitch-deck-template.md` - Touying template patterns
+- `@context/project/present/patterns/yc-compliance-checklist.md` - YC compliance validation rules
 
 **Load for Validation**:
 - `@context/core/formats/subagent-return.md` - Return format validation
@@ -147,6 +148,40 @@ For each of the 10 slides, extract or generate:
 - Include speaker notes explaining what content belongs
 - Mark slides with placeholders in output
 
+### Stage 4.5: Enforce Slide Limit
+
+Reference `@context/project/present/patterns/yc-compliance-checklist.md` for full requirements.
+
+**Hard Limit**: 10 slides maximum (excluding appendix slides)
+
+If content mapping produces > 10 slides, merge slides using priority rules:
+
+**Merge Priority Table**:
+
+| Priority | Slides | Action |
+|----------|--------|--------|
+| Critical (never merge) | Title, Problem, Solution, Traction, Ask | Keep as separate slides |
+| Important (merge last) | Why Us/Now, Team | Merge only if necessary |
+| Mergeable (merge first) | Business Model, Market, Closing | Combine or condense |
+
+**Merge Strategies**:
+
+1. **Combine Market + Business Model**: Both relate to business viability
+2. **Combine Why Us + Why Now**: Both establish competitive timing
+3. **Merge Closing into Ask**: Contact info can appear with funding request
+
+**Violation Logging**:
+
+If initial mapping exceeds 10 slides, log for compliance check:
+```json
+{
+  "violation": "slide_count_exceeded",
+  "initial_count": 12,
+  "merged_to": 10,
+  "merges_applied": ["market+business_model", "closing+ask"]
+}
+```
+
 ### Stage 5: Generate Typst Content
 
 Reference `@context/project/present/patterns/touying-pitch-deck-template.md` for template structure.
@@ -197,6 +232,85 @@ Generate a complete `.typ` file with:
 
    **Note**: Replace the palette color values based on the `palette` parameter from delegation context. The example above shows `professional-blue`; use the appropriate colors from the table above for other palettes.
 
+#### Font Size Rules (YC Compliance)
+
+Reference `@context/project/present/patterns/yc-compliance-checklist.md` for full requirements.
+
+**Minimum Font Sizes** (HARD requirements):
+
+| Element | Minimum Size | Rationale |
+|---------|-------------|-----------|
+| Titles (h1, h2) | 40pt | Legibility from back of room |
+| Body text | 24pt | Readability at distance |
+| Speaker notes | Any | Not displayed during presentation |
+
+**Prohibited Patterns**:
+
+Do NOT generate:
+```typst
+// PROHIBITED - body text too small
+#set text(size: 18pt)
+#set text(size: 20pt)
+#set text(size: 22pt)
+
+// PROHIBITED - title too small
+#show heading.where(level: 1): set text(size: 36pt)
+#show heading.where(level: 2): set text(size: 32pt)
+```
+
+**Allowed Patterns**:
+```typst
+// COMPLIANT - body text >= 24pt
+#set text(size: 24pt)
+#set text(size: 30pt)
+
+// COMPLIANT - titles >= 40pt
+#show heading.where(level: 1): set text(size: 48pt)
+#show heading.where(level: 2): set text(size: 40pt)
+```
+
+#### Layout Rules (YC Compliance)
+
+**Maximum Layout Constraints** (SOFT requirements):
+
+| Element | Maximum | Rationale |
+|---------|---------|-----------|
+| Columns | 2 | Simplicity principle |
+| Bullets per slide | 5 | One idea per slide |
+| Words per bullet | 10-15 | Brevity requirement |
+
+**Prohibited Patterns**:
+
+Do NOT generate:
+```typst
+// PROHIBITED - 3+ columns
+#grid(columns: 3, ...)
+#grid(columns: (1fr, 1fr, 1fr), ...)
+#grid(columns: 4, ...)
+
+// PROHIBITED - too many bullets (> 5)
+- Point 1
+- Point 2
+- Point 3
+- Point 4
+- Point 5
+- Point 6  // VIOLATION
+```
+
+**Allowed Patterns**:
+```typst
+// COMPLIANT - 1-2 columns
+#grid(columns: 2, ...)
+#grid(columns: (1fr, 1fr), ...)
+
+// COMPLIANT - 5 or fewer bullets
+- Key point 1
+- Key point 2
+- Key point 3
+```
+
+**Content Density Rule**: Each slide should convey ONE main idea. If content requires more than 5 bullets or 2 columns, split into multiple slides.
+
 2. **Title slide**
    ```typst
    = Company Name
@@ -229,6 +343,56 @@ Generate a complete `.typ` file with:
    [ -s "$output_path" ] || return error
    ```
 
+### Stage 6.5: YC Compliance Validation
+
+Before returning, validate the generated deck against YC compliance requirements.
+
+**Validation Checklist**:
+
+| Check | Rule | Type |
+|-------|------|------|
+| slide_count | <= 10 (excluding appendix) | HARD |
+| title_font_size | >= 40pt | HARD |
+| body_font_size | >= 24pt | HARD |
+| column_count | <= 2 | SOFT |
+| bullet_count | <= 5 per slide | SOFT |
+
+**Validation Implementation**:
+
+1. **Count slides** (excluding appendix):
+   ```bash
+   # Count level-1 and level-2 headings (= and ==)
+   grep -c '^=\s\|^==\s' "$output_path"
+   ```
+
+2. **Check font sizes in template setup**:
+   - Verify `#set text(size: Npt` uses N >= 24
+   - Verify `heading.where(level: 1)` uses size >= 40pt
+   - Verify `heading.where(level: 2)` uses size >= 40pt
+
+3. **Check for prohibited patterns**:
+   ```bash
+   # Font size < 24pt
+   grep -E 'size:\s*[0-9]pt|size:\s*1[0-9]pt|size:\s*2[0-3]pt' "$output_path"
+
+   # 3+ column grids
+   grep -E 'columns:\s*[3-9]|columns:\s*\([^)]*,[^)]*,[^)]*\)' "$output_path"
+   ```
+
+4. **Check bullet counts** per slide section:
+   - Count `-` list items between headings
+   - Flag if any section has > 5 bullets
+
+**Compliance Result**:
+
+- `compliance_passed`: true if all HARD checks pass
+- `violations`: array of failed checks with details
+- `checks_performed`: array of all checks run
+
+**On Compliance Failure**:
+
+Log violations but do NOT fail generation. Return with `compliance_passed: false` and violations array. The deck is still generated, but flagged for manual review.
+
 ### Stage 7: Return Structured JSON
 
 **Successful generation**:
@@ -243,6 +407,11 @@ Generate a complete `.typ` file with:
       "summary": "Touying pitch deck with 10 slides"
     }
   ],
+  "yc_compliance": {
+    "compliance_passed": true,
+    "violations": [],
+    "checks_performed": ["slide_count", "title_font_size", "body_font_size", "column_count", "bullet_count"]
+  },
   "metadata": {
     "session_id": "{from delegation context}",
     "duration_seconds": 5,
@@ -397,6 +566,11 @@ When parsing input, look for these patterns:
 6. Always include speaker notes for each slide
 7. Always use [TODO: ...] format for missing content
 8. Follow YC design principles (Legibility, Simplicity, Obviousness)
+9. Enforce 10-slide maximum (excluding appendix)
+10. Enforce 24pt minimum body font, 40pt minimum title font
+11. Enforce 2-column maximum layout
+12. Include compliance_passed boolean in return metadata
+13. Reference @context/project/present/patterns/yc-compliance-checklist.md for validation rules
 
 **MUST NOT**:
 1. Return plain text instead of JSON
