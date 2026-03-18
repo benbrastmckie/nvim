@@ -22,12 +22,6 @@
     "commands": ["market.md", "analyze.md", "strategy.md"],
     "rules": [],
     "context": ["project/founder"],
-    "templates": [
-      "typst/strategy-template.typ",
-      "typst/market-sizing.typ",
-      "typst/competitive-analysis.typ",
-      "typst/gtm-strategy.typ"
-    ],
     "scripts": [],
     "hooks": []
   },
