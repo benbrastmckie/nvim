@@ -1129,10 +1129,10 @@
     {
       "project_number": 235,
       "project_name": "research_integrate_mcp_founder",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-18T20:17:00Z",
-      "last_updated": "2026-03-18T20:16:26Z",
+      "last_updated": "2026-03-18T20:23:09Z",
       "session_id": "sess_1742313900_b2c3d4",
       "researched": "2026-03-18T20:16:26Z",
       "artifacts": [
@@ -1150,9 +1150,14 @@
           "path": "specs/235_research_integrate_mcp_founder/reports/02_mcp-tools-research.md",
           "type": "research",
           "summary": "Comprehensive MCP tools research with 25+ servers evaluated, 8 high-priority recommendations"
+        },
+        {
+          "path": "specs/235_research_integrate_mcp_founder/plans/02_mcp-tools-integration-revised.md",
+          "type": "plan",
+          "summary": "Revised 4-phase plan: free-tier tools only, lazy loading via agent mcp-servers field"
         }
       ],
-      "planned": "2026-03-18T20:08:12Z"
+      "planned": "2026-03-18T20:23:09Z"
     }
   ],
   "completed_projects": [],
