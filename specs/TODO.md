@@ -1,14 +1,24 @@
 ---
-next_project_number: 239
+next_project_number: 240
 ---
 
 # TODO
 
 ## Tasks
 
-### 238. Fix founder extension /implement to generate typst files using templates
+### 239. Implement user access approval workflow for protected content
 - **Effort**: TBD
 - **Status**: [NOT STARTED]
+- **Language**: web
+
+**Description**: When new users attempt to login to the site to access protected content, I want a request to be sent (which I should receive by email) that I have to approve before access is granted. Once access is granted, users will be able to sign on from any device using the same username.
+
+---
+
+### 238. Fix founder extension /implement to generate typst files using templates
+- **Effort**: TBD
+- **Status**: [RESEARCHING]
+- **Started**: 2026-03-18
 - **Language**: meta
 - **Dependencies**: Task #237
 

@@ -1,14 +1,23 @@
 {
   "version": "1.0.0",
-  "next_project_number": 239,
+  "next_project_number": 240,
   "active_projects": [
+    {
+      "project_number": 239,
+      "project_name": "implement_user_access_approval_workflow",
+      "status": "not_started",
+      "language": "web",
+      "created": "2026-03-18T23:06:04Z",
+      "last_updated": "2026-03-18T23:06:04Z"
+    },
     {
       "project_number": 238,
       "project_name": "fix_founder_implement_typst_output",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-18T22:59:04Z",
-      "last_updated": "2026-03-18T22:59:04Z"
+      "last_updated": "2026-03-18T23:03:31Z",
+      "session_id": "sess_1773874991_0382e4"
     },
     {
       "project_number": 237,
