@@ -8,9 +8,10 @@ next_project_number: 235
 
 ### 234. Upgrade founder/ extension to task-based workflow with forcing questions
 - **Effort**: 8-12 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Language**: meta
 - **Dependencies**: Task #233
+- **Started**: 2026-03-18
 - **Research**:
   - [01_task-integration-research.md](234_upgrade_founder_extension_workflow/reports/01_task-integration-research.md)
   - [02_plan-implement-workflow.md](234_upgrade_founder_extension_workflow/reports/02_plan-implement-workflow.md)

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #234
 
 - **Task**: 234 - upgrade_founder_extension_workflow
-- **Status**: [NOT STARTED]
+- **Status**: [IN PROGRESS]
 - **Effort**: 8-12 hours
 - **Dependencies**: Task #233 (current founder/ extension implementation)
 - **Research Inputs**:
@@ -56,7 +56,7 @@ Key findings integrated from research reports:
 
 ## Implementation Phases
 
-### Phase 1: Create New Skills [NOT STARTED]
+### Phase 1: Create New Skills [COMPLETED]
 
 **Goal**: Create the new skills for founder-specific planning and implementation workflows.
 
