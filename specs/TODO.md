@@ -8,9 +8,10 @@ next_project_number: 238
 
 ### 237. Add typst output generation to founder task implementation
 - **Effort**: 4-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Started**: 2026-03-18
 - **Research**: [01_typst-output-research.md](237_add_typst_output_founder_implementation/reports/01_typst-output-research.md)
+- **Plan**: [01_typst-output-implementation.md](237_add_typst_output_founder_implementation/plans/01_typst-output-implementation.md)
 - **Language**: meta
 - **Dependencies**: Task #236
 

@@ -5,22 +5,28 @@
     {
       "project_number": 237,
       "project_name": "add_typst_output_founder_implementation",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-18T21:49:51Z",
-      "last_updated": "2026-03-18T22:12:38Z",
+      "last_updated": "2026-03-18T22:16:56Z",
       "dependencies": [
         236
       ],
-      "session_id": "sess_1773871737_81a1fd",
+      "session_id": "sess_1773872059_0c01ea",
       "researched": "2026-03-18T22:12:38Z",
       "artifacts": [
         {
           "path": "specs/237_add_typst_output_founder_implementation/reports/01_typst-output-research.md",
           "type": "research",
           "summary": "Comprehensive research on adding typst output to founder-implement-agent, including template structure, phase addition, and output directory conventions"
+        },
+        {
+          "path": "specs/237_add_typst_output_founder_implementation/plans/01_typst-output-implementation.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for adding typst PDF output to founder extension"
         }
-      ]
+      ],
+      "planned": "2026-03-18T22:16:56Z"
     },
     {
       "project_number": 234,
