@@ -8,9 +8,11 @@ next_project_number: 241
 
 ### 240. Fix /market command to use forcing questions workflow with market type tasks
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Started**: 2026-03-18
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [01_market-workflow-research.md](240_fix_market_command_forcing_questions_workflow/reports/01_market-workflow-research.md)
 
 **Description**: Fix /market command in the founder/ extension to ask forcing questions before creating tasks (following the pattern from tasks 233 and 234). Currently /market starts research immediately, but should instead: (1) ask forcing questions, (2) create a task with 'market' type (distinct from 'founder' to differentiate from 'analyze' and 'strategy' types), (3) include task description and research report based on question answers. Running /research on market tasks should route to market-research agent for careful research. Running /plan on market tasks should route to a planner that prepares a typst file plan. Running /implement on market tasks should construct the typst file. Rework all founder/ extension commands uniformly to follow this pattern.
 

@@ -5,10 +5,19 @@
     {
       "project_number": 240,
       "project_name": "fix_market_command_forcing_questions_workflow",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-18T23:37:02Z",
-      "last_updated": "2026-03-18T23:37:02Z"
+      "last_updated": "2026-03-18T23:43:33Z",
+      "session_id": "sess_1773877196_3c55c1",
+      "researched": "2026-03-18T23:43:33Z",
+      "artifacts": [
+        {
+          "path": "specs/240_fix_market_command_forcing_questions_workflow/reports/01_market-workflow-research.md",
+          "type": "research",
+          "summary": "Analysis of current founder extension implementation showing forcing questions workflow already exists"
+        }
+      ]
     },
     {
       "project_number": 238,
