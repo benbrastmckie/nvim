@@ -5,21 +5,27 @@
     {
       "project_number": 223,
       "project_name": "improve_deck_themes_examples_documentation",
-      "status": "researched",
+      "status": "planned",
       "language": "general",
       "effort": "6-9 hours",
       "created": "2026-03-17T16:50:06-07:00",
-      "last_updated": "2026-03-18T00:08:42Z",
-      "session_id": "sess_1773792232_9824da",
+      "last_updated": "2026-03-18T00:13:43Z",
+      "session_id": "sess_1773792666_8a4626",
       "dependencies": [],
       "artifacts": [
         {
           "path": "specs/223_improve_deck_themes_examples_documentation/reports/01_investor-pitch-themes.md",
           "type": "research",
           "summary": "Research report with design trends, color palettes, typography guidelines, Touying theme comparison, and implementation recommendations"
+        },
+        {
+          "path": "specs/223_improve_deck_themes_examples_documentation/plans/02_implementation-plan.md",
+          "type": "plan",
+          "summary": "7-phase plan covering 4 theme examples and comprehensive README documentation"
         }
       ],
-      "researched": "2026-03-18T00:08:42Z"
+      "researched": "2026-03-18T00:08:42Z",
+      "planned": "2026-03-18T00:13:43Z"
     },
     {
       "project_number": 222,
