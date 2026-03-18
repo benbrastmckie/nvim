@@ -8,8 +8,9 @@ next_project_number: 234
 
 ### 233. Research gstack for founder extension integration
 - **Effort**: TBD
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Language**: meta
+- **Research**: [01_gstack-founder-integration.md](233_research_gstack_founder_extension/reports/01_gstack-founder-integration.md)
 
 **Description**: Research https://github.com/garrytan/gstack to see what elements would make sense to integrate into my agent system as a new founder/ extension.
 
@@ -17,7 +18,7 @@ next_project_number: 234
 
 ### 232. Update example templates to be YC compliant
 - **Effort**: 3-4 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Language**: meta
 - **Dependencies**: Task #229, Task #230, Task #231
 - **Research**:

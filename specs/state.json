@@ -5,11 +5,19 @@
     {
       "project_number": 233,
       "project_name": "research_gstack_founder_extension",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-18T17:01:41Z",
-      "last_updated": "2026-03-18T17:03:44Z",
-      "session_id": "sess_1773853402_372cc4"
+      "last_updated": "2026-03-18T17:07:53Z",
+      "session_id": "sess_1773853402_372cc4",
+      "researched": "2026-03-18T17:07:53Z",
+      "artifacts": [
+        {
+          "path": "specs/233_research_gstack_founder_extension/reports/01_gstack-founder-integration.md",
+          "type": "research",
+          "summary": "Comprehensive analysis of gstack with recommendations for founder/ extension focusing on office-hours, ceo-review, and retro skills"
+        }
+      ]
     },
     {
       "project_number": 228,
@@ -166,17 +174,17 @@
     {
       "project_number": 232,
       "project_name": "example_templates_yc_compliance",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "effort": "3-4 hours",
       "created": "2026-03-18T16:30:00Z",
-      "last_updated": "2026-03-18T17:06:29Z",
+      "last_updated": "2026-03-18T17:07:53Z",
       "dependencies": [
         229,
         230,
         231
       ],
-      "session_id": "sess_1773853396_d8bdad",
+      "session_id": "sess_1773853655_b75196",
       "researched": "2026-03-18T17:06:29Z",
       "artifacts": [
         {
