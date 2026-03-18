@@ -107,23 +107,47 @@ If `team_mode == true`:
 - Route to `skill-team-implement`
 - Pass `team_size` parameter
 
-**Language-Based Routing** (when `--team` flag NOT present):
+**Extension Routing** (when `--team` flag NOT present):
+
+Check extension manifests for language-specific implement routing:
+
+```bash
+# Get task language
+language=$(echo "$task_data" | jq -r '.language // "general"')
+
+# Check extension routing for implement (skill_name starts empty)
+skill_name=""
+for manifest in .claude/extensions/*/manifest.json; do
+  if [ -f "$manifest" ]; then
+    ext_skill=$(jq -r --arg lang "$language" \
+      '.routing.implement[$lang] // empty' "$manifest")
+    if [ -n "$ext_skill" ]; then
+      skill_name="$ext_skill"
+      break
+    fi
+  fi
+done
+
+# Fallback to default implementer if no extension routing found
+skill_name=${skill_name:-"skill-implementer"}
+```
+
+**Extension-Based Routing Table**:
 
 | Language | Skill to Invoke |
 |----------|-----------------|
-| `general`, `meta`, `markdown` | `skill-implementer` |
-| `formal`, `logic`, `math`, `physics` | `skill-implementer` |
+| `founder` | `skill-founder-implement` (from founder extension) |
+| `general`, `meta`, `markdown` | `skill-implementer` (default) |
+| `formal`, `logic`, `math`, `physics` | `skill-implementer` (default) |
 
-**Extension Languages**: When extensions are loaded (via `<leader>ac` in Neovim), additional language-specific skills become available. Extension skills follow the pattern `skill-{lang}-implementation` and are discovered automatically. See `.claude/extensions/*/manifest.json` for available extensions.
-
-**Note**: Extension skills are located in `.claude/extensions/{ext}/skills/`. Claude Code should automatically discover these skills when extensions are installed.
+**Extension Skills Location**: Extension skills are located in `.claude/extensions/{ext}/skills/`. Claude Code discovers these skills via extension manifest `routing.implement` entries.
 
 **Skill Selection Logic**:
 ```
 if team_mode:
   skill_name = "skill-team-implement"
 else:
-  skill_name = {language-based routing from table above}
+  skill_name = {extension routing lookup} OR "skill-implementer"
 ```
 
 **Invoke the Skill tool NOW** with:
@@ -132,8 +156,12 @@ else:
 skill: "skill-team-implement"
 args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} team_size={team_size} session_id={session_id}"
 
-# For single-agent mode:
-skill: "{skill-name from table above}"
+# For extension-routed skill (e.g., skill-founder-implement):
+skill: "{skill_name from extension routing}"
+args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} session_id={session_id}"
+
+# For default single-agent mode:
+skill: "skill-implementer"
 args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} session_id={session_id}"
 ```
 
