@@ -5,28 +5,35 @@
     {
       "project_number": 239,
       "project_name": "implement_user_access_approval_workflow",
-      "status": "researching",
+      "status": "researched",
       "language": "web",
       "created": "2026-03-18T23:06:04Z",
-      "last_updated": "2026-03-18T23:07:18Z",
-      "session_id": "sess_1773875208_4f543a"
+      "last_updated": "2026-03-18T23:11:25Z",
+      "session_id": "sess_1773875208_4f543a",
+      "researched": "2026-03-18T23:11:25Z"
     },
     {
       "project_number": 238,
       "project_name": "fix_founder_implement_typst_output",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-18T22:59:04Z",
-      "last_updated": "2026-03-18T23:06:56Z",
-      "session_id": "sess_1773874991_0382e4",
+      "last_updated": "2026-03-18T23:11:11Z",
+      "session_id": "sess_1773875314_b98f65",
       "researched": "2026-03-18T23:06:56Z",
       "artifacts": [
         {
           "path": "specs/238_fix_founder_implement_typst_output/reports/01_founder-typst-fix.md",
           "type": "research",
           "summary": "Identified Phase 5 execution issues: template import paths, missing directory creation, and compilation command errors prevent typst output"
+        },
+        {
+          "path": "specs/238_fix_founder_implement_typst_output/plans/01_founder-typst-fix-plan.md",
+          "type": "plan",
+          "summary": "5-phase plan to fix founder extension typst output by generating self-contained .typ files"
         }
-      ]
+      ],
+      "planned": "2026-03-18T23:11:11Z"
     },
     {
       "project_number": 237,

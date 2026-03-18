@@ -8,7 +8,8 @@ next_project_number: 240
 
 ### 239. Implement user access approval workflow for protected content
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
+- **Started**: 2026-03-18
 - **Language**: web
 
 **Description**: When new users attempt to login to the site to access protected content, I want a request to be sent (which I should receive by email) that I have to approve before access is granted. Once access is granted, users will be able to sign on from any device using the same username.
@@ -16,10 +17,11 @@ next_project_number: 240
 ---
 
 ### 238. Fix founder extension /implement to generate typst files using templates
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Effort**: 2-3 hours
+- **Status**: [PLANNED]
 - **Started**: 2026-03-18
 - **Research**: [01_founder-typst-fix.md](238_fix_founder_implement_typst_output/reports/01_founder-typst-fix.md)
+- **Plan**: [01_founder-typst-fix-plan.md](238_fix_founder_implement_typst_output/plans/01_founder-typst-fix-plan.md)
 - **Language**: meta
 - **Dependencies**: Task #237
 
