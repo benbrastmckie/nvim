@@ -72,7 +72,7 @@ Integrated findings from 01_project-local-model-picker.md:
 
 ---
 
-### Phase 2: Update config path usage [IN PROGRESS]
+### Phase 2: Update config path usage [COMPLETED]
 
 **Goal**: Replace the hardcoded global path with calls to the new helper function throughout the picker handler.
 
@@ -94,7 +94,7 @@ Integrated findings from 01_project-local-model-picker.md:
 
 ---
 
-### Phase 3: Update notification with scope indicator [NOT STARTED]
+### Phase 3: Update notification with scope indicator [COMPLETED]
 
 **Goal**: Modify the success notification to display whether the model was saved to project-local or global settings.
 
@@ -114,7 +114,7 @@ Integrated findings from 01_project-local-model-picker.md:
 
 ---
 
-### Phase 4: Test and verify fallback scenarios [NOT STARTED]
+### Phase 4: Test and verify fallback scenarios [IN PROGRESS]
 
 **Goal**: Validate all scenarios work correctly: git repo with .claude/, git repo without .claude/, and non-git directory.
 

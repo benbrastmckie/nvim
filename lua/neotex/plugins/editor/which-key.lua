@@ -437,9 +437,9 @@ return {
           end
 
           notify.editor(
-            string.format("Model set to %s (takes effect on next Claude Code open)", choice.label),
+            string.format("Model set to %s (%s settings, takes effect on next Claude Code open)", choice.label, config_scope),
             notify.categories.USER_ACTION,
-            { model = choice.id }
+            { model = choice.id, scope = config_scope }
           )
         end)
       end, desc = "model (claude)", icon = "󰘦" },
