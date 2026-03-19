@@ -359,6 +359,90 @@ mkdir -p "specs/${task_num}_${slug}"  # Wrong! Creates empty directory
 mkdir -p "specs/14_${slug}/reports"   # Wrong! Use 014, not 14
 ```
 
+## Recommended Order Section
+
+The `## Recommended Order` section in TODO.md provides a topologically-sorted list of active tasks based on their dependencies. This helps users identify which tasks to work on next.
+
+### Section Format
+
+```markdown
+## Recommended Order
+
+1. **995** -> plan + implement (unblocks 988, 989, 997)
+2. **996** -> research (independent)
+3. **997** -> implement (independent)
+```
+
+### Entry Components
+
+| Component | Description | Example |
+|-----------|-------------|---------|
+| Position | Auto-numbered, 1-indexed | `1.` |
+| Task Number | Bold task identifier | `**995**` |
+| Arrow | Visual separator | `->` |
+| Action Hint | Next action based on status | `research`, `plan`, `implement` |
+| Notes | Dependency relationships | `(unblocks 244)`, `(independent)` |
+
+### Action Hint Derivation
+
+| Task Status | Action Hint |
+|-------------|-------------|
+| `not_started`, `researching` | `research` |
+| `researched`, `planning` | `plan` |
+| `planned`, `implementing`, `partial` | `implement` |
+| `completed` | `complete` |
+| `blocked` | `blocked` |
+| `abandoned`, `expanded` | `skip` |
+
+### Utility Script
+
+The `update-recommended-order.sh` script manages the Recommended Order section:
+
+```bash
+# Add a task (inserts after its dependencies)
+.claude/scripts/update-recommended-order.sh add TASK_NUM
+
+# Remove a task (renumbers remaining entries)
+.claude/scripts/update-recommended-order.sh remove TASK_NUM
+
+# Regenerate entire section from state.json dependency graph
+.claude/scripts/update-recommended-order.sh refresh
+```
+
+### Integration Points
+
+| Command/Skill | Operation | When |
+|---------------|-----------|------|
+| `/task` | `add TASK_NUM` | After creating new task entry |
+| `skill-implementer` | `remove TASK_NUM` | In postflight after task completion |
+| `skill-spawn` | `refresh` | After creating spawned tasks |
+| `skill-todo` | `remove TASK_NUM` | For each archived task |
+
+### Topological Sort Algorithm
+
+The `refresh` command uses Kahn's algorithm to order tasks:
+
+1. Build dependency graph from `state.json` active_projects
+2. Initialize in-degree count for each task (number of uncompleted dependencies)
+3. Queue tasks with in-degree 0 (no uncompleted dependencies)
+4. Process queue: emit task, decrement in-degree of dependents
+5. Repeat until queue is empty
+
+**Circular Dependencies**: If detected, a warning is issued and affected tasks may be omitted from the output.
+
+### Section Placement
+
+The Recommended Order section is placed:
+- Before the `## Tasks` section (when Tasks exists)
+- At end of file (if no Tasks section)
+
+### Graceful Handling
+
+All operations handle missing section gracefully:
+- `add`: Creates section if missing
+- `remove`: No-op if section or task not found
+- `refresh`: Creates section if missing
+
 ## Error Handling
 
 ### On Write Failure
