@@ -1,7 +1,7 @@
 # Implementation Plan: Task #248
 
 - **Task**: 248 - Implement vault archival and number reset in /todo when tasks exceed 1000
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4-6 hours
 - **Dependencies**: None
 - **Research Inputs**: [02_vault-renumbering-research.md](../reports/02_vault-renumbering-research.md)
@@ -51,7 +51,7 @@ Key findings from research report 02_vault-renumbering-research.md:
 
 ## Implementation Phases
 
-### Phase 1: Schema Extensions [NOT STARTED]
+### Phase 1: Schema Extensions [COMPLETED]
 
 **Goal**: Add vault-related fields to state schema template and documentation
 
@@ -73,7 +73,7 @@ Key findings from research report 02_vault-renumbering-research.md:
 
 ---
 
-### Phase 2: Vault Detection Stage [NOT STARTED]
+### Phase 2: Vault Detection Stage [IN PROGRESS]
 
 **Goal**: Add vault threshold detection to skill-todo
 

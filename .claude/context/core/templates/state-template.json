@@ -55,6 +55,10 @@
     "archive_location": "specs/archive/",
     "archive_state_file": "specs/archive/state.json"
   },
+  "vault_count": 0,
+  "_comment_vault_count": "Number of completed vault archival operations. Incremented when next_project_number exceeds 1000 and vault operation completes.",
+  "vault_history": [],
+  "_comment_vault_history": "History of vault operations. Each entry contains: vault_number (1-indexed), vault_dir (e.g., 'specs/vault/01-vault/'), created_at (ISO8601), task_range (e.g., '1-999'), archived_count (number of tasks archived), final_task_number (last task number before reset).",
   "schema_info": {
     "version": "1.0.0",
     "backward_compatible": true,

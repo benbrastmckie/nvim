@@ -109,6 +109,39 @@ See `.claude/extensions/*/manifest.json` for available extension languages.
 
 **Note**: Repository-specific metrics (error counts, technical debt indicators) can be added as needed. The /todo command updates this section during archival.
 
+### Vault Fields
+
+The vault system manages task number cycling when `next_project_number` exceeds 1000.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `vault_count` | number | Number of completed vault archival operations (0 initially) |
+| `vault_history` | array | History of vault operations with metadata |
+
+**Vault History Entry Fields**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `vault_number` | number | Sequential vault number (1-indexed) |
+| `vault_dir` | string | Path to vault directory (e.g., `specs/vault/01-vault/`) |
+| `created_at` | string | ISO8601 timestamp when vault was created |
+| `task_range` | string | Range of task numbers archived (e.g., `1-999`) |
+| `archived_count` | number | Number of tasks archived to vault |
+| `final_task_number` | number | Last task number before reset (e.g., 1003) |
+
+**Vault Trigger Condition**: When `next_project_number > 1000`, the /todo command initiates vault operation.
+
+**Vault Operation Steps**:
+1. Move `specs/archive/` to `specs/vault/{NN-vault}/archive/`
+2. Move `specs/archive/state.json` to `specs/vault/{NN-vault}/state.json`
+3. Create `specs/vault/{NN-vault}/meta.json` with vault metadata
+4. Reinitialize empty `specs/archive/` with fresh state.json
+5. Renumber active tasks > 1000 by subtracting 1000
+6. Rename task directories from 4-digit to 3-digit format
+7. Update all artifact paths and dependencies
+8. Reset `next_project_number` to max(renumbered tasks) + 1
+9. Increment `vault_count` and add entry to `vault_history`
+
 ## Status Values
 
 | TODO.md Marker | state.json status |
