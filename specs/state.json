@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "next_project_number": 248,
+  "next_project_number": 249,
   "active_projects": [
     {
       "project_number": 247,
@@ -1535,6 +1535,23 @@
       "completed": "2026-03-18T22:04:24Z",
       "completion_summary": "Refactored founder extension workflow from auto-proceed to three-stage pattern. Modified 11 files: 5 agents, 3 skills, 3 commands. Forcing questions now happen once during research phase, with answers captured in research reports.",
       "claudemd_suggestions": "Modified .claude/extensions/founder/ directory: 5 agents (market, analyze, strategy, founder-plan, founder-implement), 3 skills (skill-market, skill-analyze, skill-strategy), 3 commands (market, analyze, strategy)"
+    },
+    {
+      "project_number": 248,
+      "project_name": "todo_vault_archival_number_reset",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-03-19T00:00:00Z",
+      "last_updated": "2026-03-19T00:00:00Z",
+      "effort": "3-5 hours",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/248_todo_vault_archival_number_reset/reports/01_meta-research.md",
+          "summary": "Auto-generated research from /meta interview covering vault state schema, /todo archival operation, and number reset logic"
+        }
+      ]
     }
   ],
   "completed_projects": [],

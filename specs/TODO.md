@@ -1,10 +1,21 @@
 ---
-next_project_number: 248
+next_project_number: 249
 ---
 
 # TODO
 
 ## Tasks
+
+### 248. Implement vault archival and number reset in /todo when tasks exceed 1000
+- **Effort**: 3-5 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [01_meta-research.md](248_todo_vault_archival_number_reset/reports/01_meta-research.md)
+
+**Description**: When `next_project_number` exceeds 1000, the /todo command initiates a vault operation: moves `specs/archive/` into `specs/vault/{NN-vault}/`, reinitializes a fresh archive, and resets `next_project_number` to 1. Encompasses vault state schema design (vault_count and vault_history fields in state.json), the vault archival operation in /todo (threshold detection, user confirmation, directory moves), and task number reset logic.
+
+---
 
 ### 247. Make leader-am model picker write to project-level .claude/settings.local.json
 - **Effort**: 1-2 hours
@@ -750,3 +761,4 @@ The existing strategy-template.typ uses generic styling (New Computer Modern fon
 
 1. **87** -> plan (independent)
 2. **78** -> implement (independent)
+3. **248** -> plan (independent)
