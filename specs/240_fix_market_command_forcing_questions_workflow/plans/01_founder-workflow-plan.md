@@ -167,7 +167,7 @@ Key findings from research report 01_market-workflow-research.md:
 
 ---
 
-### Phase 6: Update /research Command Type-Based Routing [NOT STARTED]
+### Phase 6: Update /research Command Type-Based Routing [COMPLETED]
 
 **Goal**: Enable /research to route founder tasks by task_type
 

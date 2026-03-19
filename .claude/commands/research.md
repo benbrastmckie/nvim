@@ -46,6 +46,10 @@ When `--team` is specified, research is delegated to `skill-team-research` which
    task_data=$(jq -r --arg num "$task_number" \
      '.active_projects[] | select(.project_number == ($num | tonumber))' \
      specs/state.json)
+
+   # Extract language and task_type for routing
+   language=$(echo "$task_data" | jq -r '.language // "general"')
+   task_type=$(echo "$task_data" | jq -r '.task_type // null')
    ```
 
 3. **Validate**
@@ -105,12 +109,34 @@ If `team_mode == true`:
 
 **Note**: Extension skills are located in `.claude/extensions/{ext}/skills/`. Claude Code should automatically discover these skills when extensions are installed.
 
+**Type-Based Routing for Extensions**: Some extensions support finer-grained routing via `task_type` field. When a task has both `language` (extension) and `task_type` set, use the composite key `{language}:{task_type}` for routing lookup.
+
+Example for founder extension:
+| language | task_type | Routing Key | Skill |
+|----------|-----------|-------------|-------|
+| founder | market | founder:market | skill-market |
+| founder | analyze | founder:analyze | skill-analyze |
+| founder | strategy | founder:strategy | skill-strategy |
+| founder | (null) | founder | skill-market (default) |
+
 **Skill Selection Logic**:
 ```
 if team_mode:
   skill_name = "skill-team-research"
 else:
-  skill_name = {language-based routing from table above}
+  # Check for task_type-based routing (extensions with sub-types)
+  task_type = task_data.task_type  # may be null
+
+  if task_type is not null:
+    # Try composite key first: "{language}:{task_type}"
+    composite_key = "{language}:{task_type}"
+    if composite_key in extension_routing:
+      skill_name = extension_routing[composite_key]
+    else:
+      # Fallback to language-only routing
+      skill_name = {language-based routing}
+  else:
+    skill_name = {language-based routing from table above}
 ```
 
 **Invoke the Skill tool NOW** with:
