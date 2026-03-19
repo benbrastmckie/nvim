@@ -5,11 +5,11 @@
     {
       "project_number": 241,
       "project_name": "add_spawn_command_skill_agent",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-19T18:09:49Z",
-      "last_updated": "2026-03-19T18:09:49Z",
-      "session_id": "sess_1742397600_a7c3f1",
+      "last_updated": "2026-03-19T18:20:55Z",
+      "session_id": "sess_1742397900_b8d4e2",
       "researched": "2026-03-19T18:09:49Z",
       "dependencies": [],
       "artifacts": [
@@ -17,8 +17,14 @@
           "type": "research",
           "path": "specs/241_add_spawn_command_skill_agent/reports/01_meta-research.md",
           "summary": "Auto-generated research covering /spawn command, skill-spawn wrapper, and spawn-agent design with all component interfaces, behaviors, and interactions"
+        },
+        {
+          "path": "specs/241_add_spawn_command_skill_agent/plans/01_spawn-workflow.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for /spawn command, skill-spawn wrapper, and spawn-agent"
         }
-      ]
+      ],
+      "planned": "2026-03-19T18:20:55Z"
     },
     {
       "project_number": 240,

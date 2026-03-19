@@ -8,10 +8,11 @@ next_project_number: 242
 
 ### 241. Add /spawn command, skill-spawn wrapper, and spawn-agent for blocked task recovery
 - **Effort**: 4-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_meta-research.md](241_add_spawn_command_skill_agent/reports/01_meta-research.md)
+- **Plan**: [01_spawn-workflow.md](241_add_spawn_command_skill_agent/plans/01_spawn-workflow.md)
 
 **Description**: Create the complete `/spawn N [prompt]` workflow for recovering from blocked implementations. When `/implement` on a task gets stuck, the user runs `/spawn N` (with an optional description of what's blocking), and the command researches the blocker, decomposes it into a minimal set of new tasks, and wires up all dependency relationships automatically. Three components must be created together:
 
