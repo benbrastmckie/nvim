@@ -5,10 +5,19 @@
     {
       "project_number": 247,
       "project_name": "leader_am_per_project_model_picker",
-      "status": "not_started",
+      "status": "researched",
       "language": "neovim",
       "created": "2026-03-19T21:36:38Z",
-      "last_updated": "2026-03-19T21:36:38Z"
+      "last_updated": "2026-03-19T21:56:20Z",
+      "session_id": "sess_1773957194_12870e",
+      "researched": "2026-03-19T21:56:20Z",
+      "artifacts": [
+        {
+          "path": "specs/247_leader_am_per_project_model_picker/reports/01_project-local-model-picker.md",
+          "type": "research",
+          "summary": "Research report covering git root detection, directory creation patterns, Claude Code settings priority hierarchy, and implementation recommendations for project-local model picker"
+        }
+      ]
     },
     {
       "project_number": 246,

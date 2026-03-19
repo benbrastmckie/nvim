@@ -8,9 +8,10 @@ next_project_number: 248
 
 ### 247. Make leader-am model picker write to project-level .claude/settings.local.json
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: neovim
 - **Dependencies**: None
+- **Research**: [01_project-local-model-picker.md](247_leader_am_per_project_model_picker/reports/01_project-local-model-picker.md)
 
 **Description**: Make `<leader>am` model picker write the selected model to the current project's `.claude/settings.local.json` (detected via `git rev-parse --show-toplevel`) instead of the global `~/.claude/settings.local.json`. Project-local settings have priority 3 (highest non-managed), overriding both the committed `settings.json` and global user settings. Fall back to `~/.claude/settings.local.json` if no git root exists or no `.claude/` directory is present in the git root.
 
