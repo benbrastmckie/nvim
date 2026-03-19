@@ -1,7 +1,18 @@
 {
   "version": "1.0.0",
-  "next_project_number": 246,
+  "next_project_number": 247,
   "active_projects": [
+    {
+      "project_number": 246,
+      "project_name": "upgrade_founder_typst_templates_professional",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-19T20:55:04Z",
+      "last_updated": "2026-03-19T20:55:04Z",
+      "effort": "4-6 hours",
+      "dependencies": [],
+      "artifacts": []
+    },
     {
       "project_number": 245,
       "project_name": "fix_plan_status_update_script_arguments",

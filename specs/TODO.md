@@ -1,10 +1,31 @@
 ---
-next_project_number: 246
+next_project_number: 247
 ---
 
 # TODO
 
 ## Tasks
+
+### 246. Upgrade founder extension typst templates to professional styling
+- **Effort**: 4-6 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+
+**Description**: Extract the professional typst template design from /home/benjamin/Projects/Logos/Vision/strategy/market-sizing-condensed.typ and use it as the basis for the typst templates in the founder extension, enabling /plan + /implement on founder tasks (market, analyze, strategy) to produce professional PDF reports.
+
+The existing strategy-template.typ uses generic styling (New Computer Modern font, gray color scheme). The reference template has: Libertinus Serif font, navy/blue color palette (#0a2540, #1a4a7a, #2a5a9a), professional heading styles with colored underlines, metric() pills (dark navy with white text), callout() boxes (left-bordered), professional page header/footer with company name, and alternating row tables.
+
+**Files to update**:
+1. `.claude/extensions/founder/context/project/founder/templates/typst/strategy-template.typ` - Complete rewrite with professional styling
+2. `.claude/extensions/founder/context/project/founder/templates/typst/market-sizing.typ` - Section structure matching condensed document
+3. `.claude/extensions/founder/context/project/founder/templates/typst/competitive-analysis.typ` - Professional color scheme
+4. `.claude/extensions/founder/context/project/founder/templates/typst/gtm-strategy.typ` - Professional color scheme
+5. `.claude/extensions/founder/agents/founder-implement-agent.md` - Update Phase 5 inline generation example
+
+**Reference**: /home/benjamin/Projects/Logos/Vision/strategy/market-sizing-condensed.typ (564 lines)
+
+---
 
 ### 245. Fix plan status update script arguments in skill-implementer
 - **Effort**: 30 minutes
