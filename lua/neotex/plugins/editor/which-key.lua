@@ -365,7 +365,7 @@ return {
 
       -- Model picker - select Claude Code model
       { "<leader>am", function()
-        local config_path = vim.fn.expand("~/.config/.claude/settings.local.json")
+        local config_path = vim.fn.expand("~/.claude/settings.json")
 
         -- Model definitions (Opus first per task description)
         local models = {

@@ -5,20 +5,27 @@
     {
       "project_number": 243,
       "project_name": "create_recommended_order_utility",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "description": "Create .claude/scripts/update-recommended-order.sh with three functions: (1) add_to_recommended_order TASK_NUM - insert task into Recommended Order section based on dependency position, (2) remove_from_recommended_order TASK_NUM - remove task entry from section, (3) refresh_recommended_order - regenerate entire section from state.json dependency graph using topological sort. The section format is: numbered list with bold task numbers, arrow separator, action hints, and parenthetical dependency notes. Also update .claude/rules/state-management.md to document the Recommended Order section format and conventions.",
       "effort": "2-3 hours",
       "dependencies": [],
       "created": "2026-03-19T19:00:36Z",
-      "last_updated": "2026-03-19T19:00:36Z",
+      "last_updated": "2026-03-19T19:05:07Z",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/243_recommended_order_integration/reports/01_recommended-order-research.md",
           "summary": "Analysis of workflow commands and proposed utility design"
+        },
+        {
+          "path": "specs/243_recommended_order_integration/plans/01_recommended-order-utility.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for Recommended Order utility script"
         }
-      ]
+      ],
+      "session_id": "sess_1773946960_2285a5",
+      "planned": "2026-03-19T19:05:07Z"
     },
     {
       "project_number": 244,

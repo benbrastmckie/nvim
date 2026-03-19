@@ -20,11 +20,12 @@ next_project_number: 245
 
 ### 243. Create Recommended Order helper utility script
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Started**: 2026-03-19
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_recommended-order-research.md](243_recommended_order_integration/reports/01_recommended-order-research.md)
+- **Plan**: [01_recommended-order-utility.md](243_recommended_order_integration/plans/01_recommended-order-utility.md)
 
 **Description**: Create .claude/scripts/update-recommended-order.sh with three functions: (1) add_to_recommended_order TASK_NUM - insert task into Recommended Order section based on dependency position, (2) remove_from_recommended_order TASK_NUM - remove task entry from section, (3) refresh_recommended_order - regenerate entire section from state.json dependency graph using topological sort. The section format is: numbered list with bold task numbers, arrow separator, action hints, and parenthetical dependency notes. Also update .claude/rules/state-management.md to document the Recommended Order section format and conventions.
 
