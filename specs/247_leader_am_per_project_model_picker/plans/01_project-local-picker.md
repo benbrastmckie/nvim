@@ -1,7 +1,7 @@
 # Implementation Plan: Task #247
 
 - **Task**: 247 - Make leader-am model picker write to project-level .claude/settings.local.json
-- **Status**: [COMPLETE]
+- **Status**: [COMPLETED]
 - **Effort**: 1-1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: [01_project-local-model-picker.md](../reports/01_project-local-model-picker.md)

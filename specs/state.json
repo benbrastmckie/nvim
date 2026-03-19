@@ -5,11 +5,11 @@
     {
       "project_number": 247,
       "project_name": "leader_am_per_project_model_picker",
-      "status": "planned",
+      "status": "completed",
       "language": "neovim",
       "created": "2026-03-19T21:36:38Z",
-      "last_updated": "2026-03-19T22:01:01Z",
-      "session_id": "sess_1773957516_dac867",
+      "last_updated": "2026-03-19T22:27:56Z",
+      "session_id": "sess_1773959016_eade21",
       "researched": "2026-03-19T21:56:20Z",
       "artifacts": [
         {
@@ -21,9 +21,17 @@
           "path": "specs/247_leader_am_per_project_model_picker/plans/01_project-local-picker.md",
           "type": "plan",
           "summary": "4-phase implementation plan for project-local model picker settings"
+        },
+        {
+          "path": "specs/247_leader_am_per_project_model_picker/summaries/01_project-local-picker-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-19T22:01:01Z"
+      "planned": "2026-03-19T22:01:01Z",
+      "started": "2026-03-19T22:24:26Z",
+      "completed": "2026-03-19T22:27:56Z",
+      "completion_summary": "Modified <leader>am model picker to write Claude Code model selection to project-local .claude/settings.local.json using git root detection, with automatic directory creation and graceful fallback to global settings."
     },
     {
       "project_number": 246,
