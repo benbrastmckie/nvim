@@ -5,18 +5,19 @@
     {
       "project_number": 251,
       "project_name": "improve_context_efficiency_progressive_disclosure",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-03-20T02:17:51Z",
-      "last_updated": "2026-03-20T02:17:51Z"
+      "last_updated": "2026-03-20T02:19:52Z",
+      "session_id": "sess_1773973137_a645dd"
     },
     {
       "project_number": 250,
       "project_name": "embed_vault_detection_in_archive_stage",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-20T01:46:33Z",
-      "last_updated": "2026-03-20T02:13:46Z",
+      "last_updated": "2026-03-20T02:22:06Z",
       "session_id": "sess_1773972809_768a3d",
       "researched": "2026-03-20T02:05:27Z",
       "artifacts": [
@@ -34,10 +35,18 @@
           "path": "specs/250_embed_vault_detection_in_archive_stage/plans/01_vault-embedding-plan.md",
           "type": "plan",
           "summary": "7-phase implementation plan for embedding vault detection in archive stage"
+        },
+        {
+          "path": "specs/250_embed_vault_detection_in_archive_stage/summaries/01_vault-embedding-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
       "planned": "2026-03-20T02:10:34Z",
-      "started": "2026-03-20T02:13:46Z"
+      "started": "2026-03-20T02:13:46Z",
+      "completed": "2026-03-20T02:22:06Z",
+      "completion_summary": "Embedded vault detection as mandatory inline check in Stage 10 of skill-todo with CRITICAL annotation and unconditional bash output. Consolidated vault operations as sub-steps 9.1-9.4. Added pre-commit safety net to GitCommit stage. Reduced skill from 21 to 16 stages.",
+      "claudemd_suggestions": "Updated skill-todo/SKILL.md with embedded vault detection pattern. Created check-vault-threshold.sh utility script."
     },
     {
       "project_number": 249,

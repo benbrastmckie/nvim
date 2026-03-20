@@ -1,7 +1,7 @@
 # Implementation Plan: Task #250
 
 - **Task**: 250 - Embed vault detection as inline check within skill-todo archive stage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2-3 hours
 - **Dependencies**: None
 - **Research Inputs**:
