@@ -1,7 +1,7 @@
 # Implementation Plan: Task #251
 
 - **Task**: 251 - Improve context efficiency via progressive disclosure
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4-6 hours
 - **Dependencies**: None
 - **Research Inputs**: [01_team-research.md](../reports/01_team-research.md)
@@ -48,7 +48,7 @@ Key findings integrated from team research:
 
 ## Implementation Phases
 
-### Phase 1: Strip Quick Reference from Root CLAUDE.md [NOT STARTED]
+### Phase 1: Strip Quick Reference from Root CLAUDE.md [COMPLETED]
 
 **Goal**: Remove inline Quick Reference content from 9 sections, leaving only pointer links. This is the highest-impact, lowest-risk change.
 
