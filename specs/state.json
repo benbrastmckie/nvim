@@ -1688,11 +1688,11 @@
     {
       "project_number": 252,
       "project_name": "add_legal_to_founder_extension",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-20T16:25:53Z",
-      "last_updated": "2026-03-20T16:54:02Z",
-      "session_id": "sess_1774025146_7e2746",
+      "last_updated": "2026-03-20T16:59:06Z",
+      "session_id": "sess_1774025776_e935ef",
       "dependencies": [],
       "artifacts": [
         {
@@ -1704,9 +1704,15 @@
           "path": "specs/252_add_legal_to_founder_extension/reports/02_team-research.md",
           "type": "research",
           "summary": "Team research with 2 teammates: implementation patterns + legal domain content"
+        },
+        {
+          "path": "specs/252_add_legal_to_founder_extension/plans/02_implementation-plan.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for adding /legal command-skill-agent to founder extension"
         }
       ],
-      "researched": "2026-03-20T16:54:02Z"
+      "researched": "2026-03-20T16:54:02Z",
+      "planned": "2026-03-20T16:59:06Z"
     }
   ],
   "completed_projects": [],

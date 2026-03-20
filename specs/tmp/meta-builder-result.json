@@ -1,26 +1,51 @@
 {
   "status": "tasks_created",
-  "summary": "Created 1 consolidated task for researching and integrating MCP tools into the founder extension. Task #235 covers market research tools, business strategy tools, and integration into manifest.json and agent definitions.",
+  "summary": "Created 6 tasks for adding /legal command-skill-agent to the founder extension: legal-council-agent (#252), skill-legal (#253), /legal command (#254), legal context files (#255), manifest/index updates (#256), EXTENSION.md documentation (#257).",
   "artifacts": [
     {
       "type": "task_entry",
       "path": "specs/TODO.md",
-      "summary": "Task #235 added to TODO.md"
+      "summary": "Tasks #252-#257 added to TODO.md"
     },
     {
       "type": "research",
-      "path": "specs/235_research_integrate_mcp_founder/reports/01_meta-research.md",
-      "summary": "Auto-generated research context from /meta interview"
+      "path": "specs/252_create_legal_council_agent/reports/01_meta-research.md",
+      "summary": "Research for legal-council-agent creation"
+    },
+    {
+      "type": "research",
+      "path": "specs/253_create_skill_legal/reports/01_meta-research.md",
+      "summary": "Research for skill-legal creation"
+    },
+    {
+      "type": "research",
+      "path": "specs/254_create_legal_command/reports/01_meta-research.md",
+      "summary": "Research for /legal command creation"
+    },
+    {
+      "type": "research",
+      "path": "specs/255_create_legal_context_files/reports/01_meta-research.md",
+      "summary": "Research for legal context files creation"
+    },
+    {
+      "type": "research",
+      "path": "specs/256_update_manifest_and_index/reports/01_meta-research.md",
+      "summary": "Research for manifest and index updates"
+    },
+    {
+      "type": "research",
+      "path": "specs/257_update_extension_documentation/reports/01_meta-research.md",
+      "summary": "Research for EXTENSION.md documentation update"
     }
   ],
   "metadata": {
-    "session_id": "sess_1742313418_f3a2b1",
-    "duration_seconds": 180,
+    "session_id": "sess_1742515847_7a3b2c",
+    "duration_seconds": 300,
     "agent_type": "meta-builder-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
     "mode": "prompt",
-    "tasks_created": 1
+    "tasks_created": 6
   },
-  "next_steps": "Run /plan 235 to create implementation plan, then /implement 235 to execute"
+  "next_steps": "Run /plan 252 to begin planning the foundational legal-council-agent task"
 }
