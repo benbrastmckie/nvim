@@ -1,7 +1,7 @@
 # Implementation Plan: Task #252
 
 - **Task**: 252 - add_legal_to_founder_extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/252_add_legal_to_founder_extension/reports/02_team-research.md

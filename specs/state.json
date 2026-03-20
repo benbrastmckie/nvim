@@ -1688,10 +1688,10 @@
     {
       "project_number": 252,
       "project_name": "add_legal_to_founder_extension",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-20T16:25:53Z",
-      "last_updated": "2026-03-20T17:06:58Z",
+      "last_updated": "2026-03-20T17:19:23Z",
       "session_id": "sess_1774026400_8019d4",
       "dependencies": [],
       "artifacts": [
@@ -1709,11 +1709,19 @@
           "path": "specs/252_add_legal_to_founder_extension/plans/02_implementation-plan.md",
           "type": "plan",
           "summary": "6-phase implementation plan for adding /legal command-skill-agent to founder extension"
+        },
+        {
+          "path": "specs/252_add_legal_to_founder_extension/summaries/03_execution-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
       "researched": "2026-03-20T16:54:02Z",
       "planned": "2026-03-20T16:59:06Z",
-      "started": "2026-03-20T17:06:58Z"
+      "started": "2026-03-20T17:06:58Z",
+      "completed": "2026-03-20T17:19:23Z",
+      "completion_summary": "Added /legal command, skill-legal, and legal-council-agent to founder extension with 4 context files and Typst template. Complete command-skill-agent stack following established patterns.",
+      "claudemd_suggestions": "Updated manifest.json (version 2.1.0, added legal routing), index-entries.json (5 new entries), EXTENSION.md (v2.2 with legal docs)"
     }
   ],
   "completed_projects": [],

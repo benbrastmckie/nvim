@@ -8,13 +8,15 @@ next_project_number: 253
 
 ### 252. Add /legal command-skill-agent to founder extension
 - **Effort**: 9-12 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-20
 - **Language**: meta
 - **Dependencies**: None
 - **Research**:
   - [01_meta-research.md](252_add_legal_to_founder_extension/reports/01_meta-research.md)
   - [02_team-research.md](252_add_legal_to_founder_extension/reports/02_team-research.md)
 - **Plan**: [02_implementation-plan.md](252_add_legal_to_founder_extension/plans/02_implementation-plan.md)
+- **Summary**: [03_execution-summary.md](252_add_legal_to_founder_extension/summaries/03_execution-summary.md)
 
 **Description**: Add contract review and negotiation legal counsel capability to the founder extension. Creates: (1) legal-council-agent with REVIEW/NEGOTIATE/TERMS/DILIGENCE modes and forcing questions; (2) skill-legal thin wrapper delegating to agent; (3) /legal command with pre-task forcing questions (contract type, concerns, position, financial exposure); (4) three context files (domain/legal-frameworks.md, patterns/contract-review.md, templates/contract-analysis.md); (5) manifest.json and index-entries.json updates with "founder:legal" routing; (6) EXTENSION.md documentation. Follows all existing founder extension patterns.
 
