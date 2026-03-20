@@ -278,8 +278,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
     </process>
   </stage>
   
-  <stage id="10" name="ArchiveTasks">
-    <action>Archive tasks to completed_projects</action>
+  <stage id="10" name="ArchiveTasks" checkpoint="vault_check_complete">
+    <action>Archive tasks to completed_projects (includes mandatory vault check)</action>
     <process>
       For each task to archive:
       1. Update specs/archive/state.json:
@@ -353,36 +353,48 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
             Archive entry created but no files moved
             ```
 
-      9. **TRANSITION**: After archiving tasks, continue to Stage 11 (DetectVaultThreshold)
-         to determine if vault operation is needed based on next_project_number threshold.
-    </process>
-  </stage>
+      9. **Vault Threshold Check (MANDATORY)**
 
-  <stage id="11" name="DetectVaultThreshold">
-    <action>Detect if vault operation is needed</action>
-    <process>
-      1. Read next_project_number from specs/state.json:
-         ```bash
-         next_num=$(jq -r '.next_project_number' specs/state.json)
-         ```
+         **CRITICAL: ALWAYS EXECUTE - DO NOT SKIP**
 
-      2. Check vault threshold (next_project_number > 1000):
+         This sub-step MUST be executed unconditionally after archiving tasks.
+         The bash block below produces output for BOTH vault-needed and vault-not-needed cases.
+
+         Execute vault threshold detection:
          ```bash
-         vault_needed=false
-         if [ "$next_num" -gt 1000 ]; then
-           vault_needed=true
+         # UNCONDITIONAL VAULT CHECK - produces output in all cases
+         PROJECT_ROOT="${PROJECT_ROOT:-.}"
+         STATE_FILE="${PROJECT_ROOT}/specs/state.json"
+         VAULT_THRESHOLD=1000
+
+         next_num=$(jq -r '.next_project_number // 0' "$STATE_FILE")
+
+         if [[ "$next_num" -gt "$VAULT_THRESHOLD" ]]; then
+             echo ""
+             echo "=============================================="
+             echo "  VAULT THRESHOLD EXCEEDED"
+             echo "=============================================="
+             echo "  next_project_number: $next_num"
+             echo "  threshold: $VAULT_THRESHOLD"
+             echo "  status: VAULT OPERATION REQUIRED"
+             echo "=============================================="
+             echo ""
+             vault_needed=true
+         else
+             echo ""
+             echo "Vault check: next_project_number=$next_num (threshold: $VAULT_THRESHOLD) - OK"
+             echo ""
+             vault_needed=false
          fi
          ```
 
-      3. If vault not needed, skip to Stage 16 (UpdateRoadmap):
-         ```bash
-         if [ "$vault_needed" = "false" ]; then
-           # Continue to UpdateRoadmap
-           continue_to_stage_16=true
-         fi
-         ```
+         **Decision Logic**:
+         - If `vault_needed=true`: Proceed to sub-step 9.1 (VaultConfirmation)
+         - If `vault_needed=false`: Skip sub-steps 9.1-9.4, continue to Stage 11 (UpdateRoadmap)
 
-      4. If vault needed, identify tasks to renumber:
+      9.1. **VaultConfirmation** (if vault_needed=true)
+
+         Identify tasks requiring renumbering:
          ```bash
          # Find active tasks with project_number > 1000
          tasks_to_renumber=$(jq -r '
@@ -398,31 +410,14 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
 
          # Count tasks to renumber
          renumber_count=$(echo "$tasks_to_renumber" | jq -s 'length')
-         ```
 
-      5. Calculate renumbering mappings:
-         ```bash
          # Build mapping array: [{old: 1001, new: 1}, {old: 1003, new: 3}, ...]
          renumber_mappings=$(jq -n --argjson tasks "$tasks_to_renumber" '
            [$tasks[] | {old: .old_number, new: .new_number, name: .project_name}]
          ')
          ```
 
-      6. Store detection results for subsequent stages:
-         - vault_needed (boolean)
-         - next_num (current next_project_number)
-         - renumber_count (number of tasks > 1000)
-         - renumber_mappings (old -> new number mappings)
-         - Continue to Stage 12 if vault_needed=true
-    </process>
-  </stage>
-
-  <stage id="12" name="VaultConfirmation">
-    <action>Get user confirmation for vault operation</action>
-    <process>
-      1. Skip if vault_needed = false from Stage 11
-
-      2. Build preview of renumbering:
+         Build preview of renumbering:
          ```bash
          # Format preview of task renumbering
          renumber_preview=""
@@ -434,7 +429,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          done
          ```
 
-      3. Present AskUserQuestion for vault confirmation:
+         Present AskUserQuestion for vault confirmation:
          ```json
          {
            "question": "Task numbering has exceeded 1000. Initiate vault archival?",
@@ -448,27 +443,20 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          }
          ```
 
-      4. Handle user response:
+         Handle user response:
          ```bash
          if [ "$user_response" = "proceed" ]; then
            vault_approved=true
-           # Continue to Stage 13
+           # Continue to sub-step 9.2
          else
            vault_approved=false
-           # Skip to Stage 16 (UpdateRoadmap)
+           # Skip to Stage 11 (UpdateRoadmap)
          fi
          ```
 
-      5. Store vault_approved flag for subsequent stages
-    </process>
-  </stage>
+      9.2. **CreateVault** (if vault_approved=true)
 
-  <stage id="13" name="CreateVault">
-    <action>Create vault directory and move archive contents</action>
-    <process>
-      1. Skip if vault_approved = false from Stage 12
-
-      2. Calculate vault number:
+         Calculate vault number:
          ```bash
          # Get current vault_count (or 0 if not set)
          vault_count=$(jq -r '.vault_count // 0' specs/state.json)
@@ -477,12 +465,12 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          vault_path="specs/vault/${vault_dir_name}"
          ```
 
-      3. Create vault directory structure:
+         Create vault directory structure:
          ```bash
          mkdir -p "$vault_path"
          ```
 
-      4. Move archive contents to vault:
+         Move archive contents to vault:
          ```bash
          # Move archive directory to vault
          if [ -d "specs/archive" ]; then
@@ -490,7 +478,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          fi
          ```
 
-      5. Move archive state.json to vault root:
+         Move archive state.json to vault root:
          ```bash
          # Archive state.json becomes vault state.json
          if [ -f "${vault_path}/archive/state.json" ]; then
@@ -498,7 +486,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          fi
          ```
 
-      6. Create vault meta.json:
+         Create vault meta.json:
          ```bash
          # Calculate metadata
          current_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -522,7 +510,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            }' > "${vault_path}/meta.json"
          ```
 
-      7. Reinitialize empty specs/archive/ with fresh state.json:
+         Reinitialize empty specs/archive/ with fresh state.json:
          ```bash
          mkdir -p "specs/archive"
 
@@ -534,19 +522,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          }' > "specs/archive/state.json"
          ```
 
-      8. Track vault creation for later:
-         - vault_path (path to new vault)
-         - new_vault_num (vault number)
-         - Continue to Stage 14
-    </process>
-  </stage>
+      9.3. **RenumberTasks** (if vault_approved=true)
 
-  <stage id="14" name="RenumberTasks">
-    <action>Renumber active tasks > 1000 and update all references</action>
-    <process>
-      1. Skip if vault_approved = false
-
-      2. For each task in renumber_mappings, update state.json:
+         For each task in renumber_mappings, update state.json:
          ```bash
          # Update each task's project_number and artifact paths
          for mapping in $(echo "$renumber_mappings" | jq -c '.[]'); do
@@ -578,7 +556,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          done
          ```
 
-      3. Update dependencies arrays (task numbers > 1000):
+         Update dependencies arrays (task numbers > 1000):
          ```bash
          # Build mapping for all renumbered tasks
          jq --argjson mappings "$renumber_mappings" '
@@ -596,7 +574,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          mv specs/state.json.tmp specs/state.json
          ```
 
-      4. Rename task directories:
+         Rename task directories:
          ```bash
          for mapping in $(echo "$renumber_mappings" | jq -c '.[]'); do
            old_num=$(echo "$mapping" | jq -r '.old')
@@ -622,7 +600,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          done
          ```
 
-      5. Update TODO.md entries:
+         Update TODO.md entries:
          ```bash
          for mapping in $(echo "$renumber_mappings" | jq -c '.[]'); do
            old_num=$(echo "$mapping" | jq -r '.old')
@@ -643,39 +621,29 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          done
          ```
 
-      6. Track renumbering results:
-         - renumbered_count (number of tasks renumbered)
-         - max_renumbered_num (highest new task number after renumbering)
-         - Continue to Stage 15
-    </process>
-  </stage>
+      9.4. **ResetState** (if vault_approved=true)
 
-  <stage id="15" name="ResetState">
-    <action>Reset numbering state and update vault tracking</action>
-    <process>
-      1. Skip if vault_approved = false
-
-      2. Calculate new next_project_number:
+         Calculate new next_project_number:
          ```bash
          # Find maximum project_number in active_projects after renumbering
          max_active=$(jq -r '[.active_projects[].project_number] | max // 0' specs/state.json)
          new_next_num=$((max_active + 1))
          ```
 
-      3. Update state.json with new next_project_number:
+         Update state.json with new next_project_number:
          ```bash
          jq --argjson new_next "$new_next_num" \
             '.next_project_number = $new_next' specs/state.json > specs/state.json.tmp
          mv specs/state.json.tmp specs/state.json
          ```
 
-      4. Increment vault_count:
+         Increment vault_count:
          ```bash
          jq '.vault_count = (.vault_count // 0) + 1' specs/state.json > specs/state.json.tmp
          mv specs/state.json.tmp specs/state.json
          ```
 
-      5. Add entry to vault_history:
+         Add entry to vault_history:
          ```bash
          current_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
          archived_count=$(jq -r '.completed_projects | length' "${vault_path}/state.json" 2>/dev/null || echo "0")
@@ -699,7 +667,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          mv specs/state.json.tmp specs/state.json
          ```
 
-      6. Add vault transition comment to TODO.md:
+         Add vault transition comment to TODO.md:
          ```bash
          current_date=$(date +"%Y-%m-%d")
          transition_comment="<!-- Vault transition: ${current_date} - Tasks 1-$((next_num - renumber_count - 1)) archived to ${vault_path}/ -->"
@@ -716,14 +684,15 @@ ${transition_comment}
          fi
          ```
 
-      7. Track state reset results:
-         - new_next_num (reset next_project_number value)
-         - vault_history_entry (added entry)
-         - Continue to Stage 16 (UpdateRoadmap)
+         After sub-step 9.4 completes, continue to Stage 11 (UpdateRoadmap).
+
+      <!-- CHECKPOINT: Stage 10 complete when vault_check output is present AND
+           (vault_needed=false OR vault operations 9.1-9.4 completed) -->
     </process>
+    <checkpoint>vault_check_complete output present; if vault_needed, sub-steps 9.1-9.4 executed</checkpoint>
   </stage>
 
-  <stage id="16" name="UpdateRoadmap">
+  <stage id="11" name="UpdateRoadmap">
     <action>Update ROAD_MAP.md with completion annotations</action>
     <process>
       For each roadmap match:
@@ -735,7 +704,7 @@ ${transition_comment}
     </process>
   </stage>
   
-  <stage id="17" name="UpdateREADME">
+  <stage id="12" name="UpdateREADME">
     <action>Apply README.md suggestions</action>
     <process>
       1. Filter suggestions where action != "none"
@@ -746,7 +715,7 @@ ${transition_comment}
     </process>
   </stage>
   
-  <stage id="18" name="UpdateChangelog">
+  <stage id="13" name="UpdateChangelog">
     <action>Update CHANGE_LOG.md with archive entries</action>
     <process>
       1. Create specs/CHANGE_LOG.md if not exists:
@@ -783,7 +752,7 @@ ${transition_comment}
     </process>
   </stage>
   
-  <stage id="19" name="CreateMemories">
+  <stage id="14" name="CreateMemories">
     <action>Create selected memories</action>
     <process>
       For each selected memory suggestion:
@@ -804,10 +773,44 @@ ${transition_comment}
     </process>
   </stage>
   
-  <stage id="20" name="GitCommit">
+  <stage id="15" name="GitCommit">
     <action>Commit all changes</action>
     <process>
-      1. Stage all modified files:
+      1. **Pre-commit vault safety net**:
+
+         Before committing, verify vault threshold was handled if exceeded:
+         ```bash
+         # PRE-COMMIT SAFETY NET - blocks commit if vault was skipped when required
+         PROJECT_ROOT="${PROJECT_ROOT:-.}"
+         STATE_FILE="${PROJECT_ROOT}/specs/state.json"
+         VAULT_THRESHOLD=1000
+
+         next_num=$(jq -r '.next_project_number // 0' "$STATE_FILE")
+         vault_count_before=$(jq -r '.vault_count // 0' "$STATE_FILE")
+         vault_count_after=$(jq -r '.vault_count // 0' "$STATE_FILE")
+
+         if [[ "$next_num" -gt "$VAULT_THRESHOLD" ]]; then
+           # Threshold exceeded - vault should have been performed
+           if [[ "$vault_count_after" -eq "$vault_count_before" ]]; then
+             echo ""
+             echo "=============================================="
+             echo "  ERROR: VAULT OPERATION SKIPPED"
+             echo "=============================================="
+             echo "  next_project_number: $next_num (exceeds threshold: $VAULT_THRESHOLD)"
+             echo "  vault_count unchanged: $vault_count_after"
+             echo ""
+             echo "  The vault threshold was exceeded but vault operation"
+             echo "  was not performed. Return to Stage 10 sub-step 9 and"
+             echo "  complete the vault operation before committing."
+             echo "=============================================="
+             echo ""
+             exit 1
+           fi
+         fi
+         echo "Pre-commit vault check: OK"
+         ```
+
+      2. Stage all modified files:
          ```bash
          git add -A
          ```
@@ -831,7 +834,7 @@ ${transition_comment}
     </process>
   </stage>
   
-  <stage id="21" name="OutputResults">
+  <stage id="16" name="OutputResults">
     <action>Display final results</action>
     <process>
       Display complete summary:
