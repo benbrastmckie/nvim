@@ -1,10 +1,34 @@
 ---
-next_project_number: 250
+next_project_number: 251
 ---
 
 # TODO
 
 ## Tasks
+
+### 250. Embed vault detection as inline check within skill-todo archive stage
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: Task #249
+
+**Description**: Task 249 renumbered vault stages from fractional IDs (10.5-10.9) to integers (11-15) and added a transition directive at Stage 10's exit. Testing in the ProofChecker repo (next_project_number=1007) confirmed the model still skips vault detection entirely. Root cause analysis reveals the problem is architectural, not syntactic: the model does not execute skill stages sequentially like a program. It reads the skill file holistically, plans its approach as "scan, archive, commit", and cherry-picks stages it deems relevant. Separate vault stages (even with integer IDs and transition directives) are skipped because the model pre-evaluates conditions and decides vault is not part of its planned execution path.
+
+The fix requires restructuring vault detection so it cannot be skipped:
+
+1. **Create a bash enforcement script** (`.claude/scripts/check-vault-threshold.sh`) that reads `next_project_number` from state.json and outputs a clear directive when > 1000 (e.g., "VAULT REQUIRED: next_project_number=1007 > 1000. Execute vault operation before committing."). The model cannot ignore output it has already received from a command it ran.
+
+2. **Embed the vault check as an inline step within Stage 10 (ArchiveTasks)** rather than a separate stage. After archiving completes (current step 8), add a new step that calls the bash script. The model is already executing Stage 10 when archiving -- it will encounter and execute inline steps within that stage. This eliminates the stage-boundary skip problem.
+
+3. **Consolidate vault stages 11-15 into Stage 10 sub-steps** (10.a through 10.e or numbered steps 9-13 within the stage process). The vault confirmation, creation, renumbering, and state reset become sub-steps of the archive stage rather than independent stages the model can skip. The stage boundary between "archive" and "vault" is what allows skipping -- removing that boundary fixes it.
+
+4. **Remove conditional language from vault detection**. Instead of "if vault needed, skip to Stage 16", make the check unconditional: "Run check-vault-threshold.sh. If output contains VAULT REQUIRED, execute vault sub-steps. Otherwise continue." The check always runs; only the branch is conditional.
+
+5. **Add a pre-commit validation in the git commit stage** as a safety net: before committing, verify next_project_number <= 1000 or vault operation was performed. This catches cases where the inline check was somehow skipped.
+
+6. **Reduce total stage count** by consolidating related stages (e.g., merge UpdateRoadmap/UpdateREADME/UpdateChangelog into a single "Finalize" stage). Fewer stages means less opportunity for skipping. Target: reduce from 21 stages to ~10-12.
+
+Evidence from failed test: The model executed stages 2, 3, 5, 10, 18, 20, 21 and skipped 4, 6, 7, 8, 9, 11-17, 19. This confirms it skips any stage it deems unnecessary, regardless of numbering or transition directives.
 
 ### 249. Fix skill-todo vault detection stages skipped due to fractional stage IDs
 - **Effort**: 1-2 hours

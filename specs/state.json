@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 250,
+  "next_project_number": 251,
   "active_projects": [
+    {
+      "project_number": 250,
+      "project_name": "embed_vault_detection_in_archive_stage",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-20T01:46:33Z",
+      "last_updated": "2026-03-20T01:46:33Z"
+    },
     {
       "project_number": 249,
       "project_name": "fix_skill_todo_vault_stage_numbering",
