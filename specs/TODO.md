@@ -22,10 +22,11 @@ next_project_number: 255
 
 ### 254. Update founder-implement-agent for typst output generation
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #253
 - **Research**: [01_meta-research.md](254_update_founder_implement_agent_typst/reports/01_meta-research.md)
+- **Plan**: [01_typst-execution-update.md](254_update_founder_implement_agent_typst/plans/01_typst-execution-update.md)
 
 **Description**: Update the founder-implement-agent.md to correctly execute the typst generation phase and produce typst files as output. Add graceful degradation if typst is not installed, and fallback logic to dynamically add typst phase if missing from plan (backward compatibility).
 

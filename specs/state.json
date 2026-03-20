@@ -37,7 +37,7 @@
     {
       "project_number": 254,
       "project_name": "update_founder_implement_agent_typst",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-20T12:00:00Z",
       "dependencies": [
@@ -48,8 +48,16 @@
           "type": "research",
           "path": "specs/254_update_founder_implement_agent_typst/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "path": "specs/254_update_founder_implement_agent_typst/plans/01_typst-execution-update.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for founder-implement-agent typst enhancements"
         }
-      ]
+      ],
+      "last_updated": "2026-03-20T19:38:41Z",
+      "session_id": "sess_1774035379_256bc3",
+      "planned": "2026-03-20T19:38:41Z"
     },
     {
       "project_number": 251,
