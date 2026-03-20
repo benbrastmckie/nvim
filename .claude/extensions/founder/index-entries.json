@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "path": ".claude/extensions/founder/context/project/founder/domain/business-frameworks.md",
+      "path": "project/founder/domain/business-frameworks.md",
       "summary": "TAM/SAM/SOM market sizing frameworks, business model canvas, unit economics",
       "line_count": 240,
       "load_when": {
@@ -11,7 +11,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/domain/legal-frameworks.md",
+      "path": "project/founder/domain/legal-frameworks.md",
       "summary": "IP assignment, indemnification, data rights, non-compete, R&W for AI startups",
       "line_count": 245,
       "load_when": {
@@ -21,7 +21,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/domain/strategic-thinking.md",
+      "path": "project/founder/domain/strategic-thinking.md",
       "summary": "CEO cognitive patterns, YC principles, completeness principle",
       "line_count": 214,
       "load_when": {
@@ -31,7 +31,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/patterns/forcing-questions.md",
+      "path": "project/founder/patterns/forcing-questions.md",
       "summary": "Forcing question framework for specificity, anti-patterns to detect",
       "line_count": 221,
       "load_when": {
@@ -41,7 +41,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/patterns/contract-review.md",
+      "path": "project/founder/patterns/contract-review.md",
       "summary": "Contract review methodology, red flags checklist, attorney escalation guide",
       "line_count": 215,
       "load_when": {
@@ -51,7 +51,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/patterns/decision-making.md",
+      "path": "project/founder/patterns/decision-making.md",
       "summary": "Two-way doors, inversion, focus as subtraction decision frameworks",
       "line_count": 276,
       "load_when": {
@@ -61,7 +61,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/patterns/mode-selection.md",
+      "path": "project/founder/patterns/mode-selection.md",
       "summary": "Operational modes pattern for scope control (LAUNCH, SCALE, PIVOT, EXPAND)",
       "line_count": 239,
       "load_when": {
@@ -71,7 +71,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/market-sizing.md",
+      "path": "project/founder/templates/market-sizing.md",
       "summary": "TAM/SAM/SOM market sizing artifact template with concentric circles diagram",
       "line_count": 250,
       "load_when": {
@@ -81,7 +81,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/competitive-analysis.md",
+      "path": "project/founder/templates/competitive-analysis.md",
       "summary": "Competitive analysis template with 2x2 positioning map, battle cards",
       "line_count": 273,
       "load_when": {
@@ -91,7 +91,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/gtm-strategy.md",
+      "path": "project/founder/templates/gtm-strategy.md",
       "summary": "Go-to-market strategy template with positioning, channels, 90-day plan",
       "line_count": 303,
       "load_when": {
@@ -101,7 +101,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/contract-analysis.md",
+      "path": "project/founder/templates/contract-analysis.md",
       "summary": "Contract analysis report template with clause review, risk matrix, BATNA/ZOPA",
       "line_count": 347,
       "load_when": {
@@ -111,7 +111,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/typst/strategy-template.typ",
+      "path": "project/founder/templates/typst/strategy-template.typ",
       "summary": "Base Typst template with shared styles, callouts, tables, and visualizations for all founder reports",
       "line_count": 400,
       "load_when": {
@@ -121,7 +121,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/typst/market-sizing.typ",
+      "path": "project/founder/templates/typst/market-sizing.typ",
       "summary": "Typst template for market sizing PDF reports with TAM/SAM/SOM visualization",
       "line_count": 200,
       "load_when": {
@@ -131,7 +131,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/typst/competitive-analysis.typ",
+      "path": "project/founder/templates/typst/competitive-analysis.typ",
       "summary": "Typst template for competitive analysis PDF reports with positioning maps and battle cards",
       "line_count": 220,
       "load_when": {
@@ -141,7 +141,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/typst/gtm-strategy.typ",
+      "path": "project/founder/templates/typst/gtm-strategy.typ",
       "summary": "Typst template for GTM strategy PDF reports with 90-day plan timeline and metrics dashboard",
       "line_count": 250,
       "load_when": {
@@ -151,7 +151,7 @@
       }
     },
     {
-      "path": ".claude/extensions/founder/context/project/founder/templates/typst/contract-analysis.typ",
+      "path": "project/founder/templates/typst/contract-analysis.typ",
       "summary": "Typst template for contract analysis PDF reports with risk matrix, clause tables, BATNA blocks",
       "line_count": 392,
       "load_when": {

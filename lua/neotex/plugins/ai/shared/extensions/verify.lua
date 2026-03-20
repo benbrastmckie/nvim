@@ -17,6 +17,25 @@ local function dir_exists(dirpath)
   return vim.fn.isdirectory(dirpath) == 1
 end
 
+--- Normalize index entry path by stripping known bad prefixes
+--- Mirrors the normalization in merge.lua so verification checks the same paths
+--- @param path string Path to normalize
+--- @return string normalized_path Path with bad prefixes stripped
+local function normalize_index_path(path)
+  -- Strip full extension path prefix: .claude/extensions/*/context/ or .opencode/extensions/*/context/
+  path = path:gsub("^%.claude/extensions/[^/]+/context/", "")
+  path = path:gsub("^%.opencode/extensions/[^/]+/context/", "")
+
+  -- Strip partial context prefix
+  path = path:gsub("^context/", "")
+
+  -- Strip .claude/context/ or .opencode/context/ prefix
+  path = path:gsub("^%.claude/context/", "")
+  path = path:gsub("^%.opencode/context/", "")
+
+  return path
+end
+
 --- Read JSON file
 --- @param filepath string Path to JSON file
 --- @return table|nil data Parsed JSON or nil on error
@@ -145,7 +164,8 @@ local function verify_context(extension_dir, target_dir)
 
   for _, entry in ipairs(index_data.entries) do
     results.checked = results.checked + 1
-    local context_path = context_dir .. "/" .. entry.path
+    local normalized_path = normalize_index_path(entry.path)
+    local context_path = context_dir .. "/" .. normalized_path
     if not file_exists(context_path) then
       table.insert(results.missing, entry.path)
     end
@@ -208,7 +228,8 @@ local function verify_index_merge(extension_dir, target_dir)
   end
 
   -- Check if at least one extension entry is in main index
-  local first_ext_path = ext_index.entries[1].path
+  -- Normalize the extension path since merge.lua normalizes paths during append
+  local first_ext_path = normalize_index_path(ext_index.entries[1].path)
   for _, entry in ipairs(main_index.entries) do
     if entry.path == first_ext_path then
       return true

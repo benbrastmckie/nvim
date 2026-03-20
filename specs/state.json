@@ -5,7 +5,7 @@
     {
       "project_number": 253,
       "project_name": "fix_founder_plan_agent_typst_phase",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-20T12:00:00Z",
       "dependencies": [],
@@ -14,8 +14,16 @@
           "type": "research",
           "path": "specs/253_fix_founder_plan_agent_typst_phase/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "path": "specs/253_fix_founder_plan_agent_typst_phase/plans/01_enforce-typst-phase.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan to enforce typst generation phase in founder-plan-agent"
         }
-      ]
+      ],
+      "last_updated": "2026-03-20T19:27:57Z",
+      "session_id": "sess_1774034712_67bd01",
+      "planned": "2026-03-20T19:27:57Z"
     },
     {
       "project_number": 254,

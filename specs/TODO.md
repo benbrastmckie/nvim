@@ -8,10 +8,11 @@ next_project_number: 255
 
 ### 253. Fix founder-plan-agent to enforce typst generation phase
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_meta-research.md](253_fix_founder_plan_agent_typst_phase/reports/01_meta-research.md)
+- **Plan**: [01_enforce-typst-phase.md](253_fix_founder_plan_agent_typst_phase/plans/01_enforce-typst-phase.md)
 
 **Description**: Fix the founder-plan-agent.md specification to always include a typst document generation phase (Phase 5) in generated plans. Currently the agent generates plans with varying phase structures that omit typst output, causing the implement agent to never produce typst files.
 
