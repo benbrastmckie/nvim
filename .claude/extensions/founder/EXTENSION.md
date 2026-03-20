@@ -1,6 +1,6 @@
-## Founder Extension (v2.1)
+## Founder Extension (v2.2)
 
-Strategic business analysis tools for founders and entrepreneurs. Integrates forcing question patterns and decision frameworks inspired by Y Combinator office hours methodology.
+Strategic business analysis tools for founders and entrepreneurs. Integrates forcing question patterns and decision frameworks inspired by Y Combinator office hours methodology. Now includes contract review and legal counsel capabilities.
 
 ### Pre-Task Forcing Questions (v2.1 NEW)
 
@@ -17,6 +17,17 @@ Commands now ask essential forcing questions BEFORE creating tasks:
 ```
 
 This workflow reverses the previous pattern (task first, questions during research) to gather essential data upfront, creating richer task entries and enabling more focused research.
+
+```
+/legal "SaaS vendor agreement"
+  -> Mode selection (REVIEW, NEGOTIATE, TERMS, DILIGENCE)
+  -> Contract type question
+  -> Primary concern question
+  -> Position question
+  -> Financial exposure question
+  -> Task created with forcing_data stored
+  -> Escalation assessment (self-serve / attorney review)
+```
 
 ### Task Integration (v2.0+)
 
@@ -38,6 +49,9 @@ Commands integrate with the task system by default:
 | `/market` | `/market --quick [args]` | Legacy standalone mode |
 | `/analyze` | `/analyze "competitor landscape"` | Ask forcing questions, create task (stops at [NOT STARTED]) |
 | `/strategy` | `/strategy "B2B launch"` | Ask forcing questions, create task (stops at [NOT STARTED]) |
+| `/legal` | `/legal "SaaS vendor agreement"` | Ask forcing questions, create task (stops at [NOT STARTED]) |
+| `/legal` | `/legal 256` | Run research on existing task |
+| `/legal` | `/legal --quick [args]` | Legacy standalone mode |
 
 ### Input Types
 
@@ -47,6 +61,15 @@ Commands integrate with the task system by default:
 | Task number | Load existing task, run research, stop at [RESEARCHED] |
 | File path | Read file for context, ask questions, create task |
 | `--quick [args]` | Legacy standalone mode (no task creation) |
+
+### Legal Command Modes
+
+| Mode | Posture | Focus |
+|------|---------|-------|
+| **REVIEW** | Risk assessment | Identify problematic clauses, red flags, missing protections |
+| **NEGOTIATE** | Position building | Counter-terms, leverage points, BATNA/ZOPA analysis |
+| **TERMS** | Term sheet review | Key terms, market benchmarks, standard vs non-standard |
+| **DILIGENCE** | Due diligence | Comprehensive review for transaction, IP, liability, R&W |
 
 ### Workflow (v2.1)
 
@@ -64,7 +87,7 @@ Alternative: Resume existing task (skips STAGE 0 forcing questions):
 /market {N}             -> Runs research on existing task, stops at [RESEARCHED]
 ```
 
-### task_type Field (v2.1 NEW)
+### task_type Field (v2.1+)
 
 Tasks created by founder commands include a `task_type` field for finer-grained routing:
 
@@ -73,6 +96,7 @@ Tasks created by founder commands include a `task_type` field for finer-grained 
 | /market | market | skill-market |
 | /analyze | analyze | skill-analyze |
 | /strategy | strategy | skill-strategy |
+| /legal | legal | skill-legal |
 
 When `/research {N}` is invoked on a founder task with `task_type` set, routing uses the composite key `founder:{task_type}` to select the appropriate skill.
 
@@ -103,6 +127,7 @@ Research agents use this data and only ask follow-up questions for missing detai
 | skill-market | market-agent | Market sizing research (uses forcing_data) |
 | skill-analyze | analyze-agent | Competitive analysis (uses forcing_data) |
 | skill-strategy | strategy-agent | GTM strategy (uses forcing_data) |
+| skill-legal | legal-council-agent | Contract review research (uses forcing_data) |
 | skill-founder-plan | founder-plan-agent | Task planning with forcing questions |
 | skill-founder-implement | founder-implement-agent | Execute plan and generate report |
 
@@ -115,6 +140,7 @@ Tasks with `language: founder` route to founder-specific skills:
 | `/research` (task_type: market) | founder:market | skill-market | market-agent |
 | `/research` (task_type: analyze) | founder:analyze | skill-analyze | analyze-agent |
 | `/research` (task_type: strategy) | founder:strategy | skill-strategy | strategy-agent |
+| `/research` (task_type: legal) | founder:legal | skill-legal | legal-council-agent |
 | `/research` (no task_type) | founder | skill-market | market-agent |
 | `/plan` | founder | skill-founder-plan | founder-plan-agent |
 | `/implement` | founder | skill-founder-implement | founder-implement-agent |
@@ -132,12 +158,15 @@ Tasks with `language: founder` route to founder-specific skills:
 |------|---------|
 | `context/project/founder/domain/business-frameworks.md` | TAM/SAM/SOM, business model canvas |
 | `context/project/founder/domain/strategic-thinking.md` | CEO cognitive patterns, YC principles |
+| `context/project/founder/domain/legal-frameworks.md` | IP assignment, data rights, liability, R&W for AI startups |
 | `context/project/founder/patterns/forcing-questions.md` | Forcing question framework |
 | `context/project/founder/patterns/decision-making.md` | Two-way doors, inversion, focus as subtraction |
 | `context/project/founder/patterns/mode-selection.md` | Operational modes pattern |
+| `context/project/founder/patterns/contract-review.md` | Contract review methodology, red flags, escalation |
 | `context/project/founder/templates/market-sizing.md` | TAM/SAM/SOM template |
 | `context/project/founder/templates/competitive-analysis.md` | Competitor analysis template |
 | `context/project/founder/templates/gtm-strategy.md` | Go-to-market template |
+| `context/project/founder/templates/contract-analysis.md` | Contract review and negotiation template |
 
 ### MCP Tool Integration
 

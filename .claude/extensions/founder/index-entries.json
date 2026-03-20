@@ -11,6 +11,16 @@
       }
     },
     {
+      "path": ".claude/extensions/founder/context/project/founder/domain/legal-frameworks.md",
+      "summary": "IP assignment, indemnification, data rights, non-compete, R&W for AI startups",
+      "line_count": 245,
+      "load_when": {
+        "agents": ["legal-council-agent", "founder-plan-agent", "founder-implement-agent"],
+        "languages": ["founder"],
+        "commands": ["/legal", "/plan", "/implement"]
+      }
+    },
+    {
       "path": ".claude/extensions/founder/context/project/founder/domain/strategic-thinking.md",
       "summary": "CEO cognitive patterns, YC principles, completeness principle",
       "line_count": 214,
@@ -25,9 +35,19 @@
       "summary": "Forcing question framework for specificity, anti-patterns to detect",
       "line_count": 221,
       "load_when": {
-        "agents": ["market-agent", "analyze-agent", "strategy-agent", "founder-plan-agent"],
+        "agents": ["market-agent", "analyze-agent", "strategy-agent", "legal-council-agent", "founder-plan-agent"],
         "languages": ["founder"],
-        "commands": ["/market", "/analyze", "/strategy", "/plan"]
+        "commands": ["/market", "/analyze", "/strategy", "/legal", "/plan"]
+      }
+    },
+    {
+      "path": ".claude/extensions/founder/context/project/founder/patterns/contract-review.md",
+      "summary": "Contract review methodology, red flags checklist, attorney escalation guide",
+      "line_count": 215,
+      "load_when": {
+        "agents": ["legal-council-agent"],
+        "languages": ["founder"],
+        "commands": ["/legal"]
       }
     },
     {
@@ -81,6 +101,16 @@
       }
     },
     {
+      "path": ".claude/extensions/founder/context/project/founder/templates/contract-analysis.md",
+      "summary": "Contract analysis report template with clause review, risk matrix, BATNA/ZOPA",
+      "line_count": 347,
+      "load_when": {
+        "agents": ["legal-council-agent", "founder-implement-agent"],
+        "languages": ["founder"],
+        "commands": ["/legal", "/implement"]
+      }
+    },
+    {
       "path": ".claude/extensions/founder/context/project/founder/templates/typst/strategy-template.typ",
       "summary": "Base Typst template with shared styles, callouts, tables, and visualizations for all founder reports",
       "line_count": 400,
@@ -114,6 +144,16 @@
       "path": ".claude/extensions/founder/context/project/founder/templates/typst/gtm-strategy.typ",
       "summary": "Typst template for GTM strategy PDF reports with 90-day plan timeline and metrics dashboard",
       "line_count": 250,
+      "load_when": {
+        "agents": ["founder-implement-agent"],
+        "languages": ["founder"],
+        "commands": ["/implement"]
+      }
+    },
+    {
+      "path": ".claude/extensions/founder/context/project/founder/templates/typst/contract-analysis.typ",
+      "summary": "Typst template for contract analysis PDF reports with risk matrix, clause tables, BATNA blocks",
+      "line_count": 392,
       "load_when": {
         "agents": ["founder-implement-agent"],
         "languages": ["founder"],

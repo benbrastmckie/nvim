@@ -237,7 +237,7 @@ Integrated research report `02_team-research.md` covering:
 
 ---
 
-### Phase 6: Registration and Documentation [NOT STARTED]
+### Phase 6: Registration and Documentation [COMPLETED]
 
 **Goal**: Register components in manifest.json and index-entries.json, update EXTENSION.md.
 

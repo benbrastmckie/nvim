@@ -1,7 +1,7 @@
 {
   "name": "founder",
-  "version": "2.0.0",
-  "description": "Strategic business analysis for founders with task integration: market sizing, competitive analysis, and go-to-market strategy",
+  "version": "2.1.0",
+  "description": "Strategic business analysis for founders with task integration: market sizing, competitive analysis, go-to-market strategy, and contract review",
   "language": "founder",
   "dependencies": [],
   "provides": {
@@ -10,16 +10,18 @@
       "analyze-agent.md",
       "strategy-agent.md",
       "founder-plan-agent.md",
-      "founder-implement-agent.md"
+      "founder-implement-agent.md",
+      "legal-council-agent.md"
     ],
     "skills": [
       "skill-market",
       "skill-analyze",
       "skill-strategy",
       "skill-founder-plan",
-      "skill-founder-implement"
+      "skill-founder-implement",
+      "skill-legal"
     ],
-    "commands": ["market.md", "analyze.md", "strategy.md"],
+    "commands": ["market.md", "analyze.md", "strategy.md", "legal.md"],
     "rules": [],
     "context": ["project/founder"],
     "scripts": [],
@@ -30,7 +32,8 @@
       "founder": "skill-market",
       "founder:market": "skill-market",
       "founder:analyze": "skill-analyze",
-      "founder:strategy": "skill-strategy"
+      "founder:strategy": "skill-strategy",
+      "founder:legal": "skill-legal"
     },
     "plan": {
       "founder": "skill-founder-plan"
