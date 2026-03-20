@@ -5,11 +5,23 @@
     {
       "project_number": 251,
       "project_name": "improve_context_efficiency_progressive_disclosure",
-      "status": "researching",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-20T02:17:51Z",
-      "last_updated": "2026-03-20T02:19:52Z",
-      "session_id": "sess_1773973137_a645dd"
+      "last_updated": "2026-03-19T00:00:00Z",
+      "session_id": "sess_1773973137_a645dd",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/251_improve_context_efficiency_progressive_disclosure/reports/01_teammate-a-findings.md",
+          "summary": "Teammate A: token measurements, QR inline content analysis, duplication detection, lazy loading patterns"
+        },
+        {
+          "type": "research",
+          "path": "specs/251_improve_context_efficiency_progressive_disclosure/reports/02_context-efficiency-synthesis.md",
+          "summary": "Synthesis: 4 prioritized recommendations, ~7,846 token savings potential, implementation approach"
+        }
+      ]
     },
     {
       "project_number": 250,
