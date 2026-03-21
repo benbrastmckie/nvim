@@ -5,11 +5,11 @@
     {
       "project_number": 255,
       "project_name": "tts_worktree_worker_announcement",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-21T19:05:16Z",
-      "last_updated": "2026-03-21T19:23:05Z",
-      "session_id": "sess_1774120860_cd05dc",
+      "last_updated": "2026-03-21T19:37:20Z",
+      "session_id": "sess_1774121403_3d4534",
       "researched": "2026-03-21T19:19:02Z",
       "artifacts": [
         {
@@ -21,9 +21,17 @@
           "path": "specs/255_tts_worktree_worker_announcement/plans/01_worktree-announcement.md",
           "type": "plan",
           "summary": "3-phase implementation plan for worktree-aware TTS announcements"
+        },
+        {
+          "path": "specs/255_tts_worktree_worker_announcement/summaries/01_worktree-announcement-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-21T19:23:05Z"
+      "planned": "2026-03-21T19:23:05Z",
+      "started": "2026-03-21T19:30:27Z",
+      "completed": "2026-03-21T19:37:20Z",
+      "completion_summary": "Added worktree detection to tts-notify.sh using git rev-parse; sub-agent sessions now announce 'Tab N worker' for auditory distinction."
     },
     {
       "project_number": 253,

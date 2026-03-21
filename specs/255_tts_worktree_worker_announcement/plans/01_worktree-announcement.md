@@ -1,7 +1,7 @@
 # Implementation Plan: Task #255
 
 - **Task**: 255 - tts_worktree_worker_announcement
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/255_tts_worktree_worker_announcement/reports/01_worktree-detection.md
@@ -44,7 +44,7 @@ Research report `01_worktree-detection.md` analyzed three worktree detection met
 
 ## Implementation Phases
 
-### Phase 1: Add Worktree Detection [NOT STARTED]
+### Phase 1: Add Worktree Detection [COMPLETED]
 
 **Goal**: Add logic to detect if running inside a git worktree
 
@@ -65,7 +65,7 @@ Research report `01_worktree-detection.md` analyzed three worktree detection met
 
 ---
 
-### Phase 2: Modify Message Construction [NOT STARTED]
+### Phase 2: Modify Message Construction [COMPLETED]
 
 **Goal**: Conditionally append "worker" suffix based on worktree detection
 
@@ -86,7 +86,7 @@ Research report `01_worktree-detection.md` analyzed three worktree detection met
 
 ---
 
-### Phase 3: Testing and Verification [NOT STARTED]
+### Phase 3: Testing and Verification [COMPLETED]
 
 **Goal**: Verify the implementation works in all scenarios
 

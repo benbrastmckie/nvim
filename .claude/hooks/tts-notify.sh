@@ -115,13 +115,30 @@ if [[ -n "${WEZTERM_PANE:-}" ]] && command -v wezterm &>/dev/null; then
     fi
 fi
 
+# Detect if running inside a git worktree (sub-agent session)
+IS_WORKTREE=false
+if command -v git &>/dev/null; then
+    GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
+    GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
+    # In main worktree: both return same path (typically ".git")
+    # In linked worktree: git-dir returns ".git/worktrees/<name>", common-dir returns main ".git"
+    if [[ -n "$GIT_DIR" ]] && [[ -n "$GIT_COMMON_DIR" ]] && [[ "$GIT_DIR" != "$GIT_COMMON_DIR" ]]; then
+        IS_WORKTREE=true
+    fi
+fi
+
 # Build message based on event type
 TAB_PREFIX="${TAB_LABEL%: }"  # Strip ": " suffix if present
 if [[ -z "$TAB_PREFIX" ]]; then
     TAB_PREFIX="Tab"  # Fallback if tab detection failed
 fi
 
-MESSAGE="$TAB_PREFIX"
+# Append "worker" suffix for worktree (sub-agent) sessions
+if [[ "$IS_WORKTREE" == "true" ]]; then
+    MESSAGE="$TAB_PREFIX worker"
+else
+    MESSAGE="$TAB_PREFIX"
+fi
 
 # Speak using piper with paplay (background, tolerant of errors)
 if command -v paplay &>/dev/null; then
@@ -139,6 +156,6 @@ fi
 # Update cooldown timestamp
 date +%s > "$LAST_NOTIFY_FILE"
 
-log "Notification sent: $MESSAGE"
+log "Notification sent: $MESSAGE (worktree=$IS_WORKTREE)"
 
 exit_success
