@@ -29,10 +29,11 @@ next_project_number: 262
 
 ### 259. Create skill-project wrapper
 - **Effort**: 1 hour
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #258
 - **Research**: [01_skill-project-research.md](259_skill_project/reports/01_skill-project-research.md)
+- **Plan**: [01_skill-project-plan.md](259_skill_project/plans/01_skill-project-plan.md)
 
 **Description**: Create skill-project following founder extension skill patterns with preflight/postflight status updates, agent delegation via Task tool (NOT Skill), metadata file handling, artifact linking, and git commit. Output goes to strategy/timelines/ directory.
 
