@@ -141,11 +141,11 @@
     {
       "project_number": 260,
       "project_name": "project_command",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-23T12:37:00Z",
-      "last_updated": "2026-03-23T20:46:16Z",
-      "session_id": "sess_1774298604_52405c",
+      "last_updated": "2026-03-23T20:49:09Z",
+      "session_id": "sess_1774298815_77776a",
       "dependencies": [
         259
       ],
@@ -155,8 +155,14 @@
           "path": "specs/260_project_command/reports/01_project-command-research.md",
           "type": "research",
           "summary": "Research report with command structure analysis, 7 forcing questions design, routing pattern, and implementation recommendations"
+        },
+        {
+          "path": "specs/260_project_command/plans/01_project-command-plan.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan for /project command with forcing questions"
         }
-      ]
+      ],
+      "planned": "2026-03-23T20:49:09Z"
     },
     {
       "project_number": 261,
