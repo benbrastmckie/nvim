@@ -141,11 +141,11 @@
     {
       "project_number": 260,
       "project_name": "project_command",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-03-23T12:37:00Z",
-      "last_updated": "2026-03-23T20:49:09Z",
-      "session_id": "sess_1774298815_77776a",
+      "last_updated": "2026-03-23T20:56:03Z",
+      "session_id": "sess_1774299025_9c4999",
       "dependencies": [
         259
       ],
@@ -160,9 +160,18 @@
           "path": "specs/260_project_command/plans/01_project-command-plan.md",
           "type": "plan",
           "summary": "7-phase implementation plan for /project command with forcing questions"
+        },
+        {
+          "path": "specs/260_project_command/summaries/01_project-command-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
       ],
-      "planned": "2026-03-23T20:49:09Z"
+      "planned": "2026-03-23T20:49:09Z",
+      "started": "2026-03-23T20:50:43Z",
+      "completed": "2026-03-23T20:56:03Z",
+      "completion_summary": "Created /project command following founder extension patterns with 7 forcing questions covering project scope, team allocation, timeline constraints, resources, dependencies, and risks. Command routes to skill-project with task_type=\"project\" and supports PLAN/TRACK/REPORT modes.",
+      "claudemd_suggestions": "Added /project command to founder extension (commands/project.md), updated EXTENSION.md routing tables, updated index-entries.json context discovery entries"
     },
     {
       "project_number": 261,

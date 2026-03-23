@@ -45,9 +45,9 @@
       "summary": "Forcing question framework for specificity, anti-patterns to detect",
       "line_count": 221,
       "load_when": {
-        "agents": ["market-agent", "analyze-agent", "strategy-agent", "legal-council-agent", "founder-plan-agent"],
+        "agents": ["market-agent", "analyze-agent", "strategy-agent", "legal-council-agent", "project-agent", "founder-plan-agent"],
         "languages": ["founder"],
-        "commands": ["/market", "/analyze", "/strategy", "/legal", "/plan"]
+        "commands": ["/market", "/analyze", "/strategy", "/legal", "/project", "/plan"]
       }
     },
     {
@@ -72,12 +72,12 @@
     },
     {
       "path": "project/founder/patterns/mode-selection.md",
-      "summary": "Operational modes pattern for scope control (LAUNCH, SCALE, PIVOT, EXPAND)",
+      "summary": "Operational modes pattern for scope control (LAUNCH, SCALE, PIVOT, EXPAND, PLAN, TRACK, REPORT)",
       "line_count": 239,
       "load_when": {
-        "agents": ["market-agent", "analyze-agent", "strategy-agent", "founder-plan-agent"],
+        "agents": ["market-agent", "analyze-agent", "strategy-agent", "project-agent", "founder-plan-agent"],
         "languages": ["founder"],
-        "commands": ["/market", "/analyze", "/strategy", "/plan"]
+        "commands": ["/market", "/analyze", "/strategy", "/project", "/plan"]
       }
     },
     {

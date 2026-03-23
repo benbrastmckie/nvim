@@ -52,6 +52,9 @@ Commands integrate with the task system by default:
 | `/legal` | `/legal "SaaS vendor agreement"` | Ask forcing questions, create task (stops at [NOT STARTED]) |
 | `/legal` | `/legal 256` | Run research on existing task |
 | `/legal` | `/legal --quick [args]` | Legacy standalone mode |
+| `/project` | `/project "Mobile App Redesign"` | Ask forcing questions, create task (stops at [NOT STARTED]) |
+| `/project` | `/project 234` | Run project planning on existing task |
+| `/project` | `/project --quick [mode]` | Legacy standalone mode |
 
 ### Input Types
 
@@ -97,6 +100,7 @@ Tasks created by founder commands include a `task_type` field for finer-grained 
 | /analyze | analyze | skill-analyze |
 | /strategy | strategy | skill-strategy |
 | /legal | legal | skill-legal |
+| /project | project | skill-project |
 
 When `/research {N}` is invoked on a founder task with `task_type` set, routing uses the composite key `founder:{task_type}` to select the appropriate skill.
 
@@ -128,6 +132,7 @@ Research agents use this data and only ask follow-up questions for missing detai
 | skill-analyze | analyze-agent | Competitive analysis (uses forcing_data) |
 | skill-strategy | strategy-agent | GTM strategy (uses forcing_data) |
 | skill-legal | legal-council-agent | Contract review research (uses forcing_data) |
+| skill-project | project-agent | Project timeline management (uses forcing_data) |
 | skill-founder-plan | founder-plan-agent | Task planning with forcing questions |
 | skill-founder-implement | founder-implement-agent | Execute plan and generate report |
 
@@ -141,6 +146,7 @@ Tasks with `language: founder` route to founder-specific skills:
 | `/research` (task_type: analyze) | founder:analyze | skill-analyze | analyze-agent |
 | `/research` (task_type: strategy) | founder:strategy | skill-strategy | strategy-agent |
 | `/research` (task_type: legal) | founder:legal | skill-legal | legal-council-agent |
+| `/research` (task_type: project) | founder:project | skill-project | project-agent |
 | `/research` (no task_type) | founder | skill-market | market-agent |
 | `/plan` | founder | skill-founder-plan | founder-plan-agent |
 | `/implement` | founder | skill-founder-implement | founder-implement-agent |
