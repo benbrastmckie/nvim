@@ -106,13 +106,21 @@
     {
       "project_number": 259,
       "project_name": "skill_project",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-03-23T12:37:00Z",
-      "last_updated": "2026-03-23T12:37:00Z",
-      "session_id": "sess_1774294671_a66f55",
+      "last_updated": "2026-03-23T20:33:36Z",
+      "session_id": "sess_1774297846_ee84b5",
       "dependencies": [
         258
+      ],
+      "researched": "2026-03-23T20:33:36Z",
+      "artifacts": [
+        {
+          "path": "specs/259_skill_project/reports/01_skill-project-research.md",
+          "type": "research",
+          "summary": "Research report identifying 11-stage thin wrapper pattern, mode-specific status values, strategy/timelines/ output directory, and artifact linking differences from research skills"
+        }
       ]
     },
     {
