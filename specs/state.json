@@ -49,16 +49,22 @@
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-25T00:00:00Z",
-      "last_updated": "2026-03-25T00:00:00Z",
+      "last_updated": "2026-03-25T23:23:47Z",
       "dependencies": [],
-      "session_id": "sess_1742922000_meta01",
+      "session_id": "sess_1774480659_c9b1a7",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/277_research_pdf_annotation_tools/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "path": "specs/277_research_pdf_annotation_tools/reports/02_team-research.md",
+          "type": "research",
+          "summary": "Team research with 2 teammates"
         }
-      ]
+      ],
+      "researched": "2026-03-25T23:23:47Z"
     },
     {
       "project_number": 278,
@@ -68,7 +74,9 @@
       "effort": "1-2 hours",
       "created": "2026-03-25T00:00:00Z",
       "last_updated": "2026-03-25T00:00:00Z",
-      "dependencies": [277],
+      "dependencies": [
+        277
+      ],
       "session_id": "sess_1742922000_meta01",
       "artifacts": [
         {
@@ -86,7 +94,9 @@
       "effort": "1-2 hours",
       "created": "2026-03-25T00:00:00Z",
       "last_updated": "2026-03-25T00:00:00Z",
-      "dependencies": [278],
+      "dependencies": [
+        278
+      ],
       "session_id": "sess_1742922000_meta01",
       "artifacts": [
         {
@@ -104,7 +114,9 @@
       "effort": "30 minutes",
       "created": "2026-03-25T00:00:00Z",
       "last_updated": "2026-03-25T00:00:00Z",
-      "dependencies": [279],
+      "dependencies": [
+        279
+      ],
       "session_id": "sess_1742922000_meta01",
       "artifacts": [
         {
