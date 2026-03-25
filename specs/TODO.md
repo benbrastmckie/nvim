@@ -13,9 +13,9 @@ next_project_number: 281
 ### 1. Active Tasks
 
 - **277** [RESEARCHED] -- Research PDF annotation extraction tools
-- **278** [RESEARCHED] -- Create scrape-agent for PDF annotation extraction (depends on #277)
-- **279** [RESEARCHED] -- Create skill-scrape and /scrape command (depends on #278)
-- **280** [RESEARCHED] -- Update filetypes extension manifest and docs (depends on #279)
+- **278** [PLANNED] -- Create scrape-agent for PDF annotation extraction (depends on #277)
+- **279** [PLANNED] -- Create skill-scrape and /scrape command (depends on #278)
+- **280** [PLANNED] -- Update filetypes extension manifest and docs (depends on #279)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -34,10 +34,11 @@ next_project_number: 281
 
 ### 278. Create scrape-agent for PDF annotation extraction
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #277
 - **Research**: [01_meta-research.md](278_create_scrape_agent/reports/01_meta-research.md)
+- **Plan**: [01_scrape-agent-plan.md](278_create_scrape_agent/plans/01_scrape-agent-plan.md)
 
 **Description**: Create scrape-agent.md in .claude/extensions/filetypes/agents/ following the document-agent.md pattern. Agent should detect available annotation extraction tools with fallback chain, support multiple output formats (markdown, JSON), handle annotation type filtering, and return structured JSON matching subagent-return.md schema.
 
@@ -45,10 +46,11 @@ next_project_number: 281
 
 ### 279. Create skill-scrape and /scrape command
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #278
 - **Research**: [01_meta-research.md](279_create_skill_scrape_command/reports/01_meta-research.md)
+- **Plan**: [01_skill-scrape-plan.md](279_create_skill_scrape_command/plans/01_skill-scrape-plan.md)
 
 **Description**: Create skill-scrape/SKILL.md (thin wrapper with Task tool invocation) and scrape.md command (checkpoint-based execution with GATE IN/DELEGATE/GATE OUT/COMMIT) following existing convert.md and skill-filetypes patterns. Support PDF path argument, output path inference to Annotations/ directory, and format selection based on output extension.
 
@@ -56,10 +58,11 @@ next_project_number: 281
 
 ### 280. Update filetypes extension manifest and documentation
 - **Effort**: 30 minutes
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: Task #279
 - **Research**: [01_meta-research.md](280_update_filetypes_extension_manifest/reports/01_meta-research.md)
+- **Plan**: [01_manifest-update-plan.md](280_update_filetypes_extension_manifest/plans/01_manifest-update-plan.md)
 
 **Description**: Register scrape-agent, skill-scrape, and scrape.md in manifest.json. Update EXTENSION.md with /scrape command documentation. Add context index entries to index-entries.json. Update filetypes-router-agent to dispatch annotation extraction requests to scrape-agent.
 

@@ -69,7 +69,7 @@
     {
       "project_number": 278,
       "project_name": "create_scrape_agent",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-25T00:00:00Z",
@@ -83,13 +83,18 @@
           "type": "research",
           "path": "specs/278_create_scrape_agent/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "type": "plan",
+          "path": "specs/278_create_scrape_agent/plans/01_scrape-agent-plan.md",
+          "summary": "1-phase plan to create scrape-agent.md following document-agent pattern"
         }
       ]
     },
     {
       "project_number": 279,
       "project_name": "create_skill_scrape_command",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "effort": "1-2 hours",
       "created": "2026-03-25T00:00:00Z",
@@ -103,13 +108,18 @@
           "type": "research",
           "path": "specs/279_create_skill_scrape_command/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "type": "plan",
+          "path": "specs/279_create_skill_scrape_command/plans/01_skill-scrape-plan.md",
+          "summary": "2-phase plan to create skill-scrape/SKILL.md and commands/scrape.md"
         }
       ]
     },
     {
       "project_number": 280,
       "project_name": "update_filetypes_extension_manifest",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "effort": "30 minutes",
       "created": "2026-03-25T00:00:00Z",
@@ -123,6 +133,11 @@
           "type": "research",
           "path": "specs/280_update_filetypes_extension_manifest/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "type": "plan",
+          "path": "specs/280_update_filetypes_extension_manifest/plans/01_manifest-update-plan.md",
+          "summary": "3-phase plan to update manifest.json, EXTENSION.md, and index-entries.json"
         }
       ]
     }
