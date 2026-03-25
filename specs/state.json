@@ -5,12 +5,31 @@
     {
       "project_number": 272,
       "project_name": "task_order_schema_format",
-      "status": "not_started",
+      "status": "completed",
       "language": "meta",
       "effort": "1 hour",
       "created": "2026-03-25T05:44:46Z",
-      "last_updated": "2026-03-25T05:44:46Z",
-      "dependencies": []
+      "last_updated": "2026-03-24T00:00:00Z",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/272_task_order_schema_format/reports/01_task-order-schema.md",
+          "summary": "Research on Task Order format elements and parsing patterns"
+        },
+        {
+          "type": "plan",
+          "path": "specs/272_task_order_schema_format/plans/01_task-order-schema.md",
+          "summary": "2-phase implementation plan for Task Order format specification"
+        },
+        {
+          "type": "summary",
+          "path": "specs/272_task_order_schema_format/summaries/01_task-order-schema-summary.md",
+          "summary": "Implementation summary for Task Order format specification"
+        }
+      ],
+      "completion_summary": "Created task-order-format.md context file defining the Task Order section format for TODO.md, including section structure, category system, dependency chain syntax, task entry formats, regex parsing patterns, and complete example.",
+      "claudemd_suggestions": "Created .claude/context/core/formats/task-order-format.md defining Task Order section format with parsing patterns for downstream task 273"
     },
     {
       "project_number": 273,

@@ -6,7 +6,7 @@ next_project_number: 277
 
 ## Task Order
 
-*Updated 2026-03-24. Created 5 tasks for /review Task Order management feature.*
+*Updated 2026-03-24. Task 272 completed (Task Order format specification). Created 5 tasks for /review Task Order management feature.*
 
 **Goal**: Add Task Order section management to /review command.
 
@@ -17,7 +17,7 @@ next_project_number: 277
            └ 275 ┴→ 276
 ```
 
-1. **272** [NOT STARTED] — Define Task Order schema and format specification
+1. **272** [COMPLETED] — Define Task Order schema and format specification
 2. **273** [NOT STARTED] — Add Task Order parsing to /review command (depends: 272)
 3. **274** [NOT STARTED] — Add Task Order pruning for completed/abandoned tasks (depends: 273)
 4. **275** [NOT STARTED] — Add Task Order insertion for newly created tasks (depends: 273)
@@ -72,9 +72,11 @@ next_project_number: 277
 
 ### 272. Define Task Order schema and format specification
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
+- **Plan**: [01_task-order-schema.md](272_task_order_schema_format/plans/01_task-order-schema.md)
+- **Summary**: [01_task-order-schema-summary.md](272_task_order_schema_format/summaries/01_task-order-schema-summary.md)
 
 **Description**: Create a context file defining the Task Order markdown format for TODO.md. Specify: section header format (`## Task Order`), update timestamp line, goal statement, category subsections (numbered headers), dependency chain syntax (arrow `→` notation), status markers, and task number references. Include parsing patterns and generation templates. Model after ProofChecker's TODO.md Task Order section.
 
