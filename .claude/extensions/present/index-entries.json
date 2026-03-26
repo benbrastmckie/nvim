@@ -253,6 +253,34 @@
       }
     },
     {
+      "path": "project/present/domain/grant-workflow.md",
+      "domain": "project",
+      "subdomain": "present",
+      "topics": ["grant", "workflow", "draft", "budget", "revise"],
+      "keywords": ["grant", "workflow", "draft", "budget", "revise", "legacy"],
+      "summary": "Grant command usage, draft/budget/revise modes, revision workflow, output directory",
+      "line_count": 153,
+      "load_when": {
+        "languages": ["grant"],
+        "agents": ["grant-agent"],
+        "commands": ["/grant"]
+      }
+    },
+    {
+      "path": "project/present/domain/deck-workflow.md",
+      "domain": "project",
+      "subdomain": "present",
+      "topics": ["deck", "workflow", "generation", "touying"],
+      "keywords": ["deck", "workflow", "generation", "yc", "touying", "slides"],
+      "summary": "Deck generation workflow, YC 10-slide structure, touying integration",
+      "line_count": 18,
+      "load_when": {
+        "languages": ["deck"],
+        "agents": ["deck-agent"],
+        "commands": ["/deck"]
+      }
+    },
+    {
       "path": "project/present/tools/web-resources.md",
       "domain": "project",
       "subdomain": "present",

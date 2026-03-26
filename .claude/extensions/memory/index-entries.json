@@ -27,6 +27,15 @@
       "line_count": 250
     },
     {
+      "path": "project/memory/domain/memory-reference.md",
+      "description": "MCP integration, vault structure, memory classification, operations, topic organization",
+      "load_when": {
+        "skills": ["skill-memory"],
+        "commands": ["/learn"]
+      },
+      "line_count": 57
+    },
+    {
       "path": "project/memory/knowledge-capture-usage.md",
       "description": "Example workflows for knowledge capture system",
       "load_when": {

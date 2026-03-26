@@ -369,6 +369,44 @@
       }
     },
     {
+      "path": "project/founder/domain/workflow-reference.md",
+      "summary": "Forcing questions, phased workflow, input types, routing tables, MCP integration, output locations",
+      "line_count": 152,
+      "load_when": {
+        "agents": [
+          "market-agent",
+          "analyze-agent",
+          "strategy-agent",
+          "legal-council-agent",
+          "project-agent",
+          "founder-plan-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "commands": [
+          "/market",
+          "/analyze",
+          "/strategy",
+          "/legal",
+          "/project"
+        ]
+      }
+    },
+    {
+      "path": "project/founder/domain/migration-guide.md",
+      "summary": "Breaking changes from v2.x, migration tables from v2.1, v2.0, and v1.0",
+      "line_count": 35,
+      "load_when": {
+        "agents": [],
+        "languages": [
+          "founder"
+        ],
+        "commands": []
+      }
+    },
+    {
       "path": "project/founder/patterns/project-planning.md",
       "summary": "Project management reference: WBS validation (100% rule), PERT formulas, critical path method, resource leveling",
       "line_count": 120,

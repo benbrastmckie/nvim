@@ -279,6 +279,20 @@
       "line_count": 100
     },
     {
+      "path": "project/web/domain/web-reference.md",
+      "description": "Key technologies, build verification commands, context categories, deployment version tracking",
+      "load_when": {
+        "agents": [
+          "web-research-agent",
+          "web-implementation-agent"
+        ],
+        "languages": [
+          "web"
+        ]
+      },
+      "line_count": 58
+    },
+    {
       "path": "project/web/astro-framework.md",
       "description": "Astro framework quick reference",
       "load_when": {

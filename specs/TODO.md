@@ -14,8 +14,8 @@ next_project_number: 286
 
 - **281** [COMPLETED] -- Scope unscoped rules (add paths: frontmatter, deduplicate)
 - **282** [COMPLETED] -- Slim nvim/CLAUDE.md (move reference material to context)
-- **283** [RESEARCHED] -- Create EXTENSION.md slim-down standard
-- **284** [RESEARCHED] -- Migrate large extensions to slim pattern (depends on #283)
+- **283** [COMPLETED] -- Create EXTENSION.md slim-down standard
+- **284** [COMPLETED] -- Migrate large extensions to slim pattern (depends on #283)
 - **285** [COMPLETED] -- Slim parent CLAUDE.md (convert to pointer file)
 - **277** [COMPLETED] -- Research PDF annotation extraction tools
 - **278** [COMPLETED] -- Create scrape-agent for PDF annotation extraction (depends on #277)
@@ -64,10 +64,11 @@ next_project_number: 286
 
 ### 284. Migrate large extensions to slim pattern
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: Task #283
 - **Research**: [01_meta-research.md](284_migrate_large_extensions/reports/01_meta-research.md)
+- **Plan**: [01_migrate-extensions-plan.md](284_migrate_large_extensions/plans/01_migrate-extensions-plan.md)
 
 **Description**: Apply slim-down pattern to 5 largest EXTENSION.md files: founder (234->50), present (216->50), filetypes (143->50), memory (91->40), web (80->40). Move documentation to context files, update index-entries.json, verify extension loading. Target: ~534 lines saved.
 

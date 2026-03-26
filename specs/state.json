@@ -223,11 +223,11 @@
     {
       "project_number": 284,
       "project_name": "migrate_large_extensions",
-      "status": "researched",
+      "status": "completed",
       "language": "meta",
       "effort": "2-3 hours",
       "created": "2026-03-25T22:51:00Z",
-      "last_updated": "2026-03-25T22:51:00Z",
+      "last_updated": "2026-03-25T23:59:00Z",
       "dependencies": [
         283
       ],
@@ -237,8 +237,15 @@
           "type": "research",
           "path": "specs/284_migrate_large_extensions/reports/01_meta-research.md",
           "summary": "Auto-generated research from /meta interview"
+        },
+        {
+          "type": "plan",
+          "path": "specs/284_migrate_large_extensions/plans/01_migrate-extensions-plan.md",
+          "summary": "6-phase plan to migrate 5 large EXTENSION.md files to slim pattern"
         }
-      ]
+      ],
+      "completion_summary": "Migrated 5 EXTENSION.md files to slim standard: founder (234->39), present (216->35), filetypes (143->30), memory (91->32), web (80->30). Total 764->166 lines (78% reduction). Created 7 context files for extracted content, updated all 5 index-entries.json files.",
+      "claudemd_suggestions": "none"
     },
     {
       "project_number": 285,

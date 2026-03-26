@@ -66,6 +66,22 @@
     }
   },
   {
+    "path": "project/filetypes/domain/conversion-tables.md",
+    "description": "Format conversion support matrices, usage examples, prerequisites, dependency summary",
+    "line_count": 117,
+    "load_when": {
+      "agents": [
+        "filetypes-router-agent",
+        "document-agent",
+        "spreadsheet-agent",
+        "presentation-agent",
+        "scrape-agent"
+      ],
+      "languages": [],
+      "commands": ["/convert", "/table", "/slides", "/scrape"]
+    }
+  },
+  {
     "path": "project/filetypes/README.md",
     "description": "Filetypes extension overview and navigation",
     "line_count": 60,
