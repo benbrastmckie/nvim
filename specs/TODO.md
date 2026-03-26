@@ -89,14 +89,19 @@ next_project_number: 307
 
 ### 301. Fix extension loader orphaned index entry cleanup
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-03-26
 - **Research Completed**: 2026-03-26
+- **Completed**: 2026-03-27
 - **Language**: neovim
 - **Dependencies**: None
-- **Research**: [01_loader-orphan-cleanup.md](301_fix_loader_orphan_cleanup/reports/01_loader-orphan-cleanup.md)
+- **Artifacts**:
+  - **Research**: [01_loader-orphan-cleanup.md](301_fix_loader_orphan_cleanup/reports/01_loader-orphan-cleanup.md)
+  - **Plan**: [02_loader-orphan-cleanup.md](301_fix_loader_orphan_cleanup/plans/02_loader-orphan-cleanup.md)
 
 **Description**: Fix the extension loader (`lua/neotex/plugins/ai/shared/extensions/merge.lua`) to clean orphaned `index.json` entries during sparse extension reloads. The loader tracks entries added at load time but not entries added by external processes (e.g., tasks enriching metadata). On unload, only tracked entries are removed, leaving behind orphans. Fix: add path-prefix-based cleanup using `provides.context` from the extension manifest to remove all entries under an extension's owned prefix during unload.
+
+**Completion**: Added `remove_index_entries_by_prefix()` to merge.lua and integrated it into the unload flow in init.lua. After tracked entry removal, the loader now scans remaining entries and removes any whose path matches the unloaded extension's `provides.context` prefixes.
 
 ---
 

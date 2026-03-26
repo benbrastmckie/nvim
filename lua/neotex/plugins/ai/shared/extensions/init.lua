@@ -428,6 +428,25 @@ function M.create(config)
       reverse_merge_targets(extension.manifest, merged_sections, project_dir, config)
     end
 
+    -- Clean up orphaned index entries by path prefix
+    -- This catches entries added by external processes (e.g., metadata enrichment tasks)
+    -- that bypass the loader's tracked append/remove system
+    if extension and extension.manifest
+        and extension.manifest.provides and extension.manifest.provides.context
+        and extension.manifest.merge_targets and extension.manifest.merge_targets.index then
+      local mt_config = extension.manifest.merge_targets.index
+      local target_path = project_dir .. "/" .. mt_config.target
+      local ok, removed = merge_mod.remove_index_entries_by_prefix(
+        target_path, extension.manifest.provides.context
+      )
+      if ok and removed > 0 then
+        helpers.notify(
+          string.format("Cleaned %d orphaned index entries for '%s'", removed, extension_name),
+          "DEBUG"
+        )
+      end
+    end
+
     -- Convert relative paths back to absolute for file removal
     local abs_files = {}
     for _, rel_path in ipairs(installed_files) do

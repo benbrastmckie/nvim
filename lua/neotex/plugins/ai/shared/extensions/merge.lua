@@ -448,6 +448,67 @@ function M.remove_index_entries_tracked(target_path, tracked)
   return true
 end
 
+--- Remove index entries whose path starts with any of the given prefixes
+--- Used for cleaning orphaned entries that bypass tracked append/remove
+--- @param target_path string Path to index.json
+--- @param prefixes table Array of path prefixes to match (e.g., {"project/lean4"})
+--- @return boolean success True if removal succeeded
+--- @return number removed_count Number of entries removed
+function M.remove_index_entries_by_prefix(target_path, prefixes)
+  if vim.fn.filereadable(target_path) ~= 1 then
+    return true, 0
+  end
+
+  local index = read_json(target_path)
+  if not index or not index.entries then
+    return true, 0
+  end
+
+  -- Normalize prefixes to ensure trailing slash for safe matching
+  local normalized = {}
+  for _, prefix in ipairs(prefixes) do
+    if prefix:sub(-1) ~= "/" then
+      table.insert(normalized, prefix .. "/")
+    else
+      table.insert(normalized, prefix)
+    end
+  end
+
+  backup_file(target_path)
+
+  -- Filter entries: keep those that do NOT match any prefix
+  local new_entries = {}
+  local removed_count = 0
+  for _, entry in ipairs(index.entries) do
+    local dominated = false
+    for _, prefix in ipairs(normalized) do
+      if entry.path and entry.path:sub(1, #prefix) == prefix then
+        dominated = true
+        break
+      end
+    end
+    if dominated then
+      removed_count = removed_count + 1
+    else
+      table.insert(new_entries, entry)
+    end
+  end
+
+  if removed_count == 0 then
+    return true, 0
+  end
+
+  index.entries = new_entries
+
+  local ok = write_json(target_path, index)
+  if not ok then
+    restore_from_backup(target_path)
+    return false, 0
+  end
+
+  return true, removed_count
+end
+
 --- Merge opencode.json agent definitions
 --- Adds agent definitions from fragment to target opencode.json.
 --- Only adds keys that don't already exist (no overwrite).
