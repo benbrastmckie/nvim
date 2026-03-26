@@ -1,7 +1,75 @@
 {
   "version": "1.0.0",
-  "next_project_number": 297,
+  "next_project_number": 301,
   "active_projects": [
+    {
+      "project_number": 299,
+      "project_name": "index_unindexed_context",
+      "status": "researched",
+      "language": "meta",
+      "effort": "1-2 hours",
+      "description": "Add index.json entries for 75 context files that exist on disk but aren't indexed in Website .claude/context/",
+      "created": "2026-03-26T20:00:00Z",
+      "last_updated": "2026-03-26T20:00:00Z",
+      "dependencies": [298],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/299_index_unindexed_context/reports/01_unindexed-context.md"
+        }
+      ]
+    },
+    {
+      "project_number": 297,
+      "project_name": "create_pitch_deck_context",
+      "status": "researched",
+      "language": "meta",
+      "effort": "30 minutes",
+      "description": "Create 2 missing pitch-deck context files referenced in Website .claude/context/index.json",
+      "created": "2026-03-26T20:00:00Z",
+      "last_updated": "2026-03-26T20:00:00Z",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/297_create_pitch_deck_context/reports/01_pitch-deck-context.md"
+        }
+      ]
+    },
+    {
+      "project_number": 300,
+      "project_name": "add_index_summaries",
+      "status": "researched",
+      "language": "meta",
+      "effort": "30-45 minutes",
+      "description": "Add missing summary fields to 67 index.json entries in Website .claude/context/",
+      "created": "2026-03-26T20:00:00Z",
+      "last_updated": "2026-03-26T20:00:00Z",
+      "dependencies": [298],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/300_add_index_summaries/reports/01_index-summaries.md"
+        }
+      ]
+    },
+    {
+      "project_number": 298,
+      "project_name": "add_index_metadata",
+      "status": "researched",
+      "language": "meta",
+      "effort": "1-2 hours",
+      "description": "Add missing domain/subdomain metadata to 134 index.json entries in Website .claude/context/",
+      "created": "2026-03-26T20:00:00Z",
+      "last_updated": "2026-03-26T20:00:00Z",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/298_add_index_metadata/reports/01_index-metadata.md"
+        }
+      ]
+    },
     {
       "project_number": 87,
       "project_name": "investigate_wezterm_terminal_directory_change",

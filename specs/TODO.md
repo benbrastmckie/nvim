@@ -1,19 +1,75 @@
 ---
-next_project_number: 297
+next_project_number: 301
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-03-26. 2 active tasks remaining.*
+*Updated 2026-03-26. 6 active tasks remaining.*
 
 ### Pending
 
+- **298** [RESEARCHED] -- Add missing domain/subdomain metadata to index.json entries
+- **299** [RESEARCHED] -- Index 75 unindexed context files (depends on 298)
+- **300** [RESEARCHED] -- Add missing summaries to index.json entries (depends on 298)
+- **297** [RESEARCHED] -- Create missing pitch-deck context files
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 299. Index 75 unindexed context files
+- **Effort**: 1-2 hours
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-26
+- **Research Completed**: 2026-03-26
+- **Language**: meta
+- **Dependencies**: 298
+- **Research**: [01_unindexed-context.md](299_index_unindexed_context/reports/01_unindexed-context.md)
+
+**Description**: Add index.json entries for 75 context files that exist on disk under Website `.claude/context/` but have no corresponding entry in `index.json`. All 75 are core agent system files (orchestration, standards, patterns, formats, templates, workflows, etc.) -- not extension-specific content. They function via `@`-imports but are invisible to programmatic context discovery queries. Depends on task 298 (metadata conventions) to ensure consistent domain/subdomain assignment.
+
+---
+
+### 298. Add missing domain/subdomain metadata to index.json entries
+- **Effort**: 1-2 hours
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-26
+- **Research Completed**: 2026-03-26
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [01_index-metadata.md](298_add_index_metadata/reports/01_index-metadata.md)
+
+**Description**: Add missing `domain` and `subdomain` metadata to 134 entries in the Website project's `.claude/context/index.json`. All 134 entries are under the `project/` path prefix and can be assigned `domain="project"` with `subdomain` derived from the second path component (e.g., `typst`, `logic`, `founder`, `math`, `nix`, `latex`, `python`, `memory`, `z3`, `physics`, `lean4`, `filetypes`, `web`). Many entries also lack `summary`, `keywords`, and `topics` fields, which could be addressed in a follow-up task (300).
+
+---
+
+### 300. Add missing summaries to index.json entries
+- **Effort**: 30-45 minutes
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-26
+- **Research Completed**: 2026-03-26
+- **Language**: meta
+- **Dependencies**: 298
+- **Research**: [01_index-summaries.md](300_add_index_summaries/reports/01_index-summaries.md)
+
+**Description**: Add missing `summary` fields to 67 index.json entries in the Website `.claude/context/` directory. All missing entries are in the `project/` subtree (extension context), primarily in typst (24), nix (11), and latex (10) domains. Summaries are not used in routing logic but aid agent context discovery. Depends on task 298 to establish metadata conventions first.
+
+---
+
+### 297. Create missing pitch-deck context files
+- **Effort**: 30 minutes
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-26
+- **Research Completed**: 2026-03-26
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [01_pitch-deck-context.md](297_create_pitch_deck_context/reports/01_pitch-deck-context.md)
+
+**Description**: Create 2 missing pitch-deck context files referenced in Website `.claude/context/index.json`. The files `pitch-deck-structure.md` and `touying-pitch-deck-template.md` exist in the `present` subdomain but are also referenced (and missing) in the `filetypes` subdomain. Research recommends removing the duplicate index entries rather than creating duplicate files.
+
+---
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
