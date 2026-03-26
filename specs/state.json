@@ -1,7 +1,24 @@
 {
   "version": "1.0.0",
-  "next_project_number": 307,
+  "next_project_number": 308,
   "active_projects": [
+    {
+      "project_number": 307,
+      "project_name": "post_load_index_cleanup",
+      "status": "researched",
+      "language": "neovim",
+      "effort": "1-2 hours",
+      "description": "Add post-load index cleanup that removes entries for non-loaded extensions, fixing sparse reload orphan issue",
+      "created": "2026-03-26T23:00:00Z",
+      "last_updated": "2026-03-26T23:00:00Z",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/307_post_load_index_cleanup/reports/01_post-load-cleanup.md"
+        }
+      ]
+    },
     {
       "project_number": 306,
       "project_name": "persist_core_index_entries",
