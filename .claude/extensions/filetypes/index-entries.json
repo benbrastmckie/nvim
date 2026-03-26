@@ -99,6 +99,48 @@
       "summary": "Presentation extraction and slide generation patterns"
     },
     {
+      "path": "project/filetypes/patterns/pitch-deck-structure.md",
+      "description": "Pitch deck structure and 10-slide framework for investor presentations",
+      "line_count": 408,
+      "load_when": {
+        "agents": [
+          "presentation-agent",
+          "deck-agent"
+        ],
+        "languages": [
+          "deck"
+        ],
+        "commands": [
+          "/slides",
+          "/deck"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Pitch deck structure and 10-slide framework for investor presentations"
+    },
+    {
+      "path": "project/filetypes/patterns/touying-pitch-deck-template.md",
+      "description": "Touying typst template for pitch deck slide generation",
+      "line_count": 423,
+      "load_when": {
+        "agents": [
+          "presentation-agent",
+          "deck-agent"
+        ],
+        "languages": [
+          "deck"
+        ],
+        "commands": [
+          "/slides",
+          "/deck"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Touying typst template for pitch deck slide generation"
+    },
+    {
       "path": "project/filetypes/domain/conversion-tables.md",
       "description": "Format conversion support matrices, usage examples, prerequisites, dependency summary",
       "line_count": 117,
