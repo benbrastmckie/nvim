@@ -3,56 +3,128 @@
     {
       "path": "project/python/standards/code-style.md",
       "description": "Python coding style and conventions",
-      "tags": ["python", "style", "conventions"],
+      "tags": [
+        "python",
+        "style",
+        "conventions"
+      ],
       "load_when": {
-        "languages": ["python"],
-        "agents": ["python-implementation-agent"]
-      }
+        "languages": [
+          "python"
+        ],
+        "agents": [
+          "python-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "Python coding style and conventions"
     },
     {
       "path": "project/python/patterns/testing-patterns.md",
       "description": "Pytest patterns and fixtures",
-      "tags": ["python", "pytest", "testing"],
+      "tags": [
+        "python",
+        "pytest",
+        "testing"
+      ],
       "load_when": {
-        "languages": ["python"],
-        "agents": ["python-implementation-agent"]
-      }
+        "languages": [
+          "python"
+        ],
+        "agents": [
+          "python-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "Pytest patterns and fixtures"
     },
     {
       "path": "project/python/domain/model-checker-api.md",
       "description": "ModelChecker framework API - package structure, key classes, import patterns",
-      "tags": ["python", "modelchecker", "api", "z3", "semantics"],
+      "tags": [
+        "python",
+        "modelchecker",
+        "api",
+        "z3",
+        "semantics"
+      ],
       "load_when": {
-        "languages": ["python"],
-        "agents": ["python-implementation-agent", "python-research-agent"]
-      }
+        "languages": [
+          "python"
+        ],
+        "agents": [
+          "python-implementation-agent",
+          "python-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "ModelChecker framework API - package structure, key classes, import patterns"
     },
     {
       "path": "project/python/domain/theory-lib-patterns.md",
       "description": "Theory library file structure and conventions for semantic theories",
-      "tags": ["python", "modelchecker", "theory", "patterns"],
+      "tags": [
+        "python",
+        "modelchecker",
+        "theory",
+        "patterns"
+      ],
       "load_when": {
-        "languages": ["python"],
-        "agents": ["python-implementation-agent", "python-research-agent"]
-      }
+        "languages": [
+          "python"
+        ],
+        "agents": [
+          "python-implementation-agent",
+          "python-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "Theory library file structure and conventions for semantic theories"
     },
     {
       "path": "project/python/patterns/semantic-evaluation.md",
       "description": "Tree-walking evaluation patterns",
-      "tags": ["python", "evaluation", "interpreter"],
+      "tags": [
+        "python",
+        "evaluation",
+        "interpreter"
+      ],
       "load_when": {
-        "languages": ["python"],
-        "agents": ["python-implementation-agent"]
-      }
+        "languages": [
+          "python"
+        ],
+        "agents": [
+          "python-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "Tree-walking evaluation patterns"
     },
     {
       "path": "project/python/README.md",
       "description": "Python extension overview and navigation",
-      "tags": ["python", "overview", "navigation"],
+      "tags": [
+        "python",
+        "overview",
+        "navigation"
+      ],
       "load_when": {
-        "languages": ["python"],
-        "agents": ["python-implementation-agent", "python-research-agent"]
-      }
+        "languages": [
+          "python"
+        ],
+        "agents": [
+          "python-implementation-agent",
+          "python-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "python",
+      "summary": "Python extension overview and navigation"
     }
   ]
 }

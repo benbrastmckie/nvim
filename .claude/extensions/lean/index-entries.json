@@ -3,236 +3,531 @@
     {
       "path": "project/lean4/domain/mathlib-overview.md",
       "description": "Mathlib library organization and key modules",
-      "tags": ["lean4", "mathlib", "library"],
+      "tags": [
+        "lean4",
+        "mathlib",
+        "library"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Mathlib library organization and key modules"
     },
     {
       "path": "project/lean4/domain/dependent-types.md",
       "description": "Dependent type theory foundations in Lean 4",
-      "tags": ["lean4", "types", "theory"],
+      "tags": [
+        "lean4",
+        "types",
+        "theory"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Dependent type theory foundations in Lean 4"
     },
     {
       "path": "project/lean4/domain/key-mathematical-concepts.md",
       "description": "Key mathematical concepts in Lean 4 type theory",
-      "tags": ["lean4", "math", "concepts"],
+      "tags": [
+        "lean4",
+        "math",
+        "concepts"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Key mathematical concepts in Lean 4 type theory"
     },
     {
       "path": "project/lean4/domain/lean4-syntax.md",
       "description": "Advanced Lean 4 syntax and metaprogramming",
-      "tags": ["lean4", "syntax", "metaprogramming"],
+      "tags": [
+        "lean4",
+        "syntax",
+        "metaprogramming"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Advanced Lean 4 syntax and metaprogramming"
     },
     {
       "path": "project/lean4/patterns/tactic-patterns.md",
       "description": "Common proof patterns and tactics in Lean 4",
-      "tags": ["lean4", "proofs", "tactics"],
+      "tags": [
+        "lean4",
+        "proofs",
+        "tactics"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Common proof patterns and tactics in Lean 4"
     },
     {
       "path": "project/lean4/standards/lean4-style-guide.md",
       "description": "Lean 4 coding style and conventions",
-      "tags": ["lean4", "style", "conventions"],
+      "tags": [
+        "lean4",
+        "style",
+        "conventions"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean 4 coding style and conventions"
     },
     {
       "path": "project/lean4/standards/proof-conventions-lean.md",
       "description": "Lean-specific proof conventions and docstrings",
-      "tags": ["lean4", "proofs", "conventions"],
+      "tags": [
+        "lean4",
+        "proofs",
+        "conventions"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean-specific proof conventions and docstrings"
     },
     {
       "path": "project/lean4/standards/proof-debt-policy.md",
       "description": "Sorry and axiom policy for Lean proofs",
-      "tags": ["lean4", "sorry", "debt"],
+      "tags": [
+        "lean4",
+        "sorry",
+        "debt"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Sorry and axiom policy for Lean proofs"
     },
     {
       "path": "project/lean4/standards/proof-readability-criteria.md",
       "description": "Guidelines for writing readable Lean proofs",
-      "tags": ["lean4", "readability", "quality"],
+      "tags": [
+        "lean4",
+        "readability",
+        "quality"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Guidelines for writing readable Lean proofs"
     },
     {
       "path": "project/lean4/tools/mcp-tools-guide.md",
       "description": "Lean LSP MCP server tools reference",
-      "tags": ["lean4", "mcp", "lsp"],
+      "tags": [
+        "lean4",
+        "mcp",
+        "lsp"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean LSP MCP server tools reference"
     },
     {
       "path": "project/lean4/tools/aesop-integration.md",
       "description": "Aesop automated theorem prover integration",
-      "tags": ["lean4", "aesop", "automation"],
+      "tags": [
+        "lean4",
+        "aesop",
+        "automation"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Aesop automated theorem prover integration"
     },
     {
       "path": "project/lean4/tools/leansearch-api.md",
       "description": "LeanSearch semantic search API integration",
-      "tags": ["lean4", "search", "api"],
+      "tags": [
+        "lean4",
+        "search",
+        "api"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "LeanSearch semantic search API integration"
     },
     {
       "path": "project/lean4/tools/loogle-api.md",
       "description": "Loogle type pattern search API",
-      "tags": ["lean4", "search", "types"],
+      "tags": [
+        "lean4",
+        "search",
+        "types"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Loogle type pattern search API"
     },
     {
       "path": "project/lean4/tools/lsp-integration.md",
       "description": "Lean 4 LSP server integration guide",
-      "tags": ["lean4", "lsp", "integration"],
+      "tags": [
+        "lean4",
+        "lsp",
+        "integration"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean 4 LSP server integration guide"
     },
     {
       "path": "project/lean4/agents/lean-implementation-flow.md",
       "description": "Lean implementation agent execution flow",
-      "tags": ["lean4", "agent", "implementation"],
+      "tags": [
+        "lean4",
+        "agent",
+        "implementation"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean implementation agent execution flow"
     },
     {
       "path": "project/lean4/agents/lean-research-flow.md",
       "description": "Lean research agent execution flow",
-      "tags": ["lean4", "agent", "research"],
+      "tags": [
+        "lean4",
+        "agent",
+        "research"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean research agent execution flow"
     },
     {
       "path": "project/lean4/operations/multi-instance-optimization.md",
       "description": "Optimizing multiple Lean-LSP instances",
-      "tags": ["lean4", "optimization", "mcp"],
+      "tags": [
+        "lean4",
+        "optimization",
+        "mcp"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Optimizing multiple Lean-LSP instances"
     },
     {
       "path": "project/lean4/processes/end-to-end-proof-workflow.md",
       "description": "Complete proof development workflow",
-      "tags": ["lean4", "workflow", "proofs"],
+      "tags": [
+        "lean4",
+        "workflow",
+        "proofs"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Complete proof development workflow"
     },
     {
       "path": "project/lean4/processes/project-structure-best-practices.md",
       "description": "Lean 4 project organization best practices",
-      "tags": ["lean4", "project", "structure"],
+      "tags": [
+        "lean4",
+        "project",
+        "structure"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean 4 project organization best practices"
     },
     {
       "path": "project/lean4/templates/definition-template.md",
       "description": "Template for Lean 4 definitions",
-      "tags": ["lean4", "template", "definition"],
+      "tags": [
+        "lean4",
+        "template",
+        "definition"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Template for Lean 4 definitions"
     },
     {
       "path": "project/lean4/templates/new-file-template.md",
       "description": "Template for new Lean 4 files",
-      "tags": ["lean4", "template", "file"],
+      "tags": [
+        "lean4",
+        "template",
+        "file"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Template for new Lean 4 files"
     },
     {
       "path": "project/lean4/templates/proof-structure-templates.md",
       "description": "Templates for common proof structures",
-      "tags": ["lean4", "template", "proofs"],
+      "tags": [
+        "lean4",
+        "template",
+        "proofs"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Templates for common proof structures"
     },
     {
       "path": "project/lean4/README.md",
       "description": "Lean 4 extension overview and navigation",
-      "tags": ["lean4", "overview", "navigation"],
+      "tags": [
+        "lean4",
+        "overview",
+        "navigation"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean 4 extension overview and navigation"
     },
     {
       "path": "project/lean4/standards/proof-conventions.md",
       "description": "Lean proof conventions and best practices",
-      "tags": ["lean4", "proofs", "conventions"],
+      "tags": [
+        "lean4",
+        "proofs",
+        "conventions"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean proof conventions and best practices"
     },
     {
       "path": "project/lean4/tools/blocked-mcp-tools.md",
       "description": "Reference for blocked Lean MCP tools with alternatives",
-      "tags": ["lean4", "mcp", "blocked", "tools"],
+      "tags": [
+        "lean4",
+        "mcp",
+        "blocked",
+        "tools"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Reference for blocked Lean MCP tools with alternatives"
     },
     {
       "path": "project/lean4/patterns/mcp-fallback-table.md",
       "description": "Lean-specific MCP tool fallback strategies",
-      "tags": ["lean4", "mcp", "recovery", "fallback"],
+      "tags": [
+        "lean4",
+        "mcp",
+        "recovery",
+        "fallback"
+      ],
       "load_when": {
-        "languages": ["lean4"],
-        "agents": ["lean-research-agent", "lean-implementation-agent"]
-      }
+        "languages": [
+          "lean4"
+        ],
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean-specific MCP tool fallback strategies"
     }
   ]
 }

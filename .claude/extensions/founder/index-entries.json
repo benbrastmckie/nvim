@@ -18,7 +18,9 @@
           "/plan",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/domain/business-frameworks.md",
@@ -42,7 +44,9 @@
           "/plan",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/domain/legal-frameworks.md",
@@ -62,7 +66,9 @@
           "/plan",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/domain/strategic-thinking.md",
@@ -86,7 +92,9 @@
           "/plan",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/patterns/forcing-questions.md",
@@ -112,7 +120,9 @@
           "/project",
           "/plan"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/patterns/contract-review.md",
@@ -128,7 +138,9 @@
         "commands": [
           "/legal"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/patterns/decision-making.md",
@@ -152,7 +164,9 @@
           "/plan",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/patterns/mode-selection.md",
@@ -176,7 +190,9 @@
           "/project",
           "/plan"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/market-sizing.md",
@@ -194,7 +210,9 @@
           "/market",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/competitive-analysis.md",
@@ -212,7 +230,9 @@
           "/analyze",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/gtm-strategy.md",
@@ -230,7 +250,9 @@
           "/strategy",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/contract-analysis.md",
@@ -248,7 +270,9 @@
           "/legal",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/typst/strategy-template.typ",
@@ -264,7 +288,9 @@
         "commands": [
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/typst/market-sizing.typ",
@@ -280,7 +306,9 @@
         "commands": [
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/typst/competitive-analysis.typ",
@@ -296,7 +324,9 @@
         "commands": [
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/typst/gtm-strategy.typ",
@@ -312,7 +342,9 @@
         "commands": [
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/typst/contract-analysis.typ",
@@ -328,7 +360,9 @@
         "commands": [
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/templates/typst/project-timeline.typ",
@@ -346,7 +380,9 @@
           "/project",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/patterns/legal-planning.md",
@@ -366,7 +402,9 @@
         "commands": [
           "/plan"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/domain/workflow-reference.md",
@@ -392,7 +430,9 @@
           "/legal",
           "/project"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/domain/migration-guide.md",
@@ -404,7 +444,9 @@
           "founder"
         ],
         "commands": []
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     },
     {
       "path": "project/founder/patterns/project-planning.md",
@@ -425,7 +467,9 @@
           "/plan",
           "/implement"
         ]
-      }
+      },
+      "domain": "project",
+      "subdomain": "founder"
     }
   ]
 }

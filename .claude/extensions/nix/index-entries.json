@@ -12,7 +12,10 @@
           "nix"
         ]
       },
-      "line_count": 100
+      "line_count": 100,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Nix context overview with directory structure and loading strategy"
     },
     {
       "path": "project/nix/domain/nix-language.md",
@@ -26,7 +29,10 @@
           "nix"
         ]
       },
-      "line_count": 150
+      "line_count": 150,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Nix expression language syntax and builtins reference"
     },
     {
       "path": "project/nix/domain/flakes.md",
@@ -40,7 +46,10 @@
           "nix"
         ]
       },
-      "line_count": 180
+      "line_count": 180,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Nix flake structure, inputs, outputs, and lockfile management"
     },
     {
       "path": "project/nix/domain/nixos-modules.md",
@@ -54,7 +63,10 @@
           "nix"
         ]
       },
-      "line_count": 170
+      "line_count": 170,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "NixOS module system with options, config, and imports"
     },
     {
       "path": "project/nix/domain/home-manager.md",
@@ -68,7 +80,10 @@
           "nix"
         ]
       },
-      "line_count": 160
+      "line_count": 160,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Home Manager user-level configuration and module patterns"
     },
     {
       "path": "project/nix/patterns/module-patterns.md",
@@ -82,7 +97,10 @@
           "nix"
         ]
       },
-      "line_count": 140
+      "line_count": 140,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "NixOS and Home Manager module definition patterns"
     },
     {
       "path": "project/nix/patterns/overlay-patterns.md",
@@ -96,7 +114,10 @@
           "nix"
         ]
       },
-      "line_count": 130
+      "line_count": 130,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Nixpkgs overlay patterns for package customization"
     },
     {
       "path": "project/nix/patterns/derivation-patterns.md",
@@ -110,7 +131,10 @@
           "nix"
         ]
       },
-      "line_count": 160
+      "line_count": 160,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Nix derivation and package building patterns"
     },
     {
       "path": "project/nix/standards/nix-style-guide.md",
@@ -124,7 +148,10 @@
           "nix"
         ]
       },
-      "line_count": 150
+      "line_count": 150,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Nix code formatting and naming conventions"
     },
     {
       "path": "project/nix/tools/nixos-rebuild-guide.md",
@@ -138,7 +165,10 @@
           "nix"
         ]
       },
-      "line_count": 120
+      "line_count": 120,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "NixOS system rebuild commands and workflows"
     },
     {
       "path": "project/nix/tools/home-manager-guide.md",
@@ -152,7 +182,10 @@
           "nix"
         ]
       },
-      "line_count": 130
+      "line_count": 130,
+      "domain": "project",
+      "subdomain": "nix",
+      "summary": "Home Manager CLI commands and configuration workflows"
     }
   ]
 }

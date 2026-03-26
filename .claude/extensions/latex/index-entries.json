@@ -3,92 +3,206 @@
     {
       "path": "project/latex/patterns/document-structure.md",
       "description": "LaTeX document organization patterns",
-      "tags": ["latex", "structure", "organization"],
+      "tags": [
+        "latex",
+        "structure",
+        "organization"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "LaTeX document organization patterns"
     },
     {
       "path": "project/latex/patterns/theorem-environments.md",
       "description": "LaTeX theorem environment patterns",
-      "tags": ["latex", "theorems", "environments"],
+      "tags": [
+        "latex",
+        "theorems",
+        "environments"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "LaTeX theorem environment patterns"
     },
     {
       "path": "project/latex/patterns/cross-references.md",
       "description": "Cross-reference patterns for LaTeX documents",
-      "tags": ["latex", "references", "labels"],
+      "tags": [
+        "latex",
+        "references",
+        "labels"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent", "latex-research-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent",
+          "latex-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "Cross-reference patterns for LaTeX documents"
     },
     {
       "path": "project/latex/standards/document-structure.md",
       "description": "Document structure standards for LaTeX projects",
-      "tags": ["latex", "structure", "standards"],
+      "tags": [
+        "latex",
+        "structure",
+        "standards"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "Document structure standards for LaTeX projects"
     },
     {
       "path": "project/latex/standards/latex-style-guide.md",
       "description": "LaTeX style guide and formatting conventions",
-      "tags": ["latex", "style", "formatting"],
+      "tags": [
+        "latex",
+        "style",
+        "formatting"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent", "latex-research-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent",
+          "latex-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "LaTeX style guide and formatting conventions"
     },
     {
       "path": "project/latex/standards/notation-conventions.md",
       "description": "Mathematical notation conventions for LaTeX",
-      "tags": ["latex", "notation", "math"],
+      "tags": [
+        "latex",
+        "notation",
+        "math"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "Mathematical notation conventions for LaTeX"
     },
     {
       "path": "project/latex/standards/custom-macros.md",
       "description": "Custom macro patterns and conventions",
-      "tags": ["latex", "macros", "notation"],
+      "tags": [
+        "latex",
+        "macros",
+        "notation"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "Custom macro patterns and conventions"
     },
     {
       "path": "project/latex/templates/subfile-template.md",
       "description": "Subfile template for modular LaTeX documents",
-      "tags": ["latex", "templates", "subfiles"],
+      "tags": [
+        "latex",
+        "templates",
+        "subfiles"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "Subfile template for modular LaTeX documents"
     },
     {
       "path": "project/latex/tools/compilation-guide.md",
       "description": "LaTeX compilation workflow and troubleshooting",
-      "tags": ["latex", "compilation", "build"],
+      "tags": [
+        "latex",
+        "compilation",
+        "build"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent", "latex-research-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent",
+          "latex-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "LaTeX compilation workflow and troubleshooting"
     },
     {
       "path": "project/latex/README.md",
       "description": "LaTeX extension overview and navigation",
-      "tags": ["latex", "overview", "navigation"],
+      "tags": [
+        "latex",
+        "overview",
+        "navigation"
+      ],
       "load_when": {
-        "languages": ["latex"],
-        "agents": ["latex-implementation-agent", "latex-research-agent"]
-      }
+        "languages": [
+          "latex"
+        ],
+        "agents": [
+          "latex-implementation-agent",
+          "latex-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "latex",
+      "summary": "LaTeX extension overview and navigation"
     }
   ]
 }

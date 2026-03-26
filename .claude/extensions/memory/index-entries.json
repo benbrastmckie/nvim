@@ -4,45 +4,78 @@
       "path": "project/memory/learn-usage.md",
       "description": "Usage guide for /learn command and memory management",
       "load_when": {
-        "skills": ["skill-memory"],
-        "commands": ["/learn"]
+        "skills": [
+          "skill-memory"
+        ],
+        "commands": [
+          "/learn"
+        ]
       },
-      "line_count": 150
+      "line_count": 150,
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Usage guide for /learn command and memory management"
     },
     {
       "path": "project/memory/memory-setup.md",
       "description": "MCP server setup for Obsidian memory vault",
       "load_when": {
-        "skills": ["skill-memory"],
-        "commands": ["/learn"]
+        "skills": [
+          "skill-memory"
+        ],
+        "commands": [
+          "/learn"
+        ]
       },
-      "line_count": 120
+      "line_count": 120,
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "MCP server setup for Obsidian memory vault"
     },
     {
       "path": "project/memory/memory-troubleshooting.md",
       "description": "Troubleshooting guide for memory system issues",
       "load_when": {
-        "skills": ["skill-memory"]
+        "skills": [
+          "skill-memory"
+        ]
       },
-      "line_count": 250
+      "line_count": 250,
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Troubleshooting guide for memory system issues"
     },
     {
       "path": "project/memory/domain/memory-reference.md",
       "description": "MCP integration, vault structure, memory classification, operations, topic organization",
       "load_when": {
-        "skills": ["skill-memory"],
-        "commands": ["/learn"]
+        "skills": [
+          "skill-memory"
+        ],
+        "commands": [
+          "/learn"
+        ]
       },
-      "line_count": 57
+      "line_count": 57,
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "MCP integration, vault structure, memory classification, operations, topic organization"
     },
     {
       "path": "project/memory/knowledge-capture-usage.md",
       "description": "Example workflows for knowledge capture system",
       "load_when": {
-        "skills": ["skill-memory"],
-        "commands": ["/learn"]
+        "skills": [
+          "skill-memory"
+        ],
+        "commands": [
+          "/learn"
+        ]
       },
-      "line_count": 180
+      "line_count": 180,
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Example workflows for knowledge capture system"
     }
   ]
 }

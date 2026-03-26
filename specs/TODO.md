@@ -10,8 +10,8 @@ next_project_number: 307
 
 ### Pending
 
-- **306** [RESEARCHED] -- Persist core context index entries across reloads (depends on 301)
-- **305** [RESEARCHED] -- Persist metadata in extension source index-entries.json files (depends on 303)
+- **306** [PLANNED] -- Persist core context index entries across reloads (depends on 301)
+- **305** [COMPLETED] -- Persist metadata in extension source index-entries.json files (depends on 303)
 - **304** [COMPLETED] -- Fix malformed @-references in extension rule source files
 - **303** [COMPLETED] -- Fix filetypes extension source index-entries.json (verified no-op)
 - **301** [RESEARCHED] -- Fix extension loader orphaned index entry cleanup (root cause)
@@ -27,12 +27,13 @@ next_project_number: 307
 
 ### 306. Persist core context index entries across reloads
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Started**: 2026-03-26
 - **Research Completed**: 2026-03-26
 - **Language**: neovim
 - **Dependencies**: 301
 - **Research**: [01_persist-core-entries.md](306_persist_core_index_entries/reports/01_persist-core-entries.md)
+- **Plan**: [02_persist-core-entries.md](306_persist_core_index_entries/plans/02_persist-core-entries.md)
 
 **Description**: Create a `core-index-entries.json` file in `.claude/context/` containing all ~90 core context entries (orchestration, standards, patterns, formats, templates, etc.) and modify the extension loader to always include it during index.json rebuilds. Task 299 added 75 core entries to the Website OUTPUT index.json, but the loader rebuilds from extension sources only, discarding core entries on reload. The recommended fix adds ~10 lines to the loader to load core entries before extension entries.
 
@@ -40,12 +41,14 @@ next_project_number: 307
 
 ### 305. Persist metadata in extension source index-entries.json files
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-03-26
 - **Research Completed**: 2026-03-26
+- **Completed**: 2026-03-26
 - **Language**: meta
 - **Dependencies**: 303
 - **Research**: [01_persist-metadata.md](305_persist_extension_metadata/reports/01_persist-metadata.md)
+- **Plan**: [02_persist-metadata.md](305_persist_extension_metadata/plans/02_persist-metadata.md)
 
 **Description**: Add missing `domain`, `subdomain`, and `summary` metadata to 11 extension source `index-entries.json` files (186 entries need domain/subdomain, 119 need summaries, 232 total entries across 14 extensions). Tasks 298 and 300 added this metadata to the output `index.json`, but the extension loader rebuilds from source on every reload, discarding the improvements. Fixing the source files ensures metadata persists. Domain is always `"project"`, subdomain is derived from the second path component (lean4 -> `"lean"`). Summaries follow noun-phrase style, 27-112 chars.
 

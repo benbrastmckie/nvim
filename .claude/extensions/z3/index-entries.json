@@ -3,47 +3,105 @@
     {
       "path": "project/z3/domain/z3-api.md",
       "description": "Z3 Python API reference and examples",
-      "tags": ["z3", "api", "python"],
+      "tags": [
+        "z3",
+        "api",
+        "python"
+      ],
       "load_when": {
-        "languages": ["z3"],
-        "agents": ["z3-research-agent", "z3-implementation-agent"]
-      }
+        "languages": [
+          "z3"
+        ],
+        "agents": [
+          "z3-research-agent",
+          "z3-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "z3",
+      "summary": "Z3 Python API reference and examples"
     },
     {
       "path": "project/z3/domain/smt-patterns.md",
       "description": "SMT-LIB patterns and Z3 tactics",
-      "tags": ["z3", "smt", "tactics"],
+      "tags": [
+        "z3",
+        "smt",
+        "tactics"
+      ],
       "load_when": {
-        "languages": ["z3"],
-        "agents": ["z3-research-agent", "z3-implementation-agent"]
-      }
+        "languages": [
+          "z3"
+        ],
+        "agents": [
+          "z3-research-agent",
+          "z3-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "z3",
+      "summary": "SMT-LIB patterns and Z3 tactics"
     },
     {
       "path": "project/z3/patterns/constraint-generation.md",
       "description": "Constraint building patterns for Z3",
-      "tags": ["z3", "constraints", "patterns"],
+      "tags": [
+        "z3",
+        "constraints",
+        "patterns"
+      ],
       "load_when": {
-        "languages": ["z3"],
-        "agents": ["z3-implementation-agent"]
-      }
+        "languages": [
+          "z3"
+        ],
+        "agents": [
+          "z3-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "z3",
+      "summary": "Constraint building patterns for Z3"
     },
     {
       "path": "project/z3/patterns/bitvector-operations.md",
       "description": "BitVec state manipulation patterns",
-      "tags": ["z3", "bitvector", "state"],
+      "tags": [
+        "z3",
+        "bitvector",
+        "state"
+      ],
       "load_when": {
-        "languages": ["z3"],
-        "agents": ["z3-implementation-agent"]
-      }
+        "languages": [
+          "z3"
+        ],
+        "agents": [
+          "z3-implementation-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "z3",
+      "summary": "BitVec state manipulation patterns"
     },
     {
       "path": "project/z3/README.md",
       "description": "Z3 extension overview and navigation",
-      "tags": ["z3", "overview", "navigation"],
+      "tags": [
+        "z3",
+        "overview",
+        "navigation"
+      ],
       "load_when": {
-        "languages": ["z3"],
-        "agents": ["z3-implementation-agent", "z3-research-agent"]
-      }
+        "languages": [
+          "z3"
+        ],
+        "agents": [
+          "z3-implementation-agent",
+          "z3-research-agent"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "z3",
+      "summary": "Z3 extension overview and navigation"
     }
   ]
 }

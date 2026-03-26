@@ -5,34 +5,43 @@
     {
       "project_number": 306,
       "project_name": "persist_core_index_entries",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "effort": "2-3 hours",
       "description": "Persist core context index entries across extension reloads by creating core-index-entries.json and modifying the loader to always include it",
       "created": "2026-03-26T23:00:00Z",
-      "last_updated": "2026-03-26T23:00:00Z",
+      "last_updated": "2026-03-27T00:30:00Z",
       "dependencies": [301],
       "artifacts": [
         {
           "type": "research",
           "path": "specs/306_persist_core_index_entries/reports/01_persist-core-entries.md"
+        },
+        {
+          "type": "plan",
+          "path": "specs/306_persist_core_index_entries/plans/02_persist-core-entries.md"
         }
       ]
     },
     {
       "project_number": 305,
       "project_name": "persist_extension_metadata",
-      "status": "researched",
+      "status": "completed",
       "language": "meta",
       "effort": "2-3 hours",
       "description": "Add domain/subdomain/summary metadata to 11 extension source index-entries.json files so metadata persists across loader reloads",
+      "completion_summary": "Added domain/subdomain to 186 entries and summary to 119 entries across 11 extension source index-entries.json files. All 232 entries across 14 extensions now have complete domain, subdomain, and summary metadata. Zero missing fields remain.",
       "created": "2026-03-26T23:30:00Z",
-      "last_updated": "2026-03-26T23:30:00Z",
+      "last_updated": "2026-03-27T01:00:00Z",
       "dependencies": [303],
       "artifacts": [
         {
           "type": "research",
           "path": "specs/305_persist_extension_metadata/reports/01_persist-metadata.md"
+        },
+        {
+          "type": "plan",
+          "path": "specs/305_persist_extension_metadata/plans/02_persist-metadata.md"
         }
       ]
     },

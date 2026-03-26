@@ -2,94 +2,138 @@
   "entries": [
     {
       "path": "project/filetypes/tools/tool-detection.md",
-    "description": "Shared tool detection patterns for all filetypes agents",
-    "line_count": 180,
-    "load_when": {
-      "agents": [
-        "filetypes-router-agent",
-        "document-agent",
-        "spreadsheet-agent",
-        "presentation-agent",
-        "scrape-agent"
-      ],
-      "languages": [],
-      "commands": ["/convert", "/table", "/slides"]
+      "description": "Shared tool detection patterns for all filetypes agents",
+      "line_count": 180,
+      "load_when": {
+        "agents": [
+          "filetypes-router-agent",
+          "document-agent",
+          "spreadsheet-agent",
+          "presentation-agent",
+          "scrape-agent"
+        ],
+        "languages": [],
+        "commands": [
+          "/convert",
+          "/table",
+          "/slides"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Shared tool detection patterns for all filetypes agents"
+    },
+    {
+      "path": "project/filetypes/tools/dependency-guide.md",
+      "description": "Platform-specific installation instructions for conversion tools",
+      "line_count": 120,
+      "load_when": {
+        "agents": [
+          "filetypes-router-agent",
+          "document-agent",
+          "spreadsheet-agent",
+          "presentation-agent",
+          "scrape-agent"
+        ],
+        "languages": [],
+        "commands": [
+          "/convert",
+          "/table",
+          "/slides"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Platform-specific installation instructions for conversion tools"
+    },
+    {
+      "path": "project/filetypes/tools/mcp-integration.md",
+      "description": "MCP server integration patterns for format conversion",
+      "line_count": 80,
+      "load_when": {
+        "agents": [
+          "filetypes-router-agent",
+          "document-agent"
+        ],
+        "languages": [],
+        "commands": [
+          "/convert"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "MCP server integration patterns for format conversion"
+    },
+    {
+      "path": "project/filetypes/patterns/spreadsheet-tables.md",
+      "description": "Spreadsheet to LaTeX/Typst table conversion patterns",
+      "line_count": 150,
+      "load_when": {
+        "agents": [
+          "spreadsheet-agent"
+        ],
+        "languages": [],
+        "commands": [
+          "/table"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Spreadsheet to LaTeX/Typst table conversion patterns"
+    },
+    {
+      "path": "project/filetypes/patterns/presentation-slides.md",
+      "description": "Presentation extraction and slide generation patterns",
+      "line_count": 180,
+      "load_when": {
+        "agents": [
+          "presentation-agent"
+        ],
+        "languages": [],
+        "commands": [
+          "/slides"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Presentation extraction and slide generation patterns"
+    },
+    {
+      "path": "project/filetypes/domain/conversion-tables.md",
+      "description": "Format conversion support matrices, usage examples, prerequisites, dependency summary",
+      "line_count": 117,
+      "load_when": {
+        "agents": [
+          "filetypes-router-agent",
+          "document-agent",
+          "spreadsheet-agent",
+          "presentation-agent",
+          "scrape-agent"
+        ],
+        "languages": [],
+        "commands": [
+          "/convert",
+          "/table",
+          "/slides",
+          "/scrape"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Format conversion support matrices, usage examples, prerequisites, dependency summary"
+    },
+    {
+      "path": "project/filetypes/README.md",
+      "description": "Filetypes extension overview and navigation",
+      "line_count": 60,
+      "load_when": {
+        "agents": [],
+        "languages": [],
+        "commands": []
+      },
+      "domain": "project",
+      "subdomain": "filetypes",
+      "summary": "Filetypes extension overview and navigation"
     }
-  },
-  {
-    "path": "project/filetypes/tools/dependency-guide.md",
-    "description": "Platform-specific installation instructions for conversion tools",
-    "line_count": 120,
-    "load_when": {
-      "agents": [
-        "filetypes-router-agent",
-        "document-agent",
-        "spreadsheet-agent",
-        "presentation-agent",
-        "scrape-agent"
-      ],
-      "languages": [],
-      "commands": ["/convert", "/table", "/slides"]
-    }
-  },
-  {
-    "path": "project/filetypes/tools/mcp-integration.md",
-    "description": "MCP server integration patterns for format conversion",
-    "line_count": 80,
-    "load_when": {
-      "agents": [
-        "filetypes-router-agent",
-        "document-agent"
-      ],
-      "languages": [],
-      "commands": ["/convert"]
-    }
-  },
-  {
-    "path": "project/filetypes/patterns/spreadsheet-tables.md",
-    "description": "Spreadsheet to LaTeX/Typst table conversion patterns",
-    "line_count": 150,
-    "load_when": {
-      "agents": ["spreadsheet-agent"],
-      "languages": [],
-      "commands": ["/table"]
-    }
-  },
-  {
-    "path": "project/filetypes/patterns/presentation-slides.md",
-    "description": "Presentation extraction and slide generation patterns",
-    "line_count": 180,
-    "load_when": {
-      "agents": ["presentation-agent"],
-      "languages": [],
-      "commands": ["/slides"]
-    }
-  },
-  {
-    "path": "project/filetypes/domain/conversion-tables.md",
-    "description": "Format conversion support matrices, usage examples, prerequisites, dependency summary",
-    "line_count": 117,
-    "load_when": {
-      "agents": [
-        "filetypes-router-agent",
-        "document-agent",
-        "spreadsheet-agent",
-        "presentation-agent",
-        "scrape-agent"
-      ],
-      "languages": [],
-      "commands": ["/convert", "/table", "/slides", "/scrape"]
-    }
-  },
-  {
-    "path": "project/filetypes/README.md",
-    "description": "Filetypes extension overview and navigation",
-    "line_count": 60,
-    "load_when": {
-      "agents": [],
-      "languages": [],
-      "commands": []
-    }
-  }
   ]
 }
