@@ -161,10 +161,11 @@ next_project_number: 297
 
 ### 296. Verify index.json domain/subdomain field semantics
 - **Effort**: 30 minutes
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_index-domains.md](296_fix_index_domain_semantics/reports/01_index-domains.md)
+- **Plan**: [02_index-domains.md](296_fix_index_domain_semantics/plans/02_index-domains.md)
 
 **Description**: After task 287 promoted meta/, processes/, repo/ from `project/` to core level, their index.json entries all have `"domain": "core"`. Verify subdomain fields are set correctly. May be a no-op if subdomains already distinguish these files.
 
