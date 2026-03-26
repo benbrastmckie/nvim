@@ -366,10 +366,10 @@ function M.create(config)
             end
           end
         end
-        if #valid_prefixes > 0 then
-          local context_dir = target_dir .. "/context"
-          merge_mod.remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)
-        end
+        -- Always run cleanup, even with empty valid_prefixes.
+        -- When no extensions are loaded yet, all project/ entries are stale.
+        local context_dir = target_dir .. "/context"
+        merge_mod.remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)
       end
 
       -- Load core context entries (always included, not extension-specific)
