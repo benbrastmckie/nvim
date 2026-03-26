@@ -10,7 +10,7 @@ next_project_number: 309
 
 ### Pending
 
-- **308** [NOT STARTED] -- Implement adaptive context loading by extension and language
+- **308** [RESEARCHED] -- Implement adaptive context loading by extension and language
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,8 +18,11 @@ next_project_number: 309
 
 ### 308. Implement adaptive context loading by extension and language
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research Started**: 2026-03-26
+- **Research Completed**: 2026-03-26
 - **Language**: meta
+- **Research**: [01_context-loading-research.md](308_adaptive_context_loading_by_extension_and_language/reports/01_context-loading-research.md)
 
 **Description**: Implement adaptive context loading that filters by loaded extensions and task language. Currently, empty load_when conditions (empty arrays for agents/languages/commands) cause ALL context files to load unconditionally, regardless of task language. In the Vision project, a typst task loads ~24,444 lines of unrelated context (business-frameworks.md, legal-frameworks.md, pitch-deck-templates, etc.) because 74 core files have empty load_when. Fix this by: (1) Changing empty-array semantics so empty = never-load instead of always-load, requiring explicit 'always: true' for universal files; (2) Adding language-gate validation to the extension loader that warns when entries lack language filtering; (3) Adding a context budget system that caps total loaded lines and prioritizes by relevance (always > agent-match > language-match > command-match); (4) Making the skill/agent context loading queries filter OUT entries that don't match any active dimension rather than loading everything unfiltered. This is a meta task affecting .claude/context/, .claude/extensions/, .claude/agents/, and .claude/skills/.
 
