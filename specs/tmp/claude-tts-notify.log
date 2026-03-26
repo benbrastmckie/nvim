@@ -652,3 +652,12 @@
 [2026-03-26T09:34:43-07:00] Notification sent: Tab 5 (worktree=false)
 [2026-03-26T09:52:32-07:00] Notification sent: Tab 5 (worktree=false)
 [2026-03-26T09:57:03-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:02:51-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:06:11-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:06:51-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:07:55-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:08:00-07:00] Cooldown active: 5s < 10s - skipping notification
+[2026-03-26T10:09:00-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:09:14-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:09:53-07:00] Notification sent: Tab 5 (worktree=false)
+[2026-03-26T10:10:17-07:00] Notification sent: Tab 5 (worktree=false)
