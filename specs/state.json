@@ -1,7 +1,26 @@
 {
   "version": "1.0.0",
-  "next_project_number": 319,
+  "next_project_number": 320,
   "active_projects": [
+    {
+      "project_number": 319,
+      "project_name": "founder_plan_format_conformance",
+      "status": "researched",
+      "language": "meta",
+      "effort": "1-2 hours",
+      "created": "2026-03-27T23:56:55Z",
+      "last_updated": "2026-03-27T23:56:55Z",
+      "session_id": "sess_1774655767_a7c6b1",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/319_founder_plan_format_conformance/reports/01_meta-research.md",
+          "summary": "Investigation of plan format non-conformance in founder-plan-agent"
+        }
+      ],
+      "next_artifact_number": 2
+    },
     {
       "project_number": 309,
       "project_name": "unified_artifact_numbering_research",
