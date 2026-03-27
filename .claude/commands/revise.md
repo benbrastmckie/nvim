@@ -9,6 +9,8 @@ model: claude-opus-4-5-20251101
 
 Create a new version of an implementation plan, or update task description if no plan exists.
 
+**Artifact Numbering Note**: Plan revision creates a new plan file within the same artifact round. The revised plan uses the SAME artifact number (not incremented) because it replaces the previous plan in the same round. Only `/research` advances the artifact number to start a new round.
+
 ## Arguments
 
 - `$1` - Task number (required)

@@ -6,18 +6,80 @@ Reusable patterns for wave-based team coordination.
 
 This file contains reference patterns for implementing team skills. Copy and adapt these patterns rather than importing directly.
 
+## Artifact Numbering Helpers
+
+### Unified Artifact Numbering
+
+All artifacts (reports, plans, summaries) share a single sequence number per task within a "round" of work. Research advances the sequence; plan and implement reuse the current number.
+
+**Read Artifact Number for Research (advances sequence)**:
+```bash
+# Read next_artifact_number from state.json
+artifact_number=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Fallback for legacy tasks
+if [ "$artifact_number" = "null" ] || [ -z "$artifact_number" ]; then
+  padded_num=$(printf "%03d" "$task_number")
+  count=$(ls "specs/${padded_num}_${SLUG}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+  artifact_number=$((count + 1))
+fi
+
+run_padded=$(printf "%02d" "$artifact_number")
+# After completion, increment: next_artifact_number = artifact_number + 1
+```
+
+**Read Artifact Number for Plan/Implement (stays in same round)**:
+```bash
+# Read next_artifact_number and use (current - 1)
+next_num=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Plan/implement use (current - 1) to stay in same round
+if [ "$next_num" -le 1 ]; then
+  artifact_number=1
+else
+  artifact_number=$((next_num - 1))
+fi
+
+run_padded=$(printf "%02d" "$artifact_number")
+# Do NOT increment next_artifact_number after completion
+```
+
+### Team Mode Artifact Naming
+
+**Teammate Artifacts**: `{NN}_teammate-{letter}-findings.md`
+- Example: `01_teammate-a-findings.md`, `01_teammate-b-findings.md`
+
+**Synthesis Artifacts**: `{NN}_{slug}.md` (base number, no letter)
+- Example: `01_team-research.md`, `01_implementation-plan.md`
+
+**Key Principle**: All artifacts from the same research round share the same base number. Letter suffixes distinguish parallel work within a round.
+
+---
+
 ## Wave Spawning Pattern
 
 ### Spawn Research Wave
 
-Spawn 2-4 teammates for parallel research. First, calculate the run number:
+Spawn 2-4 teammates for parallel research. First, calculate the artifact number using unified numbering:
 
 ```bash
-# Calculate run number before spawning
-padded_num=$(printf "%03d" "$task_number")
-run_num=$(ls specs/${padded_num}_${SLUG}/reports/*[0-9][0-9]*.md 2>/dev/null | wc -l)
-run_num=$((run_num + 1))
-run_padded=$(printf "%02d" $run_num)
+# Read next_artifact_number from state.json (research advances the sequence)
+artifact_number=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Fallback for legacy tasks
+if [ "$artifact_number" = "null" ] || [ -z "$artifact_number" ]; then
+  padded_num=$(printf "%03d" "$task_number")
+  count=$(ls "specs/${padded_num}_${SLUG}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+  artifact_number=$((count + 1))
+fi
+
+run_padded=$(printf "%02d" "$artifact_number")
 ```
 
 Then spawn teammates with run-scoped output paths. **Pass the `model` parameter** to enforce model selection:
@@ -53,14 +115,29 @@ Wave 1 teammates:
 
 ### Spawn Planning Wave
 
-Spawn teammates for parallel plan generation. First, calculate the run number:
+Spawn teammates for parallel plan generation. First, calculate the artifact number using unified numbering:
 
 ```bash
-# Calculate run number before spawning
-padded_num=$(printf "%03d" "$task_number")
-run_num=$(ls specs/${padded_num}_${SLUG}/plans/*[0-9][0-9]*.md 2>/dev/null | wc -l)
-run_num=$((run_num + 1))
-run_padded=$(printf "%02d" $run_num)
+# Read next_artifact_number and use (current - 1) since plan stays in same round
+next_num=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Plan uses (current - 1) to stay in same round as research
+if [ "$next_num" -le 1 ]; then
+  artifact_number=1
+else
+  artifact_number=$((next_num - 1))
+fi
+
+# Fallback for legacy tasks
+if [ "$next_num" = "null" ] || [ -z "$next_num" ]; then
+  padded_num=$(printf "%03d" "$task_number")
+  count=$(ls "specs/${padded_num}_${SLUG}/plans/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+  artifact_number=$((count + 1))
+fi
+
+run_padded=$(printf "%02d" "$artifact_number")
 ```
 
 Then spawn teammates with run-scoped output paths:

@@ -107,6 +107,28 @@ EOF
 
 ---
 
+### Stage 3a: Read Artifact Number
+
+Read `next_artifact_number` from state.json (or fall back to directory scanning for legacy tasks):
+
+```bash
+# Read next_artifact_number from state.json
+artifact_number=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Fallback for legacy tasks: count existing artifacts
+if [ "$artifact_number" = "null" ] || [ -z "$artifact_number" ]; then
+  padded_num=$(printf "%03d" "$task_number")
+  count=$(ls "specs/${padded_num}_${project_name}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+  artifact_number=$((count + 1))
+fi
+
+artifact_padded=$(printf "%02d" "$artifact_number")
+```
+
+---
+
 ### Stage 4: Prepare Delegation Context
 
 Prepare delegation context for the subagent:
@@ -123,10 +145,13 @@ Prepare delegation context for the subagent:
     "description": "{description}",
     "language": "{language}"
   },
+  "artifact_number": "{artifact_number from Stage 3a}",
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
 }
 ```
+
+**Note**: The `artifact_number` field tells the agent which sequence number to use for artifact naming (e.g., `01`, `02`).
 
 ---
 
@@ -179,8 +204,9 @@ fi
 
 If status is "researched", update state.json and TODO.md:
 
-**Update state.json**:
+**Update state.json** (includes incrementing `next_artifact_number`):
 ```bash
+# Step 1: Update status and timestamps
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
    --arg status "researched" \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
@@ -188,7 +214,14 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     last_updated: $ts,
     researched: $ts
   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+
+# Step 2: Increment next_artifact_number (research advances the sequence)
+jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
+    (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
+  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
+
+**Note**: Research is the only operation that increments `next_artifact_number`. Plan and implement use `(current - 1)` to stay in the same "round".
 
 **Update TODO.md**: Use Edit tool to change status marker from `[RESEARCHING]` to `[RESEARCHED]`.
 

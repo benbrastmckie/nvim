@@ -99,11 +99,16 @@ Extract from delegation context:
     "description": "...",
     "effort": "..."
   },
+  "artifact_number": "02",
   "blocker_prompt": "optional user description of blocker",
   "plan_path": "path/to/latest/plan or null",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
 }
 ```
+
+**Artifact Naming**:
+- Use `artifact_number` from delegation context for the `{NN}` prefix in report path
+- Report path: `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md`
 
 **Load task artifacts**:
 - Read plan file if provided: identify which phase is blocked and why
@@ -163,7 +168,11 @@ Apply the **Task Minimization Principle**:
 
 ### Stage 4: Write Blocker Analysis Report
 
-Write to `specs/{NNN}_{SLUG}/reports/02_spawn-analysis.md`:
+**Path Construction**:
+- Use `artifact_number` from delegation context for `{NN}` prefix (not hardcoded 02)
+- Report path: `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md`
+
+Write to `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md`:
 
 ```markdown
 # Blocker Analysis: Task #{N}
@@ -252,7 +261,7 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
 | `dependency_order` | array | Topologically sorted list of indices (foundational first) |
 | `parent_task_number` | integer | The blocked task number |
 | `analysis_summary` | string | 1-2 sentence summary for display |
-| `report_path` | string | Path to the analysis report |
+| `report_path` | string | Path to the analysis report (uses artifact_number for {NN} prefix) |
 
 **dependency_order**: Must be a valid topological sort of the tasks. Foundational tasks (no dependencies) come first. The skill uses this to assign task numbers so foundational tasks get lower numbers.
 
@@ -266,7 +275,7 @@ Update `specs/{NNN}_{SLUG}/.return-meta.json` to final status:
   "artifacts": [
     {
       "type": "spawn_analysis",
-      "path": "specs/{NNN}_{SLUG}/reports/02_spawn-analysis.md",
+      "path": "specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md",
       "summary": "Blocker analysis with {N} proposed tasks"
     }
   ],

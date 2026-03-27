@@ -114,6 +114,8 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "plan", "skill-planner"]
   },
+  "artifact_number": "01",
+  "teammate_letter": "a (optional, for team mode)",
   "research_path": "specs/414_slug/reports/MM_{short-slug}.md",
   "metadata_file_path": "specs/414_slug/.return-meta.json"
 }
@@ -123,6 +125,11 @@ Extract from input:
 - task_number is present and valid
 - session_id is present (for return metadata)
 - delegation_path is present
+
+**Artifact Naming**:
+- Use `artifact_number` for the `{NN}` prefix in artifact paths
+- In team mode, if `teammate_letter` is provided: `{NN}_candidate-{letter}.md`
+- In single-agent mode (no letter): `{NN}_{slug}.md`
 
 ### Stage 2: Load Research Report (if exists)
 
@@ -188,7 +195,10 @@ Create directory if needed:
 mkdir -p specs/{NNN}_{SLUG}/plans/
 ```
 
-Find next plan version (MM_{short-slug}.md format)
+**Path Construction**:
+- Use `artifact_number` from delegation context for `{NN}` prefix
+- Single-agent mode: `specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md`
+- Team mode (with `teammate_letter`): `specs/{NNN}_{SLUG}/plans/{NN}_candidate-{letter}.md`
 
 Write plan file following plan-format.md structure:
 

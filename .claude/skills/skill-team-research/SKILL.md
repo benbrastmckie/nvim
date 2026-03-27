@@ -144,18 +144,28 @@ If team mode is unavailable:
 
 ---
 
-### Stage 5a: Calculate Run Number
+### Stage 5a: Calculate Artifact Number
 
-Determine the next run number by counting existing synthesis artifacts:
+Read `next_artifact_number` from state.json (or fall back to directory scanning for legacy tasks):
 
 ```bash
-# Count existing research reports to determine run number
-padded_num=$(printf "%03d" "$task_number")
-run_num=$(ls "specs/${padded_num}_${project_name}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
-run_num=$((run_num + 1))
-run_padded=$(printf "%02d" $run_num)
-# run_padded is now the run number for this team research run (e.g., "01")
+# Read next_artifact_number from state.json
+artifact_number=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Fallback for legacy tasks: count existing artifacts
+if [ "$artifact_number" = "null" ] || [ -z "$artifact_number" ]; then
+  padded_num=$(printf "%03d" "$task_number")
+  count=$(ls "specs/${padded_num}_${project_name}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+  artifact_number=$((count + 1))
+fi
+
+run_padded=$(printf "%02d" "$artifact_number")
+# run_padded is now the artifact number for this team research run (e.g., "01")
 ```
+
+**Note**: Team research uses the same artifact number for all teammates and synthesis. The artifact number advances after all teammates and synthesis complete.
 
 ---
 
@@ -188,7 +198,16 @@ model_preference_line="Model preference: Use Claude ${default_model^} 4.6 for th
 
 ### Stage 5: Spawn Research Wave
 
-Create teammate prompts and spawn wave.
+Create teammate prompts and spawn wave. Pass `artifact_number` and `teammate_letter` to each teammate.
+
+**Delegation context for teammates**:
+```json
+{
+  "artifact_number": "{run_padded}",
+  "teammate_letter": "a",
+  "artifact_pattern": "{NN}_teammate-{letter}-findings.md"
+}
+```
 
 **Teammate A - Primary Angle**:
 ```
@@ -196,12 +215,15 @@ Research task {task_number}: {description}
 
 {model_preference_line}
 
+Artifact number: {run_padded}
+Teammate letter: a
+
 Focus on implementation approaches and patterns.
 Challenge assumptions and provide specific examples.
 Consider {focus_prompt} if provided.
 
 Output your findings to:
-specs/{NNN}_{SLUG}/reports/{RR}_teammate-a-findings.md
+specs/{NNN}_{SLUG}/reports/{run_padded}_teammate-a-findings.md
 
 Format: Markdown with clear sections for:
 - Key Findings
@@ -216,12 +238,15 @@ Research task {task_number}: {description}
 
 {model_preference_line}
 
+Artifact number: {run_padded}
+Teammate letter: b
+
 Focus on alternative patterns and prior art.
 Look for existing solutions we could adapt.
 Do NOT duplicate Teammate A's focus on primary approaches.
 
 Output your findings to:
-specs/{NNN}_{SLUG}/reports/{RR}_teammate-b-findings.md
+specs/{NNN}_{SLUG}/reports/{run_padded}_teammate-b-findings.md
 
 Format: Same as Teammate A
 ```
@@ -232,12 +257,15 @@ Research task {task_number}: {description}
 
 {model_preference_line}
 
+Artifact number: {run_padded}
+Teammate letter: c
+
 Focus on risks, blockers, and edge cases.
 Identify what could go wrong with proposed approaches.
 Consider integration challenges and dependencies.
 
 Output your findings to:
-specs/{NNN}_{SLUG}/reports/{RR}_teammate-c-findings.md
+specs/{NNN}_{SLUG}/reports/{run_padded}_teammate-c-findings.md
 
 Format: Same as Teammate A
 ```
@@ -248,6 +276,9 @@ Research task {task_number}: {description}
 
 {model_preference_line}
 
+Artifact number: {run_padded}
+Teammate letter: d
+
 Challenge findings from other teammates once available.
 Look for gaps, inconsistencies, and missed alternatives.
 Question assumptions and identify blind spots.
@@ -255,7 +286,7 @@ Question assumptions and identify blind spots.
 Wait for other teammates to complete, then analyze their outputs.
 
 Output your findings to:
-specs/{NNN}_{SLUG}/reports/{RR}_teammate-d-findings.md
+specs/{NNN}_{SLUG}/reports/{run_padded}_teammate-d-findings.md
 
 Format: Same as Teammate A
 ```
@@ -268,6 +299,8 @@ Format: Same as Teammate A
 - Use `model: "sonnet"` for all tasks (cost-effective for non-Lean work)
 
 The `model_preference_line` in prompts serves as secondary guidance only. The `model` parameter on TeammateTool is the enforced selection.
+
+**Synthesis uses base number without letter**: After all teammates complete, the synthesis report uses `{run_padded}_{slug}.md` (e.g., `01_team-research.md`).
 
 ---
 
@@ -390,8 +423,9 @@ Output to: `specs/{NNN}_{SLUG}/reports/{RR}_team-research.md`
 
 Update task status to "researched":
 
-**Update state.json**:
+**Update state.json** (includes incrementing `next_artifact_number`):
 ```bash
+# Step 1: Update status and timestamps
 jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
    --arg status "researched" \
   '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
@@ -399,7 +433,14 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     last_updated: $ts,
     researched: $ts
   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+
+# Step 2: Increment next_artifact_number (team research advances the sequence)
+jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
+    (((.active_projects[] | select(.project_number == '$task_number')).next_artifact_number // 1) + 1)' \
+  specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
+
+**Note**: Team research (like single-agent research) is the only operation that increments `next_artifact_number`. Team plan and team implement use `(current - 1)` to stay in the same "round".
 
 **Update TODO.md**: Change status marker to `[RESEARCHED]`.
 

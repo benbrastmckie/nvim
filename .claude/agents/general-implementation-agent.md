@@ -124,10 +124,15 @@ Extract from input:
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
+  "artifact_number": "01",
   "plan_path": "specs/412_general_research/plans/MM_{short-slug}.md",
   "metadata_file_path": "specs/412_general_research/.return-meta.json"
 }
 ```
+
+**Artifact Naming**:
+- Use `artifact_number` for the `{NN}` prefix in summary artifact path
+- Summary path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`
 
 ### Stage 2: Load and Parse Implementation Plan
 
@@ -201,7 +206,11 @@ After all phases complete:
 
 ### Stage 6: Create Implementation Summary
 
-Write to `specs/{NNN}_{SLUG}/summaries/MM_{short-slug}-summary.md`:
+**Path Construction**:
+- Use `artifact_number` from delegation context for `{NN}` prefix
+- Summary path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`
+
+Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`:
 
 ```markdown
 # Implementation Summary: Task #{N}

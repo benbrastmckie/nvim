@@ -141,18 +141,36 @@ If team mode is unavailable:
 
 ---
 
-### Stage 5a: Calculate Run Number
+### Stage 5a: Calculate Artifact Number
 
-Determine the next run number by counting existing plan artifacts:
+Read `next_artifact_number` from state.json and use (current-1) since plan stays in the same round as research:
 
 ```bash
-# Count existing plan files to determine run number
-padded_num=$(printf "%03d" "$task_number")
-run_num=$(ls "specs/${padded_num}_${project_name}/plans/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
-run_num=$((run_num + 1))
-run_padded=$(printf "%02d" $run_num)
-# run_padded is now the run number for this team planning run (e.g., "01")
+# Read next_artifact_number from state.json
+next_num=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+  specs/state.json)
+
+# Plan uses (current - 1) to stay in the same round as research
+# If next_artifact_number is 1 (no research yet), use 1
+if [ "$next_num" -le 1 ]; then
+  artifact_number=1
+else
+  artifact_number=$((next_num - 1))
+fi
+
+# Fallback for legacy tasks: count existing plan artifacts
+if [ "$next_num" = "null" ] || [ -z "$next_num" ]; then
+  padded_num=$(printf "%03d" "$task_number")
+  count=$(ls "specs/${padded_num}_${project_name}/plans/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+  artifact_number=$((count + 1))
+fi
+
+run_padded=$(printf "%02d" "$artifact_number")
+# run_padded is now the artifact number for this team planning run (e.g., "01")
 ```
+
+**Note**: Team plan does NOT increment `next_artifact_number`. Only research advances the sequence.
 
 ---
 
@@ -172,13 +190,25 @@ fi
 
 ### Stage 5: Spawn Planning Wave
 
-Create teammate prompts and spawn wave.
+Create teammate prompts and spawn wave. Pass `artifact_number` and `teammate_letter` to each teammate.
+
+**Delegation context for teammates**:
+```json
+{
+  "artifact_number": "{run_padded}",
+  "teammate_letter": "a",
+  "artifact_pattern": "{NN}_candidate-{letter}.md"
+}
+```
 
 **Teammate A - Plan Version A (Incremental Delivery)**:
 ```
 Create an implementation plan for task {task_number}: {description}
 
 {model_preference_line}
+
+Artifact number: {run_padded}
+Teammate letter: a
 
 Focus on incremental delivery with verification at each phase.
 Each phase should deliver working, tested functionality.
@@ -188,7 +218,7 @@ Research findings:
 {research_content}
 
 Output your plan to:
-specs/{NNN}_{SLUG}/plans/{RR}_candidate-a.md
+specs/{NNN}_{SLUG}/plans/{run_padded}_candidate-a.md
 
 Format: Standard implementation plan format with:
 - Overview
@@ -204,6 +234,9 @@ Create an alternative implementation plan for task {task_number}: {description}
 
 {model_preference_line}
 
+Artifact number: {run_padded}
+Teammate letter: b
+
 Consider different phase boundaries or ordering.
 Look for opportunities to parallelize phases.
 Focus on risk mitigation through early verification.
@@ -215,7 +248,7 @@ Do NOT duplicate Teammate A's exact phase structure.
 Provide a meaningfully different approach.
 
 Output your plan to:
-specs/{NNN}_{SLUG}/plans/{RR}_candidate-b.md
+specs/{NNN}_{SLUG}/plans/{run_padded}_candidate-b.md
 
 Format: Same as Teammate A
 ```
@@ -225,6 +258,9 @@ Format: Same as Teammate A
 Analyze dependencies and risks for implementing task {task_number}: {description}
 
 {model_preference_line}
+
+Artifact number: {run_padded}
+Teammate letter: c
 
 Identify:
 - Which phases can be parallelized vs must be sequential
@@ -236,7 +272,7 @@ Research findings:
 {research_content}
 
 Output your analysis to:
-specs/{NNN}_{SLUG}/plans/{RR}_risk-analysis.md
+specs/{NNN}_{SLUG}/plans/{run_padded}_risk-analysis.md
 
 Format: Risk analysis with dependency graph and critical path
 ```
@@ -247,6 +283,8 @@ Format: Risk analysis with dependency graph and critical path
 
 **IMPORTANT**: Pass the `model` parameter to enforce model selection:
 - Use `model: "sonnet"` for all tasks
+
+**Synthesis uses base number without letter**: After all teammates complete, the synthesis plan uses `{run_padded}_{slug}.md` (e.g., `01_implementation-plan.md`).
 
 ---
 

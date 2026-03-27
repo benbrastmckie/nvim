@@ -35,11 +35,50 @@ All task artifacts use the `MM_{short-slug}.md` format:
 3. Remove: articles (a, an, the), prepositions (in, on, at, of), conjunctions (and, or, for, to)
 4. Keep: main nouns, verbs, adjectives that capture task essence
 
-### Per-Type Sequential Numbering
-Each artifact type maintains its own independent sequence within a task:
-- **Reports**: 01, 02, 03... (research reports, chronological)
-- **Plans**: 01, 02, 03... (plan versions, sequential)
-- **Summaries**: 01, 02, 03... (execution summaries, follows plan execution)
+### Unified Sequential Numbering
+
+All artifact types share a single sequence number per task within a "round" of work:
+
+**Round Concept**: A research report starts a new round, and the corresponding plan and summary share that round's number:
+- **Research**: Advances the sequence (reads `next_artifact_number`, uses it, increments)
+- **Plan**: Uses current round (`next_artifact_number - 1`)
+- **Summary**: Uses current round (`next_artifact_number - 1`)
+
+**Single-Agent Mode**: `{NN}_{slug}.md`
+- Example: `01_initial-research.md`, `01_implementation-plan.md`, `01_execution-summary.md`
+
+**Team Mode** (parallel teammates):
+- Teammate findings: `{NN}_{letter}-findings.md`
+  - Example: `01_teammate-a-findings.md`, `01_teammate-b-findings.md`
+- Synthesis artifact: `{NN}_{slug}.md` (same number, no letter)
+  - Example: `01_team-research.md`
+
+**Key Principle**: All artifacts from the same research round share the same base number. Letter suffixes distinguish parallel work within a round.
+
+**Example Flow**:
+```
+Round 1:
+  /research 309  -> creates 01_report.md (next_artifact_number becomes 2)
+  /plan 309      -> creates 01_plan.md (uses round 1)
+  /implement 309 -> creates 01_summary.md (uses round 1)
+
+Round 2 (after blocker/revision):
+  /research 309  -> creates 02_report.md (next_artifact_number becomes 3)
+  /plan 309      -> creates 02_plan.md (uses round 2)
+```
+
+**Team Mode Example**:
+```
+/research 309 --team
+  -> 01_teammate-a-findings.md
+  -> 01_teammate-b-findings.md
+  -> 01_teammate-c-findings.md
+  -> 01_team-research.md (synthesis)
+  -> next_artifact_number becomes 2
+
+/plan 309
+  -> 01_implementation-plan.md (uses round 1)
+```
 
 ## Phase Status Markers
 

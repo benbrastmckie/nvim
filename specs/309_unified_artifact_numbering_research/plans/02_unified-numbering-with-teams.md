@@ -1,7 +1,7 @@
 # Implementation Plan: Task #309 (Revision 2)
 
 - **Task**: 309 - unified_artifact_numbering_research
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/309_unified_artifact_numbering_research/reports/01_unified-numbering-research.md
@@ -64,7 +64,7 @@ Key findings from 01_unified-numbering-research.md:
 
 ## Implementation Phases
 
-### Phase 1: Documentation Updates [NOT STARTED]
+### Phase 1: Documentation Updates [COMPLETED]
 
 **Goal**: Establish the schema and rules for unified artifact numbering (including team mode) before code changes
 
@@ -87,7 +87,7 @@ Key findings from 01_unified-numbering-research.md:
 
 ---
 
-### Phase 2: Single-Agent Skill Updates [NOT STARTED]
+### Phase 2: Single-Agent Skill Updates [COMPLETED]
 
 **Goal**: Update single-agent skills to read/write `next_artifact_number` and pass correct artifact number to agents
 
@@ -111,7 +111,7 @@ Key findings from 01_unified-numbering-research.md:
 
 ---
 
-### Phase 3: Team Skill Updates [NOT STARTED]
+### Phase 3: Team Skill Updates [COMPLETED]
 
 **Goal**: Update team skills to pass artifact number with letter suffixes to teammates
 
@@ -154,7 +154,7 @@ Key findings from 01_unified-numbering-research.md:
 
 ---
 
-### Phase 4: Agent Updates [NOT STARTED]
+### Phase 4: Agent Updates [COMPLETED]
 
 **Goal**: Update agents to use the artifact number (and optional letter) passed via delegation context
 
@@ -181,7 +181,7 @@ Key findings from 01_unified-numbering-research.md:
 
 ---
 
-### Phase 5: Command Updates [NOT STARTED]
+### Phase 5: Command Updates [COMPLETED]
 
 **Goal**: Ensure /revise command maintains same-round semantics
 
@@ -200,7 +200,7 @@ Key findings from 01_unified-numbering-research.md:
 
 ---
 
-### Phase 6: Verification and Testing [NOT STARTED]
+### Phase 6: Verification and Testing [COMPLETED]
 
 **Goal**: Verify the complete flow works end-to-end
 

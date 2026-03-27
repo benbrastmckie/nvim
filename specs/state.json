@@ -5,12 +5,12 @@
     {
       "project_number": 309,
       "project_name": "unified_artifact_numbering_research",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "effort": "2-3 hours",
       "created": "2026-03-27T17:26:39Z",
-      "last_updated": "2026-03-27T17:40:08Z",
-      "session_id": "sess_1774632840_d40ec6",
+      "last_updated": "2026-03-27T18:16:46Z",
+      "session_id": "sess_1774634714_c7ff56",
       "dependencies": [],
       "artifacts": [
         {
@@ -22,10 +22,19 @@
           "path": "specs/309_unified_artifact_numbering_research/plans/02_unified-numbering-with-teams.md",
           "type": "plan",
           "summary": "6-phase implementation plan for unified artifact numbering with team mode support"
+        },
+        {
+          "path": "specs/309_unified_artifact_numbering_research/summaries/01_implementation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with all files modified"
         }
       ],
       "researched": "2026-03-27T17:32:46Z",
-      "planned": "2026-03-27T17:40:08Z"
+      "planned": "2026-03-27T17:40:08Z",
+      "started": "2026-03-27T18:05:45Z",
+      "completed": "2026-03-27T18:16:46Z",
+      "completion_summary": "Implemented unified artifact numbering where research advances sequence and plan/implement stay in same round. Updated 3 single-agent skills, 3 team skills, 4 agents, 1 command, and 2 documentation files. Added team mode naming with letter suffixes (a, b, c, d) for parallel teammates.",
+      "claudemd_suggestions": "Added next_artifact_number field to state-management-schema.md, updated artifact-formats.md with unified numbering, modified all research/plan/implement skills to pass artifact_number, updated all agents to use passed artifact_number, added team-wave-helpers.md artifact numbering section"
     },
     {
       "project_number": 310,

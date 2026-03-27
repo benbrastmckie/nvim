@@ -71,6 +71,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
 | `dependencies` | array | No | Array of task numbers this depends on |
 | `artifacts` | array | No | Array of artifact objects |
+| `next_artifact_number` | number | No | Next artifact sequence number (default: 1) |
 
 ### task_type Field
 
@@ -104,6 +105,45 @@ The `task_type` field enables finer-grained routing within a language, particula
 | `markdown` | Documentation tasks |
 
 **Extension Languages** (when extensions loaded): See `.claude/extensions/*/manifest.json`.
+
+### Unified Artifact Numbering (next_artifact_number)
+
+The `next_artifact_number` field enables unified artifact numbering where all artifact types (reports, plans, summaries) share a single sequence number per task within a "round" of work.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `next_artifact_number` | number | 1 | Next artifact sequence number to use |
+
+**Semantics**:
+- **Research advances the sequence**: Research reads `next_artifact_number`, uses it for artifact naming, then increments it in postflight
+- **Plan/Summary reuse current**: Plan and summary skills use `(next_artifact_number - 1)` since they're completing the current round started by research
+- **Round concept**: A research report starts a new "round", and the corresponding plan and summary share that round's number
+
+**Example Flow**:
+```
+Round 1:
+  /research 309  -> reads 1, creates 01_report.md, increments to 2
+  /plan 309      -> reads 2, uses (2-1)=1, creates 01_plan.md
+  /implement 309 -> reads 2, uses (2-1)=1, creates 01_summary.md
+
+Round 2 (after blocker):
+  /research 309  -> reads 2, creates 02_report.md, increments to 3
+  /plan 309      -> reads 3, uses (3-1)=2, creates 02_plan.md
+  /implement 309 -> reads 3, uses (3-1)=2, creates 02_summary.md
+```
+
+**Team Mode Naming**:
+- Teammate artifacts use `{NN}_{letter}-findings.md` pattern (e.g., `01_teammate-a-findings.md`)
+- Synthesis artifacts use `{NN}_{slug}.md` pattern (same number, no letter)
+- All artifacts from the same research round share the same base number
+
+**Backward Compatibility**:
+When `next_artifact_number` is missing (legacy tasks), skills fall back to directory scanning:
+```bash
+# Fallback: count existing artifacts to determine next number
+count=$(ls "specs/${padded_num}_${slug}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+artifact_number=$((count + 1))
+```
 
 ### Artifact Object Fields
 
