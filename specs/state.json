@@ -5,11 +5,11 @@
     {
       "project_number": 321,
       "project_name": "review_revise_claude_readme_docs",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-03-29T06:08:00Z",
-      "last_updated": "2026-03-29T06:13:37Z",
-      "session_id": "sess_1743231000_r321doc",
+      "last_updated": "2026-03-29T06:19:09Z",
+      "session_id": "sess_1743231100_p321doc",
       "researched": "2026-03-29T06:13:37Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -17,8 +17,14 @@
           "path": "specs/321_review_revise_claude_readme_docs/reports/01_documentation-audit.md",
           "type": "research",
           "summary": "Documentation audit with 6 missing file references, outdated agent names, ProofChecker references in wrong project, and restructuring recommendations"
+        },
+        {
+          "path": "specs/321_review_revise_claude_readme_docs/plans/01_documentation-revision.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan to restructure README.md as navigation hub and fix documentation issues"
         }
-      ]
+      ],
+      "planned": "2026-03-29T06:19:09Z"
     },
     {
       "project_number": 320,
