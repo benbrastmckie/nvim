@@ -9,7 +9,7 @@
 
 ## Overview
 
-This standard defines the complete state management system for ProofChecker:
+This standard defines the complete state management system:
 
 - **Status Markers**: Standardized markers for tracking task and phase progress
 - **State Schemas**: JSON schemas for distributed state tracking

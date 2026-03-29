@@ -8,7 +8,7 @@
 
 ## Overview
 
-In ProofChecker, **command files are agents with workflows**, not just entry points or routers. Each command file is an autonomous agent responsible for:
+In this agent system, **command files are agents with workflows**, not just entry points or routers. Each command file is an autonomous agent responsible for:
 
 1. **Parsing and validating** user arguments
 2. **Orchestrating workflow execution** via subagent delegation
@@ -210,7 +210,7 @@ User → Orchestrator → Execution Agent
 - Hard to compose complex workflows
 - Difficult to test
 
-### ProofChecker Pattern (Three-Layer)
+### Agent System Pattern (Three-Layer)
 
 ```
 User → Orchestrator → Command File → Execution Subagent(s)
@@ -903,7 +903,7 @@ See `templates/delegation-context.md` for delegation context format
 
 ### Three-Layer Pattern
 
-Command files are **Layer 2** in ProofChecker's three-layer architecture:
+Command files are **Layer 2** in the three-layer architecture:
 
 ```
 Layer 1: Orchestrator (Pure Router)

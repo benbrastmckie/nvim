@@ -2,7 +2,7 @@
 
 [Back to Docs](../README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
 
-A comprehensive guide to using the `.claude/` task management system commands for ProofChecker development.
+A comprehensive guide to using the `.claude/` task management system commands for Neovim configuration development.
 
 **Last Updated**: 2026-01-28
 

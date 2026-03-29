@@ -265,6 +265,3 @@ Build validation into every stage of the workflow.
 - **Domain Patterns**: `.claude/context/standards/domain-patterns.md`
 - **Agent Templates**: `.claude/context/templates/agent-templates.md`
 
----
-
-**Maintained By**: ProofChecker Development Team

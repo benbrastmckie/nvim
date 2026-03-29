@@ -329,6 +329,3 @@ All templates follow the 8-stage workflow pattern:
 - **Architecture Principles**: `.claude/context/standards/architecture-principles.md`
 - **Domain Patterns**: `.claude/context/standards/domain-patterns.md`
 
----
-
-**Maintained By**: ProofChecker Development Team

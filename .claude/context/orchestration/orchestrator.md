@@ -378,11 +378,10 @@ Agents own workflows, orchestrator just coordinates
 
 ## Related Documentation
 
-- `.claude/context/system/routing-guide.md` - Routing rules and language mapping
-- `.claude/context/workflows/delegation-guide.md` - Delegation safety patterns
-- `.claude/context/system/validation-strategy.md` - Validation philosophy
-- `.claude/context/standards/subagent-return-format.md` - Return format standard
-- `.claude/agent/orchestrator.md` - Orchestrator implementation
+- `.claude/context/orchestration/routing.md` - Routing rules and language mapping
+- `.claude/context/orchestration/delegation.md` - Delegation safety patterns
+- `.claude/context/orchestration/validation.md` - Validation philosophy
+- `.claude/context/formats/subagent-return.md` - Return format standard
 # Orchestrator Guide - Examples and Troubleshooting
 
 **Created**: 2025-12-29 (Task 245 Phase 5)  
@@ -395,10 +394,9 @@ Agents own workflows, orchestrator just coordinates
 This guide provides detailed examples and troubleshooting information for the orchestrator router pattern. The orchestrator itself is simplified to ~80 lines focusing on routing logic. This guide contains the supporting documentation.
 
 **Related Files**:
-- `.claude/agent/orchestrator.md` - Main orchestrator (routing logic)
-- `.claude/context/system/routing-guide.md` - Command→Agent mapping
-- `.claude/context/workflows/subagent-delegation-guide.md` - Delegation safety
-- `.claude/context/standards/subagent-return-format.md` - Return validation
+- `.claude/context/orchestration/routing.md` - Command-to-Agent mapping
+- `.claude/context/orchestration/delegation.md` - Delegation safety
+- `.claude/context/formats/subagent-return.md` - Return validation
 
 ---
 
@@ -869,8 +867,7 @@ Orchestrator:
 
 ## Related Documentation
 
-- **Orchestrator**: `.claude/agent/orchestrator.md`
-- **Routing Guide**: `.claude/context/system/routing-guide.md`
-- **Delegation Guide**: `.claude/context/workflows/subagent-delegation-guide.md`
-- **Return Format**: `.claude/context/standards/subagent-return-format.md`
+- **Routing Guide**: `.claude/context/orchestration/routing.md`
+- **Delegation Guide**: `.claude/context/orchestration/delegation.md`
+- **Return Format**: `.claude/context/formats/subagent-return.md`
 - **Command Lifecycle**: `.claude/context/workflows/command-lifecycle.md`

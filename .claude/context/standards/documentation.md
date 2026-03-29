@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Documentation standards for the .opencode AI system and ProofChecker repository.
+Documentation standards for the Claude Code agent system.
 These standards ensure documentation is clear, concise, accurate, and optimized for
 AI agent consumption.
 
@@ -285,13 +285,9 @@ Use this checklist when creating or updating documentation:
 
 ## Related Standards
 
-### ProofChecker Project
+### Project Documentation
 - [DIRECTORY_README_STANDARD.md](../../../docs/development/DIRECTORY_README_STANDARD.md)
-  - Directory-level README conventions for LEAN 4 projects
-- [DOC_QUALITY_CHECKLIST.md](../../../docs/development/DOC_QUALITY_CHECKLIST.md)
-  - Systematic verification procedures for documentation quality
-- [LEAN_STYLE_GUIDE.md](../../../docs/development/LEAN_STYLE_GUIDE.md)
-  - Code-level documentation conventions
+  - Directory-level README conventions
 
 ### .opencode System
 - [Artifact Management](../system/artifact-management.md) - Artifact organization

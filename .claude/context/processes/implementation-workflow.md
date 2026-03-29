@@ -406,20 +406,20 @@ On timeout or failure:
 ### Routing Stage (Command)
 
 Load minimal context for routing decisions:
-- `.claude/context/system/routing-guide.md` (routing logic)
+- `.claude/context/orchestration/routing.md` (routing logic)
 
 ### Execution Stage (Implementer)
 
-Implementer loads context on-demand per `.claude/context/index.json`:
-- `core/standards/subagent-return-format.md` (return format)
-- `core/standards/status-markers.md` (status transitions)
-- `core/system/artifact-management.md` (lazy directory creation)
+Implementation agents load context on-demand per `.claude/context/index.json`:
+- `.claude/context/formats/subagent-return.md` (return format)
+- `.claude/rules/state-management.md` (status transitions)
+- `.claude/rules/artifact-formats.md` (artifact naming)
 - Task entry via `grep -A 50 "^### ${task_number}\." TODO.md` (~2KB vs 109KB full file)
 - `state.json` (project state)
 - Plan file if exists (for phase tracking and resume)
 
 **Language-specific context**:
-- If neovim: `project/neovim/tools/lazy-nvim-guide.md`, `project/neovim/patterns/plugin-spec.md`
+- Extension context loaded based on task language (see `.claude/extensions/*/context/`)
 - If markdown: (no additional context)
 
 **Optimization**: Task extraction reduces context from 109KB (full TODO.md) to ~2KB (task entry only), 98% reduction.
@@ -568,9 +568,8 @@ Load context on-demand:
 
 ## References
 
-- **Command**: `.claude/command/implement.md`
-- **Subagent**: `.claude/agent/subagents/implementer.md`
-- **Return Format**: `.claude/context/standards/subagent-return-format.md`
-- **Status Markers**: `.claude/context/standards/status-markers.md`
-- **Artifact Management**: `.claude/context/system/artifact-management.md`
-- **Delegation**: `.claude/context/standards/delegation.md`
+- **Command**: `.claude/commands/implement.md`
+- **Agent**: `.claude/agents/general-implementation-agent.md`
+- **Return Format**: `.claude/context/formats/subagent-return.md`
+- **Artifact Formats**: `.claude/rules/artifact-formats.md`
+- **Delegation**: `.claude/context/orchestration/delegation.md`

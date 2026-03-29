@@ -13,7 +13,7 @@ XML-structured prompts improve LLM performance through:
 - **Better parsing** by LLMs (clear semantic boundaries)
 - **Improved maintainability** (structured, predictable format)
 
-This guide defines the standard XML patterns for ProofChecker agents.
+This guide defines the standard XML patterns for agents in this system.
 
 ---
 
@@ -73,7 +73,7 @@ context_loading:
   strategy: lazy
   index: ".claude/context/index.json"
   required:
-    - "core/standards/subagent-return-format.md"
+    - "formats/subagent-return.md"
     - "{command_specific_context}"
   max_context_size: 50000
 ---
@@ -532,15 +532,13 @@ delegation:
 
 ## Anti-Patterns (Avoid These)
 
-### ❌ Overly Verbose Context
+### Overly Verbose Context (Avoid)
 ```xml
 <context>
   <system_context>
-    This command is part of the ProofChecker system which is a comprehensive
-    proof checking and verification system built on Lean 4 that provides
-    extensive capabilities for formal verification, theorem proving, and
-    mathematical reasoning across multiple domains including logic, algebra,
-    topology, and more...
+    This command is part of a comprehensive agent system which provides
+    extensive capabilities for task management, research, planning, and
+    implementation automation across multiple domains...
   </system_context>
 </context>
 ```

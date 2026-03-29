@@ -134,7 +134,7 @@ context_loading:
   # Required context files (relative to .claude/context/)
   required:
     - "core/workflows/command-lifecycle.md"
-    - "core/standards/subagent-return-format.md"
+    - "formats/subagent-return.md"
     - "core/system/status-markers.md"
   
   # Optional context files (loaded if available)

@@ -219,6 +219,3 @@ Build shared context incrementally throughout the interview.
 - **Domain Patterns**: `.claude/context/standards/domain-patterns.md`
 - **Agent Templates**: `.claude/context/templates/agent-templates.md`
 
----
-
-**Maintained By**: ProofChecker Development Team

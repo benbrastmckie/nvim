@@ -19,10 +19,8 @@
 - **Research Inputs**: None
 - **Artifacts**: plans/MM_{short-slug}.md
 - **Standards**:
-  - .claude/context/standards/plan.md
-  - .claude/context/standards/status-markers.md
-  - .claude/context/system/artifact-management.md
-  - .claude/context/standards/tasks.md
+  - .claude/rules/artifact-formats.md
+  - .claude/rules/state-management.md
 - **Type**: markdown
 ```
 

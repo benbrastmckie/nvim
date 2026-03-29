@@ -10,8 +10,7 @@
 
 This document contains detailed implementation pseudocode, data extraction functions, and testing scenarios for the self-healing infrastructure. For user-facing documentation, see:
 
-- **Quick Reference**: `.claude/context/system/self-healing-guide.md`
-- **Schema Reference**: `.claude/context/system/state-schema.md`
+- **Schema Reference**: `.claude/context/reference/state-management-schema.md`
 
 ---
 
@@ -593,7 +592,5 @@ Recovery steps:
 
 ## Related Documentation
 
-- **Quick Reference**: `.claude/context/system/self-healing-guide.md`
-- **Schema Reference**: `.claude/context/system/state-schema.md`
-- **Context Organization**: `.claude/context/system/context-guide.md`
-- **Template**: `.claude/context/templates/state-template.json`
+- **Schema Reference**: `.claude/context/reference/state-management-schema.md`
+- **State Management Rules**: `.claude/rules/state-management.md`

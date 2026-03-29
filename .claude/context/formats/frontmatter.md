@@ -352,7 +352,7 @@ context_loading:
   index: ".claude/context/index.json"
   required:
     - "core/workflows/command-lifecycle.md"
-    - "core/standards/subagent-return-format.md"
+    - "formats/subagent-return.md"
   optional:
     - "project/neovim/plugin-patterns.md"
   max_context_size: 50000
@@ -509,7 +509,7 @@ context_loading:
   index: ".claude/context/index.json"
   required:
     - "core/workflows/command-lifecycle.md"
-    - "core/standards/subagent-return-format.md"
+    - "formats/subagent-return.md"
   max_context_size: 50000
 delegation:
   max_depth: 3
@@ -556,7 +556,7 @@ context_loading:
   index: ".claude/context/index.json"
   required:
     - "core/workflows/command-lifecycle.md"
-    - "core/standards/subagent-return-format.md"
+    - "formats/subagent-return.md"
   max_context_size: 50000
 delegation:
   max_depth: 3

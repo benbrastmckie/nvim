@@ -691,9 +691,8 @@ These validation rules are now ACTIVELY ENFORCED by command files Stage 3 (Valid
 
 ## See Also
 
-- **Command Files Stage 3**: `.claude/command/*.md` Stage 3 (ValidateReturn) - Executable validation logic
-- **Validation Template**: `specs/280_fix_orchestrator_stage_4_validation/validation-template.md` - Reusable validation section
-- Delegation Standard: `.claude/context/standards/delegation.md`
-- Subagent Return Format: `.claude/context/standards/subagent-return-format.md`
-- State Management: `.claude/context/system/state-management.md`
-- Routing Logic: `.claude/context/system/routing-logic.md`
+- **Command Files Stage 3**: `.claude/commands/*.md` Stage 3 (ValidateReturn) - Executable validation logic
+- Delegation Guide: `.claude/context/orchestration/delegation.md`
+- Subagent Return Format: `.claude/context/formats/subagent-return.md`
+- State Management: `.claude/context/orchestration/state-management.md`
+- Routing Logic: `.claude/context/orchestration/routing.md`

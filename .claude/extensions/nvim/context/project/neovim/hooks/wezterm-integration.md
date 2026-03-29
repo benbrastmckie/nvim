@@ -5,7 +5,7 @@ This document describes the WezTerm terminal integration for Claude Code, provid
 ## Overview
 
 The integration enables:
-- Task number display in WezTerm tab titles (e.g., `ProofChecker #792`)
+- Task number display in WezTerm tab titles (e.g., `nvim #792`)
 - Amber highlighting for tabs awaiting Claude Code input
 - Automatic notification clearing when the user views or responds
 
@@ -14,7 +14,7 @@ The integration enables:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ WezTerm Tab Title                                               │
-│ "1 ProofChecker #792"                                           │
+│ "1 nvim #792"                                                   │
 └─────────────────────────────────────────────────────────────────┘
                     ▲                           ▲
                     │                           │

@@ -1,6 +1,6 @@
 # Meta-System Builder Guide
 
-Complete guide for using the `/meta` command to create and modify agents and commands in the ProofChecker system.
+Complete guide for using the `/meta` command to create and modify agents and commands in the Claude Code agent system.
 
 ## Overview
 
@@ -43,10 +43,7 @@ This launches an interactive interview that guides you through:
 ├── command/
 │   ├── {command-1}.md
 │   └── {command-2}.md
-├── README.md                         # System overview
-├── README.md                   # Architecture guide
-├── TESTING.md                        # Testing checklist
-└── QUICK-START.md                    # Usage examples
+└── README.md                         # System architecture overview
 ```
 
 ### Research-Backed Optimizations
@@ -409,11 +406,9 @@ After generation, you can customize:
 
 ### Getting Help
 
-1. Review generated documentation (README.md, README.md)
-2. Check TESTING.md for testing guidance
-3. Review QUICK-START.md for usage examples
-4. Examine template files for patterns
-5. Ask specific questions about components
+1. Review generated documentation (README.md)
+2. Examine template files for patterns
+3. Ask specific questions about components
 
 ## Examples
 

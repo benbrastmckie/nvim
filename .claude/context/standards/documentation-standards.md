@@ -238,4 +238,4 @@ Use relative paths from the current file location:
 
 - [documentation.md](documentation.md) - General documentation formatting standards
 - [DIRECTORY_README_STANDARD.md](../../../docs/development/DIRECTORY_README_STANDARD.md) -
-  Directory README conventions for the ProofChecker project
+  Directory README conventions for the project

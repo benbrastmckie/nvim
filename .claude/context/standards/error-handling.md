@@ -91,8 +91,8 @@ Warning: Operation succeeded but git commit failed
 Changes were successfully applied but could not be committed to git.
 
 Manual commit required:
-  git add ProofChecker/Lattices.neovim
-  git commit -m "feat: Add lattice definitions"
+  git add lua/neotex/plugins/new-plugin.lua
+  git commit -m "feat: Add new plugin configuration"
 
 Error: fatal: not a git repository
 ```

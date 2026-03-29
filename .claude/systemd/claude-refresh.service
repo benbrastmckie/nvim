@@ -4,9 +4,9 @@ Documentation=https://github.com/anthropics/claude-code
 
 [Service]
 Type=oneshot
-# Use the script from the ProofChecker project
-# Update this path if you install elsewhere
-ExecStart=%h/Projects/ProofChecker/.claude/scripts/claude-refresh.sh --force
+# Use the script from the project
+# Update this path to match your installation
+ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --force
 # Alternatively, if installed system-wide:
 # ExecStart=/usr/local/bin/claude-refresh.sh --force
 

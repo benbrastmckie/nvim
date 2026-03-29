@@ -76,9 +76,9 @@ This command creates the following artifacts:
 
 ## See Also
 
-- **Agent**: `.claude/skills/<agent-name>.md`
-- **Workflow Standard**: `.claude/context/standards/agent-workflow.md`
-- **Return Format**: `.claude/context/standards/subagent-return-format.md`
+- **Skill**: `.claude/skills/<skill-name>.md`
+- **Agent**: `.claude/agents/<agent-name>.md`
+- **Return Format**: `.claude/context/formats/subagent-return.md`
 
 ---
 
@@ -118,6 +118,5 @@ Use this checklist when creating a new command:
 
 ---
 
-**Template Version**: 1.0  
-**Last Updated**: 2025-12-29  
-**Maintained By**: ProofChecker Development Team
+**Template Version**: 1.0
+**Last Updated**: 2025-12-29

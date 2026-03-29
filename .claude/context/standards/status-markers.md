@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document defines the complete set of status markers used throughout the ProofChecker project for tracking task and phase progress. It serves as the authoritative reference for:
+This document defines the complete set of status markers used throughout this agent system for tracking task and phase progress. It serves as the authoritative reference for:
 
 - **Status Marker Definitions**: All valid status markers and their meanings
 - **TODO.md Format**: How markers appear in TODO.md task entries
@@ -369,5 +369,4 @@ status-sync-manager updates atomically:
 
 ---
 
-**Last Updated**: 2026-01-05  
-**Maintained By**: ProofChecker Development Team
+**Last Updated**: 2026-01-05

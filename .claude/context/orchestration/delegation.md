@@ -710,9 +710,8 @@ The status-sync-manager subagent now supports these additional operations:
 
 ## Related Documentation
 
-- Status Management: `.claude/context/system/state-management.md`
-- Artifact Management: `.claude/context/system/artifact-management.md`
-- Task 191 Research: `specs/191_fix_subagent_delegation_hang/reports/01_fix-delegation-hang.md`
+- Status Management: `.claude/context/orchestration/state-management.md`
+- Artifact Formats: `.claude/rules/artifact-formats.md`
 # Delegation Guide
 
 ## Session ID Tracking

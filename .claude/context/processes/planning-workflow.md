@@ -370,15 +370,15 @@ Revise plans when:
 ### Routing Stage (Command)
 
 Load minimal context for routing decisions:
-- `.claude/context/system/routing-guide.md` (routing logic)
+- `.claude/context/orchestration/routing.md` (routing logic)
 
 ### Execution Stage (Planner)
 
 Planner loads context on-demand per `.claude/context/index.json`:
-- `core/standards/subagent-return-format.md` (return format)
-- `core/standards/status-markers.md` (status transitions)
-- `core/system/artifact-management.md` (lazy directory creation)
-- `core/standards/plan.md` (plan template)
+- `.claude/context/formats/subagent-return.md` (return format)
+- `.claude/rules/state-management.md` (status transitions)
+- `.claude/rules/artifact-formats.md` (artifact naming)
+- `.claude/context/formats/plan-format.md` (plan template)
 - Task entry via `grep -A 50 "^### ${task_number}\." TODO.md` (~2KB vs 109KB full file)
 - `state.json` (project state)
 - Research artifacts if linked in TODO.md
@@ -532,9 +532,8 @@ Load context on-demand:
 
 ## References
 
-- **Command**: `.claude/command/plan.md`
-- **Subagent**: `.claude/agent/subagents/planner.md`
-- **Plan Template**: `.claude/context/standards/plan.md`
-- **Return Format**: `.claude/context/standards/subagent-return-format.md`
-- **Status Markers**: `.claude/context/standards/status-markers.md`
-- **Artifact Management**: `.claude/context/system/artifact-management.md`
+- **Command**: `.claude/commands/plan.md`
+- **Agent**: `.claude/agents/planner-agent.md`
+- **Plan Format**: `.claude/context/formats/plan-format.md`
+- **Return Format**: `.claude/context/formats/subagent-return.md`
+- **Artifact Formats**: `.claude/rules/artifact-formats.md`

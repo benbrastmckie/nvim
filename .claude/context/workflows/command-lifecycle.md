@@ -397,13 +397,12 @@ When creating new checkpoint-based commands:
 
 ## References
 
-- **State Management:** `.claude/context/system/state-management.md`
-- **Status Sync Manager:** `.claude/agent/subagents/status-sync-manager.md`
-- **Researcher (Reference Implementation):** `.claude/agent/subagents/researcher.md`
-- **Planner:** `.claude/agent/subagents/planner.md`
-- **Implementer:** `.claude/agent/subagents/implementer.md`
-- **Task Creator:** `.claude/agent/subagents/task-creator.md`
-- **Command Files:** `.claude/command/{research,plan,revise,implement,task}.md`
+- **State Management:** `.claude/context/orchestration/state-management.md`
+- **Status Sync Skill:** `.claude/skills/skill-status-sync.md`
+- **Research Agent:** `.claude/agents/general-research-agent.md`
+- **Planner Agent:** `.claude/agents/planner-agent.md`
+- **Implementation Agent:** `.claude/agents/general-implementation-agent.md`
+- **Command Files:** `.claude/commands/{research,plan,revise,implement,task}.md`
 
 ## Validation
 

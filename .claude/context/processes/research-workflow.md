@@ -397,19 +397,19 @@ Sub-topics:
 ### Routing Stage (Command)
 
 Load minimal context for routing decisions:
-- `.claude/context/system/routing-guide.md` (routing logic)
+- `.claude/context/orchestration/routing.md` (routing logic)
 
 ### Execution Stage (Researcher)
 
-Researcher loads context on-demand per `.claude/context/index.json`:
-- `core/standards/subagent-return-format.md` (return format)
-- `core/standards/status-markers.md` (status transitions)
-- `core/system/artifact-management.md` (lazy directory creation)
+Research agents load context on-demand per `.claude/context/index.json`:
+- `.claude/context/formats/subagent-return.md` (return format)
+- `.claude/rules/state-management.md` (status transitions)
+- `.claude/rules/artifact-formats.md` (artifact naming)
 - Task entry via `grep -A 50 "^### ${task_number}\." TODO.md` (~2KB vs 109KB full file)
 - `state.json` (project state)
 
 **Language-specific context**:
-- If neovim: `project/neovim/domain/neovim-api.md`, `project/neovim/patterns/plugin-spec.md`
+- Extension context loaded based on task language (see `.claude/extensions/*/context/`)
 - If markdown: (no additional context)
 
 **Optimization**: Task extraction reduces context from 109KB to ~2KB, 98% reduction.
@@ -616,13 +616,8 @@ Use most appropriate tool for each research task:
 
 ## References
 
-- **Command**: `.claude/command/research.md`
-- **Subagent**: `.claude/agent/subagents/researcher.md`
-- **Neovim Research Agent**: `.claude/agent/subagents/neovim-research-agent.md`
-- **Return Format**: `.claude/context/standards/subagent-return-format.md`
-- **Status Markers**: `.claude/context/standards/status-markers.md`
-- **Artifact Management**: `.claude/context/system/artifact-management.md`
-- **Neovim Tools**:
-  - Neovim API: `.claude/context/project/neovim/domain/neovim-api.md`
-  - Plugin Patterns: `.claude/context/project/neovim/patterns/plugin-spec.md`
-  - lazy.nvim Guide: `.claude/context/project/neovim/tools/lazy-nvim-guide.md`
+- **Command**: `.claude/commands/research.md`
+- **Agent**: `.claude/agents/general-research-agent.md`
+- **Return Format**: `.claude/context/formats/subagent-return.md`
+- **Artifact Formats**: `.claude/rules/artifact-formats.md`
+- **Extension Context**: `.claude/extensions/*/context/` (language-specific)
