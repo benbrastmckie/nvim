@@ -1,15 +1,16 @@
 ---
-next_project_number: 321
+next_project_number: 322
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-03-28. 15 active tasks remaining.*
+*Updated 2026-03-28. 16 active tasks remaining.*
 
 ### Pending
 
+- **321** [NOT STARTED] -- Review and revise .claude/README.md and agent system documentation
 - **320** [PLANNED] -- Study Personal AI Infrastructure for agent system improvements
 - **319** [COMPLETED] -- Fix founder-plan-agent plan format conformance
 - **313** [COMPLETED] -- Create spreadsheet domain context (foundational)
@@ -27,6 +28,15 @@ next_project_number: 321
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 321. Review and revise .claude/README.md and agent system documentation
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Review and revise .claude/README.md and all subsequent documentation to be complete, accurate, and up to date, providing a clear and concise introduction to the core agent system, its architecture, and the extensions available with the neovim loader. The .claude/README.md should link to more detailed documents elsewhere deeper in the .claude/ directory as appropriate.
+
+---
 
 ### 320. Study Personal AI Infrastructure for agent system improvements
 - **Effort**: Extended research
