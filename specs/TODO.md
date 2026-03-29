@@ -10,7 +10,7 @@ next_project_number: 321
 
 ### Pending
 
-- **320** [PLANNED] -- Study Personal AI Infrastructure for agent system improvements
+- **320** [RESEARCHED] -- Study Personal AI Infrastructure for agent system improvements
 - **319** [COMPLETED] -- Fix founder-plan-agent plan format conformance
 - **313** [COMPLETED] -- Create spreadsheet domain context (foundational)
 - **314** [RESEARCHED] -- Create spreadsheet-agent (blocked by 313)
@@ -30,10 +30,12 @@ next_project_number: 321
 
 ### 320. Study Personal AI Infrastructure for agent system improvements
 - **Effort**: Extended research
-- **Status**: [PLANNED]
+- **Status**: [RESEARCHED]
 - **Research Completed**: 2026-03-29
 - **Language**: meta
-- **Research**: [01_personal-ai-research.md](320_study_personal_ai_infrastructure/reports/01_personal-ai-research.md)
+- **Research**:
+  - [01_personal-ai-research.md](320_study_personal_ai_infrastructure/reports/01_personal-ai-research.md)
+  - [02_team-research.md](320_study_personal_ai_infrastructure/reports/02_team-research.md)
 - **Plan**: [01_pai-improvements.md](320_study_personal_ai_infrastructure/plans/01_pai-improvements.md)
 
 **Description**: Clone https://github.com/danielmiessler/Personal_AI_Infrastructure.git into a temp folder and study what this platform offers in order to identify what elements make sense to incorporate into the current agent system.
