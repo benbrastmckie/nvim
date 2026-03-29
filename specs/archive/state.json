@@ -1,6 +1,173 @@
 {
   "completed_projects": [
     {
+      "project_number": 318,
+      "project_name": "typst_spreadsheet_template",
+      "status": "completed",
+      "language": "meta",
+      "effort": "2 hours",
+      "created": "2026-03-27T19:50:00Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1743101400_meta01",
+      "dependencies": [
+        313
+      ],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/318_typst_spreadsheet_template/reports/01_meta-research.md",
+          "summary": "Auto-generated research from /meta interview"
+        }
+      ],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 317,
+      "project_name": "founder_manifest_routing",
+      "status": "completed",
+      "language": "meta",
+      "effort": "30 min",
+      "created": "2026-03-27T19:50:00Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1743101400_meta01",
+      "dependencies": [
+        315
+      ],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/317_founder_manifest_routing/reports/01_meta-research.md",
+          "summary": "Auto-generated research from /meta interview"
+        }
+      ],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 316,
+      "project_name": "sheet_command",
+      "status": "completed",
+      "language": "meta",
+      "effort": "1 hour",
+      "created": "2026-03-27T19:50:00Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1743101400_meta01",
+      "dependencies": [
+        315
+      ],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/316_sheet_command/reports/01_meta-research.md",
+          "summary": "Auto-generated research from /meta interview"
+        }
+      ],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 315,
+      "project_name": "skill_spreadsheet",
+      "status": "completed",
+      "language": "meta",
+      "effort": "1 hour",
+      "created": "2026-03-27T19:50:00Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1743101400_meta01",
+      "dependencies": [
+        314
+      ],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/315_skill_spreadsheet/reports/01_meta-research.md",
+          "summary": "Auto-generated research from /meta interview"
+        }
+      ],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 314,
+      "project_name": "spreadsheet_agent",
+      "status": "completed",
+      "language": "meta",
+      "effort": "3 hours",
+      "created": "2026-03-27T19:50:00Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1743101400_meta01",
+      "dependencies": [
+        313
+      ],
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/314_spreadsheet_agent/reports/01_meta-research.md",
+          "summary": "Auto-generated research from /meta interview"
+        }
+      ],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 312,
+      "project_name": "update_skills_agents_unified_numbering",
+      "status": "completed",
+      "language": "meta",
+      "effort": "3-4 hours",
+      "created": "2026-03-27T17:26:39Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1774632399_14d5b9",
+      "dependencies": [
+        310,
+        311
+      ],
+      "artifacts": [],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 311,
+      "project_name": "artifact_formats_unified_numbering_rule",
+      "status": "completed",
+      "language": "meta",
+      "effort": "1 hour",
+      "created": "2026-03-27T17:26:39Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1774632399_14d5b9",
+      "dependencies": [
+        309
+      ],
+      "artifacts": [],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
+      "project_number": 310,
+      "project_name": "state_json_schema_next_artifact_number",
+      "status": "completed",
+      "language": "meta",
+      "effort": "1 hour",
+      "created": "2026-03-27T17:26:39Z",
+      "last_updated": "2026-03-29T06:59:12Z",
+      "session_id": "sess_1774632399_14d5b9",
+      "dependencies": [
+        309
+      ],
+      "artifacts": [],
+      "completed": "2026-03-29T06:59:12Z",
+      "completion_summary": "Already implemented as part of parent task",
+      "archived": "2026-03-29T06:59:20Z"
+    },
+    {
       "project_number": 308,
       "project_name": "adaptive_context_loading_by_extension_and_language",
       "status": "completed",
