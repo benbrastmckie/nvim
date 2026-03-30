@@ -1,7 +1,37 @@
 {
   "version": "1.0.0",
-  "next_project_number": 323,
+  "next_project_number": 326,
   "active_projects": [
+    {
+      "project_number": 325,
+      "project_name": "audit_index_command_assignments",
+      "status": "not_started",
+      "language": "meta",
+      "description": "Full audit of all 181 index.json entries to ensure commands are appropriately scoped to their domains. Verify no domain-specific files have generic commands like /plan, /implement, /research.",
+      "created": "2026-03-30T21:15:00Z",
+      "last_updated": "2026-03-30T21:15:00Z",
+      "dependencies": [324]
+    },
+    {
+      "project_number": 324,
+      "project_name": "remove_plan_from_founder_index",
+      "status": "not_started",
+      "language": "meta",
+      "description": "Remove generic commands (/plan, /implement) from 15+ founder domain files in index.json. These should only match language='founder', not all planning/implementation tasks.",
+      "created": "2026-03-30T21:15:00Z",
+      "last_updated": "2026-03-30T21:15:00Z",
+      "dependencies": []
+    },
+    {
+      "project_number": 323,
+      "project_name": "fix_jq_query_duplicates",
+      "status": "not_started",
+      "language": "meta",
+      "description": "Fix jq query in planner-agent.md and other agents to use `any()` function instead of `[]?` with OR, preventing duplicate results when entries match multiple conditions. Currently returns 87 files with 34 duplicates.",
+      "created": "2026-03-30T21:15:00Z",
+      "last_updated": "2026-03-30T21:15:00Z",
+      "dependencies": []
+    },
     {
       "project_number": 322,
       "project_name": "add_review_mode_to_project_command",

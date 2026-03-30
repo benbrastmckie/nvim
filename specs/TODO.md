@@ -1,15 +1,18 @@
 ---
-next_project_number: 323
+next_project_number: 326
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-03-30. 2 active tasks remaining.*
+*Updated 2026-03-30. 5 active tasks remaining.*
 
 ### Pending
 
+- **323** [NOT STARTED] -- Fix jq query duplicates in agent context loading
+- **324** [NOT STARTED] -- Remove /plan from founder index entries
+- **325** [NOT STARTED] -- Audit all index.json command assignments (depends on 324)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,6 +21,39 @@ next_project_number: 323
 - **322** [COMPLETED] -- Add REVIEW mode to /project command
 
 ## Tasks
+
+### 325. Audit all index.json command assignments
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: 324
+- **Created**: 2026-03-30
+
+**Description**: Full audit of all 181 index.json entries to ensure commands are appropriately scoped to their domains. Verify no domain-specific files have generic commands like /plan, /implement, /research. Create validation script to detect future regressions.
+
+---
+
+### 324. Remove /plan from founder index entries
+- **Effort**: 1 hour
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+- **Created**: 2026-03-30
+
+**Description**: Remove generic commands (/plan, /implement) from 15+ founder domain files in index.json. These files should only match when task language='founder', not for all planning/implementation tasks. Currently causes 15+ irrelevant founder files to load for every /plan command.
+
+---
+
+### 323. Fix jq query duplicates in agent context loading
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: None
+- **Created**: 2026-03-30
+
+**Description**: Fix jq query in planner-agent.md (line 57-64) and other agents to use `any()` function instead of `[]?` with OR. Current query causes duplicate results when entries match multiple conditions (e.g., both commands and agents match). Example: forcing-questions.md appears 6 times because it matches `/plan` command AND `founder-plan-agent` agent. Query returns 87 files with 34 duplicates instead of 53 unique files.
+
+---
 
 ### 322. Add REVIEW mode to /project command for timeline analysis
 - **Effort**: 2-3 hours
