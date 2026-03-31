@@ -2,7 +2,7 @@
 description: Execute implementation with resume support
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit, Glob
 argument-hint: TASK_NUMBER [--team [--team-size N]] [--force]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /implement Command
@@ -249,7 +249,7 @@ task {N}: complete implementation
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -262,7 +262,7 @@ task {N}: partial implementation (phases 1-{M} of {total})
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```

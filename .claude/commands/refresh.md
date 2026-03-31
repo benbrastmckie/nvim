@@ -1,3 +1,8 @@
+---
+description: Manage Claude Code resources - terminate orphaned processes and clean up files
+allowed-tools: Bash, Read, Glob, AskUserQuestion
+---
+
 # /refresh Command
 
 Comprehensive cleanup of Claude Code resources - terminate orphaned processes and clean up ~/.claude/ directory.

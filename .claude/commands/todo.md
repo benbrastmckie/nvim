@@ -1,8 +1,8 @@
 ---
 description: Archive completed and abandoned tasks
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Bash(mv:*), Bash(mkdir:*), Bash(ls:*), Bash(find:*), Bash(jq:*), TodoWrite, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), Bash(mv:*), Bash(mkdir:*), Bash(ls:*), Bash(find:*), Bash(jq:*), TaskCreate, TaskUpdate, AskUserQuestion
 argument-hint: [--dry-run]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /todo Command

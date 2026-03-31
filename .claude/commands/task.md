@@ -2,7 +2,7 @@
 description: Create, recover, divide, sync, or abandon tasks
 allowed-tools: Read(specs/*), Edit(specs/TODO.md), Bash(jq:*), Bash(git:*), Bash(mv:*), Bash(date:*), Bash(sed:*), AskUserQuestion
 argument-hint: "description" | --recover N | --expand N | --sync | --abandon N | --review N
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /task Command

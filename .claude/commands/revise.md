@@ -1,8 +1,8 @@
 ---
 description: Create new version of implementation plan, or update task description if no plan exists
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(jq:*), Bash(git:*), TodoWrite
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(jq:*), Bash(git:*), TaskCreate, TaskUpdate
 argument-hint: TASK_NUMBER [REASON]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /revise Command
@@ -147,7 +147,7 @@ task {N}: revise plan (v{NEW_VERSION})
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -160,7 +160,7 @@ task {N}: revise description
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```

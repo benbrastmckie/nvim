@@ -1,8 +1,8 @@
 ---
 description: Analyze errors and create fix plans
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TodoWrite, Task
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, Task
 argument-hint: [--fix TASK_NUMBER]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /errors Command

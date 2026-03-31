@@ -2,7 +2,7 @@
 description: Spawn new tasks to unblock a blocked task
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit
 argument-hint: TASK_NUMBER [blocker description]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /spawn Command

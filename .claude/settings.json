@@ -21,7 +21,9 @@
       "WebSearch",
       "WebFetch",
       "Task",
-      "TodoWrite",
+      "TaskCreate",
+      "TaskUpdate",
+      "Skill",
       "mcp__lean-lsp__*"
     ],
     "deny": [
@@ -135,5 +137,8 @@
         ]
       }
     ]
+  },
+  "env": {
+    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "50000"
   }
 }

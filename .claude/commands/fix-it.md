@@ -2,7 +2,7 @@
 description: Scan files for FIX:, NOTE:, TODO:, QUESTION: tags and create structured tasks interactively
 allowed-tools: Skill
 argument-hint: [PATH...]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /fix-it Command

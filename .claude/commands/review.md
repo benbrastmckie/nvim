@@ -1,8 +1,8 @@
 ---
 description: Review code and create analysis reports
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TodoWrite, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion
 argument-hint: [SCOPE] [--create-tasks]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /review Command
@@ -1497,7 +1497,7 @@ Task Order: {pruned_count} pruned, {inserted_count} added, {reassigned_count} re
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```

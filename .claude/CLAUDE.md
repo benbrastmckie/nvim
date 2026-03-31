@@ -152,7 +152,7 @@ task 1: complete research
 
 Session: sess_1736700000_abc123
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 ```
 
 Standard actions: `create`, `complete research`, `create implementation plan`, `phase {P}: {name}`, `complete implementation`.
@@ -227,9 +227,9 @@ Context is discovered from three independent layers, loaded in parallel:
 jq -r --arg agent "planner-agent" --arg lang "meta" --arg cmd "/plan" '
   .entries[] | select(
     (.load_when.always == true) or
-    (.load_when.agents[]? == $agent) or
-    (.load_when.languages[]? == $lang) or
-    (.load_when.commands[]? == $cmd)
+    any(.load_when.agents[]?; . == $agent) or
+    any(.load_when.languages[]?; . == $lang) or
+    any(.load_when.commands[]?; . == $cmd)
   ) | .path' .claude/context/index.json
 
 # Get line counts for budget calculation

@@ -10,7 +10,7 @@ next_project_number: 327
 
 ### Pending
 
-- **326** [PLANNED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility
+- **326** [COMPLETED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility
 - **323** [COMPLETED] -- Fix jq query duplicates in agent context loading
 - **324** [COMPLETED] -- Remove /plan from founder index entries
 - **325** [COMPLETED] -- Audit all index.json command assignments (depends on 324)
@@ -25,12 +25,13 @@ next_project_number: 327
 
 ### 326. Upgrade agent system for Claude Code v2.1.88+ compatibility
 - **Effort**: 2-4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Created**: 2026-03-30
 - **Description**: Migrate agent system to work with Claude Code v2.1.88+. Commands in .claude/commands/ are not loading (no autocomplete or invocation). Root causes: (1) stale model IDs in frontmatter (claude-opus-4-5-20251101 no longer valid), (2) commands-to-skills unification may require format changes, (3) SlashCommand tool replaced by Skill tool, (4) description budget constraints. Scope: update all 14 command files, verify 15 skill files, update model references in agents, test autocomplete and invocation.
 - **Report**: [01_command-loading-fix.md](specs/326_upgrade_agent_system_for_claude_code_v2/reports/01_command-loading-fix.md)
 - **Plan**: [01_implementation-plan.md](specs/326_upgrade_agent_system_for_claude_code_v2/plans/01_implementation-plan.md)
+- **Summary**: [01_execution-summary.md](specs/326_upgrade_agent_system_for_claude_code_v2/summaries/01_execution-summary.md)
 
 ### 325. Audit all index.json command assignments
 - **Effort**: 2-3 hours

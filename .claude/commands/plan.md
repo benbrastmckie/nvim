@@ -2,7 +2,7 @@
 description: Create implementation plan for a task
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit
 argument-hint: TASK_NUMBER [--team [--team-size N]]
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /plan Command
@@ -175,7 +175,7 @@ task {N}: create implementation plan
 
 Session: {session_id}
 
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
