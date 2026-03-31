@@ -59,13 +59,23 @@
     {
       "project_number": 329,
       "project_name": "typst_primary_in_implement_agent",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "description": "Update founder-implement-agent Phase 4 to generate .typ files directly for ALL report types (like project-timeline already does), and Phase 5 to compile PDF. Currently Phase 4 writes markdown for non-project-timeline types and Phase 5 generates Typst as optional add-on.",
       "created": "2026-03-31T02:00:00Z",
-      "last_updated": "2026-03-31T02:00:00Z",
+      "last_updated": "2026-03-31T03:23:12Z",
       "dependencies": [
         327
+      ],
+      "session_id": "sess_1743394900_r329",
+      "researched": "2026-03-31T03:23:12Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/329_typst_primary_in_implement_agent/reports/01_typst-primary-implement.md",
+          "type": "research",
+          "summary": "Research report with 14 sections requiring changes across the 1564-line founder-implement-agent.md"
+        }
       ]
     },
     {
