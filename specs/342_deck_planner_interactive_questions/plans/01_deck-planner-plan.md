@@ -87,7 +87,7 @@ Create a dedicated deck-planner-agent and skill-deck-plan for the founder extens
 
 ---
 
-### Phase 2: Create skill-deck-plan/SKILL.md [NOT STARTED]
+### Phase 2: Create skill-deck-plan/SKILL.md [COMPLETED]
 
 **Goal**: Create the thin wrapper skill that handles preflight/postflight status management and delegates to deck-planner-agent
 
