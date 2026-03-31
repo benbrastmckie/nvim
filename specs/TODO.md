@@ -11,7 +11,7 @@ next_project_number: 340
 ### Pending
 
 - **336** [COMPLETED] -- Fix TODO.md status update bug in skill-implementer
-- **338** [NOT STARTED] -- Consolidate duplicated references across .claude/ files
+- **338** [COMPLETED] -- Consolidate duplicated references across .claude/ files
 - **337** [NOT STARTED] -- Condense skill-implementer verbosity (depends: 336)
 - **339** [NOT STARTED] -- Reduce agent boilerplate (depends: 338)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -43,9 +43,11 @@ next_project_number: 340
 
 ### 338. Consolidate duplicated references across .claude/ files
 - **Effort**: Medium
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-31
 - **Language**: meta
 - **Dependencies**: None
+- **Summary**: Removed 481 lines (27%) across 4 agent files by consolidating Stage 0, context discovery, error handling, and return format examples into cross-references
 
 **Description**: Unify information that's duplicated across multiple files into single canonical sources: (1) Status markers defined in 4+ files -> single reference, (2) Artifact path explanations in 5+ places -> single reference, (3) Error handling re-explained in 12+ files -> cross-reference to error-handling.md, (4) Context discovery jq pattern duplicated in every agent -> shared template or include reference. Replace duplicates with cross-references to canonical sources. Target: eliminate ~800-1200 lines of redundancy.
 

@@ -56,33 +56,7 @@ Load these on-demand using @-references:
 
 ### Stage 0: Write Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work. This ensures metadata exists even if the agent is interrupted.
-
-1. Ensure task directory exists:
-   ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
-   ```
-
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
-   ```json
-   {
-     "status": "in_progress",
-     "started_at": "{ISO8601 timestamp}",
-     "artifacts": [],
-     "partial_progress": {
-       "stage": "initializing",
-       "details": "Agent started, analyzing blocker"
-     },
-     "metadata": {
-       "session_id": "{from delegation context}",
-       "agent_type": "spawn-agent",
-       "delegation_depth": 2,
-       "delegation_path": ["orchestrator", "spawn", "skill-spawn", "spawn-agent"]
-     }
-   }
-   ```
-
-3. **Why this matters**: If agent is interrupted at ANY point after this, the metadata file will exist and skill postflight can detect the interruption and provide guidance for resuming.
+**CRITICAL**: Create `specs/{NNN}_{SLUG}/.return-meta.json` with `"status": "in_progress"` BEFORE any substantive work. Use `agent_type: "spawn-agent"` and `delegation_path: ["orchestrator", "spawn", "skill-spawn", "spawn-agent"]`. See `return-metadata-file.md` for full schema.
 
 ### Stage 1: Load Context
 
@@ -308,53 +282,27 @@ Blocker analysis completed for task 241:
 
 ## Error Handling
 
-### Invalid Task
-
-When task validation fails:
-1. Write `failed` status to metadata file
-2. Include clear error message
-3. Return brief error summary
-
-### Missing Plan or Context
-
-When plan_path is provided but file not found:
-1. Log warning but continue
-2. Analyze based on task description and blocker_prompt
-3. Note in report that plan context was unavailable
-
-### Timeout/Interruption
-
-If time runs out before completion:
-1. Save partial analysis (if any)
-2. Write `partial` status to metadata file with:
-   - What analysis was completed
-   - Resume point information
-
-### Invalid Blocker Scope
-
-If blocker requires more than 4 tasks:
-1. Recommend more focused blocker_prompt
-2. Propose 2-3 highest-priority tasks
-3. Note that blocker scope is broad
+See `rules/error-handling.md` for general error patterns. Agent-specific behavior:
+- **Invalid task**: Write `failed` status to metadata file
+- **Missing plan/context**: Continue with task description and blocker_prompt
+- **Timeout**: Save partial analysis, write partial status
+- **Blocker scope too broad (>4 tasks)**: Propose 2-3 highest-priority, note broad scope
 
 ## Critical Requirements
 
 **MUST DO**:
-1. **Create early metadata at Stage 0** before any substantive work
-2. Always write both `.spawn-return.json` AND blocker analysis report
-3. Always return brief text summary (3-6 bullets), NOT JSON
-4. Always include session_id from delegation context in metadata
-5. Always provide explicit dependency reasoning (WHY, not just WHAT)
-6. Always validate dependency_order is a valid topological sort
-7. Apply Task Minimization Principle - prefer fewer, well-scoped tasks
-8. Each task must be actionable without additional context
+1. Create early metadata at Stage 0 before any substantive work
+2. Write both `.spawn-return.json` AND blocker analysis report
+3. Return brief text summary (3-6 bullets), NOT JSON
+4. Provide explicit dependency reasoning (WHY, not just WHAT)
+5. Validate dependency_order is a valid topological sort
+6. Apply Task Minimization Principle - prefer fewer, well-scoped tasks
 
 **MUST NOT**:
-1. Create tasks in state.json or TODO.md (skill postflight handles all state writes)
-2. Create task directories for new tasks (skill postflight handles this)
-3. Return JSON to the console (skill cannot parse it reliably)
-4. Propose more than 4 tasks (blocker scope too broad)
-5. Create circular dependencies between proposed tasks
-6. Use status value "completed" (triggers Claude stop behavior)
-7. Skip Stage 0 early metadata creation (critical for interruption recovery)
-8. Write to any files outside `specs/{NNN}_{SLUG}/` directory
+1. Create tasks in state.json or TODO.md (skill postflight handles state writes)
+2. Return JSON to console
+3. Propose more than 4 tasks
+4. Create circular dependencies
+5. Use status value "completed" (triggers Claude stop behavior)
+6. Skip Stage 0 early metadata creation
+7. Write to files outside `specs/{NNN}_{SLUG}/` directory

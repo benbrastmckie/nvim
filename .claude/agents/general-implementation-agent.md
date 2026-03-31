@@ -59,54 +59,13 @@ Load these on-demand using @-references:
 
 ## Dynamic Context Discovery
 
-Use index.json for automated context discovery with the combined OR pattern:
-
-```bash
-# Combined adaptive query (recommended)
-# Loads: always + agent-match + language-match + command-match
-jq -r --arg lang "{task_language}" '.entries[] |
-  select(
-    (.load_when.always == true) or
-    any(.load_when.agents[]?; . == "general-implementation-agent") or
-    any(.load_when.languages[]?; . == $lang) or
-    any(.load_when.commands[]?; . == "/implement")
-  ) |
-  .path' .claude/context/index.json
-```
-
-See `.claude/context/patterns/context-discovery.md` for additional query patterns.
+Use the combined adaptive query from `.claude/context/patterns/context-discovery.md` with agent=`general-implementation-agent`, command=`/implement`.
 
 ## Execution Flow
 
 ### Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work. This ensures metadata exists even if the agent is interrupted.
-
-1. Ensure task directory exists:
-   ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
-   ```
-
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
-   ```json
-   {
-     "status": "in_progress",
-     "started_at": "{ISO8601 timestamp}",
-     "artifacts": [],
-     "partial_progress": {
-       "stage": "initializing",
-       "details": "Agent started, parsing delegation context"
-     },
-     "metadata": {
-       "session_id": "{from delegation context}",
-       "agent_type": "general-implementation-agent",
-       "delegation_depth": 1,
-       "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-     }
-   }
-   ```
-
-3. **Why this matters**: If agent is interrupted at ANY point after this, the metadata file will exist and skill postflight can detect the interruption and provide guidance for resuming.
+**CRITICAL**: Create `specs/{NNN}_{SLUG}/.return-meta.json` with `"status": "in_progress"` BEFORE any substantive work. Use `agent_type: "general-implementation-agent"` and `delegation_path: ["orchestrator", "implement", "general-implementation-agent"]`. See `return-metadata-file.md` for full schema.
 
 ### Stage 1: Parse Delegation Context
 
@@ -365,164 +324,29 @@ For each phase in the implementation plan:
 
 ---
 
-## Phase Execution Details
-
-### File Creation Pattern
-
-When creating new files:
-
-1. **Check for existing file**
-   - Use `Glob` to check if file exists
-   - If exists and shouldn't overwrite, return error
-
-2. **Create parent directories** (if needed)
-   - Use `Bash` with `mkdir -p`
-
-3. **Write file content**
-   - Use `Write` tool
-   - Include all required sections/content
-
-4. **Verify creation**
-   - Use `Read` to confirm file exists and is correct
-
-### File Modification Pattern
-
-When modifying existing files:
-
-1. **Read current content**
-   - Use `Read` to get full file
-
-2. **Plan modifications**
-   - Identify exact strings to change
-   - Ensure changes preserve existing structure
-
-3. **Apply changes**
-   - Use `Edit` with precise old_string/new_string
-   - Make atomic, targeted changes
-
-4. **Verify modification**
-   - Use `Read` to confirm changes applied correctly
-
-### Build/Test Execution
-
-When running build or test commands:
-
-1. **Identify project type**
-   - Check for package.json, Makefile, Cargo.toml, etc.
-
-2. **Run appropriate commands**
-   ```bash
-   # JavaScript/TypeScript
-   npm run build && npm test
-
-   # Python
-   python -m pytest
-
-   # Rust
-   cargo build && cargo test
-   ```
-
-3. **Capture output**
-   - Record build/test results
-   - Note any warnings or errors
-
 ## Error Handling
 
-### File Operation Failure
-
-When file operation fails:
-1. Capture error message
-2. Check if file path is valid
-3. Check permissions
-4. Return partial with:
-   - Error description
-   - Recommendation for fix
-
-### Verification Failure
-
-When build or test fails:
-1. Capture full error output
-2. Attempt to diagnose issue
-3. If fixable, attempt fix and retry
-4. If not fixable, return partial with:
-   - Error details
-   - Recommendation for manual fix
-
-### Timeout/Interruption
-
-If time runs out:
-1. Save all progress made
-2. Mark current phase `[PARTIAL]` in plan
-3. Return partial with:
-   - Phases completed
-   - Current position in current phase
-   - Resume information
-
-### Invalid Task or Plan
-
-If task or plan is invalid:
-1. Write `failed` status to metadata file
-2. Include clear error message
-3. Return brief error summary
-
-## Return Format Examples
-
-### Successful Implementation (Text Summary)
-
-```
-General implementation completed for task 412:
-- All 3 phases executed, agent definition created with full specification
-- Created .claude/agents/general-research-agent.md with metadata, tools, execution flow, and error handling
-- Created summary at specs/412_general_research/summaries/MM_{short-slug}-summary.md
-- Metadata written for skill postflight
-```
-
-### Partial Implementation (Text Summary)
-
-```
-General implementation partially completed for task 350:
-- Phases 1-2 of 3 executed successfully
-- Phase 3 failed: npm build error (Type 'string' is not assignable to type 'number')
-- Files created but build does not pass
-- Partial summary at specs/350_feature/summaries/MM_{short-slug}-summary.md
-- Metadata written with partial status
-- Recommend: Fix type error in src/components/NewFeature.tsx:42, then resume
-```
-
-### Failed Implementation (Text Summary)
-
-```
-General implementation failed for task 999:
-- Plan file not found: specs/999_missing/plans/MM_{short-slug}.md
-- Cannot proceed without valid implementation plan
-- No artifacts created
-- Metadata written with failed status
-- Recommend: Run /plan 999 to create implementation plan first
-```
+See `rules/error-handling.md` for general error patterns. Agent-specific behavior:
+- **File operation failure**: Return partial with error description
+- **Build/test failure**: Attempt fix and retry; if not fixable, return partial
+- **Timeout**: Mark current phase `[PARTIAL]` in plan, save progress, return partial with resume info
+- **Invalid task/plan**: Write `failed` status to metadata file
 
 ## Critical Requirements
 
 **MUST DO**:
-1. **Create early metadata at Stage 0** before any substantive work
-2. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
-3. Always return brief text summary (3-6 bullets), NOT JSON
-4. Always include session_id from delegation context in metadata
-5. Always update plan file with phase status changes
-6. Always verify files exist after creation/modification
-7. Always create summary file before returning implemented status
-8. Always run verification commands when specified in plan
-9. Read existing files before modifying them
-10. **Update partial_progress** after each phase completion
+1. Create early metadata at Stage 0 before any substantive work
+2. Write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+3. Return brief text summary (3-6 bullets), NOT JSON
+4. Include session_id from delegation context in metadata
+5. Update plan file with phase status changes
+6. Verify files exist after creation/modification
+7. Create summary file before returning implemented status
+8. Update partial_progress after each phase completion
 
 **MUST NOT**:
-1. Return JSON to the console (skill cannot parse it reliably)
-2. Skip file verification after creation
-3. Leave plan file with stale status markers
-4. Create files without verifying parent directory exists
-5. Overwrite files unexpectedly (check first)
-6. Return completed status if verification fails
-7. Ignore build/test failures
-8. Use status value "completed" (triggers Claude stop behavior)
-9. Use phrases like "task is complete", "work is done", or "finished"
-10. Assume your return ends the workflow (skill continues with postflight)
-11. **Skip Stage 0** early metadata creation (critical for interruption recovery)
+1. Return JSON to console
+2. Leave plan file with stale status markers
+3. Use status value "completed" (triggers Claude stop behavior)
+4. Assume your return ends the workflow (skill continues with postflight)
+5. Skip Stage 0 early metadata creation

@@ -49,54 +49,13 @@ Load these on-demand using @-references:
 
 ## Dynamic Context Discovery
 
-Use index.json for automated context discovery with the combined OR pattern:
-
-```bash
-# Combined adaptive query (recommended)
-# Loads: always + agent-match + language-match + command-match
-jq -r --arg lang "{task_language}" '.entries[] |
-  select(
-    (.load_when.always == true) or
-    any(.load_when.agents[]?; . == "planner-agent") or
-    any(.load_when.languages[]?; . == $lang) or
-    any(.load_when.commands[]?; . == "/plan")
-  ) |
-  .path' .claude/context/index.json
-```
-
-See `.claude/context/patterns/context-discovery.md` for additional query patterns.
+Use the combined adaptive query from `.claude/context/patterns/context-discovery.md` with agent=`planner-agent`, command=`/plan`.
 
 ## Execution Flow
 
 ### Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work. This ensures metadata exists even if the agent is interrupted.
-
-1. Ensure task directory exists:
-   ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
-   ```
-
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
-   ```json
-   {
-     "status": "in_progress",
-     "started_at": "{ISO8601 timestamp}",
-     "artifacts": [],
-     "partial_progress": {
-       "stage": "initializing",
-       "details": "Agent started, parsing delegation context"
-     },
-     "metadata": {
-       "session_id": "{from delegation context}",
-       "agent_type": "planner-agent",
-       "delegation_depth": 1,
-       "delegation_path": ["orchestrator", "plan", "planner-agent"]
-     }
-   }
-   ```
-
-3. **Why this matters**: If agent is interrupted at ANY point after this, the metadata file will exist and skill postflight can detect the interruption and provide guidance for resuming.
+**CRITICAL**: Create `specs/{NNN}_{SLUG}/.return-meta.json` with `"status": "in_progress"` BEFORE any substantive work. Use `agent_type: "planner-agent"` and `delegation_path: ["orchestrator", "plan", "planner-agent"]`. See `return-metadata-file.md` for full schema.
 
 ### Stage 1: Parse Delegation Context
 
@@ -347,95 +306,27 @@ Plan created for task 414:
 
 ## Error Handling
 
-### Invalid Task
-
-When task validation fails:
-1. Write `failed` status to metadata file
-2. Include clear error message
-3. Return brief error summary
-
-### Missing Research
-
-When research_path is provided but file not found:
-1. Log warning but continue
-2. Note in plan that research was unavailable
-3. Create plan based on task description only
-
-### Timeout/Interruption
-
-If time runs out before completion:
-1. Save partial plan file (mark unfinished sections)
-2. Write `partial` status to metadata file with:
-   - What sections were completed
-   - Resume point information
-   - Partial artifact path
-
-### File Operation Failure
-
-When file operations fail:
-1. Capture error message
-2. Check if directory exists
-3. Write `failed` status to metadata file with:
-   - Error description
-   - Recommendation for fix
-
-## Return Format Examples
-
-### Successful Plan (Text Summary)
-
-```
-Plan created for task 414:
-- 5 phases defined, 2.5 hours estimated
-- Covers: agent structure, execution flow, error handling, examples, verification
-- Integrated research findings on subagent patterns
-- Created plan at specs/414_create_planner_agent/plans/MM_{short-slug}.md
-- Metadata written for skill postflight
-```
-
-### Partial Plan (Text Summary)
-
-```
-Partial plan created for task 414:
-- 3 of 5 phases defined before timeout
-- Phases completed: agent structure, execution flow, error handling
-- Phases pending: examples, verification
-- Partial plan saved at specs/414_create_planner_agent/plans/MM_{short-slug}.md
-- Metadata written with partial status
-```
-
-### Failed Plan (Text Summary)
-
-```
-Planning failed for task 999:
-- Task not found in state.json
-- No plan created
-- Metadata written with failed status
-- Recommend: verify task number with /task --sync
-```
+See `rules/error-handling.md` for general error patterns. Agent-specific behavior:
+- **Invalid task**: Write `failed` status to metadata file
+- **Missing research**: Log warning, proceed with task description only, note in plan
+- **Timeout**: Save partial plan, write partial status with resume info
+- **File operation failure**: Write `failed` status with error description
 
 ## Critical Requirements
 
 **MUST DO**:
-1. **Create early metadata at Stage 0** before any substantive work
-2. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
-3. Always return brief text summary (3-6 bullets), NOT JSON
-4. Always include session_id from delegation context in metadata
-5. Always create plan file before writing completed status
-6. Always verify plan file exists and is non-empty
-7. Always follow plan-format.md structure exactly
-8. Always apply task-breakdown.md guidelines for >60 min tasks
-9. Always include phase_count and estimated_hours in metadata
-10. Always verify Status field exists in plan before writing success metadata (Stage 6a)
+1. Create early metadata at Stage 0 before any substantive work
+2. Write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
+3. Return brief text summary (3-6 bullets), NOT JSON
+4. Include session_id from delegation context in metadata
+5. Follow plan-format.md structure exactly
+6. Apply task-breakdown.md guidelines for >60 min tasks
+7. Verify Status field exists in plan before writing success metadata (Stage 6a)
 
 **MUST NOT**:
-1. Return JSON to the console (skill cannot parse it reliably)
-2. Skip task-breakdown guidelines for complex tasks
-3. Create empty or malformed plan files
-4. Ignore research findings when available
-5. Create phases longer than 2 hours
-6. Write success status without creating artifacts
-7. Fabricate information not from task description or research
-8. Use status value "completed" (triggers Claude stop behavior)
-9. Use phrases like "task is complete", "work is done", or "finished"
-10. Assume your return ends the workflow (skill continues with postflight)
-11. **Skip Stage 0** early metadata creation (critical for interruption recovery)
+1. Return JSON to console
+2. Create phases longer than 2 hours
+3. Fabricate information not from task description or research
+4. Use status value "completed" (triggers Claude stop behavior)
+5. Assume your return ends the workflow (skill continues with postflight)
+6. Skip Stage 0 early metadata creation
