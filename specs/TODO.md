@@ -20,7 +20,8 @@ next_project_number: 333
 - **332** [NOT STARTED] -- Integrate finance into founder extension (depends on 330, 331)
 - **327** [COMPLETED] -- Pass task_type through founder delegation pipeline
 - **328** [COMPLETED] -- Make Typst primary output in founder plan agent (depends on 327)
-- **329** [PLANNED] -- Make Typst primary output in founder implement agent (depends on 327)
+- **329** [COMPLETED] -- Make Typst primary output in founder implement agent (depends on 327)
+  - **Summary**: [01_typst-primary-implement-summary.md](329_typst_primary_in_implement_agent/summaries/01_typst-primary-implement-summary.md)
 - **326** [COMPLETED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility
 - **323** [COMPLETED] -- Fix jq query duplicates in agent context loading
 - **324** [COMPLETED] -- Remove /plan from founder index entries
@@ -87,17 +88,18 @@ next_project_number: 333
 
 ### 329. Make Typst primary output in founder implement agent
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 327
 - **Created**: 2026-03-31
+- **Completed**: 2026-03-30
 - **Research**: [01_typst-primary-implement.md](specs/329_typst_primary_in_implement_agent/reports/01_typst-primary-implement.md)
 - **Plan**: [01_typst-primary-implement.md](specs/329_typst_primary_in_implement_agent/plans/01_typst-primary-implement.md)
+- **Summary**: [01_typst-primary-implement-summary.md](specs/329_typst_primary_in_implement_agent/summaries/01_typst-primary-implement-summary.md)
 
 **Description**: Update founder-implement-agent Phase 4 to generate .typ files directly for ALL report types (like project-timeline already does), and Phase 5 to compile PDF. Currently Phase 4 writes markdown for non-project-timeline types and Phase 5 generates Typst as optional add-on. All founder types should follow the project-timeline pattern: Typst as primary output, markdown as fallback.
 
-**Files to modify**:
-- `.claude/extensions/founder/agents/founder-implement-agent.md` -- Phase 4 and Phase 5 restructure
+**Completion Summary**: Updated founder-implement-agent.md supporting sections (summary template, metadata template, return text summary, critical requirements) to consistently list Typst as primary output. Core Phase 4/5 and per-type sections were already updated by task 328.
 
 ---
 
