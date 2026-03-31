@@ -1,7 +1,7 @@
 # Implementation Plan: Task #340 (Revised)
 
 - **Task**: 340 - Create reusable typst slide deck templates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/340_create_typst_deck_templates/reports/01_typst-deck-templates.md, specs/340_create_typst_deck_templates/reports/02_dark-blue-template-standards.md

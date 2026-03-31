@@ -92,11 +92,11 @@
     {
       "project_number": 340,
       "project_name": "create_typst_deck_templates",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T21:30:26Z",
+      "last_updated": "2026-03-31T21:48:45Z",
       "dependencies": [],
       "researched": "2026-03-31T21:21:27Z",
       "next_artifact_number": 3,
@@ -110,11 +110,18 @@
           "path": "specs/340_create_typst_deck_templates/plans/02_typst-deck-templates.md",
           "type": "plan",
           "summary": "5-phase implementation plan: dark-blue primary template, minimal-light, premium-dark, growth-green, professional-blue with cross-validation"
+        },
+        {
+          "path": "specs/340_create_typst_deck_templates/summaries/02_typst-deck-templates-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results for 5 typst deck templates"
         }
       ],
       "session_id": "sess_1774992613_ni3h",
       "planned": "2026-03-31T21:27:31Z",
-      "started": "2026-03-31T21:30:26Z"
+      "started": "2026-03-31T21:30:26Z",
+      "completed": "2026-03-31T21:48:45Z",
+      "completion_summary": "Created 5 reusable typst pitch deck templates with dark-blue as primary/default. All templates are self-contained, compile with touying 0.6.3, enforce YC compliance, and include parameterizable content with [TODO:] markers for deck-builder consumption."
     },
     {
       "project_number": 341,
