@@ -24,9 +24,3 @@ The `--remember` flag on `/research` searches the memory vault for relevant prio
 ```bash
 /research N --remember
 ```
-
-### Context
-
-- @context/project/memory/domain/memory-reference.md - MCP integration, vault structure, classification, operations
-- @context/project/memory/learn-usage.md - Usage guide for /learn command
-- @context/project/memory/memory-setup.md - MCP server setup for Obsidian vault

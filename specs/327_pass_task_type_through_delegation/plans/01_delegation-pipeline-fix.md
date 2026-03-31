@@ -1,7 +1,7 @@
 # Implementation Plan: Pass task_type Through Founder Delegation Pipeline
 
 - **Task**: 327 - Pass task_type through founder delegation pipeline
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: reports/01_delegation-pipeline-gap.md

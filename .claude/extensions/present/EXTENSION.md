@@ -25,11 +25,3 @@ Structured proposal development (grants) and investor pitch deck generation (dec
 |----------|----------------|---------------------|-------|
 | `grant` | `skill-grant` | `skill-grant` | WebSearch, WebFetch, Read, Write, Edit |
 | `deck` | `skill-deck` | `skill-deck` | Read, Write, Glob, Bash |
-
-### Context
-
-- @context/project/present/domain/grant-workflow.md - Command usage, revision workflow, output directory
-- @context/project/present/domain/deck-workflow.md - Deck generation workflow, YC slide structure
-- @context/project/present/domain/proposal-components.md - Standard grant proposal sections
-- @context/project/present/patterns/pitch-deck-structure.md - YC 10-slide structure
-- @context/project/present/patterns/touying-pitch-deck-template.md - Touying Typst patterns

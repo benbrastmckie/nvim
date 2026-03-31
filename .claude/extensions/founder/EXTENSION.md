@@ -31,12 +31,3 @@ All commands accept: description string (create task), task number (run research
 ### Language Routing
 
 Tasks with `language: founder` use `task_type` for research routing (`founder:{task_type}`). Planning and implementation use shared founder agents regardless of task_type.
-
-### Context
-
-- @context/project/founder/domain/workflow-reference.md - Forcing questions, phased workflow, input types, MCP integration
-- @context/project/founder/domain/migration-guide.md - Breaking changes, v2.x/v1.0 migration tables
-- @context/project/founder/domain/business-frameworks.md - TAM/SAM/SOM, business model canvas
-- @context/project/founder/domain/strategic-thinking.md - CEO cognitive patterns, YC principles
-- @context/project/founder/domain/legal-frameworks.md - IP, data rights, liability for AI startups
-- @context/project/founder/domain/spreadsheet-frameworks.md - Cost structure, formulas, JSON export for Typst

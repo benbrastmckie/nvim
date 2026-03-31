@@ -60,9 +60,9 @@ Use index.json for automated context discovery with the combined OR pattern:
 jq -r --arg lang "{task_language}" '.entries[] |
   select(
     (.load_when.always == true) or
-    (.load_when.agents[]? == "general-research-agent") or
-    (.load_when.languages[]? == $lang) or
-    (.load_when.commands[]? == "/research")
+    any(.load_when.agents[]?; . == "general-research-agent") or
+    any(.load_when.languages[]?; . == $lang) or
+    any(.load_when.commands[]?; . == "/research")
   ) |
   .path' .claude/context/index.json
 

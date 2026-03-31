@@ -20,11 +20,3 @@ File format conversion and manipulation: documents, spreadsheets, presentations,
 | `/table` | `/table data.xlsx` | Convert spreadsheets to LaTeX/Typst tables |
 | `/slides` | `/slides deck.pptx` | Convert presentations to Beamer/Polylux/Touying |
 | `/scrape` | `/scrape paper.pdf` | Extract PDF annotations to Markdown/JSON |
-
-### Context
-
-- @context/project/filetypes/domain/conversion-tables.md - Format support matrices, usage examples, dependencies
-- @context/project/filetypes/tools/dependency-guide.md - Platform-specific installation instructions
-- @context/project/filetypes/patterns/spreadsheet-tables.md - Table conversion patterns
-- @context/project/filetypes/patterns/presentation-slides.md - Slide generation patterns
-- @context/project/filetypes/tools/tool-detection.md - Shared tool availability patterns

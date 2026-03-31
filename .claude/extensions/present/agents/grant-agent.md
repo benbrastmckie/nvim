@@ -70,7 +70,7 @@ jq -r '.entries[] |
 
 # Find context by topic (e.g., funders, budgets)
 jq -r '.entries[] |
-  select(.topics[]? == "funders" or .topics[]? == "budget") |
+  select(any(.topics[]?; . == "funders") or any(.topics[]?; . == "budget")) |
   .path' .claude/context/index.json
 
 # Get line counts for budget calculation
@@ -200,12 +200,12 @@ jq -r '.entries[] |
 
 # For proposal drafting workflow
 jq -r '.entries[] |
-  select(.topics[]? == "proposal" or .topics[]? == "narrative") |
+  select(any(.topics[]?; . == "proposal") or any(.topics[]?; . == "narrative")) |
   .path' .claude/context/index.json
 
 # For budget workflow
 jq -r '.entries[] |
-  select(.topics[]? == "budget" or .topics[]? == "financial") |
+  select(any(.topics[]?; . == "budget") or any(.topics[]?; . == "financial")) |
   .path' .claude/context/index.json
 ```
 

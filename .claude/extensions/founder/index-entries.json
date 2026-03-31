@@ -14,9 +14,7 @@
           "founder"
         ],
         "commands": [
-          "/project",
-          "/plan",
-          "/implement"
+          "/project"
         ]
       },
       "domain": "project",
@@ -40,9 +38,7 @@
         "commands": [
           "/market",
           "/analyze",
-          "/strategy",
-          "/plan",
-          "/implement"
+          "/strategy"
         ]
       },
       "domain": "project",
@@ -62,9 +58,7 @@
           "founder"
         ],
         "commands": [
-          "/legal",
-          "/plan",
-          "/implement"
+          "/legal"
         ]
       },
       "domain": "project",
@@ -88,9 +82,7 @@
         "commands": [
           "/market",
           "/analyze",
-          "/strategy",
-          "/plan",
-          "/implement"
+          "/strategy"
         ]
       },
       "domain": "project",
@@ -117,8 +109,7 @@
           "/analyze",
           "/strategy",
           "/legal",
-          "/project",
-          "/plan"
+          "/project"
         ]
       },
       "domain": "project",
@@ -160,9 +151,7 @@
         "commands": [
           "/market",
           "/analyze",
-          "/strategy",
-          "/plan",
-          "/implement"
+          "/strategy"
         ]
       },
       "domain": "project",
@@ -187,8 +176,7 @@
           "/market",
           "/analyze",
           "/strategy",
-          "/project",
-          "/plan"
+          "/project"
         ]
       },
       "domain": "project",
@@ -207,8 +195,7 @@
           "founder"
         ],
         "commands": [
-          "/market",
-          "/implement"
+          "/market"
         ]
       },
       "domain": "project",
@@ -227,8 +214,7 @@
           "founder"
         ],
         "commands": [
-          "/analyze",
-          "/implement"
+          "/analyze"
         ]
       },
       "domain": "project",
@@ -247,8 +233,7 @@
           "founder"
         ],
         "commands": [
-          "/strategy",
-          "/implement"
+          "/strategy"
         ]
       },
       "domain": "project",
@@ -267,8 +252,7 @@
           "founder"
         ],
         "commands": [
-          "/legal",
-          "/implement"
+          "/legal"
         ]
       },
       "domain": "project",
@@ -285,9 +269,7 @@
         "languages": [
           "founder"
         ],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -303,9 +285,7 @@
         "languages": [
           "founder"
         ],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -321,9 +301,7 @@
         "languages": [
           "founder"
         ],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -339,9 +317,7 @@
         "languages": [
           "founder"
         ],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -357,9 +333,7 @@
         "languages": [
           "founder"
         ],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -377,8 +351,7 @@
           "founder"
         ],
         "commands": [
-          "/project",
-          "/implement"
+          "/project"
         ]
       },
       "domain": "project",
@@ -399,9 +372,7 @@
           "contract-review",
           "legal"
         ],
-        "commands": [
-          "/plan"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -463,10 +434,7 @@
         "task_types": [
           "project-timeline"
         ],
-        "commands": [
-          "/plan",
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"
@@ -488,9 +456,7 @@
           "sheet"
         ],
         "commands": [
-          "/sheet",
-          "/plan",
-          "/implement"
+          "/sheet"
         ]
       },
       "domain": "project",
@@ -512,8 +478,7 @@
           "sheet"
         ],
         "commands": [
-          "/sheet",
-          "/plan"
+          "/sheet"
         ]
       },
       "domain": "project",
@@ -533,9 +498,7 @@
         "task_types": [
           "sheet"
         ],
-        "commands": [
-          "/implement"
-        ]
+        "commands": []
       },
       "domain": "project",
       "subdomain": "founder"

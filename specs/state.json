@@ -5,11 +5,11 @@
     {
       "project_number": 327,
       "project_name": "pass_task_type_through_delegation",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "description": "Update skill-founder-plan and skill-founder-implement to extract task_type from state.json and include it in the task_context passed to agents. Currently task_type is stored by commands but never reaches the plan or implement agents.",
       "created": "2026-03-31T02:00:00Z",
-      "last_updated": "2026-03-31T03:03:43Z",
+      "last_updated": "2026-03-31T03:10:47Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -21,8 +21,18 @@
           "type": "plan",
           "path": "specs/327_pass_task_type_through_delegation/plans/01_delegation-pipeline-fix.md",
           "summary": "3-phase plan: update 2 skills (senders) and 2 agents (receivers) to pass task_type through delegation"
+        },
+        {
+          "path": "specs/327_pass_task_type_through_delegation/summaries/01_delegation-pipeline-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results"
         }
-      ]
+      ],
+      "session_id": "sess_1743393600_t327impl",
+      "started": "2026-03-31T03:06:13Z",
+      "completed": "2026-03-31T03:10:47Z",
+      "completion_summary": "Added task_type field to founder delegation pipeline. Both skills now extract task_type from state.json and pass it to agents. Plan agent uses task_type as primary report type determination with keyword fallback for legacy tasks.",
+      "claudemd_suggestions": "Updated 4 founder extension files: skill-founder-plan, skill-founder-implement, founder-plan-agent, founder-implement-agent - all now include task_type in delegation context"
     },
     {
       "project_number": 328,

@@ -10,7 +10,7 @@ next_project_number: 330
 
 ### Pending
 
-- **327** [PLANNED] -- Pass task_type through founder delegation pipeline
+- **327** [COMPLETED] -- Pass task_type through founder delegation pipeline
 - **328** [NOT STARTED] -- Make Typst primary output in founder plan agent (depends on 327)
 - **329** [NOT STARTED] -- Make Typst primary output in founder implement agent (depends on 327)
 - **326** [COMPLETED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility
@@ -56,10 +56,12 @@ next_project_number: 330
 
 ### 327. Pass task_type through founder delegation pipeline
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-31
+- **Completed**: 2026-03-30
+- **Summary**: [01_delegation-pipeline-fix-summary.md](specs/327_pass_task_type_through_delegation/summaries/01_delegation-pipeline-fix-summary.md)
 
 **Description**: Update skill-founder-plan and skill-founder-implement to extract task_type from state.json and include it in the task_context passed to agents. Currently commands store task_type (e.g., "project", "market", "strategy") in state.json but both skills omit it from the delegation context, forcing agents to infer report type from keyword matching on research content.
 
