@@ -1,7 +1,7 @@
 # Implementation Plan: Task #343
 
 - **Task**: 343 - Deck builder typst agent
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: Task 340 (COMPLETED), Task 342 (NOT STARTED - deck planner)
 - **Research Inputs**: specs/343_deck_builder_typst_agent/reports/01_deck-builder-research.md
@@ -53,7 +53,7 @@ Key findings from research:
 
 ## Implementation Phases
 
-### Phase 1: Create deck-builder-agent.md [NOT STARTED]
+### Phase 1: Create deck-builder-agent.md [COMPLETED]
 
 **Goal**: Create the core agent definition that generates typst pitch decks from plans and research
 
