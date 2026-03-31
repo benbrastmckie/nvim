@@ -572,6 +572,78 @@
       },
       "domain": "project",
       "subdomain": "founder"
+    },
+    {
+      "path": "project/present/patterns/pitch-deck-structure.md",
+      "summary": "10-slide YC pitch deck structure with content requirements per slide",
+      "line_count": 150,
+      "load_when": {
+        "agents": [
+          "deck-agent",
+          "deck-research-agent",
+          "founder-plan-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "task_types": [
+          "deck"
+        ],
+        "commands": [
+          "/deck"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "present"
+    },
+    {
+      "path": "project/present/patterns/touying-pitch-deck-template.md",
+      "summary": "Typst touying template structure for pitch deck slide generation",
+      "line_count": 200,
+      "load_when": {
+        "agents": [
+          "deck-agent",
+          "deck-research-agent",
+          "founder-plan-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "task_types": [
+          "deck"
+        ],
+        "commands": [
+          "/deck"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "present"
+    },
+    {
+      "path": "project/present/patterns/yc-compliance-checklist.md",
+      "summary": "YC pitch deck compliance checklist with required elements per slide",
+      "line_count": 100,
+      "load_when": {
+        "agents": [
+          "deck-agent",
+          "deck-research-agent",
+          "founder-plan-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "task_types": [
+          "deck"
+        ],
+        "commands": [
+          "/deck"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "present"
     }
   ]
 }

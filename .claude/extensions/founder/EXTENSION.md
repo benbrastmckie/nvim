@@ -13,6 +13,7 @@ Strategic business analysis tools for founders and entrepreneurs. Integrates for
 | skill-project | project-agent | Project timeline research: WBS, PERT, resources |
 | skill-spreadsheet | spreadsheet-agent | Cost breakdown spreadsheet generation (uses forcing_data) |
 | skill-finance | finance-agent | Financial analysis and verification (uses forcing_data) |
+| skill-deck-research | deck-research-agent | Pitch deck material synthesis (no forcing questions) |
 | skill-founder-plan | founder-plan-agent | Shared task planning (content-aware) |
 | skill-founder-implement | founder-implement-agent | Shared task implementation (type-aware) |
 

@@ -147,7 +147,7 @@ The research report (01_deck-command-research.md) identified 7 existing founder 
 
 ---
 
-### Phase 4: Register components in manifest, index, and EXTENSION.md [NOT STARTED]
+### Phase 4: Register components in manifest, index, and EXTENSION.md [IN PROGRESS]
 
 **Goal**: Wire the new components into the founder extension's configuration files so routing, context loading, and documentation all reflect the new deck capabilities.
 
