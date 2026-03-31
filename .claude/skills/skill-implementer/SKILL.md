@@ -86,7 +86,17 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
-**Update TODO.md**: Use Edit tool to change status marker from `[PLANNED]` to `[IMPLEMENTING]`.
+**Update TODO.md** (REQUIRED - do not skip): Use Edit tool to change the task's status marker in TODO.md from `[PLANNED]` to `[IMPLEMENTING]`. Update both the task entry and the Task Order line:
+
+```
+Edit TODO.md:
+  old_string: "- **Status**: [PLANNED]"  (in task {N}'s entry)
+  new_string: "- **Status**: [IMPLEMENTING]"
+
+Edit TODO.md:
+  old_string: "**{N}** [PLANNED]"  (in Task Order section)
+  new_string: "**{N}** [IMPLEMENTING]"
+```
 
 **Update plan file** (if exists): Update the Status field in plan metadata:
 ```bash
@@ -292,7 +302,19 @@ if [ "$language" != "meta" ] && [ "$roadmap_items" != "[]" ] && [ -n "$roadmap_i
 fi
 ```
 
-Update TODO.md: Change status marker from `[IMPLEMENTING]` to `[COMPLETED]`.
+**Update TODO.md** (REQUIRED - do not skip): Use Edit tool to change the task's status marker in TODO.md from `[IMPLEMENTING]` to `[COMPLETED]`. Both the `- **Status**: [IMPLEMENTING]` line in the task entry AND the Task Order line must be updated:
+
+```
+Edit TODO.md:
+  old_string: "- **Status**: [IMPLEMENTING]"  (in task {N}'s entry)
+  new_string: "- **Status**: [COMPLETED]"
+
+Edit TODO.md:
+  old_string: "**{N}** [IMPLEMENTING]"  (in Task Order section)
+  new_string: "**{N}** [COMPLETED]"
+```
+
+**Verify**: Read TODO.md after editing to confirm both updates succeeded before proceeding.
 
 **Update plan file** (if exists): Update the Status field to `[COMPLETED]`:
 ```bash

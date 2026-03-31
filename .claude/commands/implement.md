@@ -235,6 +235,23 @@ The skill will spawn the appropriate agent(s) which execute plan phases (in para
    **Skip if result.status == "partial":**
    Partial implementations do not need plan file verification.
 
+6. **Verify TODO.md Status (Defensive)**
+
+   **Only when result.status == "implemented":**
+
+   Check that the task entry in TODO.md shows `[COMPLETED]`. If it still shows `[IMPLEMENTING]`, apply correction:
+
+   ```bash
+   # Check if TODO.md task entry still shows [IMPLEMENTING]
+   if grep -q "- \*\*Status\*\*: \[IMPLEMENTING\]" <(grep -A 5 "^### ${task_number}\." specs/TODO.md); then
+       echo "WARNING: TODO.md status not updated to [COMPLETED]. Applying defensive correction."
+   fi
+   ```
+
+   If the check finds a mismatch, use Edit tool to fix both:
+   - Task entry: `- **Status**: [IMPLEMENTING]` → `- **Status**: [COMPLETED]`
+   - Task Order: `**{N}** [IMPLEMENTING]` → `**{N}** [COMPLETED]`
+
 **RETRY** skill if validation fails.
 
 **On GATE OUT success**: Artifacts and completion summary verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.

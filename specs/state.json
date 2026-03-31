@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "next_project_number": 336,
+  "next_project_number": 340,
   "active_projects": [
     {
       "project_number": 87,
@@ -41,6 +41,46 @@
       ],
       "session_id": "sess_1771006114_e73864",
       "planned": "2026-02-13T18:10:48Z"
+    },
+    {
+      "project_number": 336,
+      "project_name": "fix_todo_status_update_bug",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:10:00Z",
+      "completed": "2026-03-31T00:10:00Z",
+      "completion_summary": "Fixed TODO.md status update bug: converted buried prose instructions in skill-implementer Stage 7 and preflight to prominent structured instructions with explicit Edit patterns. Added defensive TODO.md status check in implement.md GATE OUT."
+    },
+    {
+      "project_number": 337,
+      "project_name": "condense_skill_implementer",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:00:00Z",
+      "dependencies": [
+        336
+      ]
+    },
+    {
+      "project_number": 338,
+      "project_name": "consolidate_duplicated_references",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:00:00Z"
+    },
+    {
+      "project_number": 339,
+      "project_name": "reduce_agent_boilerplate",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:00:00Z",
+      "dependencies": [
+        338
+      ]
     }
   ],
   "completed_projects": [],
