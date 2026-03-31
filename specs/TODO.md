@@ -1,5 +1,5 @@
 ---
-next_project_number: 326
+next_project_number: 327
 ---
 
 # TODO
@@ -10,9 +10,10 @@ next_project_number: 326
 
 ### Pending
 
-- **323** [NOT STARTED] -- Fix jq query duplicates in agent context loading
-- **324** [NOT STARTED] -- Remove /plan from founder index entries
-- **325** [NOT STARTED] -- Audit all index.json command assignments (depends on 324)
+- **326** [RESEARCHED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility
+- **323** [COMPLETED] -- Fix jq query duplicates in agent context loading
+- **324** [COMPLETED] -- Remove /plan from founder index entries
+- **325** [COMPLETED] -- Audit all index.json command assignments (depends on 324)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -22,9 +23,17 @@ next_project_number: 326
 
 ## Tasks
 
+### 326. Upgrade agent system for Claude Code v2.1.88+ compatibility
+- **Effort**: 2-4 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Created**: 2026-03-30
+- **Description**: Migrate agent system to work with Claude Code v2.1.88+. Commands in .claude/commands/ are not loading (no autocomplete or invocation). Root causes: (1) stale model IDs in frontmatter (claude-opus-4-5-20251101 no longer valid), (2) commands-to-skills unification may require format changes, (3) SlashCommand tool replaced by Skill tool, (4) description budget constraints. Scope: update all 14 command files, verify 15 skill files, update model references in agents, test autocomplete and invocation.
+- **Report**: [01_command-loading-fix.md](specs/326_upgrade_agent_system_for_claude_code_v2/reports/01_command-loading-fix.md)
+
 ### 325. Audit all index.json command assignments
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 324
 - **Created**: 2026-03-30
@@ -35,7 +44,7 @@ next_project_number: 326
 
 ### 324. Remove /plan from founder index entries
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-30
@@ -46,7 +55,7 @@ next_project_number: 326
 
 ### 323. Fix jq query duplicates in agent context loading
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Created**: 2026-03-30

@@ -1,36 +1,52 @@
 {
   "version": "1.0.0",
-  "next_project_number": 326,
+  "next_project_number": 327,
   "active_projects": [
+    {
+      "project_number": 326,
+      "project_name": "upgrade_agent_system_for_claude_code_v2",
+      "status": "researched",
+      "language": "meta",
+      "description": "Migrate agent system commands and skills to be compatible with Claude Code v2.1.88+. Commands in .claude/commands/ are not loading (no autocomplete, no invocation). Key issues: stale model IDs (claude-opus-4-5-20251101 -> claude-opus-4-6), potential format changes in the commands-to-skills unification, SlashCommand tool removed in favor of Skill tool, description budget constraints (250 char cap, 1% context budget). May require converting commands to skills format (.claude/skills/<name>/SKILL.md) or updating frontmatter.",
+      "created": "2026-03-30T23:30:00Z",
+      "last_updated": "2026-03-31T01:20:50Z",
+      "dependencies": [],
+      "session_id": "sess_1774919807_08893f"
+    },
     {
       "project_number": 325,
       "project_name": "audit_index_command_assignments",
-      "status": "not_started",
+      "status": "completed",
       "language": "meta",
       "description": "Full audit of all 181 index.json entries to ensure commands are appropriately scoped to their domains. Verify no domain-specific files have generic commands like /plan, /implement, /research.",
       "created": "2026-03-30T21:15:00Z",
-      "last_updated": "2026-03-30T21:15:00Z",
-      "dependencies": [324]
+      "last_updated": "2026-03-30T22:30:00Z",
+      "dependencies": [
+        324
+      ],
+      "completion_summary": "Audited all 181 deployed index.json entries and 14 extension source files. Deployed index was clean (0 project/* entries with generic commands). Fixed founder extension source (index-entries.json) which still had /plan and /implement in 22 entries despite task 324. Added command scope validation check to context-discovery.md documenting the rule that project/* entries must not use generic workflow commands."
     },
     {
       "project_number": 324,
       "project_name": "remove_plan_from_founder_index",
-      "status": "not_started",
+      "status": "completed",
       "language": "meta",
       "description": "Remove generic commands (/plan, /implement) from 15+ founder domain files in index.json. These should only match language='founder', not all planning/implementation tasks.",
       "created": "2026-03-30T21:15:00Z",
-      "last_updated": "2026-03-30T21:15:00Z",
+      "last_updated": "2026-03-30T22:00:00Z",
+      "completion_summary": "Removed /plan and /implement from 22 founder extension index entries in both source (extensions/founder/index-entries.json) and deployed (Vision/.claude/context/index.json). Founder files now only match via domain-specific commands (/market, /analyze, /strategy, /legal, /project, /sheet) and language='founder', preventing unwanted loading during non-founder /plan and /implement operations.",
       "dependencies": []
     },
     {
       "project_number": 323,
       "project_name": "fix_jq_query_duplicates",
-      "status": "not_started",
+      "status": "completed",
       "language": "meta",
       "description": "Fix jq query in planner-agent.md and other agents to use `any()` function instead of `[]?` with OR, preventing duplicate results when entries match multiple conditions. Currently returns 87 files with 34 duplicates.",
       "created": "2026-03-30T21:15:00Z",
-      "last_updated": "2026-03-30T21:15:00Z",
-      "dependencies": []
+      "last_updated": "2026-03-30T23:00:00Z",
+      "dependencies": [],
+      "completion_summary": "Fixed jq query duplicate bug in 6 files by replacing (.load_when.X[]? == val) with any(.load_when.X[]?; . == val) in all combined OR queries. Fixed: planner-agent.md, general-implementation-agent.md, general-research-agent.md, CLAUDE.md, context-discovery.md (2 queries), grant-agent.md (3 queries). Single-dimension selects (no OR) were left unchanged as they are safe."
     },
     {
       "project_number": 322,
