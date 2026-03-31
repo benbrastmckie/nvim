@@ -1,7 +1,7 @@
 # Implementation Plan: /deck Command and Deck-Research-Agent Integration
 
 - **Task**: 341 - /deck command and deck-research-agent integration
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: 340 (RESEARCHED)
 - **Research Inputs**: specs/341_deck_command_and_research_agent/reports/01_deck-command-research.md
@@ -45,7 +45,7 @@ The research report (01_deck-command-research.md) identified 7 existing founder 
 
 ## Implementation Phases
 
-### Phase 1: Create deck-research-agent [NOT STARTED]
+### Phase 1: Create deck-research-agent [IN PROGRESS]
 
 **Goal**: Create the agent definition following the founder agent pattern (market-agent.md as template), adapted for material synthesis instead of interactive Q&A.
 

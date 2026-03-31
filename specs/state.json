@@ -92,39 +92,39 @@
     {
       "project_number": 340,
       "project_name": "create_typst_deck_templates",
-      "status": "planned",
+      "status": "researched",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T21:07:49Z",
+      "last_updated": "2026-03-31T21:21:27Z",
       "dependencies": [],
-      "researched": "2026-03-31T20:50:09Z",
-      "next_artifact_number": 2,
+      "researched": "2026-03-31T21:21:27Z",
+      "next_artifact_number": 3,
       "artifacts": [
-        {
-          "path": "specs/340_create_typst_deck_templates/reports/01_typst-deck-templates.md",
-          "type": "research",
-          "summary": "Research report with 5 major findings covering existing examples, template architecture, YC compliance, parameterization strategy, and implementation plan"
-        },
         {
           "path": "specs/340_create_typst_deck_templates/plans/01_typst-deck-templates.md",
           "type": "plan",
           "summary": "5-phase implementation plan for creating 4 typst deck templates (minimal-light, professional-blue, premium-dark, growth-green)"
+        },
+        {
+          "path": "specs/340_create_typst_deck_templates/reports/02_dark-blue-template-standards.md",
+          "type": "research",
+          "summary": "Complete analysis of deck-source.typ sizing, colors, typography, layout patterns; proposed dark-blue palette; universal standards for all templates"
         }
       ],
-      "session_id": "sess_1774990493_hpu",
+      "session_id": "sess_1774991792_gvn4t",
       "planned": "2026-03-31T21:07:49Z"
     },
     {
       "project_number": 341,
       "project_name": "deck_command_and_research_agent",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T21:07:12Z",
+      "last_updated": "2026-03-31T21:12:24Z",
       "dependencies": [],
-      "session_id": "sess_1774990998_7Phw2jXj",
+      "session_id": "sess_1774991514_ec78KIP",
       "researched": "2026-03-31T21:00:50Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -139,7 +139,8 @@
           "summary": "4-phase implementation plan for /deck command, deck-research-agent, and skill-deck-research in the founder extension"
         }
       ],
-      "planned": "2026-03-31T21:07:12Z"
+      "planned": "2026-03-31T21:07:12Z",
+      "started": "2026-03-31T21:12:24Z"
     },
     {
       "project_number": 342,
