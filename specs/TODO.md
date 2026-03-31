@@ -10,7 +10,7 @@ next_project_number: 330
 
 ### Pending
 
-- **327** [RESEARCHED] -- Pass task_type through founder delegation pipeline
+- **327** [PLANNED] -- Pass task_type through founder delegation pipeline
 - **328** [NOT STARTED] -- Make Typst primary output in founder plan agent (depends on 327)
 - **329** [NOT STARTED] -- Make Typst primary output in founder implement agent (depends on 327)
 - **326** [COMPLETED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility

@@ -5,17 +5,22 @@
     {
       "project_number": 327,
       "project_name": "pass_task_type_through_delegation",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "description": "Update skill-founder-plan and skill-founder-implement to extract task_type from state.json and include it in the task_context passed to agents. Currently task_type is stored by commands but never reaches the plan or implement agents.",
       "created": "2026-03-31T02:00:00Z",
-      "last_updated": "2026-03-31T03:01:30Z",
+      "last_updated": "2026-03-31T03:03:43Z",
       "dependencies": [],
       "artifacts": [
         {
           "type": "research",
           "path": "specs/327_pass_task_type_through_delegation/reports/01_delegation-pipeline-gap.md",
           "summary": "Gap analysis: task_type stored by commands but not passed through skill-founder-plan/implement to agents"
+        },
+        {
+          "type": "plan",
+          "path": "specs/327_pass_task_type_through_delegation/plans/01_delegation-pipeline-fix.md",
+          "summary": "3-phase plan: update 2 skills (senders) and 2 agents (receivers) to pass task_type through delegation"
         }
       ]
     },
