@@ -10,7 +10,7 @@ next_project_number: 345
 
 ### Pending
 
-- **340** [NOT STARTED] -- Create reusable typst slide deck templates
+- **340** [RESEARCHED] -- Create reusable typst slide deck templates
 - **341** [NOT STARTED] -- /deck command and deck-research-agent integration
 - **342** [NOT STARTED] -- Deck planner with interactive style/content questions (depends: 340, 341)
 - **343** [NOT STARTED] -- Deck builder typst agent (depends: 340, 342)
@@ -26,9 +26,10 @@ next_project_number: 345
 
 ### 340. Create reusable typst slide deck templates
 - **Effort**: Medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [01_typst-deck-templates.md](340_create_typst_deck_templates/reports/01_typst-deck-templates.md)
 
 **Description**: Create 3-4 reusable typst slide deck templates in `founder/context/project/founder/templates/typst/` for the deck workflow. Templates should use touying 0.6.3 with different visual styles (minimal, professional, dark, startup). Each template defines: slide structure (10 main slides + appendix), color palettes, typography (24pt+ body, 40pt+ titles per YC compliance), and 16:9 aspect ratio. Reference `/home/benjamin/Projects/Logos/Vision/strategy/02-deck/deck-source.typ` as the basic/minimal template. Templates must be self-contained and parameterizable for the deck-planner to reference during planning.
 

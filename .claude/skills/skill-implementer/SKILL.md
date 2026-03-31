@@ -2,11 +2,6 @@
 name: skill-implementer
 description: Execute general implementation tasks following a plan. Invoke for general implementation work.
 allowed-tools: Task, Bash, Edit, Read, Write
-# Original context (now loaded by subagent):
-#   - .claude/context/formats/summary-format.md
-#   - .claude/context/standards/code-patterns.md
-# Original tools (now used by subagent):
-#   - Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Implementer Skill
@@ -437,14 +432,3 @@ See `rules/error-handling.md` for general patterns. Skill-specific behaviors:
 ## Postflight Boundary
 
 After the agent returns, this skill is LIMITED TO: reading metadata, updating state.json/TODO.md, linking artifacts, git commit, cleanup. No source edits, builds, MCP tools, or analysis. See `@.claude/context/standards/postflight-tool-restrictions.md`.
-
-## Return Format
-
-Brief text summary (NOT JSON). Example:
-```
-Implementation completed for task 350:
-- All 5 phases executed successfully
-- Created summary at specs/350_feature/summaries/MM_{short-slug}-summary.md
-- Status updated to [COMPLETED]
-- Changes committed
-```
