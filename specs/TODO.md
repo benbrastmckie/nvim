@@ -11,7 +11,7 @@ next_project_number: 345
 ### Pending
 
 - **340** [PLANNING] -- Create reusable typst slide deck templates
-- **341** [RESEARCHED] -- /deck command and deck-research-agent integration
+- **341** [PLANNED] -- /deck command and deck-research-agent integration
 - **342** [NOT STARTED] -- Deck planner with interactive style/content questions (depends: 340, 341)
 - **343** [NOT STARTED] -- Deck builder typst agent (depends: 340, 342)
 - **344** [NOT STARTED] -- Migrate deck from present/ to founder/ extension (depends: 341, 342, 343)
@@ -37,10 +37,11 @@ next_project_number: 345
 
 ### 341. /deck command and deck-research-agent integration
 - **Effort**: Medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_deck-command-research.md](specs/341_deck_command_and_research_agent/reports/01_deck-command-research.md)
+- **Plan**: [01_deck-command-plan.md](specs/341_deck_command_and_research_agent/plans/01_deck-command-plan.md)
 
 **Description**: Create the `/deck` command in `founder/commands/deck.md` that accepts a path, prompt, or task number. When given a description or path, it creates a task with `language: founder, task_type: deck` and generates a research report from the provided materials. Create `deck-research-agent` in `founder/agents/` and `skill-deck-research` in `founder/skills/` for researching deck content. Add `founder:deck` research routing to `founder/manifest.json`. Add deck-specific index entries to `founder/index-entries.json`. The research agent should synthesize input materials (files, prompts, task references) into a structured research report suitable for the deck-planner to consume.
 

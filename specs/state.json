@@ -112,13 +112,13 @@
     {
       "project_number": 341,
       "project_name": "deck_command_and_research_agent",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T21:00:50Z",
+      "last_updated": "2026-03-31T21:07:12Z",
       "dependencies": [],
-      "session_id": "sess_1774990542_izhYHEsw",
+      "session_id": "sess_1774990998_7Phw2jXj",
       "researched": "2026-03-31T21:00:50Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -126,8 +126,14 @@
           "path": "specs/341_deck_command_and_research_agent/reports/01_deck-command-research.md",
           "type": "research",
           "summary": "Comprehensive research on /deck command, deck-research-agent, and skill-deck-research patterns with implementation specifications"
+        },
+        {
+          "path": "specs/341_deck_command_and_research_agent/plans/01_deck-command-plan.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for /deck command, deck-research-agent, and skill-deck-research in the founder extension"
         }
-      ]
+      ],
+      "planned": "2026-03-31T21:07:12Z"
     },
     {
       "project_number": 342,
