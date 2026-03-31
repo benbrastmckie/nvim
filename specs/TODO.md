@@ -12,7 +12,7 @@ next_project_number: 333
 
 - **330** [RESEARCHED] -- Create /finance command, skill, and agent
   - **Research**: [01_finance-command-research.md](330_create_finance_command_skill_agent/reports/01_finance-command-research.md)
-- **331** [RESEARCHED] -- Create finance context and templates
+- **331** [PLANNED] -- Create finance context and templates
 - **332** [NOT STARTED] -- Integrate finance into founder extension (depends on 330, 331)
 - **327** [COMPLETED] -- Pass task_type through founder delegation pipeline
 - **328** [PLANNED] -- Make Typst primary output in founder plan agent (depends on 327)

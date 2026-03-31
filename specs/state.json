@@ -5,21 +5,21 @@
     {
       "project_number": 330,
       "project_name": "create_finance_command_skill_agent",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "description": "Create /finance command (finance.md), research skill (skill-finance/SKILL.md), and research agent (finance-agent.md) for the founder extension. Command uses AUDIT/MODEL/FORECAST/VALIDATE modes with 5 forcing questions. Skill follows 11-stage execution pattern. Agent analyzes existing financial documents, extracts numbers, and creates verification spreadsheets (.xlsx) to confirm/improve calculations.",
       "created": "2026-03-31T04:00:00Z",
-      "last_updated": "2026-03-31T04:15:00Z",
+      "last_updated": "2026-03-31T04:20:00Z",
       "dependencies": []
     },
     {
       "project_number": 331,
       "project_name": "create_finance_context_templates",
-      "status": "planning",
+      "status": "planned",
       "language": "meta",
       "description": "Create context files for the finance feature: domain/financial-analysis.md (frameworks for document analysis, verification methodology, spreadsheet validation), patterns/financial-forcing-questions.md (question framework for financial document review), and templates/financial-analysis.md (report template for finance research output).",
       "created": "2026-03-31T04:00:00Z",
-      "last_updated": "2026-03-31T04:20:00Z",
+      "last_updated": "2026-03-31T04:25:00Z",
       "dependencies": []
     },
     {
