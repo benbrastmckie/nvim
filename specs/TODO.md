@@ -12,8 +12,8 @@ next_project_number: 345
 
 - **340** [COMPLETED] -- Create reusable typst slide deck templates
 - **341** [IMPLEMENTING] -- /deck command and deck-research-agent integration
-- **342** [PLANNED] -- Deck planner with interactive style/content questions (depends: 340, 341)
-- **343** [PLANNED] -- Deck builder typst agent (depends: 340, 342)
+- **342** [COMPLETED] -- Deck planner with interactive style/content questions (depends: 340, 341)
+- **343** [IMPLEMENTING] -- Deck builder typst agent (depends: 340, 342)
 - **344** [NOT STARTED] -- Migrate deck from present/ to founder/ extension (depends: 341, 342, 343)
 - **336** [COMPLETED] -- Fix TODO.md status update bug in skill-implementer
 - **338** [COMPLETED] -- Consolidate duplicated references across .claude/ files
@@ -57,11 +57,13 @@ next_project_number: 345
 
 ### 342. Deck planner with interactive style/content questions
 - **Effort**: Large
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-03-31
 - **Language**: meta
 - **Dependencies**: 340, 341
 - **Research**: [01_deck-planner-research.md](342_deck_planner_interactive_questions/reports/01_deck-planner-research.md)
 - **Plan**: [01_deck-planner-plan.md](342_deck_planner_interactive_questions/plans/01_deck-planner-plan.md)
+- **Summary**: [01_deck-planner-summary.md](342_deck_planner_interactive_questions/summaries/01_deck-planner-summary.md)
 
 **Description**: Create `deck-planner-agent` in `founder/agents/` and `skill-deck-plan` in `founder/skills/`. The planner begins with interactive AskUserQuestion flow: (1) select a visual style from available templates, (2) choose which slide contents to include in the main 10 slides vs appendix slides from research findings, (3) select slide ordering from a few different arrangement options. After questions, generate a plan conforming to `plan-format.md` that specifies the typst template to use, slide-by-slide content assignments, and appendix contents. Add `founder:deck` plan routing to `founder/manifest.json` (overriding the shared `skill-founder-plan` for deck type).
 
@@ -69,7 +71,7 @@ next_project_number: 345
 
 ### 343. Deck builder typst agent
 - **Effort**: Medium
-- **Status**: [RESEARCHED]
+- **Status**: [IMPLEMENTING]
 - **Language**: meta
 - **Dependencies**: 340, 342
 - **Research**: [01_deck-builder-research.md](343_deck_builder_typst_agent/reports/01_deck-builder-research.md)

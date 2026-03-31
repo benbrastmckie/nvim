@@ -161,16 +161,16 @@
     {
       "project_number": 342,
       "project_name": "deck_planner_interactive_questions",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T22:08:35Z",
+      "last_updated": "2026-03-31T22:39:46Z",
       "dependencies": [
         340,
         341
       ],
-      "session_id": "sess_1774994717_d7299693d598",
+      "session_id": "sess_1774995036_0fa6dae79bc8",
       "researched": "2026-03-31T22:03:09Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -183,23 +183,32 @@
           "path": "specs/342_deck_planner_interactive_questions/plans/01_deck-planner-plan.md",
           "type": "plan",
           "summary": "4-phase implementation plan for deck-planner-agent and skill-deck-plan with interactive AskUserQuestion flow"
+        },
+        {
+          "path": "specs/342_deck_planner_interactive_questions/summaries/01_deck-planner-summary.md",
+          "type": "summary",
+          "summary": "Created deck-planner-agent with 3-question interactive flow and skill-deck-plan wrapper, updated manifest routing for founder:deck plan requests"
         }
       ],
-      "planned": "2026-03-31T22:08:35Z"
+      "planned": "2026-03-31T22:08:35Z",
+      "started": "2026-03-31T22:10:59Z",
+      "completed": "2026-03-31T22:39:46Z",
+      "completion_summary": "Created deck-planner-agent.md with interactive 3-question AskUserQuestion flow (template, content, ordering) and skill-deck-plan/SKILL.md wrapper. Updated manifest routing so founder:deck plan requests use dedicated deck planner instead of shared founder-plan-agent.",
+      "claudemd_suggestions": "Added deck-planner-agent.md to founder/agents/, skill-deck-plan/SKILL.md to founder/skills/, updated manifest.json routing and provides, added deck-planner-agent to 3 index-entries.json entries, updated EXTENSION.md skill-agent mapping table"
     },
     {
       "project_number": 343,
       "project_name": "deck_builder_typst_agent",
-      "status": "planned",
+      "status": "implementing",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T22:07:52Z",
+      "last_updated": "2026-03-31T22:10:25Z",
       "dependencies": [
         340,
         342
       ],
-      "session_id": "sess_1774994715_abyk",
+      "session_id": "sess_1774995013_y1bwsp",
       "researched": "2026-03-31T22:02:43Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -214,7 +223,8 @@
           "summary": "4-phase implementation plan for deck builder typst agent"
         }
       ],
-      "planned": "2026-03-31T22:07:52Z"
+      "planned": "2026-03-31T22:07:52Z",
+      "started": "2026-03-31T22:10:25Z"
     },
     {
       "project_number": 344,

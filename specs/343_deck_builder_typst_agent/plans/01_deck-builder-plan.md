@@ -95,7 +95,7 @@ Key findings from research:
 
 ---
 
-### Phase 2: Create skill-deck-implement [NOT STARTED]
+### Phase 2: Create skill-deck-implement [IN PROGRESS]
 
 **Goal**: Create the routing skill that delegates deck implementation to the builder agent
 
