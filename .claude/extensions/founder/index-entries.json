@@ -29,6 +29,7 @@
           "market-agent",
           "analyze-agent",
           "strategy-agent",
+          "finance-agent",
           "founder-plan-agent",
           "founder-implement-agent"
         ],
@@ -99,6 +100,7 @@
           "strategy-agent",
           "legal-council-agent",
           "project-agent",
+          "finance-agent",
           "founder-plan-agent"
         ],
         "languages": [
@@ -388,6 +390,7 @@
           "strategy-agent",
           "legal-council-agent",
           "project-agent",
+          "finance-agent",
           "founder-plan-agent",
           "founder-implement-agent"
         ],
@@ -499,6 +502,73 @@
           "sheet"
         ],
         "commands": []
+      },
+      "domain": "project",
+      "subdomain": "founder"
+    },
+    {
+      "path": "project/founder/domain/financial-analysis.md",
+      "summary": "Financial statement analysis, ratio analysis, verification methodology, red flag detection, spreadsheet validation",
+      "line_count": 241,
+      "load_when": {
+        "agents": [
+          "finance-agent",
+          "founder-plan-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "task_types": [
+          "finance"
+        ],
+        "commands": [
+          "/finance"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "founder"
+    },
+    {
+      "path": "project/founder/patterns/financial-forcing-questions.md",
+      "summary": "Financial document review forcing questions: document inventory, revenue, expenses, cash, projections, discrepancies",
+      "line_count": 361,
+      "load_when": {
+        "agents": [
+          "finance-agent",
+          "founder-plan-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "task_types": [
+          "finance"
+        ],
+        "commands": [
+          "/finance"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "founder"
+    },
+    {
+      "path": "project/founder/templates/financial-analysis.md",
+      "summary": "Financial analysis report template with verification tables, ratio benchmarks, red flags, scenario analysis",
+      "line_count": 331,
+      "load_when": {
+        "agents": [
+          "finance-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "task_types": [
+          "finance"
+        ],
+        "commands": [
+          "/finance"
+        ]
       },
       "domain": "project",
       "subdomain": "founder"

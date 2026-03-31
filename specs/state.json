@@ -5,38 +5,41 @@
     {
       "project_number": 330,
       "project_name": "create_finance_command_skill_agent",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "description": "Create /finance command (finance.md), research skill (skill-finance/SKILL.md), and research agent (finance-agent.md) for the founder extension. Command uses AUDIT/MODEL/FORECAST/VALIDATE modes with 5 forcing questions. Skill follows 11-stage execution pattern. Agent analyzes existing financial documents, extracts numbers, and creates verification spreadsheets (.xlsx) to confirm/improve calculations.",
       "created": "2026-03-31T04:00:00Z",
-      "last_updated": "2026-03-31T04:30:00Z",
+      "last_updated": "2026-03-31T05:00:00Z",
       "dependencies": [],
       "next_artifact_number": 2,
       "artifacts": [
         {
           "type": "research",
           "path": "specs/330_create_finance_command_skill_agent/reports/01_finance-command-research.md",
-          "summary": "Research on existing founder extension patterns for finance command, skill, and agent design"
+          "summary": "Research on existing founder extension patterns for finance command design"
         },
         {
           "type": "plan",
           "path": "specs/330_create_finance_command_skill_agent/plans/01_finance-command-plan.md",
-          "summary": "3-phase plan: create core files (command, skill, agent), update integration files, verify"
+          "summary": "3-phase plan: create core files, update integration files, verify"
         }
-      ]
+      ],
+      "completion_summary": "Created /finance command, skill-finance, and finance-agent for founder extension. Updated manifest.json, EXTENSION.md, and index-entries.json.",
+      "claudemd_suggestions": "Added finance-agent.md, skill-finance, /finance command to founder extension with full routing and context integration."
     },
     {
       "project_number": 332,
       "project_name": "integrate_finance_into_founder",
-      "status": "not_started",
+      "status": "completed",
       "language": "meta",
       "description": "Wire /finance into the founder extension: add finance-agent, skill-finance, and /finance command to manifest.json routing tables. Add context entries to index-entries.json. Update EXTENSION.md documentation. Optionally add financial-analysis.typ Typst template.",
       "created": "2026-03-31T04:00:00Z",
-      "last_updated": "2026-03-31T04:00:00Z",
+      "last_updated": "2026-03-31T05:00:00Z",
       "dependencies": [
         330,
         331
-      ]
+      ],
+      "completion_summary": "Integration work was completed as part of task 330 Phase 2. manifest.json updated with finance routing, EXTENSION.md updated with /finance docs, index-entries.json updated with 3 new finance context entries and finance-agent added to 3 existing entries."
     },
     {
       "project_number": 87,

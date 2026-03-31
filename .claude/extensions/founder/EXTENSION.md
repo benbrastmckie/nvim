@@ -12,6 +12,7 @@ Strategic business analysis tools for founders and entrepreneurs. Integrates for
 | skill-legal | legal-council-agent | Contract review research (uses forcing_data) |
 | skill-project | project-agent | Project timeline research: WBS, PERT, resources |
 | skill-spreadsheet | spreadsheet-agent | Cost breakdown spreadsheet generation (uses forcing_data) |
+| skill-finance | finance-agent | Financial analysis and verification (uses forcing_data) |
 | skill-founder-plan | founder-plan-agent | Shared task planning (content-aware) |
 | skill-founder-implement | founder-implement-agent | Shared task implementation (type-aware) |
 
@@ -25,6 +26,7 @@ Strategic business analysis tools for founders and entrepreneurs. Integrates for
 | `/legal` | `/legal "SaaS vendor agreement"` | Contract review with forcing questions |
 | `/project` | `/project "Mobile App Redesign"` | Project timeline with forcing questions |
 | `/sheet` | `/sheet "Q1 launch costs"` | Cost breakdown spreadsheet with forcing questions |
+| `/finance` | `/finance "Q1 revenue verification"` | Financial analysis and verification with forcing questions |
 
 All commands accept: description string (create task), task number (run research), file path (read context), or `--quick` (legacy standalone).
 

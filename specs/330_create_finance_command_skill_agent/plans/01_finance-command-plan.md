@@ -10,7 +10,7 @@
 
 Create the /finance command, skill-finance skill, and finance-agent for the founder extension. All three files follow the established founder extension patterns exactly, adapted for financial analysis with AUDIT/MODEL/FORECAST/VALIDATE modes.
 
-## Phase 1: Create Core Files [IN PROGRESS]
+## Phase 1: Create Core Files [COMPLETED]
 
 **Estimated**: 60-90 minutes
 **Files to create**: 3
@@ -131,7 +131,7 @@ Create the /finance command, skill-finance skill, and finance-agent for the foun
 - `specs/{NNN}_{SLUG}/financial-metrics.json` - JSON metrics export
 - `specs/{NNN}_{SLUG}/reports/01_{short-slug}.md` - Research report
 
-## Phase 2: Update Integration Files [NOT STARTED]
+## Phase 2: Update Integration Files [COMPLETED]
 
 **Estimated**: 20-30 minutes
 **Files to modify**: 3
@@ -165,7 +165,7 @@ Add entries for finance-agent to load:
 - `forcing-questions.md` (existing, add finance-agent to agents list)
 - Future context files will be added in task 331
 
-## Phase 3: Verify and Test [NOT STARTED]
+## Phase 3: Verify and Test [COMPLETED]
 
 **Estimated**: 15-20 minutes
 
