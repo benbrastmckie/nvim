@@ -12,8 +12,8 @@ next_project_number: 345
 
 - **340** [COMPLETED] -- Create reusable typst slide deck templates
 - **341** [IMPLEMENTING] -- /deck command and deck-research-agent integration
-- **342** [NOT STARTED] -- Deck planner with interactive style/content questions (depends: 340, 341)
-- **343** [NOT STARTED] -- Deck builder typst agent (depends: 340, 342)
+- **342** [RESEARCHING] -- Deck planner with interactive style/content questions (depends: 340, 341)
+- **343** [RESEARCHED] -- Deck builder typst agent (depends: 340, 342)
 - **344** [NOT STARTED] -- Migrate deck from present/ to founder/ extension (depends: 341, 342, 343)
 - **336** [COMPLETED] -- Fix TODO.md status update bug in skill-implementer
 - **338** [COMPLETED] -- Consolidate duplicated references across .claude/ files
@@ -57,7 +57,7 @@ next_project_number: 345
 
 ### 342. Deck planner with interactive style/content questions
 - **Effort**: Large
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 - **Dependencies**: 340, 341
 
@@ -67,9 +67,10 @@ next_project_number: 345
 
 ### 343. Deck builder typst agent
 - **Effort**: Medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: 340, 342
+- **Research**: [01_deck-builder-research.md](343_deck_builder_typst_agent/reports/01_deck-builder-research.md)
 
 **Description**: Create `deck-builder-agent` in `founder/agents/` and `skill-deck-implement` in `founder/skills/`. The builder reads the plan, selects the specified typst template, and generates a complete `.typ` file with 10 main slides and optional appendix slides. Compiles to PDF via `typst compile`. Add `founder:deck` implement routing to `founder/manifest.json` (overriding the shared `skill-founder-implement` for deck type). Output goes to `strategy/{slug}-deck.typ` and `strategy/{slug}-deck.pdf`.
 

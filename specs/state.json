@@ -161,27 +161,38 @@
     {
       "project_number": 342,
       "project_name": "deck_planner_interactive_questions",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T21:57:55Z",
       "dependencies": [
         340,
         341
-      ]
+      ],
+      "session_id": "sess_1774994251_8afdf427d47d"
     },
     {
       "project_number": 343,
       "project_name": "deck_builder_typst_agent",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "task_type": "deck",
       "created": "2026-03-31T05:00:00Z",
-      "last_updated": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T22:02:43Z",
       "dependencies": [
         340,
         342
+      ],
+      "session_id": "sess_1774994246_df51",
+      "researched": "2026-03-31T22:02:43Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/343_deck_builder_typst_agent/reports/01_deck-builder-research.md",
+          "type": "research",
+          "summary": "Comprehensive research on deck builder agent architecture: 5 typst templates analyzed, implementation agent/skill patterns documented, manifest routing changes identified, content substitution strategy defined"
+        }
       ]
     },
     {
