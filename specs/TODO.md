@@ -11,11 +11,11 @@ next_project_number: 333
 ### Pending
 
 - **330** [NOT STARTED] -- Create /finance command, skill, and agent
-- **331** [NOT STARTED] -- Create finance context and templates
+- **331** [RESEARCHED] -- Create finance context and templates
 - **332** [NOT STARTED] -- Integrate finance into founder extension (depends on 330, 331)
 - **327** [COMPLETED] -- Pass task_type through founder delegation pipeline
 - **328** [PLANNED] -- Make Typst primary output in founder plan agent (depends on 327)
-- **329** [RESEARCHED] -- Make Typst primary output in founder implement agent (depends on 327)
+- **329** [PLANNING] -- Make Typst primary output in founder implement agent (depends on 327)
 - **326** [COMPLETED] -- Upgrade agent system for Claude Code v2.1.88+ compatibility
 - **323** [COMPLETED] -- Fix jq query duplicates in agent context loading
 - **324** [COMPLETED] -- Remove /plan from founder index entries

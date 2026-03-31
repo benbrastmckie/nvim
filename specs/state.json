@@ -5,21 +5,21 @@
     {
       "project_number": 330,
       "project_name": "create_finance_command_skill_agent",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "description": "Create /finance command (finance.md), research skill (skill-finance/SKILL.md), and research agent (finance-agent.md) for the founder extension. Command uses AUDIT/MODEL/FORECAST/VALIDATE modes with 5 forcing questions. Skill follows 11-stage execution pattern. Agent analyzes existing financial documents, extracts numbers, and creates verification spreadsheets (.xlsx) to confirm/improve calculations.",
       "created": "2026-03-31T04:00:00Z",
-      "last_updated": "2026-03-31T04:00:00Z",
+      "last_updated": "2026-03-31T04:10:00Z",
       "dependencies": []
     },
     {
       "project_number": 331,
       "project_name": "create_finance_context_templates",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "description": "Create context files for the finance feature: domain/financial-analysis.md (frameworks for document analysis, verification methodology, spreadsheet validation), patterns/financial-forcing-questions.md (question framework for financial document review), and templates/financial-analysis.md (report template for finance research output).",
       "created": "2026-03-31T04:00:00Z",
-      "last_updated": "2026-03-31T04:00:00Z",
+      "last_updated": "2026-03-31T04:15:00Z",
       "dependencies": []
     },
     {
@@ -98,15 +98,15 @@
     {
       "project_number": 329,
       "project_name": "typst_primary_in_implement_agent",
-      "status": "researched",
+      "status": "planning",
       "language": "meta",
       "description": "Update founder-implement-agent Phase 4 to generate .typ files directly for ALL report types (like project-timeline already does), and Phase 5 to compile PDF. Currently Phase 4 writes markdown for non-project-timeline types and Phase 5 generates Typst as optional add-on.",
       "created": "2026-03-31T02:00:00Z",
-      "last_updated": "2026-03-31T03:23:12Z",
+      "last_updated": "2026-03-31T03:26:51Z",
       "dependencies": [
         327
       ],
-      "session_id": "sess_1743394900_r329",
+      "session_id": "sess_1743395100_p329",
       "researched": "2026-03-31T03:23:12Z",
       "next_artifact_number": 2,
       "artifacts": [
