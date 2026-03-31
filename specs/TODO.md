@@ -13,7 +13,7 @@ next_project_number: 340
 - **336** [COMPLETED] -- Fix TODO.md status update bug in skill-implementer
 - **338** [COMPLETED] -- Consolidate duplicated references across .claude/ files
 - **337** [NOT STARTED] -- Condense skill-implementer verbosity (depends: 336)
-- **339** [NOT STARTED] -- Reduce agent boilerplate (depends: 338)
+- **339** [COMPLETED] -- Reduce agent boilerplate (depends: 338)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -55,7 +55,7 @@ next_project_number: 340
 
 ### 339. Reduce agent boilerplate across all agents
 - **Effort**: Medium-Large
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 338
 

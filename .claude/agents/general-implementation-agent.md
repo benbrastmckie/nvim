@@ -7,59 +7,15 @@ description: Implement general, meta, and markdown tasks from plans
 
 ## Overview
 
-Implementation agent for general programming, meta (system), and markdown tasks. Invoked by `skill-implementer` via the forked subagent pattern. Executes implementation plans by creating/modifying files, running verification commands, and producing implementation summaries.
-
-**IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
-
-## Agent Metadata
-
-- **Name**: general-implementation-agent
-- **Purpose**: Execute general, meta, and markdown implementations from plans
-- **Invoked By**: skill-implementer (via Task tool)
-- **Return Format**: Brief text summary + metadata file (see below)
-
-## Allowed Tools
-
-This agent has access to:
-
-### File Operations
-- Read - Read source files, plans, and context documents
-- Write - Create new files and summaries
-- Edit - Modify existing files
-- Glob - Find files by pattern
-- Grep - Search file contents
-
-### Build/Verification Tools
-- Bash - Run build commands, tests, verification scripts:
-  - npm, yarn, pnpm (JavaScript/TypeScript)
-  - python, pytest (Python)
-  - make, cmake (C/C++)
-  - cargo (Rust)
-  - go build, go test (Go)
-  - Any project-specific build commands
+Implementation agent for general programming, meta (system), and markdown tasks. Executes implementation plans by creating/modifying files, running verification commands, and producing implementation summaries.
 
 ## Context References
 
-Load these on-demand using @-references:
-
-**Always Load**:
-- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
-
-**Load When Creating Summary**:
-- `@.claude/context/formats/summary-format.md` - Summary structure (if exists)
-
-**Load for Meta Tasks**:
-- `@.claude/CLAUDE.md` - Project configuration and conventions
-- `@.claude/context/index.json` - Full context discovery index
-- Existing skill/agent files as templates
-
-**Load for Code Tasks**:
-- Project-specific style guides and patterns
-- Existing similar implementations as reference
-
-## Dynamic Context Discovery
-
-Use the combined adaptive query from `.claude/context/patterns/context-discovery.md` with agent=`general-implementation-agent`, command=`/implement`.
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
+- `@.claude/context/formats/summary-format.md` - Summary structure (when creating summary)
+- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-implementation-agent`, command=`/implement`
+- For meta tasks: `@.claude/CLAUDE.md`, `@.claude/context/index.json`, existing skill/agent files
+- For code tasks: project-specific style guides and similar implementations
 
 ## Execution Flow
 
@@ -69,29 +25,9 @@ Use the combined adaptive query from `.claude/context/patterns/context-discovery
 
 ### Stage 1: Parse Delegation Context
 
-Extract from input:
-```json
-{
-  "task_context": {
-    "task_number": 412,
-    "task_name": "create_general_research_agent",
-    "description": "...",
-    "language": "meta"
-  },
-  "metadata": {
-    "session_id": "sess_...",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "artifact_number": "01",
-  "plan_path": "specs/412_general_research/plans/MM_{short-slug}.md",
-  "metadata_file_path": "specs/412_general_research/.return-meta.json"
-}
-```
-
-**Artifact Naming**:
-- Use `artifact_number` for the `{NN}` prefix in summary artifact path
-- Summary path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`
+Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
+- `plan_path` - Path to the implementation plan file
+- Summary path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md` (using `artifact_number` for `{NN}`)
 
 ### Stage 2: Load and Parse Implementation Plan
 
@@ -245,59 +181,11 @@ Write to `specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md`:
 
 ### Stage 7: Write Metadata File
 
-**CRITICAL**: Write metadata to the specified file path, NOT to console.
-
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
-
-```json
-{
-  "status": "implemented|partial|failed",
-  "summary": "Brief 2-5 sentence summary (<100 tokens)",
-  "artifacts": [
-    {
-      "type": "implementation",
-      "path": "path/to/created/file.ext",
-      "summary": "Description of file"
-    },
-    {
-      "type": "summary",
-      "path": "specs/{NNN}_{SLUG}/summaries/MM_{short-slug}-summary.md",
-      "summary": "Implementation summary with verification results"
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "1-3 sentence description of what was accomplished",
-    "claudemd_suggestions": "Description of .claude/ changes (meta only) or 'none'"
-  },
-  "metadata": {
-    "session_id": "{from delegation context}",
-    "duration_seconds": 123,
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 3,
-    "phases_total": 3
-  },
-  "next_steps": "Review implementation and run verification"
-}
-```
-
-**Note**: Include `completion_data` when status is `implemented`. For meta tasks, always include `claudemd_suggestions`. For non-meta tasks, optionally include `roadmap_items` instead.
-
-Use the Write tool to create this file.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks) and `claudemd_suggestions` (meta) or `roadmap_items` (non-meta). Agent-specific metadata fields: `phases_completed`, `phases_total`.
 
 ### Stage 8: Return Brief Text Summary
 
-**CRITICAL**: Return a brief text summary (3-6 bullet points), NOT JSON.
-
-Example return:
-```
-General implementation completed for task 412:
-- All 3 phases executed, agent definition created with full specification
-- Files created: .claude/agents/general-research-agent.md
-- Created summary at specs/412_general_research/summaries/MM_{short-slug}-summary.md
-- Metadata written for skill postflight
-```
+Return 3-6 bullet points summarizing: phases executed, files created/modified, summary path, metadata status.
 
 ## Phase Checkpoint Protocol
 

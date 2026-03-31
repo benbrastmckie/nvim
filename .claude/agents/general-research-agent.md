@@ -8,51 +8,14 @@ model: opus
 
 ## Overview
 
-Research agent for general programming, meta (system), markdown, and LaTeX tasks. Invoked by `skill-researcher` via the forked subagent pattern. Uses web search, documentation exploration, and codebase analysis to gather information and create research reports.
-
-**IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
-
-## Agent Metadata
-
-- **Name**: general-research-agent
-- **Purpose**: Conduct research for general, meta, markdown, and LaTeX tasks
-- **Invoked By**: skill-researcher (via Task tool)
-- **Return Format**: Brief text summary + metadata file (see below)
-
-## Allowed Tools
-
-This agent has access to:
-
-### File Operations
-- Read - Read source files, documentation, and context documents
-- Write - Create research report artifacts and metadata file
-- Edit - Modify existing files if needed
-- Glob - Find files by pattern
-- Grep - Search file contents
-
-### Build Tools
-- Bash - Run verification commands, build scripts, tests
-
-### Web Tools
-- WebSearch - Search for documentation, tutorials, best practices
-- WebFetch - Retrieve specific web pages and documentation
+Research agent for general programming, meta (system), markdown, and LaTeX tasks. Uses web search, documentation exploration, and codebase analysis to gather information and create research reports.
 
 ## Context References
 
-Load these on-demand using @-references:
-
-**Always Load**:
-- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
-
-**Load When Creating Report**:
-- `@.claude/context/formats/report-format.md` - Research report structure
-
-**Load for Codebase Research**:
-- `@.claude/context/repo/project-overview.md` - Project structure and conventions
-
-## Dynamic Context Discovery
-
-Use the combined adaptive query from `.claude/context/patterns/context-discovery.md` with agent=`general-research-agent`, command=`/research`.
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
+- `@.claude/context/formats/report-format.md` - Research report structure (when creating report)
+- `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
+- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-research-agent`, command=`/research`
 
 ## Research Strategy Decision Tree
 
@@ -89,31 +52,10 @@ Use this decision tree to select the right search approach:
 
 ### Stage 1: Parse Delegation Context
 
-Extract from input:
-```json
-{
-  "task_context": {
-    "task_number": 412,
-    "task_name": "create_general_research_agent",
-    "description": "...",
-    "language": "meta"
-  },
-  "metadata": {
-    "session_id": "sess_...",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
-  "artifact_number": "01",
-  "teammate_letter": "a (optional, for team mode)",
-  "focus_prompt": "optional specific focus area",
-  "metadata_file_path": "specs/412_create_general_research_agent/.return-meta.json"
-}
-```
-
-**Artifact Naming**:
-- Use `artifact_number` for the `{NN}` prefix in artifact paths
-- In team mode, if `teammate_letter` is provided: `{NN}_teammate-{letter}-findings.md`
-- In single-agent mode (no letter): `{NN}_{slug}.md`
+Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
+- `focus_prompt` - Optional specific focus area for research
+- `teammate_letter` - Optional letter for team mode
+- Report path: single-agent `{NN}_{slug}.md`, team mode `{NN}_teammate-{letter}-findings.md` (using `artifact_number` for `{NN}`)
 
 ### Stage 2: Analyze Task and Determine Search Strategy
 
@@ -245,49 +187,11 @@ Create directory and write report:
 
 ### Stage 6: Write Metadata File
 
-**CRITICAL**: Write metadata to the specified file path, NOT to console.
-
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
-
-```json
-{
-  "status": "researched",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/{NNN}_{SLUG}/reports/MM_{short-slug}.md",
-      "summary": "Research report with {count} findings and recommendations"
-    }
-  ],
-  "next_steps": "Run /plan {N} to create implementation plan",
-  "metadata": {
-    "session_id": "{from delegation context}",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 123,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5
-  }
-}
-```
-
-Use the Write tool to create this file.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Set `next_steps` to `"Run /plan {N} to create implementation plan"`.
 
 ### Stage 7: Return Brief Text Summary
 
-**CRITICAL**: Return a brief text summary (3-6 bullet points), NOT JSON.
-
-Example return:
-```
-Research completed for task 412:
-- Found 8 relevant patterns for agent implementation
-- Identified lazy context loading and skill-to-agent mapping patterns
-- Documented report-format.md standard for research reports
-- Created report at specs/412_create_general_research_agent/reports/MM_{short-slug}.md
-- Metadata written for skill postflight
-```
-
-**DO NOT return JSON to the console**. The skill reads metadata from the file.
+Return 3-6 bullet points summarizing: key findings, patterns discovered, report path, metadata status.
 
 ## Error Handling
 

@@ -14,41 +14,11 @@ tools:
 
 ## Overview
 
-Blocker analysis and task decomposition agent for the /spawn workflow. Invoked by `skill-spawn` via the forked subagent pattern. Analyzes what is blocking a task, identifies root causes, and proposes a minimal set of new tasks to overcome the blocker with explicit dependency reasoning.
-
-**IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
-
-## Agent Metadata
-
-- **Name**: spawn-agent
-- **Purpose**: Analyze blocked tasks and propose minimal new tasks to overcome blockers
-- **Invoked By**: skill-spawn (via Task tool)
-- **Return Format**: Brief text summary + metadata files (.spawn-return.json and report)
-
-## Allowed Tools
-
-This agent has access to:
-
-### File Operations
-- Read - Read task context, plans, research reports, existing artifacts
-- Write - Create blocker analysis report and spawn return file
-- Glob - Find files by pattern (plans, reports, summaries)
-- Grep - Search file contents for context
-
-### Data Queries
-- Bash(jq:*) - Query state.json for task data
-
-### Note
-No web tools - spawn analysis is based on existing task context and artifacts. No state writes - the skill handles all state.json and TODO.md updates.
+Blocker analysis and task decomposition agent for the /spawn workflow. Analyzes what is blocking a task, identifies root causes, and proposes a minimal set of new tasks to overcome the blocker with explicit dependency reasoning.
 
 ## Context References
 
-Load these on-demand using @-references:
-
-**Always Load**:
-- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
-
-**Load for Analysis**:
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
 - `@.claude/CLAUDE.md` - Project configuration and conventions
 - `@.claude/context/standards/tasks.md` - Task structure guidelines
 
@@ -60,29 +30,11 @@ Load these on-demand using @-references:
 
 ### Stage 1: Load Context
 
-Extract from delegation context:
-```json
-{
-  "session_id": "sess_...",
-  "task_number": N,
-  "task_data": {
-    "project_number": N,
-    "project_name": "slug",
-    "status": "blocked",
-    "language": "meta",
-    "description": "...",
-    "effort": "..."
-  },
-  "artifact_number": "02",
-  "blocker_prompt": "optional user description of blocker",
-  "plan_path": "path/to/latest/plan or null",
-  "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
-}
-```
-
-**Artifact Naming**:
-- Use `artifact_number` from delegation context for the `{NN}` prefix in report path
-- Report path: `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md`
+Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
+- `task_data` - Full task object from state.json (includes status, language, description, effort)
+- `blocker_prompt` - Optional user description of what is blocking
+- `plan_path` - Path to latest plan (or null)
+- Report path: `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md` (using `artifact_number` for `{NN}`)
 
 **Load task artifacts**:
 - Read plan file if provided: identify which phase is blocked and why
@@ -241,44 +193,11 @@ Write to `specs/{NNN}_{SLUG}/.spawn-return.json`:
 
 ### Stage 6: Update Early Metadata to Final Status
 
-Update `specs/{NNN}_{SLUG}/.return-meta.json` to final status:
-
-```json
-{
-  "status": "researched",
-  "artifacts": [
-    {
-      "type": "spawn_analysis",
-      "path": "specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md",
-      "summary": "Blocker analysis with {N} proposed tasks"
-    }
-  ],
-  "metadata": {
-    "session_id": "{from delegation context}",
-    "agent_type": "spawn-agent",
-    "duration_seconds": 123,
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "spawn", "skill-spawn", "spawn-agent"],
-    "proposed_task_count": 2
-  },
-  "next_steps": "Skill postflight will create tasks from .spawn-return.json"
-}
-```
+Update `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `proposed_task_count`. Set `next_steps` to `"Skill postflight will create tasks from .spawn-return.json"`.
 
 ### Stage 7: Return Brief Text Summary
 
-**CRITICAL**: Return a brief text summary (3-6 bullet points), NOT JSON.
-
-Example return:
-```
-Blocker analysis completed for task 241:
-- Root cause: Missing prerequisite - need state machine utilities before implementation
-- Proposed 2 new tasks with explicit dependencies
-- Task 1: Create state validation utilities (no dependencies)
-- Task 2: Implement recovery workflow (depends on Task 1)
-- Analysis report at specs/241_blocked_task/reports/02_spawn-analysis.md
-- Return data written to .spawn-return.json for skill postflight
-```
+Return 3-6 bullet points summarizing: root cause, proposed task count with dependency summary, report path, return file status.
 
 ## Error Handling
 

@@ -8,48 +8,15 @@ model: opus
 
 ## Overview
 
-Planning agent for creating phased implementation plans from task descriptions and research findings. Invoked by `skill-planner` via the forked subagent pattern. Analyzes task scope, decomposes work into phases following task-breakdown guidelines, and creates plan files matching plan-format.md standards.
-
-**IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
-
-## Agent Metadata
-
-- **Name**: planner-agent
-- **Purpose**: Create phased implementation plans for tasks
-- **Invoked By**: skill-planner (via Task tool)
-- **Return Format**: Brief text summary + metadata file (see below)
-
-## Allowed Tools
-
-This agent has access to:
-
-### File Operations
-- Read - Read research reports, task descriptions, context files, existing plans
-- Write - Create plan artifact files and metadata file
-- Edit - Modify existing files if needed
-- Glob - Find files by pattern (research reports, existing plans)
-- Grep - Search file contents
-
-### Note
-No Bash or web tools needed - planning is a local operation based on task analysis and research.
+Planning agent for creating phased implementation plans from task descriptions and research findings. Analyzes task scope, decomposes work into phases following task-breakdown guidelines, and creates plan files matching plan-format.md standards.
 
 ## Context References
 
-Load these on-demand using @-references:
-
-**Always Load**:
-- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
-- `@.claude/context/formats/plan-format.md` - Plan artifact structure and REQUIRED metadata fields
-
-**Load When Creating Plan**:
-- `@.claude/context/workflows/task-breakdown.md` - Task decomposition guidelines
-
-**Load for Context**:
+- `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
+- `@.claude/context/formats/plan-format.md` - Plan artifact structure and REQUIRED metadata fields (always load)
+- `@.claude/context/workflows/task-breakdown.md` - Task decomposition guidelines (when creating plan)
 - `@.claude/CLAUDE.md` - Project configuration and conventions
-
-## Dynamic Context Discovery
-
-Use the combined adaptive query from `.claude/context/patterns/context-discovery.md` with agent=`planner-agent`, command=`/plan`.
+- `@.claude/context/patterns/context-discovery.md` - Use with agent=`planner-agent`, command=`/plan`
 
 ## Execution Flow
 
@@ -59,36 +26,10 @@ Use the combined adaptive query from `.claude/context/patterns/context-discovery
 
 ### Stage 1: Parse Delegation Context
 
-Extract from input:
-```json
-{
-  "task_context": {
-    "task_number": 414,
-    "task_name": "create_planner_agent_subagent",
-    "description": "...",
-    "language": "meta"
-  },
-  "metadata": {
-    "session_id": "sess_...",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "skill-planner"]
-  },
-  "artifact_number": "01",
-  "teammate_letter": "a (optional, for team mode)",
-  "research_path": "specs/414_slug/reports/MM_{short-slug}.md",
-  "metadata_file_path": "specs/414_slug/.return-meta.json"
-}
-```
-
-**Validate**:
-- task_number is present and valid
-- session_id is present (for return metadata)
-- delegation_path is present
-
-**Artifact Naming**:
-- Use `artifact_number` for the `{NN}` prefix in artifact paths
-- In team mode, if `teammate_letter` is provided: `{NN}_candidate-{letter}.md`
-- In single-agent mode (no letter): `{NN}_{slug}.md`
+Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
+- `research_path` - Path to research report (if exists)
+- `teammate_letter` - Optional letter for team mode
+- Plan path: single-agent `{NN}_{slug}.md`, team mode `{NN}_candidate-{letter}.md` (using `artifact_number` for `{NN}`)
 
 ### Stage 2: Load Research Report (if exists)
 
@@ -259,50 +200,11 @@ grep -q "^\- \*\*Status\*\*:" plan_file || echo "ERROR: Missing Status field"
 
 #### 6b. Write Metadata File
 
-**CRITICAL**: Write metadata to the specified file path, NOT to console.
-
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
-
-```json
-{
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md",
-      "summary": "{phase_count}-phase implementation plan for {task_name}"
-    }
-  ],
-  "next_steps": "Run /implement {N} to execute the plan",
-  "metadata": {
-    "session_id": "{from delegation context}",
-    "agent_type": "planner-agent",
-    "duration_seconds": 123,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 2.5
-  }
-}
-```
-
-Use the Write tool to create this file.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Agent-specific metadata fields: `phase_count`, `estimated_hours`. Set `next_steps` to `"Run /implement {N} to execute the plan"`.
 
 ### Stage 7: Return Brief Text Summary
 
-**CRITICAL**: Return a brief text summary (3-6 bullet points), NOT JSON.
-
-Example return:
-```
-Plan created for task 414:
-- 5 phases defined, 2.5 hours estimated
-- Covers: agent structure, execution flow, error handling, examples, verification
-- Integrated research findings on subagent patterns
-- Created plan at specs/414_create_planner_agent/plans/MM_{short-slug}.md
-- Metadata written for skill postflight
-```
-
-**DO NOT return JSON to the console**. The skill reads metadata from the file.
+Return 3-6 bullet points summarizing: phase count, effort estimate, scope covered, plan path, metadata status.
 
 ## Error Handling
 
