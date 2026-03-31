@@ -28,6 +28,7 @@ Strategic business analysis tools for founders and entrepreneurs. Integrates for
 | `/project` | `/project "Mobile App Redesign"` | Project timeline with forcing questions |
 | `/sheet` | `/sheet "Q1 launch costs"` | Cost breakdown spreadsheet with forcing questions |
 | `/finance` | `/finance "Q1 revenue verification"` | Financial analysis and verification with forcing questions |
+| `/deck` | `/deck "Seed round pitch"` | Pitch deck creation with material synthesis |
 
 All commands accept: description string (create task), task number (run research), file path (read context), or `--quick` (legacy standalone).
 
