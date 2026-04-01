@@ -283,21 +283,22 @@ Minimum font sizes ensure legibility for all audience members. These are HARD LI
 - Includes: labels, captions, footnotes, axis labels
 - If it needs to be smaller than 20pt, remove it
 
-### Typst Implementation
+### Slidev Implementation
 
-When generating Typst slides, use these settings:
+When generating Slidev slides, use scoped CSS or Windi CSS classes to enforce font sizes:
 
-```typst
-// Title slides
-#set text(size: 44pt, weight: "bold")
-
-// Body text
-#set text(size: 24pt)
-
-// Bullet lists
-#set list(marker: [--], indent: 0.5em)
-#show list: set text(size: 24pt)
+```html
+<style>
+h1 { font-size: 3em; font-weight: 700; }  /* ~44pt equivalent */
+h2 { font-size: 2.25em; font-weight: 600; }  /* ~36pt equivalent */
+p, li { font-size: 1.5em; line-height: 1.4; }  /* ~24pt equivalent */
+</style>
 ```
+
+Use theme CSS variables for consistency:
+- `var(--slidev-text)` for primary text
+- `var(--slidev-accent)` for accent color
+- `var(--slidev-bg)` for background
 
 ---
 
@@ -403,6 +404,6 @@ The deck is a communication tool, not the pitch itself. Focus on:
 
 ## Related Context
 
-- See `touying-pitch-deck-template.md` for the Typst template implementing this structure
-- See `presentation-slides.md` for general slide generation patterns
+- See `slidev-deck-template.md` for the Slidev template implementing this structure
+- See `.context/deck/` for the reusable deck content library (themes, patterns, styles, content)
 - See `yc-compliance-checklist.md` for detailed YC compliance validation
