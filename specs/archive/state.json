@@ -1,6 +1,175 @@
 {
   "completed_projects": [
     {
+      "project_number": 348,
+      "project_name": "fix_plan_interactive_questions_founder_deck",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-04-01T21:07:53Z",
+      "last_updated": "2026-04-01T21:48:45Z",
+      "session_id": "sess_1775079513_7b2529",
+      "researched": "2026-04-01T21:29:04Z",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/348_fix_plan_interactive_questions_founder_deck/reports/02_interactive-picker-pattern.md",
+          "type": "research",
+          "summary": "Root cause: skill-deck-plan lacks AskUserQuestion in allowed-tools; interactive questions are incorrectly placed in deck-planner-agent instead of skill layer. Fix: add AskUserQuestion to skill, move 4 interactive stages from agent to skill, pass selections to agent."
+        },
+        {
+          "path": "specs/348_fix_plan_interactive_questions_founder_deck/plans/02_interactive-picker-fix.md",
+          "type": "plan",
+          "summary": "3-phase plan to move AskUserQuestion interactive pickers from deck-planner-agent into skill-deck-plan, matching the skill-fix-it pattern"
+        },
+        {
+          "path": "specs/348_fix_plan_interactive_questions_founder_deck/summaries/02_interactive-picker-fix-summary.md",
+          "type": "summary",
+          "summary": "Moved AskUserQuestion interactive pickers from deck-planner-agent to skill-deck-plan"
+        }
+      ],
+      "planned": "2026-04-01T21:35:47Z",
+      "started": "2026-04-01T21:38:47Z",
+      "completed": "2026-04-01T21:48:45Z",
+      "completion_summary": "Moved 4 interactive AskUserQuestion pickers (pattern, theme, content, ordering) from deck-planner-agent into skill-deck-plan, matching the skill-fix-it pattern. Agent now receives pre-gathered user_selections as structured input."
+    },
+    {
+      "project_number": 347,
+      "project_name": "add_interactive_deck_plan_picker",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-04-01T18:36:59Z",
+      "last_updated": "2026-04-01T19:06:50Z",
+      "session_id": "sess_1743537300_iMpL9k",
+      "researched": "2026-04-01T18:53:22Z",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/347_add_interactive_deck_plan_picker/reports/02_team-research.md",
+          "type": "research",
+          "summary": "Team research (2 teammates): command routing audit, extension skills inventory, compound language:type key analysis"
+        },
+        {
+          "path": "specs/347_add_interactive_deck_plan_picker/plans/02_deck-plan-picker.md",
+          "type": "plan",
+          "summary": "4-phase plan: fix compound key routing in /plan, /implement, /research and add founder sub-type detection to /task"
+        },
+        {
+          "path": "specs/347_add_interactive_deck_plan_picker/summaries/02_deck-plan-picker-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: fixed compound key routing in 4 command files"
+        }
+      ],
+      "planned": "2026-04-01T18:57:50Z",
+      "started": "2026-04-01T19:02:59Z",
+      "completed": "2026-04-01T19:06:50Z",
+      "completion_summary": "Fixed routing gap preventing deck-planner-agent invocation by adding compound key fallback to /plan, /implement, /research commands and founder sub-type detection to /task.",
+      "claudemd_suggestions": "Updated 4 command files in .claude/commands/ (plan.md, implement.md, research.md, task.md) with compound key routing support"
+    },
+    {
+      "project_number": 346,
+      "project_name": "refactor_deck_library_to_founder_extension",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-04-01T17:25:46Z",
+      "last_updated": "2026-04-01T18:15:00Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/346_refactor_deck_library_to_founder_extension/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research (2 teammates): file inventory, path audit, extension loader analysis, write-back tension resolution, seed-and-overlay architecture recommendation"
+        },
+        {
+          "path": "specs/346_refactor_deck_library_to_founder_extension/plans/01_deck-library-refactor.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for migrating deck library to founder extension with seed-and-overlay architecture"
+        },
+        {
+          "path": "specs/346_refactor_deck_library_to_founder_extension/summaries/01_deck-library-refactor-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for deck library refactor to founder extension"
+        }
+      ],
+      "session_id": "sess_1775068112_mR7xWq",
+      "researched": "2026-04-01T17:33:31Z",
+      "planned": "2026-04-01T17:44:00Z",
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 3,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "reports_integrated": [
+          {
+            "path": "reports/01_team-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-01"
+          }
+        ]
+      },
+      "started": "2026-04-01T17:49:54Z",
+      "completed": "2026-04-01T18:15:00Z",
+      "completion_summary": "Moved 53-file deck library from .context/deck/ to founder extension seed directory, added initialization guards to deck-planner-agent and deck-builder-agent, updated index registration from .context/index.json to extension index-entries.json, removed original .context/deck/.",
+      "claudemd_suggestions": "none"
+    },
+    {
+      "project_number": 345,
+      "project_name": "port_deck_typst_to_slidev",
+      "status": "completed",
+      "language": "founder:deck",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-04-01T16:58:10Z",
+      "session_id": "sess_1775061411_T5XCTK",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/345_port_deck_typst_to_slidev/reports/01_slidev-port-research.md",
+          "summary": "Comprehensive analysis of current Typst deck system and Slidev documentation with port strategy"
+        },
+        {
+          "type": "research",
+          "path": "specs/345_port_deck_typst_to_slidev/reports/02_slidev-standards.md",
+          "summary": "Consolidated Slidev standards and best practices for AI-driven slide generation"
+        },
+        {
+          "type": "research",
+          "path": "specs/345_port_deck_typst_to_slidev/reports/03_refactor-analysis.md",
+          "summary": "Complete file-by-file refactoring analysis for Typst-to-Slidev port"
+        },
+        {
+          "type": "plan",
+          "path": "specs/345_port_deck_typst_to_slidev/plans/02_implementation-plan.md",
+          "summary": "5-phase implementation plan for porting /deck from Typst to Slidev"
+        },
+        {
+          "type": "research",
+          "path": "specs/345_port_deck_typst_to_slidev/reports/05_deck-library-system.md",
+          "summary": "Team research (3 teammates): reusable deck library system with 12 protocols, animation library, styling presets, JSON index schema, 6-step planner workflow, and deck summary format"
+        },
+        {
+          "type": "research",
+          "path": "specs/345_port_deck_typst_to_slidev/reports/03_slidev-system-design.md",
+          "summary": "Complete Slidev system design: .context/deck/ library architecture, index.json schema, 5-step planner workflow, content library with slot syntax and write-back, builder assembly flow, agent/skill change specs"
+        },
+        {
+          "type": "plan",
+          "path": "specs/345_port_deck_typst_to_slidev/plans/03_slidev-system-plan.md",
+          "summary": "6-phase implementation plan for Slidev deck library system replacing Typst/Touying with library-based architecture at .context/deck/"
+        },
+        {
+          "path": "specs/345_port_deck_typst_to_slidev/summaries/02_slidev-system-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for Slidev deck system port with 6 phases completed"
+        }
+      ],
+      "researched": "2026-04-01T02:45:24Z",
+      "next_artifact_number": 3,
+      "planned": "2026-04-01T03:02:17Z",
+      "started": "2026-04-01T16:37:09Z",
+      "completed": "2026-04-01T16:58:10Z",
+      "completion_summary": "Ported /deck command-skill-agent system from Typst to Slidev with reusable library at .context/deck/ containing 52 indexed entries (themes, patterns, animations, styles, content, components). Rewrote planner for 5-step library-aware workflow, builder for library-based assembly, deleted 7 obsolete Typst files."
+    },
+    {
       "project_number": 318,
       "project_name": "typst_spreadsheet_template",
       "status": "completed",

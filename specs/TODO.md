@@ -6,13 +6,11 @@ next_project_number: 350
 
 ## Task Order
 
-*Updated 2026-04-01. 4 active tasks remaining.*
+*Updated 2026-04-01. 3 active tasks remaining.*
 
 ### Pending
 
-- **347** [COMPLETED] -- Add interactive deck plan picker
-- **346** [COMPLETED] -- Refactor deck library from .context/ to founder extension
-- **345** [COMPLETED] -- Port /deck command-skill-agent from Typst to Slidev
+- **349** [RESEARCHING] -- Review and update .claude/ agent system documentation
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -24,74 +22,6 @@ next_project_number: 350
 - **Language**: meta
 
 **Description**: Systematically review the .claude/ agent system and its various extensions, ensuring all documentation is correct, consistent, clear, complete, and concise. Focus particularly on .claude/README.md, .claude/extensions/README.md, and .claude/extensions/founder/README.md. Ensure Unicode box-drawing characters are used consistently (as in line 35+ of .claude/README.md).
-
-### 348. Fix /plan command not showing interactive questions for founder:deck tasks
-- **Effort**: 1-2 hours
-- **Status**: [COMPLETED]
-- **Language**: meta
-- **Research**:
-  - [01_plan-interactive-questions.md](specs/348_fix_plan_interactive_questions_founder_deck/reports/01_plan-interactive-questions.md)
-  - [02_interactive-picker-pattern.md](specs/348_fix_plan_interactive_questions_founder_deck/reports/02_interactive-picker-pattern.md)
-- **Plan**: [02_interactive-picker-fix.md](specs/348_fix_plan_interactive_questions_founder_deck/plans/02_interactive-picker-fix.md)
-- **Summary**: [02_interactive-picker-fix-summary.md](specs/348_fix_plan_interactive_questions_founder_deck/summaries/02_interactive-picker-fix-summary.md)
-
-**Description**: Fix /plan command not showing interactive questions for founder:deck tasks (pattern, theme, content, slide order). When running `/plan 135` on a founder:deck task, no interactive prompts were presented for selecting deck pattern, theme, content structure, or slide ordering -- despite task 347 implementing this feature. Identify root cause and fix.
-
-### 347. Add interactive deck plan picker
-- **Effort**: 2-4 hours
-- **Status**: [COMPLETED]
-- **Language**: meta
-- **Dependencies**: 345, 346
-- **Research**:
-  - [01_deck-plan-picker.md](347_add_interactive_deck_plan_picker/reports/01_deck-plan-picker.md)
-  - [02_team-research.md](347_add_interactive_deck_plan_picker/reports/02_team-research.md)
-- **Plan**: [02_deck-plan-picker.md](347_add_interactive_deck_plan_picker/plans/02_deck-plan-picker.md)
-- **Summary**: [02_deck-plan-picker-summary.md](347_add_interactive_deck_plan_picker/summaries/02_deck-plan-picker-summary.md)
-
-**Description**: Add an interactive question picker to the deck planning workflow (`/plan` on founder/deck tasks) so users can choose protocol/pattern, theme, content templates, and slide order before the plan is created. Currently `/plan` on a deck task routes to `skill-founder-plan` -> `founder-plan-agent` which generates a plan directly without user input. The desired behavior is that before the agent creates the plan, the user is presented with AskUserQuestion prompts to select from the deck library's available themes (5), patterns (5), animations (6), styles (9), and content templates (22) via the deck index.json. The selected choices should then be passed to the planning agent so the generated plan reflects the user's design preferences. Research what changes are needed to skill-founder-plan, founder-plan-agent, and/or the /plan command to support this interactive selection flow.
-
----
-
-### 346. Refactor deck library from .context/ to founder extension
-- **Effort**: 3-4 hours
-- **Status**: [COMPLETED]
-- **Research Started**: 2026-04-01
-- **Research Completed**: 2026-04-01
-- **Language**: meta
-- **Dependencies**: 345
-- **Research**: [01_team-research.md](346_refactor_deck_library_to_founder_extension/reports/01_team-research.md)
-- **Plan**: [01_deck-library-refactor.md](346_refactor_deck_library_to_founder_extension/plans/01_deck-library-refactor.md)
-- **Summary**: [01_deck-library-refactor-summary.md](346_refactor_deck_library_to_founder_extension/summaries/01_deck-library-refactor-summary.md)
-
-**Description**: Move the reusable deck library from `.context/deck/` (repo-local, not loaded by extension loader) to `.claude/extensions/founder/context/project/founder/deck/` so that `/deck` functionality works in any repo where the founder extension is loaded. The library contains 53 general-purpose files: 5 themes, 5 patterns, 6 animations, 9 styles, 22 content templates, 4 Vue components, and index.json. All are general founder deck resources with no repo-specific content. Refactor requires: (1) move all `.context/deck/` files to the extension path, (2) update all path references in deck-planner-agent.md, deck-builder-agent.md, and deck.md command from `.context/deck/` to the new extension path, (3) update the founder extension's context index entries in `.claude/context/index.json` to include the deck library files, (4) update the library write-back paths in deck-builder-agent so new content generated at runtime gets written back to the extension location, (5) remove or gitignore the now-empty `.context/deck/` directory, (6) verify index.json queries still resolve correctly for pattern/theme/content selection workflow.
-
----
-
-### 345. Port /deck command-skill-agent from Typst to Slidev
-- **Effort**: 6 hours
-- **Status**: [COMPLETED]
-- **Research Started**: 2026-03-31
-- **Research Completed**: 2026-04-01
-- **Planning Started**: 2026-04-01
-- **Planning Completed**: 2026-04-01
-- **Implementation Started**: 2026-04-01
-- **Implementation Completed**: 2026-04-01
-- **Language**: founder:deck
-- **Dependencies**: None
-- **Research**:
-  - [01_slidev-port-research.md](345_port_deck_typst_to_slidev/reports/01_slidev-port-research.md)
-  - [02_slidev-standards.md](345_port_deck_typst_to_slidev/reports/02_slidev-standards.md)
-  - [03_refactor-analysis.md](345_port_deck_typst_to_slidev/reports/03_refactor-analysis.md)
-  - [05_deck-library-system.md](345_port_deck_typst_to_slidev/reports/05_deck-library-system.md)
-  - [03_slidev-system-design.md](345_port_deck_typst_to_slidev/reports/03_slidev-system-design.md)
-- **Plan**:
-  - [02_implementation-plan.md](345_port_deck_typst_to_slidev/plans/02_implementation-plan.md)
-  - [03_slidev-system-plan.md](345_port_deck_typst_to_slidev/plans/03_slidev-system-plan.md)
-- **Summary**: [02_slidev-system-summary.md](345_port_deck_typst_to_slidev/summaries/02_slidev-system-summary.md)
-
-**Description**: Port the /deck command-skill-agent system from generating Typst/Touying pitch decks to Slidev markdown-based presentations. Replace 5 .typ templates with Slidev .md templates using themes and scoped CSS. Update deck-builder-agent to emit Slidev markdown and run `slidev export` instead of `typst compile`. Update deck-planner-agent template selection for Slidev themes. Update context patterns from Touying to Slidev conventions. Preserve: YC 10-slide structure, forcing questions workflow, material synthesis pattern, early metadata, non-blocking compilation, 4 deck modes, 3-question planning flow.
-
----
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
