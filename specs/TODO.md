@@ -1,5 +1,5 @@
 ---
-next_project_number: 348
+next_project_number: 349
 ---
 
 # TODO
@@ -17,6 +17,13 @@ next_project_number: 348
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 348. Fix /plan command not showing interactive questions for founder:deck tasks
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Fix /plan command not showing interactive questions for founder:deck tasks (pattern, theme, content, slide order). When running `/plan 135` on a founder:deck task, no interactive prompts were presented for selecting deck pattern, theme, content structure, or slide ordering -- despite task 347 implementing this feature. Identify root cause and fix.
 
 ### 347. Add interactive deck plan picker
 - **Effort**: 2-4 hours
@@ -102,3 +109,7 @@ next_project_number: 348
 **Description**: Fix Gmail SMTP authentication failure when sending emails via Himalaya (<leader>me). Error: "Authentication failed: Code: 535, Enhanced code: 5.7.8, Message: Username and Password not accepted". The error occurs with TLS connection attempts and persists through multiple retry attempts. Identify and fix the root cause of the SMTP credential configuration.
 
 ---
+
+## Recommended Order
+
+1. **348** -> research (independent)

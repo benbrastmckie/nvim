@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 348,
+  "next_project_number": 349,
   "active_projects": [
+    {
+      "project_number": 348,
+      "project_name": "fix_plan_interactive_questions_founder_deck",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-01T21:07:53Z",
+      "last_updated": "2026-04-01T21:07:53Z"
+    },
     {
       "project_number": 347,
       "project_name": "add_interactive_deck_plan_picker",
