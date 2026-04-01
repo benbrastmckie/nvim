@@ -5,11 +5,11 @@
     {
       "project_number": 347,
       "project_name": "add_interactive_deck_plan_picker",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-01T18:36:59Z",
-      "last_updated": "2026-04-01T18:53:22Z",
-      "session_id": "sess_1775071452_vN8pRq",
+      "last_updated": "2026-04-01T18:57:50Z",
+      "session_id": "sess_1743537000_pL4nX7",
       "researched": "2026-04-01T18:53:22Z",
       "next_artifact_number": 3,
       "artifacts": [
@@ -17,8 +17,14 @@
           "path": "specs/347_add_interactive_deck_plan_picker/reports/02_team-research.md",
           "type": "research",
           "summary": "Team research (2 teammates): command routing audit, extension skills inventory, compound language:type key analysis"
+        },
+        {
+          "path": "specs/347_add_interactive_deck_plan_picker/plans/02_deck-plan-picker.md",
+          "type": "plan",
+          "summary": "4-phase plan: fix compound key routing in /plan, /implement, /research and add founder sub-type detection to /task"
         }
-      ]
+      ],
+      "planned": "2026-04-01T18:57:50Z"
     },
     {
       "project_number": 345,
