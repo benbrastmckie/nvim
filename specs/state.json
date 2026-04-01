@@ -254,7 +254,8 @@
           "path": "specs/344_migrate_deck_present_to_founder/reports/01_migrate-deck-present.md",
           "summary": "Migration inventory: 10 files to delete, 3 to move, 10 to edit across present/founder/filetypes extensions"
         }
-      ]
+      ],
+      "next_artifact_number": 2
     }
   ],
   "completed_projects": [],
