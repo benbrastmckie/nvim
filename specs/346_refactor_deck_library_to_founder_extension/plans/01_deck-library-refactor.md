@@ -95,7 +95,7 @@ Team research (2 teammates) identified the critical tension between extension lo
 
 ---
 
-### Phase 3: Update Index Registration [NOT STARTED]
+### Phase 3: Update Index Registration [COMPLETED]
 
 **Goal**: Move the deck library registration from `.context/index.json` to the extension's `index-entries.json` so it is discoverable through the standard context index.
 

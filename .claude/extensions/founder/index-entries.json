@@ -647,6 +647,26 @@
       },
       "domain": "project",
       "subdomain": "founder"
+    },
+    {
+      "path": "project/founder/deck/index.json",
+      "summary": "Slidev deck library sub-index with themes, patterns, animations, styles, content templates, and Vue components for agent-driven deck construction",
+      "line_count": 477,
+      "load_when": {
+        "agents": [
+          "deck-planner-agent",
+          "deck-builder-agent",
+          "deck-research-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "commands": [
+          "/deck"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "founder"
     }
   ]
 }
