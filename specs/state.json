@@ -8,15 +8,15 @@
       "status": "researched",
       "language": "meta",
       "created": "2026-04-01T18:36:59Z",
-      "last_updated": "2026-04-01T18:42:25Z",
-      "session_id": "sess_1775071054_kQ3mVn",
-      "researched": "2026-04-01T18:42:25Z",
-      "next_artifact_number": 2,
+      "last_updated": "2026-04-01T18:53:22Z",
+      "session_id": "sess_1775071452_vN8pRq",
+      "researched": "2026-04-01T18:53:22Z",
+      "next_artifact_number": 3,
       "artifacts": [
         {
-          "path": "specs/347_add_interactive_deck_plan_picker/reports/01_deck-plan-picker.md",
+          "path": "specs/347_add_interactive_deck_plan_picker/reports/02_team-research.md",
           "type": "research",
-          "summary": "Research report identifying routing bug preventing deck-planner-agent from being invoked. Agent and skill already complete; fix is 3 command file edits."
+          "summary": "Team research (2 teammates): command routing audit, extension skills inventory, compound language:type key analysis"
         }
       ]
     },
