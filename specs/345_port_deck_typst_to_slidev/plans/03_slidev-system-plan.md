@@ -158,7 +158,7 @@ Five research reports and one prior plan were integrated:
 
 ---
 
-### Phase 3: Content Library -- Reusable Slide Markdown Snippets [NOT STARTED]
+### Phase 3: Content Library -- Reusable Slide Markdown Snippets [COMPLETED]
 
 **Goal**: Populate `.context/deck/contents/` with ~20 reusable slide markdown snippets following the content file format (header comment block with CONTENT/SLIDE_TYPE/LAYOUT/COMPATIBLE_MODES/CONTENT_SLOTS/ANIMATIONS/IMPORT metadata, then Slidev markdown with `[SLOT: ...]` markers). Add content entries to index.json.
 

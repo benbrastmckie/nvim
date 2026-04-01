@@ -265,6 +265,213 @@
       "path": "components/ComparisonCol.vue",
       "description": "Column for side-by-side comparison layouts.",
       "tags": { "props": ["title", "points", "color", "highlight"] }
+    },
+    {
+      "id": "content-cover-standard",
+      "category": "content",
+      "name": "Standard Cover Slide",
+      "path": "contents/cover/cover-standard.md",
+      "description": "Title slide with company name, tagline, and funding round.",
+      "tags": { "slide_type": "cover", "layout": "cover", "deck_mode": ["INVESTOR", "UPDATE", "PARTNERSHIP"] },
+      "content_slots": ["company_name", "tagline", "funding_round", "date"]
+    },
+    {
+      "id": "content-cover-hero",
+      "category": "content",
+      "name": "Hero Cover Slide",
+      "path": "contents/cover/cover-hero.md",
+      "description": "Full-bleed hero cover with bold typography.",
+      "tags": { "slide_type": "cover", "layout": "cover", "deck_mode": ["INVESTOR", "DEMO", "PARTNERSHIP"] },
+      "content_slots": ["company_name", "tagline", "hero_image_url"]
+    },
+    {
+      "id": "content-problem-statement",
+      "category": "content",
+      "name": "Problem Statement",
+      "path": "contents/problem/problem-statement.md",
+      "description": "Bold single-sentence problem with 3 evidence points.",
+      "tags": { "slide_type": "problem", "layout": "statement", "deck_mode": ["INVESTOR", "PARTNERSHIP", "LIGHTNING"] },
+      "content_slots": ["problem_statement", "evidence_1", "evidence_2", "evidence_3"]
+    },
+    {
+      "id": "content-problem-story",
+      "category": "content",
+      "name": "Problem Story",
+      "path": "contents/problem/problem-story.md",
+      "description": "Narrative problem framing with impact statistic.",
+      "tags": { "slide_type": "problem", "layout": "default", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["problem_headline", "story_text", "impact_stat"]
+    },
+    {
+      "id": "content-solution-two-col",
+      "category": "content",
+      "name": "Solution Two-Column",
+      "path": "contents/solution/solution-two-col.md",
+      "description": "Benefits left column, mechanism right column.",
+      "tags": { "slide_type": "solution", "layout": "two-cols", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["solution_headline", "benefit_1", "benefit_2", "benefit_3", "mechanism_title", "mechanism_desc"]
+    },
+    {
+      "id": "content-solution-demo",
+      "category": "content",
+      "name": "Solution with Demo",
+      "path": "contents/solution/solution-demo.md",
+      "description": "Solution with screenshot callout and key differentiator.",
+      "tags": { "slide_type": "solution", "layout": "image-right", "deck_mode": ["INVESTOR", "DEMO", "LIGHTNING"] },
+      "content_slots": ["solution_headline", "solution_desc", "key_differentiator", "screenshot_url"]
+    },
+    {
+      "id": "content-traction-metrics",
+      "category": "content",
+      "name": "Traction Metrics (3-up)",
+      "path": "contents/traction/traction-metrics.md",
+      "description": "Three key metrics with staggered cascade animation.",
+      "tags": { "slide_type": "traction", "layout": "fact", "deck_mode": ["INVESTOR", "LIGHTNING", "UPDATE"] },
+      "content_slots": ["metric_1_value", "metric_1_label", "metric_2_value", "metric_2_label", "metric_3_value", "metric_3_label", "context_note"]
+    },
+    {
+      "id": "content-traction-chart",
+      "category": "content",
+      "name": "Traction Chart",
+      "path": "contents/traction/traction-chart.md",
+      "description": "Growth chart visualization with trend description.",
+      "tags": { "slide_type": "traction", "layout": "default", "deck_mode": ["INVESTOR", "UPDATE"] },
+      "content_slots": ["chart_title", "chart_description", "growth_rate"]
+    },
+    {
+      "id": "content-market-tam-sam-som",
+      "category": "content",
+      "name": "Market TAM/SAM/SOM",
+      "path": "contents/market/market-tam-sam-som.md",
+      "description": "Three-tier market sizing with staggered reveal.",
+      "tags": { "slide_type": "market", "layout": "default", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["market_title", "tam_value", "tam_desc", "sam_value", "sam_desc", "som_value", "som_desc", "growth_rate"]
+    },
+    {
+      "id": "content-market-narrative",
+      "category": "content",
+      "name": "Market Narrative",
+      "path": "contents/market/market-narrative.md",
+      "description": "Text-based market sizing with trend and timing.",
+      "tags": { "slide_type": "market", "layout": "default", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["market_headline", "market_size", "market_trend", "target_segment", "timing_argument"]
+    },
+    {
+      "id": "content-team-two-col",
+      "category": "content",
+      "name": "Team Two-Column",
+      "path": "contents/team/team-two-col.md",
+      "description": "Two-column founder display with bios.",
+      "tags": { "slide_type": "team", "layout": "two-cols", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["founder_1_name", "founder_1_role", "founder_1_bio", "founder_2_name", "founder_2_role", "founder_2_bio"]
+    },
+    {
+      "id": "content-team-grid",
+      "category": "content",
+      "name": "Team Grid",
+      "path": "contents/team/team-grid.md",
+      "description": "Multi-member grid layout for larger teams.",
+      "tags": { "slide_type": "team", "layout": "default", "deck_mode": ["INVESTOR", "UPDATE", "PARTNERSHIP"] },
+      "content_slots": ["member_1_name", "member_1_role", "member_2_name", "member_2_role", "member_3_name", "member_3_role", "member_4_name", "member_4_role"]
+    },
+    {
+      "id": "content-ask-centered",
+      "category": "content",
+      "name": "Ask (Centered)",
+      "path": "contents/ask/ask-centered.md",
+      "description": "Centered raise amount with allocation breakdown.",
+      "tags": { "slide_type": "ask", "layout": "center", "deck_mode": ["INVESTOR", "LIGHTNING"] },
+      "content_slots": ["raise_amount", "allocation_1", "allocation_2", "allocation_3", "milestone"]
+    },
+    {
+      "id": "content-ask-milestone",
+      "category": "content",
+      "name": "Ask with Milestones",
+      "path": "contents/ask/ask-milestone.md",
+      "description": "Raise amount with milestone timeline.",
+      "tags": { "slide_type": "ask", "layout": "default", "deck_mode": ["INVESTOR", "UPDATE"] },
+      "content_slots": ["raise_amount", "use_of_funds", "milestone_1", "milestone_1_date", "milestone_2", "milestone_2_date", "milestone_3", "milestone_3_date"]
+    },
+    {
+      "id": "content-biz-model-pricing",
+      "category": "content",
+      "name": "Business Model (Pricing)",
+      "path": "contents/business-model/biz-model-pricing.md",
+      "description": "Revenue model with pricing and unit economics.",
+      "tags": { "slide_type": "business-model", "layout": "default", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["revenue_model", "pricing_desc", "unit_economics", "ltv_cac_ratio"]
+    },
+    {
+      "id": "content-biz-model-saas",
+      "category": "content",
+      "name": "Business Model (SaaS)",
+      "path": "contents/business-model/biz-model-saas.md",
+      "description": "SaaS-specific metrics: ARR, MRR, churn, ARPU, CAC, LTV.",
+      "tags": { "slide_type": "business-model", "layout": "default", "deck_mode": ["INVESTOR", "UPDATE"] },
+      "content_slots": ["arr_value", "mrr_growth", "churn_rate", "arpu", "cac", "ltv"]
+    },
+    {
+      "id": "content-why-us-now-split",
+      "category": "content",
+      "name": "Why Us / Why Now Split",
+      "path": "contents/why-us-now/why-us-now-split.md",
+      "description": "Two-column Why Us left, Why Now right.",
+      "tags": { "slide_type": "why-us-now", "layout": "two-cols", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["why_us_1", "why_us_2", "why_us_3", "why_now_1", "why_now_2", "why_now_3"]
+    },
+    {
+      "id": "content-why-us-moat",
+      "category": "content",
+      "name": "Why Us (Technical Moat)",
+      "path": "contents/why-us-now/why-us-moat.md",
+      "description": "Technical moat emphasis with competitive advantages.",
+      "tags": { "slide_type": "why-us-now", "layout": "default", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["moat_headline", "moat_desc", "advantage_1", "advantage_2", "advantage_3"]
+    },
+    {
+      "id": "content-closing-standard",
+      "category": "content",
+      "name": "Standard Closing",
+      "path": "contents/closing/closing-standard.md",
+      "description": "Company name and contact info closing slide.",
+      "tags": { "slide_type": "closing", "layout": "end", "deck_mode": ["INVESTOR", "UPDATE", "PARTNERSHIP"] },
+      "content_slots": ["company_name", "contact_email", "website_url"]
+    },
+    {
+      "id": "content-closing-cta",
+      "category": "content",
+      "name": "Closing with CTA",
+      "path": "contents/closing/closing-cta.md",
+      "description": "Call-to-action closing with next steps.",
+      "tags": { "slide_type": "closing", "layout": "center", "deck_mode": ["INVESTOR", "PARTNERSHIP", "DEMO"] },
+      "content_slots": ["cta_headline", "cta_description", "next_step_1", "next_step_2", "contact_email"]
+    },
+    {
+      "id": "content-appendix-financials",
+      "category": "content",
+      "name": "Appendix: Financials",
+      "path": "contents/appendix/appendix-financials.md",
+      "description": "Financial projections with burn rate and runway.",
+      "tags": { "slide_type": "appendix", "layout": "default", "deck_mode": ["INVESTOR", "UPDATE"] },
+      "content_slots": ["revenue_y1", "revenue_y2", "revenue_y3", "burn_rate", "runway_months", "key_assumptions"]
+    },
+    {
+      "id": "content-appendix-competition",
+      "category": "content",
+      "name": "Appendix: Competition",
+      "path": "contents/appendix/appendix-competition.md",
+      "description": "Competitive landscape with differentiation.",
+      "tags": { "slide_type": "appendix", "layout": "default", "deck_mode": ["INVESTOR", "PARTNERSHIP"] },
+      "content_slots": ["competitor_1", "competitor_1_weakness", "competitor_2", "competitor_2_weakness", "competitor_3", "competitor_3_weakness", "our_advantage"]
+    },
+    {
+      "id": "content-appendix-roadmap",
+      "category": "content",
+      "name": "Appendix: Roadmap",
+      "path": "contents/appendix/appendix-roadmap.md",
+      "description": "Product roadmap timeline with milestones.",
+      "tags": { "slide_type": "appendix", "layout": "default", "deck_mode": ["INVESTOR", "UPDATE", "PARTNERSHIP"] },
+      "content_slots": ["milestone_1", "milestone_1_date", "milestone_2", "milestone_2_date", "milestone_3", "milestone_3_date", "milestone_4", "milestone_4_date"]
     }
   ]
 }
