@@ -102,10 +102,10 @@
     {
       "project_number": 346,
       "project_name": "refactor_deck_library_to_founder_extension",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-01T17:25:46Z",
-      "last_updated": "2026-04-01T17:44:00Z",
+      "last_updated": "2026-04-01T18:15:00Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -117,9 +117,14 @@
           "path": "specs/346_refactor_deck_library_to_founder_extension/plans/01_deck-library-refactor.md",
           "type": "plan",
           "summary": "4-phase implementation plan for migrating deck library to founder extension with seed-and-overlay architecture"
+        },
+        {
+          "path": "specs/346_refactor_deck_library_to_founder_extension/summaries/01_deck-library-refactor-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for deck library refactor to founder extension"
         }
       ],
-      "session_id": "sess_1775067856_pLn2Kv",
+      "session_id": "sess_1775068112_mR7xWq",
       "researched": "2026-04-01T17:33:31Z",
       "planned": "2026-04-01T17:44:00Z",
       "plan_metadata": {
@@ -135,7 +140,11 @@
             "integrated_date": "2026-04-01"
           }
         ]
-      }
+      },
+      "started": "2026-04-01T17:49:54Z",
+      "completed": "2026-04-01T18:15:00Z",
+      "completion_summary": "Moved 53-file deck library from .context/deck/ to founder extension seed directory, added initialization guards to deck-planner-agent and deck-builder-agent, updated index registration from .context/index.json to extension index-entries.json, removed original .context/deck/.",
+      "claudemd_suggestions": "none"
     }
   ],
   "completed_projects": [],

@@ -10,7 +10,7 @@ next_project_number: 347
 
 ### Pending
 
-- **346** [PLANNED] -- Refactor deck library from .context/ to founder extension
+- **346** [COMPLETED] -- Refactor deck library from .context/ to founder extension
 - **345** [COMPLETED] -- Port /deck command-skill-agent from Typst to Slidev
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -19,13 +19,14 @@ next_project_number: 347
 
 ### 346. Refactor deck library from .context/ to founder extension
 - **Effort**: 3-4 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Research Started**: 2026-04-01
 - **Research Completed**: 2026-04-01
 - **Language**: meta
 - **Dependencies**: 345
 - **Research**: [01_team-research.md](346_refactor_deck_library_to_founder_extension/reports/01_team-research.md)
 - **Plan**: [01_deck-library-refactor.md](346_refactor_deck_library_to_founder_extension/plans/01_deck-library-refactor.md)
+- **Summary**: [01_deck-library-refactor-summary.md](346_refactor_deck_library_to_founder_extension/summaries/01_deck-library-refactor-summary.md)
 
 **Description**: Move the reusable deck library from `.context/deck/` (repo-local, not loaded by extension loader) to `.claude/extensions/founder/context/project/founder/deck/` so that `/deck` functionality works in any repo where the founder extension is loaded. The library contains 53 general-purpose files: 5 themes, 5 patterns, 6 animations, 9 styles, 22 content templates, 4 Vue components, and index.json. All are general founder deck resources with no repo-specific content. Refactor requires: (1) move all `.context/deck/` files to the extension path, (2) update all path references in deck-planner-agent.md, deck-builder-agent.md, and deck.md command from `.context/deck/` to the new extension path, (3) update the founder extension's context index entries in `.claude/context/index.json` to include the deck library files, (4) update the library write-back paths in deck-builder-agent so new content generated at runtime gets written back to the extension location, (5) remove or gitignore the now-empty `.context/deck/` directory, (6) verify index.json queries still resolve correctly for pattern/theme/content selection workflow.
 
