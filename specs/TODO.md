@@ -1,20 +1,31 @@
 ---
-next_project_number: 346
+next_project_number: 347
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-03-31. 3 active tasks remaining.*
+*Updated 2026-04-01. 4 active tasks remaining.*
 
 ### Pending
 
+- **346** [NOT STARTED] -- Refactor deck library from .context/ to founder extension
 - **345** [COMPLETED] -- Port /deck command-skill-agent from Typst to Slidev
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 346. Refactor deck library from .context/ to founder extension
+- **Effort**: 3-4 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: 345
+
+**Description**: Move the reusable deck library from `.context/deck/` (repo-local, not loaded by extension loader) to `.claude/extensions/founder/context/project/founder/deck/` so that `/deck` functionality works in any repo where the founder extension is loaded. The library contains 53 general-purpose files: 5 themes, 5 patterns, 6 animations, 9 styles, 22 content templates, 4 Vue components, and index.json. All are general founder deck resources with no repo-specific content. Refactor requires: (1) move all `.context/deck/` files to the extension path, (2) update all path references in deck-planner-agent.md, deck-builder-agent.md, and deck.md command from `.context/deck/` to the new extension path, (3) update the founder extension's context index entries in `.claude/context/index.json` to include the deck library files, (4) update the library write-back paths in deck-builder-agent so new content generated at runtime gets written back to the extension location, (5) remove or gitignore the now-empty `.context/deck/` directory, (6) verify index.json queries still resolve correctly for pattern/theme/content selection workflow.
+
+---
 
 ### 345. Port /deck command-skill-agent from Typst to Slidev
 - **Effort**: 6 hours

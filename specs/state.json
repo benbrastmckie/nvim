@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "next_project_number": 346,
+  "next_project_number": 347,
   "active_projects": [
     {
       "project_number": 345,
@@ -98,6 +98,16 @@
       ],
       "session_id": "sess_1771006114_e73864",
       "planned": "2026-02-13T18:10:48Z"
+    },
+    {
+      "project_number": 346,
+      "project_name": "refactor_deck_library_to_founder_extension",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-01T17:25:46Z",
+      "last_updated": "2026-04-01T17:25:46Z",
+      "next_artifact_number": 1,
+      "artifacts": []
     }
   ],
   "completed_projects": [],
