@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "generated": "2026-04-01T12:00:00Z",
+  "description": "Slidev deck library index for agent-driven deck construction",
+  "categories": {
+    "theme": {
+      "description": "Slidev headmatter + themeConfig presets",
+      "directory": "themes/"
+    },
+    "pattern": {
+      "description": "Deck structural patterns defining slide sequences",
+      "directory": "patterns/"
+    },
+    "animation": {
+      "description": "Reusable animation pattern definitions with syntax examples",
+      "directory": "animations/"
+    },
+    "style": {
+      "description": "Composable CSS presets for colors, typography, textures",
+      "directory": "styles/"
+    },
+    "content": {
+      "description": "Reusable slide content markdown snippets",
+      "directory": "contents/"
+    },
+    "component": {
+      "description": "Reusable Vue components for slide construction",
+      "directory": "components/"
+    }
+  },
+  "entries": []
+}

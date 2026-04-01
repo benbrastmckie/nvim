@@ -10,7 +10,7 @@ next_project_number: 346
 
 ### Pending
 
-- **345** [PLANNED] -- Port /deck command-skill-agent from Typst to Slidev
+- **345** [IMPLEMENTING] -- Port /deck command-skill-agent from Typst to Slidev
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,11 +18,12 @@ next_project_number: 346
 
 ### 345. Port /deck command-skill-agent from Typst to Slidev
 - **Effort**: 6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Research Started**: 2026-03-31
 - **Research Completed**: 2026-04-01
 - **Planning Started**: 2026-04-01
 - **Planning Completed**: 2026-04-01
+- **Implementation Started**: 2026-04-01
 - **Language**: founder:deck
 - **Dependencies**: None
 - **Research**:

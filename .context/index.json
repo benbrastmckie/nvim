@@ -3,5 +3,16 @@
   "generated": "2026-03-25T00:00:00Z",
   "scope": "project",
   "description": "Project-specific conventions and domain knowledge not covered by extensions. Independent from .memory/ — both loaded in parallel for project knowledge.",
-  "entries": []
+  "entries": [
+    {
+      "path": "deck/index.json",
+      "summary": "Slidev deck library index with themes, patterns, animations, styles, content snippets, and Vue components for agent-driven deck construction",
+      "line_count": 50,
+      "load_when": {
+        "agents": ["deck-planner-agent", "deck-builder-agent", "deck-research-agent"],
+        "languages": ["founder"],
+        "commands": ["/deck"]
+      }
+    }
+  ]
 }
