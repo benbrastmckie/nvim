@@ -8,8 +8,8 @@
       "status": "researched",
       "language": "founder:deck",
       "created": "2026-03-31T00:00:00Z",
-      "last_updated": "2026-04-01T02:14:04Z",
-      "session_id": "sess_1775008765_d4ec56",
+      "last_updated": "2026-04-01T02:45:24Z",
+      "session_id": "sess_1775010001_0ddd8b",
       "artifacts": [
         {
           "type": "research",
@@ -20,10 +20,15 @@
           "type": "research",
           "path": "specs/345_port_deck_typst_to_slidev/reports/02_slidev-standards.md",
           "summary": "Consolidated Slidev standards and best practices for AI-driven slide generation"
+        },
+        {
+          "type": "research",
+          "path": "specs/345_port_deck_typst_to_slidev/reports/03_refactor-analysis.md",
+          "summary": "Complete file-by-file refactoring analysis for Typst-to-Slidev port"
         }
       ],
-      "researched": "2026-04-01T02:14:04Z",
-      "next_artifact_number": 2
+      "researched": "2026-04-01T02:45:24Z",
+      "next_artifact_number": 3
     },
     {
       "project_number": 87,

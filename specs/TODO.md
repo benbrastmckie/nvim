@@ -26,6 +26,7 @@ next_project_number: 346
 - **Research**:
   - [01_slidev-port-research.md](345_port_deck_typst_to_slidev/reports/01_slidev-port-research.md)
   - [02_slidev-standards.md](345_port_deck_typst_to_slidev/reports/02_slidev-standards.md)
+  - [03_refactor-analysis.md](345_port_deck_typst_to_slidev/reports/03_refactor-analysis.md)
 
 **Description**: Port the /deck command-skill-agent system from generating Typst/Touying pitch decks to Slidev markdown-based presentations. Replace 5 .typ templates with Slidev .md templates using themes and scoped CSS. Update deck-builder-agent to emit Slidev markdown and run `slidev export` instead of `typst compile`. Update deck-planner-agent template selection for Slidev themes. Update context patterns from Touying to Slidev conventions. Preserve: YC 10-slide structure, forcing questions workflow, material synthesis pattern, early metadata, non-blocking compilation, 4 deck modes, 3-question planning flow.
 
