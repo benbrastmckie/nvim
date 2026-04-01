@@ -5,10 +5,10 @@
     {
       "project_number": 345,
       "project_name": "port_deck_typst_to_slidev",
-      "status": "implementing",
+      "status": "completed",
       "language": "founder:deck",
       "created": "2026-03-31T00:00:00Z",
-      "last_updated": "2026-04-01T16:37:09Z",
+      "last_updated": "2026-04-01T16:58:10Z",
       "session_id": "sess_1775061411_T5XCTK",
       "artifacts": [
         {
@@ -45,12 +45,19 @@
           "type": "plan",
           "path": "specs/345_port_deck_typst_to_slidev/plans/03_slidev-system-plan.md",
           "summary": "6-phase implementation plan for Slidev deck library system replacing Typst/Touying with library-based architecture at .context/deck/"
+        },
+        {
+          "path": "specs/345_port_deck_typst_to_slidev/summaries/02_slidev-system-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for Slidev deck system port with 6 phases completed"
         }
       ],
       "researched": "2026-04-01T02:45:24Z",
       "next_artifact_number": 3,
       "planned": "2026-04-01T03:02:17Z",
-      "started": "2026-04-01T16:37:09Z"
+      "started": "2026-04-01T16:37:09Z",
+      "completed": "2026-04-01T16:58:10Z",
+      "completion_summary": "Ported /deck command-skill-agent system from Typst to Slidev with reusable library at .context/deck/ containing 52 indexed entries (themes, patterns, animations, styles, content, components). Rewrote planner for 5-step library-aware workflow, builder for library-based assembly, deleted 7 obsolete Typst files."
     },
     {
       "project_number": 87,
