@@ -5,10 +5,10 @@
     {
       "project_number": 347,
       "project_name": "add_interactive_deck_plan_picker",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-01T18:36:59Z",
-      "last_updated": "2026-04-01T19:02:59Z",
+      "last_updated": "2026-04-01T19:06:50Z",
       "session_id": "sess_1743537300_iMpL9k",
       "researched": "2026-04-01T18:53:22Z",
       "next_artifact_number": 3,
@@ -22,10 +22,17 @@
           "path": "specs/347_add_interactive_deck_plan_picker/plans/02_deck-plan-picker.md",
           "type": "plan",
           "summary": "4-phase plan: fix compound key routing in /plan, /implement, /research and add founder sub-type detection to /task"
+        },
+        {
+          "path": "specs/347_add_interactive_deck_plan_picker/summaries/02_deck-plan-picker-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: fixed compound key routing in 4 command files"
         }
       ],
       "planned": "2026-04-01T18:57:50Z",
-      "started": "2026-04-01T19:02:59Z"
+      "started": "2026-04-01T19:02:59Z",
+      "completed": "2026-04-01T19:06:50Z",
+      "completion_summary": "Fixed routing gap preventing deck-planner-agent invocation by adding compound key fallback to /plan, /implement, /research commands and founder sub-type detection to /task."
     },
     {
       "project_number": 345,
