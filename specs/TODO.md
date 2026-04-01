@@ -1,5 +1,5 @@
 ---
-next_project_number: 347
+next_project_number: 348
 ---
 
 # TODO
@@ -10,12 +10,23 @@ next_project_number: 347
 
 ### Pending
 
+- **347** [NOT STARTED] -- Add interactive deck plan picker
 - **346** [COMPLETED] -- Refactor deck library from .context/ to founder extension
 - **345** [COMPLETED] -- Port /deck command-skill-agent from Typst to Slidev
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 347. Add interactive deck plan picker
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: 345, 346
+
+**Description**: Add an interactive question picker to the deck planning workflow (`/plan` on founder/deck tasks) so users can choose protocol/pattern, theme, content templates, and slide order before the plan is created. Currently `/plan` on a deck task routes to `skill-founder-plan` -> `founder-plan-agent` which generates a plan directly without user input. The desired behavior is that before the agent creates the plan, the user is presented with AskUserQuestion prompts to select from the deck library's available themes (5), patterns (5), animations (6), styles (9), and content templates (22) via the deck index.json. The selected choices should then be passed to the planning agent so the generated plan reflects the user's design preferences. Research what changes are needed to skill-founder-plan, founder-plan-agent, and/or the /plan command to support this interactive selection flow.
+
+---
 
 ### 346. Refactor deck library from .context/ to founder extension
 - **Effort**: 3-4 hours

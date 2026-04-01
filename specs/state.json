@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 347,
+  "next_project_number": 348,
   "active_projects": [
+    {
+      "project_number": 347,
+      "project_name": "add_interactive_deck_plan_picker",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-01T18:36:59Z",
+      "last_updated": "2026-04-01T18:36:59Z"
+    },
     {
       "project_number": 345,
       "project_name": "port_deck_typst_to_slidev",
