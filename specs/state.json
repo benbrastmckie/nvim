@@ -5,18 +5,19 @@
     {
       "project_number": 349,
       "project_name": "review_update_claude_agent_system_docs",
-      "status": "not_started",
+      "status": "researching",
       "language": "meta",
       "created": "2026-04-01T21:42:38Z",
-      "last_updated": "2026-04-01T21:42:38Z"
+      "last_updated": "2026-04-01T21:45:37Z",
+      "session_id": "sess_1743544958_r349tm"
     },
     {
       "project_number": 348,
       "project_name": "fix_plan_interactive_questions_founder_deck",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-01T21:07:53Z",
-      "last_updated": "2026-04-01T21:38:47Z",
+      "last_updated": "2026-04-01T21:48:45Z",
       "session_id": "sess_1775079513_7b2529",
       "researched": "2026-04-01T21:29:04Z",
       "next_artifact_number": 3,
@@ -30,10 +31,17 @@
           "path": "specs/348_fix_plan_interactive_questions_founder_deck/plans/02_interactive-picker-fix.md",
           "type": "plan",
           "summary": "3-phase plan to move AskUserQuestion interactive pickers from deck-planner-agent into skill-deck-plan, matching the skill-fix-it pattern"
+        },
+        {
+          "path": "specs/348_fix_plan_interactive_questions_founder_deck/summaries/02_interactive-picker-fix-summary.md",
+          "type": "summary",
+          "summary": "Moved AskUserQuestion interactive pickers from deck-planner-agent to skill-deck-plan"
         }
       ],
       "planned": "2026-04-01T21:35:47Z",
-      "started": "2026-04-01T21:38:47Z"
+      "started": "2026-04-01T21:38:47Z",
+      "completed": "2026-04-01T21:48:45Z",
+      "completion_summary": "Moved 4 interactive AskUserQuestion pickers (pattern, theme, content, ordering) from deck-planner-agent into skill-deck-plan, matching the skill-fix-it pattern. Agent now receives pre-gathered user_selections as structured input."
     },
     {
       "project_number": 347,

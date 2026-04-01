@@ -20,19 +20,20 @@ next_project_number: 350
 
 ### 349. Review and update .claude/ agent system documentation for correctness and consistency
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 
 **Description**: Systematically review the .claude/ agent system and its various extensions, ensuring all documentation is correct, consistent, clear, complete, and concise. Focus particularly on .claude/README.md, .claude/extensions/README.md, and .claude/extensions/founder/README.md. Ensure Unicode box-drawing characters are used consistently (as in line 35+ of .claude/README.md).
 
 ### 348. Fix /plan command not showing interactive questions for founder:deck tasks
 - **Effort**: 1-2 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Research**:
   - [01_plan-interactive-questions.md](specs/348_fix_plan_interactive_questions_founder_deck/reports/01_plan-interactive-questions.md)
   - [02_interactive-picker-pattern.md](specs/348_fix_plan_interactive_questions_founder_deck/reports/02_interactive-picker-pattern.md)
 - **Plan**: [02_interactive-picker-fix.md](specs/348_fix_plan_interactive_questions_founder_deck/plans/02_interactive-picker-fix.md)
+- **Summary**: [02_interactive-picker-fix-summary.md](specs/348_fix_plan_interactive_questions_founder_deck/summaries/02_interactive-picker-fix-summary.md)
 
 **Description**: Fix /plan command not showing interactive questions for founder:deck tasks (pattern, theme, content, slide order). When running `/plan 135` on a founder:deck task, no interactive prompts were presented for selecting deck pattern, theme, content structure, or slide ordering -- despite task 347 implementing this feature. Identify root cause and fix.
 
@@ -123,4 +124,3 @@ next_project_number: 350
 
 ## Recommended Order
 
-1. **348** -> research (independent)

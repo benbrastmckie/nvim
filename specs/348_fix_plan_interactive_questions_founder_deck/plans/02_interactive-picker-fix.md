@@ -1,7 +1,7 @@
 # Implementation Plan: Fix /plan Interactive Questions for founder:deck
 
 - **Task**: 348 - Fix /plan command not showing interactive questions for founder:deck tasks
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Task 347 (compound key routing - completed)
 - **Research Inputs**: specs/348_fix_plan_interactive_questions_founder_deck/reports/02_interactive-picker-pattern.md
