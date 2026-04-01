@@ -12,20 +12,20 @@ The extension system enables modular domain support that can be loaded and unloa
 Extension Source                           Target Project
 (.claude/extensions/)                      (.claude/)
 
-+--------------------+                    +------------------+
-| latex/             |                    | agents/          |
-|  manifest.json     |    Load/Unload     |  (copied agents) |
-|  EXTENSION.md      |  ===============>  | skills/          |
-|  index-entries.json|                    |  (copied skills) |
-|  agents/           |                    | rules/           |
-|  skills/           |                    |  (copied rules)  |
-|  rules/            |                    | context/         |
-|  context/          |                    |  (copied context)|
-+--------------------+                    | CLAUDE.md        |
-                                          |  (merged section)|
-                                          | context/index.json
-                                          |  (merged entries)|
-                                          +------------------+
+┌────────────────────┐                    ┌──────────────────┐
+│ latex/             │                    │ agents/          │
+│  manifest.json     │    Load/Unload     │  (copied agents) │
+│  EXTENSION.md      │  ===============>  │ skills/          │
+│  index-entries.json│                    │  (copied skills) │
+│  agents/           │                    │ rules/           │
+│  skills/           │                    │  (copied rules)  │
+│  rules/            │                    │ context/         │
+│  context/          │                    │  (copied context)│
+└────────────────────┘                    │ CLAUDE.md        │
+                                          │  (merged section)│
+                                          │ context/index.json
+                                          │  (merged entries)│
+                                          └──────────────────┘
 ```
 
 **Key Design Principles**:

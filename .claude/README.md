@@ -39,27 +39,27 @@ Full command documentation: [docs/guides/user-guide.md](docs/guides/user-guide.m
                                 |
                                 | /command args
                                 v
-    +---------------------------------------------------------+
-    |                      COMMANDS                            |
-    |   .claude/commands/*.md                                  |
-    |   Parse arguments, route by language, checkpoint flow    |
-    +---------------------------------------------------------+
+    ┌─────────────────────────────────────────────────────────┐
+    │                      COMMANDS                            │
+    │   .claude/commands/*.md                                  │
+    │   Parse arguments, route by language, checkpoint flow    │
+    └─────────────────────────────────────────────────────────┘
                                 |
                                 | Delegation context
                                 v
-    +---------------------------------------------------------+
-    |                       SKILLS                             |
-    |   .claude/skills/skill-*/SKILL.md                        |
-    |   Validate inputs, prepare context, invoke agents        |
-    +---------------------------------------------------------+
+    ┌─────────────────────────────────────────────────────────┐
+    │                       SKILLS                             │
+    │   .claude/skills/skill-*/SKILL.md                        │
+    │   Validate inputs, prepare context, invoke agents        │
+    └─────────────────────────────────────────────────────────┘
                                 |
                                 | Task tool invocation
                                 v
-    +---------------------------------------------------------+
-    |                       AGENTS                             |
-    |   .claude/agents/*.md                                    |
-    |   Full execution, create artifacts, return JSON          |
-    +---------------------------------------------------------+
+    ┌─────────────────────────────────────────────────────────┐
+    │                       AGENTS                             │
+    │   .claude/agents/*.md                                    │
+    │   Full execution, create artifacts, return JSON          │
+    └─────────────────────────────────────────────────────────┘
 ```
 
 **Detailed architecture**: [docs/architecture/system-overview.md](docs/architecture/system-overview.md)

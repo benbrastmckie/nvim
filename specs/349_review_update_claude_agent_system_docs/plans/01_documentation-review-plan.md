@@ -146,7 +146,7 @@ Team research report (3 teammates) identified 21 recommended changes across prio
 
 ---
 
-### Phase 5: Convert ASCII Box-Drawing to Unicode [NOT STARTED]
+### Phase 5: Convert ASCII Box-Drawing to Unicode [COMPLETED]
 
 **Goal**: Replace ASCII box-drawing characters with Unicode equivalents in user-facing documentation per box-drawing-guide.md
 
