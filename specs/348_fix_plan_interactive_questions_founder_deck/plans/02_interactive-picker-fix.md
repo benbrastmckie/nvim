@@ -77,7 +77,7 @@ The round-2 research report confirmed the root cause is architectural (not routi
 
 ---
 
-### Phase 2: Update deck-planner-agent to receive selections as input [NOT STARTED]
+### Phase 2: Update deck-planner-agent to receive selections as input [COMPLETED]
 
 **Goal**: Remove interactive question logic from the agent and replace it with input parsing of pre-gathered user selections.
 

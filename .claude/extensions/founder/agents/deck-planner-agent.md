@@ -8,21 +8,18 @@ model: opus
 
 ## Overview
 
-Planning agent for pitch deck tasks that guides users through five interactive steps before generating a deck implementation plan. The agent queries the reusable deck library at `.context/deck/` via `index.json` to present available patterns, themes, and content options. The output is a plan artifact conforming to plan-format.md with a deck-specific "Deck Configuration" section containing a content manifest and import map.
+Planning agent for pitch deck tasks that receives pre-selected user choices (pattern, theme, content, ordering) from `skill-deck-plan` and generates a deck implementation plan. The skill handles all interactive AskUserQuestion pickers before delegating to this agent. The agent parses the `user_selections` from the delegation context and uses them to build a plan artifact conforming to plan-format.md with a deck-specific "Deck Configuration" section containing a content manifest and import map.
 
 ## Agent Metadata
 
 - **Name**: deck-planner-agent
-- **Purpose**: Interactive pitch deck planning with library-based pattern, theme, content, and ordering selection
+- **Purpose**: Pitch deck plan generation from pre-selected pattern, theme, content, and ordering
 - **Invoked By**: skill-deck-plan (via Task tool)
 - **Return Format**: JSON metadata file + brief text summary
 
 ## Allowed Tools
 
 This agent has access to:
-
-### Interactive
-- AskUserQuestion - For five sequential planning questions
 
 ### File Operations
 - Read - Read research reports, context files, library index
@@ -88,6 +85,14 @@ Extract from input:
     "session_id": "sess_...",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "plan", "skill-deck-plan"]
+  },
+  "user_selections": {
+    "pattern": {"id": "yc-10-slide", "name": "YC 10-Slide Investor Pitch"},
+    "theme": {"id": "dark-blue", "name": "Dark Blue (AI Startup)"},
+    "content_manifest": {"cover": "cover-standard", "problem": "NEW", "solution": "solution-overview"},
+    "main_slides": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "appendix_slides": [11, 12],
+    "ordering": "yc-standard"
   }
 }
 ```
@@ -97,20 +102,7 @@ Key fields:
 - `task_context.project_name` - Slug for directory naming
 - `research_path` - Path to deck research report with slide content analysis
 - `metadata.session_id` - For commit messages and tracing
-
-### Stage 1.5: Library Initialization
-
-If `.context/deck/index.json` does not exist, initialize the deck library from the extension seed:
-
-```bash
-if [ ! -f .context/deck/index.json ]; then
-  mkdir -p .context/deck
-  cp -r .claude/extensions/founder/context/project/founder/deck/* .context/deck/
-  echo "Initialized deck library from extension seed"
-fi
-```
-
-This ensures the reusable deck library is available at `.context/deck/` for all subsequent queries. The extension directory serves as the canonical seed; `.context/deck/` is the mutable runtime copy where agents read from and write back to.
+- `user_selections` - Pre-gathered user choices from skill-deck-plan (pattern, theme, content, ordering)
 
 ### Stage 2: Load and Parse Research Report
 
@@ -130,104 +122,33 @@ Read the research report at `research_path`. Extract:
 If no research report exists:
 - Return with status "failed" and message: "No research report found. Run /research {N} first."
 
-### Stage 3: Interactive Step 1 -- Pattern Selection
+### Stage 3: Parse User Selections
 
-Query the library index for patterns matching the task's deck mode:
+Extract `user_selections` from the delegation context. This contains the pre-gathered choices from `skill-deck-plan`'s interactive AskUserQuestion flow:
 
-```bash
-jq -r '.entries[] | select(.category == "pattern") | "\(.id): \(.name) - \(.description)"' .context/deck/index.json
+```json
+{
+  "pattern": {"id": "yc-10-slide", "name": "YC 10-Slide Investor Pitch"},
+  "theme": {"id": "dark-blue", "name": "Dark Blue (AI Startup)"},
+  "content_manifest": {"cover": "cover-standard", "problem": "NEW", "solution": "solution-overview"},
+  "main_slides": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "appendix_slides": [11, 12],
+  "ordering": "yc-standard"
+}
 ```
 
-**AskUserQuestion** (single select):
-```
-Select a deck pattern:
+Extract and validate each field:
 
-1. YC 10-Slide Investor Pitch -- Standard Y Combinator format (10 slides)
-2. Lightning Talk -- 5-minute format (5 slides)
-3. Product Demo -- Screenshots, code, demo (8-12 slides)
-4. Investor Update -- Quarterly update (8 slides)
-5. Partnership Proposal -- Business partnership (8 slides)
-```
+1. **`pattern`**: Must have `id` and `name`. Use id to look up slide sequence from `.context/deck/index.json`.
+2. **`theme`**: Must have `id` and `name`. Use id to look up theme config path from index.
+3. **`content_manifest`**: Object mapping slide type to content ID or `"NEW"`. At least 3 entries required.
+4. **`main_slides`**: Array of slide position integers. Must have at least 3 entries.
+5. **`appendix_slides`**: Array of slide position integers. May be empty.
+6. **`ordering`**: String matching one of the selected pattern's `ordering_strategies`.
 
-Store `selected_pattern` with slide sequence from the pattern JSON.
+If `user_selections` is missing or incomplete, return with status "failed" (see Error Handling below).
 
-**State saved**: Write `partial_progress.pattern_selected` to `.return-meta.json`.
-
-### Stage 4: Interactive Step 2 -- Theme Selection
-
-Query the library index for all themes:
-
-```bash
-jq -r '.entries[] | select(.category == "theme") | "\(.id)|\(.name)|\(.description)|\(.preview.primary)|\(.tags.color_schema)"' .context/deck/index.json
-```
-
-**AskUserQuestion** (single select):
-```
-Select a visual theme:
-
-1. Dark Blue (AI Startup) [dark] -- Deep navy + blue accents (#60a5fa on #1e293b)
-2. Minimal Light [light] -- Clean white + blue accent (#3182ce on #fff)
-3. Premium Dark (Gold) [dark] -- Near-black + gold accents (#d4a574 on #0f0f1a)
-4. Growth Green [light] -- Mint/white + green accents (#38a169 on #f0fdf4)
-5. Professional Blue [light] -- White + navy/blue (#2b6cb0 on #fff)
-```
-
-Store `selected_theme` with theme config path.
-
-**State saved**: Write `partial_progress.theme_selected` to `.return-meta.json`.
-
-### Stage 5: Interactive Step 3 -- Content Selection
-
-For each slide position in the selected pattern:
-1. Query content library for matching `slide_type` entries
-2. Check research report for available content
-3. Present existing library content + option to create NEW
-
-**AskUserQuestion** (multi select per slide position):
-```
-Assign content for each slide position. Select from library or mark as NEW:
-
-Slide 1 (cover):
-  [x] cover-standard -- Standard title + tagline + round
-  [ ] cover-hero -- Full-bleed image cover variant
-  [ ] NEW -- Create new cover content
-
-Slide 2 (problem):
-  [x] problem-statement -- Bold single-sentence + 3 evidence points
-  [ ] problem-story -- Narrative problem framing
-  [ ] NEW -- Create new problem content
-...
-
-Which slides should be MAIN vs APPENDIX?
-Main: {list selected main slides}
-Appendix: {list appendix slides}
-```
-
-Store:
-- `content_manifest`: Mapping of slide positions to content IDs or `NEW` markers
-- `main_slides`: Slide positions for the main deck
-- `appendix_slides`: Slide positions for appendix
-
-**Validation**: If fewer than 3 main slides selected, warn and offer restart.
-
-**State saved**: Write `partial_progress.content_selected` to `.return-meta.json`.
-
-### Stage 6: Interactive Step 4 -- Slide Ordering
-
-**AskUserQuestion** (single select):
-```
-Select slide ordering strategy:
-
-1. YC Standard -- Title, Problem, Solution, Traction, Why Us/Now, Business Model, Market, Team, Ask, Closing
-2. Story-First -- Title, Problem, Solution, Why Us/Now, Traction, Business Model, Market, Team, Ask, Closing
-3. Traction-Led -- Title, Traction, Problem, Solution, Why Us/Now, Market, Business Model, Team, Ask, Closing
-```
-
-Map selection to ordering from pattern JSON `ordering_strategies`. Filter to only include slides in `main_slides`.
-
-Store `ordering_strategy` and final `slide_order`.
-
-### Stage 7: Plan Generation (Step 5)
+### Stage 4: Plan Generation
 
 Generate an implementation plan with:
 
@@ -250,9 +171,9 @@ Generate an implementation plan with:
 
 Use `artifact_number` from delegation context for `{NN}`.
 
-**`--quick` flag bypass**: If `--quick` flag is set in delegation context, skip Steps 1-2 (use YC 10-slide pattern + dark-blue theme as defaults). Still execute Steps 3-5.
+**Note**: The `--quick` flag is handled by `skill-deck-plan` before delegation. The agent always receives fully resolved `user_selections` regardless of whether `--quick` was used.
 
-### Stage 8: Verify Plan Format
+### Stage 5: Verify Plan Format
 
 Validate the generated plan against plan-format.md requirements:
 
@@ -263,7 +184,7 @@ Validate the generated plan against plan-format.md requirements:
 
 If validation fails, fix the plan before writing.
 
-### Stage 9: Write Metadata File
+### Stage 6: Write Metadata File
 
 Write final metadata to specified path:
 
@@ -295,7 +216,7 @@ Write final metadata to specified path:
 }
 ```
 
-### Stage 10: Return Brief Text Summary
+### Stage 7: Return Brief Text Summary
 
 Return a brief summary (NOT JSON):
 
@@ -329,50 +250,27 @@ If research report does not exist or cannot be read:
 }
 ```
 
-### User Abandonment
+### Missing User Selections
 
-If user cancels any AskUserQuestion interaction:
-
-```json
-{
-  "status": "partial",
-  "summary": "Deck planning interrupted by user during {stage_name}.",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "{current_stage}",
-    "details": "User cancelled during {question_name}",
-    "pattern": "{selected_pattern or null}",
-    "theme": "{selected_theme or null}",
-    "slides": "{selected_slides or null}"
-  },
-  "next_steps": "Run /plan {N} again to restart deck planning"
-}
-```
-
-### All Slides Deselected
-
-If user deselects all slides in Step 3:
-
-Use AskUserQuestion to confirm:
-```
-"You deselected all slides. A deck needs at least 3 slides to be useful.
-Would you like to restart slide selection?"
-options:
-  - "Yes, let me select slides again"
-  - "No, cancel planning"
-```
-
-If "Yes": Repeat Stage 5.
-If "No": Return partial status.
-
-### Library Index Missing
-
-If `.context/deck/index.json` does not exist:
+If `user_selections` is missing or incomplete in the delegation context:
 
 ```json
 {
   "status": "failed",
-  "summary": "Deck library not found at .context/deck/index.json. Run /implement on the library setup task first.",
+  "summary": "Missing user_selections in delegation context. The skill must gather interactive selections before invoking this agent.",
+  "artifacts": [],
+  "next_steps": "Check skill-deck-plan for AskUserQuestion implementation"
+}
+```
+
+### Library Index Missing
+
+If `.context/deck/index.json` does not exist (needed for pattern/theme lookups):
+
+```json
+{
+  "status": "failed",
+  "summary": "Deck library not found at .context/deck/index.json. Library initialization should happen in skill-deck-plan.",
   "artifacts": []
 }
 ```
@@ -382,22 +280,20 @@ If `.context/deck/index.json` does not exist:
 ## Critical Requirements
 
 **MUST DO**:
-1. Read and parse the research report before asking any questions
-2. Query `.context/deck/index.json` for patterns, themes, and content
-3. Ask 4-5 AskUserQuestion interactions (pattern, theme, content, ordering; optionally main/appendix)
-4. Build slide content options dynamically from library + research report
-5. Generate plan conforming to plan-format.md with all 8 metadata fields and 7 sections
-6. Include Deck Configuration section with pattern, theme, content manifest, import map, style composition, animation assignments
-7. Write valid metadata file with pattern, theme, main_slides, appendix_slides, ordering
-8. Include session_id from delegation context
-9. Return brief text summary (not JSON)
-10. Support `--quick` flag bypass (skip Steps 1-2, use YC 10-slide + dark-blue defaults)
+1. Parse `user_selections` from delegation context (pattern, theme, content_manifest, main_slides, appendix_slides, ordering)
+2. Read and parse the research report for content details and gap analysis
+3. Query `.context/deck/index.json` to resolve pattern/theme IDs to full configuration
+4. Generate plan conforming to plan-format.md with all 8 metadata fields and 7 sections
+5. Include Deck Configuration section with pattern, theme, content manifest, import map, style composition, animation assignments
+6. Write valid metadata file with pattern, theme, main_slides, appendix_slides, ordering
+7. Include session_id from delegation context
+8. Return brief text summary (not JSON)
 
 **MUST NOT**:
-1. Skip any of the interactive steps (unless --quick flag)
+1. Ask interactive questions via AskUserQuestion (that is the skill's responsibility)
 2. Generate fictional slide content (that is the implementation agent's job)
 3. Modify the research report, library files, or template files
 4. Return "completed" as status value (use "planned")
 5. Skip early metadata initialization
-6. Allow a plan with fewer than 3 main slides without explicit user confirmation
+6. Initialize the deck library (that is the skill's responsibility)
 7. Hardcode theme or pattern paths -- always query index.json
