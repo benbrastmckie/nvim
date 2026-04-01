@@ -10,7 +10,7 @@ next_project_number: 350
 
 ### Pending
 
-- **349** [RESEARCHING] -- Review and update .claude/ agent system documentation
+- **349** [RESEARCHED] -- Review and update .claude/ agent system documentation
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,7 +18,7 @@ next_project_number: 350
 
 ### 349. Review and update .claude/ agent system documentation for correctness and consistency
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 
 **Description**: Systematically review the .claude/ agent system and its various extensions, ensuring all documentation is correct, consistent, clear, complete, and concise. Focus particularly on .claude/README.md, .claude/extensions/README.md, and .claude/extensions/founder/README.md. Ensure Unicode box-drawing characters are used consistently (as in line 35+ of .claude/README.md).
