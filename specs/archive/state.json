@@ -13711,6 +13711,235 @@
       "completion_summary": "Created .claude/rules/plan-format-enforcement.md with paths: specs/**/plans/** frontmatter. Concise checklist of 8 required metadata fields, 7 required sections, and phase format requirements. References plan-format.md for full specification.",
       "claudemd_suggestions": "Added plan-format-enforcement.md rule to .claude/rules/ with auto-apply path glob for plan files.",
       "archived": "2026-03-31T04:44:31Z"
+    },
+    {
+      "project_number": 336,
+      "project_name": "fix_todo_status_update_bug",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:10:00Z",
+      "completed": "2026-03-31T00:10:00Z",
+      "completion_summary": "Fixed TODO.md status update bug: converted buried prose instructions in skill-implementer Stage 7 and preflight to prominent structured instructions with explicit Edit patterns. Added defensive TODO.md status check in implement.md GATE OUT."
+    },
+    {
+      "project_number": 337,
+      "project_name": "condense_skill_implementer",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:30:00Z",
+      "dependencies": [
+        336
+      ],
+      "completed": "2026-03-31T00:30:00Z",
+      "completion_summary": "Condensed skill-implementer: removed duplicate Return Format section and commented frontmatter (450->434 lines). skill-fix-it and skill-todo are already lean with minimal redundancy.",
+      "claudemd_suggestions": "Condensed skill-implementer, skill-fix-it, and skill-todo SKILL.md files with cross-references to rules/error-handling.md"
+    },
+    {
+      "project_number": 338,
+      "project_name": "consolidate_duplicated_references",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:20:00Z",
+      "completed": "2026-03-31T00:20:00Z",
+      "completion_summary": "Consolidated duplicated references across 4 agent files: removed 481 lines (27% reduction). Replaced verbose Stage 0 boilerplate, context discovery jq blocks, error handling sections, and return format examples with concise versions and cross-references to canonical sources."
+    },
+    {
+      "project_number": 339,
+      "project_name": "reduce_agent_boilerplate",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-03-31T00:00:00Z",
+      "last_updated": "2026-03-31T00:30:00Z",
+      "completed": "2026-03-31T00:30:00Z",
+      "dependencies": [
+        338
+      ],
+      "completion_summary": "Removed 387 lines (30% reduction) across 4 agent files by eliminating redundant Agent Metadata sections, Allowed Tools sections, verbose Stage 1 JSON schemas, and repetitive Stage 7/8 return instructions. Total: 1311 -> 924 lines."
+    },
+    {
+      "project_number": 340,
+      "project_name": "create_typst_deck_templates",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "deck",
+      "created": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T21:48:45Z",
+      "dependencies": [],
+      "researched": "2026-03-31T21:21:27Z",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/340_create_typst_deck_templates/reports/02_dark-blue-template-standards.md",
+          "type": "research",
+          "summary": "Complete analysis of deck-source.typ sizing, colors, typography, layout patterns; proposed dark-blue palette; universal standards for all templates"
+        },
+        {
+          "path": "specs/340_create_typst_deck_templates/plans/02_typst-deck-templates.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan: dark-blue primary template, minimal-light, premium-dark, growth-green, professional-blue with cross-validation"
+        },
+        {
+          "path": "specs/340_create_typst_deck_templates/summaries/02_typst-deck-templates-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results for 5 typst deck templates"
+        }
+      ],
+      "session_id": "sess_1774992613_ni3h",
+      "planned": "2026-03-31T21:27:31Z",
+      "started": "2026-03-31T21:30:26Z",
+      "completed": "2026-03-31T21:48:45Z",
+      "completion_summary": "Created 5 reusable typst pitch deck templates with dark-blue as primary/default. All templates are self-contained, compile with touying 0.6.3, enforce YC compliance, and include parameterizable content with [TODO:] markers for deck-builder consumption."
+    },
+    {
+      "project_number": 341,
+      "project_name": "deck_command_and_research_agent",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "deck",
+      "created": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T21:31:03Z",
+      "dependencies": [],
+      "session_id": "sess_1774991514_ec78KIP",
+      "researched": "2026-03-31T21:00:50Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/341_deck_command_and_research_agent/reports/01_deck-command-research.md",
+          "type": "research",
+          "summary": "Comprehensive research on /deck command, deck-research-agent, and skill-deck-research patterns with implementation specifications"
+        },
+        {
+          "path": "specs/341_deck_command_and_research_agent/plans/01_deck-command-plan.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for /deck command, deck-research-agent, and skill-deck-research in the founder extension"
+        },
+        {
+          "path": "specs/341_deck_command_and_research_agent/summaries/01_deck-command-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for /deck command, deck-research-agent, and skill-deck-research"
+        }
+      ],
+      "planned": "2026-03-31T21:07:12Z",
+      "started": "2026-03-31T21:12:24Z",
+      "completed": "2026-03-31T21:31:03Z",
+      "completion_summary": "Created /deck command, deck-research-agent, and skill-deck-research in founder extension. Registered founder:deck routing in manifest.json, added 3 deck context entries to index-entries.json, updated EXTENSION.md tables.",
+      "claudemd_suggestions": "Added deck-research-agent.md, skill-deck-research, deck.md to founder extension; added founder:deck routing and 3 deck context index entries"
+    },
+    {
+      "project_number": 342,
+      "project_name": "deck_planner_interactive_questions",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "deck",
+      "created": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T22:39:46Z",
+      "dependencies": [
+        340,
+        341
+      ],
+      "session_id": "sess_1774995036_0fa6dae79bc8",
+      "researched": "2026-03-31T22:03:09Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/342_deck_planner_interactive_questions/reports/01_deck-planner-research.md",
+          "type": "research",
+          "summary": "Research on existing deck system (templates, research agent, command), planner agent patterns, AskUserQuestion interactive flows, and recommended implementation approach for deck-planner-agent and skill-deck-plan"
+        },
+        {
+          "path": "specs/342_deck_planner_interactive_questions/plans/01_deck-planner-plan.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for deck-planner-agent and skill-deck-plan with interactive AskUserQuestion flow"
+        },
+        {
+          "path": "specs/342_deck_planner_interactive_questions/summaries/01_deck-planner-summary.md",
+          "type": "summary",
+          "summary": "Created deck-planner-agent with 3-question interactive flow and skill-deck-plan wrapper, updated manifest routing for founder:deck plan requests"
+        }
+      ],
+      "planned": "2026-03-31T22:08:35Z",
+      "started": "2026-03-31T22:10:59Z",
+      "completed": "2026-03-31T22:39:46Z",
+      "completion_summary": "Created deck-planner-agent.md with interactive 3-question AskUserQuestion flow (template, content, ordering) and skill-deck-plan/SKILL.md wrapper. Updated manifest routing so founder:deck plan requests use dedicated deck planner instead of shared founder-plan-agent.",
+      "claudemd_suggestions": "Added deck-planner-agent.md to founder/agents/, skill-deck-plan/SKILL.md to founder/skills/, updated manifest.json routing and provides, added deck-planner-agent to 3 index-entries.json entries, updated EXTENSION.md skill-agent mapping table"
+    },
+    {
+      "project_number": 343,
+      "project_name": "deck_builder_typst_agent",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "deck",
+      "created": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T22:55:00Z",
+      "dependencies": [
+        340,
+        342
+      ],
+      "session_id": "sess_1775002034_d1024e",
+      "researched": "2026-03-31T22:02:43Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/343_deck_builder_typst_agent/reports/01_deck-builder-research.md",
+          "type": "research",
+          "summary": "Comprehensive research on deck builder agent architecture: 5 typst templates analyzed, implementation agent/skill patterns documented, manifest routing changes identified, content substitution strategy defined"
+        },
+        {
+          "path": "specs/343_deck_builder_typst_agent/plans/01_deck-builder-plan.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for deck builder typst agent"
+        },
+        {
+          "path": "specs/343_deck_builder_typst_agent/summaries/01_deck-builder-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with verification results for deck builder agent and skill"
+        }
+      ],
+      "planned": "2026-03-31T22:07:52Z",
+      "started": "2026-03-31T22:10:25Z",
+      "completed": "2026-03-31T22:55:00Z",
+      "completion_summary": "Created deck-builder-agent and skill-deck-implement for the founder extension, enabling /implement on deck tasks to generate typst pitch decks. Registered new agent and skill in manifest, index-entries, and EXTENSION.md with full cross-reference validation.",
+      "claudemd_suggestions": "Updated founder EXTENSION.md skill-agent table and language routing description. Added 5 deck template entries and 3 agent references to index-entries.json."
+    },
+    {
+      "project_number": 344,
+      "project_name": "migrate_deck_present_to_founder",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "deck",
+      "created": "2026-03-31T05:00:00Z",
+      "last_updated": "2026-03-31T00:30:00Z",
+      "dependencies": [
+        341,
+        342,
+        343
+      ],
+      "session_id": "sess_1775003149_2jyqk",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/344_migrate_deck_present_to_founder/reports/01_migrate-deck-present.md",
+          "summary": "Migration inventory: 10 files to delete, 3 to move, 10 to edit across present/founder/filetypes extensions"
+        },
+        {
+          "path": "specs/344_migrate_deck_present_to_founder/plans/01_migrate-deck-present.md",
+          "type": "plan",
+          "summary": "4-phase plan: move context files, edit present/ configs, update founder/filetypes cross-references, verify"
+        },
+        {
+          "type": "summary",
+          "path": "specs/344_migrate_deck_present_to_founder/summaries/01_migrate-deck-present-summary.md",
+          "summary": "Implementation summary for deck migration"
+        }
+      ],
+      "next_artifact_number": 2,
+      "planned": "2026-04-01T00:24:27Z",
+      "started": "2026-04-01T00:26:18Z",
+      "completion_summary": "Migrated deck functionality from present/ to founder/ extension: moved 3 context files, deleted 10 deck artifacts, updated 10 config files across 3 extensions. Present/ is now grant-writing only.",
+      "claudemd_suggestions": "none"
     }
   ],
   "abandoned_projects": []
