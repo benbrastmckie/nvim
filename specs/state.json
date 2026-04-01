@@ -16,7 +16,7 @@
         {
           "path": "specs/349_review_update_claude_agent_system_docs/reports/01_team-research.md",
           "type": "research",
-          "summary": "Team research (1 teammate completed): documentation correctness and box-drawing audit"
+          "summary": "Team research (3 teammates): documentation correctness, extension cross-reference, box-drawing audit"
         }
       ]
     },
