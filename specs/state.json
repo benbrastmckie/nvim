@@ -5,11 +5,11 @@
     {
       "project_number": 345,
       "project_name": "port_deck_typst_to_slidev",
-      "status": "planned",
+      "status": "implementing",
       "language": "founder:deck",
       "created": "2026-03-31T00:00:00Z",
-      "last_updated": "2026-04-01T03:02:17Z",
-      "session_id": "sess_1775011585_a831d5",
+      "last_updated": "2026-04-01T03:06:58Z",
+      "session_id": "sess_1775012791_1d29ef",
       "artifacts": [
         {
           "type": "research",
@@ -34,7 +34,8 @@
       ],
       "researched": "2026-04-01T02:45:24Z",
       "next_artifact_number": 3,
-      "planned": "2026-04-01T03:02:17Z"
+      "planned": "2026-04-01T03:02:17Z",
+      "started": "2026-04-01T03:06:58Z"
     },
     {
       "project_number": 87,
