@@ -1,7 +1,7 @@
 # Implementation Plan: Centralized Status Update Script
 
 - **Task**: 362 - Create centralized update-task-status.sh script
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_meta-research.md
@@ -63,7 +63,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Core Script Skeleton and state.json Updates [NOT STARTED]
+### Phase 1: Core Script Skeleton and state.json Updates [COMPLETED]
 
 **Goal**: Create the script file with argument parsing, validation, status mapping, and state.json update logic.
 
@@ -95,7 +95,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: TODO.md Task Entry Updates [NOT STARTED]
+### Phase 2: TODO.md Task Entry Updates [COMPLETED]
 
 **Goal**: Add logic to update the status marker in the task entry section (`## Tasks`) of TODO.md.
 
@@ -120,7 +120,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: TODO.md Task Order Section Updates [NOT STARTED]
+### Phase 3: TODO.md Task Order Section Updates [COMPLETED]
 
 **Goal**: Add logic to update the status marker in the Task Order section of TODO.md.
 
@@ -144,7 +144,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Plan File Status Integration [NOT STARTED]
+### Phase 4: Plan File Status Integration [COMPLETED]
 
 **Goal**: Optionally update the plan file status by calling the existing `update-plan-status.sh`.
 
@@ -169,7 +169,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Error Handling, Idempotency, and Edge Cases [NOT STARTED]
+### Phase 5: Error Handling, Idempotency, and Edge Cases [COMPLETED]
 
 **Goal**: Harden the script with proper error handling, idempotency checks, and edge case coverage.
 
