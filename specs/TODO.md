@@ -10,7 +10,7 @@ next_project_number: 355
 
 ### Pending
 
-- **350** [PLANNED] -- Create multi-task operations context pattern
+- **350** [COMPLETED] -- Create multi-task operations context pattern
 - **351** [NOT STARTED] -- Update /research command for multi-task support (depends: 350)
 - **352** [NOT STARTED] -- Update /plan command for multi-task support (depends: 350)
 - **353** [NOT STARTED] -- Update /implement command for multi-task support (depends: 350)
@@ -23,13 +23,15 @@ next_project_number: 355
 
 ### 350. Create multi-task operations context pattern
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Research Completed**: 2026-04-02
 - **Planning Completed**: 2026-04-02
+- **Completed**: 2026-04-02
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_multi-task-ops.md](specs/350_multi_task_operations_pattern/reports/01_multi-task-ops.md)
 - **Plan**: [01_multi-task-ops-plan.md](specs/350_multi_task_operations_pattern/plans/01_multi-task-ops-plan.md)
+- **Summary**: [01_multi-task-ops-summary.md](specs/350_multi_task_operations_pattern/summaries/01_multi-task-ops-summary.md)
 
 **Description**: Create a shared context pattern document (`.claude/context/patterns/multi-task-operations.md`) defining how workflow commands parse multi-task arguments (single numbers, comma-separated lists, ranges like `22-24`, and combinations like `7, 22-24, 59`). Document the dispatch loop pattern (spawn one agent per task via Agent tool), batch commit format, consolidated output format, and partial-success error handling. This pattern is consumed by tasks 351-353.
 
