@@ -388,6 +388,41 @@ The skill will spawn the appropriate agent(s) to conduct research and create a r
    The skill handles status updates internally (preflight and postflight).
    Confirm status is now "researched" in state.json.
 
+4. **Verify state.json Status (Defensive)**
+
+   **Only when skill reports success:**
+
+   Check that state.json shows status "researched" for this task. If not, apply defensive correction:
+
+   ```bash
+   # Check if state.json status is "researched"
+   current_status=$(jq -r --argjson num "$task_number" \
+     '.active_projects[] | select(.project_number == $num) | .status' \
+     specs/state.json)
+
+   if [ "$current_status" = "researched" | not ]; then
+       echo "WARNING: state.json status is '$current_status', expected 'researched'. Applying defensive correction."
+       bash .claude/scripts/update-task-status.sh postflight "$task_number" research "$session_id"
+   fi
+   ```
+
+5. **Verify TODO.md Status (Defensive)**
+
+   **Only when skill reports success:**
+
+   Check that the task entry in TODO.md shows `[RESEARCHED]`. If it still shows `[RESEARCHING]`, apply correction:
+
+   ```bash
+   # Check if TODO.md task entry still shows [RESEARCHING]
+   if grep -q "- \*\*Status\*\*: \[RESEARCHING\]" <(grep -A 5 "^### ${task_number}\." specs/TODO.md); then
+       echo "WARNING: TODO.md status not updated to [RESEARCHED]. Applying defensive correction."
+   fi
+   ```
+
+   If the check finds a mismatch, use Edit tool to fix both:
+   - Task entry: `- **Status**: [RESEARCHING]` -> `- **Status**: [RESEARCHED]`
+   - Task Order: `**{N}** [RESEARCHING]` -> `**{N}** [RESEARCHED]`
+
 **RETRY** skill if validation fails.
 
 **On GATE OUT success**: Artifacts verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.

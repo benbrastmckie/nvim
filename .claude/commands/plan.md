@@ -385,6 +385,63 @@ The skill spawns agent(s) which analyze task requirements and research findings,
    The skill handles status updates internally (preflight and postflight).
    Confirm status is now "planned" in state.json.
 
+4. **Verify state.json Status (Defensive)**
+
+   **Only when skill reports success:**
+
+   Check that state.json shows status "planned" for this task. If not, apply defensive correction:
+
+   ```bash
+   # Check if state.json status is "planned"
+   current_status=$(jq -r --argjson num "$task_number" \
+     '.active_projects[] | select(.project_number == $num) | .status' \
+     specs/state.json)
+
+   if [ "$current_status" = "planned" | not ]; then
+       echo "WARNING: state.json status is '$current_status', expected 'planned'. Applying defensive correction."
+       bash .claude/scripts/update-task-status.sh postflight "$task_number" plan "$session_id"
+   fi
+   ```
+
+5. **Verify TODO.md Status (Defensive)**
+
+   **Only when skill reports success:**
+
+   Check that the task entry in TODO.md shows `[PLANNED]`. If it still shows `[PLANNING]`, apply correction:
+
+   ```bash
+   # Check if TODO.md task entry still shows [PLANNING]
+   if grep -q "- \*\*Status\*\*: \[PLANNING\]" <(grep -A 5 "^### ${task_number}\." specs/TODO.md); then
+       echo "WARNING: TODO.md status not updated to [PLANNED]. Applying defensive correction."
+   fi
+   ```
+
+   If the check finds a mismatch, use Edit tool to fix both:
+   - Task entry: `- **Status**: [PLANNING]` -> `- **Status**: [PLANNED]`
+   - Task Order: `**{N}** [PLANNING]` -> `**{N}** [PLANNED]`
+
+6. **Verify Plan File Status (Defensive)**
+
+   **Only when skill reports success:**
+
+   Check that the plan file status marker shows `[NOT STARTED]` (expected state for a newly created plan). If it shows something unexpected like `[PLANNING]`, log a warning:
+
+   ```bash
+   # Find latest plan file
+   padded_num=$(printf "%03d" "$task_number")
+   project_name=$(jq -r --argjson num "$task_number" \
+     '.active_projects[] | select(.project_number == $num) | .project_name' \
+     specs/state.json)
+   plan_file=$(ls -1 "specs/${padded_num}_${project_name}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+
+   if [ -n "$plan_file" ] && [ -f "$plan_file" ]; then
+       # Check if plan file has a valid status (NOT STARTED or IMPLEMENTING)
+       if grep -qE '^\*\*Status\*\*: \[PLANNING\]|^\- \*\*Status\*\*: \[PLANNING\]' "$plan_file"; then
+           echo "WARNING: Plan file status still shows [PLANNING]. Expected [NOT STARTED] for newly created plan."
+       fi
+   fi
+   ```
+
 **RETRY** skill if validation fails.
 
 **On GATE OUT success**: Plan verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.
