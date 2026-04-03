@@ -10,7 +10,7 @@ next_project_number: 358
 
 ### Pending
 
-- **356** [RESEARCHED] -- Add phase dependency analysis to plan format and planner agent
+- **356** [PLANNED] -- Add phase dependency analysis to plan format and planner agent
 - **357** [NOT STARTED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
 - **355** [COMPLETED] -- Update founder extension README and deck documentation
 - **350** [COMPLETED] -- Create multi-task operations context pattern
@@ -25,12 +25,14 @@ next_project_number: 358
 ## Tasks
 
 ### 356. Add phase dependency analysis to plan format and planner agent
-- **Effort**: 1 hour
-- **Status**: [RESEARCHED]
+- **Effort**: 2 hours
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-04-03
+- **Planning Completed**: 2026-04-03
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_plan-phase-deps.md](specs/356_plan_phase_dependencies/reports/01_plan-phase-deps.md)
+- **Plan**: [01_plan-phase-deps.md](specs/356_plan_phase_dependencies/plans/01_plan-phase-deps.md)
 
 **Description**: Update plan-format.md to add a `Depends on:` field to each phase and a `## Dependency Analysis` section after `## Implementation Phases` heading that groups phases into execution waves (phases with no unfinished dependencies run in the same wave). Update planner-agent.md Stage 4 to generate explicit inter-phase dependencies and the wave analysis section. Update the plan_metadata schema in state.json to include `dependency_waves` (array of phase number arrays). Update the example skeleton in plan-format.md to show both additions. This provides structured dependency information that skill-team-implement can consume directly.
 

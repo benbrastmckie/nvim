@@ -5,10 +5,10 @@
     {
       "project_number": 356,
       "project_name": "plan_phase_dependencies",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-03T15:49:36Z",
-      "last_updated": "2026-04-03T15:56:52Z",
+      "last_updated": "2026-04-03T16:00:54Z",
       "dependencies": [],
       "session_id": "sess_1775231615_6d12da",
       "next_artifact_number": 2,
@@ -18,8 +18,14 @@
           "path": "specs/356_plan_phase_dependencies/reports/01_plan-phase-deps.md",
           "type": "research",
           "summary": "Research on adding phase dependency analysis to plan format"
+        },
+        {
+          "path": "specs/356_plan_phase_dependencies/plans/01_plan-phase-deps.md",
+          "type": "plan",
+          "summary": "3-phase plan for adding phase dependency analysis to plan format and planner agent"
         }
-      ]
+      ],
+      "planned": "2026-04-03T16:00:54Z"
     },
     {
       "project_number": 357,
