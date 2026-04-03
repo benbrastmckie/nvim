@@ -11,7 +11,7 @@ next_project_number: 358
 ### Pending
 
 - **356** [COMPLETED] -- Add phase dependency analysis to plan format and planner agent
-- **357** [PLANNED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
+- **357** [COMPLETED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
 - **355** [COMPLETED] -- Update founder extension README and deck documentation
 - **350** [COMPLETED] -- Create multi-task operations context pattern
 - **351** [COMPLETED] -- Update /research command for multi-task support (depends: 350)
@@ -46,9 +46,10 @@ next_project_number: 358
 
 ### 357. Update skill-team-implement to consume plan dependency analysis
 - **Effort**: 30 minutes
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Research Completed**: 2026-04-03
 - **Planning Completed**: 2026-04-03
+- **Completed**: 2026-04-03
 - **Language**: meta
 - **Dependencies**: 356
 - **Research**: [01_team-implement-deps.md](specs/357_team_implement_consume_deps/reports/01_team-implement-deps.md)

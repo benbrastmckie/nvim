@@ -1,7 +1,7 @@
 # Implementation Plan: Update skill-team-implement to Consume Plan Dependencies
 
 - **Task**: 357 - Update skill-team-implement to consume plan dependency analysis
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 45 minutes
 - **Dependencies**: 356 (completed)
 - **Research Inputs**: specs/357_team_implement_consume_deps/reports/01_team-implement-deps.md
@@ -70,7 +70,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update Stage 8 for Y-Shaped Execution [NOT STARTED]
+### Phase 2: Update Stage 8 for Y-Shaped Execution [COMPLETED]
 
 **Goal**: When `--team` is used, detect Y-shaped dependency patterns and execute trunk waves sequentially with a single agent before spawning parallel agents for branching waves.
 

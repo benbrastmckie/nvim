@@ -300,31 +300,48 @@ If build/test fails:
 
 ### Stage 8: Wave Execution Loop
 
-Execute waves sequentially, phases within wave in parallel:
+Execute waves sequentially, phases within wave in parallel. Detect Y-shaped
+dependency patterns: when a single-phase "trunk" wave precedes a multi-phase
+"branching" wave, execute the trunk with a single agent before spawning
+parallel teammates for the branching waves.
 
 ```
+# Y-shaped detection: classify each wave as trunk or branching
+# A trunk wave has 1 phase and is followed by a wave with 2+ phases
+for i, wave in enumerate(waves):
+  next_wave = waves[i+1] if i+1 < len(waves) else None
+  wave.is_trunk = (len(wave.phases) == 1 and
+                   next_wave is not None and
+                   len(next_wave.phases) > 1)
+
 for wave in waves:
-  # Spawn teammates for this wave (up to team_size concurrent)
-  active_teammates = []
-  for phase in wave.phases[:team_size]:
-    teammate = spawn_phase_implementer(phase)
-    active_teammates.append(teammate)
+  if wave.is_trunk:
+    # Trunk wave: execute single phase directly (no team spawning)
+    phase = wave.phases[0]
+    execute_phase_directly(phase)  # single agent, no teammate overhead
+    mark_phase_complete(phase)
+  else:
+    # Branching or standard wave: spawn parallel teammates
+    active_teammates = []
+    for phase in wave.phases[:team_size]:
+      teammate = spawn_phase_implementer(phase)
+      active_teammates.append(teammate)
 
-  # Wait for wave completion
-  while not all_complete(active_teammates):
-    for teammate in active_teammates:
-      if teammate.complete():
-        result = teammate.result
-        if result.error:
-          # Spawn debugger for this phase
-          spawn_debugger(phase, result.error)
-        else:
-          mark_phase_complete(phase)
+    # Wait for wave completion
+    while not all_complete(active_teammates):
+      for teammate in active_teammates:
+        if teammate.complete():
+          result = teammate.result
+          if result.error:
+            # Spawn debugger for this phase
+            spawn_debugger(phase, result.error)
+          else:
+            mark_phase_complete(phase)
 
-    # Spawn additional teammates if slots available
-    remaining_phases = wave.phases[len(active_teammates):]
-    for phase in remaining_phases[:team_size - len(active)]:
-      spawn_phase_implementer(phase)
+      # Spawn additional teammates if slots available
+      remaining_phases = wave.phases[len(active_teammates):]
+      for phase in remaining_phases[:team_size - len(active)]:
+        spawn_phase_implementer(phase)
 
   # Commit wave progress
   git_commit_wave(wave)
