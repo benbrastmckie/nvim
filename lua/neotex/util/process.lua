@@ -493,6 +493,23 @@ function M.launch(filepath)
     ft = vim.filetype.match({ filename = filepath })
   end
 
+  -- Check if this file already has a running process
+  for _, entry in pairs(M._registry) do
+    if entry.status == "running" and entry.cmd then
+      for _, arg in ipairs(entry.cmd) do
+        if arg == filepath then
+          local port = entry.port
+          if port then
+            _notify(string.format("Already open on port: %d", port))
+          else
+            _notify(string.format("Already running: %s (id %d)", entry.name, entry.id))
+          end
+          return entry.id
+        end
+      end
+    end
+  end
+
   local launcher = M._launchers[ft]
   if not launcher then
     local cats = _categories()
