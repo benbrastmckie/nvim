@@ -88,6 +88,13 @@ Apply task-breakdown.md guidelines:
    - Include testing time
    - Account for unknowns
 
+6. **Build Wave Map**
+   - For each phase, record which earlier phases it depends on
+   - Phases with no dependencies get `Depends on: none` (Wave 1)
+   - Phases whose dependencies are all in earlier waves: next wave
+   - Group phases into waves; phases in the same wave can run in parallel
+   - Use wave assignments to generate the Dependency Analysis table
+
 ### Stage 5: Create Plan File
 
 Create directory if needed:
@@ -140,6 +147,14 @@ Write plan file following plan-format.md structure:
 
 ## Implementation Phases
 
+**Dependency Analysis**:
+| Wave | Phases | Blocked by |
+|------|--------|------------|
+| 1 | 1 | -- |
+| 2 | 2, 3 | 1 |
+
+Phases within the same wave can execute in parallel.
+
 ### Phase 1: {Name} [NOT STARTED]
 
 **Goal**: {What this phase accomplishes}
@@ -150,6 +165,8 @@ Write plan file following plan-format.md structure:
 
 **Timing**: {X hours}
 
+**Depends on**: none
+
 **Files to modify**:
 - `path/to/file` - {what changes}
 
@@ -159,6 +176,7 @@ Write plan file following plan-format.md structure:
 ---
 
 ### Phase 2: {Name} [NOT STARTED]
+**Depends on**: 1
 {Continue pattern...}
 
 ## Testing & Validation
@@ -187,6 +205,11 @@ Re-read the plan file and verify these fields exist (per plan-format.md):
 - `- **Effort**:` - Time estimate
 - `- **Type**:` - Language type
 
+Also verify dependency consistency:
+- Each phase has a `**Depends on**:` field
+- The Dependency Analysis wave table matches the per-phase `Depends on` fields
+- All referenced phase numbers exist in the plan
+
 **If any required field is missing**:
 1. Edit the plan file to add the missing field
 2. Re-read the plan file to confirm the field was added
@@ -200,7 +223,7 @@ grep -q "^\- \*\*Status\*\*:" plan_file || echo "ERROR: Missing Status field"
 
 #### 6b. Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Agent-specific metadata fields: `phase_count`, `estimated_hours`. Set `next_steps` to `"Run /implement {N} to execute the plan"`.
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `planned`. Agent-specific metadata fields: `phase_count`, `estimated_hours`, `dependency_waves`. Set `next_steps` to `"Run /implement {N} to execute the plan"`.
 
 ### Stage 7: Return Brief Text Summary
 

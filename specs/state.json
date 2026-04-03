@@ -5,10 +5,10 @@
     {
       "project_number": 356,
       "project_name": "plan_phase_dependencies",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-03T15:49:36Z",
-      "last_updated": "2026-04-03T16:00:54Z",
+      "last_updated": "2026-04-03T16:05:16Z",
       "dependencies": [],
       "session_id": "sess_1775231615_6d12da",
       "next_artifact_number": 2,
@@ -23,9 +23,18 @@
           "path": "specs/356_plan_phase_dependencies/plans/01_plan-phase-deps.md",
           "type": "plan",
           "summary": "3-phase plan for adding phase dependency analysis to plan format and planner agent"
+        },
+        {
+          "path": "specs/356_plan_phase_dependencies/summaries/01_plan-phase-deps-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for phase dependency analysis additions"
         }
       ],
-      "planned": "2026-04-03T16:00:54Z"
+      "planned": "2026-04-03T16:00:54Z",
+      "started": "2026-04-03T16:02:03Z",
+      "completed": "2026-04-03T16:05:16Z",
+      "completion_summary": "Added phase dependency analysis to plan format: per-phase Depends on field, Dependency Analysis wave table in Implementation Phases section, dependency_waves in plan_metadata schema. Updated planner-agent Stage 4 (Build Wave Map), Stage 5 (template with dependencies), and Stage 6 (verification and metadata). Updated plan-format-enforcement checklist.",
+      "claudemd_suggestions": "none"
     },
     {
       "project_number": 357,

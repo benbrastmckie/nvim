@@ -1,7 +1,7 @@
 # Implementation Plan: Add Phase Dependency Analysis
 
 - **Task**: 356 - Add phase dependency analysis to plan format and planner agent
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/356_plan_phase_dependencies/reports/01_plan-phase-deps.md
@@ -83,7 +83,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update Planner Agent Stages 4-5 [NOT STARTED]
+### Phase 2: Update Planner Agent Stages 4-5 [COMPLETED]
 
 **Goal**: Update Stage 4 to build a wave map from dependency data, and Stage 5 template to emit `**Depends on**:` fields and the wave table.
 
@@ -107,7 +107,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update Planner Agent Stage 6 and Verify [NOT STARTED]
+### Phase 3: Update Planner Agent Stage 6 and Verify [COMPLETED]
 
 **Goal**: Update Stage 6 metadata to include dependency_waves, add consistency verification step, and validate all changes work together.
 
