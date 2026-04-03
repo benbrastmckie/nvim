@@ -141,6 +141,19 @@ Keybinding discovery and organization system for improved workflow, implementing
 - **Templates** (`<leader>T`): Only visible in LaTeX files
 - **Actions** (`<leader>a*`): Python, Lean, and Markdown-specific actions appear contextually
 
+**Process Management (`<leader>x`):**
+
+Alongside the existing text manipulation mappings (`xa`, `xA`, `xd`, `xs`, `xw`), the `<leader>x` group includes process management for background servers:
+
+| Keymap | Description |
+|--------|-------------|
+| `<leader>xl` | Launch current file (filetype-aware: slidev for `.md`, typst-preview for `.typ`) |
+| `<leader>xp` | Open telescope process picker (view/kill running processes) |
+| `<leader>xk` | Kill all background processes |
+| `<leader>xo` | Open current file's process port in browser |
+
+The launch action auto-detects available ports (starting from 3030), opens the browser automatically, and prevents duplicate launches. See `lua/neotex/util/process.lua` for the underlying process manager API.
+
 **Technical Implementation:**
 Due to a limitation in which-key.nvim v3 where `cond` parameters are only evaluated once at startup, this configuration uses a **hybrid approach**:
 

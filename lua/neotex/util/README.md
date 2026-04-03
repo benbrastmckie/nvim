@@ -15,6 +15,7 @@ util/
 ├── diagnostics.lua    # LSP diagnostic utilities
 ├── misc.lua           # Miscellaneous helper functions
 ├── optimize.lua       # Performance optimization utilities
+├── process.lua        # Background process manager
 ├── lectic_extras.lua  # Lectic AI integration helpers
 └── neotree-width.lua  # Neo-tree width management
 ```
@@ -29,6 +30,7 @@ util/
 - **diagnostics.lua**: LSP diagnostic utilities
 - **misc.lua**: Miscellaneous helper functions
 - **optimize.lua**: Performance optimization utilities
+- **process.lua**: Background process manager with job registry, port auto-detection, and filetype launchers
 - **lectic_extras.lua**: Lectic AI integration helpers
 - **neotree-width.lua**: Neo-tree width management
 
@@ -94,6 +96,83 @@ notify.ai('Provider detection complete', notify.categories.BACKGROUND)
 | `:NotifyDebug [module]` | Toggle debug mode for module or globally |
 
 See the [full notification documentation](../../docs/NOTIFICATIONS.md) for complete usage examples and configuration options.
+
+## Process Manager
+
+The process manager (`process.lua`) provides centralized background job management for Neovim. It tracks running processes (slidev, typst, etc.), auto-detects available ports, opens browsers, and cleans up on exit.
+
+### Key Features
+
+- **Job Registry**: Track background processes with pid, command, port, working directory, uptime, and stdout/stderr ring buffers
+- **Port Auto-Detection**: Find available ports starting from a base (default 3030) using `vim.uv.new_tcp()` bind test, skipping ports already claimed by tracked processes
+- **Browser Auto-Open**: Launch browser via `xdg-open` on process start with per-port deduplication
+- **Duplicate Detection**: Launching a file that is already running shows "Already open on port: N" instead of starting a duplicate
+- **Filetype Launchers**: Extensible registry mapping filetypes to launch functions (ships with slidev for markdown and typst-preview for typst)
+- **VimLeavePre Cleanup**: All tracked processes are stopped when Neovim exits
+- **Telescope Integration**: Process picker (`<leader>xp`) shows all tracked processes with kill and browser-open actions
+
+### Quick Usage
+
+```lua
+local process = require("neotex.util.process")
+
+-- Launch current file (filetype-aware)
+process.launch()
+
+-- Start a custom process with port auto-detection
+process.start({
+  name = "my-server",
+  cmd = { "npx", "serve", "--port", "{port}" },
+  port = true,
+  base_port = 8080,
+  open_browser = true,
+})
+
+-- List running processes
+local procs = process.list()
+
+-- Stop a process by id
+process.stop(1)
+
+-- Stop all tracked processes
+process.stop_all()
+
+-- Register a custom filetype launcher
+process.register_launcher("html", function(filepath)
+  return {
+    cmd = { "npx", "live-server", filepath },
+    name = "live-server",
+    port = true,
+    base_port = 8080,
+    open_browser = true,
+  }
+end)
+
+-- Register an external (plugin-managed) process for tracking
+local id = process.register_external({
+  name = "typst-preview",
+  cmd = "tinymist preview",
+  type = "browser",
+})
+process.deregister("typst-preview")
+```
+
+### Keybindings
+
+| Keymap | Description |
+|--------|-------------|
+| `<leader>xl` | Launch current file (filetype-aware) |
+| `<leader>xp` | Open telescope process picker |
+| `<leader>xk` | Kill all background processes |
+| `<leader>xo` | Open current file's process port in browser |
+
+### Telescope Process Picker
+
+The process picker (`<leader>xp`) displays all tracked background processes with:
+- **Columns**: name, command, port, uptime, status
+- **Preview**: Process metadata and recent stdout/stderr output
+- **Actions**: `<CR>` kill process, `<C-o>` open port in browser, `<C-j/k>` navigate
+- **Help**: `[Keyboard Shortcuts]` entry at bottom shows keybinding reference
 
 ## UI Selection and Confirmation System
 

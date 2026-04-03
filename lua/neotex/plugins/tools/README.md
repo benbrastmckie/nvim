@@ -12,6 +12,7 @@ tools/
 ├── gitsigns.lua       # Git integration
 ├── firenvim.lua       # Browser integration
 ├── mini.lua           # Mini plugin collection
+├── process-picker.lua # Background process telescope picker
 ├── surround.lua       # Text surrounding
 ├── yanky.lua          # Enhanced yank/paste
 ├── todo-comments.lua  # TODO comment management
@@ -54,6 +55,7 @@ The tools module is organized into individual plugin configurations and speciali
 | **yanky** | `yanky.lua` | Enhanced yank/paste with history |
 | **todo-comments** | `todo-comments.lua` | TODO comment highlighting and navigation |
 | **luasnip** | `luasnip.lua` | Snippet engine configuration |
+| **process-picker** | `process-picker.lua` | Telescope picker for background process management |
 | **stt** | `stt/` | Speech-to-text input with Vosk offline recognition |
 
 ### Specialized Subdirectories
@@ -127,6 +129,15 @@ The tools module is organized into individual plugin configurations and speciali
   - `<leader>v` keybinding group for voice commands
   - User commands: `:STTStart`, `:STTStop`, `:STTToggle`, `:STTHealth`
   - Vosk model: vosk-model-small-en-us (~50MB)
+
+### Background Process Management
+- **process-picker**: Telescope picker for viewing and managing background processes
+  - Displays name, command, port, uptime, and status columns
+  - Preview pane shows process metadata and recent stdout/stderr
+  - `<CR>` to kill a process, `<C-o>` to open port in browser
+  - `[Keyboard Shortcuts]` help entry with keybinding reference
+  - Integrates with `neotex.util.process` registry
+  - NOT a lazy.nvim plugin spec (utility module, not loaded by `init.lua`)
 
 ### Code Completion & Snippets
 - **luasnip**: Advanced snippet engine
