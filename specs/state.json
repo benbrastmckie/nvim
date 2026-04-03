@@ -5,21 +5,27 @@
     {
       "project_number": 362,
       "project_name": "centralized_status_script",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-03T20:00:00Z",
-      "last_updated": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T19:45:33Z",
       "researched": "2026-04-03T20:00:00Z",
       "dependencies": [],
-      "session_id": "sess_1743638400_meta_status",
+      "session_id": "sess_1743638400_plan362",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/362_centralized_status_script/reports/01_meta-research.md",
           "type": "research",
           "summary": "Infrastructure analysis of duplicated status update logic across workflow skills; design for centralized update-task-status.sh script"
+        },
+        {
+          "path": "specs/362_centralized_status_script/plans/01_status-script-plan.md",
+          "type": "plan",
+          "summary": "Implementation plan for centralized status update script with 6 phases"
         }
-      ]
+      ],
+      "planned": "2026-04-03T19:45:33Z"
     },
     {
       "project_number": 363,

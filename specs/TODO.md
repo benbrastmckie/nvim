@@ -10,7 +10,7 @@ next_project_number: 368
 
 ### Pending
 
-- **362** [RESEARCHED] -- Create centralized update-task-status.sh script
+- **362** [PLANNED] -- Create centralized update-task-status.sh script
 - **363** [RESEARCHED] -- Refactor skill-researcher for centralized status updates (depends: 362)
 - **364** [RESEARCHED] -- Refactor skill-planner for centralized status updates (depends: 362)
 - **365** [RESEARCHED] -- Refactor skill-implementer for centralized status updates (depends: 362)
