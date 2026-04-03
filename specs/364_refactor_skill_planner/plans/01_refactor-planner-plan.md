@@ -70,7 +70,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Replace Stage 7 (Postflight) with script call [NOT STARTED]
+### Phase 2: Replace Stage 7 (Postflight) with script call [COMPLETED]
 
 **Goal**: Replace the inline jq state.json update and Edit TODO.md instruction in Stage 7 with a conditional call to `update-task-status.sh postflight`.
 

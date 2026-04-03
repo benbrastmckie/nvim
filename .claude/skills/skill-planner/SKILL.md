@@ -213,22 +213,15 @@ fi
 
 ### Stage 7: Update Task Status (Postflight)
 
-If status is "planned", update state.json and TODO.md:
+If subagent status is "planned", update state.json and TODO.md atomically using the centralized script:
 
-**Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "planned" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    planned: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+bash .claude/scripts/update-task-status.sh postflight $task_number plan $session_id
 ```
 
-**Update TODO.md**: Use Edit tool to change status marker from `[PLANNING]` to `[PLANNED]`.
+If the script exits non-zero, log a warning but continue with artifact linking and git commit (postflight errors are non-blocking).
 
-**On partial/failed**: Keep status as "planning" for resume.
+**On partial/failed**: Keep status as "planning" for resume (do not call the script).
 
 ---
 
@@ -376,8 +369,7 @@ After the agent returns, this skill MUST NOT:
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file
-- Updating state.json via jq
-- Updating TODO.md status marker via Edit
+- Updating status via `update-task-status.sh` (handles state.json + TODO.md atomically)
 - Linking artifacts in state.json
 - Git commit
 - Cleanup of temp/marker files
