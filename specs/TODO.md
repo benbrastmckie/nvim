@@ -10,7 +10,7 @@ next_project_number: 356
 
 ### Pending
 
-- **355** [RESEARCHED] -- Update founder extension README and deck documentation
+- **355** [PLANNED] -- Update founder extension README and deck documentation
 - **350** [COMPLETED] -- Create multi-task operations context pattern
 - **351** [COMPLETED] -- Update /research command for multi-task support (depends: 350)
 - **352** [COMPLETED] -- Update /plan command for multi-task support (depends: 350)
@@ -24,10 +24,12 @@ next_project_number: 356
 
 ### 355. Update founder extension README and deck documentation
 - **Effort**: 1 hour
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
+- **Planning Completed**: 2026-04-02
 - **Research Completed**: 2026-04-02
 - **Language**: founder
 - **Research**: [01_team-research.md](specs/355_update_founder_readme_deck_docs/reports/01_team-research.md)
+- **Plan**: [01_founder-readme-deck-docs.md](specs/355_update_founder_readme_deck_docs/plans/01_founder-readme-deck-docs.md)
 
 **Description**: Update /home/benjamin/.config/nvim/.claude/extensions/founder/context/project/founder/README.md and add content to /home/benjamin/.config/nvim/.claude/extensions/founder/context/project/founder/deck/README.md providing complete, consistent, clear, and concise documentation
 

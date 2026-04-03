@@ -5,13 +5,21 @@
     {
       "project_number": 355,
       "project_name": "update_founder_readme_deck_docs",
-      "status": "researched",
+      "status": "planned",
       "language": "founder",
       "created": "2026-04-03T03:00:37Z",
-      "last_updated": "2026-04-03T03:07:43Z",
-      "session_id": "sess_1775185392_e30404",
+      "last_updated": "2026-04-03T03:11:54Z",
+      "session_id": "sess_1775185745_d9c1f1",
       "researched": "2026-04-03T03:07:43Z",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "planned": "2026-04-03T03:11:54Z",
+      "artifacts": [
+        {
+          "path": "specs/355_update_founder_readme_deck_docs/plans/01_founder-readme-deck-docs.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for updating founder README and creating deck library README"
+        }
+      ]
     },
     {
       "project_number": 350,
