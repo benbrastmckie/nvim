@@ -54,7 +54,7 @@ Key findings from report 01_plan-phase-deps.md:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Update Plan Format Standard [NOT STARTED]
+### Phase 1: Update Plan Format Standard [COMPLETED]
 
 **Goal**: Add dependency fields and wave table to plan-format.md and update the enforcement checklist.
 

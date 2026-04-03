@@ -37,6 +37,7 @@ Each phase under `## Implementation Phases`:
 - **Goal:** short statement
 - **Tasks:** bullet checklist
 - **Timing:** expected duration
+- **Depends on:** phase numbers or "none" (optional; absence = sequential)
 ```
 
 Valid status markers: `[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`, `[PARTIAL]`, `[BLOCKED]`
