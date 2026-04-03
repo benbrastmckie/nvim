@@ -1,15 +1,21 @@
 ---
-next_project_number: 358
+next_project_number: 368
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-03. 10 active tasks remaining.*
+*Updated 2026-04-03. 16 active tasks remaining.*
 
 ### Pending
 
+- **362** [RESEARCHED] -- Create centralized update-task-status.sh script
+- **363** [RESEARCHED] -- Refactor skill-researcher for centralized status updates (depends: 362)
+- **364** [RESEARCHED] -- Refactor skill-planner for centralized status updates (depends: 362)
+- **365** [RESEARCHED] -- Refactor skill-implementer for centralized status updates (depends: 362)
+- **366** [RESEARCHED] -- Add defensive status verification to /research and /plan GATE OUT (depends: 363, 364)
+- **367** [RESEARCHED] -- Refactor /revise to use skill delegation pattern (depends: 362)
 - **358** [COMPLETED] -- Create process manager core module (lua/neotex/util/process.lua)
 - **359** [COMPLETED] -- Create telescope process picker (depends: 358)
 - **360** [COMPLETED] -- Add which-key mappings under leader-x for process management (depends: 358, 359)
@@ -27,6 +33,72 @@ next_project_number: 358
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 362. Create centralized update-task-status.sh script
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [01_meta-research.md](362_centralized_status_script/reports/01_meta-research.md)
+
+**Description**: Create `.claude/scripts/update-task-status.sh` -- a centralized shell script that atomically updates task status across state.json (status, timestamps, session_id), TODO.md task entry (`- **Status**: [STATUS]`), and TODO.md Task Order section (`**{N}** [STATUS]`). Supports preflight (in-progress variants: researching, planning, implementing) and postflight (completed variants: researched, planned, completed) operations. Replaces duplicated inline jq/Edit patterns across skill-researcher, skill-planner, and skill-implementer. Includes optional plan file status update via existing update-plan-status.sh.
+
+---
+
+### 363. Refactor skill-researcher for centralized status updates
+- **Effort**: 1-2 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: 362
+- **Research**: [01_meta-research.md](363_refactor_skill_researcher/reports/01_meta-research.md)
+
+**Description**: Replace inline preflight (Stage 2) and postflight (Stage 7) status update code in skill-researcher with calls to the centralized `update-task-status.sh` script. Fixes the gap where skill-researcher does not update the TODO.md Task Order section during status changes. Evaluate removing the skill-level git commit (Stage 9) to eliminate double-commit with the command-level CHECKPOINT 3.
+
+---
+
+### 364. Refactor skill-planner for centralized status updates
+- **Effort**: 1-2 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: 362
+- **Research**: [01_meta-research.md](364_refactor_skill_planner/reports/01_meta-research.md)
+
+**Description**: Replace inline preflight (Stage 2) and postflight (Stage 7) status update code in skill-planner with calls to the centralized `update-task-status.sh` script. Fixes the gap where skill-planner does not update the TODO.md Task Order section during status changes. Near-identical refactoring to Task 363 (skill-researcher). Can be done in parallel.
+
+---
+
+### 365. Refactor skill-implementer for centralized status updates
+- **Effort**: 1-2 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: 362
+- **Research**: [01_meta-research.md](365_refactor_skill_implementer/reports/01_meta-research.md)
+
+**Description**: Replace inline preflight (Stage 2) and postflight (Stage 7) status update code in skill-implementer with calls to the centralized `update-task-status.sh` script. More complex than Tasks 363/364 because skill-implementer also handles completion_data fields (completion_summary, claudemd_suggestions, roadmap_items), partial status with resume_phase, plan file updates, and Recommended Order removal. These additional fields may need to remain inline or the script may need an extension mechanism.
+
+---
+
+### 366. Add defensive status verification to /research and /plan GATE OUT
+- **Effort**: 1 hour
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: 363, 364
+- **Research**: [01_meta-research.md](366_defensive_gate_out/reports/01_meta-research.md)
+
+**Description**: Add defensive correction logic to the CHECKPOINT 2: GATE OUT sections of `/research` (research.md) and `/plan` (plan.md) commands, matching the pattern already implemented in `/implement` (implement.md). Verify that state.json, TODO.md task entry, and TODO.md Task Order section all show the correct final status after skill postflight. Auto-correct any mismatches (e.g., status still showing [RESEARCHING] instead of [RESEARCHED]).
+
+---
+
+### 367. Refactor /revise to use skill delegation pattern
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Dependencies**: 362
+- **Research**: [01_meta-research.md](367_refactor_revise_skill/reports/01_meta-research.md)
+
+**Description**: Refactor the `/revise` command to follow the same skill delegation pattern used by `/research`, `/plan`, and `/implement`. Currently, `/revise` handles all work inline (plan loading, analysis, plan creation, status updates) without delegating to a skill or agent. Create a thin `skill-reviser` wrapper with proper postflight marker file protection and centralized status updates. Plan revision path should delegate to planner-agent; description update path can remain inline.
+
+---
 
 ### 358. Create process manager core module
 - **Effort**: 3 hours

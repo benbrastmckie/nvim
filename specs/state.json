@@ -1,7 +1,132 @@
 {
   "version": "1.0.0",
-  "next_project_number": 362,
+  "next_project_number": 368,
   "active_projects": [
+    {
+      "project_number": 362,
+      "project_name": "centralized_status_script",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T20:00:00Z",
+      "researched": "2026-04-03T20:00:00Z",
+      "dependencies": [],
+      "session_id": "sess_1743638400_meta_status",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/362_centralized_status_script/reports/01_meta-research.md",
+          "type": "research",
+          "summary": "Infrastructure analysis of duplicated status update logic across workflow skills; design for centralized update-task-status.sh script"
+        }
+      ]
+    },
+    {
+      "project_number": 363,
+      "project_name": "refactor_skill_researcher",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T20:00:00Z",
+      "researched": "2026-04-03T20:00:00Z",
+      "dependencies": [
+        362
+      ],
+      "session_id": "sess_1743638400_meta_status",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/363_refactor_skill_researcher/reports/01_meta-research.md",
+          "type": "research",
+          "summary": "Analysis of skill-researcher preflight/postflight gaps including missing Task Order updates"
+        }
+      ]
+    },
+    {
+      "project_number": 364,
+      "project_name": "refactor_skill_planner",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T20:00:00Z",
+      "researched": "2026-04-03T20:00:00Z",
+      "dependencies": [
+        362
+      ],
+      "session_id": "sess_1743638400_meta_status",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/364_refactor_skill_planner/reports/01_meta-research.md",
+          "type": "research",
+          "summary": "Analysis of skill-planner preflight/postflight gaps including missing Task Order updates"
+        }
+      ]
+    },
+    {
+      "project_number": 365,
+      "project_name": "refactor_skill_implementer",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T20:00:00Z",
+      "researched": "2026-04-03T20:00:00Z",
+      "dependencies": [
+        362
+      ],
+      "session_id": "sess_1743638400_meta_status",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/365_refactor_skill_implementer/reports/01_meta-research.md",
+          "type": "research",
+          "summary": "Analysis of skill-implementer status patterns including completion_data handling and partial status"
+        }
+      ]
+    },
+    {
+      "project_number": 366,
+      "project_name": "defensive_gate_out",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T20:00:00Z",
+      "researched": "2026-04-03T20:00:00Z",
+      "dependencies": [
+        363,
+        364
+      ],
+      "session_id": "sess_1743638400_meta_status",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/366_defensive_gate_out/reports/01_meta-research.md",
+          "type": "research",
+          "summary": "Gap analysis of /research and /plan GATE OUT defensive verification compared to /implement"
+        }
+      ]
+    },
+    {
+      "project_number": 367,
+      "project_name": "refactor_revise_skill",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T20:00:00Z",
+      "last_updated": "2026-04-03T20:00:00Z",
+      "researched": "2026-04-03T20:00:00Z",
+      "dependencies": [
+        362
+      ],
+      "session_id": "sess_1743638400_meta_status",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/367_refactor_revise_skill/reports/01_meta-research.md",
+          "type": "research",
+          "summary": "Architecture analysis of /revise inline execution vs skill delegation pattern used by other commands"
+        }
+      ]
+    },
     {
       "project_number": 358,
       "project_name": "process_manager_core",
