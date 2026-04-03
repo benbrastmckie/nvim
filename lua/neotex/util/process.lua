@@ -563,4 +563,7 @@ M._find_available_port = _find_available_port
 M._make_ring_buffer = _make_ring_buffer
 M._is_slidev_project = _is_slidev_project
 
+-- Auto-initialize on first require
+M.setup()
+
 return M
