@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor skill-planner for centralized status updates
 
 - **Task**: 364 - Refactor skill-planner for centralized status updates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: Task 362 (update-task-status.sh must exist)
 - **Research Inputs**: None

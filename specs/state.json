@@ -39,15 +39,15 @@
     {
       "project_number": 363,
       "project_name": "refactor_skill_researcher",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-03T20:00:00Z",
-      "last_updated": "2026-04-03T19:58:09Z",
+      "last_updated": "2026-04-03T20:02:49Z",
       "researched": "2026-04-03T20:00:00Z",
       "dependencies": [
         362
       ],
-      "session_id": "sess_1743638400_plan_wave2",
+      "session_id": "sess_1743638400_impl_wave2",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -59,21 +59,27 @@
           "path": "specs/363_refactor_skill_researcher/plans/01_refactor-researcher-plan.md",
           "type": "plan",
           "summary": "Implementation plan for task 363"
+        },
+        {
+          "path": "specs/363_refactor_skill_researcher/summaries/01_refactor-researcher-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for task 363"
         }
-      ]
+      ],
+      "completion_summary": "Refactored skill-researcher preflight and postflight to use centralized update-task-status.sh, removed redundant git commit stage, fixing missing Task Order updates"
     },
     {
       "project_number": 364,
       "project_name": "refactor_skill_planner",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-03T20:00:00Z",
-      "last_updated": "2026-04-03T19:58:10Z",
+      "last_updated": "2026-04-03T20:02:49Z",
       "researched": "2026-04-03T20:00:00Z",
       "dependencies": [
         362
       ],
-      "session_id": "sess_1743638400_plan_wave2",
+      "session_id": "sess_1743638400_impl_wave2",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -85,21 +91,27 @@
           "path": "specs/364_refactor_skill_planner/plans/01_refactor-planner-plan.md",
           "type": "plan",
           "summary": "Implementation plan for task 364"
+        },
+        {
+          "path": "specs/364_refactor_skill_planner/summaries/01_refactor-planner-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for task 364"
         }
-      ]
+      ],
+      "completion_summary": "Refactored skill-planner preflight (Stage 2) and postflight (Stage 7) to use centralized update-task-status.sh, replacing inline jq/Edit patterns and fixing missing Task Order updates."
     },
     {
       "project_number": 365,
       "project_name": "refactor_skill_implementer",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-03T20:00:00Z",
-      "last_updated": "2026-04-03T19:58:10Z",
+      "last_updated": "2026-04-03T20:02:49Z",
       "researched": "2026-04-03T20:00:00Z",
       "dependencies": [
         362
       ],
-      "session_id": "sess_1743638400_plan_wave2",
+      "session_id": "sess_1743638400_impl_wave2",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -111,8 +123,14 @@
           "path": "specs/365_refactor_skill_implementer/plans/01_refactor-implementer-plan.md",
           "type": "plan",
           "summary": "Implementation plan for task 365"
+        },
+        {
+          "path": "specs/365_refactor_skill_implementer/summaries/01_refactor-implementer-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for task 365"
         }
-      ]
+      ],
+      "completion_summary": "Refactored skill-implementer preflight and postflight to use centralized update-task-status.sh, preserving completion_data and partial status handling inline"
     },
     {
       "project_number": 366,
@@ -139,15 +157,15 @@
     {
       "project_number": 367,
       "project_name": "refactor_revise_skill",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-03T20:00:00Z",
-      "last_updated": "2026-04-03T19:58:10Z",
+      "last_updated": "2026-04-03T20:02:49Z",
       "researched": "2026-04-03T20:00:00Z",
       "dependencies": [
         362
       ],
-      "session_id": "sess_1743638400_plan_wave2",
+      "session_id": "sess_1743638400_impl_wave2",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -159,8 +177,14 @@
           "path": "specs/367_refactor_revise_skill/plans/01_refactor-revise-plan.md",
           "type": "plan",
           "summary": "Implementation plan for task 367"
+        },
+        {
+          "path": "specs/367_refactor_revise_skill/summaries/01_refactor-revise-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for task 367"
         }
-      ]
+      ],
+      "completion_summary": "Created skill-reviser/SKILL.md with plan revision and description update flows using update-task-status.sh for centralized status updates. Refactored /revise command to delegate to skill-reviser. Updated CLAUDE.md mapping table."
     },
     {
       "project_number": 358,

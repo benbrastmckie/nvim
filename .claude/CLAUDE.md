@@ -175,6 +175,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | skill-team-research | (team orchestration) | sonnet | Multi-agent parallel research (--team flag) |
 | skill-team-plan | (team orchestration) | sonnet | Multi-agent parallel planning (--team flag) |
 | skill-team-implement | (team orchestration) | sonnet | Multi-agent parallel implementation (--team flag) |
+| skill-reviser | (direct execution) | opus | Plan revision and description update |
 | skill-spawn | spawn-agent | opus | Analyze blockers and spawn new tasks |
 | skill-orchestrator | (direct execution) | - | Route commands to appropriate workflows |
 | skill-git-workflow | (direct execution) | - | Create scoped git commits for task operations |

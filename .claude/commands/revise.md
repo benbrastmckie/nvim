@@ -38,134 +38,32 @@ Create a new version of an implementation plan, or update task description if no
 
    | Status | Action |
    |--------|--------|
-   | planned, implementing, partial, blocked | → Plan Revision (Stage 2A) |
-   | not_started, researched | → Description Update (Stage 2B) |
+   | planned, implementing, partial, blocked | Plan Revision (via skill-reviser) |
+   | not_started, researched | Description Update (via skill-reviser) |
    | completed | ABORT "Task completed, no revision needed" |
    | abandoned | ABORT "Task abandoned, use /task --recover first" |
 
-**ABORT** if any validation fails. **PROCEED** to appropriate stage.
+**ABORT** if any validation fails. **PROCEED** to delegation.
 
 ---
 
-### STAGE 2A: Plan Revision
+### CHECKPOINT 2: DELEGATE TO SKILL
 
-For tasks with existing plans (planned, implementing, partial, blocked):
+Invoke `skill-reviser` with the validated task context. The skill handles:
 
-1. **Load Current Context**
-   - Current plan from `specs/{NNN}_{SLUG}/plans/*.md` (latest version)
-     (Check padded directory first, fall back to unpadded for legacy tasks)
-   - Research reports if any
-   - Implementation progress (phase statuses)
+- **Plan Revision path**: Load current plan, analyze changes, create revised plan, update status via `update-task-status.sh postflight plan`, link artifacts, git commit
+- **Description Update path**: Validate revision reason, update state.json description, update TODO.md, git commit
 
-2. **Analyze What Changed**
-   - What phases succeeded/failed?
-   - What new information emerged?
-   - What dependencies weren't anticipated?
+Pass to skill-reviser:
+- `task_number` - Validated task number
+- `session_id` - Generated session ID
+- `revision_reason` - Optional reason from remaining args
+- `task_data` - Full task data from state.json lookup
+- `branch` - "plan_revision" or "description_update" based on routing
 
-3. **Create Revised Plan**
-   Increment version: MM_{short-slug}.md format (e.g., 02_revised-approach.md, 03_updated-design.md)
-
-   Write to `specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md`
-   (Always use padded directory for new plans)
-
-4. **Update Status Inline** (two-step to avoid jq escaping bug - see `jq-escaping-workarounds.md`)
-   Update state.json to "planned" status and add plan artifact:
-   ```bash
-   # Step 1: Update status and timestamps
-    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-       --arg status "planned" \
-      '(.active_projects[] | select(.project_number == {task_number})) |= . + {
-        status: $status,
-        last_updated: $ts,
-        planned: $ts
-      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-
-   # Step 2: Add artifact (use "| not" pattern to avoid != escaping - Issue #1132)
-    jq --arg path "{new_plan_path}" \
-      '(.active_projects[] | select(.project_number == {task_number})).artifacts =
-        ([(.active_projects[] | select(.project_number == {task_number})).artifacts // [] | .[] | select(.type == "plan" | not)] + [{"path": $path, "type": "plan"}])' \
-      specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-   ```
-
-   Update TODO.md status marker using Edit tool.
-
--> Continue to CHECKPOINT 2 (Plan Revision)
+The skill returns a brief text summary of what was done.
 
 ---
-
-### STAGE 2B: Description Update
-
-For tasks without plans (not_started, researched):
-
-1. **Read Current Description**
-   ```bash
-   old_description=$(echo "$task_data" | jq -r '.description // ""')
-   ```
-
-2. **Validate Revision Reason**
-   If no revision_reason provided: ABORT "No revision reason provided. Usage: /revise N \"new description\""
-
-3. **Update state.json**
-   ```bash
-    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg desc "$new_description" \
-      '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-        description: $desc,
-        last_updated: $ts
-      }' specs/state.json > specs/tmp/state.json && \
-      mv specs/tmp/state.json specs/state.json
-   ```
-
-4. **Update TODO.md**
-   Use Edit tool to replace description
-
-→ Continue to CHECKPOINT 2 (Description Update)
-
----
-
-### CHECKPOINT 2: GATE OUT
-
-**For Plan Revision (Stage 2A):**
-1. Verify new plan file exists
-2. Verify status is "planned"
-3. Verify plan link updated in TODO.md
-
-**For Description Update (Stage 2B):**
-1. Verify description updated in state.json
-2. Verify description updated in TODO.md
-
-**PROCEED** to commit.
-
----
-
-### CHECKPOINT 3: COMMIT
-
-**For Plan Revision:**
-```bash
-git add -A
-git commit -m "$(cat <<'EOF'
-task {N}: revise plan (v{NEW_VERSION})
-
-Session: {session_id}
-
-Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
-EOF
-)"
-```
-
-**For Description Update:**
-```bash
-git add -A
-git commit -m "$(cat <<'EOF'
-task {N}: revise description
-
-Session: {session_id}
-
-Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
-EOF
-)"
-```
-
-Commit failure is non-blocking (log and continue).
 
 ## Output
 
@@ -199,12 +97,8 @@ Status: [{current_status}]
 - Task not found: Return error with guidance
 - Invalid status: Return error with current status
 
-### STAGE Failure
-- Missing plan for revision: Fall back to description update
-- Write failure: Log error, preserve original
-
-### GATE OUT Failure
-- Verification failure: Log warning, continue
-
-### COMMIT Failure
-- Non-blocking: Log warning, continue with success
+### Skill Failure
+- skill-reviser handles all error cases internally
+- Missing plan for revision: Skill falls back to description update
+- Write failure: Skill logs error, preserves original
+- Git commit failure: Non-blocking (logged by skill)

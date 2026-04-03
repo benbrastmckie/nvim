@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor skill-researcher for centralized status updates
 
 - **Task**: 363 - Refactor skill-researcher for centralized status updates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: Task 362 (update-task-status.sh - completed)
 - **Research Inputs**: None (direct codebase analysis)

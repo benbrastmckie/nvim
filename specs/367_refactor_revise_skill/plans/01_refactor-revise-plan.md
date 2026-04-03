@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor /revise to Use Skill Delegation Pattern
 
 - **Task**: 367 - Refactor /revise to use skill delegation pattern
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: Task 362 (update-task-status.sh) -- completed
 - **Research Inputs**: None
@@ -48,7 +48,7 @@ The `/revise` command currently handles status updates with inline jq commands a
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Analyze Current Flow and Map Status Transitions [NOT STARTED]
+### Phase 1: Analyze Current Flow and Map Status Transitions [COMPLETED]
 
 **Goal**: Document exactly which status transitions `/revise` performs and which can be handled by `update-task-status.sh`.
 
@@ -70,7 +70,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Create skill-reviser/SKILL.md [NOT STARTED]
+### Phase 2: Create skill-reviser/SKILL.md [COMPLETED]
 
 **Goal**: Create the skill file that wraps the revise operation with proper preflight/postflight structure.
 
@@ -103,7 +103,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Refactor /revise Command to Delegate [NOT STARTED]
+### Phase 3: Refactor /revise Command to Delegate [COMPLETED]
 
 **Goal**: Update the `/revise` command file to delegate to `skill-reviser` instead of performing work inline.
 
@@ -131,7 +131,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Verify Refactored Flow [NOT STARTED]
+### Phase 4: Verify Refactored Flow [COMPLETED]
 
 **Goal**: Validate the refactored command works correctly for both branches.
 

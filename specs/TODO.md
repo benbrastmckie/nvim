@@ -11,11 +11,11 @@ next_project_number: 368
 ### Pending
 
 - **362** [COMPLETED] -- Create centralized update-task-status.sh script
-- **363** [PLANNED] -- Refactor skill-researcher for centralized status updates (depends: 362)
-- **364** [PLANNED] -- Refactor skill-planner for centralized status updates (depends: 362)
-- **365** [PLANNED] -- Refactor skill-implementer for centralized status updates (depends: 362)
+- **363** [COMPLETED] -- Refactor skill-researcher for centralized status updates (depends: 362)
+- **364** [COMPLETED] -- Refactor skill-planner for centralized status updates (depends: 362)
+- **365** [COMPLETED] -- Refactor skill-implementer for centralized status updates (depends: 362)
 - **366** [RESEARCHED] -- Add defensive status verification to /research and /plan GATE OUT (depends: 363, 364)
-- **367** [PLANNED] -- Refactor /revise to use skill delegation pattern (depends: 362)
+- **367** [COMPLETED] -- Refactor /revise to use skill delegation pattern (depends: 362)
 - **358** [COMPLETED] -- Create process manager core module (lua/neotex/util/process.lua)
 - **359** [COMPLETED] -- Create telescope process picker (depends: 358)
 - **360** [COMPLETED] -- Add which-key mappings under leader-x for process management (depends: 358, 359)
@@ -47,7 +47,7 @@ next_project_number: 368
 
 ### 363. Refactor skill-researcher for centralized status updates
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 362
 - **Research**: [01_meta-research.md](363_refactor_skill_researcher/reports/01_meta-research.md)
@@ -58,7 +58,7 @@ next_project_number: 368
 
 ### 364. Refactor skill-planner for centralized status updates
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 362
 - **Research**: [01_meta-research.md](364_refactor_skill_planner/reports/01_meta-research.md)
@@ -69,7 +69,7 @@ next_project_number: 368
 
 ### 365. Refactor skill-implementer for centralized status updates
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 362
 - **Research**: [01_meta-research.md](365_refactor_skill_implementer/reports/01_meta-research.md)
@@ -91,7 +91,7 @@ next_project_number: 368
 
 ### 367. Refactor /revise to use skill delegation pattern
 - **Effort**: 2-3 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 362
 - **Research**: [01_meta-research.md](367_refactor_revise_skill/reports/01_meta-research.md)

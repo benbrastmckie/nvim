@@ -1,7 +1,7 @@
 # Implementation Plan: Task #365
 
 - **Task**: 365 - Refactor skill-implementer for centralized status updates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Task 362 (update-task-status.sh)
 - **Research Inputs**: None
