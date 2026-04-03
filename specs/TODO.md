@@ -11,7 +11,7 @@ next_project_number: 358
 ### Pending
 
 - **356** [COMPLETED] -- Add phase dependency analysis to plan format and planner agent
-- **357** [NOT STARTED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
+- **357** [RESEARCHED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
 - **355** [COMPLETED] -- Update founder extension README and deck documentation
 - **350** [COMPLETED] -- Create multi-task operations context pattern
 - **351** [COMPLETED] -- Update /research command for multi-task support (depends: 350)
@@ -46,9 +46,11 @@ next_project_number: 358
 
 ### 357. Update skill-team-implement to consume plan dependency analysis
 - **Effort**: 30 minutes
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
+- **Research Completed**: 2026-04-03
 - **Language**: meta
 - **Dependencies**: 356
+- **Research**: [01_team-implement-deps.md](specs/357_team_implement_consume_deps/reports/01_team-implement-deps.md)
 
 **Description**: Simplify skill-team-implement Stage 5 (Analyze Phase Dependencies) and Stage 6 (Calculate Implementation Waves) to parse the explicit `## Dependency Analysis` section and per-phase `Depends on:` fields from the plan artifact, instead of inferring dependencies from file modifications and cross-references. The plan now provides wave groupings directly, so team-implement reads them rather than computing them. Keep fallback logic for plans that lack the new section (backward compatibility with existing planned tasks).
 

@@ -39,12 +39,22 @@
     {
       "project_number": 357,
       "project_name": "team_implement_consume_deps",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "created": "2026-04-03T15:49:36Z",
-      "last_updated": "2026-04-03T15:49:36Z",
+      "last_updated": "2026-04-03T16:07:19Z",
       "dependencies": [
         356
+      ],
+      "session_id": "sess_1775232391_499afe",
+      "next_artifact_number": 2,
+      "researched": "2026-04-03T16:07:19Z",
+      "artifacts": [
+        {
+          "path": "specs/357_team_implement_consume_deps/reports/01_team-implement-deps.md",
+          "type": "research",
+          "summary": "Research on updating skill-team-implement to consume plan dependency analysis"
+        }
       ]
     },
     {
