@@ -64,6 +64,14 @@ end
 ---@return function entry_maker
 local function create_entry_maker()
   return function(proc)
+    if proc._is_help then
+      return {
+        value = proc,
+        display = "[Keyboard Shortcuts]",
+        ordinal = "keyboard shortcuts help",
+      }
+    end
+
     local name = truncate(proc.name or "unnamed", 15)
     local cmd_str = table.concat(proc.cmd or {}, " ")
     cmd_str = truncate(cmd_str, 30)
@@ -98,6 +106,30 @@ local function create_previewer()
     define_preview = function(self, entry, _status)
       local proc = entry.value
       if not proc then
+        return
+      end
+
+      -- Help entry: show keybindings
+      if proc._is_help then
+        local help_lines = {
+          "Keyboard Shortcuts",
+          "==================",
+          "",
+          "  <C-j> / <C-k>    Navigate up/down",
+          "  <CR>              Kill selected process",
+          "  <C-o>             Open port in browser",
+          "  <Esc> / <C-c>     Close picker",
+          "",
+          "Column Legend",
+          "=============",
+          "",
+          "  NAME              Process name",
+          "  COMMAND            Launch command (truncated)",
+          "  PORT              Listening port (- if none)",
+          "  UPTIME            Time since launch",
+          "  STATUS            running / exited / stopped",
+        }
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, help_lines)
         return
       end
 
@@ -186,6 +218,14 @@ function M.show(opts)
     return
   end
 
+  -- Add help entry at the end
+  table.insert(processes, {
+    _is_help = true,
+    name = "[Keyboard Shortcuts]",
+    cmd = {},
+    status = "Help",
+  })
+
   -- Telescope requires
   local pickers = require("telescope.pickers")
   local finders = require("telescope.finders")
@@ -194,7 +234,7 @@ function M.show(opts)
   local conf = require("telescope.config").values
 
   pickers.new(opts, {
-    prompt_title = "Background Processes  <CR> kill | <C-o> open browser | <C-j/k> navigate",
+    prompt_title = "Background Processes",
     finder = finders.new_table({
       results = processes,
       entry_maker = create_entry_maker(),
@@ -205,7 +245,7 @@ function M.show(opts)
       -- <CR>: Kill selected process and refresh
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
-        if not selection then
+        if not selection or selection.value._is_help then
           return
         end
         actions.close(prompt_bufnr)
