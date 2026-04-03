@@ -1,7 +1,83 @@
 {
   "version": "1.0.0",
-  "next_project_number": 358,
+  "next_project_number": 362,
   "active_projects": [
+    {
+      "project_number": 358,
+      "project_name": "process_manager_core",
+      "status": "researched",
+      "language": "neovim",
+      "created": "2026-04-03T17:00:00Z",
+      "last_updated": "2026-04-03T17:05:00Z",
+      "dependencies": [],
+      "session_id": "sess_1775235900_batch358",
+      "next_artifact_number": 2,
+      "researched": "2026-04-03T17:05:00Z",
+      "artifacts": [
+        {
+          "path": "specs/358_process_manager_core/reports/01_process-mgr-core.md",
+          "type": "research",
+          "summary": "Research on existing job management patterns, utility module conventions, port detection, browser opening, and VimLeavePre cleanup for process manager design"
+        }
+      ]
+    },
+    {
+      "project_number": 359,
+      "project_name": "telescope_process_picker",
+      "status": "researched",
+      "language": "neovim",
+      "created": "2026-04-03T17:00:00Z",
+      "last_updated": "2026-04-03T17:05:00Z",
+      "dependencies": [358],
+      "session_id": "sess_1775235900_batch359",
+      "researched": "2026-04-03T17:05:00Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/359_telescope_process_picker/reports/01_process-picker.md",
+          "type": "research",
+          "summary": "Telescope picker API patterns, recommended module structure, entry format, previewer, and action mappings for process management"
+        }
+      ]
+    },
+    {
+      "project_number": 360,
+      "project_name": "process_whichkey_mappings",
+      "status": "researched",
+      "language": "neovim",
+      "created": "2026-04-03T17:00:00Z",
+      "last_updated": "2026-04-03T17:05:00Z",
+      "dependencies": [358, 359],
+      "session_id": "sess_1775235900_batch360",
+      "researched": "2026-04-03T17:05:00Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/360_process_whichkey_mappings/reports/01_process-keymaps.md",
+          "type": "research",
+          "summary": "Which-key structure analysis, recommended mappings (xl/xp/xk/xo), icon choices, filetype dispatch strategy, and integration points with process.lua and telescope picker"
+        }
+      ]
+    },
+    {
+      "project_number": 361,
+      "project_name": "typst_process_integration",
+      "status": "researched",
+      "language": "neovim",
+      "created": "2026-04-03T17:00:00Z",
+      "last_updated": "2026-04-03T17:05:00Z",
+      "dependencies": [358, 360],
+      "session_id": "sess_1775235900_batch361",
+      "researched": "2026-04-03T17:05:00Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/361_typst_process_integration/reports/01_typst-integration.md",
+          "type": "research",
+          "summary": "Complete inventory of typst job management code, migration strategy for typst_watch/typst_compile to process.lua, TypstPreview wrapping approach, risk assessment"
+        }
+      ]
+    },
     {
       "project_number": 356,
       "project_name": "plan_phase_dependencies",
