@@ -67,19 +67,11 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 
 Update task status to "researching" BEFORE invoking subagent.
 
-**Update state.json**:
 ```bash
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researching" \
-   --arg sid "$session_id" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    session_id: $sid
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+.claude/scripts/update-task-status.sh preflight "$task_number" research "$session_id"
 ```
 
-**Update TODO.md**: Use Edit tool to change status marker from `[NOT STARTED]` or `[RESEARCHED]` to `[RESEARCHING]`.
+This atomically updates state.json (status, timestamps, session_id), TODO.md task entry, and TODO.md Task Order section. If the script exits non-zero, abort and keep current status.
 
 ---
 
@@ -202,18 +194,13 @@ fi
 
 ### Stage 7: Update Task Status (Postflight)
 
-If status is "researched", update state.json and TODO.md:
+If status is "researched", update status and increment artifact number:
 
-**Update state.json** (includes incrementing `next_artifact_number`):
 ```bash
-# Step 1: Update status and timestamps
-jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   --arg status "researched" \
-  '(.active_projects[] | select(.project_number == '$task_number')) |= . + {
-    status: $status,
-    last_updated: $ts,
-    researched: $ts
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+# Step 1: Update status (state.json, TODO.md task entry, TODO.md Task Order)
+if [ "$status" = "researched" ]; then
+  .claude/scripts/update-task-status.sh postflight "$task_number" research "$session_id"
+fi
 
 # Step 2: Increment next_artifact_number (research advances the sequence)
 jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifact_number =
@@ -223,9 +210,7 @@ jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifa
 
 **Note**: Research is the only operation that increments `next_artifact_number`. Plan and implement use `(current - 1)` to stay in the same "round".
 
-**Update TODO.md**: Use Edit tool to change status marker from `[RESEARCHING]` to `[RESEARCHED]`.
-
-**On partial/failed**: Keep status as "researching" for resume.
+**On partial/failed**: Keep status as "researching" for resume (do not call the script).
 
 ---
 
@@ -278,22 +263,7 @@ See `.claude/rules/state-management.md` "Artifact Linking Format" for canonical 
 
 ---
 
-### Stage 9: Git Commit
-
-Commit changes with session ID:
-
-```bash
-git add -A
-git commit -m "task ${task_number}: complete research
-
-Session: ${session_id}
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
-```
-
----
-
-### Stage 10: Cleanup
+### Stage 9: Cleanup
 
 Remove marker and metadata files:
 
@@ -305,7 +275,7 @@ rm -f "specs/${padded_num}_${project_name}/.return-meta.json"
 
 ---
 
-### Stage 11: Return Brief Summary
+### Stage 10: Return Brief Summary
 
 Return a brief text summary (NOT JSON). Example:
 
@@ -315,7 +285,6 @@ Research completed for task {N}:
 - Identified implementation approach: {approach}
 - Created report at specs/{NNN}_{SLUG}/reports/MM_{short-slug}.md
 - Status updated to [RESEARCHED]
-- Changes committed
 ```
 
 ---
@@ -330,9 +299,6 @@ If subagent didn't write metadata file:
 1. Keep status as "researching"
 2. Do not cleanup postflight marker
 3. Report error to user
-
-### Git Commit Failure
-Non-blocking: Log failure but continue with success response.
 
 ### Subagent Timeout
 Return partial status if subagent times out (default 3600s).
@@ -352,10 +318,9 @@ After the agent returns, this skill MUST NOT:
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file
-- Updating state.json via jq
-- Updating TODO.md status marker via Edit
+- Calling `update-task-status.sh` for status updates (state.json + TODO.md)
+- Incrementing `next_artifact_number` via jq
 - Linking artifacts in state.json
-- Git commit
 - Cleanup of temp/marker files
 
 Reference: @.claude/context/standards/postflight-tool-restrictions.md
@@ -373,7 +338,6 @@ Research completed for task 412:
 - Identified lazy context loading and skill-to-agent mapping patterns
 - Created report at specs/412_general_research/reports/MM_{short-slug}.md
 - Status updated to [RESEARCHED]
-- Changes committed with session sess_1736700000_abc123
 ```
 
 Example partial return:

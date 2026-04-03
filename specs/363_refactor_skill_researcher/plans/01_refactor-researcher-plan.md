@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor skill-researcher for centralized status updates
 
 - **Task**: 363 - Refactor skill-researcher for centralized status updates
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: Task 362 (update-task-status.sh - completed)
 - **Research Inputs**: None (direct codebase analysis)
@@ -48,7 +48,7 @@ Refactor skill-researcher (SKILL.md) to replace its inline jq/Edit status update
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Replace Stage 2 (Preflight) with script call [NOT STARTED]
+### Phase 1: Replace Stage 2 (Preflight) with script call [COMPLETED]
 
 **Goal**: Replace the inline jq state.json update and Edit TODO.md instructions in Stage 2 with a single call to update-task-status.sh.
 
@@ -74,7 +74,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Replace Stage 7 (Postflight) and remove Stage 9 (Git Commit) [NOT STARTED]
+### Phase 2: Replace Stage 7 (Postflight) and remove Stage 9 (Git Commit) [COMPLETED]
 
 **Goal**: Replace the inline jq state.json update and Edit TODO.md instructions in Stage 7 with a script call, and remove Stage 9 entirely.
 
@@ -107,7 +107,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Verify changes with dry-run testing [NOT STARTED]
+### Phase 3: Verify changes with dry-run testing [COMPLETED]
 
 **Goal**: Validate the refactored SKILL.md is internally consistent and the script calls are correct.
 
