@@ -1,15 +1,17 @@
 ---
-next_project_number: 356
+next_project_number: 358
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-02. 8 active tasks remaining.*
+*Updated 2026-04-03. 10 active tasks remaining.*
 
 ### Pending
 
+- **356** [RESEARCHED] -- Add phase dependency analysis to plan format and planner agent
+- **357** [NOT STARTED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
 - **355** [COMPLETED] -- Update founder extension README and deck documentation
 - **350** [COMPLETED] -- Create multi-task operations context pattern
 - **351** [COMPLETED] -- Update /research command for multi-task support (depends: 350)
@@ -21,6 +23,36 @@ next_project_number: 356
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 356. Add phase dependency analysis to plan format and planner agent
+- **Effort**: 1 hour
+- **Status**: [RESEARCHED]
+- **Research Completed**: 2026-04-03
+- **Language**: meta
+- **Dependencies**: None
+- **Research**: [01_plan-phase-deps.md](specs/356_plan_phase_dependencies/reports/01_plan-phase-deps.md)
+
+**Description**: Update plan-format.md to add a `Depends on:` field to each phase and a `## Dependency Analysis` section after `## Implementation Phases` heading that groups phases into execution waves (phases with no unfinished dependencies run in the same wave). Update planner-agent.md Stage 4 to generate explicit inter-phase dependencies and the wave analysis section. Update the plan_metadata schema in state.json to include `dependency_waves` (array of phase number arrays). Update the example skeleton in plan-format.md to show both additions. This provides structured dependency information that skill-team-implement can consume directly.
+
+**Files to modify**:
+- `.claude/context/formats/plan-format.md` - Add `Depends on:` field, `## Dependency Analysis` section, update skeleton
+- `.claude/agents/planner-agent.md` - Add dependency analysis to Stage 4, include in Stage 5 output
+- `.claude/context/formats/plan-format.md` - Update plan_metadata schema with `dependency_waves`
+
+---
+
+### 357. Update skill-team-implement to consume plan dependency analysis
+- **Effort**: 30 minutes
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: 356
+
+**Description**: Simplify skill-team-implement Stage 5 (Analyze Phase Dependencies) and Stage 6 (Calculate Implementation Waves) to parse the explicit `## Dependency Analysis` section and per-phase `Depends on:` fields from the plan artifact, instead of inferring dependencies from file modifications and cross-references. The plan now provides wave groupings directly, so team-implement reads them rather than computing them. Keep fallback logic for plans that lack the new section (backward compatibility with existing planned tasks).
+
+**Files to modify**:
+- `.claude/skills/skill-team-implement/SKILL.md` - Simplify Stage 5-6 to read plan dependencies
+
+---
 
 ### 355. Update founder extension README and deck documentation
 - **Effort**: 1 hour

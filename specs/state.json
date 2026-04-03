@@ -1,7 +1,37 @@
 {
   "version": "1.0.0",
-  "next_project_number": 356,
+  "next_project_number": 358,
   "active_projects": [
+    {
+      "project_number": 356,
+      "project_name": "plan_phase_dependencies",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-03T15:49:36Z",
+      "last_updated": "2026-04-03T15:56:52Z",
+      "dependencies": [],
+      "session_id": "sess_1775231615_6d12da",
+      "next_artifact_number": 2,
+      "researched": "2026-04-03T15:56:52Z",
+      "artifacts": [
+        {
+          "path": "specs/356_plan_phase_dependencies/reports/01_plan-phase-deps.md",
+          "type": "research",
+          "summary": "Research on adding phase dependency analysis to plan format"
+        }
+      ]
+    },
+    {
+      "project_number": 357,
+      "project_name": "team_implement_consume_deps",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-03T15:49:36Z",
+      "last_updated": "2026-04-03T15:49:36Z",
+      "dependencies": [
+        356
+      ]
+    },
     {
       "project_number": 355,
       "project_name": "update_founder_readme_deck_docs",
