@@ -10,10 +10,10 @@ next_project_number: 358
 
 ### Pending
 
-- **358** [RESEARCHED] -- Create process manager core module (lua/neotex/util/process.lua)
-- **359** [RESEARCHED] -- Create telescope process picker (depends: 358)
-- **360** [RESEARCHED] -- Add which-key mappings under leader-x for process management (depends: 358, 359)
-- **361** [RESEARCHED] -- Integrate typst preview with process manager (depends: 358, 360)
+- **358** [PLANNED] -- Create process manager core module (lua/neotex/util/process.lua)
+- **359** [PLANNED] -- Create telescope process picker (depends: 358)
+- **360** [PLANNED] -- Add which-key mappings under leader-x for process management (depends: 358, 359)
+- **361** [PLANNED] -- Integrate typst preview with process manager (depends: 358, 360)
 - **356** [COMPLETED] -- Add phase dependency analysis to plan format and planner agent
 - **357** [COMPLETED] -- Update skill-team-implement to consume plan dependency analysis (depends: 356)
 - **355** [COMPLETED] -- Update founder extension README and deck documentation
@@ -29,12 +29,14 @@ next_project_number: 358
 ## Tasks
 
 ### 358. Create process manager core module
-- **Effort**: 1 hour
-- **Status**: [RESEARCHED]
+- **Effort**: 3 hours
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-04-03
+- **Planning Completed**: 2026-04-03
 - **Language**: neovim
 - **Dependencies**: None
 - **Research**: [01_process-mgr-core.md](specs/358_process_manager_core/reports/01_process-mgr-core.md)
+- **Plan**: [01_process-mgr-core.md](specs/358_process_manager_core/plans/01_process-mgr-core.md)
 
 **Description**: Create `lua/neotex/util/process.lua` - a centralized process manager for background jobs. Features: job registry tracking pid, cmd, port, cwd, start_time, stdout/stderr buffer. API: `start(opts)` using `vim.fn.jobstart` with auto-detection of next available port, `stop(id)` via `vim.fn.jobstop` + cleanup, `list()` returning all tracked processes. Auto-open browser via `xdg-open` on launch (skip if already open for that port). Cleanup all tracked jobs on `VimLeavePre`. Filetype-aware launch: `.md` files in slidev directories run `npx slidev`, `.typ` files trigger typst-preview. Extensible for future filetypes.
 
@@ -42,11 +44,13 @@ next_project_number: 358
 
 ### 359. Create telescope process picker
 - **Effort**: 1 hour
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-04-03
+- **Planning Completed**: 2026-04-03
 - **Language**: neovim
 - **Dependencies**: 358
 - **Research**: [01_process-picker.md](specs/359_telescope_process_picker/reports/01_process-picker.md)
+- **Plan**: [01_process-picker.md](specs/359_telescope_process_picker/plans/01_process-picker.md)
 
 **Description**: Create `lua/neotex/plugins/tools/process-picker.lua` - a telescope picker for viewing and managing background processes. Columns: name, command, port, uptime, status. Actions: `<CR>` to kill selected process, `<C-o>` to open port in browser. Preview pane shows recent stdout/stderr output. Integrates with the process.lua registry from task 358.
 
@@ -54,11 +58,13 @@ next_project_number: 358
 
 ### 360. Add which-key mappings under leader-x for process management
 - **Effort**: 45 minutes
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-04-03
+- **Planning Completed**: 2026-04-03
 - **Language**: neovim
 - **Dependencies**: 358, 359
 - **Research**: [01_process-keymaps.md](specs/360_process_whichkey_mappings/reports/01_process-keymaps.md)
+- **Plan**: [01_process-keymaps.md](specs/360_process_whichkey_mappings/plans/01_process-keymaps.md)
 
 **Description**: Add process management mappings to the existing `<leader>x` group in `lua/neotex/plugins/editor/which-key.lua`. Mappings: `<leader>xl` launch current file (filetype-aware: slidev for .md in slidev dirs, typst-preview for .typ), `<leader>xp` open telescope process picker, `<leader>xk` kill all background processes, `<leader>xo` open current file's port in browser. Must coexist with existing `<leader>x` text manipulation mappings (xa, xA, xd, xs, xw).
 
@@ -66,11 +72,13 @@ next_project_number: 358
 
 ### 361. Integrate typst preview with process manager
 - **Effort**: 30 minutes
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-04-03
+- **Planning Completed**: 2026-04-03
 - **Language**: neovim
 - **Dependencies**: 358, 360
 - **Research**: [01_typst-integration.md](specs/361_typst_process_integration/reports/01_typst-integration.md)
+- **Plan**: [01_typst-integration.md](specs/361_typst_process_integration/plans/01_typst-integration.md)
 
 **Description**: Migrate `after/ftplugin/typst.lua` job tracking (`typst_watch_job` variable, `vim.fn.jobstart`/`jobstop` calls) to use the shared process registry from task 358. Typst jobs should appear in the telescope process picker from task 359. Unify `<leader>lp` (typst preview) to go through the process manager so all browser-serving processes are tracked uniformly.
 

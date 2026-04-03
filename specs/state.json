@@ -5,68 +5,160 @@
     {
       "project_number": 358,
       "project_name": "process_manager_core",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-04-03T17:00:00Z",
-      "last_updated": "2026-04-03T17:05:00Z",
+      "last_updated": "2026-04-03T17:15:00Z",
       "dependencies": [],
       "session_id": "sess_1775235900_batch358",
       "next_artifact_number": 2,
       "researched": "2026-04-03T17:05:00Z",
+      "planned": "2026-04-03T17:15:00Z",
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 3,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_process-mgr-core.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-03"
+          }
+        ]
+      },
       "artifacts": [
         {
           "path": "specs/358_process_manager_core/reports/01_process-mgr-core.md",
           "type": "research",
           "summary": "Research on existing job management patterns, utility module conventions, port detection, browser opening, and VimLeavePre cleanup for process manager design"
+        },
+        {
+          "path": "specs/358_process_manager_core/plans/01_process-mgr-core.md",
+          "type": "plan",
+          "summary": "3-phase implementation plan: core registry and API, browser auto-open with notifications, filetype launcher registry with slidev and typst defaults"
         }
       ]
     },
     {
       "project_number": 359,
       "project_name": "telescope_process_picker",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-04-03T17:00:00Z",
-      "last_updated": "2026-04-03T17:05:00Z",
-      "dependencies": [358],
+      "last_updated": "2026-04-03T17:15:00Z",
+      "dependencies": [
+        358
+      ],
       "session_id": "sess_1775235900_batch359",
       "researched": "2026-04-03T17:05:00Z",
+      "planned": "2026-04-03T17:15:00Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/359_telescope_process_picker/reports/01_process-picker.md",
           "type": "research",
           "summary": "Telescope picker API patterns, recommended module structure, entry format, previewer, and action mappings for process management"
+        },
+        {
+          "path": "specs/359_telescope_process_picker/plans/01_process-picker.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for telescope process picker with entry maker, previewer, and kill/browser actions"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 2,
+        "total_effort_hours": 1.5,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_process-picker.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-03"
+          }
+        ]
+      }
     },
     {
       "project_number": 360,
       "project_name": "process_whichkey_mappings",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-04-03T17:00:00Z",
-      "last_updated": "2026-04-03T17:05:00Z",
-      "dependencies": [358, 359],
+      "last_updated": "2026-04-03T17:15:00Z",
+      "dependencies": [
+        358,
+        359
+      ],
       "session_id": "sess_1775235900_batch360",
       "researched": "2026-04-03T17:05:00Z",
+      "planned": "2026-04-03T17:15:00Z",
       "next_artifact_number": 2,
+      "plan_metadata": {
+        "phases": 1,
+        "total_effort_hours": 0.75,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_process-keymaps.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-03"
+          }
+        ]
+      },
       "artifacts": [
         {
           "path": "specs/360_process_whichkey_mappings/reports/01_process-keymaps.md",
           "type": "research",
           "summary": "Which-key structure analysis, recommended mappings (xl/xp/xk/xo), icon choices, filetype dispatch strategy, and integration points with process.lua and telescope picker"
+        },
+        {
+          "path": "specs/360_process_whichkey_mappings/plans/01_process-keymaps.md",
+          "type": "plan",
+          "summary": "Single-phase plan to add 4 process management keymappings (xl/xp/xk/xo) to which-key.lua with filetype-aware launch dispatch"
         }
       ]
     },
     {
       "project_number": 361,
       "project_name": "typst_process_integration",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-04-03T17:00:00Z",
-      "last_updated": "2026-04-03T17:05:00Z",
-      "dependencies": [358, 360],
+      "last_updated": "2026-04-03T17:15:00Z",
+      "dependencies": [
+        358,
+        360
+      ],
       "session_id": "sess_1775235900_batch361",
       "researched": "2026-04-03T17:05:00Z",
       "next_artifact_number": 2,
@@ -75,8 +167,36 @@
           "path": "specs/361_typst_process_integration/reports/01_typst-integration.md",
           "type": "research",
           "summary": "Complete inventory of typst job management code, migration strategy for typst_watch/typst_compile to process.lua, TypstPreview wrapping approach, risk assessment"
+        },
+        {
+          "path": "specs/361_typst_process_integration/plans/01_typst-integration.md",
+          "type": "plan",
+          "summary": "2-phase plan: migrate typst_watch/typst_compile to process.lua, wrap TypstPreview with virtual registry entries"
         }
-      ]
+      ],
+      "planned": "2026-04-03T17:15:00Z",
+      "plan_metadata": {
+        "phases": 2,
+        "total_effort_hours": 1.5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_typst-integration.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-03"
+          }
+        ]
+      }
     },
     {
       "project_number": 356,
