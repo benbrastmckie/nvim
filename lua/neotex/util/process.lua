@@ -27,6 +27,13 @@ M._shutting_down = false
 --- Create a ring buffer with a maximum line count.
 ---@param max_size number Maximum number of lines to retain (default 200)
 ---@return table Ring buffer with :push(line) and :lines() methods
+--- Strip ANSI escape sequences from a string.
+---@param str string
+---@return string
+local function _strip_ansi(str)
+  return str:gsub("\27%[[%d;]*[A-Za-z]", "")
+end
+
 local function _make_ring_buffer(max_size)
   max_size = max_size or 200
   local buf = { _data = {}, _max = max_size }
@@ -250,7 +257,7 @@ function M.start(opts)
     on_stdout = function(_, data, _)
       if data then
         for _, line in ipairs(data) do
-          stdout_buf:push(line)
+          stdout_buf:push(_strip_ansi(line))
         end
       end
       if opts.on_stdout and data then
@@ -260,7 +267,7 @@ function M.start(opts)
     on_stderr = function(_, data, _)
       if data then
         for _, line in ipairs(data) do
-          stderr_buf:push(line)
+          stderr_buf:push(_strip_ansi(line))
         end
       end
       if opts.on_stderr and data then
