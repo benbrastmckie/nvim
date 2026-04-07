@@ -221,6 +221,23 @@ fi
 
 ---
 
+### Stage 6a: Validate Artifact Content
+
+If subagent status is "researched" and `artifact_path` is non-empty, validate the report artifact against format requirements. This is **non-blocking** -- warnings are logged but do not prevent postflight from completing.
+
+```bash
+if [ "$status" = "researched" ] && [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
+    echo "Validating report artifact..."
+    if ! bash .claude/scripts/validate-artifact.sh "$artifact_path" report --fix; then
+        echo "WARNING: Report artifact has format issues (non-blocking). Review output above."
+    fi
+fi
+```
+
+**Note**: The `--fix` flag attempts auto-repair of missing metadata fields. Validation failures are logged but do not block status update or git commit.
+
+---
+
 ### Stage 7: Update Task Status (Postflight)
 
 If status is "researched", update status and increment artifact number:

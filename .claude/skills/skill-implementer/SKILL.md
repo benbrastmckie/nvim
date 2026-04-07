@@ -247,6 +247,25 @@ fi
 
 ---
 
+### Stage 6a: Validate Artifact Content
+
+If subagent status indicates success ("implemented" or "partial") and `artifact_path` is non-empty, validate the summary artifact against format requirements. This is **non-blocking** -- warnings are logged but do not prevent postflight from completing.
+
+```bash
+if [ "$status" = "implemented" ] || [ "$status" = "partial" ]; then
+    if [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
+        echo "Validating summary artifact..."
+        if ! bash .claude/scripts/validate-artifact.sh "$artifact_path" summary --fix; then
+            echo "WARNING: Summary artifact has format issues (non-blocking). Review output above."
+        fi
+    fi
+fi
+```
+
+**Note**: The `--fix` flag attempts auto-repair of missing metadata fields. Validation failures are logged but do not block status update or git commit.
+
+---
+
 ### Stage 7: Update Task Status (Postflight)
 
 **If status is "implemented"**:
