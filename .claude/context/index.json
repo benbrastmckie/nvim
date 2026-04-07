@@ -399,12 +399,17 @@
         "planning"
       ],
       "load_when": {
-        "agents": [],
+        "agents": [
+          "general-research-agent",
+          "planner-agent"
+        ],
         "languages": [
           "meta"
         ],
         "commands": [
-          "/todo"
+          "/todo",
+          "/research",
+          "/plan"
         ]
       }
     },
@@ -1254,10 +1259,13 @@
         "workflow"
       ],
       "load_when": {
-        "agents": [],
+        "agents": [
+          "planner-agent"
+        ],
         "languages": [],
         "commands": [
-          "/todo"
+          "/todo",
+          "/plan"
         ]
       }
     },

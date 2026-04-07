@@ -205,7 +205,8 @@ Create teammate prompts and spawn wave. Pass `artifact_number` and `teammate_let
 {
   "artifact_number": "{run_padded}",
   "teammate_letter": "a",
-  "artifact_pattern": "{NN}_teammate-{letter}-findings.md"
+  "artifact_pattern": "{NN}_teammate-{letter}-findings.md",
+  "roadmap_path": "specs/ROAD_MAP.md"
 }
 ```
 

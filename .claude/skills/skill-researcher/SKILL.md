@@ -139,6 +139,7 @@ Prepare delegation context for the subagent:
   },
   "artifact_number": "{artifact_number from Stage 3a}",
   "focus_prompt": "{optional focus}",
+  "roadmap_path": "specs/ROAD_MAP.md",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
 }
 ```

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #369
 
 - **Task**: 369 - Integrate ROAD_MAP.md consultation into research and planning agents
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**:
@@ -55,7 +55,7 @@ Report 01 identified that `general-research-agent.md` and `planner-agent.md` hav
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Update context/index.json and delegation contexts [NOT STARTED]
+### Phase 1: Update context/index.json and delegation contexts [COMPLETED]
 
 **Goal**: Make roadmap context files discoverable by research/planning agents and pass roadmap path in delegation contexts.
 
