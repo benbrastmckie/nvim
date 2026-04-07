@@ -10,8 +10,8 @@ next_project_number: 372
 
 ### Pending
 
-- **370** [PLANNED] -- Inject artifact format specifications into skill delegation prompts
-- **371** [PLANNED] -- Add artifact content validation to skill postflight stages
+- **370** [COMPLETED] -- Inject artifact format specifications into skill delegation prompts
+- **371** [COMPLETED] -- Add artifact content validation to skill postflight stages
 - **369** [COMPLETED] -- Integrate ROAD_MAP.md consultation into research/planning agents
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -20,7 +20,7 @@ next_project_number: 372
 
 ### 370. Inject artifact format specifications into skill delegation prompts
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_format-injection-research.md](370_inject_format_specs_delegation_prompts/reports/01_format-injection-research.md)
@@ -32,7 +32,7 @@ next_project_number: 372
 
 ### 371. Add artifact content validation to skill postflight stages
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: None
 - **Research**: [01_postflight-validation-research.md](371_artifact_content_validation_postflight/reports/01_postflight-validation-research.md)

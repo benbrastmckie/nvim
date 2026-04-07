@@ -5,11 +5,11 @@
     {
       "project_number": 370,
       "project_name": "inject_format_specs_delegation_prompts",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-07T00:00:00Z",
-      "last_updated": "2026-04-07T23:40:01Z",
-      "session_id": "sess_1744070400_370plan",
+      "last_updated": "2026-04-07T23:53:15Z",
+      "session_id": "sess_1744070400_370impl",
       "artifacts": [
         {
           "type": "research",
@@ -22,16 +22,17 @@
           "summary": "3-phase parallel plan: inject format specs via Stage 4b into skill-planner, skill-researcher, skill-implementer"
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added Stage 4b format injection to skill-planner (plan-format.md), skill-researcher (report-format.md), and skill-implementer (summary-format.md). Each skill now reads its format file and injects it as an XML-delimited section in the subagent prompt."
     },
     {
       "project_number": 371,
       "project_name": "artifact_content_validation_postflight",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-07T00:00:00Z",
-      "last_updated": "2026-04-07T23:40:01Z",
-      "session_id": "sess_1744070400_371plan",
+      "last_updated": "2026-04-07T23:53:15Z",
+      "session_id": "sess_1744070400_371impl",
       "artifacts": [
         {
           "type": "research",
@@ -44,7 +45,8 @@
           "summary": "3-phase sequential plan: create validate-artifact.sh, integrate into postflight, test against real artifacts"
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Created validate-artifact.sh script supporting report/plan/summary types with --fix auto-repair. Integrated as Stage 6a (non-blocking) in skill-planner, skill-researcher, and skill-implementer postflight flows."
     },
     {
       "project_number": 369,

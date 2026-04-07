@@ -1,7 +1,7 @@
 # Implementation Plan: Inject Format Specs into Delegation Prompts
 
 - **Task**: 370 - Inject artifact format specifications into skill delegation prompts
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/370_inject_format_specs_delegation_prompts/reports/01_format-injection-research.md
