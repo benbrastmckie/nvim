@@ -10,7 +10,7 @@ next_project_number: 370
 
 ### Pending
 
-- **369** [RESEARCHED] -- Integrate ROAD_MAP.md consultation into research/planning agents
+- **369** [PLANNED] -- Integrate ROAD_MAP.md consultation into research/planning agents
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,14 +18,14 @@ next_project_number: 370
 
 ### 369. Integrate ROAD_MAP.md consultation into research and planning agents
 - **Effort**: 1-2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Research Completed**: 2026-04-07
 - **Language**: meta
 - **Dependencies**: None
 - **Research**:
   - [01_roadmap-integration-gaps.md](369_roadmap_integration_research_planning/reports/01_roadmap-integration-gaps.md)
   - [02_team-research-roles.md](369_roadmap_integration_research_planning/reports/02_team-research-roles.md)
-- **Plan**: [01_roadmap-integration.md](369_roadmap_integration_research_planning/plans/01_roadmap-integration.md)
+- **Plan**: [02_roadmap-integration.md](369_roadmap_integration_research_planning/plans/02_roadmap-integration.md)
 
 **Description**: Research and planning agents (`general-research-agent`, `planner-agent`) are completely blind to `specs/ROAD_MAP.md`, causing repeated misalignment with project priorities. Fix by: (1) adding a roadmap consultation stage to `general-research-agent.md` (read-only, for strategic context); (2) adding a roadmap alignment stage to `planner-agent.md` (read roadmap, align plan phases, pre-populate `roadmap_items`); (3) updating `context/index.json` `load_when` entries for `formats/roadmap-format.md` and `patterns/roadmap-update.md` to include research/planning agents and commands; (4) adding `roadmap_path` to delegation contexts in `skill-researcher/SKILL.md` and `skill-planner/SKILL.md`. Files: 5 files across agents/, skills/, and context/.
 

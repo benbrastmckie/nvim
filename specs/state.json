@@ -5,10 +5,10 @@
     {
       "project_number": 369,
       "project_name": "roadmap_integration_research_planning",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-07T00:00:00Z",
-      "last_updated": "2026-04-07T20:19:47Z",
+      "last_updated": "2026-04-07T20:39:02Z",
       "next_artifact_number": 3,
       "artifacts": [
         {
@@ -17,17 +17,17 @@
           "summary": "Analysis of ROAD_MAP.md integration gaps in research/planning agents with 4 recommendations"
         },
         {
-          "type": "plan",
-          "path": "specs/369_roadmap_integration_research_planning/plans/01_roadmap-integration.md",
-          "summary": "3-phase plan: update context index and delegation contexts, add roadmap stage to research agent, add roadmap stage to planner agent"
-        },
-        {
           "path": "specs/369_roadmap_integration_research_planning/reports/02_team-research-roles.md",
           "type": "research",
           "summary": "Team research role redesign: mandatory Critic and Horizons teammates with ROAD_MAP.md consultation"
+        },
+        {
+          "type": "plan",
+          "path": "specs/369_roadmap_integration_research_planning/plans/02_roadmap-integration.md",
+          "summary": "Revised 4-phase plan: context index, research agent, planner agent, team research roles (Critic + Horizons)"
         }
       ],
-      "session_id": "sess_1744070400_369r2"
+      "session_id": "sess_1744070400_369rev"
     },
     {
       "project_number": 368,
