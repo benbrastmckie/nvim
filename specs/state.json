@@ -5,10 +5,24 @@
     {
       "project_number": 368,
       "project_name": "context_docs_slidev_custom_formalism",
-      "status": "not_started",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-05T23:31:55Z",
-      "last_updated": "2026-04-05T23:31:55Z"
+      "last_updated": "2026-04-08T03:24:32Z",
+      "session_id": "sess_1775617888_1fd493",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/368_context_docs_slidev_custom_formalism/reports/01_slidev-custom-formalism.md",
+          "type": "research",
+          "summary": "Research report documenting LogosOp.vue, KaTex.vue, setup/katex.ts patterns, HTML entity conventions, dual rendering decision tree, and file modification recommendations"
+        },
+        {
+          "path": "specs/368_context_docs_slidev_custom_formalism/plans/01_slidev-custom-formalism.md",
+          "type": "plan",
+          "summary": "Implementation plan for custom formalism rendering documentation across slidev-deck-template.md and deck/README.md"
+        }
+      ]
     },
     {
       "project_number": 87,
