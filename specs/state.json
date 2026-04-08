@@ -1,7 +1,49 @@
 {
   "version": "1.0.0",
-  "next_project_number": 372,
+  "next_project_number": 376,
   "active_projects": [
+    {
+      "project_number": 372,
+      "project_name": "create_financial_analysis_typst_template",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-07T00:00:00Z",
+      "last_updated": "2026-04-07T12:15:00Z",
+      "session_id": "sess_1744070400_372res"
+    },
+    {
+      "project_number": 373,
+      "project_name": "typst_primary_output_founder_implement",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-07T00:00:00Z",
+      "last_updated": "2026-04-07T00:00:00Z",
+      "dependencies": [
+        372
+      ]
+    },
+    {
+      "project_number": 374,
+      "project_name": "update_skill_founder_implement_typst_artifacts",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-07T00:00:00Z",
+      "last_updated": "2026-04-07T00:00:00Z",
+      "dependencies": [
+        373
+      ]
+    },
+    {
+      "project_number": 375,
+      "project_name": "update_founder_command_docs_typst_paths",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-07T00:00:00Z",
+      "last_updated": "2026-04-07T00:00:00Z",
+      "dependencies": [
+        373
+      ]
+    },
     {
       "project_number": 370,
       "project_name": "inject_format_specs_delegation_prompts",
