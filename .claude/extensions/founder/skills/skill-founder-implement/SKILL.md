@@ -257,34 +257,36 @@ Return brief text summary to caller.
 
 Brief text summary (NOT JSON).
 
-Expected successful return (with typst/PDF):
+Expected successful return (with PDF compiled):
 ```
 Founder implementation completed for task {N}:
 - Phases {phases_completed}/{phases_total} executed
 - TAM: {tam}, SAM: {sam}, SOM Y1: {som_y1}
-- Report: strategy/{slug}.md
-- Typst/PDF: founder/{slug}.pdf
+- Typst source: founder/{report-type}-{slug}.typ (primary)
+- PDF report: founder/{report-type}-{slug}.pdf (compiled)
+- Markdown: strategy/{report-type}-{slug}.md (fallback)
 - Summary: specs/{NNN}_{SLUG}/summaries/01_{short-slug}-summary.md
 - Status updated to [COMPLETED]
 - Changes committed with session {session_id}
 - Next: Review report and validate assumptions
 ```
 
-Expected successful return (without typst - Phase 5 partial):
+Expected successful return (without PDF - typst CLI not installed):
 ```
 Founder implementation completed for task {N}:
-- Phases {phases_completed}/{phases_total} executed (typst/PDF skipped - not installed)
+- Phases {phases_completed}/{phases_total} executed (PDF skipped - typst not installed)
 - TAM: {tam}, SAM: {sam}, SOM Y1: {som_y1}
-- Report: strategy/{slug}.md
+- Typst source: founder/{report-type}-{slug}.typ (primary)
+- Markdown: strategy/{report-type}-{slug}.md (fallback)
 - Summary: specs/{NNN}_{SLUG}/summaries/01_{short-slug}-summary.md
 - Status updated to [COMPLETED]
 - Changes committed with session {session_id}
-- Next: Install typst for PDF output, or review markdown report
+- Next: Install typst for PDF output, or review typst source / markdown report
 ```
 
-**Note**: Task is considered successfully completed as long as
-Phases 1-4 complete. Phase 5 (typst/PDF) is optional - if it fails or typst is not
-installed, the task still completes successfully with just the markdown output.
+**Note**: Typst source is always generated in Phase 4 regardless of typst CLI availability.
+Phase 5 (PDF compilation) is optional -- if typst CLI is not installed or compilation fails,
+the task still completes successfully. The `.typ` source file remains the primary artifact.
 
 Expected partial return (core phase failure):
 ```
@@ -321,4 +323,4 @@ Phase 5 failures do NOT block task completion:
 - **Compilation error**: Keep .typ file for debugging, task completes
 - **PDF empty**: Keep .typ file, task completes
 
-Postflight should check `metadata.typst_generated` to determine what artifacts to report.
+Postflight should check `metadata.typst_source_generated` and `metadata.pdf_compiled` to determine what artifacts to report.

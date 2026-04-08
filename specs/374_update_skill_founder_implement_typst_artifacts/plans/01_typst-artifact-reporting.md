@@ -78,7 +78,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update Return Format and Fix Field Reference [NOT STARTED]
+### Phase 2: Update Return Format and Fix Field Reference [COMPLETED]
 
 **Goal**: Rewrite success message templates to reflect typst-primary ordering and fix the `typst_generated` field name.
 
