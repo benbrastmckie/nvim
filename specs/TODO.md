@@ -10,7 +10,7 @@ next_project_number: 376
 
 ### Pending
 
-- **372** [PLANNED] -- Create financial-analysis.typ template
+- **372** [RESEARCHED] -- Create financial-analysis.typ template
 - **373** [NOT STARTED] -- Make typst primary output in founder-implement-agent (depends: 372)
 - **374** [NOT STARTED] -- Update skill-founder-implement artifact reporting for typst (depends: 373)
 - **375** [NOT STARTED] -- Update founder command docs to reference typst output paths (depends: 373)
@@ -24,10 +24,12 @@ next_project_number: 376
 
 ### 372. Create financial-analysis.typ template
 - **Effort**: 30 minutes
-- **Status**: [PLANNED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [01_financial-analysis-template.md](specs/372_create_financial_analysis_typst_template/reports/01_financial-analysis-template.md)
+- **Research**:
+  - [01_financial-analysis-template.md](specs/372_create_financial_analysis_typst_template/reports/01_financial-analysis-template.md)
+  - [02_financial-spreadsheet-integration.md](specs/372_create_financial_analysis_typst_template/reports/02_financial-spreadsheet-integration.md)
 - **Plan**: [01_financial-analysis-template.md](specs/372_create_financial_analysis_typst_template/plans/01_financial-analysis-template.md)
 
 **Description**: Create `.claude/extensions/founder/context/project/founder/templates/typst/financial-analysis.typ` following the pattern of existing typst templates. Use strategy-template.typ components (metric-callout, highlight-box, warning-box, callout, strategy-table) to build a professional financial analysis template with sections for: document summary, key assumptions, verification findings, unit economics analysis, scenario analysis, runway/cash flow projections, and recommendations. Model after the markdown template at `templates/financial-analysis.md` but leverage typst's professional styling.

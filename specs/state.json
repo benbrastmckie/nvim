@@ -5,22 +5,22 @@
     {
       "project_number": 372,
       "project_name": "create_financial_analysis_typst_template",
-      "status": "planned",
+      "status": "researched",
       "language": "meta",
       "created": "2026-04-07T00:00:00Z",
-      "last_updated": "2026-04-08T00:20:00Z",
-      "session_id": "sess_1744070400_372plan",
-      "next_artifact_number": 2,
+      "last_updated": "2026-04-08T00:27:38Z",
+      "session_id": "sess_1775607685_890c42",
+      "next_artifact_number": 3,
       "artifacts": [
-        {
-          "type": "research",
-          "path": "specs/372_create_financial_analysis_typst_template/reports/01_financial-analysis-template.md",
-          "summary": "Section mapping, component inventory, and architectural patterns for financial-analysis.typ"
-        },
         {
           "type": "plan",
           "path": "specs/372_create_financial_analysis_typst_template/plans/01_financial-analysis-template.md",
           "summary": "2-phase plan: core structure and components (1hr), remaining components and example usage (30min)"
+        },
+        {
+          "path": "specs/372_create_financial_analysis_typst_template/reports/02_financial-spreadsheet-integration.md",
+          "type": "research",
+          "summary": "Spreadsheet integration design for financial analysis research pipeline"
         }
       ]
     },
