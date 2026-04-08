@@ -1,7 +1,23 @@
 {
   "version": "1.0.0",
-  "next_project_number": 376,
+  "next_project_number": 377,
   "active_projects": [
+    {
+      "project_number": 376,
+      "project_name": "tts_primary_agent_only_notification_hook",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-08T18:12:07Z",
+      "last_updated": "2026-04-08T18:13:07Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/376_tts_primary_agent_only_notification_hook/reports/01_tts-primary-agent-research.md",
+          "summary": "Research on agent_id guard for TTS subagent suppression and Notification hook for interactive feedback"
+        }
+      ]
+    },
     {
       "project_number": 368,
       "project_name": "context_docs_slidev_custom_formalism",

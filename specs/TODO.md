@@ -1,5 +1,5 @@
 ---
-next_project_number: 376
+next_project_number: 377
 ---
 
 # TODO
@@ -15,6 +15,14 @@ next_project_number: 376
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 376. TTS notification: primary agent only with Notification hook support
+- **Effort**: 30 minutes
+- **Status**: [RESEARCHED]
+- **Language**: meta
+- **Research**: [01_tts-primary-agent-research.md](specs/376_tts_primary_agent_only_notification_hook/reports/01_tts-primary-agent-research.md)
+
+**Description**: Configure TTS announcements to fire only for the primary agent, not subagents. Add `agent_id` guard to `tts-notify.sh` (present only in subagent context) and add a `Notification` hook entry in `settings.json` for interactive feedback events (permission prompts, idle prompts, elicitation dialogs).
 
 ### 368. Create context documentation for Slidev custom formalism rendering
 - **Effort**: 1-2 hours
