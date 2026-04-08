@@ -35,22 +35,21 @@ Load these on-demand using @-references:
 
 **Always Load**:
 - `@.claude/extensions/founder/context/project/founder/domain/business-frameworks.md` - TAM/SAM/SOM methodology
-- `@.claude/extensions/founder/context/project/founder/templates/market-sizing.md` - Market sizing template
-- `@.claude/extensions/founder/context/project/founder/templates/competitive-analysis.md` - Competitive analysis template
-- `@.claude/extensions/founder/context/project/founder/templates/gtm-strategy.md` - GTM strategy template
-- `@.claude/extensions/founder/context/project/founder/templates/contract-analysis.md` - Contract analysis template
+- `@.claude/extensions/founder/context/project/founder/templates/typst/strategy-template.typ` - Base typst template (always needed)
+- `@.claude/extensions/founder/context/project/founder/templates/typst/market-sizing.typ` - Market sizing typst template
+- `@.claude/extensions/founder/context/project/founder/templates/typst/competitive-analysis.typ` - Competitive analysis typst template
+- `@.claude/extensions/founder/context/project/founder/templates/typst/gtm-strategy.typ` - GTM strategy typst template
+- `@.claude/extensions/founder/context/project/founder/templates/typst/contract-analysis.typ` - Contract analysis typst template
 
 **Load for Project-Timeline**:
 - `@.claude/extensions/founder/context/project/founder/templates/typst/project-timeline.typ` - Project timeline typst template (Gantt, PERT, resource tables)
 - `@.claude/extensions/founder/context/project/founder/domain/timeline-frameworks.md` - WBS, PERT, CPM methodology
 
-**Load for Typst Generation (Phase 4)**:
-- `@.claude/extensions/founder/context/project/founder/templates/typst/strategy-template.typ` - Base typst template
-- `@.claude/extensions/founder/context/project/founder/templates/typst/market-sizing.typ` - Market sizing typst template
-- `@.claude/extensions/founder/context/project/founder/templates/typst/competitive-analysis.typ` - Competitive analysis typst template
-- `@.claude/extensions/founder/context/project/founder/templates/typst/gtm-strategy.typ` - GTM strategy typst template
-- `@.claude/extensions/founder/context/project/founder/templates/typst/contract-analysis.typ` - Contract analysis typst template
-- `@.claude/extensions/founder/context/project/founder/templates/typst/project-timeline.typ` - Project timeline typst template
+**Load for Markdown Fallback**:
+- `@.claude/extensions/founder/context/project/founder/templates/market-sizing.md` - Market sizing markdown template
+- `@.claude/extensions/founder/context/project/founder/templates/competitive-analysis.md` - Competitive analysis markdown template
+- `@.claude/extensions/founder/context/project/founder/templates/gtm-strategy.md` - GTM strategy markdown template
+- `@.claude/extensions/founder/context/project/founder/templates/contract-analysis.md` - Contract analysis markdown template
 
 **Load for Output**:
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
@@ -185,13 +184,13 @@ This ensures all founder reports attempt typst generation regardless of when the
 
 Based on report type, load appropriate template:
 
-| Report Type | Template Path |
-|-------------|---------------|
-| market-sizing | `@.claude/extensions/founder/context/project/founder/templates/market-sizing.md` |
-| competitive-analysis | `@.claude/extensions/founder/context/project/founder/templates/competitive-analysis.md` |
-| gtm-strategy | `@.claude/extensions/founder/context/project/founder/templates/gtm-strategy.md` |
-| contract-review | `@.claude/extensions/founder/context/project/founder/templates/contract-analysis.md` |
-| project-timeline | `@.claude/extensions/founder/context/project/founder/domain/timeline-frameworks.md` |
+| Report Type | Primary Template (Typst) | Fallback Template (Markdown) |
+|-------------|--------------------------|------------------------------|
+| market-sizing | `templates/typst/market-sizing.typ` | `templates/market-sizing.md` |
+| competitive-analysis | `templates/typst/competitive-analysis.typ` | `templates/competitive-analysis.md` |
+| gtm-strategy | `templates/typst/gtm-strategy.typ` | `templates/gtm-strategy.md` |
+| contract-review | `templates/typst/contract-analysis.typ` | `templates/contract-analysis.md` |
+| project-timeline | `templates/typst/project-timeline.typ` | `domain/timeline-frameworks.md` |
 
 **For project-timeline**: Also extract `forcing_data.mode` from the plan (defaults to `PLAN` if absent). Valid modes: `PLAN`, `TRACK`, `REPORT`.
 
