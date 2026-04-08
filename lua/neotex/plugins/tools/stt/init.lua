@@ -5,7 +5,8 @@
 --   - parecord (pulseaudio-utils or pipewire-pulse)
 --   - vosk Python package with vosk-model-small-en-us
 --   - ~/.local/bin/vosk-transcribe.py (transcription helper)
---   - Kitty keyboard protocol enabled in terminal (for <C-'> support)
+--   - Terminal with enhanced keyboard protocol (WezTerm, Kitty) for <C-'> support
+--   - ~/.claude/keybindings.json with ctrl+' bound to voice:pushToTalk
 --
 -- Configuration (optional):
 --   vim.g.stt_model_path = "~/.local/share/vosk/vosk-model-small-en-us"
@@ -16,9 +17,14 @@
 --   <leader>vr - Start recording (which-key, if enabled)
 --   <leader>vs - Stop recording and transcribe (which-key, if enabled)
 --   <leader>vv - Toggle recording (which-key, if enabled)
---   <C-'>      - Unified dictation toggle (normal, insert, terminal modes)
---                Context-aware: Claude Code buffers trigger native voice:pushToTalk
---                via meta+k escape sequence; all other buffers use Vosk STT pipeline
+--   <C-'>      - Unified dictation key (normal, insert, terminal modes)
+--                In Claude Code buffers: hold to trigger native voice:pushToTalk
+--                  (sends Ctrl+' via CSI u encoding to Claude Code)
+--                In all other buffers: toggles Vosk STT recording/transcription
+--
+-- Claude Code keybindings (~/.claude/keybindings.json):
+--   ctrl+' -> voice:pushToTalk  (used from Neovim terminal via CSI u)
+--   meta+k -> voice:pushToTalk  (used from standalone terminal via Alt+K)
 --
 -- Global state:
 --   vim.g.stt_recording - true when recording, false otherwise (for statusline)
@@ -70,14 +76,17 @@ local function _is_claude_code_buffer(bufnr)
   return result
 end
 
--- Helper: send meta+k escape sequence to Claude Code for voice toggle
+-- Helper: send voice push-to-talk keypress to Claude Code terminal
+-- Sends Ctrl+' via CSI u encoding (\x1b[39;5u = codepoint 39, modifier 5=Ctrl).
+-- Bound to voice:pushToTalk in ~/.claude/keybindings.json (Chat context).
+-- CSI u encoding avoids the ESC-prefix ambiguity of legacy terminal encoding.
 local function _send_claude_voice_toggle(bufnr)
   local channel = vim.b[bufnr].terminal_job_id
   if not channel or channel <= 0 then
     notify("No terminal channel found for Claude voice toggle", vim.log.levels.WARN)
     return false
   end
-  vim.fn.chansend(channel, "\x1bk")
+  vim.fn.chansend(channel, "\x1b[39;5u")
   return true
 end
 
@@ -350,6 +359,18 @@ function M.setup(opts)
   vim.api.nvim_create_user_command('STTStop', M.stop_recording, { desc = 'Stop STT recording' })
   vim.api.nvim_create_user_command('STTToggle', M.toggle_recording, { desc = 'Toggle STT recording' })
   vim.api.nvim_create_user_command('STTHealth', M.health, { desc = 'Check STT dependencies' })
+
+  -- Send voice push-to-talk to Claude Code buffer (for testing/manual use)
+  vim.api.nvim_create_user_command('STTClaudeVoice', function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    if not _is_claude_code_buffer(bufnr) then
+      notify("Not a Claude Code buffer", vim.log.levels.WARN)
+      return
+    end
+    local ok = _send_claude_voice_toggle(bufnr)
+    notify(ok and "Sent Ctrl+' to Claude Code" or "Failed to send",
+      ok and vim.log.levels.INFO or vim.log.levels.ERROR)
+  end, { desc = 'STT: Send voice toggle to Claude Code' })
 
   -- Unified Ctrl-' dictation keymap (all modes)
   -- Context-aware: Claude Code buffers get native voice (meta+k), others get Vosk STT
