@@ -18,10 +18,11 @@ next_project_number: 377
 
 ### 376. TTS notification: primary agent only with Notification hook support
 - **Effort**: 30 minutes
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Research**: [01_tts-primary-agent-research.md](specs/376_tts_primary_agent_only_notification_hook/reports/01_tts-primary-agent-research.md)
 - **Plan**: [01_tts-primary-agent.md](specs/376_tts_primary_agent_only_notification_hook/plans/01_tts-primary-agent.md)
+- **Summary**: [01_tts-primary-agent-summary.md](specs/376_tts_primary_agent_only_notification_hook/summaries/01_tts-primary-agent-summary.md)
 
 **Description**: Configure TTS announcements to fire only for the primary agent, not subagents. Add `agent_id` guard to `tts-notify.sh` (present only in subagent context) and add a `Notification` hook entry in `settings.json` for interactive feedback events (permission prompts, idle prompts, elicitation dialogs).
 

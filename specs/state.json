@@ -5,10 +5,10 @@
     {
       "project_number": 376,
       "project_name": "tts_primary_agent_only_notification_hook",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-08T18:12:07Z",
-      "last_updated": "2026-04-08T18:18:09Z",
+      "last_updated": "2026-04-08T18:35:31Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -20,9 +20,16 @@
           "path": "specs/376_tts_primary_agent_only_notification_hook/plans/01_tts-primary-agent.md",
           "type": "plan",
           "summary": "2-phase plan: add agent_id guard and notification type filter to tts-notify.sh, add Notification hook to settings.json"
+        },
+        {
+          "path": "specs/376_tts_primary_agent_only_notification_hook/summaries/01_tts-primary-agent-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for TTS primary agent guard and Notification hook"
         }
       ],
-      "session_id": "sess_1744099200_a7b3c1"
+      "session_id": "sess_1744099200_b8c4d2",
+      "completion_summary": "Added agent_id subagent guard and auth_success notification filter to tts-notify.sh, and added Notification hook entry to settings.json for interactive feedback TTS.",
+      "claudemd_suggestions": "Modified .claude/hooks/tts-notify.sh with subagent guard logic; modified .claude/settings.json with Notification hook entry"
     },
     {
       "project_number": 368,

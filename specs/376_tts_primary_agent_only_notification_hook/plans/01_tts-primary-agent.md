@@ -1,7 +1,7 @@
 # Implementation Plan: TTS Primary Agent Only Notification Hook
 
 - **Task**: 376 - tts_primary_agent_only_notification_hook
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: reports/01_tts-primary-agent-research.md
