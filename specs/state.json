@@ -5,11 +5,11 @@
     {
       "project_number": 368,
       "project_name": "context_docs_slidev_custom_formalism",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "created": "2026-04-05T23:31:55Z",
-      "last_updated": "2026-04-08T04:32:20Z",
-      "session_id": "sess_1775622519_dde759",
+      "last_updated": "2026-04-08T04:37:50Z",
+      "session_id": "sess_1775622806_421ad9",
       "next_artifact_number": 3,
       "artifacts": [
         {
@@ -21,8 +21,15 @@
           "path": "specs/368_context_docs_slidev_custom_formalism/plans/02_slidev-custom-formalism.md",
           "type": "plan",
           "summary": "Revised 2-phase plan incorporating team research: dead-code annotations, decision tree, follow-on recommendations"
+        },
+        {
+          "path": "specs/368_context_docs_slidev_custom_formalism/summaries/02_slidev-custom-formalism-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for custom formalism rendering documentation"
         }
-      ]
+      ],
+      "completion_summary": "Added Custom Formalism Rendering section to slidev-deck-template.md documenting LogosOp.vue, dead KaTeX infrastructure, HTML entity patterns, and rendering decision tree. Updated deck/README.md with 2 new component entries.",
+      "claudemd_suggestions": "Updated founder extension context: slidev-deck-template.md gained ~80-line formalism rendering section, deck/README.md updated from 4 to 6 components with status annotations"
     },
     {
       "project_number": 87,

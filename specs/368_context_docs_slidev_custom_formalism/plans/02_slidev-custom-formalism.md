@@ -1,7 +1,7 @@
 # Implementation Plan: Custom Formalism Rendering Documentation (Revised)
 
 - **Task**: 368 - context_docs_slidev_custom_formalism
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/368_context_docs_slidev_custom_formalism/reports/01_slidev-custom-formalism.md, specs/368_context_docs_slidev_custom_formalism/reports/02_team-research.md
