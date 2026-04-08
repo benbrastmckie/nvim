@@ -13,7 +13,7 @@ next_project_number: 382
 - **381** [NOT STARTED] -- Update manifest.json, index-entries.json, routing (depends: 378-380)
 - **380** [NOT STARTED] -- Create skill-meeting + meeting.md command (depends: 379)
 - **379** [NOT STARTED] -- Create meeting-agent (depends: 378)
-- **378** [NOT STARTED] -- Create meeting format context files
+- **378** [RESEARCHED] -- Create meeting format context files
 - **368** [COMPLETED] -- Create context documentation for Slidev custom formalism rendering
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -46,9 +46,10 @@ next_project_number: 382
 
 ### 378. Create meeting format context files
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [01_meeting-format-research.md](378_meeting_format_context_files/reports/01_meeting-format-research.md)
 
 **Description**: Create two context files in .claude/extensions/founder/context/project/founder/: (1) templates/meeting-format.md -- meeting file template documenting the YAML frontmatter schema (all metadata fields from Halcyon/Celero examples) and markdown body structure (Investor Profile table, Relationship Status, Fit Assessment, Meeting Log with feedback themes, Action Items table, Strategic Notes, Raw Notes preservation section), (2) patterns/csv-tracker.md -- CSV format reference documenting column order, value formats, and update logic for the investor tracking spreadsheet. Based on exemplar files: /home/benjamin/Projects/Logos/Vision/investors/VC/2026-04-07_halcyon.md, 2026-04-08_celero.md, and VC-spreadsheet.csv.
 

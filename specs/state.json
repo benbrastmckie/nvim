@@ -5,13 +5,21 @@
     {
       "project_number": 378,
       "project_name": "meeting_format_context_files",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "task_type": "meeting",
       "created": "2026-04-08T22:15:32Z",
-      "last_updated": "2026-04-08T22:15:32Z",
-      "artifacts": [],
-      "next_artifact_number": 1
+      "last_updated": "2026-04-08T22:32:50Z",
+      "artifacts": [
+        {
+          "path": "specs/378_meeting_format_context_files/reports/01_meeting-format-research.md",
+          "type": "research",
+          "summary": "Meeting format schema analysis: 27 YAML fields, 10 markdown sections, 22 CSV columns with mapping"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1775687355_52fad3",
+      "researched": "2026-04-08T22:32:50Z"
     },
     {
       "project_number": 379,
