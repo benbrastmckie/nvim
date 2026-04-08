@@ -5,11 +5,11 @@
     {
       "project_number": 377,
       "project_name": "ctrl_keymap_dictation_neovim_claude_sidebar",
-      "status": "researched",
+      "status": "planned",
       "language": "neovim",
       "created": "2026-04-08T18:40:55Z",
-      "last_updated": "2026-04-08T19:09:26Z",
-      "session_id": "sess_1775675009_31aba5",
+      "last_updated": "2026-04-08T19:19:34Z",
+      "session_id": "sess_1775675955_8a6125",
       "researched": "2026-04-08T18:51:42Z",
       "next_artifact_number": 3,
       "artifacts": [
@@ -27,8 +27,28 @@
           "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/reports/02_unified-keymap-research.md",
           "type": "research",
           "summary": "Unified <C-apostrophe> keymap feasibility: viable with Kitty protocol in WezTerm"
+        },
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/plans/02_unified-keymap-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan for unified <C-'> dictation keymap with context-aware Claude Code routing"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 2,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 2,
+        "dependency_waves": [[1], [2], [3]],
+        "reports_integrated": [
+          {
+            "path": "reports/02_unified-keymap-research.md",
+            "integrated_in_plan_version": 2,
+            "integrated_date": "2026-04-08"
+          }
+        ]
+      }
     },
     {
       "project_number": 376,
