@@ -1,7 +1,7 @@
 # Implementation Plan: Update Founder Command Docs Typst Paths
 
 - **Task**: 375 - Update founder command docs typst paths
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: Task 373 (typst primary output)
 - **Research Inputs**: reports/01_founder-command-typst-paths.md
@@ -52,7 +52,7 @@ No ROAD_MAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Update 5 Standard Command Files [NOT STARTED]
+### Phase 1: Update 5 Standard Command Files [COMPLETED]
 
 **Goal**: Update all `.md` output references to `.typ` in market.md, analyze.md, strategy.md, legal.md, and finance.md.
 
@@ -81,7 +81,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update sheet.md (Special Case) [NOT STARTED]
+### Phase 2: Update sheet.md (Special Case) [IN PROGRESS]
 
 **Goal**: Update sheet.md output references from `.pdf` to `.typ`, preserving XLSX/JSON data artifact paths.
 
