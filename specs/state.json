@@ -5,11 +5,11 @@
     {
       "project_number": 377,
       "project_name": "ctrl_keymap_dictation_neovim_claude_sidebar",
-      "status": "planned",
+      "status": "completed",
       "language": "neovim",
       "created": "2026-04-08T18:40:55Z",
-      "last_updated": "2026-04-08T19:19:34Z",
-      "session_id": "sess_1775675955_8a6125",
+      "last_updated": "2026-04-08T19:50:22Z",
+      "session_id": "sess_1744145000_379f0f",
       "researched": "2026-04-08T18:51:42Z",
       "next_artifact_number": 3,
       "artifacts": [
@@ -32,6 +32,11 @@
           "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/plans/02_unified-keymap-plan.md",
           "type": "plan",
           "summary": "3-phase plan for unified <C-'> dictation keymap with context-aware Claude Code routing"
+        },
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/summaries/02_implementation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for unified C-apostrophe dictation keymap"
         }
       ],
       "plan_metadata": {
@@ -40,7 +45,17 @@
         "complexity": "medium",
         "research_integrated": true,
         "plan_version": 2,
-        "dependency_waves": [[1], [2], [3]],
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
         "reports_integrated": [
           {
             "path": "reports/02_unified-keymap-research.md",
@@ -48,7 +63,8 @@
             "integrated_date": "2026-04-08"
           }
         ]
-      }
+      },
+      "completion_summary": "Implemented unified <C-apostrophe> dictation keymap with context-aware routing between Claude Code native voice (meta+k) and Vosk STT across normal, insert, and terminal modes. Fixed terminal insertion bug and exposed vim.g.stt_recording for statusline."
     },
     {
       "project_number": 376,

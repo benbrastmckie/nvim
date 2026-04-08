@@ -18,7 +18,7 @@ next_project_number: 378
 
 ### 377. Add ctrl-based keymap for triggering dictation in Neovim with Claude Code sidebar voice recording support
 - **Effort**: 2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: neovim
 - **Research**:
   - [01_team-research.md](specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/reports/01_team-research.md)

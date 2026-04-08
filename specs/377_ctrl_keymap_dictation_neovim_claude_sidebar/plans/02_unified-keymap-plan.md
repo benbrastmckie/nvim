@@ -1,7 +1,7 @@
 # Implementation Plan: Unified Ctrl-' Dictation Keymap
 
 - **Task**: 377 - ctrl_keymap_dictation_neovim_claude_sidebar
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (Kitty keyboard protocol already enabled in WezTerm)
 - **Research Inputs**: specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/reports/02_unified-keymap-research.md
