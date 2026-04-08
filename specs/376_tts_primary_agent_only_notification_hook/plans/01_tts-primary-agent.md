@@ -1,7 +1,7 @@
 # Implementation Plan: TTS Primary Agent Only Notification Hook
 
 - **Task**: 376 - tts_primary_agent_only_notification_hook
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: reports/01_tts-primary-agent-research.md
@@ -58,7 +58,7 @@ No ROAD_MAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add agent_id Guard, Notification Type Filter, and Notification Hook [NOT STARTED]
+### Phase 1: Add agent_id Guard, Notification Type Filter, and Notification Hook [COMPLETED]
 
 **Goal**: Suppress TTS for subagent events and non-actionable notification types by adding guard checks to tts-notify.sh, and add Notification hook entry to settings.json.
 

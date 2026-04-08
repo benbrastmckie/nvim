@@ -60,6 +60,22 @@ if [[ "$TTS_ENABLED" != "1" ]]; then
     exit_success
 fi
 
+# Guard: suppress TTS for subagent contexts
+# agent_id is present in hook stdin JSON only for subagents
+if [[ -n "$STDIN_JSON" ]] && command -v jq &>/dev/null; then
+    AGENT_ID=$(echo "$STDIN_JSON" | jq -r '.agent_id // empty' 2>/dev/null || echo "")
+    if [[ -n "$AGENT_ID" ]]; then
+        log "Subagent detected (agent_id=$AGENT_ID) - suppressing TTS"
+        exit_success
+    fi
+fi
+
+# Guard: filter non-actionable notification types
+if [[ "$NOTIFICATION_TYPE" == "auth_success" ]]; then
+    log "Non-actionable notification type ($NOTIFICATION_TYPE) - suppressing TTS"
+    exit_success
+fi
+
 # Check if piper is available
 if ! command -v piper &>/dev/null; then
     log "piper command not found - skipping TTS notification"
