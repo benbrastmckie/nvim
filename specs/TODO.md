@@ -12,7 +12,7 @@ next_project_number: 382
 
 - **381** [NOT STARTED] -- Update manifest.json, index-entries.json, routing (depends: 378-380)
 - **380** [NOT STARTED] -- Create skill-meeting + meeting.md command (depends: 379)
-- **379** [NOT STARTED] -- Create meeting-agent (depends: 378)
+- **379** [RESEARCHED] -- Create meeting-agent (depends: 378)
 - **378** [COMPLETED] -- Create meeting format context files
 - **368** [COMPLETED] -- Create context documentation for Slidev custom formalism rendering
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -38,9 +38,10 @@ next_project_number: 382
 
 ### 379. Create meeting-agent for investor meeting note processing
 - **Effort**: 2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 - **Dependencies**: 378
+- **Research**: [01_meeting-agent-research.md](379_meeting_agent/reports/01_meeting-agent-research.md)
 
 **Description**: Create .claude/extensions/founder/agents/meeting-agent.md following legal-council-agent pattern. The agent: (1) reads raw meeting notes markdown, (2) web-searches investor/company for profile data (fund size, team, thesis, portfolio), (3) generates structured meeting file with full YAML frontmatter (investor_name, website, fund_size, stage, geography, focus, check_size_min/max, team, pipeline_stage, meetings array, fit_score, strengths, gaps, action items) + markdown body (Investor Profile, Relationship Status, Fit Assessment, Meeting Log with feedback themes, Action Items, Strategic Notes, Raw Notes preservation), (4) locates CSV file in same directory, (5) adds/updates CSV entry from frontmatter metadata. Support --update mode for CSV-only updates from existing meeting files. Reference context: meeting-format.md template, csv-tracker.md format.
 

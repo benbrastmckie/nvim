@@ -51,16 +51,24 @@
     {
       "project_number": 379,
       "project_name": "meeting_agent",
-      "status": "not_started",
+      "status": "researched",
       "language": "meta",
       "task_type": "meeting",
       "created": "2026-04-08T22:15:32Z",
-      "last_updated": "2026-04-08T22:15:32Z",
+      "last_updated": "2026-04-08T23:27:27Z",
       "dependencies": [
         378
       ],
-      "artifacts": [],
-      "next_artifact_number": 1
+      "artifacts": [
+        {
+          "path": "specs/379_meeting_agent/reports/01_meeting-agent-research.md",
+          "type": "research",
+          "summary": "Meeting-agent design: 7-stage execution flow, --update mode spec, tool requirements, context loading strategy"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1775690578_4f7911",
+      "researched": "2026-04-08T23:27:27Z"
     },
     {
       "project_number": 380,
