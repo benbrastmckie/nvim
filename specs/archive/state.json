@@ -15094,6 +15094,290 @@
         ]
       },
       "completion_summary": "Updated output path references in 6 founder command files (market, analyze, strategy, legal, finance, sheet) from .md/.pdf to .typ with .md fallback notation."
+    },
+    {
+      "project_number": 378,
+      "project_name": "meeting_format_context_files",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "meeting",
+      "created": "2026-04-08T22:15:32Z",
+      "last_updated": "2026-04-08T23:12:53Z",
+      "artifacts": [
+        {
+          "path": "specs/378_meeting_format_context_files/reports/01_meeting-format-research.md",
+          "type": "research",
+          "summary": "Meeting format schema analysis: 27 YAML fields, 10 markdown sections, 22 CSV columns with mapping"
+        },
+        {
+          "path": "specs/378_meeting_format_context_files/plans/01_meeting-format-plan.md",
+          "type": "plan",
+          "summary": "2-phase plan: meeting-format.md template + csv-tracker.md pattern"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1775689718_3ee961",
+      "researched": "2026-04-08T22:32:50Z",
+      "planned": "2026-04-08T22:41:42Z",
+      "plan_metadata": {
+        "phases": 2,
+        "total_effort_hours": 1.5,
+        "complexity": "low",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_meeting-format-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-08"
+          }
+        ]
+      },
+      "completion_summary": "Created meeting-format.md template (27-field YAML schema, 10-section body template, field source classification, pre-delivery checklist) and csv-tracker.md pattern (22-column schema, update patterns, array encoding, sync invariants) in founder extension context."
+    },
+    {
+      "project_number": 379,
+      "project_name": "meeting_agent",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "meeting",
+      "created": "2026-04-08T22:15:32Z",
+      "last_updated": "2026-04-09T00:27:27Z",
+      "dependencies": [
+        378
+      ],
+      "artifacts": [
+        {
+          "path": "specs/379_meeting_agent/reports/01_meeting-agent-research.md",
+          "type": "research",
+          "summary": "Meeting-agent design: 7-stage execution flow, --update mode spec, tool requirements, context loading strategy"
+        },
+        {
+          "path": "specs/379_meeting_agent/plans/01_meeting-agent-plan.md",
+          "type": "plan",
+          "summary": "1-phase plan: create meeting-agent.md with 7-stage execution flow"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1775694291_657e3e",
+      "researched": "2026-04-08T23:27:27Z",
+      "planned": "2026-04-09T00:01:12Z",
+      "plan_metadata": {
+        "phases": 1,
+        "total_effort_hours": 1,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_meeting-agent-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-08"
+          }
+        ]
+      },
+      "completion_summary": "Created meeting-agent.md in founder extension: 7-stage execution flow (early metadata, parse context, read notes, web research, generate meeting file, CSV update, return), --update mode for CSV-only sync, follow-up meeting handling, 8 error cases."
+    },
+    {
+      "project_number": 380,
+      "project_name": "meeting_skill_command",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "meeting",
+      "created": "2026-04-08T22:15:32Z",
+      "last_updated": "2026-04-09T00:52:05Z",
+      "dependencies": [
+        379
+      ],
+      "artifacts": [
+        {
+          "path": "specs/380_meeting_skill_command/reports/01_skill-command-research.md",
+          "type": "research",
+          "summary": "Skill-meeting and meeting.md command design: no forcing questions, 3 input types, direct delegation"
+        },
+        {
+          "path": "specs/380_meeting_skill_command/plans/01_skill-command-plan.md",
+          "type": "plan",
+          "summary": "2-phase plan: skill-meeting SKILL.md + meeting.md command"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1775695291_d2241f",
+      "researched": "2026-04-09T00:44:31Z",
+      "planned": "2026-04-09T00:47:13Z",
+      "plan_metadata": {
+        "phases": 2,
+        "total_effort_hours": 1.5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "completion_summary": "Created skill-meeting/SKILL.md (11-stage thin wrapper routing to meeting-agent) and commands/meeting.md (3 input types: file path, task number, --update; no forcing questions; direct delegation after task creation)."
+    },
+    {
+      "project_number": 381,
+      "project_name": "meeting_manifest_registration",
+      "status": "completed",
+      "language": "meta",
+      "task_type": "meeting",
+      "created": "2026-04-08T22:15:32Z",
+      "last_updated": "2026-04-09T00:55:55Z",
+      "dependencies": [
+        378,
+        379,
+        380
+      ],
+      "artifacts": [
+        {
+          "path": "specs/381_meeting_manifest_registration/reports/01_manifest-registration-research.md",
+          "type": "research",
+          "summary": "Manifest registration: 3 provides entries, 3 routing entries, 2 index entries"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1775695958_fb67e2",
+      "researched": "2026-04-09T00:53:40Z",
+      "completion_summary": "Registered /meeting command in founder extension: added meeting-agent.md, skill-meeting, meeting.md to provides; added founder:meeting routing for research/plan/implement; added 2 index entries for meeting-format.md and csv-tracker.md context files.",
+      "claudemd_suggestions": "Updated manifest.json with meeting components (agent, skill, command, 3 routing entries) and index-entries.json with 2 context entries"
+    },
+    {
+      "project_number": 377,
+      "project_name": "ctrl_keymap_dictation_neovim_claude_sidebar",
+      "status": "completed",
+      "language": "neovim",
+      "created": "2026-04-08T18:40:55Z",
+      "last_updated": "2026-04-08T19:50:22Z",
+      "session_id": "sess_1744145000_379f0f",
+      "researched": "2026-04-08T18:51:42Z",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research with 4 teammates"
+        },
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/plans/01_dictation-keymap-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan: context-aware dictation keymaps with Claude Code voice routing"
+        },
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/reports/02_unified-keymap-research.md",
+          "type": "research",
+          "summary": "Unified <C-apostrophe> keymap feasibility: viable with Kitty protocol in WezTerm"
+        },
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/plans/02_unified-keymap-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan for unified <C-'> dictation keymap with context-aware Claude Code routing"
+        },
+        {
+          "path": "specs/377_ctrl_keymap_dictation_neovim_claude_sidebar/summaries/02_implementation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for unified C-apostrophe dictation keymap"
+        }
+      ],
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 2,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 2,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/02_unified-keymap-research.md",
+            "integrated_in_plan_version": 2,
+            "integrated_date": "2026-04-08"
+          }
+        ]
+      },
+      "completion_summary": "Implemented unified <C-apostrophe> dictation keymap with context-aware routing between Claude Code native voice (meta+k) and Vosk STT across normal, insert, and terminal modes. Fixed terminal insertion bug and exposed vim.g.stt_recording for statusline."
+    },
+    {
+      "project_number": 376,
+      "project_name": "tts_primary_agent_only_notification_hook",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-04-08T18:12:07Z",
+      "last_updated": "2026-04-08T18:35:31Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/376_tts_primary_agent_only_notification_hook/reports/01_tts-primary-agent-research.md",
+          "summary": "Research on agent_id guard for TTS subagent suppression and Notification hook for interactive feedback"
+        },
+        {
+          "path": "specs/376_tts_primary_agent_only_notification_hook/plans/01_tts-primary-agent.md",
+          "type": "plan",
+          "summary": "2-phase plan: add agent_id guard and notification type filter to tts-notify.sh, add Notification hook to settings.json"
+        },
+        {
+          "path": "specs/376_tts_primary_agent_only_notification_hook/summaries/01_tts-primary-agent-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for TTS primary agent guard and Notification hook"
+        }
+      ],
+      "session_id": "sess_1744099200_b8c4d2",
+      "completion_summary": "Added agent_id subagent guard and auth_success notification filter to tts-notify.sh, and added Notification hook entry to settings.json for interactive feedback TTS.",
+      "claudemd_suggestions": "Modified .claude/hooks/tts-notify.sh with subagent guard logic; modified .claude/settings.json with Notification hook entry"
+    },
+    {
+      "project_number": 368,
+      "project_name": "context_docs_slidev_custom_formalism",
+      "status": "completed",
+      "language": "meta",
+      "created": "2026-04-05T23:31:55Z",
+      "last_updated": "2026-04-08T04:37:50Z",
+      "session_id": "sess_1775622806_421ad9",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/368_context_docs_slidev_custom_formalism/reports/02_team-research.md",
+          "type": "research",
+          "summary": "Team research (4 teammates): confirmed LogosOp.vue for compound operators, dead KaTeX infrastructure, recommended Unicode literals + shared CSS class"
+        },
+        {
+          "path": "specs/368_context_docs_slidev_custom_formalism/plans/02_slidev-custom-formalism.md",
+          "type": "plan",
+          "summary": "Revised 2-phase plan incorporating team research: dead-code annotations, decision tree, follow-on recommendations"
+        },
+        {
+          "path": "specs/368_context_docs_slidev_custom_formalism/summaries/02_slidev-custom-formalism-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for custom formalism rendering documentation"
+        }
+      ],
+      "completion_summary": "Added Custom Formalism Rendering section to slidev-deck-template.md documenting LogosOp.vue, dead KaTeX infrastructure, HTML entity patterns, and rendering decision tree. Updated deck/README.md with 2 new component entries.",
+      "claudemd_suggestions": "Updated founder extension context: slidev-deck-template.md gained ~80-line formalism rendering section, deck/README.md updated from 4 to 6 components with status annotations"
     }
   ],
   "abandoned_projects": []
