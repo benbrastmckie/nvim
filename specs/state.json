@@ -51,11 +51,11 @@
     {
       "project_number": 379,
       "project_name": "meeting_agent",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "task_type": "meeting",
       "created": "2026-04-08T22:15:32Z",
-      "last_updated": "2026-04-08T23:27:27Z",
+      "last_updated": "2026-04-09T00:01:12Z",
       "dependencies": [
         378
       ],
@@ -64,11 +64,36 @@
           "path": "specs/379_meeting_agent/reports/01_meeting-agent-research.md",
           "type": "research",
           "summary": "Meeting-agent design: 7-stage execution flow, --update mode spec, tool requirements, context loading strategy"
+        },
+        {
+          "path": "specs/379_meeting_agent/plans/01_meeting-agent-plan.md",
+          "type": "plan",
+          "summary": "1-phase plan: create meeting-agent.md with 7-stage execution flow"
         }
       ],
       "next_artifact_number": 2,
-      "session_id": "sess_1775690578_4f7911",
-      "researched": "2026-04-08T23:27:27Z"
+      "session_id": "sess_1775692703_fe5bfe",
+      "researched": "2026-04-08T23:27:27Z",
+      "planned": "2026-04-09T00:01:12Z",
+      "plan_metadata": {
+        "phases": 1,
+        "total_effort_hours": 1,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_meeting-agent-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-08"
+          }
+        ]
+      }
     },
     {
       "project_number": 380,
