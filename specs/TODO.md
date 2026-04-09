@@ -35,6 +35,7 @@ next_project_number: 392
 - **Effort**: 3-5 hours
 - **Status**: [RESEARCHED]
 - **Language**: meta
+- **Research**: [01_talk-command-research.md](390_create_talk_command_present/reports/01_talk-command-research.md)
 
 **Description**: Create /talk command for research presentations via Slidev: conference talks, poster sessions, grant defense, research seminars, journal clubs. Adapts founder /deck command material synthesis and slide library for medical research presentations. Deliverables: command, skill (skill-talk), agent (talk-agent), context files (domain, patterns, templates for research presentations).
 
