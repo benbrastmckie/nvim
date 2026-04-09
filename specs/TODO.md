@@ -13,7 +13,7 @@ next_project_number: 392
 - **387** [PLANNED] -- Create /budget command for present extension
 - **388** [PLANNED] -- Create /timeline command for present extension
 - **389** [PLANNED] -- Create /funds command for present extension
-- **390** [PLANNING] -- Create /talk command for present extension
+- **390** [PLANNED] -- Create /talk command for present extension
 - **391** [NOT STARTED] -- Integrate new commands into present extension manifest (depends: 387-390)
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **382** [COMPLETED] -- Simplify /revise command with command + skill + agent architecture
@@ -33,7 +33,7 @@ next_project_number: 392
 
 ### 390. Create /talk command for present extension
 - **Effort**: 3-5 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Research**: [01_talk-command-research.md](390_create_talk_command_present/reports/01_talk-command-research.md)
 
@@ -44,6 +44,7 @@ next_project_number: 392
 - **Status**: [PLANNED]
 - **Language**: meta
 - **Research**: [01_funds-command-research.md](389_create_funds_command_present/reports/01_funds-command-research.md)
+- **Plan**: [01_funds-command-plan.md](389_create_funds_command_present/plans/01_funds-command-plan.md)
 
 **Description**: Create /funds command for funding landscape analysis: funder portfolio mapping, cost-effectiveness analysis, budget justification verification, funding gap analysis. Adapts founder /finance command audit/model/forecast modes for research funding. Deliverables: command, skill (skill-funds), agent (funds-agent), context files (domain, patterns, templates for funding analysis).
 

@@ -129,16 +129,45 @@
           "type": "plan",
           "summary": "5-phase implementation plan for /funds command: command, skill, agent, domain context, patterns context"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 5,
+        "total_effort_hours": 4,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_funds-command-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-09"
+          }
+        ]
+      }
     },
     {
       "project_number": 390,
       "project_name": "create_talk_command_present",
-      "status": "planning",
+      "status": "planned",
       "language": "meta",
       "description": "Create /talk command for present extension: research presentations via Slidev with conference talks, poster sessions, grant defense, research seminars, journal clubs. Adapts founder /deck command material synthesis and slide library for medical research presentations.",
       "created": "2026-04-09T19:39:14Z",
-      "last_updated": "2026-04-09T19:49:41Z",
+      "last_updated": "2026-04-09T19:53:08Z",
       "dependencies": [],
       "session_id": "sess_1775764151_429db2",
       "next_artifact_number": 2,
@@ -147,6 +176,11 @@
           "path": "specs/390_create_talk_command_present/reports/01_talk-command-research.md",
           "type": "research",
           "summary": "Research report covering /talk command architecture, talk modes, slide structures, content templates, components, themes, and integration with present extension"
+        },
+        {
+          "path": "specs/390_create_talk_command_present/plans/01_talk-command-plan.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for /talk command with talk library, components, skill, agent, and integration"
         }
       ]
     },
