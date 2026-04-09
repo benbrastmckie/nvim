@@ -110,11 +110,11 @@
     {
       "project_number": 389,
       "project_name": "create_funds_command_present",
-      "status": "implementing",
+      "status": "completed",
       "language": "meta",
       "description": "Create /funds command for present extension: funding landscape analysis with funder portfolio mapping, cost-effectiveness analysis, budget justification verification, funding gap analysis. Adapts founder /finance command audit/model/forecast modes for research funding.",
       "created": "2026-04-09T19:39:14Z",
-      "last_updated": "2026-04-09T19:56:12Z",
+      "last_updated": "2026-04-09T20:08:13Z",
       "dependencies": [],
       "session_id": "sess_1775764546_dffa92",
       "next_artifact_number": 2,
@@ -128,6 +128,11 @@
           "path": "specs/389_create_funds_command_present/plans/01_funds-command-plan.md",
           "type": "plan",
           "summary": "5-phase implementation plan for /funds command: command, skill, agent, domain context, patterns context"
+        },
+        {
+          "path": "specs/389_create_funds_command_present/summaries/01_funds-command-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for /funds command creation across 5 files"
         }
       ],
       "plan_metadata": {
@@ -158,7 +163,9 @@
             "integrated_date": "2026-04-09"
           }
         ]
-      }
+      },
+      "completion_summary": "Created /funds command for present extension with 5 files: command definition (472 lines), skill wrapper (483 lines), agent definition (507 lines), funding-analysis domain context (275 lines), and funding-forcing-questions patterns context (337 lines). Four analysis modes (LANDSCAPE, PORTFOLIO, JUSTIFY, GAP) adapted from founder /finance command for research funding contexts.",
+      "claudemd_suggestions": "Add /funds to present extension command documentation. Consider adding funds-agent and skill-funds to skill-to-agent mapping table if present extension routing is documented in CLAUDE.md."
     },
     {
       "project_number": 390,

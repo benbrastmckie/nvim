@@ -1,7 +1,7 @@
 # Implementation Plan: Create /funds Command for Present Extension
 
 - **Task**: 389 - Create /funds command for present extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None (sibling tasks 387, 388, 390 are parallel; 391 integrates all)
 - **Research Inputs**: specs/389_create_funds_command_present/reports/01_funds-command-research.md
