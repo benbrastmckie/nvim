@@ -5,11 +5,11 @@
     {
       "project_number": 385,
       "project_name": "research_zed_ide_installation",
-      "status": "planned",
+      "status": "completed",
       "language": "general",
       "created": "2026-04-09T16:35:52Z",
-      "last_updated": "2026-04-09T17:38:48Z",
-      "session_id": "sess_1775756131_0f4693",
+      "last_updated": "2026-04-09T17:44:52Z",
+      "session_id": "sess_1775756424_41a00c",
       "researched": "2026-04-09T17:45:00Z",
       "next_artifact_number": 3,
       "artifacts": [
@@ -27,6 +27,16 @@
           "path": "specs/385_research_zed_ide_installation/plans/01_zed-installation-guide.md",
           "type": "plan",
           "summary": "4-phase plan to create a partner-facing Zed + Claude Code + Office guide for macOS"
+        },
+        {
+          "path": "specs/385_research_zed_ide_installation/summaries/02_zed-guide-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for Zed + Claude Code + Office guide"
+        },
+        {
+          "path": "specs/385_research_zed_ide_installation/guide/zed-claude-office-guide.md",
+          "type": "guide",
+          "summary": "Partner-facing installation and usage guide for Zed + Claude Code + SuperDoc + openpyxl on macOS"
         }
       ],
       "plan_metadata": {
@@ -59,7 +69,8 @@
             "integrated_date": "2026-04-09"
           }
         ]
-      }
+      },
+      "completion_summary": "Created partner-facing installation guide for Zed IDE + Claude Code + SuperDoc MCP on macOS with 7-step installation, 4 workflow patterns, and quick reference cheat sheet"
     },
     {
       "project_number": 384,

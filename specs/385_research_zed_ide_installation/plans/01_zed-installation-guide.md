@@ -1,7 +1,7 @@
 # Implementation Plan: Zed + Claude Code + Office Guide
 
 - **Task**: 385 - Research Zed IDE installation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_team-research.md, reports/02_superdoc-workflows.md

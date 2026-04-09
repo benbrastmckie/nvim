@@ -20,12 +20,13 @@ next_project_number: 386
 
 ### 385. Research Zed IDE installation plan for partner's laptop
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: general
 - **Research**:
   - [01_team-research.md](specs/385_research_zed_ide_installation/reports/01_team-research.md)
   - [02_superdoc-workflows.md](specs/385_research_zed_ide_installation/reports/02_superdoc-workflows.md)
 - **Plan**: [01_zed-installation-guide.md](specs/385_research_zed_ide_installation/plans/01_zed-installation-guide.md)
+- **Summary**: [02_zed-guide-summary.md](specs/385_research_zed_ide_installation/summaries/02_zed-guide-summary.md)
 
 **Description**: Research Zed IDE as a VSCode replacement for partner's laptop: evaluate integration with Claude Code, OpenCode, and Codex; assess MS Office workflow options including Zed limitations, Claude Code Office file editing, and companion apps (LibreOffice, OnlyOffice); determine OS-specific installation steps; compare extension ecosystem gaps vs VSCode; produce installation recommendation with prerequisites and configuration steps.
 
