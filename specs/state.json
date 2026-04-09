@@ -99,11 +99,11 @@
     {
       "project_number": 380,
       "project_name": "meeting_skill_command",
-      "status": "planned",
+      "status": "completed",
       "language": "meta",
       "task_type": "meeting",
       "created": "2026-04-08T22:15:32Z",
-      "last_updated": "2026-04-09T00:47:13Z",
+      "last_updated": "2026-04-09T00:52:05Z",
       "dependencies": [
         379
       ],
@@ -135,7 +135,8 @@
             2
           ]
         ]
-      }
+      },
+      "completion_summary": "Created skill-meeting/SKILL.md (11-stage thin wrapper routing to meeting-agent) and commands/meeting.md (3 input types: file path, task number, --update; no forcing questions; direct delegation after task creation)."
     },
     {
       "project_number": 381,
