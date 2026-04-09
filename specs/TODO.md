@@ -1,15 +1,20 @@
 ---
-next_project_number: 387
+next_project_number: 392
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-09. 5 active tasks remaining.*
+*Updated 2026-04-09. 10 active tasks remaining.*
 
 ### Pending
 
+- **387** [NOT STARTED] -- Create /budget command for present extension
+- **388** [NOT STARTED] -- Create /timeline command for present extension
+- **389** [NOT STARTED] -- Create /funds command for present extension
+- **390** [NOT STARTED] -- Create /talk command for present extension
+- **391** [NOT STARTED] -- Integrate new commands into present extension manifest (depends: 387-390)
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **382** [COMPLETED] -- Simplify /revise command with command + skill + agent architecture
 - **383** [COMPLETED] -- Simplify /plan command, remove status gates, reference prior plan
@@ -18,9 +23,45 @@ next_project_number: 387
 
 ## Tasks
 
+### 391. Integrate new commands into present extension manifest
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+- **Dependencies**: Tasks 387, 388, 389, 390
+
+**Description**: Integrate /budget, /timeline, /funds, /talk into present extension: update manifest.json routing, index-entries.json context entries, EXTENSION.md skill-agent table, README.md documentation.
+
+### 390. Create /talk command for present extension
+- **Effort**: 3-5 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Create /talk command for research presentations via Slidev: conference talks, poster sessions, grant defense, research seminars, journal clubs. Adapts founder /deck command material synthesis and slide library for medical research presentations. Deliverables: command, skill (skill-talk), agent (talk-agent), context files (domain, patterns, templates for research presentations).
+
+### 389. Create /funds command for present extension
+- **Effort**: 3-5 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Create /funds command for funding landscape analysis: funder portfolio mapping, cost-effectiveness analysis, budget justification verification, funding gap analysis. Adapts founder /finance command audit/model/forecast modes for research funding. Deliverables: command, skill (skill-funds), agent (funds-agent), context files (domain, patterns, templates for funding analysis).
+
+### 388. Create /timeline command for present extension
+- **Effort**: 3-5 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Create /timeline command for research project timelines: specific aims schedules, regulatory milestones (IRB, IACUC), reporting periods, no-cost extensions. Adapts founder /project command WBS/PERT/Gantt for medical research. Deliverables: command, skill (skill-timeline), agent (timeline-agent), context files (domain, patterns, templates for research timelines).
+
+### 387. Create /budget command for present extension
+- **Effort**: 3-5 hours
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Create /budget command for grant budget spreadsheets: NIH modular/detailed formats, NSF budgets, F&A rates, cost-sharing, sub-awards, personnel effort. Adapts founder /sheet command forcing questions and XLSX generation for medical research grant budgets. Deliverables: command, skill (skill-budget), agent (budget-agent), context files (domain, patterns, templates for grant budgets).
+
 ### 386. Expand filetypes extension with SuperDoc MCP integration and partner Office workflows
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Language**: meta
 - **Research**:
   - [01_team-research.md](specs/386_expand_filetypes_superdoc_integration/reports/01_team-research.md)
