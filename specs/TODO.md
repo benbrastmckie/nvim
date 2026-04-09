@@ -10,10 +10,10 @@ next_project_number: 392
 
 ### Pending
 
-- **387** [NOT STARTED] -- Create /budget command for present extension
-- **388** [NOT STARTED] -- Create /timeline command for present extension
-- **389** [NOT STARTED] -- Create /funds command for present extension
-- **390** [NOT STARTED] -- Create /talk command for present extension
+- **387** [RESEARCHED] -- Create /budget command for present extension
+- **388** [RESEARCHED] -- Create /timeline command for present extension
+- **389** [RESEARCHING] -- Create /funds command for present extension
+- **390** [RESEARCHED] -- Create /talk command for present extension
 - **391** [NOT STARTED] -- Integrate new commands into present extension manifest (depends: 387-390)
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **382** [COMPLETED] -- Simplify /revise command with command + skill + agent architecture
@@ -33,29 +33,30 @@ next_project_number: 392
 
 ### 390. Create /talk command for present extension
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 
 **Description**: Create /talk command for research presentations via Slidev: conference talks, poster sessions, grant defense, research seminars, journal clubs. Adapts founder /deck command material synthesis and slide library for medical research presentations. Deliverables: command, skill (skill-talk), agent (talk-agent), context files (domain, patterns, templates for research presentations).
 
 ### 389. Create /funds command for present extension
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Language**: meta
 
 **Description**: Create /funds command for funding landscape analysis: funder portfolio mapping, cost-effectiveness analysis, budget justification verification, funding gap analysis. Adapts founder /finance command audit/model/forecast modes for research funding. Deliverables: command, skill (skill-funds), agent (funds-agent), context files (domain, patterns, templates for funding analysis).
 
 ### 388. Create /timeline command for present extension
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
 
 **Description**: Create /timeline command for research project timelines: specific aims schedules, regulatory milestones (IRB, IACUC), reporting periods, no-cost extensions. Adapts founder /project command WBS/PERT/Gantt for medical research. Deliverables: command, skill (skill-timeline), agent (timeline-agent), context files (domain, patterns, templates for research timelines).
 
 ### 387. Create /budget command for present extension
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Language**: meta
+- **Research**: [01_budget-command-research.md](387_create_budget_command_present/reports/01_budget-command-research.md)
 
 **Description**: Create /budget command for grant budget spreadsheets: NIH modular/detailed formats, NSF budgets, F&A rates, cost-sharing, sub-awards, personnel effort. Adapts founder /sheet command forcing questions and XLSX generation for medical research grant budgets. Deliverables: command, skill (skill-budget), agent (budget-agent), context files (domain, patterns, templates for grant budgets).
 
