@@ -24,9 +24,9 @@ After following this guide, you will have:
 - You need an internet connection
 - Set aside about 20-30 minutes
 
-### Step 1: Open Terminal
+### Step 1: Open WezTerm
 
-Press **Cmd + Space** to open Spotlight, type **Terminal**, and press Enter. A window with a text prompt will appear. You will paste commands into this window.
+Open **WezTerm** from your Applications folder or Dock. A window with a text prompt will appear. You will paste commands into this window.
 
 ### Step 2: Install Homebrew
 
@@ -36,7 +36,7 @@ Homebrew is a tool that installs other tools. Paste this entire line and press E
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-Follow the on-screen instructions (you may need to enter your Mac password). When it finishes, close Terminal and reopen it.
+Follow the on-screen instructions (you may need to enter your Mac password). When it finishes, close WezTerm and reopen it.
 
 To verify it worked, paste this and press Enter:
 
@@ -44,25 +44,9 @@ To verify it worked, paste this and press Enter:
 brew --version
 ```
 
-You should see a version number like `Homebrew 4.x.x`. If you see "command not found", restart Terminal and try again.
+You should see a version number like `Homebrew 4.x.x`. If you see "command not found", restart WezTerm and try again.
 
-### Step 3: Install Node.js
-
-Node.js is required by the Office file tools. Paste this and press Enter:
-
-```
-brew install node@20
-```
-
-Verify it worked:
-
-```
-node --version
-```
-
-You should see `v20.x.x` or higher.
-
-### Step 4: Install Zed
+### Step 3: Install Zed
 
 ```
 brew install --cask zed
@@ -70,21 +54,7 @@ brew install --cask zed
 
 Open Zed from your Applications folder or Spotlight (Cmd + Space, type "Zed") to confirm it launches. You can close it for now.
 
-### Step 5: Install Claude Code
-
-```
-brew install claude-code
-```
-
-Then run Claude Code once to log in:
-
-```
-claude
-```
-
-Follow the prompts to sign in with your Anthropic account. Once you see the Claude prompt, type `/exit` to close it.
-
-### Step 6: Connect the Word Document Helper (SuperDoc)
+### Step 4: Connect the Word Document Helper (SuperDoc)
 
 This lets Claude edit .docx files with tracked changes:
 
@@ -92,7 +62,7 @@ This lets Claude edit .docx files with tracked changes:
 claude mcp add --scope user superdoc -- npx @superdoc-dev/mcp
 ```
 
-### Step 7: Connect the Spreadsheet Helper (openpyxl)
+### Step 5: Connect the Spreadsheet Helper (openpyxl)
 
 This lets Claude edit .xlsx files:
 
@@ -115,19 +85,13 @@ Open Zed, then press **Cmd + Shift + ?** to open the Agent Panel. Type a questio
 ### Troubleshooting
 
 **"command not found" after installing Homebrew**
-Close Terminal completely (Cmd + Q) and reopen it. Homebrew needs a fresh Terminal session.
-
-**Node.js version is too old**
-If `node --version` shows something below v18, run:
-```
-brew uninstall node && brew install node@20
-```
+Close WezTerm completely (Cmd + Q) and reopen it. Homebrew needs a fresh session.
 
 **"superdoc" or "openpyxl" not showing in `claude mcp list`**
-Re-run the `claude mcp add` command from Steps 6 or 7. Make sure you include `--scope user`.
+Re-run the `claude mcp add` command from Steps 4 or 5. Make sure you include `--scope user`.
 
 **Zed's Agent Panel doesn't respond**
-Make sure Claude Code is installed (Step 5). In Zed, go to **Settings > Extensions** and confirm "Claude Code" is listed. If not, search for it and install it.
+In Zed, go to **Settings > Extensions** and confirm "Claude Code" is listed. If not, search for it and install it.
 
 ---
 
@@ -282,7 +246,7 @@ That's it. Claude handles the rest.
 | Edit many files at once | Pause OneDrive sync, then ask Claude (see Workflow 3) |
 | Create a new Word document | Just describe it to Claude (see Workflow 4) |
 | See what Claude changed | Open the file in Word -- look for tracked changes |
-| Check which helpers are installed | Run `claude mcp list` in Terminal |
+| Check which helpers are installed | Run `claude mcp list` in WezTerm |
 | Open a file in Zed | Press **Cmd + P** and type the filename |
 | Search for text in Zed | Press **Cmd + Shift + F** |
 | Save a file in Zed | Press **Cmd + S** |

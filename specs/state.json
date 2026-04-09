@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 386,
+  "next_project_number": 387,
   "active_projects": [
+    {
+      "project_number": 386,
+      "project_name": "expand_filetypes_superdoc_integration",
+      "status": "not_started",
+      "language": "meta",
+      "created": "2026-04-09T17:52:37Z",
+      "last_updated": "2026-04-09T17:52:37Z"
+    },
     {
       "project_number": 385,
       "project_name": "research_zed_ide_installation",
