@@ -68,7 +68,7 @@ Phases within the same wave can execute in parallel.
 - **Timing:** 1 hour
 - **Depends on:** none
 
-### Phase 2: Create skill-funds Thin Wrapper [IN PROGRESS]
+### Phase 2: Create skill-funds Thin Wrapper [COMPLETED]
 
 - **Goal:** Create the skill file that routes /funds requests to funds-agent via Task tool, with internal postflight.
 - **Tasks:**
@@ -95,7 +95,7 @@ Phases within the same wave can execute in parallel.
 - **Timing:** 45 minutes
 - **Depends on:** 1
 
-### Phase 3: Create Domain Context File [NOT STARTED]
+### Phase 3: Create Domain Context File [IN PROGRESS]
 
 - **Goal:** Create funding-analysis.md with research funding domain knowledge for the funds-agent.
 - **Tasks:**
