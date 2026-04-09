@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "next_project_number": 382,
+  "next_project_number": 384,
   "active_projects": [
     {
       "project_number": 87,
@@ -41,6 +41,32 @@
       ],
       "session_id": "sess_1771006114_e73864",
       "planned": "2026-02-13T18:10:48Z"
+    },
+    {
+      "project_number": 382,
+      "project_name": "simplify_revise_command",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-09T05:20:48Z",
+      "last_updated": "2026-04-09T05:24:34Z",
+      "artifacts": [
+        {
+          "path": "specs/382_simplify_revise_command/reports/01_simplify-revise-command.md",
+          "type": "report",
+          "summary": "Research report: current vs target /revise architecture"
+        }
+      ],
+      "session_id": "sess_1775712110_aa5230"
+    },
+    {
+      "project_number": 383,
+      "project_name": "simplify_plan_command",
+      "status": "researched",
+      "language": "meta",
+      "created": "2026-04-09T05:20:48Z",
+      "last_updated": "2026-04-09T05:24:55Z",
+      "artifacts": [],
+      "session_id": "sess_1775712110_aa5230"
     }
   ],
   "completed_projects": [],
