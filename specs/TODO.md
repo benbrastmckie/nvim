@@ -12,7 +12,7 @@ next_project_number: 382
 
 - **381** [NOT STARTED] -- Update manifest.json, index-entries.json, routing (depends: 378-380)
 - **380** [NOT STARTED] -- Create skill-meeting + meeting.md command (depends: 379)
-- **379** [PLANNED] -- Create meeting-agent (depends: 378)
+- **379** [COMPLETED] -- Create meeting-agent (depends: 378)
 - **378** [COMPLETED] -- Create meeting format context files
 - **368** [COMPLETED] -- Create context documentation for Slidev custom formalism rendering
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -38,7 +38,7 @@ next_project_number: 382
 
 ### 379. Create meeting-agent for investor meeting note processing
 - **Effort**: 2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Language**: meta
 - **Dependencies**: 378
 - **Research**: [01_meeting-agent-research.md](379_meeting_agent/reports/01_meeting-agent-research.md)
