@@ -143,7 +143,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Simplify revise.md command [IN PROGRESS]
+### Phase 3: Simplify revise.md command [COMPLETED]
 
 **Goal**: Remove status-based ABORT rules from the command, add GATE OUT verification matching /plan's CHECKPOINT 2 pattern, and route solely by plan file existence.
 
@@ -171,7 +171,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Update CLAUDE.md tables [NOT STARTED]
+### Phase 4: Update CLAUDE.md tables [COMPLETED]
 
 **Goal**: Update the Skill-to-Agent Mapping and Agents tables in CLAUDE.md to reflect the new reviser-agent.
 

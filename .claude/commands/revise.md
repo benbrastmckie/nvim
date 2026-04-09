@@ -1,6 +1,6 @@
 ---
 description: Create new version of implementation plan, or update task description if no plan exists
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(jq:*), Bash(git:*), TaskCreate, TaskUpdate
+allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit, Glob
 argument-hint: TASK_NUMBER [REASON]
 model: opus
 ---
@@ -32,36 +32,89 @@ Create a new version of an implementation plan, or update task description if no
      specs/state.json)
    ```
 
-3. **Validate and Route**
-   - Task exists (ABORT if not)
-   - Route based on status:
+3. **Validate Task Exists**
+   - **ABORT** if task not found in state.json
 
-   | Status | Action |
-   |--------|--------|
-   | planned, implementing, partial, blocked | Plan Revision (via skill-reviser) |
-   | not_started, researched | Description Update (via skill-reviser) |
-   | completed | ABORT "Task completed, no revision needed" |
-   | abandoned | ABORT "Task abandoned, use /task --recover first" |
+   No other ABORT conditions. The command works regardless of task status.
 
-**ABORT** if any validation fails. **PROCEED** to delegation.
+4. **Check Plan Existence**
+   ```bash
+   padded_num=$(printf "%03d" "$task_number")
+   project_name=$(echo "$task_data" | jq -r '.project_name')
+   plan_exists=$(ls specs/${padded_num}_${project_name}/plans/*.md 2>/dev/null | head -1)
+   ```
+
+   This determines routing:
+   - Plan file exists: Plan Revision path
+   - No plan file: Description Update path
+
+**PROCEED** to delegation.
 
 ---
 
 ### CHECKPOINT 2: DELEGATE TO SKILL
 
-Invoke `skill-reviser` with the validated task context. The skill handles:
+Invoke `skill-reviser` with the validated task context. The skill delegates to `reviser-agent` which handles:
 
-- **Plan Revision path**: Load current plan, analyze changes, create revised plan, update status via `update-task-status.sh postflight plan`, link artifacts, git commit
-- **Description Update path**: Validate revision reason, update state.json description, update TODO.md, git commit
+- **Plan Revision path**: Load current plan, discover new research, synthesize revised plan
+- **Description Update path**: Update task description based on revision reason
 
 Pass to skill-reviser:
 - `task_number` - Validated task number
 - `session_id` - Generated session ID
 - `revision_reason` - Optional reason from remaining args
 - `task_data` - Full task data from state.json lookup
-- `branch` - "plan_revision" or "description_update" based on routing
+- `plan_exists` - Whether a plan file exists (boolean flag)
 
-The skill returns a brief text summary of what was done.
+```
+skill: "skill-reviser"
+args: "task_number={N} session_id={session_id} revision_reason={reason} plan_exists={true|false}"
+```
+
+The skill spawns the reviser-agent, handles postflight (status update, artifact linking, git commit), and returns a brief text summary.
+
+**On DELEGATE success**: Revision complete. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.
+
+---
+
+### CHECKPOINT 3: GATE OUT
+
+1. **Verify Artifacts** (Plan Revision only)
+   If `plan_exists` was true (plan revision path), check the revised plan file exists on disk:
+   ```bash
+   revised_plan=$(ls -1t specs/${padded_num}_${project_name}/plans/*.md 2>/dev/null | head -1)
+   if [ -z "$revised_plan" ]; then
+       echo "WARNING: No plan file found after revision."
+   fi
+   ```
+
+2. **Verify Status Updated** (Plan Revision only)
+   The skill handles status updates internally (postflight).
+   Confirm status is now "planned" in state.json:
+
+   ```bash
+   current_status=$(jq -r --argjson num "$task_number" \
+     '.active_projects[] | select(.project_number == $num) | .status' \
+     specs/state.json)
+
+   if [ "$current_status" = "planned" | not ]; then
+       echo "WARNING: state.json status is '$current_status', expected 'planned'. Applying defensive correction."
+       bash .claude/scripts/update-task-status.sh postflight "$task_number" plan "$session_id"
+   fi
+   ```
+
+3. **Verify TODO.md Status** (Plan Revision only)
+   Check that the task entry in TODO.md shows `[PLANNED]`:
+
+   ```bash
+   if grep -q "- \*\*Status\*\*: \[PLANNING\]" <(grep -A 5 "^### ${task_number}\." specs/TODO.md); then
+       echo "WARNING: TODO.md status not updated to [PLANNED]. Applying defensive correction."
+   fi
+   ```
+
+   If mismatch found, use Edit tool to fix both task entry and Task Order.
+
+**On GATE OUT success**: Revision verified.
 
 ---
 
@@ -95,10 +148,13 @@ Status: [{current_status}]
 
 ### GATE IN Failure
 - Task not found: Return error with guidance
-- Invalid status: Return error with current status
 
-### Skill Failure
+### DELEGATE Failure
 - skill-reviser handles all error cases internally
-- Missing plan for revision: Skill falls back to description update
-- Write failure: Skill logs error, preserves original
+- Missing plan for revision: Agent falls back to description update
+- Write failure: Agent logs error, preserves original
 - Git commit failure: Non-blocking (logged by skill)
+
+### GATE OUT Failure
+- Missing artifacts: Log warning, continue with available
+- Status mismatch: Apply defensive correction via update-task-status.sh

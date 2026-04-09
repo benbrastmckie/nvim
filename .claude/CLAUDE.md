@@ -175,7 +175,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | skill-team-research | (team orchestration) | sonnet | Multi-agent parallel research (--team flag) |
 | skill-team-plan | (team orchestration) | sonnet | Multi-agent parallel planning (--team flag) |
 | skill-team-implement | (team orchestration) | sonnet | Multi-agent parallel implementation (--team flag) |
-| skill-reviser | (direct execution) | opus | Plan revision and description update |
+| skill-reviser | reviser-agent | opus | Plan revision and description update |
 | skill-spawn | spawn-agent | opus | Analyze blockers and spawn new tasks |
 | skill-orchestrator | (direct execution) | - | Route commands to appropriate workflows |
 | skill-git-workflow | (direct execution) | - | Create scoped git commits for task operations |
@@ -189,6 +189,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | planner-agent | Implementation plan creation |
 | meta-builder-agent | System building and meta tasks |
 | code-reviewer-agent | Code quality assessment and review |
+| reviser-agent | Plan revision with research synthesis |
 | spawn-agent | Blocker analysis and task decomposition |
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. Research and planning agents use `opus` for superior reasoning. Implementation agents use default model. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
