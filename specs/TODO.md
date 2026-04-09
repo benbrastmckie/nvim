@@ -10,7 +10,7 @@ next_project_number: 382
 
 ### Pending
 
-- **381** [RESEARCHED] -- Update manifest.json, index-entries.json, routing (depends: 378-380)
+- **381** [COMPLETED] -- Update manifest.json, index-entries.json, routing (depends: 378-380)
 - **380** [COMPLETED] -- Create skill-meeting + meeting.md command (depends: 379)
 - **379** [COMPLETED] -- Create meeting-agent (depends: 378)
 - **378** [COMPLETED] -- Create meeting format context files

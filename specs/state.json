@@ -141,11 +141,11 @@
     {
       "project_number": 381,
       "project_name": "meeting_manifest_registration",
-      "status": "researched",
+      "status": "completed",
       "language": "meta",
       "task_type": "meeting",
       "created": "2026-04-08T22:15:32Z",
-      "last_updated": "2026-04-09T00:53:40Z",
+      "last_updated": "2026-04-09T00:55:55Z",
       "dependencies": [
         378,
         379,
@@ -160,7 +160,9 @@
       ],
       "next_artifact_number": 2,
       "session_id": "sess_1775695958_fb67e2",
-      "researched": "2026-04-09T00:53:40Z"
+      "researched": "2026-04-09T00:53:40Z",
+      "completion_summary": "Registered /meeting command in founder extension: added meeting-agent.md, skill-meeting, meeting.md to provides; added founder:meeting routing for research/plan/implement; added 2 index entries for meeting-format.md and csv-tracker.md context files.",
+      "claudemd_suggestions": "Updated manifest.json with meeting components (agent, skill, command, 3 routing entries) and index-entries.json with 2 context entries"
     },
     {
       "project_number": 377,

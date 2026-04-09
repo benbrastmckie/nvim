@@ -667,6 +667,44 @@
       },
       "domain": "project",
       "subdomain": "founder"
+    },
+    {
+      "path": "project/founder/templates/meeting-format.md",
+      "summary": "Investor meeting file template: 27-field YAML frontmatter schema, 10-section markdown body, field source classification, slug derivation, pre-delivery checklist",
+      "line_count": 244,
+      "load_when": {
+        "agents": [
+          "meeting-agent",
+          "founder-plan-agent",
+          "founder-implement-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "commands": [
+          "/meeting"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "founder"
+    },
+    {
+      "path": "project/founder/patterns/csv-tracker.md",
+      "summary": "CSV investor tracker pattern: 22-column schema with YAML mapping, array encoding, update patterns, sync invariants, sort order",
+      "line_count": 128,
+      "load_when": {
+        "agents": [
+          "meeting-agent"
+        ],
+        "languages": [
+          "founder"
+        ],
+        "commands": [
+          "/meeting"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "founder"
     }
   ]
 }
