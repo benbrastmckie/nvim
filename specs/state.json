@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 385,
+  "next_project_number": 386,
   "active_projects": [
+    {
+      "project_number": 385,
+      "project_name": "research_zed_ide_installation",
+      "status": "not_started",
+      "language": "general",
+      "created": "2026-04-09T16:35:52Z",
+      "last_updated": "2026-04-09T16:35:52Z"
+    },
     {
       "project_number": 384,
       "project_name": "improve_convert_command_skill_agent",

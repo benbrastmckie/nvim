@@ -1,5 +1,5 @@
 ---
-next_project_number: 385
+next_project_number: 386
 ---
 
 # TODO
@@ -17,6 +17,15 @@ next_project_number: 385
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 385. Research Zed IDE installation plan for partner's laptop
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: general
+
+**Description**: Research Zed IDE as a VSCode replacement for partner's laptop: evaluate integration with Claude Code, OpenCode, and Codex; assess MS Office workflow options including Zed limitations, Claude Code Office file editing, and companion apps (LibreOffice, OnlyOffice); determine OS-specific installation steps; compare extension ecosystem gaps vs VSCode; produce installation recommendation with prerequisites and configuration steps.
+
+---
 
 ### 384. Improve /convert command-skill-agent pipeline in filetypes extension
 - **Effort**: TBD
@@ -83,4 +92,5 @@ next_project_number: 385
 
 ## Recommended Order
 
+1. **385** -> research (independent)
 *No pending implementation tasks.*
