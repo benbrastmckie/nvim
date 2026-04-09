@@ -45,28 +45,39 @@
     {
       "project_number": 382,
       "project_name": "simplify_revise_command",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-09T05:20:48Z",
-      "last_updated": "2026-04-09T05:24:34Z",
+      "last_updated": "2026-04-09T05:31:32Z",
       "artifacts": [
         {
           "path": "specs/382_simplify_revise_command/reports/01_simplify-revise-command.md",
           "type": "report",
           "summary": "Research report: current vs target /revise architecture"
+        },
+        {
+          "path": "specs/382_simplify_revise_command/plans/01_simplify-revise-command.md",
+          "type": "plan",
+          "summary": "4-phase plan: create reviser-agent, refactor skill to thin wrapper, simplify command, update CLAUDE.md"
         }
       ],
-      "session_id": "sess_1775712110_aa5230"
+      "session_id": "sess_1775712498_9f9199"
     },
     {
       "project_number": 383,
       "project_name": "simplify_plan_command",
-      "status": "researched",
+      "status": "planned",
       "language": "meta",
       "created": "2026-04-09T05:20:48Z",
-      "last_updated": "2026-04-09T05:24:55Z",
-      "artifacts": [],
-      "session_id": "sess_1775712110_aa5230"
+      "last_updated": "2026-04-09T05:31:32Z",
+      "artifacts": [
+        {
+          "path": "specs/383_simplify_plan_command/plans/01_simplify-plan-command.md",
+          "type": "plan",
+          "summary": "3-phase plan: update planner-agent with prior plan support, simplify skill and command status gates"
+        }
+      ],
+      "session_id": "sess_1775712498_9f9199"
     }
   ],
   "completed_projects": [],

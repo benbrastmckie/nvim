@@ -10,8 +10,8 @@ next_project_number: 384
 
 ### Pending
 
-- **382** [RESEARCHED] -- Simplify /revise command with command + skill + agent architecture
-- **383** [RESEARCHED] -- Simplify /plan command, remove status gates, reference prior plan
+- **382** [PLANNED] -- Simplify /revise command with command + skill + agent architecture
+- **383** [PLANNED] -- Simplify /plan command, remove status gates, reference prior plan
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -19,10 +19,11 @@ next_project_number: 384
 
 ### 382. Simplify /revise command with command + skill + agent architecture
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
-- **Research**: [01_simplify-revise-command.md](specs/382_simplify_revise_command/reports/01_simplify-revise-command.md)
+- **Research**: [01_simplify-revise-command.md](382_simplify_revise_command/reports/01_simplify-revise-command.md)
+- **Plan**: [01_simplify-revise-command.md](382_simplify_revise_command/plans/01_simplify-revise-command.md)
 
 **Description**: Refactor the /revise command to use a full command + skill + agent architecture (matching /plan's structure). Remove all status-based ABORT rules so /revise always works regardless of task state. The reviser-agent should: (1) find and load the existing plan if one exists, (2) discover all research reports created since the plan was last modified, (3) synthesize the best of the prior plan with new research findings into a revised plan, (4) revise the task description if appropriate. If no plan exists, revise the description only. Files: .claude/commands/revise.md, .claude/skills/skill-reviser/SKILL.md, new .claude/agents/reviser-agent.md.
 
@@ -30,9 +31,11 @@ next_project_number: 384
 
 ### 383. Simplify /plan command, remove status gates, reference prior plan
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Language**: meta
 - **Dependencies**: None
+- **Research**: [01_simplify-plan-command.md](383_simplify_plan_command/reports/01_simplify-plan-command.md)
+- **Plan**: [01_simplify-plan-command.md](383_simplify_plan_command/plans/01_simplify-plan-command.md)
 
 **Description**: Simplify the /plan command to always create a fresh plan from any task state (remove status restrictions). When a prior plan exists, pass it to the planner-agent as reference context so it can learn from what worked/didn't, but always create a clean start. Follow research more closely than the prior plan when both exist. If no prior plan exists, only research informs the new plan. Files: .claude/commands/plan.md, .claude/skills/skill-planner/SKILL.md, .claude/agents/planner-agent.md.
 
