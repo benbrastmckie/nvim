@@ -10,7 +10,7 @@
     "commands": ["lake.md", "lean.md"],
     "rules": ["lean4.md"],
     "context": ["project/lean4"],
-    "scripts": ["setup-lean-mcp.sh", "verify-lean-mcp.sh"],
+    "scripts": [],
     "hooks": []
   },
   "merge_targets": {
