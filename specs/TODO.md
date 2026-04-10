@@ -18,8 +18,9 @@ next_project_number: 400
 
 ### 399. Consolidate slides.md command into convert.md or talk.md and rename talk.md to slides.md
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [01_consolidate-slides-commands.md](399_consolidate_slides_commands/reports/01_consolidate-slides-commands.md)
 
 **Description**: Fold `.claude/extensions/filetypes/commands/slides.md` into either `.claude/extensions/filetypes/commands/convert.md` or `.claude/extensions/present/commands/talk.md`, whichever is most appropriate. Then rename `.claude/extensions/present/commands/talk.md` to `.claude/extensions/present/commands/slides.md`. The research/planning phase should evaluate which target command is the better semantic fit for the folded content, update any cross-references and registrations affected by the rename, and ensure no broken links remain in docs, manifests, or other commands.
 

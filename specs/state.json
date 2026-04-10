@@ -5,11 +5,19 @@
     {
       "project_number": 399,
       "project_name": "consolidate_slides_commands",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-10T20:42:58Z",
-      "last_updated": "2026-04-10T20:42:58Z",
-      "artifacts": []
+      "last_updated": "2026-04-10T20:51:15Z",
+      "artifacts": [
+        {
+          "path": "specs/399_consolidate_slides_commands/reports/01_consolidate-slides-commands.md",
+          "type": "research",
+          "summary": "Recommendation: fold into filetypes/commands/convert.md. Affected refs: ~19 files across manifests, EXTENSION.md, READMEs, index-entries.json, context docs, skill/agent docs, and the commands themselves."
+        }
+      ],
+      "session_id": "sess_1775854000_a1b2c3",
+      "next_artifact_number": 2
     },
     {
       "project_number": 398,
