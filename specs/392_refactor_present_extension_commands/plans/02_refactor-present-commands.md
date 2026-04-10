@@ -114,7 +114,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Index and Manifest Routing Fixes [NOT STARTED]
+### Phase 2: Index and Manifest Routing Fixes [COMPLETED]
 
 **Goal**: Update 17 grant-domain index entries and fix manifest implement routing so context discovery and command routing work correctly with the new `language: "present"` values.
 

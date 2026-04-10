@@ -31,7 +31,6 @@
       "present:talk": "skill-planner"
     },
     "implement": {
-      "grant": "skill-grant:assemble",
       "present": "skill-grant",
       "present:grant": "skill-grant:assemble",
       "present:budget": "skill-budget",

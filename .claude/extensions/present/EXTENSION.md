@@ -34,7 +34,7 @@ Structured proposal development (grants) and research presentation creation (tal
 
 | Language | Task Type | Research Skill | Implementation Skill | Tools |
 |----------|-----------|----------------|---------------------|-------|
-| `grant` | - | `skill-grant` | `skill-grant` | WebSearch, WebFetch, Read, Write, Edit |
+| `present` | `grant` | `skill-grant` | `skill-grant` | WebSearch, WebFetch, Read, Write, Edit |
 | `present` | `budget` | `skill-budget` | `skill-budget` | WebSearch, WebFetch, Read, Write, Edit, Bash |
 | `present` | `timeline` | `skill-timeline` | `skill-timeline` | WebSearch, WebFetch, Read, Write, Edit |
 | `present` | `funds` | `skill-funds` | `skill-funds` | WebSearch, WebFetch, Read, Write, Edit, Bash |

@@ -9,7 +9,7 @@
       "summary": "Grant writing domain overview and extension capabilities",
       "line_count": 120,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -23,7 +23,7 @@
       "summary": "Funder categories including AI Safety, SBIR, Foundation, and Academic funders",
       "line_count": 95,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -37,7 +37,7 @@
       "summary": "Standard grant proposal sections with purpose and content guidance",
       "line_count": 140,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -51,7 +51,7 @@
       "summary": "Key grant writing terms, definitions, and common acronyms",
       "line_count": 110,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -65,7 +65,7 @@
       "summary": "Proposal structural patterns by funder type with section hierarchy",
       "line_count": 165,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -79,7 +79,7 @@
       "summary": "Budget formats and justification templates for NSF, NIH, SBIR, Foundation",
       "line_count": 210,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -93,7 +93,7 @@
       "summary": "Evaluation frameworks including logic models and measurement approaches",
       "line_count": 175,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -107,7 +107,7 @@
       "summary": "Writing patterns for impact statements, problem framing, and persuasion",
       "line_count": 145,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -121,7 +121,7 @@
       "summary": "Grant writing style guide covering voice, precision, and formatting",
       "line_count": 135,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -135,7 +135,7 @@
       "summary": "Funder-specific character and page limits for proposal sections",
       "line_count": 115,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -149,7 +149,7 @@
       "summary": "Executive summary templates for Foundation, Research, AI Safety, SBIR",
       "line_count": 155,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -163,7 +163,7 @@
       "summary": "Budget justification templates for all standard cost categories",
       "line_count": 200,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -177,7 +177,7 @@
       "summary": "Evaluation plan templates with logic model and data collection guidance",
       "line_count": 180,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -191,7 +191,7 @@
       "summary": "Pre-submission verification checklists for federal and foundation grants",
       "line_count": 175,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -205,7 +205,7 @@
       "summary": "Systematic funder research process with tracking templates",
       "line_count": 165,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -219,7 +219,7 @@
       "summary": "Grant command usage, draft/budget/revise modes, revision workflow, output directory",
       "line_count": 153,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
@@ -233,7 +233,7 @@
       "summary": "Curated list of grant research databases, writing tools, and training",
       "line_count": 125,
       "load_when": {
-        "languages": ["grant"],
+        "languages": ["present"],
         "agents": ["grant-agent"],
         "commands": ["/grant"]
       }
