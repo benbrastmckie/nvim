@@ -16,7 +16,7 @@ Full specification: `.claude/context/formats/plan-format.md`
 - [ ] **Research Inputs**: report path(s) or "None"
 - [ ] **Artifacts**: plans/MM_{short-slug}.md (this file)
 - [ ] **Standards**: list of referenced standard files
-- [ ] **Type**: language identifier (meta, neovim, general, etc.)
+- [ ] **Type**: task_type identifier (meta, neovim, general, etc.)
 
 ## Required Sections
 

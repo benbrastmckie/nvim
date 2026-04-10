@@ -308,7 +308,7 @@ Creates: Agent only (skill routes to it)
 
 ### Example 1: Adding Python Support
 
-**Goal**: Support Python tasks with language-specific tooling
+**Goal**: Support Python tasks with task-type-specific tooling
 
 **Components needed**:
 1. `skill-python-research/SKILL.md` - Routes Python tasks to Python agent

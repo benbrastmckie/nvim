@@ -530,7 +530,7 @@ Convert documents between formats.
 
 ### Language Routing
 
-| Language | Detection Keywords | Research Tools | Implementation |
+| Task Type | Detection Keywords | Research Tools | Implementation |
 |----------|-------------------|----------------|----------------|
 | `neovim` | neovim, plugin, keymap, lua, nvim | WebSearch, WebFetch, Read | nvim --headless, Write, Edit |
 | `meta` | agent, command, skill, .claude/ | Read, Grep, Glob | Write, Edit |

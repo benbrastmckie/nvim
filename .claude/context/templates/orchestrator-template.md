@@ -4,7 +4,7 @@ This template is used to generate main orchestrator agents for context-aware AI 
 
 ## Template Structure
 
-(Use YAML front matter + XML/@subagent blocks aligned with `.claude/context/standards/commands.md`; include context_level and language fields.)
+(Use YAML front matter + XML/@subagent blocks aligned with `.claude/context/standards/commands.md`; include context_level and task_type fields.)
 
 ```markdown
 ---

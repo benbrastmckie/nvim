@@ -111,7 +111,7 @@ This project includes [Your Domain] support via the your-domain extension.
 
 ### Language Routing
 
-| Language | Research Tools | Implementation Tools |
+| Task Type | Research Tools | Implementation Tools |
 |----------|----------------|---------------------|
 | `your-domain` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash (your-tool) |
 
@@ -140,7 +140,7 @@ Entries appended to the main context index:
       "description": "Common patterns for your domain",
       "tags": ["your-domain", "patterns"],
       "load_when": {
-        "languages": ["your-domain"],
+        "task_types": ["your-domain"],
         "agents": ["your-domain-implementation-agent"]
       }
     }
@@ -356,9 +356,9 @@ Load for detailed patterns:
 Edit `.claude/skills/skill-orchestrator/SKILL.md`:
 
 ```markdown
-### Language-Based Routing
+### Task-Type-Based Routing
 
-| Language | Research Skill | Implementation Skill |
+| Task Type | Research Skill | Implementation Skill |
 |----------|---------------|---------------------|
 | neovim | skill-neovim-research | skill-neovim-implementation |
 | your-domain | skill-your-domain-research | skill-your-domain-implementation |
@@ -367,7 +367,7 @@ Edit `.claude/skills/skill-orchestrator/SKILL.md`:
 
 #### Update CLAUDE.md
 
-Add to Language-Based Routing table:
+Add to Task-Type-Based Routing table:
 ```markdown
 | `your-domain` | WebSearch, Read | Read, Write, Edit, Bash (your-tool) |
 ```
@@ -393,7 +393,7 @@ Add entries to `.claude/context/index.json`:
   "description": "Core concepts",
   "tags": ["your-domain", "domain"],
   "load_when": {
-    "languages": ["your-domain"],
+    "task_types": ["your-domain"],
     "agents": ["your-domain-research-agent", "your-domain-implementation-agent"]
   }
 }

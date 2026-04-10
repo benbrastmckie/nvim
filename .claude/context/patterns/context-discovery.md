@@ -32,7 +32,7 @@ jq -r '.entries[] |
 
 ```bash
 jq -r '.entries[] |
-  select(.load_when.languages[]? == "neovim") |
+  select(.load_when.task_types[]? == "neovim") |
   .path' .claude/context/index.json
 ```
 
@@ -138,7 +138,7 @@ jq -r '.entries[] |
 
 ```bash
 jq -r '.entries[] |
-  select(.load_when.languages[]? == "neovim") |
+  select(.load_when.task_types[]? == "neovim") |
   select(.line_count < 300) |
   .path' .claude/context/index.json
 ```
@@ -166,7 +166,7 @@ jq -r --arg agent "general-implementation-agent" \
   select(
     (.load_when.always == true) or
     any(.load_when.agents[]?; . == $agent) or
-    any(.load_when.languages[]?; . == $lang) or
+    any(.load_when.task_types[]?; . == $task_type) or
     any(.load_when.commands[]?; . == $cmd)
   ) |
   select(.deprecated == true | not) |
@@ -190,7 +190,7 @@ jq -r --arg agent "general-implementation-agent" \
 jq -r '.entries[] |
   select(
     any(.load_when.agents[]?; . == "general-implementation-agent") or
-    any(.load_when.languages[]?; . == "neovim")
+    any(.load_when.task_types[]?; . == "neovim")
   ) |
   select(.deprecated == true | not) |
   .path' .claude/context/index.json
@@ -209,7 +209,7 @@ jq -r '.entries[] |
 
 1. Always-load files (critical patterns, standards)
 2. Agent-specific files (from `load_when.agents`)
-3. Language-specific files (from `load_when.languages`)
+3. Language-specific files (from `load_when.task_types`)
 4. Project context (from `.context/index.json`)
 5. Project memory (from `.memory/`)
 6. Topic-specific files (as needed for task)
@@ -274,7 +274,7 @@ Entries with empty `load_when` arrays (no agents, languages, commands) and witho
 ```bash
 jq '[.entries[] | select(
   (.load_when.agents | length) == 0 and
-  (.load_when.languages | length) == 0 and
+  (.load_when.task_types | length) == 0 and
   (.load_when.commands | length) == 0 and
   (.load_when.always == true | not)
 )] | length' .claude/context/index.json

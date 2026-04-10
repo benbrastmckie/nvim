@@ -74,7 +74,7 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
     "task_number": N,
     "task_name": "{slug}",
     "description": "{description}",
-    "language": "{language}"
+    "task_type": "{task_type}"
   }
 }
 ```

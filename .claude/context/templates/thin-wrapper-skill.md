@@ -95,7 +95,7 @@ Prepare delegation context:
     "task_number": N,
     "task_name": "{slug}",
     "description": "{description}",
-    "language": "{language}"
+    "task_type": "{task_type}"
   },
   "focus_prompt": "{optional focus}"
 }

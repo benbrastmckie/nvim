@@ -68,7 +68,7 @@ routing:
 
 ## Routing
 
-| Language | Target Skill |
+| Task Type | Target Skill |
 |----------|--------------|
 | lean | skill-{name} |
 | general | skill-{name} |
@@ -149,7 +149,7 @@ Prepare delegation context:
     "task_number": N,
     "task_name": "{slug}",
     "description": "{description}",
-    "language": "{language}"
+    "task_type": "{task_type}"
   }
 }
 ```
@@ -267,7 +267,7 @@ Extract from input:
     "task_number": N,
     "task_name": "{slug}",
     "description": "...",
-    "language": "{language}"
+    "task_type": "{task_type}"
   },
   "metadata": {
     "session_id": "sess_...",

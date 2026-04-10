@@ -72,7 +72,7 @@ specs/
       "project_number": 89,
       "project_name": "task_slug",
       "status": "planned",
-      "language": "neovim",
+      "task_type": "neovim",
       "description": "Detailed task description (50-500 chars)",
       "created": "2025-12-29T09:00:00Z",
       "last_updated": "2025-12-29"
@@ -129,7 +129,7 @@ if [ -z "$task_data" ]; then
 fi
 
 # 3. Extract metadata (single pass)
-language=$(echo "$task_data" | jq -r '.language // "general"')
+task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
@@ -145,7 +145,7 @@ in_progress=$(jq -r '.active_projects[] | select(.status == "implementing") | .p
   specs/state.json)
 
 # Get all Neovim tasks
-neovim_tasks=$(jq -r '.active_projects[] | select(.language == "neovim") | .project_number' \
+neovim_tasks=$(jq -r '.active_projects[] | select(.task_type == "neovim") | .project_number' \
   specs/state.json)
 ```
 
@@ -269,7 +269,7 @@ grep -A 20 "### ${task_number}\." specs/TODO.md
 ### 3. Provide Default Values
 
 ```bash
-language=$(echo "$task_data" | jq -r '.language // "general"')
+task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
 description=$(echo "$task_data" | jq -r '.description // ""')
 ```
 

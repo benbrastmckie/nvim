@@ -66,7 +66,7 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 6. Return structured result (JSON or metadata file)
 
 **Language Routing**:
-| Language | Research | Planning | Implementation |
+| Task Type | Research | Planning | Implementation |
 |----------|----------|----------|----------------|
 | neovim | skill-neovim-research | skill-planner | skill-neovim-implementation |
 | general | skill-researcher | skill-planner | skill-implementer |

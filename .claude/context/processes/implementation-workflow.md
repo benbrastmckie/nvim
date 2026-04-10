@@ -50,7 +50,7 @@ This document describes the complete implementation workflow executed by the imp
 
 ---
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
 ### Language Extraction
 
@@ -64,7 +64,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 
 ### Routing Rules
 
-| Language | Agent | Tools Available |
+| Task Type | Agent | Tools Available |
 |----------|-------|----------------|
 | `neovim` | `neovim-implementation-agent` | nvim --headless, File operations, git |
 | `markdown` | `implementer` | File operations, git |
@@ -73,7 +73,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 
 **Note**: Additional languages (latex, typst) available via extensions in `.claude/extensions/`.
 
-**Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses language-specific tooling.
+**Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses task-type-specific tooling.
 
 ---
 
@@ -307,7 +307,7 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
        "mode": "phased|direct",
        "phases_completed": {count} (if phased),
        "files_modified": {count},
-       "language": "{language}"
+       "task_type": "{task_type}"
      },
      "session_id": "{session_id}"
    }
@@ -497,7 +497,7 @@ Warning: Could not extract language from task entry
 Defaulting to: general
 Agent: implementer
 
-Recommendation: Add **Language**: {language} to task entry in TODO.md
+Recommendation: Add **Task Type**: {language} to task entry in TODO.md
 ```
 
 ---

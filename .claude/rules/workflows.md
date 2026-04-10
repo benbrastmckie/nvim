@@ -17,7 +17,7 @@ Before starting work:
 
 ### 2. Execute
 Perform the actual work:
-- Route to appropriate skill by language
+- Route to appropriate skill by task_type
 - Execute steps/phases
 - Track progress
 - Handle errors gracefully

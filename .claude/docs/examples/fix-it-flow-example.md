@@ -285,7 +285,7 @@ If user selected both "Fix-it task" and "Learn-it task" for NOTE: tags:
   "project_number": 650,
   "project_name": "update_context_from_note_tags",
   "status": "not_started",
-  "language": "meta",
+  "task_type": "meta",
   "priority": "medium",
   "description": "Update 1 context files based on learnings:\n\n- nvim/lua/Layer2/Temporal.lua:45 - This pattern should be documented"
 }
@@ -297,7 +297,7 @@ If user selected both "Fix-it task" and "Learn-it task" for NOTE: tags:
   "project_number": 651,
   "project_name": "fix_issues_from_tags",
   "status": "not_started",
-  "language": "neovim",
+  "task_type": "neovim",
   "priority": "high",
   "dependencies": [650],
   "description": "Address 2 items from embedded tags:\n\n- nvim/lua/Layer1/Modal.lua:89 - Handle edge case in frame validation\n- nvim/lua/Layer2/Temporal.lua:45 - This pattern should be documented"
@@ -319,7 +319,7 @@ When user selects "Accept suggested topic groups" in Step 5.6:
   "project_number": 650,
   "project_name": "lsp_configuration_2_todo_items",
   "status": "not_started",
-  "language": "neovim",
+  "task_type": "neovim",
   "priority": "medium",
   "effort": "1.5 hours",
   "description": "Address TODO items related to LSP Configuration:\n\n- [ ] Add language server for Go (`nvim/lua/Layer1/Modal.lua:67`)\n- [ ] Add language server for Rust (`nvim/lua/Layer1/Modal.lua:89`)\n\n---\n\nShared context: Related to LSP language servers"
@@ -332,7 +332,7 @@ When user selects "Accept suggested topic groups" in Step 5.6:
   "project_number": 651,
   "project_name": "utility_optimization_1_todo_item",
   "status": "not_started",
-  "language": "neovim",
+  "task_type": "neovim",
   "priority": "medium",
   "effort": "1 hour",
   "description": "Address TODO items related to Utility Optimization:\n\n- [ ] Optimize this function (`nvim/lua/Shared/Utils.lua:23`)\n\n---\n\nShared context: Performance improvement in shared utilities"
@@ -353,7 +353,7 @@ When user selects "Keep as separate tasks":
   "project_number": 650,
   "project_name": "add_go_language_server",
   "status": "not_started",
-  "language": "neovim",
+  "task_type": "neovim",
   "priority": "medium",
   "description": "Add language server for Go\n\nSource: nvim/lua/Layer1/Modal.lua:67"
 }
@@ -383,7 +383,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 
 ### Created Tasks
 
-| # | Type | Title | Priority | Language | Dependencies |
+| # | Type | Title | Priority | Task Type | Dependencies |
 |---|------|-------|----------|----------|--------------|
 | 650 | learn-it | Update context files from NOTE: tags | Medium | meta | - |
 | 651 | fix-it | Fix issues from FIX:/NOTE: tags | High | neovim | 650 |
@@ -399,7 +399,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 
 ### Created Tasks
 
-| # | Type | Title | Priority | Language | Effort |
+| # | Type | Title | Priority | Task Type | Effort |
 |---|------|-------|----------|----------|--------|
 | 650 | fix-it | Fix issues from FIX:/NOTE: tags | High | neovim | 2-4h |
 | 651 | todo (grouped) | LSP Configuration: 2 TODO items | Medium | neovim | 1.5h |
@@ -422,7 +422,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 
 ### Created Tasks
 
-| # | Type | Title | Priority | Language |
+| # | Type | Title | Priority | Task Type |
 |---|------|-------|----------|----------|
 | 650 | fix-it | Fix issues from FIX:/NOTE: tags | High | neovim |
 | 651 | todo | Add language server for Go | Medium | neovim |

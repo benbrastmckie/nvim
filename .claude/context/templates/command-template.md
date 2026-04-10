@@ -41,7 +41,7 @@ Execute checkpoint-gate-in.md:
 
 Route to skill by language (see routing.md):
 
-| Language | Skill |
+| Task Type | Skill |
 |----------|-------|
 | neovim | skill-neovim-{operation} |
 | latex | skill-latex-{operation} |

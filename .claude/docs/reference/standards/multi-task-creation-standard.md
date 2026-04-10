@@ -267,7 +267,7 @@ Always show task summary and require explicit confirmation before creating tasks
 ```markdown
 **Tasks to Create** ({N} total):
 
-| # | Title | Language | Effort | Dependencies |
+| # | Title | Task Type | Effort | Dependencies |
 |---|-------|----------|--------|--------------|
 | 37 | Add sorting | meta | 2h | None |
 | 38 | Update insertion | meta | 1h | Task #37 |
@@ -300,7 +300,7 @@ Update state.json and TODO.md atomically with correct dependency information.
   "project_number": 36,
   "project_name": "task_slug",
   "status": "not_started",
-  "language": "meta",
+  "task_type": "meta",
   "dependencies": [35, 34],
   "created": "2026-02-03T12:00:00Z",
   "last_updated": "2026-02-03T12:00:00Z"
@@ -312,7 +312,7 @@ Update state.json and TODO.md atomically with correct dependency information.
 ### 36. Task Title
 - **Effort**: 2 hours
 - **Status**: [NOT STARTED]
-- **Language**: meta
+- **Task Type**: meta
 - **Dependencies**: Task #35, Task #34
 
 **Description**: Task description here.

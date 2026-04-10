@@ -147,7 +147,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "create_agent",
     "description": "...",
-    "language": "meta"
+    "task_type": "meta"
   },
   "metadata": {
     "session_id": "sess_...",
@@ -292,7 +292,7 @@ Extract from input:
 
 Load context based on task language:
 
-| Language | Context Files |
+| Task Type | Context Files |
 |----------|---------------|
 | python | `project/python/tools.md` |
 | neovim | `project/neovim/tools/lazy-nvim-guide.md` |

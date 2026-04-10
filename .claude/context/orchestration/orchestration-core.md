@@ -13,7 +13,7 @@ This document defines the core orchestration patterns for Neovim Configuration's
 - **Session Tracking**: Unique identifiers for delegation chains
 - **Delegation Safety**: Depth limits, cycle detection, timeouts
 - **Return Format**: Standardized JSON structure for all agent returns
-- **Routing**: Command to agent mapping and language-based routing
+- **Routing**: Command to agent mapping and task-type-based routing
 
 ---
 
@@ -48,7 +48,7 @@ Active delegations tracked in memory:
     "command": "implement",
     "agent": "general-implementation-agent",
     "task_number": 191,
-    "language": "meta",
+    "task_type": "meta",
     "start_time": "2026-01-19T10:00:00Z",
     "timeout": 3600,
     "delegation_depth": 1,
@@ -166,7 +166,7 @@ Every delegation MUST include this context:
   "timeout": 3600,
   "task_context": {
     "task_number": 191,
-    "language": "meta",
+    "task_type": "meta",
     "description": "Task description"
   }
 }
@@ -194,7 +194,7 @@ Priority order for extracting task language:
 1. **state.json** (fast, ~12ms):
    ```bash
    language=$(jq -r --arg num "$task_number" \
-     '.active_projects[] | select(.project_number == ($num | tonumber)) | .language // "general"' \
+     '.active_projects[] | select(.project_number == ($num | tonumber)) | .task_type // "general"' \
      specs/state.json)
    ```
 
@@ -211,7 +211,7 @@ Validate language/agent compatibility before delegation:
 
 ```bash
 # Neovim tasks must route to neovim-* agents
-if [ "$language" == "neovim" ] && [[ ! "$agent" =~ ^neovim- ]]; then
+if [ "$task_type" == "neovim" ] && [[ ! "$agent" =~ ^neovim- ]]; then
   echo "Error: Neovim task must route to neovim-* agent"
   exit 1
 fi

@@ -7,7 +7,7 @@
 
 ## Overview
 
-This document describes the complete research workflow executed by the researcher subagent. It covers language-based routing, research execution, and report creation.
+This document describes the complete research workflow executed by the researcher subagent. It covers task-type-based routing, research execution, and report creation.
 
 ---
 
@@ -35,7 +35,7 @@ This document describes the complete research workflow executed by the researche
 
 ---
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
 ### Language Extraction
 
@@ -49,7 +49,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 
 ### Routing Rules
 
-| Language | Agent | Tools Available |
+| Task Type | Agent | Tools Available |
 |----------|-------|----------------|
 | `neovim` | `neovim-research-agent` | WebSearch, WebFetch, Read, documentation review |
 | `latex` | `researcher` | Web search, documentation review |
@@ -58,7 +58,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
 | `meta` | `researcher` | Read, Grep, Glob |
 | `general` | `researcher` | Web search, documentation review |
 
-**Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses language-specific tooling.
+**Critical**: Language extraction MUST occur before routing. Incorrect routing bypasses task-type-specific tooling.
 
 ---
 
@@ -296,7 +296,7 @@ grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*
        "task_number": {number},
        "findings_count": {count},
        "recommendations_count": {count},
-       "language": "{language}"
+       "task_type": "{task_type}"
      },
      "session_id": "{session_id}"
    }
@@ -620,4 +620,4 @@ Use most appropriate tool for each research task:
 - **Agent**: `.claude/agents/general-research-agent.md`
 - **Return Format**: `.claude/context/formats/subagent-return.md`
 - **Artifact Formats**: `.claude/rules/artifact-formats.md`
-- **Extension Context**: `.claude/extensions/*/context/` (language-specific)
+- **Extension Context**: `.claude/extensions/*/context/` (task-type-specific)

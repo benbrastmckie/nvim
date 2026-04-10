@@ -175,9 +175,9 @@ Error: Phantom research detected
 ```
 
 **Fix**:
-1. Verify **Language** field in TODO.md
+1. Verify **Task Type** field in TODO.md
 2. Check routing configuration
-3. Re-run after fixing language field
+3. Re-run after fixing task_type field
 
 ### Symptom: Session ID Mismatch
 

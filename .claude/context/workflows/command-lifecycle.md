@@ -283,7 +283,7 @@ entry="### ${next_number}. ${description}
 - **Effort**: ${effort}
 - **Status**: [NOT STARTED]
 - **Priority**: ${priority}
-- **Language**: ${language}
+- **Task Type**: ${language}
 - **Blocking**: None
 - **Dependencies**: None
 

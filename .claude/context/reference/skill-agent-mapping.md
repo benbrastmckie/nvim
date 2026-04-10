@@ -52,13 +52,13 @@ When `--team` flag is passed to commands, routing overrides to team skills which
 
 **Cost Note**: Team mode uses ~5x tokens compared to single-agent. Default team_size=2 minimizes cost.
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
 Skills are selected based on task language:
 
 ### Core Languages
 
-| Language | Research Skill | Implementation Skill | Tools |
+| Task Type | Research Skill | Implementation Skill | Tools |
 |----------|----------------|---------------------|-------|
 | `general` | skill-researcher | skill-implementer | WebSearch, WebFetch, Read, Write, Edit, Bash |
 | `meta` | skill-researcher | skill-implementer | Read, Grep, Glob, Write, Edit |
@@ -71,7 +71,7 @@ Extensions define their own skill-to-agent mappings via `manifest.json`:
 ```json
 {
   "name": "extension-name",
-  "languages": ["lang1", "lang2"],
+  "task_types": ["lang1", "lang2"],
   "skills": {
     "skill-lang-research": "lang-research-agent",
     "skill-lang-implementation": "lang-implementation-agent"
@@ -83,7 +83,7 @@ When an extension is loaded (via `<leader>ac` or `@-reference`), its skills beco
 
 **Example Extension Routing** (when lean extension loaded):
 
-| Language | Research Skill | Implementation Skill |
+| Task Type | Research Skill | Implementation Skill |
 |----------|----------------|---------------------|
 | `lean4` | skill-lean-research | skill-lean-implementation |
 
@@ -107,7 +107,7 @@ Command invoked with task N
          │
          ▼
 ┌─────────────────┐
-│ Get task.language│
+│ Get task.task_type│
 │ from state.json  │
 └────────┬────────┘
          │
@@ -151,6 +151,6 @@ When extension loaded:
 
 ## Related Documentation
 
-- [State JSON Schema](state-json-schema.md) - Task language field values
+- [State JSON Schema](state-json-schema.md) - Task task_type field values
 - [Agent Frontmatter Standard](../../docs/reference/standards/agent-frontmatter-standard.md) - Model declarations
 - [Extensions Architecture](../../extensions/README.md) - Extension structure

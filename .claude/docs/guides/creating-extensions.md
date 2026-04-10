@@ -94,7 +94,7 @@ Follow the templates below for each file type.
 | `name` | Yes | Extension name (matches directory name) |
 | `version` | Yes | Semantic version for update tracking |
 | `description` | Yes | Shown in picker UI |
-| `language` | Yes | Language code for orchestrator routing |
+| `task_type` | Yes | Language code for orchestrator routing |
 | `dependencies` | No | Extensions that must load first |
 | `provides` | Yes | Lists all files/directories provided |
 | `merge_targets` | Yes | Defines CLAUDE.md and index.json merging |
@@ -111,7 +111,7 @@ This project includes [Your Domain] support via the your-domain extension.
 
 ### Language Routing
 
-| Language | Research Tools | Implementation Tools |
+| Task Type | Research Tools | Implementation Tools |
 |----------|----------------|---------------------|
 | `your-domain` | WebSearch, WebFetch, Read | Read, Write, Edit, Bash (your-tool) |
 
@@ -141,7 +141,7 @@ Context file metadata for agent discovery:
       "description": "Overview of your domain context",
       "tags": ["your-domain", "overview"],
       "load_when": {
-        "languages": ["your-domain"],
+        "task_types": ["your-domain"],
         "agents": ["your-domain-research-agent", "your-domain-implementation-agent"]
       }
     },
@@ -150,7 +150,7 @@ Context file metadata for agent discovery:
       "description": "Common implementation patterns",
       "tags": ["your-domain", "patterns"],
       "load_when": {
-        "languages": ["your-domain"],
+        "task_types": ["your-domain"],
         "agents": ["your-domain-implementation-agent"]
       }
     },
@@ -159,7 +159,7 @@ Context file metadata for agent discovery:
       "description": "Coding style conventions",
       "tags": ["your-domain", "style"],
       "load_when": {
-        "languages": ["your-domain"],
+        "task_types": ["your-domain"],
         "agents": ["your-domain-implementation-agent"]
       }
     }

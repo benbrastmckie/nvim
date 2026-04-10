@@ -374,11 +374,11 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 
 ---
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
-Tasks route to specialized skills/agents based on their `language` field:
+Tasks route to specialized skills/agents based on their `task_type` field:
 
-| Language | Research | Planning | Implementation |
+| Task Type | Research | Planning | Implementation |
 |----------|----------|----------|----------------|
 | `neovim` | skill-neovim-research → neovim-research-agent | skill-planner → planner-agent | skill-neovim-implementation → neovim-implementation-agent |
 | `general` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-implementer → general-implementation-agent |
@@ -413,7 +413,7 @@ Complete mapping of all commands to their skill and agent paths:
 - **C**: Orchestrator/routing skill (central dispatch)
 
 **Routing Types**:
-- **Language-based**: Routes to different skills based on task language field
+- **Language-based**: Routes to different skills based on task task_type field
 - **Single**: Always routes to the same skill regardless of language
 - **Direct**: Executes inline without spawning a subagent
 

@@ -90,7 +90,7 @@ Read from `specs/state.json`:
   "project_number": 427,
   "project_name": "document_command_skill_subagent_framework",
   "status": "researching",
-  "language": "meta",
+  "task_type": "meta",
   "priority": "medium"
 }
 ```
@@ -144,7 +144,7 @@ description="Systematically document the framework..."
     "task_number": 427,
     "task_name": "document_command_skill_subagent_framework",
     "description": "Systematically document the framework for using commands, skills, and subagents in conjunction.",
-    "language": "meta"
+    "task_type": "meta"
   },
   "focus_prompt": null
 }

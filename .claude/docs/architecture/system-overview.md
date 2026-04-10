@@ -183,11 +183,11 @@ This ensures:
 
 ---
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
-Tasks route to specialized skills based on their `language` field:
+Tasks route to specialized skills based on their `task_type` field:
 
-| Language | Research | Implementation |
+| Task Type | Research | Implementation |
 |----------|----------|----------------|
 | `neovim` | skill-neovim-research | skill-neovim-implementation |
 | `general` | skill-researcher | skill-implementer |

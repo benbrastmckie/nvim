@@ -62,7 +62,7 @@ It does NOT handle:
 ### Stage 3: DetermineRouting
 **Purpose**: Determine target agent based on command configuration
 
-**For Language-Based Routing** (routing.language_based: true):
+**For Task-Type-Based Routing** (routing.task_type_based: true):
 1. Extract language from state.json (fast lookup):
    ```bash
    # Lookup task in state.json (8x faster than TODO.md)
@@ -71,7 +71,7 @@ It does NOT handle:
      specs/state.json)
    
    # Extract language
-   language=$(echo "$task_data" | jq -r '.language // "general"')
+   task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
    ```
    
    **Performance**: ~12ms for state.json vs ~100ms for TODO.md (8x faster)
@@ -80,7 +80,7 @@ It does NOT handle:
    - /research: neovim → neovim-research-agent, default → researcher
    - /implement: neovim → neovim-implementation-agent, default → implementer
 
-**For Direct Routing** (routing.language_based: false):
+**For Direct Routing** (routing.task_type_based: false):
 - Use routing.target_agent from command frontmatter
 - Examples: /plan → planner, /revise → reviser
 
@@ -105,7 +105,7 @@ It does NOT handle:
     "task_context": {
       "task_number": 244,
       "description": "...",
-      "language": "neovim"
+      "task_type": "neovim"
     }
   }
   ```
@@ -194,7 +194,7 @@ Without loading:
 ```json
 {
   "task_number": 244,
-  "language": "neovim",
+  "task_type": "neovim",
   ...
 }
 ```
@@ -206,12 +206,12 @@ Without loading:
 ### Priority 2: TODO.md
 **Path**: `specs/TODO.md`
 
-**Field**: `**Language**:` in task entry
+**Field**: `**Task Type**:` in task entry
 
 **Example**:
 ```markdown
 ### 244. Implement feature X
-- **Language**: neovim
+- **Task Type**: neovim
 ```
 
 **When to use**: Task exists in TODO.md (always)
@@ -240,7 +240,7 @@ routing:
 
 ---
 
-### Language-Based Routing
+### Task-Type-Based Routing
 ```yaml
 routing:
   language_based: true
@@ -415,7 +415,7 @@ The delegation registry tracks all active delegations in memory for monitoring, 
     "command": "implement",
     "subagent": "task-executor",
     "task_number": 191,
-    "language": "markdown",
+    "task_type": "markdown",
     "start_time": "2025-12-26T10:00:00Z",
     "timeout": 3600,
     "deadline": "2025-12-26T11:00:00Z",
@@ -462,7 +462,7 @@ function register_delegation(session_id, context) {
     "command": context.command,
     "subagent": context.target_agent,
     "task_number": context.task_number,
-    "language": context.language,
+    "language": context.task_type,
     "start_time": new Date().toISOString(),
     "timeout": context.timeout,
     "deadline": new Date(Date.now() + context.timeout * 1000).toISOString(),
@@ -803,7 +803,7 @@ If validation fails:
 1. Verify language extracted from TODO.md
 2. Check routing-guide.md for correct mapping
 3. Log routing decision for debugging
-4. Validate language field in task entry
+4. Validate task_type field in task entry
 
 ---
 

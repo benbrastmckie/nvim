@@ -214,7 +214,7 @@ This file provides essential development patterns that apply across all programm
 - Log errors with context
 - Return meaningful error messages
 - Don't expose internal implementation details
-- Use language-specific error handling mechanisms (try/catch, Result, error returns)
+- Use task-type-specific error handling mechanisms (try/catch, Result, error returns)
 
 ### 3. Input Validation
 
@@ -342,7 +342,7 @@ describe('Component', () => {
 
 ## Language-Specific Implementations
 
-These patterns are language-agnostic. For language-specific implementations:
+These patterns are language-agnostic. For task-type-specific implementations:
 
 **TypeScript/JavaScript**: See project context for Next.js, React, Node.js patterns
 **Python**: See project context for FastAPI, Django patterns

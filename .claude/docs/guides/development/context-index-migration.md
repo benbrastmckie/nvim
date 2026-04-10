@@ -19,7 +19,7 @@ The context discovery system uses a machine-readable `index.json` format that en
 1. **Automated Discovery**: Agents can query for relevant context without hardcoded file lists
 2. **Budget-Aware Loading**: `line_count` field enables context budget management
 3. **Agent-Specific Loading**: `load_when.agents[]` field allows automatic context for agents
-4. **Language Routing**: `load_when.languages[]` supports language-based context selection
+4. **Language Routing**: `load_when.task_types[]` supports task-type-based context selection
 5. **Deprecation Tracking**: `deprecated` and `replacement` fields for clean transitions
 6. **Validation**: JSON Schema enables automated validation
 
@@ -59,7 +59,7 @@ The context discovery system uses a machine-readable `index.json` format that en
   "line_count": 236,
   "load_when": {
     "agents": ["neovim-research-agent", "neovim-implementation-agent"],
-    "languages": ["neovim"]
+    "task_types": ["neovim"]
   }
 }
 ```
@@ -92,7 +92,7 @@ The `load_when` object controls automatic context loading:
 "load_when": {
   "agents": ["agent-name"],       // Load for specific agents
   "commands": ["/command"],       // Load for specific commands
-  "languages": ["neovim"],        // Load for task languages
+  "task_types": ["neovim"],        // Load for task languages
   "always": true                  // Always load for domain
 }
 ```
@@ -121,7 +121,7 @@ Add entry to `index.json`:
   "line_count": 150,
   "load_when": {
     "agents": ["relevant-agent"],
-    "languages": ["neovim"]
+    "task_types": ["neovim"]
   }
 }
 ```
@@ -196,7 +196,7 @@ jq -r '.entries[] |
 
 ```bash
 jq -r '.entries[] |
-  select(.load_when.languages[]? == "neovim") |
+  select(.load_when.task_types[]? == "neovim") |
   .path' .claude/context/index.json
 ```
 

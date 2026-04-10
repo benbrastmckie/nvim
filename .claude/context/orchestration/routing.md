@@ -48,18 +48,18 @@ Commands that invoke agents directly without command-lifecycle.md:
 
 ---
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
 ### Language Extraction
 
 Extract language from task entry in TODO.md:
 
 ```bash
-# Extract language field from task entry
+# Extract task_type field from task entry
 language=$(grep -A 20 "^### ${task_number}\." specs/TODO.md | grep "Language" | sed 's/\*\*Language\*\*: //')
 
 # Validate extraction succeeded
-if [ -z "$language" ]; then
+if [ -z "$task_type" ]; then
   language="general"
   echo "[WARN] Language not found for task ${task_number}, defaulting to 'general'"
 else
@@ -69,7 +69,7 @@ fi
 
 ### Language → Agent Routing
 
-| Language | Research Agent | Implementation Agent | Notes |
+| Task Type | Research Agent | Implementation Agent | Notes |
 |----------|---------------|---------------------|-------|
 | `neovim` | `neovim-research-agent` | `neovim-implementation-agent` | Neovim plugin and configuration development |
 | `markdown` | `researcher` | `implementer` | Documentation and markdown files |
@@ -86,13 +86,13 @@ Before delegating to agent, verify routing is correct:
 
 ```bash
 # Validate neovim routing
-if [ "$language" == "neovim" ] && [[ ! "$agent" =~ ^neovim- ]]; then
+if [ "$task_type" == "neovim" ] && [[ ! "$agent" =~ ^neovim- ]]; then
   echo "[FAIL] Routing validation failed: language=neovim but agent=${agent}"
   exit 1
 fi
 
 # Validate non-neovim routing
-if [ "$language" != "neovim" ] && [[ "$agent" =~ ^neovim- ]]; then
+if [ "$task_type" != "neovim" ] && [[ "$agent" =~ ^neovim- ]]; then
   echo "[FAIL] Routing validation failed: language=${language} but agent=${agent}"
   exit 1
 fi
@@ -117,7 +117,7 @@ echo "[PASS] Routing validation succeeded"
 - ✅ Artifact file non-empty check (size > 0)
 - ✅ Validation logging ([PASS]/[FAIL])
 
-**Commands with Language-Based Routing:**
+**Commands with Task-Type-Based Routing:**
 - ✅ /research (neovim → neovim-research-agent, default → researcher)
 - ✅ /implement (neovim → neovim-implementation-agent, default → implementer)
 
@@ -146,7 +146,7 @@ session_id="sess_${timestamp}_${random}"
   "task_context": {
     "task_number": 244,
     "description": "Phase 1: Context Index and /research Frontmatter Prototype",
-    "language": "markdown"
+    "task_type": "markdown"
   }
 }
 ```
@@ -458,15 +458,15 @@ Error: Routing mismatch: Neovim task must route to neovim-* agent
 2. If language!="neovim": Agent must NOT start with "neovim-"
 
 **Recovery:**
-1. Verify **Language** field in TODO.md task entry
+1. Verify **Task Type** field in TODO.md task entry
 2. Verify routing configuration in command frontmatter
-3. Re-run command after fixing language field
+3. Re-run command after fixing task_type field
 
 ### Language Extraction Failed
 
 **Symptom:** Warning message "Language not found for task {N}, defaulting to 'general'".
 
-**Root Cause:** Task entry missing **Language** field in TODO.md.
+**Root Cause:** Task entry missing **Task Type** field in TODO.md.
 
 **Detection:** Stage 2 language extraction logs warning:
 ```
@@ -474,11 +474,11 @@ Error: Routing mismatch: Neovim task must route to neovim-* agent
 ```
 
 **Fix:**
-1. Add **Language** field to task entry in TODO.md:
+1. Add **Task Type** field to task entry in TODO.md:
    ```markdown
    ### 258. Resolve Truth.neovim sorries
    - **Status**: [NOT STARTED]
-   - **Language**: neovim
+   - **Task Type**: neovim
    ```
 2. Re-run command
 
@@ -529,16 +529,16 @@ Error: Routing mismatch: Neovim task must route to neovim-* agent
 
 ## Overview
 
-This standard defines how the orchestrator determines which agent to route commands to, including language-based routing for Neovim-specific tasks.
+This standard defines how the orchestrator determines which agent to route commands to, including task-type-based routing for Neovim-specific tasks.
 
 ## Language Extraction
 
-For commands with `routing.language_based: true`, extract language from task metadata.
+For commands with `routing.task_type_based: true`, extract language from task metadata.
 
 ### Priority Order
 
 1. **Priority 1**: Project state.json (task-specific)
-2. **Priority 2**: TODO.md task entry (**Language** field)
+2. **Priority 2**: TODO.md task entry (**Task Type** field)
 3. **Priority 3**: Default "general" (fallback)
 
 ### Implementation
@@ -551,9 +551,9 @@ task_dir=$(find specs -maxdepth 1 -type d -name "${task_number}_*" | head -n 1)
 
 # Extract language from state.json
 if [ -n "$task_dir" ] && [ -f "${task_dir}/state.json" ]; then
-  language=$(jq -r '.language // empty' "${task_dir}/state.json")
+  language=$(jq -r '.task_type // empty' "${task_dir}/state.json")
   
-  if [ -n "$language" ]; then
+  if [ -n "$task_type" ]; then
     echo "[INFO] Language extracted from state.json: ${language}"
     # Use this language, skip to agent mapping
   fi
@@ -567,9 +567,9 @@ fi
 task_entry=$(grep -A 20 "^### ${task_number}\." specs/TODO.md)
 
 # Extract Language field
-language=$(echo "$task_entry" | grep "Language" | sed 's/\*\*Language\*\*: //' | tr -d ' ')
+task_type=$(echo "$task_entry" | grep "Language" | sed 's/\*\*Language\*\*: //' | tr -d ' ')
 
-if [ -n "$language" ]; then
+if [ -n "$task_type" ]; then
   echo "[INFO] Language extracted from TODO.md: ${language}"
   # Use this language, skip to agent mapping
 fi
@@ -607,7 +607,7 @@ neovim_agent=$(yq '.routing.neovim' .claude/command/${command}.md)
 default_agent=$(yq '.routing.default' .claude/command/${command}.md)
 
 # Map language to agent
-if [ "$language" == "neovim" ]; then
+if [ "$task_type" == "neovim" ]; then
   target_agent="$neovim_agent"
   echo "[INFO] Routing to ${target_agent} (language=neovim)"
 else
@@ -618,7 +618,7 @@ fi
 
 ### Common Routing Tables
 
-| Command | Language | Agent |
+| Command | Task Type | Agent |
 |---------|----------|-------|
 | /research | neovim | neovim-research-agent |
 | /research | general | researcher |
@@ -628,7 +628,7 @@ fi
 | /revise | general | planner |
 | /implement | neovim | neovim-implementation-agent |
 | /implement | general | implementer |
-| /review | any | reviewer (no language-based routing) |
+| /review | any | reviewer (no task-type-based routing) |
 
 ## Routing Validation
 
@@ -651,14 +651,14 @@ Validate routing decision before delegation.
 2. **Verify language matches agent capabilities**
    ```bash
    # Neovim tasks must route to neovim-* agents
-   if [ "$language" == "neovim" ] && [[ ! "$target_agent" =~ ^neovim- ]]; then
+   if [ "$task_type" == "neovim" ] && [[ ! "$target_agent" =~ ^neovim- ]]; then
      echo "[FAIL] Routing validation failed: language=neovim but agent=${target_agent}"
      echo "Error: Neovim task must route to neovim-* agent"
      exit 1
    fi
    
    # Non-neovim tasks must NOT route to neovim-* agents
-   if [ "$language" != "neovim" ] && [[ "$target_agent" =~ ^neovim- ]]; then
+   if [ "$task_type" != "neovim" ] && [[ "$target_agent" =~ ^neovim- ]]; then
      echo "[FAIL] Routing validation failed: language=${language} but agent=${target_agent}"
      echo "Error: Non-neovim task cannot route to neovim-* agent"
      exit 1
@@ -674,7 +674,7 @@ Validate routing decision before delegation.
 
 ## Direct Routing
 
-For commands with `routing.language_based: false`, use direct routing.
+For commands with `routing.task_type_based: false`, use direct routing.
 
 ### Implementation
 
@@ -717,7 +717,7 @@ echo "[WARN] Language not found for task ${task_number}, defaulting to 'general'
 
 **Impact**: Task routes to general agent instead of Neovim-specific agent
 
-**Resolution**: Add **Language** field to task entry in TODO.md
+**Resolution**: Add **Task Type** field to task entry in TODO.md
 
 ### Agent File Not Found
 

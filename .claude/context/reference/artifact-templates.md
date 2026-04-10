@@ -67,7 +67,7 @@ During research, agents should note when:
 **Task**: {title}
 **Version**: {NNN}
 **Created**: {ISO_DATE}
-**Language**: {language}
+**Task Type**: {language}
 
 ## Overview
 

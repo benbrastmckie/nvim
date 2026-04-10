@@ -10,7 +10,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -24,7 +24,7 @@
       "topics": ["context-loading"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -38,7 +38,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -52,7 +52,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -66,7 +66,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -80,7 +80,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -94,7 +94,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -109,7 +109,7 @@
       "load_when": {
         "always": true,
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -123,7 +123,7 @@
       "topics": ["standards"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -137,7 +137,7 @@
       "topics": ["standards"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -151,7 +151,7 @@
       "topics": ["standards"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -165,7 +165,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -179,7 +179,7 @@
       "topics": ["planning"],
       "load_when": {
         "agents": ["planner-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/plan"]
       }
     },
@@ -193,7 +193,7 @@
       "topics": ["implementation"],
       "load_when": {
         "agents": ["general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/implement"]
       }
     },
@@ -207,7 +207,7 @@
       "topics": ["research"],
       "load_when": {
         "agents": ["general-research-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/research"]
       }
     },
@@ -221,7 +221,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -235,7 +235,7 @@
       "topics": ["planning"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/todo"]
       }
     },
@@ -249,7 +249,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -263,7 +263,7 @@
       "topics": ["implementation"],
       "load_when": {
         "agents": ["general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/implement"]
       }
     },
@@ -277,7 +277,7 @@
       "topics": ["planning"],
       "load_when": {
         "agents": ["meta-builder-agent", "spawn-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta", "/spawn"]
       }
     },
@@ -291,7 +291,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -305,7 +305,7 @@
       "topics": ["development"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -319,7 +319,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -333,7 +333,7 @@
       "topics": ["documentation"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -347,7 +347,7 @@
       "topics": ["extensions"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -361,7 +361,7 @@
       "topics": ["user-interaction"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -375,7 +375,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -389,7 +389,7 @@
       "topics": ["quality"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -403,7 +403,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -417,7 +417,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -431,7 +431,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -445,7 +445,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -459,7 +459,7 @@
       "topics": ["quality"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -473,7 +473,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -487,7 +487,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -501,7 +501,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -515,7 +515,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -529,7 +529,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -543,7 +543,7 @@
       "topics": ["state"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/task", "/todo"]
       }
     },
@@ -557,7 +557,7 @@
       "topics": ["quality"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -571,7 +571,7 @@
       "topics": ["quality"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -585,7 +585,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -599,7 +599,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/implement"]
       }
     },
@@ -614,7 +614,7 @@
       "load_when": {
         "always": true,
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -628,7 +628,7 @@
       "topics": ["recovery"],
       "load_when": {
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -642,7 +642,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -656,7 +656,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/implement"]
       }
     },
@@ -671,7 +671,7 @@
       "load_when": {
         "always": true,
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -685,7 +685,7 @@
       "topics": ["recovery"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -699,7 +699,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -713,7 +713,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -727,7 +727,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": ["/todo"]
       }
     },
@@ -741,7 +741,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -755,7 +755,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -769,7 +769,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -783,7 +783,7 @@
       "topics": ["implementation"],
       "load_when": {
         "agents": ["general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/implement"]
       }
     },
@@ -797,7 +797,7 @@
       "topics": ["planning"],
       "load_when": {
         "agents": ["planner-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/plan"]
       }
     },
@@ -811,7 +811,7 @@
       "topics": ["research"],
       "load_when": {
         "agents": ["general-research-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/research"]
       }
     },
@@ -826,7 +826,7 @@
       "load_when": {
         "always": true,
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -840,7 +840,7 @@
       "topics": ["documentation"],
       "load_when": {
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -855,7 +855,7 @@
       "load_when": {
         "always": true,
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -869,7 +869,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -883,7 +883,7 @@
       "topics": ["state"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/task", "/todo"]
       }
     },
@@ -897,7 +897,7 @@
       "topics": ["documentation"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -912,7 +912,7 @@
       "load_when": {
         "always": true,
         "agents": [],
-        "languages": [],
+        "task_types": [],
         "commands": []
       }
     },
@@ -926,7 +926,7 @@
       "topics": ["recovery"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/errors", "/fix-it"]
       }
     },
@@ -940,7 +940,7 @@
       "topics": ["documentation"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -954,7 +954,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -968,7 +968,7 @@
       "topics": ["code-review"],
       "load_when": {
         "agents": ["code-reviewer-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/review"]
       }
     },
@@ -982,7 +982,7 @@
       "topics": ["devops"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -996,7 +996,7 @@
       "topics": ["code-review"],
       "load_when": {
         "agents": ["code-reviewer-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/review"]
       }
     },
@@ -1010,7 +1010,7 @@
       "topics": ["documentation"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta", "markdown"],
+        "task_types": ["meta", "markdown"],
         "commands": []
       }
     },
@@ -1024,7 +1024,7 @@
       "topics": ["documentation"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta", "markdown"],
+        "task_types": ["meta", "markdown"],
         "commands": []
       }
     },
@@ -1038,7 +1038,7 @@
       "topics": ["recovery"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/errors"]
       }
     },
@@ -1052,7 +1052,7 @@
       "topics": ["devops"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1066,7 +1066,7 @@
       "topics": ["devops"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1080,7 +1080,7 @@
       "topics": ["user-interaction"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta", "/fix-it", "/review"]
       }
     },
@@ -1094,7 +1094,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1108,7 +1108,7 @@
       "topics": ["state"],
       "load_when": {
         "agents": ["planner-agent", "general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/task", "/plan", "/implement"]
       }
     },
@@ -1122,7 +1122,7 @@
       "topics": ["state"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/task", "/todo"]
       }
     },
@@ -1136,7 +1136,7 @@
       "topics": ["quality"],
       "load_when": {
         "agents": ["general-implementation-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/implement"]
       }
     },
@@ -1150,7 +1150,7 @@
       "topics": ["standards"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -1164,7 +1164,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -1178,7 +1178,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -1192,7 +1192,7 @@
       "topics": ["orchestration"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1206,7 +1206,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -1220,7 +1220,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -1234,7 +1234,7 @@
       "topics": ["system-design"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/meta"]
       }
     },
@@ -1248,7 +1248,7 @@
       "topics": ["recovery"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/errors", "/fix-it"]
       }
     },
@@ -1262,7 +1262,7 @@
       "topics": ["quality"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1276,7 +1276,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1290,7 +1290,7 @@
       "topics": ["workflow"],
       "load_when": {
         "agents": ["meta-builder-agent"],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": []
       }
     },
@@ -1304,7 +1304,7 @@
       "topics": ["code-review"],
       "load_when": {
         "agents": ["code-reviewer-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/review"]
       }
     },
@@ -1318,7 +1318,7 @@
       "topics": ["state"],
       "load_when": {
         "agents": [],
-        "languages": ["meta"],
+        "task_types": ["meta"],
         "commands": ["/task"]
       }
     },
@@ -1332,7 +1332,7 @@
       "topics": ["planning"],
       "load_when": {
         "agents": ["planner-agent", "spawn-agent"],
-        "languages": [],
+        "task_types": [],
         "commands": ["/plan", "/spawn"]
       }
     }

@@ -96,9 +96,9 @@ routing:
 4. Updates task status to [{STATUS}]
 5. Creates git commit
 
-## Language-Based Routing
+## Task-Type-Based Routing
 
-| Language | Agent | Tools |
+| Task Type | Agent | Tools |
 |----------|-------|-------|
 | neovim | neovim-{command}-agent | {neovim-specific tools} |
 | general | {command}er | {general tools} |
@@ -108,7 +108,7 @@ See `.claude/agents/{agent}.md` for details.
 
 **Key Points**:
 - **MUST use `agent: orchestrator`** (not `agent: implementer` or direct agent!)
-- Include `routing` configuration for language-based routing
+- Include `routing` configuration for task-type-based routing
 - Keep documentation concise (<50 lines)
 
 ### Step 3: Create or Update Subagent
@@ -131,7 +131,7 @@ If creating a new subagent, follow this pattern:
        - Validated task_number exists in TODO.md
        - Extracted language from task metadata
        - Extracted task description
-       - Performed language-based routing
+       - Performed task-type-based routing
        
        No re-parsing or re-validation needed!
     
@@ -321,7 +321,7 @@ See existing implementations:
 
 **Wrong agent invoked**:
 - Check routing configuration in command frontmatter
-- Check language field in TODO.md task entry
+- Check task_type field in TODO.md task entry
 - Orchestrator uses language to route to correct agent
 
 **Subagent can't access task_number**:

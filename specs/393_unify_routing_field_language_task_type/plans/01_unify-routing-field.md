@@ -217,7 +217,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Context Discovery, Index, and Rules [NOT STARTED]
+### Phase 5: Context Discovery, Index, and Rules [COMPLETED]
 
 **Goal**: Update context discovery system (`load_when.languages` -> `load_when.task_types`), context index, and all rule files that reference the `language` field.
 

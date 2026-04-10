@@ -4,7 +4,7 @@ Guide for creating and managing domain extensions in the Claude Code system.
 
 ## Overview
 
-Extensions provide language-specific and domain-specific capabilities to the core system. They include agents, skills, context, and rules tailored to specific domains.
+Extensions provide task-type-specific and domain-specific capabilities to the core system. They include agents, skills, context, and rules tailored to specific domains.
 
 ## Extension Structure
 
@@ -29,7 +29,7 @@ Extensions provide language-specific and domain-specific capabilities to the cor
   "name": "neovim",
   "version": "1.0.0",
   "description": "Neovim configuration development support",
-  "languages": ["neovim", "lua"],
+  "task_types": ["neovim", "lua"],
   "agents": [
     "neovim-research-agent",
     "neovim-implementation-agent"
@@ -74,7 +74,7 @@ Extension context entries are appended to `.claude/context/index.json`:
       "domain": "project",
       "subdomain": "neovim",
       "load_when": {
-        "languages": ["neovim"]
+        "task_types": ["neovim"]
       }
     }
   ]
@@ -108,7 +108,7 @@ mkdir -p .claude/extensions/{name}/{context,agents,skills}
   "name": "myextension",
   "version": "1.0.0",
   "description": "My domain extension",
-  "languages": ["mydomain"],
+  "task_types": ["mydomain"],
   "agents": ["mydomain-research-agent"],
   "skills": ["skill-mydomain-research"],
   "merge_targets": [".claude/context/index.json"]

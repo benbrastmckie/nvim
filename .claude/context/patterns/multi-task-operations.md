@@ -525,7 +525,7 @@ Parameters:
 
 The batch skill handles:
 - Language extraction per task (from state.json)
-- Agent routing per task (using existing language-based routing)
+- Agent routing per task (using existing task-type-based routing)
 - Parallel Task tool spawning
 - Result collection
 - Consolidated status update
@@ -537,4 +537,4 @@ The batch skill handles:
 - `checkpoint-execution.md` -- Three-checkpoint command flow (GATE IN, DELEGATE, GATE OUT)
 - `team-orchestration.md` -- Wave-based parallel agent spawning (precedent for parallel Task calls)
 - `skill-lifecycle.md` -- Self-contained skill lifecycle management
-- `routing.md` -- `parse_ranges()` function and language-based routing tables
+- `routing.md` -- `parse_ranges()` function and task-type-based routing tables

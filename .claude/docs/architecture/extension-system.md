@@ -141,7 +141,7 @@ The manifest declares what the extension provides:
 | `name` | string | Extension identifier (directory name) |
 | `version` | string | Semantic version (e.g., "1.0.0") |
 | `description` | string | Human-readable description for picker |
-| `language` | string | Language code for routing (e.g., "latex") |
+| `task_type` | string | Language code for routing (e.g., "latex") |
 | `dependencies` | array | Other extensions that must be loaded first |
 | `provides` | object | What files/directories the extension provides |
 | `merge_targets` | object | Files that get merged (CLAUDE.md, index.json) |
@@ -315,7 +315,7 @@ Extensions can provide context file metadata via `index-entries.json`:
       "description": "LaTeX document organization patterns",
       "tags": ["latex", "structure"],
       "load_when": {
-        "languages": ["latex"],
+        "task_types": ["latex"],
         "agents": ["latex-implementation-agent"]
       }
     }

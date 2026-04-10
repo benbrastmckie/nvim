@@ -41,7 +41,7 @@ This directory contains the documentation for the `.claude/` agent system. The s
 
 ## System Architecture
 
-The `.claude/` directory implements a three-layer architecture: Commands, Skills, and Agents, with checkpoint-based execution and language-specific routing. All system details, including the task lifecycle, state management, and git integration patterns, are documented in [architecture/system-overview.md](architecture/system-overview.md).
+The `.claude/` directory implements a three-layer architecture: Commands, Skills, and Agents, with checkpoint-based execution and task-type-specific routing. All system details, including the task lifecycle, state management, and git integration patterns, are documented in [architecture/system-overview.md](architecture/system-overview.md).
 
 ---
 
