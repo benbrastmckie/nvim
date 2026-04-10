@@ -1,5 +1,7 @@
 # MCP Guide for Epidemiology
 
+> **Note**: The rmcp MCP server is optional and may not be configured in all environments. When unavailable, fall back to `Rscript` via the Bash tool for R execution. All examples below work with either approach.
+
 Guide to using Model Context Protocol (MCP) servers with R-based epidemiology workflows.
 
 ## rmcp (finite-sample/rmcp)
