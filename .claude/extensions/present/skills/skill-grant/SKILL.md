@@ -206,6 +206,12 @@ EOF
 
 ### Stage 4: Prepare Delegation Context
 
+**Extract pre-gathered forcing_data** (if present from Stage 0):
+```bash
+# Extract forcing_data from task metadata
+forcing_data=$(echo "$task_data" | jq -r '.forcing_data // null')
+```
+
 **Detect revision mode** (for assemble workflow):
 ```bash
 # Check if task has parent_grant field (indicates revision task)
@@ -241,6 +247,7 @@ Prepare delegation context for the subagent:
   },
   "workflow_type": "funder_research|proposal_draft|budget_develop|progress_track|assemble",
   "focus_prompt": "{optional focus - passed to agent for guidance}",
+  "forcing_data": "{pre-gathered forcing data from Stage 0, or null}",
   "is_revision": "{boolean - true if task has parent_grant field}",
   "revises_directory": "{grants/{N}_{slug}/ - path to existing grant if revision}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

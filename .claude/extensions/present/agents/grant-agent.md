@@ -132,11 +132,24 @@ Extract from input:
   },
   "workflow_type": "funder_research|proposal_draft|budget_develop|progress_track|assemble",
   "focus_prompt": "optional specific focus area",
+  "forcing_data": {
+    "mechanism": "NIH R01",
+    "content_paths": ["path/to/manuscript.md"],
+    "regulatory_materials": "PAR-25-123, IRB approved",
+    "constraints": "12-page research plan, $250K/year, Feb 5 2027 deadline",
+    "gathered_at": "2026-04-09T12:00:00Z"
+  },
   "is_revision": false,
   "revises_directory": "grants/{N}_{slug}/ (only when is_revision=true)",
   "metadata_file_path": "specs/500_research_ai_safety_funders/.return-meta.json"
 }
 ```
+
+**Using Pre-Gathered Forcing Data**: If `forcing_data` is present and non-null, use the pre-gathered
+responses to inform the workflow. For `funder_research`, use `forcing_data.mechanism` to focus the
+funder search. For `proposal_draft`, use `forcing_data.content_paths` to locate source materials and
+`forcing_data.constraints` for formatting requirements. Skip any redundant questions that were already
+answered during pre-task intake.
 
 ### Stage 2: Determine Grant Workflow
 

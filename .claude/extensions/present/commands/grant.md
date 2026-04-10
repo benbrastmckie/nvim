@@ -1,6 +1,6 @@
 ---
 description: Create grant tasks, execute grant workflows (draft, budget), or create revisions
-allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit
+allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
 argument-hint: "description" | TASK_NUMBER --draft ["prompt"] | --budget ["prompt"] | --revise N "description" | TASK_NUMBER --fix-it
 model: opus
 ---
@@ -60,6 +60,92 @@ Parse $ARGUMENTS to determine mode:
 
 When $ARGUMENTS is a description without flags.
 
+### STAGE 0: PRE-TASK FORCING QUESTIONS
+
+**This stage runs BEFORE task creation for new tasks (description input).**
+
+#### Step 0.1: Grant Mechanism and Funder
+
+Use AskUserQuestion:
+
+```
+What grant mechanism and funder is this for?
+
+Examples: NIH R01, NSF CAREER, Open Philanthropy, Foundation (specify), SBIR Phase I
+If unknown, describe the type of funding you are seeking.
+```
+
+Store response as `forcing_data.mechanism`.
+
+#### Step 0.2: Existing Content Paths
+
+Use AskUserQuestion:
+
+```
+Do you have existing content to inform this grant?
+
+Provide any combination of:
+- Task references (e.g., "task:500" to pull prior research)
+- File paths to papers, manuscripts, or preliminary data
+- "none" if starting fresh
+
+Separate multiple entries with commas.
+```
+
+Store response as `forcing_data.content_paths` (parse into array).
+
+#### Step 0.3: Regulatory and Compliance Materials
+
+Use AskUserQuestion:
+
+```
+What regulatory or compliance materials are relevant?
+
+Examples:
+- PA/FOA URL (e.g., PAR-25-123)
+- Institutional guidelines or overhead rate
+- IRB/IACUC protocol numbers or status
+- "none" if not applicable
+
+List all that apply:
+```
+
+Store response as `forcing_data.regulatory_materials`.
+
+#### Step 0.4: Grant Constraints
+
+Use AskUserQuestion:
+
+```
+What constraints apply to this grant?
+
+Include any of:
+- Page limits (e.g., 12-page research plan)
+- Required sections (e.g., specific aims, biosketch)
+- Due date (e.g., Feb 5 2027)
+- Budget ceiling (e.g., $250K/year direct costs)
+- "none" if no specific constraints
+
+List all known constraints:
+```
+
+Store response as `forcing_data.constraints`.
+
+#### Step 0.5: Store Forcing Data
+
+Capture all responses in a forcing_data object:
+```json
+{
+  "mechanism": "{response_1}",
+  "content_paths": ["{path_1}", "{path_2}"],
+  "regulatory_materials": "{response_3}",
+  "constraints": "{response_4}",
+  "gathered_at": "{ISO timestamp}"
+}
+```
+
+---
+
 ### Steps
 
 1. **Read next_project_number via jq**:
@@ -87,6 +173,7 @@ When $ARGUMENTS is a description without flags.
    ```bash
    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      --arg desc "$description" \
+     --argjson forcing_data "$forcing_data_json" \
      '.next_project_number = {NEW_NUMBER} |
       .active_projects = [{
         "project_number": {N},
@@ -95,6 +182,7 @@ When $ARGUMENTS is a description without flags.
         "language": "present",
         "task_type": "grant",
         "description": $desc,
+        "forcing_data": $forcing_data,
         "created": $ts,
         "last_updated": $ts
       }] + .active_projects' \

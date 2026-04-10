@@ -142,7 +142,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Grant Pre-Task Intake [NOT STARTED]
+### Phase 3: Grant Pre-Task Intake [COMPLETED]
 
 **Goal**: Add Stage 0 forcing questions to /grant command so it gathers grant mechanism, existing content paths, regulatory materials, and constraints before creating the task.
 
