@@ -66,6 +66,19 @@ fi
 
 **Context**: Load @.claude/context/formats/roadmap-format.md for parsing patterns.
 
+**Ensure specs/ROADMAP.md exists** before parsing. If the file does not exist, create it with the default template:
+```markdown
+# Project Roadmap
+
+## Phase 1: Current Priorities (High Priority)
+
+- [ ] (No items yet -- add roadmap items here)
+
+## Success Metrics
+
+- (Define success metrics here)
+```
+
 Parse `specs/ROADMAP.md` to extract:
 1. **Phase headers**: `## Phase {N}: {Title} ({Priority})`
 2. **Checkboxes**: `- [ ]` (incomplete) and `- [x]` (complete)

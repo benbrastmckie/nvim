@@ -84,6 +84,19 @@ Presented interactively with categories:
 
 ### Roadmap Annotation
 
+**Ensure specs/ROADMAP.md exists** before scanning or annotating. If the file does not exist, create it with the default template:
+```markdown
+# Project Roadmap
+
+## Phase 1: Current Priorities (High Priority)
+
+- [ ] (No items yet -- add roadmap items here)
+
+## Success Metrics
+
+- (Define success metrics here)
+```
+
 Automatically annotates ROADMAP.md items when tasks complete:
 - Completed: `- [x] item *(Completed: Task OC_N, DATE)*`
 - Abandoned: `- [ ] item *(Task OC_N abandoned: reason)*`

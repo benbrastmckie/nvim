@@ -133,6 +133,19 @@ For each archivable task, collect:
 
 ### 3.5. Scan Roadmap for Task References (Structured Matching)
 
+**Ensure specs/ROADMAP.md exists** before scanning. If the file does not exist, create it with the default template:
+```markdown
+# Project Roadmap
+
+## Phase 1: Current Priorities (High Priority)
+
+- [ ] (No items yet -- add roadmap items here)
+
+## Success Metrics
+
+- (Define success metrics here)
+```
+
 Use structured extraction from completion_summary fields, falling back to exact `(Task {N})` matching.
 
 **IMPORTANT**: Meta tasks (task_type: "meta") are excluded from ROADMAP.md matching. They use `claudemd_suggestions` instead (see Step 3.6).

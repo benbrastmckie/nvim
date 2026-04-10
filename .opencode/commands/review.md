@@ -64,6 +64,18 @@ description: Review code and create analysis reports
     <action>Roadmap Integration</action>
     <process>
       Load roadmap-format.md for parsing patterns
+      Ensure specs/ROADMAP.md exists before parsing. If the file does not exist, create it with the default template:
+      ```markdown
+      # Project Roadmap
+
+      ## Phase 1: Current Priorities (High Priority)
+
+      - [ ] (No items yet -- add roadmap items here)
+
+      ## Success Metrics
+
+      - (Define success metrics here)
+      ```
       Parse specs/ROADMAP.md:
       - Phase headers: ## Phase {N}: {Title} ({Priority})
       - Checkboxes: - [ ] and - [x]

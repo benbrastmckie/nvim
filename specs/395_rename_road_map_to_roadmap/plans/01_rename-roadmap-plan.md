@@ -142,7 +142,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Add Ensure-File-Exists Logic [NOT STARTED]
+### Phase 3: Add Ensure-File-Exists Logic [COMPLETED]
 
 **Goal**: Add auto-creation logic so `specs/ROADMAP.md` is created with a default template when commands reference it and it does not exist.
 
