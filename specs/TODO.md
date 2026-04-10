@@ -26,14 +26,14 @@ next_project_number: 395
 ### 394. Remove language-to-task_type backward compatibility shim
 - **Effort**: TBD
 - **Status**: [NOT STARTED]
-- **Language**: meta
+- **Task Type**: meta
 
 **Description**: Remove the backward compatibility shim that treats old `language` field values as `task_type` when no `task_type` field is present. This shim was added during task 393 to prevent breakage of existing tasks. Remove it once all existing tasks across current projects have been completed and no legacy-format tasks remain in active state.
 
 ### 393. Unify routing field: replace separate language and task_type with single extension:task_type format
 - **Effort**: TBD
-- **Status**: [PLANNED]
-- **Language**: meta
+- **Status**: [IMPLEMENTING]
+- **Task Type**: meta
 - **Research**: [01_team-research.md](specs/393_unify_routing_field_language_task_type/reports/01_team-research.md)
 - **Plan**: [01_unify-routing-field.md](specs/393_unify_routing_field_language_task_type/plans/01_unify-routing-field.md)
 
@@ -42,7 +42,7 @@ next_project_number: 395
 ### 392. Refactor present extension commands (/grant, /budget, /funds, /timeline, /talk)
 - **Effort**: TBD
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**:
   - [01_refactor-present-commands.md](specs/392_refactor_present_extension_commands/reports/01_refactor-present-commands.md)
   - [02_team-research.md](specs/392_refactor_present_extension_commands/reports/02_team-research.md)
@@ -55,7 +55,7 @@ next_project_number: 395
 ### 391. Integrate new commands into present extension manifest
 - **Effort**: 1-2 hours
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Dependencies**: Tasks 387, 388, 389, 390
 
 **Description**: Integrate /budget, /timeline, /funds, /talk into present extension: update manifest.json routing, index-entries.json context entries, EXTENSION.md skill-agent table, README.md documentation.
@@ -65,7 +65,7 @@ next_project_number: 395
 ### 390. Create /talk command for present extension
 - **Effort**: 3-5 hours
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**: [01_talk-command-research.md](390_create_talk_command_present/reports/01_talk-command-research.md)
 - **Plan**: [01_talk-command-plan.md](390_create_talk_command_present/plans/01_talk-command-plan.md)
 
@@ -74,7 +74,7 @@ next_project_number: 395
 ### 389. Create /funds command for present extension
 - **Effort**: 3-5 hours
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**: [01_funds-command-research.md](389_create_funds_command_present/reports/01_funds-command-research.md)
 - **Plan**: [01_funds-command-plan.md](389_create_funds_command_present/plans/01_funds-command-plan.md)
 - **Summary**: [01_funds-command-summary.md](389_create_funds_command_present/summaries/01_funds-command-summary.md)
@@ -84,7 +84,7 @@ next_project_number: 395
 ### 388. Create /timeline command for present extension
 - **Effort**: 3-5 hours
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**: [01_timeline-command-research.md](388_create_timeline_command_present/reports/01_timeline-command-research.md)
 - **Plan**: [01_timeline-command-plan.md](388_create_timeline_command_present/plans/01_timeline-command-plan.md)
 
@@ -93,7 +93,7 @@ next_project_number: 395
 ### 387. Create /budget command for present extension
 - **Effort**: 3-5 hours
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**: [01_budget-command-research.md](387_create_budget_command_present/reports/01_budget-command-research.md)
 - **Plan**: [01_budget-command-plan.md](387_create_budget_command_present/plans/01_budget-command-plan.md)
 - **Summary**: [01_budget-command-summary.md](387_create_budget_command_present/summaries/01_budget-command-summary.md)
@@ -103,7 +103,7 @@ next_project_number: 395
 ### 386. Expand filetypes extension with SuperDoc MCP integration and partner Office workflows
 - **Effort**: TBD
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**:
   - [01_team-research.md](specs/386_expand_filetypes_superdoc_integration/reports/01_team-research.md)
   - [02_word-reload-workflow.md](specs/386_expand_filetypes_superdoc_integration/reports/02_word-reload-workflow.md)
@@ -118,7 +118,7 @@ next_project_number: 395
 ### 385. Research Zed IDE installation plan for partner's laptop
 - **Effort**: TBD
 - **Status**: [COMPLETED]
-- **Language**: general
+- **Task Type**: general
 - **Research**:
   - [01_team-research.md](specs/385_research_zed_ide_installation/reports/01_team-research.md)
   - [02_superdoc-workflows.md](specs/385_research_zed_ide_installation/reports/02_superdoc-workflows.md)
@@ -132,7 +132,7 @@ next_project_number: 395
 ### 384. Improve /convert command-skill-agent pipeline in filetypes extension
 - **Effort**: TBD
 - **Status**: [RESEARCHED]
-- **Language**: meta
+- **Task Type**: meta
 - **Research**: [01_convert-pipeline-analysis.md](specs/384_improve_convert_command_skill_agent/reports/01_convert-pipeline-analysis.md)
 
 **Description**: Improve the /convert command-skill-agent according to best practices while conforming to current .claude/ patterns. The markitdown pipeline is currently broken (bad Python interpreter); pymupdf text extraction works and is the recommended extraction tool. Refactor the filetypes/ extension's convert pipeline to use pymupdf as the primary extraction backend, fix or replace the broken markitdown integration, and ensure the command-skill-agent architecture follows established .claude/ conventions.
@@ -142,7 +142,7 @@ next_project_number: 395
 ### 382. Simplify /revise command with command + skill + agent architecture
 - **Effort**: TBD
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [01_simplify-revise-command.md](382_simplify_revise_command/reports/01_simplify-revise-command.md)
 - **Plan**: [01_simplify-revise-command.md](382_simplify_revise_command/plans/01_simplify-revise-command.md)
@@ -154,7 +154,7 @@ next_project_number: 395
 ### 383. Simplify /plan command, remove status gates, reference prior plan
 - **Effort**: TBD
 - **Status**: [COMPLETED]
-- **Language**: meta
+- **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [01_simplify-plan-command.md](383_simplify_plan_command/reports/01_simplify-plan-command.md)
 - **Plan**: [01_simplify-plan-command.md](383_simplify_plan_command/plans/01_simplify-plan-command.md)
@@ -168,7 +168,7 @@ next_project_number: 395
  **Status**: [RESEARCHED]
  **Research Started**: 2026-02-13
  **Research Completed**: 2026-02-13
- **Language**: neovim
+ **Task Type**: neovim
  **Dependencies**: None
  **Research**: [research-001.md](087_investigate_wezterm_terminal_directory_change/reports/research-001.md)
 
@@ -183,7 +183,7 @@ next_project_number: 395
 - **Research Completed**: 2026-02-13
 - **Planning Started**: 2026-02-13
 - **Planning Completed**: 2026-02-13
-- **Language**: neovim
+- **Task Type**: neovim
 - **Dependencies**: None
 - **Research**: [research-001.md](078_fix_himalaya_smtp_authentication_failure/reports/research-001.md)
 - **Plan**: [implementation-001.md](078_fix_himalaya_smtp_authentication_failure/plans/implementation-001.md)

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #393
 
 - **Task**: 393 - Unify routing field: replace separate language and task_type with single extension:task_type format
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 14 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/393_unify_routing_field_language_task_type/reports/01_team-research.md
@@ -66,7 +66,7 @@ Revised from v1 plan which kept `language` as field name and deprecated old `tas
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Schema, State, and Core Infrastructure [NOT STARTED]
+### Phase 1: Schema, State, and Core Infrastructure [COMPLETED]
 
 **Goal**: Rename `language` to `task_type` in state.json schema, state.json data, TODO.md format, and core configuration files so all downstream phases have a consistent foundation.
 

@@ -60,19 +60,19 @@ specs/{NNN}_{SLUG}/
 
 This distinction enables identification of which system created each task.
 
-### Language-Based Routing
+### Task-Type-Based Routing
 
-**Core Languages** (always available):
+**Core Task Types** (always available):
 
-| Language | Research Skill | Implementation Skill | Tools |
-|----------|----------------|---------------------|-------|
+| Task Type | Research Skill | Implementation Skill | Tools |
+|-----------|----------------|---------------------|-------|
 | `general` | `skill-researcher` | `skill-implementer` | WebSearch, WebFetch, Read, Write, Edit, Bash |
 | `meta` | `skill-researcher` | `skill-implementer` | Read, Grep, Glob, Write, Edit |
 | `markdown` | `skill-researcher` | `skill-implementer` | Read, Write, Edit |
 
-**Extension Languages** (available when extensions are loaded via `<leader>ac`):
+**Extension Task Types** (available when extensions are loaded via `<leader>ac`):
 
-Extensions provide additional language support (neovim, lean4, latex, typst, python, nix, web, z3, epidemiology, formal, founder, present, etc.). See `.claude/extensions/*/manifest.json` for available extensions and their capabilities.
+Extensions provide additional task type support (neovim, lean4, latex, typst, python, nix, web, z3, epidemiology, formal, founder, present, etc.). See `.claude/extensions/*/manifest.json` for available extensions and their capabilities.
 
 When an extension is loaded, its routing entries are merged into the command tables and context index.
 
@@ -84,7 +84,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create task |
 | `/task` | `/task --recover N`, `--expand N`, `--sync`, `--abandon N` | Manage tasks |
-| `/research` | `/research N[,N-N] [focus] [--team]` | Research task(s), route by language |
+| `/research` | `/research N[,N-N] [focus] [--team]` | Research task(s), route by task type |
 | `/plan` | `/plan N[,N-N] [--team]` | Create implementation plan(s) |
 | `/implement` | `/implement N[,N-N] [--team] [--force]` | Execute plan(s), resume from incomplete phase |
 | `/revise` | `/revise N` | Create new plan version |
@@ -116,7 +116,7 @@ TODO.md and state.json must stay synchronized. Update state.json first (machine 
     "project_number": 1,
     "project_name": "task_slug",
     "status": "planned",
-    "language": "neovim",
+    "task_type": "neovim",
     "completion_summary": "Required when status=completed",
     "roadmap_items": ["Optional explicit roadmap items"]
   }],
@@ -196,7 +196,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 
 **User-Only Skills**: Skills marked as "user-only" cannot be invoked by agents. These are for human-controlled operations like deployment (`skill-tag`).
 
-**Extension Skills**: When extensions are loaded, additional skill-to-agent mappings are added (e.g., skill-neovim-research -> neovim-research-agent).
+**Extension Skills**: When extensions are loaded, additional skill-to-agent mappings are added (e.g., skill-neovim-research -> neovim-research-agent). Extension task types use bare values (e.g., `neovim`) or compound values (e.g., `present:grant`) for sub-routing.
 
 **Team Mode Skills**: When `--team` flag is passed to `/research`, `/plan`, or `/implement`, routing overrides to team skills which spawn multiple parallel teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable. Gracefully degrades to single-agent if unavailable.
 
@@ -231,11 +231,11 @@ Context is discovered from three independent layers, loaded in parallel:
 
 ```bash
 # Combined adaptive query (recommended) - loads matching context from all dimensions
-jq -r --arg agent "planner-agent" --arg lang "meta" --arg cmd "/plan" '
+jq -r --arg agent "planner-agent" --arg task_type "meta" --arg cmd "/plan" '
   .entries[] | select(
     (.load_when.always == true) or
     any(.load_when.agents[]?; . == $agent) or
-    any(.load_when.languages[]?; . == $lang) or
+    any(.load_when.task_types[]?; . == $task_type) or
     any(.load_when.commands[]?; . == $cmd)
   ) | .path' .claude/context/index.json
 

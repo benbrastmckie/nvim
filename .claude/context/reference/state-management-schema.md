@@ -12,8 +12,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
       "project_number": 334,
       "project_name": "task_slug_here",
       "status": "planned",
-      "language": "general",
-      "task_type": null,
+      "task_type": "general",
       "effort": "4 hours",
       "created": "2026-01-08T10:00:00Z",
       "last_updated": "2026-01-08T14:30:00Z",
@@ -45,7 +44,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 ### {NUMBER}. {TITLE}
 - **Effort**: {estimate}
 - **Status**: [{STATUS}]
-- **Language**: {neovim|general|meta|markdown|latex|typst}
+- **Task Type**: {neovim|general|meta|markdown|latex|typst}
 - **Dependencies**: Task #{N}, Task #{N}  OR  None
 - **Started**: {ISO timestamp}
 - **Completed**: {ISO timestamp}
@@ -64,8 +63,7 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 | `project_number` | number | Yes | Unique task identifier |
 | `project_name` | string | Yes | Snake_case slug from title |
 | `status` | string | Yes | Current status (see Status Values) |
-| `language` | string | Yes | Task language (see Language Values) |
-| `task_type` | string/null | No | Sub-type for finer-grained routing |
+| `task_type` | string | Yes | Task type for routing (see Task Type Values). Bare values (`meta`, `neovim`) or compound `extension:subtype` (`present:grant`, `founder:deck`) |
 | `effort` | string | No | Estimated effort |
 | `created` | string | Yes | ISO8601 creation timestamp |
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
@@ -75,36 +73,44 @@ Complete schema reference for state.json, TODO.md, and artifact formats. For beh
 
 ### task_type Field
 
-The `task_type` field enables finer-grained routing within a language, particularly useful for extension languages.
+The `task_type` field is the unified routing field for all tasks. It replaces the former `language` field and the former secondary `task_type` field.
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `task_type` | string or null | No | `null` | Sub-type for routing within a language |
+| `task_type` | string | Yes | - | Routing key: bare value or compound `extension:subtype` |
+
+**Values**:
+- **Bare values**: `meta`, `general`, `markdown`, `neovim`, `lean4`, `latex`, etc.
+- **Compound values**: `present:grant`, `founder:deck`, `present:talk`, etc.
+- Compound format: `{extension}:{subtype}` -- the extension prefix is used for routing to the correct extension, the subtype for sub-routing within the extension.
 
 **Routing Behavior**: When a command is invoked on a task:
-1. Check if `task_type` is set
-2. If set, route to skill matching task_type
-3. If null or missing, fall back to default routing
+1. Read `task_type` from the task entry
+2. If compound (contains `:`), split into base key and subtype
+3. Route to extension matching base key, then to skill matching subtype
+4. If bare value, route directly to matching extension or core skill
+
+**Backward Compatibility**: If a legacy task has a `language` field but no `task_type`, treat `language` as `task_type`. This shim will be removed in task 394.
 
 **Format Conversion**:
 
 | state.json | TODO.md |
 |------------|---------|
-| `null` | (not shown) |
-| `"market"` | `- **Type**: market` |
-| `"analyze"` | `- **Type**: analyze` |
+| `"meta"` | `- **Task Type**: meta` |
+| `"neovim"` | `- **Task Type**: neovim` |
+| `"present:grant"` | `- **Task Type**: present:grant` |
 
-### Language Values
+### Task Type Values
 
-**Core Languages** (always available):
+**Core Task Types** (always available):
 
-| Language | Description |
-|----------|-------------|
+| Task Type | Description |
+|-----------|-------------|
 | `general` | General programming, web research |
 | `meta` | System building, .claude/ modifications |
 | `markdown` | Documentation tasks |
 
-**Extension Languages** (when extensions loaded): See `.claude/extensions/*/manifest.json`.
+**Extension Task Types** (when extensions loaded): See `.claude/extensions/*/manifest.json`.
 
 ### Unified Artifact Numbering (next_artifact_number)
 
@@ -344,7 +350,7 @@ The `## Recommended Order` section in TODO.md provides a topologically-sorted li
   "project_number": 500,
   "project_name": "implement_new_feature",
   "status": "not_started",
-  "language": "general",
+  "task_type": "general",
   "created": "2026-02-25T10:00:00Z",
   "last_updated": "2026-02-25T10:00:00Z",
   "artifacts": []
@@ -357,7 +363,7 @@ The `## Recommended Order` section in TODO.md provides a topologically-sorted li
   "project_number": 502,
   "project_name": "integrate_feature",
   "status": "not_started",
-  "language": "general",
+  "task_type": "general",
   "dependencies": [500, 501],
   "created": "2026-02-25T10:30:00Z",
   "last_updated": "2026-02-25T10:30:00Z",
@@ -371,7 +377,7 @@ The `## Recommended Order` section in TODO.md provides a topologically-sorted li
   "project_number": 510,
   "project_name": "add_merge_command",
   "status": "completed",
-  "language": "meta",
+  "task_type": "meta",
   "created": "2026-02-26T09:00:00Z",
   "last_updated": "2026-02-26T12:00:00Z",
   "artifacts": [
