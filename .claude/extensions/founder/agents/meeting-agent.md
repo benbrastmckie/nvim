@@ -85,7 +85,7 @@ Extract from input:
     "task_number": 382,
     "project_name": "meeting_halcyon_ventures",
     "description": "Investor meeting: Halcyon Ventures",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "meeting"
   },
   "notes_path": "/path/to/raw-meeting-notes.md",

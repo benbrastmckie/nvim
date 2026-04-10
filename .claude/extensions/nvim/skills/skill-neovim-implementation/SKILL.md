@@ -21,7 +21,7 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "neovim"
+- Task type is "neovim"
 - Implementation plan exists for the task
 - Neovim configuration changes need to be applied
 
@@ -117,7 +117,7 @@ EOF
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "neovim"
+    "task_type": "neovim"
   },
   "plan_path": "specs/{NNN}_{SLUG}/plans/02_implementation-plan.md",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

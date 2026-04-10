@@ -129,7 +129,7 @@ Extract from input:
     "task_number": 10,
     "task_name": "create_about_page",
     "description": "...",
-    "language": "web"
+    "task_type": "web"
   },
   "metadata": {
     "session_id": "sess_...",

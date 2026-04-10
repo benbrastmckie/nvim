@@ -80,7 +80,7 @@ Extract from input:
     "task_number": 256,
     "project_name": "contract_review_saas_agreement",
     "description": "Contract review: SaaS vendor agreement",
-    "language": "founder"
+    "task_type": "founder"
   },
   "contract_type": "optional contract type hint",
   "primary_concern": "optional concern hint",

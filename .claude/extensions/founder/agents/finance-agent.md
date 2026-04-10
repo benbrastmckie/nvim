@@ -81,7 +81,7 @@ Extract from input:
     "task_number": 330,
     "project_name": "financial_analysis_q1_revenue",
     "description": "Financial analysis: Q1 revenue verification",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "finance"
   },
   "forcing_data": {

@@ -29,7 +29,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "present" and task_type is "grant"
+- Task type is "present" and task_type is "grant"
 - Grant workflow requested via flags (--draft, --budget) or /implement routing
 - Extension is loaded via `<leader>ac`
 
@@ -48,7 +48,7 @@ This skill routes to grant-agent with one of five workflow types:
 | assemble | implementing | completed | [IMPLEMENTING] -> [COMPLETED] |
 | fix_it_scan | (no change) | (no change) | (no change) |
 
-**Note**: The `assemble` workflow is triggered via `/implement N` command (not `/grant`), which routes to skill-grant when the task language is "present" and task_type is "grant".
+**Note**: The `assemble` workflow is triggered via `/implement N` command (not `/grant`), which routes to skill-grant when the task type is "present" and task_type is "grant".
 
 ---
 
@@ -100,8 +100,8 @@ project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
 # Validate language is "present"
-if [ "$language" != "present" ]; then
-  return error "Task $task_number has language '$language', expected 'present'"
+if [ "$task_type" != "present" ]; then
+  return error "Task $task_number has language '$task_type', expected 'present'"
 fi
 
 # Validate workflow_type
@@ -242,7 +242,7 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "present",
+    "task_type": "present",
     "task_type": "grant"
   },
   "workflow_type": "funder_research|proposal_draft|budget_develop|progress_track|assemble",
@@ -826,7 +826,7 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "project_number": $next_num,
      "project_name": "'"$slug"'",
      "status": "not_started",
-     "language": "present",
+     "task_type": "present",
      "task_type": "grant",
      "description": $desc,
      "parent_task": $parent,
@@ -856,7 +856,7 @@ For each created task, prepend entry to TODO.md `## Tasks` section:
 ### {NEW_N}. {Title}
 - **Effort**: TBD
 - **Status**: [NOT STARTED]
-- **Language**: grant
+- **Task Type**: grant
 - **Parent Task**: Task #{N}
 
 **Description**: {description}
@@ -924,7 +924,7 @@ Return immediately with error message:
 ```
 Grant skill error for task {N}:
 - Task has language '{language}', expected 'present'
-- Use /grant {N} to update task language or use appropriate skill
+- Use /grant {N} to update task type or use appropriate skill
 - No status changes made
 ```
 

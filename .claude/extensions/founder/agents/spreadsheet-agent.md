@@ -75,7 +75,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "cost_breakdown_saas_launch",
     "description": "Cost breakdown: SaaS product launch",
-    "language": "founder"
+    "task_type": "founder"
   },
   "mode": "ESTIMATE|BUDGET|FORECAST|ACTUALS or null",
   "forcing_data": {

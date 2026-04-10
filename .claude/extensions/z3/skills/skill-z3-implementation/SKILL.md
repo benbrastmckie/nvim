@@ -11,7 +11,7 @@ Thin wrapper that delegates Z3 implementation to `z3-implementation-agent` subag
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "z3"
+- Task type is "z3"
 - /implement command targets a Z3 task
 - Plan exists and task is ready for implementation
 

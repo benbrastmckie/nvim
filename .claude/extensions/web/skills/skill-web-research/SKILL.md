@@ -20,7 +20,7 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "web"
+- Task type is "web"
 - Research is needed for web development tasks
 - Astro, Tailwind, Cloudflare, or accessibility documentation needs to be gathered
 
@@ -106,7 +106,7 @@ EOF
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "web"
+    "task_type": "web"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

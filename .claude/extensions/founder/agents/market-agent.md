@@ -82,7 +82,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "market_sizing_fintech_payments",
     "description": "Market sizing: fintech payments",
-    "language": "founder"
+    "task_type": "founder"
   },
   "industry": "optional industry hint",
   "segment": "optional segment hint",

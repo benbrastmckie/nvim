@@ -11,7 +11,7 @@ Thin wrapper that delegates Z3 research to `z3-research-agent` subagent.
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "z3"
+- Task type is "z3"
 - Research involves SMT solving or constraints
 - Z3-specific research is needed
 

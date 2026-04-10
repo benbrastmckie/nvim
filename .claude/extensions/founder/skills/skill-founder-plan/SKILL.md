@@ -25,8 +25,8 @@ This skill activates when:
 - `/plan` command on a task with `language: founder`
 - Extension routing lookup finds `routing.plan.founder`
 
-### Language-Based Routing
-- Task language is "founder"
+### Task-Type-Based Routing
+- Task type is "founder"
 - `/plan {N}` where task {N} has language="founder"
 
 ### When NOT to trigger
@@ -117,7 +117,7 @@ Prepare delegation context for agent:
     "task_number": 234,
     "project_name": "market_sizing_fintech_payments",
     "description": "Market sizing: fintech payments",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "market"
   },
   "research_path": "specs/234_market_sizing_fintech_payments/reports/01_context.md",

@@ -76,7 +76,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "deck"
   },
   "research_path": "specs/{NNN}_{SLUG}/reports/01_{short-slug}.md",

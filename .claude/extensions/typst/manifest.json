@@ -2,7 +2,7 @@
   "name": "typst",
   "version": "1.0.0",
   "description": "Typst document development with single-pass compilation",
-  "language": "typst",
+  "task_type": "typst",
   "dependencies": [],
   "provides": {
     "agents": ["typst-research-agent.md", "typst-implementation-agent.md"],

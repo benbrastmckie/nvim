@@ -181,7 +181,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Extension Commands, Skills, and Agents [NOT STARTED]
+### Phase 4: Extension Commands, Skills, and Agents [COMPLETED]
 
 **Goal**: Update all extension files (founder, present, and all other extensions) to use `task_type` instead of `language` in commands, skills, agents, and manifests.
 

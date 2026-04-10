@@ -2,7 +2,7 @@
   "name": "web",
   "version": "1.0.0",
   "description": "Web development support with Astro, Tailwind CSS v4, TypeScript, and Cloudflare Pages",
-  "language": "web",
+  "task_type": "web",
   "dependencies": [],
   "provides": {
     "agents": ["web-implementation-agent.md", "web-research-agent.md"],

@@ -122,7 +122,7 @@ Extract from input:
     "task_number": 500,
     "task_name": "research_ai_safety_funders",
     "description": "...",
-    "language": "present",
+    "task_type": "present",
     "task_type": "grant"
   },
   "metadata": {

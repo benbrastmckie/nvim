@@ -18,7 +18,7 @@ Extract from input:
     "task_number": 123,
     "task_name": "prove_theorem",
     "description": "...",
-    "language": "lean"
+    "task_type": "lean"
   },
   "metadata": {
     "session_id": "sess_...",

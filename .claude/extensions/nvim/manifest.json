@@ -2,7 +2,7 @@
   "name": "nvim",
   "version": "1.0.0",
   "description": "Neovim configuration development with Lua patterns and plugin support",
-  "language": "neovim",
+  "task_type": "neovim",
   "dependencies": [],
   "provides": {
     "agents": ["neovim-research-agent.md", "neovim-implementation-agent.md"],

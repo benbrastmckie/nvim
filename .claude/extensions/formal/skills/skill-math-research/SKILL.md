@@ -20,7 +20,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "math"
+- Task type is "math"
 - Research involves algebra, lattice theory, order theory, topology, or category theory
 - Domain context files are needed for mathematical foundations
 
@@ -62,7 +62,7 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "math"
+    "task_type": "math"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

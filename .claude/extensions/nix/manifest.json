@@ -2,7 +2,7 @@
   "name": "nix",
   "version": "1.0.0",
   "description": "NixOS and Home Manager configuration support with MCP-NixOS integration for package/option validation",
-  "language": "nix",
+  "task_type": "nix",
   "dependencies": [],
   "provides": {
     "agents": ["nix-research-agent.md", "nix-implementation-agent.md"],

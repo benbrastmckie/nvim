@@ -30,7 +30,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "present" and task_type is "timeline"
+- Task type is "present" and task_type is "timeline"
 - Timeline workflow requested via /timeline command or /research routing
 - Extension is loaded via `<leader>ac`
 
@@ -88,8 +88,8 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 forcing_data=$(echo "$task_data" | jq -r '.forcing_data // null')
 
 # Validate language is "present"
-if [ "$language" != "present" ]; then
-  return error "Task $task_number has language '$language', expected 'present'"
+if [ "$task_type" != "present" ]; then
+  return error "Task $task_number has language '$task_type', expected 'present'"
 fi
 ```
 
@@ -191,7 +191,7 @@ esac
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "present",
+    "task_type": "present",
     "task_type": "timeline"
   },
   "workflow_type": "timeline_research",

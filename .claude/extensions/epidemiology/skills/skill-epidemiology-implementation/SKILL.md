@@ -11,7 +11,7 @@ Routes epidemiology implementation tasks to `epidemiology-implementation-agent`.
 
 ## Usage
 
-Invoked by orchestrator when task language is `epidemiology` or `r` and operation is implementation.
+Invoked by orchestrator when task type is `epidemiology` or `r` and operation is implementation.
 
 ## Agent
 

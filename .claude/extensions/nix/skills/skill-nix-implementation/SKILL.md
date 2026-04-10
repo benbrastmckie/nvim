@@ -25,7 +25,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "nix"
+- Task type is "nix"
 - /implement command targets a Nix task
 - NixOS modules, Home Manager configs, or flake changes need to be created using Nix
 
@@ -99,13 +99,13 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "general"')
+task_type=$(echo "$task_data" | jq -r '.task_type // .language // "general"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
 # Validate language
-if [ "$language" != "nix" ]; then
+if [ "$task_type" != "nix" ]; then
   return error "Task $task_number is not a Nix task"
 fi
 
@@ -129,7 +129,7 @@ Prepare delegation context:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "nix"
+    "task_type": "nix"
   },
   "plan_path": "specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

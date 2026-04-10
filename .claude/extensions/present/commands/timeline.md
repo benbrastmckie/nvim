@@ -183,7 +183,7 @@ Capture all responses in a forcing_data object:
         "project_number": {N},
         "project_name": "slug",
         "status": "not_started",
-        "language": "present",
+        "task_type": "present",
         "task_type": "timeline",
         "description": $desc,
         "forcing_data": $forcing_data,
@@ -207,7 +207,7 @@ Capture all responses in a forcing_data object:
    ### {N}. {Title}
    - **Effort**: TBD
    - **Status**: [NOT STARTED]
-   - **Language**: present
+   - **Task Type**: present
    - **Type**: timeline
 
    **Description**: {description}

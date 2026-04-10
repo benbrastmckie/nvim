@@ -11,7 +11,7 @@ Thin wrapper that delegates LaTeX implementation to `latex-implementation-agent`
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "latex"
+- Task type is "latex"
 - /implement command targets a LaTeX task
 - Plan exists and task is ready for implementation
 

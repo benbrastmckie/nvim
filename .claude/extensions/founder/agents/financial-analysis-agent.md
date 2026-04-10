@@ -76,7 +76,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "financial_analysis_acme",
     "description": "Financial analysis: Acme SaaS",
-    "language": "founder:financial-analysis"
+    "task_type": "founder:financial-analysis"
   },
   "mode": "REVIEW|DILIGENCE|AUDIT|FORECAST or null",
   "forcing_data": {

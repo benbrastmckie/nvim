@@ -2,7 +2,7 @@
   "name": "lean",
   "version": "1.0.0",
   "description": "Lean 4 theorem prover support with MCP integration for proof assistance",
-  "language": "lean4",
+  "task_type": "lean4",
   "dependencies": [],
   "provides": {
     "agents": ["lean-research-agent.md", "lean-implementation-agent.md"],

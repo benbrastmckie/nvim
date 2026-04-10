@@ -160,7 +160,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "add_blog_section",
     "description": "...",
-    "language": "web"
+    "task_type": "web"
   },
   "metadata": {
     "session_id": "sess_...",

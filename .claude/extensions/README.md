@@ -18,7 +18,7 @@ Extensions add domain-specific elements:
 
 ## Available Extensions
 
-| Extension | Language | Description |
+| Extension | Task Type | Description |
 |-----------|----------|-------------|
 | nvim | neovim | Neovim configuration development |
 | lean | lean4 | Lean 4 theorem proving with Mathlib |

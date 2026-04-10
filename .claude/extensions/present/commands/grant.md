@@ -179,7 +179,7 @@ Capture all responses in a forcing_data object:
         "project_number": {N},
         "project_name": "slug",
         "status": "not_started",
-        "language": "present",
+        "task_type": "present",
         "task_type": "grant",
         "description": $desc,
         "forcing_data": $forcing_data,
@@ -203,7 +203,7 @@ Capture all responses in a forcing_data object:
    ### {N}. {Title}
    - **Effort**: TBD
    - **Status**: [NOT STARTED]
-   - **Language**: present
+   - **Task Type**: present
    - **Type**: grant
 
    **Description**: {description}
@@ -433,7 +433,7 @@ Create a new task to revise an existing grant.
         "project_number": {NEW_N},
         "project_name": "revise_slug",
         "status": "not_started",
-        "language": "present",
+        "task_type": "present",
         "task_type": "grant",
         "description": $desc,
         "parent_grant": $parent,
@@ -452,7 +452,7 @@ Create a new task to revise an existing grant.
    ### {NEW_N}. {Revision Title}
    - **Effort**: TBD
    - **Status**: [NOT STARTED]
-   - **Language**: present
+   - **Task Type**: present
    - **Type**: grant
    - **Parent Grant**: Task #{N}
 

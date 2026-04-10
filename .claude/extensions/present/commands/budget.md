@@ -208,7 +208,7 @@ jq --argjson num "$next_num" \
      project_number: $num,
      project_name: $name,
      status: "not_started",
-     language: "present",
+     task_type: "present",
      task_type: $task_type,
      description: $desc,
      created: $ts,
@@ -227,7 +227,7 @@ Add task entry to TODO.md (if new task):
 ### {task_number}. Grant budget: {description}
 - **Effort**: 2-4 hours
 - **Status**: [NOT STARTED]
-- **Language**: present
+- **Task Type**: present
 - **Type**: budget
 - **Dependencies**: None
 - **Started**: {ISO timestamp}

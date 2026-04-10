@@ -99,7 +99,7 @@ Extract from input:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "...",
-    "language": "present",
+    "task_type": "present",
     "task_type": "talk"
   },
   "workflow_type": "talk_research|assemble",

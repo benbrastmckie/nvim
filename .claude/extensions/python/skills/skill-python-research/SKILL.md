@@ -11,7 +11,7 @@ Thin wrapper that delegates Python research to `python-research-agent` subagent.
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "python"
+- Task type is "python"
 - Research involves Python development
 - Python-specific research is needed
 

@@ -147,7 +147,7 @@ EOF
     "task_number": N,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "meeting"
   },
   "notes_path": "/absolute/path/to/meeting-notes.md",

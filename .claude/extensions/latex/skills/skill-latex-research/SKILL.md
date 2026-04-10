@@ -11,7 +11,7 @@ Thin wrapper that delegates LaTeX research to `latex-research-agent` subagent.
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "latex"
+- Task type is "latex"
 - Research involves LaTeX documentation
 - LaTeX-specific research is needed
 

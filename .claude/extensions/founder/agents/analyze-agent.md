@@ -85,7 +85,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "competitive_analysis_fintech_payments",
     "description": "Competitive analysis: fintech payments",
-    "language": "founder"
+    "task_type": "founder"
   },
   "competitors": ["optional", "competitor", "list"],
   "mode": "LANDSCAPE|DEEP|POSITION|BATTLE or null",

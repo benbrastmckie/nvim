@@ -189,7 +189,7 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "project_number": $next_num,
      "project_name": "slug",
      "status": "not_started",
-     "language": "present",
+     "task_type": "present",
      "task_type": "talk",
      "description": $desc,
      "forcing_data": $forcing,
@@ -213,7 +213,7 @@ sed -i 's/^next_project_number: [0-9]*/next_project_number: {NEW_NUMBER}/' \
 ### {N}. {Title}
 - **Effort**: TBD
 - **Status**: [NOT STARTED]
-- **Language**: present
+- **Task Type**: present
 
 **Description**: {description}
 ```

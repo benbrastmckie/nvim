@@ -20,7 +20,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "logic"
+- Task type is "logic"
 - Research involves modal logic, Kripke semantics, or general mathematical logic
 - Domain context files are needed for mathematical foundations
 
@@ -46,7 +46,7 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "general"')
+task_type=$(echo "$task_data" | jq -r '.task_type // .language // "general"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
@@ -80,7 +80,7 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "logic"
+    "task_type": "logic"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

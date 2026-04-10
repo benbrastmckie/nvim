@@ -72,7 +72,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "product_launch_timeline",
     "description": "Project timeline: Product launch Q2",
-    "language": "founder"
+    "task_type": "founder"
   },
   "metadata_file_path": "specs/234_product_launch_timeline/.return-meta.json",
   "metadata": {

@@ -2,7 +2,7 @@
   "name": "latex",
   "version": "1.0.0",
   "description": "LaTeX document development with VimTeX integration",
-  "language": "latex",
+  "task_type": "latex",
   "dependencies": [],
   "provides": {
     "agents": ["latex-implementation-agent.md", "latex-research-agent.md"],

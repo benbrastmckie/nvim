@@ -92,8 +92,8 @@ project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
 # Validate language and task_type
-if [ "$language" != "present" ] || [ "$task_type" != "talk" ]; then
-  return error "Task $task_number is not a talk task (language=$language, task_type=$task_type)"
+if [ "$task_type" != "present" ] || [ "$task_type" != "talk" ]; then
+  return error "Task $task_number is not a talk task (language=$task_type, task_type=$task_type)"
 fi
 ```
 
@@ -168,7 +168,7 @@ EOF
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "present",
+    "task_type": "present",
     "task_type": "talk"
   },
   "workflow_type": "talk_research|assemble",

@@ -75,7 +75,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "deck"
   },
   "forcing_data": {

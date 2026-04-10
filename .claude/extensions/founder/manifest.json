@@ -2,7 +2,7 @@
   "name": "founder",
   "version": "3.0.0",
   "description": "Strategic business analysis for founders with task integration: market sizing, competitive analysis, go-to-market strategy, contract review, and project timeline management",
-  "language": "founder",
+  "task_type": "founder",
   "dependencies": [],
   "provides": {
     "agents": [

@@ -94,7 +94,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "prove_modal_completeness",
     "description": "...",
-    "language": "formal"
+    "task_type": "formal"
   },
   "metadata": {
     "session_id": "sess_...",
@@ -147,7 +147,7 @@ Create directory and write report:
 **Task**: {id} - {title}
 **Started**: {ISO8601}
 **Completed**: {ISO8601}
-**Language**: formal
+**Task Type**: formal
 **Domains**: {logic, math, physics as applicable}
 
 ## Executive Summary

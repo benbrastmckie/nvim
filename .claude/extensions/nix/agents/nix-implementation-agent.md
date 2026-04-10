@@ -110,7 +110,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "configure_nginx_module",
     "description": "...",
-    "language": "nix"
+    "task_type": "nix"
   },
   "metadata": {
     "session_id": "sess_...",

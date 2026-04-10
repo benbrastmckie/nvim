@@ -11,7 +11,7 @@ Routes epidemiology research tasks to `epidemiology-research-agent`.
 
 ## Usage
 
-Invoked by orchestrator when task language is `epidemiology` or `r` and operation is research.
+Invoked by orchestrator when task type is `epidemiology` or `r` and operation is research.
 
 ## Agent
 

@@ -137,7 +137,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "configure_telescope",
     "description": "...",
-    "language": "neovim"
+    "task_type": "neovim"
   },
   "metadata": {
     "session_id": "sess_...",

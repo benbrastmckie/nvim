@@ -2,7 +2,7 @@
   "name": "python",
   "version": "1.0.0",
   "description": "Python development with pytest integration and type checking",
-  "language": "python",
+  "task_type": "python",
   "dependencies": [],
   "provides": {
     "agents": ["python-research-agent.md", "python-implementation-agent.md"],

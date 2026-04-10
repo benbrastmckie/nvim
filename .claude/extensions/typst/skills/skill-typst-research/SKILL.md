@@ -11,7 +11,7 @@ Thin wrapper that delegates Typst research to `typst-research-agent` subagent.
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "typst"
+- Task type is "typst"
 - Research involves Typst documentation
 - Typst-specific research is needed
 

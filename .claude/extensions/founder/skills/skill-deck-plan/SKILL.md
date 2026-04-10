@@ -29,8 +29,8 @@ This skill activates when:
 - `/plan` command on a task with `language: founder` and `task_type: deck`
 - Extension routing lookup finds `routing.plan["founder:deck"]`
 
-### Language-Based Routing
-- Task language is "founder" AND task_type is "deck"
+### Task-Type-Based Routing
+- Task type is "founder" AND task_type is "deck"
 - `/plan {N}` where task {N} has language="founder" and task_type="deck"
 
 ### When NOT to trigger
@@ -127,7 +127,7 @@ Prepare base delegation context (enhanced in Stage 4.4):
     "task_number": 234,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "deck"
   },
   "research_path": "specs/{NNN}_{SLUG}/reports/01_{short-slug}.md",
@@ -365,7 +365,7 @@ Bundle all user selections into the delegation context for the agent:
     "task_number": 234,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "deck"
   },
   "research_path": "specs/{NNN}_{SLUG}/reports/01_{short-slug}.md",

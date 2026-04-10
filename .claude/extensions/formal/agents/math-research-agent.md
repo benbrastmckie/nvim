@@ -139,7 +139,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "prove_lattice_completeness",
     "description": "...",
-    "language": "math"
+    "task_type": "math"
   },
   "metadata": {
     "session_id": "sess_...",
@@ -212,7 +212,7 @@ Create directory and write report:
 **Task**: {id} - {title}
 **Started**: {ISO8601}
 **Completed**: {ISO8601}
-**Language**: math
+**Task Type**: math
 
 ## Executive Summary
 - Key finding 1

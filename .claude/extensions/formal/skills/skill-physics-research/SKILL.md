@@ -20,7 +20,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "physics"
+- Task type is "physics"
 - Research involves dynamical systems, chaos theory, or physics formalization
 - Domain context files are needed for physics foundations
 
@@ -62,7 +62,7 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "physics"
+    "task_type": "physics"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

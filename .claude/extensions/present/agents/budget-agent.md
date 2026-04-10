@@ -80,7 +80,7 @@ Extract from input:
     "task_number": 42,
     "project_name": "nih_r01_budget_ai_interpretability",
     "description": "NIH R01 budget for AI interpretability project",
-    "language": "present",
+    "task_type": "present",
     "task_type": "budget"
   },
   "forcing_data": {

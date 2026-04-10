@@ -152,7 +152,7 @@ Extract from input:
     "task_number": 412,
     "task_name": "prove_modal_completeness",
     "description": "...",
-    "language": "logic"
+    "task_type": "logic"
   },
   "metadata": {
     "session_id": "sess_...",
@@ -223,7 +223,7 @@ Create directory and write report:
 **Task**: {id} - {title}
 **Started**: {ISO8601}
 **Completed**: {ISO8601}
-**Language**: logic
+**Task Type**: logic
 
 ## Executive Summary
 - Key finding 1

@@ -118,7 +118,7 @@ artifact_padded=$(printf "%02d" "$artifact_number")
     "task_number": "{N}",
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "{language}"
+    "task_type": "{task_type}"
   },
   "artifact_number": "{artifact_number}",
   "mode": "{mode if provided}",

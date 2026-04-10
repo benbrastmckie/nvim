@@ -14,7 +14,7 @@ this skill handles all postflight operations (status update, artifact linking, g
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "lean4" or "lean" (either accepted)
+- Task type is "lean4" or "lean" (either accepted)
 - Research involves Mathlib, theorems, or proofs
 - Lean-specific MCP tools are needed
 
@@ -40,7 +40,7 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "general"')
+task_type=$(echo "$task_data" | jq -r '.task_type // .language // "general"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
@@ -82,7 +82,7 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "lean"
+    "task_type": "lean"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{N}_{SLUG}/.return-meta.json"

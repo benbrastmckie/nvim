@@ -404,7 +404,7 @@ jq --argjson num "$next_num" \
       project_number: $num,
       project_name: $name,
       status: "not_started",
-      language: "founder",
+      task_type: "founder",
       task_type: $task_type,
       description: $desc,
       created: $ts,
@@ -424,7 +424,7 @@ Add task entry to TODO.md (if new task):
 ### {task_number}. Project timeline: {project_name}
 - **Effort**: 2-4 hours
 - **Status**: [NOT STARTED]
-- **Language**: founder
+- **Task Type**: founder
 - **Type**: project
 - **Dependencies**: None
 - **Started**: {ISO timestamp}

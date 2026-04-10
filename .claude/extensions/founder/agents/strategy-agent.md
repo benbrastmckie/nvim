@@ -75,7 +75,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "gtm_strategy_b2b_saas_launch",
     "description": "GTM strategy: B2B SaaS product launch",
-    "language": "founder"
+    "task_type": "founder"
   },
   "topic": "optional context hint",
   "mode": "LAUNCH|SCALE|PIVOT|EXPAND or null",

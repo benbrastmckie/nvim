@@ -2,7 +2,7 @@
   "name": "z3",
   "version": "1.0.0",
   "description": "Z3 SMT solver development with constraint pattern support",
-  "language": "z3",
+  "task_type": "z3",
   "dependencies": [],
   "provides": {
     "agents": ["z3-research-agent.md", "z3-implementation-agent.md"],

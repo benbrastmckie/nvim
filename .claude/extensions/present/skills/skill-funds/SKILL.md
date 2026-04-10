@@ -31,7 +31,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "present" with task_type="funds"
+- Task type is "present" with task_type="funds"
 - /funds command with task number
 - Extension is loaded via `<leader>ac`
 
@@ -91,8 +91,8 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 task_type=$(echo "$task_data" | jq -r '.task_type // ""')
 
 # Validate language is "present"
-if [ "$language" = "present" | not ]; then
-  return error "Task $task_number has language '$language', expected 'present'"
+if [ "$task_type" = "present" | not ]; then
+  return error "Task $task_number has language '$task_type', expected 'present'"
 fi
 
 # Validate task_type is "funds"
@@ -192,7 +192,7 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "present",
+    "task_type": "present",
     "task_type": "funds"
   },
   "mode": "{selected_mode from forcing_data}",

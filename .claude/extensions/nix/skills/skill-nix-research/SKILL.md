@@ -21,7 +21,7 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "nix"
+- Task type is "nix"
 - Research is needed for Nix, NixOS, or Home Manager configuration
 - Package definitions or module patterns need to be gathered
 
@@ -106,7 +106,7 @@ EOF
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "nix"
+    "task_type": "nix"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

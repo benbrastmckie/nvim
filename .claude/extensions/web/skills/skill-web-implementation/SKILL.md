@@ -24,7 +24,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "web"
+- Task type is "web"
 - /implement command targets a web (Astro/Tailwind/TypeScript) task
 - Pages, components, layouts, or web styling needs to be created or modified
 
@@ -99,13 +99,13 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "general"')
+task_type=$(echo "$task_data" | jq -r '.task_type // .language // "general"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
 # Validate language
-if [ "$language" != "web" ]; then
+if [ "$task_type" != "web" ]; then
   return error "Task $task_number is not a web task"
 fi
 
@@ -129,7 +129,7 @@ Prepare delegation context:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "web"
+    "task_type": "web"
   },
   "plan_path": "specs/{NNN}_{SLUG}/plans/MM_{short-slug}.md",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

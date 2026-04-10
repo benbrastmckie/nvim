@@ -2,7 +2,7 @@
   "name": "filetypes",
   "version": "2.2.0",
   "description": "File format conversion, manipulation, and in-place editing for documents, spreadsheets, and presentations",
-  "language": null,
+  "task_type": null,
   "dependencies": [],
   "provides": {
     "agents": [

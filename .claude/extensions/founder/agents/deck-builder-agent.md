@@ -75,7 +75,7 @@ Extract from input:
     "task_number": 234,
     "project_name": "seed_round_pitch_deck",
     "description": "Seed round pitch deck",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "deck"
   },
   "plan_path": "specs/234_seed_round_pitch_deck/plans/01_deck-plan.md",

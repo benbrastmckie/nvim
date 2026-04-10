@@ -147,7 +147,7 @@ Include pre-gathered forcing_data when available:
     "task_number": N,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "founder",
+    "task_type": "founder",
     "task_type": "strategy"
   },
   "forcing_data": {

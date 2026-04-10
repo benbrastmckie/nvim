@@ -116,7 +116,7 @@ Extract from input:
     "task_number": 400,
     "task_name": "funding_analysis_nih_r01_comp_bio",
     "description": "...",
-    "language": "present",
+    "task_type": "present",
     "task_type": "funds"
   },
   "metadata": {

@@ -2,7 +2,7 @@
   "name": "present",
   "version": "1.0.0",
   "description": "Research presentation support: grant writing, budget planning, timeline management, funding analysis, and academic talks",
-  "language": "present",
+  "task_type": "present",
   "dependencies": [],
   "provides": {
     "agents": ["grant-agent.md", "budget-agent.md", "timeline-agent.md", "funds-agent.md", "talk-agent.md"],

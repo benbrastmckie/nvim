@@ -21,7 +21,7 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "neovim"
+- Task type is "neovim"
 - Research is needed for Neovim configuration
 - Plugin documentation or patterns need to be gathered
 
@@ -107,7 +107,7 @@ EOF
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "neovim"
+    "task_type": "neovim"
   },
   "focus_prompt": "{optional focus}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"

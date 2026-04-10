@@ -11,7 +11,7 @@ Thin wrapper that delegates Python implementation to `python-implementation-agen
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "python"
+- Task type is "python"
 - /implement command targets a Python task
 - Plan exists and task is ready for implementation
 

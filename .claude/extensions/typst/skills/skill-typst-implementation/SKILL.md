@@ -11,7 +11,7 @@ Thin wrapper that delegates Typst implementation to `typst-implementation-agent`
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "typst"
+- Task type is "typst"
 - /implement command targets a Typst task
 - Plan exists and task is ready for implementation
 
