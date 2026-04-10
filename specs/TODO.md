@@ -1,5 +1,5 @@
 ---
-next_project_number: 392
+next_project_number: 394
 ---
 
 # TODO
@@ -22,6 +22,13 @@ next_project_number: 392
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 393. Unify routing field: replace separate language and task_type with single extension:task_type format
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Language**: meta
+
+**Description**: Instead of both 'language' and 'task-type' fields for tasks, use a single routing field in the form '{extension-or-language}:{task-type}'. Systematically study the .claude/ agent system, the extension system, and best practices to improve uniformity and consistency throughout.
 
 ### 392. Refactor present extension commands (/grant, /budget, /funds, /timeline, /talk)
 - **Effort**: TBD
