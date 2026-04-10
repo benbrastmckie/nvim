@@ -64,7 +64,7 @@ description: Review code and create analysis reports
     <action>Roadmap Integration</action>
     <process>
       Load roadmap-format.md for parsing patterns
-      Parse specs/ROAD_MAP.md:
+      Parse specs/ROADMAP.md:
       - Phase headers: ## Phase {N}: {Title} ({Priority})
       - Checkboxes: - [ ] and - [x]
       - Status tables: Component/Status/Location
@@ -105,7 +105,7 @@ description: Review code and create analysis reports
     <action>Annotate Completed Roadmap Items</action>
     <process>
       For high-confidence matches:
-      Update ROAD_MAP.md checkboxes:
+      Update ROADMAP.md checkboxes:
       - [x] item *(Completed: Task {N}, {DATE})*
       
       Update status tables for verified components
@@ -174,7 +174,7 @@ Session: ${session_id}" || echo "Warning: Commit failed but review completed"
       **Files committed** (when modified):
       - `specs/reviews/review-{DATE}.md` - Review report
       - `specs/reviews/state.json` - Review state updates
-      - `specs/ROAD_MAP.md` - Roadmap annotations (if modified)
+      - `specs/ROADMAP.md` - Roadmap annotations (if modified)
       - `specs/TODO.md` - Task updates (if status changes)
       
       **Error handling**: Commit failures are non-blocking. Log a warning and continue.
@@ -220,7 +220,7 @@ Session: ${session_id}" || echo "Warning: Commit failed but review completed"
 <state_management>
   <reads>
     specs/reviews/state.json
-    specs/ROAD_MAP.md
+    specs/ROADMAP.md
     specs/TODO.md
     specs/state.json
   </reads>
@@ -228,6 +228,6 @@ Session: ${session_id}" || echo "Warning: Commit failed but review completed"
   <writes>
     specs/reviews/review-{DATE}.md
     specs/reviews/state.json
-    specs/ROAD_MAP.md (if annotating)
+    specs/ROADMAP.md (if annotating)
   </writes>
 </state_management>

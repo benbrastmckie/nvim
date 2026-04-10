@@ -36,7 +36,7 @@ description: Archive completed and abandoned tasks with CHANGE_LOG updates and m
       - Harvesting memory suggestions from artifacts
       - Interactive prompts for user decisions
       - Archiving tasks to specs/archive/
-      - Updating ROAD_MAP.md annotations
+      - Updating ROADMAP.md annotations
       - Applying README.md suggestions
       - Updating CHANGE_LOG.md with entries
       - Creating selected memories
@@ -84,7 +84,7 @@ Presented interactively with categories:
 
 ### Roadmap Annotation
 
-Automatically annotates ROAD_MAP.md items when tasks complete:
+Automatically annotates ROADMAP.md items when tasks complete:
 - Completed: `- [x] item *(Completed: Task OC_N, DATE)*`
 - Abandoned: `- [ ] item *(Task OC_N abandoned: reason)*`
 
@@ -121,7 +121,7 @@ For meta tasks, applies readme_suggestions from completion_data to update .openc
   <reads>
     specs/state.json
     specs/TODO.md
-    specs/ROAD_MAP.md
+    specs/ROADMAP.md
     specs/archive/state.json
     specs/errors.json
   </reads>
@@ -130,7 +130,7 @@ For meta tasks, applies readme_suggestions from completion_data to update .openc
     specs/archive/state.json
     specs/state.json
     specs/TODO.md
-    specs/ROAD_MAP.md
+    specs/ROADMAP.md
     specs/CHANGE_LOG.md
     .opencode/README.md
     .opencode/memory/10-Memories/

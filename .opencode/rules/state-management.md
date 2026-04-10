@@ -111,7 +111,7 @@ When a task transitions to `status: "completed"`, these fields are populated:
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `completion_summary` | string | **Yes** (when completed) | 1-3 sentence description of what was accomplished |
-| `roadmap_items` | array of strings | No | Explicit list of ROAD_MAP.md item texts this task addresses (non-meta tasks only) |
+| `roadmap_items` | array of strings | No | Explicit list of ROADMAP.md item texts this task addresses (non-meta tasks only) |
 | `readme_suggestions` | string | **Yes** (meta only) | Description of .opencode/ changes made, or `"none"` if no .opencode/ files modified |
 
 **Responsibility Split**:
@@ -121,7 +121,7 @@ When a task transitions to `status: "completed"`, these fields are populated:
 **Producer Responsibility**: The `/implement` command populates these fields in skill postflight (Stage 7) when a task is successfully completed. The agent generates `completion_data` in the metadata file, and the skill propagates it to specs/state.json.
 
 **Consumer Usage**: The `/todo` command extracts these fields via `jq` to:
-- Match non-meta tasks against ROAD_MAP.md items for annotation (using `roadmap_items`)
+- Match non-meta tasks against ROADMAP.md items for annotation (using `roadmap_items`)
 - Display README.md modification suggestions for user review (using `readme_suggestions` from meta tasks)
 
 ### readme_suggestions Schema (Meta Tasks Only)

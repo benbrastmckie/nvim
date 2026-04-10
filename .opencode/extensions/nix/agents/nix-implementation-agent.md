@@ -249,7 +249,7 @@ Write to `specs/OC_{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
    - Focus on the outcome, not the process
    - Include key artifacts created or modified
 
-2. Optionally generate `roadmap_items`: Array of explicit ROAD_MAP.md item texts this task addresses
+2. Optionally generate `roadmap_items`: Array of explicit ROADMAP.md item texts this task addresses
    - Only include if the task clearly maps to specific roadmap items
 
 ### Stage 7: Write Metadata File

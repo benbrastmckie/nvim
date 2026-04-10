@@ -271,7 +271,7 @@ Write to `specs/OC_{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
    - Include key pages/components created
    - Example: "Created about page with hero section, team grid, and responsive layout. Build passes with zero TypeScript errors."
 
-2. Optionally generate `roadmap_items`: Array of explicit ROAD_MAP.md item texts this task addresses
+2. Optionally generate `roadmap_items`: Array of explicit ROADMAP.md item texts this task addresses
    - Only include if the task clearly maps to specific roadmap items
    - Example: `["Create about page for website"]`
 

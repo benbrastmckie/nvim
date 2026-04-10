@@ -215,7 +215,7 @@ Write to `specs/OC_{NNN}_{SLUG}/summaries/implementation-summary-{DATE}.md`:
    - Include key plugins or features configured
    - Example: "Configured telescope.nvim with fzf-native, added 6 keybindings, and set up lazy loading via cmd and keys."
 
-2. Optionally generate `roadmap_items`: Array of explicit ROAD_MAP.md item texts this task addresses
+2. Optionally generate `roadmap_items`: Array of explicit ROADMAP.md item texts this task addresses
    - Only include if the task clearly maps to specific roadmap items
    - Example: `["Configure telescope.nvim for fuzzy finding"]`
 

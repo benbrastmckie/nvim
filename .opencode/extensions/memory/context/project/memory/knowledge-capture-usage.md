@@ -230,7 +230,7 @@ Executes plan, creates implementation.
 ```
 
 - Archives completed task
-- Updates ROAD_MAP.md with completion annotation
+- Updates ROADMAP.md with completion annotation
 - Updates CHANGE_LOG.md with entry
 - Suggests reviewing implementation for additional memories
 

@@ -1,6 +1,6 @@
 # Roadmap Format Standard
 
-**Purpose**: Document ROAD_MAP.md structure for parsing during /review
+**Purpose**: Document ROADMAP.md structure for parsing during /review
 
 ---
 

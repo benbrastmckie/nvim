@@ -97,4 +97,4 @@ Prompt user with numbered list. Accept: numbers (e.g., "1,3"), "all", or "none".
 
 ## Related
 
-- @.opencode/context/core/formats/roadmap-format.md - ROAD_MAP.md structure
+- @.opencode/context/core/formats/roadmap-format.md - ROADMAP.md structure

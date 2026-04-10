@@ -294,7 +294,7 @@ Archive completed and abandoned tasks.
 1. Finds tasks with status `[COMPLETED]` or `[ABANDONED]`
 2. Moves task directories to `specs/archive/`
 3. Updates `specs/TODO.md` and `specs/state.json`
-4. For non-meta tasks: Annotates `ROAD_MAP.md` with completion notes
+4. For non-meta tasks: Annotates `ROADMAP.md` with completion notes
 5. For meta tasks: Displays suggestions for review
 
 **Example Output**:

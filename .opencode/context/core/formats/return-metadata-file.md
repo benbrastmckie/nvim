@@ -109,7 +109,7 @@ Contains fields needed for task completion processing. Skills extract this data 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `completion_summary` | string | Yes | 1-3 sentence description of what was accomplished |
-| `roadmap_items` | array of strings | No | Explicit ROAD_MAP.md item texts this task addresses (non-meta tasks only) |
+| `roadmap_items` | array of strings | No | Explicit ROADMAP.md item texts this task addresses (non-meta tasks only) |
 | `readme_suggestions` | string | Yes (meta only) | Description of .opencode/ changes made, or `"none"` if no .opencode/ files modified |
 
 **Notes**:
