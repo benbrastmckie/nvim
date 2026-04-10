@@ -11,26 +11,24 @@ Agent definitions for the Claude Code system. Agents perform execution work for 
 | planner-agent.md | Implementation plan creation and task planning |
 | meta-builder-agent.md | System building for .claude/ architecture changes |
 | code-reviewer-agent.md | Code quality assessment and review |
+| reviser-agent.md | Plan revision and task description updates |
 | spawn-agent.md | Blocker analysis and task decomposition |
 
 ## Agent Structure
 
-All agents follow the standard frontmatter format:
+All agents follow the minimal frontmatter format (see `.claude/docs/reference/standards/agent-frontmatter-standard.md`):
 
 ```yaml
 ---
 name: agent-name
 description: Brief description of agent purpose
-mode: subagent
-temperature: 0.1-1.0
-tools:
-  read: true/false
-  write: true/false
-  edit: true/false
-  bash: true/false
-  task: true/false
+model: opus
 ---
 ```
+
+**Required fields**: `name`, `description`
+
+**Optional field**: `model` (values: `opus`, `sonnet`). Omit for default model behavior. Research and planning agents typically use `opus`; implementation agents typically omit the field.
 
 ## Usage
 

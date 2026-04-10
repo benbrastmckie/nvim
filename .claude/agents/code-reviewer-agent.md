@@ -1,13 +1,7 @@
 ---
 name: code-reviewer-agent
 description: Review code for security, performance, and maintainability
-mode: subagent
-temperature: 0.1
-tools:
-  read: true
-  glob: true
-  grep: true
-  task: false
+model: opus
 ---
 
 # Code Reviewer Agent

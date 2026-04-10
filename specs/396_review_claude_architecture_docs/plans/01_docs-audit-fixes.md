@@ -131,7 +131,8 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Tier 1 -- Code-Reviewer Frontmatter Migration [NOT STARTED]
+### Phase 3: Tier 1 -- Code-Reviewer Frontmatter Migration [COMPLETED]
+**Completed**: 2026-04-10
 
 **Goal**: Migrate `code-reviewer-agent.md` to the current minimal frontmatter standard and verify no other agents have the same rot.
 
