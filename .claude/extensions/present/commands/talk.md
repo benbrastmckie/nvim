@@ -18,6 +18,7 @@ This command initiates research talk creation through structured material gather
 - `/talk "Conference talk on survival analysis methods"` - Ask questions, create task with gathered data
 - `/talk 500` - Resume research on existing task
 - `/talk /path/to/manuscript.md` - Use file as primary source material, create task
+- `/talk 500 --design` - Design confirmation after research (themes, ordering, emphasis)
 
 ## Input Types
 
@@ -25,6 +26,7 @@ This command initiates research talk creation through structured material gather
 |-------|----------|
 | Description string | Ask forcing questions, create task with forcing_data, stop at [NOT STARTED] |
 | Task number | Load existing task, run research, stop at [RESEARCHED] |
+| Task number `--design` | Read research report, confirm design choices, store as design_decisions |
 | File path | Read file as primary source material, ask questions, create task |
 
 ## Modes
@@ -122,8 +124,13 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ### Step 2: Detect Input Type
 
 ```bash
-# Check for task number
-if echo "$ARGUMENTS" | grep -qE '^[0-9]+$'; then
+# Check for --design flag with task number
+if echo "$ARGUMENTS" | grep -qE '^[0-9]+.*--design'; then
+  input_type="design"
+  task_number=$(echo "$ARGUMENTS" | grep -oE '^[0-9]+')
+
+# Check for task number (no flags)
+elif echo "$ARGUMENTS" | grep -qE '^[0-9]+$'; then
   input_type="task_number"
   task_number="$ARGUMENTS"
 
@@ -143,6 +150,9 @@ fi
 
 **If task number**:
 Load existing task, validate language is "present" and task_type is "talk", then delegate to skill-talk for research.
+
+**If --design**:
+Load existing task, validate status is "researched" or later, then proceed to STAGE 3: DESIGN CONFIRMATION.
 
 **If file path**:
 Read the file as primary source material. Run Stage 0 forcing questions (Steps 0.1-0.3) with the file content as context. Then proceed to task creation.
@@ -273,7 +283,136 @@ Talk research completed for Task #{N}
 Status: [RESEARCHED]
 Report: specs/{NNN}_{SLUG}/reports/{MM}_talk-research.md
 
-Next: /plan {N}
+Next: /talk {N} --design (optional: confirm design choices before planning)
+      /plan {N} (skip design, go directly to planning)
+```
+
+---
+
+## STAGE 3: DESIGN CONFIRMATION (--design flag)
+
+**Only reached when input_type is "design".**
+
+This stage runs after research is complete. It reads the research report, presents design choices
+to the user, and stores their decisions in task metadata for the planner to use.
+
+### Step 1: Validate Task
+
+```bash
+task_data=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num)' \
+  specs/state.json)
+
+# Validate exists, language is "present", task_type is "talk"
+# Validate status is "researched" or "planned"
+status=$(echo "$task_data" | jq -r '.status')
+if [ "$status" != "researched" ] && [ "$status" != "planned" ]; then
+  echo "Error: Task must be researched before design confirmation. Current status: [$status]"
+  echo "Run /talk $task_number first to complete research."
+  exit 1
+fi
+```
+
+### Step 2: Read Research Report
+
+```bash
+padded_num=$(printf "%03d" "$task_number")
+project_name=$(echo "$task_data" | jq -r '.project_name')
+report_path=$(ls specs/${padded_num}_${project_name}/reports/*_talk-research.md 2>/dev/null | tail -1)
+```
+
+Read the research report to extract key messages, suggested structure, and themes.
+
+### Step 3: Design Questions
+
+**D1: Visual Theme**
+
+Use AskUserQuestion:
+
+```
+Based on the research report, which visual theme fits best?
+
+A) Academic Clean - Minimal, high-contrast, serif headings (department seminars)
+B) Clinical Teal - Medical/clinical palette, clean data presentation (clinical audiences)
+C) Conference Bold - Strong colors, large type, designed for projection (conference talks)
+D) Minimal Dark - Dark background, high contrast, code-friendly (technical audiences)
+```
+
+Store response as `design_decisions.theme`.
+
+**D2: Key Message Ordering**
+
+Present the 3 key messages identified in the research report and ask:
+
+```
+The research identified these key messages. Confirm or reorder:
+
+1. {key_message_1}
+2. {key_message_2}
+3. {key_message_3}
+
+Enter the preferred order (e.g., "2, 1, 3") or "confirm" to keep as-is.
+Add any messages to emphasize or de-emphasize.
+```
+
+Store response as `design_decisions.message_order`.
+
+**D3: Section Emphasis**
+
+```
+Which sections should receive extra slides or depth?
+
+Select all that apply:
+- Methods/approach (show technical detail)
+- Results/data (more data slides)
+- Background/motivation (broader context)
+- Clinical implications (translational focus)
+- Future directions (forward-looking)
+
+Which sections to expand?
+```
+
+Store response as `design_decisions.section_emphasis`.
+
+### Step 4: Store Design Decisions
+
+Update task metadata in state.json:
+
+```bash
+jq --arg theme "$theme" \
+   --arg order "$message_order" \
+   --arg emphasis "$section_emphasis" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  '(.active_projects[] | select(.project_number == '$task_number')).design_decisions = {
+    "theme": $theme,
+    "message_order": $order,
+    "section_emphasis": $emphasis,
+    "confirmed_at": $ts
+  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+```
+
+### Step 5: Git Commit
+
+```bash
+git add specs/state.json
+git commit -m "task ${task_number}: confirm talk design
+
+Session: ${session_id}"
+```
+
+### Step 6: Output
+
+```
+Talk design confirmed for Task #{N}
+
+Design Decisions:
+- Theme: {theme}
+- Message Order: {message_order}
+- Section Emphasis: {section_emphasis}
+
+Status: [RESEARCHED] (unchanged)
+
+Next: /plan {N} - Create implementation plan (will use design_decisions)
 ```
 
 ---

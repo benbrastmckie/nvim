@@ -47,6 +47,11 @@ This skill routes to talk-agent with one of two workflow types:
 | talk_research | researching | researched | [RESEARCHING] -> [RESEARCHED] |
 | assemble | implementing | completed | [IMPLEMENTING] -> [COMPLETED] |
 
+**Note**: The `--design` workflow is handled entirely at the command level (`talk.md`), not by this
+skill. Design confirmation stores `design_decisions` in task metadata. When `/plan N` runs for a talk
+task, the planner should check for and use `design_decisions` (theme, message_order, section_emphasis)
+from state.json metadata.
+
 ---
 
 ## Input Parameters
