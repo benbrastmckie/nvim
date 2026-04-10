@@ -31,7 +31,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- `/talk` command with task number input
+- `/slides` command with task number input
 - `/research` on a present task with `task_type: "talk"`
 - `/implement` on a present task with `task_type: "talk"` (assemble workflow)
 - Extension is loaded via `<leader>ac`
@@ -47,7 +47,7 @@ This skill routes to talk-agent with one of two workflow types:
 | talk_research | researching | researched | [RESEARCHING] -> [RESEARCHED] |
 | assemble | implementing | completed | [IMPLEMENTING] -> [COMPLETED] |
 
-**Note**: The `--design` workflow is handled entirely at the command level (`talk.md`), not by this
+**Note**: The `--design` workflow is handled entirely at the command level (`slides.md`), not by this
 skill. Design confirmation stores `design_decisions` in task metadata. When `/plan N` runs for a talk
 task, the planner should check for and use `design_decisions` (theme, message_order, section_emphasis)
 from state.json metadata.
@@ -162,7 +162,7 @@ EOF
 {
   "session_id": "sess_{timestamp}_{random}",
   "delegation_depth": 1,
-  "delegation_path": ["orchestrator", "talk", "skill-talk"],
+  "delegation_path": ["orchestrator", "slides", "skill-talk"],
   "timeout": 3600,
   "task_context": {
     "task_number": N,
@@ -300,7 +300,7 @@ Talk skill error for task {N}:
 ```
 Talk skill error for task {N}:
 - Task is not a talk task (language={language}, task_type={task_type})
-- Use /talk for talk-type tasks
+- Use /slides for talk-type tasks
 - No status changes made
 ```
 

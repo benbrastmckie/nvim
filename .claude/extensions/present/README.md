@@ -18,7 +18,7 @@ The present extension provides research presentation capabilities:
 | Budget Planning | `/budget` | Grant budget spreadsheet generation (XLSX) with Excel formulas |
 | Timeline Management | `/timeline` | Research project timeline planning with WBS/PERT/Gantt |
 | Funding Analysis | `/funds` | Research funding landscape and portfolio analysis |
-| Academic Talks | `/talk` | Slidev-based research presentation generation |
+| Academic Talks | `/slides` | Slidev-based research presentation generation |
 
 ## Commands
 
@@ -66,17 +66,19 @@ Research funding landscape analysis with four analysis modes.
 
 Modes: LANDSCAPE, PORTFOLIO, JUSTIFY, GAP.
 
-### /talk - Academic Talks
+### /slides - Academic Talks
 
 Slidev-based research presentation generation from source materials.
 
 ```bash
-/talk "Conference talk on machine learning for drug discovery"
-/talk 504                      # Resume talk generation
-/talk /path/to/paper.pdf       # Use file as primary source
+/slides "Conference talk on machine learning for drug discovery"
+/slides 504                      # Resume talk generation
+/slides /path/to/paper.pdf       # Use file as primary source
 ```
 
 Modes: CONFERENCE, SEMINAR, DEFENSE, POSTER, JOURNAL_CLUB.
+
+**Note**: This command was previously named `/talk`. For PPTX slide file conversion (not research talk creation), use `/convert --format=beamer` in the `filetypes` extension.
 
 ## Related Files
 

@@ -1,6 +1,6 @@
 # Academic Presentation Types Reference
 
-Domain reference for research presentation types supported by the /talk command.
+Domain reference for research presentation types supported by the /slides command.
 
 ## CONFERENCE: Platform Presentation
 

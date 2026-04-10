@@ -7,7 +7,7 @@
   "provides": {
     "agents": ["grant-agent.md", "budget-agent.md", "timeline-agent.md", "funds-agent.md", "talk-agent.md"],
     "skills": ["skill-grant", "skill-budget", "skill-timeline", "skill-funds", "skill-talk"],
-    "commands": ["grant.md", "budget.md", "timeline.md", "funds.md", "talk.md"],
+    "commands": ["grant.md", "budget.md", "timeline.md", "funds.md", "slides.md"],
     "rules": [],
     "context": ["project/present"],
     "scripts": [],

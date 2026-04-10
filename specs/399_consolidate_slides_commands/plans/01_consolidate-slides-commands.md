@@ -179,7 +179,7 @@ All phases are sequential: each depends on the file-state established by the pre
 
 ---
 
-### Phase 4: Update present extension metadata and cross-references [NOT STARTED]
+### Phase 4: Update present extension metadata and cross-references [COMPLETED]
 
 **Goal**: Update present extension's manifest, EXTENSION.md, README.md, index-entries, skill-talk, agent, and domain docs to reflect the rename from `/talk` to `/slides`.
 

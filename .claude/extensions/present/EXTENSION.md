@@ -26,9 +26,9 @@ Structured proposal development (grants) and research presentation creation (tal
 | `/timeline` | `/timeline N` | Resume timeline planning for existing task |
 | `/funds` | `/funds "Description"` | Create funding analysis task with forcing questions |
 | `/funds` | `/funds N` | Resume funding analysis for existing task |
-| `/talk` | `/talk "Description"` | Create research talk task with forcing questions |
-| `/talk` | `/talk N` | Resume research on existing talk task |
-| `/talk` | `/talk /path/to/file` | Use file as primary source material for talk |
+| `/slides` | `/slides "Description"` | Create research talk task with forcing questions |
+| `/slides` | `/slides N` | Resume research on existing talk task |
+| `/slides` | `/slides /path/to/file` | Use file as primary source material for talk |
 
 ### Language Routing
 

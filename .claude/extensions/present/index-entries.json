@@ -347,7 +347,7 @@
       "load_when": {
         "languages": ["present"],
         "agents": ["talk-agent"],
-        "commands": ["/talk"]
+        "commands": ["/slides"]
       }
     },
     {
@@ -361,7 +361,7 @@
       "load_when": {
         "languages": ["present"],
         "agents": ["talk-agent"],
-        "commands": ["/talk"]
+        "commands": ["/slides"]
       }
     }
   ]
