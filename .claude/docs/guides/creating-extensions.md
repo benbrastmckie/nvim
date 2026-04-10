@@ -31,6 +31,7 @@ mkdir -p .claude/extensions/your-domain/{agents,skills,rules,context/project/you
 # Required files
 touch .claude/extensions/your-domain/manifest.json
 touch .claude/extensions/your-domain/EXTENSION.md
+touch .claude/extensions/your-domain/README.md
 
 # Optional but recommended
 touch .claude/extensions/your-domain/index-entries.json
@@ -128,6 +129,32 @@ This project includes [Your Domain] support via the your-domain extension.
 - Feature 2: Description or keymap
 - Common pattern: Example usage
 ```
+
+### README.md (Required)
+
+Every extension must provide a `README.md` file in its root directory. This is the user-facing overview of the extension, distinct from `EXTENSION.md` (which is a snippet injected into `.claude/CLAUDE.md` when the extension is loaded).
+
+Start from the canonical template: `.claude/templates/extension-readme-template.md`.
+
+The template includes a **section-applicability matrix** that distinguishes simple extensions (latex, python, typst, z3, epidemiology) from complex extensions (filetypes, lean, formal, nvim, nix, web). Simple extensions omit sections they do not need (MCP Setup, Workflow diagram, Output Artifacts) and produce README files under ~120 lines. Complex extensions use the full structure.
+
+**Required sections for all extensions**:
+- Overview (with a task type / command table)
+- Installation
+- Skill-Agent Mapping
+- Language Routing
+- References (optional but encouraged)
+
+**Required sections for complex extensions**:
+- MCP Tool Setup (if the extension configures MCP servers)
+- Commands (if the extension provides commands)
+- Architecture tree
+- Workflow diagram
+- Output Artifacts
+- Key Patterns
+- Tool Dependencies
+
+The doc-lint script at `.claude/scripts/check-extension-docs.sh` flags missing `README.md` files during verification.
 
 ### index-entries.json (Recommended)
 

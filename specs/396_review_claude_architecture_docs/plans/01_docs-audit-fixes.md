@@ -279,7 +279,8 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 8: Tier 3 -- Extension README Template and Creating-Extensions Guide [NOT STARTED]
+### Phase 8: Tier 3 -- Extension README Template and Creating-Extensions Guide [COMPLETED]
+**Completed**: 2026-04-10
 
 **Goal**: Codify the template pattern so future extensions produce README.md by default.
 
