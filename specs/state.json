@@ -5,10 +5,10 @@
     {
       "project_number": 395,
       "project_name": "rename_road_map_to_roadmap",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-10T17:30:08Z",
-      "last_updated": "2026-04-10T17:46:32Z",
+      "last_updated": "2026-04-10T17:51:30Z",
       "session_id": "sess_1775843180_cb52d7",
       "next_artifact_number": 2,
       "artifacts": [
@@ -16,8 +16,15 @@
           "path": "specs/395_rename_road_map_to_roadmap/plans/01_rename-roadmap-plan.md",
           "type": "plan",
           "summary": "3-phase plan: update 23 .claude/ references, update 13 .opencode/ references, add auto-creation logic in 6 files"
+        },
+        {
+          "path": "specs/395_rename_road_map_to_roadmap/summaries/01_rename-roadmap-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for ROAD_MAP.md to ROADMAP.md rename"
         }
-      ]
+      ],
+      "completion_summary": "Renamed all ROAD_MAP.md references to ROADMAP.md across 36 files and added auto-creation logic for specs/ROADMAP.md in /todo and /review commands.",
+      "claudemd_suggestions": "Updated .claude/CLAUDE.md references from ROAD_MAP.md to ROADMAP.md; updated 23 .claude/ files including skills, agents, commands, context, and extension files"
     },
     {
       "project_number": 394,

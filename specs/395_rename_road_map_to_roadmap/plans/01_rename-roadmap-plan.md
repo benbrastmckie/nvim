@@ -1,7 +1,7 @@
 # Implementation Plan: Rename ROAD_MAP.md to ROADMAP.md
 
 - **Task**: 395 - Rename ROAD_MAP.md to ROADMAP.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/395_rename_road_map_to_roadmap/reports/01_rename-roadmap-research.md
