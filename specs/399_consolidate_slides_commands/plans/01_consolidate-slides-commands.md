@@ -152,7 +152,7 @@ All phases are sequential: each depends on the file-state established by the pre
 
 ---
 
-### Phase 3: Rename talk.md to slides.md [NOT STARTED]
+### Phase 3: Rename talk.md to slides.md [COMPLETED]
 
 **Goal**: Move `present/commands/talk.md` to `present/commands/slides.md` and rewrite internal `/talk` slash-command references inside the file.
 

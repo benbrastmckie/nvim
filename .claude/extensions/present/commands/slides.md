@@ -5,7 +5,7 @@ argument-hint: "description" | TASK_NUMBER | /path/to/file.md
 model: opus
 ---
 
-# /talk Command
+# /slides Command
 
 Research presentation creation command with material synthesis and task system integration.
 
@@ -15,10 +15,12 @@ This command initiates research talk creation through structured material gather
 
 ## Syntax
 
-- `/talk "Conference talk on survival analysis methods"` - Ask questions, create task with gathered data
-- `/talk 500` - Resume research on existing task
-- `/talk /path/to/manuscript.md` - Use file as primary source material, create task
-- `/talk 500 --design` - Design confirmation after research (themes, ordering, emphasis)
+- `/slides "Conference talk on survival analysis methods"` - Ask questions, create task with gathered data
+- `/slides 500` - Resume research on existing task
+- `/slides /path/to/manuscript.md` - Use file as primary source material, create task
+- `/slides 500 --design` - Design confirmation after research (themes, ordering, emphasis)
+
+**Note**: This command was previously named `/talk`. For PPTX slide file conversion (not research talk creation), use `/convert --format beamer|polylux|touying` in the `filetypes` extension.
 
 ## Input Types
 
@@ -283,7 +285,7 @@ Talk research completed for Task #{N}
 Status: [RESEARCHED]
 Report: specs/{NNN}_{SLUG}/reports/{MM}_talk-research.md
 
-Next: /talk {N} --design (optional: confirm design choices before planning)
+Next: /slides {N} --design (optional: confirm design choices before planning)
       /plan {N} (skip design, go directly to planning)
 ```
 
@@ -308,7 +310,7 @@ task_data=$(jq -r --argjson num "$task_number" \
 status=$(echo "$task_data" | jq -r '.status')
 if [ "$status" != "researched" ] && [ "$status" != "planned" ]; then
   echo "Error: Task must be researched before design confirmation. Current status: [$status]"
-  echo "Run /talk $task_number first to complete research."
+  echo "Run /slides $task_number first to complete research."
   exit 1
 fi
 ```
@@ -437,7 +439,7 @@ Tasks with language="present" and task_type="talk" route through core commands:
 
 ### Research Errors
 - Task not found: Return error with guidance to create task first
-- Wrong language/task_type: Return error suggesting /talk for talk tasks
+- Wrong language/task_type: Return error suggesting /slides for talk tasks
 - Invalid status: Return error with current status and valid transitions
 
 ### Git Commit Failure
