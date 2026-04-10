@@ -2,7 +2,7 @@
 description: Create timeline tasks or execute research timeline workflows for medical research projects
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
 argument-hint: "description" | TASK_NUMBER
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /timeline Command
@@ -13,12 +13,12 @@ Hybrid command supporting both task creation and timeline research workflow.
 
 | Mode | Syntax | Description |
 |------|--------|-------------|
-| Task Creation | `/timeline "Description"` | Create task with language="timeline" |
+| Task Creation | `/timeline "Description"` | Create task with language="present", task_type="timeline" |
 | Research | `/timeline N` | Research and build project timeline |
 
 ## CRITICAL: Task Creation Mode
 
-When $ARGUMENTS is a description (no task number), create a task with language="timeline".
+When $ARGUMENTS is a description (no task number), create a task with language="present", task_type="timeline".
 
 **$ARGUMENTS contains a task DESCRIPTION to RECORD in the task list.**
 
@@ -62,7 +62,7 @@ When $ARGUMENTS is a description without a task number.
    - Verb inference: If no action verb, prepend appropriate one
    - Formatting normalization: Capitalize, trim, no trailing period
 
-4. **Set language = "timeline"** (always for /timeline task creation)
+4. **Set language = "present"** and **task_type = "timeline"** (always for /timeline task creation)
 
 5. **Create slug** from description:
    - Lowercase, replace spaces with underscores
@@ -78,7 +78,8 @@ When $ARGUMENTS is a description without a task number.
         "project_number": {N},
         "project_name": "slug",
         "status": "not_started",
-        "language": "timeline",
+        "language": "present",
+        "task_type": "timeline",
         "description": $desc,
         "created": $ts,
         "last_updated": $ts
@@ -100,7 +101,8 @@ When $ARGUMENTS is a description without a task number.
    ### {N}. {Title}
    - **Effort**: TBD
    - **Status**: [NOT STARTED]
-   - **Language**: timeline
+   - **Language**: present
+   - **Type**: timeline
 
    **Description**: {description}
    ```
@@ -119,7 +121,8 @@ When $ARGUMENTS is a description without a task number.
    ```
    Timeline task #{N} created: {TITLE}
    Status: [NOT STARTED]
-   Language: timeline
+   Language: present
+   Type: timeline
    Artifacts path: specs/{NNN}_{SLUG}/ (created on first artifact)
 
    Recommended workflow:
@@ -155,7 +158,7 @@ When $ARGUMENTS starts with a task number.
 
 3. **Validate Task**
    - Task must exist (ABORT if not)
-   - Language must be "timeline" (ABORT with message if not)
+   - Language must be "present" and task_type must be "timeline" (ABORT with message if not)
    - Status must allow research: not_started, researched (re-research), partial
    - If completed/abandoned: ABORT with appropriate message
 
@@ -242,7 +245,7 @@ Next: /plan {N} to create implementation plan
 
 ## Core Command Integration
 
-Tasks with language="timeline" route through core commands:
+Tasks with language="present", task_type="timeline" route through core commands:
 
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
@@ -277,7 +280,8 @@ Tasks with language="timeline" route through core commands:
 ```
 Timeline task #{N} created: {TITLE}
 Status: [NOT STARTED]
-Language: timeline
+Language: present
+Type: timeline
 
 Recommended workflow:
 1. /timeline {N} - Research and build project timeline

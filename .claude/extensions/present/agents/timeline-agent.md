@@ -83,7 +83,8 @@ Extract from input:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "...",
-    "language": "timeline"
+    "language": "present",
+    "task_type": "timeline"
   },
   "workflow_type": "timeline_research",
   "forcing_data": { "...pre-gathered responses if available..." },

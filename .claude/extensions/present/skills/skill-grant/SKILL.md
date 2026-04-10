@@ -29,7 +29,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "grant"
+- Task language is "present" and task_type is "grant"
 - Grant workflow requested via flags (--draft, --budget) or /implement routing
 - Extension is loaded via `<leader>ac`
 
@@ -48,14 +48,14 @@ This skill routes to grant-agent with one of five workflow types:
 | assemble | implementing | completed | [IMPLEMENTING] -> [COMPLETED] |
 | fix_it_scan | (no change) | (no change) | (no change) |
 
-**Note**: The `assemble` workflow is triggered via `/implement N` command (not `/grant`), which routes to skill-grant when the task language is "grant".
+**Note**: The `assemble` workflow is triggered via `/implement N` command (not `/grant`), which routes to skill-grant when the task language is "present" and task_type is "grant".
 
 ---
 
 ## Input Parameters
 
 ### Required Parameters
-- `task_number` - Task number (must exist in state.json with language="grant")
+- `task_number` - Task number (must exist in state.json with language="present" and task_type="grant")
 - `workflow_type` - One of: funder_research, proposal_draft, budget_develop, progress_track, assemble
 - `session_id` - Session ID from orchestrator
 
@@ -94,14 +94,14 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "grant"')
+language=$(echo "$task_data" | jq -r '.language // "present"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
-# Validate language is "grant"
-if [ "$language" != "grant" ]; then
-  return error "Task $task_number has language '$language', expected 'grant'"
+# Validate language is "present"
+if [ "$language" != "present" ]; then
+  return error "Task $task_number has language '$language', expected 'present'"
 fi
 
 # Validate workflow_type
@@ -236,7 +236,8 @@ Prepare delegation context for the subagent:
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "grant"
+    "language": "present",
+    "task_type": "grant"
   },
   "workflow_type": "funder_research|proposal_draft|budget_develop|progress_track|assemble",
   "focus_prompt": "{optional focus - passed to agent for guidance}",
@@ -801,7 +802,7 @@ When multiple QUESTIONs are selected, offer grouping options (same pattern as TO
 
 ### Step F10: Create Tasks
 
-For each selected task type, create tasks with `language="grant"`:
+For each selected task type, create tasks with `language="present"` and `task_type="grant"`:
 
 **FIX Task Creation**:
 ```bash
@@ -818,7 +819,8 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      "project_number": $next_num,
      "project_name": "'"$slug"'",
      "status": "not_started",
-     "language": "grant",
+     "language": "present",
+     "task_type": "grant",
      "description": $desc,
      "parent_task": $parent,
      "created": $ts,
@@ -829,12 +831,12 @@ jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 
 **TODO Task Creation** (per selected/grouped item):
 ```bash
-# Same pattern, with language="grant" and parent_task=$task_number
+# Same pattern, with language="present", task_type="grant" and parent_task=$task_number
 ```
 
 **QUESTION Task Creation** (per selected/grouped item):
 ```bash
-# Same pattern, with language="grant" and parent_task=$task_number
+# Same pattern, with language="present", task_type="grant" and parent_task=$task_number
 ```
 
 ---
@@ -914,7 +916,7 @@ Grant skill error for task {N}:
 Return immediately with error message:
 ```
 Grant skill error for task {N}:
-- Task has language '{language}', expected 'grant'
+- Task has language '{language}', expected 'present'
 - Use /grant {N} to update task language or use appropriate skill
 - No status changes made
 ```

@@ -2,7 +2,7 @@
 description: Create grant tasks, execute grant workflows (draft, budget), or create revisions
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit
 argument-hint: "description" | TASK_NUMBER --draft ["prompt"] | --budget ["prompt"] | --revise N "description" | TASK_NUMBER --fix-it
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 # /grant Command
@@ -13,7 +13,7 @@ Hybrid command supporting both task creation and grant-specific workflows.
 
 | Mode | Syntax | Description |
 |------|--------|-------------|
-| Task Creation | `/grant "Description"` | Create task with language="grant" |
+| Task Creation | `/grant "Description"` | Create task with language="present", task_type="grant" |
 | Draft | `/grant N --draft ["prompt"]` | Draft narrative sections |
 | Budget | `/grant N --budget ["prompt"]` | Develop line-item budget |
 | Fix-It | `/grant N --fix-it` | Scan grant directory for FIX:/TODO: tags |
@@ -22,7 +22,7 @@ Hybrid command supporting both task creation and grant-specific workflows.
 
 ## CRITICAL: Task Creation Mode
 
-When $ARGUMENTS is a description (no flags, no task number), create a task with language="grant".
+When $ARGUMENTS is a description (no flags, no task number), create a task with language="present" and task_type="grant".
 
 **$ARGUMENTS contains a task DESCRIPTION to RECORD in the task list.**
 
@@ -76,7 +76,7 @@ When $ARGUMENTS is a description without flags.
    - Verb inference: If no action verb, prepend appropriate one
    - Formatting normalization: Capitalize, trim, no trailing period
 
-4. **Set language = "grant"** (always for /grant task creation)
+4. **Set language = "present"** and **task_type = "grant"** (always for /grant task creation)
 
 5. **Create slug** from description:
    - Lowercase, replace spaces with underscores
@@ -92,7 +92,8 @@ When $ARGUMENTS is a description without flags.
         "project_number": {N},
         "project_name": "slug",
         "status": "not_started",
-        "language": "grant",
+        "language": "present",
+        "task_type": "grant",
         "description": $desc,
         "created": $ts,
         "last_updated": $ts
@@ -114,7 +115,8 @@ When $ARGUMENTS is a description without flags.
    ### {N}. {Title}
    - **Effort**: TBD
    - **Status**: [NOT STARTED]
-   - **Language**: grant
+   - **Language**: present
+   - **Type**: grant
 
    **Description**: {description}
    ```
@@ -133,7 +135,8 @@ When $ARGUMENTS is a description without flags.
    ```
    Grant task #{N} created: {TITLE}
    Status: [NOT STARTED]
-   Language: grant
+   Language: present
+   Type: grant
    Artifacts path: specs/{NNN}_{SLUG}/ (created on first artifact)
 
    Recommended workflow:
@@ -175,7 +178,7 @@ Execute proposal drafting workflow.
 
 3. **Validate Task**
    - Task must exist (ABORT if not)
-   - Language must be "grant" (ABORT with message if not)
+   - Language must be "present" and task_type must be "grant" (ABORT with message if not)
    - Status must allow drafting: researched, planned, partial, not_started
    - If completed/abandoned: ABORT with appropriate message
 
@@ -342,7 +345,8 @@ Create a new task to revise an existing grant.
         "project_number": {NEW_N},
         "project_name": "revise_slug",
         "status": "not_started",
-        "language": "grant",
+        "language": "present",
+        "task_type": "grant",
         "description": $desc,
         "parent_grant": $parent,
         "revises_directory": $revises_dir,
@@ -360,7 +364,8 @@ Create a new task to revise an existing grant.
    ### {NEW_N}. {Revision Title}
    - **Effort**: TBD
    - **Status**: [NOT STARTED]
-   - **Language**: grant
+   - **Language**: present
+   - **Type**: grant
    - **Parent Grant**: Task #{N}
 
    **Description**: {revision_description}
@@ -381,7 +386,8 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ```
 Grant revision task #{NEW_N} created for Grant #{N}
 Status: [NOT STARTED]
-Language: grant
+Language: present
+Type: grant
 Parent Grant: Task #{N}
 Revises: {grant_dir}
 
@@ -421,7 +427,7 @@ Scan grant directory for embedded tags and create structured tasks.
 
 3. **Validate Task**
    - Task must exist (ABORT if not)
-   - Language must be "grant" (ABORT with message if not)
+   - Language must be "present" and task_type must be "grant" (ABORT with message if not)
    - Status does not change for fix-it scan (non-destructive operation)
 
 **ABORT** if validation fails.
@@ -484,7 +490,7 @@ Then proceed with legacy execution as documented in original command.
 
 ## Core Command Integration
 
-Tasks with language="grant" route through core commands:
+Tasks with language="present" and task_type="grant" route through core commands:
 
 | Command | Routes To | Purpose |
 |---------|-----------|---------|
@@ -519,7 +525,8 @@ Tasks with language="grant" route through core commands:
 ```
 Grant task #{N} created: {TITLE}
 Status: [NOT STARTED]
-Language: grant
+Language: present
+Type: grant
 
 Recommended workflow:
 1. /research {N} - Research funders and requirements

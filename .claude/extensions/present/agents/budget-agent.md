@@ -1,6 +1,7 @@
 ---
 name: budget-agent
 description: Grant budget spreadsheet generation with forcing questions and XLSX export
+model: opus
 mcp-servers: []
 ---
 
@@ -79,7 +80,8 @@ Extract from input:
     "task_number": 42,
     "project_name": "nih_r01_budget_ai_interpretability",
     "description": "NIH R01 budget for AI interpretability project",
-    "language": "budget"
+    "language": "present",
+    "task_type": "budget"
   },
   "forcing_data": {
     "mode": "MODULAR|DETAILED|NSF|FOUNDATION|SBIR",

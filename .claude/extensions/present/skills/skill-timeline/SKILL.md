@@ -30,7 +30,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "timeline"
+- Task language is "present" and task_type is "timeline"
 - Timeline workflow requested via /timeline command or /research routing
 - Extension is loaded via `<leader>ac`
 
@@ -50,7 +50,7 @@ This skill routes to timeline-agent with one of two workflow types:
 ## Input Parameters
 
 ### Required Parameters
-- `task_number` - Task number (must exist in state.json with language="timeline")
+- `task_number` - Task number (must exist in state.json with language="present" and task_type="timeline")
 - `workflow_type` - One of: timeline_research, timeline_plan
 - `session_id` - Session ID from orchestrator
 
@@ -79,14 +79,14 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "timeline"')
+language=$(echo "$task_data" | jq -r '.language // "present"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
-# Validate language is "timeline"
-if [ "$language" != "timeline" ]; then
-  return error "Task $task_number has language '$language', expected 'timeline'"
+# Validate language is "present"
+if [ "$language" != "present" ]; then
+  return error "Task $task_number has language '$language', expected 'present'"
 fi
 ```
 
@@ -188,7 +188,8 @@ esac
     "task_number": N,
     "task_name": "{project_name}",
     "description": "{description}",
-    "language": "timeline"
+    "language": "present",
+    "task_type": "timeline"
   },
   "workflow_type": "timeline_research",
   "forcing_data": { "...pre-gathered data if available..." },
@@ -366,7 +367,7 @@ Timeline skill error for task {N}:
 ### Wrong Language
 ```
 Timeline skill error for task {N}:
-- Task has language '{language}', expected 'timeline'
+- Task has language '{language}', expected 'present'
 - Use /timeline to create timeline tasks
 - No status changes made
 ```

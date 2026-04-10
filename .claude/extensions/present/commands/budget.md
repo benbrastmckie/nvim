@@ -2,6 +2,7 @@
 description: Grant budget spreadsheet generation with forcing questions and task integration
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Read, Edit, AskUserQuestion
 argument-hint: "[description]" | TASK_NUMBER | /path/to/file.md | --quick [mode]
+model: opus
 ---
 
 # /budget Command
@@ -175,10 +176,10 @@ if [ -z "$task_data" ]; then
 fi
 
 task_lang=$(echo "$task_data" | jq -r '.language')
-if [ "$task_lang" = "budget" ] || [ "$task_lang" = "grant" ]; then
+if [ "$task_lang" = "present" ]; then
   : # OK
 else
-  echo "Error: Task $task_number has language '$task_lang', expected 'budget'"
+  echo "Error: Task $task_number has language '$task_lang', expected 'present'"
   exit 1
 fi
 ```
@@ -207,7 +208,7 @@ jq --argjson num "$next_num" \
      project_number: $num,
      project_name: $name,
      status: "not_started",
-     language: "budget",
+     language: "present",
      task_type: $task_type,
      description: $desc,
      created: $ts,
@@ -226,7 +227,7 @@ Add task entry to TODO.md (if new task):
 ### {task_number}. Grant budget: {description}
 - **Effort**: 2-4 hours
 - **Status**: [NOT STARTED]
-- **Language**: budget
+- **Language**: present
 - **Type**: budget
 - **Dependencies**: None
 - **Started**: {ISO timestamp}

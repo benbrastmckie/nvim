@@ -32,7 +32,7 @@ This skill activates when:
 
 ### Direct Invocation
 - User explicitly runs `/budget` command with task number
-- User runs `/research` on a task with language "budget"
+- User runs `/research` on a task with language "present" and task_type "budget"
 
 ### Implicit Invocation (during task implementation)
 
@@ -80,7 +80,7 @@ if [ -z "$task_data" ]; then
 fi
 
 # Extract fields
-language=$(echo "$task_data" | jq -r '.language // "budget"')
+language=$(echo "$task_data" | jq -r '.language // "present"')
 status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
@@ -150,7 +150,8 @@ Include pre-gathered forcing_data when available:
     "task_number": N,
     "project_name": "{project_name}",
     "description": "{description}",
-    "language": "budget"
+    "language": "present",
+    "task_type": "budget"
   },
   "forcing_data": {
     "mode": "{pre_gathered_mode}",

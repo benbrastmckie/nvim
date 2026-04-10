@@ -63,9 +63,9 @@ jq -r '.entries[] |
   select(.load_when.agents[]? == "grant-agent") |
   .path' .claude/context/index.json
 
-# Find context by grant language
+# Find context by present language and grant-agent
 jq -r '.entries[] |
-  select(.load_when.languages[]? == "grant") |
+  select(.load_when.languages[]? == "present" and .load_when.agents[]? == "grant-agent") |
   .path' .claude/context/index.json
 
 # Find context by topic (e.g., funders, budgets)
@@ -122,7 +122,8 @@ Extract from input:
     "task_number": 500,
     "task_name": "research_ai_safety_funders",
     "description": "...",
-    "language": "grant"
+    "language": "present",
+    "task_type": "grant"
   },
   "metadata": {
     "session_id": "sess_...",

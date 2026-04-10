@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor Present Extension Commands
 
 - **Task**: 392 - Refactor present extension commands (/grant, /budget, /funds, /timeline, /talk)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: 391 (completed - manifest integration)
 - **Research Inputs**: reports/01_refactor-present-commands.md, reports/02_team-research.md
@@ -72,7 +72,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Mechanical Standardization [NOT STARTED]
+### Phase 1: Mechanical Standardization [COMPLETED]
 
 **Goal**: Fix language, task_type, and model across all commands, skills, and agents.
 
