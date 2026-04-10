@@ -111,9 +111,8 @@ File format conversion and manipulation: documents, spreadsheets, presentations,
 
 | Command | Usage | Description |
 |---------|-------|-------------|
-| /convert | `/convert file.pdf` | Convert between document formats |
+| /convert | `/convert file.pdf` | Convert between document formats (incl. `/convert deck.pptx --format beamer`) |
 | /table | `/table data.xlsx` | Convert spreadsheets to LaTeX/Typst tables |
-| /slides | `/slides deck.pptx` | Convert presentations to Beamer/Polylux/Touying |
 | /scrape | `/scrape paper.pdf` | Extract PDF annotations to Markdown/JSON |
 
 ### Context
