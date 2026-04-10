@@ -5,12 +5,19 @@
     {
       "project_number": 395,
       "project_name": "rename_road_map_to_roadmap",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-10T17:30:08Z",
-      "last_updated": "2026-04-10T17:40:00Z",
-      "session_id": "sess_1775842425_1dba7c",
-      "next_artifact_number": 2
+      "last_updated": "2026-04-10T17:44:41Z",
+      "session_id": "sess_1775842889_ee6641",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/395_rename_road_map_to_roadmap/plans/01_rename-roadmap-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan: update 23 .claude/ references, update 13 .opencode/ references, add auto-creation logic in 6 files"
+        }
+      ]
     },
     {
       "project_number": 394,

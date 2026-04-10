@@ -132,8 +132,8 @@ local function process_merge_targets(ext_manifest, source_dir, project_dir, conf
     end
   end
 
-  -- Process opencode.json agent definitions
-  if ext_manifest.merge_targets.opencode_json then
+  -- Process opencode.json agent definitions (only for OpenCode config)
+  if config.merge_target_key == "opencode_md" and ext_manifest.merge_targets.opencode_json then
     local mt_config = ext_manifest.merge_targets.opencode_json
     local source_path = source_dir .. "/" .. mt_config.source
     -- opencode.json is at project root, not inside base_dir
@@ -184,8 +184,8 @@ local function reverse_merge_targets(ext_manifest, merged_sections, project_dir,
     merge_mod.remove_index_entries_tracked(target_path, merged_sections.index)
   end
 
-  -- Reverse opencode.json agent definitions
-  if merged_sections.opencode_json and ext_manifest.merge_targets and ext_manifest.merge_targets.opencode_json then
+  -- Reverse opencode.json agent definitions (only for OpenCode config)
+  if config.merge_target_key == "opencode_md" and merged_sections.opencode_json and ext_manifest.merge_targets and ext_manifest.merge_targets.opencode_json then
     local mt_config = ext_manifest.merge_targets.opencode_json
     local target_path = project_dir .. "/" .. mt_config.target
     merge_mod.unmerge_opencode_agents(target_path, merged_sections.opencode_json)
