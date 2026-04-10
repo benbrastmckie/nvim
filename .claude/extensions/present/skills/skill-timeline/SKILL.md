@@ -84,6 +84,9 @@ status=$(echo "$task_data" | jq -r '.status')
 project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
+# Extract pre-gathered forcing_data (if present from Stage 0)
+forcing_data=$(echo "$task_data" | jq -r '.forcing_data // null')
+
 # Validate language is "present"
 if [ "$language" != "present" ]; then
   return error "Task $task_number has language '$language', expected 'present'"

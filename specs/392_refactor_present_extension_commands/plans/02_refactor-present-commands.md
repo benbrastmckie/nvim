@@ -174,7 +174,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Timeline Structural Alignment [NOT STARTED]
+### Phase 4: Timeline Structural Alignment [COMPLETED]
 
 **Goal**: Move /timeline forcing questions from the research stage to pre-task Stage 0, extend to 5-6 questions, and wire skip logic in the agent.
 

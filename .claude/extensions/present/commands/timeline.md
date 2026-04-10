@@ -46,6 +46,110 @@ Parse $ARGUMENTS to determine mode:
 
 When $ARGUMENTS is a description without a task number.
 
+### STAGE 0: PRE-TASK FORCING QUESTIONS
+
+**This stage runs BEFORE task creation for new tasks (description input).**
+
+#### Step 0.1: Grant Mechanism
+
+Use AskUserQuestion:
+
+```
+What grant mechanism is this timeline for?
+
+Options:
+A) R01 (5 years)
+B) R01 (3 years)
+C) R21 (2 years)
+D) K-series (3-5 years)
+E) U01 (cooperative)
+F) Other (specify)
+```
+
+Store response as `forcing_data.mechanism`.
+
+#### Step 0.2: Project Period
+
+Use AskUserQuestion:
+
+```
+What is the project period?
+
+Include start and end dates (e.g., Aug 2026 - Jul 2031).
+```
+
+Store response as `forcing_data.period`.
+
+#### Step 0.3: Number of Specific Aims
+
+Use AskUserQuestion:
+
+```
+How many specific aims does this project have?
+
+Enter a number (typically 2-4 for most NIH grants).
+```
+
+Store response as `forcing_data.aims_count`.
+
+#### Step 0.4: Key Milestones
+
+Use AskUserQuestion:
+
+```
+What are the key completion criteria or milestone targets?
+
+Examples: "3 publications, validated model, Phase I trial data"
+List the major deliverables that define project success:
+```
+
+Store response as `forcing_data.milestones`.
+
+#### Step 0.5: Regulatory Requirements
+
+Use AskUserQuestion with multiSelect:
+
+```
+Which regulatory approvals are expected?
+
+Options:
+- IRB (human subjects protocol)
+- IACUC (animal use protocol)
+- FDA (IND/IDE regulatory)
+- None expected
+```
+
+Store response as `forcing_data.regulatory`.
+
+#### Step 0.6: Existing Aims Document
+
+Use AskUserQuestion:
+
+```
+Do you have an existing specific aims document or draft?
+
+Provide a file path (e.g., ~/grants/aims.md) or "none".
+```
+
+Store response as `forcing_data.aims_path`.
+
+#### Step 0.7: Store Forcing Data
+
+Capture all responses in a forcing_data object:
+```json
+{
+  "mechanism": "{response_1}",
+  "period": "{response_2}",
+  "aims_count": "{response_3}",
+  "milestones": "{response_4}",
+  "regulatory": ["{response_5a}", "{response_5b}"],
+  "aims_path": "{response_6}",
+  "gathered_at": "{ISO timestamp}"
+}
+```
+
+---
+
 ### Steps
 
 1. **Read next_project_number via jq**:
@@ -73,6 +177,7 @@ When $ARGUMENTS is a description without a task number.
    ```bash
    jq --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      --arg desc "$description" \
+     --argjson forcing_data "$forcing_data_json" \
      '.next_project_number = {NEW_NUMBER} |
       .active_projects = [{
         "project_number": {N},
@@ -81,6 +186,7 @@ When $ARGUMENTS is a description without a task number.
         "language": "present",
         "task_type": "timeline",
         "description": $desc,
+        "forcing_data": $forcing_data,
         "created": $ts,
         "last_updated": $ts
       }] + .active_projects' \
@@ -169,50 +275,10 @@ When $ARGUMENTS starts with a task number.
 
 **ABORT** if validation fails.
 
-### Stage 0: Pre-Task Forcing Questions
-
-Gather essential forcing data before delegating to skill:
-
-**F1: Grant Mechanism**
-```
-AskUserQuestion:
-  question: "What grant mechanism is this timeline for?"
-  header: "Grant Mechanism"
-  options: [
-    "R01 (5 years)",
-    "R01 (3 years)",
-    "R21 (2 years)",
-    "K-series (3-5 years)",
-    "U01 (cooperative)",
-    "Other"
-  ]
-```
-
-**F2: Project Period**
-```
-AskUserQuestion:
-  question: "What is the project period? (e.g., Aug 2026 - Jul 2031)"
-  header: "Project Period"
-```
-
-**F3: Specific Aims Overview**
-```
-AskUserQuestion:
-  question: "Briefly describe your specific aims (aim titles and 1-sentence descriptions):"
-  header: "Specific Aims"
-```
-
-Store responses in task metadata as `forcing_data`:
-```bash
-jq --arg f1 "$mechanism" --arg f2 "$period" --arg f3 "$aims" \
-  '(.active_projects[] | select(.project_number == '$task_number')).forcing_data = {
-    "mechanism": $f1,
-    "period": $f2,
-    "aims_overview": $f3
-  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-```
-
 ### STAGE 2: DELEGATE
+
+**Note**: Forcing data was gathered during Task Creation Mode (Stage 0) and stored in task metadata.
+The skill passes `forcing_data` to timeline-agent, which skips pre-gathered questions.
 
 **Invoke Skill tool**:
 ```
