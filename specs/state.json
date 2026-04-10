@@ -13,11 +13,11 @@
     {
       "project_number": 396,
       "project_name": "review_claude_architecture_docs",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-10T18:39:40Z",
-      "last_updated": "2026-04-10T18:49:55Z",
-      "session_id": "sess_1775846400_a3f2b1",
+      "last_updated": "2026-04-10T19:00:11Z",
+      "session_id": "sess_1775847200_b4e8c2",
       "researched": "2026-04-10T18:49:55Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -25,6 +25,11 @@
           "path": "specs/396_review_claude_architecture_docs/reports/01_team-research.md",
           "type": "research",
           "summary": "Team research (4 teammates) - documentation audit with 3-tier scope plan"
+        },
+        {
+          "path": "specs/396_review_claude_architecture_docs/plans/01_docs-audit-fixes.md",
+          "type": "plan",
+          "summary": "Three-tier .claude/ documentation audit and remediation plan with 10 phases across 5 dependency waves"
         }
       ]
     },
