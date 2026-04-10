@@ -5,10 +5,20 @@
     {
       "project_number": 400,
       "project_name": "epi_extension_overhaul",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-10T21:22:57Z",
-      "last_updated": "2026-04-10T21:22:57Z"
+      "last_updated": "2026-04-10T21:34:10Z",
+      "session_id": "sess_1744320300_a4f8b2",
+      "researched": "2026-04-10T21:34:10Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/400_epi_extension_overhaul/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research with 4 teammates"
+        }
+      ]
     },
     {
       "project_number": 399,
