@@ -2,7 +2,7 @@
 
 - **Task**: 392 - Refactor present extension commands (/grant, /budget, /funds, /timeline, /talk)
 - **Status**: [NOT STARTED]
-- **Effort**: 5 hours
+- **Effort**: 4.5 hours
 - **Dependencies**: 391 (completed - manifest integration)
 - **Research Inputs**: reports/01_refactor-present-commands.md, reports/02_team-research.md
 - **Artifacts**: plans/02_refactor-present-commands.md (this file)
@@ -12,12 +12,12 @@
 
 ## Overview
 
-The present extension's 5 commands were built across 4 task creation waves, accumulating inconsistencies in language fields, model specifications, Co-Authored-By lines, and structural patterns. Three commands (/grant, /budget, /timeline) create tasks with wrong language values, breaking manifest routing. This plan standardizes all mechanical fields, fixes routing and context index entries, adds pre-task intake to /grant, restructures /timeline questions to Stage 0, adds a --design flag to /talk, and aligns skill patterns with core conventions. Definition of done: all 5 commands create tasks with `language: "present"` and correct `task_type`, all context entries load correctly, and all three structural enhancements are in place.
+The present extension's 5 commands were built across 4 task creation waves, accumulating inconsistencies in language fields, model specifications, and structural patterns. Three commands (/grant, /budget, /timeline) create tasks with wrong language values, breaking manifest routing. This plan standardizes all mechanical fields, fixes routing and context index entries, adds pre-task intake to /grant, restructures /timeline questions to Stage 0, adds a --design flag to /talk, and aligns skill patterns with core conventions. Definition of done: all 5 commands create tasks with `language: "present"` and correct `task_type`, all context entries load correctly, and all three structural enhancements are in place.
 
 ### Research Integration
 
 Two research rounds were integrated:
-- **Round 1** (01_refactor-present-commands.md): Identified language, model, and Co-Authored-By inconsistencies across 9 files with ~25-30 changes.
+- **Round 1** (01_refactor-present-commands.md): Identified language and model inconsistencies across 9 files with ~25-30 changes.
 - **Round 2** (02_team-research.md, 4 teammates): Expanded scope to 16-19 files and 45-55 changes. Teammate C identified agent file gaps, 17 index-entries.json entries needing language updates, and manifest implement routing dead code. Teammate A provided per-command flow analysis with improvement options. Team consensus on /grant pre-task intake (4 questions), /timeline Stage 0 restructure, and /talk --design flag (post-research confirmation).
 
 ### Prior Plan Reference
@@ -32,7 +32,7 @@ No ROAD_MAP.md found (file does not exist at specs/ROAD_MAP.md).
 
 **Goals**:
 - Unify all 5 commands to use `language: "present"` with `task_type` for subtype differentiation
-- Standardize model to `opus` and Co-Authored-By to `Claude Opus 4.6 (1M context)` across all commands, skills, and agents
+- Standardize model to `opus` across all commands, skills, and agents
 - Update 17 grant-domain index-entries.json entries from `"languages": ["grant"]` to `"languages": ["present"]`
 - Fix manifest.json implement routing (remove bare `"grant"` key)
 - Add Stage 0 pre-task forcing questions to /grant (4 questions)
@@ -74,39 +74,35 @@ Phases within the same wave can execute in parallel.
 
 ### Phase 1: Mechanical Standardization [NOT STARTED]
 
-**Goal**: Fix language, task_type, model, and Co-Authored-By across all commands, skills, and agents.
+**Goal**: Fix language, task_type, and model across all commands, skills, and agents.
 
 **Tasks**:
-- [ ] Update grant.md: change `language: "grant"` to `language: "present"`, add `task_type: "grant"`, change `model: claude-opus-4-5-20251101` to `model: opus`, fix both Co-Authored-By lines to `Claude Opus 4.6 (1M context) <noreply@anthropic.com>`
-- [ ] Update budget.md: change `language: "budget"` to `language: "present"`, add `model: opus` to frontmatter, fix Co-Authored-By line
-- [ ] Update timeline.md: change `language: "timeline"` to `language: "present"`, add `task_type: "timeline"`, change model to `opus`, fix Co-Authored-By (already correct)
-- [ ] Update funds.md: change `model: claude-opus-4-5-20251101` to `model: opus` (language and task_type already correct), verify Co-Authored-By (already correct)
-- [ ] Update talk.md: change `model: claude-opus-4-5-20251101` to `model: opus`, fix Co-Authored-By to `Claude Opus 4.6 (1M context)`
-- [ ] Update skill-grant/SKILL.md: change all `language="grant"` references to `language="present"`, update validation to check `language == "present"`, update trigger conditions, fix both Co-Authored-By lines, update fix-it task creation to use `language: "present"` with `task_type: "grant"`
-- [ ] Update skill-budget/SKILL.md: change `language "budget"` references to `language "present"`, update delegation context example, fix Co-Authored-By
-- [ ] Update skill-timeline/SKILL.md: change all `language="timeline"` references to `language="present"`, update validation and trigger conditions, verify Co-Authored-By (already correct)
-- [ ] Update skill-funds/SKILL.md: fix Co-Authored-By from `Claude Opus 4.5` to `Claude Opus 4.6 (1M context)`
-- [ ] Update skill-talk/SKILL.md: fix Co-Authored-By from `Claude Opus 4.5` to `Claude Opus 4.6 (1M context)`
-- [ ] Update grant-agent.md: change delegation context example `"language": "grant"` to `"language": "present"`, add `"task_type": "grant"`, fix Co-Authored-By in git commit template, update dynamic context discovery query from `languages == "grant"` to `languages == "present" and agents == "grant-agent"`
+- [ ] Update grant.md: change `language: "grant"` to `language: "present"`, add `task_type: "grant"`, change `model: claude-opus-4-5-20251101` to `model: opus`
+- [ ] Update budget.md: change `language: "budget"` to `language: "present"`, add `model: opus` to frontmatter
+- [ ] Update timeline.md: change `language: "timeline"` to `language: "present"`, add `task_type: "timeline"`, change model to `opus`
+- [ ] Update funds.md: change `model: claude-opus-4-5-20251101` to `model: opus` (language and task_type already correct)
+- [ ] Update talk.md: change `model: claude-opus-4-5-20251101` to `model: opus`
+- [ ] Update skill-grant/SKILL.md: change all `language="grant"` references to `language="present"`, update validation to check `language == "present"`, update trigger conditions, update fix-it task creation to use `language: "present"` with `task_type: "grant"`
+- [ ] Update skill-budget/SKILL.md: change `language "budget"` references to `language "present"`, update delegation context example
+- [ ] Update skill-timeline/SKILL.md: change all `language="timeline"` references to `language="present"`, update validation and trigger conditions
+- [ ] Update grant-agent.md: change delegation context example `"language": "grant"` to `"language": "present"`, add `"task_type": "grant"`, update dynamic context discovery query from `languages == "grant"` to `languages == "present" and agents == "grant-agent"`
 - [ ] Update budget-agent.md: change delegation context example `"language": "budget"` to `"language": "present"`, add `"task_type": "budget"` if missing, add `model: opus` to frontmatter
 - [ ] Update timeline-agent.md: change delegation context example `"language": "timeline"` to `"language": "present"`, add `"task_type": "timeline"`
 
-**Timing**: 1.5 hours
+**Timing**: 1 hour
 
 **Depends on**: none
 
 **Files to modify**:
-- `.claude/extensions/present/commands/grant.md` - language, task_type, model, co-authored-by
-- `.claude/extensions/present/commands/budget.md` - language, model, co-authored-by
+- `.claude/extensions/present/commands/grant.md` - language, task_type, model
+- `.claude/extensions/present/commands/budget.md` - language, model
 - `.claude/extensions/present/commands/timeline.md` - language, task_type, model
 - `.claude/extensions/present/commands/funds.md` - model
-- `.claude/extensions/present/commands/talk.md` - model, co-authored-by
-- `.claude/extensions/present/skills/skill-grant/SKILL.md` - validation, co-authored-by, fix-it tasks
-- `.claude/extensions/present/skills/skill-budget/SKILL.md` - validation, co-authored-by
+- `.claude/extensions/present/commands/talk.md` - model
+- `.claude/extensions/present/skills/skill-grant/SKILL.md` - validation, fix-it tasks
+- `.claude/extensions/present/skills/skill-budget/SKILL.md` - validation
 - `.claude/extensions/present/skills/skill-timeline/SKILL.md` - validation
-- `.claude/extensions/present/skills/skill-funds/SKILL.md` - co-authored-by
-- `.claude/extensions/present/skills/skill-talk/SKILL.md` - co-authored-by
-- `.claude/extensions/present/agents/grant-agent.md` - delegation context, dynamic query, co-authored-by
+- `.claude/extensions/present/agents/grant-agent.md` - delegation context, dynamic query
 - `.claude/extensions/present/agents/budget-agent.md` - delegation context, model frontmatter
 - `.claude/extensions/present/agents/timeline-agent.md` - delegation context
 
@@ -114,7 +110,6 @@ Phases within the same wave can execute in parallel.
 - All 5 commands reference `language: "present"` and include `task_type`
 - All skills validate `language == "present"`
 - All agents show correct delegation context examples
-- All Co-Authored-By lines are `Claude Opus 4.6 (1M context) <noreply@anthropic.com>`
 - All model specifications are `opus`
 
 ---
@@ -274,7 +269,6 @@ Phases within the same wave can execute in parallel.
 - [ ] jq query: `map(select(.load_when.languages[]? == "grant")) | length` returns 0 on index-entries.json
 - [ ] jq query: `map(select(.load_when.languages[]? == "present")) | length` returns full count on index-entries.json
 - [ ] Grep: no present extension file contains `"language": "grant"` or `"language": "budget"` or `"language": "timeline"` in task creation or validation code
-- [ ] Grep: all Co-Authored-By lines in present extension match `Claude Opus 4.6 (1M context)`
 - [ ] Grep: no model field uses `claude-opus-4-5-20251101` in present extension
 - [ ] Verify grant.md frontmatter includes `AskUserQuestion` in allowed-tools
 - [ ] Verify manifest.json has no bare `"grant"` key in implement routing

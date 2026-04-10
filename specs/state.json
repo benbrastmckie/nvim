@@ -20,7 +20,7 @@
         {
           "path": "specs/392_refactor_present_extension_commands/plans/02_refactor-present-commands.md",
           "type": "plan",
-          "summary": "6-phase implementation plan: mechanical standardization, index/manifest fixes, grant intake, timeline restructure, talk design confirmation, validation"
+          "summary": "Revised plan v2: removed Co-Authored-By standardization per user request"
         }
       ],
       "plan_metadata": {
@@ -28,7 +28,7 @@
         "total_effort_hours": 5,
         "complexity": "medium",
         "research_integrated": true,
-        "plan_version": 1,
+        "plan_version": 2,
         "dependency_waves": [
           [
             1
