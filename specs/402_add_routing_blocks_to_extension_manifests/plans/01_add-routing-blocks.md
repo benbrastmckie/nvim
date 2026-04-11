@@ -1,7 +1,7 @@
 # Implementation Plan: Add Routing Blocks to 11 Extension Manifests
 
 - **Task**: 402 - Add routing blocks to 11 extension manifests (doc-lint failures)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/402_add_routing_blocks_to_extension_manifests/reports/01_extension-manifest-routing.md

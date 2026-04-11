@@ -5,19 +5,25 @@
     {
       "project_number": 402,
       "project_name": "add_routing_blocks_to_extension_manifests",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "priority": "high",
       "created": "2026-04-11T02:23:21Z",
-      "last_updated": "2026-04-11T02:34:13Z",
+      "last_updated": "2026-04-11T02:37:02Z",
       "session_id": "sess_1775874845_b4c86f",
       "artifacts": [
         {
           "path": "specs/402_add_routing_blocks_to_extension_manifests/plans/01_add-routing-blocks.md",
           "type": "plan",
           "summary": "Four-phase plan adding routing blocks to 11 failing extension manifests with a final doc-lint verification pass."
+        },
+        {
+          "path": "specs/402_add_routing_blocks_to_extension_manifests/summaries/01_add-routing-blocks-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary documenting routing blocks added to 11 extension manifests."
         }
-      ]
+      ],
+      "completion_summary": "Added canonical three-bucket routing blocks (research/plan/implement) to 11 extension manifests: latex, nix, nvim, python, typst, z3, web, formal, lean, filetypes, memory. Each block was inserted between provides and merge_targets using the exact JSON from the research report, preserving sub-routing for multi-skill extensions (formal, lean, filetypes). Doc-lint script now reports PASS: all extensions OK with exit 0, unblocking the CI doc-lint enforcement roadmap item."
     },
     {
       "project_number": 398,
