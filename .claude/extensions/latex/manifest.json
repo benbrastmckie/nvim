@@ -13,6 +13,17 @@
     "scripts": [],
     "hooks": []
   },
+  "routing": {
+    "research": {
+      "latex": "skill-latex-research"
+    },
+    "plan": {
+      "latex": "skill-planner"
+    },
+    "implement": {
+      "latex": "skill-latex-implementation"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

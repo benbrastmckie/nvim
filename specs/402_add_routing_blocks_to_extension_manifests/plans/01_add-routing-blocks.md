@@ -1,7 +1,7 @@
 # Implementation Plan: Add Routing Blocks to 11 Extension Manifests
 
 - **Task**: 402 - Add routing blocks to 11 extension manifests (doc-lint failures)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/402_add_routing_blocks_to_extension_manifests/reports/01_extension-manifest-routing.md
@@ -64,7 +64,7 @@ This task unblocks the ROADMAP item for enabling CI doc-lint enforcement (per `s
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Single-skill extensions with bare task_type [NOT STARTED]
+### Phase 1: Single-skill extensions with bare task_type [COMPLETED]
 
 **Goal**: Add `routing` blocks to the 6 simplest extensions: `latex`, `nix`, `nvim`, `python`, `typst`, `z3`. Each declares a bare task_type and has exactly one research + one implementation skill, so each routing block has three single-key buckets.
 
@@ -98,7 +98,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Multi-skill extensions with sub-routing [NOT STARTED]
+### Phase 2: Multi-skill extensions with sub-routing [IN PROGRESS]
 
 **Goal**: Add `routing` blocks to the 2 multi-skill extensions with sub-routing keys: `formal` (4 research skills, implement falls back to `skill-implementer`) and `lean` (sub-routing for `lake` and `version` specialists).
 

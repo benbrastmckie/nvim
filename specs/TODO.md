@@ -18,7 +18,7 @@ next_project_number: 403
 
 ### 402. Add routing blocks to 11 extension manifests (doc-lint failures)
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Priority**: high
 - **Review**: [review-2026-04-10.md](reviews/review-2026-04-10.md)

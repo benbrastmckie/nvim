@@ -13,6 +13,17 @@
     "scripts": [],
     "hooks": []
   },
+  "routing": {
+    "research": {
+      "python": "skill-python-research"
+    },
+    "plan": {
+      "python": "skill-planner"
+    },
+    "implement": {
+      "python": "skill-python-implementation"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

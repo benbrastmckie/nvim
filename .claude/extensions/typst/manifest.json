@@ -13,6 +13,17 @@
     "scripts": [],
     "hooks": []
   },
+  "routing": {
+    "research": {
+      "typst": "skill-typst-research"
+    },
+    "plan": {
+      "typst": "skill-planner"
+    },
+    "implement": {
+      "typst": "skill-typst-implementation"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

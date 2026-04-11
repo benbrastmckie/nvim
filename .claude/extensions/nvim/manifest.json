@@ -13,6 +13,17 @@
     "scripts": [],
     "hooks": []
   },
+  "routing": {
+    "research": {
+      "neovim": "skill-neovim-research"
+    },
+    "plan": {
+      "neovim": "skill-planner"
+    },
+    "implement": {
+      "neovim": "skill-neovim-implementation"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

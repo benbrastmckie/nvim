@@ -13,6 +13,17 @@
     "scripts": [],
     "hooks": []
   },
+  "routing": {
+    "research": {
+      "nix": "skill-nix-research"
+    },
+    "plan": {
+      "nix": "skill-planner"
+    },
+    "implement": {
+      "nix": "skill-nix-implementation"
+    }
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",
