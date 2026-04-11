@@ -147,7 +147,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Verification and doc-lint pass [IN PROGRESS]
+### Phase 4: Verification and doc-lint pass [COMPLETED]
 
 **Goal**: Confirm all 11 manifests now satisfy `check-extension-docs.sh` and that no unrelated manifests were affected.
 
