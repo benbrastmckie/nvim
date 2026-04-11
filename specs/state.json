@@ -5,11 +5,12 @@
     {
       "project_number": 402,
       "project_name": "add_routing_blocks_to_extension_manifests",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "priority": "high",
       "created": "2026-04-11T02:23:21Z",
-      "last_updated": "2026-04-11T02:23:21Z"
+      "last_updated": "2026-04-11T02:30:00Z",
+      "session_id": "sess_1775874254_0921d1"
     },
     {
       "project_number": 398,
