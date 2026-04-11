@@ -5,17 +5,22 @@
     {
       "project_number": 401,
       "project_name": "rename_talk_agent_to_slides_agent",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-11T01:57:03Z",
-      "last_updated": "2026-04-11T02:02:48Z",
-      "session_id": "sess_1744338000_r401a",
+      "last_updated": "2026-04-11T02:08:49Z",
+      "session_id": "sess_1744338100_p401a",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/401_rename_talk_agent_to_slides_agent/reports/01_rename-references-audit.md",
           "type": "research",
           "summary": "Complete audit of talk-agent/skill-talk/present:talk references with rename map and planning recommendations"
+        },
+        {
+          "path": "specs/401_rename_talk_agent_to_slides_agent/plans/01_rename-execution.md",
+          "type": "plan",
+          "summary": "6-phase plan to rename talk-agent/skill-talk to slides-agent/skill-slides across present extension"
         }
       ]
     },
