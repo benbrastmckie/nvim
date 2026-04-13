@@ -138,25 +138,6 @@ These extracted elements guide all subsequent phase execution.
 
 Execute 5 R analysis phases sequentially. Each phase produces an R script in the `analysis/` directory. Update partial_progress metadata after each phase completes.
 
-**Before each phase**, mark it `[IN PROGRESS]` in the plan file:
-Use the Edit tool with:
-- old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
-- new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
-
-**After each phase**, mark it `[COMPLETED]` in the plan file:
-Use the Edit tool with:
-- old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
-- new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
-
-Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
-
-**After marking complete**, git commit:
-```bash
-git add -A && git commit -m "task {N} phase {P}: {phase_name}
-
-Session: {session_id}"
-```
-
 ---
 
 #### Phase 1: Data Preparation
@@ -486,34 +467,6 @@ Implementation completed for task {N}:
 - Created summary at specs/{NNN}_{SLUG}/summaries/{RR}_implementation-summary.md
 - Metadata written for skill postflight
 ```
-
-## Phase Checkpoint Protocol
-
-For each phase in the implementation plan:
-
-1. **Read plan file**, identify current phase
-2. **Update phase status** to `[IN PROGRESS]` in plan file
-   - Use Edit tool with:
-     - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
-     - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
-   - Phase status lives ONLY in the heading
-3. **Execute phase steps** as documented
-4. **Update phase status** to `[COMPLETED]` or `[BLOCKED]` or `[PARTIAL]`
-   - Use Edit tool with:
-     - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
-     - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
-5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
-   ```bash
-   git add -A && git commit -m "task {N} phase {P}: {phase_name}
-
-   Session: {session_id}"
-   ```
-6. **Proceed to next phase** or return if blocked
-
-**This ensures**:
-- Resume point is always discoverable from plan file
-- Git history reflects phase-level progress
-- Failed phases can be retried from beginning
 
 ## Error Handling
 

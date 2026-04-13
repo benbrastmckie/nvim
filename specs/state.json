@@ -5,11 +5,11 @@
     {
       "project_number": 413,
       "project_name": "refine_slides_skill_command",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
-      "last_updated": "2026-04-13T14:15:00Z",
-      "session_id": "sess_1776066575_30af58",
+      "last_updated": "2026-04-13T07:55:04Z",
+      "session_id": "sess_1776066839_fa4927",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -22,11 +22,11 @@
     {
       "project_number": 412,
       "project_name": "update_docs_python_to_rust",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
-      "last_updated": "2026-04-13T18:15:00Z",
-      "session_id": "sess_1776066575_30af58",
+      "last_updated": "2026-04-13T18:30:00Z",
+      "session_id": "sess_1776066839_fa4927",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -58,40 +58,64 @@
         "complexity": "simple",
         "research_integrated": false,
         "plan_version": 1,
-        "dependency_waves": [[1]]
+        "dependency_waves": [
+          [
+            1
+          ]
+        ]
       }
     },
     {
       "project_number": 410,
       "project_name": "remove_meta_stage_5_5",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
-      "last_updated": "2026-04-13T18:15:00Z",
-      "session_id": "sess_1776066575_30af58",
-      "next_artifact_number": 2,
+      "last_updated": "2026-04-13T18:45:00Z",
+      "session_id": "sess_1776066839_fa4927",
+      "effort": "1 hour",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/410_remove_meta_stage_5_5/reports/01_remove-meta-stage-5-5.md",
           "summary": "Analysis of Stage 5.5 removal across 3 files: meta-builder-agent.md, SKILL.md, multi-task-creation-standard.md"
+        },
+        {
+          "type": "plan",
+          "path": "specs/410_remove_meta_stage_5_5/plans/01_remove-meta-stage-5-5.md",
+          "summary": "3-phase plan to remove Stage 5.5 from meta-builder-agent, skill-meta, and multi-task-creation-standard"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 3,
+        "total_effort_hours": 1,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [[1, 2, 3]]
+      }
     },
     {
       "project_number": 409,
       "project_name": "remove_phase_checkpoint_protocol",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
-      "last_updated": "2026-04-13T18:00:00Z",
-      "session_id": "sess_1776066556_e77350",
+      "last_updated": "2026-04-13T19:00:00Z",
+      "session_id": "sess_1776066741_766660",
       "effort": "1 hour",
+      "completion_summary": "Removed Phase Checkpoint Protocol sections and all references from pptx-assembly-agent.md, slidev-assembly-agent.md, and epi-implement-agent.md.",
+      "claudemd_suggestions": "none",
       "artifacts": [
         {
           "type": "plan",
           "path": "specs/409_remove_phase_checkpoint_protocol/plans/01_remove-checkpoint-protocol.md",
           "summary": "4-phase plan to remove Phase Checkpoint Protocol from 3 extension agents"
+        },
+        {
+          "type": "summary",
+          "path": "specs/409_remove_phase_checkpoint_protocol/summaries/01_remove-checkpoint-protocol-summary.md",
+          "summary": "Implementation summary for Phase Checkpoint Protocol removal"
         }
       ],
       "plan_metadata": {
@@ -100,7 +124,16 @@
         "complexity": "simple",
         "research_integrated": false,
         "plan_version": 1,
-        "dependency_waves": [[1, 2, 3], [4]]
+        "dependency_waves": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4
+          ]
+        ]
       }
     },
     {

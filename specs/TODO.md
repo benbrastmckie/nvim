@@ -10,11 +10,11 @@ next_project_number: 414
 
 ### Pending
 
-- **413** [RESEARCHED] -- Refine slides skill and command (design questions, routing, delegation)
-- **412** [RESEARCHED] -- Update documentation examples from Python to Rust
+- **413** [PLANNING] -- Refine slides skill and command (design questions, routing, delegation)
+- **412** [PLANNING] -- Update documentation examples from Python to Rust
 - **411** [PLANNED] -- Update extension trigger wording to mechanism-agnostic
-- **410** [RESEARCHED] -- Remove meta Stage 5.5 auto-research artifact generation
-- **409** [PLANNED] -- Remove Phase Checkpoint Protocol from assembly/implement agents
+- **410** [PLANNED] -- Remove meta Stage 5.5 auto-research artifact generation
+- **409** [COMPLETED] -- Remove Phase Checkpoint Protocol from assembly/implement agents
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
 - **394** [NOT STARTED] -- Remove language-to-task_type backward compatibility shim
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
@@ -25,7 +25,7 @@ next_project_number: 414
 
 ### 413. Refine slides skill and command (design questions, routing, delegation)
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Research**: [01_refine-slides-skill-command.md](specs/413_refine_slides_skill_command/reports/01_refine-slides-skill-command.md)
 
@@ -35,7 +35,7 @@ next_project_number: 414
 
 ### 412. Update documentation examples from Python to Rust
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Research**: [01_update-docs-python-rust.md](specs/412_update_docs_python_to_rust/reports/01_update-docs-python-rust.md)
 
@@ -55,10 +55,12 @@ next_project_number: 414
 ---
 
 ### 410. Remove meta Stage 5.5 auto-research artifact generation
-- **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Effort**: 1 hour
+- **Status**: [PLANNED]
+- **Planning Completed**: 2026-04-13
 - **Task Type**: meta
 - **Research**: [01_remove-meta-stage-5-5.md](specs/410_remove_meta_stage_5_5/reports/01_remove-meta-stage-5-5.md)
+- **Plan**: [01_remove-meta-stage-5-5.md](specs/410_remove_meta_stage_5_5/plans/01_remove-meta-stage-5-5.md)
 
 **Description**: Remove the "Interview Stage 5.5: GenerateResearchArtifacts" from the meta-builder-agent, which auto-generated shallow research boilerplate and set tasks to RESEARCHED status. Tasks should instead start as NOT STARTED and follow the normal `/research → /plan → /implement` lifecycle. Important: task descriptions created by meta-builder-agent must still include full file paths to key sources so that `/research` has clear starting points. Files: `.claude/agents/meta-builder-agent.md` (remove Stage 5.5 section at lines 594-691, update Stage 5→6 transition, change state.json template status to "not_started", remove artifacts array, update TODO.md template to [NOT STARTED]), `.claude/skills/skill-meta/SKILL.md` (change summary to "NOT STARTED status", remove research report objects, update next_steps to "/research"), `.claude/docs/reference/standards/multi-task-creation-standard.md` (remove "Research Generation" row and Stage 5.5 references). Source: `/home/benjamin/.config/zed/CHANGE.md` Theme 2.
 
@@ -66,12 +68,13 @@ next_project_number: 414
 
 ### 409. Remove Phase Checkpoint Protocol from assembly/implement agents
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
-- **Planning Completed**: 2026-04-13
+- **Status**: [COMPLETED]
+- **Completed**: 2026-04-13
 - **Task Type**: meta
 - **Plan**: [01_remove-checkpoint-protocol.md](specs/409_remove_phase_checkpoint_protocol/plans/01_remove-checkpoint-protocol.md)
+- **Summary**: [01_remove-checkpoint-protocol-summary.md](specs/409_remove_phase_checkpoint_protocol/summaries/01_remove-checkpoint-protocol-summary.md)
 
-**Description**: Remove the overly complex Phase Checkpoint Protocol from 3 extension agents. This removes per-phase git commits, phase-to-stage mapping tables, and "before/after each phase" checklists. Phase status markers (`[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`) in plan files are preserved — they are a core system feature defined in `.claude/rules/artifact-formats.md` and updated by implementation agents during execution. Files: `.claude/extensions/present/agents/pptx-assembly-agent.md` (remove lines 100-144: Phase Checkpoint Protocol section with A1-A8 mapping, per-phase git commits, requirement items 10-12), `.claude/extensions/present/agents/slidev-assembly-agent.md` (remove lines 118-162: Phase Checkpoint Protocol section with S1-S9 mapping, per-phase git commits, requirement items 10-12), `.claude/extensions/epidemiology/agents/epi-implement-agent.md` (remove lines 141-150: inline before/after phase instructions; remove lines 490-511: Phase Checkpoint Protocol section). Source: `/home/benjamin/.config/zed/CHANGE.md` Theme 1.
+**Description**: Remove the overly complex Phase Checkpoint Protocol from 3 extension agents. This removes per-phase git commits, phase-to-stage mapping tables, and "before/after each phase" checklists. Phase status markers (`[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`) in plan files are preserved -- they are a core system feature defined in `.claude/rules/artifact-formats.md` and updated by implementation agents during execution.
 
 ---
 

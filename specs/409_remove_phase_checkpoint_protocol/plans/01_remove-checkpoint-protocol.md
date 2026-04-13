@@ -1,7 +1,7 @@
 # Implementation Plan: Remove Phase Checkpoint Protocol from assembly/implement agents
 
 - **Task**: 409 - Remove Phase Checkpoint Protocol from assembly/implement agents
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: None
@@ -44,7 +44,7 @@ Remove the Phase Checkpoint Protocol from 3 extension agents that carry overly c
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Clean pptx-assembly-agent.md [IN PROGRESS]
+### Phase 1: Clean pptx-assembly-agent.md [COMPLETED]
 
 **Goal**: Remove Phase Checkpoint Protocol and all references from pptx-assembly-agent.md.
 
@@ -69,7 +69,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Clean slidev-assembly-agent.md [NOT STARTED]
+### Phase 2: Clean slidev-assembly-agent.md [COMPLETED]
 
 **Goal**: Remove Phase Checkpoint Protocol and all references from slidev-assembly-agent.md.
 
@@ -93,7 +93,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Clean epi-implement-agent.md [NOT STARTED]
+### Phase 3: Clean epi-implement-agent.md [COMPLETED]
 
 **Goal**: Remove Phase Checkpoint Protocol section and inline before/after phase instructions from epi-implement-agent.md.
 
@@ -116,7 +116,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Verify removal across codebase [NOT STARTED]
+### Phase 4: Verify removal across codebase [COMPLETED]
 
 **Goal**: Confirm no stale references to the removed protocol remain.
 
