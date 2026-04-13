@@ -13,7 +13,7 @@ next_project_number: 419
 - **418** [COMPLETED] -- Add postflight self-execution fallback to skill wrapper pattern
 - **398** [COMPLETED] -- Extract artifact-linking logic to shared helper script
 - **394** [COMPLETED] -- Remove language-to-task_type backward compatibility shim
-- **384** [PLANNED] -- Improve /convert command-skill-agent pipeline in filetypes extension
+- **384** [COMPLETED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -57,13 +57,14 @@ next_project_number: 419
 
 ### 384. Improve /convert command-skill-agent pipeline in filetypes extension
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**:
   - [01_convert-pipeline-analysis.md](specs/384_improve_convert_command_skill_agent/reports/01_convert-pipeline-analysis.md)
   - [02_convert-status-review.md](specs/384_improve_convert_command_skill_agent/reports/02_convert-status-review.md)
   - [03_pymupdf-vs-markitdown.md](specs/384_improve_convert_command_skill_agent/reports/03_pymupdf-vs-markitdown.md)
 - **Plan**: [02_convert-pipeline-refactor.md](specs/384_improve_convert_command_skill_agent/plans/02_convert-pipeline-refactor.md)
+- **Summary**: [02_convert-pipeline-summary.md](specs/384_improve_convert_command_skill_agent/summaries/02_convert-pipeline-summary.md)
 
 **Description**: Improve the /convert command-skill-agent according to best practices while conforming to current .claude/ patterns. The markitdown pipeline is currently broken (bad Python interpreter); pymupdf text extraction works and is the recommended extraction tool. Refactor the filetypes/ extension's convert pipeline to use pymupdf as the primary extraction backend, fix or replace the broken markitdown integration, and ensure the command-skill-agent architecture follows established .claude/ conventions.
 

@@ -95,11 +95,11 @@
     {
       "project_number": 384,
       "project_name": "improve_convert_command_skill_agent",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-09T16:15:53Z",
-      "last_updated": "2026-04-13T19:36:31Z",
-      "session_id": "sess_1776108824_770bdd",
+      "last_updated": "2026-04-13T19:48:55Z",
+      "session_id": "sess_1776109294_919e2e",
       "artifacts": [
         {
           "path": "specs/384_improve_convert_command_skill_agent/reports/02_convert-status-review.md",
@@ -115,9 +115,16 @@
           "path": "specs/384_improve_convert_command_skill_agent/plans/02_convert-pipeline-refactor.md",
           "type": "plan",
           "summary": "4-phase plan to refactor document-agent for pymupdf-primary PDF extraction with format-aware routing"
+        },
+        {
+          "path": "specs/384_improve_convert_command_skill_agent/summaries/02_convert-pipeline-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for /convert pipeline pymupdf refactor"
         }
       ],
-      "next_artifact_number": 3
+      "next_artifact_number": 3,
+      "completion_summary": "Refactored document-agent and 3 context files to use pymupdf as primary PDF tool, with format-aware routing for different source types. Added EPUB support and NixOS fragility documentation.",
+      "claudemd_suggestions": "Updated 4 files in .claude/extensions/filetypes/: document-agent.md (format-aware tool selection), tool-detection.md (pymupdf detection), conversion-tables.md (updated tool priorities), dependency-guide.md (pymupdf install instructions)"
     },
     {
       "project_number": 87,

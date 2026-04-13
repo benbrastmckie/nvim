@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor /convert Pipeline for PyMuPDF
 
 - **Task**: 384 - Improve /convert command-skill-agent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_convert-pipeline-analysis.md, reports/02_convert-status-review.md, reports/03_pymupdf-vs-markitdown.md
