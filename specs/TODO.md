@@ -11,7 +11,7 @@ next_project_number: 418
 ### Pending
 
 - **417** [COMPLETED] -- Interactive slide planning workflow with narrative arc feedback and per-slide refinement
-- **416** [RESEARCHED] -- Enforce skill delegation for plan artifacts
+- **416** [PLANNED] -- Enforce skill delegation for plan artifacts
 - **415** [COMPLETED] -- Improve /slides command task description format (Sources, forcing data, richer text)
 - **414** [COMPLETED] -- Remove Phase Checkpoint Protocol from 10 extension agents
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
@@ -37,9 +37,10 @@ next_project_number: 418
 
 ### 416. Enforce skill delegation for plan artifacts
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [01_skill-delegation-enforcement.md](specs/416_enforce_skill_delegation_for_plan_artifacts/reports/01_skill-delegation-enforcement.md)
+- **Plan**: [01_delegation-enforcement.md](specs/416_enforce_skill_delegation_for_plan_artifacts/plans/01_delegation-enforcement.md)
 
 **Description**: The `/plan` command sometimes bypasses `skill-planner` delegation and writes plan files directly, producing artifacts that violate the plan format standard (`plan-format.md`, `plan-format-enforcement.md`). This happened on 2026-04-13 with task 414: the orchestrator read the /plan command spec, skipped the `Skill("skill-planner")` invocation, and wrote a plan missing required metadata (Status, Dependencies, Research Inputs, Artifacts, Standards, Type), required sections (Goals & Non-Goals, Testing & Validation, Artifacts & Outputs, Rollback/Contingency), the Dependency Analysis wave table, and proper phase format (Goal/Tasks/Timing/Depends on). The `plan-format-enforcement.md` rule exists but only influences agents that load it — it cannot prevent the orchestrator from writing non-conforming files directly. The same class of bypass could affect `/research` (skipping `skill-researcher`) or `/implement` (skipping `skill-implementer`). Investigate enforcement mechanisms: (1) settings.json hooks (PostToolUse on Write/Edit matching `specs/**/plans/*.md`) that validate format externally, (2) stronger anti-bypass wording in command specs, (3) feedback memory for future conversations. Determine which combination provides reliable enforcement without excessive overhead.
 
