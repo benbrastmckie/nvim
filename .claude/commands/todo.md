@@ -157,7 +157,7 @@ meta_tasks=()
 non_meta_tasks=()
 
 for task in "${archivable_tasks[@]}"; do
-  task_type=$(echo "$task" | jq -r '.task_type // .language // "general"')
+  task_type=$(echo "$task" | jq -r '.task_type // "general"')
   if [ "$task_type" = "meta" ]; then
     meta_tasks+=("$task")
   else

@@ -58,7 +58,7 @@ This plan advances the "Subagent-return reference cleanup" roadmap item under Ag
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Remove Shim from Core Files [IN PROGRESS]
+### Phase 1: Remove Shim from Core Files [COMPLETED]
 
 **Goal**: Replace the `.task_type // .language // "general"` fallback chain with `.task_type // "general"` in all 19 core files (commands and skills).
 
@@ -99,7 +99,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update Extension Skills Reading `.language` Directly [NOT STARTED]
+### Phase 2: Update Extension Skills Reading `.language` Directly [IN PROGRESS]
 
 **Goal**: Replace `.language` field reads with `.task_type` in 18 extension skill files that were not updated during task 393, including downstream `$language` variable references.
 
