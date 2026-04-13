@@ -89,7 +89,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Copy and augment pptx-assembly-agent.md [NOT STARTED]
+### Phase 2: Copy and augment pptx-assembly-agent.md [COMPLETED]
 
 **Goal**: Create the PPTX assembly agent with Phase Checkpoint Protocol.
 
