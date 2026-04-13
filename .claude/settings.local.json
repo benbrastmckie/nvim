@@ -32,7 +32,10 @@
       "Bash(python3 -c \"import json; json.load\\(open\\(''$NVM_DST/slidev-project/package.json''\\)\\)\")",
       "Bash(for f:*)",
       "Bash(do test:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(python3 -c \"import json; json.load\\(open\\(''.claude/extensions/present/context/project/present/talk/themes/academic-clean.json''\\)\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\(''.claude/extensions/present/context/project/present/talk/themes/clinical-teal.json''\\)\\)\")",
+      "Bash(python3 -c \"import json; json.load\\(open\\(''.claude/extensions/present/context/project/present/talk/index.json''\\)\\)\")"
     ]
   },
   "model": "opus",
