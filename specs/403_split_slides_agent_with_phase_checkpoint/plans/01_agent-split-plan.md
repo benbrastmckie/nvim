@@ -123,7 +123,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Copy and augment slidev-assembly-agent.md [IN PROGRESS]
+### Phase 3: Copy and augment slidev-assembly-agent.md [COMPLETED]
 
 **Goal**: Create the Slidev assembly agent with Phase Checkpoint Protocol.
 

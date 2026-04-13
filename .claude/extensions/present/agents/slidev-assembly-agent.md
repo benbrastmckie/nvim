@@ -115,7 +115,57 @@ Extract from input:
 }
 ```
 
+## Phase Checkpoint Protocol
+
+For assembly tasks with implementation plans (always for `assemble` workflow):
+
+1. **Read plan file**, identify current phase
+   ```bash
+   plan_file=$(ls -t specs/{NNN}_{SLUG}/plans/*.md | head -1)
+   ```
+   - Parse plan headings for `### Phase {P}: {Name} [{STATUS}]`
+   - Find first phase with `[NOT STARTED]` or `[IN PROGRESS]` status
+   - If all phases are `[COMPLETED]`, skip to final metadata
+
+2. **Before executing each phase**, update status to `[IN PROGRESS]`:
+   - Use Edit tool:
+     - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
+     - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+
+3. **Execute the phase** (map plan phases to agent stages S1-S9)
+
+4. **After completing each phase**, update status to `[COMPLETED]`:
+   - Use Edit tool:
+     - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+     - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
+   - On failure: `[PARTIAL]` or `[BLOCKED]`
+
+5. **Git commit** per phase:
+   ```bash
+   git add -A && git commit -m "task {N} phase {P}: {phase_name}
+
+   Session: {session_id}"
+   ```
+
+6. **Proceed to next phase** or return if blocked
+
+**Phase-to-Stage Mapping** (typical plan structure):
+
+| Plan Phase | Agent Stage(s) | Description |
+|------------|---------------|-------------|
+| Phase 1: Read Research Report | S1 | Parse slide-mapped report |
+| Phase 2: Resolve Design | S2 | Theme and configuration |
+| Phase 3: Scaffold Project | S3 | Copy template files |
+| Phase 4: Map and Generate Slides | S4-S5 | Content mapping and slides.md |
+| Phase 5: Style and Verify | S6-S7 | CSS generation and verification |
+
+**Resume behavior**: When invoked on an interrupted task, read the plan file to find the first non-completed phase and resume from there. Skip already-completed stages.
+
+---
+
 ### Stage S1: Read Slide-Mapped Research Report
+
+**Preamble**: Before processing slides, read the plan file and update the current phase to `[IN PROGRESS]` per the Phase Checkpoint Protocol above.
 
 Find the most recent slide-mapped research report in `specs/{NNN}_{SLUG}/reports/`:
 
@@ -260,6 +310,8 @@ Create `talks/{N}_{slug}/style.css` with theme-derived styles:
 
 ### Stage S8: Write Final Metadata
 
+**Note**: Per-phase git commits (from the Phase Checkpoint Protocol) replace a single final commit. Each phase is committed individually with `task {N} phase {P}: {phase_name}` format.
+
 Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 ```json
@@ -348,6 +400,9 @@ Slidev assembly completed for task {N}:
 7. Generate valid Slidev frontmatter with theme and metadata
 8. Update partial_progress on significant milestones
 9. Refer to `slidev-pitfalls.md` for known issues and prevention
+10. Follow Phase Checkpoint Protocol for all assembly operations
+11. Update plan phase headings before and after each phase
+12. Create per-phase git commits with session ID
 
 **MUST NOT**:
 1. Return JSON to the console
