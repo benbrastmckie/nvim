@@ -1,7 +1,64 @@
 {
   "version": "1.0.0",
-  "next_project_number": 403,
+  "next_project_number": 409,
   "active_projects": [
+    {
+      "project_number": 408,
+      "project_name": "audit_implementation_agents_phase_checkpoint",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-12T12:00:00Z",
+      "last_updated": "2026-04-12T12:00:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 407,
+      "project_name": "update_present_manifest_and_metadata",
+      "status": "not_started",
+      "task_type": "meta",
+      "dependencies": [403, 405],
+      "created": "2026-04-12T12:00:00Z",
+      "last_updated": "2026-04-12T12:00:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 406,
+      "project_name": "update_slides_command_format_enriched",
+      "status": "not_started",
+      "task_type": "meta",
+      "dependencies": [405],
+      "created": "2026-04-12T12:00:00Z",
+      "last_updated": "2026-04-12T12:00:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 405,
+      "project_name": "update_skill_slides_multi_agent_dispatch",
+      "status": "not_started",
+      "task_type": "meta",
+      "dependencies": [403],
+      "created": "2026-04-12T12:00:00Z",
+      "last_updated": "2026-04-12T12:00:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 404,
+      "project_name": "add_ucsf_theme_pptx_patterns_templates",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-12T12:00:00Z",
+      "last_updated": "2026-04-12T12:00:00Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 403,
+      "project_name": "split_slides_agent_with_phase_checkpoint",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-12T12:00:00Z",
+      "last_updated": "2026-04-12T12:00:00Z",
+      "artifacts": []
+    },
     {
       "project_number": 402,
       "project_name": "add_routing_blocks_to_extension_manifests",

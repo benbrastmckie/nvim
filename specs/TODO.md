@@ -1,20 +1,83 @@
 ---
-next_project_number: 403
+next_project_number: 409
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-11. 5 active tasks remaining.*
+*Updated 2026-04-12. 11 active tasks remaining.*
 
 ### Pending
 
+- **403** [NOT STARTED] -- Split slides-agent into 3 specialized agents with Phase Checkpoint Protocol
+- **404** [NOT STARTED] -- Add UCSF theme, PPTX patterns, and templates to present/ context
+- **405** [NOT STARTED] -- Update skill-slides for multi-agent dispatch and plan workflow (depends: 403)
+- **406** [NOT STARTED] -- Update /slides command: output format, enriched descriptions, remove --design (depends: 405)
+- **407** [NOT STARTED] -- Update present/ manifest.json and extension metadata (depends: 403, 405)
+- **408** [NOT STARTED] -- Audit all implementation agents for Phase Checkpoint Protocol compliance
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 408. Audit all implementation agents for Phase Checkpoint Protocol compliance
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Audit every implementation agent across all extensions (present, founder, filetypes, etc.) to ensure each updates phase status in plan headings (`[NOT STARTED]` -> `[IN PROGRESS]` -> `[COMPLETED]`) before and after working on each phase, with per-phase git commits. Currently only `grant-agent` in present/ has this protocol. All assembly/implementation agents must follow the same pattern for progress monitoring and resumability.
+
+---
+
+### 407. Update present/ manifest.json and extension metadata
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: 403, 405
+
+**Description**: Update `manifest.json` provides.agents to list the 3 new agents (slides-research-agent, pptx-assembly-agent, slidev-assembly-agent) and remove slides-agent. Add `plan` routing entries for present:slides. Update EXTENSION.md skill-agent table to show the 3-agent dispatch. Update index-entries.json with new context files (pptx-generation.md, slidev-pitfalls.md, ucsf-institutional.json, templates).
+
+---
+
+### 406. Update /slides command: output format, enriched descriptions, remove --design
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: 405
+
+**Description**: Rewrite `/slides` command per zed DIFF.md: remove `--design` flag and entire Stage 3 (design confirmation). Add Step 0.0 for output format selection (Slidev default vs PPTX). Add Step 2.5 for enriched description construction. Update routing table so `/plan N` routes to skill-slides plan workflow. Update all output templates to use `{output_format}`. Source: `/home/benjamin/.config/zed/DIFF.md` section 2.
+
+---
+
+### 405. Update skill-slides for multi-agent dispatch and plan workflow
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: 403
+
+**Description**: Rewrite skill-slides SKILL.md: add `plan` workflow type with D1-D3 design questions (theme including "E) UCSF Institutional" option, message ordering, section emphasis). Add multi-agent dispatch table routing to slides-research-agent, planner-agent, pptx-assembly-agent, or slidev-assembly-agent based on workflow_type and output_format. Add plan postflight status mapping. Source: `/home/benjamin/.config/zed/DIFF.md` section 3.1.
+
+---
+
+### 404. Add UCSF theme, PPTX patterns, and templates to present/ context
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Add to present/ extension context: (1) `ucsf-institutional.json` theme with UCSF navy/blue palette and Garamond headings, (2) `pptx-generation.md` pattern documenting python-pptx API, (3) `slidev-pitfalls.md` pattern, (4) `templates/` directory with pptx-project and slidev-project scaffolds, (5) copy UCSF .pptx template from `/home/benjamin/.config/zed/examples/test-files/UCSF_ZSFG_Template_16x9.pptx` into extension. Update existing themes with footer sections, talk-structure.md with format-specific notes, conclusions-takeaway.md with custom footer, talk/index.json with new entries. Source: `/home/benjamin/.config/zed/DIFF.md` section 4.
+
+---
+
+### 403. Split slides-agent into 3 specialized agents with Phase Checkpoint Protocol
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Replace monolithic `slides-agent.md` with 3 specialized agents ported from zed: `slides-research-agent.md` (research synthesis), `pptx-assembly-agent.md` (PowerPoint generation via python-pptx), `slidev-assembly-agent.md` (Slidev project generation). Critically, add Phase Checkpoint Protocol to both assembly agents (missing in zed version) so they update `### Phase {P}: {Name} [NOT STARTED]` -> `[IN PROGRESS]` -> `[COMPLETED]` in plan headings before/after each phase with per-phase commits. Delete old slides-agent.md. Source agents: `/home/benjamin/.config/zed/.claude_NEW/agents/`.
+
+---
 
 ### 402. Add routing blocks to 11 extension manifests (doc-lint failures)
 - **Effort**: TBD
@@ -88,5 +151,10 @@ next_project_number: 403
 
 ## Recommended Order
 
-1. **384** [RESEARCHED] -> plan (independent)
-*No pending implementation tasks.*
+1. **403** [NOT STARTED] -> research (independent, unblocks 405/407)
+2. **404** [NOT STARTED] -> research (independent, parallel with 403)
+3. **408** [NOT STARTED] -> research (independent, parallel with 403/404)
+4. **405** [NOT STARTED] -> research (after 403)
+5. **406** [NOT STARTED] -> research (after 405)
+6. **407** [NOT STARTED] -> research (after 403+405)
+7. **384** [RESEARCHED] -> plan (independent)
