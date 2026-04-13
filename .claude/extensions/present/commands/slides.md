@@ -161,7 +161,7 @@ fi
 Load existing task, validate language is "present" and task_type is "slides", then delegate to skill-slides for research.
 
 **If file path**:
-Read the file as primary source material. Run Stage 0 forcing questions (Steps 0.1-0.3) with the file content as context. Then proceed to task creation.
+Read the file as primary source material. Run Stage 0 forcing questions (Steps 0.0-0.3) with the file content as context. Then proceed to task creation.
 
 **If description**:
 Run Stage 0 forcing questions (Steps 0.0-0.3), then proceed to task creation.
@@ -355,6 +355,7 @@ Talk task #{N} created: {TITLE}
 Status: [NOT STARTED]
 Language: present
 Talk Type: {talk_type}
+Output Format: {output_format}
 
 Recommended workflow:
 1. /research {N} - Synthesize source materials
