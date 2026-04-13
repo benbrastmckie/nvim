@@ -14,18 +14,23 @@
     {
       "project_number": 415,
       "project_name": "improve_slides_command_task_description",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-13T08:38:37Z",
-      "last_updated": "2026-04-13T08:40:47Z",
+      "last_updated": "2026-04-13T08:44:58Z",
       "artifacts": [
         {
           "type": "research",
           "path": "specs/415_improve_slides_command_task_description/reports/01_slides-description-analysis.md",
           "summary": "Gap analysis: /slides vs /deck TODO.md entry format. Three localized edits in slides.md"
+        },
+        {
+          "path": "specs/415_improve_slides_command_task_description/plans/01_slides-description-plan.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for improving /slides command task description format"
         }
       ],
-      "session_id": "sess_1776069587_3ad68c"
+      "session_id": "sess_1776069772_234422"
     },
     {
       "project_number": 414,
