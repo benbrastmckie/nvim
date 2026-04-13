@@ -88,7 +88,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Enrich Step 6 Console Output [IN PROGRESS]
+### Phase 2: Enrich Step 6 Console Output [COMPLETED]
 
 **Goal**: Add forcing data recap to the console output and fix the "Language" label.
 

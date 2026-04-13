@@ -273,10 +273,16 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 ```
 Talk task #{N} created: {TITLE}
 Status: [NOT STARTED]
-Language: present
+Task Type: present
 Talk Type: {talk_type}
 Output Format: {output_format}
 Artifacts path: specs/{NNN}_{SLUG}/ (created on first artifact)
+
+Forcing Data Gathered:
+- Output format: {forcing_data.output_format}
+- Talk type: {forcing_data.talk_type}
+- Source materials: {forcing_data.source_materials}
+- Audience context: {forcing_data.audience_context}
 
 Recommended workflow:
 1. /research {N} - Synthesize source materials into slide-mapped report
@@ -361,9 +367,15 @@ Tasks with language="present" and task_type="slides" route through core commands
 ```
 Talk task #{N} created: {TITLE}
 Status: [NOT STARTED]
-Language: present
+Task Type: present
 Talk Type: {talk_type}
 Output Format: {output_format}
+
+Forcing Data Gathered:
+- Output format: {forcing_data.output_format}
+- Talk type: {forcing_data.talk_type}
+- Source materials: {forcing_data.source_materials}
+- Audience context: {forcing_data.audience_context}
 
 Recommended workflow:
 1. /research {N} - Synthesize source materials
