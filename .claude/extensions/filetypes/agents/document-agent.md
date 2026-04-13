@@ -7,7 +7,7 @@ description: Convert documents between formats (PDF/DOCX to Markdown, Markdown t
 
 ## Overview
 
-Document conversion agent that transforms files between document formats. Supports PDF/DOCX to Markdown extraction and Markdown to PDF generation. Invoked by `filetypes-router-agent` or `skill-filetypes` via the forked subagent pattern. Detects available conversion tools and executes with appropriate fallbacks.
+Document conversion agent that transforms files between document formats. Supports PDF/DOCX to Markdown extraction and Markdown to PDF generation. Invoked by `filetypes-router-agent` or `skill-filetypes` via the forked subagent pattern. Uses format-aware tool selection to route each source format to the best available extraction tool, with pymupdf as primary for PDF and markitdown as primary for Office formats.
 
 ## Agent Metadata
 
@@ -28,7 +28,7 @@ This agent has access to:
 - Grep - Search file contents
 
 ### Execution Tools
-- Bash - Run conversion commands (markitdown, pandoc, typst)
+- Bash - Run conversion commands (pymupdf, markitdown, pandoc, typst)
 
 ## Context References
 
@@ -40,14 +40,15 @@ Load these on-demand using @-references:
 
 ## Supported Conversions
 
-| Source Format | Target Format | Primary Tool | Fallback Tool |
-|---------------|---------------|--------------|---------------|
-| PDF | Markdown | markitdown | pandoc |
-| DOCX | Markdown | markitdown | pandoc |
-| Images (PNG/JPG) | Markdown | markitdown | N/A |
-| Markdown | PDF | pandoc | typst |
-| HTML | Markdown | markitdown | pandoc |
-| XLSX/PPTX | Markdown | markitdown | N/A |
+| Source Format | Target Format | Primary Tool | Fallback 1 | Fallback 2 |
+|---------------|---------------|--------------|------------|------------|
+| PDF | Markdown | pymupdf | pandoc | markitdown |
+| DOCX | Markdown | markitdown | pandoc | - |
+| PPTX/XLSX | Markdown | markitdown | - | - |
+| HTML | Markdown | markitdown | pandoc | - |
+| EPUB | Markdown | pymupdf | pandoc | - |
+| Images (PNG/JPG) | Markdown | pymupdf (OCR) | markitdown | - |
+| Markdown | PDF | pandoc | typst | - |
 
 ## Execution Flow
 
@@ -74,7 +75,7 @@ Extract from input:
    ```
 
 2. **Determine conversion direction**
-   - Extract source extension: `.pdf`, `.docx`, `.md`, `.html`, etc.
+   - Extract source extension: `.pdf`, `.docx`, `.md`, `.html`, `.epub`, etc.
    - Extract target extension from output_path or infer from source
 
 3. **Validate conversion is supported**
@@ -88,48 +89,143 @@ Reference `@context/project/filetypes/tools/tool-detection.md` for patterns.
 Check which conversion tools are installed:
 
 ```bash
-# Check for markitdown (Python package)
-command -v markitdown >/dev/null 2>&1
+# Check for PyMuPDF (fitz) - primary for PDF/EPUB/Images
+has_pymupdf=$(python3 -c "import fitz" 2>/dev/null && echo "yes" || echo "no")
 
-# Check for pandoc
-command -v pandoc >/dev/null 2>&1
+# Check for pymupdf4llm (enhanced markdown output)
+has_pymupdf4llm=$(python3 -c "import pymupdf4llm" 2>/dev/null && echo "yes" || echo "no")
 
-# Check for typst
-command -v typst >/dev/null 2>&1
+# Check for markitdown (primary for DOCX/PPTX/XLSX/HTML)
+has_markitdown=$(command -v markitdown >/dev/null 2>&1 && echo "yes" || echo "no")
+
+# Check for pandoc (universal fallback)
+has_pandoc=$(command -v pandoc >/dev/null 2>&1 && echo "yes" || echo "no")
+
+# Check for typst (Markdown to PDF fallback)
+has_typst=$(command -v typst >/dev/null 2>&1 && echo "yes" || echo "no")
 ```
 
 Report available tools in metadata.
 
 ### Stage 4: Execute Conversion
 
-Based on conversion direction and available tools:
+Route by source format to select the best tool chain.
 
-**PDF/DOCX/Images to Markdown**:
+#### PDF to Markdown
+
 ```bash
-# Primary: markitdown (if available)
+# Primary: pymupdf4llm (if available) - best quality markdown from PDF
+python3 -c "
+import pymupdf4llm, sys
+md_text = pymupdf4llm.to_markdown(sys.argv[1])
+with open(sys.argv[2], 'w') as f:
+    f.write(md_text)
+" "$source_path" "$output_path"
+
+# Primary (base): pymupdf with text extraction + table detection
+python3 -c "
+import fitz, sys
+doc = fitz.open(sys.argv[1])
+output = []
+for page_num, page in enumerate(doc, 1):
+    text = page.get_text('text')
+    if text.strip():
+        output.append(f'## Page {page_num}\n\n{text}')
+    # Detect tables
+    tabs = page.find_tables()
+    for tab in tabs:
+        df = tab.to_pandas()
+        output.append(df.to_markdown(index=False))
+doc.close()
+with open(sys.argv[2], 'w') as f:
+    f.write('\n\n'.join(output))
+" "$source_path" "$output_path"
+
+# Fallback 1: pandoc (limited PDF support, may need pdftotext)
+pandoc -f pdf -t markdown -o "$output_path" "$source_path"
+
+# Fallback 2: markitdown
+markitdown "$source_path" > "$output_path"
+```
+
+#### DOCX to Markdown
+
+```bash
+# Primary: markitdown (best Office format support)
 markitdown "$source_path" > "$output_path"
 
-# Fallback: pandoc (if markitdown unavailable)
+# Fallback: pandoc
 pandoc -f docx -t markdown -o "$output_path" "$source_path"
-# Note: pandoc has limited PDF support, may need pdftotext first
 ```
 
-**Markdown to PDF**:
+#### PPTX/XLSX to Markdown
+
 ```bash
-# Primary: pandoc with PDF engine
-pandoc -f markdown -t pdf -o "$output_path" "$source_path"
-
-# Fallback: typst
-typst compile "$source_path" "$output_path"
+# Primary: markitdown
+markitdown "$source_path" > "$output_path"
 ```
 
-**HTML to Markdown**:
+#### HTML to Markdown
+
 ```bash
 # Primary: markitdown
 markitdown "$source_path" > "$output_path"
 
 # Fallback: pandoc
 pandoc -f html -t markdown -o "$output_path" "$source_path"
+```
+
+#### EPUB to Markdown
+
+```bash
+# Primary: pymupdf
+python3 -c "
+import fitz, sys
+doc = fitz.open(sys.argv[1])
+output = []
+for page_num, page in enumerate(doc, 1):
+    text = page.get_text('text')
+    if text.strip():
+        output.append(text)
+doc.close()
+with open(sys.argv[2], 'w') as f:
+    f.write('\n\n---\n\n'.join(output))
+" "$source_path" "$output_path"
+
+# Fallback: pandoc
+pandoc -f epub -t markdown -o "$output_path" "$source_path"
+```
+
+#### Images to Markdown (OCR)
+
+```bash
+# Primary: pymupdf with OCR
+python3 -c "
+import fitz, sys
+doc = fitz.open(sys.argv[1])
+page = doc[0]
+text = page.get_text('text')
+if not text.strip():
+    # Attempt OCR via pymupdf built-in (requires Tesseract)
+    tp = page.get_textpage_ocr(language='eng')
+    text = page.get_text('text', textpage=tp)
+doc.close()
+with open(sys.argv[2], 'w') as f:
+    f.write(text)
+" "$source_path" "$output_path"
+
+# Fallback: markitdown (has OCR capabilities)
+markitdown "$source_path" > "$output_path"
+```
+
+#### Markdown to PDF
+
+```bash
+# Primary: pandoc with PDF engine
+pandoc -f markdown -t pdf -o "$output_path" "$source_path"
+
+# Fallback: typst
+typst compile "$source_path" "$output_path"
 ```
 
 ### Stage 5: Validate Output
@@ -156,7 +252,7 @@ Return ONLY valid JSON matching this schema:
 ```json
 {
   "status": "converted",
-  "summary": "Successfully converted source.pdf to output.md using markitdown. Output file is 15KB with readable content.",
+  "summary": "Successfully converted source.pdf to output.md using pymupdf. Output file is 15KB with readable content.",
   "artifacts": [
     {
       "type": "implementation",
@@ -170,7 +266,7 @@ Return ONLY valid JSON matching this schema:
     "agent_type": "document-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "convert", "skill-filetypes", "filetypes-router-agent", "document-agent"],
-    "tool_used": "markitdown",
+    "tool_used": "pymupdf",
     "source_format": "pdf",
     "target_format": "markdown",
     "output_size_bytes": 15360
@@ -217,15 +313,15 @@ Return ONLY valid JSON matching this schema:
 ```json
 {
   "status": "failed",
-  "summary": "No conversion tools available for PDF to Markdown. Neither markitdown nor pandoc found.",
+  "summary": "No conversion tools available for PDF to Markdown. Neither pymupdf, markitdown, nor pandoc found.",
   "artifacts": [],
   "metadata": {...},
   "errors": [
     {
       "type": "tool_unavailable",
-      "message": "Required tools not installed: markitdown, pandoc",
+      "message": "Required tools not installed: pymupdf, markitdown, pandoc",
       "recoverable": true,
-      "recommendation": "Install markitdown with 'pip install markitdown' or pandoc from package manager"
+      "recommendation": "Install pymupdf with 'pip install pymupdf' (recommended for PDF) or markitdown with 'pip install markitdown' (recommended for DOCX/PPTX)"
     }
   ],
   "next_steps": "Install required conversion tools"
@@ -257,15 +353,15 @@ Return ONLY valid JSON matching this schema:
 ```json
 {
   "status": "failed",
-  "summary": "Conversion failed: markitdown exited with error code 1",
+  "summary": "Conversion failed: pymupdf raised an exception reading the PDF",
   "artifacts": [],
   "metadata": {...},
   "errors": [
     {
       "type": "execution",
-      "message": "markitdown error: Unable to parse PDF - file may be corrupted or encrypted",
+      "message": "pymupdf error: Unable to parse PDF - file may be corrupted or encrypted",
       "recoverable": true,
-      "recommendation": "Check if PDF is encrypted or try with pandoc fallback"
+      "recommendation": "Check if PDF is encrypted or try with pandoc/markitdown fallback"
     }
   ],
   "next_steps": "Check source file integrity or try alternative conversion method"
@@ -291,7 +387,7 @@ Return ONLY valid JSON matching this schema:
       "type": "execution",
       "message": "Conversion produced empty or minimal output",
       "recoverable": true,
-      "recommendation": "Source may require OCR. Try with OCR-enabled tool or extract images separately."
+      "recommendation": "Source may require OCR. Try with pymupdf OCR (requires Tesseract) or markitdown OCR."
     }
   ],
   "next_steps": "Consider OCR or manual transcription"
@@ -303,19 +399,39 @@ Return ONLY valid JSON matching this schema:
 ```
 Given: source_extension, target_extension, available_tools
 
-1. If source in [pdf, docx, xlsx, pptx, html, images]:
+1. If source == pdf:
+   - If target == markdown:
+     - If pymupdf4llm available: use pymupdf4llm (best quality)
+     - Else if pymupdf available: use pymupdf (text + tables)
+     - Else if pandoc available: use pandoc
+     - Else if markitdown available: use markitdown
+     - Else: fail with tool_unavailable
+
+2. If source in [docx, xlsx, pptx, html]:
    - If target == markdown:
      - If markitdown available: use markitdown
      - Else if pandoc available AND source in [docx, html]: use pandoc
      - Else: fail with tool_unavailable
 
-2. If source == markdown:
+3. If source == epub:
+   - If target == markdown:
+     - If pymupdf available: use pymupdf
+     - Else if pandoc available: use pandoc
+     - Else: fail with tool_unavailable
+
+4. If source in [png, jpg, jpeg, tiff, bmp]:
+   - If target == markdown:
+     - If pymupdf available: use pymupdf (with OCR)
+     - Else if markitdown available: use markitdown
+     - Else: fail with tool_unavailable
+
+5. If source == markdown:
    - If target == pdf:
      - If pandoc available: use pandoc
      - Else if typst available: use typst
      - Else: fail with tool_unavailable
 
-3. Else: fail with unsupported_conversion
+6. Else: fail with unsupported_conversion
 ```
 
 ## Critical Requirements
@@ -328,6 +444,7 @@ Given: source_extension, target_extension, available_tools
 5. Always report which tool was used in metadata
 6. Always include absolute paths in artifacts
 7. Reference tool-detection.md for consistent tool checking
+8. Use format-aware routing (PDF -> pymupdf, DOCX -> markitdown, etc.)
 
 **MUST NOT**:
 1. Return plain text instead of JSON

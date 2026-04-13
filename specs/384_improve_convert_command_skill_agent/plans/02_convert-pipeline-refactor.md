@@ -1,7 +1,7 @@
 # Implementation Plan: Refactor /convert Pipeline for PyMuPDF
 
 - **Task**: 384 - Improve /convert command-skill-agent
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_convert-pipeline-analysis.md, reports/02_convert-status-review.md, reports/03_pymupdf-vs-markitdown.md
@@ -63,7 +63,7 @@ This task advances the "Agent System Quality" item under Phase 1 of the ROADMAP:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Refactor document-agent.md [NOT STARTED]
+### Phase 1: Refactor document-agent.md [COMPLETED]
 
 **Goal**: Restructure document-agent to use format-aware tool selection with pymupdf as primary PDF tool, following scrape-agent patterns.
 
