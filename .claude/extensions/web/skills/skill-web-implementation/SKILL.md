@@ -186,9 +186,25 @@ This validation:
 - Indicates the subagent instructions need updating
 - Allows graceful handling of mixed v1/v2 agents
 
+### 3b. Self-Execution Fallback
+
+**CRITICAL**: If you performed the work above WITHOUT using the Task tool (i.e., you read files,
+wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
+`.return-meta.json` file now before proceeding to postflight. Use the schema from
+`return-metadata-file.md` with status value "implemented".
+
+If you DID use the Task tool, skip this stage -- the subagent already wrote the metadata.
+
+---
+
+## Postflight (ALWAYS EXECUTE)
+
+The following stages MUST execute after work is complete, whether the work was done by a
+subagent or inline (Stage 3b). Do NOT skip these stages for any reason.
+
 ### 4. Parse Subagent Return (Read Metadata File)
 
-After subagent returns, read the metadata file:
+Read the metadata file:
 
 ```bash
 metadata_file="specs/${padded_num}_${project_name}/.return-meta.json"

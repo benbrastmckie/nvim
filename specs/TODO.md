@@ -10,9 +10,9 @@ next_project_number: 419
 
 ### Pending
 
-- **418** [PLANNED] -- Add postflight self-execution fallback to skill wrapper pattern
-- **398** [PLANNED] -- Extract artifact-linking logic to shared helper script
-- **394** [PLANNED] -- Remove language-to-task_type backward compatibility shim
+- **418** [COMPLETED] -- Add postflight self-execution fallback to skill wrapper pattern
+- **398** [IMPLEMENTING] -- Extract artifact-linking logic to shared helper script
+- **394** [IMPLEMENTING] -- Remove language-to-task_type backward compatibility shim
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -21,7 +21,7 @@ next_project_number: 419
 
 ### 418. Add postflight self-execution fallback to skill wrapper pattern
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [01_postflight-fallback.md](specs/418_add_postflight_fallback_to_skill_wrapper/reports/01_postflight-fallback.md)
 - **Plan**: [01_postflight-fallback.md](specs/418_add_postflight_fallback_to_skill_wrapper/plans/01_postflight-fallback.md)
@@ -32,7 +32,7 @@ next_project_number: 419
 
 ### 398. Extract artifact-linking logic to shared helper script (consolidate six skill Stage 8 blocks)
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: 397
 - **Research**: [01_artifact-linking-helper.md](specs/398_extract_artifact_linking_helper/reports/01_artifact-linking-helper.md)
@@ -44,7 +44,7 @@ next_project_number: 419
 
 ### 394. Remove language-to-task_type backward compatibility shim
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Research**: [01_remove-compat-shim.md](specs/394_remove_language_to_task_type_compat_shim/reports/01_remove-compat-shim.md)
 - **Plan**: [01_remove-compat-shim.md](specs/394_remove_language_to_task_type_compat_shim/plans/01_remove-compat-shim.md)

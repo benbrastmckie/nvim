@@ -179,7 +179,23 @@ The agent will:
 
 ---
 
-### Stage 6: Parse Subagent Return
+### Stage 5b: Self-Execution Fallback
+
+**CRITICAL**: If you performed the work above WITHOUT using the Task tool (i.e., you read files,
+wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
+`.return-meta.json` file now before proceeding to postflight. Use the schema from
+`return-metadata-file.md` with the appropriate status value for this operation.
+
+If you DID use the Task tool, skip this stage -- the subagent already wrote the metadata.
+
+---
+
+## Postflight (ALWAYS EXECUTE)
+
+The following stages MUST execute after work is complete, whether the work was done by a
+subagent or inline (Stage 5b). Do NOT skip these stages for any reason.
+
+### Stage 6: Read Metadata File
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")

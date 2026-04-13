@@ -1,7 +1,7 @@
 # Implementation Plan: Task #418
 
 - **Task**: 418 - Add postflight self-execution fallback to skill wrapper pattern
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/418_add_postflight_fallback_to_skill_wrapper/reports/01_postflight-fallback.md
@@ -65,7 +65,7 @@ No ROADMAP.md consulted for this meta task.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add postflight fallback to the three core skills [NOT STARTED]
+### Phase 1: Add postflight fallback to the three core skills [COMPLETED]
 
 **Goal**: Add Stage 5b (self-execution fallback) and reframe postflight stages in skill-researcher, skill-planner, and skill-implementer SKILL.md files.
 
@@ -119,7 +119,7 @@ subagent (Stage 5) or inline (Stage 5b). Do NOT skip these stages for any reason
 
 ---
 
-### Phase 2: Update pattern documentation [NOT STARTED]
+### Phase 2: Update pattern documentation [COMPLETED]
 
 **Goal**: Update thin-wrapper-skill.md and postflight-control.md to document the self-execution fallback pattern so future skills are created with it.
 
@@ -149,7 +149,7 @@ subagent (Stage 5) or inline (Stage 5b). Do NOT skip these stages for any reason
 
 ---
 
-### Phase 3: Propagate fallback to extension wrapper skills [NOT STARTED]
+### Phase 3: Propagate fallback to extension wrapper skills [COMPLETED]
 
 **Goal**: Apply the Stage 5b / unconditional postflight pattern to the ~25 extension skills that use the thin-wrapper delegation pattern.
 

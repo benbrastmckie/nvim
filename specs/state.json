@@ -5,10 +5,10 @@
     {
       "project_number": 418,
       "project_name": "add_postflight_fallback_to_skill_wrapper",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-13T18:05:25Z",
-      "last_updated": "2026-04-13T18:43:00Z",
+      "last_updated": "2026-04-13T19:07:10Z",
       "session_id": "sess_1776105775_69a5ba",
       "next_artifact_number": 2,
       "artifacts": [
@@ -21,16 +21,23 @@
           "path": "specs/418_add_postflight_fallback_to_skill_wrapper/plans/01_postflight-fallback.md",
           "type": "plan",
           "summary": "3-phase plan: (1) add Stage 5b fallback and unconditional postflight to 3 core skills, (2) update pattern docs, (3) propagate to ~25 extension skills"
+        },
+        {
+          "path": "specs/418_add_postflight_fallback_to_skill_wrapper/summaries/01_postflight-fallback-summary.md",
+          "type": "summary",
+          "summary": "Added Stage 5b self-execution fallback and unconditional postflight headers to 47 skill files, updated pattern documentation"
         }
-      ]
+      ],
+      "completion_summary": "Added Stage 5b self-execution fallback and unconditional postflight headers to 47 thin-wrapper skill files (3 core + 44 extension). Updated thin-wrapper-skill.md and postflight-control.md pattern documentation.",
+      "claudemd_suggestions": "No CLAUDE.md changes needed -- pattern is documented in context files"
     },
     {
       "project_number": 398,
       "project_name": "extract_artifact_linking_helper",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-10T20:40:00Z",
-      "last_updated": "2026-04-13T18:46:23Z",
+      "last_updated": "2026-04-13T19:06:55Z",
       "dependencies": [
         397
       ],
@@ -46,17 +53,17 @@
           "summary": "4-phase plan to extract duplicated TODO.md artifact-linking logic into a shared context pattern file"
         }
       ],
-      "session_id": "sess_1776105775_bdbb60_t398",
+      "session_id": "sess_1776107204_db3651_t398",
       "next_artifact_number": 2
     },
     {
       "project_number": 394,
       "project_name": "remove_language_to_task_type_compat_shim",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-10T16:37:05Z",
-      "last_updated": "2026-04-13T18:45:50Z",
-      "session_id": "sess_1776105775_bdbb60_t394",
+      "last_updated": "2026-04-13T19:06:55Z",
+      "session_id": "sess_1776107204_db3651_t394",
       "next_artifact_number": 3,
       "artifacts": [
         {
