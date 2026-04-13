@@ -10,10 +10,10 @@ next_project_number: 414
 
 ### Pending
 
-- **413** [PLANNED] -- Refine slides skill and command (design questions, routing, delegation)
-- **412** [PLANNED] -- Update documentation examples from Python to Rust
+- **413** [COMPLETED] -- Refine slides skill and command (design questions, routing, delegation)
+- **412** [COMPLETED] -- Update documentation examples from Python to Rust
 - **411** [COMPLETED] -- Update extension trigger wording to mechanism-agnostic
-- **410** [PLANNED] -- Remove meta Stage 5.5 auto-research artifact generation
+- **410** [COMPLETED] -- Remove meta Stage 5.5 auto-research artifact generation
 - **409** [COMPLETED] -- Remove Phase Checkpoint Protocol from assembly/implement agents
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
 - **394** [NOT STARTED] -- Remove language-to-task_type backward compatibility shim
@@ -25,11 +25,12 @@ next_project_number: 414
 
 ### 413. Refine slides skill and command (design questions, routing, delegation)
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
-- **Planning Completed**: 2026-04-13
+- **Status**: [COMPLETED]
+- **Completed**: 2026-04-13
 - **Task Type**: meta
 - **Research**: [01_refine-slides-skill-command.md](specs/413_refine_slides_skill_command/reports/01_refine-slides-skill-command.md)
 - **Plan**: [01_refine-slides-skill-command.md](specs/413_refine_slides_skill_command/plans/01_refine-slides-skill-command.md)
+- **Summary**: Ported 8 SKILL.md edits and 3 slides.md edits from Zed working copy.
 
 **Description**: Port slides skill and command refinements from Zed working copy. In `.claude/extensions/present/skills/skill-slides/SKILL.md`: expand Stage 3.5 (Design Questions) with step-by-step guidance replacing bash automation code, simplify agent resolution case statement syntax, streamline delegation context section, remove duplicate agent/workflow routing table from Stage 5, remove "Plan Success" return message format. In `.claude/extensions/present/commands/slides.md`: simplify output format question wording, renumber steps (remove Step 0.0 references), expand Step 2.5 "Enrich Description" with detailed path relativization logic, remove "Plan Success" return message format. Source: `/home/benjamin/.config/zed/CHANGE.md` Theme 6.
 
@@ -37,11 +38,12 @@ next_project_number: 414
 
 ### 412. Update documentation examples from Python to Rust
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
-- **Planning Completed**: 2026-04-13
+- **Status**: [COMPLETED]
+- **Completed**: 2026-04-13
 - **Task Type**: meta
 - **Research**: [01_update-docs-python-rust.md](specs/412_update_docs_python_to_rust/reports/01_update-docs-python-rust.md)
 - **Plan**: [01_update-docs-python-rust.md](specs/412_update_docs_python_to_rust/plans/01_update-docs-python-rust.md)
+- **Summary**: Replaced ~45 Python teaching examples with Rust across 7 documentation files.
 
 **Description**: Replace Python with Rust as the example language in documentation guides, since Python is a real bundled extension and creates confusion when used as a hypothetical teaching example. Files to update: `.claude/docs/guides/creating-skills.md` (agent/skill names python→rust, packages→crates, asyncio→tokio, pytest→cargo test), `.claude/docs/guides/creating-agents.md` (task_context example, context file reference python/→rust/), `.claude/docs/guides/component-selection.md` (skill routing example, "Adding Python Support"→"Adding Rust Support"), `.claude/docs/guides/adding-domains.md` (domain example "python"→"rust"), `.claude/docs/guides/creating-extensions.md` (remove "python" from simple extensions list), `.claude/docs/architecture/system-overview.md` (rename example section), `.claude/context/architecture/component-checklist.md` (language examples). Source: `/home/benjamin/.config/zed/CHANGE.md` Theme 5.
 
@@ -61,11 +63,12 @@ next_project_number: 414
 
 ### 410. Remove meta Stage 5.5 auto-research artifact generation
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
-- **Planning Completed**: 2026-04-13
+- **Status**: [COMPLETED]
+- **Completed**: 2026-04-13
 - **Task Type**: meta
 - **Research**: [01_remove-meta-stage-5-5.md](specs/410_remove_meta_stage_5_5/reports/01_remove-meta-stage-5-5.md)
 - **Plan**: [01_remove-meta-stage-5-5.md](specs/410_remove_meta_stage_5_5/plans/01_remove-meta-stage-5-5.md)
+- **Summary**: Removed Stage 5.5 from meta-builder-agent. Tasks created via /meta now start as NOT STARTED.
 
 **Description**: Remove the "Interview Stage 5.5: GenerateResearchArtifacts" from the meta-builder-agent, which auto-generated shallow research boilerplate and set tasks to RESEARCHED status. Tasks should instead start as NOT STARTED and follow the normal `/research → /plan → /implement` lifecycle. Important: task descriptions created by meta-builder-agent must still include full file paths to key sources so that `/research` has clear starting points. Files: `.claude/agents/meta-builder-agent.md` (remove Stage 5.5 section at lines 594-691, update Stage 5→6 transition, change state.json template status to "not_started", remove artifacts array, update TODO.md template to [NOT STARTED]), `.claude/skills/skill-meta/SKILL.md` (change summary to "NOT STARTED status", remove research report objects, update next_steps to "/research"), `.claude/docs/reference/standards/multi-task-creation-standard.md` (remove "Research Generation" row and Stage 5.5 references). Source: `/home/benjamin/.config/zed/CHANGE.md` Theme 2.
 

@@ -271,16 +271,16 @@ Extract from input:
 {
   "task_context": {
     "task_number": 450,
-    "task_name": "add_async_support",
-    "description": "Add async/await support to API client",
-    "language": "python"
+    "task_name": "add_async_runtime",
+    "description": "Add async runtime support to API client",
+    "language": "rust"
   },
   "metadata": {
     "session_id": "sess_1736700000_abc123",
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "{name}-agent"]
   },
-  "focus_prompt": "asyncio best practices"
+  "focus_prompt": "tokio best practices"
 }
 ```
 ```
@@ -294,7 +294,7 @@ Load context based on task language:
 
 | Task Type | Context Files |
 |----------|---------------|
-| python | `project/python/tools.md` |
+| rust | `project/rust/tools.md` |
 | neovim | `project/neovim/tools/lazy-nvim-guide.md` |
 | general | `project/repo/project-overview.md` |
 ```

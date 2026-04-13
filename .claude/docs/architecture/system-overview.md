@@ -249,10 +249,10 @@ Updates use two-phase commit:
 
 ### Adding New Language Support
 
-To add support for a new language (e.g., Python):
+To add support for a new language (e.g., Rust):
 
-1. Create skill: `.claude/skills/skill-python-research/SKILL.md`
-2. Create agent: `.claude/agents/python-research-agent.md`
+1. Create skill: `.claude/skills/skill-rust-research/SKILL.md`
+2. Create agent: `.claude/agents/rust-research-agent.md`
 3. Update routing in existing commands
 
 ### Adding New Commands

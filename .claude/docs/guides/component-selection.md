@@ -102,7 +102,7 @@ You need a new user-invocable operation that does not exist yet.
 You need to add routing logic or input validation for execution.
 
 **Good candidates**:
-- New language support (e.g., `skill-python-research`)
+- New language support (e.g., `skill-rust-research`)
 - Specialized domain handling (e.g., `skill-database-implementation`)
 - Thin wrapper for delegation with validation
 
@@ -164,10 +164,10 @@ Creates: Command + Skill + Agent
 /research (existing)
     |
     v
-skill-python-research (new)
+skill-rust-research (new)
     |
     v
-python-research-agent (new)
+rust-research-agent (new)
 ```
 Creates: Skill + Agent (command exists)
 
@@ -306,13 +306,13 @@ Creates: Agent only (skill routes to it)
 
 ## Examples
 
-### Example 1: Adding Python Support
+### Example 1: Adding Rust Support
 
-**Goal**: Support Python tasks with task-type-specific tooling
+**Goal**: Support Rust tasks with task-type-specific tooling
 
 **Components needed**:
-1. `skill-python-research/SKILL.md` - Routes Python tasks to Python agent
-2. `python-research-agent.md` - Uses Python-specific tools
+1. `skill-rust-research/SKILL.md` - Routes Rust tasks to Rust agent
+2. `rust-research-agent.md` - Uses Rust-specific tools
 
 **No command needed** - existing `/research` routes by language
 

@@ -2,20 +2,23 @@
 name: skill-slides
 description: Research talk material synthesis, design-aware planning, and presentation assembly. Invoke for slides tasks.
 allowed-tools: Task, Bash, Edit, Read, Write, AskUserQuestion
-# Subagent dispatch (resolved at Stage 4):
+# Subagents (dispatched by workflow_type + output_format):
 #   - slides-research-agent (workflow_type=slides_research)
 #   - planner-agent (workflow_type=plan, via design questions pre-delegation)
 #   - pptx-assembly-agent (workflow_type=assemble, output_format=pptx)
 #   - slidev-assembly-agent (workflow_type=assemble, output_format=slidev)
+# Context is loaded by each subagent independently.
+# Tools (used by subagents):
+#   - Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, Bash
 ---
 
 # Slides Skill
 
-Thin wrapper that routes slides tasks to one of three specialized subagents:
+Thin wrapper that delegates slides work to the appropriate subagent based on workflow type and output format:
 
-- **slides-research-agent** -- material synthesis into slide-mapped reports
-- **planner-agent** -- design-aware implementation planning (with D1-D3 design questions)
-- **pptx-assembly-agent** / **slidev-assembly-agent** -- presentation assembly by output format
+- **slides-research-agent**: Material synthesis into slide-mapped research reports
+- **pptx-assembly-agent**: PowerPoint generation from research reports
+- **slidev-assembly-agent**: Slidev project generation from research reports
 
 **IMPORTANT**: This skill implements the skill-internal postflight pattern. After the subagent returns,
 this skill handles all postflight operations (status update, artifact linking, git commit) before returning.
@@ -36,7 +39,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 This skill activates when:
 - `/slides` command with task number input
 - `/research` on a present task with `task_type: "slides"`
-- `/plan` on a present task with `task_type: "slides"` (plan workflow)
+- `/plan` on a present task with `task_type: "slides"` (plan workflow with design questions)
 - `/implement` on a present task with `task_type: "slides"` (assemble workflow)
 - Present extension is available
 
@@ -44,7 +47,7 @@ This skill activates when:
 
 ## Workflow Type Routing
 
-This skill routes to a specialized subagent based on workflow type and output format:
+This skill routes to the appropriate subagent based on workflow type and output format:
 
 | Workflow Type | Preflight Status | Success Status | TODO.md Markers |
 |---------------|-----------------|----------------|-----------------|
@@ -52,10 +55,10 @@ This skill routes to a specialized subagent based on workflow type and output fo
 | plan | planning | planned | [PLANNING] -> [PLANNED] |
 | assemble | implementing | completed | [IMPLEMENTING] -> [COMPLETED] |
 
-**Note**: The `plan` workflow asks interactive design questions (D1-D3) in Stage 3.5 before delegating
-to planner-agent. Theme fallback chain: `design_decisions.theme` -> research report "Recommended Theme"
-section -> default `academic-clean`. Design decisions are stored in state.json task metadata for use
-by assembly agents.
+**Note**: The `plan` workflow asks interactive design questions (theme, message ordering, section
+emphasis) before delegating to planner-agent. Design decisions are stored as `design_decisions` in
+state.json task metadata. Assembly agents read `design_decisions.theme` with a fallback chain:
+design_decisions -> research report "Recommended Theme" -> default `academic-clean`.
 
 ---
 
@@ -171,84 +174,74 @@ EOF
 
 ### Stage 3.5: Design Questions (plan workflow only)
 
-**Guard**: Only execute this stage when `workflow_type == "plan"`. Skip entirely for `slides_research` and `assemble`.
+**Skip this stage** if `workflow_type` is not `plan`.
+
+This stage asks interactive design questions before delegating to the planner-agent. It reads the
+research report to extract key messages and presents theme, ordering, and emphasis choices.
+
+#### Step 1: Check for Existing Design Decisions
 
 ```bash
-if [ "$workflow_type" = "plan" ]; then
-  # --- Check for existing design_decisions ---
-  existing_dd=$(echo "$task_data" | jq -r '.design_decisions // empty')
+existing_dd=$(echo "$task_data" | jq -r '.design_decisions // empty')
+if [ -n "$existing_dd" ]; then
+  # Ask user: reuse or reconfigure?
+  # AskUserQuestion: "Design decisions already exist for this task:
+  #   Theme: {theme}, Message Order: {order}, Section Emphasis: {emphasis}
+  #   Use existing decisions or reconfigure?"
+  # If "use existing": skip to Stage 4
+  # If "reconfigure": continue with D1-D3 below
+fi
+```
 
-  if [ -n "$existing_dd" ]; then
-    # Validate schema: must have theme, message_order, section_emphasis
-    has_theme=$(echo "$existing_dd" | jq -r '.theme // empty')
-    has_order=$(echo "$existing_dd" | jq -r '.message_order // empty')
-    has_emphasis=$(echo "$existing_dd" | jq -r '.section_emphasis // empty')
+#### Step 2: Read Research Report
 
-    if [ -n "$has_theme" ] && [ -n "$has_order" ] && [ -n "$has_emphasis" ]; then
-      # Offer reuse
-      reuse_answer=$(AskUserQuestion "Existing design decisions found:
-- Theme: ${has_theme}
-- Message Order: ${has_order}
-- Section Emphasis: ${has_emphasis}
+```bash
+padded_num=$(printf "%03d" "$task_number")
+report_path=$(ls -1 "specs/${padded_num}_${project_name}/reports/"*_slides-research.md 2>/dev/null | sort -V | tail -1)
 
-Reuse these decisions or reconfigure?
+# Read the research report to extract key messages, suggested structure, and themes
+# Parse key messages for D2 ordering question
+```
 
-A) Reuse existing decisions
-B) Reconfigure from scratch")
+#### Step 3: Design Questions (D1-D3)
 
-      if [ "$reuse_answer" = "A" ] || [ "$reuse_answer" = "a" ]; then
-        echo "Reusing existing design_decisions."
-        skip_design=true
-      fi
-    fi
-  fi
+**D1: Visual Theme**
 
-  if [ "$skip_design" != "true" ]; then
-    # --- Read research report for key messages ---
-    report_path=$(ls specs/${padded_num}_${project_name}/reports/*_slides-research.md 2>/dev/null | tail -1)
+Use AskUserQuestion:
 
-    if [ -n "$report_path" ] && [ -f "$report_path" ]; then
-      # Extract key messages from research report
-      key_messages=$(grep -A 20 "## Key Messages\|### Key Messages" "$report_path" | head -20)
-      has_report=true
-    else
-      key_messages=""
-      has_report=false
-    fi
-
-    # --- D1: Visual Theme ---
-    theme_answer=$(AskUserQuestion "Which visual theme fits best for this talk?
+```
+Based on the research report, which visual theme fits best?
 
 A) Academic Clean - Minimal, high-contrast, serif headings (department seminars)
 B) Clinical Teal - Medical/clinical palette, clean data presentation (clinical audiences)
 C) Conference Bold - Strong colors, large type, designed for projection (conference talks)
 D) Minimal Dark - Dark background, high contrast, code-friendly (technical audiences)
-E) UCSF Institutional - Navy/blue, Garamond headings (institutional branding)")
+E) UCSF Institutional - Navy/blue palette, Garamond serif headings (UCSF presentations)
+```
 
-    case "$theme_answer" in
-      A|a) theme="academic-clean" ;;
-      B|b) theme="clinical-teal" ;;
-      C|c) theme="conference-bold" ;;
-      D|d) theme="minimal-dark" ;;
-      E|e) theme="ucsf-institutional" ;;
-      *) theme="academic-clean" ;;
-    esac
+Store response as `design_decisions.theme`.
 
-    # --- D2: Key Message Ordering ---
-    if [ "$has_report" = "true" ] && [ -n "$key_messages" ]; then
-      message_order=$(AskUserQuestion "The research identified these key messages. Confirm or reorder:
+**D2: Key Message Ordering**
 
-${key_messages}
+Present the 3 key messages identified in the research report and ask:
 
-Enter the preferred order (e.g., '2, 1, 3') or 'confirm' to keep as-is.
-Add any messages to emphasize or de-emphasize.")
-    else
-      message_order="no-report"
-      echo "No research report found -- skipping message ordering (D2)."
-    fi
+```
+The research identified these key messages. Confirm or reorder:
 
-    # --- D3: Section Emphasis ---
-    section_emphasis=$(AskUserQuestion "Which sections should receive extra slides or depth?
+1. {key_message_1}
+2. {key_message_2}
+3. {key_message_3}
+
+Enter the preferred order (e.g., "2, 1, 3") or "confirm" to keep as-is.
+Add any messages to emphasize or de-emphasize.
+```
+
+Store response as `design_decisions.message_order`.
+
+**D3: Section Emphasis**
+
+```
+Which sections should receive extra slides or depth?
 
 Select all that apply:
 - Methods/approach (show technical detail)
@@ -257,33 +250,33 @@ Select all that apply:
 - Clinical implications (translational focus)
 - Future directions (forward-looking)
 
-Which sections to expand?")
-
-    # --- Store design_decisions in state.json ---
-    jq --arg theme "$theme" \
-       --arg order "$message_order" \
-       --arg emphasis "$section_emphasis" \
-       --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-      '(.active_projects[] | select(.project_number == '$task_number')).design_decisions = {
-        "theme": $theme,
-        "message_order": $order,
-        "section_emphasis": $emphasis,
-        "confirmed_at": $ts
-      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
-  fi
-fi
+Which sections to expand?
 ```
 
-**Theme fallback chain** (used by assembly agents if no explicit design_decisions):
-1. `design_decisions.theme` from state.json task metadata
-2. Research report "Recommended Theme" section
-3. Default: `academic-clean`
+Store response as `design_decisions.section_emphasis`.
+
+#### Step 4: Store Design Decisions
+
+Update task metadata in state.json:
+
+```bash
+jq --arg theme "$theme" \
+   --arg order "$message_order" \
+   --arg emphasis "$section_emphasis" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  '(.active_projects[] | select(.project_number == '$task_number')).design_decisions = {
+    "theme": $theme,
+    "message_order": $order,
+    "section_emphasis": $emphasis,
+    "confirmed_at": $ts
+  }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+```
 
 ---
 
 ### Stage 4: Prepare Delegation Context
 
-**Agent Resolution**: Determine target agent from workflow_type and output_format:
+Resolve the target agent based on workflow_type and output_format:
 
 ```bash
 case "$workflow_type" in
@@ -294,21 +287,13 @@ case "$workflow_type" in
     target_agent="planner-agent"
     ;;
   assemble)
-    if [ "$output_format" = "pptx" ]; then
-      target_agent="pptx-assembly-agent"
-    else
-      target_agent="slidev-assembly-agent"
-    fi
+    case "$output_format" in
+      pptx) target_agent="pptx-assembly-agent" ;;
+      *)    target_agent="slidev-assembly-agent" ;;
+    esac
     ;;
 esac
 ```
-
-| workflow_type | output_format | target_agent |
-|---------------|---------------|--------------|
-| slides_research | (any) | slides-research-agent |
-| plan | (any) | planner-agent |
-| assemble | pptx | pptx-assembly-agent |
-| assemble | slidev (default) | slidev-assembly-agent |
 
 **Delegation context**:
 
@@ -325,10 +310,9 @@ esac
     "task_type": "present",
     "task_type": "slides"
   },
-  "workflow_type": "slides_research|plan|assemble",
+  "workflow_type": "slides_research|assemble",
   "output_format": "slidev|pptx (extracted from forcing_data, default: slidev)",
   "forcing_data": "{from state.json task metadata, includes output_format}",
-  "design_decisions": "{from state.json task metadata, if present}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
 }
 ```
@@ -337,24 +321,26 @@ esac
 
 ### Stage 5: Invoke Subagent
 
-**CRITICAL**: Use the **Task** tool to spawn the resolved `{target_agent}`.
+**CRITICAL**: Use the **Task** tool to spawn the subagent. Use the `target_agent` resolved in Stage 4.
 
 ```
 Tool: Task (NOT Skill)
 Parameters:
   - subagent_type: "{target_agent}"
-  - prompt: [Include task_context, delegation_context, workflow_type, forcing_data, design_decisions, metadata_file_path]
+  - prompt: [Include task_context, delegation_context, workflow_type, forcing_data, metadata_file_path]
   - description: "Execute {workflow_type} for task {N}"
 ```
 
-| workflow_type | output_format | Spawned Agent |
-|---------------|---------------|---------------|
-| slides_research | (any) | slides-research-agent |
-| plan | (any) | planner-agent |
-| assemble | pptx | pptx-assembly-agent |
-| assemble | slidev | slidev-assembly-agent |
+**Routing table**:
 
-**DO NOT** use `Skill({target_agent})` - this will FAIL. Always use the Task tool.
+| workflow_type | output_format | target_agent |
+|---------------|---------------|--------------|
+| `slides_research` | any | `slides-research-agent` |
+| `plan` | any | `planner-agent` |
+| `assemble` | `pptx` | `pptx-assembly-agent` |
+| `assemble` | `slidev` (default) | `slidev-assembly-agent` |
+
+**DO NOT** use `Skill(...)` - this will FAIL. Always use `Task`.
 
 ---
 
@@ -445,15 +431,6 @@ Talk research completed for task {N}:
 - Talk type: {talk_type}, {slide_count} slides mapped
 - Created report at specs/{NNN}_{SLUG}/reports/{MM}_slides-research.md
 - Status updated to [RESEARCHED]
-- Changes committed with session {session_id}
-```
-
-**Plan Success**:
-```
-Implementation plan created for task {N}:
-- Design decisions confirmed (theme: {theme}, emphasis: {section_emphasis})
-- Plan created at specs/{NNN}_{SLUG}/plans/{MM}_slides-plan.md
-- Status updated to [PLANNED]
 - Changes committed with session {session_id}
 ```
 

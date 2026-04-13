@@ -182,9 +182,9 @@ Specify when this skill should be used:
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "python"
-- Research involves Python packages or APIs
-- Python-specific tooling is needed
+- Task language is "rust"
+- Research involves Rust crates or APIs
+- Rust-specific tooling is needed
 ```
 
 ### Step 4: Implement Input Validation
@@ -305,31 +305,31 @@ Return partial status if subagent times out (default 3600s).
 
 ## Complete Example
 
-Here is a complete skill for Python research:
+Here is a complete skill for Rust research:
 
 ```yaml
 ---
-name: skill-python-research
-description: Research Python packages and APIs for implementation tasks. Invoke for Python-language research.
+name: skill-rust-research
+description: Research Rust crates and APIs for implementation tasks. Invoke for Rust-language research.
 allowed-tools: Task
 context: fork
-agent: python-research-agent
+agent: rust-research-agent
 # Original context (now loaded by subagent):
-#   - .claude/context/project/python/tools.md
+#   - .claude/context/project/rust/tools.md
 # Original tools (now used by subagent):
 #   - Read, Write, Glob, Grep, WebSearch, WebFetch
 ---
 
-# Python Research Skill
+# Rust Research Skill
 
-Thin wrapper that delegates Python research to `python-research-agent` subagent.
+Thin wrapper that delegates Rust research to `rust-research-agent` subagent.
 
 ## Trigger Conditions
 
 This skill activates when:
-- Task language is "python"
-- Research involves Python packages, APIs, or frameworks
-- Python-specific tooling documentation is needed
+- Task language is "rust"
+- Research involves Rust crates, APIs, or frameworks
+- Rust-specific tooling documentation is needed
 
 ---
 
@@ -361,29 +361,29 @@ Prepare delegation context:
 {
   "session_id": "sess_{timestamp}_{random}",
   "delegation_depth": 1,
-  "delegation_path": ["orchestrator", "research", "skill-python-research"],
+  "delegation_path": ["orchestrator", "research", "skill-rust-research"],
   "timeout": 3600,
   "task_context": {
     "task_number": 450,
-    "task_name": "add_async_support",
-    "description": "Add async/await support to API client",
-    "language": "python"
+    "task_name": "add_async_runtime",
+    "description": "Add async runtime support to API client",
+    "language": "rust"
   },
-  "focus_prompt": "asyncio best practices"
+  "focus_prompt": "tokio best practices"
 }
 ```
 
 ### 3. Invoke Subagent
 
-Invoke `python-research-agent` via Task tool with:
+Invoke `rust-research-agent` via Task tool with:
 - Task context (number, name, description, language)
 - Delegation context (session_id, depth, path)
 - Focus prompt (if provided)
 
 The subagent will:
-- Search for Python-specific documentation
-- Analyze package dependencies
-- Review asyncio patterns and best practices
+- Search for Rust-specific documentation
+- Analyze crate dependencies
+- Review tokio patterns and best practices
 - Create research report in `specs/{NNN}_{SLUG}/reports/`
 - Return standardized JSON result
 
@@ -409,19 +409,19 @@ Expected successful return:
 ```json
 {
   "status": "completed",
-  "summary": "Research completed with 6 findings on asyncio patterns",
+  "summary": "Research completed with 6 findings on tokio patterns",
   "artifacts": [
     {
       "type": "research",
-      "path": "specs/450_add_async_support/reports/01_asyncio-patterns.md",
-      "summary": "Python asyncio research report"
+      "path": "specs/450_add_async_runtime/reports/01_tokio-patterns.md",
+      "summary": "Rust tokio research report"
     }
   ],
   "metadata": {
     "session_id": "sess_1736700000_abc123",
-    "agent_type": "python-research-agent",
+    "agent_type": "rust-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "python-research-agent"]
+    "delegation_path": ["orchestrator", "research", "rust-research-agent"]
   },
   "next_steps": "Run /plan 450 to create implementation plan"
 }

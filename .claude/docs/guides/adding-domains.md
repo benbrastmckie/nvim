@@ -21,7 +21,7 @@ The .claude/ system supports two approaches for adding domain support:
 Is this the repository's PRIMARY domain?
 ├── YES (e.g., neovim in a neovim config repo)
 │   └── Use Core Approach
-└── NO (e.g., latex, lean, python, react)
+└── NO (e.g., latex, lean, rust, react)
     └── Use Extension Approach (Recommended)
 ```
 

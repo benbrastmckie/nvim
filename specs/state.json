@@ -5,11 +5,12 @@
     {
       "project_number": 413,
       "project_name": "refine_slides_skill_command",
-      "status": "planned",
+      "status": "completed",
+      "completion_summary": "Ported 8 SKILL.md edits and 3 slides.md edits from Zed working copy: restructured Stage 3.5 design questions, simplified agent resolution, streamlined delegation context, moved routing table to Stage 5, removed Plan Success return format, expanded Step 2.5 with path relativization.",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
-      "last_updated": "2026-04-13T07:57:36Z",
-      "session_id": "sess_1776066839_fa4927",
+      "last_updated": "2026-04-13T20:00:00Z",
+      "session_id": "sess_1776067171_f8da79",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -46,7 +47,8 @@
     {
       "project_number": 412,
       "project_name": "update_docs_python_to_rust",
-      "status": "planned",
+      "status": "completed",
+      "completion_summary": "Replaced ~45 hypothetical Python teaching examples with Rust across 7 documentation files (creating-skills, creating-agents, component-selection, adding-domains, creating-extensions, system-overview, component-checklist).",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
       "last_updated": "2026-04-13T18:35:00Z",
@@ -119,7 +121,8 @@
     {
       "project_number": 410,
       "project_name": "remove_meta_stage_5_5",
-      "status": "planned",
+      "status": "completed",
+      "completion_summary": "Removed Stage 5.5 (GenerateResearchArtifacts) from meta-builder-agent, updated skill-meta return format, and removed Stage 5.5 references from multi-task-creation-standard. Tasks created via /meta now start as NOT STARTED.",
       "task_type": "meta",
       "created": "2026-04-13T12:00:00Z",
       "last_updated": "2026-04-13T18:45:00Z",

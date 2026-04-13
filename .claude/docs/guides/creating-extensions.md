@@ -11,7 +11,7 @@ Step-by-step guide for creating a new domain extension for the .claude/ system.
 Extensions are self-contained packages that add domain-specific support (agents, skills, rules, context) to the .claude/ system. Extensions can be loaded/unloaded via Neovim picker (`<leader>ac`) without modifying core files.
 
 **When to Create an Extension**:
-- Adding support for a new language/framework (Python, React, Rust)
+- Adding support for a new language/framework (Rust, React, Go)
 - Adding support for a specialized tool (Lean, Z3, Typst)
 - Creating portable domain knowledge that can be shared across projects
 

@@ -21,7 +21,7 @@ Port 8 edits to SKILL.md and 3 edits to slides.md from the Zed refined versions.
 
 ## Phases
 
-### Phase 1: SKILL.md -- Frontmatter, Intro, and Routing Note (Changes 1-3) [NOT STARTED]
+### Phase 1: SKILL.md -- Frontmatter, Intro, and Routing Note (Changes 1-3) [COMPLETED]
 
 **Estimated effort**: 10 minutes
 
@@ -102,7 +102,7 @@ design_decisions -> research report "Recommended Theme" -> default `academic-cle
 
 ---
 
-### Phase 2: SKILL.md -- Stage 3.5 Design Questions Replacement (Change 4) [NOT STARTED]
+### Phase 2: SKILL.md -- Stage 3.5 Design Questions Replacement (Change 4) [COMPLETED]
 
 **Estimated effort**: 15 minutes
 
@@ -237,7 +237,7 @@ jq --arg theme "$theme" \
 
 ---
 
-### Phase 3: SKILL.md -- Agent Resolution, Delegation, Stage 5, and Return Messages (Changes 5-8) [NOT STARTED]
+### Phase 3: SKILL.md -- Agent Resolution, Delegation, Stage 5, and Return Messages (Changes 5-8) [COMPLETED]
 
 **Estimated effort**: 15 minutes
 
@@ -380,7 +380,7 @@ new_string:
 
 ---
 
-### Phase 4: slides.md -- Output Format Wording, Step References, and Step 2.5 Expansion (Changes 1-3) [NOT STARTED]
+### Phase 4: slides.md -- Output Format Wording, Step References, and Step 2.5 Expansion (Changes 1-3) [COMPLETED]
 
 **Estimated effort**: 15 minutes
 
@@ -537,7 +537,7 @@ enriched_description="${enriched_description} Audience: ${audience_summary}."
 
 ---
 
-### Phase 5: Final Validation [NOT STARTED]
+### Phase 5: Final Validation [COMPLETED]
 
 **Estimated effort**: 5 minutes
 

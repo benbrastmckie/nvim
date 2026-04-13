@@ -45,14 +45,14 @@ START: What capability do you need?
 | User types `/something` to trigger it | YES |
 | It is a new workflow operation (not variant) | YES |
 | Operation spans multiple tasks or has utility function | YES |
-| Just adding language variant (e.g., Python research) | NO - use existing command |
+| Just adding language variant (e.g., Rust research) | NO - use existing command |
 | Internal-only capability | NO - create skill/agent only |
 
 ### Create a Skill When...
 
 | Criterion | Decision |
 |-----------|----------|
-| New language support (e.g., Python, Rust) | YES |
+| New language support (e.g., Rust, Go) | YES |
 | Specialized domain handling | YES |
 | Need input validation before agent execution | YES |
 | Direct execution with no agent needed | YES (skill-status-sync pattern) |
@@ -185,11 +185,11 @@ When: Creating entirely new command workflow (e.g., /analyze)
 
 ### Pattern 2: New Language Support
 
-When: Adding support for a new language (e.g., Python)
+When: Adding support for a new language (e.g., Rust)
 
 **Creates**:
-1. Skill: `.claude/skills/skill-python-research/SKILL.md`
-2. Agent: `.claude/agents/python-research-agent.md`
+1. Skill: `.claude/skills/skill-rust-research/SKILL.md`
+2. Agent: `.claude/agents/rust-research-agent.md`
 
 **Uses existing**: `/research` command routes by language
 

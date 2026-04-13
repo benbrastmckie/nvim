@@ -370,31 +370,27 @@ The `/meta` command and `meta-builder-agent` implement all 8 components plus enh
 | Ordering | Interview Stage 6 (Kahn's algorithm) |
 | Visualization | Interview Stage 7 (DeliverSummary with graph) |
 | Confirmation | Interview Stage 5 (mandatory confirmation) |
-| **Research Generation** | **Interview Stage 5.5 (GenerateResearchArtifacts)** |
-| State Updates | Interview Stage 6 (batch insertion with RESEARCHED status) |
+| State Updates | Interview Stage 6 (batch insertion with NOT STARTED status) |
 
 **Enhanced Stages** (added for Task Minimization Principle):
 - **Stage 3.5 (AnalyzeTopics)**: Extracts topic indicators, clusters by shared terms/components, presents consolidation picker
-- **Stage 5.5 (GenerateResearchArtifacts)**: Creates `01_meta-research.md` from interview context for each task
 
 See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 
 ## Current Compliance Status
 
-| Command | Required | Grouping | Dependencies | Ordering | Visualization | Research Gen |
-|---------|----------|----------|--------------|----------|---------------|--------------|
-| `/meta` | Yes | **Automatic** | Full DAG | Kahn's | Linear/Layered | **Yes** |
-| `/fix-it` | Yes | Yes | Internal only | No | No | No |
-| `/review` | Yes | Yes | No | No | No | No |
-| `/errors` | Partial* | No | No | No | No | No |
-| `/task --review` | Yes | No | parent_task | No | No | No |
+| Command | Required | Grouping | Dependencies | Ordering | Visualization |
+|---------|----------|----------|--------------|----------|---------------|
+| `/meta` | Yes | **Automatic** | Full DAG | Kahn's | Linear/Layered |
+| `/fix-it` | Yes | Yes | Internal only | No | No |
+| `/review` | Yes | Yes | No | No | No |
+| `/errors` | Partial* | No | No | No | No |
+| `/task --review` | Yes | No | parent_task | No | No |
 
 *`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
 
 **Enhanced `/meta` Features**:
 - **Automatic Topic Clustering** (Stage 3.5): Proactively analyzes user-provided task breakdown and suggests consolidation opportunities
-- **Research Artifact Generation** (Stage 5.5): Creates lightweight research reports from interview context
-- **RESEARCHED Status**: Tasks start in `researched` status, enabling immediate `/plan N` without separate `/research N`
 
 ## Gaps and Future Enhancements
 
