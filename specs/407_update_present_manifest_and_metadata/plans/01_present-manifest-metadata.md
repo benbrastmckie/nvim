@@ -79,7 +79,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update EXTENSION.md [NOT STARTED]
+### Phase 2: Update EXTENSION.md [COMPLETED]
 
 **Goal**: Replace single slides-agent row with 3-agent dispatch rows in the skill-agent table.
 

@@ -10,7 +10,9 @@ Structured proposal development (grants) and research presentation creation (tal
 | skill-budget | budget-agent | opus | Grant budget spreadsheet generation (XLSX) |
 | skill-timeline | timeline-agent | opus | Research project timeline planning |
 | skill-funds | funds-agent | opus | Research funding landscape analysis |
-| skill-slides | slides-agent | opus | Research talk material synthesis and presentation assembly |
+| skill-slides | slides-research-agent | opus | Research talk material synthesis |
+| skill-slides | pptx-assembly-agent | opus | PowerPoint presentation assembly |
+| skill-slides | slidev-assembly-agent | opus | Slidev presentation assembly |
 
 ### Commands
 
