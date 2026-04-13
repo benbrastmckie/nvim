@@ -5,11 +5,18 @@
     {
       "project_number": 408,
       "project_name": "audit_implementation_agents_phase_checkpoint",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-12T12:00:00Z",
-      "last_updated": "2026-04-12T12:00:00Z",
-      "artifacts": []
+      "last_updated": "2026-04-12T12:30:00Z",
+      "session_id": "sess_1776182400_r408",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/408_audit_implementation_agents_phase_checkpoint/reports/01_phase-checkpoint-audit.md",
+          "summary": "Phase Checkpoint Protocol compliance audit: 8 compliant, 3 partial, 2 non-compliant implementation agents"
+        }
+      ]
     },
     {
       "project_number": 407,
@@ -44,20 +51,34 @@
     {
       "project_number": 404,
       "project_name": "add_ucsf_theme_pptx_patterns_templates",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-12T12:00:00Z",
-      "last_updated": "2026-04-12T12:00:00Z",
-      "artifacts": []
+      "last_updated": "2026-04-12T12:30:00Z",
+      "session_id": "sess_1776182400_r404",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/404_add_ucsf_theme_pptx_patterns_templates/reports/01_ucsf-pptx-context.md",
+          "summary": "Complete inventory of 13 new files, 1 binary copy, and 5 file updates for UCSF theme, PPTX patterns, and templates"
+        }
+      ]
     },
     {
       "project_number": 403,
       "project_name": "split_slides_agent_with_phase_checkpoint",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-12T12:00:00Z",
-      "last_updated": "2026-04-12T12:00:00Z",
-      "artifacts": []
+      "last_updated": "2026-04-12T12:15:00Z",
+      "session_id": "sess_1776182400_r403",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/403_split_slides_agent_with_phase_checkpoint/reports/01_agent-split-research.md",
+          "summary": "Gap analysis of 3 new agents vs Phase Checkpoint Protocol, with exact implementation spec for each"
+        }
+      ]
     },
     {
       "project_number": 402,
