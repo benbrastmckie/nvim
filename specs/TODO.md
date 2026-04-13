@@ -12,7 +12,7 @@ next_project_number: 417
 
 - **416** [NOT STARTED] -- Enforce skill delegation for plan artifacts
 - **415** [COMPLETED] -- Improve /slides command task description format (Sources, forcing data, richer text)
-- **414** [IMPLEMENTING] -- Remove Phase Checkpoint Protocol from 10 extension agents
+- **414** [COMPLETED] -- Remove Phase Checkpoint Protocol from 10 extension agents
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
 - **394** [NOT STARTED] -- Remove language-to-task_type backward compatibility shim
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
@@ -50,7 +50,9 @@ next_project_number: 417
 
 ### 414. Remove Phase Checkpoint Protocol from 10 extension agents
 - **Effort**: 1 hour
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-04-13
+- **Summary**: Removed Phase Checkpoint Protocol from 10 extension agents (~280 lines). Restructured grant-agent Stage 6/7.
 - **Task Type**: meta
 - **Research**: [01_checkpoint-protocol-audit.md](specs/414_remove_phase_checkpoint_protocol/reports/01_checkpoint-protocol-audit.md)
 - **Plan**: [01_checkpoint-removal-plan.md](specs/414_remove_phase_checkpoint_protocol/plans/01_checkpoint-removal-plan.md)

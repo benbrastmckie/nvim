@@ -394,41 +394,7 @@ Structure:
 - `checklist.md` - Submission requirements checklist
 - `README.md` - Grant package overview with submission instructions
 
-## Phase Checkpoint Protocol
-
-For grant tasks with implementation plans (typically `assemble` workflow):
-
-1. **Read plan file**, identify current phase
-2. **Update phase status** to `[IN PROGRESS]` in plan file
-   - Use Edit tool with:
-     - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
-     - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
-   - Phase status lives ONLY in the heading
-3. **Execute phase steps** as documented
-4. **Update phase status** to `[COMPLETED]` or `[BLOCKED]` or `[PARTIAL]`
-   - Use Edit tool with:
-     - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
-     - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
-5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
-   ```bash
-   git add -A && git commit -m "task {N} phase {P}: {phase_name}
-
-   Session: {session_id}
-
-   Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
-   ```
-6. **Proceed to next phase** or return if blocked
-
-**This ensures**:
-- Resume point is always discoverable from plan file
-- Git history reflects phase-level progress
-- Failed phases can be retried from beginning
-
-**Note**: This protocol applies primarily to the `assemble` workflow when following a multi-phase plan. Single-stage workflows (funder_research, proposal_draft, budget_develop, progress_track) may not require phase-level tracking.
-
----
-
-### Stage 6: Write Metadata File
+## Stage 6: Write Metadata File
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
@@ -468,7 +434,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 
 Use the Write tool to create this file.
 
-### Stage 7: Return Brief Text Summary
+## Stage 7: Return Brief Text Summary
 
 **CRITICAL**: Return a brief text summary (3-6 bullet points), NOT JSON.
 
