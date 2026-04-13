@@ -1,7 +1,7 @@
 # Implementation Plan: Remove language-to-task_type Compatibility Shim
 
 - **Task**: 394 - Remove language-to-task_type backward compatibility shim
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Task 393 (completed)
 - **Research Inputs**: specs/394_remove_language_to_task_type_compat_shim/reports/01_remove-compat-shim.md

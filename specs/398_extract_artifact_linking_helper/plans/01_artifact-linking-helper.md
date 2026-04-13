@@ -116,7 +116,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update Extension Skills [IN PROGRESS]
+### Phase 3: Update Extension Skills [COMPLETED]
 
 **Goal**: Apply the same replacement to all ~20 extension skill files.
 

@@ -462,7 +462,7 @@ jq --argjson num "$task_number" \
    }]' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
-Update TODO.md status marker to [PLANNED] and add Plan link.
+Update TODO.md status marker to [PLANNED] and link plan artifact per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Plan**`, `next_field=**Description**`.
 
 ### Stage 8: Git Commit
 

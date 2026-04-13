@@ -59,10 +59,10 @@
     {
       "project_number": 394,
       "project_name": "remove_language_to_task_type_compat_shim",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-10T16:37:05Z",
-      "last_updated": "2026-04-13T19:06:55Z",
+      "last_updated": "2026-04-13T19:14:47Z",
       "session_id": "sess_1776107204_db3651_t394",
       "next_artifact_number": 3,
       "artifacts": [
@@ -75,8 +75,15 @@
           "path": "specs/394_remove_language_to_task_type_compat_shim/plans/01_remove-compat-shim.md",
           "type": "plan",
           "summary": "4-phase plan to remove language-to-task_type backward compatibility shim from 50 files"
+        },
+        {
+          "path": "specs/394_remove_language_to_task_type_compat_shim/summaries/01_remove-compat-shim-summary.md",
+          "type": "summary",
+          "summary": "Removed language-to-task_type backward compatibility shim from 51 files"
         }
-      ]
+      ],
+      "completion_summary": "Removed all .language field references from 51 active .claude/ files, completing the task_type migration started in task 393. Updated 19 core files, 18 extension skills, 11 extension commands, and 3 documentation files.",
+      "claudemd_suggestions": "Removed backward-compat note from state-management-schema.md, updated context-discovery.md language->task_types references, fixed orchestrator.md session registry key"
     },
     {
       "project_number": 384,

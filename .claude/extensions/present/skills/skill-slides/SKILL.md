@@ -279,6 +279,8 @@ fi
 
 Add artifact to state.json with summary. Use the two-step jq pattern to avoid Issue #1132.
 
+**Update TODO.md**: Link artifact per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.
+
 ---
 
 ### Stage 9: Git Commit

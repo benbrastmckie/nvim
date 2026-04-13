@@ -231,7 +231,7 @@ for i in $(seq 0 $(($(echo "$artifacts" | jq 'length') - 1))); do
 done
 ```
 
-Update TODO.md status marker to [COMPLETED], add Completed date and Summary link.
+Update TODO.md status marker to [COMPLETED], add Completed date, and link summary artifact per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Summary**`, `next_field=**Description**`.
 
 If partial (status == "partial"):
 - Keep status as "implementing"

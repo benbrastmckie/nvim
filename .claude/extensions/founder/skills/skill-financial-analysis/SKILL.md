@@ -200,6 +200,8 @@ fi
 
 Link all artifacts (research report, spreadsheet, metrics JSON) to state.json using two-step jq pattern.
 
+**Update TODO.md**: Link artifact per `@.claude/context/patterns/artifact-linking-todo.md` with `field_name=**Research**`, `next_field=**Plan**`.
+
 ---
 
 ### Stage 9: Git Commit
