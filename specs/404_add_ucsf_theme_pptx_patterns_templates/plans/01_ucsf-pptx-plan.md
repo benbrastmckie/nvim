@@ -91,7 +91,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Create Template Directories and Files [NOT STARTED]
+### Phase 2: Create Template Directories and Files [IN PROGRESS]
 
 **Goal**: Create pptx-project/, slidev-project/, and playwright-verify.mjs template files.
 

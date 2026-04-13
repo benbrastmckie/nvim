@@ -34,7 +34,7 @@ This skill activates when:
 - `/slides` command with task number input
 - `/research` on a present task with `task_type: "slides"`
 - `/implement` on a present task with `task_type: "slides"` (assemble workflow)
-- Extension is loaded via `<leader>ac`
+- Present extension is available
 
 ---
 
@@ -109,6 +109,9 @@ Update task status based on workflow type BEFORE invoking subagent.
 | assemble | implementing | [IMPLEMENTING] |
 
 ```bash
+# Extract output_format from forcing_data (default: "slidev" for backward compatibility)
+output_format=$(echo "$task_data" | jq -r '.forcing_data.output_format // "slidev"')
+
 case "$workflow_type" in
   slides_research)
     preflight_status="researching"
@@ -172,7 +175,8 @@ EOF
     "task_type": "slides"
   },
   "workflow_type": "slides_research|assemble",
-  "forcing_data": "{from state.json task metadata}",
+  "output_format": "slidev|pptx (extracted from forcing_data, default: slidev)",
+  "forcing_data": "{from state.json task metadata, includes output_format}",
   "metadata_file_path": "specs/{NNN}_{SLUG}/.return-meta.json"
 }
 ```
@@ -239,7 +243,12 @@ case "$workflow_type" in
     commit_action="complete slides research"
     ;;
   assemble)
-    commit_action="assemble slides presentation"
+    # Branch commit message on output_format
+    if [ "$output_format" = "pptx" ]; then
+      commit_action="assemble PPTX presentation"
+    else
+      commit_action="assemble Slidev presentation"
+    fi
     ;;
 esac
 
@@ -275,11 +284,21 @@ Talk research completed for task {N}:
 - Changes committed with session {session_id}
 ```
 
-**Assemble Success**:
+**Assemble Success (Slidev)**:
 ```
-Talk presentation assembled for task {N}:
+Slidev presentation assembled for task {N}:
 - Output directory: talks/{N}_{slug}/
 - Files created: slides.md, style.css, README.md
+- Theme: {theme_name}
+- Status updated to [COMPLETED]
+- Changes committed with session {session_id}
+```
+
+**Assemble Success (PPTX)**:
+```
+PPTX presentation assembled for task {N}:
+- Output directory: talks/{N}_{slug}/
+- Files created: {slug}.pptx, generate_deck.py
 - Theme: {theme_name}
 - Status updated to [COMPLETED]
 - Changes committed with session {session_id}

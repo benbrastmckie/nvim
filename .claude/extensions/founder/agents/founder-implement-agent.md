@@ -225,6 +225,16 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 5. Document assumptions and sources
 
 6. Mark phase `[COMPLETED]` in plan file
+   Use the Edit tool with:
+   - old_string: `### Phase 1: {Phase Name} [IN PROGRESS]`
+   - new_string: `### Phase 1: {Phase Name} [COMPLETED]`
+
+7. Git commit:
+   ```bash
+   git add -A && git commit -m "task {N} phase 1: {phase_name}
+
+   Session: {session_id}"
+   ```
 
 #### Phase 2: SAM Narrowing
 
@@ -243,6 +253,16 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 4. Document each narrowing factor with rationale
 
 5. Mark phase `[COMPLETED]`
+   Use the Edit tool with:
+   - old_string: `### Phase 2: {Phase Name} [IN PROGRESS]`
+   - new_string: `### Phase 2: {Phase Name} [COMPLETED]`
+
+6. Git commit:
+   ```bash
+   git add -A && git commit -m "task {N} phase 2: {phase_name}
+
+   Session: {session_id}"
+   ```
 
 #### Phase 3: SOM Projection
 
@@ -260,6 +280,16 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 4. Validate against competitive benchmarks
 
 5. Mark phase `[COMPLETED]`
+   Use the Edit tool with:
+   - old_string: `### Phase 3: {Phase Name} [IN PROGRESS]`
+   - new_string: `### Phase 3: {Phase Name} [COMPLETED]`
+
+6. Git commit:
+   ```bash
+   git add -A && git commit -m "task {N} phase 3: {phase_name}
+
+   Session: {session_id}"
+   ```
 
 #### Phase 4: Typst Report Generation
 
@@ -301,6 +331,16 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    ```
 
 5. Mark phase `[COMPLETED]`
+   Use the Edit tool with:
+   - old_string: `### Phase 4: {Phase Name} [IN PROGRESS]`
+   - new_string: `### Phase 4: {Phase Name} [COMPLETED]`
+
+6. Git commit:
+   ```bash
+   git add -A && git commit -m "task {N} phase 4: {phase_name}
+
+   Session: {session_id}"
+   ```
 
 #### Phase 5: PDF Compilation
 
@@ -349,6 +389,13 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - If `implicit_typst_phase=true`: skip phase marker update (no heading in plan file)
 
    In all cases, proceed to Stage 6. Phase 5 status does not affect the overall task status -- if Phases 1-4 succeeded, the task is `implemented`.
+
+5. Git commit (if Phase 5 was not skipped):
+   ```bash
+   git add -A && git commit -m "task {N} phase 5: {phase_name}
+
+   Session: {session_id}"
+   ```
 
 **Self-Contained Typst Content Generation Pattern** (used in Phase 4):
 
@@ -1433,6 +1480,36 @@ Also generate a markdown summary report at `strategy/timelines/{project-slug}-re
 | REPORT | `strategy/timelines/{slug}-status.typ` | `founder/{slug}-status.pdf` | `strategy/timelines/{slug}-report.md` (updated) |
 
 Phase 5 failure does NOT block task completion. The Typst source and markdown fallback from Phase 4 are preserved.
+
+---
+
+## Phase Checkpoint Protocol
+
+For each phase in the implementation plan:
+
+1. **Read plan file**, identify current phase
+2. **Update phase status** to `[IN PROGRESS]` in plan file
+   - Use Edit tool with:
+     - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
+     - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+   - Phase status lives ONLY in the heading
+3. **Execute phase steps** as documented
+4. **Update phase status** to `[COMPLETED]` or `[BLOCKED]` or `[PARTIAL]`
+   - Use Edit tool with:
+     - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+     - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
+5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
+   ```bash
+   git add -A && git commit -m "task {N} phase {P}: {phase_name}
+
+   Session: {session_id}"
+   ```
+6. **Proceed to next phase** or return if blocked
+
+**This ensures**:
+- Resume point is always discoverable from plan file
+- Git history reflects phase-level progress
+- Failed phases can be retried from beginning
 
 ---
 

@@ -58,7 +58,7 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Fix Partially Compliant Agents [NOT STARTED]
+### Phase 1: Fix Partially Compliant Agents [COMPLETED]
 
 **Goal**: Add per-phase git commit instructions, explicit Edit tool instructions, and a dedicated Phase Checkpoint Protocol section to the 3 partially compliant agents.
 

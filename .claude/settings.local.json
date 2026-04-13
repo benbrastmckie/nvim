@@ -20,7 +20,9 @@
       "Bash(mv .claude/context/project/hooks/wezterm-integration.md .claude/extensions/nvim/context/project/neovim/hooks/)",
       "Bash(bash .claude/scripts/check-extension-docs.sh)",
       "Bash(bash .claude/scripts/check-extension-docs.sh --quiet)",
-      "Bash(bash /home/benjamin/.config/nvim/.claude/scripts/check-extension-docs.sh)"
+      "Bash(bash /home/benjamin/.config/nvim/.claude/scripts/check-extension-docs.sh)",
+      "Bash(python3 -c \"import json; json.load\\(open\\(''.claude/extensions/present/context/project/present/talk/themes/ucsf-institutional.json''\\)\\)\")",
+      "Bash(/home/benjamin/.config/nvim/specs/408_audit_implementation_agents_phase_checkpoint/.return-meta.json:*)"
     ]
   },
   "model": "opus",

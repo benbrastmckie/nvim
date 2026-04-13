@@ -28,7 +28,8 @@
       "present:budget": "skill-planner",
       "present:timeline": "skill-planner",
       "present:funds": "skill-planner",
-      "present:slides": "skill-planner"
+      "present:slides": "skill-slides",
+      "slides": "skill-slides"
     },
     "implement": {
       "present": "skill-grant",
@@ -36,7 +37,7 @@
       "present:budget": "skill-budget",
       "present:timeline": "skill-timeline",
       "present:funds": "skill-funds",
-      "present:slides": "skill-slides"
+      "present:slides": "skill-slides:assemble"
     }
   },
   "merge_targets": {

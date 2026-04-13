@@ -82,12 +82,38 @@ Extract phases, files to create/modify.
 Scan phases for first incomplete.
 
 ### Stage 4: Execute Python Development Loop
-For each phase:
-1. Mark phase `[IN PROGRESS]`
-2. Create/modify Python code
-3. Run tests
-4. Check results
-5. Mark phase `[COMPLETED]` or `[PARTIAL]`
+
+For each phase starting from resume point:
+
+**A. Mark Phase In Progress**
+Edit plan file heading to show the phase is active.
+Use the Edit tool with:
+- old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
+- new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+
+Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+
+**B. Execute Steps**
+1. Create/modify Python code
+2. Run tests (`pytest -v`, `python -m py_compile`, `mypy`, `ruff check`)
+3. Check results
+
+**C. Mark Phase Complete**
+Edit plan file heading to show the phase is finished.
+Use the Edit tool with:
+- old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+- new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
+
+Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+
+**D. Git Commit**
+```bash
+git add -A && git commit -m "task {N} phase {P}: {phase_name}
+
+Session: {session_id}"
+```
+
+**E. Proceed to next phase** or return if blocked
 
 ### Stage 5: Verification
 Run tests to verify implementation.
@@ -99,6 +125,34 @@ Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`
 Write to `specs/{N}_{SLUG}/.return-meta.json`
 
 ### Stage 8: Return Brief Text Summary
+
+## Phase Checkpoint Protocol
+
+For each phase in the implementation plan:
+
+1. **Read plan file**, identify current phase
+2. **Update phase status** to `[IN PROGRESS]` in plan file
+   - Use Edit tool with:
+     - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
+     - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+   - Phase status lives ONLY in the heading
+3. **Execute phase steps** as documented
+4. **Update phase status** to `[COMPLETED]` or `[BLOCKED]` or `[PARTIAL]`
+   - Use Edit tool with:
+     - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
+     - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
+5. **Git commit** with message: `task {N} phase {P}: {phase_name}`
+   ```bash
+   git add -A && git commit -m "task {N} phase {P}: {phase_name}
+
+   Session: {session_id}"
+   ```
+6. **Proceed to next phase** or return if blocked
+
+**This ensures**:
+- Resume point is always discoverable from plan file
+- Git history reflects phase-level progress
+- Failed phases can be retried from beginning
 
 ## Critical Requirements
 
