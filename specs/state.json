@@ -1,7 +1,23 @@
 {
   "version": "1.0.0",
-  "next_project_number": 417,
+  "next_project_number": 418,
   "active_projects": [
+    {
+      "project_number": 417,
+      "project_name": "interactive_slide_planning_workflow",
+      "status": "researched",
+      "task_type": "meta",
+      "created": "2026-04-13T13:00:00Z",
+      "last_updated": "2026-04-13T13:05:00Z",
+      "session_id": "sess_1776073200_f41a7e",
+      "artifacts": [
+        {
+          "type": "research",
+          "path": "specs/417_interactive_slide_planning_workflow/reports/01_slide-planning-analysis.md",
+          "summary": "Architecture analysis: new skill-slide-planning (5-stage interactive Q&A) and slide-planner-agent for present:slides /plan workflow"
+        }
+      ]
+    },
     {
       "project_number": 416,
       "project_name": "enforce_skill_delegation_for_plan_artifacts",

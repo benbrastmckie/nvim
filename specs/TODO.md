@@ -1,15 +1,16 @@
 ---
-next_project_number: 417
+next_project_number: 418
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-13. 8 active tasks remaining.*
+*Updated 2026-04-13. 9 active tasks remaining.*
 
 ### Pending
 
+- **417** [RESEARCHED] -- Interactive slide planning workflow with narrative arc feedback and per-slide refinement
 - **416** [NOT STARTED] -- Enforce skill delegation for plan artifacts
 - **415** [COMPLETED] -- Improve /slides command task description format (Sources, forcing data, richer text)
 - **414** [COMPLETED] -- Remove Phase Checkpoint Protocol from 10 extension agents
@@ -20,6 +21,16 @@ next_project_number: 417
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 417. Interactive slide planning workflow with narrative arc feedback and per-slide refinement
+- **Effort**: 2-3 hours
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Research**: [01_slide-planning-analysis.md](specs/417_interactive_slide_planning_workflow/reports/01_slide-planning-analysis.md)
+
+**Description**: Replace the current 3-question design stage (D1-D3 in skill-slides Stage 3.5) with a rich interactive planning workflow for `present:slides` tasks. The new flow: (1) theme choice, (2) present narrative arc outline of all slides for user feedback on order/inclusion/exclusion, (3) interactive slide picker to include/exclude each slide, (4) per-slide detail view with feedback opportunity, (5) only then generate the detailed plan. Create a new `skill-slide-planning` skill for the interactive questioning and a new `slide-planner-agent` that receives all gathered feedback plus the research report to generate a detailed slide-by-slide plan. Update manifest routing so `/plan present:slides` routes to the new skill. Remove Stage 3.5 from skill-slides.
+
+---
 
 ### 416. Enforce skill delegation for plan artifacts
 - **Effort**: TBD
