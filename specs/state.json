@@ -1,7 +1,16 @@
 {
   "version": "1.0.0",
-  "next_project_number": 415,
+  "next_project_number": 416,
   "active_projects": [
+    {
+      "project_number": 415,
+      "project_name": "improve_slides_command_task_description",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-13T08:38:37Z",
+      "last_updated": "2026-04-13T08:38:37Z",
+      "artifacts": []
+    },
     {
       "project_number": 414,
       "project_name": "remove_phase_checkpoint_protocol",

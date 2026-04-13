@@ -1,15 +1,16 @@
 ---
-next_project_number: 415
+next_project_number: 416
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-13. 6 active tasks remaining.*
+*Updated 2026-04-13. 7 active tasks remaining.*
 
 ### Pending
 
+- **415** [NOT STARTED] -- Improve /slides command task description format (Sources, forcing data, richer text)
 - **414** [PLANNED] -- Remove Phase Checkpoint Protocol from 10 extension agents
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
 - **394** [NOT STARTED] -- Remove language-to-task_type backward compatibility shim
@@ -18,6 +19,21 @@ next_project_number: 415
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 415. Improve /slides command task description format (Sources, forcing data, richer text)
+- **Effort**: 30 min
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: The `/slides` command in `present/` extension creates terse, poorly structured TODO.md task entries. Three specific improvements needed in `.claude/extensions/present/commands/slides.md`:
+
+1. **Add Sources section**: Add a `**Sources**:` section to the TODO.md entry (Step 4) with full absolute paths to all source files. Currently source paths are relativized and buried in the single-line description.
+
+2. **Add Forcing Data Gathered section**: Add a structured `**Forcing Data Gathered**:` section to the TODO.md entry showing all forcing question answers (output_format, talk_type, source_materials, audience_context). Model after `/deck` command (lines 239-254 of `founder/commands/deck.md`).
+
+3. **Richer description**: Remove the ~20 word truncation on audience_context in Step 2.5. Use the full audience context. Improve the enriched description to be multi-line rather than a single compressed sentence.
+
+**Reference**: `/deck` command at `.claude/extensions/founder/commands/deck.md` lines 239-254 for the TODO.md entry format to emulate.
 
 ### 414. Remove Phase Checkpoint Protocol from 10 extension agents
 - **Effort**: 1 hour
