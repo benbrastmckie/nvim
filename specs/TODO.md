@@ -6,14 +6,11 @@ next_project_number: 419
 
 ## Task Order
 
-*Updated 2026-04-13. 9 active tasks remaining.*
+*Updated 2026-04-13. 5 active tasks remaining.*
 
 ### Pending
 
-- **417** [COMPLETED] -- Interactive slide planning workflow with narrative arc feedback and per-slide refinement
-- **416** [COMPLETED] -- Enforce skill delegation for plan artifacts
-- **415** [COMPLETED] -- Improve /slides command task description format (Sources, forcing data, richer text)
-- **414** [COMPLETED] -- Remove Phase Checkpoint Protocol from 10 extension agents
+- **418** [RESEARCHING] -- Add postflight self-execution fallback to skill wrapper pattern
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
 - **394** [NOT STARTED] -- Remove language-to-task_type backward compatibility shim
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
@@ -24,66 +21,10 @@ next_project_number: 419
 
 ### 418. Add postflight self-execution fallback to skill wrapper pattern
 - **Effort**: TBD
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 
 **Description**: Add postflight self-execution fallback to skill-implementer: when the skill executor does implementation work directly (without spawning a subagent via Task tool), it must still execute Stages 6-10 (read .return-meta.json, postflight status update, artifact linking, git commit, cleanup). The current pattern assumes Stage 5 always spawns a subagent, but agents frequently do the work inline, causing the entire postflight chain to break silently. Possible fixes: (1) add a Stage 5a check that detects inline execution and falls through to postflight, (2) restructure so postflight runs unconditionally after implementation regardless of delegation mode, or (3) add enforcement that prevents inline execution. This affects skill-researcher and skill-planner similarly if they have the same pattern.
-
----
-
-### 417. Interactive slide planning workflow with narrative arc feedback and per-slide refinement
-- **Effort**: 2-3 hours
-- **Status**: [COMPLETED]
-- **Completed**: 2026-04-13
-- **Summary**: Created skill-slide-planning (5-stage interactive Q&A) and slide-planner-agent for /plan present:slides workflow. Updated manifest routing, index-entries, and cleaned plan code from skill-slides.
-- **Task Type**: meta
-- **Research**: [01_slide-planning-analysis.md](specs/417_interactive_slide_planning_workflow/reports/01_slide-planning-analysis.md)
-- **Plan**: [01_slide-planning-workflow.md](specs/417_interactive_slide_planning_workflow/plans/01_slide-planning-workflow.md)
-
-**Description**: Replace the current 3-question design stage (D1-D3 in skill-slides Stage 3.5) with a rich interactive planning workflow for `present:slides` tasks. The new flow: (1) theme choice, (2) present narrative arc outline of all slides for user feedback on order/inclusion/exclusion, (3) interactive slide picker to include/exclude each slide, (4) per-slide detail view with feedback opportunity, (5) only then generate the detailed plan. Create a new `skill-slide-planning` skill for the interactive questioning and a new `slide-planner-agent` that receives all gathered feedback plus the research report to generate a detailed slide-by-slide plan. Update manifest routing so `/plan present:slides` routes to the new skill. Remove Stage 3.5 from skill-slides.
-
----
-
-### 416. Enforce skill delegation for plan artifacts
-- **Effort**: TBD
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Research**: [01_skill-delegation-enforcement.md](specs/416_enforce_skill_delegation_for_plan_artifacts/reports/01_skill-delegation-enforcement.md)
-- **Plan**: [01_delegation-enforcement.md](specs/416_enforce_skill_delegation_for_plan_artifacts/plans/01_delegation-enforcement.md)
-- **Summary**: [01_delegation-enforcement-summary.md](specs/416_enforce_skill_delegation_for_plan_artifacts/summaries/01_delegation-enforcement-summary.md)
-
-**Description**: The `/plan` command sometimes bypasses `skill-planner` delegation and writes plan files directly, producing artifacts that violate the plan format standard (`plan-format.md`, `plan-format-enforcement.md`). This happened on 2026-04-13 with task 414: the orchestrator read the /plan command spec, skipped the `Skill("skill-planner")` invocation, and wrote a plan missing required metadata (Status, Dependencies, Research Inputs, Artifacts, Standards, Type), required sections (Goals & Non-Goals, Testing & Validation, Artifacts & Outputs, Rollback/Contingency), the Dependency Analysis wave table, and proper phase format (Goal/Tasks/Timing/Depends on). The `plan-format-enforcement.md` rule exists but only influences agents that load it — it cannot prevent the orchestrator from writing non-conforming files directly. The same class of bypass could affect `/research` (skipping `skill-researcher`) or `/implement` (skipping `skill-implementer`). Investigate enforcement mechanisms: (1) settings.json hooks (PostToolUse on Write/Edit matching `specs/**/plans/*.md`) that validate format externally, (2) stronger anti-bypass wording in command specs, (3) feedback memory for future conversations. Determine which combination provides reliable enforcement without excessive overhead.
-
----
-
-### 415. Improve /slides command task description format (Sources, forcing data, richer text)
-- **Effort**: 30 min
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Research**: [01_slides-description-analysis.md](specs/415_improve_slides_command_task_description/reports/01_slides-description-analysis.md)
-- **Plan**: [01_slides-description-plan.md](specs/415_improve_slides_command_task_description/plans/01_slides-description-plan.md)
-- **Summary**: [01_slides-description-summary.md](specs/415_improve_slides_command_task_description/summaries/01_slides-description-summary.md)
-
-**Description**: The `/slides` command in `present/` extension creates terse, poorly structured TODO.md task entries. Three specific improvements needed in `.claude/extensions/present/commands/slides.md`:
-
-1. **Add Sources section**: Add a `**Sources**:` section to the TODO.md entry (Step 4) with full absolute paths to all source files. Currently source paths are relativized and buried in the single-line description.
-
-2. **Add Forcing Data Gathered section**: Add a structured `**Forcing Data Gathered**:` section to the TODO.md entry showing all forcing question answers (output_format, talk_type, source_materials, audience_context). Model after `/deck` command (lines 239-254 of `founder/commands/deck.md`).
-
-3. **Richer description**: Remove the ~20 word truncation on audience_context in Step 2.5. Use the full audience context. Improve the enriched description to be multi-line rather than a single compressed sentence.
-
-**Reference**: `/deck` command at `.claude/extensions/founder/commands/deck.md` lines 239-254 for the TODO.md entry format to emulate.
-
-### 414. Remove Phase Checkpoint Protocol from 10 extension agents
-- **Effort**: 1 hour
-- **Status**: [COMPLETED]
-- **Completed**: 2026-04-13
-- **Summary**: Removed Phase Checkpoint Protocol from 10 extension agents (~280 lines). Restructured grant-agent Stage 6/7.
-- **Task Type**: meta
-- **Research**: [01_checkpoint-protocol-audit.md](specs/414_remove_phase_checkpoint_protocol/reports/01_checkpoint-protocol-audit.md)
-- **Plan**: [01_checkpoint-removal-plan.md](specs/414_remove_phase_checkpoint_protocol/plans/01_checkpoint-removal-plan.md)
-
-**Description**: Remove the "Phase Checkpoint Protocol" sections from 10 extension implementation agents that still contain them. This protocol documented per-phase `[IN PROGRESS]`/`[COMPLETED]` status tracking in plan headings, per-phase git commits, and phase-to-stage mapping tables. It was already removed from epi-implement-agent, pptx-assembly-agent, and slidev-assembly-agent as unnecessary overhead. The same removal should be applied to: latex-implementation-agent, typst-implementation-agent, python-implementation-agent, nix-implementation-agent, neovim-implementation-agent, web-implementation-agent, z3-implementation-agent, founder-implement-agent, deck-builder-agent, and grant-agent. Also remove inline references to the protocol (preamble notes, per-phase commit instructions, numbered rules at the end). Origin: PORT.md cross-reference audit.
 
 ---
 
@@ -147,10 +88,9 @@ next_project_number: 419
 
 ## Recommended Order
 
-1. **414** [NOT STARTED] -> research (independent, small)
-2. **384** [RESEARCHED] -> plan (independent)
-3. **78** [PLANNED] -> implement
-4. **87** [RESEARCHED] -> plan
-5. **398** [NOT STARTED] -> research (depends: 397)
-6. **394** [NOT STARTED] -> research
-7. **418** -> research (independent)
+1. **384** [RESEARCHED] -> plan (independent)
+2. **78** [PLANNED] -> implement
+3. **87** [RESEARCHED] -> plan
+4. **398** [NOT STARTED] -> research (depends: 397)
+5. **394** [NOT STARTED] -> research
+6. **418** [RESEARCHING] -> complete research

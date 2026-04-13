@@ -5,116 +5,11 @@
     {
       "project_number": 418,
       "project_name": "add_postflight_fallback_to_skill_wrapper",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "created": "2026-04-13T18:05:25Z",
-      "last_updated": "2026-04-13T18:05:25Z"
-    },
-    {
-      "project_number": 417,
-      "project_name": "interactive_slide_planning_workflow",
-      "status": "completed",
-      "task_type": "meta",
-      "created": "2026-04-13T13:00:00Z",
-      "last_updated": "2026-04-13T17:29:17Z",
-      "session_id": "sess_1776099227_96b900",
-      "artifacts": [
-        {
-          "type": "research",
-          "path": "specs/417_interactive_slide_planning_workflow/reports/01_slide-planning-analysis.md",
-          "summary": "Architecture analysis: new skill-slide-planning (5-stage interactive Q&A) and slide-planner-agent for present:slides /plan workflow"
-        },
-        {
-          "path": "specs/417_interactive_slide_planning_workflow/plans/01_slide-planning-workflow.md",
-          "type": "plan",
-          "summary": "5-phase implementation plan for interactive slide planning workflow with skill-slide-planning and slide-planner-agent"
-        },
-        {
-          "type": "summary",
-          "path": "specs/417_interactive_slide_planning_workflow/summaries/01_slide-planning-summary.md",
-          "summary": "Execution summary for interactive slide planning workflow implementation"
-        }
-      ],
-      "completion_summary": "Created skill-slide-planning (5-stage interactive Q&A) and slide-planner-agent for /plan present:slides workflow. Updated manifest routing, index-entries, and cleaned plan code from skill-slides."
-    },
-    {
-      "project_number": 416,
-      "project_name": "enforce_skill_delegation_for_plan_artifacts",
-      "status": "completed",
-      "task_type": "meta",
-      "created": "2026-04-13T12:30:00Z",
-      "last_updated": "2026-04-13T18:04:40Z",
-      "artifacts": [
-        {
-          "path": "specs/416_enforce_skill_delegation_for_plan_artifacts/reports/01_skill-delegation-enforcement.md",
-          "type": "research",
-          "summary": "Research on enforcement mechanisms for preventing orchestrator bypass of skill delegation when writing plan artifacts. Recommends layered defense: PostToolUse validation hook (primary), command spec hardening (secondary), local .memory/ feedback entry (tertiary)."
-        },
-        {
-          "path": "specs/416_enforce_skill_delegation_for_plan_artifacts/plans/01_delegation-enforcement.md",
-          "type": "plan",
-          "summary": "4-phase implementation plan: PostToolUse validation hook, command spec hardening, .memory/ feedback entry, verification"
-        },
-        {
-          "path": "specs/416_enforce_skill_delegation_for_plan_artifacts/summaries/01_delegation-enforcement-summary.md",
-          "type": "summary",
-          "summary": "Implementation summary for task 416: layered defense against skill delegation bypass"
-        }
-      ],
-      "session_id": "sess_1776103098_cdcf23",
-      "next_artifact_number": 2,
-      "completion_summary": "Implemented 3-layer enforcement system: PostToolUse validation hook (.claude/hooks/validate-plan-write.sh) validates artifact writes against format standards, anti-bypass constraint sections added to plan/research/implement command specs, and .memory/ entry persists the delegation requirement across sessions.",
-      "claudemd_suggestions": "Consider adding the PostToolUse hook pattern documentation to .claude/context/ for reference by future meta tasks that need similar infrastructure-level enforcement."
-    },
-    {
-      "project_number": 415,
-      "project_name": "improve_slides_command_task_description",
-      "status": "completed",
-      "task_type": "meta",
-      "created": "2026-04-13T08:38:37Z",
-      "last_updated": "2026-04-13T08:50:21Z",
-      "artifacts": [
-        {
-          "type": "research",
-          "path": "specs/415_improve_slides_command_task_description/reports/01_slides-description-analysis.md",
-          "summary": "Gap analysis: /slides vs /deck TODO.md entry format. Three localized edits in slides.md"
-        },
-        {
-          "path": "specs/415_improve_slides_command_task_description/plans/01_slides-description-plan.md",
-          "type": "plan",
-          "summary": "2-phase implementation plan for improving /slides command task description format"
-        },
-        {
-          "path": "specs/415_improve_slides_command_task_description/summaries/01_slides-description-summary.md",
-          "type": "summary",
-          "summary": "Implementation summary for /slides command description improvements"
-        }
-      ],
-      "session_id": "sess_1776070002_d1b843",
-      "completion_summary": "Improved /slides command task description: simplified enriched description format, added Sources section with absolute paths, added Forcing Data Gathered section to TODO.md entries, and enriched console output with forcing data recap.",
-      "claudemd_suggestions": "Updated .claude/extensions/present/commands/slides.md: simplified Step 2.5 enriched description, expanded Step 4 TODO.md template with Sources and Forcing Data sections, updated Step 6 and Output Formats console output"
-    },
-    {
-      "project_number": 414,
-      "project_name": "remove_phase_checkpoint_protocol",
-      "status": "completed",
-      "task_type": "meta",
-      "created": "2026-04-13T12:00:00Z",
-      "last_updated": "2026-04-13T12:40:00Z",
-      "artifacts": [
-        {
-          "type": "research",
-          "path": "specs/414_remove_phase_checkpoint_protocol/reports/01_checkpoint-protocol-audit.md",
-          "summary": "Audit of 10 extension agents with Phase Checkpoint Protocol: 286 lines to remove, 3 complexity tiers"
-        },
-        {
-          "type": "plan",
-          "path": "specs/414_remove_phase_checkpoint_protocol/plans/01_checkpoint-removal-plan.md",
-          "summary": "4-phase plan: simple agents (5), standard agents (2), complex agents (3), verification"
-        }
-      ],
-      "session_id": "sess_1776069988_0a783d",
-      "completion_summary": "Removed Phase Checkpoint Protocol from 10 extension agents (latex, typst, python, z3, nix, nvim, web, founder-implement, deck-builder, grant). Deleted ~280 lines of protocol sections and inline references. Renumbered MUST DO/MUST NOT lists. Restructured grant-agent Stage 6/7 from nested under protocol heading to top-level sections."
+      "last_updated": "2026-04-13T18:06:56Z",
+      "session_id": "sess_1776103597_d0ae5c"
     },
     {
       "project_number": 398,
@@ -195,7 +90,7 @@
   ],
   "completed_projects": [],
   "repository_health": {
-    "last_assessed": "2026-04-13T08:16:49Z",
+    "last_assessed": "2026-04-13T18:10:46Z",
     "todo_count": 44,
     "fixme_count": 2,
     "build_errors": 0,
