@@ -53,22 +53,27 @@
     {
       "project_number": 407,
       "project_name": "update_present_manifest_and_metadata",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "dependencies": [
         403,
         405
       ],
       "created": "2026-04-12T12:00:00Z",
-      "last_updated": "2026-04-13T07:05:25Z",
+      "last_updated": "2026-04-13T07:12:32Z",
       "artifacts": [
         {
           "path": "specs/407_update_present_manifest_and_metadata/reports/01_present-manifest-metadata.md",
           "type": "research",
           "summary": "Gap analysis of present extension metadata files: manifest.json needs agent list update, EXTENSION.md needs 3-agent table, index-entries.json needs 2 stale reference fixes and 1 new entry"
+        },
+        {
+          "path": "specs/407_update_present_manifest_and_metadata/plans/01_present-manifest-metadata.md",
+          "type": "plan",
+          "summary": "3-phase plan to update present extension manifest, EXTENSION.md, and index-entries.json for 3-agent slide dispatch"
         }
       ],
-      "session_id": "sess_1776063736_1810fa",
+      "session_id": "sess_1776064102_396062",
       "next_artifact_number": 2
     },
     {

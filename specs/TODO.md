@@ -14,7 +14,7 @@ next_project_number: 409
 - **404** [COMPLETED] -- Add UCSF theme, PPTX patterns, and templates to present/ context
 - **405** [COMPLETED] -- Update skill-slides for multi-agent dispatch and plan workflow (depends: 403)
 - **406** [COMPLETED] -- Update /slides command: output format, enriched descriptions, remove --design (depends: 405)
-- **407** [RESEARCHED] -- Update present/ manifest.json and extension metadata (depends: 403, 405)
+- **407** [PLANNED] -- Update present/ manifest.json and extension metadata (depends: 403, 405)
 - **408** [COMPLETED] -- Audit all implementation agents for Phase Checkpoint Protocol compliance
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -36,10 +36,11 @@ next_project_number: 409
 
 ### 407. Update present/ manifest.json and extension metadata
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: 403, 405
 - **Research**: [01_present-manifest-metadata.md](specs/407_update_present_manifest_and_metadata/reports/01_present-manifest-metadata.md)
+- **Plan**: [01_present-manifest-metadata.md](specs/407_update_present_manifest_and_metadata/plans/01_present-manifest-metadata.md)
 
 **Description**: Update `manifest.json` provides.agents to list the 3 new agents (slides-research-agent, pptx-assembly-agent, slidev-assembly-agent) and remove slides-agent. Add `plan` routing entries for present:slides. Update EXTENSION.md skill-agent table to show the 3-agent dispatch. Update index-entries.json with new context files (pptx-generation.md, slidev-pitfalls.md, ucsf-institutional.json, templates).
 
