@@ -1,7 +1,7 @@
 # Implementation Plan: Improve /slides Command Task Description
 
 - **Task**: 415 - Improve /slides command task description
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/415_improve_slides_command_task_description/reports/01_slides-description-analysis.md
@@ -59,7 +59,7 @@ This task does not directly advance any current ROADMAP.md items. It is a qualit
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Simplify Step 2.5 and Expand Step 4 [NOT STARTED]
+### Phase 1: Simplify Step 2.5 and Expand Step 4 [COMPLETED]
 
 **Goal**: Clean up the enriched description and add structured sections to the TODO.md entry template.
 
@@ -88,7 +88,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Enrich Step 6 Console Output [NOT STARTED]
+### Phase 2: Enrich Step 6 Console Output [IN PROGRESS]
 
 **Goal**: Add forcing data recap to the console output and fix the "Language" label.
 
