@@ -1,7 +1,7 @@
 # Implementation Plan: Update Present Manifest and Metadata
 
 - **Task**: 407 - update_present_manifest_and_metadata
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: 403 (completed), 405 (completed)
 - **Research Inputs**: specs/407_update_present_manifest_and_metadata/reports/01_present-manifest-metadata.md
@@ -58,7 +58,7 @@ This task advances the "Subagent-return reference cleanup" roadmap item indirect
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Update manifest.json [NOT STARTED]
+### Phase 1: Update manifest.json [COMPLETED]
 
 **Goal**: Replace slides-agent.md with the 3 new agent filenames in provides.agents.
 
