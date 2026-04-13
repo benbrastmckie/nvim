@@ -12,7 +12,7 @@ next_project_number: 419
 
 - **418** [PLANNED] -- Add postflight self-execution fallback to skill wrapper pattern
 - **398** [RESEARCHING] -- Extract artifact-linking logic to shared helper script
-- **394** [RESEARCHING] -- Remove language-to-task_type backward compatibility shim
+- **394** [RESEARCHED] -- Remove language-to-task_type backward compatibility shim
 - **384** [RESEARCHED] -- Improve /convert command-skill-agent pipeline in filetypes extension
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -42,8 +42,9 @@ next_project_number: 419
 
 ### 394. Remove language-to-task_type backward compatibility shim
 - **Effort**: TBD
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [01_remove-compat-shim.md](specs/394_remove_language_to_task_type_compat_shim/reports/01_remove-compat-shim.md)
 
 **Description**: Remove the backward compatibility shim that treats old `language` field values as `task_type` when no `task_type` field is present. This shim was added during task 393 to prevent breakage of existing tasks. Remove it once all existing tasks across current projects have been completed and no legacy-format tasks remain in active state.
 

@@ -40,11 +40,19 @@
     {
       "project_number": 394,
       "project_name": "remove_language_to_task_type_compat_shim",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-10T16:37:05Z",
-      "last_updated": "2026-04-13T18:25:52Z",
-      "session_id": "sess_1776104740_8dc2fe_t394"
+      "last_updated": "2026-04-13T18:45:00Z",
+      "session_id": "sess_1776104740_8dc2fe_t394",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/394_remove_language_to_task_type_compat_shim/reports/01_remove-compat-shim.md",
+          "type": "research",
+          "summary": "Complete inventory of 50 files requiring changes to remove language-to-task_type compat shim; safe to proceed"
+        }
+      ]
     },
     {
       "project_number": 384,
