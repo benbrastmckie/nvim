@@ -35,6 +35,10 @@ python3 -c "import PACKAGE_NAME" 2>/dev/null && echo "yes" || echo "no"
 
 ### Available Packages Check
 ```bash
+# PDF/document extraction packages
+has_pymupdf=$(python3 -c "import fitz" 2>/dev/null && echo "yes" || echo "no")
+has_pymupdf4llm=$(python3 -c "import pymupdf4llm" 2>/dev/null && echo "yes" || echo "no")
+
 # Spreadsheet packages
 has_pandas=$(python3 -c "import pandas" 2>/dev/null && echo "yes" || echo "no")
 has_openpyxl=$(python3 -c "import openpyxl" 2>/dev/null && echo "yes" || echo "no")
@@ -83,8 +87,16 @@ def detect_docx_editor():
 ## Tool Fallback Chains
 
 ### Document Conversion (to Markdown)
-1. **Primary**: markitdown (best PDF/DOCX/Office support)
-2. **Fallback**: pandoc (good HTML/DOCX support, limited PDF)
+
+**PDF/EPUB/Images**:
+1. **Primary**: pymupdf4llm (best PDF-to-markdown quality, structured output)
+2. **Secondary**: pymupdf / fitz (text extraction + table detection)
+3. **Fallback**: pandoc (limited PDF support)
+4. **Last resort**: markitdown (25% success rate on PDF benchmarks)
+
+**DOCX/PPTX/XLSX/HTML**:
+1. **Primary**: markitdown (best Office format support)
+2. **Fallback**: pandoc (good HTML/DOCX support)
 3. **Basic**: N/A - require at least one tool
 
 ### Markdown to PDF
@@ -147,6 +159,8 @@ echo "  pip install $PIP_PACKAGE"
 | Tool | NixOS Package | apt Package | Homebrew Package | pip Package |
 |------|---------------|-------------|------------------|-------------|
 | markitdown | python3Packages.markitdown | - | - | markitdown |
+| pymupdf | python3Packages.pymupdf | - | - | pymupdf |
+| pymupdf4llm | - | - | - | pymupdf4llm |
 | pandoc | pandoc | pandoc | pandoc | - |
 | typst | typst | - | typst | - |
 | pdflatex | texlive.combined.scheme-basic | texlive-base | mactex-no-gui | - |
@@ -172,6 +186,8 @@ detect_tools() {
     "xlsx2csv": $(command -v xlsx2csv >/dev/null 2>&1 && echo "true" || echo "false")
   },
   "python": {
+    "pymupdf": $(python3 -c "import fitz" 2>/dev/null && echo "true" || echo "false"),
+    "pymupdf4llm": $(python3 -c "import pymupdf4llm" 2>/dev/null && echo "true" || echo "false"),
     "pandas": $(python3 -c "import pandas" 2>/dev/null && echo "true" || echo "false"),
     "openpyxl": $(python3 -c "import openpyxl" 2>/dev/null && echo "true" || echo "false"),
     "pptx": $(python3 -c "import pptx" 2>/dev/null && echo "true" || echo "false"),

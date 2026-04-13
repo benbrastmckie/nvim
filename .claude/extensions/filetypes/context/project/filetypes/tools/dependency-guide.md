@@ -6,6 +6,8 @@ Platform-specific installation instructions for all conversion tools used by the
 
 | Tool | NixOS | Ubuntu/Debian | macOS |
 |------|-------|---------------|-------|
+| pymupdf | `python3Packages.pymupdf` | `pip install pymupdf` | `pip install pymupdf` |
+| pymupdf4llm | (pip in venv) | `pip install pymupdf4llm` | `pip install pymupdf4llm` |
 | markitdown | `python3Packages.markitdown` | `pip install markitdown` | `pip install markitdown` |
 | pandoc | `pandoc` | `apt install pandoc` | `brew install pandoc` |
 | typst | `typst` | (manual/cargo) | `brew install typst` |
@@ -22,7 +24,10 @@ Platform-specific installation instructions for all conversion tools used by the
 For temporary use without modifying system configuration:
 
 ```bash
-# Document conversion
+# Document conversion (PDF)
+nix-shell -p python3Packages.pymupdf
+
+# Document conversion (Office formats)
 nix-shell -p python3Packages.markitdown
 
 # Spreadsheet conversion
@@ -38,7 +43,7 @@ nix-shell -p pandoc texlive.combined.scheme-basic
 nix-shell -p typst
 
 # All at once
-nix-shell -p python3Packages.markitdown python3Packages.openpyxl python3Packages.pandas python3Packages.python-pptx pandoc typst texlive.combined.scheme-basic
+nix-shell -p python3Packages.pymupdf python3Packages.markitdown python3Packages.openpyxl python3Packages.pandas python3Packages.python-pptx pandoc typst texlive.combined.scheme-basic
 ```
 
 ### Persistent (home-manager)
@@ -55,6 +60,7 @@ Add to your `home.nix` for persistent installation:
     texlive.combined.scheme-basic  # or scheme-full for complete LaTeX
 
     (python3.withPackages (ps: with ps; [
+      pymupdf
       markitdown
       openpyxl
       pandas
@@ -176,14 +182,34 @@ pip install markitdown pandas openpyxl python-pptx xlsx2csv
 
 ## Package Details
 
+### pymupdf (fitz)
+
+PDF manipulation and extraction library.
+
+- **Purpose**: Extract text, tables, and images from PDF, EPUB, and image files
+- **Python package**: `pymupdf` (imported as `fitz`)
+- **Capabilities**: Text extraction, table detection (`find_tables()`), OCR (with Tesseract), image extraction
+- **Primary for**: PDF to Markdown conversion, EPUB extraction, image OCR
+- **Note**: Decisively outperforms markitdown for PDF quality (structure, tables, formatting)
+
+### pymupdf4llm (optional enhancement)
+
+Enhanced markdown output from PyMuPDF.
+
+- **Purpose**: High-quality PDF-to-markdown conversion optimized for LLM consumption
+- **Python package**: `pymupdf4llm`
+- **Capabilities**: Structured markdown with headers, lists, tables preserved from PDF layout
+- **Note**: Optional enhancement; base pymupdf provides adequate output
+
 ### markitdown
 
 Microsoft's document-to-markdown converter.
 
-- **Purpose**: Convert PDF, DOCX, XLSX, PPTX, HTML, images to Markdown
+- **Purpose**: Convert DOCX, XLSX, PPTX, HTML, images to Markdown (primary for Office formats)
 - **Python package**: `markitdown`
 - **Capabilities**: OCR support, table extraction, embedded content
 - **Note**: Not available as system package on most distros
+- **NixOS fragility**: markitdown CLI availability can break on Nix Python version bumps; pymupdf is the more reliable option for PDF on NixOS
 
 ### pandoc
 
@@ -254,6 +280,8 @@ command -v pdflatex && echo "pdflatex: OK"
 command -v xlsx2csv && echo "xlsx2csv: OK"
 
 # Python packages
+python3 -c "import fitz" && echo "pymupdf: OK"
+python3 -c "import pymupdf4llm" && echo "pymupdf4llm: OK"
 python3 -c "import pandas" && echo "pandas: OK"
 python3 -c "import openpyxl" && echo "openpyxl: OK"
 python3 -c "import pptx" && echo "python-pptx: OK"

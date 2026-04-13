@@ -96,7 +96,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update tool-detection.md and dependency-guide.md [NOT STARTED]
+### Phase 2: Update tool-detection.md and dependency-guide.md [COMPLETED]
 
 **Goal**: Add pymupdf to the document conversion sections of tool detection and dependency documentation.
 
