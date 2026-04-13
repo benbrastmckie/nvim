@@ -111,6 +111,7 @@ Update task status based on workflow type BEFORE invoking subagent.
 | Workflow Type | state.json status | TODO.md marker |
 |---------------|------------------|----------------|
 | slides_research | researching | [RESEARCHING] |
+| plan | planning | [PLANNING] |
 | assemble | implementing | [IMPLEMENTING] |
 
 ```bash
@@ -121,6 +122,10 @@ case "$workflow_type" in
   slides_research)
     preflight_status="researching"
     preflight_marker="[RESEARCHING]"
+    ;;
+  plan)
+    preflight_status="planning"
+    preflight_marker="[PLANNING]"
     ;;
   assemble)
     preflight_status="implementing"
@@ -161,6 +166,118 @@ cat > "specs/${padded_num}_${project_name}/.postflight-pending" << EOF
 }
 EOF
 ```
+
+---
+
+### Stage 3.5: Design Questions (plan workflow only)
+
+**Guard**: Only execute this stage when `workflow_type == "plan"`. Skip entirely for `slides_research` and `assemble`.
+
+```bash
+if [ "$workflow_type" = "plan" ]; then
+  # --- Check for existing design_decisions ---
+  existing_dd=$(echo "$task_data" | jq -r '.design_decisions // empty')
+
+  if [ -n "$existing_dd" ]; then
+    # Validate schema: must have theme, message_order, section_emphasis
+    has_theme=$(echo "$existing_dd" | jq -r '.theme // empty')
+    has_order=$(echo "$existing_dd" | jq -r '.message_order // empty')
+    has_emphasis=$(echo "$existing_dd" | jq -r '.section_emphasis // empty')
+
+    if [ -n "$has_theme" ] && [ -n "$has_order" ] && [ -n "$has_emphasis" ]; then
+      # Offer reuse
+      reuse_answer=$(AskUserQuestion "Existing design decisions found:
+- Theme: ${has_theme}
+- Message Order: ${has_order}
+- Section Emphasis: ${has_emphasis}
+
+Reuse these decisions or reconfigure?
+
+A) Reuse existing decisions
+B) Reconfigure from scratch")
+
+      if [ "$reuse_answer" = "A" ] || [ "$reuse_answer" = "a" ]; then
+        echo "Reusing existing design_decisions."
+        skip_design=true
+      fi
+    fi
+  fi
+
+  if [ "$skip_design" != "true" ]; then
+    # --- Read research report for key messages ---
+    report_path=$(ls specs/${padded_num}_${project_name}/reports/*_slides-research.md 2>/dev/null | tail -1)
+
+    if [ -n "$report_path" ] && [ -f "$report_path" ]; then
+      # Extract key messages from research report
+      key_messages=$(grep -A 20 "## Key Messages\|### Key Messages" "$report_path" | head -20)
+      has_report=true
+    else
+      key_messages=""
+      has_report=false
+    fi
+
+    # --- D1: Visual Theme ---
+    theme_answer=$(AskUserQuestion "Which visual theme fits best for this talk?
+
+A) Academic Clean - Minimal, high-contrast, serif headings (department seminars)
+B) Clinical Teal - Medical/clinical palette, clean data presentation (clinical audiences)
+C) Conference Bold - Strong colors, large type, designed for projection (conference talks)
+D) Minimal Dark - Dark background, high contrast, code-friendly (technical audiences)
+E) UCSF Institutional - Navy/blue, Garamond headings (institutional branding)")
+
+    case "$theme_answer" in
+      A|a) theme="academic-clean" ;;
+      B|b) theme="clinical-teal" ;;
+      C|c) theme="conference-bold" ;;
+      D|d) theme="minimal-dark" ;;
+      E|e) theme="ucsf-institutional" ;;
+      *) theme="academic-clean" ;;
+    esac
+
+    # --- D2: Key Message Ordering ---
+    if [ "$has_report" = "true" ] && [ -n "$key_messages" ]; then
+      message_order=$(AskUserQuestion "The research identified these key messages. Confirm or reorder:
+
+${key_messages}
+
+Enter the preferred order (e.g., '2, 1, 3') or 'confirm' to keep as-is.
+Add any messages to emphasize or de-emphasize.")
+    else
+      message_order="no-report"
+      echo "No research report found -- skipping message ordering (D2)."
+    fi
+
+    # --- D3: Section Emphasis ---
+    section_emphasis=$(AskUserQuestion "Which sections should receive extra slides or depth?
+
+Select all that apply:
+- Methods/approach (show technical detail)
+- Results/data (more data slides)
+- Background/motivation (broader context)
+- Clinical implications (translational focus)
+- Future directions (forward-looking)
+
+Which sections to expand?")
+
+    # --- Store design_decisions in state.json ---
+    jq --arg theme "$theme" \
+       --arg order "$message_order" \
+       --arg emphasis "$section_emphasis" \
+       --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '(.active_projects[] | select(.project_number == '$task_number')).design_decisions = {
+        "theme": $theme,
+        "message_order": $order,
+        "section_emphasis": $emphasis,
+        "confirmed_at": $ts
+      }' specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
+  fi
+fi
+```
+
+**Theme fallback chain** (used by assembly agents if no explicit design_decisions):
+1. `design_decisions.theme` from state.json task metadata
+2. Research report "Recommended Theme" section
+3. Default: `academic-clean`
 
 ---
 

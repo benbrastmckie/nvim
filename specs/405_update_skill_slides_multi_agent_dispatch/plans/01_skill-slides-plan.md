@@ -100,7 +100,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Stage 3 preflight case and new Stage 3.5 (Design Questions) [NOT STARTED]
+### Phase 2: Stage 3 preflight case and new Stage 3.5 (Design Questions) [COMPLETED]
 
 **Goal**: Apply DIFF changes 8-9 -- add the `plan)` preflight case and the entire new Stage 3.5 Design Questions section (~120 lines).
 
