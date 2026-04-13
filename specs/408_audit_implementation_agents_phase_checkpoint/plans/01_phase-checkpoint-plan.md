@@ -89,7 +89,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Fix Non-Compliant Agents [NOT STARTED]
+### Phase 2: Fix Non-Compliant Agents [COMPLETED]
 
 **Goal**: Add the full Phase Checkpoint Protocol (heading updates, Edit tool instructions, git commits) to the 2 completely non-compliant agents.
 

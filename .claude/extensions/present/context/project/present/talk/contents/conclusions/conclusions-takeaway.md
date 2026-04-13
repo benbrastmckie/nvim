@@ -50,3 +50,17 @@ layout: default
 - Build progressively with v-click for emphasis
 - End with future directions to leave the audience with next steps
 - Avoid repeating methods; focus on "so what?"
+
+## Custom Footer (optional)
+
+If the slide needs a custom footer (e.g., repo links, receipt pointers), use a flow-positioned div at the end of the slide content:
+
+```html
+<div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--ac-muted);
+     display: flex; justify-content: space-between;">
+  <span>Left text</span>
+  <span>Right text</span>
+</div>
+```
+
+This sits above Slidev's built-in footer bar via normal document flow.

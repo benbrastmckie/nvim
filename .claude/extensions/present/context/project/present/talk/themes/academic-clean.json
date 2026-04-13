@@ -34,6 +34,10 @@
     "accent_bar": "3px solid #3b5998",
     "table_header": "2px solid #3b5998"
   },
+  "footer": {
+    "custom_footer_style": "margin-top: 1.5rem; font-size: 0.8rem; color: #6b7280; display: flex; justify-content: space-between;",
+    "positioning": "flow (margin-top), sits above Slidev built-in footer bar"
+  },
   "slidev_config": {
     "theme": "none",
     "highlighter": "shiki",

@@ -104,3 +104,8 @@ Paper review and critique for journal club meetings.
 - Research from `/grant` tasks can inform talk content via `task:{N}` references
 - Manuscripts and papers can be provided as file path source materials
 - Multiple talks can reference the same source materials with different modes
+
+### Format-Specific Implementation Notes
+- **Slidev**: See `talk/patterns/slidev-pitfalls.md` for setup, footer positioning, and mermaid gotchas
+- **PowerPoint**: See `talk/patterns/pptx-generation.md` for python-pptx API patterns and component helpers
+- Theme JSON files include a `footer` section with correct positioning guidance for custom footers

@@ -1,6 +1,6 @@
 {
   "name": "talk-library",
-  "description": "Research presentation library for Slidev-based academic talks",
+  "description": "Research presentation library for Slidev and PowerPoint academic talks",
   "version": "1.0.0",
   "categories": {
     "themes": {
@@ -8,7 +8,8 @@
       "path": "themes/",
       "items": [
         { "name": "academic-clean", "file": "academic-clean.json", "description": "White background, muted blue accents, serif headings" },
-        { "name": "clinical-teal", "file": "clinical-teal.json", "description": "White background, teal/medical accents" }
+        { "name": "clinical-teal", "file": "clinical-teal.json", "description": "White background, teal/medical accents" },
+        { "name": "ucsf-institutional", "file": "ucsf-institutional.json", "description": "UCSF institutional palette: navy/blue, Garamond headings" }
       ]
     },
     "patterns": {
@@ -18,7 +19,9 @@
         { "name": "conference-standard", "file": "conference-standard.json", "mode": "CONFERENCE", "slides": 12 },
         { "name": "journal-club", "file": "journal-club.json", "mode": "JOURNAL_CLUB", "slides": 12 },
         { "name": "seminar-deep-dive", "file": "seminar-deep-dive.json", "mode": "SEMINAR", "slides": 35 },
-        { "name": "defense-grant", "file": "defense-grant.json", "mode": "DEFENSE", "slides": 30 }
+        { "name": "defense-grant", "file": "defense-grant.json", "mode": "DEFENSE", "slides": 30 },
+        { "name": "slidev-pitfalls", "file": "slidev-pitfalls.md", "description": "Slidev implementation gotchas (footer, Mermaid, PDF export)" },
+        { "name": "pptx-generation", "file": "pptx-generation.md", "description": "python-pptx API patterns for PPTX slide creation, theme application, component helpers (DataTable, FigurePanel, CitationBlock, StatResult, FlowDiagram), speaker notes, and error handling" }
       ]
     },
     "animations": {
@@ -53,6 +56,14 @@
         { "name": "CitationBlock", "file": "CitationBlock.vue" },
         { "name": "StatResult", "file": "StatResult.vue" },
         { "name": "FlowDiagram", "file": "FlowDiagram.vue" }
+      ]
+    },
+    "templates": {
+      "description": "Reusable scripts and templates for Slidev and PowerPoint projects",
+      "path": "templates/",
+      "items": [
+        { "name": "playwright-verify", "file": "playwright-verify.mjs", "description": "Playwright slide verification script -- copy to scripts/verify-slides.mjs in each project" },
+        { "name": "pptx-project", "file": "pptx-project/", "description": "PowerPoint generation template with theme mappings and skeleton script", "files": ["theme_mappings.json", "generate_deck.py", "README.md"] }
       ]
     }
   }
