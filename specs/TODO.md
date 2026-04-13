@@ -10,7 +10,7 @@ next_project_number: 416
 
 ### Pending
 
-- **415** [NOT STARTED] -- Improve /slides command task description format (Sources, forcing data, richer text)
+- **415** [RESEARCHED] -- Improve /slides command task description format (Sources, forcing data, richer text)
 - **414** [PLANNED] -- Remove Phase Checkpoint Protocol from 10 extension agents
 - **398** [NOT STARTED] -- Extract artifact-linking logic to shared helper script
 - **394** [NOT STARTED] -- Remove language-to-task_type backward compatibility shim
@@ -22,8 +22,9 @@ next_project_number: 416
 
 ### 415. Improve /slides command task description format (Sources, forcing data, richer text)
 - **Effort**: 30 min
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [01_slides-description-analysis.md](specs/415_improve_slides_command_task_description/reports/01_slides-description-analysis.md)
 
 **Description**: The `/slides` command in `present/` extension creates terse, poorly structured TODO.md task entries. Three specific improvements needed in `.claude/extensions/present/commands/slides.md`:
 
