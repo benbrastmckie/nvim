@@ -1,7 +1,7 @@
 # Implementation Plan: Extract Artifact Linking Helper
 
 - **Task**: 398 - Extract artifact linking helper
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (task 397 already completed)
 - **Research Inputs**: specs/398_extract_artifact_linking_helper/reports/01_artifact-linking-helper.md

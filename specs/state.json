@@ -34,10 +34,10 @@
     {
       "project_number": 398,
       "project_name": "extract_artifact_linking_helper",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-10T20:40:00Z",
-      "last_updated": "2026-04-13T19:06:55Z",
+      "last_updated": "2026-04-13T19:17:28Z",
       "dependencies": [
         397
       ],
@@ -51,10 +51,17 @@
           "path": "specs/398_extract_artifact_linking_helper/plans/01_artifact-linking-helper.md",
           "type": "plan",
           "summary": "4-phase plan to extract duplicated TODO.md artifact-linking logic into a shared context pattern file"
+        },
+        {
+          "path": "specs/398_extract_artifact_linking_helper/summaries/01_artifact-linking-helper-summary.md",
+          "type": "summary",
+          "summary": "Extracted artifact-linking logic from 37+ skills into shared pattern file"
         }
       ],
       "session_id": "sess_1776107204_db3651_t398",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Extracted duplicated TODO.md artifact-linking logic from 37+ skills into canonical pattern file at .claude/context/patterns/artifact-linking-todo.md, updating all core and extension skills to reference it.",
+      "claudemd_suggestions": "Created .claude/context/patterns/artifact-linking-todo.md, added index.json entry, updated state-management-schema.md cross-reference, updated 7 core skills and 30+ extension skills"
     },
     {
       "project_number": 394,
