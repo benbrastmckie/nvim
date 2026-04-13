@@ -123,7 +123,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update conversion-tables.md [NOT STARTED]
+### Phase 3: Update conversion-tables.md [COMPLETED]
 
 **Goal**: Update conversion tables to reflect new tool priorities with pymupdf as primary for PDF.
 
