@@ -5,17 +5,22 @@
     {
       "project_number": 420,
       "project_name": "prevent_extension_loader_overwriting_repo_customizations",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-13T23:20:00Z",
-      "last_updated": "2026-04-13T23:24:32Z",
-      "session_id": "sess_1776122467_ef3ac1",
+      "last_updated": "2026-04-13T23:54:21Z",
+      "session_id": "sess_1776124239_52b969",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/420_prevent_extension_loader_overwriting_repo_customizations/reports/01_extension-loader-sync.md",
           "type": "research",
           "summary": "Identified two sync mechanisms causing CLAUDE.md overwrites: core sync copies file wholesale, destroying extension-injected sections. Recommends section-marker preservation during sync plus post-sync re-injection of extension merge targets."
+        },
+        {
+          "path": "specs/420_prevent_extension_loader_overwriting_repo_customizations/plans/01_prevent-loader-overwrite.md",
+          "type": "plan",
+          "summary": "3-phase plan: section-aware sync for CLAUDE.md, post-sync extension re-injection, and edge case testing"
         }
       ]
     },

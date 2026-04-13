@@ -10,7 +10,7 @@ next_project_number: 421
 
 ### Pending
 
-- **420** [RESEARCHED] -- Prevent extension loader overwriting repo customizations
+- **420** [PLANNED] -- Prevent extension loader overwriting repo customizations
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
