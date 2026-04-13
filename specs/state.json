@@ -98,15 +98,16 @@
       "status": "researched",
       "task_type": "meta",
       "created": "2026-04-09T16:15:53Z",
-      "last_updated": "2026-04-09T16:30:00Z",
-      "session_id": "sess_1775751408_a98f4b",
+      "last_updated": "2026-04-13T19:22:39Z",
+      "session_id": "sess_1776107949_3a8d19",
       "artifacts": [
         {
+          "path": "specs/384_improve_convert_command_skill_agent/reports/02_convert-status-review.md",
           "type": "research",
-          "path": "specs/384_improve_convert_command_skill_agent/reports/01_convert-pipeline-analysis.md",
-          "summary": "Analysis of /convert pipeline: markitdown broken, pymupdf as replacement, 6-priority refactoring plan"
+          "summary": "Follow-up assessment: markitdown CLI self-healed but Python import still broken; pymupdf upgraded; document-agent and context files still need refactoring. Task remains valid with narrowed scope."
         }
-      ]
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 87,
