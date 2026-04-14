@@ -10,9 +10,9 @@ next_project_number: 435
 
 ### Pending
 
-- **434** [RESEARCHED] -- Prevent lead agent post-delegation takeover after subagent returns
+- **434** [PLANNED] -- Prevent lead agent post-delegation takeover after subagent returns
 - **433** [NOT STARTED] -- Move nvim-specific core content into neovim extension (depends: 432)
-- **432** [RESEARCHED] -- Harden sync engine against repo-specific content leakage
+- **432** [PLANNING] -- Harden sync engine against repo-specific content leakage
 - **431** [COMPLETED] -- Fix artifact linking order and missing blank line in TODO.md
 - **430** [COMPLETED] -- Fix /implement excessive front-loading: lead agent should read plan only, not codebase
 - **429** [COMPLETED] -- Update .claude/docs/ to reflect task 428 changes
@@ -32,9 +32,10 @@ next_project_number: 435
 
 ### 434. Prevent lead agent post-delegation takeover after subagent returns
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [specs/434_prevent_lead_agent_post_delegation_takeover/reports/01_post-delegation-takeover.md](specs/434_prevent_lead_agent_post_delegation_takeover/reports/01_post-delegation-takeover.md)
+- **Plan**: [434_prevent_lead_agent_post_delegation_takeover/plans/01_post-delegation-takeover.md]
 
 **Description**: When a subagent returns with incomplete or partial work, the lead agent (skill-implementer, skill-team-implement, or extension implementation skills) sometimes takes over and continues implementation itself -- reading source files, running builds, grepping patterns, and attempting to finish the work. This violates the postflight boundary and must never happen.
 
@@ -71,7 +72,7 @@ After lean-implementation-agent returned from Wave 2 Phase 2, the lead agent: (1
 
 ### 432. Harden sync engine against repo-specific content leakage
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: neovim
 - **Research**: [01_sync-leakage-hardening.md](432_harden_sync_against_repo_specific_leakage/reports/01_sync-leakage-hardening.md)
 

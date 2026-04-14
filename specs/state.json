@@ -5,19 +5,50 @@
     {
       "project_number": 434,
       "project_name": "prevent_lead_agent_post_delegation_takeover",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-14T21:00:00Z",
-      "last_updated": "2026-04-14T20:49:24Z",
+      "last_updated": "2026-04-14T20:53:13Z",
       "artifacts": [
         {
           "path": "specs/434_prevent_lead_agent_post_delegation_takeover/reports/01_post-delegation-takeover.md",
           "type": "research",
           "summary": "Research report analyzing post-delegation boundary enforcement gaps across all implementation skills"
+        },
+        {
+          "path": "specs/434_prevent_lead_agent_post_delegation_takeover/plans/01_post-delegation-takeover.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for adding PROHIBITION blocks to 13 implementation skills and standards files"
         }
       ],
       "next_artifact_number": 2,
-      "session_id": "sess_1776199605_f617dd"
+      "session_id": "sess_1776199885_b33bf7",
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 1.5,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_post-delegation-takeover.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-14"
+          }
+        ]
+      }
     },
     {
       "project_number": 433,
@@ -35,10 +66,10 @@
     {
       "project_number": 432,
       "project_name": "harden_sync_against_repo_specific_leakage",
-      "status": "researched",
+      "status": "planning",
       "task_type": "neovim",
       "created": "2026-04-14T20:45:00Z",
-      "last_updated": "2026-04-14T20:50:10Z",
+      "last_updated": "2026-04-14T20:51:55Z",
       "artifacts": [
         {
           "path": "specs/432_harden_sync_against_repo_specific_leakage/reports/01_sync-leakage-hardening.md",
@@ -47,7 +78,7 @@
         }
       ],
       "next_artifact_number": 2,
-      "session_id": "sess_1776199605_f617dd"
+      "session_id": "sess_1776199885_b33bf7"
     },
     {
       "project_number": 431,
