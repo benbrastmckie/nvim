@@ -34,6 +34,7 @@ next_project_number: 432
 - **Research**: [01_artifact-linking-bug.md](431_fix_artifact_linking_order_todo/reports/01_artifact-linking-bug.md)
 
 - **Plan**: [01_artifact-linking-fix.md](431_fix_artifact_linking_order_todo/plans/01_artifact-linking-fix.md)
+
 **Description**: Investigate how artifacts are being linked in task 429 where they appear out of order and there is no empty line above the description. Determine the root cause and create a targeted fix.
 
 ### 430. Fix /implement excessive front-loading: lead agent should read plan only, not codebase

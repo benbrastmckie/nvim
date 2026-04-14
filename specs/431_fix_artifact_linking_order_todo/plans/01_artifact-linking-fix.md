@@ -1,7 +1,7 @@
-# Implementation Plan: Fix Artifact Linking Order in TODO.md
+# Implementation Plan: Fix Artifact Linking in TODO.md
 
 - **Task**: 431 - Fix artifact linking order and missing blank line in TODO.md
-- **Status**: [PLANNED]
+- **Status**: [NOT STARTED]
 - **Effort**: small
 - **Dependencies**: None
 - **Research Inputs**: specs/431_fix_artifact_linking_order_todo/reports/01_artifact-linking-bug.md
@@ -12,32 +12,27 @@
 
 ## Overview
 
-Fix two bugs in `link-artifact-todo.sh`: (1) blank line above `**Description**:` is consumed when inserting artifact lines before it, and (2) the `specs/` prefix is stripped from link paths while manual agent edits preserve it, causing inconsistency. A third issue -- task creation placing artifacts below Description -- is addressed by adding a defensive reorder in the script itself rather than auditing all task creation paths.
-
-### Research Integration
-
-The research report identified four bugs. Bug 1 (research link below Description) originates in task creation, not the script. Rather than auditing every task creation path (`/task`, `/meta`, `/fix-it`, `/review`, `/errors`, `/spawn`), this plan adds a post-insertion validation step in the script that detects and corrects misplaced artifact lines. Bug 2 (blank line consumption) is fixed by adjusting insertion logic. Bug 3 (specs/ prefix inconsistency) is fixed by removing the prefix stripping. Bug 4 (Summary next_field) is a non-issue once blank line preservation works.
+Fix three issues in `link-artifact-todo.sh`: (1) blank line above `**Description**:` is consumed during insertion, (2) link format uses `[text](path)` instead of bracket-only `[path]`, and (3) the `specs/` prefix stripping is already correct but the link format must change to bracket-only style. The state-management-schema.md artifact linking format spec must also be updated to reflect the bracket-only link style.
 
 ## Goals & Non-Goals
 
 **Goals:**
 - Preserve blank line between last artifact field and `**Description**:` during insertion
-- Standardize link paths to include `specs/` prefix (matching manual agent behavior)
-- Ensure script is robust against pre-existing malformed entries
+- Change link format from `[text](path)` to bracket-only `[path]` throughout the script
+- Keep `specs/` prefix stripping (current behavior on line 69 is correct)
+- Update state-management-schema.md to document the bracket-only link format
 
 **Non-Goals:**
-- Auditing all task creation commands for artifact placement (out of scope for this fix)
-- Changing the `next_field` parameterization for Summary skill calls
-- Retroactively fixing already-malformed TODO.md entries (cosmetic, will self-correct)
+- Fixing pre-existing malformed TODO.md entries
+- Auditing task creation commands for artifact placement
+- Changing `next_field` parameterization
 
 ## Risks & Mitigations
 
 - **Risk**: Blank line logic change may break entries without a blank line above Description
-  - **Mitigation**: Check for blank line presence before adjusting; only shift insertion point when blank line exists
-- **Risk**: Removing `specs/` stripping changes all future link formats
-  - **Mitigation**: This matches the format agents already use in manual edits; existing links are functional either way
-- **Risk**: sed line number arithmetic off-by-one errors
-  - **Mitigation**: Test with `--dry-run` on representative entries before applying
+  - **Mitigation**: Only adjust insertion point when a blank line is detected; entries without a blank line insert normally
+- **Risk**: Bracket-only links may not render as clickable in some markdown renderers
+  - **Mitigation**: This is the user's preferred format; TODO.md is primarily for human reading, not rendered markdown
 
 ## Implementation Phases
 
@@ -49,47 +44,50 @@ The research report identified four bugs. Bug 1 (research link below Description
 
 ### Phase 1: Fix link-artifact-todo.sh [NOT STARTED]
 
-**Goal:** Fix blank line preservation and specs/ prefix handling in the script.
+**Goal:** Fix blank line preservation and change link format to bracket-only style.
 
 **Tasks:**
-- [ ] In Case 1 (lines 124-134): Before inserting at `actual_next_line`, check if the line at `actual_next_line - 1` is blank. If so, insert at `actual_next_line - 1` instead (before the blank line), so the blank line remains between the new artifact line and `**Description**:`
+- [ ] In Case 1 (lines 124-134): Before inserting at `actual_next_line`, check if the line at `actual_next_line - 1` (relative to the TODO file) is blank. If so, insert at `actual_next_line - 1` instead, so the blank line remains between the new artifact line and `**Description**:`
 - [ ] In Case 3 (lines 156-178): Apply the same blank line check before `insert_before`
-- [ ] Remove the `specs/` prefix stripping on line 69 (`todo_link_path="${artifact_path#specs/}"` becomes `todo_link_path="$artifact_path"`)
+- [ ] Change link format on line 125 from `[${artifact_filename}](${todo_link_path})` to `[${todo_link_path}]`
+- [ ] Change link format on line 168 (Case 3 bullet) from `[${artifact_filename}](${todo_link_path})` to `[${todo_link_path}]`
+- [ ] Change link format on line 182-194 (Case 2 inline-to-multiline) from `[${artifact_filename}](${todo_link_path})` to `[${todo_link_path}]`
+- [ ] Change link format on line 219 (replace non-link value) from `[${artifact_filename}](${todo_link_path})` to `[${todo_link_path}]`
 - [ ] Add a comment explaining the blank line preservation logic
 
-**Timing:** 15-20 minutes
+**Timing:** 15 minutes
 
 **Depends on:** none
 
-### Phase 2: Validate with dry-run tests [NOT STARTED]
+### Phase 2: Update state-management-schema.md [NOT STARTED]
 
-**Goal:** Verify the fix handles all edge cases correctly.
+**Goal:** Update the artifact linking format documentation to reflect bracket-only link style.
 
 **Tasks:**
-- [ ] Run `--dry-run` against a task entry with blank line above Description (should insert before blank line)
-- [ ] Run `--dry-run` against a task entry without blank line above Description (should insert normally)
-- [ ] Run `--dry-run` against a task entry with existing multi-line field (Case 3)
-- [ ] Run `--dry-run` against a task entry where artifact is already linked (Case 4 no-op)
-- [ ] Verify link paths now include `specs/` prefix in dry-run output
+- [ ] In `.claude/context/reference/state-management-schema.md`, update the "Artifact Linking Formats" section: change all `[filename](path)` examples to `[path]` format
+- [ ] Update the "Count-Aware Linking" examples similarly
+- [ ] Update the "Detection Patterns" inline detection regex from `\[.*\]\(.*\)` to `\[.*\]`
 
-**Timing:** 10 minutes
+**Timing:** 5 minutes
 
 **Depends on:** 1
 
 ## Testing & Validation
 
-- Run `bash .claude/scripts/link-artifact-todo.sh <task> '**Research**' '**Plan**' 'specs/431_.../reports/01_artifact-linking-bug.md' --dry-run` and verify output shows correct insertion point
-- Run against a test task entry and verify blank line is preserved above `**Description**:`
-- Run against Case 2 (inline-to-multiline conversion) to verify no regression
-- Inspect resulting TODO.md formatting for the test entry
+- Run `--dry-run` against a task entry with blank line above Description: verify insertion happens before the blank line
+- Run `--dry-run` against a task entry without blank line above Description: verify normal insertion
+- Run `--dry-run` and verify link format shows `[path]` not `[text](path)`
+- Run `--dry-run` and verify no `specs/` prefix in output paths
+- Verify Case 2 (inline-to-multiline) dry-run output shows bracket-only format
 
 ## Artifacts & Outputs
 
 | Artifact | Path |
 |----------|------|
 | Modified script | `.claude/scripts/link-artifact-todo.sh` |
+| Updated schema | `.claude/context/reference/state-management-schema.md` |
 | This plan | `specs/431_fix_artifact_linking_order_todo/plans/01_artifact-linking-fix.md` |
 
 ## Rollback/Contingency
 
-The script is version-controlled. If the fix introduces regressions, revert with `git checkout HEAD~1 -- .claude/scripts/link-artifact-todo.sh`. The changes are isolated to a single file with no downstream dependencies beyond the skill invocations that already call it.
+Both files are version-controlled. Revert with `git checkout HEAD~1 -- .claude/scripts/link-artifact-todo.sh .claude/context/reference/state-management-schema.md`. Changes are isolated with no downstream dependencies.

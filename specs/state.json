@@ -20,7 +20,7 @@
         {
           "path": "specs/431_fix_artifact_linking_order_todo/plans/01_artifact-linking-fix.md",
           "type": "plan",
-          "summary": "Two-phase plan to fix blank line preservation and specs/ prefix handling in link-artifact-todo.sh"
+          "summary": "Revised plan: fix blank line preservation, bracket-only link format, update schema docs"
         }
       ]
     },
