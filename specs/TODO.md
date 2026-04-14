@@ -13,8 +13,8 @@ next_project_number: 427
 - **426** [NOT STARTED] -- Update slides command and manifest for --critic flag (depends: 425)
 - **425** [NOT STARTED] -- Create skill-slide-critic interactive critique skill (depends: 424)
 - **424** [NOT STARTED] -- Create slide-critic-agent (depends: 423)
-- **423** [IMPLEMENTING] -- Create critique rubric context file
-- **422** [RESEARCHED] -- Fix sync.lua overwriting all non-CLAUDE.md files
+- **423** [COMPLETED] -- Create critique rubric context file
+- **422** [PLANNING] -- Fix sync.lua overwriting all non-CLAUDE.md files
 - **421** [COMPLETED] -- Fix status script grep pattern and TODO artifact linking
 - **420** [COMPLETED] -- Prevent extension loader overwriting repo customizations
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -48,16 +48,17 @@ next_project_number: 427
 
 ### 423. Create critique rubric context file
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 
 - **Research**: [01_critique-rubric-research.md](423_create_critique_rubric_context/reports/01_critique-rubric-research.md)
 - **Plan**: [01_critique-rubric-plan.md](423_create_critique_rubric_context/plans/01_critique-rubric-plan.md)
+- **Summary**: [01_critique-rubric-summary.md](423_create_critique_rubric_context/summaries/01_critique-rubric-summary.md)
 **Description**: Create a critique rubric context file at `.claude/extensions/present/context/project/present/talk/critique-rubric.md`. Define review criteria and scoring patterns for slide presentations across categories: narrative flow (logical progression, story arc, transitions), audience alignment (jargon level, assumed knowledge, engagement), timing balance (slides per section, pacing), content depth (too shallow vs too detailed), evidence quality (data presentation, citations, claims), and visual design considerations (text density, figure placement). Include talk-type-specific criteria for conference, seminar, defense, poster, and journal club presentations.
 
 ### 422. Fix sync.lua overwriting all non-CLAUDE.md files in target repos
 - **Effort**: large
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Research**: [01_sync-overwrite-diagnosis.md](422_fix_sync_overwriting_all_non_claudemd_files/reports/01_sync-overwrite-diagnosis.md)
 
