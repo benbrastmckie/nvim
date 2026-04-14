@@ -60,16 +60,22 @@
     {
       "project_number": 433,
       "project_name": "move_nvim_specific_content_to_neovim_extension",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-14T20:45:00Z",
-      "last_updated": "2026-04-14T21:04:35Z",
-      "artifacts": [],
+      "last_updated": "2026-04-14T21:16:45Z",
+      "artifacts": [
+        {
+          "path": "specs/433_move_nvim_specific_content_to_neovim_extension/plans/01_extension-restructuring.md",
+          "type": "plan",
+          "summary": "Implementation plan: corruption fixes, file moves, section extraction, example generalization"
+        }
+      ],
       "next_artifact_number": 1,
       "dependencies": [
         432
       ],
-      "session_id": "sess_1776200126_research433"
+      "session_id": "sess_1776200126_plan433"
     },
     {
       "project_number": 432,

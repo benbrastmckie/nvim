@@ -1,19 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1776200126_research433",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "session_id": "sess_1776200126_plan433",
   "task_number": 433,
-  "started_at": "2026-04-14T00:00:00Z",
-  "completed_at": "2026-04-14T00:30:00Z",
-  "summary": "Identified 42 core context files with neovim references. 1 purely neovim-specific file (project-overview.md), 4 files with extractable neovim sections, ~15 files using neovim as example data, 1 deprecated file to delete, and corruption artifacts in 3 files. Three-phase plan: fix corruption + delete deprecated file, extract neovim sections, generalize examples.",
-  "findings_count": 42,
+  "summary": "Created 4-phase implementation plan for extracting neovim-specific content from core .claude/ files into the neovim extension directory",
   "artifacts": [
     {
-      "path": "specs/433_move_nvim_specific_content_to_neovim_extension/reports/01_extension-restructuring.md",
-      "type": "research",
-      "summary": "Research report on neovim content extraction from core .claude/ files"
+      "path": "specs/433_move_nvim_specific_content_to_neovim_extension/plans/01_extension-restructuring.md",
+      "type": "plan",
+      "summary": "Implementation plan: corruption fixes, file moves, section extraction, example generalization"
     }
   ],
-  "next_steps": "Run /plan 433 to create implementation plan"
+  "plan_metadata": {
+    "phases": 4,
+    "total_effort_hours": 4,
+    "complexity": "medium",
+    "research_integrated": true,
+    "plan_version": 1,
+    "dependency_waves": [[1], [2, 3], [4]],
+    "reports_integrated": [
+      {
+        "path": "reports/01_extension-restructuring.md",
+        "integrated_in_plan_version": 1,
+        "integrated_date": "2026-04-14"
+      }
+    ]
+  },
+  "next_steps": "Run /implement 433 to execute the plan"
 }
