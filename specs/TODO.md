@@ -1,5 +1,5 @@
 ---
-next_project_number: 431
+next_project_number: 432
 ---
 
 # TODO
@@ -10,6 +10,7 @@ next_project_number: 431
 
 ### Pending
 
+- **431** [NOT STARTED] -- Fix artifact linking order and missing blank line in TODO.md
 - **430** [NOT STARTED] -- Fix /implement excessive front-loading: lead agent should read plan only, not codebase
 - **429** [PLANNED] -- Update .claude/docs/ to reflect task 428 changes
 - **428** [COMPLETED] -- Refactor agent system: syncprotect integration, backup elimination, and systematic organization review
@@ -25,6 +26,13 @@ next_project_number: 431
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 431. Fix artifact linking order and missing blank line in TODO.md
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Investigate how artifacts are being linked in task 429 where they appear out of order and there is no empty line above the description. Determine the root cause and create a targeted fix.
 
 ### 430. Fix /implement excessive front-loading: lead agent should read plan only, not codebase
 - **Effort**: small
@@ -222,3 +230,4 @@ The sync system needs to handle the fact that target repos (zed, other projects)
 1. **78** [PLANNED] -> implement
 2. **87** [RESEARCHED] -> plan
 3. **422** -> research (independent)
+4. **431** -> research (independent)

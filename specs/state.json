@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 431,
+  "next_project_number": 432,
   "active_projects": [
+    {
+      "project_number": 431,
+      "project_name": "fix_artifact_linking_order_todo",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-14T19:45:09Z",
+      "last_updated": "2026-04-14T19:45:09Z"
+    },
     {
       "project_number": 430,
       "project_name": "fix_implement_excessive_front_loading",
