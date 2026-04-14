@@ -58,7 +58,7 @@ No ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Update slides.md Command [IN PROGRESS]
+### Phase 1: Update slides.md Command [COMPLETED]
 
 **Goal**: Add `--critic` flag parsing, new input type, new delegation stage, and updated frontmatter to the `/slides` command definition.
 

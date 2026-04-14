@@ -1,7 +1,7 @@
 ---
 description: Create research talk tasks with pre-task forcing questions for academic presentations
-allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
-argument-hint: "description" | TASK_NUMBER | /path/to/file.md
+allowed-tools: Skill, Task, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
+argument-hint: "description" | TASK_NUMBER | /path/to/file.md | TASK_NUMBER --critic [/path | prompt] | --critic /path/to/file
 model: opus
 ---
 
@@ -18,6 +18,10 @@ This command initiates research talk creation through structured material gather
 - `/slides "Conference talk on survival analysis methods"` - Ask questions, create task with gathered data
 - `/slides 500` - Resume research on existing task
 - `/slides /path/to/manuscript.md` - Use file as primary source material, create task
+- `/slides N --critic` - Critique existing task's slide materials
+- `/slides N --critic /path/to/rubric.md` - Critique with custom rubric file
+- `/slides N --critic "Focus on narrative flow"` - Critique with focus prompt
+- `/slides --critic /path/to/slides.md` - Critique a standalone file (no task)
 
 **Note**: This command was previously named `/talk`. For PPTX slide file conversion (not research talk creation), use `/convert --format beamer|polylux|touying` in the `filetypes` extension.
 
@@ -28,6 +32,8 @@ This command initiates research talk creation through structured material gather
 | Description string | Ask forcing questions, create task with forcing_data, stop at [NOT STARTED] |
 | Task number | Load existing task, run research, stop at [RESEARCHED] |
 | File path | Read file as primary source material, ask questions, create task |
+| `N --critic [path\|prompt]` | Route to skill-slide-critic for interactive critique loop |
+| `--critic /path/to/file` | Read file, create temporary context, route to skill-slide-critic |
 
 ## Modes
 
@@ -138,8 +144,32 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 ### Step 2: Detect Input Type
 
 ```bash
+# Check for --critic flag (before other checks, following grant.md flag-first pattern)
+if echo "$ARGUMENTS" | grep -q '\-\-critic'; then
+  # Extract task number before --critic (if present)
+  task_number=$(echo "$ARGUMENTS" | grep -oE '^[0-9]+' || echo "")
+
+  # Extract critic input after --critic
+  critic_input=$(echo "$ARGUMENTS" | sed 's/.*--critic\s*//')
+
+  if [ -n "$critic_input" ]; then
+    # Detect if it's a file path or prompt text
+    if echo "$critic_input" | grep -qE '^\.|^/|^~|\.md$|\.txt$'; then
+      critic_type="file_path"
+      critic_file="$critic_input"
+    elif echo "$critic_input" | grep -qE '^[0-9]+$'; then
+      critic_type="task_number"
+      critic_task="$critic_input"
+    else
+      critic_type="prompt"
+      critic_prompt="$critic_input"
+    fi
+  fi
+
+  input_type="critic"
+
 # Check for task number
-if echo "$ARGUMENTS" | grep -qE '^[0-9]+$'; then
+elif echo "$ARGUMENTS" | grep -qE '^[0-9]+$'; then
   input_type="task_number"
   task_number="$ARGUMENTS"
 
@@ -156,6 +186,31 @@ fi
 ```
 
 ### Step 3: Handle Input Type
+
+**If critic** (`input_type="critic"`):
+Skip Stage 0 forcing questions. Route directly to critique workflow:
+
+1. **Validate task** (if `task_number` is set):
+   ```bash
+   task_data=$(jq -r --argjson num "$task_number" \
+     '.active_projects[] | select(.project_number == $num)' \
+     specs/state.json)
+   # Validate task_type is "present:slides"
+   ```
+
+2. **Build delegation context** for skill-slide-critic:
+   - `workflow_type`: `"slides_critique"`
+   - `forcing_data.talk_type`: from task's forcing_data (or default "CONFERENCE")
+   - `forcing_data.materials_to_review`: task's existing reports/plans/slides, or `critic_file`
+   - `forcing_data.focus_categories`: parsed from `critic_prompt` if provided
+   - `forcing_data.audience_context`: from task's forcing_data if available
+
+3. **Delegate** to skill-slide-critic:
+   ```
+   Skill("skill-slide-critic", "task_number={N} session_id={session_id}")
+   ```
+
+4. **Gate Out**: Verify critique completed, report results.
 
 **If task number**:
 Load existing task, validate task_type is "present:slides", then delegate to skill-slides for research.
@@ -339,6 +394,7 @@ Tasks with task_type="present:slides" route through core commands:
 | `/research N` | skill-slides | Synthesize materials into slide-mapped report |
 | `/plan N` | skill-slides (plan workflow) | Ask design questions, then delegate to planner-agent |
 | `/implement N` | skill-slides (assemble) | Generate presentation (Slidev or PPTX per output_format) |
+| `/slides N --critic` | skill-slide-critic | Interactive critique loop with accept/reject decisions |
 
 ---
 
