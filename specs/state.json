@@ -13,18 +13,27 @@
     {
       "project_number": 430,
       "project_name": "fix_implement_excessive_front_loading",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-14T19:41:32Z",
-      "last_updated": "2026-04-14T19:41:32Z"
+      "last_updated": "2026-04-14T19:48:33Z",
+      "session_id": "sess_1744663200_430res",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/430_fix_implement_excessive_front_loading/reports/01_front-loading-fix.md",
+          "type": "report",
+          "summary": "Research report identifying 6 findings and 4 changes across 3-4 files to add pre-delegation boundary constraints"
+        }
+      ]
     },
     {
       "project_number": 429,
       "project_name": "update_docs_for_task_428_changes",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-14T19:27:08Z",
-      "last_updated": "2026-04-14T19:42:05Z",
+      "last_updated": "2026-04-14T19:47:05Z",
       "next_artifact_number": 3,
       "artifacts": [
         {
@@ -43,7 +52,7 @@
           "summary": "4-phase plan to fix 10 stale documentation references across 7 files in .claude/docs/"
         }
       ],
-      "session_id": "sess_1776199800_f4e520"
+      "session_id": "sess_1776196007_5d5b7f"
     },
     {
       "project_number": 428,

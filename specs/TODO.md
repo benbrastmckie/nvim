@@ -11,8 +11,8 @@ next_project_number: 432
 ### Pending
 
 - **431** [NOT STARTED] -- Fix artifact linking order and missing blank line in TODO.md
-- **430** [NOT STARTED] -- Fix /implement excessive front-loading: lead agent should read plan only, not codebase
-- **429** [PLANNED] -- Update .claude/docs/ to reflect task 428 changes
+- **430** [RESEARCHED] -- Fix /implement excessive front-loading: lead agent should read plan only, not codebase
+- **429** [IMPLEMENTING] -- Update .claude/docs/ to reflect task 428 changes
 - **428** [COMPLETED] -- Refactor agent system: syncprotect integration, backup elimination, and systematic organization review
 - **427** [COMPLETED] -- Remove Co-Authored-By trailers and refine README.md sync exclusion
 - **426** [COMPLETED] -- Update slides command and manifest for --critic flag (depends: 425)
@@ -36,19 +36,19 @@ next_project_number: 432
 
 ### 430. Fix /implement excessive front-loading: lead agent should read plan only, not codebase
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 
 **Description**: Fix excessive front-loading in /implement: the lead agent (both skill-team-implement and skill-implementer) reads the entire codebase before spawning sub-agents, instead of just reading the plan file. The lead should only read the plan to extract phase structure/dependencies/waves, then immediately delegate to agents. Source file reading, grepping, and MCP tool usage must be the sub-agent's responsibility. Affected files: `.claude/skills/skill-team-implement/SKILL.md` (add anti-front-loading constraint to Stages 5-7), `.claude/skills/skill-implementer/SKILL.md` (add constraint to Stages 4-5), and potentially `.claude/agents/general-implementation-agent.md` (clarify that codebase exploration is the agent's job, not the delegator's).
 
 ### 429. Update .claude/docs/ to reflect task 428 changes
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
-
-- **Plan**: [02_docs-update-plan.md](429_update_docs_for_task_428_changes/plans/02_docs-update-plan.md)
-**Description**: Update .claude/docs/ to reflect task 428 changes: fix stale backup system docs in extension-system.md, manifest schema examples (language->task_type, add routing object), renamed spreadsheet agents in extension-slim-standard.md, and agent frontmatter examples for model enforcement
 - **Research**: [docs-audit](specs/429_update_docs_for_task_428_changes/reports/01_docs-audit.md), [docs-update-research](specs/429_update_docs_for_task_428_changes/reports/02_docs-update-research.md)
+- **Plan**: [02_docs-update-plan.md](429_update_docs_for_task_428_changes/plans/02_docs-update-plan.md)
+
+**Description**: Update .claude/docs/ to reflect task 428 changes: fix stale backup system docs in extension-system.md, manifest schema examples (language->task_type, add routing object), renamed spreadsheet agents in extension-slim-standard.md, and agent frontmatter examples for model enforcement
 
 ### 428. Refactor agent system: syncprotect integration, backup elimination, and systematic organization review
 - **Effort**: large

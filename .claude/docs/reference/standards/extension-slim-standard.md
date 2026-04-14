@@ -103,7 +103,7 @@ File format conversion and manipulation: documents, spreadsheets, presentations,
 | Skill | Agent | Purpose |
 |-------|-------|---------|
 | skill-filetypes | filetypes-router-agent | Format detection and routing |
-| skill-spreadsheet | spreadsheet-agent | Spreadsheet to LaTeX/Typst |
+| skill-filetypes-spreadsheet | filetypes-spreadsheet-agent | Spreadsheet to LaTeX/Typst |
 | skill-presentation | presentation-agent | Slide extraction and generation |
 | skill-scrape | scrape-agent | PDF annotation extraction |
 

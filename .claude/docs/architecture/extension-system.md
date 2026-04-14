@@ -108,7 +108,7 @@ The manifest declares what the extension provides:
   "name": "latex",
   "version": "1.0.0",
   "description": "LaTeX document development with VimTeX integration",
-  "language": "latex",
+  "task_type": "latex",
   "dependencies": [],
   "provides": {
     "agents": ["latex-implementation-agent.md", "latex-research-agent.md"],
@@ -118,6 +118,14 @@ The manifest declares what the extension provides:
     "context": ["project/latex"],
     "scripts": [],
     "hooks": []
+  },
+  "routing": {
+    "research": {
+      "latex": "skill-latex-research"
+    },
+    "implement": {
+      "latex": "skill-latex-implement"
+    }
   },
   "merge_targets": {
     "claudemd": {
@@ -296,7 +304,7 @@ When an extension is loaded:
 - Routing info appears in CLAUDE.md
 
 This means:
-- Extension routing (e.g., `language: latex`) only works when extension is loaded
+- Extension routing (e.g., `task_type: latex`) only works when extension is loaded
 - Orchestrator routes to extension skills just like core skills
 - Context index includes extension entries
 - Rules auto-apply based on file patterns
@@ -377,10 +385,9 @@ If loading would overwrite existing files:
 - User is notified of conflicting files
 - No partial state is created
 
-### Backup System
-Before modifying shared files (CLAUDE.md, index.json, settings.json):
-- Original file is backed up to `{filename}.backup`
-- If modification fails, backup is restored
+### Recovery
+
+Extension files are tracked by git. Use `git checkout HEAD -- .claude/extensions/{ext}/` to recover any extension file, or `git log --oneline -- .claude/extensions/` to find when changes occurred.
 
 ### State Consistency
 - State is only updated after successful operations

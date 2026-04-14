@@ -50,7 +50,7 @@ Directly advances ROADMAP Phase 1 success metric: "Zero stale references to remo
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Fix extension-system.md (Issues 1, 2, 3, 10) [NOT STARTED]
+### Phase 1: Fix extension-system.md (Issues 1, 2, 3, 10) [COMPLETED]
 
 **Goal**: Update the primary extension architecture doc with backup removal, task_type rename, routing addition, and prose fix.
 
@@ -109,7 +109,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Fix extension-slim-standard.md (Issue 4) [NOT STARTED]
+### Phase 3: Fix extension-slim-standard.md (Issue 4) [COMPLETED]
 
 **Goal**: Update the spreadsheet agent reference to use the renamed filetypes-specific agent.
 
