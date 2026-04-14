@@ -13,10 +13,10 @@
     {
       "project_number": 426,
       "project_name": "update_slides_command_manifest_critic_flag",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-14T03:14:38Z",
-      "last_updated": "2026-04-14T04:14:42Z",
+      "last_updated": "2026-04-14T04:18:37Z",
       "session_id": "sess_1776140082_8d0b30",
       "next_artifact_number": 2,
       "artifacts": [
@@ -29,8 +29,14 @@
           "path": "specs/426_update_slides_command_manifest_critic_flag/plans/01_slides-critic-flag-plan.md",
           "type": "plan",
           "summary": "Plan for adding --critic flag to slides command"
+        },
+        {
+          "path": "specs/426_update_slides_command_manifest_critic_flag/summaries/01_slides-critic-flag-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for --critic flag integration"
         }
-      ]
+      ],
+      "completion_summary": "Wired slide critique subsystem into /slides command: added --critic flag parsing, critique routing in manifest.json, slide-critic-agent to index-entries.json, documentation in EXTENSION.md."
     },
     {
       "project_number": 425,

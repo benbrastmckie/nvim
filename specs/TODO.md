@@ -11,7 +11,7 @@ next_project_number: 428
 ### Pending
 
 - **427** [NOT STARTED] -- Remove Co-Authored-By trailers and refine README.md sync exclusion
-- **426** [IMPLEMENTING] -- Update slides command and manifest for --critic flag (depends: 425)
+- **426** [COMPLETED] -- Update slides command and manifest for --critic flag (depends: 425)
 - **425** [COMPLETED] -- Create skill-slide-critic interactive critique skill (depends: 424)
 - **424** [COMPLETED] -- Create slide-critic-agent (depends: 423)
 - **423** [COMPLETED] -- Create critique rubric context file
@@ -46,12 +46,13 @@ Fix: Make README.md exclusion more targeted - only skip in agents/ subdirectory,
 
 ### 426. Update slides command and manifest for --critic flag
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: 425
 
 - **Research**: [01_slides-critic-flag-research.md](426_update_slides_command_manifest_critic_flag/reports/01_slides-critic-flag-research.md)
 - **Plan**: [01_slides-critic-flag-plan.md](426_update_slides_command_manifest_critic_flag/plans/01_slides-critic-flag-plan.md)
+- **Summary**: [01_slides-critic-flag-summary.md](426_update_slides_command_manifest_critic_flag/summaries/01_slides-critic-flag-summary.md)
 **Description**: Add `--critic` flag parsing to the `/slides` command (`slides.md`). Accept `--critic /path/to/file`, `--critic N` (task number), or `--critic "prompt"` as input. Route to `skill-slide-critic`. Update `manifest.json` with critic routing entry. Update `index-entries.json` with context entries for the critic agent and rubric. Update EXTENSION.md documentation.
 
 ### 425. Create skill-slide-critic interactive critique skill
