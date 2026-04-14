@@ -10,7 +10,7 @@ next_project_number: 429
 
 ### Pending
 
-- **428** [IMPLEMENTING] -- Refactor agent system: syncprotect integration, backup elimination, and systematic organization review
+- **428** [COMPLETED] -- Refactor agent system: syncprotect integration, backup elimination, and systematic organization review
 - **427** [COMPLETED] -- Remove Co-Authored-By trailers and refine README.md sync exclusion
 - **426** [COMPLETED] -- Update slides command and manifest for --critic flag (depends: 425)
 - **425** [COMPLETED] -- Create skill-slide-critic interactive critique skill (depends: 424)
@@ -26,10 +26,11 @@ next_project_number: 429
 
 ### 428. Refactor agent system: syncprotect integration, backup elimination, and systematic organization review
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [01_team-research.md](specs/428_refactor_agent_system_syncprotect_and_organization/reports/01_team-research.md)
 - **Plan**: [01_syncprotect-organization.md](428_refactor_agent_system_syncprotect_and_organization/plans/01_syncprotect-organization.md)
+- **Summary**: [01_implementation-summary.md](428_refactor_agent_system_syncprotect_and_organization/summaries/01_implementation-summary.md)
 **Description**: Systematic agent system refactoring: review and improve organization, naming, documentation, .syncprotect integration, and backup elimination across all commands, skills, agents, context files, rules, and extensions. Key objectives: (1) Eliminate .backup file creation during extension loading by leveraging .syncprotect and section preservation -- the backup mechanism in merge.lua should be made conditional or removed where .syncprotect coverage makes it redundant; (2) Create .syncprotect files in project repos (NOT in .claude/) that protect repo-specific customizations like CLAUDE.md, settings.local.json, and any other files that should survive sync operations; (3) Improve .syncprotect documentation, integration with the extension loader, and visibility in the leader-ac picker UI; (4) Conduct systematic review of all 14 commands, 8 agents, 16 core skills, 15 extensions, 6 rules, 94+ context files for naming consistency, documentation gaps, redundancy, and organizational improvements; (5) Update the neovim leader-ac picker (sync.lua, merge.lua, and related files) to handle .syncprotect more prominently and stop creating .backup files when protection is adequate; (6) Ensure .syncprotect is stored in the main repo root (e.g., nvim/.syncprotect or project-root/.syncprotect) not inside .claude/ which gets replaced during updates.
 
 ### 427. Remove Co-Authored-By trailers and refine README.md sync exclusion
