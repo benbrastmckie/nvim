@@ -21,10 +21,11 @@
     {
       "project_number": 424,
       "project_name": "create_slide_critic_agent",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "created": "2026-04-14T03:14:38Z",
-      "last_updated": "2026-04-14T03:14:38Z"
+      "last_updated": "2026-04-14T03:49:39Z",
+      "session_id": "sess_1776138565_524582"
     },
     {
       "project_number": 423,
@@ -57,10 +58,10 @@
     {
       "project_number": 422,
       "project_name": "fix_sync_overwriting_all_non_claudemd_files",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-14T03:05:36Z",
-      "last_updated": "2026-04-14T03:47:40Z",
+      "last_updated": "2026-04-14T03:50:13Z",
       "session_id": "sess_1744517400_plan422",
       "next_artifact_number": 2,
       "artifacts": [
@@ -68,8 +69,30 @@
           "path": "specs/422_fix_sync_overwriting_all_non_claudemd_files/reports/01_sync-overwrite-diagnosis.md",
           "type": "research",
           "summary": "Diagnosed 3 root causes: generated JSON not excluded, README.md not skipped in scan_directory_for_sync, no per-repo file protection. Proposed index.json exclusion, README skip, and .syncprotect file support."
+        },
+        {
+          "path": "specs/422_fix_sync_overwriting_all_non_claudemd_files/plans/01_sync-overwrite-fix.md",
+          "type": "plan",
+          "summary": "4-phase plan to fix sync.lua overwriting non-CLAUDE.md files: add index.json exclusions, skip README.md in sync scan, add .syncprotect file support, testing"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 2.5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      }
     },
     {
       "project_number": 421,
