@@ -120,7 +120,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update skill postflights to use the script [NOT STARTED]
+### Phase 3: Update skill postflights to use the script [COMPLETED]
 
 **Goal**: Replace LLM-dependent Edit instructions with calls to `link-artifact-todo.sh` in the four core skills.
 

@@ -319,10 +319,13 @@ if [ -n "$artifact_path" ]; then
 fi
 ```
 
-**Update TODO.md**: Link artifact using count-aware format.
+**Update TODO.md**: Link artifact using the automated script:
 
-Apply the four-case Edit logic from `@.claude/context/patterns/artifact-linking-todo.md`
-with `field_name=**Plan**`, `next_field=**Description**`.
+```bash
+bash .claude/scripts/link-artifact-todo.sh $task_number '**Plan**' '**Description**' "$artifact_path"
+```
+
+If the script exits non-zero, log a warning but continue (linking errors are non-blocking).
 
 ---
 

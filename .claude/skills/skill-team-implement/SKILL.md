@@ -484,10 +484,13 @@ jq --arg path "specs/${padded_num}_${project_name}/summaries/${run_padded}_imple
   specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
-**Update TODO.md**: Link artifact using count-aware format.
+**Update TODO.md**: Link artifact using the automated script:
 
-Apply the four-case Edit logic from `@.claude/context/patterns/artifact-linking-todo.md`
-with `field_name=**Summary**`, `next_field=**Description**`.
+```bash
+bash .claude/scripts/link-artifact-todo.sh $task_number '**Summary**' '**Description**' "$artifact_path"
+```
+
+If the script exits non-zero, log a warning but continue (linking errors are non-blocking).
 
 ---
 

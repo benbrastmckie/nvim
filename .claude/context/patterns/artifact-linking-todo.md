@@ -2,7 +2,7 @@
 
 Canonical four-case logic for linking artifacts in TODO.md task entries. Skills reference this pattern instead of carrying inline instructions.
 
-**Constraint**: This logic uses the Edit tool for semantic text replacement. It cannot be implemented as a shell script.
+**Automation**: This logic is implemented by `.claude/scripts/link-artifact-todo.sh`. Core skills call the script in their Stage 8 postflight. The four-case logic below remains as reference documentation.
 
 ## Parameterization Map
 
