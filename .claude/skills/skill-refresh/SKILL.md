@@ -88,7 +88,33 @@ else
 fi
 ```
 
-### Step 4: Run Directory Survey
+### Step 4: Clean Stale Backup Files
+
+Scan for and remove any `.backup` files left over from the deprecated backup mechanism in `.claude/`:
+
+```bash
+echo ""
+echo "=== Cleaning Stale Backup Files ==="
+echo ""
+
+# Find .backup files in .claude/ directory
+backup_files=$(find .claude/ -name "*.backup" -type f 2>/dev/null)
+
+if [ -n "$backup_files" ]; then
+    backup_count=$(echo "$backup_files" | wc -l)
+    if [ "$dry_run" = true ]; then
+        echo "Would delete $backup_count .backup file(s):"
+        echo "$backup_files"
+    else
+        echo "$backup_files" | xargs rm -f
+        echo "Deleted $backup_count stale .backup file(s)."
+    fi
+else
+    echo "No stale .backup files found."
+fi
+```
+
+### Step 5: Run Directory Survey
 
 Show current directory status without cleaning yet:
 
@@ -101,7 +127,7 @@ This displays:
 - Breakdown by directory
 - Space that can be reclaimed
 
-### Step 5: Execute Based on Mode
+### Step 6: Execute Based on Mode
 
 #### Dry-Run Mode
 
