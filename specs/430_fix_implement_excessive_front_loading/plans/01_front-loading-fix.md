@@ -82,7 +82,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add pre-delegation boundary to skill-implementer [NOT STARTED]
+### Phase 2: Add pre-delegation boundary to skill-implementer [COMPLETED]
 
 **Goal**: Add 2 insertions to skill-implementer/SKILL.md establishing the pre-delegation boundary.
 

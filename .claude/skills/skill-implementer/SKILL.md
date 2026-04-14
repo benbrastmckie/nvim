@@ -158,6 +158,8 @@ Prepare delegation context for the subagent:
 
 **Note**: The `artifact_number` field tells the agent which sequence number to use for artifact naming (e.g., `01`, `02`). Summary uses the same round number as the research and plan that preceded it.
 
+> **CRITICAL: No Source Reading Before Delegation** -- Between preparing the delegation context (Stage 4) and spawning the sub-agent (Stage 5), the lead skill MUST NOT read, grep, glob, or analyze source files. The plan file and state.json are the only files the lead reads. All codebase exploration (reading source files, grepping for patterns, using MCP tools) is the exclusive responsibility of the sub-agent after it is spawned.
+
 ---
 
 ### Stage 4b: Read and Inject Format Specification
@@ -428,6 +430,23 @@ See `rules/error-handling.md` for general patterns. Skill-specific behaviors:
 - **Metadata file missing**: Keep status as "implementing", do not cleanup marker, report to user
 - **Git commit failure**: Non-blocking (log and continue)
 - **Subagent timeout**: Return partial status, keep "implementing" for resume
+
+## Pre-Delegation Boundary
+
+Before spawning the implementation sub-agent, this skill MUST NOT:
+
+1. **Read source files** - Source files are read by the sub-agent, not the lead
+2. **Grep or glob the codebase** - Codebase exploration is sub-agent work
+3. **Use MCP tools** - Domain tools (LSP, build, etc.) are for sub-agent use only
+4. **Analyze source code** - Code analysis belongs to the implementation agent
+5. **Run build or test commands** - Verification is done by the sub-agent
+
+The pre-delegation phase is LIMITED TO:
+- Reading the plan file to locate phases and extract the plan path
+- Reading state.json and TODO.md for status updates
+- Preparing the delegation context JSON
+- Reading the summary format file for injection (Stage 4b)
+- Spawning the sub-agent with the Task tool
 
 ## Postflight Boundary
 
