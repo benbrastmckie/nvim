@@ -10,7 +10,7 @@ next_project_number: 435
 
 ### Pending
 
-- **434** [IMPLEMENTING] -- Prevent lead agent post-delegation takeover after subagent returns
+- **434** [COMPLETED] -- Prevent lead agent post-delegation takeover after subagent returns
 - **433** [NOT STARTED] -- Move nvim-specific core content into neovim extension (depends: 432)
 - **432** [IMPLEMENTING] -- Harden sync engine against repo-specific content leakage
 - **431** [COMPLETED] -- Fix artifact linking order and missing blank line in TODO.md
@@ -32,10 +32,11 @@ next_project_number: 435
 
 ### 434. Prevent lead agent post-delegation takeover after subagent returns
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [specs/434_prevent_lead_agent_post_delegation_takeover/reports/01_post-delegation-takeover.md](specs/434_prevent_lead_agent_post_delegation_takeover/reports/01_post-delegation-takeover.md)
 - **Plan**: [434_prevent_lead_agent_post_delegation_takeover/plans/01_post-delegation-takeover.md]
+- **Summary**: [434_prevent_lead_agent_post_delegation_takeover/summaries/01_post-delegation-takeover-summary.md]
 
 **Description**: When a subagent returns with incomplete or partial work, the lead agent (skill-implementer, skill-team-implement, or extension implementation skills) sometimes takes over and continues implementation itself -- reading source files, running builds, grepping patterns, and attempting to finish the work. This violates the postflight boundary and must never happen.
 
