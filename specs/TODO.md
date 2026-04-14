@@ -10,7 +10,7 @@ next_project_number: 428
 
 ### Pending
 
-- **427** [PLANNED] -- Remove Co-Authored-By trailers and refine README.md sync exclusion
+- **427** [COMPLETED] -- Remove Co-Authored-By trailers and refine README.md sync exclusion
 - **426** [COMPLETED] -- Update slides command and manifest for --critic flag (depends: 425)
 - **425** [COMPLETED] -- Create skill-slide-critic interactive critique skill (depends: 424)
 - **424** [COMPLETED] -- Create slide-critic-agent (depends: 423)
@@ -25,10 +25,11 @@ next_project_number: 428
 
 ### 427. Remove Co-Authored-By trailers and refine README.md sync exclusion
 - **Effort**: large
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [01_coauthored-by-removal.md](specs/427_remove_coauthored_by_and_refine_readme_sync/reports/01_coauthored-by-removal.md)
 - **Plan**: [01_coauthored-by-removal.md](specs/427_remove_coauthored_by_and_refine_readme_sync/plans/01_coauthored-by-removal.md)
+- **Summary**: [01_coauthored-by-removal-summary.md](specs/427_remove_coauthored_by_and_refine_readme_sync/summaries/01_coauthored-by-removal-summary.md)
 
 **Description**: Two issues remain after task 422 that affect all target repos loading the agent system via `<leader>ac`:
 

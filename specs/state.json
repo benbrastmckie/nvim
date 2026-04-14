@@ -5,11 +5,13 @@
     {
       "project_number": 427,
       "project_name": "remove_coauthored_by_and_refine_readme_sync",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-14T04:14:16Z",
-      "last_updated": "2026-04-13T14:30:00Z",
-      "session_id": "sess_1744520400_plan427",
+      "last_updated": "2026-04-13T00:30:00Z",
+      "session_id": "sess_1744520400_impl427",
+      "completion_summary": "Removed all Co-Authored-By trailers from 101 files across .claude/ and .opencode/ directories, including commit templates, rules, skills, agents, commands, extensions, and context docs. Also removed the CLAUDE.md policy note and the creating-agents.md instruction.",
+      "claudemd_suggestions": "Removed Co-Authored-By policy note from .claude/CLAUDE.md, removed trailer instruction from creating-agents.md, cleaned commit templates across 101 .claude/ and .opencode/ files",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -21,6 +23,11 @@
           "path": "specs/427_remove_coauthored_by_and_refine_readme_sync/plans/01_coauthored-by-removal.md",
           "type": "plan",
           "summary": "5-phase plan to remove ~137 Co-Authored-By occurrences from ~75 active files across .claude/ and .opencode/"
+        },
+        {
+          "path": "specs/427_remove_coauthored_by_and_refine_readme_sync/summaries/01_coauthored-by-removal-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for Co-Authored-By trailer removal from 101 files"
         }
       ],
       "plan_metadata": {
@@ -29,7 +36,21 @@
         "complexity": "medium",
         "research_integrated": true,
         "plan_version": 1,
-        "dependency_waves": [[1], [2, 3], [4], [5]]
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ]
+        ]
       }
     },
     {
