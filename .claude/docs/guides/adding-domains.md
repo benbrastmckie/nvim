@@ -74,7 +74,7 @@ The manifest declares what the extension provides:
   "name": "your-domain",
   "version": "1.0.0",
   "description": "Domain description for picker display",
-  "language": "your-domain",
+  "task_type": "your-domain",
   "dependencies": [],
   "provides": {
     "agents": ["your-domain-research-agent.md", "your-domain-implementation-agent.md"],
@@ -84,6 +84,14 @@ The manifest declares what the extension provides:
     "context": ["project/your-domain"],
     "scripts": [],
     "hooks": []
+  },
+  "routing": {
+    "research": {
+      "your-domain": "skill-your-domain-research"
+    },
+    "implement": {
+      "your-domain": "skill-your-domain-implement"
+    }
   },
   "merge_targets": {
     "claudemd": {
@@ -189,12 +197,12 @@ Command (/research, /implement)
     ▼
 Orchestrator (skill-orchestrator)
     │
-    ├── language: your-domain → skill-your-domain-research / skill-your-domain-implementation
-    ├── language: general    → skill-researcher / skill-implementer
-    └── language: meta       → skill-researcher / skill-implementer
+    ├── task_type: your-domain → skill-your-domain-research / skill-your-domain-implementation
+    ├── task_type: general    → skill-researcher / skill-implementer
+    └── task_type: meta       → skill-researcher / skill-implementer
 ```
 
-Each language type routes to specialized skills, which delegate to specialized agents.
+Each task type routes to specialized skills, which delegate to specialized agents.
 
 ### Step 1: Create Domain Context Directory
 
@@ -299,7 +307,7 @@ allowed-tools: Task, Bash, Edit, Read, Write
 Thin wrapper that delegates to `your-domain-research-agent`.
 
 ## Execution Flow
-1. Validate task exists and language matches
+1. Validate task exists and task_type matches
 2. Update status to "researching"
 3. Invoke your-domain-research-agent via Task tool
 4. Update status to "researched"
@@ -428,7 +436,7 @@ Add entries to `.claude/context/index.json`:
 - [ ] Orchestrator routing updated
 - [ ] CLAUDE.md updated
 - [ ] Context index updated
-- [ ] Test with `/task "Test" --language your-domain`
+- [ ] Test with `/task "Test" --task-type your-domain`
 
 ---
 

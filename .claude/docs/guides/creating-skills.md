@@ -367,7 +367,7 @@ Prepare delegation context:
     "task_number": 450,
     "task_name": "add_async_runtime",
     "description": "Add async runtime support to API client",
-    "language": "rust"
+    "task_type": "rust"
   },
   "focus_prompt": "tokio best practices"
 }
@@ -376,7 +376,7 @@ Prepare delegation context:
 ### 3. Invoke Subagent
 
 Invoke `rust-research-agent` via Task tool with:
-- Task context (number, name, description, language)
+- Task context (number, name, description, task_type)
 - Delegation context (session_id, depth, path)
 - Focus prompt (if provided)
 

@@ -52,7 +52,7 @@ Follow the templates below for each file type.
   "name": "your-domain",
   "version": "1.0.0",
   "description": "Your domain description for picker display",
-  "language": "your-domain",
+  "task_type": "your-domain",
   "dependencies": [],
   "provides": {
     "agents": [
@@ -72,6 +72,14 @@ Follow the templates below for each file type.
     ],
     "scripts": [],
     "hooks": []
+  },
+  "routing": {
+    "research": {
+      "your-domain": "skill-your-domain-research"
+    },
+    "implement": {
+      "your-domain": "skill-your-domain-implement"
+    }
   },
   "merge_targets": {
     "claudemd": {

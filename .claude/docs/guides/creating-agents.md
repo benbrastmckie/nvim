@@ -273,7 +273,7 @@ Extract from input:
     "task_number": 450,
     "task_name": "add_async_runtime",
     "description": "Add async runtime support to API client",
-    "language": "rust"
+    "task_type": "rust"
   },
   "metadata": {
     "session_id": "sess_1736700000_abc123",
@@ -290,7 +290,7 @@ Extract from input:
 ```markdown
 ### Stage 2: Context Loading
 
-Load context based on task language:
+Load context based on task task_type:
 
 | Task Type | Context Files |
 |----------|---------------|

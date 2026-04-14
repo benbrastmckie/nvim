@@ -38,6 +38,7 @@ next_project_number: 432
 - **Effort**: small
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [front-loading-fix](specs/430_fix_implement_excessive_front_loading/reports/01_front-loading-fix.md)
 
 **Description**: Fix excessive front-loading in /implement: the lead agent (both skill-team-implement and skill-implementer) reads the entire codebase before spawning sub-agents, instead of just reading the plan file. The lead should only read the plan to extract phase structure/dependencies/waves, then immediately delegate to agents. Source file reading, grepping, and MCP tool usage must be the sub-agent's responsibility. Affected files: `.claude/skills/skill-team-implement/SKILL.md` (add anti-front-loading constraint to Stages 5-7), `.claude/skills/skill-implementer/SKILL.md` (add constraint to Stages 4-5), and potentially `.claude/agents/general-implementation-agent.md` (clarify that codebase exploration is the agent's job, not the delegator's).
 

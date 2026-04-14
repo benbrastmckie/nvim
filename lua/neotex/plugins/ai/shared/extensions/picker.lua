@@ -150,6 +150,8 @@ function M.create(extensions_module, picker_config)
           end
 
           local ext = selection.value
+          local picker = action_state.get_current_picker(prompt_bufnr)
+          local selection_index = picker:get_index(picker:get_selection_row())
           actions.close(prompt_bufnr)
 
           if ext.status == "active" or ext.status == "update-available" then
@@ -160,9 +162,9 @@ function M.create(extensions_module, picker_config)
             extensions_module.load(ext.name, { confirm = true })
           end
 
-          -- Refresh picker after action
+          -- Refresh picker after action, preserving cursor position
           vim.defer_fn(function()
-            picker_mod.show(opts)
+            picker_mod.show(vim.tbl_extend("force", opts, { default_selection_index = selection_index }))
           end, 100)
         end)
 
@@ -179,11 +181,13 @@ function M.create(extensions_module, picker_config)
             return
           end
 
+          local picker = action_state.get_current_picker(prompt_bufnr)
+          local selection_index = picker:get_index(picker:get_selection_row())
           actions.close(prompt_bufnr)
           extensions_module.reload(ext.name, { confirm = false })
 
           vim.defer_fn(function()
-            picker_mod.show(opts)
+            picker_mod.show(vim.tbl_extend("force", opts, { default_selection_index = selection_index }))
           end, 100)
         end)
 

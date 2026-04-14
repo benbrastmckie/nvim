@@ -75,7 +75,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Fix guide files (Issues 2, 3, 5, 7, 8, 9) [NOT STARTED]
+### Phase 2: Fix guide files (Issues 2, 3, 5, 7, 8, 9) [COMPLETED]
 
 **Goal**: Update creating-extensions.md, adding-domains.md, creating-skills.md, and creating-agents.md with task_type rename, routing additions, and delegation context fixes.
 
@@ -128,7 +128,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Fix agent-frontmatter-standard.md (Issue 6) [NOT STARTED]
+### Phase 4: Fix agent-frontmatter-standard.md (Issue 6) [COMPLETED]
 
 **Goal**: Update the implementation agent example and sonnet usage guidelines to reflect model enforcement changes.
 

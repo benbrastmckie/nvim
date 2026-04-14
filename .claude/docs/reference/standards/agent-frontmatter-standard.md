@@ -55,7 +55,7 @@ The `model` field allows explicit model selection for agents that benefit from s
 - Tasks requiring mathematical or logical reasoning
 
 **Use `model: sonnet` for**:
-- Implementation agents with clear plans
+- Team orchestration skills (lightweight coordination)
 - Routine code generation tasks
 - Tasks where speed is prioritized over depth
 
@@ -104,9 +104,9 @@ model: opus
 
 ```yaml
 ---
-name: neovim-implementation-agent
-description: Implement Neovim configuration changes from plans
-model: sonnet
+name: general-implementation-agent
+description: Implement general, meta, and markdown tasks from plans
+model: opus
 ---
 ```
 
