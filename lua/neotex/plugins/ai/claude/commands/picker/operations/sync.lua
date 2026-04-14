@@ -10,6 +10,8 @@ local scan = require("neotex.plugins.ai.claude.commands.picker.utils.scan")
 local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
 local manifest = require("neotex.plugins.ai.shared.extensions.manifest")
 local ext_config = require("neotex.plugins.ai.shared.extensions.config")
+local state_mod = require("neotex.plugins.ai.shared.extensions.state")
+local merge_mod = require("neotex.plugins.ai.shared.extensions.merge")
 
 -- Files to exclude from context sync (repository-specific files that should not be copied)
 -- Note: update-project.md is intentionally NOT excluded as it is a guide/template
@@ -70,6 +72,111 @@ local function restore_sections(content, sections)
   end
 
   return content
+end
+
+--- Read file contents as string (local helper for re-injection)
+--- @param filepath string Path to file
+--- @return string|nil content File contents or nil
+local function read_file_string(filepath)
+  local file = io.open(filepath, "r")
+  if not file then
+    return nil
+  end
+  local content = file:read("*all")
+  file:close()
+  return content
+end
+
+--- Read JSON file (local helper for re-injection)
+--- @param filepath string Path to JSON file
+--- @return table|nil data Parsed JSON or nil
+local function read_json(filepath)
+  local content = read_file_string(filepath)
+  if not content then
+    return nil
+  end
+  local ok, result = pcall(vim.json.decode, content)
+  if not ok then
+    return nil
+  end
+  return result
+end
+
+--- Re-inject merge targets for all loaded extensions after a full sync.
+--- This provides defense-in-depth: even if section preservation missed something
+--- (e.g., settings.json or index.json which don't have section markers),
+--- re-running merge targets restores all extension-injected content.
+--- All merge operations (inject_section, merge_settings, append_index_entries) are
+--- idempotent, so re-injection is safe even when section preservation already worked.
+--- @param project_dir string Project directory path
+--- @param config table Extension system configuration
+local function reinject_loaded_extensions(project_dir, config)
+  local state = state_mod.read(project_dir, config)
+  local loaded_names = state_mod.list_loaded(state)
+
+  if #loaded_names == 0 then
+    return
+  end
+
+  for _, ext_name in ipairs(loaded_names) do
+    local extension = manifest.get_extension(ext_name, config)
+    if extension and extension.manifest and extension.manifest.merge_targets then
+      local ext_manifest = extension.manifest
+      local source_dir = extension.path
+      local merge_key = config.merge_target_key
+
+      -- Re-inject config markdown section (CLAUDE.md or OPENCODE.md)
+      if ext_manifest.merge_targets[merge_key] then
+        local mt_config = ext_manifest.merge_targets[merge_key]
+        local source_path = source_dir .. "/" .. mt_config.source
+        local target_path = project_dir .. "/" .. mt_config.target
+
+        local section_content = read_file_string(source_path)
+        if section_content then
+          merge_mod.inject_section(target_path, section_content, mt_config.section_id)
+        end
+      end
+
+      -- Re-inject settings merge
+      if ext_manifest.merge_targets.settings then
+        local mt_config = ext_manifest.merge_targets.settings
+        local source_path = source_dir .. "/" .. mt_config.source
+        local target_path = project_dir .. "/" .. mt_config.target
+
+        local fragment = read_json(source_path)
+        if fragment then
+          merge_mod.merge_settings(target_path, fragment)
+        end
+      end
+
+      -- Re-inject index.json entries
+      if ext_manifest.merge_targets.index then
+        local mt_config = ext_manifest.merge_targets.index
+        local source_path = source_dir .. "/" .. mt_config.source
+        local target_path = project_dir .. "/" .. mt_config.target
+
+        local entries_data = read_json(source_path)
+        if entries_data then
+          local entries = entries_data.entries or (vim.isarray(entries_data) and entries_data) or nil
+          if entries then
+            merge_mod.append_index_entries(target_path, entries)
+          end
+        end
+      end
+
+      -- Re-inject opencode.json agent definitions (only for OpenCode config)
+      if config.merge_target_key == "opencode_md" and ext_manifest.merge_targets.opencode_json then
+        local mt_config = ext_manifest.merge_targets.opencode_json
+        local source_path = source_dir .. "/" .. mt_config.source
+        local target_path = project_dir .. "/" .. mt_config.target
+
+        local fragment = read_json(source_path)
+        if fragment then
+          merge_mod.merge_opencode_agents(target_path, fragment)
+        end
+      end
+    end
+  end
 end
 
 --- Count files by depth (top-level vs subdirectory)
@@ -472,7 +579,18 @@ function M.load_all_globally(config)
     end
   end
 
-  return execute_sync(project_dir, all_artifacts, merge_only, base_dir)
+  local total_synced = execute_sync(project_dir, all_artifacts, merge_only, base_dir)
+
+  -- After a full sync (not merge-only), re-inject merge targets for all loaded
+  -- extensions. This provides defense-in-depth: section preservation in sync_files()
+  -- handles CLAUDE.md/OPENCODE.md, while re-injection also restores settings.json
+  -- and index.json content that would be overwritten by a full sync.
+  if not merge_only and total_synced > 0 then
+    local extension_cfg = get_extension_config(base_dir, scan.get_global_dir())
+    reinject_loaded_extensions(project_dir, extension_cfg)
+  end
+
+  return total_synced
 end
 
 --- Update local artifact from global version
