@@ -5,11 +5,11 @@
     {
       "project_number": 428,
       "project_name": "refactor_agent_system_syncprotect_and_organization",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-14T16:56:14Z",
-      "last_updated": "2026-04-14T17:16:12Z",
-      "session_id": "sess_1776186190_33620a",
+      "last_updated": "2026-04-14T17:34:22Z",
+      "session_id": "sess_1776187738_711799",
       "researched": "2026-04-14T17:16:12Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -17,6 +17,11 @@
           "path": "specs/428_refactor_agent_system_syncprotect_and_organization/reports/01_team-research.md",
           "type": "research",
           "summary": "Team research with 4 teammates: syncprotect, components, critic, horizons"
+        },
+        {
+          "path": "specs/428_refactor_agent_system_syncprotect_and_organization/plans/01_syncprotect-organization.md",
+          "type": "plan",
+          "summary": "5-phase plan: syncprotect relocation and picker integration, backup elimination, default syncprotect creation, orphaned component and reference fixes, frontmatter and documentation polish"
         }
       ]
     },
