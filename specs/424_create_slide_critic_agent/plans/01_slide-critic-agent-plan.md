@@ -100,7 +100,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add critique-rubric index entry [NOT STARTED]
+### Phase 2: Add critique-rubric index entry [COMPLETED]
 
 **Goal**: Register critique-rubric.md in the present extension's index-entries.json so it loads automatically for the slide-critic-agent.
 
@@ -130,7 +130,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Register agent in manifest.json [NOT STARTED]
+### Phase 3: Register agent in manifest.json [COMPLETED]
 
 **Goal**: Add slide-critic-agent.md to the present extension's manifest so the system recognizes it.
 

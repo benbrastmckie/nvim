@@ -489,6 +489,20 @@
         "agents": ["pptx-assembly-agent", "slidev-assembly-agent", "slide-planner-agent"],
         "commands": ["/slides"]
       }
+    },
+    {
+      "path": "project/present/talk/critique-rubric.md",
+      "domain": "project",
+      "subdomain": "present",
+      "topics": ["critique", "rubric", "evaluation", "slides", "review"],
+      "keywords": ["critique", "rubric", "severity", "narrative", "audience", "timing", "evidence", "visual"],
+      "summary": "6-category critique rubric with severity definitions, talk-type priority matrix, and structured output format",
+      "line_count": 248,
+      "load_when": {
+        "task_types": ["present"],
+        "agents": ["slide-critic-agent"],
+        "commands": ["/slides"]
+      }
     }
   ]
 }
