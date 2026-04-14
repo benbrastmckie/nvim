@@ -20,11 +20,9 @@ Before linking, strip the `specs/` prefix (TODO.md is inside `specs/`):
 todo_link_path="${artifact_path#specs/}"
 ```
 
-Extract the filename from the path for the link text:
+## Link Format
 
-```bash
-artifact_filename=$(basename "$artifact_path")
-```
+All new artifact links use **bracket-only** format: `[{todo_link_path}]` (not markdown `[text](url)`).
 
 ## Four-Case Edit Logic
 
@@ -34,62 +32,62 @@ Read the task's entry in `specs/TODO.md` and determine which case applies.
 
 The task entry has no `- {field_name}:` line.
 
-**Action**: Insert a new inline link. Find the `- {next_field}:` line in the task entry and insert before it:
+**Action**: Insert a new inline link. Find the `- {next_field}:` line in the task entry and insert before it. If there is a blank line before the next field, insert before the blank line to preserve spacing.
 
 ```
 old_string: - {next_field}:
-new_string: - {field_name}: [{artifact_filename}]({todo_link_path})
+new_string: - {field_name}: [{todo_link_path}]
 - {next_field}:
 ```
 
-**Example** (research artifact, file `01_initial-research.md`):
+**Example** (research artifact):
 ```
 old_string: - **Plan**:
-new_string: - **Research**: [01_initial-research.md](398_extract_artifact/reports/01_initial-research.md)
+new_string: - **Research**: [398_extract_artifact/reports/01_initial-research.md]
 - **Plan**:
 ```
 
 ### Case 2: Existing Inline (Single Link)
 
-The task entry has `- {field_name}: [something](path)` -- a link on the same line.
+The task entry has `- {field_name}: [something]` -- a link on the same line.
 
 **Action**: Convert to multi-line format with both the existing and new links:
 
 ```
-old_string: - {field_name}: [existing_file](existing_path)
+old_string: - {field_name}: [existing_path]
 new_string: - {field_name}:
-  - [existing_file](existing_path)
-  - [{artifact_filename}]({todo_link_path})
+  - [existing_path]
+  - [{todo_link_path}]
 ```
 
 **Example** (plan artifact, existing inline link):
 ```
-old_string: - **Plan**: [01_impl-plan.md](398_extract_artifact/plans/01_impl-plan.md)
+old_string: - **Plan**: [398_extract_artifact/plans/01_impl-plan.md]
 new_string: - **Plan**:
-  - [01_impl-plan.md](398_extract_artifact/plans/01_impl-plan.md)
-  - [02_revised-plan.md](398_extract_artifact/plans/02_revised-plan.md)
+  - [398_extract_artifact/plans/01_impl-plan.md]
+  - [398_extract_artifact/plans/02_revised-plan.md]
 ```
 
 ### Case 3: Existing Multi-Line
 
 The task entry has `- {field_name}:` followed by indented bullet items (2+ links already).
 
-**Action**: Append the new link as a bullet before the `- {next_field}:` line:
+**Action**: Append the new link as a bullet before the `- {next_field}:` line. If there is a blank line before the next field, insert before the blank line to preserve spacing.
 
 ```
-old_string:   - [last_item](last_path)
+old_string:   - [last_path]
 - {next_field}:
-new_string:   - [last_item](last_path)
-  - [{artifact_filename}]({todo_link_path})
+new_string:   - [last_path]
+  - [{todo_link_path}]
 - {next_field}:
 ```
 
 **Example** (summary artifact, existing multi-line):
 ```
-old_string:   - [01_exec-summary.md](398_extract_artifact/summaries/01_exec-summary.md)
+old_string:   - [398_extract_artifact/summaries/01_exec-summary.md]
 - **Description**:
-new_string:   - [01_exec-summary.md](398_extract_artifact/summaries/01_exec-summary.md)
-  - [02_revised-summary.md](398_extract_artifact/summaries/02_revised-summary.md)
+new_string:   - [398_extract_artifact/summaries/01_exec-summary.md]
+  - [398_extract_artifact/summaries/02_revised-summary.md]
 - **Description**:
 ```
 
