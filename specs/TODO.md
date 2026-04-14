@@ -11,7 +11,7 @@ next_project_number: 427
 ### Pending
 
 - **426** [NOT STARTED] -- Update slides command and manifest for --critic flag (depends: 425)
-- **425** [PLANNED] -- Create skill-slide-critic interactive critique skill (depends: 424)
+- **425** [IMPLEMENTING] -- Create skill-slide-critic interactive critique skill (depends: 424)
 - **424** [COMPLETED] -- Create slide-critic-agent (depends: 423)
 - **423** [COMPLETED] -- Create critique rubric context file
 - **422** [COMPLETED] -- Fix sync.lua overwriting all non-CLAUDE.md files
@@ -32,7 +32,7 @@ next_project_number: 427
 
 ### 425. Create skill-slide-critic interactive critique skill
 - **Effort**: large
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: 424
 

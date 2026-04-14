@@ -1,7 +1,7 @@
 # Implementation Plan: Task #425
 
 - **Task**: 425 - create_skill_slide_critic
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: slide-critic-agent (already created)
 - **Research Inputs**: specs/425_create_skill_slide_critic/reports/01_skill-slide-critic-research.md
@@ -65,7 +65,7 @@ No ROADMAP.md consulted for this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Create SKILL.md with Frontmatter and Stages 1-5 (Delegation) [NOT STARTED]
+### Phase 1: Create SKILL.md with Frontmatter and Stages 1-5 (Delegation) [COMPLETED]
 
 **Goal**: Establish the skill file with frontmatter, input validation, preflight, postflight marker, delegation context preparation, and Task tool invocation of slide-critic-agent.
 
@@ -95,7 +95,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add Stages 5-8 (Report Parsing, Interactive Loop, Filtered Report) [NOT STARTED]
+### Phase 2: Add Stages 5-8 (Report Parsing, Interactive Loop, Filtered Report) [COMPLETED]
 
 **Goal**: Add the core interactive critique loop -- parse agent output, present to user, collect decisions, generate filtered report.
 
@@ -123,7 +123,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Add Postflight Stages and Error Handling [NOT STARTED]
+### Phase 3: Add Postflight Stages and Error Handling [COMPLETED]
 
 **Goal**: Complete the skill with postflight operations (status update, artifact linking, git commit, cleanup), error handling, and return format.
 
