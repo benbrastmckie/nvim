@@ -2,6 +2,11 @@
 -- Load Core Agent System operation with manifest-based blocklist filtering
 -- Extension artifacts are filtered via aggregate_extension_artifacts() to ensure
 -- only core artifacts are synced, regardless of what extensions are loaded globally
+--
+-- Section Preservation: When syncing config markdown files (CLAUDE.md, OPENCODE.md),
+-- any <!-- SECTION: {id} -->...<!-- END_SECTION: {id} --> blocks injected by loaded
+-- extensions are preserved across the overwrite. After a full sync, merge targets
+-- for all loaded extensions are also re-injected as defense-in-depth.
 
 local M = {}
 
