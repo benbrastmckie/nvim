@@ -10,7 +10,7 @@ next_project_number: 444
 
 ### Pending
 
-- **443** [NOT STARTED] -- Optimize artifact format verbosity using caveman-inspired insights
+- **443** [RESEARCHING] -- Optimize artifact format verbosity using caveman-inspired insights
 - **440** [ABANDONED] -- Genericize documentation and examples (superseded by task 438 phase 4)
 - **439** [COMPLETED] -- Harden sync protection and clean deprecated index entries
 - **438** [COMPLETED] -- Comprehensive core genericization (depends: 437)
@@ -40,16 +40,17 @@ next_project_number: 444
 
 ### 443. Optimize artifact format verbosity using caveman-inspired insights
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 
 **Description**: Optimize artifact creation throughout the Claude Code agent system to be more readable and less verbose without removing anything important. Study the https://github.com/JuliusBrussee/caveman/blob/main/README.md repo for a comprehensive understanding of the strategy, then review artifact formats (reports, summaries, plans, etc.) for modest optimizations. Not "going full caveman" but drawing on the basic insight to reduce verbiage where it counts without over-complicating instructions. Look for elements that could be dropped or improved.
 
 ### 442. Optimize token usage with model routing and effort flags
 - **Effort**: Medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [specs/442_optimize_token_usage_model_routing/reports/01_model-routing-research.md]
+- **Plan**: [specs/442_optimize_token_usage_model_routing/plans/01_model-routing-plan.md]
 
 **Description**: Optimize token usage throughout the Claude Code agent system. Reserve Opus (most recent model) for Lean research and implementation tasks, using Sonnet for everything else. Add --fast and --hard flags to /research and /implement commands for low effort or high effort respectively. Add --opus flag to /research and /implement to allow designating Opus when desired.
 
@@ -506,5 +507,5 @@ The sync system needs to handle the fact that target repos (zed, other projects)
 ### Existing backlog
 7. **78** [PLANNED] -> implement
 8. **87** [RESEARCHED] -> plan
-9. **442** [RESEARCHED] -> plan (independent)
+9. **442** [PLANNED] -> implement (independent)
 10. **443** -> research (independent)

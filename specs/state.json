@@ -5,25 +5,31 @@
     {
       "project_number": 443,
       "project_name": "optimize_artifact_format_verbosity",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "created": "2026-04-15T17:21:30Z",
-      "last_updated": "2026-04-15T17:21:30Z"
+      "last_updated": "2026-04-15T17:30:19Z",
+      "session_id": "sess_1776274208_5591e4"
     },
     {
       "project_number": 442,
       "project_name": "optimize_token_usage_model_routing",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-15T17:17:45Z",
-      "last_updated": "2026-04-15T17:25:03Z",
-      "session_id": "sess_1744737466_research",
+      "last_updated": "2026-04-15T17:33:15Z",
+      "session_id": "sess_1744737470_plan",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/442_optimize_token_usage_model_routing/reports/01_model-routing-research.md",
           "type": "research",
           "summary": "Model routing audit: all 7 core agents use opus, lean agents on opus (preserve), flag parsing in STAGE 1.5. Recommendations: change core agents to sonnet, add --fast/--hard/--opus flags."
+        },
+        {
+          "path": "specs/442_optimize_token_usage_model_routing/plans/01_model-routing-plan.md",
+          "type": "plan",
+          "summary": "5-phase plan: switch non-Lean agents/commands to sonnet, add --fast/--hard/--opus flags to /research and /implement, update docs."
         }
       ]
     },
