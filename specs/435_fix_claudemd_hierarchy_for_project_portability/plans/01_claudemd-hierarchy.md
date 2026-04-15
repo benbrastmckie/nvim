@@ -1,7 +1,7 @@
 # Implementation Plan: Fix CLAUDE.md Hierarchy for Cross-Project Portability
 
 - **Task**: 435 - Fix CLAUDE.md hierarchy for cross-project portability
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/435_fix_claudemd_hierarchy_for_project_portability/reports/01_claudemd-hierarchy.md
@@ -60,7 +60,7 @@ No ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Rewrite Parent CLAUDE.md Files [NOT STARTED]
+### Phase 1: Rewrite Parent CLAUDE.md Files [COMPLETED]
 
 **Goal**: Replace nvim-specific content in both parent-level CLAUDE.md files with project-agnostic content.
 
@@ -83,7 +83,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Verify No Breakage [NOT STARTED]
+### Phase 2: Verify No Breakage [COMPLETED]
 
 **Goal**: Confirm that both the nvim and zed projects still load correctly and that the parent files no longer inject nvim-specific content.
 
