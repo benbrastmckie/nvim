@@ -47,8 +47,9 @@ next_project_number: 444
 
 ### 442. Optimize token usage with model routing and effort flags
 - **Effort**: Medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [specs/442_optimize_token_usage_model_routing/reports/01_model-routing-research.md]
 
 **Description**: Optimize token usage throughout the Claude Code agent system. Reserve Opus (most recent model) for Lean research and implementation tasks, using Sonnet for everything else. Add --fast and --hard flags to /research and /implement commands for low effort or high effort respectively. Add --opus flag to /research and /implement to allow designating Opus when desired.
 
@@ -505,5 +506,5 @@ The sync system needs to handle the fact that target repos (zed, other projects)
 ### Existing backlog
 7. **78** [PLANNED] -> implement
 8. **87** [RESEARCHED] -> plan
-9. **442** -> research (independent)
+9. **442** [RESEARCHED] -> plan (independent)
 10. **443** -> research (independent)
