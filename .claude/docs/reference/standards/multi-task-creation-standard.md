@@ -77,8 +77,8 @@ Use AskUserQuestion with multiSelect for item selection.
   "header": "TODO Selection",
   "multiSelect": true,
   "options": [
-    {"label": "Add LSP configuration", "description": "nvim/lua/plugins/lsp.lua:67"},
-    {"label": "Implement helper function", "description": "utils/helpers.lua:23"}
+    {"label": "Add API configuration", "description": "src/config/api.py:67"},
+    {"label": "Implement helper function", "description": "src/utils/helpers.py:23"}
   ]
 }
 ```

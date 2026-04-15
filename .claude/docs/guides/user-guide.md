@@ -2,7 +2,7 @@
 
 [Back to Docs](../README.md) | [CLAUDE.md](../../CLAUDE.md) | [Architecture](../architecture/system-overview.md)
 
-A comprehensive guide to using the `.claude/` task management system commands for Neovim configuration development.
+A comprehensive guide to using the `.claude/` task management system commands for project development.
 
 **Last Updated**: 2026-01-28
 
@@ -106,16 +106,14 @@ Create and manage tasks.
 
 **Examples**:
 ```
-/task "Add telescope picker for recent config files"
-/task "Add README documentation for the semantic evaluator"
-/task "Fix type mismatch error in lsp/init.lua"
+/task "Add search functionality for recent project files"
+/task "Add README documentation for the API module"
+/task "Fix type mismatch error in src/config.py"
 ```
 
 **Language Detection**: The system automatically detects task language from keywords:
-- `neovim`, `plugin`, `keymap`, `lua`, `nvim` -> `neovim`
 - `meta`, `agent`, `command`, `skill`, `.claude/` -> `meta`
-- `latex`, `.tex`, `document` -> `latex`
-- `typst`, `.typ` -> `typst`
+- Extension-specific keywords -> extension task type (when loaded)
 - Otherwise -> `general`
 
 #### Recover Archived Tasks
@@ -182,11 +180,11 @@ Conduct research on a task and create reports.
 **Examples**:
 ```
 /research 123                          # General research
-/research 123 "focus on lazy.nvim event loading patterns"
+/research 123 "focus on dependency injection patterns"
 ```
 
 **Language Routing**:
-- `neovim` tasks -> Uses Neovim-specific research agent
+- Extension tasks -> Uses domain-specific research agent (when loaded)
 - Other tasks -> Uses web search, documentation, codebase exploration
 
 **Output**: Creates `specs/{NNN}_{SLUG}/reports/MM_{short-slug}.md`
@@ -217,7 +215,7 @@ Create an implementation plan for a task.
 ### Phase 1: Set Up Module Structure [NOT STARTED]
 **Goal**: Create file structure and imports
 **Steps**:
-1. Create lua/neotex/plugins/new_feature.lua
+1. Create src/modules/new_feature.py
 2. Add required imports
 **Verification**: Module loads without errors
 
@@ -266,9 +264,7 @@ Execute an implementation plan.
 - `--force` - Skip confirmation prompts (optional)
 
 **Language Routing**:
-- `neovim` -> Neovim-specific implementation agent
-- `latex` -> LaTeX document implementation
-- `typst` -> Typst document implementation
+- Extension task types -> Domain-specific implementation agent (when loaded)
 - Other -> General file implementation
 
 **Resume Support**: If interrupted, running `/implement N` again automatically resumes from the last incomplete phase.
@@ -329,13 +325,13 @@ Analyze codebase and create review reports.
 
 **Analysis includes**:
 - TODOs, FIXMEs, and code smells
-- For Neovim: deprecated APIs, missing lazy-loading, keymap descriptions
+- For extensions: domain-specific checks (when loaded)
 - Roadmap progress tracking
 - Documentation coverage
 
 **Example**:
 ```
-/review lua/neotex/plugins/     # Review plugins directory
+/review src/modules/            # Review modules directory
 /review --create-tasks          # Review all and create tasks for issues
 ```
 
@@ -532,12 +528,10 @@ Convert documents between formats.
 
 | Task Type | Detection Keywords | Research Tools | Implementation |
 |----------|-------------------|----------------|----------------|
-| `neovim` | neovim, plugin, keymap, lua, nvim | WebSearch, WebFetch, Read | nvim --headless, Write, Edit |
 | `meta` | agent, command, skill, .claude/ | Read, Grep, Glob | Write, Edit |
-| `latex` | latex, .tex, document | WebSearch, Read | pdflatex |
-| `typst` | typst, .typ | WebSearch, Read | typst compile |
 | `markdown` | docs, readme, documentation | WebSearch, Read | Write, Edit |
 | `general` | (default) | WebSearch, Read | Write, Edit, Bash |
+| Extension types | (per extension keywords) | (per extension) | (per extension) |
 
 ---
 
@@ -588,7 +582,7 @@ Convert documents between formats.
 **Symptom**: Tools timeout or fail
 
 **Solutions**:
-1. Verify Neovim configuration loads: `nvim --headless -c "q"`
+1. Verify your project builds or loads correctly
 2. Check MCP configuration in `~/.claude.json`
 3. Run `/refresh` to clean orphaned processes
 4. Restart Claude Code session

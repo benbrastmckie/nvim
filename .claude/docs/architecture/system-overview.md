@@ -2,7 +2,7 @@
 
 **Last Verified**: 2026-01-19
 
-This document provides a high-level overview of the Neovim Configuration agent system architecture for users and developers.
+This document provides a high-level overview of the agent system architecture for users and developers.
 
 ---
 
@@ -31,8 +31,8 @@ The agent system uses a three-layer architecture that separates user interaction
     │                   LAYER 2: SKILLS                    │
     │                                                      │
     │   .claude/skills/skill-*/SKILL.md                   │
-    │   ├── skill-neovim-research/   Validate inputs      │
-    │   ├── skill-researcher/        Prepare context      │
+    │   ├── skill-researcher/        Validate inputs      │
+    │   ├── skill-planner/           Prepare context      │
     │   ├── skill-planner/           Invoke agents        │
     │   └── ...                                            │
     └─────────────────────────────────────────────────────┘
@@ -43,8 +43,8 @@ The agent system uses a three-layer architecture that separates user interaction
     │                   LAYER 3: AGENTS                    │
     │                                                      │
     │   .claude/agents/*.md                               │
-    │   ├── neovim-research-agent.md Full execution       │
-    │   ├── general-research-agent.md  Create artifacts   │
+    │   ├── general-research-agent.md  Full execution     │
+    │   ├── general-implementation-agent.md Create artifacts│
     │   ├── planner-agent.md         Return JSON          │
     │   └── ...                                            │
     └─────────────────────────────────────────────────────┘
@@ -135,18 +135,18 @@ When you run `/research 1`:
 ```
 1. Command: research.md
    - Parse: task_number = 1
-   - Lookup: language = "neovim" (from state.json)
-   - Route: skill-neovim-research
+   - Lookup: task_type = "general" (from state.json)
+   - Route: skill-researcher
 
-2. Skill: skill-neovim-research
+2. Skill: skill-researcher
    - Generate session_id: sess_1736700000_abc123
    - Validate: task exists, status allows research
    - Prepare: delegation context
-   - Invoke: neovim-research-agent via Task tool
+   - Invoke: general-research-agent via Task tool
 
-3. Agent: neovim-research-agent
-   - Load: Neovim context files
-   - Execute: Search documentation, analyze plugins
+3. Agent: general-research-agent
+   - Load: relevant context files
+   - Execute: Search documentation, analyze codebase
    - Create: specs/001_{slug}/reports/01_{short-slug}.md
    - Return: {"status": "researched", "artifacts": [...]}
 
@@ -189,13 +189,13 @@ Tasks route to specialized skills based on their `task_type` field:
 
 | Task Type | Research | Implementation |
 |----------|----------|----------------|
-| `neovim` | skill-neovim-research | skill-neovim-implementation |
 | `general` | skill-researcher | skill-implementer |
 | `meta` | skill-researcher | skill-implementer |
+| `markdown` | skill-researcher | skill-implementer |
 
-The language is automatically detected from task description or can be set explicitly.
+The task type is automatically detected from task description or can be set explicitly.
 
-**Note**: Additional languages (latex, typst) are available via extensions in `.claude/extensions/`.
+**Note**: Additional task types (neovim, latex, typst, python, etc.) are available via extensions in `.claude/extensions/`.
 
 ---
 
@@ -224,11 +224,11 @@ Updates use two-phase commit:
 │   ├── plan.md
 │   └── ...
 ├── skills/             # Layer 2: Skills
-│   ├── skill-neovim-research/
+│   ├── skill-researcher/
 │   │   └── SKILL.md
 │   └── ...
 ├── agents/             # Layer 3: Agents
-│   ├── neovim-research-agent.md
+│   ├── general-research-agent.md
 │   └── ...
 ├── rules/              # Automatic behavior rules
 ├── context/            # Domain knowledge

@@ -110,7 +110,7 @@ User-invocable operations with checkpoint-based execution:
 
 ## Extensions
 
-The extension system provides task-type-specific support. Extensions are loaded via `<leader>ac` keybinding.
+The extension system provides task-type-specific support. Extensions are loaded via the extension picker.
 
 **Available Extensions** (`.claude/extensions/`):
 

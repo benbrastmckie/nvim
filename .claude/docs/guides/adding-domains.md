@@ -19,7 +19,7 @@ The .claude/ system supports two approaches for adding domain support:
 
 ```
 Is this the repository's PRIMARY domain?
-├── YES (e.g., neovim in a neovim config repo)
+├── YES (e.g., python in a Python project)
 │   └── Use Core Approach
 └── NO (e.g., latex, lean, rust, react)
     └── Use Extension Approach (Recommended)
@@ -35,7 +35,7 @@ Is this the repository's PRIMARY domain?
 
 ## Extension Approach (Recommended)
 
-For most new domains, create an extension. Extensions live in `.claude/extensions/{domain}/` and are loaded via the Neovim picker (`<leader>ac`).
+For most new domains, create an extension. Extensions live in `.claude/extensions/{domain}/` and are loaded via the the extension picker.
 
 ### Directory Structure
 
@@ -158,10 +158,10 @@ Entries appended to the main context index:
 
 ### Load/Unload Mechanism
 
-Extensions are managed via Neovim picker:
+Extensions are managed via the extension picker:
 
-1. **Loading**: `<leader>ac` → Select extension → Neovim copies files into core
-2. **Unloading**: `<leader>ac` → Select loaded extension → Neovim removes copied files
+1. **Loading**: Open the extension picker, select extension, files are copied into core
+2. **Unloading**: Open the extension picker, select loaded extension, copied files are removed
 
 When loaded:
 - Agents copied to `.claude/agents/`
@@ -187,7 +187,7 @@ See [Creating Extensions](creating-extensions.md) for a complete step-by-step gu
 
 ## Core Approach (Primary Domain Only)
 
-Use this approach only for the repository's primary domain (e.g., neovim for a Neovim config repo). Core domains are always available without loading.
+Use this approach only for the repository's primary domain (e.g., python for a Python project). Core domains are always available without loading.
 
 ### Architecture
 
@@ -368,7 +368,7 @@ Edit `.claude/skills/skill-orchestrator/SKILL.md`:
 
 | Task Type | Research Skill | Implementation Skill |
 |----------|---------------|---------------------|
-| neovim | skill-neovim-research | skill-neovim-implementation |
+| {domain} | skill-{domain}-research | skill-{domain}-implementation |
 | your-domain | skill-your-domain-research | skill-your-domain-implementation |
 | general | skill-researcher | skill-implementer |
 ```

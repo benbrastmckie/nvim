@@ -1,12 +1,12 @@
 # Integration Example: Fix-It Flow
 
-This example traces a complete `/fix-it` command execution through the Neovim Configuration agent system, showing how the command scans for tags, presents findings interactively, and creates user-selected tasks.
+This example traces a complete `/fix-it` command execution through the agent system, showing how the command scans for tags, presents findings interactively, and creates user-selected tasks.
 
 ---
 
 ## Scenario
 
-A user runs `/fix-it nvim/lua/` to scan the Neovim Lua configuration directory for embedded tags. The system displays findings, then prompts the user to select which task types to create.
+A user runs `/fix-it src/` to scan the project source directory for embedded tags. The system displays findings, then prompts the user to select which task types to create.
 
 ---
 
@@ -23,14 +23,14 @@ The `/fix-it` command recognizes four tag types in source code comments:
 
 **Dependency behavior**: When NOTE: tags exist and both fix-it and learn-it tasks are selected, the learn-it task is created first and the fix-it task depends on it. This ensures proper workflow: learn-it extracts knowledge to context files (NOTE: tags remain in source), then fix-it addresses the code changes and removes both NOTE: and FIX: tags.
 
-**QUESTION: language detection**: Unlike other tag types, QUESTION: tags use **content-based language detection** instead of file-type detection. The question text is analyzed for domain keywords (nvim/lsp/telescope -> neovim, theorem/proof/lemma -> latex, .claude/command/agent -> meta), defaulting to "general" for ambiguous cases. This ensures research questions are routed to the appropriate research agent based on what is being asked, not where the question was written.
+**QUESTION: language detection**: Unlike other tag types, QUESTION: tags use **content-based language detection** instead of file-type detection. The question text is analyzed for domain keywords (e.g., theorem/proof/lemma -> latex, .claude/command/agent -> meta, api/endpoint/route -> web), defaulting to "general" for ambiguous cases. This ensures research questions are routed to the appropriate research agent based on what is being asked, not where the question was written.
 
 ---
 
 ## Complete Flow Diagram
 
 ```
-User Input: /fix-it nvim/lua/
+User Input: /fix-it src/
        |
        v
 [Layer 1: Command] .claude/commands/fix-it.md
@@ -39,7 +39,7 @@ User Input: /fix-it nvim/lua/
        v
 [Layer 2: Skill] skill-fix-it/SKILL.md (DIRECT EXECUTION)
        |
-       | 1. Parse arguments -> paths = ["nvim/lua/"]
+       | 1. Parse arguments -> paths = ["src/"]
        | 2. Generate session ID
        | 3. Execute tag extraction (grep patterns)
        | 4. Display tag summary to user
@@ -62,7 +62,7 @@ Output: Created N tasks from M tags
 ### Step 1: User Invokes Command
 
 ```bash
-/fix-it nvim/lua/
+/fix-it src/
 ```
 
 Claude Code reads `.claude/commands/fix-it.md` and sees:
@@ -82,7 +82,7 @@ The skill (`skill-fix-it/SKILL.md`) executes directly (no subagent).
 **Skill Step 1: Parse Arguments**
 
 ```bash
-paths="nvim/lua/"
+paths="src/"
 session_id="sess_1768940708_a1b2c3"
 ```
 
@@ -91,30 +91,30 @@ session_id="sess_1768940708_a1b2c3"
 Execute grep patterns for each file type:
 
 ```bash
-# Lua files
-grep -rn --include="*.lua" "-- FIX:" nvim/lua/ 2>/dev/null
-grep -rn --include="*.lua" "-- NOTE:" nvim/lua/ 2>/dev/null
-grep -rn --include="*.lua" "-- TODO:" nvim/lua/ 2>/dev/null
+# Python files
+grep -rn --include="*.py" "# FIX:" src/ 2>/dev/null
+grep -rn --include="*.py" "# NOTE:" src/ 2>/dev/null
+grep -rn --include="*.py" "# TODO:" src/ 2>/dev/null
 
 # Example output:
-nvim/lua/plugins/lsp.lua:67:-- TODO: Add language server for Go
-nvim/lua/plugins/lsp.lua:89:-- FIX: Handle edge case in completion setup
-nvim/lua/config/keymaps.lua:45:-- NOTE: This pattern should be documented
-nvim/lua/utils/helpers.lua:23:-- TODO: Optimize this function
+src/api/endpoints.py:67:# TODO: Add validation for Go endpoints
+src/api/endpoints.py:89:# FIX: Handle edge case in request parsing
+src/config/settings.py:45:# NOTE: This pattern should be documented
+src/utils/helpers.py:23:# TODO: Optimize this function
 ```
 
 **Skill Step 3: Parse and Categorize**
 
 ```
 fix_tags = [
-  {file: "nvim/lua/plugins/lsp.lua", line: 89, content: "Handle edge case in completion setup"}
+  {file: "src/api/endpoints.py", line: 89, content: "Handle edge case in request parsing"}
 ]
 note_tags = [
-  {file: "nvim/lua/config/keymaps.lua", line: 45, content: "This pattern should be documented"}
+  {file: "src/config/settings.py", line: 45, content: "This pattern should be documented"}
 ]
 todo_tags = [
-  {file: "nvim/lua/plugins/lsp.lua", line: 67, content: "Add language server for Go"},
-  {file: "nvim/lua/utils/helpers.lua", line: 23, content: "Optimize this function"}
+  {file: "src/api/endpoints.py", line: 67, content: "Add validation for Go endpoints"},
+  {file: "src/utils/helpers.py", line: 23, content: "Optimize this function"}
 ]
 ```
 
@@ -125,18 +125,18 @@ User sees:
 ```
 ## Tag Scan Results
 
-**Files Scanned**: nvim/lua/
+**Files Scanned**: src/
 **Tags Found**: 4
 
 ### FIX: Tags (1)
-- `nvim/lua/plugins/lsp.lua:89` - Handle edge case in completion setup
+- `src/api/endpoints.py:89` - Handle edge case in request parsing
 
 ### NOTE: Tags (1)
-- `nvim/lua/config/keymaps.lua:45` - This pattern should be documented
+- `src/config/settings.py:45` - This pattern should be documented
 
 ### TODO: Tags (2)
-- `nvim/lua/plugins/lsp.lua:67` - Add language server for Go
-- `nvim/lua/utils/helpers.lua:23` - Optimize this function
+- `src/api/endpoints.py:67` - Add validation for Go endpoints
+- `src/utils/helpers.py:23` - Optimize this function
 ```
 
 ### Step 4: Interactive Task Type Selection
@@ -191,12 +191,12 @@ Since "TODO tasks" was selected, the skill prompts for individual TODO item sele
       "multiSelect": true,
       "options": [
         {
-          "label": "Add language server for Go",
-          "description": "From nvim/lua/plugins/lsp.lua:67"
+          "label": "Add validation for Go endpoints",
+          "description": "From src/api/endpoints.py:67"
         },
         {
           "label": "Optimize this function",
-          "description": "From nvim/lua/utils/helpers.lua:23"
+          "description": "From src/utils/helpers.py:23"
         }
       ]
     }
@@ -205,8 +205,8 @@ Since "TODO tasks" was selected, the skill prompts for individual TODO item sele
 ```
 
 User selects:
-- ✓ Add language server for Go
-- ✓ Add language server for Rust
+- ✓ Add validation for Go endpoints
+- ✓ Add validation for Rust endpoints
 - ✓ Optimize this function
 
 ### Step 5.5: Topic Grouping (New Feature)
@@ -217,23 +217,23 @@ Since multiple TODOs were selected (3 items), the skill analyzes them for topic 
 
 ```
 TODO analysis:
-  "Add language server for Go" at nvim/lua/plugins/lsp.lua:67
-    → key_terms: ["language", "server", "Go"]
-    → file_section: "nvim/lua/plugins/"
+  "Add validation for Go endpoints" at src/api/endpoints.py:67
+    → key_terms: ["validation", "endpoints", "Go"]
+    → file_section: "src/api/"
     → action_type: "implementation"
 
-  "Add language server for Rust" at nvim/lua/plugins/lsp.lua:89
-    → key_terms: ["language", "server", "Rust"]
-    → file_section: "nvim/lua/plugins/"
+  "Add validation for Rust endpoints" at src/api/endpoints.py:89
+    → key_terms: ["validation", "endpoints", "Rust"]
+    → file_section: "src/api/"
     → action_type: "implementation"
 
-  "Optimize this function" at nvim/lua/utils/helpers.lua:23
+  "Optimize this function" at src/utils/helpers.py:23
     → key_terms: ["optimize", "function"]
-    → file_section: "nvim/lua/utils/"
+    → file_section: "src/utils/"
     → action_type: "improvement"
 
 Clustering result:
-  Group 1: "LSP Configuration" - 2 items (shared: language server, implementation)
+  Group 1: "API Validation" - 2 items (shared: validation, endpoints, implementation)
   Group 2: "Utility Optimization" - 1 item
 ```
 
@@ -251,7 +251,7 @@ Since there's at least one group with 2+ items, the skill presents grouping opti
       "options": [
         {
           "label": "Accept suggested topic groups",
-          "description": "Creates 2 grouped tasks: LSP Configuration (2 items), Utility Optimization (1 item)"
+          "description": "Creates 2 grouped tasks: API Validation (2 items), Utility Optimization (1 item)"
         },
         {
           "label": "Keep as separate tasks",
@@ -287,7 +287,7 @@ If user selected both "Fix-it task" and "Learn-it task" for NOTE: tags:
   "status": "not_started",
   "task_type": "meta",
   "priority": "medium",
-  "description": "Update 1 context files based on learnings:\n\n- nvim/lua/Layer2/Temporal.lua:45 - This pattern should be documented"
+  "description": "Update 1 context files based on learnings:\n\n- src/config/settings.py:45 - This pattern should be documented"
 }
 ```
 
@@ -297,10 +297,10 @@ If user selected both "Fix-it task" and "Learn-it task" for NOTE: tags:
   "project_number": 651,
   "project_name": "fix_issues_from_tags",
   "status": "not_started",
-  "task_type": "neovim",
+  "task_type": "general",
   "priority": "high",
   "dependencies": [650],
-  "description": "Address 2 items from embedded tags:\n\n- nvim/lua/Layer1/Modal.lua:89 - Handle edge case in frame validation\n- nvim/lua/Layer2/Temporal.lua:45 - This pattern should be documented"
+  "description": "Address 2 items from embedded tags:\n\n- src/api/endpoints.py:89 - Handle edge case in request parsing\n- src/config/settings.py:45 - This pattern should be documented"
 }
 ```
 
@@ -317,12 +317,12 @@ When user selects "Accept suggested topic groups" in Step 5.6:
 ```json
 {
   "project_number": 650,
-  "project_name": "lsp_configuration_2_todo_items",
+  "project_name": "api_validation_2_todo_items",
   "status": "not_started",
-  "task_type": "neovim",
+  "task_type": "general",
   "priority": "medium",
   "effort": "1.5 hours",
-  "description": "Address TODO items related to LSP Configuration:\n\n- [ ] Add language server for Go (`nvim/lua/Layer1/Modal.lua:67`)\n- [ ] Add language server for Rust (`nvim/lua/Layer1/Modal.lua:89`)\n\n---\n\nShared context: Related to LSP language servers"
+  "description": "Address TODO items related to API Validation:\n\n- [ ] Add validation for Go endpoints (`src/api/endpoints.py:67`)\n- [ ] Add validation for Rust endpoints (`src/api/endpoints.py:89`)\n\n---\n\nShared context: Related to API endpoint validation"
 }
 ```
 
@@ -332,15 +332,15 @@ When user selects "Accept suggested topic groups" in Step 5.6:
   "project_number": 651,
   "project_name": "utility_optimization_1_todo_item",
   "status": "not_started",
-  "task_type": "neovim",
+  "task_type": "general",
   "priority": "medium",
   "effort": "1 hour",
-  "description": "Address TODO items related to Utility Optimization:\n\n- [ ] Optimize this function (`nvim/lua/Shared/Utils.lua:23`)\n\n---\n\nShared context: Performance improvement in shared utilities"
+  "description": "Address TODO items related to Utility Optimization:\n\n- [ ] Optimize this function (`src/utils/helpers.py:23`)\n\n---\n\nShared context: Performance improvement in shared utilities"
 }
 ```
 
 **Effort scaling applied**:
-- LSP Configuration: 2 items = 1h + 30min = 1.5 hours
+- API Validation: 2 items = 1h + 30min = 1.5 hours
 - Utility Optimization: 1 item = 1 hour (base)
 
 **Example C: Separate TODO tasks (original behavior)**
@@ -351,15 +351,15 @@ When user selects "Keep as separate tasks":
 ```json
 {
   "project_number": 650,
-  "project_name": "add_go_language_server",
+  "project_name": "add_go_endpoint_validation",
   "status": "not_started",
-  "task_type": "neovim",
+  "task_type": "general",
   "priority": "medium",
-  "description": "Add language server for Go\n\nSource: nvim/lua/Layer1/Modal.lua:67"
+  "description": "Add validation for Go endpoints\n\nSource: src/api/endpoints.py:67"
 }
 ```
 
-(Plus 2 more individual tasks for soundness theorem and utility optimization)
+(Plus 2 more individual tasks for Rust validation and utility optimization)
 
 ### Step 7: Postflight Git Commit
 
@@ -384,8 +384,8 @@ Session: sess_1768940708_a1b2c3
 | # | Type | Title | Priority | Task Type | Dependencies |
 |---|------|-------|----------|----------|--------------|
 | 650 | learn-it | Update context files from NOTE: tags | Medium | meta | - |
-| 651 | fix-it | Fix issues from FIX:/NOTE: tags | High | neovim | 650 |
-| 652 | todo | Add language server for Go | Medium | neovim | - |
+| 651 | fix-it | Fix issues from FIX:/NOTE: tags | High | general | 650 |
+| 652 | todo | Add validation for Go endpoints | Medium | general | - |
 ```
 
 **Example output with topic-grouped TODO tasks (new feature)**:
@@ -399,9 +399,9 @@ Session: sess_1768940708_a1b2c3
 
 | # | Type | Title | Priority | Task Type | Effort |
 |---|------|-------|----------|----------|--------|
-| 650 | fix-it | Fix issues from FIX:/NOTE: tags | High | neovim | 2-4h |
-| 651 | todo (grouped) | LSP Configuration: 2 TODO items | Medium | neovim | 1.5h |
-| 652 | todo (grouped) | Utility Optimization: 1 TODO item | Medium | neovim | 1h |
+| 650 | fix-it | Fix issues from FIX:/NOTE: tags | High | general | 2-4h |
+| 651 | todo (grouped) | API Validation: 2 TODO items | Medium | general | 1.5h |
+| 652 | todo (grouped) | Utility Optimization: 1 TODO item | Medium | general | 1h |
 
 ---
 
@@ -422,23 +422,23 @@ Session: sess_1768940708_a1b2c3
 
 | # | Type | Title | Priority | Task Type |
 |---|------|-------|----------|----------|
-| 650 | fix-it | Fix issues from FIX:/NOTE: tags | High | neovim |
-| 651 | todo | Add language server for Go | Medium | neovim |
-| 652 | todo | Add language server for Rust | Medium | neovim |
-| 653 | todo | Optimize this function | Medium | neovim |
+| 650 | fix-it | Fix issues from FIX:/NOTE: tags | High | general |
+| 651 | todo | Add validation for Go endpoints | Medium | general |
+| 652 | todo | Add validation for Rust endpoints | Medium | general |
+| 653 | todo | Optimize this function | Medium | general |
 ```
 
 ---
 
 ## Tag Detection Examples
 
-### Lua Files (.lua)
+### Python Files (.py)
 
-```lua
--- FIX: This needs to handle the empty frame case
--- NOTE: The S5 axiom pattern could be generalized
--- TODO: Add reflexivity lemma
--- QUESTION: What is the best way to implement telescope pickers?
+```python
+# FIX: This needs to handle the empty input case
+# NOTE: The validation pattern could be generalized
+# TODO: Add input sanitization
+# QUESTION: What is the best way to implement rate limiting?
 ```
 
 ### LaTeX Files (.tex)
@@ -479,7 +479,7 @@ NOTE: tags are special because they can create both fix-it and learn-it tasks. T
 | `.claude/agents/*.md` | `.claude/context/agents/` |
 | `.claude/skills/*/SKILL.md` | `.claude/context/skills/` |
 | `.claude/commands/*.md` | `.claude/context/commands/` |
-| `nvim/lua/**/*.lua` | `.claude/context/project/neovim/` |
+| `src/**/*.py` | `.claude/context/project/{domain}/` |
 | `docs/*.tex` | `.claude/context/project/logic/` |
 
 ---
@@ -488,12 +488,12 @@ NOTE: tags are special because they can create both fix-it and learn-it tasks. T
 
 ### Scenario A: No Tags Found
 
-If user runs `/fix-it nvim/lua/` but no tags exist:
+If user runs `/fix-it src/` but no tags exist:
 
 ```
 ## No Tags Found
 
-Scanned files in: nvim/lua/
+Scanned files in: src/
 No FIX:, NOTE:, TODO:, or QUESTION: tags detected.
 
 Nothing to create.
@@ -508,11 +508,11 @@ If user runs `/fix-it` and the scan finds QUESTION: tags:
 ```
 ## Tag Scan Results
 
-**Files Scanned**: nvim/lua/
+**Files Scanned**: src/
 **Tags Found**: 3
 
 ### QUESTION: Tags (3)
-- `nvim/lua/config/lsp.lua:45` - What is the best way to configure LSP hover windows?
+- `src/api/routes.py:45` - What is the best way to implement REST pagination?
 - `docs/guide.tex:89` - How do I prove this theorem about completeness?
 - `scripts/build.sh:12` - What is the best approach for caching build artifacts?
 ```
@@ -521,11 +521,11 @@ When creating research tasks, language is detected from **question content**, no
 
 | Question | Source File | Detected Language | Reason |
 |----------|-------------|-------------------|--------|
-| "What is the best way to configure LSP hover windows?" | `.lua` | neovim | Contains "LSP" keyword |
+| "What is the best way to implement REST pagination?" | `.py` | web | Contains "REST" keyword |
 | "How do I prove this theorem about completeness?" | `.tex` | latex | Contains "theorem" keyword |
 | "What is the best approach for caching build artifacts?" | `.sh` | general | No domain keywords found |
 
-**Key insight**: The middle question would be detected as "latex" even though it's in a .tex file - this is the desired behavior. A math question in a .tex file could theoretically be "general" if it doesn't contain latex keywords, while an LSP question in any file type would be "neovim".
+**Key insight**: The middle question would be detected as "latex" even though it's in a .tex file - this is the desired behavior. A math question in a .tex file could theoretically be "general" if it doesn't contain latex keywords, while a REST question in any file type would be "web".
 
 ### Scenario B: Only FIX: Tags
 
@@ -576,13 +576,13 @@ Exits gracefully without creating tasks or git commits.
 ### Old Pattern (Deprecated)
 
 ```
-User runs: /fix-it nvim/lua/ --dry-run
+User runs: /fix-it src/ --dry-run
   → skill-fix-it (thin wrapper)
     → fix-it-agent (subagent via Task tool)
       → Returns JSON metadata to skill
     → skill reads metadata, displays preview
 User reviews preview
-User runs: /fix-it nvim/lua/ (without --dry-run)
+User runs: /fix-it src/ (without --dry-run)
   → Same delegation flow, but creates tasks automatically
 ```
 
@@ -594,7 +594,7 @@ User runs: /fix-it nvim/lua/ (without --dry-run)
 ### New Pattern (Current)
 
 ```
-User runs: /fix-it nvim/lua/
+User runs: /fix-it src/
   → skill-fix-it (direct execution)
     → Scans tags inline
     → Displays findings
@@ -646,4 +646,4 @@ The `/fix-it` command provides:
 
 **Document Version**: 2.0 (Updated 2026-01-20)
 **Created**: 2026-01-20
-**Maintained By**: Neovim Configuration Team
+**Maintained By**: Project Development Team

@@ -2,7 +2,7 @@
 
 [Back to Docs](../README.md) | [User Installation](user-installation.md) | [Commands Reference](../commands/README.md)
 
-Instructions for copying the `.claude/` agent system directory for Neovim configuration maintenance.
+Instructions for copying the `.claude/` agent system directory to a new project.
 
 ---
 
@@ -11,8 +11,8 @@ Instructions for copying the `.claude/` agent system directory for Neovim config
 The `.claude/` directory provides an agent system for Claude Code that enhances your development workflow with:
 
 - **Task Management Commands**: `/task`, `/research`, `/plan`, `/implement` - structured workflow for development tasks
-- **Specialized Skills**: Language-specific agents for Neovim configuration (neovim), LaTeX, Typst, and general development
-- **Context Files**: Domain knowledge for Neovim, lazy.nvim, LSP, treesitter, and Lua patterns
+- **Specialized Skills**: Language-specific agents available via extensions (LaTeX, Typst, and more)
+- **Context Files**: Domain knowledge loaded per task type via the extension system
 - **State Tracking**: TODO.md and state.json for persistent task tracking across sessions
 - **Extensible Architecture**: Easy to add new domain contexts for additional specializations
 
@@ -57,8 +57,7 @@ These are the essential files for the system to function:
 ├── rules/                       # Auto-applied rules
 ├── context/
 │   ├── core/                   # Core patterns and standards
-│   └── project/
-│       └── neovim/             # Neovim domain context
+│   └── project/               # Project domain context
 ├── docs/                        # Documentation
 └── settings.json               # Claude settings
 ```
@@ -96,34 +95,30 @@ After copying, customize these files for your project:
 
 ### 1. CLAUDE.md
 
-Update the project structure section to match your Neovim config:
+Update the project structure section to match your project:
 
 ```markdown
 ## Project Structure
 
-nvim/
-├── lua/
-│   ├── config/           # Core configuration
-│   ├── plugins/          # Plugin specifications
-│   └── utils/            # Utility functions
-├── after/ftplugin/       # Filetype plugins
-└── init.lua              # Entry point
+src/
+├── core/                 # Core functionality
+├── modules/              # Feature modules
+├── utils/                # Utility functions
+└── main.py               # Entry point
 ```
 
 ### 2. Context Files
 
-The `context/project/neovim/` directory contains:
-- Lua patterns and conventions
-- Plugin ecosystem overview
-- lazy.nvim configuration patterns
-- LSP setup guides
-- Treesitter integration
+The `context/project/` directory contains domain knowledge files. Add context specific to your project:
+- Language patterns and conventions
+- Framework or library guides
+- Tool-specific configuration patterns
 
-Customize or extend based on your specific plugins and setup.
+Customize or extend based on your specific project stack.
 
 ### 3. Rules
 
-The `rules/neovim-lua.md` rule applies to `nvim/**/*.lua` files. Adjust patterns if your config uses different paths.
+Extension rules apply to specific file patterns (e.g., `src/**/*.py`). Adjust patterns to match your project paths.
 
 ---
 
@@ -163,13 +158,13 @@ cd /tmp
 # Clone the repository (replace with your source)
 git clone https://github.com/your-repo.git source-repo
 
-# Copy .claude/ to your Neovim config directory
-cp -r source-repo/.claude ~/.config/
+# Copy .claude/ to your project directory
+cp -r source-repo/.claude /path/to/your/project/
 
 # Initialize specs directory
-mkdir -p ~/.config/specs
-echo '{"next_project_number":1,"active_projects":[]}' > ~/.config/specs/state.json
-echo '# TODO\n\n## Tasks\n' > ~/.config/specs/TODO.md
+mkdir -p /path/to/your/project/specs
+echo '{"next_project_number":1,"active_projects":[]}' > /path/to/your/project/specs/state.json
+echo '# TODO\n\n## Tasks\n' > /path/to/your/project/specs/TODO.md
 
 # Clean up
 rm -rf source-repo
@@ -182,12 +177,12 @@ cd $env:TEMP
 
 git clone https://github.com/your-repo.git source-repo
 
-Copy-Item -Recurse source-repo\.claude $env:LOCALAPPDATA\nvim\
+Copy-Item -Recurse source-repo\.claude C:\path\to\your\project\
 
 # Initialize specs
-New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA\nvim\specs
-'{"next_project_number":1,"active_projects":[]}' | Out-File $env:LOCALAPPDATA\nvim\specs\state.json
-'# TODO`n`n## Tasks`n' | Out-File $env:LOCALAPPDATA\nvim\specs\TODO.md
+New-Item -ItemType Directory -Force -Path C:\path\to\your\project\specs
+'{"next_project_number":1,"active_projects":[]}' | Out-File C:\path\to\your\project\specs\state.json
+'# TODO`n`n## Tasks`n' | Out-File C:\path\to\your\project\specs\TODO.md
 
 Remove-Item -Recurse -Force source-repo
 ```
@@ -225,7 +220,7 @@ claude
 ### 3. Test Commands
 
 ```
-/task "Test task creation" --language neovim
+/task "Test task creation"
 ```
 
 ---
@@ -235,8 +230,8 @@ claude
 After installation:
 
 ```
-/task "Configure telescope.nvim"     # Create a task
-/research 1                           # Research telescope patterns
+/task "Add search functionality"      # Create a task
+/research 1                           # Research implementation options
 /plan 1                               # Create implementation plan
 /implement 1                          # Execute the plan
 /todo                                 # Archive completed tasks
@@ -258,7 +253,7 @@ Verify `skill-orchestrator/SKILL.md` has correct routing for your language.
 
 ### Missing context
 
-Ensure `context/project/neovim/` was copied correctly.
+Ensure `context/project/` was copied correctly.
 
 ---
 

@@ -244,50 +244,49 @@ permissions:
     - edit: ["**/*.lua", "**/*.md"]
     
     # Development commands
-    - bash: ["git", "nvim", "grep", "find", "wc", "jq"]
-  
+    - bash: ["git", "grep", "find", "wc", "jq"]
+
   deny:
     # Dangerous operations
     - bash: ["rm -rf", "sudo", "chmod +x", "dd"]
-    
+
     # Protected files
-    - write: [".git/**/*", "init.lua", "lazy-lock.json"]
+    - write: [".git/**/*"]
 ```
 
-### Neovim Implementation Agent
+### Domain Implementation Agent
 
-**Purpose**: Implement Neovim configurations with LSP integration
+**Purpose**: Implement domain-specific tasks with specialized tooling
 
 ```yaml
-name: "neovim-implementation-agent"
+name: "domain-implementation-agent"
 tools:
   - read
   - write
   - edit
   - bash
   - git
-  - nvim-lua  # Special tool for Neovim Lua integration
 
 permissions:
   allow:
-    # Read access to Lean codebase
-    - read: ["**/*.lua", "**/*.md", ".claude/**/*"]
-    
-    # Write access to Lean files
-    - write: ["**/*.lua", "specs/**/*"]
-    
-    # Edit access for Lean files
-    - edit: ["**/*.lua"]
-    
-    # Lean development commands
-    - bash: ["git", "nvim", "lean"]
-  
+    # Read access to domain codebase
+    - read: ["**/*.py", "**/*.md", ".claude/**/*"]
+
+    # Write access to domain files
+    - write: ["**/*.py", "specs/**/*"]
+
+    # Edit access for domain files
+    - edit: ["**/*.py"]
+
+    # Domain development commands
+    - bash: ["git", "python", "pytest"]
+
   deny:
     # Dangerous operations
     - bash: ["rm -rf", "sudo", "chmod +x"]
-    
+
     # Protected files
-    - write: [".git/**/*", "init.lua", "lazy-lock.json"]
+    - write: [".git/**/*", "setup.cfg", "pyproject.toml"]
 ```
 
 ### Utility Agent (Status Sync Manager)
@@ -497,9 +496,9 @@ permissions:
     - read: ["**/*"]
     - write: ["**/*.lua", "**/*.md", "specs/**/*"]
     - edit: ["**/*.lua", "**/*.md"]
-    - bash: ["git", "nvim", "lean"]
+    - bash: ["git", "python", "pytest"]
   deny:
-    - write: [".git/**/*", "init.lua", "lazy-lock.json"]
+    - write: [".git/**/*"]
     - bash: ["rm -rf", "sudo", "chmod +x"]
 ```
 
@@ -598,13 +597,13 @@ permissions:
 **Solution**:
 1. Review recent permission changes in git history:
    ```bash
-   git log -p -- .claude/agent/subagents/{agent}.md
+   git log -p -- .claude/agents/{agent}.md
    ```
 2. Identify removed permission
 3. Assess if removal was intentional
 4. If unintentional, restore permission:
    ```bash
-   git checkout HEAD~1 -- .claude/agent/subagents/{agent}.md
+   git checkout HEAD~1 -- .claude/agents/{agent}.md
    ```
 5. Test agent operation
 6. Document decision
@@ -711,7 +710,7 @@ permissions:
   
   deny:
     # Prevent modification of build configuration
-    - write: ["init.lua", "lazy-lock.json"]
+    - write: ["config.yaml", "lock-file.json"]
 ```
 
 ### 5. Monitor Permission Denials

@@ -8,7 +8,7 @@ Step-by-step guide for creating a new domain extension for the .claude/ system.
 
 ## Overview
 
-Extensions are self-contained packages that add domain-specific support (agents, skills, rules, context) to the .claude/ system. Extensions can be loaded/unloaded via Neovim picker (`<leader>ac`) without modifying core files.
+Extensions are self-contained packages that add domain-specific support (agents, skills, rules, context) to the .claude/ system. Extensions can be loaded/unloaded via the extension picker without modifying core files.
 
 **When to Create an Extension**:
 - Adding support for a new language/framework (Rust, React, Go)
@@ -144,7 +144,7 @@ Every extension must provide a `README.md` file in its root directory. This is t
 
 Start from the canonical template: `.claude/templates/extension-readme-template.md`.
 
-The template includes a **section-applicability matrix** that distinguishes simple extensions (latex, python, typst, z3) from complex extensions (filetypes, lean, formal, nvim, nix, web, epidemiology). Simple extensions omit sections they do not need (MCP Setup, Workflow diagram, Output Artifacts) and produce README files under ~120 lines. Complex extensions use the full structure.
+The template includes a **section-applicability matrix** that distinguishes simple extensions (latex, python, typst, z3) from complex extensions (filetypes, lean, formal, nix, web, epidemiology). Simple extensions omit sections they do not need (MCP Setup, Workflow diagram, Output Artifacts) and produce README files under ~120 lines. Complex extensions use the full structure.
 
 **Required sections for all extensions**:
 - Overview (with a task type / command table)
@@ -553,7 +553,7 @@ Domain knowledge for [Your Domain] development.
 
 ### 1. Load the Extension
 
-Press `<leader>ac` and select your extension from the picker.
+Press the extension picker and select your extension from the picker.
 
 ### 2. Verify Files are Installed
 
@@ -596,7 +596,7 @@ Verify:
 
 ### 4. Test Unload
 
-Press `<leader>ac` and select your extension again to unload.
+Press the extension picker and select your extension again to unload.
 
 Verify:
 - All copied files are removed

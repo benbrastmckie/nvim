@@ -67,7 +67,6 @@ agent: orchestrator
 description: Conduct research for a task
 routing:
   language_based: true
-  neovim: skill-neovim-research
   default: skill-researcher
 ---
 ```
@@ -106,7 +105,6 @@ Extracted:
 ```
 Language: "meta"
 Routing rules from command frontmatter:
-  neovim -> skill-neovim-research
   default -> skill-researcher
 
 Decision: "meta" matches default -> invoke skill-researcher
@@ -305,17 +303,16 @@ Input: /research 427 (task language = "meta")
 
 Command frontmatter:
   routing:
-    neovim: skill-neovim-research
     default: skill-researcher
 
 Decision tree:
-  Is language "neovim"? NO
+  Is language an extension type with custom routing? NO
   -> Use default: skill-researcher
 ```
 
-If task 427 had `language: "neovim"`, the flow would be:
+If task 427 had a task type provided by an extension (e.g., `task_type: "python"`), the flow would route to the extension's skill:
 ```
-orchestrator -> skill-neovim-research -> neovim-research-agent
+orchestrator -> skill-python-research -> python-research-agent
 ```
 
 ### Context Loading Decision
@@ -399,25 +396,25 @@ Return:
 }
 ```
 
-### Scenario C: Neovim Task Routing
+### Scenario C: Extension Task Type Routing
 
-If user runs `/research 259` where task 259 has `language: "neovim"`:
+If user runs `/research 259` where task 259 has `task_type: "python"` (with the python extension loaded):
 
 ```
 Orchestrator Stage 2:
-  Lookup task 259 -> language = "neovim"
+  Lookup task 259 -> task_type = "python"
 
 Orchestrator Stage 3:
-  Routing: neovim -> skill-neovim-research
+  Routing: python -> skill-python-research
 
 Flow:
-  orchestrator -> skill-neovim-research -> neovim-research-agent
+  orchestrator -> skill-python-research -> python-research-agent
 
 Agent uses:
-  - WebSearch for plugin documentation
+  - WebSearch for library documentation
   - WebFetch for API references
   - Read for codebase exploration
-  - Neovim/lazy.nvim context
+  - Python-specific context files
 ```
 
 ---

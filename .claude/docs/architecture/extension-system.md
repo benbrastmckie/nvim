@@ -30,7 +30,7 @@ Extension Source                           Target Project
 
 **Key Design Principles**:
 1. **File-Copy Based**: Extensions are loaded by copying files into the core structure
-2. **Neovim Managed**: Load/unload triggered via Neovim picker (`<leader>ac`)
+2. **Editor Managed**: Load/unload triggered via the extension picker
 3. **Claude Code Agnostic**: Claude Code sees only standard `.claude/` structure
 4. **State Tracked**: `extensions.json` tracks what is installed and where
 
@@ -77,7 +77,7 @@ When extensions are loaded, state is tracked in `.claude/extensions.json`:
     "latex": {
       "version": "1.0.0",
       "loaded_at": "2026-01-15T10:30:00Z",
-      "source_dir": "/home/user/.config/nvim/.claude/extensions/latex",
+      "source_dir": "$PROJECT_ROOT/.claude/extensions/latex",
       "installed_files": [
         ".claude/agents/latex-implementation-agent.md",
         ".claude/agents/latex-research-agent.md"
@@ -219,7 +219,7 @@ Configuration presets for different agent systems:
   config_file = "CLAUDE.md",
   section_prefix = "extension_",
   state_file = "extensions.json",
-  global_extensions_dir = "~/.config/nvim/.claude/extensions",
+  global_extensions_dir = "$PROJECT_ROOT/.claude/extensions",
   merge_target_key = "claudemd"
 }
 ```
@@ -361,7 +361,7 @@ Extensions can provide MCP server configurations that get merged into `settings.
 
 ## Picker Integration
 
-The extension picker (`<leader>ac`) provides the user interface:
+The extension picker provides the user interface:
 
 1. Scans `global_extensions_dir` for available extensions
 2. Reads state to identify loaded extensions

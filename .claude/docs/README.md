@@ -1,8 +1,8 @@
 # Claude Agent System Documentation
 
-[Neovim Configuration](../../README.md) | [Architecture](../README.md) | [CLAUDE.md](../CLAUDE.md)
+[Project Root](../../README.md) | [Architecture](../README.md) | [CLAUDE.md](../CLAUDE.md)
 
-This directory contains the documentation for the `.claude/` agent system. The system provides structured task management, research workflows, and implementation automation for Neovim configuration development. For comprehensive system details, see [architecture/system-overview.md](architecture/system-overview.md).
+This directory contains the documentation for the `.claude/` agent system. The system provides structured task management, research workflows, and implementation automation for project development. For comprehensive system details, see [architecture/system-overview.md](architecture/system-overview.md).
 
 ---
 
@@ -93,8 +93,8 @@ Reusable templates for creating new system components are available in [template
 - [README.md](../README.md) - Detailed system architecture and component specifications
 
 ### Project Documentation
-- [Neovim Configuration README](../../README.md) - Main project documentation
+- [Project README](../../README.md) - Main project documentation
 
 ---
 
-[Neovim Configuration](../../README.md) | [Architecture](../README.md) | [CLAUDE.md](../CLAUDE.md)
+[Project Root](../../README.md) | [Architecture](../README.md) | [CLAUDE.md](../CLAUDE.md)

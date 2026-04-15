@@ -2,7 +2,7 @@
 
 [Back to Docs](../README.md) | [Detailed Installation](../../../docs/installation/README.md)
 
-A quick-start guide for installing Claude Code and using it to work with Neovim configuration projects.
+A quick-start guide for installing Claude Code and using it with your project.
 
 ---
 
@@ -10,9 +10,9 @@ A quick-start guide for installing Claude Code and using it to work with Neovim 
 
 This guide helps you:
 1. Install Claude Code (Anthropic's AI CLI)
-2. Set up a Neovim configuration project
+2. Set up your project
 3. Set up Claude agent commands (optional)
-4. Work with Neovim configuration files
+4. Work with your project files
 5. Set up GitHub CLI for issue reporting
 
 **New to the terminal?** See your operating system's documentation for terminal basics.
@@ -67,13 +67,12 @@ claude auth status
 
 ---
 
-## Setting Up a Neovim Configuration Project with Claude Code
+## Setting Up Your Project with Claude Code
 
-### Step 1: Navigate to Your Configuration
+### Step 1: Navigate to Your Project
 
 ```bash
-cd ~/.config/nvim
-# Or wherever your Neovim configuration lives
+cd /path/to/your/project
 ```
 
 ### Step 2: Initialize Git (if not already done)
@@ -95,10 +94,10 @@ claude
 Ask Claude:
 
 ```
-Please verify my Neovim configuration by:
-1. Checking the overall structure of the configuration
-2. Identifying the plugin manager in use
-3. Confirming the Lua modules are properly organized
+Please verify my project setup by:
+1. Checking the overall structure of the project
+2. Identifying the build system or package manager in use
+3. Confirming the source modules are properly organized
 ```
 
 ---
@@ -111,8 +110,8 @@ The repository includes a `.claude/` agent system that provides enhanced task ma
 
 - **Task Management**: Create, track, and archive development tasks
 - **Structured Workflow**: `/research` -> `/plan` -> `/implement` cycle
-- **Specialized Skills**: Language-specific agents for Neovim development
-- **Context Files**: Domain knowledge for Neovim, plugins, and Lua
+- **Specialized Skills**: Language-specific agents via extensions
+- **Context Files**: Domain knowledge loaded per task type
 - **State Persistence**: Track progress across Claude Code sessions
 
 ### After Installation
@@ -138,38 +137,38 @@ For complete documentation, see the [Commands Reference](../commands/README.md).
 
 ---
 
-## Working with Neovim Configuration
+## Working with Your Project
 
-Once your configuration is set up, use Claude Code to assist with Neovim development.
+Once your project is set up, use Claude Code to assist with development.
 
 ### Explore the Codebase
 
 In Claude Code, ask:
 
 ```
-Show me the structure of my Neovim configuration and explain
+Show me the structure of my project and explain
 how the modules are organized.
 ```
 
 Claude will:
-1. Navigate the lua/ directory structure
-2. Explain the plugin specifications
-3. Show how keymaps and options are configured
+1. Navigate the source directory structure
+2. Explain the project organization
+3. Show how configuration and modules are structured
 
-### Working on Configuration
+### Working on Code
 
-Ask Claude to help with specific configurations:
+Ask Claude to help with specific tasks:
 
 ```
-Help me understand how the LSP is configured in my
-nvim/lua/plugins/lsp.lua file
+Help me understand how the authentication module is
+configured in src/auth/config.py
 ```
 
 Or:
 
 ```
-I want to add a new plugin for git integration. Can you help me
-find popular options and configure one?
+I want to add a new module for data processing. Can you help me
+find popular libraries and set one up?
 ```
 
 ---
@@ -230,8 +229,8 @@ claude --version
 # Authenticate
 claude auth login
 
-# Navigate to your configuration
-cd ~/.config/nvim
+# Navigate to your project
+cd /path/to/your/project
 
 # Start Claude
 claude
@@ -240,33 +239,33 @@ claude
 In Claude Code:
 ```
 Please help me:
-1. Verify my Neovim configuration is properly structured
-2. Explore the lua/ directory and identify plugins
+1. Verify my project is properly structured
+2. Explore the source directory and identify modules
 3. Check for any common issues or improvements
 ```
 
-### Adding a New Plugin
+### Adding a New Dependency
 
 ```bash
-cd ~/.config/nvim
+cd /path/to/your/project
 claude
 ```
 
 Ask Claude:
 ```
-Help me add telescope.nvim to my configuration with
-proper keybindings for file finding and live grep.
+Help me add a logging library to my project with
+proper configuration and usage examples.
 ```
 
-### Debugging Configuration Issues
+### Debugging Issues
 
 ```bash
-cd ~/.config/nvim
+cd /path/to/your/project
 claude
 ```
 
 ```
-I'm getting an error when Neovim starts.
+I'm getting an error when the project builds.
 Please diagnose the issue and suggest fixes.
 ```
 
@@ -287,21 +286,17 @@ claude auth logout
 claude auth login
 ```
 
-### Neovim Issues
+### Project Issues
 
-**Plugins not loading:**
-- Run `:Lazy sync` to update plugins
-- Check for errors: `:messages`
-- Verify plugin specifications are correct
+**Dependencies not loading:**
+- Run your package manager's sync/install command
+- Check for errors in the build output
+- Verify dependency specifications are correct
 
-**LSP not working:**
-- Check LSP is installed: `:LspInfo`
-- Ensure language servers are installed via Mason
-- Check for errors: `:LspLog`
-
-**Configuration errors:**
-- Run `nvim --headless -c 'checkhealth' -c 'qa'` to check health
-- Look for syntax errors in lua files
+**Build errors:**
+- Check build configuration files for syntax errors
+- Ensure all required tools are installed
+- Review build logs for detailed error messages
 
 ---
 
@@ -315,7 +310,7 @@ claude auth login
 
 ### Project Documentation
 
-- **[nvim/](../../../nvim/)** - Neovim configuration source
+- **Project source** - See your project's directory structure
 
 ### Contributing
 

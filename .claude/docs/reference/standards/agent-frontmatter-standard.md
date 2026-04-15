@@ -18,15 +18,15 @@ description: {brief description of agent purpose}
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Agent identifier (e.g., `neovim-research-agent`) |
+| `name` | string | Yes | Agent identifier (e.g., `general-research-agent`) |
 | `description` | string | Yes | Brief description of agent purpose and capabilities |
 
 ## Optional Fields
 
 ```yaml
 ---
-name: neovim-research-agent
-description: Research Neovim configuration and plugin tasks
+name: general-research-agent
+description: Research general tasks using web search and codebase exploration
 model: opus
 ---
 ```
@@ -68,13 +68,13 @@ The `model` field allows explicit model selection for agents that benefit from s
 
 ```yaml
 ---
-name: neovim-research-agent
-description: Research Neovim configuration and plugin tasks
+name: general-research-agent
+description: Research general tasks using web search and codebase exploration
 model: opus
 ---
 ```
 
-**Rationale**: Research agents benefit from Opus's deeper reasoning capabilities when analyzing plugin ecosystems, API patterns, and community best practices.
+**Rationale**: Research agents benefit from Opus's deeper reasoning capabilities when analyzing complex systems, API patterns, and community best practices.
 
 ## Validation
 
@@ -124,7 +124,7 @@ model: opus
 
 To add model enforcement to existing agents:
 
-1. Open agent file (e.g., `.claude/agents/neovim-research-agent.md`)
+1. Open agent file (e.g., `.claude/agents/general-research-agent.md`)
 2. Add `model: opus` or `model: sonnet` to frontmatter
 3. Document rationale in agent comments
 
