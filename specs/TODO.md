@@ -12,7 +12,7 @@ next_project_number: 441
 
 - **440** [NOT STARTED] -- Genericize documentation and examples (depends: 438)
 - **439** [COMPLETED] -- Harden sync protection and clean deprecated index entries
-- **438** [NOT STARTED] -- Comprehensive core genericization (depends: 437)
+- **438** [RESEARCHED] -- Comprehensive core genericization (depends: 437)
 - **437** [COMPLETED] -- Move neovim-only files to extension and add to .sync-exclude
 - **436** [COMPLETED] -- Resolve /convert command: documented but not implemented
 - **435** [COMPLETED] -- Fix CLAUDE.md hierarchy for cross-project portability
@@ -98,7 +98,7 @@ Remove the index entries. Optionally delete the deprecated files themselves.
 
 ### 438. Comprehensive core genericization
 - **Effort**: large
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: Task #437
 
