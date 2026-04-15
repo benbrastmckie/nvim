@@ -1,15 +1,21 @@
 ---
-next_project_number: 435
+next_project_number: 441
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-13. 8 active tasks remaining.*
+*Updated 2026-04-14. 14 active tasks remaining.*
 
 ### Pending
 
+- **440** [NOT STARTED] -- Genericize documentation and examples (depends: 438)
+- **439** [RESEARCHED] -- Harden sync protection and clean deprecated index entries
+- **438** [NOT STARTED] -- Comprehensive core genericization (depends: 437)
+- **437** [NOT STARTED] -- Move neovim-only files to extension and add to .sync-exclude
+- **436** [RESEARCHED] -- Resolve /convert command: documented but not implemented
+- **435** [RESEARCHED] -- Fix CLAUDE.md hierarchy for cross-project portability
 - **434** [COMPLETED] -- Prevent lead agent post-delegation takeover after subagent returns
 - **433** [COMPLETED] -- Move nvim-specific core content into neovim extension (depends: 432)
 - **432** [COMPLETED] -- Harden sync engine against repo-specific content leakage
@@ -29,6 +35,169 @@ next_project_number: 435
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 436. Resolve /convert command: documented but not implemented
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+
+**Description**: The `/convert` command is extensively documented in `docs/guides/user-guide.md` (lines 28, 462-483, 511) and `docs/reference/standards/extension-slim-standard.md` (line 114) but no `commands/convert.md` file exists. Users attempting to use this command will fail silently.
+
+**Decision required**: Either implement the command or remove all documentation references. The command is described as converting between document formats (PDF to Markdown, Markdown to PDF, etc.) with auto-detection of output format.
+
+**If implementing**: Create `commands/convert.md` with format detection routing, likely delegating to the filetypes extension which already has conversion tables and tool detection. Register in appropriate extension manifests.
+
+**If removing**: Delete all references from user-guide.md (4 locations) and extension-slim-standard.md (1 location).
+
+### 440. Genericize documentation and examples
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task #438
+
+**Description**: Rewrite documentation files that use neovim as the primary/only example domain. After task 438 genericizes routing and agent references, these docs files still contain neovim-centric walkthroughs and examples that mislead agents in non-nvim repos.
+
+**Files requiring rewrites (~142 occurrences across 13 files):**
+- `docs/examples/fix-it-flow-example.md` (60 refs) -- All examples use `nvim/lua/` paths and neovim task types. Rewrite with generic `src/` paths and a domain-neutral scenario.
+- `docs/architecture/system-overview.md` (12 refs) -- "Neovim Configuration agent system" throughout. Replace with "Agent system" or "Project agent system".
+- `docs/guides/component-selection.md` (13 refs) -- Neovim routing table examples. Use generic extension examples.
+- `docs/examples/research-flow-example.md` (12 refs) -- Scenario C: "Neovim Task Routing". Replace with generic domain routing.
+- `docs/guides/development/context-index-migration.md` (12 refs) -- Neovim context entry examples.
+- `docs/guides/creating-agents.md` (8 refs) -- neovim agents listed as examples.
+- `docs/guides/permission-configuration.md` (7 refs) -- "Neovim Implementation Agent" permission profile.
+- `docs/reference/standards/agent-frontmatter-standard.md` (6 refs) -- neovim-research-agent as example.
+- `docs/guides/creating-skills.md` (2 refs), `docs/guides/creating-extensions.md` (2 refs) -- minor references.
+- `docs/reference/standards/multi-task-creation-standard.md` (1 ref) -- nvim/lua/ path in example.
+
+**Approach**: Replace neovim-specific examples with generic placeholders (`{domain}`, `src/`, `{config-dir}/`) or multi-domain examples showing 2-3 different extensions. Do NOT use neovim as the sole worked example -- use a fictional or neutral domain if a concrete example is needed.
+
+### 439. Harden sync protection and clean deprecated index entries
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+
+**Description**: Two independent improvements to the sync mechanism and index hygiene.
+
+**1. Harden .syncprotect against self-destruction**
+
+The zed audit (task 65) revealed that a "Load Core" sync **deleted** `.claude/.syncprotect` (the old location) when the source repo moved it to project root, destroying all of zed's protection entries. Fixes:
+- The sync must never overwrite or delete `.syncprotect` itself (either at project root or legacy `.claude/.syncprotect` location). Add it to the skip list in `sync_files()` or the scan exclusion.
+- The auto-seed mechanism (sync.lua:822-834) correctly creates a minimal `.syncprotect`, but doesn't preserve existing entries at the legacy location during migration. Add migration logic: if `.claude/.syncprotect` exists and project-root `.syncprotect` doesn't, **move** the legacy file rather than seeding a new one.
+- Consider showing the protected file count in the sync confirmation dialog (before the user commits), not just in the results summary.
+
+**2. Remove 5 deprecated entries from `context/index.json`**
+
+These files are marked `DEPRECATED (2026-01-19)` but still indexed:
+- `orchestration/delegation.md`
+- `orchestration/sessions.md`
+- `orchestration/subagent-validation.md`
+- `orchestration/validation.md`
+- `workflows/status-transitions.md`
+
+Remove the index entries. Optionally delete the deprecated files themselves.
+
+### 438. Comprehensive core genericization
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task #437
+
+**Description**: Systematic pass through ALL remaining core `.claude/` files to remove neovim-specific content. The zed audit (task 65) found 368 nvim/neovim occurrences across 53 files after a "Load Core" sync. Tasks 432-433 addressed ~30 files but left the majority untouched. This task completes the genericization.
+
+**Scope (~190 changes across ~38 files):**
+
+**Routing and agent hardcodes (Category B, ~12 occurrences, 6 files):**
+- `agents/meta-builder-agent.md` -- Routes "nvim", "neovim", "plugin" keywords to `task_type = "neovim"`. Remove neovim-specific keyword detection; extensions should provide their own keyword lists.
+- `agents/code-reviewer-agent.md` -- "Load For Neovim Code" section with nvim extension context paths. Remove or make conditional on loaded extensions.
+- `agents/spawn-agent.md` -- Lists "neovim" as valid task_type example. Use generic placeholder.
+- `skills/skill-fix-it/SKILL.md` -- `.lua (nvim/)` -> "neovim" type detection. Remove hardcoded detection.
+- `context/architecture/system-overview.md` -- "Neovim Configuration agent system". Replace with "Agent system".
+- `context/orchestration/orchestration-core.md` -- "Neovim Configuration's architecture". Genericize.
+
+**Command examples (Category A+, ~36 occurrences, 8 files):**
+- `commands/fix-it.md` (16 refs) -- All examples use `nvim/lua/` paths, neovim task types. Replace with `src/` paths.
+- `commands/review.md` (7 refs) -- `nvim --headless`, `nvim/lua/` paths. Use generic build/test examples.
+- `commands/task.md` (3 refs) -- neovim keyword detection, nvim path examples.
+- `commands/learn.md` (1 ref) -- neovim directory example.
+- `commands/todo.md` (4 refs) -- Health metrics grep `nvim/lua/`, `nvim --headless`.
+- `rules/plan-format-enforcement.md` (1 ref) -- neovim task_type example.
+- `skills/skill-orchestrator/SKILL.md` (2 refs) -- neovim routing entry.
+- `CLAUDE.md` (4 refs) -- Extension list mentions neovim, task_type example.
+
+**Config files (Category A, ~30 occurrences, 6 files):**
+- `settings.json` -- SessionStart hook runs nvim-specific script. Make hook path generic or remove.
+- `settings.local.json` -- Bash permissions reference nvim paths. Remove nvim-specific permissions.
+- `extensions.json` -- All `source_dir` entries point to nvim paths. These are generated at load time; verify they're not synced.
+- `systemd/claude-refresh.service` -- ExecStart points to nvim script path. Use generic path.
+- `scripts/validate-wiring.sh` -- Validates nonexistent neovim agents. Make validation dynamic.
+
+**Context files (~15 occurrences across ~8 files):**
+- `context/formats/frontmatter.md` -- "non-Neovim tasks", "Neovim plugin tooling"
+- `context/standards/ci-workflow.md` -- "Neovim Lua files", "Neovim phases"
+- `context/standards/documentation-standards.md` -- "Neovim configuration"
+- `context/repo/update-project.md` -- "example for a Neovim configuration project"
+- `context/guides/extension-development.md` (15 refs) -- Neovim as worked example
+
+**`<leader>ac` references (19 occurrences across 10 files):**
+Replace with "extension loader" or "the loader" -- the keybinding is Neovim-specific and meaningless in other editors.
+
+### 437. Move neovim-only files to extension and add to .sync-exclude
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Several core `.claude/` files are 100% neovim-specific and should not be synced to any other repository. Move them to the neovim extension and add source-side exclusions.
+
+**Files to relocate to `.claude/extensions/neovim/` (or exclude):**
+
+| File | Lines | Content | Action |
+|------|-------|---------|--------|
+| `docs/guides/neovim-integration.md` | ~336 | SessionStart hooks, nvim --remote-expr, terminal state management | Move to extension |
+| `docs/guides/tts-stt-integration.md` | ~200 | neotex STT plugin, PulseAudio recording, Neovim-specific | Move to extension |
+| `docs/guides/user-installation.md` | ~300 | "Setting Up a Neovim Configuration Project", telescope.nvim | Move to extension |
+| `docs/guides/copy-claude-directory.md` | ~200 | "Copying .claude/ for Neovim configuration maintenance" | Move to extension |
+| `context/project/memory/learn-usage.md` | ~100 | Neovim as the sole example memory topic throughout | Move to extension |
+
+**Steps:**
+1. Add all 5 files to `.sync-exclude` as path exclusions (immediate protection against future syncs)
+2. Move files to `extensions/neovim/context/` or `extensions/neovim/docs/` directories
+3. Update the neovim extension `manifest.json` to declare these files under `provides`
+4. Update `context/index.json` to remove entries for moved files (or update paths to extension locations)
+5. Add entries to neovim extension's `index-entries.json` so they're available when the neovim extension is loaded
+6. Verify no other core files reference the moved files by path
+
+**Memory files**: The `context/project/memory/` files (`learn-usage.md`, `knowledge-capture-usage.md`, `memory-setup.md`, `domain/memory-reference.md`) all use neovim as their example domain. The memory extension is separate from neovim, so these should be genericized in task 438 rather than moved here -- only `learn-usage.md` (12 refs, deeply neovim-specific) warrants moving.
+
+### 435. Fix CLAUDE.md hierarchy for cross-project portability
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+
+**Description**: The CLAUDE.md file chain that Claude Code loads (by walking up the directory tree) causes neovim-specific content to leak into non-nvim projects like zed. When Claude Code runs in `/home/benjamin/.config/zed/`, it loads:
+
+```
+/home/benjamin/.config/CLAUDE.md          <- Links to nvim/CLAUDE.md for "Neovim Configuration Guidelines"
+/home/benjamin/.config/.claude/CLAUDE.md  <- "This repository uses nvim/.claude/ as primary", hardcodes nvim/ paths
+/home/benjamin/.config/zed/.claude/CLAUDE.md  <- Correct generic agent system (this is fine)
+```
+
+The parent files inject nvim-specific paths and coding standards into every non-nvim session.
+
+**Fixes:**
+
+**1. `/home/benjamin/.config/.claude/CLAUDE.md`** -- Remove nvim-specific assumptions:
+- Replace "This repository uses nvim/.claude/ as the primary Claude Code configuration" with generic language like "Each subdirectory maintains its own Claude Code configuration"
+- Replace hardcoded paths (`nvim/specs/TODO.md`, `nvim/.claude/commands/`, etc.) with relative references (`specs/TODO.md`, `.claude/commands/`) that resolve correctly per-project
+- Remove the "See nvim/.claude/CLAUDE.md" redirect
+
+**2. `/home/benjamin/.config/CLAUDE.md`** -- Make the root config project-agnostic:
+- Remove or conditionalize the link to `nvim/CLAUDE.md` ("Neovim Configuration Guidelines")
+- Keep the link to `.claude/CLAUDE.md` (agent system) since that's shared
+- Consider whether this file should exist at all -- each subdirectory (nvim/, zed/) could be self-contained
+
+**3. Ensure `/home/benjamin/.config/zed/CLAUDE.md` exists** as a root config for zed, providing zed-specific project context and overriding any nvim references from parent files. The zed audit (task 65) notes this file was created by task 63 but no longer exists.
+
+**Key constraint**: Changes to the parent CLAUDE.md files must not break the nvim workflow. The nvim-specific coding standards currently in `nvim/CLAUDE.md` should remain but not leak upward.
 
 ### 434. Prevent lead agent post-delegation takeover after subagent returns
 - **Effort**: small
@@ -298,9 +467,14 @@ The sync system needs to handle the fact that target repos (zed, other projects)
 
 ## Recommended Order
 
-1. **434** [NOT STARTED] -> research (independent)
-2. **432** [NOT STARTED] -> research (unblocks 433)
-2. **433** [NOT STARTED] -> research (depends: 432)
-3. **78** [PLANNED] -> implement
-2. **87** [RESEARCHED] -> plan
-3. **422** -> research (independent)
+### Portability refactor (tasks 435-440)
+1. **435** [NOT STARTED] -> implement (independent, quick win)
+2. **439** [NOT STARTED] -> implement (independent, quick win)
+3. **437** [NOT STARTED] -> research (unblocks 438)
+4. **438** [NOT STARTED] -> research (depends: 437, large)
+5. **440** [NOT STARTED] -> research (depends: 438)
+6. **436** [NOT STARTED] -> research (independent, decision needed)
+
+### Existing backlog
+7. **78** [PLANNED] -> implement
+8. **87** [RESEARCHED] -> plan

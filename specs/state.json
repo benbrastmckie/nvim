@@ -1,7 +1,94 @@
 {
   "version": "1.0.0",
-  "next_project_number": 435,
+  "next_project_number": 441,
   "active_projects": [
+    {
+      "project_number": 440,
+      "project_name": "genericize_documentation_and_examples",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-14T23:00:00Z",
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "dependencies": [
+        438
+      ]
+    },
+    {
+      "project_number": 439,
+      "project_name": "harden_sync_protection_and_clean_deprecated_index",
+      "status": "researched",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-15T01:44:28Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/439_harden_sync_protection_and_clean_deprecated_index/reports/01_sync-protection.md",
+          "type": "research",
+          "summary": "Research report on sync protection hardening and deprecated index cleanup"
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282"
+    },
+    {
+      "project_number": 438,
+      "project_name": "comprehensive_core_genericization",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-14T23:00:00Z",
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "dependencies": [
+        437
+      ]
+    },
+    {
+      "project_number": 437,
+      "project_name": "move_neovim_only_files_to_extension",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-14T23:00:00Z",
+      "next_artifact_number": 1,
+      "artifacts": []
+    },
+    {
+      "project_number": 436,
+      "project_name": "resolve_convert_command_docs_without_implementation",
+      "status": "researched",
+      "task_type": "meta",
+      "created": "2026-04-14T22:00:00Z",
+      "last_updated": "2026-04-15T01:42:42Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/436_resolve_convert_command_docs_without_implementation/reports/01_convert-command.md",
+          "type": "research",
+          "summary": "Research report on /convert command: implement vs remove decision. Finding: command EXISTS in filetypes extension, docs just need extension annotation."
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282"
+    },
+    {
+      "project_number": 435,
+      "project_name": "fix_claudemd_hierarchy_for_project_portability",
+      "status": "researched",
+      "task_type": "meta",
+      "created": "2026-04-14T22:00:00Z",
+      "last_updated": "2026-04-15T01:43:25Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/435_fix_claudemd_hierarchy_for_project_portability/reports/01_claudemd-hierarchy.md",
+          "type": "research",
+          "summary": "Research report on CLAUDE.md hierarchy leakage and fixes"
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282"
+    },
     {
       "project_number": 434,
       "project_name": "prevent_lead_agent_post_delegation_takeover",
