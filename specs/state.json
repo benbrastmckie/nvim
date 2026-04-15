@@ -5,17 +5,22 @@
     {
       "project_number": 441,
       "project_name": "update_readme_documentation",
-      "status": "researched",
+      "status": "planned",
       "task_type": "markdown",
       "created": "2026-04-15T16:52:16Z",
-      "last_updated": "2026-04-15T16:55:45Z",
-      "session_id": "sess_1776271975_c8556a",
+      "last_updated": "2026-04-15T17:11:57Z",
+      "session_id": "sess_1776272978_d72ca3",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/441_update_readme_documentation/reports/01_readme-update-research.md",
           "type": "research",
           "summary": "Comprehensive analysis of README.md identifying Avante references, current AI plugins, and recommended changes for Claude Code integration"
+        },
+        {
+          "path": "specs/441_update_readme_documentation/plans/01_readme-update-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan to update README.md: remove Avante references, add Claude Code/OpenCode/Lectic documentation, add Zed alternative link and .claude/README.md reference"
         }
       ]
     },
