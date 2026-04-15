@@ -1,7 +1,7 @@
 ---
 description: Research a task and create reports
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit
-argument-hint: TASK_NUMBERS [FOCUS] [--team [--team-size N]]
+argument-hint: TASK_NUMBERS [FOCUS] [--team [--team-size N]] [--fast] [--hard] [--opus]
 model: sonnet
 ---
 
@@ -31,6 +31,9 @@ When multiple tasks are specified, each task is researched independently in para
 |------|-------------|---------|
 | `--team` | Enable multi-agent parallel research with multiple teammates | false |
 | `--team-size N` | Number of teammates to spawn (2-4) | 2 |
+| `--fast` | Use Sonnet model (explicit low-cost mode) | false |
+| `--hard` | Use Opus model (explicit high-effort mode) | false |
+| `--opus` | Use Opus model (alias for --hard) | false |
 
 When `--team` is specified, research is delegated to `skill-team-research` which spawns multiple research agents working in parallel on different aspects of the task. Each teammate produces a research report, and the lead synthesizes findings into a final comprehensive report.
 
@@ -275,10 +278,20 @@ Skipped: {count}
    [ "$team_size" -gt 4 ] && team_size=4
    ```
 
-3. **Extract Focus Prompt**
+3. **Extract Model Override Flags**
+   Check remaining args for model flags:
+   - `--fast` -> `model_flag = "fast"` (uses Sonnet, explicit low-cost mode)
+   - `--hard` -> `model_flag = "hard"` (uses Opus, explicit high-effort mode)
+   - `--opus` -> `model_flag = "opus"` (uses Opus, explicit alias for --hard)
+
+   If multiple are provided, last one wins.
+   If none: `model_flag = null` (use agent default, which is Sonnet)
+
+4. **Extract Focus Prompt**
    Remove all recognized flags from remaining args:
    - Remove `--team`
    - Remove `--team-size N` (flag and its value)
+   - Remove `--fast`, `--hard`, `--opus`
 
    Remaining text is `focus_prompt`.
 
@@ -357,12 +370,17 @@ else:
 ```
 # For team mode:
 skill: "skill-team-research"
-args: "task_number={N} focus={focus_prompt} team_size={team_size} session_id={session_id}"
+args: "task_number={N} focus={focus_prompt} team_size={team_size} session_id={session_id} model_flag={model_flag}"
 
 # For single-agent mode:
 skill: "{skill-name from table above}"
-args: "task_number={N} focus={focus_prompt} session_id={session_id}"
+args: "task_number={N} focus={focus_prompt} session_id={session_id} model_flag={model_flag}"
 ```
+
+If `model_flag` is set, pass the `model` parameter to override the agent's default model:
+- `model_flag="fast"` -> pass `model: sonnet` (explicit Sonnet)
+- `model_flag="hard"` or `model_flag="opus"` -> pass `model: opus` (override to Opus)
+- `model_flag=null` -> omit `model` parameter (use agent default)
 
 The skill will spawn the appropriate agent(s) to conduct research and create a report.
 

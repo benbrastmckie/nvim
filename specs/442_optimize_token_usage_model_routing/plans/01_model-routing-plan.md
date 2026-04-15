@@ -207,7 +207,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Add --fast, --hard, --opus Flags to Commands [NOT STARTED]
+### Phase 4: Add --fast, --hard, --opus Flags to Commands [COMPLETED]
 
 **Goal**: Add three new model-tier flags to STAGE 1.5 of `/research` and `/implement`, and update the Options tables and argument-hint frontmatter fields.
 

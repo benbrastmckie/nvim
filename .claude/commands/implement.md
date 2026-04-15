@@ -1,7 +1,7 @@
 ---
 description: Execute implementation with resume support
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Read, Edit, Glob
-argument-hint: TASK_NUMBERS [--team [--team-size N]] [--force]
+argument-hint: TASK_NUMBERS [--team [--team-size N]] [--force] [--fast] [--hard] [--opus]
 model: sonnet
 ---
 
@@ -25,6 +25,9 @@ Execute implementation plan with automatic resume support by delegating to the a
 | `--team` | Enable parallel phase execution with multiple teammates | false |
 | `--team-size N` | Number of implementation teammates to spawn (2-4) | 2 |
 | `--force` | Override status validation | false |
+| `--fast` | Use Sonnet model (explicit low-cost mode) | false |
+| `--hard` | Use Opus model (explicit high-effort mode) | false |
+| `--opus` | Use Opus model (alias for --hard) | false |
 
 When `--team` is specified, implementation is delegated to `skill-team-implement` which spawns teammates to execute independent phases in parallel. Dependent phases wait for their dependencies. A debugger teammate can be spawned on build errors.
 
@@ -319,7 +322,16 @@ Skipped: {count}
 2. **Extract Other Flags**
    - `--force` -> `force_mode = true`
 
-3. **Validate Team Size**
+3. **Extract Model Override Flags**
+   Check remaining args for model flags:
+   - `--fast` -> `model_flag = "fast"` (uses Sonnet, explicit low-cost mode)
+   - `--hard` -> `model_flag = "hard"` (uses Opus, explicit high-effort mode)
+   - `--opus` -> `model_flag = "opus"` (uses Opus, explicit alias for --hard)
+
+   If multiple are provided, last one wins.
+   If none: `model_flag = null` (use agent default, which is Sonnet)
+
+4. **Validate Team Size**
    ```bash
    # Clamp team_size to valid range
    team_size=${team_size:-2}
@@ -403,16 +415,21 @@ else:
 ```
 # For team mode:
 skill: "skill-team-implement"
-args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} team_size={team_size} session_id={session_id}"
+args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} team_size={team_size} session_id={session_id} model_flag={model_flag}"
 
 # For extension-routed skill (e.g., skill-founder-implement):
 skill: "{skill_name from extension routing}"
-args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} session_id={session_id}"
+args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} session_id={session_id} model_flag={model_flag}"
 
 # For default single-agent mode:
 skill: "skill-implementer"
-args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} session_id={session_id}"
+args: "task_number={N} plan_path={path to implementation plan} resume_phase={phase number} session_id={session_id} model_flag={model_flag}"
 ```
+
+If `model_flag` is set, pass the `model` parameter to override the agent's default model:
+- `model_flag="fast"` -> pass `model: sonnet` (explicit Sonnet)
+- `model_flag="hard"` or `model_flag="opus"` -> pass `model: opus` (override to Opus)
+- `model_flag=null` -> omit `model` parameter (use agent default)
 
 The skill will spawn the appropriate agent(s) which execute plan phases (in parallel for team mode), update phase markers, create commits per phase, and return a structured result.
 
