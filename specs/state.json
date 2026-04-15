@@ -47,11 +47,11 @@
         {
           "path": "specs/442_optimize_token_usage_model_routing/summaries/01_model-routing-summary.md",
           "type": "summary",
-          "summary": "Implementation summary: changed all non-Lean agent/command frontmatter to sonnet, added --fast/--hard/--opus flags to /research and /implement"
+          "summary": "All 5 phases completed: core agents, commands, extension files to sonnet; --fast/--hard/--opus flags added; documentation updated"
         }
       ],
       "completion_summary": "Changed default model from Opus to Sonnet across all 7 core agents, 13 commands, and 24 extension agent/command files (excluding Lean4 which retains Opus). Added --fast/--hard/--opus flags to /research and /implement commands for runtime model override. Updated CLAUDE.md and agent-frontmatter-standard.md documentation.",
-      "claudemd_suggestions": "Updated .claude/CLAUDE.md skill-to-agent table (sonnet defaults, Model Enforcement paragraph, command reference flags). Updated .claude/docs/reference/standards/agent-frontmatter-standard.md with Sonnet as default, Lean exception, and --fast/--hard/--opus runtime override documentation. Changed model: opus to model: sonnet in 7 core agent files, 13 command files, and 24 extension files."
+      "claudemd_suggestions": "Updated .claude/CLAUDE.md skill-to-agent table, Model Enforcement paragraph, and command reference flags. Updated agent-frontmatter-standard.md with Sonnet default, Lean exception, and --fast/--hard/--opus documentation."
     },
     {
       "project_number": 441,

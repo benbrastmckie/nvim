@@ -510,5 +510,4 @@ The sync system needs to handle the fact that target repos (zed, other projects)
 ### Existing backlog
 7. **78** [PLANNED] -> implement
 8. **87** [RESEARCHED] -> plan
-9. **442** [COMPLETED]
-10. **443** [RESEARCHED] -> plan (independent)
+9. **443** [RESEARCHED] -> plan (independent)
