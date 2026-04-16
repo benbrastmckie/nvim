@@ -1,7 +1,17 @@
 {
   "version": "1.0.0",
-  "next_project_number": 456,
+  "next_project_number": 457,
   "active_projects": [
+    {
+      "project_number": 456,
+      "project_name": "fix_doc_regressions_agent_system_update",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-16T20:27:09Z",
+      "last_updated": "2026-04-16T20:27:09Z",
+      "next_artifact_number": 1,
+      "artifacts": []
+    },
     {
       "project_number": 455,
       "project_name": "separate_model_effort_flags_add_haiku_sonnet",

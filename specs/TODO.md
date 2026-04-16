@@ -1,5 +1,5 @@
 ---
-next_project_number: 456
+next_project_number: 457
 ---
 
 # TODO
@@ -10,6 +10,7 @@ next_project_number: 456
 
 ### Pending
 
+- **456** [NOT STARTED] -- Fix documentation regressions from agent system update
 - **455** [COMPLETED] -- Separate model selection from effort flags, add --haiku and --sonnet
 - **454** [COMPLETED] -- Memory system documentation and end-to-end validation (depends: 448, 453)
 - **453** [COMPLETED] -- Integrate /distill with /todo suggestions and retrieval tombstone filtering (depends: 447, 452)
@@ -26,6 +27,15 @@ next_project_number: 456
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 456. Fix documentation regressions from agent system update
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Fix documentation regressions introduced during the agent system update. Four fixes across three files: (1) **High**: Restore retrieval tracking fields (`retrieval_count`, `last_retrieved`, `keywords`, `summary`) in skill-memory SKILL.md frontmatter template -- without these, new memories break JSON index generation and retrieval scoring. (2) **Medium**: Restore "Planning Success" and "Implementation Partial" JSON examples in `return-metadata-file.md` -- agents need concrete examples for non-obvious field combinations. (3) **Medium**: Restore `plan_metadata` JSON example block in `plan-format.md` -- the `dependency_waves` nested array-of-arrays shape is not self-evident from text alone. (4) **Low**: Add sequential plan note to Dependency Analysis description in `plan-format.md` -- prevents agents from skipping wave tables for non-parallel plans. Source: `/home/benjamin/.config/zed/specs/071_fix_doc_regressions_agent_update/reports/01_doc-regression-review.md`.
+
+---
 
 ### 455. Separate model selection from effort flags, add --haiku and --sonnet
 - **Effort**: medium
