@@ -30,14 +30,16 @@ next_project_number: 459
 
 ### 458. Create legal-analysis-agent for critical legal feedback
 - **Effort**: Medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
+- **Research**:
+  - [specs/458_create_legal_analysis_agent/reports/01_teammate-c-findings.md]
 
 **Description**: Create a new legal-analysis-agent.md at .claude/extensions/founder/agents/ designed to think like an attorney and provide clear critical feedback with concrete suggestions for improvement. Use this agent to improve legal-ai-example.typ (~/Projects/Logos/Vision/shared/strategy/03-applications/) which has received consistent feedback that its description does not accord with legal fundamentals. Avoid redundancy with the existing legal-council-agent.md -- the new agent's focus is attorney-style critical analysis and actionable improvement suggestions.
 
 ### 457. Design extension-based slidev resource distribution strategy
 - **Effort**: Large
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Research**:
   - [specs/457_design_extension_slidev_resource_distribution/reports/01_team-research.md]
