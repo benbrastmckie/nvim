@@ -101,7 +101,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Integrate Retrieval into Skills [IN PROGRESS]
+### Phase 2: Integrate Retrieval into Skills [COMPLETED]
 
 **Goal**: Add Stage 4a (Memory Retrieval) to skill-researcher, skill-planner, and skill-implementer, injecting retrieved memory into the delegation prompt.
 
@@ -131,7 +131,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Add --clean Flag to Commands [NOT STARTED]
+### Phase 3: Add --clean Flag to Commands [IN PROGRESS]
 
 **Goal**: Parse the --clean flag in /research, /plan, and /implement commands and pass it through to the skill delegation context.
 
