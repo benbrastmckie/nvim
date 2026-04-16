@@ -11,7 +11,7 @@ next_project_number: 456
 ### Pending
 
 - **455** [COMPLETED] -- Separate model selection from effort flags, add --haiku and --sonnet
-- **454** [NOT STARTED] -- Memory system documentation and end-to-end validation (depends: 448, 453)
+- **454** [RESEARCHED] -- Memory system documentation and end-to-end validation (depends: 448, 453)
 - **453** [COMPLETED] -- Integrate /distill with /todo suggestions and retrieval tombstone filtering (depends: 447, 452)
 - **452** [COMPLETED] -- Implement distill compress and refine operations (depends: 450, 451)
 - **451** [COMPLETED] -- Implement distill combine operation with keyword superset guarantee (depends: 449)
@@ -114,7 +114,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 454. Memory system documentation and end-to-end validation
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: Tasks #448, #453
 
