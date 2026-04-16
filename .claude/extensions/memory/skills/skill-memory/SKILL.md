@@ -921,3 +921,139 @@ git commit -m "memory: add/update ${memories_affected} memories
 
 Session: ${session_id}
 ```
+
+---
+
+## Mode: distill
+
+Memory vault distillation: scoring, health reporting, and maintenance operations. Invoked by `/distill` command with `mode=distill`.
+
+### Prerequisites
+
+**Validate-on-Read**: Before scoring, run the validate-on-read procedure from the "Validate-on-Read" section above to ensure `memory-index.json` is consistent with the filesystem. If stale, regenerate using the "JSON Index Maintenance" procedure before proceeding.
+
+### Sub-Mode Dispatch
+
+| Sub-Mode | Description | Status |
+|----------|-------------|--------|
+| `report` | Generate health report with scoring | Available (task 449) |
+| `purge` | Remove memories with composite score > 0.7 | Placeholder (task 450) |
+| `merge` | Combine memories with duplicate score > 0.6 | Placeholder (task 451) |
+| `compress` | Summarize memories with size penalty > 0.5 | Placeholder (task 452) |
+| `refine` | Improve memory quality (keywords, tags) | Placeholder (task 452) |
+| `gc` | Run purge + merge + compress in sequence | Placeholder (task 452) |
+| `auto` | Automated distillation with all operations | Placeholder (task 452) |
+
+For placeholder sub-modes, return:
+```
+/distill --{sub_mode} is not yet implemented.
+Currently available: /distill (health report)
+```
+
+### Scoring Engine
+
+The scoring engine computes a composite maintenance score for each memory in the vault. Higher scores indicate memories that are better candidates for maintenance operations.
+
+#### Input
+
+Read all entries from `.memory/memory-index.json` after validate-on-read. Each entry provides:
+- `created` (ISO date)
+- `modified` (ISO date)
+- `last_retrieved` (ISO date or null)
+- `retrieval_count` (number)
+- `token_count` (number)
+- `keywords` (array of strings)
+
+#### Component 1: Staleness Score (weight: 0.3)
+
+Measures how long since the memory was last useful.
+
+```
+days_since_last = days_between(today, last_retrieved or created)
+
+staleness = min(1.0, days_since_last / 90)
+
+# FSRS adjustment: reduce staleness for actively retrieved old memories
+if retrieval_count > 0 AND days_since_created > 60:
+  staleness = max(0, staleness - 0.3)
+```
+
+- Range: 0.0 (fresh) to 1.0 (90+ days stale)
+- FSRS adjustment rewards memories that have proven useful over time
+
+#### Component 2: Zero-Retrieval Penalty (weight: 0.25)
+
+Penalizes memories that have never been retrieved after a grace period.
+
+```
+if retrieval_count == 0 AND days_since_created > 30:
+  zero_retrieval = 1.0
+else:
+  zero_retrieval = 0.0
+```
+
+- Binary: 0.0 (has retrievals or too new) or 1.0 (never retrieved, older than 30 days)
+
+#### Component 3: Size Penalty (weight: 0.2)
+
+Penalizes oversized memories that may benefit from compression.
+
+```
+size_penalty = max(0, (token_count - 600) / 600)
+```
+
+- Range: 0.0 (600 tokens or fewer) to unbounded (linear above 600)
+- A 1200-token memory scores 1.0; a 300-token memory scores 0.0
+
+#### Component 4: Duplicate Score (weight: 0.25)
+
+Measures keyword overlap with the most similar other memory in the vault.
+
+```
+for each other_memory in vault:
+  overlap = |memory.keywords intersect other_memory.keywords| / |memory.keywords|
+
+duplicate = max(overlap across all other memories)
+```
+
+- Range: 0.0 (no keyword overlap) to 1.0 (complete keyword subset)
+- Uses Jaccard-like ratio: intersection size divided by the memory's own keyword count
+
+#### Composite Score
+
+```
+composite = (staleness * 0.3) + (zero_retrieval * 0.25) + (size_penalty * 0.2) + (duplicate * 0.25)
+composite = clamp(composite, 0, 1)
+```
+
+- Weights sum to 1.0 (0.3 + 0.25 + 0.2 + 0.25)
+- Range: 0.0 (healthy memory) to 1.0 (strong maintenance candidate)
+
+#### Topic-Cluster Grouping
+
+Group memories by topic cluster for the health report. The cluster key is the first path segment of the memory's `topic` field:
+
+```
+cluster_key = topic.split("/")[0]
+
+# Example:
+# topic "neovim/plugins/telescope" -> cluster "neovim"
+# topic "lua/patterns" -> cluster "lua"
+# topic "" or null -> cluster "uncategorized"
+```
+
+### Maintenance Candidate Classification
+
+Based on composite scores, classify each memory:
+
+| Composite Score | Classification | Recommended Action |
+|-----------------|----------------|-------------------|
+| >= 0.7 | Purge candidate | Remove (--purge) |
+| >= 0.5 | Merge/compress candidate | Merge duplicates (--merge) or compress (--compress) |
+| >= 0.3 | Review candidate | May benefit from refinement (--refine) |
+| < 0.3 | Healthy | No action needed |
+
+Additionally, flag specific conditions:
+- `duplicate > 0.6` -> Merge candidate regardless of composite
+- `size_penalty > 0.5` -> Compress candidate regardless of composite
+- `zero_retrieval == 1.0` -> Review for relevance
