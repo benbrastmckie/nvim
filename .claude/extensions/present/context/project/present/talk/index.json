@@ -24,15 +24,13 @@
         { "name": "pptx-generation", "file": "pptx-generation.md", "description": "python-pptx API patterns for PPTX slide creation, theme application, component helpers (DataTable, FigurePanel, CitationBlock, StatResult, FlowDiagram), speaker notes, and error handling" }
       ]
     },
-    "animations": {
-      "description": "Slide transition and element animations (reuse founder deck animations)",
-      "path": null,
-      "note": "Reference .claude/extensions/founder/context/project/founder/deck/animations/ directly"
+    "animation": {
+      "description": "Reusable animation pattern definitions with syntax examples (shared via slidev extension)",
+      "path": "../../slidev/animation/"
     },
-    "styles": {
-      "description": "CSS styles for slide elements (reuse founder deck styles where applicable)",
-      "path": null,
-      "note": "Reference .claude/extensions/founder/context/project/founder/deck/styles/ for base styles"
+    "style": {
+      "description": "Composable CSS presets for colors, typography, textures (shared via slidev extension)",
+      "path": "../../slidev/style/"
     },
     "content": {
       "description": "Content templates for research presentation slides",

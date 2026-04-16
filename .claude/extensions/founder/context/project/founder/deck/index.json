@@ -12,12 +12,12 @@
       "directory": "patterns/"
     },
     "animation": {
-      "description": "Reusable animation pattern definitions with syntax examples",
-      "directory": "animations/"
+      "description": "Reusable animation pattern definitions with syntax examples (shared via slidev extension)",
+      "directory": "../../slidev/animation/"
     },
     "style": {
-      "description": "Composable CSS presets for colors, typography, textures",
-      "directory": "styles/"
+      "description": "Composable CSS presets for colors, typography, textures (shared via slidev extension)",
+      "directory": "../../slidev/style/"
     },
     "content": {
       "description": "Reusable slide content markdown snippets",
@@ -118,7 +118,7 @@
       "id": "anim-fade-in",
       "category": "animation",
       "name": "Fade In",
-      "path": "animations/fade-in.md",
+      "path": "../../slidev/animation/fade-in.md",
       "description": "CSS fade entrance via v-click opacity transition.",
       "tags": { "complexity": "low", "trigger": "v-click" }
     },
@@ -126,7 +126,7 @@
       "id": "anim-slide-in-below",
       "category": "animation",
       "name": "Slide In Below",
-      "path": "animations/slide-in-below.md",
+      "path": "../../slidev/animation/slide-in-below.md",
       "description": "v-motion y-axis entrance with optional spring physics.",
       "tags": { "complexity": "medium", "trigger": "v-motion" }
     },
@@ -134,7 +134,7 @@
       "id": "anim-metric-cascade",
       "category": "animation",
       "name": "Metric Cascade",
-      "path": "animations/metric-cascade.md",
+      "path": "../../slidev/animation/metric-cascade.md",
       "description": "Staggered v-motion entrance for KPI slides with scale and opacity.",
       "tags": { "complexity": "high", "trigger": "v-motion" }
     },
@@ -142,7 +142,7 @@
       "id": "anim-rough-marks",
       "category": "animation",
       "name": "Rough Marks",
-      "path": "animations/rough-marks.md",
+      "path": "../../slidev/animation/rough-marks.md",
       "description": "v-mark emphasis patterns for hand-drawn style text highlighting.",
       "tags": { "complexity": "medium", "trigger": "v-mark" }
     },
@@ -150,7 +150,7 @@
       "id": "anim-staggered-list",
       "category": "animation",
       "name": "Staggered List",
-      "path": "animations/staggered-list.md",
+      "path": "../../slidev/animation/staggered-list.md",
       "description": "v-clicks with depth and every parameters for progressive list reveal.",
       "tags": { "complexity": "low", "trigger": "v-clicks" }
     },
@@ -158,7 +158,7 @@
       "id": "anim-scale-in-pop",
       "category": "animation",
       "name": "Scale In Pop",
-      "path": "animations/scale-in-pop.md",
+      "path": "../../slidev/animation/scale-in-pop.md",
       "description": "v-motion spring scale entrance for CTAs and emphasis elements.",
       "tags": { "complexity": "medium", "trigger": "v-motion" }
     },
@@ -166,7 +166,7 @@
       "id": "style-dark-blue-navy",
       "category": "style",
       "name": "Dark Blue Navy Colors",
-      "path": "styles/colors/dark-blue-navy.css",
+      "path": "../../slidev/style/colors/dark-blue-navy.css",
       "description": "Navy background with blue accents color variables.",
       "tags": { "style_type": "colors", "color_schema": "dark" }
     },
@@ -174,7 +174,7 @@
       "id": "style-dark-gold-premium",
       "category": "style",
       "name": "Dark Gold Premium Colors",
-      "path": "styles/colors/dark-gold-premium.css",
+      "path": "../../slidev/style/colors/dark-gold-premium.css",
       "description": "Near-black background with gold accents color variables.",
       "tags": { "style_type": "colors", "color_schema": "dark" }
     },
@@ -182,7 +182,7 @@
       "id": "style-light-green-growth",
       "category": "style",
       "name": "Light Green Growth Colors",
-      "path": "styles/colors/light-green-growth.css",
+      "path": "../../slidev/style/colors/light-green-growth.css",
       "description": "Mint/white background with green accents color variables.",
       "tags": { "style_type": "colors", "color_schema": "light" }
     },
@@ -190,7 +190,7 @@
       "id": "style-light-blue-corp",
       "category": "style",
       "name": "Light Blue Corporate Colors",
-      "path": "styles/colors/light-blue-corp.css",
+      "path": "../../slidev/style/colors/light-blue-corp.css",
       "description": "White background with blue/navy accents color variables.",
       "tags": { "style_type": "colors", "color_schema": "light" }
     },
@@ -198,7 +198,7 @@
       "id": "style-montserrat-inter",
       "category": "style",
       "name": "Montserrat + Inter Typography",
-      "path": "styles/typography/montserrat-inter.css",
+      "path": "../../slidev/style/typography/montserrat-inter.css",
       "description": "Montserrat headings with Inter body text.",
       "tags": { "style_type": "typography" }
     },
@@ -206,7 +206,7 @@
       "id": "style-playfair-inter",
       "category": "style",
       "name": "Playfair + Inter Typography",
-      "path": "styles/typography/playfair-inter.css",
+      "path": "../../slidev/style/typography/playfair-inter.css",
       "description": "Playfair Display serif headings with Inter body text.",
       "tags": { "style_type": "typography" }
     },
@@ -214,7 +214,7 @@
       "id": "style-inter-only",
       "category": "style",
       "name": "Inter Only Typography",
-      "path": "styles/typography/inter-only.css",
+      "path": "../../slidev/style/typography/inter-only.css",
       "description": "All-sans clean look using Inter for everything.",
       "tags": { "style_type": "typography" }
     },
@@ -222,7 +222,7 @@
       "id": "style-grid-overlay",
       "category": "style",
       "name": "Grid Overlay Texture",
-      "path": "styles/textures/grid-overlay.css",
+      "path": "../../slidev/style/textures/grid-overlay.css",
       "description": "Subtle grid background for technical/structured feel.",
       "tags": { "style_type": "texture" }
     },
@@ -230,7 +230,7 @@
       "id": "style-noise-grain",
       "category": "style",
       "name": "Noise Grain Texture",
-      "path": "styles/textures/noise-grain.css",
+      "path": "../../slidev/style/textures/noise-grain.css",
       "description": "Film grain SVG overlay for premium/editorial feel.",
       "tags": { "style_type": "texture" }
     },

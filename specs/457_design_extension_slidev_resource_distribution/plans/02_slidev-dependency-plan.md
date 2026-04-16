@@ -145,7 +145,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Migrate Founder and Present to Depend on slidev [NOT STARTED]
+### Phase 3: Migrate Founder and Present to Depend on slidev [COMPLETED]
 
 **Goal**: Update both founder and present manifests to declare the slidev dependency, repoint all path references from founder's deck directory to slidev's deployed paths, and fix present's broken null-path entries.
 

@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "Strategic business analysis for founders with task integration: market sizing, competitive analysis, go-to-market strategy, contract review, and project timeline management",
   "task_type": "founder",
-  "dependencies": [],
+  "dependencies": ["slidev"],
   "provides": {
     "agents": [
       "market-agent.md",
