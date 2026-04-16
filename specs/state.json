@@ -62,16 +62,21 @@
     {
       "project_number": 452,
       "project_name": "implement_distill_compress_and_refine_operations",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:27:49Z",
+      "last_updated": "2026-04-16T19:30:45Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/452_implement_distill_compress_and_refine_operations/reports/01_distill-compress-research.md",
           "type": "research",
           "summary": "Research on distill compress and refine operations"
+        },
+        {
+          "path": "specs/452_implement_distill_compress_and_refine_operations/plans/01_distill-compress-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan: compress, refine, auto flag, validation"
         }
       ],
       "dependencies": [
@@ -176,16 +181,21 @@
     {
       "project_number": 448,
       "project_name": "add_passive_memory_nudge_stop_hook",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:28:06Z",
+      "last_updated": "2026-04-16T19:30:23Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/448_add_passive_memory_nudge_stop_hook/reports/01_memory-nudge-research.md",
           "type": "research",
           "summary": "Research on passive memory nudge stop hook"
+        },
+        {
+          "path": "specs/448_add_passive_memory_nudge_stop_hook/plans/01_memory-nudge-plan.md",
+          "type": "plan",
+          "summary": "2-phase plan: hook script + settings integration"
         }
       ],
       "dependencies": [
@@ -196,16 +206,21 @@
     {
       "project_number": 447,
       "project_name": "upgrade_todo_memory_harvest_pre_classification",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:27:35Z",
+      "last_updated": "2026-04-16T19:31:27Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/447_upgrade_todo_memory_harvest_pre_classification/reports/01_todo-harvest-research.md",
           "type": "research",
           "summary": "Research on /todo memory harvest upgrade with pre-classification"
+        },
+        {
+          "path": "specs/447_upgrade_todo_memory_harvest_pre_classification/plans/01_todo-harvest-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan: Stage 7 rewrite, Stage 9 tiered review, Stage 14 autonomous creation, validation"
         }
       ],
       "dependencies": [
