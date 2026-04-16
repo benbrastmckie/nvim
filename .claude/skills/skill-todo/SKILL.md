@@ -733,6 +733,51 @@ ${transition_comment}
         - Format: `Memory harvest: {created} created ({t1_created} Tier 1, {t2_created} Tier 2, {t3_created} Tier 3), {noop_skipped} skipped (NOOP), {user_skipped} declined`
         - If no memories created: `Memory harvest: none (no candidates)` or `Memory harvest: none (all skipped)`
       - Active tasks remaining
+
+      **Suggested Next Steps**:
+
+      After displaying the archival summary, append a numbered "Suggested Next Steps" list.
+      The list always includes at least one item (the archive review suggestion).
+      Distill suggestions are conditionally added based on `memory_health` from state.json.
+
+      1. Read `memory_health` from specs/state.json with fallback:
+         ```bash
+         memory_health=$(jq -r '.memory_health // {}' specs/state.json)
+         total_memories=$(echo "$memory_health" | jq -r '.total_memories // 0')
+         never_retrieved=$(echo "$memory_health" | jq -r '.never_retrieved // 0')
+         health_score=$(echo "$memory_health" | jq -r '.health_score // 100')
+         last_distilled=$(echo "$memory_health" | jq -r '.last_distilled // null')
+         ```
+         If `memory_health` is absent or empty (`{}`), suppress all /distill suggestions
+         (only show the archive review suggestion).
+
+      2. Always include as the first suggestion:
+         `1. Review the archive at specs/archive/ to verify task directories moved correctly`
+
+      3. Suppress ALL /distill suggestions when `total_memories < 5`:
+         - Do not mention /distill at all in this case
+
+      4. When `total_memories >= 5`, evaluate these conditions (in order):
+
+         a. Suggest `/distill --report` when `total_memories >= 10`:
+            `N. Run /distill --report to review memory vault health ({total_memories} memories, {health_score}/100 health)`
+
+         b. Suggest `/distill` (full interactive) when ANY of these conditions are true:
+            - `total_memories >= 30`
+            - `never_retrieved / total_memories > 0.5` AND `total_memories >= 5`
+            - `last_distilled` is null or stale (older than 30 days) AND `total_memories >= 10`
+
+            Format: `N. Run /distill to maintain memory vault ({total_memories} memories, {health_score}/100 health)`
+
+         Note: If condition (b) is met, it replaces condition (a) -- do not show both
+         /distill --report and /distill suggestions. Show the stronger suggestion only.
+
+      5. Format as a clean numbered list:
+         ```
+         Suggested next steps:
+         1. Review the archive at specs/archive/ to verify task directories moved correctly
+         2. Run /distill to maintain memory vault (42 memories, 72/100 health)
+         ```
     </process>
   </stage>
 </execution>

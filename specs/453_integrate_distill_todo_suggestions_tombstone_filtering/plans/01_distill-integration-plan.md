@@ -79,7 +79,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Conditional /distill Suggestions in skill-todo [IN PROGRESS]
+### Phase 2: Conditional /distill Suggestions in skill-todo [COMPLETED]
 
 **Goal**: Append numbered "Suggested Next Steps" to /todo output based on memory_health state.
 
@@ -108,7 +108,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Distill State Tracking Clarification and Validation [NOT STARTED]
+### Phase 3: Distill State Tracking Clarification and Validation [IN PROGRESS]
 
 **Goal**: Make distill_count increment conditional on non-report sub-modes and validate all three integration points.
 
