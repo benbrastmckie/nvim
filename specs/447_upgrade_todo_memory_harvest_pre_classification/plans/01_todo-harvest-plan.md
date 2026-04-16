@@ -1,7 +1,7 @@
 # Implementation Plan: Upgrade /todo memory harvest with pre-classification and batch review
 
 - **Task**: 447 - Upgrade /todo memory harvest with pre-classification and batch review
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: Task 446 (completed)
 - **Research Inputs**: specs/447_upgrade_todo_memory_harvest_pre_classification/reports/01_todo-harvest-research.md

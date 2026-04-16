@@ -22,10 +22,10 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     1. No arguments (bare invocation) -> Report mode (health report)
     2. `--purge` -> Purge mode (tombstone stale/zero-retrieval memories) [available - task 450]
     3. `--merge` -> Merge mode (combine duplicate memories) [available - task 451]
-    4. `--compress` -> Compress mode (reduce oversized memories) [placeholder - task 452]
-    5. `--refine` -> Refine mode (improve memory quality) [placeholder - task 452]
+    4. `--compress` -> Compress mode (reduce oversized memories) [available - task 452]
+    5. `--refine` -> Refine mode (improve memory quality) [available - task 452]
     6. `--gc` -> Garbage collection (hard-delete tombstoned memories past grace period) [available - task 450]
-    7. `--auto` -> Automated distillation (all operations) [placeholder - task 452]
+    7. `--auto` -> Automated distillation (Tier 1 refine only) [available - task 452]
 
     **Additional Flags**:
     - `--dry-run` -> Show what would happen without making changes
@@ -68,17 +68,12 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       | report | Available | 449 |
       | purge | Available | 450 |
       | merge | Available | 451 |
-      | compress | Placeholder | 452 |
-      | refine | Placeholder | 452 |
+      | compress | Available | 452 |
+      | refine | Available | 452 |
       | gc | Available | 450 |
-      | auto | Placeholder | 452 |
+      | auto | Available | 452 |
 
-      If sub-mode is a placeholder, display:
-      ```
-      /distill --{sub_mode} is not yet implemented.
-      Currently available: /distill (health report), /distill --purge, /distill --merge, /distill --gc
-      See task 452 for planned sub-mode implementations.
-      ```
+      All sub-modes are now available.
     </process>
   </step_1>
 
@@ -129,10 +124,23 @@ description: Analyze memory vault health, score memories for maintenance, and ru
         - Log gc operation to distill-log.json (type: "gc")
         - Update memory_health in state.json (decrement total_memories)
 
-      Other modes (when implemented):
-        - Display operation summary
-        - Show before/after metrics
-        - Log operation to distill-log.json
+      Compress mode:
+        - Display compressed memory count and IDs
+        - Show per-memory tokens_before, tokens_after, compression_ratio
+        - Verify keyword preservation per memory
+        - Log compress operation to distill-log.json (type: "compress")
+        - Update memory_health in state.json
+
+      Refine mode:
+        - Display Tier 1 automatic fixes applied (keyword dedup, summary gen, topic normalize)
+        - Present Tier 2 interactive fixes via AskUserQuestion (keyword enrich, category reclassify, topic correct)
+        - Log refine operation to distill-log.json (type: "refine")
+        - Update memory_health in state.json
+
+      Auto mode:
+        - Run Tier 1 refine fixes only (no interactive operations)
+        - Display change summary table
+        - Log refine operation to distill-log.json (type: "refine", notes: "auto mode")
         - Update memory_health in state.json
     </process>
   </step_3>
@@ -155,7 +163,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 <error_handling>
   <argument_errors>
     - Unknown flag -> "Unknown flag: {flag}. Available: --purge, --merge, --compress, --refine, --gc, --auto, --dry-run, --verbose"
-    - Unimplemented sub-mode -> "Sub-mode not yet implemented. Currently available: /distill (health report), /distill --purge, /distill --merge, /distill --gc"
+    - Unknown sub-mode -> "Unknown sub-mode. Available: /distill (report), /distill --purge, --merge, --compress, --refine, --gc, --auto"
   </argument_errors>
 
   <execution_errors>
@@ -181,9 +189,9 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <writes>
     - .memory/distill-log.json (operation log entries)
     - specs/state.json (memory_health field updates)
-    - .memory/10-Memories/*.md (frontmatter mutation for purge; deletion for gc; content merge for merge/compress)
-    - .memory/memory-index.json (status field updates for purge; entry removal for gc; regeneration for merge)
-    - .memory/20-Indices/index.md (regeneration for merge)
-    - .memory/10-Memories/README.md (regeneration for merge)
+    - .memory/10-Memories/*.md (frontmatter mutation for purge/refine; deletion for gc; content merge for merge; content compression for compress)
+    - .memory/memory-index.json (status field updates for purge; entry removal for gc; regeneration for merge/compress/refine/auto)
+    - .memory/20-Indices/index.md (regeneration for merge/compress/refine/auto)
+    - .memory/10-Memories/README.md (regeneration for merge/compress/refine/auto)
   </writes>
 </state_management>

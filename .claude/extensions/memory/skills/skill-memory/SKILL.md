@@ -950,11 +950,7 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 | `gc` | Hard-delete tombstoned memories past grace period | Available (task 450) |
 | `auto` | Automated distillation (Tier 1 refine only) | Available (task 452) |
 
-For placeholder sub-modes, return:
-```
-/distill --{sub_mode} is not yet implemented.
-Currently available: /distill (health report), /distill --purge, /distill --merge, /distill --gc
-```
+All sub-modes are now available. No placeholder responses needed.
 
 ### Scoring Engine
 

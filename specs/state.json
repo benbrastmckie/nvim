@@ -212,10 +212,10 @@
     {
       "project_number": 447,
       "project_name": "upgrade_todo_memory_harvest_pre_classification",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:31:32Z",
+      "last_updated": "2026-04-16T19:37:23Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -227,12 +227,18 @@
           "path": "specs/447_upgrade_todo_memory_harvest_pre_classification/plans/01_todo-harvest-plan.md",
           "type": "plan",
           "summary": "4-phase plan: Stage 7 rewrite, Stage 9 tiered review, Stage 14 autonomous creation, validation"
+        },
+        {
+          "path": "specs/447_upgrade_todo_memory_harvest_pre_classification/summaries/01_todo-harvest-summary.md",
+          "type": "summary",
+          "summary": "Todo harvest upgrade implementation summary"
         }
       ],
       "dependencies": [
         446
       ],
-      "session_id": "sess_1776367430_f97955"
+      "session_id": "sess_1776367430_f97955",
+      "completion_summary": "Upgraded /todo harvest with structured memory_candidates consumption, Jaccard dedup, three-tier classification, tiered batch review, and autonomous memory creation"
     },
     {
       "project_number": 446,

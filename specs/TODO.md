@@ -18,7 +18,7 @@ next_project_number: 456
 - **450** [COMPLETED] -- Implement distill purge operation with tombstone pattern (depends: 449)
 - **449** [COMPLETED] -- Create /distill command with scoring engine and health report (depends: 444)
 - **448** [COMPLETED] -- Add passive memory nudge stop hook (depends: 446)
-- **447** [IMPLEMENTING] -- Upgrade /todo memory harvest with pre-classification and batch review (depends: 446)
+- **447** [COMPLETED] -- Upgrade /todo memory harvest with pre-classification and batch review (depends: 446)
 - **446** [COMPLETED] -- Add memory candidate emission to agents and return metadata (depends: 445)
 - **445** [COMPLETED] -- Implement two-phase auto-retrieval for memory system (depends: 444)
 - **444** [COMPLETED] -- Create skill-memory with /learn command and memory index infrastructure
@@ -394,7 +394,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 447. Upgrade /todo memory harvest with pre-classification and batch review
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task #446
 
