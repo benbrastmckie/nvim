@@ -102,16 +102,21 @@
     {
       "project_number": 449,
       "project_name": "create_distill_command_scoring_engine_health_report",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T18:53:36Z",
+      "last_updated": "2026-04-16T18:57:21Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/449_create_distill_command_scoring_engine_health_report/reports/01_distill-command-research.md",
           "type": "research",
           "summary": "Research covering /distill command design, scoring engine, health report, distill-log schema"
+        },
+        {
+          "path": "specs/449_create_distill_command_scoring_engine_health_report/plans/01_distill-command-plan.md",
+          "type": "plan",
+          "summary": "5-phase plan: /distill command, scoring engine, health report, distill-log, state tracking"
         }
       ],
       "dependencies": [
@@ -161,16 +166,21 @@
     {
       "project_number": 445,
       "project_name": "implement_two_phase_auto_retrieval_memory",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T18:54:28Z",
+      "last_updated": "2026-04-16T18:57:37Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/445_implement_two_phase_auto_retrieval_memory/reports/01_auto-retrieval-research.md",
           "type": "research",
           "summary": "Research on two-phase auto-retrieval covering index schema, injection points, scoring, token budget"
+        },
+        {
+          "path": "specs/445_implement_two_phase_auto_retrieval_memory/plans/01_auto-retrieval-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan: shared retrieval script, skill injection, --clean flag, validation"
         }
       ],
       "dependencies": [
