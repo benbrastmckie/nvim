@@ -18,6 +18,7 @@ Direct execution skill for memory vault management. Handles memory creation, sim
 Reference (do not load eagerly):
 - Path: `@.memory/30-Templates/memory-template.md` - Memory template
 - Path: `@.memory/20-Indices/index.md` - Memory index
+- Path: `@.memory/memory-index.json` - Machine-queryable memory index
 - Path: `@.claude/context/project/memory/learn-usage.md` - Usage guide
 
 ---
@@ -402,6 +403,8 @@ Infer topic using four-source priority:
 
 ### Index Maintenance
 
+> **Note**: After each operation, update all three indexes: `index.md`, `.memory/10-Memories/README.md`, and `memory-index.json`. See "JSON Index Maintenance" and "Index Regeneration Pattern" below.
+
 After each operation, update both `index.md` and `.memory/10-Memories/README.md`:
 
 **index.md**:
@@ -449,6 +452,79 @@ Benefits:
 - No append conflicts (complete overwrite)
 - Self-healing (missing entries recovered)
 - Idempotent (multiple regenerations produce same result)
+
+### JSON Index Maintenance
+
+After each CREATE, UPDATE, or EXTEND operation, regenerate `.memory/memory-index.json` from filesystem state:
+
+```bash
+# 1. Scan all memory files
+memories=$(ls .memory/10-Memories/MEM-*.md 2>/dev/null)
+
+# 2. For each file, extract frontmatter fields
+for mem in $memories; do
+  title=$(grep -m1 "^title:" "$mem" | sed 's/^title: *//' | tr -d '"')
+  topic=$(grep -m1 "^topic:" "$mem" | sed 's/^topic: *//' | tr -d '"')
+  created=$(grep -m1 "^created:" "$mem" | sed 's/^created: *//')
+  modified=$(grep -m1 "^modified:" "$mem" | sed 's/^modified: *//')
+  keywords=$(grep -m1 "^keywords:" "$mem" | sed 's/^keywords: *//')
+  summary=$(grep -m1 "^summary:" "$mem" | sed 's/^summary: *//' | tr -d '"')
+  retrieval_count=$(grep -m1 "^retrieval_count:" "$mem" | sed 's/^retrieval_count: *//')
+  last_retrieved=$(grep -m1 "^last_retrieved:" "$mem" | sed 's/^last_retrieved: *//')
+  # Compute token_count: word_count * 1.3
+  word_count=$(wc -w < "$mem")
+  token_count=$(echo "$word_count * 1.3" | bc | cut -d. -f1)
+  # Derive id from filename: MEM-{slug}.md -> MEM-{slug}
+  id=$(basename "$mem" .md)
+  # Derive category from first tag
+  category=$(grep -m1 "^tags:" "$mem" | sed 's/^tags: *\[//' | cut -d, -f1 | tr -d '] ')
+done
+
+# 3. Build JSON structure
+{
+  "version": "1.0.0",
+  "generated_at": "$(date +%Y-%m-%d)",
+  "entry_count": N,
+  "total_tokens": sum_of_token_counts,
+  "entries": [...]
+}
+
+# 4. Write to .memory/memory-index.json (complete overwrite)
+```
+
+**Schema Fields per Entry**:
+
+| Field | Type | Source |
+|-------|------|--------|
+| `id` | string | Filename without `.md` extension |
+| `path` | string | Relative path from project root |
+| `title` | string | Frontmatter `title` |
+| `summary` | string | Frontmatter `summary` |
+| `topic` | string | Frontmatter `topic` |
+| `category` | string | First tag from frontmatter `tags` |
+| `keywords` | array | Frontmatter `keywords` |
+| `token_count` | number | Word count * 1.3, rounded down |
+| `created` | string | Frontmatter `created` (ISO date) |
+| `modified` | string | Frontmatter `modified` (ISO date) |
+| `last_retrieved` | string/null | Frontmatter `last_retrieved` |
+| `retrieval_count` | number | Frontmatter `retrieval_count` |
+
+### Validate-on-Read
+
+Before using `memory-index.json` for retrieval or scoring, validate that the index matches the filesystem:
+
+```
+1. List all MEM-*.md files in .memory/10-Memories/
+2. List all entry ids in memory-index.json
+3. Compare:
+   - Files on disk not in index -> INDEX STALE (missing entries)
+   - Index entries with no file on disk -> INDEX STALE (orphaned entries)
+   - All match -> INDEX VALID
+4. If INDEX STALE: regenerate memory-index.json using JSON Index Maintenance procedure
+5. If INDEX VALID: proceed with retrieval
+```
+
+This ensures the index is always consistent, even if manual file edits bypass the skill pipeline.
 
 ---
 

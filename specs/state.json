@@ -5,10 +5,10 @@
     {
       "project_number": 455,
       "project_name": "separate_model_effort_flags_add_haiku_sonnet",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-16T21:00:00Z",
-      "last_updated": "2026-04-16T18:38:06Z",
+      "last_updated": "2026-04-16T18:39:28Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -22,7 +22,7 @@
           "summary": "4-phase plan: separate model selection from effort level across commands, skills, and docs"
         }
       ],
-      "session_id": "sess_1776364404_91f6f1"
+      "session_id": "sess_1776364720_50e855"
     },
     {
       "project_number": 454,
@@ -160,10 +160,10 @@
     {
       "project_number": 444,
       "project_name": "create_skill_memory_learn_command_index_infrastructure",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T18:37:22Z",
+      "last_updated": "2026-04-16T18:39:28Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -177,7 +177,7 @@
           "summary": "3-phase plan: memory-index.json creation, template field additions, backfilling, SKILL.md JSON index enhancement"
         }
       ],
-      "session_id": "sess_1776364404_91f6f1"
+      "session_id": "sess_1776364720_50e855"
     },
     {
       "project_number": 87,

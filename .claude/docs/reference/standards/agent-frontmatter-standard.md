@@ -1,6 +1,7 @@
 # Agent Frontmatter Standard
 
 **Created**: 2026-02-24
+**Updated**: 2026-04-16
 **Purpose**: Define YAML frontmatter requirements for agent files
 
 ## Overview
@@ -27,13 +28,13 @@ description: {brief description of agent purpose}
 ---
 name: general-research-agent
 description: Research general tasks using web search and codebase exploration
-model: sonnet
+model: opus
 ---
 ```
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `model` | string | No | Preferred model for this agent (`opus`, `sonnet`) |
+| `model` | string | No | Preferred model for this agent (`opus`, `sonnet`, `haiku`) |
 
 ## Model Field
 
@@ -41,29 +42,24 @@ The `model` field allows explicit model selection for agents that benefit from s
 
 ### Default Policy
 
-**Non-Lean agents default to Sonnet** for cost efficiency. All 7 core agents and all non-Lean extension agents declare `model: sonnet`.
+**All agents default to Opus.** All 7 core agents and all extension agents declare `model: opus` in their frontmatter. This provides the highest reasoning quality as the baseline.
 
-**Lean4 agents retain Opus** (`lean-research-agent`, `lean-implementation-agent`) because Lean4 proof work requires deep mathematical reasoning that benefits from Opus's superior capabilities.
+Users can override the model at invocation time using model flags (`--haiku`, `--sonnet`, `--opus`) for cost/speed tradeoffs on specific tasks.
 
 ### Values
 
 | Value | Use Case | Rationale |
 |-------|----------|-----------|
-| `opus` | Lean4 proof tasks requiring deep mathematical reasoning | Superior analytical and reasoning capabilities; reserved for Lean4 |
-| `sonnet` | General research, planning, implementation, coordination | Cost-effective, fast, good quality for most tasks |
+| `opus` | Default for all agents | Superior analytical and reasoning capabilities |
+| `sonnet` | Cost-effective alternative when specified via `--sonnet` | Good quality, faster, lower cost |
+| `haiku` | Lightweight tasks when specified via `--haiku` | Fastest, lowest cost, suitable for simple tasks |
 | (omitted) | Default behavior | System chooses based on context |
 
 ### Usage Guidelines
 
 **Use `model: opus` for**:
-- Lean4 research and implementation agents (mathematical reasoning)
-- Any future agent requiring provably superior reasoning quality
-
-**Use `model: sonnet` for**:
-- General research agents (default)
-- Planning and implementation agents (default)
-- Team orchestration skills (lightweight coordination)
-- All non-Lean extension agents
+- All core agents (research, planning, implementation, coordination)
+- All extension agents (domain-specific research and implementation)
 
 **Omit model field when**:
 - Model flexibility is desired
@@ -71,21 +67,35 @@ The `model` field allows explicit model selection for agents that benefit from s
 
 ### Runtime Override Flags
 
-Users can override the agent's default model at invocation time using flags on `/research` and `/implement` commands:
+Users can override the agent's default model at invocation time using flags on `/research`, `/plan`, and `/implement` commands. There are two independent flag dimensions:
+
+**Effort flags** (how deeply the model reasons):
+
+| Flag | Behavior |
+|------|----------|
+| `--fast` | Low-effort mode: lighter reasoning, faster responses |
+| `--hard` | High-effort mode: deeper reasoning, more thorough analysis |
+
+**Model flags** (which model family to use):
 
 | Flag | Maps to | Behavior |
 |------|---------|----------|
-| `--fast` | `sonnet` | Explicit low-cost mode (Sonnet) |
-| `--hard` | `opus` | Explicit high-effort mode (Opus) |
-| `--opus` | `opus` | Explicit Opus (alias for `--hard`) |
+| `--haiku` | `haiku` | Use Haiku model (fastest, lowest cost) |
+| `--sonnet` | `sonnet` | Use Sonnet model (balanced cost/quality) |
+| `--opus` | `opus` | Use Opus model (highest quality, same as default) |
 
-If multiple flags are provided, the last one wins. These flags are passed as `model_flag` in the delegation context to the skill and subagent.
+Effort and model flags are independent and can be combined. For example, `--fast --opus` uses Opus with low-effort reasoning. If no model flag is provided, the agent's frontmatter default is used (currently opus for all agents). If no effort flag is provided, normal effort is used.
+
+If multiple flags of the same dimension are provided, the last one wins. These flags are passed as `model_flag` and `effort_flag` in the delegation context to the skill and subagent.
 
 **Examples**:
 ```
-/research 42 --opus        # Force Opus for this research task
-/implement 42 --hard       # Force Opus for this implementation
-/research 42 --fast        # Explicit Sonnet (same as default)
+/research 42 --opus        # Force Opus (same as default)
+/research 42 --sonnet      # Use Sonnet for cost savings
+/research 42 --haiku       # Use Haiku for speed
+/implement 42 --hard       # Deep reasoning with default model (Opus)
+/implement 42 --fast       # Light reasoning with default model (Opus)
+/plan 42 --fast --sonnet   # Light reasoning with Sonnet
 ```
 
 ### Examples
@@ -94,11 +104,11 @@ If multiple flags are provided, the last one wins. These flags are passed as `mo
 ---
 name: general-research-agent
 description: Research general tasks using web search and codebase exploration
-model: sonnet
+model: opus
 ---
 ```
 
-**Rationale**: General research agents use Sonnet for cost efficiency. Use `--hard` or `--opus` at invocation time when a specific research task requires deeper reasoning.
+**Rationale**: All agents use Opus as the default for highest quality. Use `--sonnet` or `--haiku` at invocation time for cost savings on simpler tasks.
 
 ```yaml
 ---
@@ -108,7 +118,7 @@ model: opus
 ---
 ```
 
-**Rationale**: Lean4 proof work requires deep mathematical reasoning; Opus is retained for all Lean4 agents.
+**Rationale**: Lean4 proof work requires deep mathematical reasoning; Opus provides superior capabilities for formal verification.
 
 ## Validation
 
@@ -120,7 +130,7 @@ Agent frontmatter is validated during:
 
 1. `name` must be present and non-empty
 2. `description` must be present and non-empty
-3. `model`, if present, must be one of: `opus`, `sonnet`
+3. `model`, if present, must be one of: `opus`, `sonnet`, `haiku`
 
 ## Examples
 
@@ -130,7 +140,7 @@ Agent frontmatter is validated during:
 ---
 name: general-research-agent
 description: Research general tasks using web search and codebase exploration
-model: sonnet
+model: opus
 ---
 ```
 
@@ -140,7 +150,7 @@ model: sonnet
 ---
 name: general-implementation-agent
 description: Implement general, meta, and markdown tasks from plans
-model: sonnet
+model: opus
 ---
 ```
 
@@ -150,11 +160,11 @@ model: sonnet
 ---
 name: planner-agent
 description: Create phased implementation plans from research findings
-model: sonnet
+model: opus
 ---
 ```
 
-### Lean4 Research Agent (retains Opus)
+### Lean4 Research Agent
 
 ```yaml
 ---
@@ -169,12 +179,10 @@ model: opus
 To add model enforcement to existing agents:
 
 1. Open agent file (e.g., `.claude/agents/general-research-agent.md`)
-2. Add `model: sonnet` (default for non-Lean agents) or `model: opus` (Lean4 only) to frontmatter
+2. Add `model: opus` to frontmatter (default for all agents)
 3. Document rationale in agent comments
 
 No other changes are required - the Task tool will respect the model field when spawning agents.
-
-**Note**: As of task 442, all non-Lean agents have been migrated to `model: sonnet`. Lean4 agents retain `model: opus`.
 
 ## Related Documentation
 

@@ -96,7 +96,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: SKILL.md JSON Index Enhancement [NOT STARTED]
+### Phase 2: SKILL.md JSON Index Enhancement [COMPLETED]
 
 **Goal**: Add memory-index.json regeneration logic to the existing skill-memory SKILL.md so that all CREATE/UPDATE/EXTEND operations maintain both index.md and memory-index.json.
 

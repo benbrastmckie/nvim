@@ -10,7 +10,7 @@ next_project_number: 456
 
 ### Pending
 
-- **455** [PLANNED] -- Separate model selection from effort flags, add --haiku and --sonnet
+- **455** [IMPLEMENTING] -- Separate model selection from effort flags, add --haiku and --sonnet
 - **454** [NOT STARTED] -- Memory system documentation and end-to-end validation (depends: 448, 453)
 - **453** [NOT STARTED] -- Integrate /distill with /todo suggestions and retrieval tombstone filtering (depends: 447, 452)
 - **452** [NOT STARTED] -- Implement distill compress and refine operations (depends: 450, 451)
@@ -21,7 +21,7 @@ next_project_number: 456
 - **447** [NOT STARTED] -- Upgrade /todo memory harvest with pre-classification and batch review (depends: 446)
 - **446** [NOT STARTED] -- Add memory candidate emission to agents and return metadata (depends: 445)
 - **445** [NOT STARTED] -- Implement two-phase auto-retrieval for memory system (depends: 444)
-- **444** [PLANNED] -- Create skill-memory with /learn command and memory index infrastructure
+- **444** [IMPLEMENTING] -- Create skill-memory with /learn command and memory index infrastructure
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -29,7 +29,7 @@ next_project_number: 456
 
 ### 455. Separate model selection from effort flags, add --haiku and --sonnet
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 
 **Description**: Refactor the `/research`, `/implement`, and `/plan` command flag system to separate two currently conflated concerns: **model selection** (which model family to use) and **effort level** (how deeply the model reasons). Currently `--fast` maps to Sonnet and `--hard`/`--opus` both map to Opus, conflating "cheaper model" with "less effort" and "expensive model" with "more effort". These should be independent dimensions, and the missing `--haiku` and `--sonnet` model flags should be added.
@@ -487,7 +487,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 444. Create skill-memory with /learn command and memory index infrastructure
 - **Effort**: large
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 
 **Description**: Create the foundational memory skill (`skill-memory`) with `/learn` command and the machine-queryable memory index (`memory-index.json`). This is the prerequisite for all subsequent memory system tasks.

@@ -84,9 +84,9 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create task |
 | `/task` | `/task --recover N`, `--expand N`, `--sync`, `--abandon N` | Manage tasks |
-| `/research` | `/research N[,N-N] [focus] [--team] [--fast\|--hard\|--opus]` | Research task(s), route by task type |
-| `/plan` | `/plan N[,N-N] [--team]` | Create implementation plan(s) |
-| `/implement` | `/implement N[,N-N] [--team] [--force] [--fast\|--hard\|--opus]` | Execute plan(s), resume from incomplete phase |
+| `/research` | `/research N[,N-N] [focus] [--team] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Research task(s), route by task type |
+| `/plan` | `/plan N[,N-N] [--team] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Create implementation plan(s) |
+| `/implement` | `/implement N[,N-N] [--team] [--force] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Execute plan(s), resume from incomplete phase |
 | `/revise` | `/revise N` | Create new plan version |
 | `/review` | `/review` | Analyze codebase |
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync repository metrics |
@@ -165,7 +165,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 |-------|-------|-------|---------|
 | skill-researcher | general-research-agent | opus | General web/codebase research |
 | skill-planner | planner-agent | opus | Implementation plan creation |
-| skill-implementer | general-implementation-agent | - | General file implementation |
+| skill-implementer | general-implementation-agent | opus | General file implementation |
 | skill-meta | meta-builder-agent | - | System building and task creation |
 | skill-status-sync | (direct execution) | - | Atomic status updates |
 | skill-refresh | (direct execution) | - | Process and file cleanup |
@@ -193,7 +193,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | reviser-agent | Plan revision with research synthesis |
 | spawn-agent | Blocker analysis and task decomposition |
 
-**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. All agents default to Opus. Use `--fast` flag with `/research` or `/implement` to use Sonnet for cost savings on specific tasks. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
+**Model Enforcement**: Agents declare preferred models via `model:` frontmatter field. All agents default to Opus. Two independent flag dimensions override behavior at invocation time: effort flags (`--fast`, `--hard`) control reasoning depth, and model flags (`--haiku`, `--sonnet`, `--opus`) select the model family. These flags work on `/research`, `/plan`, and `/implement`. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for details.
 
 **User-Only Skills**: Skills marked as "user-only" cannot be invoked by agents. These are for human-controlled operations like deployment (`skill-tag`).
 

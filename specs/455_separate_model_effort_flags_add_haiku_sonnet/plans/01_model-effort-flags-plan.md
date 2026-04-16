@@ -1,7 +1,7 @@
 # Implementation Plan: Task #455
 
 - **Task**: 455 - Separate model/effort flags, add --haiku and --sonnet
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/455_separate_model_effort_flags_add_haiku_sonnet/reports/01_model-effort-flags-research.md
@@ -68,7 +68,7 @@ No prior plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Update agent-frontmatter-standard.md and CLAUDE.md documentation [NOT STARTED]
+### Phase 1: Update agent-frontmatter-standard.md and CLAUDE.md documentation [COMPLETED]
 
 - **Goal:** Fix documentation inconsistencies and establish the two-dimensional flag system as the documented standard before changing any command/skill code
 - **Tasks:**
