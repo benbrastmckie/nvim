@@ -74,7 +74,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add merge sub-mode specification to SKILL.md [IN PROGRESS]
+### Phase 1: Add merge sub-mode specification to SKILL.md [COMPLETED]
 
 **Goal**: Define the complete merge algorithm, merge content template, tombstone pattern, cross-reference cleanup procedure, and logging schema in SKILL.md so the agent has full instructions when executing `/distill --merge`.
 
