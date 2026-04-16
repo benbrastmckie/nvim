@@ -1,7 +1,7 @@
 # Implementation Plan: Optimize Artifact Format Verbosity
 
 - **Task**: 443 - optimize_artifact_format_verbosity
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/443_optimize_artifact_format_verbosity/reports/01_artifact-format-research.md
@@ -67,7 +67,7 @@ This task advances the "Agent System Quality" theme under Phase 1 by reducing co
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Trim Format Files (report, plan, summary) [NOT STARTED]
+### Phase 1: Trim Format Files (report, plan, summary) [COMPLETED]
 
 **Goal**: Reduce verbosity in the three core format files by cutting redundant sections and tightening prose.
 

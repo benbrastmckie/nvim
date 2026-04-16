@@ -26,41 +26,7 @@
 
 ## Plan Metadata Schema
 
-Plans may include a `plan_metadata` object in state.json tracking plan characteristics:
-
-```json
-{
-  "phases": 5,
-  "total_effort_hours": 8,
-  "complexity": "medium",
-  "research_integrated": true,
-  "plan_version": 1,
-  "dependency_waves": [[1], [2, 3], [4, 5]],
-  "reports_integrated": [
-    {
-      "path": "reports/01_{short-slug}.md",
-      "integrated_in_plan_version": 1,
-      "integrated_date": "2026-01-05"
-    }
-  ]
-}
-```
-
-**Field Descriptions**:
-- `phases`: Number of implementation phases in plan
-- `total_effort_hours`: Total estimated effort across all phases
-- `complexity`: Plan complexity (simple, medium, complex)
-- `research_integrated`: Boolean indicating if research was incorporated
-- `plan_version`: Plan version number (1 for initial, increments with revisions)
-- `dependency_waves`: Array of arrays grouping phase numbers by execution wave (e.g., `[[1], [2, 3], [4]]` means Phase 1 first, then 2 and 3 in parallel, then 4). Used by skill-team-implement to determine parallel execution groups. Omit for fully sequential plans.
-- `reports_integrated`: Array tracking which research reports were integrated into which plan versions
-
-**reports_integrated Schema**:
-- `path`: Relative path to research report (e.g., "reports/01_{short-slug}.md")
-- `integrated_in_plan_version`: Plan version that integrated this report
-- `integrated_date`: Date report was integrated (YYYY-MM-DD format)
-
-**Backward Compatibility**: Plans without `reports_integrated` field use empty array default.
+Plans may include a `plan_metadata` object in state.json with fields: `phases` (int), `total_effort_hours` (int), `complexity` (simple/medium/complex), `research_integrated` (bool), `plan_version` (int), `dependency_waves` (array of phase-number arrays for parallel execution groups), and `reports_integrated` (array of `{path, integrated_in_plan_version, integrated_date}` objects). Plans without `reports_integrated` use empty array default.
 
 ## Structure
 1. **Overview** – 2-4 sentences: problem, scope, constraints, definition of done. May include "Research Integration" subsection listing integrated reports.
@@ -83,7 +49,7 @@ Plans may include a `plan_metadata` object in state.json tracking plan character
 
 ## Dependency Analysis (format)
 
-Place a **Dependency Analysis** block immediately after the `## Implementation Phases` heading and before the first `### Phase` heading. This compact table shows which phases can execute in parallel and what blocks them.
+Place a **Dependency Analysis** wave table immediately after `## Implementation Phases` and before the first `### Phase`. Columns: **Wave** (execution order), **Phases** (can run in parallel within wave), **Blocked by** (prerequisite phases, `--` for none). Generate from per-phase `Depends on` fields.
 
 ```
 **Dependency Analysis**:
@@ -95,12 +61,6 @@ Place a **Dependency Analysis** block immediately after the `## Implementation P
 
 Phases within the same wave can execute in parallel.
 ```
-
-- **Wave**: execution order group (Wave 1 runs first, Wave 2 after Wave 1 completes, etc.)
-- **Phases**: phase numbers in this wave (can run in parallel)
-- **Blocked by**: phase numbers that must complete before this wave starts (`--` for none)
-- Generate the table from per-phase `Depends on` fields; they must be consistent
-- For fully sequential plans, each wave contains one phase (still valid and clear)
 
 ## Status Marker Requirements
 - Use markers exactly as defined in status-markers.md.

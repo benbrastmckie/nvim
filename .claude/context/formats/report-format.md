@@ -12,7 +12,7 @@
 - **Artifacts**: list of produced artifacts (paths)
 - **Standards**: status-markers.md, artifact-management.md, tasks.md, this file
 
-**Note**: Status metadata (e.g., `[RESEARCHING]`, `[COMPLETED]`) belongs in TODO.md and state.json only, NOT in research reports. Reports are artifacts that document findings, not workflow state.
+**Note**: Status metadata belongs in TODO.md and state.json only, not in reports. Include **Started**/**Completed** timestamps in metadata; do not use emojis.
 
 ## Structure
 1. **Project Context (optional)** – dependency relationships if applicable (see below).
@@ -27,26 +27,15 @@
 
 ## Project Context (optional)
 
-**Applicability**: Include this section when understanding dependencies or relationships is essential for the research topic. For simple reports or standalone topics, this section may be omitted.
-
-**Purpose**: Provides early orientation on how the research topic fits into the codebase by documenting dependency relationships.
-
-**Fields**:
-- **Upstream Dependencies**: Existing modules, functions, or components this builds upon. Example: "Depends on `utils/helpers.ext`, `config/settings.ext`"
-- **Downstream Dependents**: Existing or planned components that will use this. Example: "Enables `modules/search.ext`, `config/server.ext`"
-- **Alternative Paths**: Where this provides redundancy or different approaches. Example: "Alternative to the direct API approach"
-- **Potential Extensions**: New directions this enables or suggests. Example: "Could extend to support additional filetypes"
-
-## Timestamps
-- Include **Started** timestamp when research/analysis begins
-- Include **Completed** timestamp when report is finalized
-- Do not use emojis
-- Do not include status markers (status tracked in TODO.md and state.json only)
+Include when dependency relationships are essential to the research topic. Omit for standalone topics. Fields: **Upstream Dependencies**, **Downstream Dependents**, **Alternative Paths**, **Potential Extensions** -- each a brief list of relevant modules/components.
 
 ## Writing Guidance
 - Be objective, cite sources/paths.
 - Keep headings at most level 3 inside the report.
 - Prefer bullet lists over prose for findings/recommendations.
+- Group Sources/Inputs by category when >5 items.
+- Appendix must not duplicate Findings or Recommendations content.
+- Omit code blocks that restate file contents cited by path.
 - Ensure lazy directory creation: create `reports/` only when writing the first report file.
 
 ## Example Skeleton
@@ -96,36 +85,4 @@
 
 ## Context Extension Recommendations Section
 
-**Purpose**: Identifies gaps in project context documentation discovered during research.
-
-**When to Include**: Include this section when research reveals:
-- Topics not covered by existing context files
-- Outdated or incomplete context documentation
-- Recurring patterns that would benefit from documentation
-
-**When to Omit**: Omit this section for:
-- Meta tasks (to avoid circular task creation)
-- Simple tasks where no context gaps are identified
-- Tasks where existing context is sufficient
-
-**Entry Format**:
-```markdown
-- **Topic**: {specific topic or pattern discovered}
-- **Gap**: {what is missing from current context}
-- **Recommendation**: {suggested action - create new file or update existing}
-```
-
-**Example**:
-```markdown
-## Context Extension Recommendations
-
-- **Topic**: Advanced search/filter patterns
-- **Gap**: No context file covers custom search implementation patterns
-- **Recommendation**: Create `patterns/search-patterns.md` or extend existing tool guide
-
-- **Topic**: Dynamic UI component API
-- **Gap**: No context file covers dynamic UI component creation
-- **Recommendation**: Add UI component section to relevant domain context file
-```
-
-**Note**: Context gap task creation is currently disabled. Agents should document gaps in reports for future manual review rather than automatically creating tasks.
+Include when research reveals undocumented topics, outdated context, or recurring patterns worth capturing. Omit for meta tasks or when no gaps are found. Each entry uses the format: `- **Topic**: ... / **Gap**: ... / **Recommendation**: ...`. Context gap task creation is currently disabled; document gaps for manual review only.

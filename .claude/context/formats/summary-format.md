@@ -20,10 +20,6 @@
 5. **Follow-ups** – bullets with owners/due dates if applicable.
 6. **References** – paths to artifacts informing the summary.
 
-## Status Marker Usage
-- Mark summary status and include Started/Completed timestamps.
-- Avoid emojis; rely on text markers only.
-
 ## Writing Guidance
 - Keep concise (<= 1 page).
 - Use bullet lists for clarity.
