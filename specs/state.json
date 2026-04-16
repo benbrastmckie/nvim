@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 457,
+  "next_project_number": 458,
   "active_projects": [
+    {
+      "project_number": 457,
+      "project_name": "design_extension_slidev_resource_distribution",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-16T22:07:02Z",
+      "last_updated": "2026-04-16T22:07:02Z"
+    },
     {
       "project_number": 456,
       "project_name": "fix_doc_regressions_agent_system_update",

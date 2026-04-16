@@ -1,5 +1,5 @@
 ---
-next_project_number: 457
+next_project_number: 458
 ---
 
 # TODO
@@ -27,6 +27,13 @@ next_project_number: 457
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 457. Design extension-based slidev resource distribution strategy
+- **Effort**: Large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Design an extension-based slidev resource distribution strategy that combines context files from multiple extensions (epidemiology, founder, present) without redundancy or conflicts. Context files for each slidev feature should combine appropriately upon loading extensions using the `<leader>ac` picker in neovim. Use index-based or lookup-based methods to make domain-specific resources available to appropriate slide commands (/deck, /slides) while avoiding context bloat and preventing irrelevant resources from loading for all slidev commands. Reference the Zed report at `/home/benjamin/.config/zed/specs/073_port_vision_slidev_resources/reports/01_vision-slidev-port.md` and source resources at `/home/benjamin/Projects/Logos/Vision/`. Research best practices online
 
 ### 456. Fix documentation regressions from agent system update
 - **Effort**: small
@@ -603,3 +610,4 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 ### Existing backlog
 13. **78** [PLANNED] -> implement
 14. **87** [RESEARCHED] -> plan
+15. **457** -> research (independent)
