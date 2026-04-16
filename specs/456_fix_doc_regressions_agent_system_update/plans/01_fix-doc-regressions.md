@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Documentation Regressions from Agent System Update
 
 - **Task**: 456 - Fix documentation regressions from agent system update
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: specs/456_fix_doc_regressions_agent_system_update/reports/01_fix-doc-regressions.md
@@ -55,7 +55,7 @@ This plan advances the "Agent System Quality" roadmap area by fixing documentati
 
 All three phases target different files and can execute in parallel.
 
-### Phase 1: Fix SKILL.md CREATE Template [NOT STARTED]
+### Phase 1: Fix SKILL.md CREATE Template [COMPLETED]
 
 **Goal**: Add missing `keywords`, `summary`, `retrieval_count`, and `last_retrieved` fields to the CREATE template frontmatter so it matches the JSON Index Maintenance extraction logic.
 
@@ -76,7 +76,7 @@ All three phases target different files and can execute in parallel.
 
 ---
 
-### Phase 2: Add Missing Examples to return-metadata-file.md [NOT STARTED]
+### Phase 2: Add Missing Examples to return-metadata-file.md [COMPLETED]
 
 **Goal**: Restore "Planning Success" and "Implementation Partial" JSON examples to return-metadata-file.md, bringing the example count from 3 to 5.
 
@@ -98,7 +98,7 @@ All three phases target different files and can execute in parallel.
 
 ---
 
-### Phase 3: Fix plan-format.md JSON Example and Sequential Note [NOT STARTED]
+### Phase 3: Fix plan-format.md JSON Example and Sequential Note [COMPLETED]
 
 **Goal**: Add a concrete `plan_metadata` JSON example block and a clarifying sentence about sequential plans requiring wave tables.
 

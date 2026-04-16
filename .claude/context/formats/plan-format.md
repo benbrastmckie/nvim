@@ -28,6 +28,24 @@
 
 Plans may include a `plan_metadata` object in state.json with fields: `phases` (int), `total_effort_hours` (int), `complexity` (simple/medium/complex), `research_integrated` (bool), `plan_version` (int), `dependency_waves` (array of phase-number arrays for parallel execution groups), and `reports_integrated` (array of `{path, integrated_in_plan_version, integrated_date}` objects). Plans without `reports_integrated` use empty array default.
 
+```json
+{
+  "phases": 5,
+  "total_effort_hours": 8,
+  "complexity": "medium",
+  "research_integrated": true,
+  "plan_version": 1,
+  "dependency_waves": [[1], [2, 3], [4, 5]],
+  "reports_integrated": [
+    {
+      "path": "reports/01_{short-slug}.md",
+      "integrated_in_plan_version": 1,
+      "integrated_date": "2026-01-05"
+    }
+  ]
+}
+```
+
 ## Structure
 1. **Overview** – 2-4 sentences: problem, scope, constraints, definition of done. May include "Research Integration" subsection listing integrated reports.
 2. **Goals & Non-Goals** – bullets.
@@ -49,7 +67,7 @@ Plans may include a `plan_metadata` object in state.json with fields: `phases` (
 
 ## Dependency Analysis (format)
 
-Place a **Dependency Analysis** wave table immediately after `## Implementation Phases` and before the first `### Phase`. Columns: **Wave** (execution order), **Phases** (can run in parallel within wave), **Blocked by** (prerequisite phases, `--` for none). Generate from per-phase `Depends on` fields.
+Place a **Dependency Analysis** wave table immediately after `## Implementation Phases` and before the first `### Phase`. Columns: **Wave** (execution order), **Phases** (can run in parallel within wave), **Blocked by** (prerequisite phases, `--` for none). Generate from per-phase `Depends on` fields. For fully sequential plans, each wave contains one phase.
 
 ```
 **Dependency Analysis**:

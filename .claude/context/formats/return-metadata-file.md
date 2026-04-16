@@ -348,7 +348,72 @@ Written at Stage 0, before substantive work begins:
 }
 ```
 
-For other scenarios (meta tasks, partial, blocked, planning), combine the schema fields above. Meta tasks add `claudemd_suggestions` to `completion_data`. Partial results include `errors` array. Planning uses `status: "planned"`.
+### Planning Success
+
+Written by planner-agent after successful plan creation:
+
+```json
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/001_setup_lsp_config/plans/01_lsp-config-plan.md",
+      "summary": "Implementation plan with 4 phases and dependency analysis"
+    }
+  ],
+  "next_steps": "Run /implement 1 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1736700000_abc123",
+    "agent_type": "planner-agent",
+    "duration_seconds": 240,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
+```
+
+### Implementation Partial
+
+Written when implementation is interrupted or fails mid-execution:
+
+```json
+{
+  "status": "partial",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/001_setup_lsp_config/summaries/01_lsp-config-summary.md",
+      "summary": "Partial implementation summary with 2 of 4 phases completed"
+    }
+  ],
+  "partial_progress": {
+    "stage": "phase_2_completed",
+    "details": "Phases 1-2 completed, phase 3 failed due to build error",
+    "phases_completed": 2,
+    "phases_total": 4
+  },
+  "errors": [
+    {
+      "type": "execution",
+      "message": "Build failed: missing dependency in configuration",
+      "recoverable": true,
+      "recommendation": "Install dependency and run /implement 1 to resume from phase 3"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1736700000_ghi789",
+    "agent_type": "general-implementation-agent",
+    "duration_seconds": 1800,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 4
+  }
+}
+```
+
+For other scenarios (meta tasks, blocked), combine the schema fields above. Meta tasks add `claudemd_suggestions` to `completion_data`.
 
 **Note**: The file-based metadata format supersedes the earlier console-based `subagent-return.md` pattern. See that file for historical context only.
 

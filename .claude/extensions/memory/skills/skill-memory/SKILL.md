@@ -367,6 +367,10 @@ tags: {inferred_tags}
 topic: "{segment.topic}"
 source: "{segment.source_file or 'user input'}"
 modified: {today}
+keywords: {segment.key_terms}
+summary: "{segment.summary}"
+retrieval_count: 0
+last_retrieved:
 ---
 
 # {segment.summary}
