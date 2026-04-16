@@ -14,10 +14,10 @@
     {
       "project_number": 458,
       "project_name": "create_legal_analysis_agent",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T22:54:44Z",
-      "last_updated": "2026-04-16T23:25:58Z",
+      "last_updated": "2026-04-16T23:29:28Z",
       "session_id": "sess_1713309200_c9d5e3",
       "next_artifact_number": 3,
       "artifacts": [
@@ -35,6 +35,11 @@
           "path": "specs/458_create_legal_analysis_agent/reports/01_teammate-d-findings.md",
           "type": "research",
           "summary": "Teammate D (Horizons) findings: strategic direction, long-term alignment for legal analysis agent"
+        },
+        {
+          "path": "specs/458_create_legal_analysis_agent/plans/02_legal-design-partner.md",
+          "type": "plan",
+          "summary": "Implementation plan with 4 phases for legal-analysis-agent design partner, /consult command, skill wrapper, and manifest registration"
         }
       ],
       "researched": "2026-04-16T23:08:30Z"

@@ -37,7 +37,7 @@ next_project_number: 460
 
 ### 458. Create legal-analysis-agent for critical legal feedback
 - **Effort**: Medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**:
   - [specs/458_create_legal_analysis_agent/reports/01_team-research.md]
@@ -46,6 +46,7 @@ next_project_number: 460
   - [specs/458_create_legal_analysis_agent/reports/01_teammate-c-findings.md]
   - [specs/458_create_legal_analysis_agent/reports/01_teammate-d-findings.md]
   - [specs/458_create_legal_analysis_agent/reports/02_legal-design-partner.md]
+- **Plan**: [458_create_legal_analysis_agent/plans/02_legal-design-partner.md]
 
 **Description**: Create a new legal-analysis-agent.md at .claude/extensions/founder/agents/ designed to think like an attorney and provide clear critical feedback with concrete suggestions for improvement. Use this agent to improve legal-ai-example.typ (~/Projects/Logos/Vision/shared/strategy/03-applications/) which has received consistent feedback that its description does not accord with legal fundamentals. Avoid redundancy with the existing legal-council-agent.md -- the new agent's focus is attorney-style critical analysis and actionable improvement suggestions.
 
