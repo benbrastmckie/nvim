@@ -5,23 +5,23 @@
     {
       "project_number": 457,
       "project_name": "design_extension_slidev_resource_distribution",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T22:07:02Z",
-      "last_updated": "2026-04-16T22:46:13Z",
-      "session_id": "sess_1776379088_dd542b",
+      "last_updated": "2026-04-16T22:51:37Z",
+      "session_id": "sess_1776379654_209d71",
       "researched": "2026-04-16T22:21:41Z",
       "next_artifact_number": 3,
       "artifacts": [
         {
-          "path": "specs/457_design_extension_slidev_resource_distribution/plans/01_slidev-resource-distribution.md",
-          "type": "plan",
-          "summary": "4-phase implementation plan for cross-extension slidev resource distribution with dependency enforcement"
-        },
-        {
           "path": "specs/457_design_extension_slidev_resource_distribution/reports/02_slidev-dependency-research.md",
           "type": "research",
           "summary": "Deep research into extension loader architecture, dependency resolution design, and slidev/ micro-extension approach as improvement over plan-01"
+        },
+        {
+          "path": "specs/457_design_extension_slidev_resource_distribution/plans/02_slidev-dependency-plan.md",
+          "type": "plan",
+          "summary": "5-phase implementation plan for slidev micro-extension creation and dependency auto-loading in the extension loader"
         }
       ],
       "memory_candidates": [
@@ -39,7 +39,41 @@
             "circular"
           ]
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 5,
+        "total_effort_hours": 5,
+        "complexity": "complex",
+        "research_integrated": true,
+        "plan_version": 2,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/02_slidev-dependency-research.md",
+            "integrated_in_plan_version": 2,
+            "integrated_date": "2026-04-16"
+          },
+          {
+            "path": "reports/01_team-research.md",
+            "integrated_in_plan_version": 2,
+            "integrated_date": "2026-04-16"
+          }
+        ]
+      }
     },
     {
       "project_number": 456,
