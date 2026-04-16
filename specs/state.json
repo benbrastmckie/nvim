@@ -34,16 +34,21 @@
     {
       "project_number": 454,
       "project_name": "memory_system_documentation_end_to_end_validation",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:53:21Z",
+      "last_updated": "2026-04-16T19:55:42Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
           "path": "specs/454_memory_system_documentation_end_to_end_validation/reports/01_memory-docs-research.md",
           "type": "research",
           "summary": "Research on memory system documentation gaps and e2e validation checklist"
+        },
+        {
+          "path": "specs/454_memory_system_documentation_end_to_end_validation/plans/01_memory-docs-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan: docs updates, context files, index fixes, validation checklist"
         }
       ],
       "dependencies": [
