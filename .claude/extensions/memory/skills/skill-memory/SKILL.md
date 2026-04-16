@@ -2016,6 +2016,19 @@ After each distill operation, update `memory_health` in `specs/state.json`:
 
 The `memory_health` field is a top-level sibling of `repository_health` in state.json. Update it after every distill operation (including report-only operations).
 
+**Field update rules by sub-mode**:
+
+| Field | report | purge/merge/compress/refine/gc/auto |
+|-------|--------|-------------------------------------|
+| `last_distilled` | Updated | Updated |
+| `distill_count` | NOT incremented | Incremented |
+| `total_memories` | Updated | Updated |
+| `never_retrieved` | Updated | Updated |
+| `health_score` | Updated | Updated |
+| `status` | Updated | Updated |
+
+**Rationale**: The `report` sub-mode is read-only -- it generates a health report without modifying any memory files. Since `distill_count` tracks the number of maintenance operations that actually changed the vault, report-only invocations should not increment it. The `last_distilled` timestamp is still updated for all sub-modes because it tracks when the vault was last assessed, not when it was last modified.
+
 ### Purge Sub-Mode
 
 The purge sub-mode identifies stale or zero-retrieval memories, presents candidates interactively, and applies a tombstone pattern (frontmatter mutation) rather than deleting files.
