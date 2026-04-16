@@ -76,10 +76,10 @@
     {
       "project_number": 451,
       "project_name": "implement_distill_combine_keyword_superset_guarantee",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:15:47Z",
+      "last_updated": "2026-04-16T19:23:40Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -91,20 +91,26 @@
           "path": "specs/451_implement_distill_combine_keyword_superset_guarantee/plans/01_distill-combine-plan.md",
           "type": "plan",
           "summary": "Distill combine with keyword superset plan"
+        },
+        {
+          "path": "specs/451_implement_distill_combine_keyword_superset_guarantee/summaries/01_distill-combine-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for distill combine operation"
         }
       ],
       "dependencies": [
         449
       ],
-      "session_id": "sess_1776366318_6bc332"
+      "session_id": "sess_1776366318_6bc332",
+      "completion_summary": "Implemented distill combine with keyword superset guarantee, pairwise overlap algorithm, interactive selection, tombstone application"
     },
     {
       "project_number": 450,
       "project_name": "implement_distill_purge_tombstone_pattern",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:15:47Z",
+      "last_updated": "2026-04-16T19:22:25Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -116,12 +122,18 @@
           "path": "specs/450_implement_distill_purge_tombstone_pattern/plans/01_distill-purge-plan.md",
           "type": "plan",
           "summary": "Distill purge with tombstone plan"
+        },
+        {
+          "path": "specs/450_implement_distill_purge_tombstone_pattern/summaries/01_distill-purge-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for distill purge operation"
         }
       ],
       "dependencies": [
         449
       ],
-      "session_id": "sess_1776366318_6bc332"
+      "session_id": "sess_1776366318_6bc332",
+      "completion_summary": "Implemented distill purge with tombstone pattern, gc sub-mode, retrieval exclusion, and link-scan procedure"
     },
     {
       "project_number": 449,
@@ -183,10 +195,10 @@
     {
       "project_number": 446,
       "project_name": "add_memory_candidate_emission_agents_return_metadata",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:15:47Z",
+      "last_updated": "2026-04-16T19:20:56Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -198,12 +210,18 @@
           "path": "specs/446_add_memory_candidate_emission_agents_return_metadata/plans/01_memory-emission-plan.md",
           "type": "plan",
           "summary": "Memory candidate emission plan"
+        },
+        {
+          "path": "specs/446_add_memory_candidate_emission_agents_return_metadata/summaries/01_memory-emission-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for memory candidate emission"
         }
       ],
       "dependencies": [
         445
       ],
-      "session_id": "sess_1776366318_6bc332"
+      "session_id": "sess_1776366318_6bc332",
+      "completion_summary": "Added memory_candidates to return metadata schema, 3 agent emission stages, 2 skill postflight propagation steps"
     },
     {
       "project_number": 445,

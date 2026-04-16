@@ -14,12 +14,12 @@ next_project_number: 456
 - **454** [NOT STARTED] -- Memory system documentation and end-to-end validation (depends: 448, 453)
 - **453** [NOT STARTED] -- Integrate /distill with /todo suggestions and retrieval tombstone filtering (depends: 447, 452)
 - **452** [NOT STARTED] -- Implement distill compress and refine operations (depends: 450, 451)
-- **451** [IMPLEMENTING] -- Implement distill combine operation with keyword superset guarantee (depends: 449)
-- **450** [IMPLEMENTING] -- Implement distill purge operation with tombstone pattern (depends: 449)
+- **451** [COMPLETED] -- Implement distill combine operation with keyword superset guarantee (depends: 449)
+- **450** [COMPLETED] -- Implement distill purge operation with tombstone pattern (depends: 449)
 - **449** [COMPLETED] -- Create /distill command with scoring engine and health report (depends: 444)
 - **448** [NOT STARTED] -- Add passive memory nudge stop hook (depends: 446)
 - **447** [NOT STARTED] -- Upgrade /todo memory harvest with pre-classification and batch review (depends: 446)
-- **446** [IMPLEMENTING] -- Add memory candidate emission to agents and return metadata (depends: 445)
+- **446** [COMPLETED] -- Add memory candidate emission to agents and return metadata (depends: 445)
 - **445** [COMPLETED] -- Implement two-phase auto-retrieval for memory system (depends: 444)
 - **444** [COMPLETED] -- Create skill-memory with /learn command and memory index infrastructure
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -230,7 +230,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 451. Implement distill combine operation with keyword superset guarantee
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task #449
 
@@ -268,7 +268,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 450. Implement distill purge operation with tombstone pattern
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task #449
 
@@ -427,7 +427,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 446. Add memory candidate emission to agents and return metadata
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task #445
 

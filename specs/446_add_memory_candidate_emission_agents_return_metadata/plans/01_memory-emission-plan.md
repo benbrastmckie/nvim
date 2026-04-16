@@ -1,7 +1,7 @@
 # Implementation Plan: Add Memory Candidate Emission to Agents and Return Metadata
 
 - **Task**: 446 - Add memory candidate emission to agents and return metadata
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: Task #445 (completed)
 - **Research Inputs**: specs/446_add_memory_candidate_emission_agents_return_metadata/reports/01_memory-emission-research.md
