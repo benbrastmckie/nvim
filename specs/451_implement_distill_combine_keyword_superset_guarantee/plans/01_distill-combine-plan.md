@@ -112,7 +112,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update distill.md command dispatch [NOT STARTED]
+### Phase 2: Update distill.md command dispatch [IN PROGRESS]
 
 **Goal**: Enable the `/distill --merge` command to route through to the merge sub-mode instead of returning the "not yet implemented" placeholder.
 
