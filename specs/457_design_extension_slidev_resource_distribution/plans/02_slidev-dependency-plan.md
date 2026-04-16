@@ -182,7 +182,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Picker Preview and Unload Safety [NOT STARTED]
+### Phase 4: Picker Preview and Unload Safety [COMPLETED]
 
 **Goal**: Enhance the extension picker to show dependency information in the preview panel and prevent unloading extensions that have active dependents.
 

@@ -57,6 +57,32 @@ local function create_previewer(extensions_module)
         "",
       }
 
+      -- Dependencies section
+      if details and details.dependencies and #details.dependencies > 0 then
+        table.insert(lines, "**Dependencies**: " .. table.concat(details.dependencies, ", "))
+        table.insert(lines, "")
+      end
+
+      -- Required by (reverse dependency lookup)
+      local required_by = {}
+      local all_exts = extensions_module.list_available()
+      for _, other in ipairs(all_exts) do
+        if other.name ~= ext.name and (other.status == "active" or other.status == "update-available") then
+          local other_details = extensions_module.get_details(other.name)
+          if other_details and other_details.dependencies then
+            for _, dep in ipairs(other_details.dependencies) do
+              if dep == ext.name then
+                table.insert(required_by, other.name)
+              end
+            end
+          end
+        end
+      end
+      if #required_by > 0 then
+        table.insert(lines, "**Required by**: " .. table.concat(required_by, ", "))
+        table.insert(lines, "")
+      end
+
       -- Provides section
       if details and details.provides then
         table.insert(lines, "## Provides")

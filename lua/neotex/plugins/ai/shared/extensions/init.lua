@@ -503,6 +503,22 @@ function M.create(config)
     -- Get extension manifest for reverse merge
     local extension = manifest_mod.get_extension(extension_name, config)
 
+    -- Check if any loaded extensions depend on this one
+    local dependents = {}
+    local loaded_names = state_mod.list_loaded(state)
+    for _, loaded_name in ipairs(loaded_names) do
+      if loaded_name ~= extension_name then
+        local loaded_ext = manifest_mod.get_extension(loaded_name, config)
+        if loaded_ext and loaded_ext.manifest and loaded_ext.manifest.dependencies then
+          for _, dep in ipairs(loaded_ext.manifest.dependencies) do
+            if dep == extension_name then
+              table.insert(dependents, loaded_name)
+            end
+          end
+        end
+      end
+    end
+
     -- Confirmation dialog
     if confirm then
       local total_files = #installed_files + #data_skeleton_files
@@ -510,11 +526,23 @@ function M.create(config)
       if #data_skeleton_files > 0 then
         data_note = "\n(User-created data files will be preserved)"
       end
+
+      -- Warn about active dependents
+      local dep_warning = ""
+      if #dependents > 0 then
+        dep_warning = string.format(
+          "\n\nWARNING: Extension '%s' is required by: %s",
+          extension_name,
+          table.concat(dependents, ", ")
+        )
+      end
+
       local message = string.format(
-        "Unload extension '%s'?\n\nThis will remove %d files.%s",
+        "Unload extension '%s'?\n\nThis will remove %d files.%s%s",
         extension_name,
         total_files,
-        data_note
+        data_note,
+        dep_warning
       )
 
       local choice = vim.fn.confirm(message, "&Unload\n&Cancel", 2)
@@ -673,6 +701,7 @@ function M.create(config)
       version = extension.manifest.version,
       description = extension.manifest.description,
       language = extension.manifest.language,
+      dependencies = extension.manifest.dependencies or {},
       provides = extension.manifest.provides,
       merge_targets = extension.manifest.merge_targets,
       mcp_servers = extension.manifest.mcp_servers,
