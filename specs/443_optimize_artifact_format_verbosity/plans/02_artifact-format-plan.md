@@ -96,7 +96,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Reduce return-metadata-file.md Examples [NOT STARTED]
+### Phase 2: Reduce return-metadata-file.md Examples [COMPLETED]
 
 **Goal**: Cut the 262-line examples section down to ~80 lines by keeping only 3 representative examples.
 
