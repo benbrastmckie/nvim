@@ -76,6 +76,22 @@
       "domain": "project",
       "subdomain": "memory",
       "summary": "Example workflows for knowledge capture system"
+    },
+    {
+      "path": "project/memory/domain/memory-reference.md",
+      "description": "Memory vault distillation: scoring engine, health report, maintenance operations",
+      "load_when": {
+        "skills": [
+          "skill-memory"
+        ],
+        "commands": [
+          "/distill"
+        ]
+      },
+      "line_count": 57,
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Memory vault distillation: scoring engine, health report, maintenance operations"
     }
   ]
 }

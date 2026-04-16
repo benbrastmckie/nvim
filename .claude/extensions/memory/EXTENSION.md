@@ -16,6 +16,10 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 | `/learn` | `/learn /path/to/file` | Add file content as memory |
 | `/learn` | `/learn /path/to/dir/` | Scan directory for learnable content |
 | `/learn` | `/learn --task N` | Review task artifacts and create memories |
+| `/distill` | `/distill` | Generate memory vault health report with scoring |
+| `/distill` | `/distill --purge` | Remove low-value memories (placeholder) |
+| `/distill` | `/distill --merge` | Combine duplicate memories (placeholder) |
+| `/distill` | `/distill --compress` | Reduce oversized memories (placeholder) |
 
 ### Memory-Augmented Research
 

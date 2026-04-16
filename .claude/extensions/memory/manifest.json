@@ -5,7 +5,7 @@
   "task_type": "memory",
   "dependencies": [],
   "provides": {
-    "commands": ["learn.md"],
+    "commands": ["learn.md", "distill.md"],
     "skills": ["skill-memory"],
     "context": ["project/memory"],
     "data": [".memory"],
