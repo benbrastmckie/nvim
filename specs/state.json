@@ -62,16 +62,23 @@
     {
       "project_number": 452,
       "project_name": "implement_distill_compress_and_refine_operations",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T20:00:00Z",
-      "next_artifact_number": 1,
-      "artifacts": [],
+      "last_updated": "2026-04-16T19:27:49Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/452_implement_distill_compress_and_refine_operations/reports/01_distill-compress-research.md",
+          "type": "research",
+          "summary": "Research on distill compress and refine operations"
+        }
+      ],
       "dependencies": [
         450,
         451
-      ]
+      ],
+      "session_id": "sess_1776367430_f97955"
     },
     {
       "project_number": 451,
@@ -169,28 +176,42 @@
     {
       "project_number": 448,
       "project_name": "add_passive_memory_nudge_stop_hook",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T20:00:00Z",
-      "next_artifact_number": 1,
-      "artifacts": [],
+      "last_updated": "2026-04-16T19:28:06Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/448_add_passive_memory_nudge_stop_hook/reports/01_memory-nudge-research.md",
+          "type": "research",
+          "summary": "Research on passive memory nudge stop hook"
+        }
+      ],
       "dependencies": [
         446
-      ]
+      ],
+      "session_id": "sess_1776367430_f97955"
     },
     {
       "project_number": 447,
       "project_name": "upgrade_todo_memory_harvest_pre_classification",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T20:00:00Z",
-      "next_artifact_number": 1,
-      "artifacts": [],
+      "last_updated": "2026-04-16T19:27:35Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/447_upgrade_todo_memory_harvest_pre_classification/reports/01_todo-harvest-research.md",
+          "type": "research",
+          "summary": "Research on /todo memory harvest upgrade with pre-classification"
+        }
+      ],
       "dependencies": [
         446
-      ]
+      ],
+      "session_id": "sess_1776367430_f97955"
     },
     {
       "project_number": 446,
