@@ -1,7 +1,7 @@
 ---
 name: epi-implement-agent
 description: Implementation agent for R-based epidemiology analysis
-model: sonnet
+model: opus
 ---
 
 # Epi Implement Agent

@@ -1,7 +1,7 @@
 ---
 name: budget-agent
 description: Grant budget spreadsheet generation with forcing questions and XLSX export
-model: sonnet
+model: opus
 mcp-servers: []
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: slide-planner-agent
 description: Create slide-by-slide implementation plans from interactive design feedback and research reports
-model: sonnet
+model: opus
 ---
 
 # Slide Planner Agent

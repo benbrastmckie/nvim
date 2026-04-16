@@ -1,7 +1,7 @@
 ---
 name: code-reviewer-agent
 description: Review code for security, performance, and maintainability
-model: sonnet
+model: opus
 ---
 
 # Code Reviewer Agent

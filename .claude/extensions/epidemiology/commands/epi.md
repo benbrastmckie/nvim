@@ -2,7 +2,7 @@
 description: Create epidemiology study tasks with pre-task forcing questions for R-based analysis
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
 argument-hint: "description" | TASK_NUMBER | /path/to/protocol.md
-model: sonnet
+model: opus
 ---
 
 # /epi Command

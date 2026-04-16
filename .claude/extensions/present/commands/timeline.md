@@ -2,7 +2,7 @@
 description: Create timeline tasks or execute research timeline workflows for medical research projects
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
 argument-hint: "description" | TASK_NUMBER
-model: sonnet
+model: opus
 ---
 
 # /timeline Command

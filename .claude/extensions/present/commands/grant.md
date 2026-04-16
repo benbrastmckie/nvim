@@ -2,7 +2,7 @@
 description: Create grant tasks, execute grant workflows (draft, budget), or create revisions
 allowed-tools: Skill, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
 argument-hint: "description" | TASK_NUMBER --draft ["prompt"] | --budget ["prompt"] | --revise N "description" | TASK_NUMBER --fix-it
-model: sonnet
+model: opus
 ---
 
 # /grant Command

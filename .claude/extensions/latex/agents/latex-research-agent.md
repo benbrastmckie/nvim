@@ -1,7 +1,7 @@
 ---
 name: latex-research-agent
 description: Research LaTeX documentation tasks using domain context and codebase exploration
-model: sonnet
+model: opus
 ---
 
 # LaTeX Research Agent

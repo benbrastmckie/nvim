@@ -1,7 +1,7 @@
 ---
 name: physics-research-agent
 description: Research physics formalization tasks using domain context and codebase exploration
-model: sonnet
+model: opus
 ---
 
 # Physics Research Agent

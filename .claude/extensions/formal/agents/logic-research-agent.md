@@ -1,7 +1,7 @@
 ---
 name: logic-research-agent
 description: Research formal mathematical logic tasks using domain context and codebase exploration
-model: sonnet
+model: opus
 ---
 
 # Logic Research Agent

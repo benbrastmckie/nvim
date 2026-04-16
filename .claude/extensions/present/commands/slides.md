@@ -2,7 +2,7 @@
 description: Create research talk tasks with pre-task forcing questions for academic presentations
 allowed-tools: Skill, Task, Bash(jq:*), Bash(git:*), Bash(date:*), Bash(sed:*), Read, Edit, AskUserQuestion
 argument-hint: "description" | TASK_NUMBER | /path/to/file.md | TASK_NUMBER --critic [/path | prompt] | --critic /path/to/file
-model: sonnet
+model: opus
 ---
 
 # /slides Command

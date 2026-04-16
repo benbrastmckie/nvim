@@ -2,7 +2,7 @@
 description: Analyze errors and create fix plans
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, Task
 argument-hint: [--fix TASK_NUMBER]
-model: sonnet
+model: opus
 ---
 
 # /errors Command

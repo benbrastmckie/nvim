@@ -2,7 +2,7 @@
 description: Create a pull/merge request for the current branch (GitHub PR or GitLab MR)
 allowed-tools: Bash(git:*), Bash(gh:*), Bash(glab:*)
 argument-hint: [--draft] [--assignee USER] [--label LABEL] [--reviewer USER]
-model: sonnet
+model: opus
 ---
 
 # /merge Command
