@@ -1,7 +1,7 @@
 # Implementation Plan: Add Passive Memory Nudge Stop Hook
 
 - **Task**: 448 - Add passive memory nudge stop hook
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: Task #446 (memory candidate emission, completed)
 - **Research Inputs**: specs/448_add_passive_memory_nudge_stop_hook/reports/01_memory-nudge-research.md

@@ -17,7 +17,7 @@ next_project_number: 456
 - **451** [COMPLETED] -- Implement distill combine operation with keyword superset guarantee (depends: 449)
 - **450** [COMPLETED] -- Implement distill purge operation with tombstone pattern (depends: 449)
 - **449** [COMPLETED] -- Create /distill command with scoring engine and health report (depends: 444)
-- **448** [IMPLEMENTING] -- Add passive memory nudge stop hook (depends: 446)
+- **448** [COMPLETED] -- Add passive memory nudge stop hook (depends: 446)
 - **447** [IMPLEMENTING] -- Upgrade /todo memory harvest with pre-classification and batch review (depends: 446)
 - **446** [COMPLETED] -- Add memory candidate emission to agents and return metadata (depends: 445)
 - **445** [COMPLETED] -- Implement two-phase auto-retrieval for memory system (depends: 444)
@@ -369,7 +369,7 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 
 ### 448. Add passive memory nudge stop hook
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task #446
 

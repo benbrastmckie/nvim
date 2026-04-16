@@ -948,7 +948,7 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 | `compress` | Summarize memories with size penalty > 0.5 | Available (task 452) |
 | `refine` | Improve memory quality (keywords, tags) | Available (task 452) |
 | `gc` | Hard-delete tombstoned memories past grace period | Available (task 450) |
-| `auto` | Automated distillation with all operations | Placeholder (task 452) |
+| `auto` | Automated distillation (Tier 1 refine only) | Available (task 452) |
 
 For placeholder sub-modes, return:
 ```
@@ -1844,6 +1844,102 @@ Log the refine operation to `.memory/distill-log.json`:
 ```
 
 Update the distill-log.json `summary.total_refined` counter by incrementing it by the number of refined memories.
+
+### Sub-Mode: auto
+
+Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. The auto mode is designed for routine maintenance without human oversight -- it explicitly excludes compress (requires AI-generated summaries that need review), purge, and merge.
+
+#### Auto Execution Flow
+
+```
+1. Run validate-on-read:
+   - Check memory-index.json consistency with filesystem
+   - Regenerate if stale
+
+2. Run Tier 1 refine fixes ONLY (no AskUserQuestion calls):
+   - Keyword deduplication: remove duplicate keywords (case-insensitive, keep first)
+   - Summary generation: for memories with empty/missing summary, generate from first line of content (~100 chars)
+   - Topic normalization: lowercase all topic paths, ensure "/" separators, no trailing slashes
+
+3. For each fix applied:
+   - Update the memory file frontmatter
+   - Update modified date to today
+
+4. Rebuild memory-index.json from filesystem state:
+   - Use "JSON Index Maintenance" procedure
+   - Regenerate index.md and .memory/10-Memories/README.md
+
+5. Update memory_health in state.json:
+   - Recalculate health_score
+   - Update last_distilled timestamp
+   - Increment distill_count
+
+6. Skip ALL interactive operations:
+   - No AskUserQuestion calls
+   - No Tier 2 refine fixes
+   - No compress operations
+   - No purge operations
+   - No merge operations
+```
+
+#### Explicitly Excluded Operations
+
+| Operation | Reason for Exclusion |
+|-----------|---------------------|
+| Compress | AI-generated summaries require human review |
+| Purge | Tombstoning decisions need user judgment |
+| Merge | Content combination needs user oversight |
+| Tier 2 Refine | Interactive fixes require user selection |
+
+#### Change Summary Display
+
+After auto mode completes, display a summary of changes:
+
+```
+## Auto Distill Complete
+
+| Fix Type | Count | Details |
+|----------|-------|---------|
+| Keyword dedup | {N} | Removed duplicates in {N} memories |
+| Summary gen | {N} | Generated summaries for {N} memories |
+| Topic normalize | {N} | Normalized topics in {N} memories |
+
+**Total fixes**: {total_count} across {memory_count} memories
+**Health score**: {score}/100 ({status})
+```
+
+#### "No Changes Needed" Edge Case
+
+If no Tier 1 fixes are applicable:
+```
+Auto distill: No changes needed. All memories have clean metadata.
+Health score: {score}/100 ({status})
+```
+
+#### Auto Log Entry
+
+Log the auto operation to `.memory/distill-log.json`:
+
+```json
+{
+  "id": "distill_{timestamp}",
+  "timestamp": "ISO8601",
+  "type": "refine",
+  "session_id": "sess_...",
+  "pre_metrics": { ... },
+  "post_metrics": { ... },
+  "affected_memories": [
+    {
+      "id": "{memory.id}",
+      "fixes_applied": ["keyword_dedup"],
+      "action": "refined"
+    }
+  ],
+  "notes": "auto mode - Tier 1 fixes only. Applied {N} fixes to {M} memories"
+}
+```
+
+Note: Auto mode uses `type: "refine"` (not a separate type) with `"notes"` containing `"auto mode"` to distinguish from interactive refine operations.
 
 ### Distill Log Schema
 

@@ -181,10 +181,10 @@
     {
       "project_number": 448,
       "project_name": "add_passive_memory_nudge_stop_hook",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:31:32Z",
+      "last_updated": "2026-04-16T19:35:04Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -196,12 +196,18 @@
           "path": "specs/448_add_passive_memory_nudge_stop_hook/plans/01_memory-nudge-plan.md",
           "type": "plan",
           "summary": "2-phase plan: hook script + settings integration"
+        },
+        {
+          "path": "specs/448_add_passive_memory_nudge_stop_hook/summaries/01_memory-nudge-summary.md",
+          "type": "summary",
+          "summary": "Memory nudge hook implementation summary"
         }
       ],
       "dependencies": [
         446
       ],
-      "session_id": "sess_1776367430_f97955"
+      "session_id": "sess_1776367430_f97955",
+      "completion_summary": "Created memory-nudge.sh stop hook with lifecycle detection, subagent suppression, cooldown, and settings.json integration"
     },
     {
       "project_number": 447,
