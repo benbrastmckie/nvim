@@ -28,10 +28,18 @@ next_project_number: 460
 
 ## Tasks
 
+### 460. Fix link-artifact-todo.sh missing fallback to Description
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Fix link-artifact-todo.sh: when /research inserts a Research link, it passes next_field="**Plan**" as the insertion anchor. On tasks that have never been planned, no **Plan** line exists in TODO.md, so the script fails with "could not find insertion point". The error message mentions **Description** as a fallback but the code never actually searches for it. Add a fallback chain so that when the primary next_field is not found, the script tries **Description** (which always exists). /plan and /implement are not affected since they already use next_field="**Description**".
+
 ### 459. Document extension dependency system
 - **Effort**: small
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [459_document_extension_dependency_system/reports/01_extension-deps-docs.md]
 
 **Description**: Update documentation for extension dependency system: document the new dependency auto-loading feature in all relevant locations including (1) CLAUDE.md extension section noting dependency support, (2) extension development guide with dependency declaration, auto-loading behavior, circular detection, unload safety, and the resource-only extension pattern, (3) project-overview.md to mention slidev/ as a shared resource extension, (4) any context patterns or standards that reference extensions being atomic-only. The slidev/ micro-extension and dependency resolution in manager.load() were implemented in task 457 -- a state re-read fix was also applied to prevent dependency entries from being overwritten during load.
 

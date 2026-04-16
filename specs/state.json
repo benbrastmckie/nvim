@@ -1,7 +1,16 @@
 {
   "version": "1.0.0",
-  "next_project_number": 460,
+  "next_project_number": 461,
   "active_projects": [
+    {
+      "project_number": 460,
+      "project_name": "fix_link_artifact_todo_fallback",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix link-artifact-todo.sh: when /research inserts a Research link, it passes next_field=\"**Plan**\" as the insertion anchor. On tasks that have never been planned, no **Plan** line exists in TODO.md, so the script fails with \"could not find insertion point\". The error message mentions **Description** as a fallback but the code never actually searches for it. Add a fallback chain so that when the primary next_field is not found, the script tries **Description** (which always exists). /plan and /implement are not affected since they already use next_field=\"**Description**\".",
+      "created": "2026-04-16T23:40:00Z",
+      "last_updated": "2026-04-16T23:40:00Z"
+    },
     {
       "project_number": 459,
       "project_name": "document_extension_dependency_system",
