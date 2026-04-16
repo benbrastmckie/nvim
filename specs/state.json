@@ -5,18 +5,39 @@
     {
       "project_number": 457,
       "project_name": "design_extension_slidev_resource_distribution",
-      "status": "planned",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-16T22:07:02Z",
-      "last_updated": "2026-04-16T22:27:04Z",
-      "session_id": "sess_1713306457_plan457",
+      "last_updated": "2026-04-16T22:46:13Z",
+      "session_id": "sess_1776379088_dd542b",
       "researched": "2026-04-16T22:21:41Z",
-      "next_artifact_number": 2,
+      "next_artifact_number": 3,
       "artifacts": [
         {
           "path": "specs/457_design_extension_slidev_resource_distribution/plans/01_slidev-resource-distribution.md",
           "type": "plan",
           "summary": "4-phase implementation plan for cross-extension slidev resource distribution with dependency enforcement"
+        },
+        {
+          "path": "specs/457_design_extension_slidev_resource_distribution/reports/02_slidev-dependency-research.md",
+          "type": "research",
+          "summary": "Deep research into extension loader architecture, dependency resolution design, and slidev/ micro-extension approach as improvement over plan-01"
+        }
+      ],
+      "memory_candidates": [
+        {
+          "content": "The extension loader (shared/extensions/init.lua) manager.load() ignores the manifest dependencies field entirely. Dependency resolution should be inserted between the is_loaded check (line 244) and the conflict check (line 249). The loading stack pattern via opts._loading_stack enables circular dependency detection through recursion. The picker (picker/init.lua) is a thin UI layer that needs no changes -- it delegates to manager.load() which is the correct injection point.",
+          "category": "PATTERN",
+          "source_artifact": "specs/457_design_extension_slidev_resource_distribution/reports/02_slidev-dependency-research.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "extension",
+            "loader",
+            "dependency",
+            "init.lua",
+            "manager.load",
+            "circular"
+          ]
         }
       ]
     },
