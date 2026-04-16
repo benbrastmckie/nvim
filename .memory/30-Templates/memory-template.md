@@ -9,6 +9,7 @@ retrieval_count: 0
 last_retrieved: null
 keywords: []
 summary: ""
+token_count: 0
 ---
 
 # {{title}}
