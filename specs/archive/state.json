@@ -3693,7 +3693,7 @@
       "planned": "2026-02-03T19:59:17Z",
       "started": "2026-02-03T20:02:20Z",
       "completed": "2026-02-03T20:03:56Z",
-      "completion_summary": "Updated Claude Code statusline hook script to use Unicode block characters (█░) instead of ASCII bracket notation ([=][-]) for the progress bar. The display now shows clean progress bars like '50% █████░░░░░ 100k/200k' instead of cluttered '50% [[=][=][=][=][=][-][-][-][-][-]] 100k/200k'."
+      "completion_summary": "Updated Claude Code statusline hook script to use Unicode block characters (\u2588\u2591) instead of ASCII bracket notation ([=][-]) for the progress bar. The display now shows clean progress bars like '50% \u2588\u2588\u2588\u2588\u2588\u2591\u2591\u2591\u2591\u2591 100k/200k' instead of cluttered '50% [[=][=][=][=][=][-][-][-][-][-]] 100k/200k'."
     },
     {
       "project_number": 35,
@@ -6051,7 +6051,7 @@
         }
       ],
       "description": "Skills are being displayed instead of executed. When /plan command invokes skill-planner, the skill specification content is output rather than delegating to planner-agent via Task tool. Need to audit all skill-command integration points and fix the delegation mechanism system-wide.",
-      "completion_summary": "Fixed agent delegation system by adding explicit skill tool invocation to 3 core commands (plan, implement, research). Commands now properly delegate: Command → Skill → Task → Agent. 40-45% line reduction by removing duplicate logic. Root cause: commands described skills but never invoked them."
+      "completion_summary": "Fixed agent delegation system by adding explicit skill tool invocation to 3 core commands (plan, implement, research). Commands now properly delegate: Command \u2192 Skill \u2192 Task \u2192 Agent. 40-45% line reduction by removing duplicate logic. Root cause: commands described skills but never invoked them."
     },
     {
       "project_number": 144,
@@ -10696,7 +10696,7 @@
           "summary": "Auto-generated research from /meta interview"
         }
       ],
-      "description": "Create lightweight .context/ directory with index.json schema for user-defined project conventions. Starts empty — no files migrate here. Loaded alongside .memory/ as independent systems.",
+      "description": "Create lightweight .context/ directory with index.json schema for user-defined project conventions. Starts empty \u2014 no files migrate here. Loaded alongside .memory/ as independent systems.",
       "completion_summary": "Created .context/ directory with index.json schema (version 1.0, scope: project, empty entries) and README.md documenting purpose, boundaries, and usage. Directory is user-managed for project conventions, independent from .memory/.",
       "archived": "2026-03-26T17:11:08Z"
     },
@@ -16948,6 +16948,769 @@
       "completion_summary": "Added Stage 5b self-execution fallback and unconditional postflight headers to 47 thin-wrapper skill files (3 core + 44 extension). Updated thin-wrapper-skill.md and postflight-control.md pattern documentation.",
       "claudemd_suggestions": "No CLAUDE.md changes needed -- pattern is documented in context files",
       "archived": "2026-04-13T19:53:19Z"
+    },
+    {
+      "project_number": 443,
+      "project_name": "optimize_artifact_format_verbosity",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-15T17:21:30Z",
+      "last_updated": "2026-04-16T17:34:12Z",
+      "session_id": "sess_1776360237_afca7c",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/443_optimize_artifact_format_verbosity/reports/01_artifact-format-research.md",
+          "type": "research",
+          "summary": "Analysis of artifact format verbosity with 7 prioritized recommendations for ~37% line reduction across format files"
+        },
+        {
+          "path": "specs/443_optimize_artifact_format_verbosity/plans/02_artifact-format-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan to reduce artifact format verbosity by ~37% across 7 files through deduplication, example trimming, and tighter writing guidance"
+        },
+        {
+          "path": "specs/443_optimize_artifact_format_verbosity/summaries/02_artifact-format-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for artifact format verbosity reduction (447 lines saved, 41% reduction)"
+        }
+      ],
+      "completion_summary": "Reduced artifact format system verbosity by 447 lines (41%) across 6 files: trimmed format files, cut return-metadata examples from 9 to 3, consolidated duplicate templates, and slimmed enforcement rule to redirect."
+    },
+    {
+      "project_number": 442,
+      "project_name": "optimize_token_usage_model_routing",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-15T17:17:45Z",
+      "last_updated": "2026-04-15T17:36:14Z",
+      "session_id": "sess_1744737480_implement",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/442_optimize_token_usage_model_routing/reports/01_model-routing-research.md",
+          "type": "research",
+          "summary": "Model routing audit: all 7 core agents use opus, lean agents on opus (preserve), flag parsing in STAGE 1.5. Recommendations: change core agents to sonnet, add --fast/--hard/--opus flags."
+        },
+        {
+          "path": "specs/442_optimize_token_usage_model_routing/plans/01_model-routing-plan.md",
+          "type": "plan",
+          "summary": "5-phase plan: agent frontmatter changes, command frontmatter changes, extension changes, --fast/--hard/--opus flags, documentation updates"
+        },
+        {
+          "path": "specs/442_optimize_token_usage_model_routing/summaries/01_model-routing-summary.md",
+          "type": "summary",
+          "summary": "All 5 phases completed: core agents, commands, extension files to sonnet; --fast/--hard/--opus flags added; documentation updated"
+        }
+      ],
+      "completion_summary": "Changed default model from Opus to Sonnet across all 7 core agents, 13 commands, and 24 extension agent/command files (excluding Lean4 which retains Opus). Added --fast/--hard/--opus flags to /research and /implement commands for runtime model override. Updated CLAUDE.md and agent-frontmatter-standard.md documentation.",
+      "claudemd_suggestions": "Updated .claude/CLAUDE.md skill-to-agent table, Model Enforcement paragraph, and command reference flags. Updated agent-frontmatter-standard.md with Sonnet default, Lean exception, and --fast/--hard/--opus documentation."
+    },
+    {
+      "project_number": 441,
+      "project_name": "update_readme_documentation",
+      "status": "completed",
+      "task_type": "markdown",
+      "created": "2026-04-15T16:52:16Z",
+      "last_updated": "2026-04-15T17:16:52Z",
+      "session_id": "sess_1776273172_6cf221",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/441_update_readme_documentation/reports/01_readme-update-research.md",
+          "type": "research",
+          "summary": "Comprehensive analysis of README.md identifying Avante references, current AI plugins, and recommended changes for Claude Code integration"
+        },
+        {
+          "path": "specs/441_update_readme_documentation/plans/01_readme-update-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan to update README.md: remove Avante references, add Claude Code/OpenCode/Lectic documentation, add Zed alternative link and .claude/README.md reference"
+        },
+        {
+          "path": "specs/441_update_readme_documentation/summaries/01_readme-update-summary.md",
+          "type": "summary",
+          "summary": "Updated README.md: removed all Avante references, added Claude Code/OpenCode/Lectic AI documentation, Zed link, and .claude/README.md reference"
+        }
+      ],
+      "completion_summary": "Updated README.md to remove all Avante references and document current AI tools (Claude Code, OpenCode, Lectic). Added Zed editor alternative link and .claude/README.md reference."
+    },
+    {
+      "project_number": 440,
+      "project_name": "genericize_documentation_and_examples",
+      "status": "abandoned",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-14T23:00:00Z",
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "dependencies": [
+        438
+      ],
+      "completion_summary": "Superseded by task 438 Phase 4, which genericized all documentation and guide files that task 440 was targeting."
+    },
+    {
+      "project_number": 439,
+      "project_name": "harden_sync_protection_and_clean_deprecated_index",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-15T01:52:55Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/439_harden_sync_protection_and_clean_deprecated_index/reports/01_sync-protection.md",
+          "type": "research",
+          "summary": "Research report on sync protection hardening and deprecated index cleanup"
+        },
+        {
+          "path": "specs/439_harden_sync_protection_and_clean_deprecated_index/plans/01_sync-protection.md",
+          "type": "plan",
+          "summary": "2-phase plan for sync protection hardening and deprecated index cleanup"
+        },
+        {
+          "path": "specs/439_harden_sync_protection_and_clean_deprecated_index/summaries/01_sync-protection-summary.md",
+          "type": "summary",
+          "summary": "Fixed sync.lua auto-seed legacy migration and removed 5 deprecated index entries"
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282",
+      "completion_summary": "Fixed sync.lua auto-seed to merge legacy .syncprotect entries during migration, preventing silent entry loss. Removed 5 deprecated entries from index.json, recovering 2,123 lines of context budget."
+    },
+    {
+      "project_number": 438,
+      "project_name": "comprehensive_core_genericization",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-15T02:31:30Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/438_comprehensive_core_genericization/reports/01_core-genericization.md",
+          "type": "research",
+          "summary": "Comprehensive audit of all nvim references in core .claude/ with proposed fixes"
+        },
+        {
+          "path": "specs/438_comprehensive_core_genericization/plans/01_core-genericization.md",
+          "type": "plan",
+          "summary": "4-phase plan for comprehensive core genericization across ~30 files"
+        },
+        {
+          "path": "specs/438_comprehensive_core_genericization/summaries/01_core-genericization-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for comprehensive core genericization"
+        }
+      ],
+      "dependencies": [
+        437
+      ],
+      "session_id": "sess_1776217178_5c9282",
+      "completion_summary": "Removed all neovim-specific references from ~35 core .claude/ files across 4 phases: routing/detection logic, commands/settings, context docs, and documentation guides. Core agent system is now fully project-agnostic."
+    },
+    {
+      "project_number": 437,
+      "project_name": "move_neovim_only_files_to_extension",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T23:00:00Z",
+      "last_updated": "2026-04-15T02:08:21Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/437_move_neovim_only_files_to_extension/reports/01_nvim-file-relocation.md",
+          "type": "research",
+          "summary": "Audit of 5 neovim-only files for relocation to extension"
+        },
+        {
+          "path": "specs/437_move_neovim_only_files_to_extension/plans/01_nvim-file-relocation.md",
+          "type": "plan",
+          "summary": "2-phase plan to move 2 neovim-only docs to extension and update references"
+        },
+        {
+          "path": "specs/437_move_neovim_only_files_to_extension/summaries/01_nvim-file-relocation-summary.md",
+          "type": "summary",
+          "summary": "Moved 2 neovim-only guide files to extension and updated references"
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282",
+      "completion_summary": "Moved neovim-integration.md and tts-stt-integration.md from core docs to nvim extension, added 2 index entries, and updated all cross-references."
+    },
+    {
+      "project_number": 436,
+      "project_name": "resolve_convert_command_docs_without_implementation",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T22:00:00Z",
+      "last_updated": "2026-04-15T01:51:18Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/436_resolve_convert_command_docs_without_implementation/reports/01_convert-command.md",
+          "type": "research",
+          "summary": "Research report on /convert command: implement vs remove decision. Finding: command EXISTS in filetypes extension, docs just need extension annotation."
+        },
+        {
+          "path": "specs/436_resolve_convert_command_docs_without_implementation/plans/01_convert-command.md",
+          "type": "plan",
+          "summary": "Implementation plan for annotating /convert as extension command in docs"
+        },
+        {
+          "path": "specs/436_resolve_convert_command_docs_without_implementation/summaries/01_convert-command-summary.md",
+          "type": "summary",
+          "summary": "Annotated /convert as extension-provided command in user-guide.md"
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282",
+      "completion_summary": "Added filetypes extension annotation to /convert command in user-guide.md ToC, section heading, and command summary table."
+    },
+    {
+      "project_number": 435,
+      "project_name": "fix_claudemd_hierarchy_for_project_portability",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T22:00:00Z",
+      "last_updated": "2026-04-15T01:52:31Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/435_fix_claudemd_hierarchy_for_project_portability/reports/01_claudemd-hierarchy.md",
+          "type": "research",
+          "summary": "Research report on CLAUDE.md hierarchy leakage and fixes"
+        },
+        {
+          "path": "specs/435_fix_claudemd_hierarchy_for_project_portability/plans/01_claudemd-hierarchy.md",
+          "type": "plan",
+          "summary": "2-phase plan to rewrite parent CLAUDE.md files for cross-project portability"
+        },
+        {
+          "path": "specs/435_fix_claudemd_hierarchy_for_project_portability/summaries/01_claudemd-hierarchy-summary.md",
+          "type": "summary",
+          "summary": "Rewrote 2 parent CLAUDE.md files to be project-agnostic"
+        }
+      ],
+      "session_id": "sess_1776217178_5c9282",
+      "completion_summary": "Rewrote /home/benjamin/.config/CLAUDE.md and /home/benjamin/.config/.claude/CLAUDE.md to be project-agnostic, removing all nvim-specific content that was polluting sibling project sessions."
+    },
+    {
+      "project_number": 434,
+      "project_name": "prevent_lead_agent_post_delegation_takeover",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T21:00:00Z",
+      "last_updated": "2026-04-14T21:00:17Z",
+      "artifacts": [
+        {
+          "path": "specs/434_prevent_lead_agent_post_delegation_takeover/reports/01_post-delegation-takeover.md",
+          "type": "research",
+          "summary": "Research report analyzing post-delegation boundary enforcement gaps across all implementation skills"
+        },
+        {
+          "path": "specs/434_prevent_lead_agent_post_delegation_takeover/plans/01_post-delegation-takeover.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for adding PROHIBITION blocks to 13 implementation skills and standards files"
+        },
+        {
+          "path": "specs/434_prevent_lead_agent_post_delegation_takeover/summaries/01_post-delegation-takeover-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for post-delegation takeover prevention across 13 implementation skills"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1776200126_2edbea",
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 1.5,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_post-delegation-takeover.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-14"
+          }
+        ]
+      },
+      "completion_summary": "Added PROHIBITION blocks to all 13 implementation skills (2 core, 11 extension), updated canonical postflight template, added partial-is-acceptable guidance to general-implementation-agent, and documented future GATE OUT detection in implement.md.",
+      "claudemd_suggestions": "Updated skill-implementer/SKILL.md, skill-team-implement/SKILL.md, general-implementation-agent.md, postflight-tool-restrictions.md canonical template, implement.md GATE OUT section, and 11 extension implementation SKILL.md files"
+    },
+    {
+      "project_number": 433,
+      "project_name": "move_nvim_specific_content_to_neovim_extension",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T20:45:00Z",
+      "last_updated": "2026-04-14T21:47:58Z",
+      "artifacts": [
+        {
+          "path": "specs/433_move_nvim_specific_content_to_neovim_extension/plans/01_extension-restructuring.md",
+          "type": "plan",
+          "summary": "Implementation plan: corruption fixes, file moves, section extraction, example generalization"
+        },
+        {
+          "path": "specs/433_move_nvim_specific_content_to_neovim_extension/summaries/01_extension-restructuring-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for extension restructuring"
+        }
+      ],
+      "next_artifact_number": 1,
+      "dependencies": [
+        432
+      ],
+      "session_id": "sess_1776200126_impl433",
+      "completion_summary": "Removed neovim-specific content from ~30 core .claude/context/ files. Fixed corruption artifacts, deleted deprecated routing.md, replaced project-overview with generic template, and generalized all routing tables and example data to use extension placeholders.",
+      "claudemd_suggestions": "Updated ~30 files in .claude/context/ to remove neovim-specific references. Replaced routing tables, agent names, file paths, and task type enumerations with generic extension patterns. Added project-overview.md to .syncprotect. No CLAUDE.md changes needed -- it already uses generic patterns."
+    },
+    {
+      "project_number": 432,
+      "project_name": "harden_sync_against_repo_specific_leakage",
+      "status": "completed",
+      "task_type": "neovim",
+      "created": "2026-04-14T20:45:00Z",
+      "last_updated": "2026-04-14T21:01:32Z",
+      "artifacts": [
+        {
+          "path": "specs/432_harden_sync_against_repo_specific_leakage/reports/01_sync-leakage-hardening.md",
+          "type": "research",
+          "summary": "Research report analyzing sync engine leakage vectors and recommending 3 hardening mechanisms"
+        },
+        {
+          "path": "specs/432_harden_sync_against_repo_specific_leakage/plans/01_sync-leakage-hardening.md",
+          "type": "plan",
+          "summary": "4-phase plan: sync-exclude parser with source-side exclusion, auto-seed syncprotect, post-sync content audit, testing"
+        },
+        {
+          "path": "specs/432_harden_sync_against_repo_specific_leakage/summaries/01_sync-leakage-hardening-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for sync leakage hardening: .sync-exclude parser, auto-seed .syncprotect, post-sync content audit"
+        }
+      ],
+      "next_artifact_number": 2,
+      "session_id": "sess_1776200126_2edbea",
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 3,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_sync-leakage-hardening.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-14"
+          }
+        ]
+      },
+      "completion_summary": "Implemented three sync hardening mechanisms: .sync-exclude file with source-side path exclusions and audit-pattern directives, auto-seeding .syncprotect in target repos, and post-sync content audit with non-blocking warnings. All mechanisms are optional and backward-compatible."
+    },
+    {
+      "project_number": 431,
+      "project_name": "fix_artifact_linking_order_todo",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T19:45:09Z",
+      "last_updated": "2026-04-14T20:21:51Z",
+      "session_id": "sess_1776199200_431imp",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/431_fix_artifact_linking_order_todo/reports/01_artifact-linking-bug.md",
+          "summary": "Root cause analysis: 3 independent bugs in artifact linking - misplaced Research below Description by task creation, blank line consumed by script insertion, inconsistent specs/ prefix"
+        },
+        {
+          "path": "specs/431_fix_artifact_linking_order_todo/plans/01_artifact-linking-fix.md",
+          "type": "plan",
+          "summary": "Revised plan: fix blank line preservation, bracket-only link format, update schema docs"
+        },
+        {
+          "path": "specs/431_fix_artifact_linking_order_todo/summaries/01_artifact-linking-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for artifact linking fix"
+        }
+      ],
+      "completion_summary": "Fixed link-artifact-todo.sh to preserve blank lines before Description field during insertion and changed link format from [text](url) to bracket-only [path]. Updated state-management-schema.md, artifact-formats.md, and artifact-linking-todo.md to match.",
+      "claudemd_suggestions": "Updated artifact-formats.md rule (inline format example), state-management-schema.md (linking format section and detection patterns), artifact-linking-todo.md (four-case examples and prerequisites)"
+    },
+    {
+      "project_number": 430,
+      "project_name": "fix_implement_excessive_front_loading",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T19:41:32Z",
+      "last_updated": "2026-04-14T20:00:47Z",
+      "session_id": "sess_1744663200_430impl",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/430_fix_implement_excessive_front_loading/reports/01_front-loading-fix.md",
+          "type": "report",
+          "summary": "Research report identifying 6 findings and 4 changes across 3-4 files to add pre-delegation boundary constraints"
+        },
+        {
+          "path": "specs/430_fix_implement_excessive_front_loading/plans/01_front-loading-fix.md",
+          "type": "plan",
+          "summary": "3-phase plan: add pre-delegation boundary constraints to skill-team-implement, skill-implementer, and general-implementation-agent"
+        },
+        {
+          "path": "specs/430_fix_implement_excessive_front_loading/summaries/01_front-loading-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for pre-delegation boundary constraints"
+        }
+      ],
+      "completion_summary": "Added pre-delegation boundary constraints to skill-team-implement, skill-implementer, and general-implementation-agent preventing the lead from front-loading codebase exploration before spawning sub-agents.",
+      "claudemd_suggestions": "Added Pre-Delegation Boundary sections to skill-team-implement/SKILL.md and skill-implementer/SKILL.md, added Codebase Exploration Responsibility section to general-implementation-agent.md"
+    },
+    {
+      "project_number": 429,
+      "project_name": "update_docs_for_task_428_changes",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T19:27:08Z",
+      "last_updated": "2026-04-14T19:50:12Z",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {
+          "path": "specs/429_update_docs_for_task_428_changes/reports/01_docs-audit.md",
+          "type": "report",
+          "summary": "Documentation audit: 6 stale references across 5 files in .claude/docs/"
+        },
+        {
+          "path": "specs/429_update_docs_for_task_428_changes/reports/02_docs-update-research.md",
+          "type": "research",
+          "summary": "Verified 6 issues from audit, found 4 additional issues. 10 total fixes across 6 files with exact line-level diffs."
+        },
+        {
+          "path": "specs/429_update_docs_for_task_428_changes/plans/02_docs-update-plan.md",
+          "type": "plan",
+          "summary": "4-phase plan to fix 10 stale documentation references across 7 files in .claude/docs/"
+        },
+        {
+          "path": "specs/429_update_docs_for_task_428_changes/summaries/02_implementation-summary.md",
+          "type": "summary",
+          "summary": "Team implementation with 2 max concurrent teammates"
+        }
+      ],
+      "session_id": "sess_1776196007_5d5b7f",
+      "completed": "2026-04-14T19:50:12Z",
+      "completion_summary": "Fixed 10 stale documentation references across 7 files in .claude/docs/: backup->git recovery, language->task_type rename, routing additions, spreadsheet agent rename, model enforcement examples"
+    },
+    {
+      "project_number": 428,
+      "project_name": "refactor_agent_system_syncprotect_and_organization",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T16:56:14Z",
+      "last_updated": "2026-04-14T19:15:31Z",
+      "session_id": "sess_1776190756_a3fda6",
+      "researched": "2026-04-14T17:16:12Z",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/428_refactor_agent_system_syncprotect_and_organization/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research with 4 teammates: syncprotect, components, critic, horizons"
+        },
+        {
+          "path": "specs/428_refactor_agent_system_syncprotect_and_organization/plans/01_syncprotect-organization.md",
+          "type": "plan",
+          "summary": "5-phase plan: syncprotect relocation and picker integration, backup elimination, default syncprotect creation, orphaned component and reference fixes, frontmatter and documentation polish"
+        },
+        {
+          "path": "specs/428_refactor_agent_system_syncprotect_and_organization/summaries/01_implementation-summary.md",
+          "type": "summary",
+          "summary": "Team implementation: 5 phases across 3 waves, syncprotect hardening, backup elimination, orphaned components, frontmatter polish"
+        }
+      ],
+      "completion_summary": "Refactored agent system: relocated syncprotect to project root with picker integration, eliminated backup mechanism (59 lines removed from merge.lua), fixed orphaned components and naming collisions, added missing frontmatter across commands/agents/skills"
+    },
+    {
+      "project_number": 427,
+      "project_name": "remove_coauthored_by_and_refine_readme_sync",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T04:14:16Z",
+      "last_updated": "2026-04-13T00:30:00Z",
+      "session_id": "sess_1744520400_impl427",
+      "completion_summary": "Removed all Co-Authored-By trailers from 101 files across .claude/ and .opencode/ directories, including commit templates, rules, skills, agents, commands, extensions, and context docs. Also removed the CLAUDE.md policy note and the creating-agents.md instruction.",
+      "claudemd_suggestions": "Removed Co-Authored-By policy note from .claude/CLAUDE.md, removed trailer instruction from creating-agents.md, cleaned commit templates across 101 .claude/ and .opencode/ files",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/427_remove_coauthored_by_and_refine_readme_sync/reports/01_coauthored-by-removal.md",
+          "type": "research",
+          "summary": "Comprehensive catalog of 137 Co-Authored-By occurrences across 100 files with prioritized removal plan"
+        },
+        {
+          "path": "specs/427_remove_coauthored_by_and_refine_readme_sync/plans/01_coauthored-by-removal.md",
+          "type": "plan",
+          "summary": "5-phase plan to remove ~137 Co-Authored-By occurrences from ~75 active files across .claude/ and .opencode/"
+        },
+        {
+          "path": "specs/427_remove_coauthored_by_and_refine_readme_sync/summaries/01_coauthored-by-removal-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for Co-Authored-By trailer removal from 101 files"
+        }
+      ],
+      "plan_metadata": {
+        "phases": 5,
+        "total_effort_hours": 2.5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "project_number": 426,
+      "project_name": "update_slides_command_manifest_critic_flag",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T03:14:38Z",
+      "last_updated": "2026-04-14T04:18:37Z",
+      "session_id": "sess_1776140082_8d0b30",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/426_update_slides_command_manifest_critic_flag/reports/01_slides-critic-flag-research.md",
+          "type": "research",
+          "summary": "Research on slides command, manifest, and index changes for --critic flag"
+        },
+        {
+          "path": "specs/426_update_slides_command_manifest_critic_flag/plans/01_slides-critic-flag-plan.md",
+          "type": "plan",
+          "summary": "Plan for adding --critic flag to slides command"
+        },
+        {
+          "path": "specs/426_update_slides_command_manifest_critic_flag/summaries/01_slides-critic-flag-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for --critic flag integration"
+        }
+      ],
+      "completion_summary": "Wired slide critique subsystem into /slides command: added --critic flag parsing, critique routing in manifest.json, slide-critic-agent to index-entries.json, documentation in EXTENSION.md."
+    },
+    {
+      "project_number": 425,
+      "project_name": "create_skill_slide_critic",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T03:14:38Z",
+      "last_updated": "2026-04-14T04:09:57Z",
+      "session_id": "sess_1776139563_41ec4d",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/425_create_skill_slide_critic/reports/01_skill-slide-critic-research.md",
+          "type": "research",
+          "summary": "Research on skill patterns for interactive critique loop"
+        },
+        {
+          "path": "specs/425_create_skill_slide_critic/plans/01_skill-slide-critic-plan.md",
+          "type": "plan",
+          "summary": "Plan for skill-slide-critic interactive critique loop"
+        },
+        {
+          "path": "specs/425_create_skill_slide_critic/summaries/01_skill-slide-critic-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for skill-slide-critic"
+        }
+      ],
+      "completion_summary": "Created skill-slide-critic SKILL.md (532 lines) with frontmatter, 13 execution stages (delegation, report parsing, interactive critique loop with AskUserQuestion, filtered report generation, postflight), error handling, and manifest registration."
+    },
+    {
+      "project_number": 424,
+      "project_name": "create_slide_critic_agent",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T03:14:38Z",
+      "last_updated": "2026-04-14T04:00:35Z",
+      "session_id": "sess_1776138962_f49077",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/424_create_slide_critic_agent/reports/01_slide-critic-agent-research.md",
+          "type": "research",
+          "summary": "Research on agent patterns, rubric integration, context loading, and structured output design for slide-critic-agent"
+        },
+        {
+          "path": "specs/424_create_slide_critic_agent/plans/01_slide-critic-agent-plan.md",
+          "type": "plan",
+          "summary": "3-phase plan for creating slide-critic-agent with rubric evaluation and structured issue output"
+        },
+        {
+          "path": "specs/424_create_slide_critic_agent/summaries/01_slide-critic-agent-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for slide-critic-agent"
+        }
+      ],
+      "completion_summary": "Created slide-critic-agent.md with full 8-stage execution flow, rubric-based evaluation across 6 categories with talk-type priority weighting, structured critique report output, and registered in manifest and index."
+    },
+    {
+      "project_number": 423,
+      "project_name": "create_critique_rubric_context",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T03:14:38Z",
+      "last_updated": "2026-04-14T03:48:52Z",
+      "session_id": "sess_1776137415_5c8de8",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/423_create_critique_rubric_context/reports/01_critique-rubric-research.md",
+          "type": "research",
+          "summary": "Research on critique rubric patterns for academic presentations - review criteria categories, severity levels, talk-type-specific criteria"
+        },
+        {
+          "path": "specs/423_create_critique_rubric_context/plans/01_critique-rubric-plan.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for critique rubric context file with 6 categories and 5 talk-type adjustments"
+        },
+        {
+          "path": "specs/423_create_critique_rubric_context/summaries/01_critique-rubric-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for critique rubric context file"
+        }
+      ],
+      "completion_summary": "Created critique-rubric.md (248 lines) with 3-tier severity system, 6 rubric categories with criteria tables and anti-patterns, talk-type priority matrix, per-mode adjustment notes for all 5 presentation types, cross-references to 11 existing files, and output format guidance for a future slide-critic-agent."
+    },
+    {
+      "project_number": 422,
+      "project_name": "fix_sync_overwriting_all_non_claudemd_files",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T03:05:36Z",
+      "last_updated": "2026-04-14T03:59:13Z",
+      "session_id": "sess_1744517800_impl422",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/422_fix_sync_overwriting_all_non_claudemd_files/reports/01_sync-overwrite-diagnosis.md",
+          "type": "research",
+          "summary": "Diagnosed 3 root causes: generated JSON not excluded, README.md not skipped in scan_directory_for_sync, no per-repo file protection. Proposed index.json exclusion, README skip, and .syncprotect file support."
+        },
+        {
+          "path": "specs/422_fix_sync_overwriting_all_non_claudemd_files/plans/01_sync-overwrite-fix.md",
+          "type": "plan",
+          "summary": "4-phase plan to fix sync.lua overwriting non-CLAUDE.md files: add index.json exclusions, skip README.md in sync scan, add .syncprotect file support, testing"
+        },
+        {
+          "path": "specs/422_fix_sync_overwriting_all_non_claudemd_files/summaries/01_sync-overwrite-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for sync overwrite fixes: JSON exclusion, README skip, and .syncprotect support"
+        }
+      ],
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 2.5,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "completion_summary": "Fixed sync.lua to exclude generated JSON files (index.json), skip README.md in scan_directory_for_sync, and support .syncprotect for per-repo file protection during sync operations."
+    },
+    {
+      "project_number": 421,
+      "project_name": "fix_status_script_grep_pattern_and_todo_linking",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-14T01:07:37Z",
+      "last_updated": "2026-04-14T02:05:49Z",
+      "session_id": "sess_1776131395_2814c9",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/421_fix_status_script_grep_pattern_and_todo_linking/reports/01_status-script-bugs.md",
+          "type": "research",
+          "summary": "Research on two bugs: grep pattern mismatch in update-task-status.sh that silently fails for space-indented TODO.md entries, and LLM-dependent artifact linking in skill postflight stages"
+        },
+        {
+          "path": "specs/421_fix_status_script_grep_pattern_and_todo_linking/plans/01_fix-status-linking.md",
+          "type": "plan",
+          "summary": "3-phase plan to fix grep pattern mismatch in update-task-status.sh, create link-artifact-todo.sh automation script, and update skill postflights"
+        },
+        {
+          "path": "specs/421_fix_status_script_grep_pattern_and_todo_linking/summaries/01_fix-status-linking-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for grep pattern fix and artifact linking automation"
+        }
+      ],
+      "completion_summary": "Fixed silent grep pattern failure in update-task-status.sh, created link-artifact-todo.sh to automate four-case TODO.md artifact linking, and updated 7 skill postflights to use the script instead of LLM-dependent Edit logic."
+    },
+    {
+      "project_number": 420,
+      "project_name": "prevent_extension_loader_overwriting_repo_customizations",
+      "status": "completed",
+      "task_type": "meta",
+      "created": "2026-04-13T23:20:00Z",
+      "last_updated": "2026-04-14T01:15:29Z",
+      "session_id": "sess_1776128912_56a5d4",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/420_prevent_extension_loader_overwriting_repo_customizations/reports/01_extension-loader-sync.md",
+          "type": "research",
+          "summary": "Identified two sync mechanisms causing CLAUDE.md overwrites: core sync copies file wholesale, destroying extension-injected sections. Recommends section-marker preservation during sync plus post-sync re-injection of extension merge targets."
+        },
+        {
+          "path": "specs/420_prevent_extension_loader_overwriting_repo_customizations/plans/01_prevent-loader-overwrite.md",
+          "type": "plan",
+          "summary": "3-phase plan: section-aware sync for CLAUDE.md, post-sync extension re-injection, and edge case testing"
+        },
+        {
+          "path": "specs/420_prevent_extension_loader_overwriting_repo_customizations/summaries/01_prevent-loader-overwrite-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for section preservation and post-sync re-injection in sync.lua"
+        }
+      ],
+      "completion_summary": "Added two-layer defense to sync.lua: section-aware overwrite preserves extension-injected SECTION blocks in CLAUDE.md/OPENCODE.md, and post-sync re-injection restores all merge targets (settings.json, index.json) for loaded extensions."
     }
   ],
   "abandoned_projects": []
