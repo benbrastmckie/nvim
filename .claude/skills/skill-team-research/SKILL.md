@@ -40,6 +40,8 @@ This skill activates when:
 | `focus_prompt` | string | No | Optional focus for research |
 | `team_size` | integer | No | Number of teammates (2-4, default 2) |
 | `session_id` | string | Yes | Session ID for tracking |
+| `model_flag` | string | No | Model override (haiku, sonnet, opus). If set, use instead of default |
+| `effort_flag` | string | No | Effort level (fast, hard). Passed as prompt context |
 
 ---
 
@@ -176,20 +178,21 @@ Determine task-type-specific configuration for teammate prompts:
 case "$task_type" in
   "meta")
     # Meta tasks - focus on .claude/ system patterns
-    default_model="sonnet"
     context_refs="@.claude/CLAUDE.md, @.claude/context/index.json"
     available_tools="Read, Grep, Glob"
     ;;
   *)
-    # General tasks - use Sonnet for cost-effectiveness
-    default_model="sonnet"
+    # General tasks
     context_refs=""
     available_tools="WebSearch, WebFetch, Read, Grep, Glob"
     ;;
 esac
 
+# Determine model for teammates: use model_flag if provided, otherwise default to sonnet (cost-effective for team mode)
+teammate_model="${model_flag:-sonnet}"
+
 # Prepare model preference line for prompts (secondary guidance)
-model_preference_line="Model preference: Use Claude ${default_model^} 4.6 for this analysis."
+model_preference_line="Model preference: Use Claude ${teammate_model^} 4.6 for this analysis."
 ```
 
 ---
@@ -309,7 +312,7 @@ Format: Same as Teammate A
 **Spawn teammates using TeammateTool**.
 
 **IMPORTANT**: Pass the `model` parameter to enforce model selection:
-- Use `model: "sonnet"` for all tasks (cost-effective for non-Lean work)
+- Use `model: "${teammate_model}"` (from Stage 5b: model_flag if provided, otherwise "sonnet" as default)
 
 The `model_preference_line` in prompts serves as secondary guidance only. The `model` parameter on TeammateTool is the enforced selection.
 

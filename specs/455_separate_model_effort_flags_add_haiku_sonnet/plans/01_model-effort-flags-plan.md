@@ -130,7 +130,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update skill files (3 single-agent + 3 team skills) [NOT STARTED]
+### Phase 3: Update skill files (3 single-agent + 3 team skills) [COMPLETED]
 
 - **Goal:** Update skills to accept, interpret, and pass through both effort_flag and model_flag independently
 - **Tasks:**
