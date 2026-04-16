@@ -1,7 +1,7 @@
 # Implementation Plan: Task #455
 
 - **Task**: 455 - Separate model/effort flags, add --haiku and --sonnet
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/455_separate_model_effort_flags_add_haiku_sonnet/reports/01_model-effort-flags-research.md

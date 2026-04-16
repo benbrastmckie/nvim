@@ -5,10 +5,10 @@
     {
       "project_number": 455,
       "project_name": "separate_model_effort_flags_add_haiku_sonnet",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-16T21:00:00Z",
-      "last_updated": "2026-04-16T18:39:28Z",
+      "last_updated": "2026-04-16T18:49:05Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -20,9 +20,16 @@
           "path": "specs/455_separate_model_effort_flags_add_haiku_sonnet/plans/01_model-effort-flags-plan.md",
           "type": "plan",
           "summary": "4-phase plan: separate model selection from effort level across commands, skills, and docs"
+        },
+        {
+          "path": "specs/455_separate_model_effort_flags_add_haiku_sonnet/summaries/01_model-effort-flags-summary.md",
+          "type": "summary",
+          "summary": "Separated model/effort flags across 3 commands, 6 skills, and docs"
         }
       ],
-      "session_id": "sess_1776364720_50e855"
+      "session_id": "sess_1776364720_50e855",
+      "completion_summary": "Separated model selection (--haiku/--sonnet/--opus) from effort level (--fast/--hard) across 3 commands, 6 skills, and documentation; fixed docs-say-sonnet-but-files-say-opus inconsistency",
+      "claudemd_suggestions": "Updated agent-frontmatter-standard.md and CLAUDE.md with two-dimensional flag system"
     },
     {
       "project_number": 454,

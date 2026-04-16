@@ -10,7 +10,7 @@ next_project_number: 456
 
 ### Pending
 
-- **455** [IMPLEMENTING] -- Separate model selection from effort flags, add --haiku and --sonnet
+- **455** [COMPLETED] -- Separate model selection from effort flags, add --haiku and --sonnet
 - **454** [NOT STARTED] -- Memory system documentation and end-to-end validation (depends: 448, 453)
 - **453** [NOT STARTED] -- Integrate /distill with /todo suggestions and retrieval tombstone filtering (depends: 447, 452)
 - **452** [NOT STARTED] -- Implement distill compress and refine operations (depends: 450, 451)
@@ -29,7 +29,7 @@ next_project_number: 456
 
 ### 455. Separate model selection from effort flags, add --haiku and --sonnet
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 
 **Description**: Refactor the `/research`, `/implement`, and `/plan` command flag system to separate two currently conflated concerns: **model selection** (which model family to use) and **effort level** (how deeply the model reasons). Currently `--fast` maps to Sonnet and `--hard`/`--opus` both map to Opus, conflating "cheaper model" with "less effort" and "expensive model" with "more effort". These should be independent dimensions, and the missing `--haiku` and `--sonnet` model flags should be added.
