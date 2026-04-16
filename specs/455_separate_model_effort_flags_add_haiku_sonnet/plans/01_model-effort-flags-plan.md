@@ -168,7 +168,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Validation and cross-reference sweep [NOT STARTED]
+### Phase 4: Validation and cross-reference sweep [COMPLETED]
 
 - **Goal:** Verify no stale references to the old single-dimension flag mapping remain anywhere in the codebase, and confirm the new system is internally consistent
 - **Tasks:**
