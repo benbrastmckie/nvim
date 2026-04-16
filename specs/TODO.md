@@ -1,5 +1,5 @@
 ---
-next_project_number: 459
+next_project_number: 460
 ---
 
 # TODO
@@ -28,9 +28,16 @@ next_project_number: 459
 
 ## Tasks
 
+### 459. Document extension dependency system
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Update documentation for extension dependency system: document the new dependency auto-loading feature in all relevant locations including (1) CLAUDE.md extension section noting dependency support, (2) extension development guide with dependency declaration, auto-loading behavior, circular detection, unload safety, and the resource-only extension pattern, (3) project-overview.md to mention slidev/ as a shared resource extension, (4) any context patterns or standards that reference extensions being atomic-only. The slidev/ micro-extension and dependency resolution in manager.load() were implemented in task 457 -- a state re-read fix was also applied to prevent dependency entries from being overwritten during load.
+
 ### 458. Create legal-analysis-agent for critical legal feedback
 - **Effort**: Medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Research**:
   - [specs/458_create_legal_analysis_agent/reports/01_team-research.md]
