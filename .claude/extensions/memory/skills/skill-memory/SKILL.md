@@ -471,6 +471,9 @@ for mem in $memories; do
   summary=$(grep -m1 "^summary:" "$mem" | sed 's/^summary: *//' | tr -d '"')
   retrieval_count=$(grep -m1 "^retrieval_count:" "$mem" | sed 's/^retrieval_count: *//')
   last_retrieved=$(grep -m1 "^last_retrieved:" "$mem" | sed 's/^last_retrieved: *//')
+  status=$(grep -m1 "^status:" "$mem" | sed 's/^status: *//')
+  # Default status to "active" when absent
+  if [ -z "$status" ]; then status="active"; fi
   # Compute token_count: word_count * 1.3
   word_count=$(wc -w < "$mem")
   token_count=$(echo "$word_count * 1.3" | bc | cut -d. -f1)
@@ -508,6 +511,7 @@ done
 | `modified` | string | Frontmatter `modified` (ISO date) |
 | `last_retrieved` | string/null | Frontmatter `last_retrieved` |
 | `retrieval_count` | number | Frontmatter `retrieval_count` |
+| `status` | string | Frontmatter `status` (default: "active" when absent; "tombstoned" for purged memories) |
 
 ### Validate-on-Read
 
@@ -525,6 +529,8 @@ Before using `memory-index.json` for retrieval or scoring, validate that the ind
 ```
 
 This ensures the index is always consistent, even if manual file edits bypass the skill pipeline.
+
+**Status Field Handling**: During regeneration, the `status` field is read from each memory's frontmatter. If absent, it defaults to `"active"`. Tombstoned memories (with `status: tombstoned` in frontmatter) retain their `"tombstoned"` status in the regenerated index. The `tombstoned_at` and `tombstone_reason` fields are also preserved when present.
 
 ---
 
@@ -937,17 +943,17 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 | Sub-Mode | Description | Status |
 |----------|-------------|--------|
 | `report` | Generate health report with scoring | Available (task 449) |
-| `purge` | Remove memories with composite score > 0.7 | Placeholder (task 450) |
-| `merge` | Combine memories with duplicate score > 0.6 | Placeholder (task 451) |
+| `purge` | Tombstone stale/zero-retrieval memories | Available (task 450) |
+| `merge` | Combine memories with duplicate score > 0.6 | Available (task 451) |
 | `compress` | Summarize memories with size penalty > 0.5 | Placeholder (task 452) |
 | `refine` | Improve memory quality (keywords, tags) | Placeholder (task 452) |
-| `gc` | Run purge + merge + compress in sequence | Placeholder (task 452) |
+| `gc` | Hard-delete tombstoned memories past grace period | Available (task 450) |
 | `auto` | Automated distillation with all operations | Placeholder (task 452) |
 
 For placeholder sub-modes, return:
 ```
 /distill --{sub_mode} is not yet implemented.
-Currently available: /distill (health report)
+Currently available: /distill (health report), /distill --purge, /distill --merge, /distill --gc
 ```
 
 ### Scoring Engine

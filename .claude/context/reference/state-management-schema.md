@@ -164,6 +164,24 @@ artifact_number=$((count + 1))
 | `completion_summary` | string | Yes (when completed) | 1-3 sentence summary of accomplishment |
 | `roadmap_items` | array | No | Explicit ROADMAP.md item texts (non-meta only) |
 | `claudemd_suggestions` | string | Yes (meta only) | .claude/ changes made, or "none" |
+| `memory_candidates` | array | No | Structured memory candidates emitted by agents (see below) |
+
+### Memory Candidates Field
+
+The `memory_candidates` array on task entries accumulates structured memory candidates emitted by agents during research and implementation. Candidates are appended (not overwritten) so research and implementation candidates coexist.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `content` | string | Yes | Description of reusable knowledge (~300 tokens max) |
+| `category` | string | Yes | One of: `TECHNIQUE`, `PATTERN`, `CONFIG`, `WORKFLOW`, `INSIGHT` |
+| `source_artifact` | string | Yes | Path to the artifact that produced this candidate |
+| `confidence` | number | Yes | Float 0-1 indicating reusability confidence |
+| `suggested_keywords` | array of strings | Yes | Keywords for memory index retrieval |
+
+**Lifecycle**:
+- **Producer**: Skill postflight extracts `memory_candidates` from `.return-meta.json` and appends to the task entry
+- **Consumer**: `/todo` processes candidates during task archival (writes memory files, updates index)
+- **Semantics**: Append-only during task lifecycle; consumed and removed during archival
 
 **Responsibility Split**:
 - **`/implement` (Producer)**: Reports what was changed factually

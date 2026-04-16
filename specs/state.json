@@ -76,10 +76,10 @@
     {
       "project_number": 451,
       "project_name": "implement_distill_combine_keyword_superset_guarantee",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:15:13Z",
+      "last_updated": "2026-04-16T19:15:47Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -101,10 +101,10 @@
     {
       "project_number": 450,
       "project_name": "implement_distill_purge_tombstone_pattern",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:15:13Z",
+      "last_updated": "2026-04-16T19:15:47Z",
       "next_artifact_number": 2,
       "artifacts": [
         {
@@ -183,10 +183,10 @@
     {
       "project_number": 446,
       "project_name": "add_memory_candidate_emission_agents_return_metadata",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-16T20:00:00Z",
-      "last_updated": "2026-04-16T19:15:13Z",
+      "last_updated": "2026-04-16T19:15:47Z",
       "next_artifact_number": 2,
       "artifacts": [
         {

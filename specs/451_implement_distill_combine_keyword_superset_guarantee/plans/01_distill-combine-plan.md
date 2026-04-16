@@ -1,7 +1,7 @@
 # Implementation Plan: Distill Combine Operation with Keyword Superset Guarantee
 
 - **Task**: 451 - Implement distill combine operation with keyword superset guarantee
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: Task #449 (completed)
 - **Research Inputs**: specs/451_implement_distill_combine_keyword_superset_guarantee/reports/01_distill-combine-research.md
@@ -74,7 +74,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add merge sub-mode specification to SKILL.md [NOT STARTED]
+### Phase 1: Add merge sub-mode specification to SKILL.md [IN PROGRESS]
 
 **Goal**: Define the complete merge algorithm, merge content template, tombstone pattern, cross-reference cleanup procedure, and logging schema in SKILL.md so the agent has full instructions when executing `/distill --merge`.
 

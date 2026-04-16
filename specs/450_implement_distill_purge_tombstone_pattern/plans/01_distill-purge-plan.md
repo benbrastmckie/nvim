@@ -1,7 +1,7 @@
 # Implementation Plan: Distill Purge with Tombstone Pattern
 
 - **Task**: 450 - Implement distill purge operation with tombstone pattern
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: Task #449 (completed)
 - **Research Inputs**: specs/450_implement_distill_purge_tombstone_pattern/reports/01_distill-purge-research.md
@@ -72,7 +72,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Purge Sub-Mode -- Candidate Identification and Tombstone Application [NOT STARTED]
+### Phase 1: Purge Sub-Mode -- Candidate Identification and Tombstone Application [IN PROGRESS]
 
 **Goal**: Implement the core purge pipeline in SKILL.md: candidate identification using scoring engine output, category-aware TTL ranking, AskUserQuestion interactive selection, and tombstone frontmatter mutation.
 

@@ -36,6 +36,15 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
+  "memory_candidates": [
+    {
+      "content": "Description of reusable knowledge",
+      "category": "TECHNIQUE|PATTERN|CONFIG|WORKFLOW|INSIGHT",
+      "source_artifact": "specs/001_setup_lsp_config/reports/01_lsp-config-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["keyword1", "keyword2"]
+    }
+  ],
   "errors": [
     {
       "type": "validation|execution|timeout",
@@ -147,6 +156,41 @@ Contains fields needed for task completion processing. Skills extract this data 
 - `claudemd_suggestions` is mandatory for meta tasks (language: "meta")
 - `roadmap_items` is optional and only relevant for non-meta tasks
 - Skills propagate these fields to state.json for use by `/todo` command
+
+### memory_candidates (optional)
+
+**Type**: array of objects (0-3 items)
+**Include if**: Agent discovered reusable patterns, techniques, or insights during execution
+
+Structured memory candidates emitted by agents for downstream processing. Candidates are stored in state.json task entries and consumed by `/todo` during archival.
+
+Each candidate object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `content` | string | Yes | Description of the reusable knowledge (~300 tokens max) |
+| `category` | string | Yes | One of: `TECHNIQUE`, `PATTERN`, `CONFIG`, `WORKFLOW`, `INSIGHT` |
+| `source_artifact` | string | Yes | Path to the artifact that produced this candidate |
+| `confidence` | number | Yes | Float 0-1 indicating reusability confidence |
+| `suggested_keywords` | array of strings | Yes | Keywords for memory index retrieval |
+
+**Category Definitions**:
+- `TECHNIQUE` - A reusable debugging, testing, or problem-solving technique
+- `PATTERN` - A code or architecture pattern discovered in the codebase
+- `CONFIG` - A configuration discovery (tool settings, flags, options)
+- `WORKFLOW` - A workflow or process insight (command sequences, operational patterns)
+- `INSIGHT` - A general insight about the project, domain, or tooling
+
+**Confidence Scoring Guidance**:
+- >= 0.8: Clearly reusable patterns or configurations with broad applicability
+- 0.5-0.8: Potentially useful techniques or workflows, context-dependent
+- < 0.5: Speculative insights, may not generalize
+
+**Notes**:
+- Agents emit 0-3 candidates per execution; absence is valid behavior
+- Skill postflight propagates candidates to state.json task entries with append semantics
+- `/todo` consumes candidates during archival (task 447 scope)
+- The field uses `// []` fallback in all jq reads for backward compatibility
 
 ### errors (optional)
 
@@ -260,6 +304,15 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
     "completion_summary": "Configured 4 server integrations with automated installation. Implemented keybindings for common actions.",
     "roadmap_items": ["Configure server integrations"]
   },
+  "memory_candidates": [
+    {
+      "content": "When configuring multiple server integrations, use a shared base config table and merge per-server overrides with vim.tbl_deep_extend. This avoids duplication and makes adding new servers trivial.",
+      "category": "PATTERN",
+      "source_artifact": "specs/001_setup_lsp_config/summaries/01_lsp-config-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lsp", "server-config", "vim.tbl_deep_extend", "merge"]
+    }
+  ],
   "next_steps": "Review implementation and verify with /test",
   "metadata": {
     "session_id": "sess_1736700000_def456",

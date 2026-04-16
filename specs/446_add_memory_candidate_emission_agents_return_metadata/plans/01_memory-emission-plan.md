@@ -1,7 +1,7 @@
 # Implementation Plan: Add Memory Candidate Emission to Agents and Return Metadata
 
 - **Task**: 446 - Add memory candidate emission to agents and return metadata
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: Task #445 (completed)
 - **Research Inputs**: specs/446_add_memory_candidate_emission_agents_return_metadata/reports/01_memory-emission-research.md
@@ -66,7 +66,7 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Schema Extension [NOT STARTED]
+### Phase 1: Schema Extension [COMPLETED]
 
 **Goal**: Define the `memory_candidates` array in return-metadata-file.md and document the state.json field addition.
 
