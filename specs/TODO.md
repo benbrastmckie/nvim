@@ -15,7 +15,7 @@ next_project_number: 475
 - **472** [NOT STARTED] -- Fix lean MCP script permissions
 - **471** [NOT STARTED] -- Add model: opus to nix agent frontmatter
 - **470** [NOT STARTED] -- Fix loader to handle root-level context files
-- **469** [PLANNED] -- Systematically review agent system post-refactor
+- **469** [COMPLETED] -- Systematically review agent system post-refactor
 - **468** [NOT STARTED] -- Document extension loader architecture
 - **467** [COMPLETED] -- Move remaining root files to extensions/core/
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -60,10 +60,11 @@ next_project_number: 475
 
 ### 469. Systematically review agent system post-refactor for errors and improvements
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [469_review_agent_system_post_refactor/reports/01_team-research.md]
 - **Plan**: [469_review_agent_system_post_refactor/plans/01_system-review-fixes.md]
+- **Summary**: [469_review_agent_system_post_refactor/summaries/01_system-review-fixes-summary.md]
 
 **Description**: Review the resulting agent system in .claude/ after loading nvim + memory + nix + core extensions following the recent refactoring in tasks 464, 465, 467. Systematically detect errors, inconsistencies, or opportunities for improvement across the loaded system.
 
@@ -186,5 +187,4 @@ Key changes: (1) Move core files from `.claude/{agents,commands,rules,skills,con
 ## Recommended Order
 
 1. **465** [COMPLETED]
-2. **469** -> research (independent)
 (none)
