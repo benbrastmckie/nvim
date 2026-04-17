@@ -216,6 +216,11 @@ function M.copy_context_dirs(manifest, source_dir, target_dir)
           table.insert(copied_files, target_path)
         end
       end
+    elseif vim.fn.filereadable(source_ctx_dir) == 1 then
+      -- Handle individual files at context root (mirrors copy_docs pattern)
+      if copy_file(source_ctx_dir, target_ctx_dir, false) then
+        table.insert(copied_files, target_ctx_dir)
+      end
     end
   end
 

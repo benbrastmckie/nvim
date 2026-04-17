@@ -14,7 +14,7 @@ next_project_number: 475
 - **473** [NOT STARTED] -- Clean up stale permissions in settings.local.json
 - **472** [COMPLETED] -- Fix lean MCP script permissions
 - **471** [COMPLETED] -- Add model: opus to nix agent frontmatter
-- **470** [IMPLEMENTING] -- Fix loader to handle root-level context files
+- **470** [COMPLETED] -- Fix loader to handle root-level context files
 - **469** [COMPLETED] -- Systematically review agent system post-refactor
 - **468** [NOT STARTED] -- Document extension loader architecture
 - **467** [COMPLETED] -- Move remaining root files to extensions/core/
@@ -60,10 +60,11 @@ next_project_number: 475
 
 ### 470. Fix loader to handle root-level context files
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Research**: [470_fix_loader_root_level_context_files/reports/01_loader-context-fix.md]
 - **Plan**: [470_fix_loader_root_level_context_files/plans/01_loader-context-fix.md]
+- **Summary**: [470_fix_loader_root_level_context_files/summaries/01_loader-context-fix-summary.md]
 
 **Description**: Fix `copy_context_dirs()` in `lua/neotex/plugins/ai/shared/extensions/loader.lua` to deploy individual files at the context root, not just subdirectories. Currently `vim.fn.isdirectory()` check silently skips root-level files like README.md, routing.md, and validation.md. The core manifest's `provides.context` only lists subdirectory names, so root files have no deployment path. Either add a `root_files` list within context provides, or have the loader scan for files alongside directories. Note: task 469 applied a manual workaround by committing these files directly to `.claude/context/`, but the loader bug persists -- reloading extensions will not regenerate them.
 

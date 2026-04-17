@@ -122,10 +122,10 @@
     {
       "project_number": 470,
       "project_name": "fix_loader_root_level_context_files",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "neovim",
       "created": "2026-04-17T06:41:09Z",
-      "last_updated": "2026-04-17T14:45:50Z",
+      "last_updated": "2026-04-17T14:47:24Z",
       "session_id": "sess_1713250000_impl470",
       "next_artifact_number": 2,
       "artifacts": [
@@ -138,8 +138,14 @@
           "path": "specs/470_fix_loader_root_level_context_files/plans/01_loader-context-fix.md",
           "type": "plan",
           "summary": "Implementation plan with 4 phases: add filereadable fallback, update core manifest, verify deployment, verify unload/reload cycle"
+        },
+        {
+          "path": "specs/470_fix_loader_root_level_context_files/summaries/01_loader-context-fix-summary.md",
+          "type": "summary",
+          "summary": "Added filereadable fallback to copy_context_dirs and listed 5 root-level files in core manifest"
         }
-      ]
+      ],
+      "completion_summary": "Added elseif filereadable fallback to copy_context_dirs() in loader.lua (mirroring copy_docs pattern) and listed 5 root-level files in core manifest provides.context. Root-level context files are now properly deployed and tracked for unload."
     },
     {
       "project_number": 469,

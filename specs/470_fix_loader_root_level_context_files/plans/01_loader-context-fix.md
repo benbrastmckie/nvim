@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Loader Root-Level Context Files
 
 - **Task**: 470 - Fix loader to handle root-level context files
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: [specs/470_fix_loader_root_level_context_files/reports/01_loader-context-fix.md]
@@ -46,7 +46,7 @@ Integrated report: `reports/01_loader-context-fix.md` -- confirmed root cause (m
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add filereadable fallback to copy_context_dirs [NOT STARTED]
+### Phase 1: Add filereadable fallback to copy_context_dirs [COMPLETED]
 
 - **Goal:** Enable `copy_context_dirs()` to handle individual file entries in `provides.context`, matching the `copy_docs()` pattern.
 - **Tasks:**
@@ -56,7 +56,7 @@ Phases within the same wave can execute in parallel.
 - **Timing:** 10 minutes
 - **Depends on:** none
 
-### Phase 2: Update core manifest provides.context [NOT STARTED]
+### Phase 2: Update core manifest provides.context [COMPLETED]
 
 - **Goal:** List root-level files in the core manifest so the loader knows to deploy them.
 - **Tasks:**
@@ -65,7 +65,7 @@ Phases within the same wave can execute in parallel.
 - **Timing:** 5 minutes
 - **Depends on:** none
 
-### Phase 3: Verify deployment [NOT STARTED]
+### Phase 3: Verify deployment [COMPLETED]
 
 - **Goal:** Confirm the loader correctly deploys root-level context files after the fix.
 - **Tasks:**
@@ -76,7 +76,7 @@ Phases within the same wave can execute in parallel.
 - **Timing:** 15 minutes
 - **Depends on:** 1, 2
 
-### Phase 4: Verify unload and reload cycle [NOT STARTED]
+### Phase 4: Verify unload and reload cycle [COMPLETED]
 
 - **Goal:** Confirm unload removes root-level files and reload re-creates them.
 - **Tasks:**

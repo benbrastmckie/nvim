@@ -8,6 +8,10 @@
       "source": "merge-sources/claudemd.md",
       "target": ".claude/CLAUDE.md",
       "section_id": "core"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
     }
   },
   "provides": {
@@ -106,6 +110,11 @@
       "wezterm-task-number.sh"
     ],
     "context": [
+      "README.md",
+      "routing.md",
+      "validation.md",
+      "core-index-entries.json",
+      "index.schema.json",
       "architecture",
       "checkpoints",
       "formats",
