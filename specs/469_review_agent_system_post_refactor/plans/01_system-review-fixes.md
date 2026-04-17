@@ -1,7 +1,7 @@
 # Implementation Plan: Task #469
 
 - **Task**: 469 - Review agent system post-refactor
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/469_review_agent_system_post_refactor/reports/01_team-research.md
@@ -63,7 +63,7 @@ No prior plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Fix broken context index entries and deploy missing files [NOT STARTED]
+### Phase 1: Fix broken context index entries and deploy missing files [COMPLETED]
 
 **Goal**: Resolve P1 (4 broken index entries) and P5 (6 unindexed files)
 

@@ -506,20 +506,6 @@
       }
     },
     {
-      "path": "orchestration/routing.md",
-      "domain": "core",
-      "subdomain": "orchestration",
-      "summary": "Task routing by language and type",
-      "line_count": 777,
-      "keywords": ["orchestration", "routing"],
-      "topics": ["orchestration"],
-      "load_when": {
-        "agents": ["meta-builder-agent"],
-        "task_types": ["meta"],
-        "commands": []
-      }
-    },
-    {
       "path": "orchestration/sessions.md",
       "domain": "core",
       "subdomain": "orchestration",
@@ -587,6 +573,20 @@
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
         "task_types": [],
         "commands": []
+      }
+    },
+    {
+      "path": "patterns/artifact-linking-todo.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Artifact linking patterns for TODO.md entries",
+      "line_count": 114,
+      "keywords": ["patterns", "artifact", "linking", "todo"],
+      "topics": ["state"],
+      "load_when": {
+        "agents": [],
+        "task_types": ["meta"],
+        "commands": ["/task", "/todo"]
       }
     },
     {
@@ -701,6 +701,20 @@
         "agents": ["general-research-agent", "planner-agent", "general-implementation-agent"],
         "task_types": [],
         "commands": []
+      }
+    },
+    {
+      "path": "patterns/multi-task-operations.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Multi-task command syntax and parallel processing patterns",
+      "line_count": 522,
+      "keywords": ["patterns", "multi-task", "parallel", "operations"],
+      "topics": ["orchestration"],
+      "load_when": {
+        "agents": [],
+        "task_types": ["meta"],
+        "commands": ["/research", "/plan", "/implement"]
       }
     },
     {
@@ -888,6 +902,20 @@
       }
     },
     {
+      "path": "reference/team-wave-helpers.md",
+      "domain": "core",
+      "subdomain": "reference",
+      "summary": "Helper patterns for team wave-based parallel execution",
+      "line_count": 400,
+      "keywords": ["reference", "team", "wave", "helpers"],
+      "topics": ["orchestration"],
+      "load_when": {
+        "agents": [],
+        "task_types": ["meta"],
+        "commands": []
+      }
+    },
+    {
       "path": "reference/workflow-diagrams.md",
       "domain": "core",
       "subdomain": "reference",
@@ -956,6 +984,34 @@
         "agents": [],
         "task_types": ["meta"],
         "commands": []
+      }
+    },
+    {
+      "path": "schemas/frontmatter-schema.json",
+      "domain": "core",
+      "subdomain": "schemas",
+      "summary": "JSON schema for agent and skill YAML frontmatter validation",
+      "line_count": 190,
+      "keywords": ["schemas", "frontmatter", "validation", "json-schema"],
+      "topics": ["standards"],
+      "load_when": {
+        "agents": ["meta-builder-agent"],
+        "task_types": ["meta"],
+        "commands": ["/meta"]
+      }
+    },
+    {
+      "path": "schemas/subagent-frontmatter.yaml",
+      "domain": "core",
+      "subdomain": "schemas",
+      "summary": "YAML schema for subagent frontmatter fields",
+      "line_count": 198,
+      "keywords": ["schemas", "subagent", "frontmatter", "yaml"],
+      "topics": ["standards"],
+      "load_when": {
+        "agents": ["meta-builder-agent"],
+        "task_types": ["meta"],
+        "commands": ["/meta"]
       }
     },
     {
@@ -1194,6 +1250,20 @@
         "agents": ["meta-builder-agent"],
         "task_types": ["meta"],
         "commands": ["/meta"]
+      }
+    },
+    {
+      "path": "templates/state-template.json",
+      "domain": "core",
+      "subdomain": "templates",
+      "summary": "Template for state.json initialization",
+      "line_count": 69,
+      "keywords": ["template", "state", "json"],
+      "topics": ["state"],
+      "load_when": {
+        "agents": ["meta-builder-agent"],
+        "task_types": ["meta"],
+        "commands": ["/task"]
       }
     },
     {
