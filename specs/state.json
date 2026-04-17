@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 465,
+  "next_project_number": 466,
   "active_projects": [
+    {
+      "project_number": 465,
+      "project_name": "restructure_core_as_real_extension",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-17T03:40:40Z",
+      "last_updated": "2026-04-17T03:40:40Z"
+    },
     {
       "project_number": 464,
       "project_name": "enable_extensions_in_source_repo",

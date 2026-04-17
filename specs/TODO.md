@@ -1,5 +1,5 @@
 ---
-next_project_number: 465
+next_project_number: 466
 ---
 
 # TODO
@@ -15,13 +15,26 @@ next_project_number: 465
 
 ## Tasks
 
+### 465. Restructure core agent system as a real extension in .claude/extensions/core/
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Restructure the core agent system as a real (non-virtual) extension in `.claude/extensions/core/`. The Round 2 research report for task 464 claimed a "bootstrap impossibility" for making core a real extension, but this is incorrect — the Lua extension loader (neovim plugin) is completely separate from the Claude agent system (markdown/json files read by Claude Code). The loader manages which files are present in `.claude/` and does not depend on those files to function.
+
+Currently a virtual core manifest exists at `.claude/extensions/core/manifest.json` with `"virtual": true`, which skips file copy on load/unload. The goal is to physically move core agent system files (agents, commands, rules, skills, context, scripts, hooks, docs — ~280 files) into `.claude/extensions/core/` and make core loadable via `<leader>ac` just like any other extension. This enables loading core + nvim + memory in the source repository.
+
+Key changes: (1) Move core files from `.claude/{agents,commands,rules,skills,context,scripts,hooks,docs}/` into `.claude/extensions/core/` following the standard extension directory structure. (2) Update core manifest to remove `"virtual": true` and add proper `merge_targets` (EXTENSION.md for CLAUDE.md injection, index-entries.json for context). (3) Show core in the picker (remove virtual filter). (4) No special loader handling needed — core loads like any extension. (5) Verify extension-to-extension dependencies work (all 15 extensions already declare `"dependencies": ["core"]`). (6) Update sync system to source from `.claude/extensions/core/` or operate on loaded state. (7) Restructure CLAUDE.md into a minimal shell populated by core's EXTENSION.md merge. Files that stay in `.claude/`: CLAUDE.md (shell), README.md, settings.json, extensions.json, extensions/ directory, context/index.json, context/core-index-entries.json.
+
+---
+
 ### 464. Enable extension loading in global source repository without sync leakage
 - **Effort**: TBD
 - **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**:
-  - [01_team-research.md](464_enable_extensions_in_source_repo/reports/01_team-research.md)
-  - [02_team-research.md](464_enable_extensions_in_source_repo/reports/02_team-research.md)
+  - [464_enable_extensions_in_source_repo/reports/01_team-research.md]
+  - [464_enable_extensions_in_source_repo/reports/02_team-research.md]
 - **Plan**: [464_enable_extensions_in_source_repo/plans/02_enable-extensions-source.md]
 - **Summary**: [464_enable_extensions_in_source_repo/summaries/02_enable-extensions-source-summary.md]
 
@@ -36,7 +49,7 @@ next_project_number: 465
 - **Research Completed**: 2026-02-13
 - **Task Type**: neovim
 - **Dependencies**: None
-- **Research**: [research-001.md](087_investigate_wezterm_terminal_directory_change/reports/research-001.md)
+- **Research**: [087_investigate_wezterm_terminal_directory_change/reports/research-001.md]
 
 **Description**: Investigate why the terminal working directory changes to a project root when opening neovim sessions in wezterm from the home directory (~). Determine whether this behavior is caused by neovim or wezterm (configured in ~/.dotfiles/config/). Identify if any functionality depends on this behavior before modifying it. Goal is to avoid changing the terminal directory unless necessary.
 
@@ -51,11 +64,12 @@ next_project_number: 465
 - **Planning Completed**: 2026-02-13
 - **Task Type**: neovim
 - **Dependencies**: None
-- **Research**: [research-001.md](078_fix_himalaya_smtp_authentication_failure/reports/research-001.md)
-- **Plan**: [implementation-001.md](078_fix_himalaya_smtp_authentication_failure/plans/implementation-001.md)
+- **Research**: [078_fix_himalaya_smtp_authentication_failure/reports/research-001.md]
+- **Plan**: [078_fix_himalaya_smtp_authentication_failure/plans/implementation-001.md]
 
 **Description**: Fix Gmail SMTP authentication failure when sending emails via Himalaya (<leader>me). Error: "Authentication failed: Code: 535, Enhanced code: 5.7.8, Message: Username and Password not accepted". The error occurs with TLS connection attempts and persists through multiple retry attempts. Identify and fix the root cause of the SMTP credential configuration.
 
 ## Recommended Order
 
-1. **464** [RESEARCHED] -> plan (independent)
+1. **465** -> research (independent)
+(none)
