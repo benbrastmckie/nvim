@@ -144,8 +144,16 @@ function M.create(extensions_module, picker_config)
   function picker_mod.show(opts)
     opts = opts or {}
 
-    -- Get all available extensions
-    local available = extensions_module.list_available()
+    -- Get all available extensions, filtering out virtual extensions (e.g., core)
+    -- Virtual extensions are auto-managed and should not appear in the user picker.
+    local all_available = extensions_module.list_available()
+    local available = {}
+    for _, ext in ipairs(all_available) do
+      local details = extensions_module.get_details(ext.name)
+      if not (details and details.virtual) then
+        table.insert(available, ext)
+      end
+    end
 
     if #available == 0 then
       helpers.notify(picker_config.empty_message or "No extensions found", "WARN")
