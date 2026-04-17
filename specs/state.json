@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 463,
+  "next_project_number": 464,
   "active_projects": [
+    {
+      "project_number": 463,
+      "project_name": "commands_picker_conditional_artifact_display",
+      "status": "not_started",
+      "task_type": "neovim",
+      "created": "2026-04-17T00:28:25Z",
+      "last_updated": "2026-04-17T00:28:25Z"
+    },
     {
       "project_number": 462,
       "project_name": "fix_extension_system_step_numbering",

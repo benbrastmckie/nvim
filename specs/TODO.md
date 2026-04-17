@@ -1,5 +1,5 @@
 ---
-next_project_number: 463
+next_project_number: 464
 ---
 
 # TODO
@@ -27,6 +27,13 @@ next_project_number: 463
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 463. Conditionally display artifacts in commands picker based on loaded state
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+
+**Description**: Refactor the `<leader>ac` commands picker (ClaudeCommands) to conditionally display artifacts based on whether the core agent system and extensions are loaded. Currently, unloaded artifacts (commands, skills, agents, etc.) appear in the picker with no asterisk and get an asterisk once loaded -- but this asterisk pattern should be reserved exclusively for extensions. The desired behavior: (1) When no extensions are loaded, only show the Extensions section so the user can load what they need; (2) Once the core agent system is loaded and extensions are loaded, show the full artifact listing (commands, skills, agents, hooks, scripts, tests, docs, templates, etc.) from those loaded extensions; (3) Remove the asterisk loaded/unloaded indicator from non-extension artifacts -- artifacts should simply appear or not appear based on whether their parent extension is loaded; (4) All displayed artifacts should continue to show previews and relevant metadata in the previewer pane. Key files: lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua (entry creation and display formatting), lua/neotex/plugins/ai/claude/commands/picker/init.lua (picker orchestration), lua/neotex/plugins/ai/claude/commands/parser.lua (structure parsing).
 
 ### 462. Fix duplicate step numbering in extension-system.md load and unload flows
 - **Effort**: small
@@ -667,3 +674,4 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 15. **457** [RESEARCHED] -> plan (independent)
 16. **458** -> research (independent)
 17. **461** -> research (independent)
+18. **463** -> research (independent)
