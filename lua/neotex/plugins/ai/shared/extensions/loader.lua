@@ -408,6 +408,37 @@ function M.copy_templates(manifest, source_dir, target_dir)
   return copied_files, created_dirs
 end
 
+--- Copy root files (files that go directly into target_dir, not a subdirectory)
+--- These are files like settings.json, .gitignore that live at the .claude/ root.
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory (.claude/)
+--- @return table copied_files Array of copied file paths
+--- @return table created_dirs Array of created directory paths
+function M.copy_root_files(manifest, source_dir, target_dir)
+  local copied_files = {}
+  local created_dirs = {}
+
+  if not manifest.provides or not manifest.provides.root_files then
+    return copied_files, created_dirs
+  end
+
+  local source_root_dir = source_dir .. "/root-files"
+
+  for _, filename in ipairs(manifest.provides.root_files) do
+    local source_path = source_root_dir .. "/" .. filename
+    local target_path = target_dir .. "/" .. filename
+
+    if vim.fn.filereadable(source_path) == 1 then
+      if copy_file(source_path, target_path, false) then
+        table.insert(copied_files, target_path)
+      end
+    end
+  end
+
+  return copied_files, created_dirs
+end
+
 --- Copy data directories (merge-copy semantics - only copy non-existing files)
 --- Data directories are copied to the parent directory (project root) not target_dir (.claude/.opencode)
 --- @param manifest table Extension manifest

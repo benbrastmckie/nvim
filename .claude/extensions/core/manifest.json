@@ -8,7 +8,7 @@
       "source": "merge-sources/claudemd.md",
       "target": ".claude/CLAUDE.md",
       "section_id": "core"
-    },
+    }
   },
   "provides": {
     "agents": [
@@ -131,6 +131,11 @@
     "systemd": [
       "claude-refresh.service",
       "claude-refresh.timer"
+    ],
+    "root_files": [
+      "settings.json",
+      "settings.local.json",
+      ".gitignore"
     ]
   }
 }
