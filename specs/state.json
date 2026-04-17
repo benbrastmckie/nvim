@@ -5,15 +5,15 @@
     {
       "project_number": 474,
       "project_name": "create_core_extension_readme",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-17T06:41:09Z",
-      "last_updated": "2026-04-17T16:29:15Z",
+      "last_updated": "2026-04-17T16:34:29Z",
       "dependencies": [
         466,
         470
       ],
-      "session_id": "sess_1776441495_1057c6",
+      "session_id": "sess_1776443462_276caa",
       "researched": "2026-04-17T16:29:15Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -21,6 +21,11 @@
           "path": "specs/474_create_core_extension_readme/reports/01_team-research.md",
           "type": "research",
           "summary": "Team research with 4 teammates"
+        },
+        {
+          "path": "specs/474_create_core_extension_readme/plans/01_core-extension-readme.md",
+          "type": "plan",
+          "summary": "3-phase implementation plan for core extension README and validator routing exemption fix"
         }
       ]
     },
