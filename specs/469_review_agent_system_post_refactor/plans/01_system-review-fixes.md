@@ -121,7 +121,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Fix validation scripts [NOT STARTED]
+### Phase 3: Fix validation scripts [COMPLETED]
 
 **Goal**: Resolve P4 (broken validate-wiring.sh and validate-context-index.sh) and P7 (13 stale subagent-return-format.md references)
 

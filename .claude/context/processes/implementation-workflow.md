@@ -281,7 +281,7 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 
 ### Step 6: Prepare Return
 
-**Action**: Format return object per subagent-return-format.md
+**Action**: Format return object per subagent-return.md
 
 **Process**:
 1. Build return object:

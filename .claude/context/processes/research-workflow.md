@@ -246,7 +246,7 @@ Extension research agents follow the same general pattern but use domain-specifi
 
 ### Step 7: Prepare Return
 
-**Action**: Format return object per subagent-return-format.md
+**Action**: Format return object per subagent-return.md
 
 **Process**:
 1. Build return object:

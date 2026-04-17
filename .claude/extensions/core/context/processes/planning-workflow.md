@@ -246,7 +246,7 @@ All plans must follow `.claude/context/standards/plan.md` template exactly.
 
 ### Step 7: Prepare Return
 
-**Action**: Format return object per subagent-return-format.md
+**Action**: Format return object per subagent-return.md
 
 **Process**:
 1. Build return object:

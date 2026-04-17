@@ -28,7 +28,7 @@ All workflow commands follow a standardized 8-stage lifecycle:
 - Invoke target subagent
 
 **Stage 4 (ValidateReturn):**
-- Validate return format per subagent-return-format.md
+- Validate return format per subagent-return.md
 - Verify artifacts exist and are non-empty
 - Extract metadata from return
 

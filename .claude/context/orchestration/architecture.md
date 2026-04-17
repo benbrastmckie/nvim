@@ -179,7 +179,7 @@ Command File: Return to orchestrator
 **Key Characteristics**:
 - **Specialized**: Each subagent has a single, well-defined purpose
 - **Stateless**: No persistent state between invocations
-- **Standardized**: All returns follow subagent-return-format.md
+- **Standardized**: All returns follow subagent-return.md
 - **Composable**: Can be combined in different workflows
 - **Testable**: Clear inputs and outputs
 

@@ -679,7 +679,7 @@ Validate all subagent returns against standardized format to ensure consistent p
 ### Validation Steps
 
 1. Check return is valid JSON/structured format
-2. Validate against `subagent-return-format.md` schema
+2. Validate against `subagent-return.md` schema
 3. Check session_id matches expected
 4. Validate all required fields present
 5. Check status is valid enum value
@@ -779,7 +779,7 @@ If validation fails:
 **Cause**: Subagent not following standard format
 
 **Fix**:
-1. Update subagent to follow subagent-return-format.md
+1. Update subagent to follow subagent-return.md
 2. Add validation before returning
 3. Test subagent independently
 4. Check session_id matches

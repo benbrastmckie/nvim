@@ -367,7 +367,7 @@ context_loading:
 
 **Guidelines**:
 - Use lazy strategy for efficiency
-- Include command-lifecycle.md and subagent-return-format.md in required
+- Include command-lifecycle.md and subagent-return.md in required
 - Add agent-specific context in optional
 - Set max_context_size to 50000 tokens (default)
 
@@ -421,7 +421,7 @@ delegation:
 lifecycle:
   stage: 4
   command: "/research"
-  return_format: "subagent-return-format.md"
+  return_format: "subagent-return.md"
 ```
 
 **Fields**:
@@ -520,7 +520,7 @@ delegation:
 lifecycle:
   stage: 4
   command: "/research"
-  return_format: "subagent-return-format.md"
+  return_format: "subagent-return.md"
 ---
 ```
 
@@ -568,7 +568,7 @@ delegation:
 lifecycle:
   stage: 4
   command: "/implement"
-  return_format: "subagent-return-format.md"
+  return_format: "subagent-return.md"
 ---
 ```
 

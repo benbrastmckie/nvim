@@ -257,7 +257,7 @@ Orchestrator Stage 3 (RegisterAndDelegate) appends the following instruction to 
 
 ```
 CRITICAL RETURN FORMAT REQUIREMENT:
-You MUST return ONLY valid JSON matching the schema in subagent-return-format.md.
+You MUST return ONLY valid JSON matching the schema in subagent-return.md.
 Do NOT return plain text, markdown narrative, or any other format.
 
 Required JSON structure:

@@ -231,7 +231,7 @@ delegation:
 lifecycle:
   stage: 4
   command: "/{command}"
-  return_format: "subagent-return-format.md"
+  return_format: "subagent-return.md"
 ---
 
 # {Subagent Name}
@@ -656,7 +656,7 @@ Create implementation plans with phased breakdown.
   <stage id="3" name="ValidateReturn">
     <action>Validate planner return</action>
     <process>
-      1. Validate against subagent-return-format.md
+      1. Validate against subagent-return.md
       2. Check plan artifact created
     </process>
     <checkpoint>Return validated</checkpoint>

@@ -180,7 +180,7 @@ lifecycle:
   command: "/research"
   
   # Return format standard
-  return_format: "subagent-return-format.md"
+  return_format: "subagent-return.md"
 
 # ==============================================================================
 # NOTES

@@ -83,7 +83,7 @@
   - [ ] Status updates via status-sync-manager
   - [ ] Git commits via git-workflow-manager
 
-- [ ] **Stage 8 (Return)** follows subagent-return-format.md:
+- [ ] **Stage 8 (Return)** follows subagent-return.md:
   - [ ] status field (completed, partial, failed, blocked)
   - [ ] summary field (<100 tokens)
   - [ ] artifacts array with validated artifacts
@@ -298,7 +298,7 @@
 
 #### Wrong Return Format
 
-**Issue**: Stage 8 return doesn't follow subagent-return-format.md  
+**Issue**: Stage 8 return doesn't follow subagent-return.md  
 **Fix**: Update return to include all required fields  
 **Example**: Add status, summary, artifacts, metadata, errors, next_steps
 

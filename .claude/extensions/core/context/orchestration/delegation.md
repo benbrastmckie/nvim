@@ -805,7 +805,7 @@ Updated in Stage 4 (PrepareContext) and Stage 7 (PostflightCleanup).
 
 ```
 CRITICAL RETURN FORMAT REQUIREMENT:
-You MUST return ONLY valid JSON matching the schema in subagent-return-format.md.
+You MUST return ONLY valid JSON matching the schema in subagent-return.md.
 Do NOT return plain text, markdown narrative, or any other format.
 
 Required JSON structure:
