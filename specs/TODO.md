@@ -16,7 +16,7 @@ next_project_number: 475
 - **471** [COMPLETED] -- Add model: opus to nix agent frontmatter
 - **470** [COMPLETED] -- Fix loader to handle root-level context files
 - **469** [COMPLETED] -- Systematically review agent system post-refactor
-- **468** [PLANNED] -- Document extension loader architecture
+- **468** [IMPLEMENTING] -- Document extension loader architecture
 - **467** [COMPLETED] -- Move remaining root files to extensions/core/
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -83,7 +83,7 @@ next_project_number: 475
 
 ### 468. Document extension loader architecture and .claude/ lifecycle
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Parent Task**: 465
 - **Dependencies**: 466, 470
