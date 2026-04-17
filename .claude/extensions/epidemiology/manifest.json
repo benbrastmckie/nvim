@@ -3,7 +3,9 @@
   "version": "2.0.0",
   "description": "Epidemiology research extension for R and related tooling. Provides agents, skills, and context for study design, statistical modeling, causal inference, and Bayesian analysis.",
   "task_type": "epi",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
     "agents": [
       "epi-research-agent.md",

@@ -2,13 +2,17 @@
   "name": "slidev",
   "version": "1.0.0",
   "description": "Shared Slidev animation patterns and CSS style presets for deck and slide agents",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
     "agents": [],
     "skills": [],
     "commands": [],
     "rules": [],
-    "context": ["project/slidev"],
+    "context": [
+      "project/slidev"
+    ],
     "scripts": [],
     "hooks": []
   },

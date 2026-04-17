@@ -3,7 +3,9 @@
   "version": "2.2.0",
   "description": "File format conversion, manipulation, and in-place editing for documents, spreadsheets, and presentations",
   "task_type": "filetypes",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
     "agents": [
       "filetypes-router-agent.md",
@@ -77,12 +79,18 @@
   "mcp_servers": {
     "superdoc": {
       "command": "npx",
-      "args": ["-y", "@superdoc-dev/mcp"],
+      "args": [
+        "-y",
+        "@superdoc-dev/mcp"
+      ],
       "env": {}
     },
     "openpyxl": {
       "command": "npx",
-      "args": ["-y", "@jonemo/openpyxl-mcp"],
+      "args": [
+        "-y",
+        "@jonemo/openpyxl-mcp"
+      ],
       "env": {}
     }
   }

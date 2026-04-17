@@ -3,7 +3,10 @@
   "version": "3.0.0",
   "description": "Strategic business analysis for founders with task integration: market sizing, competitive analysis, go-to-market strategy, contract review, and project timeline management",
   "task_type": "founder",
-  "dependencies": ["slidev"],
+  "dependencies": [
+    "core",
+    "slidev"
+  ],
   "provides": {
     "agents": [
       "market-agent.md",
@@ -39,9 +42,22 @@
       "skill-meeting",
       "skill-consult"
     ],
-    "commands": ["market.md", "analyze.md", "strategy.md", "legal.md", "project.md", "sheet.md", "finance.md", "deck.md", "meeting.md", "consult.md"],
+    "commands": [
+      "market.md",
+      "analyze.md",
+      "strategy.md",
+      "legal.md",
+      "project.md",
+      "sheet.md",
+      "finance.md",
+      "deck.md",
+      "meeting.md",
+      "consult.md"
+    ],
     "rules": [],
-    "context": ["project/founder"],
+    "context": [
+      "project/founder"
+    ],
     "scripts": [],
     "hooks": []
   },
@@ -103,12 +119,18 @@
   "mcp_servers": {
     "sec-edgar": {
       "command": "npx",
-      "args": ["-y", "@stefanoamorelli/sec-edgar-mcp"],
+      "args": [
+        "-y",
+        "@stefanoamorelli/sec-edgar-mcp"
+      ],
       "env": {}
     },
     "firecrawl": {
       "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
       "env": {
         "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
       }

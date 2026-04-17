@@ -3,13 +3,25 @@
   "version": "1.0.0",
   "description": "LaTeX document development with VimTeX integration",
   "task_type": "latex",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
-    "agents": ["latex-implementation-agent.md", "latex-research-agent.md"],
-    "skills": ["skill-latex-implementation", "skill-latex-research"],
+    "agents": [
+      "latex-implementation-agent.md",
+      "latex-research-agent.md"
+    ],
+    "skills": [
+      "skill-latex-implementation",
+      "skill-latex-research"
+    ],
     "commands": [],
-    "rules": ["latex.md"],
-    "context": ["project/latex"],
+    "rules": [
+      "latex.md"
+    ],
+    "context": [
+      "project/latex"
+    ],
     "scripts": [],
     "hooks": []
   },

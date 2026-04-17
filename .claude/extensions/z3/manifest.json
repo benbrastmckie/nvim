@@ -3,13 +3,23 @@
   "version": "1.0.0",
   "description": "Z3 SMT solver development with constraint pattern support",
   "task_type": "z3",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
-    "agents": ["z3-research-agent.md", "z3-implementation-agent.md"],
-    "skills": ["skill-z3-research", "skill-z3-implementation"],
+    "agents": [
+      "z3-research-agent.md",
+      "z3-implementation-agent.md"
+    ],
+    "skills": [
+      "skill-z3-research",
+      "skill-z3-implementation"
+    ],
     "commands": [],
     "rules": [],
-    "context": ["project/z3"],
+    "context": [
+      "project/z3"
+    ],
     "scripts": [],
     "hooks": []
   },

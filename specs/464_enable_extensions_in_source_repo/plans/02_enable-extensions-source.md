@@ -171,7 +171,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Extension Dependency on Core [NOT STARTED]
+### Phase 5: Extension Dependency on Core [COMPLETED]
 
 **Goal**: Add `"dependencies": ["core"]` to all extension manifests so that loading any extension auto-loads core first, formalizing the dependency graph.
 

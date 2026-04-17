@@ -3,13 +3,25 @@
   "version": "1.0.0",
   "description": "Web development support with Astro, Tailwind CSS v4, TypeScript, and Cloudflare Pages",
   "task_type": "web",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
-    "agents": ["web-implementation-agent.md", "web-research-agent.md"],
-    "skills": ["skill-web-implementation", "skill-web-research"],
+    "agents": [
+      "web-implementation-agent.md",
+      "web-research-agent.md"
+    ],
+    "skills": [
+      "skill-web-implementation",
+      "skill-web-research"
+    ],
     "commands": [],
-    "rules": ["web-astro.md"],
-    "context": ["project/web"],
+    "rules": [
+      "web-astro.md"
+    ],
+    "context": [
+      "project/web"
+    ],
     "scripts": [],
     "hooks": []
   },

@@ -3,12 +3,23 @@
   "version": "1.0.0",
   "description": "Obsidian-compatible memory vault for knowledge capture and retrieval with MCP integration",
   "task_type": "memory",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
-    "commands": ["learn.md", "distill.md"],
-    "skills": ["skill-memory"],
-    "context": ["project/memory"],
-    "data": [".memory"],
+    "commands": [
+      "learn.md",
+      "distill.md"
+    ],
+    "skills": [
+      "skill-memory"
+    ],
+    "context": [
+      "project/memory"
+    ],
+    "data": [
+      ".memory"
+    ],
     "hooks": []
   },
   "routing": {
@@ -36,7 +47,10 @@
   "mcp_servers": {
     "obsidian-memory": {
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/obsidian-claude-code-mcp@latest"],
+      "args": [
+        "-y",
+        "@anthropic-ai/obsidian-claude-code-mcp@latest"
+      ],
       "env": {
         "OBSIDIAN_WS_PORT": "22360"
       }

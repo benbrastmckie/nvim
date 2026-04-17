@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Formal reasoning extension providing agents, skills, and context for mathematical logic, mathematics, and physics research. Includes modal logic, Kripke semantics, lattice theory, category theory, and dynamical systems.",
   "task_type": "formal",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
     "agents": [
       "formal-research-agent.md",

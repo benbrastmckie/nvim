@@ -3,13 +3,23 @@
   "version": "1.0.0",
   "description": "Typst document development with single-pass compilation",
   "task_type": "typst",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
-    "agents": ["typst-research-agent.md", "typst-implementation-agent.md"],
-    "skills": ["skill-typst-research", "skill-typst-implementation"],
+    "agents": [
+      "typst-research-agent.md",
+      "typst-implementation-agent.md"
+    ],
+    "skills": [
+      "skill-typst-research",
+      "skill-typst-implementation"
+    ],
     "commands": [],
     "rules": [],
-    "context": ["project/typst"],
+    "context": [
+      "project/typst"
+    ],
     "scripts": [],
     "hooks": []
   },

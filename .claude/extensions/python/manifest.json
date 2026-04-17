@@ -3,13 +3,23 @@
   "version": "1.0.0",
   "description": "Python development with pytest integration and type checking",
   "task_type": "python",
-  "dependencies": [],
+  "dependencies": [
+    "core"
+  ],
   "provides": {
-    "agents": ["python-research-agent.md", "python-implementation-agent.md"],
-    "skills": ["skill-python-research", "skill-python-implementation"],
+    "agents": [
+      "python-research-agent.md",
+      "python-implementation-agent.md"
+    ],
+    "skills": [
+      "skill-python-research",
+      "skill-python-implementation"
+    ],
     "commands": [],
     "rules": [],
-    "context": ["project/python"],
+    "context": [
+      "project/python"
+    ],
     "scripts": [],
     "hooks": []
   },
