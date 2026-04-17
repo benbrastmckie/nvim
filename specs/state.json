@@ -5,11 +5,11 @@
     {
       "project_number": 465,
       "project_name": "restructure_core_as_real_extension",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-17T03:40:40Z",
-      "last_updated": "2026-04-17T04:25:25Z",
-      "session_id": "sess_1776399354_fe5278",
+      "last_updated": "2026-04-17T04:33:25Z",
+      "session_id": "sess_1776399992_678beb",
       "researched": "2026-04-17T04:25:25Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -17,8 +17,45 @@
           "path": "specs/465_restructure_core_as_real_extension/reports/01_team-research.md",
           "type": "research",
           "summary": "Team research with 4 teammates: implementation architecture, prior art, critical evaluation, strategic direction"
+        },
+        {
+          "path": "specs/465_restructure_core_as_real_extension/plans/01_restructure-core-extension.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan for restructuring core agent system as a real extension"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 6,
+        "total_effort_hours": 8,
+        "complexity": "complex",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_team-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-16"
+          }
+        ]
+      }
     },
     {
       "project_number": 464,

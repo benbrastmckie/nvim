@@ -460,9 +460,9 @@ jq '(.active_projects[] | select(.project_number == '$task_number')).next_artifa
 
 **Note**: Team research (like single-agent research) is the only operation that increments `next_artifact_number`. Team plan and team implement use `(current - 1)` to stay in the same "round".
 
-**Update TODO.md**: Change status marker to `[RESEARCHED]`.
+**Update TODO.md**: Change status marker from `[RESEARCHING]` to `[RESEARCHED]` via Edit tool.
 
-**Link artifact**:
+**Link artifact in state.json**:
 ```bash
 padded_num=$(printf "%03d" "$task_number")
 jq --arg path "specs/${padded_num}_${project_name}/reports/${run_padded}_team-research.md" \
@@ -472,13 +472,13 @@ jq --arg path "specs/${padded_num}_${project_name}/reports/${run_padded}_team-re
   specs/state.json > specs/tmp/state.json && mv specs/tmp/state.json specs/state.json
 ```
 
-**Update TODO.md**: Link artifact using the automated script:
+**Link artifact in TODO.md**: Use the `link-artifact-todo.sh` script (REQUIRED -- do NOT manually edit artifact links in TODO.md):
 
 ```bash
 bash .claude/scripts/link-artifact-todo.sh $task_number '**Research**' '**Plan**' "$artifact_path"
 ```
 
-If the script exits non-zero, log a warning but continue (linking errors are non-blocking).
+The script produces bracket-only `[path]` format. Never use markdown `[name](path)` format for artifact links. If the script exits non-zero, log a warning but continue (linking errors are non-blocking).
 
 ---
 

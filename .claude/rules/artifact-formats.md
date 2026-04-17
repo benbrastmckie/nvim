@@ -112,6 +112,8 @@ Use count-aware format from `.claude/context/reference/state-management-schema.m
 - Single artifact (1): Use inline format `- **Type**: [path]`
 - Multiple artifacts (2+): Use multi-line list format with 2-space indentation
 
+**PROHIBITION**: Never use markdown link format `[name](path)` in TODO.md artifact links. Always use bracket-only format `[path]`. The `link-artifact-todo.sh` script enforces this -- always call the script instead of manually editing artifact links.
+
 ## Template Reference
 
 For error report templates, see [Artifact Templates](.claude/context/reference/artifact-templates.md). For research reports, plans, and summaries, use the format files directly:

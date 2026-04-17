@@ -352,13 +352,13 @@ if [ -n "$artifact_path" ]; then
 fi
 ```
 
-**Update TODO.md**: Link artifact using the automated script:
+**Link artifact in TODO.md**: Use the `link-artifact-todo.sh` script (REQUIRED -- do NOT manually edit artifact links in TODO.md):
 
 ```bash
 bash .claude/scripts/link-artifact-todo.sh $task_number '**Research**' '**Plan**' "$artifact_path"
 ```
 
-If the script exits non-zero, log a warning but continue (linking errors are non-blocking).
+The script produces bracket-only `[path]` format. Never use markdown `[name](path)` format for artifact links. If the script exits non-zero, log a warning but continue (linking errors are non-blocking).
 
 ---
 

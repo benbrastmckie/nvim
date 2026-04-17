@@ -17,9 +17,10 @@ next_project_number: 466
 
 ### 465. Restructure core agent system as a real extension in .claude/extensions/core/
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [465_restructure_core_as_real_extension/reports/01_team-research.md]
+- **Plan**: [465_restructure_core_as_real_extension/plans/01_restructure-core-extension.md]
 
 **Description**: Restructure the core agent system as a real (non-virtual) extension in `.claude/extensions/core/`. The Round 2 research report for task 464 claimed a "bootstrap impossibility" for making core a real extension, but this is incorrect — the Lua extension loader (neovim plugin) is completely separate from the Claude agent system (markdown/json files read by Claude Code). The loader manages which files are present in `.claude/` and does not depend on those files to function.
 
