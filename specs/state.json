@@ -5,11 +5,11 @@
     {
       "project_number": 464,
       "project_name": "enable_extensions_in_source_repo",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-17T02:32:51Z",
-      "last_updated": "2026-04-17T02:51:58Z",
-      "session_id": "sess_1776393867_ba1e21",
+      "last_updated": "2026-04-17T02:59:07Z",
+      "session_id": "sess_1776394420_b9c324",
       "researched": "2026-04-17T02:51:58Z",
       "next_artifact_number": 3,
       "artifacts": [
@@ -22,8 +22,45 @@
           "path": "specs/464_enable_extensions_in_source_repo/reports/02_team-research.md",
           "type": "research",
           "summary": "Round 2: core-as-extension architecture with virtual manifest approach"
+        },
+        {
+          "path": "specs/464_enable_extensions_in_source_repo/plans/02_enable-extensions-source.md",
+          "type": "plan",
+          "summary": "5-phase implementation: sync fixes, virtual core manifest, allow-list sync, dependency formalization, validation"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 5,
+        "total_effort_hours": 5,
+        "complexity": "complex",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4,
+            5
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_team-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-17"
+          },
+          {
+            "path": "reports/02_team-research.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-17"
+          }
+        ]
+      }
     },
     {
       "project_number": 87,
