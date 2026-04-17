@@ -1,7 +1,7 @@
 # Implementation Plan: Conditional Artifact Display in Commands Picker
 
 - **Task**: 463 - Conditional Artifact Display in Commands Picker
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/463_commands_picker_conditional_artifact_display/reports/01_conditional-artifact-display.md
@@ -58,7 +58,7 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Remove Asterisks and Add Conditional Display Gate [NOT STARTED]
+### Phase 1: Remove Asterisks and Add Conditional Display Gate [COMPLETED]
 
 **Goal**: Remove asterisk prefix from all non-extension artifacts and gate non-extension sections behind extension load state check.
 

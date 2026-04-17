@@ -15,24 +15,7 @@ local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers"
 --- @param is_event_local boolean|nil Whether the event itself is from local settings
 --- @return string Formatted display string
 local function format_hook_event(event_name, indent_char, event_hooks, is_event_local)
-  local has_local_hook = false
-
-  -- First check event-level locality (handles inline hooks)
-  if is_event_local then
-    has_local_hook = true
-  end
-
-  -- Also check individual hooks for backward compatibility with .sh files
-  if not has_local_hook and event_hooks then
-    for _, hook in ipairs(event_hooks) do
-      if hook.is_local then
-        has_local_hook = true
-        break
-      end
-    end
-  end
-
-  local prefix = has_local_hook and "*" or " "
+  local prefix = " "
 
   local registry = require("neotex.plugins.ai.claude.commands.picker.artifacts.registry")
   local description = ""
@@ -55,7 +38,7 @@ end
 --- @param is_dependent boolean Whether this is a dependent command
 --- @return string Formatted display string
 local function format_command(command, indent_char, is_dependent)
-  local prefix = command.is_local and "*" or " "
+  local prefix = " "
   local description = command.description or ""
 
   if is_dependent then
@@ -118,7 +101,7 @@ function M.create_context_entries(config)
 
           table.insert(all_entries_added, {
             display = helpers.format_display(
-              file.is_local and "*" or " ",
+              " ",
               " " .. indent_char,
               display_name,
               description
@@ -257,7 +240,7 @@ function M.create_memory_entries(config)
   if index_path then
     table.insert(index_entries, {
       display = helpers.format_display(
-        index_is_local and "*" or " ",
+        " ",
         " ├─",
         "Index",
         "Memory index and navigation"
@@ -280,7 +263,7 @@ function M.create_memory_entries(config)
 
       table.insert(entries, {
         display = helpers.format_display(
-          mem.is_local and "*" or " ",
+          " ",
           " " .. indent_char,
           display_name,
           ""
@@ -336,7 +319,7 @@ function M.create_rules_entries(config)
 
       table.insert(entries, {
         display = helpers.format_display(
-          rule.is_local and "*" or " ",
+          " ",
           " " .. indent_char,
           rule.name,
           description
@@ -391,7 +374,7 @@ function M.create_docs_entries(config)
 
     table.insert(entries, {
       display = helpers.format_display(
-        is_local and "*" or " ",
+        " ",
         " " .. helpers.get_tree_char(true),
         "README",
         description
@@ -439,7 +422,7 @@ function M.create_lib_entries(config)
 
       table.insert(entries, {
         display = helpers.format_display(
-          lib.is_local and "*" or " ",
+          " ",
           " " .. indent_char,
           lib.name,
           description
@@ -488,7 +471,7 @@ function M.create_templates_entries(config)
 
       table.insert(entries, {
         display = helpers.format_display(
-          tmpl.is_local and "*" or " ",
+          " ",
           " " .. indent_char,
           tmpl.name,
           description
@@ -537,7 +520,7 @@ function M.create_scripts_entries(config)
 
       table.insert(entries, {
         display = helpers.format_display(
-          script.is_local and "*" or " ",
+          " ",
           " " .. indent_char,
           script.name,
           description
@@ -586,7 +569,7 @@ function M.create_tests_entries(config)
 
       table.insert(entries, {
         display = helpers.format_display(
-          test.is_local and "*" or " ",
+          " ",
           " " .. indent_char,
           test.name,
           description
@@ -617,7 +600,7 @@ end
 --- @param indent_char string Tree character (├─ or └─)
 --- @return string Formatted display string
 local function format_skill(skill, indent_char)
-  local prefix = skill.is_local and "*" or " "
+  local prefix = " "
   local description = skill.description or ""
 
   return string.format(
@@ -634,7 +617,7 @@ end
 --- @param indent_char string Tree character (├─ or └─)
 --- @return string Formatted display string
 local function format_agent(agent, indent_char)
-  local prefix = agent.is_local and "*" or " "
+  local prefix = " "
   local description = agent.description or ""
 
   return string.format(
@@ -732,7 +715,7 @@ end
 --- @param indent_char string Tree character (├─ or └─)
 --- @return string Formatted display string
 local function format_root_file(root_file, indent_char)
-  local prefix = root_file.is_local and "*" or " "
+  local prefix = " "
   local description = root_file.description or ""
 
   return string.format(
@@ -1020,10 +1003,18 @@ function M.create_picker_entries(structure, config)
     table.insert(all_entries, entry)
   end
 
-  -- 2. Extensions section (after Load All)
+  -- 2. Extensions section (always shown)
   local ext_entries = M.create_extensions_entries(config)
   for _, entry in ipairs(ext_entries) do
     table.insert(all_entries, entry)
+  end
+
+  -- Gate: only show artifact sections when extensions are loaded
+  local extensions_module = config and config.extensions_module
+    or "neotex.plugins.ai.claude.extensions"
+  local ok, extensions = pcall(require, extensions_module)
+  if not ok or #extensions.list_loaded() == 0 then
+    return all_entries
   end
 
   -- 3. Docs section

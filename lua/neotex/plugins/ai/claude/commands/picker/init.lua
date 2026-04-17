@@ -37,14 +37,9 @@ function M.show_commands_picker(opts, config)
   -- Get extended structure with all commands, skills, hooks
   local structure = parser.get_extended_structure(config)
 
-  if not structure or not structure.primary_commands or vim.tbl_isempty(structure.primary_commands) then
-    local scan_mod = require("neotex.plugins.ai.claude.commands.picker.utils.scan")
-    local global_dir = config and config.global_source_dir or scan_mod.get_global_dir()
-    helpers.notify(
-      "No " .. label .. " commands found in " .. base_dir .. "/commands/ or " .. global_dir .. "/" .. base_dir .. "/commands/",
-      "WARN"
-    )
-    return
+  -- Ensure structure is always a table so entry creators can iterate safely
+  if not structure then
+    structure = { primary_commands = {}, skills = {}, agents = {}, hooks = {}, hook_events = {}, root_files = {}, event_is_local = {} }
   end
 
   -- Create entries for picker (pass config for extension loading)
