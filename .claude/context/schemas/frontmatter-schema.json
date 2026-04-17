@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.org/schemas/subagent-frontmatter.json",
+  "title": "Subagent Frontmatter Schema",
+  "description": "JSON Schema for validating subagent YAML frontmatter configuration",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "description",
+    "mode",
+    "agent_type",
+    "temperature",
+    "tools",
+    "permissions"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 3,
+      "maxLength": 50,
+      "description": "Unique agent identifier (lowercase, hyphen-separated)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (SemVer 2.0.0)"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 500,
+      "description": "Human-readable agent purpose"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["subagent", "orchestrator"],
+      "description": "Execution mode"
+    },
+    "agent_type": {
+      "type": "string",
+      "enum": ["research", "planning", "implementation", "execution", "validation", "orchestration"],
+      "description": "Agent category for configuration"
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "LLM sampling temperature"
+    },
+    "max_tokens": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 100000,
+      "description": "Maximum output tokens"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 10800,
+      "description": "Execution timeout in seconds"
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "read", "write", "edit", "bash", "grep", "glob", "list",
+          "webfetch", "websearch", "task"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Available tools for agent execution"
+    },
+    "permissions": {
+      "type": "object",
+      "required": ["allow", "deny"],
+      "properties": {
+        "allow": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "description": "Explicitly permitted operations"
+        },
+        "deny": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          },
+          "description": "Explicitly forbidden operations (takes precedence)"
+        }
+      },
+      "description": "Access control rules"
+    },
+    "context_loading": {
+      "type": "object",
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["lazy", "eager", "filtered"],
+          "description": "Context loading strategy"
+        },
+        "index": {
+          "type": "string",
+          "pattern": "^[.]claude/context/.+\\.md$",
+          "description": "Index file for lazy loading"
+        },
+        "required": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Required context files (relative paths)"
+        },
+        "optional": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Optional context files"
+        },
+        "max_context_size": {
+          "type": "integer",
+          "minimum": 10000,
+          "maximum": 100000,
+          "description": "Maximum context size in tokens"
+        }
+      },
+      "description": "Context management configuration"
+    },
+    "delegation": {
+      "type": "object",
+      "properties": {
+        "max_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Maximum delegation depth"
+        },
+        "can_delegate_to": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Agents this agent can delegate to"
+        },
+        "timeout_default": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 10800,
+          "description": "Default delegation timeout in seconds"
+        },
+        "timeout_max": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 10800,
+          "description": "Maximum delegation timeout in seconds"
+        }
+      },
+      "description": "Delegation configuration"
+    },
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Workflow stage where agent executes"
+        },
+        "command": {
+          "type": "string",
+          "pattern": "^/.+$",
+          "description": "Command that invokes this agent"
+        },
+        "return_format": {
+          "type": "string",
+          "description": "Return format standard"
+        }
+      },
+      "description": "Lifecycle integration metadata"
+    }
+  },
+  "additionalProperties": false
+}

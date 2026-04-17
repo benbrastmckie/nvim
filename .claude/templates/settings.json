@@ -1,0 +1,18 @@
+{
+  "$schema": "https://claude.ai/claude-code/settings-schema.json",
+  "_comment": "Template settings for Claude Code with recommended cleanup settings",
+  "_usage": "Merge these settings into ~/.config/claude-code/settings.json",
+
+  "cleanupPeriodDays": 7,
+
+  "_cleanup_notes": [
+    "cleanupPeriodDays: Number of days after which orphaned sessions are auto-cleaned",
+    "Default is 7 days. Set to 0 to disable automatic cleanup.",
+    "Manual cleanup: run /refresh command or use claude-refresh alias"
+  ],
+
+  "experimental": {
+    "_note": "Experimental features - may change or be removed",
+    "processMonitoring": false
+  }
+}

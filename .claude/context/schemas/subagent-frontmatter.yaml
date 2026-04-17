@@ -1,0 +1,198 @@
+# Subagent YAML Frontmatter Template
+#
+# This template defines the standard structure for subagent frontmatter.
+# All 13 essential fields are documented with types, examples, and guidelines.
+#
+# Usage: Copy this template when creating new subagents and customize for
+# agent-specific requirements.
+
+---
+# ==============================================================================
+# AGENT IDENTITY (Required)
+# ==============================================================================
+
+# Unique identifier for the agent (lowercase, hyphen-separated)
+name: "agent-name"
+
+# Semantic version following SemVer 2.0.0 (MAJOR.MINOR.PATCH)
+version: "1.0.0"
+
+# Human-readable description of agent purpose (2-5 sentences)
+description: |
+  Brief description of what this agent does. Include primary purpose,
+  key capabilities, and integration points. No emojis.
+
+# Execution mode: "subagent" (delegated to) or "orchestrator" (delegates to others)
+mode: subagent
+
+# Agent category for temperature and routing configuration
+# Valid values: research, planning, implementation, execution, validation
+agent_type: research
+
+# ==============================================================================
+# EXECUTION CONFIGURATION (Required)
+# ==============================================================================
+
+# LLM sampling temperature (0.0-1.0)
+# Research agents: 0.3 (moderate creativity for diverse source exploration)
+# Planning agents: 0.2 (structured, deterministic planning)
+# Implementation agents: 0.2 (precise, deterministic code generation)
+temperature: 0.3
+
+# Maximum output tokens (optional, default: 4000)
+max_tokens: 4000
+
+# Execution timeout in seconds (optional, default: 3600)
+# Research: 3600 (1 hour), Planning: 1800 (30 min), Implementation: 7200 (2 hours)
+timeout: 3600
+
+# ==============================================================================
+# CAPABILITIES (Required)
+# ==============================================================================
+
+# Available tools for agent execution
+# Core tools: read, write, edit, bash, grep, glob, list
+# Specialized tools: webfetch, websearch (research)
+tools:
+  - read
+  - write
+  - bash
+  - grep
+  - glob
+
+# ==============================================================================
+# SAFETY CONFIGURATION (Required)
+# ==============================================================================
+
+permissions:
+  # Allow list: Explicitly permitted operations with glob patterns
+  allow:
+    # File read permissions (glob patterns)
+    - read: ["**/*.md", ".claude/**/*", "Documentation/**/*"]
+    
+    # File write permissions (glob patterns)
+    - write: ["specs/**/*"]
+    
+    # Bash command whitelist (exact command names)
+    - bash: ["grep", "find", "wc", "date", "mkdir"]
+  
+  # Deny list: Explicitly forbidden operations (takes precedence over allow)
+  deny:
+    # CRITICAL: Destructive filesystem operations
+    - bash: ["rm -rf", "rm -fr", "rm -r *", "rm -rf /", "rm -rf .", "rm -rf ..", "rm -rf ~"]
+    
+    # CRITICAL: Privilege escalation
+    - bash: ["sudo", "su", "doas"]
+    
+    # CRITICAL: Permission changes (security risk)
+    - bash: ["chmod +x", "chmod 777", "chmod -R", "chown", "chgrp"]
+    
+    # CRITICAL: Disk operations (data loss risk)
+    - bash: ["dd", "mkfs", "mkfs.ext4", "fdisk", "parted", "gparted"]
+    
+    # CRITICAL: Network operations (security risk)
+    - bash: ["wget", "curl", "nc", "netcat", "nmap", "telnet", "ssh"]
+    
+    # CRITICAL: Process manipulation (system stability risk)
+    - bash: ["kill -9", "killall", "pkill", "killall -9"]
+    
+    # CRITICAL: System modification (configuration risk)
+    - bash: ["systemctl", "service", "init", "shutdown", "reboot", "halt"]
+    
+    # CRITICAL: Package management (dependency risk)
+    - bash: ["apt", "apt-get", "yum", "dnf", "pacman", "brew", "pip", "npm", "cargo"]
+    
+    # CRITICAL: Shell execution (command injection risk)
+    - bash: ["eval", "exec", "source", ".", "bash -c", "sh -c"]
+    
+    # CRITICAL: File archiving/compression (can overwrite files)
+    - bash: ["tar -x", "unzip", "gunzip", "bunzip2"]
+    
+    # CRITICAL: Sensitive file access (credential leakage)
+    - read: [".env", "**/*.key", "**/*.pem", "**/*.p12", ".ssh/**/*", "**/.git/config"]
+    
+    # CRITICAL: Critical file modification (breaks system)
+    - write: [".git/**/*", "/etc/**/*", "/var/**/*"]
+
+# Permission evaluation:
+# 1. Check deny list first (deny takes precedence)
+# 2. If not denied, check allow list
+# 3. If not in allow list, deny by default
+# 4. Log all permission denials for audit
+
+# ==============================================================================
+# CONTEXT MANAGEMENT (Optional but recommended)
+# ==============================================================================
+
+context_loading:
+  # Context loading strategy: lazy (index-based), eager (all upfront), filtered (category-based)
+  strategy: lazy
+  
+  # Index file for lazy loading discovery
+  index: ".claude/context/index.json"
+  
+  # Required context files (relative to .claude/context/)
+  required:
+    - "core/workflows/command-lifecycle.md"
+    - "formats/subagent-return.md"
+    - "core/system/status-markers.md"
+  
+  # Optional context files (loaded if available)
+  optional:
+    - "project/research/research-patterns.md"
+  
+  # Maximum context size in tokens (default: 50000)
+  max_context_size: 50000
+
+# ==============================================================================
+# DELEGATION CONFIGURATION (Optional but recommended)
+# ==============================================================================
+
+delegation:
+  # Maximum delegation depth (0-5, recommended: 3)
+  # Depth 0: No delegation (atomic agent)
+  # Depth 1: Command → Subagent
+  # Depth 2: Command → Subagent → Specialist
+  # Depth 3: Command → Subagent → Specialist → Helper
+  max_depth: 3
+  
+  # Agents this agent can delegate to
+  can_delegate_to:
+    - "status-sync-manager"
+    - "git-workflow-manager"
+  
+  # Default timeout for delegations in seconds
+  timeout_default: 1800
+  
+  # Maximum timeout for delegations in seconds
+  timeout_max: 3600
+
+# ==============================================================================
+# LIFECYCLE INTEGRATION (Optional)
+# ==============================================================================
+
+lifecycle:
+  # Workflow stage where agent executes (1-8)
+  # Stage 4: InvokeAgent (most common for subagents)
+  stage: 4
+  
+  # Command that invokes this agent
+  command: "/research"
+  
+  # Return format standard
+  return_format: "subagent-return-format.md"
+
+# ==============================================================================
+# NOTES
+# ==============================================================================
+
+# - All 13 essential fields should be present for comprehensive configuration
+# - Temperature must match agent_type guidelines
+# - Tools must be subset of available tools
+# - Permissions must deny all dangerous commands
+# - Context loading should use lazy strategy with index
+# - Delegation depth should not exceed 3
+# - Version should follow SemVer 2.0.0
+# - No emojis in any field (text-based only)
+
+---

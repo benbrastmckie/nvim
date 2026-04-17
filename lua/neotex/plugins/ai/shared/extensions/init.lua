@@ -237,23 +237,6 @@ function M.create(config)
     local project_dir = opts.project_dir or vim.fn.getcwd()
     local target_dir = project_dir .. "/" .. config.base_dir
 
-    -- Self-loading guard: warn when loading extensions into the global source directory.
-    -- Sync leak vectors are now closed (Phase 1), so this is safe but worth noting.
-    -- Derive global_dir from config: global_extensions_dir is {global_dir}/{base_dir}/extensions
-    local global_dir = config.global_extensions_dir:match("^(.+)/" .. config.base_dir .. "/extensions$")
-    if global_dir and project_dir == global_dir then
-      vim.schedule(function()
-        vim.notify(
-          string.format(
-            "Loading extension '%s' in source repository (%s). "
-              .. "Sync leak protection is active.",
-            extension_name, global_dir
-          ),
-          vim.log.levels.WARN
-        )
-      end)
-    end
-
     -- Find extension
     local extension = manifest_mod.get_extension(extension_name, config)
     if not extension then
