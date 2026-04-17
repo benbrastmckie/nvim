@@ -297,6 +297,43 @@ function M.copy_hooks(manifest, source_dir, target_dir)
   return copied_files, created_dirs
 end
 
+--- Copy systemd unit files (flat files, no execute permissions)
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory
+--- @return table copied_files Array of copied file paths
+--- @return table created_dirs Array of created directory paths
+function M.copy_systemd(manifest, source_dir, target_dir)
+  local copied_files = {}
+  local created_dirs = {}
+
+  if not manifest.provides or not manifest.provides.systemd then
+    return copied_files, created_dirs
+  end
+
+  local source_systemd_dir = source_dir .. "/systemd"
+  local target_systemd_dir = target_dir .. "/systemd"
+
+  -- Ensure systemd directory exists
+  if vim.fn.isdirectory(target_systemd_dir) ~= 1 then
+    helpers.ensure_directory(target_systemd_dir)
+    table.insert(created_dirs, target_systemd_dir)
+  end
+
+  for _, unit_name in ipairs(manifest.provides.systemd) do
+    local source_path = source_systemd_dir .. "/" .. unit_name
+    local target_path = target_systemd_dir .. "/" .. unit_name
+
+    if vim.fn.filereadable(source_path) == 1 then
+      if copy_file(source_path, target_path, false) then
+        table.insert(copied_files, target_path)
+      end
+    end
+  end
+
+  return copied_files, created_dirs
+end
+
 --- Copy docs (flat files, no execute permissions)
 --- @param manifest table Extension manifest
 --- @param source_dir string Extension source directory
@@ -446,7 +483,7 @@ function M.check_conflicts(manifest, target_dir, project_dir)
   end
 
   -- Check each category
-  local categories = { "agents", "commands", "rules", "scripts", "hooks", "docs", "templates" }
+  local categories = { "agents", "commands", "rules", "scripts", "hooks", "docs", "templates", "systemd" }
   for _, category in ipairs(categories) do
     if manifest.provides[category] then
       local target_category_dir = target_dir .. "/" .. category

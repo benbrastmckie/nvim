@@ -10,7 +10,7 @@ next_project_number: 468
 
 ### Pending
 
-- **467** [RESEARCHED] -- Move remaining root files to extensions/core/
+- **467** [COMPLETED] -- Move remaining root files to extensions/core/
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,7 +18,9 @@ next_project_number: 468
 
 ### 467. Move remaining .claude/ root files into extensions/core/
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
+- **Completed**: 2026-04-16
+- **Summary**: Moved 8 remaining root files into extensions/core/, added copy_systemd to loader, updated core-index-entries path
 - **Task Type**: meta
 - **Parent Task**: 465
 - **Research**: [467_move_remaining_root_files_to_core/reports/01_root-files-investigation.md]

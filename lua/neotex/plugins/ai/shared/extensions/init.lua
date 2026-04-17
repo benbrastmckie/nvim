@@ -455,6 +455,11 @@ function M.create(config)
       vim.list_extend(all_files, files)
       vim.list_extend(all_dirs, dirs)
 
+      -- Copy systemd unit files
+      files, dirs = loader_mod.copy_systemd(ext_manifest, source_dir, target_dir)
+      vim.list_extend(all_files, files)
+      vim.list_extend(all_dirs, dirs)
+
       -- Copy data directories (merge-copy semantics - preserves existing files)
       -- Data skeleton files are tracked separately for safe unload
       local data_files, data_dirs = loader_mod.copy_data_dirs(ext_manifest, source_dir, project_dir)
@@ -492,8 +497,8 @@ function M.create(config)
         merge_mod.remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)
       end
 
-      -- Load core context entries (always included, not extension-specific)
-      local core_index_path = target_dir .. "/context/core-index-entries.json"
+      -- Load core context entries from extension source directory
+      local core_index_path = source_dir .. "/context/core-index-entries.json"
       local core_stat = vim.loop.fs_stat(core_index_path)
       if core_stat then
         local ok_core, core_data = pcall(read_json, core_index_path)

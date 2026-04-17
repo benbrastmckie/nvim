@@ -838,9 +838,9 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
     end
   end
 
-  -- Systemd: not a core extension category; read from base_dir root (not extensions/core/)
-  local systemd_service = sync_scan("systemd", "*.service", true, nil, nil, false)
-  local systemd_timer = sync_scan("systemd", "*.timer", true, nil, nil, false)
+  -- Systemd: core extension category; read from extensions/core/
+  local systemd_service = sync_scan("systemd", "*.service", true)
+  local systemd_timer = sync_scan("systemd", "*.timer", true)
   artifacts.systemd = {}
   for _, file in ipairs(systemd_service) do
     table.insert(artifacts.systemd, file)
@@ -863,7 +863,7 @@ function M.scan_all_artifacts(global_dir, project_dir, config)
   if base_dir == ".opencode" then
     root_file_names = { "AGENTS.md", "OPENCODE.md", "settings.json", ".gitignore", "README.md", "QUICK-START.md" }
   else
-    root_file_names = { ".gitignore", "README.md", "CLAUDE.md", "settings.local.json" }
+    root_file_names = { ".gitignore", "CLAUDE.md", "settings.local.json" }
   end
 
   artifacts.root_files = {}

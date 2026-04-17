@@ -5,10 +5,10 @@
     {
       "project_number": 467,
       "project_name": "move_remaining_root_files_to_core",
-      "status": "researched",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-17T05:21:22Z",
-      "last_updated": "2026-04-17T05:21:22Z",
+      "last_updated": "2026-04-17T05:33:16Z",
       "session_id": "sess_1776400640_d16198",
       "researched": "2026-04-17T05:21:22Z",
       "next_artifact_number": 2,
@@ -18,7 +18,9 @@
           "type": "research",
           "summary": "Investigation of 10 files remaining in .claude/ root that should move to extensions/core/"
         }
-      ]
+      ],
+      "completed": "2026-04-17T05:33:16Z",
+      "completion_summary": "Moved 8 remaining root files (5 context docs, 2 systemd units, root README) into extensions/core/. Added copy_systemd() to loader, updated init.lua core-index-entries path to read from extension source dir, added systemd to VALID_PROVIDES and check_conflicts."
     },
     {
       "project_number": 465,
