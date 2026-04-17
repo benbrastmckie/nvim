@@ -116,6 +116,14 @@ if [[ -z "$field_line_relative" ]]; then
     next_field_line=$(sed -n "${heading_line},${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "${next_field}:" | head -1 | cut -d: -f1)
   fi
 
+  if [[ -z "$next_field_line" && "$next_field" != "**Description**" ]]; then
+    # Fallback: try **Description** as anchor when primary next_field not found
+    next_field_line=$(sed -n "${heading_line},${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "- **Description**:" | head -1 | cut -d: -f1)
+    if [[ -z "$next_field_line" ]]; then
+      next_field_line=$(sed -n "${heading_line},${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "**Description**:" | head -1 | cut -d: -f1)
+    fi
+  fi
+
   if [[ -z "$next_field_line" ]]; then
     echo "Error: could not find insertion point (${next_field} or **Description**) for task $task_number" >&2
     exit 3
@@ -163,6 +171,13 @@ if [[ -z "$field_value" || "$field_value" == "$field_line_content" ]]; then
   next_field_line_abs=$(sed -n "$((field_actual_line+1)),${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "- ${next_field}:" | head -1 | cut -d: -f1)
   if [[ -z "$next_field_line_abs" ]]; then
     next_field_line_abs=$(sed -n "$((field_actual_line+1)),${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "${next_field}:" | head -1 | cut -d: -f1)
+    if [[ -z "$next_field_line_abs" && "$next_field" != "**Description**" ]]; then
+      # Fallback: try **Description** as anchor when primary next_field not found
+      next_field_line_abs=$(sed -n "$((field_actual_line+1)),${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "- **Description**:" | head -1 | cut -d: -f1)
+      if [[ -z "$next_field_line_abs" ]]; then
+        next_field_line_abs=$(sed -n "$((field_actual_line+1)),${entry_end}p" "$TODO_FILE" | safe_grep -nF -- "**Description**:" | head -1 | cut -d: -f1)
+      fi
+    fi
     if [[ -z "$next_field_line_abs" ]]; then
       echo "Error: could not find ${next_field} after ${field_name} for task $task_number" >&2
       exit 3

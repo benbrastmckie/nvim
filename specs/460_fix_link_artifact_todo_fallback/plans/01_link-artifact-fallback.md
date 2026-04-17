@@ -1,7 +1,7 @@
 # Implementation Plan: Fix link-artifact-todo.sh Fallback Chain
 
 - **Task**: 460 - fix_link_artifact_todo_fallback
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/460_fix_link_artifact_todo_fallback/reports/01_link-artifact-fallback.md
@@ -56,7 +56,7 @@ No ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add Fallback Chain to Both Cases [NOT STARTED]
+### Phase 1: Add Fallback Chain to Both Cases [COMPLETED]
 
 **Goal**: Insert `**Description**` fallback search logic in Case 1 and Case 3 of `link-artifact-todo.sh`, and apply the same changes to the Zed copy.
 
@@ -79,7 +79,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Validation [NOT STARTED]
+### Phase 2: Validation [COMPLETED]
 
 **Goal**: Confirm the fix works end-to-end and does not regress existing behavior.
 
