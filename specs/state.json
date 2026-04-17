@@ -17,11 +17,11 @@
     {
       "project_number": 473,
       "project_name": "clean_stale_permissions_settings_local",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-17T06:41:09Z",
-      "last_updated": "2026-04-17T15:08:34Z",
-      "session_id": "sess_1776438305_90cfd9",
+      "last_updated": "2026-04-17T15:12:36Z",
+      "session_id": "sess_1776438594_a9f8af",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -43,8 +43,35 @@
           "path": "specs/473_clean_stale_permissions_settings_local/reports/01_stale-permissions-audit.md",
           "type": "research",
           "summary": "Audited 52 permission entries, found 43 stale across 5 categories, 7 to retain"
+        },
+        {
+          "path": "specs/473_clean_stale_permissions_settings_local/plans/01_stale-permissions-cleanup.md",
+          "type": "plan",
+          "summary": "Implementation plan with 2 phases to remove 45 stale permission entries from settings.local.json"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 2,
+        "total_effort_hours": 0.5,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_stale-permissions-audit.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-17"
+          }
+        ]
+      }
     },
     {
       "project_number": 472,
