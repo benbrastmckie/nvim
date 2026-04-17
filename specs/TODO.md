@@ -1,5 +1,5 @@
 ---
-next_project_number: 460
+next_project_number: 462
 ---
 
 # TODO
@@ -27,6 +27,13 @@ next_project_number: 460
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 461. Review and refactor picker cursor restoration implementation
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+
+**Description**: Review and refactor cursor restoration in commands picker and extensions picker. Systematically review all elements touched during the cursor-position-restore feature implementation: (1) lua/neotex/plugins/ai/claude/commands/picker/init.lua - verify the register_completion_callback + vim.schedule + set_selection approach works correctly with descending sorting_strategy, clean up any unnecessary variable captures (the ext/actions.close reorder on line 164-168), ensure the _restore_extension_name convention is documented; (2) lua/neotex/plugins/ai/shared/extensions/picker.lua - verify this file is fully clean and matches its original state with no leftover artifacts from the debugging session; (3) Consider whether the same cursor-restore pattern should be applied to other close/reopen cycles in the commands picker (Ctrl-l load artifact, Ctrl-u update, Ctrl-s save, Load All - lines 100-228) for consistency; (4) Evaluate whether the restore logic should be extracted into a shared helper since both the commands picker and extensions picker have close/reopen patterns; (5) Verify the approach works for the OpenCode equivalent picker if one exists at lua/neotex/plugins/ai/opencode/commands/picker/init.lua.
 
 ### 460. Fix link-artifact-todo.sh missing fallback to Description
 - **Effort**: small
@@ -652,3 +659,4 @@ The Agent tool's `model` parameter already accepts `"haiku"`, `"sonnet"`, and `"
 14. **87** [RESEARCHED] -> plan
 15. **457** [RESEARCHED] -> plan (independent)
 16. **458** -> research (independent)
+17. **461** -> research (independent)
