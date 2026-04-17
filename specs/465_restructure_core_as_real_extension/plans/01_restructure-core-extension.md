@@ -68,7 +68,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Loader Foundation -- Hooks Copy and Guard Fixes [NOT STARTED]
+### Phase 1: Loader Foundation -- Hooks Copy and Guard Fixes [COMPLETED]
 
 **Goal**: Add missing hooks copy support to the loader and fix the `get_core_provides()` guard so it works without the virtual flag.
 

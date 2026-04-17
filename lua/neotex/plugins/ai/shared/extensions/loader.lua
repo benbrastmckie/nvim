@@ -259,6 +259,118 @@ function M.copy_scripts(manifest, source_dir, target_dir)
   return copied_files, created_dirs
 end
 
+--- Copy hooks (flat .sh files with execute permissions preserved)
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory
+--- @return table copied_files Array of copied file paths
+--- @return table created_dirs Array of created directory paths
+function M.copy_hooks(manifest, source_dir, target_dir)
+  local copied_files = {}
+  local created_dirs = {}
+
+  if not manifest.provides or not manifest.provides.hooks then
+    return copied_files, created_dirs
+  end
+
+  local source_hooks_dir = source_dir .. "/hooks"
+  local target_hooks_dir = target_dir .. "/hooks"
+
+  -- Ensure hooks directory exists
+  if vim.fn.isdirectory(target_hooks_dir) ~= 1 then
+    helpers.ensure_directory(target_hooks_dir)
+    table.insert(created_dirs, target_hooks_dir)
+  end
+
+  for _, hook_name in ipairs(manifest.provides.hooks) do
+    local source_path = source_hooks_dir .. "/" .. hook_name
+    local target_path = target_hooks_dir .. "/" .. hook_name
+
+    if vim.fn.filereadable(source_path) == 1 then
+      -- Always preserve execute permissions for hook scripts
+      if copy_file(source_path, target_path, true) then
+        table.insert(copied_files, target_path)
+      end
+    end
+  end
+
+  return copied_files, created_dirs
+end
+
+--- Copy docs (flat files, no execute permissions)
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory
+--- @return table copied_files Array of copied file paths
+--- @return table created_dirs Array of created directory paths
+function M.copy_docs(manifest, source_dir, target_dir)
+  local copied_files = {}
+  local created_dirs = {}
+
+  if not manifest.provides or not manifest.provides.docs then
+    return copied_files, created_dirs
+  end
+
+  local source_docs_dir = source_dir .. "/docs"
+  local target_docs_dir = target_dir .. "/docs"
+
+  -- Ensure docs directory exists
+  if vim.fn.isdirectory(target_docs_dir) ~= 1 then
+    helpers.ensure_directory(target_docs_dir)
+    table.insert(created_dirs, target_docs_dir)
+  end
+
+  for _, doc_name in ipairs(manifest.provides.docs) do
+    local source_path = source_docs_dir .. "/" .. doc_name
+    local target_path = target_docs_dir .. "/" .. doc_name
+
+    if vim.fn.filereadable(source_path) == 1 then
+      if copy_file(source_path, target_path, false) then
+        table.insert(copied_files, target_path)
+      end
+    end
+  end
+
+  return copied_files, created_dirs
+end
+
+--- Copy templates (flat files, no execute permissions)
+--- @param manifest table Extension manifest
+--- @param source_dir string Extension source directory
+--- @param target_dir string Target base directory
+--- @return table copied_files Array of copied file paths
+--- @return table created_dirs Array of created directory paths
+function M.copy_templates(manifest, source_dir, target_dir)
+  local copied_files = {}
+  local created_dirs = {}
+
+  if not manifest.provides or not manifest.provides.templates then
+    return copied_files, created_dirs
+  end
+
+  local source_templates_dir = source_dir .. "/templates"
+  local target_templates_dir = target_dir .. "/templates"
+
+  -- Ensure templates directory exists
+  if vim.fn.isdirectory(target_templates_dir) ~= 1 then
+    helpers.ensure_directory(target_templates_dir)
+    table.insert(created_dirs, target_templates_dir)
+  end
+
+  for _, template_name in ipairs(manifest.provides.templates) do
+    local source_path = source_templates_dir .. "/" .. template_name
+    local target_path = target_templates_dir .. "/" .. template_name
+
+    if vim.fn.filereadable(source_path) == 1 then
+      if copy_file(source_path, target_path, false) then
+        table.insert(copied_files, target_path)
+      end
+    end
+  end
+
+  return copied_files, created_dirs
+end
+
 --- Copy data directories (merge-copy semantics - only copy non-existing files)
 --- Data directories are copied to the parent directory (project root) not target_dir (.claude/.opencode)
 --- @param manifest table Extension manifest
@@ -334,7 +446,7 @@ function M.check_conflicts(manifest, target_dir, project_dir)
   end
 
   -- Check each category
-  local categories = { "agents", "commands", "rules", "scripts" }
+  local categories = { "agents", "commands", "rules", "scripts", "hooks", "docs", "templates" }
   for _, category in ipairs(categories) do
     if manifest.provides[category] then
       local target_category_dir = target_dir .. "/" .. category

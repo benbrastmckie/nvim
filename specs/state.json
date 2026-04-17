@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 466,
+  "next_project_number": 467,
   "active_projects": [
     {
       "project_number": 465,
       "project_name": "restructure_core_as_real_extension",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-17T03:40:40Z",
-      "last_updated": "2026-04-17T04:33:25Z",
-      "session_id": "sess_1776399992_678beb",
+      "last_updated": "2026-04-17T04:37:46Z",
+      "session_id": "sess_1776400640_d16198",
       "researched": "2026-04-17T04:25:25Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -191,6 +191,17 @@
       ],
       "session_id": "sess_1771006114_e73864",
       "planned": "2026-02-13T18:10:48Z"
+    },
+    {
+      "project_number": 466,
+      "project_name": "convert_core_index_entries",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-16T00:00:00Z",
+      "last_updated": "2026-04-16T00:00:00Z",
+      "parent_task": 465,
+      "next_artifact_number": 1,
+      "artifacts": []
     }
   ],
   "completed_projects": [],

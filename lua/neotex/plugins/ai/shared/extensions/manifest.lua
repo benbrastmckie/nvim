@@ -8,7 +8,7 @@ local REQUIRED_FIELDS = { "name", "version", "description" }
 
 --- Valid provides categories
 local VALID_PROVIDES = {
-  "agents", "skills", "commands", "rules", "context", "scripts", "hooks", "data"
+  "agents", "skills", "commands", "rules", "context", "scripts", "hooks", "data", "docs", "templates"
 }
 
 --- Read JSON file and parse it
@@ -261,13 +261,13 @@ function M.aggregate_extension_artifacts(config)
 end
 
 --- Get the core extension's provides map
---- Reads the virtual core manifest and returns its provides entries.
---- Returns nil if the core extension doesn't exist or isn't virtual.
+--- Reads the core manifest and returns its provides entries.
+--- Returns nil if the core extension doesn't exist or has no provides.
 --- @param config table Extension system configuration
 --- @return table|nil provides Map of category -> array of filenames, or nil
 function M.get_core_provides(config)
   local core = M.get_extension("core", config)
-  if not core or not core.manifest or not core.manifest.virtual then
+  if not core or not core.manifest or not core.manifest.provides then
     return nil
   end
   return core.manifest.provides

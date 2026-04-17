@@ -1,5 +1,5 @@
 ---
-next_project_number: 466
+next_project_number: 467
 ---
 
 # TODO
@@ -15,9 +15,19 @@ next_project_number: 466
 
 ## Tasks
 
+### 466. Convert core-index-entries.json from static fixture to standard merge_targets
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Parent Task**: 465
+
+**Description**: Convert `core-index-entries.json` from a static fixture (special-cased in `init.lua:451-462`) to a standard `merge_targets` entry in the core extension manifest. Currently the core extension uses a hardcoded path to `.claude/context/core-index-entries.json` which is loaded via special-case code in the extension loader. This should instead use the standard `merge_targets` mechanism that other extensions use (e.g., `index-entries.json` merged into `context/index.json`). This eliminates the last piece of core-specific special-casing in the loader and makes core fully uniform with other extensions. Follow-up to task 465 (restructure core as real extension).
+
+---
+
 ### 465. Restructure core agent system as a real extension in .claude/extensions/core/
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Research**: [465_restructure_core_as_real_extension/reports/01_team-research.md]
 - **Plan**: [465_restructure_core_as_real_extension/plans/01_restructure-core-extension.md]
@@ -73,5 +83,5 @@ Key changes: (1) Move core files from `.claude/{agents,commands,rules,skills,con
 
 ## Recommended Order
 
-1. **465** [RESEARCHED] -> plan
+1. **465** [IMPLEMENTING]
 (none)
