@@ -1,5 +1,5 @@
 ---
-next_project_number: 469
+next_project_number: 470
 ---
 
 # TODO
@@ -10,12 +10,20 @@ next_project_number: 469
 
 ### Pending
 
+- **469** [NOT STARTED] -- Systematically review agent system post-refactor
 - **468** [NOT STARTED] -- Document extension loader architecture
 - **467** [COMPLETED] -- Move remaining root files to extensions/core/
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 469. Systematically review agent system post-refactor for errors and improvements
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Review the resulting agent system in .claude/ after loading nvim + memory + nix + core extensions following the recent refactoring in tasks 464, 465, 467. Systematically detect errors, inconsistencies, or opportunities for improvement across the loaded system.
 
 ### 468. Document extension loader architecture and .claude/ lifecycle
 - **Effort**: TBD
@@ -136,4 +144,5 @@ Key changes: (1) Move core files from `.claude/{agents,commands,rules,skills,con
 ## Recommended Order
 
 1. **465** [COMPLETED]
+2. **469** -> research (independent)
 (none)
