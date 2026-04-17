@@ -361,7 +361,20 @@ function M.copy_docs(manifest, source_dir, target_dir)
     local source_path = source_docs_dir .. "/" .. doc_name
     local target_path = target_docs_dir .. "/" .. doc_name
 
-    if vim.fn.filereadable(source_path) == 1 then
+    if vim.fn.isdirectory(source_path) == 1 then
+      -- Directory entry: copy recursively (like copy_context_dirs)
+      if vim.fn.isdirectory(target_path) ~= 1 then
+        helpers.ensure_directory(target_path)
+        table.insert(created_dirs, target_path)
+      end
+
+      local files = scan_directory_recursive(source_path)
+      for _, rel_path in ipairs(files) do
+        if copy_file(source_path .. "/" .. rel_path, target_path .. "/" .. rel_path, false) then
+          table.insert(copied_files, target_path .. "/" .. rel_path)
+        end
+      end
+    elseif vim.fn.filereadable(source_path) == 1 then
       if copy_file(source_path, target_path, false) then
         table.insert(copied_files, target_path)
       end

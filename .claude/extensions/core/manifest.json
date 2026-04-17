@@ -122,7 +122,15 @@
       "troubleshooting",
       "workflows"
     ],
-    "docs": "docs",
+    "docs": [
+      "README.md",
+      "docs-README.md",
+      "architecture",
+      "examples",
+      "guides",
+      "reference",
+      "templates"
+    ],
     "templates": [
       "claudemd-header.md",
       "extension-readme-template.md",
