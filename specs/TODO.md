@@ -19,7 +19,9 @@ next_project_number: 465
 - **Effort**: TBD
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
-- **Research**: [01_team-research.md](464_enable_extensions_in_source_repo/reports/01_team-research.md)
+- **Research**:
+  - [01_team-research.md](464_enable_extensions_in_source_repo/reports/01_team-research.md)
+  - [02_team-research.md](464_enable_extensions_in_source_repo/reports/02_team-research.md)
 
 **Description**: Allow loading extensions (nvim/, memory/, etc.) in the global source repository (~/.config/nvim) so they function normally for development, without those extension artifacts becoming part of the core agent system that "Load Core Agent System" syncs to other repos. Currently a self-loading guard prevents any extension from being loaded in this repo. The desired behavior is that this repo is just another consumer of the extension system: it loads core + nvim + memory the same way any other repo loads core + its own extensions. The sync mechanism must ensure that only core artifacts propagate to other projects — no extension-injected content in CLAUDE.md sections, context/index.json entries, settings fragments, or discrete files (agents, skills, rules, context) should travel with the core sync. One possible direction is restructuring the core agent system as a base layer that every extension depends on, but the research phase should evaluate approaches before committing to an architecture.
 
