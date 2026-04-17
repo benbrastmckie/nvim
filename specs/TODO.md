@@ -12,8 +12,8 @@ next_project_number: 475
 
 - **474** [NOT STARTED] -- Create core extension README.md
 - **473** [NOT STARTED] -- Clean up stale permissions in settings.local.json
-- **472** [RESEARCHING] -- Fix lean MCP script permissions
-- **471** [RESEARCHING] -- Add model: opus to nix agent frontmatter
+- **472** [RESEARCHED] -- Fix lean MCP script permissions
+- **471** [RESEARCHED] -- Add model: opus to nix agent frontmatter
 - **470** [RESEARCHED] -- Fix loader to handle root-level context files
 - **469** [COMPLETED] -- Systematically review agent system post-refactor
 - **468** [NOT STARTED] -- Document extension loader architecture
@@ -40,15 +40,17 @@ next_project_number: 475
 
 ### 472. Fix lean MCP script permissions
 - **Effort**: small
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [472_fix_lean_mcp_script_permissions/reports/01_script-permissions-fix.md]
 
 **Description**: Add execute permissions to `setup-lean-mcp.sh` and `verify-lean-mcp.sh` in `extensions/core/scripts/`. Both have shebangs but are `-rw-r--r--` unlike all other scripts which are executable. The loader copies permissions verbatim, so fixing the source fixes the deployed copies on next load.
 
 ### 471. Add model: opus to nix agent frontmatter
 - **Effort**: small
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [471_add_model_opus_to_nix_agents/reports/01_nix-agent-frontmatter.md]
 
 **Description**: Add `model: opus` to the YAML frontmatter of `nix-research-agent.md` and `nix-implementation-agent.md`. All other research/implementation agents declare this field explicitly per the agent-frontmatter-standard. Functionally harmless (defaults to opus) but inconsistent with the documented standard.
 

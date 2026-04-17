@@ -25,20 +25,36 @@
     {
       "project_number": 472,
       "project_name": "fix_lean_mcp_script_permissions",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-17T06:41:09Z",
-      "last_updated": "2026-04-17T14:29:03Z",
-      "session_id": "sess_1713248200_res472"
+      "last_updated": "2026-04-17T14:32:19Z",
+      "session_id": "sess_1713248200_res472",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/472_fix_lean_mcp_script_permissions/reports/01_script-permissions-fix.md",
+          "type": "research",
+          "summary": "Research on fixing lean MCP script permissions"
+        }
+      ]
     },
     {
       "project_number": 471,
       "project_name": "add_model_opus_to_nix_agents",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-17T06:41:09Z",
-      "last_updated": "2026-04-17T14:29:03Z",
-      "session_id": "sess_1713248200_res471"
+      "last_updated": "2026-04-17T14:37:27Z",
+      "session_id": "sess_1713248200_res471",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/471_add_model_opus_to_nix_agents/reports/01_nix-agent-frontmatter.md",
+          "type": "research",
+          "summary": "Research on adding model: opus to nix agent frontmatter"
+        }
+      ]
     },
     {
       "project_number": 470,
