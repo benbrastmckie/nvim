@@ -1,5 +1,5 @@
 ---
-next_project_number: 470
+next_project_number: 475
 ---
 
 # TODO
@@ -10,6 +10,11 @@ next_project_number: 470
 
 ### Pending
 
+- **474** [NOT STARTED] -- Create core extension README.md
+- **473** [NOT STARTED] -- Clean up stale permissions in settings.local.json
+- **472** [NOT STARTED] -- Fix lean MCP script permissions
+- **471** [NOT STARTED] -- Add model: opus to nix agent frontmatter
+- **470** [NOT STARTED] -- Fix loader to handle root-level context files
 - **469** [PLANNED] -- Systematically review agent system post-refactor
 - **468** [NOT STARTED] -- Document extension loader architecture
 - **467** [COMPLETED] -- Move remaining root files to extensions/core/
@@ -17,6 +22,41 @@ next_project_number: 470
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 474. Create core extension README.md
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Create a README.md for the core extension at `extensions/core/README.md`. The core extension currently fails `check-extension-docs.sh` because it has no README. This is a ROADMAP item for doc generation. The README should document core's role as the foundational system payload (not a peer extension), its provides categories, and why it has no routing block.
+
+### 473. Clean up stale permissions in settings.local.json
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Remove 40+ accumulated stale bash permission entries from `settings.local.json`. These are operational artifacts from past agent sessions (specific mv commands, specs directory paths for completed tasks, shell loop constructs). They add noise and should be pruned to keep the file auditable.
+
+### 472. Fix lean MCP script permissions
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Add execute permissions to `setup-lean-mcp.sh` and `verify-lean-mcp.sh` in `extensions/core/scripts/`. Both have shebangs but are `-rw-r--r--` unlike all other scripts which are executable. The loader copies permissions verbatim, so fixing the source fixes the deployed copies on next load.
+
+### 471. Add model: opus to nix agent frontmatter
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Add `model: opus` to the YAML frontmatter of `nix-research-agent.md` and `nix-implementation-agent.md`. All other research/implementation agents declare this field explicitly per the agent-frontmatter-standard. Functionally harmless (defaults to opus) but inconsistent with the documented standard.
+
+### 470. Fix loader to handle root-level context files
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+
+**Description**: Fix `copy_context_dirs()` in `lua/neotex/plugins/ai/shared/extensions/loader.lua` to deploy individual files at the context root, not just subdirectories. Currently `vim.fn.isdirectory()` check silently skips root-level files like README.md, routing.md, and validation.md. The core manifest's `provides.context` only lists subdirectory names, so root files have no deployment path. Either add a `root_files` list within context provides, or have the loader scan for files alongside directories.
 
 ### 469. Systematically review agent system post-refactor for errors and improvements
 - **Effort**: TBD
