@@ -5,10 +5,13 @@
     {
       "project_number": 469,
       "project_name": "review_agent_system_post_refactor",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-17T06:19:50Z",
-      "last_updated": "2026-04-17T06:19:50Z"
+      "last_updated": "2026-04-17T06:30:26Z",
+      "session_id": "sess_1776406885_fb2cf2",
+      "researched": "2026-04-17T06:30:26Z",
+      "next_artifact_number": 2
     },
     {
       "project_number": 468,
