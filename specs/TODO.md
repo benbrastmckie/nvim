@@ -39,7 +39,7 @@ next_project_number: 464
 
 ### 462. Fix duplicate step numbering in extension-system.md load and unload flows
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [specs/462_fix_extension_system_step_numbering/reports/01_step-numbering-fix.md]
 - **Plan**: [462_fix_extension_system_step_numbering/plans/01_step-numbering-fix.md]
@@ -48,19 +48,21 @@ next_project_number: 464
 
 ### 461. Review and refactor picker cursor restoration implementation
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Research**: [specs/461_refactor_picker_cursor_restore/reports/01_picker-cursor-restore.md]
 - **Plan**: [461_refactor_picker_cursor_restore/plans/01_picker-cursor-restore.md]
+- **Summary**: [461_refactor_picker_cursor_restore/summaries/01_picker-cursor-restore-summary.md]
 
 **Description**: Review and refactor cursor restoration in commands picker and extensions picker. Systematically review all elements touched during the cursor-position-restore feature implementation: (1) lua/neotex/plugins/ai/claude/commands/picker/init.lua - verify the register_completion_callback + vim.schedule + set_selection approach works correctly with descending sorting_strategy, clean up any unnecessary variable captures (the ext/actions.close reorder on line 164-168), ensure the _restore_extension_name convention is documented; (2) lua/neotex/plugins/ai/shared/extensions/picker.lua - verify this file is fully clean and matches its original state with no leftover artifacts from the debugging session; (3) Consider whether the same cursor-restore pattern should be applied to other close/reopen cycles in the commands picker (Ctrl-l load artifact, Ctrl-u update, Ctrl-s save, Load All - lines 100-228) for consistency; (4) Evaluate whether the restore logic should be extracted into a shared helper since both the commands picker and extensions picker have close/reopen patterns; (5) Verify the approach works for the OpenCode equivalent picker if one exists at lua/neotex/plugins/ai/opencode/commands/picker/init.lua.
 
 ### 460. Fix link-artifact-todo.sh missing fallback to Description
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [specs/460_fix_link_artifact_todo_fallback/reports/01_link-artifact-fallback.md]
 - **Plan**: [460_fix_link_artifact_todo_fallback/plans/01_link-artifact-fallback.md]
+- **Summary**: [460_fix_link_artifact_todo_fallback/summaries/01_link-artifact-fallback-summary.md]
 
 **Description**: Fix link-artifact-todo.sh: when /research inserts a Research link, it passes next_field="**Plan**" as the insertion anchor. On tasks that have never been planned, no **Plan** line exists in TODO.md, so the script fails with "could not find insertion point". The error message mentions **Description** as a fallback but the code never actually searches for it. Add a fallback chain so that when the primary next_field is not found, the script tries **Description** (which always exists). /plan and /implement are not affected since they already use next_field="**Description**".
 

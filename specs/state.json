@@ -58,10 +58,10 @@
     {
       "project_number": 462,
       "project_name": "fix_extension_system_step_numbering",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-17T00:23:41Z",
-      "last_updated": "2026-04-17T00:39:54Z",
+      "last_updated": "2026-04-17T00:44:29Z",
       "session_id": "sess_1776385923_14c03e",
       "next_artifact_number": 2,
       "artifacts": [
@@ -74,6 +74,11 @@
           "path": "specs/462_fix_extension_system_step_numbering/plans/01_step-numbering-fix.md",
           "type": "plan",
           "summary": "Single-phase plan to renumber duplicate step numbers in extension-system.md"
+        },
+        {
+          "path": "specs/462_fix_extension_system_step_numbering/summaries/01_step-numbering-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for step numbering fix"
         }
       ],
       "plan_metadata": {
@@ -82,15 +87,17 @@
         "complexity": "simple",
         "research_integrated": true,
         "plan_version": 1
-      }
+      },
+      "completion_summary": "Fixed duplicate step numbering in extension-system.md: load flow renumbered to 1-10, unload flow renumbered to 1-6.",
+      "claudemd_suggestions": "Fixed step numbering in .claude/docs/architecture/extension-system.md load/unload process sections"
     },
     {
       "project_number": 461,
       "project_name": "refactor_picker_cursor_restore",
-      "status": "planned",
+      "status": "completed",
       "task_type": "neovim",
       "created": "2026-04-17T00:21:42Z",
-      "last_updated": "2026-04-17T00:40:23Z",
+      "last_updated": "2026-04-17T00:43:59Z",
       "session_id": "sess_1776385923_14c03e",
       "next_artifact_number": 2,
       "artifacts": [
@@ -103,6 +110,11 @@
           "path": "specs/461_refactor_picker_cursor_restore/plans/01_picker-cursor-restore.md",
           "type": "plan",
           "summary": "1-phase plan to add clarifying comment and commit cursor-restore implementation"
+        },
+        {
+          "path": "specs/461_refactor_picker_cursor_restore/summaries/01_picker-cursor-restore-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for picker cursor restore refactor"
         }
       ],
       "memory_candidates": [
@@ -132,16 +144,17 @@
             1
           ]
         ]
-      }
+      },
+      "completion_summary": "Committed cursor-restore implementation with close-reorder safety fix, simplified extension status indicators, and added clarifying comment explaining the design rationale."
     },
     {
       "project_number": 460,
       "project_name": "fix_link_artifact_todo_fallback",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Fix link-artifact-todo.sh: when /research inserts a Research link, it passes next_field=\"**Plan**\" as the insertion anchor. On tasks that have never been planned, no **Plan** line exists in TODO.md, so the script fails with \"could not find insertion point\". The error message mentions **Description** as a fallback but the code never actually searches for it. Add a fallback chain so that when the primary next_field is not found, the script tries **Description** (which always exists). /plan and /implement are not affected since they already use next_field=\"**Description**\".",
       "created": "2026-04-16T23:40:00Z",
-      "last_updated": "2026-04-17T00:40:23Z",
+      "last_updated": "2026-04-17T00:48:18Z",
       "session_id": "sess_1776385923_14c03e",
       "next_artifact_number": 2,
       "artifacts": [
@@ -154,6 +167,11 @@
           "path": "specs/460_fix_link_artifact_todo_fallback/plans/01_link-artifact-fallback.md",
           "type": "plan",
           "summary": "2-phase plan to add Description fallback chain in link-artifact-todo.sh"
+        },
+        {
+          "path": "specs/460_fix_link_artifact_todo_fallback/summaries/01_link-artifact-fallback-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for Description fallback fix in link-artifact-todo.sh"
         }
       ],
       "plan_metadata": {
@@ -170,7 +188,8 @@
             2
           ]
         ]
-      }
+      },
+      "completion_summary": "Added **Description** fallback chain to link-artifact-todo.sh in Case 1 and Case 3, fixing /research postflight failure on unplanned tasks. Applied identical fix to Zed copy."
     },
     {
       "project_number": 459,

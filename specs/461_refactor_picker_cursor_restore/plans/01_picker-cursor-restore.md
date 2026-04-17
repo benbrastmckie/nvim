@@ -1,7 +1,7 @@
 # Implementation Plan: Review and Refactor Picker Cursor Restoration
 
 - **Task**: 461 - Review and refactor picker cursor restoration
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/461_refactor_picker_cursor_restore/reports/01_picker-cursor-restore.md

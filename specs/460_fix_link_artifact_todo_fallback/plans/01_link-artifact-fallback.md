@@ -1,7 +1,7 @@
 # Implementation Plan: Fix link-artifact-todo.sh Fallback Chain
 
 - **Task**: 460 - fix_link_artifact_todo_fallback
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/460_fix_link_artifact_todo_fallback/reports/01_link-artifact-fallback.md

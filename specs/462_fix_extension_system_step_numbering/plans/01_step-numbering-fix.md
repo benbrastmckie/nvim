@@ -1,7 +1,7 @@
 # Implementation Plan: Task #462
 
 - **Task**: 462 - Fix extension system step numbering
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 0.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/462_fix_extension_system_step_numbering/reports/01_step-numbering-fix.md
@@ -53,7 +53,7 @@ No ROADMAP.md consulted for this trivial documentation fix.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Renumber Steps [NOT STARTED]
+### Phase 1: Renumber Steps [COMPLETED]
 
 **Goal**: Fix all duplicate step numbers in both load and unload flows.
 
