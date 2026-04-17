@@ -5,10 +5,10 @@
     {
       "project_number": 465,
       "project_name": "restructure_core_as_real_extension",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-17T03:40:40Z",
-      "last_updated": "2026-04-17T04:37:46Z",
+      "last_updated": "2026-04-17T04:57:05Z",
       "session_id": "sess_1776400640_d16198",
       "researched": "2026-04-17T04:25:25Z",
       "next_artifact_number": 2,
@@ -22,6 +22,11 @@
           "path": "specs/465_restructure_core_as_real_extension/plans/01_restructure-core-extension.md",
           "type": "plan",
           "summary": "6-phase implementation plan for restructuring core agent system as a real extension"
+        },
+        {
+          "path": "specs/465_restructure_core_as_real_extension/summaries/01_implementation-summary.md",
+          "type": "summary",
+          "summary": "Team implementation: restructured core agent system as real extension"
         }
       ],
       "plan_metadata": {
@@ -55,7 +60,9 @@
             "integrated_date": "2026-04-16"
           }
         ]
-      }
+      },
+      "completed": "2026-04-17T04:57:05Z",
+      "completion_summary": "Restructured core agent system from virtual extension to real physical extension at .claude/extensions/core/. Moved ~203 files, added hooks/docs/templates copy support to loader, removed virtual flag and fast-paths, updated sync system to source from extensions/core/, implemented computed CLAUDE.md generation, and added legacy migration detection."
     },
     {
       "project_number": 464,
