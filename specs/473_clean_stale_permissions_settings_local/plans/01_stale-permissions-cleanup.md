@@ -1,7 +1,7 @@
 # Implementation Plan: Clean Stale Permissions in settings.local.json
 
 - **Task**: 473 - Clean stale permissions in settings.local.json
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/473_clean_stale_permissions_settings_local/reports/01_stale-permissions-audit.md
