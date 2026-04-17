@@ -19682,3 +19682,19 @@
 [2026-04-17T08:12:14-07:00] Task directory: specs/473_clean_stale_permissions_settings_local
 [2026-04-17T08:12:14-07:00] Loop guard triggered: 3 >= 3
 [2026-04-17T08:12:14-07:00] Loop guard prevented continuation
+[2026-04-17T08:22:30-07:00] Postflight marker found at: specs/473_clean_stale_permissions_settings_local/.postflight-pending
+[2026-04-17T08:22:30-07:00] Task directory: specs/473_clean_stale_permissions_settings_local
+[2026-04-17T08:22:30-07:00] Loop guard initialized to 1
+[2026-04-17T08:22:30-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-17T08:23:24-07:00] Postflight marker found at: specs/473_clean_stale_permissions_settings_local/.postflight-pending
+[2026-04-17T08:23:24-07:00] Task directory: specs/473_clean_stale_permissions_settings_local
+[2026-04-17T08:23:24-07:00] Loop guard incremented to 2
+[2026-04-17T08:23:24-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-17T08:23:35-07:00] Postflight marker found at: specs/473_clean_stale_permissions_settings_local/.postflight-pending
+[2026-04-17T08:23:35-07:00] Task directory: specs/473_clean_stale_permissions_settings_local
+[2026-04-17T08:23:35-07:00] Loop guard incremented to 3
+[2026-04-17T08:23:35-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-17T08:23:44-07:00] Postflight marker found at: specs/473_clean_stale_permissions_settings_local/.postflight-pending
+[2026-04-17T08:23:44-07:00] Task directory: specs/473_clean_stale_permissions_settings_local
+[2026-04-17T08:23:44-07:00] Loop guard triggered: 3 >= 3
+[2026-04-17T08:23:44-07:00] Loop guard prevented continuation

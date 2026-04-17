@@ -52,7 +52,7 @@
         {
           "path": "specs/473_clean_stale_permissions_settings_local/summaries/01_stale-permissions-cleanup-summary.md",
           "type": "summary",
-          "summary": "Removed 44 stale permission entries, reduced permissions.allow from 52 to 8 entries"
+          "summary": "Implementation summary for stale permissions cleanup"
         }
       ],
       "completed": "2026-04-17T15:25:00Z",
