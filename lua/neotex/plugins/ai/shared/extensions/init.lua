@@ -176,6 +176,50 @@ local function reverse_merge_targets(ext_manifest, merged_sections, project_dir,
   end
 end
 
+--- Detect whether a project has legacy core files without extensions.json entry.
+--- A "legacy core" repo is one where core agent files exist directly under .claude/
+--- (e.g., .claude/agents/ contains .md files) but extensions.json does not list
+--- core as loaded. This indicates a pre-migration repo that has not yet been updated
+--- to the real-extension model.
+--- @param project_dir string Project root directory
+--- @param config table Extension system configuration
+--- @return boolean is_legacy True when legacy core files are detected
+--- @return string|nil detail Human-readable description of what was found
+local function detect_legacy_core(project_dir, config)
+  local target_dir = project_dir .. "/" .. config.base_dir
+
+  -- Check whether core is already tracked in extensions.json
+  local state = state_mod.read(project_dir, config)
+  if state_mod.is_loaded(state, "core") then
+    -- Core is already managed by the extension system; no legacy detection needed
+    return false, nil
+  end
+
+  -- Check for the most reliable indicator: agent files in the base .claude/agents/ dir.
+  -- In the new architecture these live in extensions/core/ and are installed by the loader.
+  -- Their presence in the root agents/ dir without an extensions.json entry is the telltale.
+  local agents_dir = target_dir .. "/agents"
+  if vim.fn.isdirectory(agents_dir) == 1 then
+    local handle = vim.loop.fs_scandir(agents_dir)
+    if handle then
+      while true do
+        local name, type = vim.loop.fs_scandir_next(handle)
+        if not name then
+          break
+        end
+        if type == "file" and name:match("%.md$") and name ~= ".gitkeep" then
+          return true, string.format(
+            "Legacy core detected: '%s/%s' exists without extensions.json entry",
+            agents_dir, name
+          )
+        end
+      end
+    end
+  end
+
+  return false, nil
+end
+
 --- Create an extension manager instance with the given configuration
 --- @param config table Extension system configuration from config.lua
 --- @return table manager Extension manager with load, unload, reload, etc.
@@ -223,6 +267,25 @@ function M.create(config)
     local state = state_mod.read(project_dir, config)
     if state_mod.is_loaded(state, extension_name) then
       return false, "Extension already loaded: " .. extension_name
+    end
+
+    -- Migration detection: when loading core into a repo that has legacy-style core
+    -- files (pre-migration repos with files directly under .claude/ without an
+    -- extensions.json entry), notify the user. The loader will still proceed and
+    -- overwrite conflicts as usual -- the conflict count in the confirmation dialog
+    -- communicates this to the user. This is not an error condition.
+    if extension_name == "core" then
+      local is_legacy, legacy_detail = detect_legacy_core(project_dir, config)
+      if is_legacy then
+        vim.schedule(function()
+          vim.notify(
+            "Migration notice: This repo has legacy core files (pre-extension-system).\n"
+              .. "Loading core will migrate them to extension-managed files.\n"
+              .. (legacy_detail or ""),
+            vim.log.levels.INFO
+          )
+        end)
+      end
     end
 
     -- Dependency resolution: auto-load declared dependencies before proceeding

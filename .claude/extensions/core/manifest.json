@@ -124,6 +124,7 @@
     ],
     "docs": "docs",
     "templates": [
+      "claudemd-header.md",
       "extension-readme-template.md",
       "settings.json"
     ]

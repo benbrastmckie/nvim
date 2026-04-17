@@ -1,7 +1,7 @@
 # Implementation Plan: Restructure Core Agent System as Real Extension
 
 - **Task**: 465 - Restructure core agent system as a real extension
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: Task 464 (manifest-driven allow-list sync) completed
 - **Research Inputs**: reports/01_team-research.md
@@ -230,7 +230,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 6: Migration Support and Cleanup [NOT STARTED]
+### Phase 6: Migration Support and Cleanup [COMPLETED]
 
 **Goal**: Handle existing repos that have core files in `.claude/` but no `extensions.json` entry, and clean up any remaining artifacts from the virtual approach.
 

@@ -911,6 +911,35 @@ function M.load_all_globally(config)
   -- Scan all artifact types using config-appropriate base_dir
   local all_artifacts = M.scan_all_artifacts(global_dir, project_dir, config)
 
+  -- Migration notice: detect repos with old-style core files (pre-extension-system layout).
+  -- A legacy repo has .claude/agents/ files without an extensions.json core entry.
+  -- We log a notice but do not block sync -- the overwrite dialog handles conflict resolution.
+  if base_dir == ".claude" then
+    local agents_dir = project_dir .. "/" .. base_dir .. "/agents"
+    local ext_json_path = project_dir .. "/" .. base_dir .. "/extensions.json"
+    if vim.fn.isdirectory(agents_dir) == 1 then
+      -- Check whether core is tracked in extensions.json
+      local is_core_tracked = false
+      local ext_file = io.open(ext_json_path, "r")
+      if ext_file then
+        local ext_content = ext_file:read("*all")
+        ext_file:close()
+        local ok_ext, ext_data = pcall(vim.json.decode, ext_content)
+        if ok_ext and type(ext_data) == "table" and type(ext_data.extensions) == "table" then
+          is_core_tracked = ext_data.extensions.core ~= nil
+        end
+      end
+      if not is_core_tracked then
+        helpers.notify(
+          "Migration notice: This repo has legacy core files (pre-extension-system layout).\n"
+            .. "Sync will update them to the current versions. To use the full extension\n"
+            .. "system, load core via the extension picker after syncing.",
+          "INFO"
+        )
+      end
+    end
+  end
+
   -- Count totals
   local total_files = 0
   local total_copy = 0

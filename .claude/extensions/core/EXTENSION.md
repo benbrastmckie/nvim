@@ -37,7 +37,7 @@ via the extension loader while maintaining full backward compatibility.
 
 ## Usage Notes
 
-- This extension is always active (virtual in pre-migration systems, real extension post-migration)
+- This extension is always active and is the foundational layer for all other extensions
 - All core commands (e.g., `/implement`, `/research`) are defined here
 - Context files are auto-loaded by agents via the context index
 - Scripts are callable from hooks and other scripts using the extension-relative path
