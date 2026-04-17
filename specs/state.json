@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 462,
+  "next_project_number": 463,
   "active_projects": [
+    {
+      "project_number": 462,
+      "project_name": "fix_extension_system_step_numbering",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-17T00:23:41Z",
+      "last_updated": "2026-04-17T00:23:41Z"
+    },
     {
       "project_number": 461,
       "project_name": "refactor_picker_cursor_restore",

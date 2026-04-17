@@ -1,5 +1,5 @@
 ---
-next_project_number: 462
+next_project_number: 463
 ---
 
 # TODO
@@ -27,6 +27,13 @@ next_project_number: 462
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 462. Fix duplicate step numbering in extension-system.md load and unload flows
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Fix duplicate step "3" in `.claude/docs/architecture/extension-system.md`. The load flow has two steps numbered "3" (check_conflicts and copy files) and the unload flow has two steps numbered "3" (remove merged content and remove files). This was caused by inserting new dependency resolution steps (step 2 in load, step 2 in unload) without renumbering subsequent steps. Fix: renumber load flow steps after "Resolve dependencies" to 3, 4, 5, 6, 7, 8, 9, 10 and unload flow steps after "Check reverse dependencies" to 3, 4, 5, 6. Reference fix already applied in `~/.config/zed/.claude/docs/architecture/extension-system.md` (task 74)
 
 ### 461. Review and refactor picker cursor restoration implementation
 - **Effort**: small
