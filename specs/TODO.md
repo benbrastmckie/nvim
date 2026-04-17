@@ -12,7 +12,7 @@ next_project_number: 475
 
 - **474** [NOT STARTED] -- Create core extension README.md
 - **473** [NOT STARTED] -- Clean up stale permissions in settings.local.json
-- **472** [PLANNING] -- Fix lean MCP script permissions
+- **472** [PLANNED] -- Fix lean MCP script permissions
 - **471** [PLANNED] -- Add model: opus to nix agent frontmatter
 - **470** [PLANNING] -- Fix loader to handle root-level context files
 - **469** [COMPLETED] -- Systematically review agent system post-refactor
@@ -40,9 +40,10 @@ next_project_number: 475
 
 ### 472. Fix lean MCP script permissions
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [472_fix_lean_mcp_script_permissions/reports/01_script-permissions-fix.md]
+- **Plan**: [472_fix_lean_mcp_script_permissions/plans/01_script-permissions-fix.md]
 
 **Description**: Add execute permissions to `setup-lean-mcp.sh` and `verify-lean-mcp.sh` in `extensions/core/scripts/`. Both have shebangs but are `-rw-r--r--` unlike all other scripts which are executable. The loader copies permissions verbatim, so fixing the source fixes the deployed copies on next load.
 
@@ -127,6 +128,7 @@ Lives in `.claude/` AFTER extensions are loaded — commands, agents, skills, ru
 - **Task Type**: meta
 - **Parent Task**: 465
 - **Research**: [466_convert_core_index_entries/reports/01_convert-merge-targets.md]
+- **Plan**: [466_convert_core_index_entries/plans/01_convert-merge-targets.md]
 
 **Description**: Convert `core-index-entries.json` from a static fixture (special-cased in `init.lua:451-462`) to a standard `merge_targets` entry in the core extension manifest. Currently the core extension uses a hardcoded path to `.claude/context/core-index-entries.json` which is loaded via special-case code in the extension loader. This should instead use the standard `merge_targets` mechanism that other extensions use (e.g., `index-entries.json` merged into `context/index.json`). This eliminates the last piece of core-specific special-casing in the loader and makes core fully uniform with other extensions. Follow-up to task 465 (restructure core as real extension).
 

@@ -25,10 +25,10 @@
     {
       "project_number": 472,
       "project_name": "fix_lean_mcp_script_permissions",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-17T06:41:09Z",
-      "last_updated": "2026-04-17T14:38:02Z",
+      "last_updated": "2026-04-17T14:39:32Z",
       "session_id": "sess_1713249000_plan472",
       "next_artifact_number": 2,
       "artifacts": [
@@ -36,8 +36,35 @@
           "path": "specs/472_fix_lean_mcp_script_permissions/reports/01_script-permissions-fix.md",
           "type": "research",
           "summary": "Research on fixing lean MCP script permissions"
+        },
+        {
+          "path": "specs/472_fix_lean_mcp_script_permissions/plans/01_script-permissions-fix.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for fixing execute permissions on Lean MCP scripts"
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 2,
+        "total_effort_hours": 0.5,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_script-permissions-fix.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-16"
+          }
+        ]
+      }
     },
     {
       "project_number": 471,
@@ -382,6 +409,11 @@
           "path": "specs/466_convert_core_index_entries/reports/01_convert-merge-targets.md",
           "type": "research",
           "summary": "Research on converting core-index-entries.json to standard merge_targets"
+        },
+        {
+          "path": "specs/466_convert_core_index_entries/plans/01_convert-merge-targets.md",
+          "type": "plan",
+          "summary": "4-phase plan: relocate file + update manifest, remove special-case init.lua code, update 5 docs, verify end-to-end"
         }
       ],
       "session_id": "sess_1713249000_plan466",
@@ -399,7 +431,35 @@
             "merge"
           ]
         }
-      ]
+      ],
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 1,
+        "complexity": "simple",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_convert-merge-targets.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-04-16"
+          }
+        ]
+      }
     }
   ],
   "completed_projects": [],
