@@ -19911,3 +19911,5 @@
 [2026-04-18T10:46:51-07:00] Loop guard triggered: 3 >= 3
 [2026-04-18T10:46:51-07:00] Loop guard prevented continuation
 [2026-04-18T10:47:02-07:00] No postflight marker, allowing stop
+[2026-04-18T10:51:31-07:00] No postflight marker, allowing stop
+[2026-04-18T10:55:01-07:00] No postflight marker, allowing stop

@@ -10,7 +10,7 @@ next_project_number: 477
 
 ### Pending
 
-- **476** [IMPLEMENTING] -- Consolidate extension system documentation into single source of truth
+- **476** [COMPLETED] -- Consolidate extension system documentation into single source of truth
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -18,10 +18,11 @@ next_project_number: 477
 
 ### 476. Consolidate extension system documentation into single source of truth
 - **Effort**: Medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [476_consolidate_extension_system_docs/reports/01_consolidate-ext-docs.md]
 - **Plan**: [476_consolidate_extension_system_docs/plans/01_consolidate-ext-docs.md]
+- **Summary**: [476_consolidate_extension_system_docs/summaries/01_consolidate-ext-docs-summary.md]
 
 **Description**: Consolidate extension system documentation into a single source of truth to eliminate contradictions between `docs/architecture/extension-system.md`, `context/guides/extension-development.md`, and `docs/guides/creating-extensions.md`. The files have drifted out of sync -- some describe CLAUDE.md as a computed artifact via `generate_claudemd()` while others regress to the old section-injection approach. Additional inconsistencies exist in conflict handling behavior, `provides` field coverage, loader function documentation, and validator expectations vs actual index.json schema.
 
