@@ -20013,3 +20013,35 @@
 [2026-04-18T14:12:20-07:00] Task directory: specs/478_editor_agnostic_extension_docs
 [2026-04-18T14:12:20-07:00] Loop guard triggered: 3 >= 3
 [2026-04-18T14:12:20-07:00] Loop guard prevented continuation
+[2026-04-18T14:35:27-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:35:27-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:35:27-07:00] Loop guard initialized to 1
+[2026-04-18T14:35:27-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T14:35:31-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:35:31-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:35:31-07:00] Loop guard incremented to 2
+[2026-04-18T14:35:31-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T14:35:34-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:35:34-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:35:34-07:00] Loop guard incremented to 3
+[2026-04-18T14:35:34-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T14:36:06-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:36:06-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:36:06-07:00] Loop guard triggered: 3 >= 3
+[2026-04-18T14:36:06-07:00] Loop guard prevented continuation
+[2026-04-18T14:41:59-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:41:59-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:41:59-07:00] Loop guard initialized to 1
+[2026-04-18T14:41:59-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T14:42:02-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:42:02-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:42:02-07:00] Loop guard incremented to 2
+[2026-04-18T14:42:02-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T14:42:04-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:42:04-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:42:04-07:00] Loop guard incremented to 3
+[2026-04-18T14:42:04-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T14:42:07-07:00] Postflight marker found at: specs/479_fix_remaining_nvim_refs_in_core_ext/.postflight-pending
+[2026-04-18T14:42:07-07:00] Task directory: specs/479_fix_remaining_nvim_refs_in_core_ext
+[2026-04-18T14:42:07-07:00] Loop guard triggered: 3 >= 3
+[2026-04-18T14:42:07-07:00] Loop guard prevented continuation

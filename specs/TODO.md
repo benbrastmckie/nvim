@@ -18,9 +18,10 @@ next_project_number: 480
 
 ### 479. Fix remaining nvim-specific references in core extension sources
 - **Effort**: Small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [specs/479_fix_remaining_nvim_refs_in_core_ext/reports/01_nvim-refs-audit.md]
+- **Plan**: [479_fix_remaining_nvim_refs_in_core_ext/plans/01_fix-nvim-refs.md]
 
 **Description**: Fix remaining nvim/neotex references in core extension source files that were missed by task 478 and cause re-contamination on reload: (1) Replace "neotex extension loader" with "extension loader" in templates/claudemd-header.md, (2) Replace "Neovim Lua loader" with "extension loader" in context/guides/extension-development.md, (3) Replace "neovim" in extension example lists in context/architecture/system-overview.md, docs/architecture/system-overview.md, and merge-sources/claudemd.md with generic alternatives, (4) Fix meta-guide.md bug where ".claude/docs/README.md" was changed to duplicate ".claude/README.md, .claude/README.md", (5) Mirror all source changes to deployed copies. Root cause identified in zed post-reload audit report.
 
