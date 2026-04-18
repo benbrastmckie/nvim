@@ -19946,3 +19946,19 @@
 [2026-04-18T12:39:10-07:00] Task directory: specs/477_fix_generated_claudemd_and_restore_readme
 [2026-04-18T12:39:10-07:00] Loop guard triggered: 3 >= 3
 [2026-04-18T12:39:10-07:00] Loop guard prevented continuation
+[2026-04-18T12:44:16-07:00] Postflight marker found at: specs/477_fix_generated_claudemd_and_restore_readme/.postflight-pending
+[2026-04-18T12:44:16-07:00] Task directory: specs/477_fix_generated_claudemd_and_restore_readme
+[2026-04-18T12:44:16-07:00] Loop guard initialized to 1
+[2026-04-18T12:44:16-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T12:44:19-07:00] Postflight marker found at: specs/477_fix_generated_claudemd_and_restore_readme/.postflight-pending
+[2026-04-18T12:44:19-07:00] Task directory: specs/477_fix_generated_claudemd_and_restore_readme
+[2026-04-18T12:44:19-07:00] Loop guard incremented to 2
+[2026-04-18T12:44:19-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T12:44:22-07:00] Postflight marker found at: specs/477_fix_generated_claudemd_and_restore_readme/.postflight-pending
+[2026-04-18T12:44:22-07:00] Task directory: specs/477_fix_generated_claudemd_and_restore_readme
+[2026-04-18T12:44:22-07:00] Loop guard incremented to 3
+[2026-04-18T12:44:22-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-18T12:44:24-07:00] Postflight marker found at: specs/477_fix_generated_claudemd_and_restore_readme/.postflight-pending
+[2026-04-18T12:44:24-07:00] Task directory: specs/477_fix_generated_claudemd_and_restore_readme
+[2026-04-18T12:44:24-07:00] Loop guard triggered: 3 >= 3
+[2026-04-18T12:44:24-07:00] Loop guard prevented continuation

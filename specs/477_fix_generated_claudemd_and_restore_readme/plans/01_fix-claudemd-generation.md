@@ -1,7 +1,7 @@
 # Implementation Plan: Task #477
 
 - **Task**: 477 - Fix generated CLAUDE.md duplicate header, restore README.md, and improve generation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/477_fix_generated_claudemd_and_restore_readme/reports/01_fix-claudemd-generation.md

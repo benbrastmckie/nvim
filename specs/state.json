@@ -5,10 +5,10 @@
     {
       "project_number": 477,
       "project_name": "fix_generated_claudemd_and_restore_readme",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-18T19:25:18Z",
-      "last_updated": "2026-04-18T19:39:21Z",
+      "last_updated": "2026-04-18T19:44:36Z",
       "session_id": "sess_1776540520_11e735",
       "memory_candidates": [
         {
@@ -32,8 +32,15 @@
           "path": "specs/477_fix_generated_claudemd_and_restore_readme/plans/01_fix-claudemd-generation.md",
           "type": "plan",
           "summary": "2-phase plan to fix duplicate header in generated CLAUDE.md, update broken README references, and add root README reference"
+        },
+        {
+          "path": "specs/477_fix_generated_claudemd_and_restore_readme/summaries/01_fix-claudemd-generation-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for fixing duplicate header and broken references in generated CLAUDE.md"
         }
-      ]
+      ],
+      "completion_summary": "Fixed duplicate # Agent System heading in generated .claude/CLAUDE.md by removing it from merge-source, updated 2 broken @.claude/README.md references to @.claude/docs/README.md, and added @README.md to Context Imports.",
+      "claudemd_suggestions": "Removed duplicate heading from claudemd.md merge-source, fixed 2 broken @.claude/README.md references to @.claude/docs/README.md, added @README.md to Context Imports in both merge-source and generated CLAUDE.md"
     },
     {
       "project_number": 476,

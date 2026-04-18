@@ -18,10 +18,11 @@ next_project_number: 478
 
 ### 477. Fix generated CLAUDE.md duplicate header, restore README.md, and improve generation
 - **Effort**: Medium
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [477_fix_generated_claudemd_and_restore_readme/reports/01_fix-claudemd-generation.md]
 - **Plan**: [477_fix_generated_claudemd_and_restore_readme/plans/01_fix-claudemd-generation.md]
+- **Summary**: [477_fix_generated_claudemd_and_restore_readme/summaries/01_fix-claudemd-generation-summary.md]
 
 **Description**: Fix the generated `.claude/CLAUDE.md` file which has a duplicate header (lines 1-10). Restore the missing `.claude/README.md` from git history and update it for accuracy. Add a reference to the root `README.md` in the generated CLAUDE.md. Review the generated CLAUDE.md for additional improvements to how the file is produced.
 
