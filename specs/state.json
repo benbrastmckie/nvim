@@ -5,11 +5,11 @@
     {
       "project_number": 475,
       "project_name": "review_extension_docs_and_manifests",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-17T16:38:06Z",
-      "last_updated": "2026-04-17T17:46:51Z",
-      "session_id": "sess_1776447597_2fa5aa",
+      "last_updated": "2026-04-18T00:13:25Z",
+      "session_id": "sess_1776470296_ed2c2e",
       "researched": "2026-04-17T17:06:13Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -22,6 +22,28 @@
           "path": "specs/475_review_extension_docs_and_manifests/plans/01_extension-docs-review.md",
           "type": "plan",
           "summary": "Implementation plan with 4 phases: loading safety, stale content fixes, present README expansion, and cross-linking"
+        },
+        {
+          "path": "specs/475_review_extension_docs_and_manifests/summaries/01_extension-docs-review-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for extension docs review"
+        }
+      ],
+      "completion_summary": "Reviewed and corrected extension documentation across 7 files: removed README.md loading risks from core manifest and install script, fixed stale content in memory/nix/founder READMEs, expanded present/README.md for template compliance, added cross-linking to extension hub. check-extension-docs.sh passes cleanly.",
+      "claudemd_suggestions": "Added routing_exempt field to extension-development.md manifest fields table, fixed stale template reference",
+      "memory_candidates": [
+        {
+          "content": "README.md files listed in manifest.json provides.agents or provides.commands arrays get copied to runtime directories (.claude/agents/, .claude/commands/) by install-extension.sh. This is a documentation loading risk -- README files have no frontmatter and can break agent resolution. Fix: remove from manifest arrays AND add skip logic to install-extension.sh glob loops.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/475_review_extension_docs_and_manifests/summaries/01_extension-docs-review-summary.md",
+          "confidence": 0.85,
+          "suggested_keywords": [
+            "manifest",
+            "README",
+            "install-extension",
+            "loading-safety",
+            "provides-agents"
+          ]
         }
       ]
     },

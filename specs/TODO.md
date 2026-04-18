@@ -10,7 +10,7 @@ next_project_number: 476
 
 ### Pending
 
-- **475** [PLANNED] -- Review extension documentation and manifests
+- **475** [COMPLETED] -- Review extension documentation and manifests
 - **474** [COMPLETED] -- Create core extension README.md
 - **473** [COMPLETED] -- Clean up stale permissions in settings.local.json
 - **472** [COMPLETED] -- Fix lean MCP script permissions
@@ -26,10 +26,11 @@ next_project_number: 476
 
 ### 475. Review extension documentation and manifests
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [475_review_extension_docs_and_manifests/reports/01_team-research.md]
 - **Plan**: [475_review_extension_docs_and_manifests/plans/01_extension-docs-review.md]
+- **Summary**: [475_review_extension_docs_and_manifests/summaries/01_extension-docs-review-summary.md]
 
 **Description**: Systematically review all documentation in .claude/extensions/, making sure each subdirectory has a README.md that is complete, accurate, and consistent with clear cross-linking and a uniform style, including appropriate `routing_exempt` flag to `manifest.json` to avoid loading any files that should not be loaded by the `<leader>ac` picker in neovim
 
@@ -219,7 +220,6 @@ Key changes: (1) Move core files from `.claude/{agents,commands,rules,skills,con
 
 ## Recommended Order
 
-1. **475** -> research (independent)
 Wave 1 (independent, parallel):
 - **466** [COMPLETED] -- Convert core-index-entries.json to merge_targets
 - **470** [NOT STARTED] -- Fix loader root-level context files
