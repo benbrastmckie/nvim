@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 479,
+  "next_project_number": 480,
   "active_projects": [
+    {
+      "project_number": 479,
+      "project_name": "fix_remaining_nvim_refs_in_core_ext",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-18T21:28:28Z",
+      "last_updated": "2026-04-18T21:28:28Z"
+    },
     {
       "project_number": 478,
       "project_name": "editor_agnostic_extension_docs",

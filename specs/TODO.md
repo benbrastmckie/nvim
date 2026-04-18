@@ -1,5 +1,5 @@
 ---
-next_project_number: 479
+next_project_number: 480
 ---
 
 # TODO
@@ -15,6 +15,13 @@ next_project_number: 479
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 479. Fix remaining nvim-specific references in core extension sources
+- **Effort**: Small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Fix remaining nvim/neotex references in core extension source files that were missed by task 478 and cause re-contamination on reload: (1) Replace "neotex extension loader" with "extension loader" in templates/claudemd-header.md, (2) Replace "Neovim Lua loader" with "extension loader" in context/guides/extension-development.md, (3) Replace "neovim" in extension example lists in context/architecture/system-overview.md, docs/architecture/system-overview.md, and merge-sources/claudemd.md with generic alternatives, (4) Fix meta-guide.md bug where ".claude/docs/README.md" was changed to duplicate ".claude/README.md, .claude/README.md", (5) Mirror all source changes to deployed copies. Root cause identified in zed post-reload audit report.
 
 ### 478. Make extension core docs editor-agnostic and handle project-overview.md per-project generation
 - **Effort**: Small
@@ -76,3 +83,7 @@ Scope: (1) Audit the Lua loader implementation for ground truth, (2) designate `
 - **Plan**: [078_fix_himalaya_smtp_authentication_failure/plans/implementation-001.md]
 
 **Description**: Fix Gmail SMTP authentication failure when sending emails via Himalaya (<leader>me). Error: "Authentication failed: Code: 535, Enhanced code: 5.7.8, Message: Username and Password not accepted". The error occurs with TLS connection attempts and persists through multiple retry attempts. Identify and fix the root cause of the SMTP credential configuration.
+
+## Recommended Order
+
+1. **479** -> research (independent)
