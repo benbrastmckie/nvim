@@ -5,10 +5,10 @@
     {
       "project_number": 477,
       "project_name": "fix_generated_claudemd_and_restore_readme",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-18T19:25:18Z",
-      "last_updated": "2026-04-18T19:35:00Z",
+      "last_updated": "2026-04-18T19:39:21Z",
       "session_id": "sess_1776540520_11e735",
       "memory_candidates": [
         {
@@ -26,7 +26,14 @@
           ]
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "artifacts": [
+        {
+          "path": "specs/477_fix_generated_claudemd_and_restore_readme/plans/01_fix-claudemd-generation.md",
+          "type": "plan",
+          "summary": "2-phase plan to fix duplicate header in generated CLAUDE.md, update broken README references, and add root README reference"
+        }
+      ]
     },
     {
       "project_number": 476,
