@@ -140,7 +140,7 @@ For a complete step-by-step creation guide with file templates, agent templates,
 3. Create `EXTENSION.md` with routing tables and skill-agent mapping
 4. Create `index-entries.json` with context load conditions
 5. Create agents in `agents/` and skills in `skills/`
-6. Load via the extension picker (`<leader>ac`)
+6. Load via the extension picker
 
 ## Dependencies
 

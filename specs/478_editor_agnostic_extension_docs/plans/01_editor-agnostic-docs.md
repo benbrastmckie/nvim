@@ -1,7 +1,7 @@
 # Implementation Plan: Make Extension Core Docs Editor-Agnostic
 
 - **Task**: 478 - editor_agnostic_extension_docs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/478_editor_agnostic_extension_docs/reports/01_team-research.md
@@ -60,7 +60,7 @@ No ROADMAP.md items are directly addressed by this task. However, Phase 2's "Ext
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Replace `<leader>ac` in Extension Source Files [NOT STARTED]
+### Phase 1: Replace `<leader>ac` in Extension Source Files [COMPLETED]
 
 **Goal**: Remove all editor-specific keybinding references from the 3 guide/template source files (project-overview.md handled separately in Phase 2).
 

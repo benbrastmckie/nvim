@@ -47,7 +47,7 @@ Delete this comment block when creating a real extension README.
 
 ## Installation
 
-Loaded via `<leader>ac` in Neovim. Once loaded, `<type>` becomes a recognized task type<, and `/<cmd>` becomes available>.
+Loaded via the extension picker. Once loaded, `<type>` becomes a recognized task type<, and `/<cmd>` becomes available>.
 
 ## MCP Tool Setup
 
