@@ -5,10 +5,13 @@
     {
       "project_number": 478,
       "project_name": "editor_agnostic_extension_docs",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-18T20:31:40Z",
-      "last_updated": "2026-04-18T20:31:40Z"
+      "last_updated": "2026-04-18T20:42:45Z",
+      "session_id": "sess_1745005900_a7b3c1",
+      "researched": "2026-04-18T20:42:45Z",
+      "next_artifact_number": 2
     },
     {
       "project_number": 477,

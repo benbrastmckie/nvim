@@ -18,8 +18,9 @@ next_project_number: 479
 
 ### 478. Make extension core docs editor-agnostic and handle project-overview.md per-project generation
 - **Effort**: Small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [specs/478_editor_agnostic_extension_docs/reports/01_team-research.md]
 
 **Description**: Two related changes to prevent nvim-specific contamination when extension core files are synced to other projects: (1) Replace hardcoded `<leader>ac` references with generic "extension picker" language in `extensions/core/` docs (extension-development.md, loader-reference.md, extension-readme-template.md), following the multi-editor pattern already used in extensions/README.md. (2) Exclude project-overview.md from the core extension loader sync -- it describes this repo's specific structure and should not propagate to downstream projects. Instead, provide a stub/template (e.g., update-project.md) that detects when project-overview.md is missing and instructs Claude to suggest generating one based on analysis of the actual project structure. (3) Update deployed copies in `.claude/context/` to match. Existing project-overview.md in this nvim repo remains unchanged.
 
