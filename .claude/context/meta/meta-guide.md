@@ -447,7 +447,7 @@ After your system is generated:
 
 - **Templates**: `.claude/context/templates/`
 - **Meta Agent**: `.claude/agent/subagents/meta.md`
-- **Documentation**: `.claude/README.md`, `.claude/README.md`
+- **Documentation**: `.claude/docs/README.md`, `.claude/README.md`
 - **Patterns**: Review template files for best practices
 
 ---

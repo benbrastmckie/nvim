@@ -195,7 +195,7 @@ Tasks route to specialized skills based on their `task_type` field:
 
 The task type is automatically detected from task description or can be set explicitly.
 
-**Note**: Additional task types (neovim, latex, typst, python, etc.) are available via extensions in `.claude/extensions/`.
+**Note**: Additional task types (nix, latex, typst, python, etc.) are available via extensions in `.claude/extensions/`.
 
 ---
 

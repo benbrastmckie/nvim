@@ -42,7 +42,7 @@ The extension system operates at two distinct layers that serve different audien
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ Layer 1: Neovim Lua Loader                                      │
+│ Layer 1: Extension Loader                                        │
 │ (.claude/extensions/lua/)                                       │
 │                                                                 │
 │  init.lua          manager.load() / manager.unload()           │
@@ -51,7 +51,7 @@ The extension system operates at two distinct layers that serve different audien
 │  state.lua         extensions.json read/write                   │
 │  config.lua        target paths, section prefixes              │
 │                                                                 │
-│  Trigger: Extension picker UI in Neovim                        │
+│  Trigger: Extension picker UI (editor-specific)                │
 └────────────────────────┬────────────────────────────────────────┘
                          │ copies files into
                          ▼

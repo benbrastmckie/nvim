@@ -384,7 +384,7 @@ Tasks route to specialized skills/agents based on their `task_type` field:
 | `meta` | skill-researcher → general-research-agent | skill-planner → planner-agent | skill-implementer → general-implementation-agent |
 | _{extension}_ | _Extension-provided skill → extension agent_ | skill-planner → planner-agent | _Extension-provided skill → extension agent_ |
 
-**Note**: Extensions (e.g., neovim, lean4, latex, typst) add task type routing entries. See `.claude/extensions/*/manifest.json`.
+**Note**: Extensions (e.g., nix, lean4, latex, typst) add task type routing entries. See `.claude/extensions/*/manifest.json`.
 
 ---
 

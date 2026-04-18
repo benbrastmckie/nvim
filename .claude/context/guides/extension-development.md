@@ -8,7 +8,7 @@ Extensions provide task-type-specific and domain-specific capabilities to the co
 
 ## Two-Layer Architecture
 
-The extension system splits across a Neovim Lua loader (Layer 1) that manages which files exist in the `.claude/` runtime, and the `.claude/` agent system (Layer 2) that Claude Code reads. The loader copies files from extension sources into the runtime on load, merges context index entries, and calls `generate_claudemd()` to rebuild `.claude/CLAUDE.md`. On unload, it removes those files and regenerates. Claude Code has no knowledge of the extension system itself -- it only sees the resulting runtime.
+The extension system splits across an extension loader (Layer 1) that manages which files exist in the `.claude/` runtime, and the `.claude/` agent system (Layer 2) that Claude Code reads. The loader copies files from extension sources into the runtime on load, merges context index entries, and calls `generate_claudemd()` to rebuild `.claude/CLAUDE.md`. On unload, it removes those files and regenerates. Claude Code has no knowledge of the extension system itself -- it only sees the resulting runtime.
 
 For complete architecture details, see [Extension System Architecture](../../docs/architecture/extension-system.md).
 
