@@ -4,14 +4,14 @@ Strategic business analysis tools for founders and entrepreneurs. Integrates for
 
 ## What's New in v3.0
 
-- **Unified Phased Workflow**: All 8 commands (market, analyze, strategy, legal, project, deck, finance, sheet) follow the same `/research -> /plan -> /implement` lifecycle
+- **Unified Phased Workflow**: All 9 commands (market, analyze, strategy, legal, project, deck, finance, sheet, consult) follow the same `/research -> /plan -> /implement` lifecycle
 - **Project Command Updated**: `/project` now creates research reports instead of generating timelines directly
 - **Per-Type Routing**: Complete routing table with 5 types across 3 phases (research, plan, implement)
 - **Breaking Changes**: project-agent is now research-only; TRACK/REPORT modes move to `/implement`
 
 ## Overview
 
-This extension provides eight commands for strategic business analysis:
+This extension provides nine commands for strategic business analysis:
 
 | Command | Purpose | Output |
 |---------|---------|--------|
@@ -24,6 +24,7 @@ This extension provides eight commands for strategic business analysis:
 | `/finance` | Financial analysis | Revenue verification, runway analysis |
 | `/sheet` | Cost breakdown spreadsheets | Budget and cost analysis spreadsheets |
 | `/meeting` | Investor meeting note processing | Structured meeting file with YAML frontmatter, CSV tracker update |
+| `/consult` | Collaborative design consultation | Socratic dialogue with domain expert perspective |
 
 ## Installation
 
@@ -228,7 +229,8 @@ founder/
 │   ├── project.md            # /project command (task-integrated)
 │   ├── deck.md               # /deck command (task-integrated)
 │   ├── finance.md            # /finance command (task-integrated)
-│   └── sheet.md              # /sheet command (task-integrated)
+│   ├── sheet.md              # /sheet command (task-integrated)
+│   └── consult.md            # /consult command (standalone immediate-mode)
 │
 ├── skills/                    # Skill wrappers
 │   ├── skill-market/         # Market sizing research
@@ -249,7 +251,11 @@ founder/
 │   │   └── SKILL.md
 │   ├── skill-finance/        # Financial analysis
 │   │   └── SKILL.md
-│   ├── skill-spreadsheet/    # Cost breakdown spreadsheets
+│   ├── skill-founder-spreadsheet/ # Cost breakdown spreadsheets
+│   │   └── SKILL.md
+│   ├── skill-meeting/        # Investor meeting processing
+│   │   └── SKILL.md
+│   ├── skill-consult/        # Design consultation routing
 │   │   └── SKILL.md
 │   ├── skill-founder-plan/   # Shared task planning
 │   │   └── SKILL.md
@@ -266,7 +272,10 @@ founder/
 │   ├── deck-planner-agent.md    # Deck planning agent
 │   ├── deck-builder-agent.md    # Deck building agent
 │   ├── finance-agent.md         # Financial analysis agent
-│   ├── spreadsheet-agent.md     # Cost breakdown agent
+│   ├── financial-analysis-agent.md # Financial analysis verification agent
+│   ├── founder-spreadsheet-agent.md # Cost breakdown agent
+│   ├── legal-analysis-agent.md  # Legal consultation design partner agent
+│   ├── meeting-agent.md         # Investor meeting processing agent
 │   ├── founder-plan-agent.md    # Shared planning agent
 │   └── founder-implement-agent.md # Shared implementation agent
 │
@@ -295,7 +304,7 @@ founder/
 
 ### Standard Phased Workflow (All Commands)
 
-All 5 commands follow the same lifecycle:
+All commands follow the same lifecycle:
 
 ```
 /{command} "description"
@@ -338,6 +347,7 @@ Summary in specs/{NNN}_{SLUG}/summaries/
 | /deck | deck-research-agent | Material synthesis, slide mapping |
 | /finance | finance-agent | Financial verification, runway analysis |
 | /sheet | spreadsheet-agent | Cost breakdown, budget generation |
+| /consult | legal-analysis-agent | Collaborative design consultation (--legal) |
 
 ### Legacy Workflow (--quick)
 

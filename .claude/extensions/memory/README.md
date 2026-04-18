@@ -18,11 +18,12 @@ Everything in this extension comes down to three operations:
 | Operation | Command | When to use |
 |-----------|---------|-------------|
 | **Write** | `/learn <input>` | After finishing work, to capture what you learned |
-| **Read** | `/research N --remember` | Before starting work, to surface relevant prior knowledge |
+| **Read** | Automatic during `/research`, `/plan`, `/implement` | Relevant memories injected into agent context |
 | **Maintain** | `/distill` | Periodically, to assess vault health and run maintenance |
 
-**Important**: Memories are NOT automatically injected into every session. The vault is passive.
-You must pass `--remember` explicitly to have memories included in a research context.
+**Note**: When this extension is loaded, memory retrieval is automatic. The `/research`, `/plan`,
+and `/implement` preflight stages call `memory-retrieve.sh` to inject relevant memories into
+agent context. Use the `--clean` flag to suppress auto-retrieval for a specific invocation.
 
 ---
 
@@ -65,18 +66,18 @@ You always see what it wants to do and can override or skip any segment.
 
 ## Reading Memories
 
-### During Research
+### Automatic Retrieval
+
+When this extension is loaded, memory retrieval happens automatically during `/research`,
+`/plan`, and `/implement`. The preflight stage calls `memory-retrieve.sh` to search the
+vault for memories relevant to the current task and injects them into the agent context
+under a `<memory-context>` section.
+
+To suppress auto-retrieval for a specific invocation, pass the `--clean` flag:
 
 ```bash
-/research N --remember
+/research N --clean    # Skip memory injection
 ```
-
-This searches the vault for memories relevant to task N and includes them in the research
-agent's context under a "Prior Knowledge from Memory Vault" section. The research report
-will reflect what the agent found there.
-
-**The `--remember` flag requires this extension to be loaded.** If the extension is not
-loaded, the flag is silently ignored.
 
 ### Manual Access
 
@@ -86,7 +87,7 @@ Since memories are plain markdown files, you can also:
 - Use grep: `grep -rl "telescope" .memory/10-Memories/`
 - Consult the index: `.memory/20-Indices/index.md`
 
-There is no `/recall` command. Outside of `--remember`, retrieval is a manual operation.
+There is no `/recall` command. Outside of auto-retrieval, manual access is through the filesystem.
 
 ---
 
@@ -207,7 +208,7 @@ backlinks integration but not core functionality.
 
 ## Troubleshooting
 
-### "No memories found" when using --remember
+### "No memories found" during auto-retrieval
 
 1. Is the vault empty? Check: `ls .memory/10-Memories/MEM-*.md`
 2. Are search terms too specific? Try broader terms
@@ -241,7 +242,7 @@ Limit is 200 files. Narrow the path or run multiple `/learn` invocations.
 
 ### When to Read
 
-- Before researching a topic where you might have prior context: `/research N --remember`
+- Memory retrieval is automatic when this extension is loaded -- just run `/research N`
 - When manually starting work on something familiar: browse `.memory/20-Indices/index.md`
 
 ### Writing Effective Memories
@@ -273,9 +274,9 @@ The extension is optimized for under 1000 memories. Periodically:
 
 ## Subdirectories
 
-- [commands/](commands/README.md) - `/learn` command implementation
-- [skills/](skills/README.md) - `skill-memory` skill definition
-- [context/](context/README.md) - Extended usage guides
+- `commands/` - `/learn` command implementation
+- `skills/` - `skill-memory` skill definition
+- `context/` - Extended usage guides
 
 ### Context Documentation
 

@@ -71,6 +71,7 @@ Extensions provide task-type-specific and domain-specific capabilities to the co
 | `provides` | object | Agents, skills, commands, rules, context, scripts, hooks |
 | `routing` | object | Task-type to skill mapping for research/plan/implement |
 | `merge_targets` | object | Source-to-target file mappings for system integration |
+| `routing_exempt` | boolean | If true, extension is excluded from doc-lint routing checks (for resource-only extensions like `slidev`) |
 
 ## Merge Process
 
@@ -249,7 +250,7 @@ The extension picker shows dependency information:
 
 ## Example: Minimal Extension
 
-See `extensions/template/` for a minimal extension structure.
+See `core/templates/extension-readme-template.md` for the README template for new extensions.
 
 ## Troubleshooting
 

@@ -174,8 +174,8 @@ Before adding a package reference to a flake, the research agent verifies existe
 
 - `@.claude/extensions/nix/context/project/nix/domain/nix-language.md`
 - `@.claude/extensions/nix/context/project/nix/domain/flakes.md`
-- `@.claude/extensions/nix/context/project/nix/patterns/modules.md`
-- `@.claude/extensions/nix/context/project/nix/tools/nixos-rebuild.md`
+- `@.claude/extensions/nix/context/project/nix/patterns/module-patterns.md`
+- `@.claude/extensions/nix/context/project/nix/tools/nixos-rebuild-guide.md`
 
 ## References
 
