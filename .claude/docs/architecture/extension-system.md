@@ -549,6 +549,7 @@ Extension files are tracked by git. Use `git checkout HEAD -- .claude/extensions
 - [Creating Extensions](../guides/creating-extensions.md) - Step-by-step guide
 - [Context Loading](../guides/context-loading-best-practices.md) - How agents load context
 - [Loader Reference](../../context/guides/loader-reference.md) - Detailed loader function signatures
+- [Context Index Schema](../../context/index.schema.json) - JSON Schema for index.json validation
 
 ---
 

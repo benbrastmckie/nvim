@@ -110,6 +110,13 @@ check_routing_block() {
   local ext_path="$1"
   local manifest="$ext_path/manifest.json"
 
+  # Skip routing check if extension declares routing_exempt: true
+  local routing_exempt
+  routing_exempt=$(jq -r '.routing_exempt // false' "$manifest" 2>/dev/null)
+  if [[ "$routing_exempt" == "true" ]]; then
+    return 0
+  fi
+
   # If manifest declares non-empty provides.skills, verify routing block exists
   local skill_count
   skill_count=$(jq -r '.provides.skills | length' "$manifest" 2>/dev/null)

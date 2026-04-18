@@ -1,7 +1,7 @@
 # Implementation Plan: Consolidate Extension System Docs
 
 - **Task**: 476 - Consolidate extension system documentation into single source of truth
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/476_consolidate_extension_system_docs/reports/01_consolidate-ext-docs.md
@@ -163,7 +163,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Update project-overview.md and Final Validation [NOT STARTED]
+### Phase 4: Update project-overview.md and Final Validation [COMPLETED]
 
 **Goal**: Ensure project-overview.md cross-references are correct, run all validators, and confirm end-to-end consistency.
 

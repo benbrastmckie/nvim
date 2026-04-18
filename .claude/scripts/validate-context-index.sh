@@ -4,6 +4,9 @@
 #
 # Usage: ./validate-context-index.sh [--fix]
 #
+# Schema: .claude/context/index.schema.json defines the JSON Schema for index.json.
+#         This script performs structural validation independently of ajv.
+#
 # Checks:
 # - JSON syntax validation
 # - All paths in entries exist
