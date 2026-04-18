@@ -111,7 +111,7 @@ Follow the templates below for each file type.
 
 ### EXTENSION.md (Required)
 
-Content added to CLAUDE.md when the extension is loaded (CLAUDE.md is regenerated from all loaded extensions):
+Content injected into CLAUDE.md when loaded:
 
 ```markdown
 ## Your Domain Extension
@@ -140,7 +140,7 @@ This project includes [Your Domain] support via the your-domain extension.
 
 ### README.md (Required)
 
-Every extension must provide a `README.md` file in its root directory. This is the user-facing overview of the extension, distinct from `EXTENSION.md` (which provides content that appears in `.claude/CLAUDE.md` when the extension is loaded).
+Every extension must provide a `README.md` file in its root directory. This is the user-facing overview of the extension, distinct from `EXTENSION.md` (which is a snippet injected into `.claude/CLAUDE.md` when the extension is loaded).
 
 Start from the canonical template: `.claude/templates/extension-readme-template.md`.
 
@@ -231,7 +231,7 @@ Consuming extensions declare the dependency: `"dependencies": ["slidev"]`. When 
 
 **Key characteristics**:
 - No `task_type` field (no routing)
-- No `EXTENSION.md` or `claudemd` merge target (no content added to CLAUDE.md)
+- No `EXTENSION.md` or `claudemd` merge target (nothing injected into CLAUDE.md)
 - Only `provides.context` populated
 - Loaded automatically as a dependency, not typically selected directly
 
@@ -603,8 +603,8 @@ ls .claude/rules/your-domain.md
 # Check context
 ls .claude/context/project/your-domain/
 
-# Check CLAUDE.md content
-grep "Your Domain Extension" .claude/CLAUDE.md
+# Check CLAUDE.md injection
+grep "extension_your_domain" .claude/CLAUDE.md
 
 # Check index entries
 grep "your-domain" .claude/context/index.json
@@ -654,16 +654,16 @@ Verify:
 
 ### Load Fails with Conflicts
 
-The loader detected existing files that would be overwritten. A confirmation dialog is shown listing the conflicts. You can confirm to proceed (overwriting existing files) or cancel. To avoid the conflict:
+The loader detected existing files that would be overwritten. Either:
 - Rename conflicting files in your extension
 - Remove conflicting files from core (if safe)
 - Check if another extension provides the same files
 
 ### Routing Not Working After Load
 
-1. Check CLAUDE.md content was regenerated:
+1. Check CLAUDE.md section was injected:
    ```bash
-   grep "Your Domain Extension" .claude/CLAUDE.md
+   grep "extension_your_domain" .claude/CLAUDE.md
    ```
 
 2. Verify orchestrator knows about your language routing

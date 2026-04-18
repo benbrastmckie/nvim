@@ -6,6 +6,30 @@ Guide for creating and managing domain extensions in the Claude Code system.
 
 Extensions provide task-type-specific and domain-specific capabilities to the core system. They include agents, skills, context, and rules tailored to specific domains.
 
+## Two-Layer Architecture
+
+The extension system is split across two layers:
+
+- **Layer 1 -- Neovim Lua loader** (`lua/neotex/plugins/ai/shared/extensions/`): Manages which files exist in the `.claude/` runtime. Triggered by the extension picker (`<leader>ac`), it copies files from extension sources into the loaded runtime and regenerates CLAUDE.md.
+- **Layer 2 -- .claude/ agent system** (`.claude/`): The runtime that Claude Code reads. Contains only what the loader has installed. Claude Code has no knowledge of the extension system itself.
+
+**Lifecycle**:
+1. User opens the extension picker in Neovim
+2. Picker calls `manager.load(extension_name)` via `init.lua`
+3. Lua loader copies agent, skill, rule, context files from `.claude/extensions/{name}/` into `.claude/agents/`, `.claude/skills/`, etc.
+4. Loader merges index entries into `.claude/context/index.json`
+5. `generate_claudemd()` rebuilds `.claude/CLAUDE.md` from all loaded extensions' CLAUDE.md source files
+6. Claude Code reads the resulting `.claude/` structure -- routing, agents, and context are now available
+
+When unloading, the loader removes the copied files and regenerates CLAUDE.md without that extension's content.
+
+### Source vs Loaded Vocabulary
+
+> **Extension source**: Files in `.claude/extensions/*/` -- edit these when developing extensions.
+>
+> **Loaded runtime**: Files in `.claude/{agents,skills,rules,...}/` -- copies made by the loader.
+> Do not edit runtime files directly; they are overwritten on reload.
+
 ## Extension Structure
 
 ```
@@ -38,7 +62,12 @@ Extensions provide task-type-specific and domain-specific capabilities to the co
     "rules": [],
     "context": ["project/python"],
     "scripts": [],
-    "hooks": []
+    "hooks": [],
+    "docs": [],
+    "templates": [],
+    "systemd": [],
+    "root_files": [],
+    "data": []
   },
   "routing": {
     "research": { "python": "skill-python-research" },
@@ -68,10 +97,9 @@ Extensions provide task-type-specific and domain-specific capabilities to the co
 | `description` | string | Brief description |
 | `task_type` | string | Task type this extension handles |
 | `dependencies` | array | Other extensions required |
-| `provides` | object | Agents, skills, commands, rules, context, scripts, hooks |
+| `provides` | object | Agents, skills, commands, rules, context, scripts, hooks, docs, templates, systemd, root_files, data |
 | `routing` | object | Task-type to skill mapping for research/plan/implement |
 | `merge_targets` | object | Source-to-target file mappings for system integration |
-| `routing_exempt` | boolean | If true, extension is excluded from doc-lint routing checks (for resource-only extensions like `slidev`) |
 
 ## Merge Process
 
@@ -96,9 +124,27 @@ Extension context entries from `index-entries.json` are merged into `.claude/con
 }
 ```
 
-### 2. CLAUDE.md Merging
+### 2. CLAUDE.md Generation
 
-Extension `EXTENSION.md` content is merged into `.claude/CLAUDE.md` at the section identified by `section_id`.
+`.claude/CLAUDE.md` is a computed artifact. When an extension is loaded or unloaded, the loader regenerates CLAUDE.md by concatenating the CLAUDE.md source from every currently loaded extension. The `section_id` field in `merge_targets.claudemd` is used for tracking which sections to remove on unload, not for locating a content placement point.
+
+### CLAUDE.md Source Files: merge-sources/claudemd.md vs EXTENSION.md
+
+There are two patterns for providing CLAUDE.md content:
+
+- **Standard extensions** (all domain extensions): use `EXTENSION.md` at the extension root. The manifest specifies `"source": "EXTENSION.md"` in `merge_targets.claudemd`.
+- **Core extension** (`.claude/extensions/core/`): uses `merge-sources/claudemd.md` as its CLAUDE.md source. This allows the core extension to maintain its CLAUDE.md content separately from a potential top-level `EXTENSION.md`. The manifest specifies `"source": "merge-sources/claudemd.md"`.
+
+When `generate_claudemd()` runs, it reads each loaded extension's `merge_targets.claudemd.source` file and concatenates them: core first, then all other extensions in sorted order.
+
+### copy_context_dirs() Dual Behavior
+
+The `copy_context_dirs()` function in `loader.lua` handles two types of entries in `provides.context`:
+
+1. **Directory names** (common case): `"project/latex"` -- copies the entire directory tree from the extension source to `.claude/context/project/latex/`
+2. **Individual file paths**: `"project/latex/specific-file.md"` -- copies a single file to `.claude/context/project/latex/specific-file.md`
+
+The function detects which case applies by checking `vim.fn.isdirectory()` first, then falling back to `vim.fn.filereadable()` for individual files.
 
 ## Creating an Extension
 
@@ -124,7 +170,12 @@ mkdir -p .claude/extensions/{name}/{context,agents,skills}
     "rules": [],
     "context": ["project/mydomain"],
     "scripts": [],
-    "hooks": []
+    "hooks": [],
+    "docs": [],
+    "templates": [],
+    "systemd": [],
+    "root_files": [],
+    "data": []
   },
   "routing": {
     "research": { "mydomain": "skill-mydomain-research" },
@@ -250,7 +301,7 @@ The extension picker shows dependency information:
 
 ## Example: Minimal Extension
 
-See `core/templates/extension-readme-template.md` for the README template for new extensions.
+See `extensions/template/` for a minimal extension structure.
 
 ## Troubleshooting
 

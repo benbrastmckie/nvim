@@ -125,11 +125,6 @@ validate_task_type_entries() {
     fi
 }
 
-# Alias: validate_language_entries -> validate_task_type_entries
-validate_language_entries() {
-    validate_task_type_entries "$@"
-}
-
 # Validate context files exist on disk
 validate_context_files() {
     local system_dir="$1"

@@ -22,7 +22,7 @@ Extension Source                           Target Project
 │  rules/            │                    │ context/         │
 │  context/          │                    │  (copied context)│
 └────────────────────┘                    │ CLAUDE.md        │
-                                          │  (regenerated)   │
+                                          │  (merged section)│
                                           │ context/index.json
                                           │  (merged entries)│
                                           └──────────────────┘
@@ -36,66 +36,6 @@ Extension Source                           Target Project
 
 ---
 
-## Two-Layer Architecture
-
-The extension system operates across two distinct layers. Understanding this separation is essential for working with extensions correctly.
-
-```
-Layer 1: Neovim Lua Loader                 Layer 2: .claude/ Agent System
-(lua/neotex/plugins/ai/shared/extensions/) (.claude/)
-
-┌─────────────────────────────────┐        ┌──────────────────────────────┐
-│ Extension Sources                │        │ Loaded Runtime               │
-│ .claude/extensions/*/            │  copy  │ .claude/agents/              │
-│   manifest.json                  │ -----> │ .claude/skills/              │
-│   EXTENSION.md                   │        │ .claude/rules/               │
-│   agents/, skills/, rules/, ...  │        │ .claude/context/             │
-│                                  │ regen  │ .claude/CLAUDE.md            │
-│ Lua modules:                     │ -----> │ .claude/context/index.json   │
-│   init.lua (public API)          │        └──────────────────────────────┘
-│   loader.lua (file copies)       │
-│   merge.lua (CLAUDE.md, index)   │                    |
-│   state.lua (extensions.json)    │                    | reads
-│   manifest.lua (discovery)       │                    v
-│   verify.lua (post-load checks)  │        ┌──────────────────────────────┐
-└─────────────────────────────────┘        │ Claude Code                  │
-                                            │ (sees only .claude/ runtime) │
-         |                                  └──────────────────────────────┘
-         | triggered by
-         v
-┌─────────────────────────────────┐
-│ Extension Picker                 │
-│ (Neovim UI, <leader>ac)          │
-└─────────────────────────────────┘
-```
-
-**How the layers interact**:
-1. User triggers the extension picker in Neovim (`<leader>ac`)
-2. The picker calls the Lua loader (`init.lua`) to load or unload an extension
-3. The loader copies files from the **extension source** (`.claude/extensions/*/`) into the **loaded runtime** (`.claude/agents/`, `.claude/skills/`, etc.)
-4. After copying, `generate_claudemd()` rebuilds `.claude/CLAUDE.md` from all loaded extensions' content
-5. Claude Code reads only the `.claude/` runtime structure and has no knowledge of the extension system
-
-**Key consequence**: Claude Code agents work with the *loaded runtime* in `.claude/`. The extension sources in `.claude/extensions/*/` are invisible to Claude Code. When an extension is unloaded, its files are removed from the runtime, and Claude Code loses access to those capabilities.
-
-### Source vs Loaded Vocabulary
-
-> **Extension source**: Files in `.claude/extensions/*/` -- the canonical definitions
-> that are never modified by the loader. These are what you edit when developing
-> an extension.
->
-> **Loaded runtime**: Files in `.claude/{agents,skills,rules,commands,context}/` -- copies
-> produced by the Lua loader from the extension sources. These are what Claude Code reads.
-> Runtime files should not be edited directly; they will be overwritten on next load.
-
-This vocabulary appears throughout the documentation:
-- "Load an extension" = copy from extension source to loaded runtime
-- "Unload an extension" = remove from loaded runtime (source files are preserved)
-- "Extension provides X" = the extension source contains X to be copied
-- "X is available" = X exists in the loaded runtime
-
----
-
 ## Directory Structure
 
 ### Extension Layout
@@ -105,9 +45,9 @@ Each extension lives in `.claude/extensions/{name}/`:
 ```
 .claude/extensions/{name}/
 ├── manifest.json              # Extension metadata (REQUIRED)
-├── EXTENSION.md               # Content appended to CLAUDE.md by generate_claudemd() (REQUIRED)
+├── EXTENSION.md               # Content merged into CLAUDE.md (REQUIRED)
 ├── index-entries.json         # Context index entries (optional)
-├── settings-fragment.json     # Settings to deep-merge into settings.json (optional)
+├── settings-fragment.json     # MCP server configurations (optional)
 ├── agents/                    # Agent definitions
 │   └── {name}-*-agent.md
 ├── skills/                    # Skill directories
@@ -122,20 +62,8 @@ Each extension lives in `.claude/extensions/{name}/`:
 │       ├── patterns/
 │       ├── standards/
 │       └── tools/
-├── scripts/                   # Helper scripts (optional)
-│   └── *.sh
-├── hooks/                     # Hook scripts with execute permissions (optional)
-│   └── *.sh
-├── docs/                      # Documentation files (optional)
-│   └── *.md
-├── templates/                 # Template files (optional)
-│   └── *.md
-├── systemd/                   # Systemd unit files (optional)
-│   └── *.service
-├── root-files/                # Files copied to .claude/ root (optional)
-│   └── settings.json
-└── merge-sources/             # Alternative location for claudemd merge source (optional)
-    └── claudemd.md
+└── scripts/                   # Helper scripts (optional)
+    └── *.sh
 ```
 
 ### State File
@@ -232,30 +160,23 @@ The manifest declares what the extension provides:
 The loader handles file copy operations:
 
 **Functions**:
-- `copy_simple_files()` - Copy agents, commands, rules (flat .md files)
+- `copy_simple_files()` - Copy agents, commands, rules
 - `copy_skill_dirs()` - Copy skill directories recursively
 - `copy_context_dirs()` - Copy context directories preserving structure
 - `copy_scripts()` - Copy shell scripts with preserved permissions
-- `copy_hooks()` - Copy hook scripts with execute permissions preserved
-- `copy_docs()` - Copy documentation files (flat files or recursive directories)
-- `copy_templates()` - Copy template files (flat files, no execute permissions)
-- `copy_systemd()` - Copy systemd unit files (flat files, no execute permissions)
-- `copy_root_files()` - Copy files that live at the .claude/ root (e.g., settings.json); reads from extension's root-files/ subdirectory
-- `copy_data_dirs()` - Copy data directories with merge-copy semantics (only copies files that don't already exist, preserving user data); copies to project root, not target_dir
-- `check_conflicts()` - Detect conflicts before loading; reports overwrite conflicts and data-directory merge scenarios separately
-- `remove_installed_files()` - Remove tracked files on unload (skips empty directories, preserves user data in data dirs)
+- `check_conflicts()` - Detect conflicts before loading
+- `remove_installed_files()` - Clean up on unload
 
 **Conflict Detection**:
-Before loading, the loader checks if target files already exist. Conflicts are categorized as overwrite (file will be replaced) or merge (data directory already has content, merge-copy will preserve existing files). Both types are reported in the confirmation dialog; the user can proceed or cancel.
+Before loading, the loader checks if target files already exist in the core directory. If conflicts are found, loading is aborted to prevent overwriting core files.
 
 ### 3. Merger (merge.lua)
 
 The merger handles shared file modifications:
 
 **Functions**:
-- `generate_claudemd()` - Rebuild CLAUDE.md as a fully computed artifact from all loaded extensions' EXTENSION.md content (core first, then others in sorted order). Called after every load and unload. Replaces section-injection approach.
-- `inject_section()` - Insert section with markers into a config markdown file. Used internally and by sync.lua for non-load/unload operations. Note: section_id is vestigial for load/unload (CLAUDE.md is regenerated, not section-injected), but still used by sync.lua.
-- `remove_section()` - Remove a section from a config markdown file. Used by sync.lua.
+- `inject_section()` - Insert section into CLAUDE.md with markers
+- `remove_section()` - Remove section from CLAUDE.md
 - `append_index_entries()` - Add entries to index.json (with deduplication and tracking)
 - `remove_index_entries_tracked()` - Remove tracked entries from index.json on unload
 - `remove_orphaned_index_entries()` - Pre-load cleanup: remove stale project/ entries
@@ -264,8 +185,15 @@ The merger handles shared file modifications:
 - `merge_settings()` - Deep merge into settings.json
 - `unmerge_settings()` - Remove merged settings
 
-**CLAUDE.md as Computed Artifact**:
-CLAUDE.md is not built by injecting sections with markers. Instead, `generate_claudemd()` reads each loaded extension's merge_targets source file (e.g., EXTENSION.md) and concatenates them into a fresh CLAUDE.md on every load and unload. The file begins with a header template from the core extension, followed by each extension's content fragment. This means the file has no section markers and is fully deterministic given the set of loaded extensions.
+**Section Markers**:
+Injected sections are wrapped with markers for clean removal:
+
+```markdown
+<!-- SECTION: extension_latex -->
+## LaTeX Extension
+[Extension content here]
+<!-- END_SECTION: extension_latex -->
+```
 
 ### 4. State (state.lua)
 
@@ -317,12 +245,7 @@ Configuration presets for different agent systems:
    d. copy_skill_dirs()
    e. copy_context_dirs()
    f. copy_scripts()
-   g. copy_hooks() (execute permissions preserved)
-   h. copy_docs()
-   i. copy_templates()
-   j. copy_systemd()
-   k. copy_root_files() (reads from root-files/ subdirectory, copies to .claude/ root)
-   l. copy_data_dirs() (merge-copy semantics, copies to project root not target_dir)
+   g. copy_data_dirs() (merge-copy semantics)
 5. Pre-load index cleanup:
    a. Collect provides.context prefixes from already-loaded extensions
    b. remove_orphaned_index_entries() - remove stale project/ entries
@@ -331,15 +254,14 @@ Configuration presets for different agent systems:
       prefixes so its stale entries are removed before fresh ones are
       added, ensuring proper tracking.
 6. Merge shared files (process_merge_targets):
-   a. (claudemd merge target skipped here; generate_claudemd() rebuilds CLAUDE.md after state update)
+   a. inject_section() into CLAUDE.md (claudemd merge target)
    b. append_index_entries() to index.json (index merge target, tracked)
       - Core index entries loaded via core's merge_targets.index (same as other extensions)
       - Extension-specific entries loaded via each extension's merge_targets.index
-   c. merge_settings() if merge_targets.settings defined (reads fragment from settings-fragment.json source)
+   c. merge_settings() if mcp_servers defined
 7. Update state (mark_loaded)
 8. Write extensions.json
-9. generate_claudemd() - rebuilds CLAUDE.md from all loaded extensions' content (non-fatal if fails)
-10. Post-load verification
+9. Post-load verification
 ```
 
 ### Unloading an Extension
@@ -348,18 +270,16 @@ Configuration presets for different agent systems:
 1. Read state (get extension info)
 2. Check reverse dependencies:
    a. Scan loaded extensions for ones declaring this extension in dependencies
-   b. If dependents exist: hard block with error, return false
-      (message: "Cannot unload 'X': required by loaded extension(s): Y, Z. Unload dependent(s) first.")
-3. Show confirmation dialog (if confirm=true), cancel if user declines
-4. Remove merged content:
-   a. (CLAUDE.md section removal skipped; generate_claudemd() regenerates after state update)
+   b. If dependents exist, show warning: "Extension 'X' is required by: Y, Z"
+   c. Proceed with unload if user confirms (dependents are NOT cascade-unloaded)
+3. Remove merged content:
+   a. remove_section() from CLAUDE.md
    b. remove_index_entries_tracked() from index.json
    c. unmerge_settings() if settings were merged
-5. Remove files:
+4. Remove files:
    a. remove_installed_files() (files first, then empty dirs)
-6. Update state (mark_unloaded)
-7. Write extensions.json
-8. generate_claudemd() - rebuilds CLAUDE.md excluding unloaded extension's content (non-fatal if fails)
+5. Update state (mark_unloaded)
+6. Write extensions.json
 ```
 
 ### Index Lifecycle
@@ -428,22 +348,10 @@ When loaded, these entries are appended to the main `context/index.json`. Agents
 
 Extensions can provide MCP server configurations that get merged into `settings.json`:
 
-**Extension manifest** (`merge_targets.settings` entry):
+**Extension manifest**:
 ```json
 {
-  "merge_targets": {
-    "settings": {
-      "source": "settings-fragment.json",
-      "target": ".claude/settings.json"
-    }
-  }
-}
-```
-
-**Extension source fragment** (`settings-fragment.json`):
-```json
-{
-  "mcpServers": {
+  "mcp_servers": {
     "latex-compile": {
       "command": "latex-mcp",
       "args": ["--format", "pdf"]
@@ -482,10 +390,9 @@ The extension picker provides the user interface:
 
 ### Conflict Handling
 If loading would overwrite existing files:
-- Conflicts are detected before any files are copied
-- Conflict count and type (overwrite vs. merge) are shown in the confirmation dialog
-- User can proceed with load (which overwrites conflicting files) or cancel
-- If load proceeds, conflicting files are overwritten; no partial state is created on failure (pcall rollback)
+- Loading is aborted
+- User is notified of conflicting files
+- No partial state is created
 
 ### Recovery
 
@@ -503,7 +410,6 @@ Extension files are tracked by git. Use `git checkout HEAD -- .claude/extensions
 - [Adding Domains](../guides/adding-domains.md) - When to use extensions vs core
 - [Creating Extensions](../guides/creating-extensions.md) - Step-by-step guide
 - [Context Loading](../guides/context-loading-best-practices.md) - How agents load context
-- [Loader Function Reference](../../extensions/core/context/guides/loader-reference.md) - All 12 public loader.lua functions with signatures and copy semantics
 
 ---
 

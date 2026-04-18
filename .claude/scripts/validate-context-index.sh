@@ -30,12 +30,12 @@ WARNINGS=0
 
 log_error() {
     echo "[ERROR] $1" >&2
-    ERRORS=$((ERRORS + 1))
+    ((ERRORS++))
 }
 
 log_warning() {
     echo "[WARN] $1" >&2
-    WARNINGS=$((WARNINGS + 1))
+    ((WARNINGS++))
 }
 
 log_info() {
@@ -58,12 +58,11 @@ log_info "JSON syntax is valid"
 
 # Check required top-level fields
 log_info "Checking required fields..."
-for field in entries; do
+for field in version generated entries; do
     if ! jq -e ".$field" "$INDEX_FILE" > /dev/null 2>&1; then
         log_error "Missing required field: $field"
     fi
 done
-# Note: version and generated fields are optional (index may be extension-merged)
 
 # Validate all paths exist
 log_info "Validating file paths..."

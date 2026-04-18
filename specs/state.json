@@ -5,10 +5,48 @@
     {
       "project_number": 476,
       "project_name": "consolidate_extension_system_docs",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-18T01:14:22Z",
-      "last_updated": "2026-04-18T01:14:22Z"
+      "last_updated": "2026-04-18T06:46:19Z",
+      "session_id": "sess_1750208500_a7b3c1",
+      "next_artifact_number": 2,
+      "memory_candidates": [
+        {
+          "content": "The extension system's CLAUDE.md is generated via merge.lua:generate_claudemd() as a fully computed artifact -- NOT via section injection with markers. The inject_section()/remove_section() functions still exist in merge.lua but are unused for CLAUDE.md. The section_id field in manifest merge_targets.claudemd is vestigial. Both load and unload call generate_claudemd() after state update.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/476_consolidate_extension_system_docs/reports/01_consolidate-ext-docs.md",
+          "confidence": 0.95,
+          "suggested_keywords": [
+            "extension",
+            "claudemd",
+            "generate_claudemd",
+            "section-injection",
+            "merge.lua"
+          ]
+        },
+        {
+          "content": "The extension loader supports 12 provides categories: agents, skills, commands, rules, context, scripts, hooks, data, docs, templates, systemd, root_files. The loader.lua file has 12 public functions corresponding to these. Unload dependency handling is a hard block (not a warning with confirm) -- the function returns false before reaching the confirmation dialog.",
+          "category": "PATTERN",
+          "source_artifact": "specs/476_consolidate_extension_system_docs/reports/01_consolidate-ext-docs.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "extension",
+            "provides",
+            "loader",
+            "unload",
+            "dependency",
+            "hard-block"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "specs/476_consolidate_extension_system_docs/reports/01_consolidate-ext-docs.md",
+          "type": "research",
+          "summary": "Comprehensive audit of extension system documentation vs Lua implementation"
+        }
+      ]
     },
     {
       "project_number": 87,
