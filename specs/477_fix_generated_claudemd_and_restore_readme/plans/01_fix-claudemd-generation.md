@@ -1,7 +1,7 @@
 # Implementation Plan: Task #477
 
 - **Task**: 477 - Fix generated CLAUDE.md duplicate header, restore README.md, and improve generation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/477_fix_generated_claudemd_and_restore_readme/reports/01_fix-claudemd-generation.md
@@ -59,7 +59,7 @@ No prior plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Fix merge-source content [NOT STARTED]
+### Phase 1: Fix merge-source content [COMPLETED]
 
 **Goal**: Remove the duplicate heading and fix broken references in the core merge-source fragment.
 
@@ -85,7 +85,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Regenerate and validate [NOT STARTED]
+### Phase 2: Regenerate and validate [COMPLETED]
 
 **Goal**: Regenerate the CLAUDE.md file and verify the output is correct.
 

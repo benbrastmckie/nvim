@@ -1,13 +1,11 @@
-# Agent System
-
-Task management and agent orchestration for project development. For comprehensive documentation, see @.claude/README.md.
+Task management and agent orchestration for project development. For comprehensive documentation, see @.claude/docs/README.md.
 
 ## Quick Reference
 
 - **Task List**: @specs/TODO.md
 - **Machine State**: @specs/state.json
 - **Error Tracking**: @specs/errors.json
-- **Architecture**: @.claude/README.md
+- **Architecture**: @.claude/docs/README.md
 
 ## Project Structure
 
@@ -291,6 +289,7 @@ Full details: `.claude/context/architecture/context-layers.md`
 Core context (always available):
 - @.claude/context/repo/project-overview.md
 - @.claude/context/meta/meta-guide.md
+- @README.md
 
 **Extension Context**: Available when extensions are loaded via the extension picker. Query `index.json` for extension-specific context files.
 
