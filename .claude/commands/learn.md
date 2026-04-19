@@ -185,7 +185,7 @@ When invoked with a directory path, /learn enters directory mode:
 
 ```bash
 /learn ./src/utils/              # Scan utils directory for learnable content
-/learn ~/notes/neovim/           # Import notes directory to memory vault
+/learn ~/notes/python/           # Import notes directory to memory vault
 ```
 
 ---

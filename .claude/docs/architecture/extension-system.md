@@ -160,7 +160,7 @@ The manifest declares what the extension provides:
 {
   "name": "latex",
   "version": "1.0.0",
-  "description": "LaTeX document development with VimTeX integration",
+  "description": "LaTeX document development with latexmk/pdflatex toolchain",
   "task_type": "latex",
   "dependencies": [],
   "provides": {
@@ -510,7 +510,7 @@ The extension picker provides the user interface:
 
 **Display Format**:
 ```
-[x] latex - LaTeX document development with VimTeX integration
+[x] latex - LaTeX document development with latexmk/pdflatex toolchain
 [ ] lean - Lean theorem prover support
 [x] formal - Formal verification tools
 ```

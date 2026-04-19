@@ -8,7 +8,7 @@ The memory extension is designed to work across both Claude Code and OpenCode:
 
 ### Shared Components
 - `.memory/` vault at project root (single source of truth)
-- Memory filename format: `MEM-{semantic-slug}.md` (e.g., `MEM-telescope-custom-pickers.md`)
+- Memory filename format: `MEM-{semantic-slug}.md` (e.g., `MEM-project-code-patterns.md`)
 - Index regeneration from filesystem
 
 ### System-Specific Components
@@ -175,9 +175,9 @@ When connected, these tools are available:
 ### Tool Usage Pattern
 
 ```
-execute("search", {query: "telescope picker", vault: ".memory", limit: 5})
-execute("read", {path: ".memory/10-Memories/MEM-telescope-custom-pickers.md"})
-execute("write", {path: ".memory/10-Memories/MEM-neovim-lsp-best-practices.md", content: "..."})
+execute("search", {query: "retry pattern", vault: ".memory", limit: 5})
+execute("read", {path: ".memory/10-Memories/MEM-project-code-patterns.md"})
+execute("write", {path: ".memory/10-Memories/MEM-project-code-patterns.md", content: "..."})
 execute("list", {vault: ".memory"})
 ```
 

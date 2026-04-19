@@ -237,12 +237,6 @@ validate_extensions_loaded() {
 
         # Check extension agents exist
         case "$ext_name" in
-            nvim)
-                validate_agent_exists "$system_dir/$agents_subdir" "neovim-research-agent"
-                validate_agent_exists "$system_dir/$agents_subdir" "neovim-implementation-agent"
-                validate_index_entries "$system_dir" "neovim-research-agent"
-                validate_language_entries "$system_dir" "neovim"
-                ;;
             lean)
                 validate_agent_exists "$system_dir/$agents_subdir" "lean-research-agent"
                 validate_agent_exists "$system_dir/$agents_subdir" "lean-implementation-agent"

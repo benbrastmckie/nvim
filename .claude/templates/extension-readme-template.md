@@ -23,7 +23,7 @@ Section Applicability Matrix:
 
 Simple extensions (e.g., latex, python, typst, z3) typically
 produce README files under ~120 lines.
-Complex extensions (e.g., filetypes, lean, formal, nvim, nix, web, epidemiology) use the
+Complex extensions (e.g., filetypes, lean, formal, nix, web, epidemiology) use the
 full template and typically produce README files of 200-400 lines.
 
 Delete this comment block when creating a real extension README.

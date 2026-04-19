@@ -51,7 +51,7 @@ The `/learn` command uses three memory operations based on overlap scoring:
 Memories now include a `topic` field in frontmatter with slash-separated hierarchical paths:
 
 ```yaml
-topic: "neovim/plugins/telescope"
+topic: "python/libs/requests"
 ```
 
 The index.md includes both "By Category" and "By Topic" sections for navigation.

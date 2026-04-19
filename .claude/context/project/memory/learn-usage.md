@@ -21,7 +21,7 @@ Add content from a single file:
 
 ```bash
 /learn /path/to/notes.md
-/learn ~/docs/neovim-tips.txt
+/learn ~/docs/python-tips.txt
 ```
 
 ### Directory Mode
@@ -30,7 +30,7 @@ Scan a directory tree for learnable content:
 
 ```bash
 /learn ./src/utils/
-/learn ~/notes/neovim/
+/learn ~/notes/python/
 ```
 
 **Features**:
@@ -65,9 +65,9 @@ Input: Large markdown file (2500 tokens)
        |
        v
 Content Map:
-  - Segment 1: "Telescope picker creation" (350 tokens)
-  - Segment 2: "Custom sorter patterns" (280 tokens)
-  - Segment 3: "Attach mappings usage" (420 tokens)
+  - Segment 1: "HTTP session configuration" (350 tokens)
+  - Segment 2: "Custom retry adapter patterns" (280 tokens)
+  - Segment 3: "Timeout and backoff usage" (420 tokens)
 ```
 
 **Segmentation by file type**:
@@ -84,12 +84,12 @@ Content Map:
 Each segment is matched against existing memories:
 
 ```
-Segment: "Telescope picker creation"
-Key terms: telescope, picker, finders, sorters, attach_mappings
+Segment: "HTTP session configuration"
+Key terms: requests, session, adapter, retry, timeout
 
 Related Memories:
-1. MEM-telescope-custom-pickers (72% overlap) -> UPDATE recommended
-2. MEM-neovim-plugin-patterns (45% overlap) -> EXTEND recommended
+1. MEM-requests-retry-patterns (72% overlap) -> UPDATE recommended
+2. MEM-python-http-patterns (45% overlap) -> EXTEND recommended
 3. (no match) -> CREATE recommended
 ```
 
@@ -106,8 +106,8 @@ Related Memories:
 Replace existing memory content:
 
 ```
-Before: MEM-telescope-basics "Telescope basics"
-After:  MEM-telescope-basics "Telescope picker creation"
+Before: MEM-requests-basics "Requests basics"
+After:  MEM-requests-basics "HTTP session configuration"
         - Old content moved to ## History section
         - modified field updated
 ```
@@ -117,10 +117,10 @@ After:  MEM-telescope-basics "Telescope picker creation"
 Append new section to existing memory:
 
 ```
-Before: MEM-neovim-plugin-patterns "Neovim plugin patterns"
-After:  MEM-neovim-plugin-patterns with new:
+Before: MEM-python-http-patterns "Python HTTP patterns"
+After:  MEM-python-http-patterns with new:
         ## Extension (2026-03-11)
-        [new content about telescope]
+        [new content about retry adapters]
 ```
 
 ### CREATE (<30% overlap)
@@ -128,7 +128,7 @@ After:  MEM-neovim-plugin-patterns with new:
 Create new memory file:
 
 ```
-New: MEM-telescope-picker-creation "Telescope picker creation"
+New: MEM-requests-session-config "HTTP session configuration"
      - Fresh memory with topic and tags
      - Added to index (category + topic sections)
 ```
@@ -140,7 +140,7 @@ New: MEM-telescope-picker-creation "Telescope picker creation"
 Memories include a `topic` field with slash-separated paths:
 
 ```yaml
-topic: "neovim/plugins/telescope"
+topic: "python/libs/requests"
 ```
 
 **Topic inference priority**:
@@ -153,9 +153,9 @@ topic: "neovim/plugins/telescope"
 ```
 ## By Topic
 
-### neovim/
-  - neovim/plugins/telescope - 3 memories
-  - neovim/config - 5 memories
+### python/
+  - python/libs/requests - 3 memories
+  - python/patterns - 5 memories
 
 ### meta/
   - meta/commands - 2 memories
@@ -169,19 +169,19 @@ topic: "neovim/plugins/telescope"
 
 ```
 Segment: Use pcall() in Lua for safe function calls
-Topic: neovim/lua
-Key terms: pcall, lua, safe, function, error
+Topic: python/error-handling
+Key terms: pcall, safe, function, error, exception
 
 Related Memories Found:
-- MEM-lua-error-handling: "Lua error handling" (65% match)
+- MEM-error-handling-patterns: "Error handling patterns" (65% match)
 ```
 
 ### Step 2: Operation Selection
 
 ```
 What would you like to do with this segment?
-[ ] UPDATE MEM-lua-error-handling (replace content)
-[ ] EXTEND MEM-lua-error-handling (append section)
+[ ] UPDATE MEM-error-handling-patterns (replace content)
+[ ] EXTEND MEM-error-handling-patterns (append section)
 [ ] CREATE new memory
 [ ] SKIP - don't save
 ```
@@ -189,8 +189,8 @@ What would you like to do with this segment?
 ### Step 3: Confirmation
 
 ```
-Operation: UPDATE MEM-lua-error-handling
-Topic: neovim/lua (confirm or modify)
+Operation: UPDATE MEM-error-handling-patterns
+Topic: python/error-handling (confirm or modify)
 
 Proceed? [Yes/No]
 ```
@@ -207,14 +207,14 @@ Proceed? [Yes/No]
 
 Flow:
 1. Single segment (under 500 tokens)
-2. Search finds MEM-lua-error-handling (45% match)
+2. Search finds MEM-error-handling-patterns (45% match)
 3. User selects EXTEND
 4. Memory updated with new section
 
 ### Example 2: File Import
 
 ```bash
-/learn ~/docs/telescope-notes.md
+/learn ~/docs/python-notes.md
 ```
 
 Flow:
@@ -289,7 +289,7 @@ Flow:
 1. **Use existing topics** when possible (check index.md)
 2. **Create new paths** for genuinely new domains
 3. **Keep hierarchy shallow** - 2-3 levels is typical
-4. **Be consistent** - neovim/plugins not plugins/neovim
+4. **Be consistent** - python/libs not libs/python
 
 ---
 

@@ -52,12 +52,12 @@ Content mapping is the intermediate representation between input acquisition and
   "segments": [
     {
       "id": "seg-001",
-      "topic": "neovim/plugins/telescope",
+      "topic": "python/libs/requests",
       "source_file": "/path/to/file.md",
       "source_lines": "15-42",
-      "summary": "Telescope custom picker creation pattern",
+      "summary": "HTTP request retry pattern with backoff",
       "estimated_tokens": 350,
-      "key_terms": ["telescope", "picker", "finders", "sorters", "attach_mappings"]
+      "key_terms": ["requests", "retry", "backoff", "session", "timeout"]
     }
   ]
 }
@@ -217,13 +217,13 @@ Topic: {segment.topic}
 Key terms: {segment.key_terms.join(", ")}
 
 Related Memories:
-1. MEM-telescope-custom-pickers (72% overlap) -> Recommended: UPDATE
-2. MEM-neovim-plugin-patterns (45% overlap) -> Recommended: EXTEND
-3. MEM-lua-module-structure (18% overlap) -> Recommended: CREATE (no strong match)
+1. MEM-requests-retry-patterns (72% overlap) -> Recommended: UPDATE
+2. MEM-python-http-patterns (45% overlap) -> Recommended: EXTEND
+3. MEM-api-error-handling (18% overlap) -> Recommended: CREATE (no strong match)
 
 What would you like to do with this segment?
-[ ] UPDATE MEM-telescope-custom-pickers (replace content)
-[ ] EXTEND MEM-neovim-plugin-patterns (append section)
+[ ] UPDATE MEM-requests-retry-patterns (replace content)
+[ ] EXTEND MEM-python-http-patterns (append section)
 [ ] CREATE new memory
 [ ] SKIP - don't save this segment
 ```
@@ -381,7 +381,7 @@ last_retrieved:
 <!-- Add links to related memories using [[filename]] syntax -->
 ```
 
-**Note**: The MEM- prefix is preserved for grep discoverability (`grep -r "MEM-" .memory/`). Filenames follow the pattern `MEM-{semantic-slug}.md` (e.g., `MEM-telescope-custom-pickers.md`).
+**Note**: The MEM- prefix is preserved for grep discoverability (`grep -r "MEM-" .memory/`). Filenames follow the pattern `MEM-{semantic-slug}.md` (e.g., `MEM-requests-retry-patterns.md`).
 
 ### Topic Inference
 
@@ -390,11 +390,11 @@ Infer topic using four-source priority:
 ```
 1. Source directory path (highest priority)
    - /project/src/utils/ -> "project/utils"
-   - /home/user/notes/neovim/ -> "neovim"
+   - /home/user/notes/python/ -> "python"
 
 2. Keyword analysis
-   - Extract domain indicators: neovim, lua, telescope, lazy
-   - Map to topic: "neovim/plugins" or "neovim/config"
+   - Extract domain indicators: python, requests, http, api
+   - Map to topic: "python/libs" or "python/patterns"
 
 3. Related memory topics
    - If UPDATE/EXTEND: inherit topic from target memory
@@ -661,7 +661,7 @@ Recognized text extensions (alphabetized by category):
 | Data | .csv, .sql |
 | Documentation | .adoc, .asciidoc, .md, .org, .rdoc, .rst, .tex, .txt |
 | Web | .css, .htm, .html, .less, .sass, .scss, .svg |
-| Neovim | .fnl, .janet, .nix |
+| Scripting | .fnl, .janet, .nix |
 
 **Tier 2: MIME-Type Fallback**
 
@@ -1043,7 +1043,7 @@ Group memories by topic cluster for the health report. The cluster key is the fi
 cluster_key = topic.split("/")[0]
 
 # Example:
-# topic "neovim/plugins/telescope" -> cluster "neovim"
+# topic "python/libs/requests" -> cluster "python"
 # topic "lua/patterns" -> cluster "lua"
 # topic "" or null -> cluster "uncategorized"
 ```
@@ -2151,13 +2151,13 @@ For each selected memory, apply the tombstone by mutating its YAML frontmatter:
 **Frontmatter Example (before)**:
 ```yaml
 ---
-title: "Telescope custom picker creation"
+title: "HTTP request retry patterns"
 created: 2026-01-15
 tags: [PATTERN]
-topic: "neovim/plugins/telescope"
+topic: "python/libs/requests"
 source: "user input"
 modified: 2026-01-15
-summary: "How to create custom Telescope pickers"
+summary: "HTTP retry with exponential backoff"
 retrieval_count: 0
 last_retrieved:
 ---
@@ -2166,13 +2166,13 @@ last_retrieved:
 **Frontmatter Example (after)**:
 ```yaml
 ---
-title: "Telescope custom picker creation"
+title: "HTTP request retry patterns"
 created: 2026-01-15
 tags: [PATTERN]
-topic: "neovim/plugins/telescope"
+topic: "python/libs/requests"
 source: "user input"
 modified: 2026-01-15
-summary: "How to create custom Telescope pickers"
+summary: "HTTP retry with exponential backoff"
 status: tombstoned
 tombstoned_at: 2026-04-16
 tombstone_reason: "purge"
@@ -2245,8 +2245,8 @@ Display link-scan warnings to the user (no automatic modification):
 ## Link-Scan Warnings
 
 The following active memories reference tombstoned memories:
-- .memory/10-Memories/MEM-lua-patterns.md -> [[MEM-telescope-custom-pickers]] (tombstoned)
-- .memory/10-Memories/MEM-plugin-setup.md -> [[MEM-telescope-custom-pickers]] (tombstoned)
+- .memory/10-Memories/MEM-http-patterns.md -> [[MEM-requests-retry-patterns]] (tombstoned)
+- .memory/10-Memories/MEM-library-setup.md -> [[MEM-requests-retry-patterns]] (tombstoned)
 
 These references will become stale. Consider manually updating the Connections section
 in the above files to remove or replace the references.
@@ -2262,7 +2262,7 @@ Link-scan: No stale references found.
 Include link-scan warnings in the purge operation's `notes` field in distill-log.json:
 
 ```
-"notes": "Tombstoned 3 memories. Link-scan warnings: MEM-lua-patterns.md->MEM-slug-1, MEM-plugin-setup.md->MEM-slug-1"
+"notes": "Tombstoned 3 memories. Link-scan warnings: MEM-http-patterns.md->MEM-slug-1, MEM-library-setup.md->MEM-slug-1"
 ```
 
 Or if none:

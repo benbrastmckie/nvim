@@ -69,7 +69,7 @@ The `/learn` command adds knowledge to the memory vault with four input modes.
 ### Example 2: Add File Content
 
 ```bash
-/learn ~/notes/telescope-tips.md
+/learn ~/notes/python-tips.md
 ```
 
 **Workflow:**
@@ -280,7 +280,7 @@ After size filter: 12
 After text detection: 12
 
 Select files to process:
-[x] telescope.lua (2.3KB) - 3 segments expected
+[x] http_client.py (2.3KB) - 3 segments expected
 [x] lsp.lua (4.1KB) - 5 segments expected
 [ ] unused.lua (0.5KB) - 1 segment expected
 [x] keymaps.lua (1.8KB) - 2 segments expected
@@ -288,10 +288,10 @@ Select files to process:
 
 **Processing:**
 ```
-Processing telescope.lua...
-  Segment 1: "Telescope setup" -> CREATE (18% overlap)
-  Segment 2: "Custom pickers" -> UPDATE MEM-telescope-custom-pickers (68% overlap)
-  Segment 3: "Key mappings" -> EXTEND MEM-neovim-plugin-patterns (42% overlap)
+Processing http_client.py...
+  Segment 1: "Session setup" -> CREATE (18% overlap)
+  Segment 2: "Retry adapter" -> UPDATE MEM-requests-retry-patterns (68% overlap)
+  Segment 3: "Timeout config" -> EXTEND MEM-python-http-patterns (42% overlap)
 
 Processing lsp.lua...
   [...]

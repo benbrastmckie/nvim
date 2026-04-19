@@ -117,7 +117,6 @@ The extension system provides task-type-specific support. Extensions are loaded 
 | Extension | Domain | Provides |
 |-----------|--------|----------|
 | **core** | **Agent system foundation** | **All base commands, agents, rules, skills, scripts, hooks, context** |
-| nvim | Neovim/Lua | neovim-research-agent, neovim-implementation-agent |
 | lean | Theorem proving | lean4-research-agent, MCP integration |
 | latex | LaTeX documents | latex-research-agent |
 | typst | Typst documents | typst-research-agent |
@@ -188,8 +187,6 @@ Context files are discovered via `.claude/context/index.json`:
 
 - [User Installation Guide](docs/guides/user-installation.md) - Set up Claude Code
 - [User Guide](docs/guides/user-guide.md) - Command workflows
-- Neovim Integration - Moved to nvim extension: `extensions/nvim/context/project/neovim/guides/neovim-integration.md`
-
 ### Development
 
 - [Component Selection](docs/guides/component-selection.md) - Command vs skill vs agent
