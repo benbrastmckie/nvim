@@ -18,9 +18,10 @@ next_project_number: 481
 
 ### 480. Comprehensively strip ALL remaining nvim/neovim/neotex/VimTeX references from extension sources
 - **Effort**: Medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [480_strip_all_nvim_refs_from_ext_sources/reports/01_team-research.md]
+- **Plan**: [480_strip_all_nvim_refs_from_ext_sources/plans/01_strip-nvim-refs.md]
 
 **Description**: Comprehensively strip ALL remaining nvim/neovim/neotex/VimTeX references from core and latex extension sources. Third attempt -- tasks 478 and 479 each fixed only a subset. Zed post-reload audit (see /home/benjamin/.config/zed/specs/065_strip_nvim_references_post_sync/reports/04_post-reload-diff-review.md) still finds 60 references across 18 files after reloading. Priority 1 (must fix): (1) Remove VimTeX Integration subsection from extensions/latex/EXTENSION.md upstream (propagates `<leader>` bindings into CLAUDE.md on reload), (2) Remove "Load For Neovim Code" block from extensions/core/agents/code-reviewer-agent.md, (3) Remove nvim routing row and "moved to nvim extension" notes from extensions/core/docs/README.md, (4) Remove "moved to nvim extension" entries from extensions/core/docs/docs-README.md, (5) Remove nvim case block from extensions/core/scripts/validate-wiring.sh, (6) Replace "nvim" example in extensions/core/templates/extension-readme-template.md. Priority 2 (should fix): Replace "neovim" example topics in memory documentation (6 files, ~33 refs in extensions/core/skills/skill-memory/SKILL.md, extensions/core/context/project/memory/*.md, extensions/core/commands/learn.md). Priority 3: Genericize nvim references in extensions/core/context/project/latex/tools/compilation-guide.md, extensions/core/context/project/typst/tools/compilation-guide.md, extensions/core/context/standards/postflight-tool-restrictions.md, and extensions/core/scripts/lint/lint-postflight-boundary.sh. Mirror ALL source changes to deployed copies. Verify with `grep -riE 'nvim|neovim|neotex' .claude/extensions/core/ .claude/extensions/latex/` returning zero actionable results.
 

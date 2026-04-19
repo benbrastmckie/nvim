@@ -5,11 +5,11 @@
     {
       "project_number": 480,
       "project_name": "strip_all_nvim_refs_from_ext_sources",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-19T00:44:13Z",
-      "last_updated": "2026-04-19T00:53:52Z",
-      "session_id": "sess_1776559563_3d29db",
+      "last_updated": "2026-04-19T01:15:49Z",
+      "session_id": "sess_1776561110_8fd370",
       "researched": "2026-04-19T00:53:52Z",
       "next_artifact_number": 2,
       "artifacts": [
@@ -17,6 +17,11 @@
           "path": "specs/480_strip_all_nvim_refs_from_ext_sources/reports/01_team-research.md",
           "type": "research",
           "summary": "Team research with 4 teammates"
+        },
+        {
+          "path": "specs/480_strip_all_nvim_refs_from_ext_sources/plans/01_strip-nvim-refs.md",
+          "type": "plan",
+          "summary": "6-phase implementation plan to strip ~75 nvim/neovim/VimTeX references from extension sources with deploy mirroring and prevention check"
         }
       ]
     },
