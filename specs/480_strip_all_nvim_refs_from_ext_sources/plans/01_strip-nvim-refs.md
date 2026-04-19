@@ -201,7 +201,7 @@ Phases are sequential because each priority level builds on the previous, mirror
 
 ---
 
-### Phase 5: Add Prevention Check [NOT STARTED]
+### Phase 5: Add Prevention Check [COMPLETED]
 
 **Goal**: Extend `check-extension-docs.sh` with a `check_core_purity()` function that detects nvim/neovim/VimTeX references in non-nvim extension sources.
 

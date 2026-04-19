@@ -189,6 +189,59 @@ for ext_path in "$EXT_DIR"/*/; do
   echo
 done
 
+# Core purity check: detect nvim/neovim/VimTeX references in non-nvim extension sources
+check_core_purity() {
+  echo "[core-purity]"
+  local purity_failures=0
+
+  # Whitelist: files that legitimately contain the search terms
+  local whitelist=(
+    "lint-postflight-boundary.sh"
+    "postflight-tool-restrictions.md"
+    "extensions/core/README.md"
+    "extensions/latex/README.md"
+    "check-extension-docs.sh"
+    "settings.local.json"
+  )
+
+  # Build grep exclusion args
+  local grep_exclude=""
+  for w in "${whitelist[@]}"; do
+    grep_exclude="$grep_exclude --exclude=*${w##*/}"
+  done
+
+  # Search non-nvim extension directories
+  local matches
+  matches=$(grep -riE 'nvim|neovim|neotex|vimtex' \
+    "$EXT_DIR/core/" \
+    "$EXT_DIR/latex/" \
+    "$EXT_DIR/memory/" \
+    "$EXT_DIR/typst/" \
+    --include='*.md' --include='*.sh' --include='*.json' \
+    2>/dev/null | \
+    grep -v 'extensions/core/README.md' | \
+    grep -v 'extensions/latex/README.md' | \
+    grep -v 'lint-postflight-boundary.sh' | \
+    grep -v 'postflight-tool-restrictions.md' | \
+    grep -v 'extensions/nvim/' | \
+    grep -v 'context/project/neovim/' | \
+    grep -v 'check-extension-docs.sh' | \
+    grep -v 'settings.local.json' || true)
+
+  if [[ -n "$matches" ]]; then
+    while IFS= read -r line; do
+      CURRENT_EXT="core-purity"
+      fail "stale nvim reference: $line"
+      purity_failures=$((purity_failures + 1))
+    done <<< "$matches"
+  else
+    info "OK - no stale nvim/neovim/VimTeX references in non-nvim extensions"
+  fi
+  echo
+}
+
+check_core_purity
+
 # Summary table
 echo "====================================="
 echo "Summary"
