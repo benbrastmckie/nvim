@@ -15,12 +15,20 @@
     {
       "project_number": 486,
       "project_name": "align_skill_meta_frontmatter",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-19T21:30:00Z",
-      "last_updated": "2026-04-19T21:30:00Z",
-      "session_id": "sess_1745098000_meta485",
-      "artifacts": []
+      "last_updated": "2026-04-19T23:57:26Z",
+      "session_id": "sess_1745098400_res486",
+      "artifacts": [
+        {
+          "path": "specs/486_align_skill_meta_frontmatter/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research with 4 teammates"
+        }
+      ],
+      "researched": "2026-04-19T23:57:26Z",
+      "next_artifact_number": 2
     },
     {
       "project_number": 482,

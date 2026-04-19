@@ -11,7 +11,7 @@ next_project_number: 487
 ### Pending
 
 - **485** [NOT STARTED] -- Rewrite meta-guide.md to match current system
-- **486** [NOT STARTED] -- Align skill-meta and agent frontmatter/references
+- **486** [RESEARCHED] -- Align skill-meta and agent frontmatter/references
 - **482** [NOT STARTED] -- Create project-overview detection rule
 - **483** [NOT STARTED] -- Create skill-project-overview for interactive repo generation (depends: 482)
 - **484** [NOT STARTED] -- Wire project-overview components into extension system (depends: 482, 483)
@@ -30,8 +30,9 @@ next_project_number: 487
 
 ### 486. Align skill-meta and agent frontmatter/references
 - **Effort**: Small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [486_align_skill_meta_frontmatter/reports/01_team-research.md]
 
 **Description**: Bundle of small fixes across the /meta pipeline: (1) Add `context: fork` and `agent: meta-builder-agent` to skill-meta frontmatter per thin-wrapper pattern, (2) Fix stale `subagent-return.md` references to `return-metadata-file.md` in both skill and agent, (3) Remove hardcoded `latex` domain type from DetectDomainType in meta-builder-agent.md (replace with extension-aware pattern or `general` fallback), (4) All changes in extension source copies under `.claude/extensions/core/`. Mirror to deployed copies.
 
