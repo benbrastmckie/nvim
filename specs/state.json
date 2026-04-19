@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 480,
+  "next_project_number": 481,
   "active_projects": [
+    {
+      "project_number": 480,
+      "project_name": "strip_all_nvim_refs_from_ext_sources",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-19T00:44:13Z",
+      "last_updated": "2026-04-19T00:44:13Z"
+    },
     {
       "project_number": 479,
       "project_name": "fix_remaining_nvim_refs_in_core_ext",
