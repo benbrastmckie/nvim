@@ -1,5 +1,5 @@
 ---
-next_project_number: 485
+next_project_number: 487
 ---
 
 # TODO
@@ -10,6 +10,8 @@ next_project_number: 485
 
 ### Pending
 
+- **485** [NOT STARTED] -- Rewrite meta-guide.md to match current system
+- **486** [NOT STARTED] -- Align skill-meta and agent frontmatter/references
 - **482** [NOT STARTED] -- Create project-overview detection rule
 - **483** [NOT STARTED] -- Create skill-project-overview for interactive repo generation (depends: 482)
 - **484** [NOT STARTED] -- Wire project-overview components into extension system (depends: 482, 483)
@@ -18,6 +20,20 @@ next_project_number: 485
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 485. Rewrite meta-guide.md to match current system
+- **Effort**: Large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Complete rewrite of `.claude/extensions/core/context/meta/meta-guide.md` (462 lines). The current file documents a phantom system: a 12-question interview across 5 phases, `.opencode/agent/subagents/` paths, marketing-style claims ("+20% routing accuracy"), and a 3-level context allocation model that doesn't exist. Rewrite to document the actual /meta workflow: 3 modes (interactive/prompt/analyze), the 7-stage interview, multi-task creation standard compliance, and current system paths. Fix broken reference to `.claude/context/standards/commands.md`. Update both extension source and deployed copy.
+
+### 486. Align skill-meta and agent frontmatter/references
+- **Effort**: Small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Bundle of small fixes across the /meta pipeline: (1) Add `context: fork` and `agent: meta-builder-agent` to skill-meta frontmatter per thin-wrapper pattern, (2) Fix stale `subagent-return.md` references to `return-metadata-file.md` in both skill and agent, (3) Remove hardcoded `latex` domain type from DetectDomainType in meta-builder-agent.md (replace with extension-aware pattern or `general` fallback), (4) All changes in extension source copies under `.claude/extensions/core/`. Mirror to deployed copies.
 
 ### 482. Create project-overview detection rule
 - **Effort**: Small

@@ -1,7 +1,27 @@
 {
   "version": "1.0.0",
-  "next_project_number": 485,
+  "next_project_number": 487,
   "active_projects": [
+    {
+      "project_number": 485,
+      "project_name": "rewrite_meta_guide",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-19T21:30:00Z",
+      "last_updated": "2026-04-19T21:30:00Z",
+      "session_id": "sess_1745098000_meta485",
+      "artifacts": []
+    },
+    {
+      "project_number": 486,
+      "project_name": "align_skill_meta_frontmatter",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-19T21:30:00Z",
+      "last_updated": "2026-04-19T21:30:00Z",
+      "session_id": "sess_1745098000_meta485",
+      "artifacts": []
+    },
     {
       "project_number": 482,
       "project_name": "project_overview_detection_rule",
