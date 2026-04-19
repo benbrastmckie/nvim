@@ -1,7 +1,15 @@
 {
   "version": "1.0.0",
-  "next_project_number": 481,
+  "next_project_number": 482,
   "active_projects": [
+    {
+      "project_number": 481,
+      "project_name": "remove_check_core_purity_from_check_extension_docs",
+      "status": "not_started",
+      "task_type": "meta",
+      "created": "2026-04-19T19:10:48Z",
+      "last_updated": "2026-04-19T19:10:48Z"
+    },
     {
       "project_number": 480,
       "project_name": "strip_all_nvim_refs_from_ext_sources",

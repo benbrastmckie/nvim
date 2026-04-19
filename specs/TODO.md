@@ -1,5 +1,5 @@
 ---
-next_project_number: 481
+next_project_number: 482
 ---
 
 # TODO
@@ -15,6 +15,13 @@ next_project_number: 481
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 481. Remove check_core_purity() function from check-extension-docs.sh
+- **Effort**: Small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+
+**Description**: Remove check_core_purity() function from check-extension-docs.sh (both source and deployed copy) added by task 480 - this prevention infrastructure is scope creep beyond the reference removal task.
 
 ### 480. Comprehensively strip ALL remaining nvim/neovim/neotex/VimTeX references from extension sources
 - **Effort**: Medium
@@ -101,3 +108,4 @@ Scope: (1) Audit the Lua loader implementation for ground truth, (2) designate `
 
 1. **479** -> research (independent)
 2. **480** -> research (independent)
+3. **481** -> research (independent)
