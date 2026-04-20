@@ -122,7 +122,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Rewrite context-revision-guide.md [NOT STARTED]
+### Phase 3: Rewrite context-revision-guide.md [COMPLETED]
 
 **Goal**: Update context-revision-guide.md (~280 lines) by fixing stale directory references, removing emoji characters, and updating examples to reference current files (removing references to deleted sister files).
 

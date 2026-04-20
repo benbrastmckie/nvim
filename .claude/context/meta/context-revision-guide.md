@@ -1,6 +1,6 @@
 # Context File Revision Guide for Meta Agents
 
-**Last Updated**: 2026-01-08  
+**Last Updated**: 2026-04-19
 **Purpose**: Guide meta agents on when and how to revise context files without bloat
 
 ---
@@ -51,34 +51,12 @@ Split an existing file when:
 
 ### Revision Checklist
 
-1. **Read existing file completely**
-   - Understand current structure and content
-   - Identify section to update
-
-2. **Check if change fits within 200-line limit**
-   - Count current lines
-   - Estimate lines to add
-   - Calculate total
-
-3. **If yes: Update in place**
-   - Make targeted changes
-   - Preserve existing structure
-   - Update version/date
-
-4. **If no: Split file or create new file**
-   - Identify natural boundaries
-   - Create new file(s)
-   - Update references
-
-5. **Update context index**
-   - Add new files to index
-   - Update descriptions
-   - Maintain organization
-
-6. **Update dependent agents**
-   - Find agents loading this file
-   - Update context_loading sections
-   - Test context loading
+1. **Read existing file completely** -- understand current structure and content
+2. **Check if change fits within 200-line limit** -- count current lines, estimate additions
+3. **If yes**: Update in place, preserve existing structure, update date
+4. **If no**: Split file or create new file, update references
+5. **Update context index** -- add new files, update descriptions and line_count
+6. **Update dependent agents** -- find agents loading this file, update context references
 
 ---
 
@@ -86,30 +64,30 @@ Split an existing file when:
 
 ### Core Standards (`.claude/context/standards/`)
 
-**When to revise**: System-wide standard changes  
-**Examples**: `xml-structure.md`, `documentation.md`, `task-management.md`  
-**Revision pattern**: Update in place (rarely changes)  
+**When to revise**: System-wide standard changes
+**Examples**: `xml-structure.md`, `documentation-standards.md`, `task-management.md`
+**Revision pattern**: Update in place (rarely changes)
 **Frequency**: Low (quarterly or less)
 
 ### Core Templates (`.claude/context/templates/`)
 
-**When to revise**: Template structure changes  
-**Examples**: `agent-template.md`, `command-template.md`, `subagent-template.md`  
-**Revision pattern**: Update in place, add version notes  
+**When to revise**: Template structure changes
+**Examples**: `agent-template.md`, `command-template.md`, `thin-wrapper-skill.md`
+**Revision pattern**: Update in place, add version notes
 **Frequency**: Medium (monthly)
 
 ### Core Workflows (`.claude/context/workflows/`)
 
-**When to revise**: Workflow pattern changes  
-**Examples**: `command-lifecycle.md`, `status-transitions.md`, `preflight-postflight.md`  
-**Revision pattern**: Update in place, document changes  
+**When to revise**: Workflow pattern changes
+**Examples**: `command-lifecycle.md`, `status-transitions.md`, `preflight-postflight.md`
+**Revision pattern**: Update in place, document changes
 **Frequency**: Medium (monthly)
 
 ### Project Meta (`.claude/context/meta/`)
 
-**When to revise**: Meta-system patterns evolve  
-**Examples**: `architecture-principles.md`, `domain-patterns.md`, `interview-patterns.md`  
-**Revision pattern**: Update frequently, split if >200 lines  
+**When to revise**: Meta-system patterns evolve
+**Examples**: `meta-guide.md`, `domain-patterns.md`, `context-revision-guide.md`
+**Revision pattern**: Update frequently, split if >200 lines
 **Frequency**: High (weekly)
 
 ### Project Domain (`.claude/context/project/{domain}/`)
@@ -125,76 +103,29 @@ Split an existing file when:
 
 ### Stage 1: Assess Impact
 
-1. **Identify affected files**
-   - Which context files need changes?
-   - Are changes breaking or additive?
-
-2. **Count dependent agents**
-   - How many agents load these files?
-   - Which agents are affected?
-
-3. **Determine change type**
-   - Update existing content?
-   - Add new content?
-   - Remove obsolete content?
+1. **Identify affected files** -- which context files need changes? Breaking or additive?
+2. **Count dependent agents** -- how many agents load these files?
+3. **Determine change type** -- update existing, add new, or remove obsolete?
 
 ### Stage 2: Plan Revision
 
-1. **Choose revision strategy**
-   - Update in place?
-   - Create new file?
-   - Split existing file?
-
-2. **Check file size constraints**
-   - Current line count
-   - Estimated new line count
-   - Within 200-line limit?
-
-3. **Identify agent updates needed**
-   - Which agents need context_loading updates?
-   - Are there breaking changes?
+1. **Choose revision strategy** -- update in place, create new file, or split?
+2. **Check file size constraints** -- current line count, estimated new count, within 200 lines?
+3. **Identify index updates needed** -- line_count changes, new entries, removed entries?
 
 ### Stage 3: Execute Revision
 
-1. **Update/create context files**
-   - Make targeted changes
-   - Follow file size limits
-   - Update version/date
-
-2. **Update context index**
-   - Add new files
-   - Update descriptions
-   - Maintain organization
-
-3. **Update agent context_loading sections**
-   - Add new required files
-   - Move to optional if appropriate
-   - Remove obsolete files
-
-4. **Test affected agents**
-   - Verify context loads correctly
-   - Check for errors
-   - Validate behavior
+1. **Update/create context files** -- make targeted changes, follow file size limits
+2. **Update context index** -- add new files, update line_count, maintain organization
+3. **Sync extension source and deployed copies** -- both locations must match
+4. **Test affected agents** -- verify context loads correctly
 
 ### Stage 4: Validate
 
-1. **Check file sizes**
-   - All files within limits?
-   - No files >200 lines?
-
-2. **Verify context index**
-   - All files listed?
-   - Descriptions accurate?
-   - Organization logical?
-
-3. **Test agent context loading**
-   - Agents load correct files?
-   - No broken references?
-   - Context usage reasonable?
-
-4. **Check for duplication**
-   - No duplicate content across files?
-   - Clear boundaries between files?
+1. **Check file sizes** -- all files within limits?
+2. **Verify context index** -- all files listed with correct line_count?
+3. **Verify sync** -- deployed and extension source copies are identical?
+4. **Check for duplication** -- no duplicate content across files?
 
 ---
 
@@ -202,102 +133,91 @@ Split an existing file when:
 
 ### Scenario 1: New Pattern Discovered
 
-**Situation**: Agent-generator discovers new delegation pattern  
+**Situation**: Agent discovers new delegation pattern
 **Action**: Update `orchestration/delegation.md`
 **Steps**:
-1. Read delegation.md (currently 180 lines)
+1. Read file (currently 180 lines)
 2. Add new pattern section (20 lines)
 3. Total: 200 lines (within limit)
-4. Update version/date
+4. Update date
 5. No agent updates needed (already loaded)
 
 ### Scenario 2: File Exceeds Limit
 
 **Situation**: `standards/task-management.md` grows to 220 lines
-**Action**: Split into two files  
+**Action**: Split into two files
 **Steps**:
 1. Identify natural boundary (e.g., task creation vs. task updates)
 2. Create `task-creation.md` (100 lines)
 3. Create `task-updates.md` (120 lines)
-4. Update context index
+4. Update context index (remove old entry, add two new entries)
 5. Update agents loading task-management.md to load both files
 
 ### Scenario 3: New Domain Added
 
-**Situation**: Adding a new documentation domain (e.g., Typst)
-**Action**: Create new domain directory
+**Situation**: Adding a new domain extension (e.g., Typst)
+**Action**: Create new extension directory
 **Steps**:
-1. Create `.claude/context/project/typst/`
-2. Create domain-specific files (e.g., `typst-syntax.md`, `typst-templates.md`)
-3. Update context index
-4. Update relevant agents to load new files
+1. Create `.claude/extensions/typst/` with manifest.json
+2. Create domain-specific context files
+3. Add index entries via `index-entries.json`
+4. Register routing in manifest
 
 ### Scenario 4: Standard Evolves
 
-**Situation**: New frontmatter field required for all agents  
+**Situation**: New frontmatter field required for all agents
 **Action**: Update `standards/xml-structure.md`
 **Steps**:
 1. Read xml-structure.md
 2. Add new field documentation
 3. Update examples
-4. Update version/date
+4. Update date
 5. No agent updates needed (standard applies to all)
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### ❌ Bloated Files
+### Bloated Files
 
-**Problem**: Single file grows to 500+ lines  
-**Why bad**: Hard to navigate, slow to load, low cohesion  
+**Problem**: Single file grows to 500+ lines
+**Why bad**: Hard to navigate, slow to load, low cohesion
 **Solution**: Split into focused files (50-200 lines each)
 
-### ❌ Duplicate Content
+### Duplicate Content
 
-**Problem**: Same information in multiple files  
-**Why bad**: Inconsistency, maintenance burden  
+**Problem**: Same information in multiple files
+**Why bad**: Inconsistency, maintenance burden
 **Solution**: Single source of truth, cross-reference
 
-### ❌ Orphaned Files
+### Orphaned Files
 
-**Problem**: Context file not referenced by any agent  
-**Why bad**: Dead code, wasted space  
-**Solution**: Remove or document purpose
+**Problem**: Context file not referenced by any agent or index
+**Why bad**: Dead code, wasted space, risk of staleness
+**Solution**: Remove or document purpose; update index
 
-### ❌ Missing Index Updates
+### Missing Index Updates
 
-**Problem**: New files created but not added to index  
-**Why bad**: Files not discoverable, lazy loading broken  
-**Solution**: Always update index when adding files
+**Problem**: New files created but not added to index
+**Why bad**: Files not discoverable, lazy loading broken
+**Solution**: Always update index.json when adding files
 
-### ❌ Breaking Changes Without Updates
+### Breaking Changes Without Updates
 
-**Problem**: Context file changed but dependent agents not updated  
-**Why bad**: Agents fail or behave incorrectly  
+**Problem**: Context file changed but dependent agents not updated
+**Why bad**: Agents fail or behave incorrectly
 **Solution**: Update all dependent agents atomically
 
 ---
 
 ## Metrics and Monitoring
 
-### File Size Distribution
-
-- **Ideal**: 80% of files between 50-200 lines
-- **Warning**: >10% of files >200 lines
-- **Action**: Review and split large files
-
-### Context Loading Efficiency
-
-- **Ideal**: <40KB per agent
-- **Warning**: >40KB per agent
-- **Action**: Review required vs. optional files
-
-### File Cohesion
-
-- **Ideal**: Each file covers single topic
-- **Warning**: File covers multiple unrelated topics
-- **Action**: Split into focused files
+| Metric | Ideal | Warning | Action |
+|--------|-------|---------|--------|
+| File size | 50-200 lines | >200 lines | Split file |
+| Context per agent | <40KB | >40KB | Review required vs. optional |
+| File cohesion | Single topic | Multiple unrelated topics | Split file |
+| Index accuracy | 100% files indexed | Missing entries | Update index |
 
 ---
 
@@ -308,16 +228,16 @@ Split an existing file when:
 2. Update in place when possible
 3. Create new files for new concepts
 4. Split files that exceed 200 lines
-5. Always update context index
-6. Update dependent agents atomically
+5. Always update context index with correct line_count
+6. Sync deployed and extension source copies
 
 **Decision Tree**:
 ```
 Change needed?
-├─ Fits in existing file (<200 lines)? → Update in place
-├─ New concept? → Create new file
-├─ File >200 lines? → Split file
-└─ Breaking change? → Update all dependent agents
++-- Fits in existing file (<200 lines)? -> Update in place
++-- New concept? -> Create new file
++-- File >200 lines? -> Split file
++-- Breaking change? -> Update all dependent agents
 ```
 
 **Remember**: Context files are living documentation. Keep them focused, current, and discoverable.
