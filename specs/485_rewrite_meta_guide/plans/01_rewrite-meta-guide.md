@@ -1,7 +1,7 @@
 # Implementation Plan: Rewrite meta-guide.md
 
 - **Task**: 485 - Rewrite meta-guide.md to match current system
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/485_rewrite_meta_guide/reports/01_team-research.md
@@ -65,7 +65,7 @@ No /meta-specific roadmap items exist. The rewrite supports "Agent System Qualit
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Write new meta-guide.md content [NOT STARTED]
+### Phase 1: Write new meta-guide.md content [COMPLETED]
 
 **Goal**: Create the complete replacement meta-guide.md from scratch based on research findings and source-of-truth files.
 
