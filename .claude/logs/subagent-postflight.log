@@ -20270,3 +20270,19 @@
 [2026-04-19T18:25:48-07:00] Task directory: specs/487_update_stale_meta_sister_files
 [2026-04-19T18:25:48-07:00] Loop guard triggered: 3 >= 3
 [2026-04-19T18:25:48-07:00] Loop guard prevented continuation
+[2026-04-19T18:32:50-07:00] Postflight marker found at: specs/487_update_stale_meta_sister_files/.postflight-pending
+[2026-04-19T18:32:50-07:00] Task directory: specs/487_update_stale_meta_sister_files
+[2026-04-19T18:32:50-07:00] Loop guard initialized to 1
+[2026-04-19T18:32:50-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-19T18:32:52-07:00] Postflight marker found at: specs/487_update_stale_meta_sister_files/.postflight-pending
+[2026-04-19T18:32:52-07:00] Task directory: specs/487_update_stale_meta_sister_files
+[2026-04-19T18:32:52-07:00] Loop guard incremented to 2
+[2026-04-19T18:32:52-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-19T18:32:56-07:00] Postflight marker found at: specs/487_update_stale_meta_sister_files/.postflight-pending
+[2026-04-19T18:32:56-07:00] Task directory: specs/487_update_stale_meta_sister_files
+[2026-04-19T18:32:56-07:00] Loop guard incremented to 3
+[2026-04-19T18:32:56-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-19T18:32:58-07:00] Postflight marker found at: specs/487_update_stale_meta_sister_files/.postflight-pending
+[2026-04-19T18:32:58-07:00] Task directory: specs/487_update_stale_meta_sister_files
+[2026-04-19T18:32:58-07:00] Loop guard triggered: 3 >= 3
+[2026-04-19T18:32:58-07:00] Loop guard prevented continuation

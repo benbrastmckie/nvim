@@ -10,7 +10,7 @@ next_project_number: 488
 
 ### Pending
 
-- **487** [RESEARCHED] -- Update stale meta sister files (architecture-principles, standards-checklist, interview-patterns)
+- **487** [PLANNED] -- Update stale meta sister files (architecture-principles, standards-checklist, interview-patterns)
 - **485** [COMPLETED] -- Rewrite meta-guide.md to match current system
 - **486** [COMPLETED] -- Align skill-meta and agent frontmatter/references
 - **482** [NOT STARTED] -- Create project-overview detection rule
@@ -24,9 +24,10 @@ next_project_number: 488
 
 ### 487. Update stale meta sister files (architecture-principles, standards-checklist, interview-patterns)
 - **Effort**: Medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Research**: [487_update_stale_meta_sister_files/reports/01_meta-sister-files.md]
+- **Plan**: [487_update_stale_meta_sister_files/plans/01_update-meta-sister-files.md]
 - **Description**: Update or consolidate 3 stale sister files in `.claude/context/meta/`: architecture-principles.md (references .opencode, phantom 3-level context, non-existent tools), standards-checklist.md (references subagent-return.md, non-existent frontmatter fields), interview-patterns.md (old interview stages). Rewrite to match current system or remove if redundant with new meta-guide.md. Sync both deployed and extension source copies. Follow-on from tasks 485/486.
 
 ### 485. Rewrite meta-guide.md to match current system

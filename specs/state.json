@@ -361,13 +361,13 @@
     {
       "project_number": 487,
       "project_name": "update_stale_meta_sister_files",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-19T01:00:00Z",
-      "last_updated": "2026-04-20T01:26:09Z",
+      "last_updated": "2026-04-20T01:33:14Z",
       "description": "Update or consolidate the 3 stale sister files in .claude/context/meta/: architecture-principles.md (references .opencode, phantom 3-level context model, non-existent status-sync-manager/git-workflow-manager), standards-checklist.md (references subagent-return.md, non-existent frontmatter fields temperature/max_tokens/can_delegate_to, non-existent tools), interview-patterns.md (references old interview stages). These were identified as follow-on work during task 485 research. Each file should be rewritten to match the current system or removed if redundant with the new meta-guide.md. Both deployed (.claude/context/meta/) and extension source (.claude/extensions/core/context/meta/) copies must be synced. Update index.json line counts if file sizes change.",
       "next_artifact_number": 2,
-      "session_id": "sess_1776648076_eb8512",
+      "session_id": "sess_1776648602_d23efe",
       "memory_candidates": [
         {
           "content": "All agents in .claude/agents/ use minimal frontmatter (name, description, optional model). The extensive frontmatter schema documented in standards-checklist.md (temperature, max_tokens, can_delegate_to, version, mode, agent_type, permissions, context_loading, delegation, lifecycle) was never implemented. The actual standard is documented in agent-frontmatter-standard.md.",
@@ -401,6 +401,11 @@
           "path": "specs/487_update_stale_meta_sister_files/reports/01_meta-sister-files.md",
           "type": "research",
           "summary": "Analysis of 5 meta sister files with rewrite/delete/keep recommendations"
+        },
+        {
+          "path": "specs/487_update_stale_meta_sister_files/plans/01_update-meta-sister-files.md",
+          "type": "plan",
+          "summary": "4-phase plan: delete 3 files, rewrite 2 files, update indexes, fix cross-references"
         }
       ]
     }
