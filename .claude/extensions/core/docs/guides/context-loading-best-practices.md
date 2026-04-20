@@ -130,8 +130,8 @@ context_loading:
         - "project/lean4/tools/lsp-integration.md"
     - condition: "task_type == 'meta'"
       files:
-        - "project/meta/architecture-principles.md"
-        - "project/meta/domain-patterns.md"
+        - "meta/meta-guide.md"
+        - "meta/domain-patterns.md"
   max_context_size: 40000
 ```
 
@@ -377,8 +377,8 @@ context_loading:
     # Task-type-based
     - condition: "task_type == 'meta'"
       files:
-        - "project/meta/architecture-principles.md"
-        - "project/meta/domain-patterns.md"
+        - "meta/meta-guide.md"
+        - "meta/domain-patterns.md"
     
     # Operation-based
     - condition: "requires_git == true"
@@ -724,9 +724,9 @@ context_loading:
   conditional:
     - condition: "stage >= 4"  # Only load in execution stage
       files:
-        - "project/meta/architecture-principles.md"
-        - "project/meta/domain-patterns.md"
-        - "project/meta/interview-patterns.md"
+        - "meta/meta-guide.md"
+        - "meta/domain-patterns.md"
+        - "meta/context-revision-guide.md"
   max_context_size: 40000
 ```
 

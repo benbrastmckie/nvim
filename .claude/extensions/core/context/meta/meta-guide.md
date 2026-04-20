@@ -244,7 +244,7 @@ The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used dur
 
 2. **Roadmap-aware priority hints**: Pass `roadmap_path` in delegation context. During ReviewAndConfirm (Stage 5), the agent could check if proposed tasks align with roadmap priorities and surface alignment information.
 
-3. **Sister file updates**: The companion files in `.claude/context/meta/` (architecture-principles.md, standards-checklist.md, interview-patterns.md) contain stale references and should be updated or consolidated in follow-on tasks.
+3. **Sister file cleanup** (completed, task 487): Removed architecture-principles.md, standards-checklist.md, and interview-patterns.md (redundant with this guide). Rewrote domain-patterns.md and context-revision-guide.md to match current system.
 
 4. **v2 return protocol migration**: Migrate meta-builder-agent from console JSON return to file-based `.return-meta.json` protocol, aligning with all other agents and enabling proper postflight in skill-meta.
 

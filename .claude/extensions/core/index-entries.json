@@ -559,37 +559,11 @@
       }
     },
     {
-      "path": "meta/architecture-principles.md",
-      "domain": "core",
-      "subdomain": "meta",
-      "summary": "Core architecture principles for agent system",
-      "line_count": 270,
-      "keywords": [
-        "meta",
-        "architecture",
-        "principles"
-      ],
-      "topics": [
-        "system-design"
-      ],
-      "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "task_types": [
-          "meta"
-        ],
-        "commands": [
-          "/meta"
-        ]
-      }
-    },
-    {
       "path": "meta/context-revision-guide.md",
       "domain": "core",
       "subdomain": "meta",
       "summary": "Guide for revising context documentation",
-      "line_count": 323,
+      "line_count": 243,
       "keywords": [
         "meta",
         "context",
@@ -615,7 +589,7 @@
       "domain": "core",
       "subdomain": "meta",
       "summary": "Domain-specific patterns for extensions",
-      "line_count": 259,
+      "line_count": 143,
       "keywords": [
         "meta",
         "domain",
@@ -623,32 +597,6 @@
       ],
       "topics": [
         "extensions"
-      ],
-      "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "task_types": [
-          "meta"
-        ],
-        "commands": [
-          "/meta"
-        ]
-      }
-    },
-    {
-      "path": "meta/interview-patterns.md",
-      "domain": "core",
-      "subdomain": "meta",
-      "summary": "User interview patterns for task gathering",
-      "line_count": 224,
-      "keywords": [
-        "meta",
-        "interview",
-        "patterns"
-      ],
-      "topics": [
-        "user-interaction"
       ],
       "load_when": {
         "agents": [
@@ -674,32 +622,6 @@
       ],
       "topics": [
         "system-design"
-      ],
-      "load_when": {
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "task_types": [
-          "meta"
-        ],
-        "commands": [
-          "/meta"
-        ]
-      }
-    },
-    {
-      "path": "meta/standards-checklist.md",
-      "domain": "core",
-      "subdomain": "meta",
-      "summary": "Checklist for applying system standards",
-      "line_count": 379,
-      "keywords": [
-        "meta",
-        "standards",
-        "checklist"
-      ],
-      "topics": [
-        "quality"
       ],
       "load_when": {
         "agents": [

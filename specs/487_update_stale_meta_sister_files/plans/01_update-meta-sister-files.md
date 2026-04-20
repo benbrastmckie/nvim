@@ -152,7 +152,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Update Index Files and Cross-References [NOT STARTED]
+### Phase 4: Update Index Files and Cross-References [COMPLETED]
 
 **Goal**: Remove deleted file entries from all index files, update line_counts for rewritten files, and fix cross-references in other context files.
 

@@ -570,33 +570,7 @@
           "/meta"
         ]
       },
-      "line_count": 270,
-      "keywords": [
-        "meta",
-        "architecture",
-        "principles"
-      ],
-      "domain": "core",
-      "path": "meta/architecture-principles.md",
-      "summary": "Core architecture principles for agent system",
-      "topics": [
-        "system-design"
-      ],
-      "subdomain": "meta"
-    },
-    {
-      "load_when": {
-        "task_types": [
-          "meta"
-        ],
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "commands": [
-          "/meta"
-        ]
-      },
-      "line_count": 323,
+      "line_count": 243,
       "keywords": [
         "meta",
         "context",
@@ -622,7 +596,7 @@
           "/meta"
         ]
       },
-      "line_count": 259,
+      "line_count": 143,
       "keywords": [
         "meta",
         "domain",
@@ -648,32 +622,6 @@
           "/meta"
         ]
       },
-      "line_count": 224,
-      "keywords": [
-        "meta",
-        "interview",
-        "patterns"
-      ],
-      "domain": "core",
-      "path": "meta/interview-patterns.md",
-      "summary": "User interview patterns for task gathering",
-      "topics": [
-        "user-interaction"
-      ],
-      "subdomain": "meta"
-    },
-    {
-      "load_when": {
-        "task_types": [
-          "meta"
-        ],
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "commands": [
-          "/meta"
-        ]
-      },
       "line_count": 259,
       "keywords": [
         "meta",
@@ -684,32 +632,6 @@
       "summary": "Reference guide for /meta command and meta-builder-agent",
       "topics": [
         "system-design"
-      ],
-      "subdomain": "meta"
-    },
-    {
-      "load_when": {
-        "task_types": [
-          "meta"
-        ],
-        "agents": [
-          "meta-builder-agent"
-        ],
-        "commands": [
-          "/meta"
-        ]
-      },
-      "line_count": 379,
-      "keywords": [
-        "meta",
-        "standards",
-        "checklist"
-      ],
-      "domain": "core",
-      "path": "meta/standards-checklist.md",
-      "summary": "Checklist for applying system standards",
-      "topics": [
-        "quality"
       ],
       "subdomain": "meta"
     },
