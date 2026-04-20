@@ -288,7 +288,6 @@ Full details: `.claude/context/architecture/context-layers.md`
 
 Core context (always available):
 - @.claude/context/repo/project-overview.md
-- @.claude/context/meta/meta-guide.md
 - @README.md
 
 **Extension Context**: Available when extensions are loaded via the extension picker. Query `index.json` for extension-specific context files.

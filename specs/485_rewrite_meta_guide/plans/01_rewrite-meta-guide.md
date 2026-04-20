@@ -102,7 +102,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update CLAUDE.md and extension source files [NOT STARTED]
+### Phase 2: Update CLAUDE.md and extension source files [COMPLETED]
 
 **Goal**: Remove the always-available import of meta-guide.md from CLAUDE.md and sync the extension source copy.
 
