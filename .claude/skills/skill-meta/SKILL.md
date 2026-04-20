@@ -2,13 +2,7 @@
 name: skill-meta
 description: Interactive system builder. Invoke for /meta command to create tasks for .claude/ system changes.
 allowed-tools: Task, Bash, Edit, Read, Write
-# Original context (now loaded by subagent):
-#   - .claude/docs/guides/component-selection.md
-#   - .claude/docs/guides/creating-commands.md
-#   - .claude/docs/guides/creating-skills.md
-#   - .claude/docs/guides/creating-agents.md
-# Original tools (now used by subagent):
-#   - Read, Write, Edit, Glob, Grep, Bash(git, jq, mkdir), AskUserQuestion
+agent: meta-builder-agent
 ---
 
 # Meta Skill
@@ -106,7 +100,7 @@ The subagent will:
 
 ### 4. Return Validation
 
-Validate return matches `subagent-return.md` schema:
+Validate return matches `return-metadata-file.md` schema:
 - Status is one of: completed, partial, failed, blocked
 - Summary is non-empty and <100 tokens
 - Artifacts array present (task directories for interactive/prompt modes)
@@ -120,7 +114,7 @@ Return validated result to caller without modification.
 
 ## Return Format
 
-See `.claude/context/formats/subagent-return.md` for full specification.
+See `.claude/context/formats/return-metadata-file.md` for full specification.
 
 ### Expected Return: Interactive Mode (tasks created)
 

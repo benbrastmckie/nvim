@@ -1,7 +1,7 @@
 # Implementation Plan: Align skill-meta and agent frontmatter/references
 
 - **Task**: 486 - Align skill-meta and agent frontmatter/references
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: reports/01_team-research.md
@@ -53,7 +53,7 @@ No ROADMAP.md consulted. Research notes this advances the "Agent frontmatter val
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Apply all four fixes [NOT STARTED]
+### Phase 1: Apply all four fixes [COMPLETED]
 
 **Goal**: Complete all four surgical edits to the two deployed files.
 

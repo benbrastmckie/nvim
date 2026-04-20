@@ -90,7 +90,7 @@ Quick reference for context loading by mode:
 
 | Context File | Interactive | Prompt | Analyze |
 |--------------|-------------|--------|---------|
-| subagent-return.md | Always | Always | Always |
+| return-metadata-file.md | Always | Always | Always |
 | component-selection.md | Stage 2 | Stage 2 | No |
 | creating-commands.md | On-demand* | On-demand* | No |
 | creating-skills.md | On-demand* | On-demand* | No |
@@ -237,7 +237,6 @@ Let's begin!
 
 **Classification Logic**:
 - Keywords: "command", "skill", "agent", "meta", ".claude/" -> task_type = "meta"
-- Keywords: "latex", "document", "pdf", "tex" -> task_type = "latex"
 - Otherwise -> task_type = "general"
 
 ### Interview Stage 3: IdentifyUseCases
