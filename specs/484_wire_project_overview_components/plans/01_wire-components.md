@@ -113,7 +113,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update update-project.md guide [IN PROGRESS]
+### Phase 3: Update update-project.md guide [COMPLETED]
 
 **Goal**: Update both the extension source and installed versions of update-project.md to reference the /project-overview automated workflow.
 

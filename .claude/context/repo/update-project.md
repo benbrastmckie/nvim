@@ -11,7 +11,19 @@ Generate or update `project-overview.md` when:
 - The existing project-overview.md doesn't match the current project
 - Project structure or technology stack has significantly changed
 
-## Generation Process
+## Recommended Workflow
+
+The fastest way to generate `project-overview.md` is the `/project-overview` command. It interactively scans the repository, interviews you about project purpose and workflow, and creates a task in [RESEARCHED] status with a research artifact. Then follow the standard lifecycle:
+
+```bash
+/project-overview     # Interactive scan + task creation
+/plan {N}             # Create implementation plan
+/implement {N}        # Generate the file
+```
+
+The manual process below is preserved as a reference for understanding what the command does internally, or for cases where fine-grained control is needed.
+
+## Manual Generation Process
 
 ### Step 1: Analyze the Project
 
