@@ -10,7 +10,7 @@ next_project_number: 487
 
 ### Pending
 
-- **485** [NOT STARTED] -- Rewrite meta-guide.md to match current system
+- **485** [RESEARCHED] -- Rewrite meta-guide.md to match current system
 - **486** [COMPLETED] -- Align skill-meta and agent frontmatter/references
 - **482** [NOT STARTED] -- Create project-overview detection rule
 - **483** [NOT STARTED] -- Create skill-project-overview for interactive repo generation (depends: 482)
@@ -23,8 +23,9 @@ next_project_number: 487
 
 ### 485. Rewrite meta-guide.md to match current system
 - **Effort**: Large
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
+- **Research**: [485_rewrite_meta_guide/reports/01_team-research.md]
 
 **Description**: Complete rewrite of `.claude/extensions/core/context/meta/meta-guide.md` (462 lines). The current file documents a phantom system: a 12-question interview across 5 phases, `.opencode/agent/subagents/` paths, marketing-style claims ("+20% routing accuracy"), and a 3-level context allocation model that doesn't exist. Rewrite to document the actual /meta workflow: 3 modes (interactive/prompt/analyze), the 7-stage interview, multi-task creation standard compliance, and current system paths. Fix broken reference to `.claude/context/standards/commands.md`. Update both extension source and deployed copy.
 

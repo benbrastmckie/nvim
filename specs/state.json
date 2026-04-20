@@ -5,12 +5,20 @@
     {
       "project_number": 485,
       "project_name": "rewrite_meta_guide",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-19T21:30:00Z",
-      "last_updated": "2026-04-19T21:30:00Z",
-      "session_id": "sess_1745098000_meta485",
-      "artifacts": []
+      "last_updated": "2026-04-20T00:28:13Z",
+      "session_id": "sess_1745104500_res485",
+      "artifacts": [
+        {
+          "path": "specs/485_rewrite_meta_guide/reports/01_team-research.md",
+          "type": "research",
+          "summary": "Team research with 4 teammates"
+        }
+      ],
+      "researched": "2026-04-20T00:28:13Z",
+      "next_artifact_number": 2
     },
     {
       "project_number": 486,
