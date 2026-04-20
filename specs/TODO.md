@@ -16,7 +16,7 @@ next_project_number: 490
 - **485** [COMPLETED] -- Rewrite meta-guide.md to match current system
 - **486** [COMPLETED] -- Align skill-meta and agent frontmatter/references
 - **482** [IMPLEMENTING] -- Create project-overview detection rule
-- **483** [NOT STARTED] -- Create skill-project-overview for interactive repo generation (depends: 482)
+- **483** [RESEARCHED] -- Create skill-project-overview for interactive repo generation (depends: 482)
 - **484** [NOT STARTED] -- Wire project-overview components into extension system (depends: 482, 483)
 - **476** [COMPLETED] -- Consolidate extension system documentation into single source of truth
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
@@ -107,7 +107,7 @@ The command, skill, and agent files are structurally intact -- the regression is
 
 ### 483. Create skill-project-overview for interactive repo generation
 - **Effort**: Medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: Task #482
 

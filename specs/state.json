@@ -149,15 +149,20 @@
     {
       "project_number": 483,
       "project_name": "skill_project_overview",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-19T21:00:00Z",
-      "last_updated": "2026-04-19T21:00:00Z",
-      "session_id": "sess_1745096400_meta482",
+      "last_updated": "2026-04-20T23:14:07Z",
+      "session_id": "sess_1745187000_a657c3",
       "dependencies": [
         482
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/483_skill_project_overview/reports/01_skill-project-overview.md",
+          "type": "research"
+        }
+      ]
     },
     {
       "project_number": 484,
