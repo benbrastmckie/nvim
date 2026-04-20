@@ -25,7 +25,7 @@ Task management and agent orchestration for project development. For comprehensi
 
 **Project-specific structure**: See `.claude/context/repo/project-overview.md` for details about this repository's layout.
 
-**New repository setup**: If project-overview.md doesn't exist or contains the generic template notice (`<!-- GENERIC TEMPLATE`), run `/task "Generate project-overview.md for this repository"` to create a project-specific version. See `.claude/context/repo/update-project.md` for guidance.
+**New repository setup**: If project-overview.md doesn't exist or contains the generic template notice (`<!-- GENERIC TEMPLATE`), run `/project-overview` to interactively scan the repository and create a generation task. See `.claude/context/repo/update-project.md` for guidance.
 
 ## Task Management
 
@@ -89,6 +89,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/implement` | `/implement N[,N-N] [--team] [--force] [--clean] [--fast\|--hard] [--haiku\|--sonnet\|--opus]` | Execute plan(s), resume from incomplete phase |
 | `/revise` | `/revise N` | Create new plan version |
 | `/review` | `/review` | Analyze codebase |
+| `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync repository metrics |
 | `/errors` | `/errors` | Analyze error patterns, create fix plans |
 | `/meta` | `/meta` | System builder for .claude/ changes |
@@ -179,6 +180,7 @@ Standard actions: `create`, `complete research`, `create implementation plan`, `
 | skill-orchestrator | (direct execution) | - | Route commands to appropriate workflows |
 | skill-git-workflow | (direct execution) | - | Create scoped git commits for task operations |
 | skill-fix-it | (direct execution) | - | Scan for FIX:/TODO:/NOTE: tags and create tasks |
+| skill-project-overview | (direct execution) | - | Interactive repo scan and project-overview.md task creation |
 | /review | (direct execution) | - | Codebase analysis; code-reviewer-agent available for future skill integration |
 
 ### Agents

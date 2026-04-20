@@ -90,7 +90,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update CLAUDE.md merge-source [IN PROGRESS]
+### Phase 2: Update CLAUDE.md merge-source [COMPLETED]
 
 **Goal**: Add /project-overview command and skill-project-overview entries to the claudemd.md merge-source, and update the "New repository setup" paragraph.
 
@@ -113,7 +113,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Update update-project.md guide [NOT STARTED]
+### Phase 3: Update update-project.md guide [IN PROGRESS]
 
 **Goal**: Update both the extension source and installed versions of update-project.md to reference the /project-overview automated workflow.
 
