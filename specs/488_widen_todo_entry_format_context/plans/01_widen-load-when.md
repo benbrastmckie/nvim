@@ -1,7 +1,7 @@
 # Implementation Plan: Widen load_when for State Management Context
 
 - **Task**: 488 - widen_todo_entry_format_context
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/488_widen_todo_entry_format_context/reports/01_widen-load-when.md

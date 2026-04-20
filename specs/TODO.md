@@ -10,7 +10,7 @@ next_project_number: 489
 
 ### Pending
 
-- **488** [PLANNED] -- Widen load_when for state-management-schema.md in index.json so task-creating commands see TODO.md entry format spec
+- **488** [COMPLETED] -- Widen load_when for state-management-schema.md in index.json so task-creating commands see TODO.md entry format spec
 - **487** [COMPLETED] -- Update stale meta sister files (architecture-principles, standards-checklist, interview-patterns)
 - **485** [COMPLETED] -- Rewrite meta-guide.md to match current system
 - **486** [COMPLETED] -- Align skill-meta and agent frontmatter/references
@@ -25,10 +25,11 @@ next_project_number: 489
 
 ### 488. Widen load_when for state-management-schema.md in index.json so task-creating commands see TODO.md entry format spec
 - **Effort**: Small
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Research**: [488_widen_todo_entry_format_context/reports/01_widen-load-when.md]
 - **Plan**: [488_widen_todo_entry_format_context/plans/01_widen-load-when.md]
+- **Summary**: [488_widen_todo_entry_format_context/summaries/01_widen-load-when-summary.md]
 
 **Description**: Widen load_when for state-management-schema.md in index.json so /review and all task-creating commands see the TODO.md entry format spec. Add explicit format reference to review.md task creation section.
 

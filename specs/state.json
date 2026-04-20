@@ -5,12 +5,12 @@
     {
       "project_number": 488,
       "project_name": "widen_todo_entry_format_context",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Widen load_when for state-management-schema.md in index.json so /review and all task-creating commands see the TODO.md entry format spec. Add explicit format reference to review.md task creation section.",
       "created": "2026-04-20T19:05:51Z",
-      "last_updated": "2026-04-20T19:14:55Z",
-      "session_id": "sess_1745178100_plan488",
+      "last_updated": "2026-04-20T19:20:37Z",
+      "session_id": "sess_1745178200_impl488",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -37,8 +37,15 @@
           "path": "specs/488_widen_todo_entry_format_context/plans/01_widen-load-when.md",
           "type": "plan",
           "summary": "Implementation plan with 2 parallel phases to widen load_when for state-management context files and add explicit schema reference in review.md"
+        },
+        {
+          "path": "specs/488_widen_todo_entry_format_context/summaries/01_widen-load-when-summary.md",
+          "type": "summary",
+          "summary": "Widened load_when for state-management context files to cover all task-creating commands"
         }
-      ]
+      ],
+      "completion_summary": "Widened load_when.commands and load_when.agents for both state-management-schema.md and state-management.md in index.json to include all task-creating commands (/review, /fix-it, /meta, /spawn, /errors) and added explicit schema reference to review.md.",
+      "claudemd_suggestions": "Updated .claude/context/index.json (two load_when entries widened) and .claude/commands/review.md (explicit schema reference added)"
     },
     {
       "project_number": 485,
