@@ -80,7 +80,7 @@ Phases within the same wave can execute in parallel.
 - `jq . .claude/context/index.json` parses without error
 - `jq '.entries[] | select(.path | test("state-management")) | {path, load_when}' .claude/context/index.json` shows updated commands and agents arrays
 
-### Phase 2: Add Schema Reference to review.md [NOT STARTED]
+### Phase 2: Add Schema Reference to review.md [COMPLETED]
 
 **Goal**: Add an explicit `@`-reference to `state-management-schema.md` in the `/review` command's task creation section so the entry format is unambiguous.
 

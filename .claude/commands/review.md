@@ -803,7 +803,7 @@ jq --arg num "$next_num" --arg slug "$slug" --arg title "$title" \
 ```
 
 **4. Update TODO.md:**
-Add task entry following existing format in TODO.md frontmatter section.
+Add task entry to TODO.md following the format in @.claude/context/reference/state-management-schema.md (see 'TODO.md Entry Format' section).
 
 **5. Track in review state:**
 ```bash
