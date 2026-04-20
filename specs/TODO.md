@@ -15,7 +15,7 @@ next_project_number: 490
 - **487** [COMPLETED] -- Update stale meta sister files (architecture-principles, standards-checklist, interview-patterns)
 - **485** [COMPLETED] -- Rewrite meta-guide.md to match current system
 - **486** [COMPLETED] -- Align skill-meta and agent frontmatter/references
-- **482** [PLANNED] -- Create project-overview detection rule
+- **482** [IMPLEMENTING] -- Create project-overview detection rule
 - **483** [NOT STARTED] -- Create skill-project-overview for interactive repo generation (depends: 482)
 - **484** [NOT STARTED] -- Wire project-overview components into extension system (depends: 482, 483)
 - **476** [COMPLETED] -- Consolidate extension system documentation into single source of truth
@@ -98,9 +98,10 @@ The command, skill, and agent files are structurally intact -- the regression is
 
 ### 482. Create project-overview detection rule
 - **Effort**: Small
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Plan**: [specs/482_project_overview_detection_rule/plans/01_overview-detection-rule.md]
+- **Summary**: [specs/482_project_overview_detection_rule/summaries/01_overview-detection-rule-summary.md]
 
 **Description**: Create a detection rule that fires when `project-overview.md` contains the `<!-- GENERIC TEMPLATE` marker. The rule should instruct the agent to notify the user and suggest invoking the project-overview generation workflow (task 483's skill).
 

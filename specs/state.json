@@ -125,19 +125,26 @@
     {
       "project_number": 482,
       "project_name": "project_overview_detection_rule",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-19T21:00:00Z",
-      "last_updated": "2026-04-20T23:02:00Z",
-      "session_id": "sess_1745186500_10c95d",
+      "last_updated": "2026-04-20T23:10:00Z",
+      "session_id": "sess_1745186600_6f1bc7",
       "artifacts": [
         {
           "path": "specs/482_project_overview_detection_rule/plans/01_overview-detection-rule.md",
           "type": "plan",
           "summary": "2-phase plan to create and install project-overview detection rule"
+        },
+        {
+          "path": "specs/482_project_overview_detection_rule/summaries/01_overview-detection-rule-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for project-overview detection rule creation and installation"
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Created project-overview-detection.md rule with YAML frontmatter path targeting, registered in core manifest, and installed to active rules directory.",
+      "claudemd_suggestions": "Added project-overview-detection.md to .claude/extensions/core/rules/ and .claude/rules/, updated core manifest.json provides.rules array"
     },
     {
       "project_number": 483,
