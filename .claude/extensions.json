@@ -1,87 +1,56 @@
 {
   "extensions": {
-    "nix": {
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "project/nix/README.md",
-            "project/nix/domain/nix-language.md",
-            "project/nix/domain/flakes.md",
-            "project/nix/domain/nixos-modules.md",
-            "project/nix/domain/home-manager.md",
-            "project/nix/patterns/module-patterns.md",
-            "project/nix/patterns/overlay-patterns.md",
-            "project/nix/patterns/derivation-patterns.md",
-            "project/nix/standards/nix-style-guide.md",
-            "project/nix/tools/nixos-rebuild-guide.md",
-            "project/nix/tools/home-manager-guide.md"
-          ]
-        },
-        "settings": {
-          "mcpServers": {
-            "type": "new_object",
-            "children": {
-              "mcp-nixos": {
-                "type": "new_object",
-                "children": {
-                  "command": {
-                    "type": "new_value",
-                    "value": "uvx"
-                  },
-                  "args": {
-                    "type": "new_array",
-                    "items": [
-                      "mcp-nixos"
-                    ]
-                  }
-                }
-              }
-            }
-          },
-          "permissions": {
-            "type": "merged",
-            "children": {
-              "allow": {
-                "type": "appended",
-                "items": [
-                  "mcp__nixos__nix",
-                  "mcp__nixos__nix_versions"
-                ]
-              }
-            }
-          }
-        }
-      },
-      "version": "1.0.0",
-      "status": "active",
-      "loaded_at": "2026-04-18T18:43:16Z",
-      "installed_files": [
-        ".claude/agents/nix-research-agent.md",
-        ".claude/agents/nix-implementation-agent.md",
-        ".claude/rules/nix.md",
-        ".claude/skills/skill-nix-research/SKILL.md",
-        ".claude/skills/skill-nix-implementation/SKILL.md",
-        ".claude/context/project/nix/README.md",
-        ".claude/context/project/nix/domain/flakes.md",
-        ".claude/context/project/nix/domain/home-manager.md",
-        ".claude/context/project/nix/domain/nix-language.md",
-        ".claude/context/project/nix/domain/nixos-modules.md",
-        ".claude/context/project/nix/patterns/derivation-patterns.md",
-        ".claude/context/project/nix/patterns/module-patterns.md",
-        ".claude/context/project/nix/patterns/overlay-patterns.md",
-        ".claude/context/project/nix/standards/nix-style-guide.md",
-        ".claude/context/project/nix/tools/home-manager-guide.md",
-        ".claude/context/project/nix/tools/nixos-rebuild-guide.md"
-      ],
-      "data_skeleton_files": [],
-      "installed_dirs": [
-        ".claude/skills/skill-nix-research",
-        ".claude/skills/skill-nix-implementation",
-        ".claude/context/project/nix"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nix"
-    },
     "core": {
+      "status": "active",
+      "loaded_at": "2026-04-19T23:15:10Z",
+      "installed_dirs": [
+        ".claude/agents",
+        ".claude/commands",
+        ".claude/rules",
+        ".claude/skills",
+        ".claude/skills/skill-fix-it",
+        ".claude/skills/skill-git-workflow",
+        ".claude/skills/skill-implementer",
+        ".claude/skills/skill-meta",
+        ".claude/skills/skill-orchestrator",
+        ".claude/skills/skill-planner",
+        ".claude/skills/skill-refresh",
+        ".claude/skills/skill-researcher",
+        ".claude/skills/skill-reviser",
+        ".claude/skills/skill-spawn",
+        ".claude/skills/skill-status-sync",
+        ".claude/skills/skill-tag",
+        ".claude/skills/skill-team-implement",
+        ".claude/skills/skill-team-plan",
+        ".claude/skills/skill-team-research",
+        ".claude/skills/skill-todo",
+        ".claude/context",
+        ".claude/context/architecture",
+        ".claude/context/checkpoints",
+        ".claude/context/formats",
+        ".claude/context/guides",
+        ".claude/context/meta",
+        ".claude/context/orchestration",
+        ".claude/context/patterns",
+        ".claude/context/processes",
+        ".claude/context/reference",
+        ".claude/context/repo",
+        ".claude/context/schemas",
+        ".claude/context/standards",
+        ".claude/context/templates",
+        ".claude/context/troubleshooting",
+        ".claude/context/workflows",
+        ".claude/scripts",
+        ".claude/hooks",
+        ".claude/docs",
+        ".claude/docs/architecture",
+        ".claude/docs/examples",
+        ".claude/docs/guides",
+        ".claude/docs/reference",
+        ".claude/docs/templates",
+        ".claude/templates",
+        ".claude/systemd"
+      ],
       "merged_sections": {
         "index": {
           "paths": [
@@ -189,56 +158,7 @@
           ]
         }
       },
-      "loaded_at": "2026-04-18T18:43:12Z",
-      "status": "active",
-      "installed_dirs": [
-        ".claude/agents",
-        ".claude/commands",
-        ".claude/rules",
-        ".claude/skills",
-        ".claude/skills/skill-fix-it",
-        ".claude/skills/skill-git-workflow",
-        ".claude/skills/skill-implementer",
-        ".claude/skills/skill-meta",
-        ".claude/skills/skill-orchestrator",
-        ".claude/skills/skill-planner",
-        ".claude/skills/skill-refresh",
-        ".claude/skills/skill-researcher",
-        ".claude/skills/skill-reviser",
-        ".claude/skills/skill-spawn",
-        ".claude/skills/skill-status-sync",
-        ".claude/skills/skill-tag",
-        ".claude/skills/skill-team-implement",
-        ".claude/skills/skill-team-plan",
-        ".claude/skills/skill-team-research",
-        ".claude/skills/skill-todo",
-        ".claude/context",
-        ".claude/context/architecture",
-        ".claude/context/checkpoints",
-        ".claude/context/formats",
-        ".claude/context/guides",
-        ".claude/context/meta",
-        ".claude/context/orchestration",
-        ".claude/context/patterns",
-        ".claude/context/processes",
-        ".claude/context/reference",
-        ".claude/context/repo",
-        ".claude/context/schemas",
-        ".claude/context/standards",
-        ".claude/context/templates",
-        ".claude/context/troubleshooting",
-        ".claude/context/workflows",
-        ".claude/scripts",
-        ".claude/hooks",
-        ".claude/docs",
-        ".claude/docs/architecture",
-        ".claude/docs/examples",
-        ".claude/docs/guides",
-        ".claude/docs/reference",
-        ".claude/docs/templates",
-        ".claude/templates",
-        ".claude/systemd"
-      ],
+      "data_skeleton_files": [],
       "installed_files": [
         ".claude/agents/code-reviewer-agent.md",
         ".claude/agents/general-implementation-agent.md",
@@ -454,11 +374,130 @@
         ".claude/settings.local.json",
         ".claude/.gitignore"
       ],
-      "data_skeleton_files": [],
       "version": "1.0.0",
       "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/core"
     },
+    "memory": {
+      "installed_files": [
+        ".claude/commands/learn.md",
+        ".claude/commands/distill.md",
+        ".claude/skills/skill-memory/README.md",
+        ".claude/skills/skill-memory/SKILL.md",
+        ".claude/context/project/memory/README.md",
+        ".claude/context/project/memory/distill-usage.md",
+        ".claude/context/project/memory/domain/memory-reference.md",
+        ".claude/context/project/memory/knowledge-capture-usage.md",
+        ".claude/context/project/memory/learn-usage.md",
+        ".claude/context/project/memory/memory-setup.md",
+        ".claude/context/project/memory/memory-troubleshooting.md"
+      ],
+      "loaded_at": "2026-04-19T23:15:10Z",
+      "version": "1.0.0",
+      "merged_sections": {
+        "index": {
+          "paths": [
+            "project/memory/learn-usage.md",
+            "project/memory/memory-setup.md",
+            "project/memory/memory-troubleshooting.md",
+            "project/memory/domain/memory-reference.md",
+            "project/memory/knowledge-capture-usage.md",
+            "project/memory/distill-usage.md"
+          ]
+        }
+      },
+      "status": "active",
+      "data_skeleton_files": [],
+      "installed_dirs": [
+        ".claude/skills/skill-memory",
+        ".claude/context/project/memory"
+      ],
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/memory"
+    },
+    "nix": {
+      "data_skeleton_files": [],
+      "loaded_at": "2026-04-19T23:15:12Z",
+      "installed_dirs": [
+        ".claude/skills/skill-nix-research",
+        ".claude/skills/skill-nix-implementation",
+        ".claude/context/project/nix"
+      ],
+      "merged_sections": {
+        "settings": {
+          "permissions": {
+            "children": {
+              "allow": {
+                "type": "appended",
+                "items": [
+                  "mcp__nixos__nix",
+                  "mcp__nixos__nix_versions"
+                ]
+              }
+            },
+            "type": "merged"
+          },
+          "mcpServers": {
+            "children": {
+              "mcp-nixos": {
+                "children": {
+                  "command": {
+                    "type": "new_value",
+                    "value": "uvx"
+                  },
+                  "args": {
+                    "type": "new_array",
+                    "items": [
+                      "mcp-nixos"
+                    ]
+                  }
+                },
+                "type": "new_object"
+              }
+            },
+            "type": "new_object"
+          }
+        },
+        "index": {
+          "paths": [
+            "project/nix/README.md",
+            "project/nix/domain/nix-language.md",
+            "project/nix/domain/flakes.md",
+            "project/nix/domain/nixos-modules.md",
+            "project/nix/domain/home-manager.md",
+            "project/nix/patterns/module-patterns.md",
+            "project/nix/patterns/overlay-patterns.md",
+            "project/nix/patterns/derivation-patterns.md",
+            "project/nix/standards/nix-style-guide.md",
+            "project/nix/tools/nixos-rebuild-guide.md",
+            "project/nix/tools/home-manager-guide.md"
+          ]
+        }
+      },
+      "installed_files": [
+        ".claude/agents/nix-research-agent.md",
+        ".claude/agents/nix-implementation-agent.md",
+        ".claude/rules/nix.md",
+        ".claude/skills/skill-nix-research/SKILL.md",
+        ".claude/skills/skill-nix-implementation/SKILL.md",
+        ".claude/context/project/nix/README.md",
+        ".claude/context/project/nix/domain/flakes.md",
+        ".claude/context/project/nix/domain/home-manager.md",
+        ".claude/context/project/nix/domain/nix-language.md",
+        ".claude/context/project/nix/domain/nixos-modules.md",
+        ".claude/context/project/nix/patterns/derivation-patterns.md",
+        ".claude/context/project/nix/patterns/module-patterns.md",
+        ".claude/context/project/nix/patterns/overlay-patterns.md",
+        ".claude/context/project/nix/standards/nix-style-guide.md",
+        ".claude/context/project/nix/tools/home-manager-guide.md",
+        ".claude/context/project/nix/tools/nixos-rebuild-guide.md"
+      ],
+      "status": "active",
+      "version": "1.0.0",
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nix"
+    },
     "nvim": {
+      "version": "1.0.0",
+      "loaded_at": "2026-04-19T23:15:14Z",
+      "status": "active",
       "merged_sections": {
         "index": {
           "paths": [
@@ -488,13 +527,7 @@
           ]
         }
       },
-      "loaded_at": "2026-04-18T18:43:14Z",
-      "status": "active",
-      "installed_dirs": [
-        ".claude/skills/skill-neovim-research",
-        ".claude/skills/skill-neovim-implementation",
-        ".claude/context/project/neovim"
-      ],
+      "data_skeleton_files": [],
       "installed_files": [
         ".claude/agents/neovim-research-agent.md",
         ".claude/agents/neovim-implementation-agent.md",
@@ -525,45 +558,12 @@
         ".claude/context/project/neovim/tools/telescope-guide.md",
         ".claude/context/project/neovim/tools/treesitter-guide.md"
       ],
-      "data_skeleton_files": [],
-      "version": "1.0.0",
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nvim"
-    },
-    "memory": {
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "project/memory/learn-usage.md",
-            "project/memory/memory-setup.md",
-            "project/memory/memory-troubleshooting.md",
-            "project/memory/domain/memory-reference.md",
-            "project/memory/knowledge-capture-usage.md",
-            "project/memory/distill-usage.md"
-          ]
-        }
-      },
-      "loaded_at": "2026-04-18T18:43:12Z",
-      "status": "active",
-      "version": "1.0.0",
-      "installed_files": [
-        ".claude/commands/learn.md",
-        ".claude/commands/distill.md",
-        ".claude/skills/skill-memory/README.md",
-        ".claude/skills/skill-memory/SKILL.md",
-        ".claude/context/project/memory/README.md",
-        ".claude/context/project/memory/distill-usage.md",
-        ".claude/context/project/memory/domain/memory-reference.md",
-        ".claude/context/project/memory/knowledge-capture-usage.md",
-        ".claude/context/project/memory/learn-usage.md",
-        ".claude/context/project/memory/memory-setup.md",
-        ".claude/context/project/memory/memory-troubleshooting.md"
-      ],
-      "data_skeleton_files": [],
       "installed_dirs": [
-        ".claude/skills/skill-memory",
-        ".claude/context/project/memory"
+        ".claude/skills/skill-neovim-research",
+        ".claude/skills/skill-neovim-implementation",
+        ".claude/context/project/neovim"
       ],
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/memory"
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nvim"
     }
   },
   "version": "1.0.0"

@@ -1,3 +1,9 @@
+<!-- GENERIC TEMPLATE: This file provides a default project overview for new repositories.
+     To generate a project-specific version, run:
+       /task "Generate project-overview.md for this repository"
+     Then add context/repo/project-overview.md to your .syncprotect file to prevent
+     future syncs from overwriting it. -->
+
 # Project Overview
 
 ## Purpose
@@ -8,8 +14,8 @@ This file describes the repository structure for agent context. When extensions 
 
 This repository uses a two-layer extension system:
 
-- **Layer 1 -- Neovim Lua loader** (`lua/neotex/plugins/ai/shared/extensions/`): Manages which agent files, skills, rules, and context exist in the `.claude/` runtime. The extension picker (`<leader>ac`) triggers the loader, which copies files from `.claude/extensions/*/` sources into the `.claude/` runtime and regenerates `.claude/CLAUDE.md`.
-- **Layer 2 -- .claude/ agent system** (`.claude/`): The runtime read by Claude Code. Contains only the files that have been loaded by the Lua loader. Claude Code does not know about the extension system; it sees a standard `.claude/` directory structure.
+- **Layer 1 -- Editor loader**: Manages which agent files, skills, rules, and context exist in the agent runtime directory. The extension picker triggers the loader, which copies files from extension sources into the runtime and regenerates the main configuration file.
+- **Layer 2 -- Agent system** (`.claude/` or `.opencode/`): The runtime read by the AI coding assistant. Contains only the files that have been loaded by the editor loader. The assistant does not know about the extension system; it sees a standard directory structure.
 
 See `.claude/docs/architecture/extension-system.md` for the full two-layer architecture documentation.
 
@@ -46,7 +52,7 @@ Extensions supply project-specific knowledge:
 - Coding standards and patterns
 - Tool-specific guides
 
-Extensions can declare dependencies on other extensions (e.g., founder and present both depend on slidev for shared Slidev animation patterns). Resource-only extensions like slidev/ provide only context files with no agents, skills, or routing.
+Extensions can declare dependencies on other extensions. Resource-only extensions provide only context files with no agents, skills, or routing.
 
 See `.claude/extensions/*/manifest.json` for available extensions, their capabilities, and dependency declarations.
 
