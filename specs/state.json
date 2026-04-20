@@ -5,12 +5,12 @@
     {
       "project_number": 488,
       "project_name": "widen_todo_entry_format_context",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Widen load_when for state-management-schema.md in index.json so /review and all task-creating commands see the TODO.md entry format spec. Add explicit format reference to review.md task creation section.",
       "created": "2026-04-20T19:05:51Z",
-      "last_updated": "2026-04-20T19:11:11Z",
-      "session_id": "sess_1745178000_research488",
+      "last_updated": "2026-04-20T19:14:55Z",
+      "session_id": "sess_1745178100_plan488",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -32,6 +32,11 @@
           "path": "specs/488_widen_todo_entry_format_context/reports/01_widen-load-when.md",
           "type": "research",
           "summary": "Analysis of load_when gaps for state-management-schema.md across task-creating commands"
+        },
+        {
+          "path": "specs/488_widen_todo_entry_format_context/plans/01_widen-load-when.md",
+          "type": "plan",
+          "summary": "Implementation plan with 2 parallel phases to widen load_when for state-management context files and add explicit schema reference in review.md"
         }
       ]
     },
