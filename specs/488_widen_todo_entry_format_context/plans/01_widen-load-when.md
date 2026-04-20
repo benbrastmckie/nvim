@@ -1,7 +1,7 @@
 # Implementation Plan: Widen load_when for State Management Context
 
 - **Task**: 488 - widen_todo_entry_format_context
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/488_widen_todo_entry_format_context/reports/01_widen-load-when.md
@@ -58,7 +58,7 @@ This task advances the "Agent System Quality" priority area in Phase 1 of the ro
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Widen load_when in index.json [NOT STARTED]
+### Phase 1: Widen load_when in index.json [COMPLETED]
 
 **Goal**: Update both `state-management-schema.md` and `state-management.md` entries in `.claude/context/index.json` to include all task-creating commands and agents.
 

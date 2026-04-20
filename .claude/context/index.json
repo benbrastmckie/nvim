@@ -845,10 +845,18 @@
         "task_types": [
           "meta"
         ],
-        "agents": [],
+        "agents": [
+          "meta-builder-agent",
+          "spawn-agent"
+        ],
         "commands": [
           "/task",
-          "/todo"
+          "/todo",
+          "/review",
+          "/fix-it",
+          "/meta",
+          "/spawn",
+          "/errors"
         ]
       },
       "line_count": 337,
@@ -1448,10 +1456,18 @@
         "task_types": [
           "meta"
         ],
-        "agents": [],
+        "agents": [
+          "meta-builder-agent",
+          "spawn-agent"
+        ],
         "commands": [
           "/task",
-          "/todo"
+          "/todo",
+          "/review",
+          "/fix-it",
+          "/meta",
+          "/spawn",
+          "/errors"
         ]
       },
       "line_count": 352,
