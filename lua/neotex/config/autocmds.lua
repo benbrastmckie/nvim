@@ -70,6 +70,11 @@ function M.setup()
     callback = function(args)
       local bufname = vim.api.nvim_buf_get_name(args.buf)
       
+      -- Ignore temp files (e.g., VimTeX compiler output in /tmp/nvim.*)
+      if bufname:find("^/tmp/") then
+        vim.v.fcs_choice = ""
+        return
+      end
       -- Check if file still exists
       if vim.fn.filereadable(bufname) == 0 then
         -- File was deleted - mark as not modified and don't reload
@@ -94,6 +99,11 @@ function M.setup()
     pattern = "*",
     callback = function()
       if vim.o.autoread and vim.fn.getcmdwintype() == '' then
+        -- Skip temp files (e.g., VimTeX compiler output in /tmp/nvim.*)
+        local bufname = vim.api.nvim_buf_get_name(0)
+        if bufname:find("^/tmp/") then
+          return
+        end
         -- Silently check for file changes
         vim.cmd('silent! checktime')
       end
