@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "next_project_number": 499,
+  "next_project_number": 502,
   "active_projects": [
     {
       "project_number": 494,
@@ -281,6 +281,46 @@
       "dependencies": [],
       "created": "2026-04-25T19:52:31Z",
       "last_updated": "2026-04-25T19:52:31Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 499,
+      "project_name": "research_fork_subagent_patterns",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Research CLAUDE_CODE_FORK_SUBAGENT patterns, context: fork optimization strategies, and document how prompt cache sharing works with the existing skill/agent delegation architecture",
+      "effort": "1-3 hours",
+      "dependencies": [],
+      "created": "2026-04-25T20:12:09Z",
+      "last_updated": "2026-04-25T20:12:09Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 500,
+      "project_name": "add_context_fork_to_core_skills",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Add context: fork frontmatter to core delegating skills (researcher, planner, implementer, reviser, spawn, neovim/nix variants) to align with documentation recommendations and enable prompt cache efficiency",
+      "effort": "1-3 hours",
+      "dependencies": [
+        499
+      ],
+      "created": "2026-04-25T20:12:09Z",
+      "last_updated": "2026-04-25T20:12:09Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 501,
+      "project_name": "optimize_team_mode_fork_cache_sharing",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Optimize team-mode skills (team-research, team-plan, team-implement) to maximize FORK_SUBAGENT parallel cache sharing benefits for teammates 2-N",
+      "effort": "1-3 hours",
+      "dependencies": [
+        499
+      ],
+      "created": "2026-04-25T20:12:09Z",
+      "last_updated": "2026-04-25T20:12:09Z",
       "artifacts": []
     }
   ],
