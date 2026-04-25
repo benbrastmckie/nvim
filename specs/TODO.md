@@ -10,9 +10,9 @@ next_project_number: 494
 
 ### Pending
 
-- **490** [RESEARCHED] -- Wire --roadmap flag through /plan command
-- **491** [RESEARCHED] -- Add ROADMAP.md preflight to /research command
-- **492** [RESEARCHED] -- Ensure /review creates ROADMAP.md if missing
+- **490** [PLANNED] -- Wire --roadmap flag through /plan command
+- **491** [PLANNED] -- Add ROADMAP.md preflight to /research command
+- **492** [PLANNED] -- Ensure /review creates ROADMAP.md if missing
 - **493** [NOT STARTED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -21,10 +21,11 @@ next_project_number: 494
 
 ### 490. Wire --roadmap flag through /plan command to planner-agent
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md]
+- **Plan**: [490_wire_roadmap_flag_plan_command/plans/01_wire-roadmap-flag.md]
 
 **Description**: The /plan command does not currently parse or pass a `--roadmap` flag. The planner-agent has Stage 2.6 (Evaluate Roadmap Flag) architecturally prepared but never receives the flag. Wire the `--roadmap` flag from the /plan command through skill-planner delegation context to the planner-agent so Stage 2.6 activates. Files: `.claude/commands/plan.md`, `.claude/skills/skill-planner.md` (or SKILL.md), planner-agent delegation context.
 
@@ -32,10 +33,11 @@ next_project_number: 494
 
 ### 491. Add ROADMAP.md preflight consultation to /research command
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [491_research_roadmap_preflight/reports/01_research-roadmap-preflight.md]
+- **Plan**: [491_research_roadmap_preflight/plans/01_research-roadmap-preflight.md]
 
 **Description**: The /research command should, by default, read `specs/ROADMAP.md` during preflight (before delegating to research subagents) and inject relevant roadmap context into the agent's delegation context. This gives research agents strategic awareness of project direction without requiring a flag. The `--clean` flag should suppress this auto-consultation (consistent with memory retrieval suppression). Files: `.claude/commands/research.md`, `.claude/skills/skill-researcher.md` (or SKILL.md), research agent delegation context.
 
@@ -43,10 +45,11 @@ next_project_number: 494
 
 ### 492. Ensure /review creates ROADMAP.md if missing
 - **Effort**: TBD
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [492_review_create_roadmap/reports/01_review-create-roadmap.md]
+- **Plan**: [492_review_create_roadmap/plans/01_review-create-roadmap.md]
 
 **Description**: The /review command's Step 2.5 reads ROADMAP.md for cross-referencing but does not create a default ROADMAP.md if one doesn't exist (unlike /todo which does). Add creation-if-missing logic to /review's roadmap integration step, using the same default template as /todo. Files: `.claude/commands/review.md`.
 

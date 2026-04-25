@@ -5,37 +5,47 @@
     {
       "project_number": 490,
       "project_name": "wire_roadmap_flag_plan_command",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:41:03Z",
+      "last_updated": "2026-04-25T16:47:28Z",
       "dependencies": [],
       "artifacts": [
         {
           "path": "specs/490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md",
           "type": "research",
           "summary": "Research report identifying where --roadmap flag needs to be added in plan.md (3 locations), skill-planner and planner-agent already have full support"
+        },
+        {
+          "path": "specs/490_wire_roadmap_flag_plan_command/plans/01_wire-roadmap-flag.md",
+          "type": "plan",
+          "summary": "Single-phase plan to add --roadmap flag parsing and delegation in plan.md"
         }
       ],
-      "session_id": "sess_1777135042_8d5943_t490",
+      "session_id": "sess_1777135489_5050d7_t490",
       "next_artifact_number": 2
     },
     {
       "project_number": 491,
       "project_name": "research_roadmap_preflight",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:41:04Z",
+      "last_updated": "2026-04-25T16:47:28Z",
       "dependencies": [],
       "artifacts": [
         {
           "path": "specs/491_research_roadmap_preflight/reports/01_research-roadmap-preflight.md",
           "type": "research",
           "summary": "Research on adding ROADMAP.md preflight to /research command, 3 files to modify, Stage 4c pattern"
+        },
+        {
+          "path": "specs/491_research_roadmap_preflight/plans/01_research-roadmap-preflight.md",
+          "type": "plan",
+          "summary": "2-phase plan to add Stage 4c roadmap consultation to skill-researcher and update agent"
         }
       ],
-      "session_id": "sess_1777135042_8d5943_t491",
+      "session_id": "sess_1777135489_5050d7_t491",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -48,19 +58,24 @@
     {
       "project_number": 492,
       "project_name": "review_create_roadmap",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:41:04Z",
+      "last_updated": "2026-04-25T16:47:29Z",
       "dependencies": [],
       "artifacts": [
         {
           "path": "specs/492_review_create_roadmap/reports/01_review-create-roadmap.md",
           "type": "research",
           "summary": "Creation-if-missing already exists in review.md Step 2.5; only fix needed is contradictory error handling note at line 116"
+        },
+        {
+          "path": "specs/492_review_create_roadmap/plans/01_review-create-roadmap.md",
+          "type": "plan",
+          "summary": "Single-phase plan to fix contradictory error handling note in review.md"
         }
       ],
-      "session_id": "sess_1777135042_8d5943_t492",
+      "session_id": "sess_1777135489_5050d7_t492",
       "next_artifact_number": 2
     },
     {
