@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "next_project_number": 495,
+  "next_project_number": 499,
   "active_projects": [
     {
       "project_number": 494,
@@ -232,6 +232,56 @@
       ],
       "session_id": "sess_1771006114_e73864",
       "planned": "2026-02-13T18:10:48Z"
+    },
+    {
+      "project_number": 495,
+      "project_name": "multi_subagent_continuation_loop",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Add multi-subagent continuation loop to skill-implementer for complex multi-phase tasks",
+      "effort": "3-6 hours",
+      "dependencies": [],
+      "created": "2026-04-25T19:52:31Z",
+      "last_updated": "2026-04-25T19:52:31Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 496,
+      "project_name": "prior_implementation_context_injection",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Add prior-implementation context injection to /research for tasks in IMPLEMENTING state",
+      "effort": "1-2 hours",
+      "dependencies": [],
+      "created": "2026-04-25T19:52:31Z",
+      "last_updated": "2026-04-25T19:52:31Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 497,
+      "project_name": "per_phase_plan_item_checkoff",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Add per-phase plan item check-off to implementation agent",
+      "effort": "1-2 hours",
+      "dependencies": [
+        495
+      ],
+      "created": "2026-04-25T19:52:31Z",
+      "last_updated": "2026-04-25T19:52:31Z",
+      "artifacts": []
+    },
+    {
+      "project_number": 498,
+      "project_name": "spawn_any_state_interactive",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Make /spawn work from any non-terminal state with interactive confirmation",
+      "effort": "1-2 hours",
+      "dependencies": [],
+      "created": "2026-04-25T19:52:31Z",
+      "last_updated": "2026-04-25T19:52:31Z",
+      "artifacts": []
     }
   ],
   "completed_projects": [],

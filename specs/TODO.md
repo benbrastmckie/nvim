@@ -1,12 +1,12 @@
 ---
-next_project_number: 495
+next_project_number: 499
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-25. 7 active tasks remaining.*
+*Updated 2026-04-25. 11 active tasks remaining.*
 
 ### Pending
 
@@ -15,10 +15,54 @@ next_project_number: 495
 - **491** [COMPLETED] -- Add ROADMAP.md preflight to /research command
 - **492** [COMPLETED] -- Ensure /review creates ROADMAP.md if missing
 - **493** [COMPLETED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
+- **495** [NOT STARTED] -- Add multi-subagent continuation loop to skill-implementer
+- **496** [NOT STARTED] -- Add prior-implementation context injection to /research
+- **497** [NOT STARTED] -- Add per-phase plan item check-off to implementation agent (depends: 495)
+- **498** [NOT STARTED] -- Make /spawn work from any non-terminal state with interactive confirmation
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 495. Add multi-subagent continuation loop to skill-implementer
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Modify skill-implementer to detect partial/handoff returns from the implementation subagent and re-spawn new subagents to continue work. Wire the existing handoff-artifact.md and progress-file.md formats into general-implementation-agent so it writes structured handoffs before context exhaustion instead of simply returning "partial". Add a continuation loop in skill-implementer that reads the handoff artifact, injects it into a new subagent prompt, and continues spawning subagents until all phases are complete or a blocker/critical decision requires user input. The only appropriate causes for interrupting work are blockers or critical decisions -- context exhaustion should be handled transparently via handoff and re-spawn. Files: `.claude/skills/skill-implementer/SKILL.md`, `.claude/agents/general-implementation-agent.md`, `.claude/context/formats/handoff-artifact.md`, `.claude/context/formats/progress-file.md`.
+
+---
+
+### 496. Add prior-implementation context injection to /research
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Modify skill-researcher preflight to detect when a task is in [IMPLEMENTING] or [PARTIAL] status and collect existing implementation artifacts (summaries, handoffs, progress files) from the task directory. Inject these as tagged context into the research agent prompt so it understands what was already done, what approaches were tried, what failed, and where work stalled. Update general-research-agent Stage 2 to use this prior-implementation context in its search strategy, focusing research on the gaps and blockers identified in the handoffs rather than starting from scratch. Files: `.claude/skills/skill-researcher/SKILL.md` (new Stage 4d), `.claude/agents/general-research-agent.md` (Stage 2 strategy update).
+
+---
+
+### 497. Add per-phase plan item check-off to implementation agent
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task #495
+
+**Description**: Extend general-implementation-agent Stage 4 (Execute File Operations Loop) to, after completing each phase, parse the plan for individual checklist items, steps, or sub-tasks within that phase and mark them as completed (using `- [x]` check-off syntax or adding brief completion notes). This provides granular visibility into what was accomplished within each phase, aids handoff documents in knowing exactly where work stopped, and helps subsequent /research runs understand partial completion state. Depends on task 495 because the handoff mechanism determines what the "completion" tracking needs to feed into. Files: `.claude/agents/general-implementation-agent.md` (Stage 4C/4D enhancement).
+
+---
+
+### 498. Make /spawn work from any non-terminal state with interactive confirmation
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: Update spawn.md to remove the restriction blocking `researching` and `planning` statuses -- /spawn should work for any task in any non-terminal state (not just blocked/implementing/partial). Update spawn-agent to work without a blocker-focused analysis when the task is not actually blocked: instead, analyze the task holistically and present the user with interactive questions (AskUserQuestion) to confirm what tasks to spawn and provide feedback or discussion before creation. The agent should ask the user about their intent, propose task decomposition, and allow iterative refinement before committing to task creation. Files: `.claude/commands/spawn.md` (status validation table), `.claude/skills/skill-spawn/SKILL.md` (preflight status handling), `.claude/agents/spawn-agent.md` (analysis mode for non-blocked tasks, interactive confirmation).
+
+---
 
 ### 494. Simplify status transition rules to allow iterative workflows
 - **Effort**: TBD
