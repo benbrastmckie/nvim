@@ -286,14 +286,34 @@
     {
       "project_number": 499,
       "project_name": "research_fork_subagent_patterns",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "description": "Research CLAUDE_CODE_FORK_SUBAGENT patterns, context: fork optimization strategies, and document how prompt cache sharing works with the existing skill/agent delegation architecture",
       "effort": "1-3 hours",
       "dependencies": [],
       "created": "2026-04-25T20:12:09Z",
-      "last_updated": "2026-04-25T20:12:09Z",
-      "artifacts": []
+      "last_updated": "2026-04-25T20:32:48Z",
+      "artifacts": [
+        {
+          "path": "specs/499_research_fork_subagent_patterns/reports/01_fork-subagent-patterns.md",
+          "type": "research",
+          "summary": "Research report on FORK_SUBAGENT patterns, context: fork strategies, prompt cache sharing mechanics, and optimization opportunities"
+        }
+      ],
+      "session_id": "sess_1777148804_698aa7",
+      "next_artifact_number": 2,
+      "memory_candidates": [
+        {
+          "content": "CLAUDE_CODE_FORK_SUBAGENT=1 only triggers fork when subagent_type is OMITTED from the Agent/Task tool call. Skills that explicitly specify subagent_type are unaffected by this env var.",
+          "category": "INSIGHT",
+          "confidence": 0.95
+        },
+        {
+          "content": "context: fork (skill frontmatter) and CLAUDE_CODE_FORK_SUBAGENT=1 (env var) solve opposite problems. context: fork creates isolation, while FORK_SUBAGENT creates inheritance. They are complementary, not alternatives.",
+          "category": "INSIGHT",
+          "confidence": 0.9
+        }
+      ]
     },
     {
       "project_number": 500,
