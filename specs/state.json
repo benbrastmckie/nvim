@@ -15,6 +15,11 @@
           "path": "specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md",
           "type": "research",
           "summary": "Comprehensive inventory of 14 files (+ 12 extension copies = 26 edits) that enforce forward-only status transitions"
+        },
+        {
+          "path": "specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md",
+          "type": "research",
+          "summary": "Comprehensive inventory of 14 files (+ 12 extension copies) that enforce forward-only status transitions"
         }
       ],
       "session_id": "sess_1777350000_a4b2c1",
