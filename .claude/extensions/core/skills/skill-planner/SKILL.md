@@ -62,7 +62,7 @@ project_name=$(echo "$task_data" | jq -r '.project_name')
 description=$(echo "$task_data" | jq -r '.description // ""')
 
 # Validate status (only block terminal states)
-if [ "$status" = "completed" ] || [ "$status" = "abandoned" ]; then
+if [ "$status" = "completed" ] || [ "$status" = "abandoned" ] || [ "$status" = "expanded" ]; then
   return error "Task is in terminal state [$status]"
 fi
 ```

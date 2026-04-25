@@ -22,8 +22,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- Task status allows spawn (implementing, partial, blocked, planned, researched)
-- Task is NOT completed or abandoned
+- Task status is not terminal (completed, abandoned, expanded)
 - /spawn command is invoked with a valid task number
 
 ---

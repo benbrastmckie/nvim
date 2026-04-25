@@ -32,20 +32,14 @@
 
 ## Valid Transitions
 
+**Permissive model**: Any command can run from any non-terminal status. Only terminal states block transitions.
+
 ```
-[NOT STARTED] → [RESEARCHING] → [RESEARCHED] → [PLANNING] → [PLANNED] → [IMPLEMENTING] → [COMPLETED]
-              ↘                ↗              ↘            ↗
-                [PLANNING]                      [IMPLEMENTING]
+Terminal states: [COMPLETED], [ABANDONED], [EXPANDED]
+
+Any non-terminal status -> any command (research, plan, implement, revise)
+Any non-terminal status -> [BLOCKED] | [ABANDONED] | [EXPANDED]
 ```
-
-**Shortcuts allowed**:
-- `[NOT STARTED]` → `[PLANNING]` (skip research)
-- `[NOT STARTED]` → `[IMPLEMENTING]` (skip research and planning)
-- `[RESEARCHED]` → `[IMPLEMENTING]` (skip planning)
-
-**Any status** → `[BLOCKED]` or `[ABANDONED]`
-
-**Any non-terminal** → `[EXPANDED]` (when task is expanded into subtasks via `/task --expand`)
 
 ## Command → Status Mapping
 

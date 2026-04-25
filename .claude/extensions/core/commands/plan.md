@@ -32,6 +32,7 @@ When multiple task numbers are provided, the command enters multi-task mode (see
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
 | `--clean` | Skip automatic memory retrieval | false |
+| `--roadmap` | Include ROADMAP.md review/update phases in plan | false |
 
 When `--team` is specified, planning is delegated to `skill-team-plan` which spawns multiple planning agents generating alternative plans in parallel. Each teammate produces a plan candidate, and the lead synthesizes findings into a final plan with trade-off analysis.
 
@@ -132,7 +133,7 @@ for task_num in "${task_numbers[@]}"; do
   status=$(echo "$task_data" | jq -r '.status')
 
   # /plan accepts any non-terminal status
-  if [ "$status" = "completed" ] || [ "$status" = "abandoned" ]; then
+  if [ "$status" = "completed" ] || [ "$status" = "abandoned" ] || [ "$status" = "expanded" ]; then
     invalid_tasks+=("$task_num: terminal status [$status]")
   else
     validated_tasks+=("$task_num")
@@ -253,7 +254,7 @@ Skipped: {count}
 
 3. **Validate**
    - Task exists (ABORT if not)
-   - If completed or abandoned: ABORT "Task is in terminal state"
+   - If completed, abandoned, or expanded: ABORT "Task is in terminal state"
    - All other states: proceed
 
 4. **Load Context**
@@ -310,6 +311,12 @@ Skipped: {count}
    - `--clean` -> `clean_flag = true` (skip automatic memory retrieval)
 
    If not present: `clean_flag = false`
+
+6. **Extract Roadmap Flag**
+   Check remaining args for roadmap phase injection:
+   - `--roadmap` -> `roadmap_flag = true` (add ROADMAP.md review/update phases to plan)
+
+   If not present: `roadmap_flag = false`
 
 **On STAGE 1.5 success**: Flags parsed. **IMMEDIATELY CONTINUE** to STAGE 2 below.
 
@@ -384,15 +391,15 @@ else:
 ```
 # For team mode:
 skill: "skill-team-plan"
-args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} team_size={team_size} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag}"
+args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} team_size={team_size} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} roadmap_flag={roadmap_flag}"
 
 # For extension-routed skill (e.g., skill-founder-plan):
 skill: "{skill_name from extension routing}"
-args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag}"
+args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} roadmap_flag={roadmap_flag}"
 
 # For default single-agent mode:
 skill: "skill-planner"
-args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag}"
+args: "task_number={N} research_path={path to research report if exists} prior_plan_path={path to prior plan if exists} session_id={session_id} effort_flag={effort_flag} model_flag={model_flag} clean_flag={clean_flag} roadmap_flag={roadmap_flag}"
 ```
 
 If `model_flag` is set, pass the `model` parameter to override the agent's default model:
