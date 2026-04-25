@@ -140,7 +140,7 @@ When you run `/research 1`:
 
 2. Skill: skill-researcher
    - Generate session_id: sess_1736700000_abc123
-   - Validate: task exists, status allows research
+   - Validate: task exists, status is not terminal
    - Prepare: delegation context
    - Invoke: general-research-agent via Task tool
 

@@ -43,7 +43,10 @@ Task management and agent orchestration for project development. For comprehensi
 - `[RESEARCHING]` -> `[RESEARCHED]` - Research phase
 - `[PLANNING]` -> `[PLANNED]` - Planning phase
 - `[IMPLEMENTING]` -> `[COMPLETED]` - Implementation phase
-- `[BLOCKED]`, `[ABANDONED]`, `[PARTIAL]`, `[EXPANDED]` - Terminal/exception states
+- `[BLOCKED]`, `[PARTIAL]` - Exception states (non-terminal)
+- `[COMPLETED]`, `[ABANDONED]`, `[EXPANDED]` - Terminal states
+
+**Transition model**: Any command can run from any non-terminal status. Only terminal states (completed, abandoned, expanded) block transitions.
 
 ### Artifact Paths
 ```
