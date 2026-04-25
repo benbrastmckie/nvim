@@ -1,27 +1,39 @@
 ---
-next_project_number: 494
+next_project_number: 495
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-25. 6 active tasks remaining.*
+*Updated 2026-04-25. 7 active tasks remaining.*
 
 ### Pending
 
-- **490** [PLANNED] -- Wire --roadmap flag through /plan command
-- **491** [PLANNED] -- Add ROADMAP.md preflight to /research command
-- **492** [PLANNED] -- Ensure /review creates ROADMAP.md if missing
+- **494** [RESEARCHED] -- Simplify status transition rules to allow iterative workflows
+- **490** [IMPLEMENTING] -- Wire --roadmap flag through /plan command
+- **491** [IMPLEMENTING] -- Add ROADMAP.md preflight to /research command
+- **492** [IMPLEMENTING] -- Ensure /review creates ROADMAP.md if missing
 - **493** [NOT STARTED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
 
+### 494. Simplify status transition rules to allow iterative workflows
+- **Effort**: TBD
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Dependencies**: None
+- **Research**: [494_simplify_status_transitions/reports/01_simplify-status-transitions.md]
+
+**Description**: Replace the forward-only status transition model with a permissive one: any `/research`, `/plan`, `/revise`, or `/implement` command can run from any non-terminal status. Only terminal states (`[COMPLETED]`, `[ABANDONED]`, `[EXPANDED]`) block transitions. This enables the natural iterative workflow of cycling through /research -> /plan -> /implement -> /research -> ... without status gates blocking backward movement. Files to update: `.claude/context/standards/status-markers.md` (transition tables), `.claude/rules/state-management.md` ("Cannot regress" rule), `.claude/context/orchestration/state-management.md` (transition table), `.claude/skills/skill-orchestrator/SKILL.md` (Allowed Statuses table), `.claude/context/workflows/status-transitions.md` (deprecated but still loaded), and corresponding core extension copies under `.claude/extensions/core/`.
+
+---
+
 ### 490. Wire --roadmap flag through /plan command to planner-agent
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md]
@@ -33,7 +45,7 @@ next_project_number: 494
 
 ### 491. Add ROADMAP.md preflight consultation to /research command
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [491_research_roadmap_preflight/reports/01_research-roadmap-preflight.md]
@@ -50,6 +62,7 @@ next_project_number: 494
 - **Dependencies**: None
 - **Research**: [492_review_create_roadmap/reports/01_review-create-roadmap.md]
 - **Plan**: [492_review_create_roadmap/plans/01_review-create-roadmap.md]
+- **Summary**: [492_review_create_roadmap/summaries/01_review-create-roadmap-summary.md]
 
 **Description**: The /review command's Step 2.5 reads ROADMAP.md for cross-referencing but does not create a default ROADMAP.md if one doesn't exist (unlike /todo which does). Add creation-if-missing logic to /review's roadmap integration step, using the same default template as /todo. Files: `.claude/commands/review.md`.
 

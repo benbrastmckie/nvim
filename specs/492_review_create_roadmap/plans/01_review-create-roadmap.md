@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Contradictory Error Handling Note in review.md
 
 - **Task**: 492 - review_create_roadmap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/492_review_create_roadmap/reports/01_review-create-roadmap.md
@@ -54,7 +54,7 @@ No ROADMAP.md consultation needed for this task.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Fix Error Handling Note [NOT STARTED]
+### Phase 1: Fix Error Handling Note [BLOCKED]
 
 **Goal**: Remove contradictory "doesn't exist or" clause from the error handling note at line 116.
 

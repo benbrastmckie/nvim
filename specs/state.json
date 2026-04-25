@@ -1,14 +1,48 @@
 {
   "version": "1.0.0",
-  "next_project_number": 494,
+  "next_project_number": 495,
   "active_projects": [
+    {
+      "project_number": 494,
+      "project_name": "simplify_status_transitions",
+      "status": "researched",
+      "task_type": "meta",
+      "created": "2026-04-25T16:58:10Z",
+      "last_updated": "2026-04-25T17:05:35Z",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md",
+          "type": "research",
+          "summary": "Comprehensive inventory of 14 files (+ 12 extension copies = 26 edits) that enforce forward-only status transitions"
+        }
+      ],
+      "session_id": "sess_1777350000_a4b2c1",
+      "next_artifact_number": 2,
+      "memory_candidates": [
+        {
+          "content": "Status transition enforcement in the agent system is entirely documentation-driven (Claude-facing markdown instructions), not programmatic. The update-task-status.sh script performs no transition validation -- it only does idempotency checks and atomic file updates. All enforcement comes from Allowed Statuses tables in skill-orchestrator, checkpoint-gate-in, and per-command GATE IN sections.",
+          "category": "INSIGHT",
+          "source_artifact": "specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md",
+          "confidence": 0.9,
+          "suggested_keywords": [
+            "status-transitions",
+            "enforcement",
+            "update-task-status",
+            "orchestrator",
+            "gate-in",
+            "documentation-driven"
+          ]
+        }
+      ]
+    },
     {
       "project_number": 490,
       "project_name": "wire_roadmap_flag_plan_command",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:47:28Z",
+      "last_updated": "2026-04-25T16:57:38Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -22,16 +56,16 @@
           "summary": "Single-phase plan to add --roadmap flag parsing and delegation in plan.md"
         }
       ],
-      "session_id": "sess_1777135489_5050d7_t490",
+      "session_id": "sess_1777136246_2cc2ce_t490",
       "next_artifact_number": 2
     },
     {
       "project_number": 491,
       "project_name": "research_roadmap_preflight",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:47:28Z",
+      "last_updated": "2026-04-25T16:57:39Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -45,7 +79,7 @@
           "summary": "2-phase plan to add Stage 4c roadmap consultation to skill-researcher and update agent"
         }
       ],
-      "session_id": "sess_1777135489_5050d7_t491",
+      "session_id": "sess_1777136246_2cc2ce_t491",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -61,7 +95,7 @@
       "status": "planned",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:47:29Z",
+      "last_updated": "2026-04-25T17:10:00Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -73,9 +107,14 @@
           "path": "specs/492_review_create_roadmap/plans/01_review-create-roadmap.md",
           "type": "plan",
           "summary": "Single-phase plan to fix contradictory error handling note in review.md"
+        },
+        {
+          "path": "specs/492_review_create_roadmap/summaries/01_review-create-roadmap-summary.md",
+          "type": "summary",
+          "summary": "Implementation blocked - Edit and Write tools denied permission for .claude/commands/review.md"
         }
       ],
-      "session_id": "sess_1777135489_5050d7_t492",
+      "session_id": "sess_1777136246_2cc2ce_t492",
       "next_artifact_number": 2
     },
     {
