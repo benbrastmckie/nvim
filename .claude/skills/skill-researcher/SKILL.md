@@ -144,6 +144,34 @@ If `memory_context` is non-empty, it will be injected into the Stage 5 prompt al
 
 ---
 
+### Stage 4c: Roadmap Consultation (Auto)
+
+Read the project roadmap to inject strategic context into the research agent prompt.
+
+**Skip if**: `clean_flag` is true in the delegation context (from `--clean` command flag).
+
+```bash
+# Check clean_flag (same gate as memory retrieval)
+roadmap_context=""
+if [ "$clean_flag" != "true" ]; then
+  roadmap_file="specs/ROADMAP.md"
+  if [ -f "$roadmap_file" ]; then
+    roadmap_context=$(cat "$roadmap_file")
+  fi
+fi
+
+# roadmap_context will be empty string if:
+# - clean_flag is true (skipped)
+# - specs/ROADMAP.md does not exist
+# - file is empty
+```
+
+If `roadmap_context` is non-empty, it will be injected into the Stage 5 prompt as a tagged block. If empty, no roadmap block is injected.
+
+**Note**: If ROADMAP.md grows beyond ~100 lines, consider adding a size-check threshold and summarizing before injection.
+
+---
+
 ### Stage 4: Prepare Delegation Context
 
 Prepare delegation context for the subagent:
@@ -222,7 +250,19 @@ Place this section AFTER the delegation context JSON and BEFORE any other instru
 {memory_context from Stage 4a -- already wrapped in <memory-context> tags}
 ```
 
-Place the memory context block AFTER the format specification and BEFORE the task-specific instructions. Do NOT inject an empty `<memory-context>` block when no memories were retrieved.
+Place the memory context block AFTER the format specification and BEFORE the roadmap context block. Do NOT inject an empty `<memory-context>` block when no memories were retrieved.
+
+**Roadmap Context Injection**: If `roadmap_context` from Stage 4c is non-empty, include it in the prompt as a separate block:
+
+```
+<roadmap-context>
+## Project Roadmap (auto-injected, read-only)
+
+{roadmap_context from Stage 4c}
+</roadmap-context>
+```
+
+Place the roadmap context block AFTER the `<memory-context>` block and BEFORE the task-specific instructions. Do NOT inject an empty `<roadmap-context>` block when no roadmap was read.
 
 **DO NOT** use `Skill(general-research-agent)` - this will FAIL.
 

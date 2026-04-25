@@ -1,7 +1,7 @@
 # Implementation Plan: Task #491
 
 - **Task**: 491 - research_roadmap_preflight
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: None
 - **Research Inputs**: specs/491_research_roadmap_preflight/reports/01_research-roadmap-preflight.md
@@ -58,7 +58,7 @@ This task advances **Agent System Quality** in Phase 1. It improves agent effici
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add Stage 4c and update Stage 5 injection in skill-researcher [NOT STARTED]
+### Phase 1: Add Stage 4c and update Stage 5 injection in skill-researcher [COMPLETED]
 
 **Goal**: Add roadmap consultation to the skill preflight and inject content into the agent prompt.
 
@@ -85,7 +85,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update command docs and agent to prefer injected content [NOT STARTED]
+### Phase 2: Update command docs and agent to prefer injected content [IN PROGRESS]
 
 **Goal**: Document the updated `--clean` behavior and update the agent to consume injected roadmap context.
 
