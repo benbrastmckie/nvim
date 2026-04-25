@@ -60,14 +60,17 @@ Extract standard delegation fields (see `return-metadata-file.md` for schema). A
 
 ### Stage 1.5: Load Roadmap Context
 
-If `roadmap_path` is provided in the delegation context and the file exists:
+**Prefer injected content**: Check for `<roadmap-context>` block in the prompt (injected by skill-researcher preflight Stage 4c).
 
-1. Use `Read` to load the roadmap file (typically `specs/ROADMAP.md`)
-2. Extract the current phase priorities and incomplete items
+1. If `<roadmap-context>` is present in the prompt, parse the injected content directly (no file I/O needed)
+2. If NOT present (e.g., `--clean` was used, or file was missing at preflight time):
+   - Fall back to reading `roadmap_path` from delegation context (typically `specs/ROADMAP.md`)
+   - Use `Read` to load the file if it exists
+   - Extract the current phase priorities and incomplete items
 3. Identify roadmap items relevant to the task being researched
 4. Store as `roadmap_context` for use in Stage 2
 
-If the file does not exist, skip this stage gracefully and proceed without roadmap context.
+If neither injected content nor the file exists, skip this stage gracefully and proceed without roadmap context.
 
 **MUST NOT**: Modify, write to, or create ROADMAP.md. This is a read-only consultation.
 

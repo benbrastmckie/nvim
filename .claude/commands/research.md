@@ -36,7 +36,7 @@ When multiple tasks are specified, each task is researched independently in para
 | `--haiku` | Use Haiku model (fastest, lowest cost) | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
-| `--clean` | Skip automatic memory retrieval | false |
+| `--clean` | Skip automatic memory and roadmap retrieval | false |
 
 When `--team` is specified, research is delegated to `skill-team-research` which spawns multiple research agents working in parallel on different aspects of the task. Each teammate produces a research report, and the lead synthesizes findings into a final comprehensive report.
 

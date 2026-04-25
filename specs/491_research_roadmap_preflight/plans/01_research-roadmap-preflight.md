@@ -85,7 +85,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Update command docs and agent to prefer injected content [IN PROGRESS]
+### Phase 2: Update command docs and agent to prefer injected content [COMPLETED]
 
 **Goal**: Document the updated `--clean` behavior and update the agent to consume injected roadmap context.
 
