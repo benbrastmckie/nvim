@@ -20700,3 +20700,51 @@
 [2026-04-25T11:13:59-07:00] Task directory: specs/494_simplify_status_transitions
 [2026-04-25T11:13:59-07:00] Loop guard triggered: 3 >= 3
 [2026-04-25T11:13:59-07:00] Loop guard prevented continuation
+[2026-04-25T12:02:32-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:02:32-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:02:32-07:00] Loop guard initialized to 1
+[2026-04-25T12:02:32-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:02:35-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:02:36-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:02:36-07:00] Loop guard incremented to 2
+[2026-04-25T12:02:36-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:02:39-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:02:39-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:02:39-07:00] Loop guard incremented to 3
+[2026-04-25T12:02:39-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:02:42-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:02:42-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:02:42-07:00] Loop guard triggered: 3 >= 3
+[2026-04-25T12:02:42-07:00] Loop guard prevented continuation
+[2026-04-25T12:10:57-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:10:57-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:10:57-07:00] Loop guard initialized to 1
+[2026-04-25T12:10:57-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:11:00-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:11:00-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:11:00-07:00] Loop guard incremented to 2
+[2026-04-25T12:11:00-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:11:03-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:11:03-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:11:03-07:00] Loop guard incremented to 3
+[2026-04-25T12:11:03-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:11:08-07:00] Postflight marker found at: specs/493_planner_per_phase_roadmap_updates/.postflight-pending
+[2026-04-25T12:11:08-07:00] Task directory: specs/493_planner_per_phase_roadmap_updates
+[2026-04-25T12:11:08-07:00] Loop guard triggered: 3 >= 3
+[2026-04-25T12:11:08-07:00] Loop guard prevented continuation
+[2026-04-25T12:40:05-07:00] Postflight marker found at: specs/494_simplify_status_transitions/.postflight-pending
+[2026-04-25T12:40:05-07:00] Task directory: specs/494_simplify_status_transitions
+[2026-04-25T12:40:05-07:00] Loop guard initialized to 1
+[2026-04-25T12:40:05-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:40:09-07:00] Postflight marker found at: specs/494_simplify_status_transitions/.postflight-pending
+[2026-04-25T12:40:09-07:00] Task directory: specs/494_simplify_status_transitions
+[2026-04-25T12:40:09-07:00] Loop guard incremented to 2
+[2026-04-25T12:40:09-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:40:12-07:00] Postflight marker found at: specs/494_simplify_status_transitions/.postflight-pending
+[2026-04-25T12:40:12-07:00] Task directory: specs/494_simplify_status_transitions
+[2026-04-25T12:40:12-07:00] Loop guard incremented to 3
+[2026-04-25T12:40:12-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T12:40:15-07:00] Postflight marker found at: specs/494_simplify_status_transitions/.postflight-pending
+[2026-04-25T12:40:15-07:00] Task directory: specs/494_simplify_status_transitions
+[2026-04-25T12:40:15-07:00] Loop guard triggered: 3 >= 3
+[2026-04-25T12:40:15-07:00] Loop guard prevented continuation

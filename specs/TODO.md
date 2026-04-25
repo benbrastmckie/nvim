@@ -10,7 +10,7 @@ next_project_number: 495
 
 ### Pending
 
-- **494** [IMPLEMENTING] -- Simplify status transition rules to allow iterative workflows
+- **494** [COMPLETED] -- Simplify status transition rules to allow iterative workflows
 - **490** [COMPLETED] -- Wire --roadmap flag through /plan command
 - **491** [COMPLETED] -- Add ROADMAP.md preflight to /research command
 - **492** [COMPLETED] -- Ensure /review creates ROADMAP.md if missing
@@ -22,11 +22,12 @@ next_project_number: 495
 
 ### 494. Simplify status transition rules to allow iterative workflows
 - **Effort**: TBD
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [494_simplify_status_transitions/reports/01_simplify-status-transitions.md]
 - **Plan**: [494_simplify_status_transitions/plans/01_simplify-status-transitions.md]
+- **Summary**: [494_simplify_status_transitions/summaries/01_simplify-status-transitions-summary.md]
 
 **Description**: Replace the forward-only status transition model with a permissive one: any `/research`, `/plan`, `/revise`, or `/implement` command can run from any non-terminal status. Only terminal states (`[COMPLETED]`, `[ABANDONED]`, `[EXPANDED]`) block transitions. This enables the natural iterative workflow of cycling through /research -> /plan -> /implement -> /research -> ... without status gates blocking backward movement. Files to update: `.claude/context/standards/status-markers.md` (transition tables), `.claude/rules/state-management.md` ("Cannot regress" rule), `.claude/context/orchestration/state-management.md` (transition table), `.claude/skills/skill-orchestrator/SKILL.md` (Allowed Statuses table), `.claude/context/workflows/status-transitions.md` (deprecated but still loaded), and corresponding core extension copies under `.claude/extensions/core/`.
 

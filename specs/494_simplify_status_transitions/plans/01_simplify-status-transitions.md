@@ -1,7 +1,7 @@
 # Implementation Plan: Simplify Status Transitions
 
 - **Task**: 494 - simplify_status_transitions
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md
