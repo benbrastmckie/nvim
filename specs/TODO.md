@@ -15,7 +15,7 @@ next_project_number: 502
 - **491** [COMPLETED] -- Add ROADMAP.md preflight to /research command
 - **492** [COMPLETED] -- Ensure /review creates ROADMAP.md if missing
 - **493** [COMPLETED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
-- **499** [RESEARCHED] -- Research FORK_SUBAGENT patterns and context: fork optimization strategies
+- **499** [PLANNED] -- Research FORK_SUBAGENT patterns and context: fork optimization strategies
 - **500** [NOT STARTED] -- Add context: fork frontmatter to core delegating skills (depends: 499)
 - **501** [NOT STARTED] -- Optimize team-mode skills for FORK_SUBAGENT parallel cache sharing (depends: 499)
 - **495** [NOT STARTED] -- Add multi-subagent continuation loop to skill-implementer
@@ -29,10 +29,11 @@ next_project_number: 502
 
 ### 499. Research FORK_SUBAGENT patterns and context: fork optimization strategies
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [499_research_fork_subagent_patterns/reports/01_fork-subagent-patterns.md]
+- **Plan**: [499_research_fork_subagent_patterns/plans/01_fork-subagent-patterns.md]
 
 **Description**: Deep-dive research into CLAUDE_CODE_FORK_SUBAGENT environment variable and `context: fork` skill frontmatter. Investigate: (1) How prompt cache sharing works between parent sessions and forked subagents -- do Task tool-based delegations already benefit or only `context: fork` skills? (2) The interaction between the env var and the frontmatter field. (3) Current cost implications of the existing thin-wrapper pattern (skills that use Task tool explicitly without `context: fork`). (4) Whether the system-overview.md note "Skills do NOT use context: fork" is intentional architecture or technical debt. (5) Document concrete recommendations for which skills/agents benefit most from forking. Research should include web sources on CLAUDE_CODE_FORK_SUBAGENT best practices and codebase analysis of the 8 core delegating skills plus 4 extension skills.
 
