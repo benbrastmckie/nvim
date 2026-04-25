@@ -113,7 +113,7 @@ Build `roadmap_state` structure:
 }
 ```
 
-**Error handling**: If ROADMAP.md doesn't exist or fails to parse, log warning and continue review without roadmap integration.
+**Error handling**: If ROADMAP.md fails to parse, log warning and continue review without roadmap integration.
 
 ### 2.5.2. Cross-Reference Roadmap with Project State
 

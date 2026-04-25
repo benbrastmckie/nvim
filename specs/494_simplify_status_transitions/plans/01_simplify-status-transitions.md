@@ -1,7 +1,7 @@
 # Implementation Plan: Simplify Status Transitions
 
 - **Task**: 494 - simplify_status_transitions
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md
@@ -67,7 +67,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Core Enforcement Files (Priority 1) [NOT STARTED]
+### Phase 1: Core Enforcement Files (Priority 1) [IN PROGRESS]
 
 **Goal**: Update the 7 primary enforcement files that actively restrict transitions, replacing per-status allow-lists with terminal-state-only blocking.
 

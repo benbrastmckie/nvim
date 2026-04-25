@@ -10,10 +10,10 @@ next_project_number: 495
 
 ### Pending
 
-- **494** [PLANNED] -- Simplify status transition rules to allow iterative workflows
-- **490** [IMPLEMENTING] -- Wire --roadmap flag through /plan command
-- **491** [IMPLEMENTING] -- Add ROADMAP.md preflight to /research command
-- **492** [IMPLEMENTING] -- Ensure /review creates ROADMAP.md if missing
+- **494** [IMPLEMENTING] -- Simplify status transition rules to allow iterative workflows
+- **490** [COMPLETED] -- Wire --roadmap flag through /plan command
+- **491** [COMPLETED] -- Add ROADMAP.md preflight to /research command
+- **492** [COMPLETED] -- Ensure /review creates ROADMAP.md if missing
 - **493** [NOT STARTED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
@@ -22,7 +22,7 @@ next_project_number: 495
 
 ### 494. Simplify status transition rules to allow iterative workflows
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [494_simplify_status_transitions/reports/01_simplify-status-transitions.md]
@@ -34,11 +34,12 @@ next_project_number: 495
 
 ### 490. Wire --roadmap flag through /plan command to planner-agent
 - **Effort**: TBD
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md]
 - **Plan**: [490_wire_roadmap_flag_plan_command/plans/01_wire-roadmap-flag.md]
+- **Summary**: [490_wire_roadmap_flag_plan_command/summaries/01_wire-roadmap-flag-summary.md]
 
 **Description**: The /plan command does not currently parse or pass a `--roadmap` flag. The planner-agent has Stage 2.6 (Evaluate Roadmap Flag) architecturally prepared but never receives the flag. Wire the `--roadmap` flag from the /plan command through skill-planner delegation context to the planner-agent so Stage 2.6 activates. Files: `.claude/commands/plan.md`, `.claude/skills/skill-planner.md` (or SKILL.md), planner-agent delegation context.
 
@@ -46,11 +47,12 @@ next_project_number: 495
 
 ### 491. Add ROADMAP.md preflight consultation to /research command
 - **Effort**: TBD
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [491_research_roadmap_preflight/reports/01_research-roadmap-preflight.md]
 - **Plan**: [491_research_roadmap_preflight/plans/01_research-roadmap-preflight.md]
+- **Summary**: [491_research_roadmap_preflight/summaries/01_research-roadmap-preflight-summary.md]
 
 **Description**: The /research command should, by default, read `specs/ROADMAP.md` during preflight (before delegating to research subagents) and inject relevant roadmap context into the agent's delegation context. This gives research agents strategic awareness of project direction without requiring a flag. The `--clean` flag should suppress this auto-consultation (consistent with memory retrieval suppression). Files: `.claude/commands/research.md`, `.claude/skills/skill-researcher.md` (or SKILL.md), research agent delegation context.
 
@@ -58,7 +60,7 @@ next_project_number: 495
 
 ### 492. Ensure /review creates ROADMAP.md if missing
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [492_review_create_roadmap/reports/01_review-create-roadmap.md]

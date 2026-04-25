@@ -5,10 +5,10 @@
     {
       "project_number": 494,
       "project_name": "simplify_status_transitions",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-04-25T16:58:10Z",
-      "last_updated": "2026-04-25T18:14:10Z",
+      "last_updated": "2026-04-25T18:29:10Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -27,7 +27,7 @@
           "summary": "4-phase implementation plan for simplifying status transitions to terminal-state-only blocking across 26 files"
         }
       ],
-      "session_id": "sess_1777350100_b5c3d2",
+      "session_id": "sess_1777350200_c6d4e3",
       "next_artifact_number": 2,
       "memory_candidates": [
         {
@@ -49,10 +49,10 @@
     {
       "project_number": 490,
       "project_name": "wire_roadmap_flag_plan_command",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:57:38Z",
+      "last_updated": "2026-04-25T18:52:43Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -64,18 +64,25 @@
           "path": "specs/490_wire_roadmap_flag_plan_command/plans/01_wire-roadmap-flag.md",
           "type": "plan",
           "summary": "Single-phase plan to add --roadmap flag parsing and delegation in plan.md"
+        },
+        {
+          "path": "specs/490_wire_roadmap_flag_plan_command/summaries/01_wire-roadmap-flag-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
       ],
       "session_id": "sess_1777136246_2cc2ce_t490",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Wired --roadmap flag through /plan command to planner-agent delegation chain",
+      "claudemd_suggestions": "Add --roadmap flag documentation to CLAUDE.md /plan command reference"
     },
     {
       "project_number": 491,
       "project_name": "research_roadmap_preflight",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T16:57:39Z",
+      "last_updated": "2026-04-25T18:52:44Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -87,6 +94,11 @@
           "path": "specs/491_research_roadmap_preflight/plans/01_research-roadmap-preflight.md",
           "type": "plan",
           "summary": "2-phase plan to add Stage 4c roadmap consultation to skill-researcher and update agent"
+        },
+        {
+          "path": "specs/491_research_roadmap_preflight/summaries/01_research-roadmap-preflight-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary"
         }
       ],
       "session_id": "sess_1777136246_2cc2ce_t491",
@@ -97,15 +109,17 @@
           "category": "PATTERN",
           "confidence": 0.75
         }
-      ]
+      ],
+      "completion_summary": "Added ROADMAP.md preflight consultation to /research command with --clean suppression",
+      "claudemd_suggestions": "Update --clean flag description in CLAUDE.md research command reference"
     },
     {
       "project_number": 492,
       "project_name": "review_create_roadmap",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T17:10:00Z",
+      "last_updated": "2026-04-25T18:52:44Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -121,11 +135,12 @@
         {
           "path": "specs/492_review_create_roadmap/summaries/01_review-create-roadmap-summary.md",
           "type": "summary",
-          "summary": "Implementation blocked - Edit and Write tools denied permission for .claude/commands/review.md"
+          "summary": "Implementation summary"
         }
       ],
       "session_id": "sess_1777136246_2cc2ce_t492",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed contradictory error handling note in review.md"
     },
     {
       "project_number": 493,

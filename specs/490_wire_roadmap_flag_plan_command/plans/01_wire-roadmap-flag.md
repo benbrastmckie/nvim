@@ -1,7 +1,7 @@
 # Implementation Plan: Wire --roadmap Flag to /plan Command
 
 - **Task**: 490 - wire_roadmap_flag_plan_command
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md
