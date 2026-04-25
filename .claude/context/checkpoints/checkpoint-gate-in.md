@@ -28,17 +28,14 @@ fi
 
 ### 3. Validate Status Transition
 
-Extract current status and verify transition is allowed:
+Extract current status and verify it is not terminal:
 
-| Current Status | Allowed Transitions |
-|----------------|---------------------|
-| not_started | researching, planning, implementing |
-| researched | planning, implementing |
-| planned | implementing |
-| implementing | implementing (resume) |
-| partial | implementing (resume) |
+```
+if status in [completed, abandoned, expanded]:
+  ABORT "Task is in terminal state [$status]"
+```
 
-If transition not allowed: ABORT with reason.
+Any non-terminal status allows any operation (research, plan, implement, revise).
 
 ### 4. Update Status (via skill-status-sync)
 

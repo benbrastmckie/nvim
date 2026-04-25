@@ -49,14 +49,14 @@ Route to appropriate skill based on task type:
 
 ### 3. Status Validation
 
-Before routing, validate task status allows the operation:
+Before routing, validate task status is not terminal:
 
-| Operation | Allowed Statuses |
-|-----------|------------------|
-| research | not_started, planned, partial, blocked |
-| plan | not_started, researched, partial |
-| implement | planned, implementing, partial, researched |
-| revise | planned, implementing, partial, blocked |
+```
+if status in [completed, abandoned, expanded]:
+  ABORT "Task is in terminal state [$status]"
+```
+
+All operations (research, plan, implement, revise) are allowed from any non-terminal status.
 
 ### 4. Context Preparation
 

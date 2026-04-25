@@ -21,21 +21,22 @@ TODO.md and state.json MUST stay synchronized. Any update to one requires updati
 
 ## Status Transitions
 
-### Valid Transitions
-```
-[NOT STARTED] -> [RESEARCHING] -> [RESEARCHED]
-[RESEARCHED] -> [PLANNING] -> [PLANNED]
-[PLANNED] -> [IMPLEMENTING] -> [COMPLETED]
+### Permissive Model
 
-Any state -> [BLOCKED] (with reason)
-Any state -> [ABANDONED] (moves to archive)
+Any command can run from any non-terminal status. Only terminal states block transitions:
+
+```
+Terminal states: [COMPLETED], [ABANDONED], [EXPANDED]
+
+Any non-terminal status -> any command (research, plan, implement, revise)
+Any status -> [BLOCKED] (with reason)
+Any status -> [ABANDONED] (moves to archive)
 Any non-terminal -> [EXPANDED] (when divided into subtasks)
 [IMPLEMENTING] -> [PARTIAL] (on timeout/error)
 ```
 
-### Invalid Transitions
-- Cannot skip phases (e.g., NOT STARTED -> PLANNED)
-- Cannot regress (e.g., PLANNED -> RESEARCHED) except for revisions
+### Restrictions
+- Cannot transition from terminal states (completed, abandoned, expanded)
 - Cannot mark COMPLETED without all phases done
 
 ## Two-Phase Update Pattern

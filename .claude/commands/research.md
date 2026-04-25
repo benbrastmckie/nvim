@@ -137,11 +137,11 @@ for task_num in "${task_numbers[@]}"; do
 
   status=$(echo "$task_data" | jq -r '.status')
 
-  # Allowed statuses for /research
+  # Block terminal statuses only
   case "$status" in
-    not_started|researched|planned|partial|blocked) validated_tasks+=("$task_num") ;;
-    *) skipped_tasks+=("$task_num: invalid status [$status]") ;;
+    completed|abandoned|expanded) skipped_tasks+=("$task_num: terminal status [$status]") ; continue ;;
   esac
+  validated_tasks+=("$task_num")
 done
 ```
 
@@ -255,8 +255,8 @@ Skipped: {count}
 
 3. **Validate**
    - Task exists (ABORT if not)
-   - Status allows research: not_started, planned, partial, blocked, researched
-   - If completed/abandoned: ABORT with recommendation
+   - Status is not terminal: block completed, abandoned, expanded
+   - If terminal: ABORT with recommendation
 
 **ABORT** if any validation fails.
 

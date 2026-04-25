@@ -135,10 +135,8 @@ for task_num in "${task_numbers[@]}"; do
 
   status=$(echo "$task_data" | jq -r '.status')
 
-  # Allowed statuses for /implement (same as GATE IN step 3)
-  # With --force: also allow "completed"
+  # Block terminal statuses only; --force overrides completed
   case "$status" in
-    planned|implementing|partial|researched|not_started) ;;
     completed)
       if [ "$force_mode" = "true" ]; then
         : # Allow with --force
@@ -147,12 +145,8 @@ for task_num in "${task_numbers[@]}"; do
         continue
       fi
       ;;
-    abandoned)
-      skipped_tasks+=("$task_num: abandoned (recover first)")
-      continue
-      ;;
-    *)
-      skipped_tasks+=("$task_num: invalid status [$status]")
+    abandoned|expanded)
+      skipped_tasks+=("$task_num: terminal status [$status]")
       continue
       ;;
   esac
@@ -289,9 +283,8 @@ Skipped: {count}
 
 3. **Validate**
    - Task exists (ABORT if not)
-   - Status allows implementation: planned, implementing, partial, researched, not_started
-   - If completed: ABORT unless --force
-   - If abandoned: ABORT "Recover task first"
+   - Status is not terminal: block completed (unless --force), abandoned, expanded
+   - If terminal (and not --force): ABORT with recommendation
 
 4. **Load Implementation Plan**
    Find latest: `specs/{NNN}_{SLUG}/plans/*.md` (sorted by version)

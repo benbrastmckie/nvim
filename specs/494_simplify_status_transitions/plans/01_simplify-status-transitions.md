@@ -67,7 +67,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Core Enforcement Files (Priority 1) [IN PROGRESS]
+### Phase 1: Core Enforcement Files (Priority 1) [COMPLETED]
 
 **Goal**: Update the 7 primary enforcement files that actively restrict transitions, replacing per-status allow-lists with terminal-state-only blocking.
 
