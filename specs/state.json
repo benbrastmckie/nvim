@@ -145,14 +145,22 @@
     {
       "project_number": 493,
       "project_name": "planner_per_phase_roadmap_updates",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "created": "2026-04-25T00:00:00Z",
-      "last_updated": "2026-04-25T00:00:00Z",
+      "last_updated": "2026-04-25T19:02:56Z",
       "dependencies": [
         490
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/493_planner_per_phase_roadmap_updates/reports/01_per-phase-roadmap.md",
+          "type": "research",
+          "summary": "Research on strengthening planner-agent Stage 2.6 for per-phase ROADMAP.md updates"
+        }
+      ],
+      "session_id": "sess_1777143554_29d849",
+      "next_artifact_number": 2
     },
     {
       "project_number": 87,
