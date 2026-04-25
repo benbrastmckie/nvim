@@ -100,7 +100,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Near-Consistent and Minor Files (Priority 2-3) [NOT STARTED]
+### Phase 2: Near-Consistent and Minor Files (Priority 2-3) [COMPLETED]
 
 **Goal**: Update the 7 remaining files that are already close to the permissive model or need only minor changes.
 

@@ -352,7 +352,7 @@ task_data=$(jq -r --argjson num "$task_number" \
 
 # Validate exists
 # Validate task_type starts with "epi"
-# Validate status allows research (not_started or researched for re-research)
+# Validate status is not terminal (block completed, abandoned, expanded)
 ```
 
 ### Step 2: Delegate

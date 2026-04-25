@@ -133,7 +133,7 @@ for task_num in "${task_numbers[@]}"; do
   status=$(echo "$task_data" | jq -r '.status')
 
   # /plan accepts any non-terminal status
-  if [ "$status" = "completed" ] || [ "$status" = "abandoned" ]; then
+  if [ "$status" = "completed" ] || [ "$status" = "abandoned" ] || [ "$status" = "expanded" ]; then
     invalid_tasks+=("$task_num: terminal status [$status]")
   else
     validated_tasks+=("$task_num")
@@ -254,7 +254,7 @@ Skipped: {count}
 
 3. **Validate**
    - Task exists (ABORT if not)
-   - If completed or abandoned: ABORT "Task is in terminal state"
+   - If completed, abandoned, or expanded: ABORT "Task is in terminal state"
    - All other states: proceed
 
 4. **Load Context**

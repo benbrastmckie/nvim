@@ -100,9 +100,9 @@ if [ "$task_type" = "funds" | not ]; then
   return error "Task $task_number has task_type '$task_type', expected 'funds'"
 fi
 
-# Validate status allows research
-if [ "$status" = "completed" ]; then
-  return error "Task already completed"
+# Validate status (only block terminal states)
+if [ "$status" = "completed" ] || [ "$status" = "abandoned" ] || [ "$status" = "expanded" ]; then
+  return error "Task is in terminal state [$status]"
 fi
 ```
 
