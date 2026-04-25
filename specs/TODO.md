@@ -1,19 +1,66 @@
 ---
-next_project_number: 490
+next_project_number: 494
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-04-20. 2 active tasks remaining.*
+*Updated 2026-04-25. 6 active tasks remaining.*
 
 ### Pending
 
+- **490** [RESEARCHED] -- Wire --roadmap flag through /plan command
+- **491** [RESEARCHED] -- Add ROADMAP.md preflight to /research command
+- **492** [RESEARCHED] -- Ensure /review creates ROADMAP.md if missing
+- **493** [NOT STARTED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
 ## Tasks
+
+### 490. Wire --roadmap flag through /plan command to planner-agent
+- **Effort**: TBD
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Dependencies**: None
+- **Research**: [490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md]
+
+**Description**: The /plan command does not currently parse or pass a `--roadmap` flag. The planner-agent has Stage 2.6 (Evaluate Roadmap Flag) architecturally prepared but never receives the flag. Wire the `--roadmap` flag from the /plan command through skill-planner delegation context to the planner-agent so Stage 2.6 activates. Files: `.claude/commands/plan.md`, `.claude/skills/skill-planner.md` (or SKILL.md), planner-agent delegation context.
+
+---
+
+### 491. Add ROADMAP.md preflight consultation to /research command
+- **Effort**: TBD
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Dependencies**: None
+- **Research**: [491_research_roadmap_preflight/reports/01_research-roadmap-preflight.md]
+
+**Description**: The /research command should, by default, read `specs/ROADMAP.md` during preflight (before delegating to research subagents) and inject relevant roadmap context into the agent's delegation context. This gives research agents strategic awareness of project direction without requiring a flag. The `--clean` flag should suppress this auto-consultation (consistent with memory retrieval suppression). Files: `.claude/commands/research.md`, `.claude/skills/skill-researcher.md` (or SKILL.md), research agent delegation context.
+
+---
+
+### 492. Ensure /review creates ROADMAP.md if missing
+- **Effort**: TBD
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Dependencies**: None
+- **Research**: [492_review_create_roadmap/reports/01_review-create-roadmap.md]
+
+**Description**: The /review command's Step 2.5 reads ROADMAP.md for cross-referencing but does not create a default ROADMAP.md if one doesn't exist (unlike /todo which does). Add creation-if-missing logic to /review's roadmap integration step, using the same default template as /todo. Files: `.claude/commands/review.md`.
+
+---
+
+### 493. Add per-phase ROADMAP.md update steps to planner roadmap mode
+- **Effort**: TBD
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: 490
+
+**Description**: When `--roadmap` is active, the planner currently generates a Phase 1 "Review and Snapshot" and a final "Update ROADMAP.md" phase. Strengthen this so: (a) Phase 1 updates ROADMAP.md with what is known with confidence at plan time, not just a snapshot; (b) each subsequent phase includes a ROADMAP.md update step at phase end (not just the final phase). This ensures the roadmap is incrementally updated as implementation progresses. Files: `.claude/commands/plan.md` (planner Stage 2.6 and Stage 3 phase decomposition), `.claude/context/formats/plan-format.md`.
+
+---
 
 ### 87. Investigate terminal directory change when opening neovim in wezterm
 - **Effort**: TBD
