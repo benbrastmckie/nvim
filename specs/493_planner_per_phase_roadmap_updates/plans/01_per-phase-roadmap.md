@@ -1,7 +1,7 @@
 # Implementation Plan: Task #493
 
 - **Task**: 493 - planner_per_phase_roadmap_updates
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 0.5 hours
 - **Dependencies**: Task 490 (wired --roadmap flag through /plan to planner-agent)
 - **Research Inputs**: specs/493_planner_per_phase_roadmap_updates/reports/01_per-phase-roadmap.md

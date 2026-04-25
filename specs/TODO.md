@@ -14,7 +14,7 @@ next_project_number: 495
 - **490** [COMPLETED] -- Wire --roadmap flag through /plan command
 - **491** [COMPLETED] -- Add ROADMAP.md preflight to /research command
 - **492** [COMPLETED] -- Ensure /review creates ROADMAP.md if missing
-- **493** [PLANNED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
+- **493** [COMPLETED] -- Add per-phase ROADMAP.md updates to planner (depends: 490)
 - **87** [RESEARCHED] -- Investigate terminal directory change in wezterm
 - **78** [PLANNED] -- Fix Himalaya SMTP authentication failure
 
@@ -73,11 +73,12 @@ next_project_number: 495
 
 ### 493. Add per-phase ROADMAP.md update steps to planner roadmap mode
 - **Effort**: TBD
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: 490
 - **Research**: [493_planner_per_phase_roadmap_updates/reports/01_per-phase-roadmap.md]
 - **Plan**: [493_planner_per_phase_roadmap_updates/plans/01_per-phase-roadmap.md]
+- **Summary**: [493_planner_per_phase_roadmap_updates/summaries/01_per-phase-roadmap-summary.md]
 
 **Description**: When `--roadmap` is active, the planner currently generates a Phase 1 "Review and Snapshot" and a final "Update ROADMAP.md" phase. Strengthen this so: (a) Phase 1 updates ROADMAP.md with what is known with confidence at plan time, not just a snapshot; (b) each subsequent phase includes a ROADMAP.md update step at phase end (not just the final phase). This ensures the roadmap is incrementally updated as implementation progresses. Files: `.claude/commands/plan.md` (planner Stage 2.6 and Stage 3 phase decomposition), `.claude/context/formats/plan-format.md`.
 
