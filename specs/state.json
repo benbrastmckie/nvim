@@ -5,10 +5,10 @@
     {
       "project_number": 494,
       "project_name": "simplify_status_transitions",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "created": "2026-04-25T16:58:10Z",
-      "last_updated": "2026-04-25T17:05:35Z",
+      "last_updated": "2026-04-25T18:14:10Z",
       "dependencies": [],
       "artifacts": [
         {
@@ -20,9 +20,14 @@
           "path": "specs/494_simplify_status_transitions/reports/01_simplify-status-transitions.md",
           "type": "research",
           "summary": "Comprehensive inventory of 14 files (+ 12 extension copies) that enforce forward-only status transitions"
+        },
+        {
+          "path": "specs/494_simplify_status_transitions/plans/01_simplify-status-transitions.md",
+          "type": "plan",
+          "summary": "4-phase implementation plan for simplifying status transitions to terminal-state-only blocking across 26 files"
         }
       ],
-      "session_id": "sess_1777350000_a4b2c1",
+      "session_id": "sess_1777350100_b5c3d2",
       "next_artifact_number": 2,
       "memory_candidates": [
         {

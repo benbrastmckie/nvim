@@ -32,6 +32,7 @@ When multiple task numbers are provided, the command enters multi-task mode (see
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
 | `--clean` | Skip automatic memory retrieval | false |
+| `--roadmap` | Include ROADMAP.md review/update phases in plan | false |
 
 When `--team` is specified, planning is delegated to `skill-team-plan` which spawns multiple planning agents generating alternative plans in parallel. Each teammate produces a plan candidate, and the lead synthesizes findings into a final plan with trade-off analysis.
 

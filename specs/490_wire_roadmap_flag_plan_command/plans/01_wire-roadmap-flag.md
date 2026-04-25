@@ -1,7 +1,7 @@
 # Implementation Plan: Wire --roadmap Flag to /plan Command
 
 - **Task**: 490 - wire_roadmap_flag_plan_command
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/490_wire_roadmap_flag_plan_command/reports/01_wire-roadmap-flag.md
@@ -57,7 +57,7 @@ No ROADMAP.md consultation requested (roadmap_flag=false).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add --roadmap flag to plan.md [NOT STARTED]
+### Phase 1: Add --roadmap flag to plan.md [IN PROGRESS]
 
 **Goal**: Wire the `--roadmap` flag through all three touchpoints in `.claude/commands/plan.md`.
 

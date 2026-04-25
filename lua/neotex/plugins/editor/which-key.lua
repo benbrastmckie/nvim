@@ -770,49 +770,6 @@ return {
           vim.notify("Process manager not available", vim.log.levels.WARN)
         end
       end, desc = "kill all", icon = "󰅚" },
-      { "<leader>xo", function()
-        local ok, process = pcall(require, "neotex.util.process")
-        if not ok then
-          vim.notify("Process manager not available", vim.log.levels.WARN)
-          return
-        end
-        local file = vim.api.nvim_buf_get_name(0)
-        local name = vim.fn.fnamemodify(file, ":t:r")
-        local entries = process.list()
-        -- Find a process matching the current file or just use the first one with a port
-        local target = nil
-        for _, entry in ipairs(entries) do
-          if entry.port and entry.status == "running" then
-            local cmd_str = table.concat(entry.cmd or {}, " ")
-            if cmd_str:find(file, 1, true) or cmd_str:find(name, 1, true) then
-              target = entry
-              break
-            end
-          end
-        end
-        if not target then
-          -- Fall back to first running process with a port
-          for _, entry in ipairs(entries) do
-            if entry.port and entry.status == "running" then
-              target = entry
-              break
-            end
-          end
-        end
-        if target and target.port then
-          local url = "http://localhost:" .. tostring(target.port)
-          local cmd
-          if vim.fn.has("mac") == 1 or vim.fn.has("macunix") == 1 then
-            cmd = { "open", url }
-          else
-            cmd = { "xdg-open", url }
-          end
-          vim.fn.jobstart(cmd, { detach = true })
-          vim.notify("Opening " .. url, vim.log.levels.INFO)
-        else
-          vim.notify("No running process with a port found", vim.log.levels.INFO)
-        end
-      end, desc = "open in browser", icon = "󰖟" },
     })
 
     -- ============================================================================

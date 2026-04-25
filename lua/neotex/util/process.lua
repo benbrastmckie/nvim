@@ -508,19 +508,13 @@ function M.launch(filepath)
     ft = vim.filetype.match({ filename = filepath })
   end
 
-  -- Check if this file already has a running process
+  -- If this file already has a running process, open it in the browser
   for _, entry in pairs(M._registry) do
     if entry.status == "running" and entry.cmd then
       for _, arg in ipairs(entry.cmd) do
         if arg == filepath then
-          local port = entry.port
-          local cats = _categories()
-          if port then
-            _notify(string.format("Already open on port: %d", port),
-              cats and cats.USER_ACTION)
-          else
-            _notify(string.format("Already running: %s (id %d)", entry.name, entry.id),
-              cats and cats.USER_ACTION)
+          if entry.port then
+            _open_browser(entry.port, 0)
           end
           return entry.id
         end
@@ -583,7 +577,7 @@ function M.setup(opts)
     end
     local dir = vim.fn.fnamemodify(filepath, ":h")
     return {
-      cmd = { "npx", "slidev", filepath, "--port", "{port}" },
+      cmd = { "npx", "@slidev/cli", filepath, "--port", "{port}" },
       name = "slidev",
       cwd = dir,
       port = true,

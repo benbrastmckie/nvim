@@ -23,7 +23,6 @@ return {
       out_dir = 'build',                           -- Output directory for PDF and aux files
       aux_dir = 'build',                           -- Auxiliary files directory
       options = {
-        '-xelatex',                                -- Use XeLaTeX engine
         '-interaction=nonstopmode',                -- Don't stop on errors
         '-file-line-error',                        -- Better error messages
         '-synctex=1',                              -- Enable SyncTeX
