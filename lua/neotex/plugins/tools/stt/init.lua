@@ -76,17 +76,12 @@ local function _is_claude_code_buffer(bufnr)
   return result
 end
 
--- Helper: send voice push-to-talk keypress to Claude Code terminal
--- Sends Ctrl+' via CSI u encoding (\x1b[39;5u = codepoint 39, modifier 5=Ctrl).
--- Bound to voice:pushToTalk in ~/.claude/keybindings.json (Chat context).
--- CSI u encoding avoids the ESC-prefix ambiguity of legacy terminal encoding.
-local function _send_claude_voice_toggle(bufnr)
+-- Send /voice command to Claude Code terminal to toggle voice recording.
+-- Escape sequences don't work because Claude Code's vim mode intercepts ESC.
+local function _send_claude_voice(bufnr)
   local channel = vim.b[bufnr].terminal_job_id
-  if not channel or channel <= 0 then
-    notify("No terminal channel found for Claude voice toggle", vim.log.levels.WARN)
-    return false
-  end
-  vim.fn.chansend(channel, "\x1b[39;5u")
+  if not channel or channel <= 0 then return false end
+  vim.fn.chansend(channel, "/voice\r")
   return true
 end
 
@@ -360,27 +355,29 @@ function M.setup(opts)
   vim.api.nvim_create_user_command('STTToggle', M.toggle_recording, { desc = 'Toggle STT recording' })
   vim.api.nvim_create_user_command('STTHealth', M.health, { desc = 'Check STT dependencies' })
 
-  -- Send voice push-to-talk to Claude Code buffer (for testing/manual use)
+  -- Send /voice to Claude Code buffer (for testing/manual use)
   vim.api.nvim_create_user_command('STTClaudeVoice', function()
     local bufnr = vim.api.nvim_get_current_buf()
     if not _is_claude_code_buffer(bufnr) then
       notify("Not a Claude Code buffer", vim.log.levels.WARN)
       return
     end
-    local ok = _send_claude_voice_toggle(bufnr)
-    notify(ok and "Sent Ctrl+' to Claude Code" or "Failed to send",
-      ok and vim.log.levels.INFO or vim.log.levels.ERROR)
-  end, { desc = 'STT: Send voice toggle to Claude Code' })
+    _send_claude_voice(bufnr)
+  end, { desc = 'STT: Toggle Claude Code voice recording' })
 
   -- Unified Ctrl-' dictation keymap (all modes)
-  -- Context-aware: Claude Code buffers get native voice (meta+k), others get Vosk STT
+  -- Claude Code buffers: send /voice command for native voice recording
+  -- All other buffers: Vosk STT toggle
 
-  -- Normal mode: <C-'> toggle dictation
+  -- Normal mode: <C-'> context-aware dictation
   vim.keymap.set('n', "<C-'>", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local buftype = vim.api.nvim_get_option_value('buftype', { buf = bufnr })
-    if buftype == 'terminal' and _is_claude_code_buffer(bufnr) then
-      _send_claude_voice_toggle(bufnr)
+    if _is_claude_code_buffer(bufnr) then
+      vim.cmd('startinsert')
+      vim.schedule(function()
+        local key = vim.api.nvim_replace_termcodes("<C-k>", true, true, true)
+        vim.api.nvim_feedkeys(key, 'nt', false)
+      end)
     else
       M.toggle_recording()
     end
@@ -399,24 +396,42 @@ function M.setup(opts)
     desc = "STT: Toggle dictation (insert mode, Ctrl-')"
   })
 
-  -- Terminal mode: <C-'> context-aware dictation toggle
-  vim.keymap.set('t', "<C-'>", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    if _is_claude_code_buffer(bufnr) then
-      -- Claude Code buffer: send meta+k for native voice, stay in terminal mode
-      _send_claude_voice_toggle(bufnr)
-    else
-      -- Non-Claude terminal: exit terminal mode, toggle Vosk STT, return
-      vim.cmd('stopinsert')
-      M.toggle_recording()
+  -- Terminal mode: buffer-local <C-'> keymaps.
+  -- Claude Code: remap to <C-k> which has a standard single-byte encoding
+  --   (0x0b) that passes through libvterm to trigger voice:pushToTalk
+  --   (bound to ctrl+k in ~/.claude/keybindings.json).
+  -- Other terminals: Vosk STT toggle.
+  local stt_term_group = vim.api.nvim_create_augroup("STTTerminal", { clear = true })
+
+  vim.api.nvim_create_autocmd("TermOpen", {
+    group = stt_term_group,
+    callback = function()
+      local bufnr = vim.api.nvim_get_current_buf()
       vim.schedule(function()
-        vim.cmd('startinsert')
+        if not vim.api.nvim_buf_is_valid(bufnr) then return end
+        if _is_claude_code_buffer(bufnr) then
+          vim.keymap.set('t', "<C-'>", "<C-k>", {
+            buffer = bufnr,
+            noremap = true,
+            silent = true,
+            desc = "Voice: toggle Claude Code voice recording"
+          })
+        else
+          vim.keymap.set('t', "<C-'>", function()
+            vim.cmd('stopinsert')
+            M.toggle_recording()
+            vim.schedule(function()
+              vim.cmd('startinsert')
+            end)
+          end, {
+            buffer = bufnr,
+            noremap = true,
+            silent = true,
+            desc = "STT: Toggle dictation (terminal mode, Ctrl-')"
+          })
+        end
       end)
-    end
-  end, {
-    noremap = true,
-    silent = true,
-    desc = "STT: Toggle dictation (terminal mode, Ctrl-')"
+    end,
   })
 
 end

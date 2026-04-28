@@ -20748,3 +20748,93 @@
 [2026-04-25T12:40:15-07:00] Task directory: specs/494_simplify_status_transitions
 [2026-04-25T12:40:15-07:00] Loop guard triggered: 3 >= 3
 [2026-04-25T12:40:15-07:00] Loop guard prevented continuation
+[2026-04-25T12:51:34-07:00] No postflight marker, allowing stop
+[2026-04-25T12:53:44-07:00] No postflight marker, allowing stop
+[2026-04-25T12:56:44-07:00] No postflight marker, allowing stop
+[2026-04-25T13:00:10-07:00] No postflight marker, allowing stop
+[2026-04-25T13:05:35-07:00] No postflight marker, allowing stop
+[2026-04-25T13:13:49-07:00] No postflight marker, allowing stop
+[2026-04-25T13:32:26-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:32:26-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:32:26-07:00] Loop guard initialized to 1
+[2026-04-25T13:32:26-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T13:32:30-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:32:30-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:32:30-07:00] Loop guard incremented to 2
+[2026-04-25T13:32:30-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T13:32:34-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:32:34-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:32:34-07:00] Loop guard incremented to 3
+[2026-04-25T13:32:34-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T13:32:38-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:32:38-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:32:38-07:00] Loop guard triggered: 3 >= 3
+[2026-04-25T13:32:38-07:00] Loop guard prevented continuation
+[2026-04-25T13:46:44-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:46:44-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:46:44-07:00] Loop guard initialized to 1
+[2026-04-25T13:46:44-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T13:46:47-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:46:47-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:46:47-07:00] Loop guard incremented to 2
+[2026-04-25T13:46:47-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T13:46:51-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:46:51-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:46:51-07:00] Loop guard incremented to 3
+[2026-04-25T13:46:51-07:00] Blocking stop: Postflight pending: status update, artifact linking, git commit
+[2026-04-25T13:46:53-07:00] Postflight marker found at: specs/499_research_fork_subagent_patterns/.postflight-pending
+[2026-04-25T13:46:53-07:00] Task directory: specs/499_research_fork_subagent_patterns
+[2026-04-25T13:46:53-07:00] Loop guard triggered: 3 >= 3
+[2026-04-25T13:46:53-07:00] Loop guard prevented continuation
+[2026-04-27T10:24:20-07:00] No postflight marker, allowing stop
+[2026-04-27T10:24:52-07:00] No postflight marker, allowing stop
+[2026-04-27T10:25:59-07:00] No postflight marker, allowing stop
+[2026-04-27T10:26:27-07:00] No postflight marker, allowing stop
+[2026-04-27T10:27:56-07:00] No postflight marker, allowing stop
+[2026-04-27T10:29:06-07:00] No postflight marker, allowing stop
+[2026-04-27T10:53:09-07:00] No postflight marker, allowing stop
+[2026-04-27T10:55:39-07:00] No postflight marker, allowing stop
+[2026-04-27T11:04:54-07:00] No postflight marker, allowing stop
+[2026-04-27T11:12:37-07:00] No postflight marker, allowing stop
+[2026-04-27T11:32:31-07:00] No postflight marker, allowing stop
+[2026-04-27T11:33:32-07:00] No postflight marker, allowing stop
+[2026-04-27T11:40:09-07:00] No postflight marker, allowing stop
+[2026-04-27T11:48:56-07:00] No postflight marker, allowing stop
+[2026-04-27T11:51:18-07:00] No postflight marker, allowing stop
+[2026-04-27T11:54:40-07:00] No postflight marker, allowing stop
+[2026-04-27T11:59:47-07:00] No postflight marker, allowing stop
+[2026-04-27T12:10:27-07:00] No postflight marker, allowing stop
+[2026-04-27T12:11:00-07:00] No postflight marker, allowing stop
+[2026-04-27T12:11:18-07:00] No postflight marker, allowing stop
+[2026-04-27T12:11:33-07:00] No postflight marker, allowing stop
+[2026-04-27T12:12:08-07:00] No postflight marker, allowing stop
+[2026-04-27T12:12:13-07:00] No postflight marker, allowing stop
+[2026-04-27T12:12:36-07:00] No postflight marker, allowing stop
+[2026-04-27T12:20:48-07:00] No postflight marker, allowing stop
+[2026-04-27T12:27:24-07:00] No postflight marker, allowing stop
+[2026-04-27T12:31:53-07:00] No postflight marker, allowing stop
+[2026-04-27T12:35:52-07:00] No postflight marker, allowing stop
+[2026-04-27T12:41:28-07:00] No postflight marker, allowing stop
+[2026-04-27T12:43:44-07:00] No postflight marker, allowing stop
+[2026-04-27T12:50:20-07:00] No postflight marker, allowing stop
+[2026-04-27T12:53:51-07:00] No postflight marker, allowing stop
+[2026-04-27T12:57:58-07:00] No postflight marker, allowing stop
+[2026-04-27T12:58:13-07:00] No postflight marker, allowing stop
+[2026-04-27T13:02:13-07:00] No postflight marker, allowing stop
+[2026-04-27T15:56:07-07:00] No postflight marker, allowing stop
+[2026-04-27T16:02:02-07:00] No postflight marker, allowing stop
+[2026-04-27T16:34:51-07:00] No postflight marker, allowing stop
+[2026-04-27T16:38:29-07:00] No postflight marker, allowing stop
+[2026-04-27T16:43:54-07:00] No postflight marker, allowing stop
+[2026-04-27T17:26:00-07:00] No postflight marker, allowing stop
+[2026-04-27T17:26:19-07:00] No postflight marker, allowing stop
+[2026-04-27T17:26:51-07:00] No postflight marker, allowing stop
+[2026-04-27T17:27:32-07:00] No postflight marker, allowing stop
+[2026-04-27T17:28:04-07:00] No postflight marker, allowing stop
+[2026-04-27T17:28:36-07:00] No postflight marker, allowing stop
+[2026-04-27T17:29:09-07:00] No postflight marker, allowing stop
+[2026-04-27T17:29:41-07:00] No postflight marker, allowing stop
+[2026-04-27T17:30:14-07:00] No postflight marker, allowing stop
+[2026-04-27T17:30:27-07:00] No postflight marker, allowing stop
+[2026-04-27T17:30:56-07:00] No postflight marker, allowing stop
+[2026-04-27T17:38:37-07:00] No postflight marker, allowing stop
