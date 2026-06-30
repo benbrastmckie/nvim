@@ -1,5 +1,5 @@
 ---
-next_project_number: 784
+next_project_number: 785
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 784
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,784 | -- | agent-system, literature, cslib, ... |
 | 2 | 773,774,776,779,781 | 772,775,778,780 | agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -35,6 +35,10 @@ next_project_number: 784
 775 [NOT STARTED] — [--lit, NO SILENT FALLBACK] When --lit is used but no per-repo sp
   └─ 776 [NOT STARTED] — Two coupled fixes so --lit works outside the formal /research N -
 
+### Cslib
+
+784 [NOT STARTED] — [/pr WORKFLOW SELECTION] Add a workflow-determination front-end t
+
 ### Terminal UI
 
 87 [RESEARCHED] — Investigate why the terminal working directory changes to a proje
@@ -44,6 +48,17 @@ next_project_number: 784
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 784. /pr: select among new/stacked/update/amend PR workflows with auto-detection
+- **Effort**: 4-8 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: cslib
+- **Dependencies**: None
+
+**Description**: [/pr WORKFLOW SELECTION] Add a workflow-determination front-end to the PR-SUBMISSION path of the /pr command (cslib extension, source: .claude/extensions/cslib/commands/pr.md; deployed: .claude/commands/pr.md). Leave the --review path (STEP 0) and the PR-READY review-response posting path (STEP 0.5) UNTOUCHED. Insert a new early step immediately after argument parsing (STEP 1) that resolves WHICH of four workflows applies BEFORE any branch/CI work: (1) NEW branch from upstream/main (default; current STEP 4-5 behavior); (2) STACKED on an upstream PR -- create the feature branch from that PR head ref (gh pr checkout / fetch the PR head) instead of upstream/main, and set gh pr create --base to the PR head branch; (3) UPDATE an existing PR -- checkout the PR head branch, add a commit, push, do NOT call gh pr create; (4) AMEND/SQUASH + force-push -- amend or squash onto the existing PR branch and git push --force-with-lease (no new PR). FLAG SCHEME (3 flags + sensible default, per user decision "flags, not too many"): no flag => new (default); --stacked [PR]; --update [PR]; --amend [PR]. PR is an OPTIONAL positional ref accepting either a PR number or a full GitHub PR URL; reuse the existing github_pr URL-parsing logic from STEP 0.1. AUTO-DETECTION + INTERACTIVE FALLBACK (per user decision "auto-detect, confirm always"): when a chosen workflow needs a PR ref and none was supplied -- OR when no workflow flag was given at all -- query gh to locate candidate open PRs: git fetch upstream, then gh pr list / gh search prs against leanprover/cslib filtered to head branches that were pushed from the origin fork (benbrastmckie), matching by current branch name and/or task slug. ALWAYS surface findings in an AskUserQuestion for confirmation -- never silently auto-proceed. The interactive question must offer: pick the detected PR (with its number/title/head shown), choose a different workflow, SUPPLY A PR URL MANUALLY (when auto-detection finds nothing or the wrong PR), or fall back to a new branch from upstream. DOWNSTREAM STEP EDITS: STEP 4 (sync) and STEP 5 (branch creation) must branch by workflow (from upstream/main for new; from PR head for stacked; checkout existing PR head for update/amend rather than creating a feat/ branch). STEP 10 (commit/push/create) must: plain push + NO gh pr create for update; git push --force-with-lease for amend; gh pr create --base <pr-head-branch> for stacked; current behavior for new. STEP 5b mathlib cache fetch still applies on any branch switch. DOCS: update the command frontmatter argument-hint, the Options table, the Input Modes / Notes sections, the Output Examples, and add a short workflow-selection overview near the top. Verify manifest keyword_overrides (already lists rebase, cherry-pick) need no change, or extend if a new keyword (stacked, amend, update) improves task-type detection. CONSTRAINTS: respects .claude/rules/pr-prohibition.md -- /pr is user-invoked so its push/PR/force-push operations remain permitted ONLY within this command; agents/skills still must not push. Keep all four workflows behind explicit user approval gates (AskUserQuestion before any push or force-push, especially force-with-lease for amend). This is a meta task: modify the EXTENSION SOURCE at .claude/extensions/cslib/commands/pr.md and re-deploy, never hand-edit only the deployed copy. Lifecycle: /research 784 -> /plan 784 -> /implement 784.
+
+---
 
 ### 783. Fix sorry-census to exclude comment/docstring lines (count only live proof debt)
 - **Effort**: 1-2 hours
