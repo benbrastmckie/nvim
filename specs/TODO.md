@@ -1,5 +1,5 @@
 ---
-next_project_number: 785
+next_project_number: 789
 ---
 
 # TODO
@@ -11,8 +11,10 @@ next_project_number: 785
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783 | -- | agent-system, literature, Terminal UI, ... |
-| 2 | 773,774,776,779,781 | 772,775,778,780 | agent-system, literature |
+| 1 | 78,87,772,775,777,778,780,782,783,787 | -- | agent-system, literature, Terminal UI, ... |
+| 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
+| 3 | 786 | 785 | agent-system |
+| 4 | 788 | 786,787 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -27,8 +29,13 @@ next_project_number: 785
 780 [NOT STARTED] — [Working-tree preservation] Prevent agents from destroying uncomm
   └─ 779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr (see above)
   └─ 781 [NOT STARTED] — [Context-overflow safety] Dispatched agents must detect context p
+  └─ 785 [NOT STARTED] — Replace the repo-wide `git add -A` in the task commit pipeline wi
+    └─ 786 [NOT STARTED] — Sweep the 40+ remaining `git add -A` references across the agent 
+      └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree
 782 [NOT STARTED] — [Formal-domain context hygiene] Reduce the context that lean4/for
 783 [NOT STARTED] — Fix the sorry-census methodology in the review/vet agent tooling 
+787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
+  └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 
 ### Literature
 
@@ -44,6 +51,50 @@ next_project_number: 785
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 788. Concurrent-session protection: task lock + mandatory commit-per-green-substep
+- **Effort**: 4-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 786, Task 787
+
+**Description**: Prevent concurrent sessions from clobbering a shared working tree (the 427 failure: an uncommitted in-progress task wiped by a concurrent session). USER-SELECTED SCOPE: lock + commit-per-step, NO git-worktree integration (keep the single shared tree; worktree isolation explicitly deferred). ROOT CAUSE: no concurrency protection exists -- manage-topics.sh assumes 'single-threaded sessions', state.json is last-write-wins, and nothing reserves a task for one session. Scope: (1) TASK LOCK: a session must reserve a task before working it -- a lock (lockfile under specs/{NNN}_{SLUG}/.lock or a state.json lock field) recording session_id + heartbeat timestamp; /orchestrate and /implement acquire on entry and REFUSE (with clear guidance) if a fresh lock is held by another session, with a stale-lock override threshold and release on completion/abort. (2) COMMIT-PER-GREEN-SUBSTEP: mandate an incremental commit at every green sub-step so in-progress work lives in git, not only the working tree -- align with checkpoint discipline and the scoped-staging contract from 785/786. (3) Coordinate with the 779/780/781 git-safety + checkpoint cluster (snapshot-before-rollback, checkpoint-before-overflow) so locking + commit cadence compose. OUT OF SCOPE: git worktree isolation (deferred). Depends on 786 (edits orchestrate.md/implement.md) and 787 (shared state schema + uses file_scope for lock granularity). Goal: a concurrent session can never silently destroy another session's uncommitted progress.
+
+---
+
+### 787. File-footprint-aware task dependency declaration (serialize same-file tasks)
+- **Effort**: 3-5 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Make multi-task creation declare dependencies based on FILE FOOTPRINT OVERLAP, not just logical sequencing, so two tasks that will edit the same files are never dispatched in the same wave / run concurrently. ROOT CAUSE: dependencies[] exists in the schema but is used only for Kahn topo-ordering; task creation (multi-task-creation-standard Component 4) asks only about logical ordering, and territory/file-ownership (H7, context/contracts/territory.md) is hard-mode-only, per-phase, and declarative. Scope: (1) Add an optional task-level 'file_scope' (anticipated owned paths) field to the state.json task schema (.claude/rules/state-management.md + .claude/context/reference/state-management-schema.md), promoting H7 territory to a lightweight task-level declaration. (2) Extend multi-task-creation-standard.md Component 4 so creators capture each proposed task's file footprint and AUTO-ADD a dependency (or surface a conflict warning) when two footprints overlap. (3) Wire this into meta-builder-agent, skill-fix-it, and skill-spawn. (4) Document that /orchestrate and --team wave assignment must treat file-footprint overlap as a serialization edge. Goal: when the system proposes multiple tasks touching the same files, it declares the dependency automatically instead of leaving them parallelizable. This is the gap that let two same-file tasks run concurrently.
+
+---
+
+### 786. Propagate scoped-staging convention across all agent/command/skill templates
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 785
+
+**Description**: Sweep the 40+ remaining `git add -A` references across the agent system to the canonical scoped-staging pattern established in task 785, so no template re-introduces repo-wide staging. SITES (from audit): implementation agents (general-implementation-agent.md:435, general-implementation-hard-agent.md:214, neovim:364, nix:384, python:116, web:432, founder, cslib-implementation-hard:261); commands (implement.md:187,192; plan.md:500; research.md:473; orchestrate.md:250,258,375,382; errors.md:197); skills (skill-implementer + extension implement/research skills); and doc/command templates (creating-commands.md:127, command-template.md, checkpoint-commit.md:10, checkpoint-execution.md:114, subagent-continuation-loop.md:127, workflow-interruptions.md:217, research-flow-example.md, creating-skills.md:403). Update the command/skill generator TEMPLATES so newly-created components inherit scoped staging by default. Leave cslib/pr.md's deliberate 'git add -A then exclude' flow alone unless it can be made scoped safely. Goal: scoped staging is uniform -- 'grep -rn "git add -A" .claude/' returns only intentional, documented exceptions. Depends on 785 (canonical pattern). Coordinate with the 779/781 hard-mode cluster on shared agent files (e.g. general-implementation-hard-agent.md).
+
+---
+
+### 785. Scoped git staging: eliminate `git add -A` in the commit pipeline
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 780
+
+**Description**: Replace the repo-wide `git add -A` in the task commit pipeline with targeted, work-scoped staging so commits contain only files the operation actually produced. ROOT CAUSE: .claude/scripts/orchestrator-postflight.sh:322 runs 'git add -A && git commit', and agents track nothing about which files they modified -- so every research/plan/implement commit sweeps the entire working tree (including a concurrent session's stray edits). This contradicts the system's own policy: .claude/rules/git-workflow.md 'Commit Scope' (lines 51-62) and shared-core .claude/context/core/standards/git-safety.md (lines 182-195) already forbid 'git add -A'/'git commit -am' and prescribe targeted staging. Scope: (1) Define a commit-scope contract -- operation-type scope (research/plan -> specs/TODO.md + specs/state.json + specs/{NNN}_{SLUG}/; implement -> task dir + the source files the agent reports it modified) read from agent return-meta (modified_files) or a COMMIT_SCOPE param. (2) Rewrite orchestrator-postflight.sh (project + shared copy) to stage only those paths via 'git add <paths>', with 'git status --short'/'git diff --staged' review per the git-safety.md flow. (3) Harden git-workflow.md to explicitly FORBID 'git add -A'/'git commit -am' and reference the targeted-staging procedure. (4) Establish skill-git-workflow as the canonical scoped-commit helper. Goal: a commit reflects only the work actually accomplished, and a concurrent session's uncommitted changes can never be swept into this task's commit. Depends on 780 (also edits git-workflow.md, so serialized to avoid clobber).
+
+---
 
 ### 784. /pr: select among new/stacked/update/amend PR workflows with auto-detection
 - **Effort**: 4-8 hours
