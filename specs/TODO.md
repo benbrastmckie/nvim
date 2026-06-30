@@ -1,17 +1,17 @@
 ---
-next_project_number: 783
+next_project_number: 784
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-06-24. Generated from state.json dependency graph.*
+*Updated 2026-06-30. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781 | 772,775,778,780 | agent-system, literature |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -28,6 +28,7 @@ next_project_number: 783
   └─ 779 [NOT STARTED] — [--hard recovery discipline] Define an unambiguous recovery contr (see above)
   └─ 781 [NOT STARTED] — [Context-overflow safety] Dispatched agents must detect context p
 782 [NOT STARTED] — [Formal-domain context hygiene] Reduce the context that lean4/for
+783 [NOT STARTED] — Fix the sorry-census methodology in the review/vet agent tooling 
 
 ### Literature
 
@@ -43,6 +44,17 @@ next_project_number: 783
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 783. Fix sorry-census to exclude comment/docstring lines (count only live proof debt)
+- **Effort**: 1-2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Fix the sorry-census methodology in the review/vet agent tooling so it stops counting Lean comment/docstring lines as proof debt. Root cause surfaced by cslib task 431 (origin repo: ~/Projects/cslib): the health-review census is a raw grep for 'sorry' over Cslib/**.lean, which swept up 7 docstring/comment occurrences (e.g. 'sorry-free', 'removing the sorry') plus a commented-out TODO stub, producing false 'unowned foundational sorry' findings. Moving to word-boundary 'sorry' did not help -- it still matches inside docstrings. Fix: make the census count only live proof debt -- strip Lean line comments (--) and block comments (/- -/) before matching, and/or cross-check against the compiler 'declaration uses sorry' warnings or #print axioms sorryAx. Update whichever shared agent-system tooling performs the census (the /review and/or /vet skills/scripts under .claude/). Evidence: cslib specs/431_audit_unowned_foundational_sorries/reports/01_unowned-sorries-audit.md, specs/reviews/review-2026-06-30.md, review-2026-06-30-2.md. Moved here from cslib (was task 437) because it is an agent-system change.
+
+---
 
 ### 782. Formal-domain context hygiene: minimize goal-state context for lean4 agents
 - **Effort**: 2-4 hours
