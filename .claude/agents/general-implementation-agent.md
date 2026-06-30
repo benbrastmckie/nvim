@@ -117,15 +117,8 @@ Throughout execution, monitor for signs of context pressure:
 - **If tool calls exceed ~50** and the phase is not nearly complete, proactively write a handoff
 
 **A. Mark Phase In Progress**
-Call `update-phase-status.sh` to mark the phase active. This script is idempotent, logs to `.claude/logs/phase-transitions.log`, and verifies the update succeeded:
-
-```bash
-bash /home/benjamin/.config/nvim/.claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" IN_PROGRESS
-```
-
-Where `$task_number` is the integer task number (e.g., `764`), `$project_name` is the slug used in the task directory name (e.g., `harden_plan_marker_enforcement`), and `$phase_num` is the phase number being started.
-
-**Fallback**: If the script is unavailable or fails, fall back to using the Edit tool:
+Edit plan file heading to show the phase is active.
+Use the Edit tool with:
 - old_string: `### Phase {P}: {Phase Name} [NOT STARTED]`
 - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
 
@@ -194,13 +187,8 @@ Run phase verification criteria:
 - Content validation
 
 **D. Mark Phase Complete**
-Call `update-phase-status.sh` to mark the phase finished. This script verifies the update and logs the transition:
-
-```bash
-bash /home/benjamin/.config/nvim/.claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED
-```
-
-**Fallback**: If the script is unavailable or fails, fall back to using the Edit tool:
+Edit plan file heading to show the phase is finished.
+Use the Edit tool with:
 - old_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
 - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
 
@@ -301,66 +289,6 @@ After all phases complete:
 - Run full build (if applicable)
 - Run tests (if applicable)
 - Verify all created files exist
-
-### Stage 5a: Verify and Repair Plan Markers (HARD CONTRACT)
-
-**MANDATORY**: After all phases complete and before writing the summary, perform a fresh read of the
-plan file to confirm every phase heading carries `[COMPLETED]`. This step enforces the contract that
-no stale markers survive to the final artifact.
-
-**Step 1: Fresh read and count stale headings**
-
-```bash
-plan_file="specs/{NNN}_{SLUG}/plans/{latest-plan}.md"
-
-# Count phase headings that are NOT COMPLETED
-stale_not_started=$(grep -c "^### Phase [0-9].*\[NOT STARTED\]" "$plan_file" 2>/dev/null || echo 0)
-stale_in_progress=$(grep -c "^### Phase [0-9].*\[IN PROGRESS\]" "$plan_file" 2>/dev/null || echo 0)
-stale_partial=$(grep -c "^### Phase [0-9].*\[PARTIAL\]" "$plan_file" 2>/dev/null || echo 0)
-stale_total=$((stale_not_started + stale_in_progress + stale_partial))
-```
-
-**Step 2: Repair loop**
-
-If `stale_total > 0`, iterate over stale headings and call `update-phase-status.sh` for each:
-
-```bash
-if [ "$stale_total" -gt 0 ]; then
-  echo "[Stage 5a] WARNING: $stale_total stale phase heading(s) detected. Repairing..."
-  # Extract phase numbers with stale markers
-  grep -n "^### Phase [0-9].*\[\(NOT STARTED\|IN PROGRESS\|PARTIAL\)\]" "$plan_file" | while IFS=: read -r linenum content; do
-    phase_num=$(echo "$content" | grep -oE "Phase [0-9]+" | grep -oE "[0-9]+")
-    bash /home/benjamin/.config/nvim/.claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$phase_num" COMPLETED
-    echo "[Stage 5a] Repaired phase $phase_num -> [COMPLETED]"
-  done
-fi
-```
-
-**Step 3: Top-level Status verification**
-
-The plan's top-level `- **Status**:` field (updated by the skill layer's `update-plan-status.sh`)
-should reflect `[IMPLEMENTING]` or later. This is managed by the skill, not the agent — but if the
-Status field still shows `[PLANNED]` after all phases complete, log a warning rather than modifying
-it (the skill postflight owns this field).
-
-**Step 4: Final confirmation read**
-
-After repair, perform a final check:
-
-```bash
-remaining_stale=$(grep -c "^### Phase [0-9].*\[\(NOT STARTED\|IN PROGRESS\|PARTIAL\)\]" "$plan_file" 2>/dev/null || echo 0)
-if [ "$remaining_stale" -gt 0 ]; then
-  echo "[Stage 5a] ERROR: $remaining_stale phase heading(s) still stale after repair. Manual fix required."
-  # Log the stale lines for diagnosis
-  grep -n "^### Phase [0-9].*\[\(NOT STARTED\|IN PROGRESS\|PARTIAL\)\]" "$plan_file"
-  # Do NOT block Stage 6 — log the issue and continue. The orchestrator will detect stale markers.
-else
-  echo "[Stage 5a] All phase headings verified [COMPLETED]."
-fi
-```
-
-**Context note**: Stage 5a adds at most 3-5 tool calls (one Read + one Bash for counting + one Bash
-for repair if needed + one Bash for final check). It is designed to run even when context is tight.
 
 ### Stage 6: Create Implementation Summary
 
@@ -544,15 +472,5 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 3. Use status value "completed" (triggers Claude stop behavior)
 4. Assume your return ends the workflow (skill continues with postflight)
 5. Skip Stage 0 early metadata creation
-
-**HARD CONTRACT — Plan Marker Completeness**:
-
-> Every completed phase MUST carry `[COMPLETED]` in its heading before the implementation summary
-> is written. This is not a best-effort instruction — it is a verifiable invariant enforced by
-> Stage 5a. Stale markers (`[NOT STARTED]`, `[IN PROGRESS]`, `[PARTIAL]`) in completed phases are
-> defects. Stage 5a is the mandatory enforcement step: it counts stale headings, repairs them via
-> `update-phase-status.sh`, and performs a final confirmation read. An agent that skips Stage 5a
-> violates this contract. A stale heading that survives to the `.return-meta.json` write is a
-> reportable defect in the implementation trace.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-implementer) will report partial status to the user, who can re-run `/implement` to resume.

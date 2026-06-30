@@ -345,9 +345,36 @@ Check extension manifests for task-type-specific plan routing:
 # Get task_type (may be simple "founder" or compound "founder:deck")
 task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
 
-# Route through centralized script (handles standard + hard-mode routing)
-source .claude/scripts/command-route-skill.sh "plan" "$task_type" "skill-planner" "${effort_flag:-}"
-skill_name="$SKILL_NAME"
+# Check extension routing for plan (skill_name starts empty)
+skill_name=""
+for manifest in .claude/extensions/*/manifest.json; do
+  if [ -f "$manifest" ]; then
+    ext_skill=$(jq -r --arg tt "$task_type" \
+      '.routing.plan[$tt] // empty' "$manifest")
+    if [ -n "$ext_skill" ]; then
+      skill_name="$ext_skill"
+      break
+    fi
+  fi
+done
+
+# Fallback: if compound key (contains ":"), try base task_type
+if [ -z "$skill_name" ] && echo "$task_type" | grep -q ":"; then
+  base_type=$(echo "$task_type" | cut -d: -f1)
+  for manifest in .claude/extensions/*/manifest.json; do
+    if [ -f "$manifest" ]; then
+      ext_skill=$(jq -r --arg tt "$base_type" \
+        '.routing.plan[$tt] // empty' "$manifest")
+      if [ -n "$ext_skill" ]; then
+        skill_name="$ext_skill"
+        break
+      fi
+    fi
+  done
+fi
+
+# Fallback to default planner if no extension routing found
+skill_name=${skill_name:-"skill-planner"}
 ```
 
 **Extension-Based Routing Table**:

@@ -123,7 +123,7 @@ If no plan: ABORT "No implementation plan found. Run /plan {N} first."
 **Extension Routing** (when `--team` flag NOT present):
 
 ```bash
-source .claude/scripts/command-route-skill.sh "implement" "$TASK_TYPE" "skill-implementer" "${EFFORT_FLAG:-}"
+source .claude/scripts/command-route-skill.sh "implement" "$TASK_TYPE" "skill-implementer"
 skill_name="$SKILL_NAME"
 # Defensive correction (state.json + TODO.md) handled by command-gate-out.sh
 ```

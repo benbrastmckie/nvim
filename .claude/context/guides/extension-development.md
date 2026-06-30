@@ -233,47 +233,6 @@ The extension picker shows dependency information:
 
 See `extensions/template/` for a minimal extension structure.
 
-## Deploy Mechanisms: install-extension.sh vs Extension Loader
-
-Two distinct mechanisms exist for deploying extension files to a project. Use the right one
-based on whether the project is new or already has an installed copy of the extension.
-
-### `install-extension.sh` — New Projects (Symlinks)
-
-- Scans the extension's `agents/` and `skills/` directories on the **filesystem** (not the
-  manifest `provides` arrays)
-- Creates **symlinks** (relative paths like `../extensions/{name}/agents/...`), not copies
-- For files that already exist as non-symlinks: emits a warning and **skips** — no overwrite
-- **Use for**: Fresh project setup where the extension has not been previously deployed
-
-```bash
-bash ~/.config/nvim/.claude/scripts/install-extension.sh core /path/to/project/.claude
-```
-
-### Extension Loader / Ctrl-l — Existing Projects (Copies, Overwrite on Confirm)
-
-- Reads `manifest.provides.agents` and `manifest.provides.skills` arrays
-- **Copies** files (not symlinks) to the project's `.claude/` directory
-- Shows a conflict dialog for files that already exist; user confirms to overwrite
-- **Use for**: Updating a project that already has an installed copy of the extension
-
-To trigger: Open the extension picker → select the extension → Ctrl-l ("Load Core" or the
-equivalent load action for the extension). Confirm the conflict dialog when prompted
-(existing files are listed; confirming is expected and correct for an update).
-
-### Choosing the Right Mechanism
-
-| Scenario | Mechanism | Why |
-|----------|-----------|-----|
-| New project, never installed | `install-extension.sh` | Symlinks are lightweight for first deploy |
-| Existing project, extension was previously loaded via picker | Extension loader (Ctrl-l) | Picker-installed files are copies; install-extension.sh skips non-symlinks |
-| Need to pick up new files added to `manifest.provides` | Extension loader (Ctrl-l) | install-extension.sh does not read provides; only copies new files not present |
-| Need to update existing files to latest version | Extension loader (Ctrl-l) | install-extension.sh skips files that already exist |
-
-**Key distinction**: `install-extension.sh` is a one-time bootstrap tool. For ongoing
-updates (e.g., after new agents/skills are added to the core manifest), the extension
-loader (Ctrl-l) is the correct update path.
-
 ## Troubleshooting
 
 ### Load Failures

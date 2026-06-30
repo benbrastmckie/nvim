@@ -342,9 +342,36 @@ Check extension manifests for task-type-specific research routing:
 # Get task_type (may be simple "founder" or compound "founder:deck")
 task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
 
-# Route through centralized script (handles standard + hard-mode routing)
-source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-researcher" "${effort_flag:-}"
-skill_name="$SKILL_NAME"
+# Check extension routing for research (skill_name starts empty)
+skill_name=""
+for manifest in .claude/extensions/*/manifest.json; do
+  if [ -f "$manifest" ]; then
+    ext_skill=$(jq -r --arg tt "$task_type" \
+      '.routing.research[$tt] // empty' "$manifest")
+    if [ -n "$ext_skill" ]; then
+      skill_name="$ext_skill"
+      break
+    fi
+  fi
+done
+
+# Fallback: if compound key (contains ":"), try base task_type
+if [ -z "$skill_name" ] && echo "$task_type" | grep -q ":"; then
+  base_type=$(echo "$task_type" | cut -d: -f1)
+  for manifest in .claude/extensions/*/manifest.json; do
+    if [ -f "$manifest" ]; then
+      ext_skill=$(jq -r --arg tt "$base_type" \
+        '.routing.research[$tt] // empty' "$manifest")
+      if [ -n "$ext_skill" ]; then
+        skill_name="$ext_skill"
+        break
+      fi
+    fi
+  done
+fi
+
+# Fallback to default researcher if no extension routing found
+skill_name=${skill_name:-"skill-researcher"}
 ```
 
 **Extension-Based Routing Table**:

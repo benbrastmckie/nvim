@@ -657,7 +657,7 @@ return {
       { "<leader>nm", "<cmd>TermExec cmd='brave https://mynixos.com' open=0<CR>", desc = "my-nixos", icon = "󰖟" },
       { "<leader>np", "<cmd>TermExec cmd='brave https://search.nixos.org/packages' open=0<CR>", desc = "packages", icon = "󰏖" },
       { "<leader>nr", "<cmd>TermExec cmd='~/.dotfiles/update.sh'<CR><C-w>l", desc = "rebuild nix", icon = "󰜉" },
-      { "<leader>nu", "<cmd>TermExec cmd='nix flake update'<CR><C-w>j", desc = "update", icon = "󰚰" },
+      { "<leader>nu", "<cmd>TermExec cmd='cd ~/.dotfiles && ./update.sh --update'<CR><C-w>j", desc = "update inputs + rebuild", icon = "󰚰" },
     })
 
     -- ============================================================================

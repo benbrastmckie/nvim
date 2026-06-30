@@ -293,11 +293,25 @@ Use `--hard` when one or more of the following apply:
 
 ### Routing Mechanism
 
-`--hard` is resolved by `command-route-skill.sh` as a 4th `effort_flag` argument:
-1. Check `routing_hard.$operation.$task_type` in extension manifests
-2. If not found: construct candidate by appending `-hard` to the resolved skill name
-3. If candidate skill exists (`.claude/skills/${skill}-hard/SKILL.md`): use it
-4. If not: fall back to standard skill with stderr note `[route] No hard variant for $skill; using standard skill`
+`--hard` is resolved by `command-route-skill.sh` as a 4th `effort_flag` argument, using a
+5-step precedence (first match wins):
+
+1. **Non-core extension `routing_hard` exact match** — scan non-core extension manifests for
+   `routing_hard[$op][$task_type]`; first hit wins.
+2. **Non-core extension `routing_hard` compound-key fallback** — if `task_type` contains `:`
+   and no hit yet, try `routing_hard[$op][$base_type]` in non-core manifests.
+3. **Core extension `routing_hard` exact match** — scan the core manifest (identified by
+   `routing_exempt: true`) for `routing_hard[$op][$task_type]`.
+4. **Core extension `routing_hard` compound-key fallback** — if `task_type` contains `:` and
+   no hit yet, try `routing_hard[$op][$base_type]` in the core manifest.
+5. **`-hard` append fallback** — construct `${SKILL_NAME}-hard`; use it only if
+   `.claude/skills/${candidate}-hard/SKILL.md` exists on disk; otherwise emit a stderr note
+   and leave `SKILL_NAME` unchanged (safe default = standard skill).
+
+Non-core extensions (Steps 1-2) are scanned before core (Steps 3-4), so a non-core
+`routing_hard` entry for the same `($op, $task_type)` pair unconditionally overrides core.
+The SKILL.md existence safety gate applies only to Step 5; manifest-declared entries
+(Steps 1-4) are trusted to point to deployed skills.
 
 ### Per-Invocation Only
 

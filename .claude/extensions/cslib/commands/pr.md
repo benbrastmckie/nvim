@@ -1,7 +1,7 @@
 ---
 description: Create and submit a CSLib PR, or create a PR review task (--review)
 allowed-tools: Bash, Read, Edit, Write, AskUserQuestion
-argument-hint: "<task_number | path | description> [--draft] [--dry-run] [--branch BRANCH] | --review <urls/descriptions...>"
+argument-hint: "<task_number | path | description> [--draft] [--dry-run] [--branch BRANCH] [--stacked [PR]] [--update [PR]] [--amend [PR]] | --review <urls/descriptions...>"
 model: opus
 ---
 
@@ -34,6 +34,32 @@ via `gh pr create`.
 | `--draft` | Create PR as draft (not ready for review) |
 | `--dry-run` | Preview all steps without executing git/gh commands |
 | `--branch BRANCH` | Override the auto-generated branch name |
+| `--stacked [PR]` | Stack new PR on top of an existing PR (branch from PR head; `gh pr create --base <pr-head>`). Optional `PR` is a PR number or full GitHub URL; omit for auto-detection. |
+| `--update [PR]` | Push new commits to an existing PR (checkout PR branch, commit, push — no new PR created). Optional `PR` is a PR number or full GitHub URL. |
+| `--amend [PR]` | Amend+squash the last commit on an existing PR and force-push with `--force-with-lease` (no new PR created). Optional `PR` is a PR number or full GitHub URL. |
+
+`--stacked`, `--update`, and `--amend` are mutually exclusive. When none is provided, the default
+**NEW** workflow creates a fresh branch from `upstream/main` (existing behavior).
+
+## Workflow Selection
+
+The `/pr` command supports four PR-submission workflows, selected via flags in STEP 1 and
+resolved in STEP 1b before any branch or CI work:
+
+| Workflow | Flag | Branch from | Push | Creates PR |
+|----------|------|-------------|------|-----------|
+| **new** | _(none, default)_ | `upstream/main` | `git push -u origin` | Yes (`gh pr create --base main`) |
+| **stacked** | `--stacked [PR]` | Parent PR head branch | `git push -u origin` | Yes (`gh pr create --base <pr-head>`) |
+| **update** | `--update [PR]` | Existing PR head (checkout) | `git push origin` | No (PR updated automatically) |
+| **amend** | `--amend [PR]` | Existing PR head (checkout) | `git push --force-with-lease` | No (PR history rewritten) |
+
+**Auto-detect-and-always-confirm**: When a workflow flag is given without a PR ref, `/pr`
+queries `gh pr list` for open PRs by `benbrastmckie` in `leanprover/cslib` and presents
+candidates in an AskUserQuestion prompt — it never silently auto-selects. A manual URL/number
+entry option and a "Switch to NEW workflow" fallback are always offered.
+
+**Every push and force-push requires explicit AskUserQuestion confirmation.** All four
+workflows support `--dry-run` for preview without executing git/gh commands.
 
 ## Execution
 
@@ -744,18 +770,230 @@ is_draft=false
 is_dry_run=false
 branch_override="" # from --branch FLAG
 
+# Workflow selection defaults (set here; resolved in STEP 1b)
+workflow="new"              # values: "new" | "stacked" | "update" | "amend"
+workflow_pr_ref=""          # raw flag value: PR number (integer) or full GitHub PR URL
+workflow_pr_number=""       # resolved integer PR number (from workflow_pr_ref)
+workflow_head_branch=""     # resolved PR head ref branch name (from gh pr view)
+stacked_base_branch=""      # for stacked: the target PR head ref (becomes --base for gh pr create)
+
 # Parse $ARGUMENTS:
 # - Extract --draft, --dry-run flags
 # - Extract --branch VALUE (next token after --branch)
+# - Extract --stacked [PR], --update [PR], --amend [PR] workflow flags
+#   (each optionally followed by a PR ref token matching ^[0-9]+$ or github.com.*pull)
 # - First non-flag argument is the input_value
 ```
+
+**Workflow flag parsing logic** (extend the existing parse loop additively):
+
+For each token in `$ARGUMENTS`:
+- `--draft` → `is_draft=true`
+- `--dry-run` → `is_dry_run=true`
+- `--branch` → consume next token as `branch_override`
+- `--stacked` → `workflow="stacked"`; if next token matches `^[0-9]+$` or contains `github.com` and `/pull/`, consume it as `workflow_pr_ref`
+- `--update` → `workflow="update"`; if next token matches `^[0-9]+$` or contains `github.com` and `/pull/`, consume it as `workflow_pr_ref`
+- `--amend` → `workflow="amend"`; if next token matches `^[0-9]+$` or contains `github.com` and `/pull/`, consume it as `workflow_pr_ref`
+- First remaining non-flag token → `input_value`
+
+**Inline PR URL parser** (replicated from STEP 0.1 for workflow flags):
+
+When `workflow_pr_ref` is set and contains `github.com` and `/pull/`:
+```bash
+# Extract PR number from a full GitHub PR URL
+# URL format: https://github.com/{owner}/{repo}/pull/{pr_number}[/files|#discussion...]
+workflow_pr_number=$(echo "$workflow_pr_ref" | sed 's|.*/pull/||; s|[/#].*||; s|[^0-9].*||')
+```
+
+When `workflow_pr_ref` is set and matches `^[0-9]+$`:
+```bash
+workflow_pr_number="$workflow_pr_ref"
+```
+
+**Mutual-exclusion check**:
+
+If more than one of `--stacked`, `--update`, `--amend` is present in `$ARGUMENTS`:
+```
+ERROR: Only one workflow flag may be specified at a time.
+  --stacked, --update, and --amend are mutually exclusive.
+
+Usage examples:
+  /pr 42 --stacked 123         (stacked on PR #123)
+  /pr 42 --update 123          (update existing PR #123)
+  /pr 42 --amend 123           (amend-squash existing PR #123)
+
+STOP — re-run with exactly one workflow flag (or none for the default NEW workflow).
+```
+
+**STOP** if more than one workflow flag is present.
 
 Determine `input_mode` from `input_value`:
 - If `input_value` is a pure integer: `input_mode="task"`
 - If `input_value` starts with `/`, `./`, `~/`, or contains a path separator: `input_mode="path"`
 - Otherwise: `input_mode="description"`
 
-**On success**: **IMMEDIATELY CONTINUE** to STEP 2.
+**On success**: **IMMEDIATELY CONTINUE** to STEP 1b.
+
+---
+
+### STEP 1b: Determine Workflow
+
+**EXECUTE NOW**: Resolve the PR-submission workflow and derive the branch variables needed by STEP 4,
+STEP 5, and STEP 10. Three cases apply depending on which flags were parsed in STEP 1.
+
+**Case C — No workflow flag (default NEW)**: If `$workflow` is `"new"`, skip all detection and
+**IMMEDIATELY CONTINUE** to STEP 2.
+
+**Case A — Workflow flag supplied WITH a PR ref** (`$workflow_pr_ref` is non-empty):
+
+Resolve and validate the target PR:
+```bash
+CSLIB_REPO="leanprover/cslib"
+
+# workflow_pr_number was resolved from workflow_pr_ref in STEP 1
+# Now fetch PR metadata from GitHub
+pr_meta=$(gh pr view "$workflow_pr_number" \
+  --repo "$CSLIB_REPO" \
+  --json headRefName,baseRefName,state,headRepositoryOwner,title,url 2>&1)
+if [ $? -ne 0 ]; then
+  echo "ERROR: Could not retrieve PR #$workflow_pr_number from $CSLIB_REPO."
+  echo "Output: $pr_meta"
+  # STOP
+fi
+
+pr_state=$(echo "$pr_meta" | jq -r '.state')
+pr_owner_login=$(echo "$pr_meta" | jq -r '.headRepositoryOwner.login // "unknown"')
+pr_title_remote=$(echo "$pr_meta" | jq -r '.title')
+pr_url_remote=$(echo "$pr_meta" | jq -r '.url')
+workflow_head_branch=$(echo "$pr_meta" | jq -r '.headRefName')
+pr_base_ref=$(echo "$pr_meta" | jq -r '.baseRefName')
+
+# For stacked: the current PR head is the base for the new PR
+if [ "$workflow" = "stacked" ]; then
+  stacked_base_branch="$workflow_head_branch"
+fi
+
+# Validation warnings
+if [ "$pr_state" != "OPEN" ]; then
+  echo "Warning: PR #$workflow_pr_number is in state '$pr_state' (not OPEN)."
+fi
+if [ "$pr_owner_login" != "benbrastmckie" ]; then
+  echo "Warning: PR #$workflow_pr_number head is owned by '$pr_owner_login', not benbrastmckie."
+fi
+```
+
+**Ask user to confirm** via AskUserQuestion:
+```json
+{
+  "question": "Proceed with {workflow} workflow using PR #$workflow_pr_number?",
+  "header": "Workflow Confirmation",
+  "multiSelect": false,
+  "options": [
+    {"label": "Yes, proceed", "description": "Continue with PR #{workflow_pr_number}: {pr_title_remote} ({pr_url_remote})"},
+    {"label": "Switch to NEW workflow", "description": "Abandon this PR ref and create a fresh branch from upstream/main"},
+    {"label": "Cancel", "description": "Abort the /pr workflow"}
+  ]
+}
+```
+
+- **Yes, proceed**: variables are set; **IMMEDIATELY CONTINUE** to STEP 2.
+- **Switch to NEW workflow**: set `workflow="new"`, clear `workflow_pr_ref`, `workflow_pr_number`,
+  `workflow_head_branch`, `stacked_base_branch`; **IMMEDIATELY CONTINUE** to STEP 2.
+- **Cancel**: **STOP**.
+
+---
+
+**Case B — Workflow flag supplied WITHOUT a PR ref** (`$workflow_pr_ref` is empty):
+
+Run auto-detection to find a candidate PR:
+```bash
+CSLIB_REPO="leanprover/cslib"
+current_branch=$(git -C /home/benjamin/Projects/cslib branch --show-current 2>/dev/null)
+
+# First, try to find a PR for the current branch
+if [ -n "$current_branch" ]; then
+  candidates=$(gh pr list \
+    --repo "$CSLIB_REPO" \
+    --author benbrastmckie \
+    --state open \
+    --head "$current_branch" \
+    --limit 10 \
+    --json number,title,headRefName,baseRefName,url 2>/dev/null)
+  candidate_count=$(echo "$candidates" | jq 'length' 2>/dev/null || echo 0)
+fi
+
+# If no results for the current branch, fall back to all open PRs by benbrastmckie
+if [ -z "$candidates" ] || [ "$candidate_count" -eq 0 ]; then
+  candidates=$(gh pr list \
+    --repo "$CSLIB_REPO" \
+    --author benbrastmckie \
+    --state open \
+    --limit 10 \
+    --json number,title,headRefName,baseRefName,url 2>/dev/null)
+  candidate_count=$(echo "$candidates" | jq 'length' 2>/dev/null || echo 0)
+fi
+```
+
+**If candidates were found** (`$candidate_count` > 0):
+
+Build a numbered list of candidates (number, title, headRefName) and present via AskUserQuestion:
+```json
+{
+  "question": "Which PR should be used for the '{workflow}' workflow?",
+  "header": "Select Target PR",
+  "multiSelect": false,
+  "options": [
+    {"label": "PR #{number}: {title}", "description": "Branch: {headRefName} -> {baseRefName} | {url}"},
+    ...one entry per candidate (up to 10)...,
+    {"label": "Supply a PR URL or number manually", "description": "Enter a GitHub PR URL or PR number at the prompt"},
+    {"label": "Switch to NEW workflow", "description": "Create a fresh branch from upstream/main instead"},
+    {"label": "Cancel", "description": "Abort the /pr workflow"}
+  ]
+}
+```
+
+- **Select a candidate PR**: set `workflow_pr_number` to that PR number; re-run the Case A
+  resolution logic (gh pr view, set `workflow_head_branch`, `stacked_base_branch`, validation
+  warnings, confirmation) and **IMMEDIATELY CONTINUE** to STEP 2.
+- **Supply a PR URL or number manually**: display "Enter the GitHub PR URL or PR number:" and read
+  the next user message as `workflow_pr_ref`; re-run the STEP 1 inline URL parser to extract
+  `workflow_pr_number`, then re-run the Case A resolution logic above;
+  **IMMEDIATELY CONTINUE** to STEP 2.
+- **Switch to NEW workflow**: set `workflow="new"`, clear all workflow PR variables;
+  **IMMEDIATELY CONTINUE** to STEP 2.
+- **Cancel**: **STOP**.
+
+**If no candidates were found** (`$candidate_count` == 0):
+
+Display:
+```
+No open PRs found for benbrastmckie in leanprover/cslib.
+```
+
+**Ask user** via AskUserQuestion:
+```json
+{
+  "question": "No open PRs found. How would you like to proceed?",
+  "header": "No PRs Found",
+  "multiSelect": false,
+  "options": [
+    {"label": "Supply a PR URL or number manually", "description": "Enter a GitHub PR URL or PR number at the prompt"},
+    {"label": "Switch to NEW workflow", "description": "Create a fresh branch from upstream/main"},
+    {"label": "Cancel", "description": "Abort the /pr workflow"}
+  ]
+}
+```
+
+- **Supply manually**: prompt "Enter the GitHub PR URL or PR number:", read `workflow_pr_ref`,
+  resolve `workflow_pr_number` via the inline URL parser, run Case A resolution logic;
+  **IMMEDIATELY CONTINUE** to STEP 2.
+- **Switch to NEW workflow**: set `workflow="new"`, clear all workflow PR variables;
+  **IMMEDIATELY CONTINUE** to STEP 2.
+- **Cancel**: **STOP**.
+
+---
+
+**IMMEDIATELY CONTINUE** to STEP 2.
 
 ---
 
@@ -910,39 +1148,65 @@ All checks passed.
 
 ### STEP 4: Sync with Upstream
 
-**EXECUTE NOW**: Fetch latest changes from upstream to ensure the branch will be based on current main.
+**EXECUTE NOW**: Fetch the appropriate remote refs based on the resolved `$workflow`.
 
 ```bash
 cd /home/benjamin/Projects/cslib
-
-# Fetch upstream
-git fetch upstream 2>&1
-FETCH_STATUS=$?
-
-if [ $FETCH_STATUS -eq 0 ]; then
-  echo "Fetched upstream/main successfully."
-  # Show how far ahead/behind we are
-  git log --oneline HEAD..upstream/main 2>/dev/null | head -5
-else
-  echo "Warning: Could not fetch upstream. Proceeding with local state."
-fi
-
-# Show current branch
-git branch --show-current
 ```
 
-If currently on a feature branch (not `main`), note it but proceed — the PR branch will be
-created from `upstream/main` regardless.
+**Branch on `$workflow`**:
+
+- **`new` workflow**: fetch `upstream` (existing behavior):
+  ```bash
+  git fetch upstream 2>&1
+  FETCH_STATUS=$?
+  if [ $FETCH_STATUS -eq 0 ]; then
+    echo "Fetched upstream/main successfully."
+    git log --oneline HEAD..upstream/main 2>/dev/null | head -5
+  else
+    echo "Warning: Could not fetch upstream. Proceeding with local state."
+  fi
+  ```
+
+- **`stacked` workflow**: fetch both `upstream` and the stacked-on PR head branch from `origin`:
+  ```bash
+  git fetch upstream 2>&1
+  git fetch origin "$workflow_head_branch" 2>&1
+  FETCH_STATUS=$?
+  if [ $FETCH_STATUS -eq 0 ]; then
+    echo "Fetched upstream and origin/$workflow_head_branch successfully."
+  else
+    echo "Warning: Could not fetch origin/$workflow_head_branch. Proceeding with local state."
+  fi
+  ```
+
+- **`update` or `amend` workflow**: skip upstream fetch (branch already exists); fetch `origin`
+  to ensure local refs are current:
+  ```bash
+  git fetch origin 2>&1
+  FETCH_STATUS=$?
+  if [ $FETCH_STATUS -eq 0 ]; then
+    echo "Fetched origin successfully."
+  else
+    echo "Warning: Could not fetch origin. Proceeding with local state."
+  fi
+  ```
+
+```bash
+# Show current branch (all workflows)
+git branch --show-current
+```
 
 **On success**: **IMMEDIATELY CONTINUE** to STEP 5.
 
 ---
 
-### STEP 5: Branch Creation
+### STEP 5: Branch Creation / Checkout
 
-**EXECUTE NOW**: Propose a branch name and ask the user to confirm before creating it.
+**EXECUTE NOW**: Propose a branch name (or identify the existing PR branch) and confirm with the
+user before executing any branch operations. Behavior branches on `$workflow`.
 
-Generate the slug from `working_desc`:
+Generate the slug from `working_desc` (used for new branches in `new` and `stacked` workflows):
 ```bash
 # Create slug: lowercase, spaces to hyphens, remove special chars, max 40 chars
 slug=$(echo "$working_desc" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | \
@@ -950,21 +1214,22 @@ slug=$(echo "$working_desc" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | \
 proposed_branch="feat/$slug"
 ```
 
-If `branch_override` was provided via `--branch`, use that instead.
+If `branch_override` was provided via `--branch`, use that instead (applies to `new` and
+`stacked` workflows; ignored for `update`/`amend` where the branch is set by the existing PR).
+
+---
+
+**Branch on `$workflow`**:
+
+#### `new` workflow (default, unchanged behavior):
 
 Check if branch already exists:
 ```bash
 cd /home/benjamin/Projects/cslib
 local_exists=$(git branch --list "$proposed_branch" 2>/dev/null)
 remote_exists=$(git ls-remote --heads origin "$proposed_branch" 2>/dev/null)
-```
-
-**Task mode** (`input_mode="task"`): If a `feat/` branch matching the task slug already exists
-locally (from a previous /pr run or manual branch creation), offer to reuse it:
-```bash
 if [ -n "$local_exists" ] || [ -n "$remote_exists" ]; then
   echo "Branch '$proposed_branch' already exists."
-  # Ask user to reuse existing branch or create a new one
 fi
 ```
 
@@ -983,26 +1248,91 @@ fi
 }
 ```
 
-- If **Yes**: proceed with `proposed_branch` (create new from upstream/main)
-- If **Reuse existing**: switch to the branch without recreating: `git checkout "$proposed_branch"`
-- If **Use a different name**: display "Enter branch name (format: type/description):" and read input from the conversation; use that as `branch_name`
-- If **Cancel**: **STOP** — user aborted
-
-If `--dry-run`: show what would happen and skip git commands.
-
-Otherwise (creating new branch):
-```bash
-cd /home/benjamin/Projects/cslib
-git checkout upstream/main -b "$branch_name" 2>&1
-```
-
-If branch already exists locally and user chose to create new, ask to delete and recreate or switch to existing.
+- **Yes**: create and switch — if `--dry-run`: show `git checkout upstream/main -b {proposed_branch}` and skip; otherwise:
+  ```bash
+  cd /home/benjamin/Projects/cslib
+  git checkout upstream/main -b "$branch_name" 2>&1
+  ```
+- **Reuse existing**: `git checkout "$proposed_branch"` — `branch_name="$proposed_branch"`
+- **Use a different name**: prompt "Enter branch name (format: type/description):" and read input; use as `branch_name`
+- **Cancel**: **STOP**
 
 Display:
 ```
 Branch created: {branch_name}
 Based on: upstream/main ({commit_hash})
 ```
+
+---
+
+#### `stacked` workflow:
+
+The new branch is created from the parent PR's head branch (not `upstream/main`).
+
+**Ask the user** via AskUserQuestion:
+```json
+{
+  "question": "Create feature branch '{proposed_branch}' from PR #$workflow_pr_number head ($workflow_head_branch)?",
+  "header": "Branch Creation (Stacked)",
+  "multiSelect": false,
+  "options": [
+    {"label": "Yes, create '{proposed_branch}'", "description": "Create this branch from origin/$workflow_head_branch (parent PR head) and switch to it"},
+    {"label": "Use a different name", "description": "Enter a custom branch name at the prompt"},
+    {"label": "Cancel", "description": "Abort the PR workflow"}
+  ]
+}
+```
+
+- **Yes**: if `--dry-run`: show `git checkout origin/{workflow_head_branch} -b {proposed_branch}` and skip; otherwise:
+  ```bash
+  cd /home/benjamin/Projects/cslib
+  git checkout "origin/$workflow_head_branch" -b "$branch_name" 2>&1
+  ```
+- **Use a different name**: prompt and read `branch_name` as above.
+- **Cancel**: **STOP**
+
+Display:
+```
+Branch created: {branch_name}
+Based on: PR #{workflow_pr_number} head ({workflow_head_branch})
+```
+
+---
+
+#### `update` or `amend` workflow:
+
+The existing PR branch is checked out. `branch_name` is set to the PR head branch.
+
+```bash
+branch_name="$workflow_head_branch"
+```
+
+**Ask the user** via AskUserQuestion:
+```json
+{
+  "question": "Check out existing PR #$workflow_pr_number branch ($workflow_head_branch) for {workflow}?",
+  "header": "Branch Checkout ({workflow})",
+  "multiSelect": false,
+  "options": [
+    {"label": "Yes, check out '{workflow_head_branch}'", "description": "Switch to the existing PR branch to stage and commit changes"},
+    {"label": "Cancel", "description": "Abort the PR workflow"}
+  ]
+}
+```
+
+- **Yes**: if `--dry-run`: show `gh pr checkout {workflow_pr_number} --repo leanprover/cslib` and skip; otherwise:
+  ```bash
+  cd /home/benjamin/Projects/cslib
+  gh pr checkout "$workflow_pr_number" --repo leanprover/cslib 2>&1
+  ```
+- **Cancel**: **STOP**
+
+Display:
+```
+Checked out: {workflow_head_branch} (PR #{workflow_pr_number})
+```
+
+---
 
 **On success**: **IMMEDIATELY CONTINUE** to STEP 5b.
 
@@ -1012,10 +1342,9 @@ Based on: upstream/main ({commit_hash})
 
 **EXECUTE NOW**: Fetch the pre-built Mathlib `.olean` cache so CI does not trigger a near-full rebuild.
 
-When a feature branch is created from `upstream/main`, Lean's build cache may be invalidated
-because the new branch diverges from the branch the existing `.olean` files were built on.
-Running `lake exe cache get` restores the Mathlib pre-built cache so only CSLib modules need
-to be rebuilt during CI.
+This step runs for **all four workflows** (`new`, `stacked`, `update`, `amend`). Any branch
+switch can invalidate the local `.olean` cache; running `lake exe cache get` after the checkout
+restores the Mathlib pre-built cache so only CSLib modules need to be rebuilt during CI.
 
 ```bash
 cd /home/benjamin/Projects/cslib
@@ -1500,9 +1829,12 @@ echo "Review this file alongside your code changes before pushing."
 
 ### STEP 10: Commit, Push, and Create PR
 
-**EXECUTE NOW**: Commit staged changes, push to origin, and create the PR against upstream.
+**EXECUTE NOW**: Commit staged changes, push to origin, and create (or update) the PR. The exact
+operations depend on `$workflow`. First perform the shared commit step, then branch by workflow
+for the approval gate and push/create execution.
 
-First, commit any staged or unstaged changes on the branch:
+#### 10a — Shared: Commit Staged Changes
+
 ```bash
 cd /home/benjamin/Projects/cslib
 
@@ -1510,38 +1842,75 @@ cd /home/benjamin/Projects/cslib
 git status --porcelain 2>&1
 ```
 
-If there are uncommitted changes:
+**`amend` workflow pre-commit**: For `amend`, use `git commit --amend` instead of a new commit:
 ```bash
-# Stage all changes
-git add -A 2>&1
+if [ "$workflow" = "amend" ]; then
+  # Stage all changes
+  git add -A 2>&1
+  # Exclude pr-description.md from the commit
+  git reset HEAD pr-description.md 2>/dev/null || true
+  # Amend the most recent commit (no new commit object)
+  git commit --amend --no-edit 2>&1
+  echo "Amended last commit on branch $branch_name."
+```
 
-# Exclude pr-description.md from the commit (written by STEP 9b for local review only)
-git reset HEAD pr-description.md 2>/dev/null || true
-
-# Commit with descriptive message
-git commit -m "$pr_title" 2>&1
+**All other workflows** (`new`, `stacked`, `update`): if there are uncommitted changes:
+```bash
+  git add -A 2>&1
+  git reset HEAD pr-description.md 2>/dev/null || true
+  git commit -m "$pr_title" 2>&1
 ```
 
 Display the commit summary.
 
-Then show the PR summary to the user before submission:
+---
+
+#### 10b — Per-Workflow: Approval Gate + Push/Create
+
+Show the submission summary appropriate for the workflow:
+
+**`new` and `stacked`**:
 ```
 PR Submission Summary
 =====================
+Workflow: {new|stacked}
 Title: {pr_title}
-Branch: {branch_name} -> leanprover/cslib {base_branch}
+Branch: {branch_name} -> leanprover/cslib:{base_branch}
+{Stacked on: PR #{workflow_pr_number} ({workflow_head_branch})}
 Draft: {true/false}
-Changed files:
-  {list of changed files}
-
+Changed files: {list}
 CI: All 7 steps passed
-
 Description preview:
 {first 10 lines of pr_body}
 ...
 ```
 
-**Ask user** for final approval via AskUserQuestion:
+**`update`**:
+```
+PR Update Summary
+=================
+Workflow: update (no new PR — push only)
+PR: #{workflow_pr_number} (https://github.com/leanprover/cslib/pull/{workflow_pr_number})
+Branch: {branch_name}
+Changed files: {list}
+CI: All 7 steps passed
+```
+
+**`amend`**:
+```
+PR Amend Summary
+================
+Workflow: amend (force-push, no new PR)
+PR: #{workflow_pr_number} (https://github.com/leanprover/cslib/pull/{workflow_pr_number})
+Branch: {branch_name}
+Amended: last commit
+Changed files: {list}
+CI: All 7 steps passed
+```
+
+**Ask user** for final approval via AskUserQuestion (text varies by workflow):
+
+For **`new`**:
 ```json
 {
   "question": "Submit this PR to leanprover/cslib?",
@@ -1555,10 +1924,55 @@ Description preview:
 }
 ```
 
-- Yes or Submit as draft: proceed (override `is_draft` if user selected draft)
-- Cancel: **STOP** — inform user the branch exists locally and can be submitted later
+For **`stacked`**:
+```json
+{
+  "question": "Submit stacked PR based on PR #{workflow_pr_number} head ({workflow_head_branch})?",
+  "header": "Submit Stacked PR",
+  "multiSelect": false,
+  "options": [
+    {"label": "Yes, submit stacked PR", "description": "Push branch and create PR targeting {workflow_head_branch} on GitHub"},
+    {"label": "Submit as draft", "description": "Create as draft stacked PR (not ready for review)"},
+    {"label": "Cancel — do not submit", "description": "Abort without pushing or creating PR"}
+  ]
+}
+```
 
-If `--dry-run`: show what would execute without running:
+For **`update`**:
+```json
+{
+  "question": "Update PR #{workflow_pr_number} — push changes (no new PR)?",
+  "header": "Update PR",
+  "multiSelect": false,
+  "options": [
+    {"label": "Yes, push to update PR #{workflow_pr_number}", "description": "Push branch to origin; the existing PR will automatically reflect the changes"},
+    {"label": "Cancel — do not push", "description": "Abort without pushing"}
+  ]
+}
+```
+
+For **`amend`**:
+```json
+{
+  "question": "Force-push amend to PR #{workflow_pr_number} (git push --force-with-lease)?",
+  "header": "Amend PR (Force-Push)",
+  "multiSelect": false,
+  "options": [
+    {"label": "Yes, force-push amended commit to PR #{workflow_pr_number}", "description": "Rewrites the PR branch history; the PR will reflect the amended commit"},
+    {"label": "Cancel — do not force-push", "description": "Abort without pushing"}
+  ]
+}
+```
+
+- Cancel (any workflow): **STOP** — inform user the branch exists locally.
+
+---
+
+#### 10c — Dry-Run Previews
+
+If `--dry-run`: show what would execute (per workflow) without running, then **STOP**.
+
+**`new`**:
 ```
 [DRY RUN] Would execute:
   git push -u origin {branch_name}
@@ -1567,39 +1981,57 @@ If `--dry-run`: show what would execute without running:
     --body "..." \
     {--draft if draft}
 ```
-Then **STOP**.
 
-Otherwise:
+**`stacked`**:
+```
+[DRY RUN] Would execute:
+  git push -u origin {branch_name}
+  gh pr create --base {workflow_head_branch} --repo leanprover/cslib \
+    --title "{pr_title}" \
+    --body "..." \
+    {--draft if draft}
+```
+
+**`update`**:
+```
+[DRY RUN] Would execute:
+  git push origin {branch_name}
+  (no gh pr create — existing PR #{workflow_pr_number} is updated automatically)
+```
+
+**`amend`**:
+```
+[DRY RUN] Would execute:
+  git push --force-with-lease origin {branch_name}
+  (no gh pr create — existing PR #{workflow_pr_number} history is rewritten)
+```
+
+---
+
+#### 10d — Execute Push and PR Create
+
 ```bash
 cd /home/benjamin/Projects/cslib
+```
 
-# Push to origin
+**`new` workflow** (unchanged behavior):
+```bash
 git push -u origin "$branch_name" 2>&1
 PUSH_STATUS=$?
-
 if [ $PUSH_STATUS -ne 0 ]; then
   echo "ERROR: Push failed. See output above."
   # STOP and report error
 fi
 
-# Create PR
 if [ "$is_draft" = "true" ]; then
-  gh pr create \
-    --base "$base_branch" \
-    --repo leanprover/cslib \
-    --title "$pr_title" \
-    --body "$pr_body" \
-    --draft 2>&1
+  gh pr create --base "$base_branch" --repo leanprover/cslib \
+    --title "$pr_title" --body "$pr_body" --draft 2>&1
 else
-  gh pr create \
-    --base "$base_branch" \
-    --repo leanprover/cslib \
-    --title "$pr_title" \
-    --body "$pr_body" 2>&1
+  gh pr create --base "$base_branch" --repo leanprover/cslib \
+    --title "$pr_title" --body "$pr_body" 2>&1
 fi
+# Capture and display the PR URL.
 ```
-
-Capture and display the PR URL from `gh pr create` output.
 
 Display:
 ```
@@ -1614,7 +2046,93 @@ Next: Monitor the PR at {pr_url}
 CI will run automatically on GitHub Actions.
 ```
 
+**`stacked` workflow**:
+```bash
+git push -u origin "$branch_name" 2>&1
+PUSH_STATUS=$?
+if [ $PUSH_STATUS -ne 0 ]; then
+  echo "ERROR: Push failed. See output above."
+  # STOP and report error
+fi
+
+if [ "$is_draft" = "true" ]; then
+  gh pr create --base "$workflow_head_branch" --repo leanprover/cslib \
+    --title "$pr_title" --body "$pr_body" --draft 2>&1
+else
+  gh pr create --base "$workflow_head_branch" --repo leanprover/cslib \
+    --title "$pr_title" --body "$pr_body" 2>&1
+fi
+# Capture and display the PR URL.
+```
+
+Display:
+```
+Stacked PR Created Successfully!
+=================================
+URL: {pr_url}
+Title: {pr_title}
+Branch: {branch_name}
+Base: {workflow_head_branch} (PR #{workflow_pr_number})
+Status: {Open/Draft}
+
+Next: Monitor the PR at {pr_url}
+CI will run automatically on GitHub Actions.
+```
+
+**`update` workflow** (plain push, NO `gh pr create`):
+```bash
+git push origin "$branch_name" 2>&1
+PUSH_STATUS=$?
+if [ $PUSH_STATUS -ne 0 ]; then
+  echo "ERROR: Push failed. See output above."
+  # STOP and report error
+fi
+```
+
+Display:
+```
+Updated PR #{workflow_pr_number} — push complete.
+URL: https://github.com/leanprover/cslib/pull/{workflow_pr_number}
+
+The existing PR has been updated with the new commits.
+CI will run automatically on GitHub Actions.
+```
+
+**`amend` workflow** (`git push --force-with-lease`, NO `gh pr create`):
+```bash
+git push --force-with-lease origin "$branch_name" 2>&1
+PUSH_STATUS=$?
+if [ $PUSH_STATUS -ne 0 ]; then
+  echo "ERROR: Force-push failed."
+  echo ""
+  echo "Recovery options:"
+  echo "  1. If the remote branch has new commits you haven't pulled:"
+  echo "     git fetch origin"
+  echo "     git rebase origin/$branch_name"
+  echo "     Then re-run /pr {input_value} --amend"
+  echo "  2. If you are certain it is safe to overwrite the remote:"
+  echo "     git push --force origin $branch_name"
+  echo "     (WARNING: this discards remote commits — only do this if you own the branch)"
+  # STOP and report error
+fi
+```
+
+Display:
+```
+Amended PR #{workflow_pr_number} — force-push complete.
+URL: https://github.com/leanprover/cslib/pull/{workflow_pr_number}
+
+The PR branch history has been rewritten with the amended commit.
+CI will run automatically on GitHub Actions.
+```
+
+---
+
 **On success**: **IMMEDIATELY CONTINUE** to STEP 10b (if task mode) or STEP 11 (otherwise).
+
+Note for `update`/`amend` workflows: the task may already be in `[COMPLETED]` status if a PR
+was previously submitted. STEP 10b's status transition is non-fatal and can be skipped if the
+update-task-status script reports the task is already completed.
 
 ---
 
@@ -1757,6 +2275,58 @@ Draft: false
 No changes made (dry-run mode).
 ```
 
+### Stacked PR Submission
+
+```
+CI Pipeline Results
+===================
+[PASS] lake build
+[PASS] lake exe checkInitImports
+[PASS] lake lint
+[PASS] lake exe lint-style
+[PASS] lake test
+[SKIP] lake exe mk_all --module (no new files detected)
+[PASS] lake shake
+
+Stacked PR Created Successfully!
+=================================
+URL: https://github.com/leanprover/cslib/pull/45
+Title: feat(Logics): prove completeness for modal logic S4
+Branch: feat/prove-completeness-modal-logic-s4
+Base: feat/prove-completeness-modal-logic-k (PR #42)
+Status: Open
+```
+
+### Update PR Output
+
+```
+CI Pipeline Results
+===================
+[PASS] lake build
+...
+
+Updated PR #42 — push complete.
+URL: https://github.com/leanprover/cslib/pull/42
+
+The existing PR has been updated with the new commits.
+CI will run automatically on GitHub Actions.
+```
+
+### Amend PR Output
+
+```
+CI Pipeline Results
+===================
+[PASS] lake build
+...
+
+Amended PR #42 — force-push complete.
+URL: https://github.com/leanprover/cslib/pull/42
+
+The PR branch history has been rewritten with the amended commit.
+CI will run automatically on GitHub Actions.
+```
+
 ## Error Recovery
 
 ### gh CLI Not Authenticated
@@ -1803,3 +2373,11 @@ If the branch already exists locally or on origin, the command will:
 - AI disclosure is always included in the PR body per CSLib and Mathlib policy
 - For major changes (new abstractions, cross-cutting refactors), coordinate on Zulip first
 - `lake exe mk_all --module` is only run when new `.lean` files are detected in the diff
+- **Workflow selection**: use `--stacked`, `--update`, or `--amend` to switch from the default
+  NEW workflow. All four workflows run the full 7-step CI pipeline before pushing.
+- **`--amend` safety**: force-push uses `git push --force-with-lease`, which aborts if the
+  remote branch has commits the local copy hasn't seen. If the force-push is rejected, fetch
+  the latest remote state, rebase, and re-run. Never use plain `--force` unless you are certain
+  the remote commits can be discarded.
+- **Every push requires confirmation**: all four workflows gate their push/force-push behind an
+  explicit AskUserQuestion approval step. Use `--dry-run` to preview what would execute.

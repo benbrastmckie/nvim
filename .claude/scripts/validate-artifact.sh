@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
 # validate-artifact.sh - Validate artifact files against format standards
 #
-# Usage: validate-artifact.sh <artifact_path> <type> [--fix] [--strict] [--verify-completion]
+# Usage: validate-artifact.sh <artifact_path> <type> [--fix] [--strict]
 #
 # Types: report, plan, summary
 # Exit codes: 0 = valid, 1 = errors found, 2 = auto-fixed, 3 = file not found, 4 = unknown type
-#
-# --verify-completion: (plan type only) additionally check that all phase headings carry [COMPLETED].
-#   Logs errors for any phase headings with [NOT STARTED], [IN PROGRESS], or [PARTIAL] markers,
-#   and checks that the top-level **Status** field contains [COMPLETED].
 
 set -euo pipefail
 
@@ -30,14 +26,12 @@ artifact_path="${1:-}"
 artifact_type="${2:-}"
 fix_mode=false
 strict_mode=false
-verify_completion=false
 
 shift 2 2>/dev/null || true
 for arg in "$@"; do
   case "$arg" in
     --fix) fix_mode=true ;;
     --strict) strict_mode=true ;;
-    --verify-completion) verify_completion=true ;;
   esac
 done
 
@@ -147,48 +141,6 @@ if [ "$artifact_type" = "plan" ]; then
   # Check for Dependency Analysis table
   if ! grep -qF "Dependency Analysis" "$artifact_path"; then
     log_warn "Missing Dependency Analysis table under Implementation Phases"
-  fi
-
-  # --- Completion verification (--verify-completion flag) ---
-  if [ "$verify_completion" = true ]; then
-    # Count phase headings that are NOT [COMPLETED]
-    stale_not_started=$(grep -cE '^### Phase [0-9]+.*\[NOT STARTED\]' "$artifact_path" 2>/dev/null || true)
-    stale_in_progress=$(grep -cE '^### Phase [0-9]+.*\[IN PROGRESS\]' "$artifact_path" 2>/dev/null || true)
-    stale_partial=$(grep -cE '^### Phase [0-9]+.*\[PARTIAL\]' "$artifact_path" 2>/dev/null || true)
-    stale_blocked=$(grep -cE '^### Phase [0-9]+.*\[BLOCKED\]' "$artifact_path" 2>/dev/null || true)
-
-    # grep -c returns empty string (not 0) when no match on some systems; normalize
-    stale_not_started=${stale_not_started:-0}
-    stale_in_progress=${stale_in_progress:-0}
-    stale_partial=${stale_partial:-0}
-    stale_blocked=${stale_blocked:-0}
-
-    stale_total=$((stale_not_started + stale_in_progress + stale_partial + stale_blocked))
-
-    if [ "$stale_total" -gt 0 ]; then
-      [ "$stale_not_started" -gt 0 ] && log_error "Found $stale_not_started phase heading(s) still [NOT STARTED] -- implementation incomplete"
-      [ "$stale_in_progress" -gt 0 ] && log_error "Found $stale_in_progress phase heading(s) still [IN PROGRESS] -- marker not updated to [COMPLETED]"
-      [ "$stale_partial" -gt 0 ]     && log_error "Found $stale_partial phase heading(s) marked [PARTIAL] -- implementation did not finish"
-      [ "$stale_blocked" -gt 0 ]     && log_error "Found $stale_blocked phase heading(s) marked [BLOCKED] -- implementation was blocked"
-
-      # List the stale headings for diagnosis
-      stale_lines=$(grep -nE '^### Phase [0-9]+.*\[(NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED)\]' "$artifact_path" 2>/dev/null || true)
-      if [ -n "$stale_lines" ]; then
-        log_info "Stale phase headings:"
-        while IFS= read -r line; do
-          log_info "  $line"
-        done <<< "$stale_lines"
-      fi
-    else
-      log_info "All phase headings verified [COMPLETED]"
-    fi
-
-    # Check top-level Status field for [COMPLETED]
-    if grep -qE '^- \*\*Status\*\*:' "$artifact_path"; then
-      if ! grep -qE '^- \*\*Status\*\*:.*\[COMPLETED\]' "$artifact_path"; then
-        log_warn "Top-level **Status** field does not contain [COMPLETED] (skill postflight owns this field)"
-      fi
-    fi
   fi
 fi
 

@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "summary": "Added a four-workflow (new/stacked/update/amend) selection front-end to the /pr command. A new STEP 1b resolves the workflow and PR-derived branch variables before any branch or CI work; three new flags (--stacked [PR], --update [PR], --amend [PR]) with auto-detect-always-confirm drive the choice; STEP 4/5/5b and STEP 10 branch conditionally on $workflow with per-workflow AskUserQuestion approval gates, dry-run previews, and the amend path using git push --force-with-lease. STEP 0/0.5 review paths are untouched.",
+  "blockers": [],
+  "continuation_context": null,
+  "next_action_hint": "complete",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "path": "specs/784_pr_command_workflow_selection/summaries/01_pr-workflow-selection-summary.md",
+      "type": "summary",
+      "summary": "6-phase implementation summary covering flag parsing, STEP 1b insertion, STEP 4/5/5b branching, STEP 10 push/create logic, docs updates, and final structural verification — all 6 phases completed with zero deviations from plan."
+    }
+  ]
+}
