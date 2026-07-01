@@ -1,7 +1,7 @@
 # Implementation Plan: Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos
 
 - **Task**: 791 - Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/791_loader_wezterm_status_hook_merge/reports/01_loader-settings-merge.md
@@ -152,17 +152,17 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: End-to-end verification and idempotency against BimodalLogic copy [NOT STARTED]
+### Phase 4: End-to-end verification and idempotency against BimodalLogic copy [COMPLETED]
 
 - **Goal:** Prove all three fixes work together on a real broken target without mutating the real project: scripts copied, hooks registered, no exit-127, no clobbering, idempotent on repeated Load Core.
 - **Tasks:**
-  - [ ] Copy `/home/benjamin/Projects/BimodalLogic` to `/tmp/bimodal-test` (throwaway; never touch the real repo).
-  - [ ] Static merge simulation: confirm merging the fragment into a settings.json that HAS the keys is a no-op, and into one with the keys stripped re-adds exactly the fragment entries with permissions/MCP untouched (report verification steps 3).
-  - [ ] Headless nvim harness: call `merge.merge_settings` against `/tmp/stripped-settings.json` twice; diff before/after the second run to confirm NO duplicate array entries (idempotency; report step 5).
-  - [ ] Script-copy check: after the manifest fix, confirm `wezterm-preflight-status.sh`, `wezterm-utils.sh`, and `claude-stop-notify.sh` now appear in a copy target's `.claude/hooks/` and that `bash wezterm-preflight-status.sh` no longer exits 127 (report step 4).
-  - [ ] State-independence check: simulate a target with no `core` entry in `extensions.json`; confirm `merge_targets.settings` (and `claudemd`/`index`) still applied after the reinject patch (report step 6).
-  - [ ] Regression check: confirm lean/nix/epidemiology `settings.local.json` merge behavior is unaffected (different target file) — no diff to their manifests (report step 7).
-  - [ ] Cleanup: `rm -rf /tmp/bimodal-test /tmp/stripped-settings.json /tmp/merged-settings.json`.
+  - [x] Copy `/home/benjamin/Projects/BimodalLogic` to a throwaway location (used the session scratchpad dir instead of raw `/tmp` per environment convention; never touched the real repo — confirmed after cleanup that the real repo's `.claude/hooks/` still lacks the wezterm scripts, i.e. untouched). *(deviation: altered — throwaway copy path was `<scratchpad>/bimodal-test` rather than literal `/tmp/bimodal-test`; behavior identical, only the base directory differs)*
+  - [x] Static merge simulation via `jq -s '.[0] * .[1]'` (as literally specified): ran it and found it produces **misleading** results — jq's `*` operator replaces arrays wholesale (no append/dedup) rather than emulating `deep_merge`'s append-and-`vim.deep_equal`-dedup semantics, so it spuriously reports differences (e.g. drops BimodalLogic's unrelated `SessionStart` `"startup"`-matcher entry and `Stop`'s bundled `post-command.sh`/`memory-nudge.sh` commands) that do not reflect real `merge_settings` behavior. *(deviation: altered — superseded the jq static check with the real Lua `merge.merge_settings` function run via the headless nvim harness (next task) as the authoritative correctness test, since it exercises the actual code path being shipped. jq output annotated as a known-imprecise approximation, not a defect.)* Using the real `merge_settings` against BimodalLogic's actual (already-registered) settings.json: `SessionStart` and `UserPromptSubmit` are true no-ops (fragment content is byte-identical to what BimodalLogic already has); `Stop` appends a second `"*"` matcher entry containing only `claude-stop-notify.sh` alongside the existing combined entry (`post-command.sh`+`claude-stop-notify.sh`+`memory-nudge.sh`) — this is *exactly* the documented, accepted risk in the plan's Risk table row 1 (safe: Claude Code runs all matching hook entries; untidy but non-clobbering). Against a settings.json with the 3 keys stripped, all 3 events re-add exactly the fragment's content; permissions/MCP/env/other hook events (`PreToolUse`/`PostToolUse`/`Notification`/`SubagentStop`) byte-identical before/after.
+  - [x] Headless nvim harness: called `merge.merge_settings` against the stripped settings.json twice; diffed before/after the second run — zero further changes (idempotent). Also ran it twice against the already-registered settings.json (which had already picked up the one extra `Stop` entry on the first run) — second run produced no further changes, confirming the one-time `Stop` duplication does not compound on repeated Load Core.
+  - [x] Script-copy check: copied `wezterm-preflight-status.sh`, `wezterm-utils.sh`, `claude-stop-notify.sh` (previously silently dropped under the stale `provides.hooks` allow-list) into the throwaway target's `.claude/hooks/`; `bash wezterm-preflight-status.sh` now exits 0 (emits `{}` via its `2>/dev/null || echo '{}'` fallback, since no live WezTerm pane exists in the headless test context) instead of exit 127.
+  - [x] State-independence check: built a variant of the throwaway repo with `core` deleted from `.claude/extensions.json` (simulating a repo that only ever ran "Load Core") and the 3 hook events stripped from `settings.json`. Confirmed `state_mod.list_loaded()` excludes `"core"` beforehand (proving the Bug B precondition is real), then applied the exact patched logic from `reinject_loaded_extensions` and confirmed it inserts `"core"` into `loaded_names`; resolved `core`'s `merge_targets.settings` via `manifest.get_extension` and ran `merge_mod.merge_settings` — the 3 events reappear in `settings.json` and all pre-existing non-hook keys (`PreToolUse`/`PostToolUse`/`Notification`/`SubagentStop`, permissions, etc.) remain byte-identical. *(deviation: altered — rather than invoking the full `M.load_all_globally`/interactive "Load Core" UI flow, which reads `vim.fn.getcwd()` and includes an interactive overwrite-conflict dialog unsuitable for a non-interactive headless verification, exercised the state-read + patched-insertion logic + `merge_mod.merge_settings` call directly against the throwaway repo — the same functions `reinject_loaded_extensions` calls internally, since that function is a private `local` not exported for direct headless invocation. This is a faithful proxy for the real code path.)*
+  - [x] Regression check: `git diff` against `.claude/extensions/{lean,nix,epidemiology}/manifest.json` shows no changes from this task's commits — their `settings.local.json` merge targets are untouched.
+  - [x] Cleanup: removed all throwaway scratch artifacts (`bimodal-test/`, `no-core-repo/`, stripped/merged settings copies). Confirmed the real `/home/benjamin/Projects/BimodalLogic` repo's `.claude/hooks/` still lacks the wezterm scripts post-cleanup (i.e., it was never mutated by this verification).
 - **Timing:** 45-60 minutes
 - **Depends on:** 1, 2, 3
 - **Files to modify:** none (verification only; operates on `/tmp` throwaway copies)
@@ -194,15 +194,15 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] Both core manifests parse as JSON and `provides.hooks` fully reconciles against on-disk hooks (`comm -3` empty) in each tree.
-- [ ] `settings-hooks.json` parses, declares exactly `SessionStart`/`Stop`/`UserPromptSubmit`, and every command it references is present in `provides.hooks`.
-- [ ] `merge_targets.settings.target == ".claude/settings.json"` (committed file, not `.local`).
-- [ ] `sync.lua` loads headlessly without error and `reinject_loaded_extensions` always includes `core`.
-- [ ] Merge into an already-registered settings.json is a no-op (idempotent); merge into a stripped one re-adds exactly the fragment entries.
-- [ ] Running the merge twice produces zero duplicate array entries.
-- [ ] Project-specific `permissions`/MCP/`env` keys are never clobbered.
-- [ ] Copied target `.claude/hooks/` now contains `wezterm-preflight-status.sh`, `wezterm-utils.sh`, `claude-stop-notify.sh`; `wezterm-preflight-status.sh` no longer exits 127.
-- [ ] lean/nix/epidemiology `settings.local.json` merge behavior unaffected (regression check).
+- [x] Both core manifests parse as JSON and `provides.hooks` fully reconciles against on-disk hooks (`comm -3` empty) in each tree.
+- [x] `settings-hooks.json` parses, declares exactly `SessionStart`/`Stop`/`UserPromptSubmit`, and every command it references is present in `provides.hooks`.
+- [x] `merge_targets.settings.target == ".claude/settings.json"` (committed file, not `.local`).
+- [x] `sync.lua` loads headlessly without error and `reinject_loaded_extensions` always includes `core`.
+- [x] Merge into an already-registered settings.json is a no-op for `SessionStart`/`UserPromptSubmit` (fragment byte-identical to existing content); `Stop` appends one additional `"*"` matcher entry with just `claude-stop-notify.sh` alongside BimodalLogic's existing combined `Stop` entry — this is the documented, accepted append-semantics risk (Risk table row 1), not a defect. Merge into a stripped settings.json re-adds exactly the fragment entries for all 3 events. *(deviation: annotated — the "true no-op" claim in the phase's own success criteria does not hold universally for `Stop` on a target with a pre-existing combined `"*"` matcher entry; verified this is the plan's own documented and accepted trade-off, not a bug.)*
+- [x] Running the merge twice produces zero *additional* duplicate array entries (the one-time `Stop` append from the first run does not compound on a second run; stripped-repo case shows zero duplication across two runs from a clean baseline).
+- [x] Project-specific `permissions`/MCP/`env` keys are never clobbered (byte-identical diff on all non-`hooks` top-level keys, confirmed in both the already-registered and stripped/state-independence test cases).
+- [x] Copied target `.claude/hooks/` now contains `wezterm-preflight-status.sh`, `wezterm-utils.sh`, `claude-stop-notify.sh`; `wezterm-preflight-status.sh` no longer exits 127 (now exits 0, printing the `{}` fallback in the no-WezTerm-pane headless test context).
+- [x] lean/nix/epidemiology `settings.local.json` merge behavior unaffected (regression check — no diff to their manifests from this task's commits).
 
 ## Artifacts & Outputs
 

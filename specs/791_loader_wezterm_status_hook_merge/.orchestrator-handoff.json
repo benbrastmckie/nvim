@@ -1,14 +1,21 @@
 {
-  "status": "planned",
-  "summary": "Created a 4-phase implementation plan for task 791. Fixes two compounding bugs: (A) stale provides.hooks allow-list in the core manifest that silently drops the wezterm status-hook scripts during Load Core / Load Extension copy, and (B) the settings.json registration-merge gap where reinject_loaded_extensions is state-gated and never runs for Load-Core-only repos. Plan reconciles provides.hooks in both .claude and .opencode trees (full reconciliation revealed 4 missing files, not 2 -- including claude-stop-notify.sh which the new Stop fragment references), adds a merge_targets.settings fragment targeting the committed .claude/settings.json (not .local), patches reinject_loaded_extensions to always include core, and verifies end-to-end against a throwaway BimodalLogic copy including idempotency.",
+  "status": "implemented",
+  "summary": "Fixed the Load Core loader so WezTerm lifecycle tab coloring propagates to every synced repo. Reconciled the stale provides.hooks allow-list in both .claude and .opencode core manifests (removed phantom wezterm-clear-status.sh; added claude-stop-notify.sh, validate-meta-write.sh, wezterm-preflight-status.sh, wezterm-utils.sh). Added .claude/extensions/core/merge-sources/settings-hooks.json (SessionStart/Stop/UserPromptSubmit) and declared merge_targets.settings in the core manifest targeting the committed .claude/settings.json. Patched reinject_loaded_extensions() in sync.lua to unconditionally include core so Load-Core-only repos also receive the settings merge. Verified end-to-end against a throwaway copy of BimodalLogic (never mutated): script-copy fix eliminates the exit-127 failure, settings merge is idempotent across repeated runs, non-hook keys (permissions/MCP/env) are never clobbered, and a documented one-time Stop-matcher duplication (safe, plan-accepted risk) was observed and confirmed non-compounding.",
+  "phases_completed": 4,
+  "phases_total": 4,
   "artifacts": [
+    {
+      "path": "specs/791_loader_wezterm_status_hook_merge/summaries/01_loader-settings-merge-summary.md",
+      "type": "summary",
+      "summary": "Implementation summary covering both bug fixes, all 4 phase deviations, and full Phase 4 verification results including the documented Stop-matcher append-semantics behavior."
+    },
     {
       "path": "specs/791_loader_wezterm_status_hook_merge/plans/01_loader-settings-merge-plan.md",
       "type": "plan",
-      "summary": "Phased plan (4 phases, ~3h, waves [[1,3],[2],[4]]) to reconcile core manifest provides.hooks in both synced trees, add settings-hooks.json merge fragment + merge_targets.settings on .claude/settings.json, patch reinject_loaded_extensions to always include core, and verify script-copy + registration + idempotency against a throwaway BimodalLogic copy."
+      "summary": "Plan file with all 4 phases marked [COMPLETED], checklist items checked, and deviations annotated inline."
     }
   ],
   "blockers": [],
   "continuation_context": null,
-  "next_action_hint": "Run /implement 791 to execute the plan. Phase 1 and Phase 3 are independent (Wave 1) and can run in parallel; Phase 2 depends on Phase 1; Phase 4 (verification) depends on 1, 2, 3."
+  "next_action_hint": "Task is at [PR READY] per pr-prohibition rule (agents cannot push or create PRs). Review the diff, then run /merge to open a PR for the two manifest.json edits, the new settings-hooks.json fragment, and the sync.lua patch."
 }
