@@ -33,7 +33,7 @@ nvim/
 │   └── skill-neovim-implementation/ # Implementation wrapper
 │
 ├── agents/
-│   ├── neovim-research-agent.md     # Research agent (opus model)
+│   ├── neovim-research-agent.md     # Research agent (sonnet model)
 │   └── neovim-implementation-agent.md # Implementation agent
 │
 ├── rules/
@@ -52,7 +52,7 @@ nvim/
 
 | Skill | Agent | Model | Purpose |
 |-------|-------|-------|---------|
-| skill-neovim-research | neovim-research-agent | opus | Neovim/plugin/Lua research |
+| skill-neovim-research | neovim-research-agent | sonnet | Neovim/plugin/Lua research |
 | skill-neovim-implementation | neovim-implementation-agent | - | Neovim configuration implementation |
 
 ## Language Routing

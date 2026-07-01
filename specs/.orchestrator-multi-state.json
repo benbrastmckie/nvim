@@ -21,9 +21,10 @@
   },
   "current_wave": 1,
   "completed_tasks": [
-    789
+    789,
+    790
   ],
   "failed_tasks": [],
-  "cycle_count": 1,
+  "cycle_count": 2,
   "max_cycles": 25
 }

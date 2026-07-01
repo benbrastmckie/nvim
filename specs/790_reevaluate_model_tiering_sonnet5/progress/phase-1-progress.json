@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Stale benchmark + hardcoded version strings",
+  "started_at": "2026-06-30T00:00:00Z",
+  "last_updated": "2026-06-30T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "SOURCE: benchmark sentence in extensions/core/docs agent-frontmatter-standard.md", "status": "done"},
+    {"id": 2, "description": "DEPLOYED MIRROR: benchmark sentence in .claude/docs agent-frontmatter-standard.md", "status": "done"},
+    {"id": 3, "description": "HAND-EDIT: benchmark sentence in dotfiles agent-frontmatter-standard.md", "status": "done"},
+    {"id": 4, "description": "SOURCE: drop 4.6 in skill-team-research/plan/implement SKILL.md (extensions/core)", "status": "done"},
+    {"id": 5, "description": "DEPLOYED MIRROR: drop 4.6 in skill-team-research/plan/implement SKILL.md (.claude/skills)", "status": "done"},
+    {"id": 6, "description": "HAND-EDIT: drop 4.6 in dotfiles skill-team-research/plan/implement SKILL.md", "status": "done"},
+    {"id": 7, "description": "SOURCE: drop (Sonnet 4.6) in extensions/core/context team-wave-helpers.md", "status": "done"},
+    {"id": 8, "description": "DEPLOYED MIRROR: drop (Sonnet 4.6) in .claude/context team-wave-helpers.md", "status": "done"},
+    {"id": 9, "description": "HAND-EDIT: drop (Sonnet 4.6) in dotfiles team-wave-helpers.md if present", "status": "done"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "grep_79_6_80_8_opus46_sonnet46": "zero real hits (one false positive in validate-context-budgets.sh due to unescaped '.' in verification regex matching '8048' as '80.8' — unrelated file, pre-existing, out of scope)",
+    "grep_4_6_for_this": "zero hits both trees"
+  }
+}

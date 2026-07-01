@@ -45,7 +45,7 @@ This skill activates when:
 ```bash
 # Use model_flag if provided, otherwise default to sonnet (cost-effective for team mode)
 teammate_model="${model_flag:-sonnet}"
-model_preference_line="Model preference: Use Claude ${teammate_model^} 4.6 for this task."
+model_preference_line="Model preference: Use Claude ${teammate_model^} for this task."
 ```
 
 ---

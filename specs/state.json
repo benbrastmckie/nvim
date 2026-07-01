@@ -343,10 +343,10 @@
     {
       "project_number": 790,
       "project_name": "reevaluate_model_tiering_sonnet5",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-07-01T00:40:58Z",
-      "last_updated": "2026-07-01T01:06:04Z",
+      "last_updated": "2026-07-01T01:13:20Z",
       "title": "Re-evaluate model tiering for Sonnet 5: re-tier agents, refresh benchmarks, fix neovim-research",
       "description": "Re-evaluate and update the model tiering policy now that Sonnet 5 is released (and the fleet runs Opus 4.8), then RE-TIER agents where justified. USER-CONFIRMED: re-tiering IS in scope (not docs-only). CONTEXT: the tiering rationale in .claude/docs/reference/standards/agent-frontmatter-standard.md rests on stale benchmarks (\"Sonnet 4.6 achieves 79.6%% on SWE-bench vs Opus 4.6 at 80.8%%\", references \"Opus 4.6\") and a hard constraint that orchestrator commands (/research /plan /implement) MUST be opus solely to receive the 1M-context auto-upgrade via ANTHROPIC_DEFAULT_OPUS_MODEL. SCOPE: (1) Refresh benchmark citations and rationale to current Sonnet 5 / Opus 4.8 reality. (2) Re-examine the orchestrator 1M-context constraint -- with `claude-sonnet-5[1m]` pinned (task 789), determine whether orchestrators / other opus-tier roles can move to sonnet for cost savings without losing 1M context, and apply the moves that hold up. (3) Propose + apply re-tiering of specific opus-tier agents (e.g. domain research agents) to sonnet where Sonnet 5 is now sufficient; keep genuine deep-reasoning roles (planner, meta-builder, reviser, formal-verification) on opus unless research shows otherwise. (4) Fix the confirmed discrepancy: neovim-research is listed as opus in the CLAUDE.md routing table but sonnet in frontmatter -- USER-CONFIRMED it should be SONNET; reconcile the routing table (and any other alias mismatches surfaced) to sonnet. (5) Keep the two synced .claude/ trees (dotfiles and nvim) consistent. DEPENDS ON 789 (needs the concrete Sonnet 5 variant pinned before deciding what can move). Goal: a current, correctly-benchmarked tiering policy with agent assignments actually updated for Sonnet 5.",
       "effort": "3-5 hours",
@@ -355,7 +355,8 @@
         789
       ],
       "artifacts": [],
-      "session_id": "sess_1782866508_55beee"
+      "session_id": "sess_1782866508_55beee",
+      "completion_summary": "Docs-hygiene: re-tiering evaluated -> ZERO agent moves warranted (all 16 opus-tier agents legitimately deep-reasoning). Refreshed stale SWE-bench benchmark text to durable qualitative framing; relaxed orchestrator-1M rationale (Sonnet 5 has native 1M, so opus default is now justified on reasoning grounds not context); fixed neovim-research stale prose (opus->sonnet) in 4 sites. Applied across both .claude/ trees (nvim + dotfiles). No model: fields changed. PENDING USER ACTIONS: (1) Neovim-picker 'Load Core' resync to authoritatively regenerate nvim .claude/CLAUDE.md (expected no-op); (2) review/commit 13 nvim-tree files + dotfiles CLAUDE.md (5 dotfiles files were auto-committed as e6590fd by a concurrent checkpoint process)."
     },
     {
       "project_number": 791,

@@ -214,7 +214,7 @@ esac
 teammate_model="${model_flag:-sonnet}"
 
 # Prepare model preference line for prompts (secondary guidance)
-model_preference_line="Model preference: Use Claude ${teammate_model^} 4.6 for this analysis."
+model_preference_line="Model preference: Use Claude ${teammate_model^} for this analysis."
 ```
 
 ---

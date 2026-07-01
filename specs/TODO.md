@@ -11,7 +11,7 @@ next_project_number: 792
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,790,791 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -36,7 +36,6 @@ next_project_number: 792
 783 [NOT STARTED] — Fix the sorry-census methodology in the review/vet agent tooling 
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
-790 [IMPLEMENTING] — Re-evaluate and update the model tiering policy now that Sonnet 5
 791 [NOT STARTED] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
 
 ### Literature
@@ -67,7 +66,7 @@ next_project_number: 792
 
 ### 790. Re-evaluate model tiering for Sonnet 5: re-tier agents, refresh benchmarks, fix neovim-research
 - **Effort**: 3-5 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 789

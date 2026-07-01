@@ -50,7 +50,7 @@ Agents use a three-tier model assignment based on task complexity:
 | **General Purpose** | `sonnet` | Pattern-execution, research, implementation, and review tasks | general-research-agent, general-implementation-agent, code-reviewer-agent, spawn-agent, domain research/implementation agents |
 | **Inherit** | (omitted) | Utility agents where model flexibility is desired | Agents that should respect `CLAUDE_CODE_SUBAGENT_MODEL` env var |
 
-Sonnet 4.6 achieves 79.6% on SWE-bench (vs Opus 4.6 at 80.8%), making it suitable for most pattern-execution work. Opus is reserved for tasks requiring deep analytical reasoning, multi-step planning, or formal verification.
+Sonnet 5 delivers near-Opus quality on most pattern-execution work, including coding and agentic tasks; Opus remains the choice for deep analytical reasoning, multi-step planning, and formal verification.
 
 Users can override the model at invocation time using model flags (`--haiku`, `--sonnet`, `--opus`) for cost/speed tradeoffs on specific tasks.
 
@@ -69,7 +69,7 @@ Users can override the model at invocation time using model flags (`--haiku`, `-
 - Planning and architecture agents (planner-agent, meta-builder-agent, reviser-agent)
 - Formal reasoning agents (lean, formal, logic, math, physics)
 - Legal analysis agents (complex document reasoning)
-- **Orchestrator commands** (`/research`, `/plan`, `/implement`): these commands run long multi-task sessions that accumulate context from many sequential sub-agent summaries. They must use `model: opus` to receive the 1M context auto-upgrade (via `ANTHROPIC_DEFAULT_OPUS_MODEL` env var). Using `model: sonnet` drops them to 200K and causes context-limit failures on multi-task workflows.
+- **Orchestrator commands** (`/research`, `/plan`, `/implement`): these commands run long multi-task sessions that accumulate context from many sequential sub-agent summaries. Both `model: opus` and `model: sonnet` now receive the native 1M-token context window (Anthropic's current catalog ships 1M context at standard pricing for both Opus 4.8 and Sonnet 5, no premium or beta header required — verify empirically via `/context` if behavior seems inconsistent). Context size alone no longer requires `model: opus` here; `model: opus` may still be preferred for these commands when the *reasoning depth* of orchestration decisions (not context capacity) justifies it. Domain worker agents dispatched by these commands remain `model: sonnet` per their own frontmatter.
 
 **Use `model: sonnet` for**:
 - General research and implementation agents (they have their own fresh context per invocation)
@@ -108,7 +108,7 @@ If multiple flags of the same dimension are provided, the last one wins. These f
 /research 42 --opus        # Force Opus (same as default for research/plan/implement commands)
 /research 42 --sonnet      # Use Sonnet on research sub-agent (overrides default Sonnet for general-research-agent)
 /research 42 --haiku       # Use Haiku for speed
-/implement 42 --hard       # Deep reasoning with default model (Opus for orchestrator command)
+/implement 42 --hard       # Deep reasoning at high effort (model per command frontmatter; --opus to force Opus)
 /implement 42 --fast       # Light reasoning with default model
 /plan 42 --fast --sonnet   # Light reasoning with Sonnet (overrides Opus command, uses Sonnet for planner sub-agent)
 ```

@@ -660,7 +660,7 @@ This project includes Neovim configuration development support via the nvim exte
 
 | Skill | Agent | Model | Purpose |
 |-------|-------|-------|---------|
-| skill-neovim-research | neovim-research-agent | opus | Neovim/plugin research |
+| skill-neovim-research | neovim-research-agent | sonnet | Neovim/plugin research |
 | skill-neovim-implementation | neovim-implementation-agent | - | Neovim configuration implementation |
 
 ### Rules
