@@ -361,24 +361,59 @@
     {
       "project_number": 791,
       "project_name": "loader_wezterm_status_hook_merge",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "neovim",
       "created": "2026-07-01T01:10:44Z",
-      "last_updated": "2026-07-01T01:10:44Z",
+      "last_updated": "2026-07-01T01:40:00Z",
       "title": "Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos",
       "description": "Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab coloring works in every repo the agent system is copied into, not just this one. ROOT CAUSE (confirmed): lifecycle tab coloring (researching/planning/implementing/completed/blocked, etc.) is driven by the CLAUDE_STATUS WezTerm user variable, read in ~/.config/wezterm/wezterm.lua's format-tab-title handler (lines ~316-338). CLAUDE_STATUS is only set when a status-emitting hook fires (wezterm-notify.sh / wezterm-preflight-status.sh / wezterm-clear-status.sh). A hook fires only if (a) its script is present under .claude/hooks/ AND (b) it is REGISTERED in .claude/settings.json. Load Core syncs the hook SCRIPTS but NOT the registration: in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (scan_all_artifacts, lines ~894-910), settings.json uses install-only semantics -- copy if absent, replace only if a settings.json.managed marker exists, otherwise SKIP. So any target repo that already has a .claude/settings.json never receives the status-hook registrations, CLAUDE_STATUS is never emitted, and inactive tabs keep the default gray. This repo works only because its settings.json already registers the status hook. FIX DIRECTION (validate/refine during /research): instead of skipping settings.json wholesale, MERGE the core wezterm status-hook registrations into the target's existing settings.json without clobbering project-specific permissions/MCP servers. Infrastructure already exists: merge.lua provides merge_settings()/unmerge_settings() (lines ~229-263), and the core manifest (.claude/extensions/core/manifest.json:7-17) already declares merge_targets for claudemd and index but NOT settings. Add a merge_targets.settings fragment (core hook registrations) and wire the loader to merge it on Load Core, idempotently. Ensure the loader change also propagates to the synced .opencode tree if applicable, and keep the two synced .claude/ trees (dotfiles + nvim) consistent. Verify end-to-end: after Load Core into a repo with a pre-existing settings.json, the wezterm status hooks are registered and lifecycle tab coloring works. OUT OF SCOPE: redesigning the wezterm.lua color palette; the TASK_NUMBER title mechanism (already works). PRIMARY FILES: lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua, lua/neotex/plugins/ai/shared/extensions/merge.lua, .claude/extensions/core/manifest.json, .claude/extensions/core/root-files/settings.json.",
       "effort": "3-5 hours",
       "topic": "agent-system",
       "dependencies": [],
-      "artifacts": []
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/791_loader_wezterm_status_hook_merge/reports/01_loader-settings-merge.md"
+        },
+        {
+          "type": "plan",
+          "path": "specs/791_loader_wezterm_status_hook_merge/plans/01_loader-settings-merge-plan.md"
+        }
+      ],
+      "plan_metadata": {
+        "phases": 4,
+        "total_effort_hours": 3,
+        "complexity": "medium",
+        "research_integrated": true,
+        "plan_version": 1,
+        "dependency_waves": [
+          [
+            1,
+            3
+          ],
+          [
+            2
+          ],
+          [
+            4
+          ]
+        ],
+        "reports_integrated": [
+          {
+            "path": "reports/01_loader-settings-merge.md",
+            "integrated_in_plan_version": 1,
+            "integrated_date": "2026-07-01"
+          }
+        ]
+      }
     },
     {
       "project_number": 792,
       "project_name": "right_size_command_model_tiers",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "created": "2026-07-01T01:17:07Z",
-      "last_updated": "2026-07-01T01:17:07Z",
+      "last_updated": "2026-07-01T01:33:23Z",
       "title": "Right-size slash-command model: frontmatter (reserve opus for orchestrators/deep-reasoning)",
       "description": "Right-size the `model:` frontmatter across all slash-commands now that the tiering rationale is refreshed (task 790) and the sonnet tier is pinned to Sonnet 5 with 1M context (task 789). PROBLEM: ~18 of the command files carry `model: opus` indiscriminately, including pure-utility commands that do no deep reasoning -- e.g. /tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet -- so they pay Opus cost/latency for what is orchestration glue and direct-execution work. SCOPE: (1) Classify every command in .claude/commands/*.md by whether it needs opus. KEEP-OPUS: the context-accumulating orchestrator commands (/research, /plan, /implement, /orchestrate) which run long multi-subagent sessions and rely on the opus 1M-context auto-upgrade, plus genuine deep-reasoning commands (/meta, /revise) -- confirm against the agent-frontmatter-standard.md policy refreshed in task 790. DOWNGRADE-CANDIDATES: utility/direct-execution and single-shot commands (/tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet, /review) -- decide per-command between `model: sonnet` and OMITTING the field entirely (inherit CLAUDE_CODE_SUBAGENT_MODEL / harness default). Prefer omission where the command just delegates to a skill/agent that already declares its own model, so the command frontmatter does not override the agent tier. (2) Apply the changes across BOTH synced .claude/ trees (nvim /home/benjamin/.config/nvim/.claude/ and dotfiles /home/benjamin/.dotfiles/.claude/), respecting the generation caveat: nvim command files may be generated from extension sources -- edit the correct source (extensions/*/commands or merge-sources) and flag the user-run Neovim-picker resync; dotfiles has no generator (hand-edit). (3) Note any command whose frontmatter `model` is load-bearing for a documented reason before downgrading. VERIFICATION: each command still routes correctly; orchestrator commands retain opus; grep confirms the intended per-command tiers in both trees. OUT OF SCOPE: agent frontmatter re-tiering (task 790 settled: zero moves) and changing the orchestrator commands opus default (explicitly kept). Depends on 790 (uses its refreshed rationale) and benefits from 789 (sonnet=Sonnet5 1M). Goal: commands run on the cheapest tier that preserves correctness, with opus reserved for the commands that genuinely need it.",
       "effort": "2-3 hours",
@@ -386,7 +421,25 @@
       "dependencies": [
         790
       ],
-      "artifacts": []
+      "artifacts": [
+        {
+          "path": "specs/792_right_size_command_model_tiers/reports/01_command-model-tier-inventory.md",
+          "type": "report",
+          "summary": "Command model-tier inventory: 6 keep-opus, 6 omit-field, 6 downgrade-sonnet"
+        },
+        {
+          "path": "specs/792_right_size_command_model_tiers/plans/01_right-size-command-model-tiers.md",
+          "type": "plan",
+          "summary": "4-phase plan: 6 omit-field, 6 downgrade-sonnet, meta.md root-cause fix, doc reconciliation, grep verification"
+        },
+        {
+          "path": "specs/792_right_size_command_model_tiers/summaries/01_right-size-command-model-tiers-summary.md",
+          "type": "summary",
+          "summary": "Down-tiered 12 command sources (6 omit, 6 sonnet), fixed meta.md scaffold root-cause, reconciled 2 docs; all grep checks pass"
+        }
+      ],
+      "session_id": "sess_1782868693_adc8b1",
+      "completion_summary": "Right-sized model: frontmatter across 12 slash-command sources: removed the field from 6 pure-delegation commands (fix-it, spawn, project-overview, refresh, tag, vet) and downgraded 6 inline-mechanical commands to sonnet (merge, errors, task, todo, review, pr). Kept opus on the 6 context-accumulating orchestrator/deep-reasoning commands (research, plan, implement, orchestrate, meta, revise). Fixed the root cause: meta.md's embedded command scaffold template no longer hardcodes opus. Reconciled creating-commands.md and command-template.md docs. All grep verifications pass. USER ACTION REQUIRED: run the Neovim extension-picker resync twice (nvim + dotfiles projects) to propagate edits into generated .claude/commands/."
     }
   ],
   "completed_projects": [],

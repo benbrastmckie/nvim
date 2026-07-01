@@ -2,7 +2,6 @@
 description: Vet completed CSLib tasks against library standards (CONTRIBUTING.md, NOTATION.md, ORGANISATION.md, CODE_OF_CONDUCT.md), run the CI pipeline, and create fix tasks for violations found.
 allowed-tools: Bash, Read, AskUserQuestion
 argument-hint: "<task_number[,task_number-task_number...]> [focus_prompt]"
-model: opus
 ---
 
 # /vet Command

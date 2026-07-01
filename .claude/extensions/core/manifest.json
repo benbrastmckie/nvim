@@ -13,6 +13,11 @@
     "index": {
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
+    },
+    "settings": {
+      "_comment": "Registers the WezTerm lifecycle status hooks (SessionStart/Stop/UserPromptSubmit) into the committed .claude/settings.json, NOT settings.local.json, since these are required core functionality rather than personal MCP/permission preference (unlike the lean/nix/epidemiology settings.local.json precedent). deep_merge appends array entries per-matcher rather than merging into an existing '*' matcher, so a target repo with a pre-existing '*' entry for Stop/UserPromptSubmit will end up with two array entries for that matcher after merge -- safe (Claude Code runs all matching entries) but untidy. deep_merge also does not self-heal drifted command paths: renaming a hook script here requires manually removing the stale registration from already-synced repos' settings.json, or it will be appended alongside the corrected one rather than replacing it (follow-up risk, not fixed by this mechanism).",
+      "source": "merge-sources/settings-hooks.json",
+      "target": ".claude/settings.json"
     }
   },
   "provides": {

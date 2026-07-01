@@ -11,7 +11,7 @@ next_project_number: 793
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,791,792 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -36,8 +36,7 @@ next_project_number: 793
 783 [NOT STARTED] — Fix the sorry-census methodology in the review/vet agent tooling 
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
-791 [NOT STARTED] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
-792 [NOT STARTED] — Right-size the `model:` frontmatter across all slash-commands now
+791 [PLANNED] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
 
 ### Literature
 
@@ -56,10 +55,13 @@ next_project_number: 793
 
 ### 792. Right-size slash-command model: frontmatter (reserve opus for orchestrators/deep-reasoning)
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 790
+- **Research**: [792_right_size_command_model_tiers/reports/01_command-model-tier-inventory.md]
+- **Plan**: [792_right_size_command_model_tiers/plans/01_right-size-command-model-tiers.md]
+- **Summary**: [792_right_size_command_model_tiers/summaries/01_right-size-command-model-tiers-summary.md]
 
 **Description**: Right-size the `model:` frontmatter across all slash-commands now that the tiering rationale is refreshed (task 790) and the sonnet tier is pinned to Sonnet 5 with 1M context (task 789). PROBLEM: ~18 of the command files carry `model: opus` indiscriminately, including pure-utility commands that do no deep reasoning -- e.g. /tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet -- so they pay Opus cost/latency for what is orchestration glue and direct-execution work. SCOPE: (1) Classify every command in .claude/commands/*.md by whether it needs opus. KEEP-OPUS: the context-accumulating orchestrator commands (/research, /plan, /implement, /orchestrate) which run long multi-subagent sessions and rely on the opus 1M-context auto-upgrade, plus genuine deep-reasoning commands (/meta, /revise) -- confirm against the agent-frontmatter-standard.md policy refreshed in task 790. DOWNGRADE-CANDIDATES: utility/direct-execution and single-shot commands (/tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet, /review) -- decide per-command between `model: sonnet` and OMITTING the field entirely (inherit CLAUDE_CODE_SUBAGENT_MODEL / harness default). Prefer omission where the command just delegates to a skill/agent that already declares its own model, so the command frontmatter does not override the agent tier. (2) Apply the changes across BOTH synced .claude/ trees (nvim /home/benjamin/.config/nvim/.claude/ and dotfiles /home/benjamin/.dotfiles/.claude/), respecting the generation caveat: nvim command files may be generated from extension sources -- edit the correct source (extensions/*/commands or merge-sources) and flag the user-run Neovim-picker resync; dotfiles has no generator (hand-edit). (3) Note any command whose frontmatter `model` is load-bearing for a documented reason before downgrading. VERIFICATION: each command still routes correctly; orchestrator commands retain opus; grep confirms the intended per-command tiers in both trees. OUT OF SCOPE: agent frontmatter re-tiering (task 790 settled: zero moves) and changing the orchestrator commands opus default (explicitly kept). Depends on 790 (uses its refreshed rationale) and benefits from 789 (sonnet=Sonnet5 1M). Goal: commands run on the cheapest tier that preserves correctness, with opus reserved for the commands that genuinely need it.
 
@@ -67,10 +69,12 @@ next_project_number: 793
 
 ### 791. Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos
 - **Effort**: 3-5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: neovim
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [791_loader_wezterm_status_hook_merge/reports/01_loader-settings-merge.md]
+- **Plan**: [791_loader_wezterm_status_hook_merge/plans/01_loader-settings-merge-plan.md]
 
 **Description**: Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab coloring works in every repo the agent system is copied into, not just this one. ROOT CAUSE (confirmed): lifecycle tab coloring (researching/planning/implementing/completed/blocked, etc.) is driven by the CLAUDE_STATUS WezTerm user variable, read in ~/.config/wezterm/wezterm.lua's format-tab-title handler (lines ~316-338). CLAUDE_STATUS is only set when a status-emitting hook fires (wezterm-notify.sh / wezterm-preflight-status.sh / wezterm-clear-status.sh). A hook fires only if (a) its script is present under .claude/hooks/ AND (b) it is REGISTERED in .claude/settings.json. Load Core syncs the hook SCRIPTS but NOT the registration: in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (scan_all_artifacts, lines ~894-910), settings.json uses install-only semantics -- copy if absent, replace only if a settings.json.managed marker exists, otherwise SKIP. So any target repo that already has a .claude/settings.json never receives the status-hook registrations, CLAUDE_STATUS is never emitted, and inactive tabs keep the default gray. This repo works only because its settings.json already registers the status hook. FIX DIRECTION (validate/refine during /research): instead of skipping settings.json wholesale, MERGE the core wezterm status-hook registrations into the target's existing settings.json without clobbering project-specific permissions/MCP servers. Infrastructure already exists: merge.lua provides merge_settings()/unmerge_settings() (lines ~229-263), and the core manifest (.claude/extensions/core/manifest.json:7-17) already declares merge_targets for claudemd and index but NOT settings. Add a merge_targets.settings fragment (core hook registrations) and wire the loader to merge it on Load Core, idempotently. Ensure the loader change also propagates to the synced .opencode tree if applicable, and keep the two synced .claude/ trees (dotfiles + nvim) consistent. Verify end-to-end: after Load Core into a repo with a pre-existing settings.json, the wezterm status hooks are registered and lifecycle tab coloring works. OUT OF SCOPE: redesigning the wezterm.lua color palette; the TASK_NUMBER title mechanism (already works). PRIMARY FILES: lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua, lua/neotex/plugins/ai/shared/extensions/merge.lua, .claude/extensions/core/manifest.json, .claude/extensions/core/root-files/settings.json.
 

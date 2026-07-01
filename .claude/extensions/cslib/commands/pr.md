@@ -2,7 +2,7 @@
 description: Create and submit a CSLib PR, or create a PR review task (--review)
 allowed-tools: Bash, Read, Edit, Write, AskUserQuestion
 argument-hint: "<task_number | path | description> [--draft] [--dry-run] [--branch BRANCH] [--stacked [PR]] [--update [PR]] [--amend [PR]] | --review <urls/descriptions...>"
-model: opus
+model: sonnet
 ---
 
 # /pr Command

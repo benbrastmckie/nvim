@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
+    ]
+  }
+}

@@ -94,7 +94,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add settings-hooks.json fragment and declare `merge_targets.settings` [NOT STARTED]
+### Phase 2: Add settings-hooks.json fragment and declare `merge_targets.settings` [IN PROGRESS]
 
 - **Goal:** Ship the 3-event wezterm status-hook registration fragment via the existing generic merge-target machinery, targeting the committed `.claude/settings.json`.
 - **Tasks:**
