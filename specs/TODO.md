@@ -1,5 +1,5 @@
 ---
-next_project_number: 792
+next_project_number: 793
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 792
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787,791 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,791,792 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -37,6 +37,7 @@ next_project_number: 792
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
 791 [NOT STARTED] — Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab co
+792 [NOT STARTED] — Right-size the `model:` frontmatter across all slash-commands now
 
 ### Literature
 
@@ -52,6 +53,17 @@ next_project_number: 792
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 792. Right-size slash-command model: frontmatter (reserve opus for orchestrators/deep-reasoning)
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 790
+
+**Description**: Right-size the `model:` frontmatter across all slash-commands now that the tiering rationale is refreshed (task 790) and the sonnet tier is pinned to Sonnet 5 with 1M context (task 789). PROBLEM: ~18 of the command files carry `model: opus` indiscriminately, including pure-utility commands that do no deep reasoning -- e.g. /tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet -- so they pay Opus cost/latency for what is orchestration glue and direct-execution work. SCOPE: (1) Classify every command in .claude/commands/*.md by whether it needs opus. KEEP-OPUS: the context-accumulating orchestrator commands (/research, /plan, /implement, /orchestrate) which run long multi-subagent sessions and rely on the opus 1M-context auto-upgrade, plus genuine deep-reasoning commands (/meta, /revise) -- confirm against the agent-frontmatter-standard.md policy refreshed in task 790. DOWNGRADE-CANDIDATES: utility/direct-execution and single-shot commands (/tag, /todo, /refresh, /merge, /fix-it, /errors, /spawn, /task, /project-overview, /pr, /vet, /review) -- decide per-command between `model: sonnet` and OMITTING the field entirely (inherit CLAUDE_CODE_SUBAGENT_MODEL / harness default). Prefer omission where the command just delegates to a skill/agent that already declares its own model, so the command frontmatter does not override the agent tier. (2) Apply the changes across BOTH synced .claude/ trees (nvim /home/benjamin/.config/nvim/.claude/ and dotfiles /home/benjamin/.dotfiles/.claude/), respecting the generation caveat: nvim command files may be generated from extension sources -- edit the correct source (extensions/*/commands or merge-sources) and flag the user-run Neovim-picker resync; dotfiles has no generator (hand-edit). (3) Note any command whose frontmatter `model` is load-bearing for a documented reason before downgrading. VERIFICATION: each command still routes correctly; orchestrator commands retain opus; grep confirms the intended per-command tiers in both trees. OUT OF SCOPE: agent frontmatter re-tiering (task 790 settled: zero moves) and changing the orchestrator commands opus default (explicitly kept). Depends on 790 (uses its refreshed rationale) and benefits from 789 (sonnet=Sonnet5 1M). Goal: commands run on the cheapest tier that preserves correctness, with opus reserved for the commands that genuinely need it.
+
+---
 
 ### 791. Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos
 - **Effort**: 3-5 hours
