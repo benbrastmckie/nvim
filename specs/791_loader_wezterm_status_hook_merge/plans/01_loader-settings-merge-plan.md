@@ -94,14 +94,14 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add settings-hooks.json fragment and declare `merge_targets.settings` [IN PROGRESS]
+### Phase 2: Add settings-hooks.json fragment and declare `merge_targets.settings` [COMPLETED]
 
 - **Goal:** Ship the 3-event wezterm status-hook registration fragment via the existing generic merge-target machinery, targeting the committed `.claude/settings.json`.
 - **Tasks:**
-  - [ ] Create `.claude/extensions/core/merge-sources/settings-hooks.json` with exactly the 3 event arrays (`SessionStart` -> `wezterm-clear-task-number.sh`; `Stop` -> `claude-stop-notify.sh`; `UserPromptSubmit` -> `wezterm-task-number.sh` then `wezterm-preflight-status.sh`), each command wrapped `... 2>/dev/null || echo '{}'`, per report Section 3. Do NOT include `wezterm-notify.sh`, `wezterm-utils.sh`, or any `PreToolUse`/`PostToolUse`/`SubagentStop`/`Notification` entries.
-  - [ ] Add a `settings` entry to `merge_targets` in `.claude/extensions/core/manifest.json`: `{ "source": "merge-sources/settings-hooks.json", "target": ".claude/settings.json" }`. Match the schema shape used by the lean/nix/epidemiology manifests, but with target `.claude/settings.json` (NOT `.claude/settings.local.json`).
-  - [ ] Add a short comment (in the fragment via a `"_comment"` key, or in the manifest region if JSON comments are unsupported — confirm which the loader tolerates) noting: (a) `deep_merge` append semantics may produce a second `"*"` matcher entry for targets that already have one — safe but untidy; (b) `merge_settings` does not self-heal drifted command paths (follow-up risk, report Section 4c).
-  - [ ] Validate the fragment and manifest parse as JSON.
+  - [x] Create `.claude/extensions/core/merge-sources/settings-hooks.json` with exactly the 3 event arrays (`SessionStart` -> `wezterm-clear-task-number.sh`; `Stop` -> `claude-stop-notify.sh`; `UserPromptSubmit` -> `wezterm-task-number.sh` then `wezterm-preflight-status.sh`), each command wrapped `... 2>/dev/null || echo '{}'`, per report Section 3. Do NOT include `wezterm-notify.sh`, `wezterm-utils.sh`, or any `PreToolUse`/`PostToolUse`/`SubagentStop`/`Notification` entries.
+  - [x] Add a `settings` entry to `merge_targets` in `.claude/extensions/core/manifest.json`: `{ "source": "merge-sources/settings-hooks.json", "target": ".claude/settings.json" }`. Match the schema shape used by the lean/nix/epidemiology manifests, but with target `.claude/settings.json` (NOT `.claude/settings.local.json`).
+  - [x] Add a short comment (in the fragment via a `"_comment"` key, or in the manifest region if JSON comments are unsupported — confirm which the loader tolerates) noting: (a) `deep_merge` append semantics may produce a second `"*"` matcher entry for targets that already have one — safe but untidy; (b) `merge_settings` does not self-heal drifted command paths (follow-up risk, report Section 4c). *(deviation: altered — placed the `_comment` on the manifest's `merge_targets.settings` entry itself, not inside the merge-sources fragment. `process_merge_targets`/`reinject_loaded_extensions` only read `.source`/`.target` from this object, ignoring extra keys, so this is safe; putting it in the fragment instead would have injected a literal `_comment` key into every target repo's committed `.claude/settings.json` via `deep_merge`, which is undesirable pollution.)*
+  - [x] Validate the fragment and manifest parse as JSON.
 - **Timing:** 40-50 minutes
 - **Depends on:** 1
 - **Files to modify:**
