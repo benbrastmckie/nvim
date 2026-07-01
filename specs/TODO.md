@@ -1,17 +1,17 @@
 ---
-next_project_number: 789
+next_project_number: 791
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-06-30. Generated from state.json dependency graph.*
+*Updated 2026-07-01. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 78,87,772,775,777,778,780,782,783,787 | -- | agent-system, literature, Terminal UI, ... |
+| 1 | 78,87,772,775,777,778,780,782,783,787,790 | -- | agent-system, literature, Terminal UI, ... |
 | 2 | 773,774,776,779,781,785 | 772,775,778,780 | agent-system, literature |
 | 3 | 786 | 785 | agent-system |
 | 4 | 788 | 786,787 | agent-system |
@@ -36,6 +36,7 @@ next_project_number: 789
 783 [NOT STARTED] — Fix the sorry-census methodology in the review/vet agent tooling 
 787 [NOT STARTED] — Make multi-task creation declare dependencies based on FILE FOOTP
   └─ 788 [NOT STARTED] — Prevent concurrent sessions from clobbering a shared working tree (see above)
+790 [NOT STARTED] — Re-evaluate and update the model tiering policy now that Sonnet 5
 
 ### Literature
 
@@ -51,6 +52,28 @@ next_project_number: 789
 78 [PLANNED] — Fix Gmail SMTP authentication failure when sending emails via Him
 
 ## Tasks
+
+### 790. Re-evaluate model tiering for Sonnet 5: re-tier agents, refresh benchmarks, fix neovim-research
+- **Effort**: 3-5 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 789
+
+**Description**: Re-evaluate and update the model tiering policy now that Sonnet 5 is released (and the fleet runs Opus 4.8), then RE-TIER agents where justified. USER-CONFIRMED: re-tiering IS in scope (not docs-only). CONTEXT: the tiering rationale in .claude/docs/reference/standards/agent-frontmatter-standard.md rests on stale benchmarks ("Sonnet 4.6 achieves 79.6%% on SWE-bench vs Opus 4.6 at 80.8%%", references "Opus 4.6") and a hard constraint that orchestrator commands (/research /plan /implement) MUST be opus solely to receive the 1M-context auto-upgrade via ANTHROPIC_DEFAULT_OPUS_MODEL. SCOPE: (1) Refresh benchmark citations and rationale to current Sonnet 5 / Opus 4.8 reality. (2) Re-examine the orchestrator 1M-context constraint -- with `claude-sonnet-5[1m]` pinned (task 789), determine whether orchestrators / other opus-tier roles can move to sonnet for cost savings without losing 1M context, and apply the moves that hold up. (3) Propose + apply re-tiering of specific opus-tier agents (e.g. domain research agents) to sonnet where Sonnet 5 is now sufficient; keep genuine deep-reasoning roles (planner, meta-builder, reviser, formal-verification) on opus unless research shows otherwise. (4) Fix the confirmed discrepancy: neovim-research is listed as opus in the CLAUDE.md routing table but sonnet in frontmatter -- USER-CONFIRMED it should be SONNET; reconcile the routing table (and any other alias mismatches surfaced) to sonnet. (5) Keep the two synced .claude/ trees (dotfiles and nvim) consistent. DEPENDS ON 789 (needs the concrete Sonnet 5 variant pinned before deciding what can move). Goal: a current, correctly-benchmarked tiering policy with agent assignments actually updated for Sonnet 5.
+
+---
+
+### 789. Pin sonnet tier to Sonnet 5 (1M context) via ANTHROPIC_DEFAULT_SONNET_MODEL
+- **Effort**: 1-2 hours
+- **Status**: [COMPLETED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Pin the `sonnet` model tier to Sonnet 5 with 1M context, mirroring the existing Opus pattern. CONTEXT: model config is version-agnostic -- all ~70 sonnet-tier agents use the symbolic `sonnet` alias, but there is NO `ANTHROPIC_DEFAULT_SONNET_MODEL` set, so `sonnet` resolves to Claude Code's built-in default rather than deterministically Sonnet 5. The Opus tier is already pinned via `ANTHROPIC_DEFAULT_OPUS_MODEL: claude-opus-4-8[1m]`. SCOPE: (1) Add `ANTHROPIC_DEFAULT_SONNET_MODEL` to the `env` block of dotfiles/config/claude/settings.json (/home/benjamin/.dotfiles/config/claude/settings.json), USER-CONFIRMED to the 1M-context variant `claude-sonnet-5[1m]` -- research/verify during /research that the `[1m]` suffix is the correct form for Sonnet 5 (confirm against the Opus `[1m]` precedent and Claude Code env-var conventions). (2) Update the `_MODEL_NOTE` comment to document that BOTH Opus and Sonnet tiers now have a single source of truth here, and to warn against pinning elsewhere. (3) Verify the settings.json activation-script deploy path (modules/home/core/shell.nix copies to ~/.claude/settings.json) still picks up the change. NOTE: this task edits the DOTFILES repo, not the nvim/.claude tree. OUT OF SCOPE: agent frontmatter (untouched -- aliases resolve automatically); tiering-policy re-evaluation (task 790). Goal: sonnet-tier agents deterministically run Sonnet 5 with 1M context.
+
+---
 
 ### 788. Concurrent-session protection: task lock + mandatory commit-per-green-substep
 - **Effort**: 4-6 hours

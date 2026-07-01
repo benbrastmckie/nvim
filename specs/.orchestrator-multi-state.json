@@ -1,0 +1,29 @@
+{
+  "session_id": "sess_1782866508_55beee",
+  "multi_task_mode": true,
+  "task_numbers": [
+    789,
+    790
+  ],
+  "waves": [
+    [
+      789
+    ],
+    [
+      790
+    ]
+  ],
+  "dependency_graph": {
+    "789": [],
+    "790": [
+      "789"
+    ]
+  },
+  "current_wave": 1,
+  "completed_tasks": [
+    789
+  ],
+  "failed_tasks": [],
+  "cycle_count": 1,
+  "max_cycles": 25
+}
