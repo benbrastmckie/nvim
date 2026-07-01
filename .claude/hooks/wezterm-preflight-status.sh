@@ -83,9 +83,8 @@ if [[ "$SHOULD_SET" -eq 1 ]]; then
 elif [[ "$SHOULD_CLEAR" -eq 1 ]]; then
     # Clear CLAUDE_STATUS on non-lifecycle slash commands (via shared utility)
     set_user_var "CLAUDE_STATUS" "" "$PANE_TTY"
-    # Clear workflow-active and orchestrate-active markers (handles ESC-cancel, crash, and non-lifecycle command cleanup)
+    # Clear workflow-active marker (handles ESC-cancel and non-lifecycle command cleanup)
     rm -f "$SCRIPT_DIR/../tmp/workflow-active" 2>/dev/null || true
-    rm -f "$SCRIPT_DIR/../tmp/orchestrate-active" 2>/dev/null || true
 fi
 # Tier 3: no-op (CLAUDE_STATUS preserved from previous state)
 

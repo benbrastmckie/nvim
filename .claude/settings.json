@@ -1,5 +1,137 @@
 {
+  "env": {
+    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "50000"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash .claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
+          }
+        ],
+        "matcher": "Write"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "Write|Edit"
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "permission_prompt|elicitation_dialog"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 30000,
+            "command": "bash .claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "startup"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'"
+          }
+        ],
+        "matcher": "Write"
+      }
+    ]
+  },
   "permissions": {
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ],
     "allow": [
       "Bash(git:*)",
       "Bash(lake *)",
@@ -25,129 +157,6 @@
       "TaskUpdate",
       "Skill",
       "mcp__lean-lsp__*"
-    ],
-    "deny": [
-      "Bash(rm -rf /)",
-      "Bash(rm -rf ~)",
-      "Bash(sudo *)",
-      "Bash(chmod 777 *)"
     ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash .claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      },
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
-          },
-          {
-            "type": "command",
-            "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
-          },
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
-            "timeout": 30000
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "permission_prompt|elicitation_dialog",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
-          }
-        ]
-      }
-    ]
-  },
-  "env": {
-    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "50000"
   }
 }

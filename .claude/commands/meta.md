@@ -176,12 +176,18 @@ These templates are provided for reference when creating tasks. Actual file crea
 
 ### Command Template Reference
 
+Model tiering guidance: `opus` is reserved for context-accumulating orchestrators
+(`/research`, `/plan`, `/implement`, `/orchestrate`) and deep-reasoning commands (`/meta`,
+`/revise`). Pure-delegation commands (dispatch only to a skill/agent that declares its own
+model) should omit the `model:` line entirely. All other inline/single-shot utility commands
+default to `model: sonnet`, as scaffolded below.
+
 ```markdown
 ---
 description: {description}
 allowed-tools: {tools}
 argument-hint: {hint}
-model: opus
+model: sonnet
 ---
 
 # /{command} Command

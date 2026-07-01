@@ -49,7 +49,7 @@ All commands use this frontmatter format:
 description: <one-line description>
 allowed-tools: <comma-separated tool list>
 argument-hint: "<required>" [--flag]
-model: sonnet
+model: opus
 ---
 ```
 
@@ -62,14 +62,13 @@ model: sonnet
 
 ### Model Selection
 
-`opus` is reserved for context-accumulating orchestrators and deep-reasoning commands; pure-delegation commands should omit the field so they inherit the tier declared by the skill/agent they dispatch to; all other inline/single-shot utility commands default to `model: sonnet`.
+Commands that dispatch to agents should use `model: sonnet` in their frontmatter. The agent's own frontmatter model takes precedence during execution, so the command-level model primarily affects the command's own preflight/postflight reasoning.
 
 | Command Type | Recommended Model | Rationale |
 |-------------|-------------------|-----------|
-| Context-accumulating orchestrators (`/research`, `/plan`, `/implement`, `/orchestrate`) | `opus` | Accumulate large context across sequential sub-agent calls; require 1M-context auto-upgrade |
-| Deep-reasoning commands (`/meta`, `/revise`) | `opus` | Command itself performs the deep-reasoning/synthesis work |
-| Pure-delegation commands (dispatch only to a skill/agent, e.g. `/fix-it`, `/spawn`, `/project-overview`, `/refresh`, `/tag`) | omit | Inherit the tier declared by the skill/agent they dispatch to |
-| Inline/single-shot utility commands (`/todo`, `/review`, `/task`, `/merge`, `/errors`) | `sonnet` | Command does its own mechanical work with no skill/agent dispatch; fresh context per invocation |
+| Dispatch commands (`/research`, `/plan`, `/implement`) | `sonnet` | Lightweight routing; agent model takes precedence |
+| Direct-execution commands (`/todo`, `/meta`, `/review`) | `opus` | Command itself does the reasoning work |
+| Utility commands (`/refresh`, `/tag`) | `opus` or omit | Simple operations; model matters less |
 
 See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for the full tiered model policy.
 

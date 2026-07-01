@@ -2,7 +2,7 @@
 description: Review code and create analysis reports
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion
 argument-hint: [SCOPE] [--create-tasks]
-model: opus
+model: sonnet
 ---
 
 # /review Command

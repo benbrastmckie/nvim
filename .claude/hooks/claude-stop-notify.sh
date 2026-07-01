@@ -56,15 +56,10 @@ if [[ -f "$WORKFLOW_ACTIVE" ]]; then
 fi
 
 # --- No active workflow: interactive / non-lifecycle stop ---
-# Fire needs_input wezterm color + TTS announcement for user attention
+# Fire needs_input wezterm color only (no TTS for non-lifecycle stops)
 wezterm_script="$SCRIPT_DIR/wezterm-notify.sh"
 if [[ -f "$wezterm_script" ]]; then
     bash "$wezterm_script" 2>/dev/null || true
-fi
-
-tts_script="$SCRIPT_DIR/tts-notify.sh"
-if [[ -f "$tts_script" ]]; then
-    bash "$tts_script" 2>/dev/null || true
 fi
 
 exit_success

@@ -1,149 +1,7 @@
 {
+  "version": "1.0.0",
   "extensions": {
     "core": {
-      "data_skeleton_files": [],
-      "installed_dirs": [
-        ".claude/skills/skill-fix-it",
-        ".claude/skills/skill-git-workflow",
-        ".claude/skills/skill-implementer",
-        ".claude/skills/skill-meta",
-        ".claude/skills/skill-planner",
-        ".claude/skills/skill-refresh",
-        ".claude/skills/skill-researcher",
-        ".claude/skills/skill-reviser",
-        ".claude/skills/skill-spawn",
-        ".claude/skills/skill-status-sync",
-        ".claude/skills/skill-tag",
-        ".claude/skills/skill-team-implement",
-        ".claude/skills/skill-team-plan",
-        ".claude/skills/skill-team-research",
-        ".claude/skills/skill-todo",
-        ".claude/skills/skill-project-overview",
-        ".claude/context/architecture",
-        ".claude/context/checkpoints",
-        ".claude/context/formats",
-        ".claude/context/meta",
-        ".claude/context/orchestration",
-        ".claude/context/processes",
-        ".claude/context/reference",
-        ".claude/context/repo",
-        ".claude/context/schemas",
-        ".claude/context/standards",
-        ".claude/context/templates",
-        ".claude/context/troubleshooting",
-        ".claude/context/workflows",
-        ".claude/docs/examples",
-        ".claude/docs/templates",
-        ".claude/templates",
-        ".claude/systemd"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/core",
-      "loaded_at": "2026-07-01T01:17:56Z",
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "architecture/component-checklist.md",
-            "architecture/context-layers.md",
-            "architecture/generation-guidelines.md",
-            "architecture/system-overview.md",
-            "checkpoints/checkpoint-commit.md",
-            "checkpoints/checkpoint-gate-in.md",
-            "checkpoints/checkpoint-gate-out.md",
-            "checkpoints/README.md",
-            "formats/command-output.md",
-            "formats/command-structure.md",
-            "formats/frontmatter.md",
-            "formats/handoff-artifact.md",
-            "formats/plan-format.md",
-            "formats/progress-file.md",
-            "formats/report-format.md",
-            "formats/return-metadata-file.md",
-            "formats/roadmap-format.md",
-            "formats/subagent-return.md",
-            "formats/summary-format.md",
-            "formats/task-order-format.md",
-            "formats/team-metadata-extension.md",
-            "guides/extension-development.md",
-            "guides/loader-reference.md",
-            "meta/context-revision-guide.md",
-            "meta/domain-patterns.md",
-            "meta/meta-guide.md",
-            "orchestration/architecture.md",
-            "orchestration/delegation.md",
-            "orchestration/orchestration-core.md",
-            "orchestration/orchestration-reference.md",
-            "orchestration/orchestration-validation.md",
-            "orchestration/orchestrator.md",
-            "orchestration/postflight-pattern.md",
-            "orchestration/preflight-pattern.md",
-            "orchestration/sessions.md",
-            "orchestration/state-management.md",
-            "orchestration/subagent-validation.md",
-            "orchestration/validation.md",
-            "patterns/anti-stop-patterns.md",
-            "patterns/artifact-linking-todo.md",
-            "patterns/checkpoint-execution.md",
-            "patterns/context-discovery.md",
-            "patterns/early-metadata-pattern.md",
-            "patterns/file-metadata-exchange.md",
-            "patterns/inline-status-update.md",
-            "patterns/jq-escaping-workarounds.md",
-            "patterns/mcp-tool-recovery.md",
-            "patterns/metadata-file-return.md",
-            "patterns/multi-task-operations.md",
-            "patterns/postflight-control.md",
-            "patterns/roadmap-update.md",
-            "patterns/skill-lifecycle.md",
-            "patterns/team-orchestration.md",
-            "patterns/thin-wrapper-skill.md",
-            "processes/implementation-workflow.md",
-            "processes/planning-workflow.md",
-            "processes/research-workflow.md",
-            "README.md",
-            "reference/artifact-templates.md",
-            "reference/README.md",
-            "reference/skill-agent-mapping.md",
-            "reference/state-management-schema.md",
-            "reference/team-wave-helpers.md",
-            "reference/workflow-diagrams.md",
-            "repo/project-overview.md",
-            "repo/self-healing-implementation-details.md",
-            "repo/update-project.md",
-            "routing.md",
-            "schemas/frontmatter-schema.json",
-            "schemas/subagent-frontmatter.yaml",
-            "standards/analysis-framework.md",
-            "standards/ci-workflow.md",
-            "standards/code-patterns.md",
-            "standards/documentation-standards.md",
-            "standards/error-handling.md",
-            "standards/git-integration.md",
-            "standards/git-safety.md",
-            "standards/interactive-selection.md",
-            "standards/postflight-tool-restrictions.md",
-            "standards/status-markers.md",
-            "standards/task-management.md",
-            "standards/testing.md",
-            "standards/xml-structure.md",
-            "templates/agent-template.md",
-            "templates/command-template.md",
-            "templates/delegation-context.md",
-            "templates/orchestrator-template.md",
-            "templates/state-template.json",
-            "templates/subagent-template.md",
-            "templates/thin-wrapper-skill.md",
-            "troubleshooting/workflow-interruptions.md",
-            "validation.md",
-            "workflows/command-lifecycle.md",
-            "workflows/preflight-postflight.md",
-            "workflows/review-process.md",
-            "workflows/task-breakdown.md",
-            "index.schema.json"
-          ]
-        }
-      },
-      "status": "active",
-      "version": "1.0.0",
       "installed_files": [
         ".claude/agents/code-reviewer-agent.md",
         ".claude/agents/general-implementation-agent.md",
@@ -345,16 +203,20 @@
         ".claude/scripts/vault-operation.sh",
         ".claude/scripts/verify-lean-mcp.sh",
         ".claude/scripts/lint/lint-postflight-boundary.sh",
+        ".claude/hooks/claude-stop-notify.sh",
         ".claude/hooks/log-session.sh",
         ".claude/hooks/memory-nudge.sh",
         ".claude/hooks/post-command.sh",
         ".claude/hooks/subagent-postflight.sh",
         ".claude/hooks/tts-notify.sh",
+        ".claude/hooks/validate-meta-write.sh",
         ".claude/hooks/validate-plan-write.sh",
         ".claude/hooks/validate-state-sync.sh",
         ".claude/hooks/wezterm-clear-task-number.sh",
         ".claude/hooks/wezterm-notify.sh",
+        ".claude/hooks/wezterm-preflight-status.sh",
         ".claude/hooks/wezterm-task-number.sh",
+        ".claude/hooks/wezterm-utils.sh",
         ".claude/docs/README.md",
         ".claude/docs/docs-README.md",
         ".claude/docs/architecture/architecture-spec.md",
@@ -390,127 +252,216 @@
         ".claude/settings.json",
         ".claude/settings.local.json",
         ".claude/.gitignore"
-      ]
-    },
-    "nix": {
+      ],
       "data_skeleton_files": [],
       "installed_dirs": [
-        ".claude/skills/skill-nix-research",
-        ".claude/skills/skill-nix-implementation"
+        ".claude/skills/skill-fix-it",
+        ".claude/skills/skill-git-workflow",
+        ".claude/skills/skill-implementer",
+        ".claude/skills/skill-meta",
+        ".claude/skills/skill-planner",
+        ".claude/skills/skill-refresh",
+        ".claude/skills/skill-researcher",
+        ".claude/skills/skill-reviser",
+        ".claude/skills/skill-spawn",
+        ".claude/skills/skill-status-sync",
+        ".claude/skills/skill-tag",
+        ".claude/skills/skill-team-implement",
+        ".claude/skills/skill-team-plan",
+        ".claude/skills/skill-team-research",
+        ".claude/skills/skill-todo",
+        ".claude/skills/skill-project-overview",
+        ".claude/context/architecture",
+        ".claude/context/checkpoints",
+        ".claude/context/formats",
+        ".claude/context/meta",
+        ".claude/context/orchestration",
+        ".claude/context/processes",
+        ".claude/context/reference",
+        ".claude/context/repo",
+        ".claude/context/schemas",
+        ".claude/context/standards",
+        ".claude/context/templates",
+        ".claude/context/troubleshooting",
+        ".claude/context/workflows",
+        ".claude/docs/examples",
+        ".claude/docs/templates",
+        ".claude/templates",
+        ".claude/systemd"
       ],
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nix",
-      "loaded_at": "2026-07-01T01:17:56Z",
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/core",
+      "loaded_at": "2026-07-01T01:39:28Z",
+      "merged_sections": {
+        "settings": {
+          "hooks": {
+            "type": "merged",
+            "children": {
+              "SessionStart": {
+                "type": "appended",
+                "items": []
+              },
+              "UserPromptSubmit": {
+                "type": "appended",
+                "items": []
+              },
+              "Stop": {
+                "type": "appended",
+                "items": [
+                  {
+                    "hooks": [
+                      {
+                        "type": "command",
+                        "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
+                      }
+                    ],
+                    "matcher": "*"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "index": {
+          "paths": [
+            "architecture/component-checklist.md",
+            "architecture/context-layers.md",
+            "architecture/generation-guidelines.md",
+            "architecture/system-overview.md",
+            "checkpoints/checkpoint-commit.md",
+            "checkpoints/checkpoint-gate-in.md",
+            "checkpoints/checkpoint-gate-out.md",
+            "checkpoints/README.md",
+            "formats/command-output.md",
+            "formats/command-structure.md",
+            "formats/frontmatter.md",
+            "formats/handoff-artifact.md",
+            "formats/plan-format.md",
+            "formats/progress-file.md",
+            "formats/report-format.md",
+            "formats/return-metadata-file.md",
+            "formats/roadmap-format.md",
+            "formats/subagent-return.md",
+            "formats/summary-format.md",
+            "formats/task-order-format.md",
+            "formats/team-metadata-extension.md",
+            "guides/extension-development.md",
+            "guides/loader-reference.md",
+            "meta/context-revision-guide.md",
+            "meta/domain-patterns.md",
+            "meta/meta-guide.md",
+            "orchestration/architecture.md",
+            "orchestration/delegation.md",
+            "orchestration/orchestration-core.md",
+            "orchestration/orchestration-reference.md",
+            "orchestration/orchestration-validation.md",
+            "orchestration/orchestrator.md",
+            "orchestration/postflight-pattern.md",
+            "orchestration/preflight-pattern.md",
+            "orchestration/sessions.md",
+            "orchestration/state-management.md",
+            "orchestration/subagent-validation.md",
+            "orchestration/validation.md",
+            "patterns/anti-stop-patterns.md",
+            "patterns/artifact-linking-todo.md",
+            "patterns/checkpoint-execution.md",
+            "patterns/context-discovery.md",
+            "patterns/early-metadata-pattern.md",
+            "patterns/file-metadata-exchange.md",
+            "patterns/inline-status-update.md",
+            "patterns/jq-escaping-workarounds.md",
+            "patterns/mcp-tool-recovery.md",
+            "patterns/metadata-file-return.md",
+            "patterns/multi-task-operations.md",
+            "patterns/postflight-control.md",
+            "patterns/roadmap-update.md",
+            "patterns/skill-lifecycle.md",
+            "patterns/team-orchestration.md",
+            "patterns/thin-wrapper-skill.md",
+            "processes/implementation-workflow.md",
+            "processes/planning-workflow.md",
+            "processes/research-workflow.md",
+            "README.md",
+            "reference/artifact-templates.md",
+            "reference/README.md",
+            "reference/skill-agent-mapping.md",
+            "reference/state-management-schema.md",
+            "reference/team-wave-helpers.md",
+            "reference/workflow-diagrams.md",
+            "repo/project-overview.md",
+            "repo/self-healing-implementation-details.md",
+            "repo/update-project.md",
+            "routing.md",
+            "schemas/frontmatter-schema.json",
+            "schemas/subagent-frontmatter.yaml",
+            "standards/analysis-framework.md",
+            "standards/ci-workflow.md",
+            "standards/code-patterns.md",
+            "standards/documentation-standards.md",
+            "standards/error-handling.md",
+            "standards/git-integration.md",
+            "standards/git-safety.md",
+            "standards/interactive-selection.md",
+            "standards/postflight-tool-restrictions.md",
+            "standards/status-markers.md",
+            "standards/task-management.md",
+            "standards/testing.md",
+            "standards/xml-structure.md",
+            "templates/agent-template.md",
+            "templates/command-template.md",
+            "templates/delegation-context.md",
+            "templates/orchestrator-template.md",
+            "templates/state-template.json",
+            "templates/subagent-template.md",
+            "templates/thin-wrapper-skill.md",
+            "troubleshooting/workflow-interruptions.md",
+            "validation.md",
+            "workflows/command-lifecycle.md",
+            "workflows/preflight-postflight.md",
+            "workflows/review-process.md",
+            "workflows/task-breakdown.md",
+            "index.schema.json"
+          ]
+        }
+      },
+      "version": "1.0.0",
+      "status": "active"
+    },
+    "memory": {
+      "installed_files": [
+        ".claude/commands/learn.md",
+        ".claude/commands/distill.md",
+        ".claude/skills/skill-memory/README.md",
+        ".claude/skills/skill-memory/SKILL.md",
+        ".claude/context/project/memory/README.md",
+        ".claude/context/project/memory/distill-usage.md",
+        ".claude/context/project/memory/domain/memory-reference.md",
+        ".claude/context/project/memory/knowledge-capture-usage.md",
+        ".claude/context/project/memory/learn-usage.md",
+        ".claude/context/project/memory/memory-setup.md",
+        ".claude/context/project/memory/memory-troubleshooting.md"
+      ],
+      "data_skeleton_files": [],
+      "installed_dirs": [
+        ".claude/skills/skill-memory"
+      ],
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/memory",
+      "loaded_at": "2026-07-01T01:39:28Z",
       "merged_sections": {
         "index": {
           "paths": [
-            "project/nix/README.md",
-            "project/nix/domain/nix-language.md",
-            "project/nix/domain/flakes.md",
-            "project/nix/domain/nixos-modules.md",
-            "project/nix/domain/home-manager.md",
-            "project/nix/patterns/module-patterns.md",
-            "project/nix/patterns/overlay-patterns.md",
-            "project/nix/patterns/derivation-patterns.md",
-            "project/nix/standards/nix-style-guide.md",
-            "project/nix/tools/nixos-rebuild-guide.md",
-            "project/nix/tools/home-manager-guide.md"
+            "project/memory/learn-usage.md",
+            "project/memory/memory-setup.md",
+            "project/memory/memory-troubleshooting.md",
+            "project/memory/domain/memory-reference.md",
+            "project/memory/knowledge-capture-usage.md",
+            "project/memory/distill-usage.md"
           ]
-        },
-        "settings": {
-          "mcpServers": {
-            "children": {
-              "mcp-nixos": {
-                "children": {
-                  "command": {
-                    "type": "new_value",
-                    "value": "uvx"
-                  },
-                  "args": {
-                    "items": [
-                      "mcp-nixos"
-                    ],
-                    "type": "new_array"
-                  }
-                },
-                "type": "new_object"
-              }
-            },
-            "type": "new_object"
-          },
-          "permissions": {
-            "children": {
-              "allow": {
-                "items": [
-                  "mcp__nixos__nix",
-                  "mcp__nixos__nix_versions"
-                ],
-                "type": "appended"
-              }
-            },
-            "type": "merged"
-          }
         }
       },
-      "status": "active",
       "version": "1.0.0",
-      "installed_files": [
-        ".claude/agents/nix-research-agent.md",
-        ".claude/agents/nix-implementation-agent.md",
-        ".claude/rules/nix.md",
-        ".claude/skills/skill-nix-research/SKILL.md",
-        ".claude/skills/skill-nix-implementation/SKILL.md",
-        ".claude/context/project/nix/README.md",
-        ".claude/context/project/nix/domain/flakes.md",
-        ".claude/context/project/nix/domain/home-manager.md",
-        ".claude/context/project/nix/domain/nix-language.md",
-        ".claude/context/project/nix/domain/nixos-modules.md",
-        ".claude/context/project/nix/patterns/derivation-patterns.md",
-        ".claude/context/project/nix/patterns/module-patterns.md",
-        ".claude/context/project/nix/patterns/overlay-patterns.md",
-        ".claude/context/project/nix/standards/nix-style-guide.md",
-        ".claude/context/project/nix/tools/home-manager-guide.md",
-        ".claude/context/project/nix/tools/nixos-rebuild-guide.md"
-      ]
+      "status": "active"
     },
     "nvim": {
-      "data_skeleton_files": [],
-      "installed_dirs": [
-        ".claude/skills/skill-neovim-research",
-        ".claude/skills/skill-neovim-implementation"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nvim",
-      "loaded_at": "2026-07-01T01:17:56Z",
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "project/neovim/README.md",
-            "project/neovim/domain/lua-patterns.md",
-            "project/neovim/domain/neovim-api.md",
-            "project/neovim/domain/plugin-ecosystem.md",
-            "project/neovim/domain/lsp-overview.md",
-            "project/neovim/patterns/autocommand-patterns.md",
-            "project/neovim/patterns/ftplugin-patterns.md",
-            "project/neovim/patterns/keymap-patterns.md",
-            "project/neovim/patterns/plugin-spec.md",
-            "project/neovim/standards/lua-style-guide.md",
-            "project/neovim/standards/testing-patterns.md",
-            "project/neovim/templates/ftplugin-template.md",
-            "project/neovim/templates/plugin-template.md",
-            "project/neovim/tools/lazy-nvim-guide.md",
-            "project/neovim/tools/telescope-guide.md",
-            "project/neovim/tools/treesitter-guide.md",
-            "project/neovim/standards/box-drawing-guide.md",
-            "project/neovim/standards/documentation-policy.md",
-            "project/neovim/standards/emoji-policy.md",
-            "project/neovim/standards/lua-assertion-patterns.md",
-            "project/neovim/hooks/wezterm-integration.md",
-            "project/neovim/guides/neovim-integration.md",
-            "project/neovim/guides/tts-stt-integration.md"
-          ]
-        }
-      },
-      "status": "active",
-      "version": "1.0.0",
       "installed_files": [
         ".claude/agents/neovim-research-agent.md",
         ".claude/agents/neovim-implementation-agent.md",
@@ -540,43 +491,125 @@
         ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
         ".claude/context/project/neovim/tools/telescope-guide.md",
         ".claude/context/project/neovim/tools/treesitter-guide.md"
-      ]
-    },
-    "memory": {
+      ],
       "data_skeleton_files": [],
       "installed_dirs": [
-        ".claude/skills/skill-memory"
+        ".claude/skills/skill-neovim-research",
+        ".claude/skills/skill-neovim-implementation"
       ],
-      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/memory",
-      "loaded_at": "2026-07-01T01:17:56Z",
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nvim",
+      "loaded_at": "2026-07-01T01:39:28Z",
       "merged_sections": {
         "index": {
           "paths": [
-            "project/memory/learn-usage.md",
-            "project/memory/memory-setup.md",
-            "project/memory/memory-troubleshooting.md",
-            "project/memory/domain/memory-reference.md",
-            "project/memory/knowledge-capture-usage.md",
-            "project/memory/distill-usage.md"
+            "project/neovim/README.md",
+            "project/neovim/domain/lua-patterns.md",
+            "project/neovim/domain/neovim-api.md",
+            "project/neovim/domain/plugin-ecosystem.md",
+            "project/neovim/domain/lsp-overview.md",
+            "project/neovim/patterns/autocommand-patterns.md",
+            "project/neovim/patterns/ftplugin-patterns.md",
+            "project/neovim/patterns/keymap-patterns.md",
+            "project/neovim/patterns/plugin-spec.md",
+            "project/neovim/standards/lua-style-guide.md",
+            "project/neovim/standards/testing-patterns.md",
+            "project/neovim/templates/ftplugin-template.md",
+            "project/neovim/templates/plugin-template.md",
+            "project/neovim/tools/lazy-nvim-guide.md",
+            "project/neovim/tools/telescope-guide.md",
+            "project/neovim/tools/treesitter-guide.md",
+            "project/neovim/standards/box-drawing-guide.md",
+            "project/neovim/standards/documentation-policy.md",
+            "project/neovim/standards/emoji-policy.md",
+            "project/neovim/standards/lua-assertion-patterns.md",
+            "project/neovim/hooks/wezterm-integration.md",
+            "project/neovim/guides/neovim-integration.md",
+            "project/neovim/guides/tts-stt-integration.md"
           ]
         }
       },
-      "status": "active",
       "version": "1.0.0",
+      "status": "active"
+    },
+    "nix": {
       "installed_files": [
-        ".claude/commands/learn.md",
-        ".claude/commands/distill.md",
-        ".claude/skills/skill-memory/README.md",
-        ".claude/skills/skill-memory/SKILL.md",
-        ".claude/context/project/memory/README.md",
-        ".claude/context/project/memory/distill-usage.md",
-        ".claude/context/project/memory/domain/memory-reference.md",
-        ".claude/context/project/memory/knowledge-capture-usage.md",
-        ".claude/context/project/memory/learn-usage.md",
-        ".claude/context/project/memory/memory-setup.md",
-        ".claude/context/project/memory/memory-troubleshooting.md"
-      ]
+        ".claude/agents/nix-research-agent.md",
+        ".claude/agents/nix-implementation-agent.md",
+        ".claude/rules/nix.md",
+        ".claude/skills/skill-nix-research/SKILL.md",
+        ".claude/skills/skill-nix-implementation/SKILL.md",
+        ".claude/context/project/nix/README.md",
+        ".claude/context/project/nix/domain/flakes.md",
+        ".claude/context/project/nix/domain/home-manager.md",
+        ".claude/context/project/nix/domain/nix-language.md",
+        ".claude/context/project/nix/domain/nixos-modules.md",
+        ".claude/context/project/nix/patterns/derivation-patterns.md",
+        ".claude/context/project/nix/patterns/module-patterns.md",
+        ".claude/context/project/nix/patterns/overlay-patterns.md",
+        ".claude/context/project/nix/standards/nix-style-guide.md",
+        ".claude/context/project/nix/tools/home-manager-guide.md",
+        ".claude/context/project/nix/tools/nixos-rebuild-guide.md"
+      ],
+      "data_skeleton_files": [],
+      "installed_dirs": [
+        ".claude/skills/skill-nix-research",
+        ".claude/skills/skill-nix-implementation"
+      ],
+      "source_dir": "/home/benjamin/.config/nvim/.claude/extensions/nix",
+      "loaded_at": "2026-07-01T01:39:28Z",
+      "merged_sections": {
+        "settings": {
+          "permissions": {
+            "type": "merged",
+            "children": {
+              "allow": {
+                "type": "appended",
+                "items": [
+                  "mcp__nixos__nix",
+                  "mcp__nixos__nix_versions"
+                ]
+              }
+            }
+          },
+          "mcpServers": {
+            "type": "new_object",
+            "children": {
+              "mcp-nixos": {
+                "type": "new_object",
+                "children": {
+                  "args": {
+                    "type": "new_array",
+                    "items": [
+                      "mcp-nixos"
+                    ]
+                  },
+                  "command": {
+                    "type": "new_value",
+                    "value": "uvx"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "index": {
+          "paths": [
+            "project/nix/README.md",
+            "project/nix/domain/nix-language.md",
+            "project/nix/domain/flakes.md",
+            "project/nix/domain/nixos-modules.md",
+            "project/nix/domain/home-manager.md",
+            "project/nix/patterns/module-patterns.md",
+            "project/nix/patterns/overlay-patterns.md",
+            "project/nix/patterns/derivation-patterns.md",
+            "project/nix/standards/nix-style-guide.md",
+            "project/nix/tools/nixos-rebuild-guide.md",
+            "project/nix/tools/home-manager-guide.md"
+          ]
+        }
+      },
+      "version": "1.0.0",
+      "status": "active"
     }
-  },
-  "version": "1.0.0"
+  }
 }
