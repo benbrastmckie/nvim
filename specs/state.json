@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 791,
+  "next_project_number": 792,
   "active_projects": [
     {
       "project_number": 784,
@@ -343,10 +343,10 @@
     {
       "project_number": 790,
       "project_name": "reevaluate_model_tiering_sonnet5",
-      "status": "not_started",
+      "status": "implementing",
       "task_type": "meta",
       "created": "2026-07-01T00:40:58Z",
-      "last_updated": "2026-07-01T00:40:58Z",
+      "last_updated": "2026-07-01T01:06:04Z",
       "title": "Re-evaluate model tiering for Sonnet 5: re-tier agents, refresh benchmarks, fix neovim-research",
       "description": "Re-evaluate and update the model tiering policy now that Sonnet 5 is released (and the fleet runs Opus 4.8), then RE-TIER agents where justified. USER-CONFIRMED: re-tiering IS in scope (not docs-only). CONTEXT: the tiering rationale in .claude/docs/reference/standards/agent-frontmatter-standard.md rests on stale benchmarks (\"Sonnet 4.6 achieves 79.6%% on SWE-bench vs Opus 4.6 at 80.8%%\", references \"Opus 4.6\") and a hard constraint that orchestrator commands (/research /plan /implement) MUST be opus solely to receive the 1M-context auto-upgrade via ANTHROPIC_DEFAULT_OPUS_MODEL. SCOPE: (1) Refresh benchmark citations and rationale to current Sonnet 5 / Opus 4.8 reality. (2) Re-examine the orchestrator 1M-context constraint -- with `claude-sonnet-5[1m]` pinned (task 789), determine whether orchestrators / other opus-tier roles can move to sonnet for cost savings without losing 1M context, and apply the moves that hold up. (3) Propose + apply re-tiering of specific opus-tier agents (e.g. domain research agents) to sonnet where Sonnet 5 is now sufficient; keep genuine deep-reasoning roles (planner, meta-builder, reviser, formal-verification) on opus unless research shows otherwise. (4) Fix the confirmed discrepancy: neovim-research is listed as opus in the CLAUDE.md routing table but sonnet in frontmatter -- USER-CONFIRMED it should be SONNET; reconcile the routing table (and any other alias mismatches surfaced) to sonnet. (5) Keep the two synced .claude/ trees (dotfiles and nvim) consistent. DEPENDS ON 789 (needs the concrete Sonnet 5 variant pinned before deciding what can move). Goal: a current, correctly-benchmarked tiering policy with agent assignments actually updated for Sonnet 5.",
       "effort": "3-5 hours",
@@ -354,6 +354,21 @@
       "dependencies": [
         789
       ],
+      "artifacts": [],
+      "session_id": "sess_1782866508_55beee"
+    },
+    {
+      "project_number": 791,
+      "project_name": "loader_wezterm_status_hook_merge",
+      "status": "not_started",
+      "task_type": "neovim",
+      "created": "2026-07-01T01:10:44Z",
+      "last_updated": "2026-07-01T01:10:44Z",
+      "title": "Fix Load Core loader so WezTerm lifecycle tab coloring propagates to all synced repos",
+      "description": "Fix the <leader>al 'Load Core' loader so WezTerm lifecycle tab coloring works in every repo the agent system is copied into, not just this one. ROOT CAUSE (confirmed): lifecycle tab coloring (researching/planning/implementing/completed/blocked, etc.) is driven by the CLAUDE_STATUS WezTerm user variable, read in ~/.config/wezterm/wezterm.lua's format-tab-title handler (lines ~316-338). CLAUDE_STATUS is only set when a status-emitting hook fires (wezterm-notify.sh / wezterm-preflight-status.sh / wezterm-clear-status.sh). A hook fires only if (a) its script is present under .claude/hooks/ AND (b) it is REGISTERED in .claude/settings.json. Load Core syncs the hook SCRIPTS but NOT the registration: in lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua (scan_all_artifacts, lines ~894-910), settings.json uses install-only semantics -- copy if absent, replace only if a settings.json.managed marker exists, otherwise SKIP. So any target repo that already has a .claude/settings.json never receives the status-hook registrations, CLAUDE_STATUS is never emitted, and inactive tabs keep the default gray. This repo works only because its settings.json already registers the status hook. FIX DIRECTION (validate/refine during /research): instead of skipping settings.json wholesale, MERGE the core wezterm status-hook registrations into the target's existing settings.json without clobbering project-specific permissions/MCP servers. Infrastructure already exists: merge.lua provides merge_settings()/unmerge_settings() (lines ~229-263), and the core manifest (.claude/extensions/core/manifest.json:7-17) already declares merge_targets for claudemd and index but NOT settings. Add a merge_targets.settings fragment (core hook registrations) and wire the loader to merge it on Load Core, idempotently. Ensure the loader change also propagates to the synced .opencode tree if applicable, and keep the two synced .claude/ trees (dotfiles + nvim) consistent. Verify end-to-end: after Load Core into a repo with a pre-existing settings.json, the wezterm status hooks are registered and lifecycle tab coloring works. OUT OF SCOPE: redesigning the wezterm.lua color palette; the TASK_NUMBER title mechanism (already works). PRIMARY FILES: lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua, lua/neotex/plugins/ai/shared/extensions/merge.lua, .claude/extensions/core/manifest.json, .claude/extensions/core/root-files/settings.json.",
+      "effort": "3-5 hours",
+      "topic": "agent-system",
+      "dependencies": [],
       "artifacts": []
     }
   ],
