@@ -219,10 +219,22 @@ end
 --- @param config table Extension system configuration
 local function reinject_loaded_extensions(project_dir, config)
   local state = state_mod.read(project_dir, config)
-  local loaded_names = state_mod.list_loaded(state)
+  local loaded_names = state_mod.list_loaded(state) or {}
 
-  if #loaded_names == 0 then
-    return
+  -- "Load Core" (load_all_globally) never writes extensions.json state, so a
+  -- repo that only ever ran "Load Core" has no "core" entry there. "core" is
+  -- definitionally in scope for Load Core regardless of extensions.json
+  -- tracking state, so always include it here to ensure its merge_targets
+  -- (settings, claudemd, index) are re-injected even for state-untracked repos.
+  local has_core = false
+  for _, name in ipairs(loaded_names) do
+    if name == "core" then
+      has_core = true
+      break
+    end
+  end
+  if not has_core then
+    table.insert(loaded_names, 1, "core")
   end
 
   for _, ext_name in ipairs(loaded_names) do

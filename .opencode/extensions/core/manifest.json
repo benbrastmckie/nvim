@@ -92,17 +92,20 @@
       "verify-lean-mcp.sh"
     ],
     "hooks": [
+      "claude-stop-notify.sh",
       "log-session.sh",
       "memory-nudge.sh",
       "post-command.sh",
       "subagent-postflight.sh",
       "tts-notify.sh",
+      "validate-meta-write.sh",
       "validate-plan-write.sh",
       "validate-state-sync.sh",
-      "wezterm-clear-status.sh",
       "wezterm-clear-task-number.sh",
       "wezterm-notify.sh",
-      "wezterm-task-number.sh"
+      "wezterm-preflight-status.sh",
+      "wezterm-task-number.sh",
+      "wezterm-utils.sh"
     ],
     "context": [
       "README.md",
