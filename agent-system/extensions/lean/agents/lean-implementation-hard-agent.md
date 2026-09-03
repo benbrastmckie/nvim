@@ -406,12 +406,71 @@ Include sorry_inventory populated from any remaining sorries.
 
 Path: `specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md`
 
-Include:
-- Phases executed
-- Theorems/lemmas proved
-- Final verification results
-- Sorry inventory (if non-empty)
-- Plan deviations (from inline checklist annotations)
+**This block is the authoritative shape of a summary artifact.** The metadata header below is
+mandatory and MUST NOT be abbreviated, reordered, or partially omitted — every bullet is a field
+the validator checks by name. Use `**Status**: [COMPLETED]` when every plan phase is done,
+`**Status**: [IN PROGRESS]` on a partial run, or `**Status**: [BLOCKED]` when blocked, matching
+`summary-format.md`'s declared vocabulary. Copy source: `general-implementation-agent.md`'s
+`### Stage 6: Create Implementation Summary`.
+
+```markdown
+# Implementation Summary: Task #{N}
+
+- **Task**: {N} - {title}
+- **Status**: [COMPLETED]
+- **Started**: {ISO8601}
+- **Completed**: {ISO8601}
+- **Effort**: {time}
+- **Dependencies**: {list or None}
+- **Artifacts**: plans/{NN}_{short-slug}.md
+- **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
+
+## Overview
+
+{2-3 sentences on scope, phases executed, and what was proved or implemented}
+
+## What Changed
+
+- `path/to/File.lean` — {theorem/lemma proved or definition added}
+
+## Decisions
+
+- {Key decision made during implementation, e.g. tactic choice or proof strategy}
+
+## Plan Deviations
+
+- **Task {P}.{N}** skipped: {reason}
+- **Task {P}.{N}** altered: {what changed and why}
+
+(Populate from inline checklist annotations; use `- None (implementation followed plan)` when no
+deviations occurred)
+
+## Verification
+
+- Build: Success/Failure/N/A (final `lake build` result from Stage 6 above)
+- Sorry count: {sorry_count} (must be 0, or every remaining sorry is tracked as strategic — see
+  Stage 6)
+- Sorry inventory: {list, or "None" if empty}
+- Vacuous count: {vacuous_count} (must be 0)
+- Axiom count: {axiom_count} (must not have increased)
+
+## Impacts
+
+- {Downstream effect of these changes, e.g. theorems now available to other modules}
+
+## Follow-ups
+
+- {Remaining item, caveat, or follow-up task; use `- None` when there are none}
+
+## References
+
+- {Paths to the plan, reports, and other artifacts informing this summary}
+```
+
+Phases executed, theorems/lemmas proved, final verification results, sorry inventory, and plan
+deviations all have a documented home above: phases executed and theorems proved go in
+`## Overview`/`## What Changed`; final verification results and sorry inventory go in
+`## Verification`; plan deviations go in `## Plan Deviations`.
 
 ### Stage 8: Write Metadata File
 

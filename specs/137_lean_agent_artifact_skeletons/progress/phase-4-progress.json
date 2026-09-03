@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Amend the Two Lean Hard Agents' Write Stages",
+  "started_at": "2026-09-03T00:25:00Z",
+  "last_updated": "2026-09-03T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Pre-edit content-preservation inventory for both files", "status": "done", "files_touched": [], "note": "lean-implementation-hard-agent.md Stage 7 (:405-414): phases executed, theorems/lemmas proved, final verification results, sorry inventory, plan deviations. lean-research-hard-agent.md Stage 6 (:260-271): Adversarial Self-Verification, Literature Proof Structure (Tier 1), Tactic Survey Results, Tier-1 5-column lemma-mapping-table requirement in Findings."},
+    {"id": 2, "description": "Amend lean-implementation-hard-agent.md Stage 7 in place with metadata header, Status vocabulary sentence, six SUMMARY_SECTIONS", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"], "note": "Verified: all 6 SUMMARY_METADATA fields and 6 SUMMARY_SECTIONS present in fenced block; all preservation-inventory items (phases executed, sorry inventory, sorry_inventory, Plan Deviations) still grep in post-edit file; heading-diff shows additions only."},
+    {"id": 3, "description": "Amend lean-research-hard-agent.md Stage 6 in place, inlining full report skeleton plus 3 hard-specific extra sections", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-hard-agent.md"], "note": "Verified: all 8 REPORT_METADATA fields and 5 REPORT_SECTIONS present in fenced block; all preservation-inventory items (Adversarial Self-Verification, Literature Proof Structure, Tactic Survey Results, sorry, 5-column lemma mapping table) still grep in post-edit file; heading-diff shows additions only."},
+    {"id": 4, "description": "Add copy-source cross-reference lines to both files", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-implementation-hard-agent.md", "agent-system/extensions/lean/agents/lean-research-hard-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

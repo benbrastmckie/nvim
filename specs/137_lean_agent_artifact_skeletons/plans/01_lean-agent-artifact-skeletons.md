@@ -265,33 +265,33 @@ entirely, carrying a skeleton covering all six `SUMMARY_METADATA` fields, all si
 
 ---
 
-### Phase 4: Amend the Two Lean Hard Agents' Write Stages [NOT STARTED]
+### Phase 4: Amend the Two Lean Hard Agents' Write Stages [COMPLETED]
 
 **Goal**: Wrap the existing (content-correct but structurally incomplete) write stages in
 `lean-implementation-hard-agent.md` and `lean-research-hard-agent.md` in full skeletons, with
 zero loss of their hard/lean-specific content.
 
 **Tasks**:
-- [ ] Pre-edit: inventory the content to preserve. For `lean-implementation-hard-agent.md`
+- [x] Pre-edit: inventory the content to preserve. For `lean-implementation-hard-agent.md`
       `### Stage 7: Create Implementation Summary` (:405-414): phases executed, theorems/lemmas
       proved, final verification results, sorry inventory, plan deviations from inline checklist
       annotations. For `lean-research-hard-agent.md` `### Stage 6: Create Research Report`
       (:260-271): `## Adversarial Self-Verification`, `## Literature Proof Structure` (Tier 1
       only), `## Tactic Survey Results`, and the Tier-1 five-column lemma-mapping-table
-      requirement in `## Findings`. Record this inventory before touching either file.
-- [ ] `lean-implementation-hard-agent.md`: amend Stage 7 in place -- add the mandatory metadata
+      requirement in `## Findings`. Record this inventory before touching either file. *(completed: done, recorded in progress file)*
+- [x] `lean-implementation-hard-agent.md`: amend Stage 7 in place -- add the mandatory metadata
       header, the bracketed-Status vocabulary sentence, and the six `SUMMARY_SECTIONS` headings,
       relocating each preserved bullet into its natural home (sorry inventory and verification
       results under `## Verification`/`## What Changed`; plan deviations under
-      `## Plan Deviations`). Do not delete the stage or its bullets.
-- [ ] `lean-research-hard-agent.md`: amend Stage 6 in place -- inline the full report skeleton
+      `## Plan Deviations`). Do not delete the stage or its bullets. *(completed: done, verified via scoped grep and preservation grep)*
+- [x] `lean-research-hard-agent.md`: amend Stage 6 in place -- inline the full report skeleton
       (all eight metadata fields, all five sections) rather than referring to a "base report",
       then append the three hard-specific extra sections and keep the Tier-1 lemma-table
       requirement attached to `## Findings`. Inlining (rather than cross-referencing
       `lean-research-agent.md`) is deliberate: agents are dispatched with only their own file
       loaded, which is why the `general-*` agents each inline their own skeleton rather than
-      pointing at one another.
-- [ ] Add the same copy-source cross-reference line to both files.
+      pointing at one another. *(completed: done, verified via scoped grep and preservation grep)*
+- [x] Add the same copy-source cross-reference line to both files. *(completed: done)*
 
 **Timing**: 1 hour
 

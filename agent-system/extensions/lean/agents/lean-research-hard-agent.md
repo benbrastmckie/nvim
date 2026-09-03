@@ -263,7 +263,70 @@ Review findings and emit 0-3 structured memory candidates for novel, reusable le
 - Use `artifact_number` from delegation context for `{NN}` prefix
 - Report path: `specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md`
 
-**Required additional sections** (not in base report):
+**This block is the authoritative shape of a research report.** It is inlined in full here
+(rather than referring to a "base report" in `lean-research-agent.md`) because agents are
+dispatched with only their own definition file loaded. Copy source:
+`general-research-agent.md`'s `### Stage 6: Create Research Report`.
+
+```markdown
+# Research Report: Task #{N}
+
+**Task**: {id} - {title}
+**Started**: {ISO8601}
+**Completed**: {ISO8601}
+**Effort**: {estimate}
+**Dependencies**: {list or None}
+**Sources/Inputs**: - Codebase, Mathlib search tools (leansearch/loogle/leanfinder/state_search), lean-lsp MCP, literature source (if applicable)
+**Artifacts**: - path to this report
+**Standards**: report-format.md, subagent-return.md
+
+## Executive Summary
+- Key finding 1
+- Key finding 2
+- Recommended approach
+
+## Context & Scope
+{What was researched, constraints}
+
+## Findings
+### Codebase Patterns
+- {Existing Lean/Mathlib patterns discovered}
+
+### External Resources
+- {Mathlib declarations, documentation, tactic references}
+
+### Recommendations
+- {Implementation approaches, including whether a sorry-free path exists}
+
+**Required for Tier 1 tasks**: a 5-column lemma mapping table here in `## Findings` (Literature
+Step | Lean Statement | Mathlib Lemma(s) | Confidence | Notes, or equivalent columns).
+
+## Decisions
+- {Explicit decisions made during research}
+
+## Adversarial Self-Verification
+{Claim Verification Table and, when applicable, Contradiction Log -- per Stage 4.5 above}
+
+## Literature Proof Structure
+{Tier 1 tasks only -- Source, Strategy, Step Map, Dependencies, Potential Formalization
+Challenges. Omit this section entirely for non-Tier-1 tasks.}
+
+## Tactic Survey Results
+{When tactics were tested per the tactic survey protocol -- goal/tactic/result/premises table.
+Additional section beyond REPORT_SECTIONS' required minimum; extra sections are accepted by
+design, never penalized.}
+
+## Context Extension Recommendations
+- **Topic**: {topic not covered by existing context}
+- **Gap**: {description of missing documentation}
+- **Recommendation**: {suggested context file to create or update}
+
+## Appendix
+- Search queries used
+- References to documentation
+```
+
+**Required additional sections beyond the base five** (hard-mode specific, appended above):
 - `## Adversarial Self-Verification`
 - `## Literature Proof Structure` (Tier 1 tasks only)
 - `## Tactic Survey Results` (when tactics tested)
