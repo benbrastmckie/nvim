@@ -11,8 +11,8 @@ next_project_number: 153
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,89,91,127,137,139,143,151,152 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,136,140,148 | 29,91,139,143 | core-agent-system, extensions |
+| 1 | 22,29,39,43,44,45,89,127,136,137,139,143,151,152 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,51,140,148 | 29,139,143 | core-agent-system, extensions |
 | 3 | 74,88 | 148 | core-agent-system, extensions |
 | 4 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
 
@@ -22,9 +22,8 @@ next_project_number: 153
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-91 [IMPLEMENTING] — update-plan-status.sh reports every non-conforming plan Status li
-  └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 137 [IMPLEMENTING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -599,12 +598,13 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md]
 - **Plan**: [091_fail_loudly_on_nonconforming_plan_status_line/plans/01_status-line-diagnostics-and-tolerance.md]
+- **Summary**: [091_fail_loudly_on_nonconforming_plan_status_line/summaries/01_status-line-diagnostics-and-tolerance-summary.md]
 
 **Description**: update-plan-status.sh reports every non-conforming plan Status line with one generic, undiagnosable message, and hard-fails /orchestrate postflight on a plan shape that a legitimate resume workflow produces. Reported independently by a peer session reviewing a consuming repo (BimodalLogic) and re-derived by execution against the source store on 2026-08-24.
 

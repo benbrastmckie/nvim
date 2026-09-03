@@ -9,6 +9,7 @@
 **Artifacts**:
 - specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md
 **Standards**: report-format.md, subagent-return.md, artifact-formats.md, state-management.md
+- **Sources/Inputs**: TBD
 
 ## Executive Summary
 

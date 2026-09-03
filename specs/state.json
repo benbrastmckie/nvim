@@ -426,7 +426,7 @@
     {
       "project_number": 91,
       "project_name": "fail_loudly_on_nonconforming_plan_status_line",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -439,8 +439,8 @@
       ],
       "created": "2026-08-24T18:42:08Z",
       "title": "Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy",
-      "last_updated": "2026-09-03T17:43:36Z",
-      "session_id": "sess_1788456363_df3984_91",
+      "last_updated": "2026-09-03T21:06:25Z",
+      "session_id": "sess_1788467022_7d8d2d",
       "artifacts": [
         {
           "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
@@ -451,8 +451,14 @@
           "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/plans/01_status-line-diagnostics-and-tolerance.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/summaries/01_status-line-diagnostics-and-tolerance-summary.md",
+          "type": "summary",
+          "summary": "Task 91 complete: update-plan-status.sh now emits three classified line-numbered diagnostics, tolerates trailing Status-line annotations, and redeploy was confirmed with a full acceptance walk."
         }
-      ]
+      ],
+      "completion_summary": "Replaced update-plan-status.sh's single generic failure message with three classified, line-numbered diagnostics (missing prefix, missing brackets, text before bracket); made the mutating sed preserve trailing annotations after the closing bracket so resumed plans are stampable; corrected the idempotent no-op path to echo the plan path; documented the policy in plan-format.md; enriched the preflight warning without touching its fatality; added a 28-case fixture-driven test suite; and redeployed, confirming the fix survives regeneration via a live acceptance walk against the deployed script."
     },
     {
       "project_number": 127,
