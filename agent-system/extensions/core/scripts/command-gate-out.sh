@@ -226,9 +226,17 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
   fi
 fi
 
-# Non-blocking artifact validation (link repair)
+# Non-blocking artifact validation (link repair). Instrumented: skill_validate_task_artifacts
+# now aggregates fix/error/warning counts across the sweep into SKILL_VALIDATE_* globals (see
+# its header comment in skill-base.sh for the D-A/D-B reasoning), and this call site reports
+# them unconditionally below -- for the repaired case AND the clean case alike -- so a --fix
+# repair is never invisible.
 if [ -d "$task_dir" ]; then
   skill_validate_task_artifacts "$task_dir"
+  echo "[gate-out] Artifact validation for task ${task_number}: ${SKILL_VALIDATE_FIXES:-0} field(s) auto-repaired, ${SKILL_VALIDATE_ERRORS:-0} error(s), ${SKILL_VALIDATE_WARNINGS:-0} warning(s) remaining."
+  if [ "${SKILL_VALIDATE_FIXES:-0}" -gt 0 ]; then
+    echo "[gate-out] Auto-repaired artifact(s): ${SKILL_VALIDATE_FIXED_FILES}"
+  fi
 fi
 
 # NOTE: this script MUST NOT delete .return-meta.json. Two reasons: (1) skill-orchestrate never

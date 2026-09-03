@@ -218,25 +218,25 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Add the gate-out console report surface [NOT STARTED]
+### Phase 2: Add the gate-out console report surface [COMPLETED]
 
 - **Goal:** `command-gate-out.sh` prints an always-on report line — for the repaired *and* the
   clean case — immediately after the validation sweep, plus the repaired file paths when any
   exist.
 
 - **Tasks:**
-  - [ ] In `agent-system/extensions/core/scripts/command-gate-out.sh`, extend the existing
+  - [x] In `agent-system/extensions/core/scripts/command-gate-out.sh`, extend the existing
         `if [ -d "$task_dir" ]; then skill_validate_task_artifacts "$task_dir"; fi` block to
         print, immediately after the call, a single always-on line of the form
         `[gate-out] Artifact validation for task N: F field(s) auto-repaired, E error(s), W warning(s) remaining.`
         using `${SKILL_VALIDATE_*:-0}` defaults.
-  - [ ] Emit a second line naming `${SKILL_VALIDATE_FIXED_FILES}` only when the fix count is
+  - [x] Emit a second line naming `${SKILL_VALIDATE_FIXED_FILES}` only when the fix count is
         greater than zero.
-  - [ ] Match the existing `[gate-out] ` prefix convention already used elsewhere in this file so
+  - [x] Match the existing `[gate-out] ` prefix convention already used elsewhere in this file so
         the new line is greppable alongside the current announcements.
-  - [ ] Confirm the added lines are `set -e`-safe (no bare non-zero command in the block) — the
+  - [x] Confirm the added lines are `set -e`-safe (no bare non-zero command in the block) — the
         script runs under `set -e` from its top.
-  - [ ] Update the block's `# Non-blocking artifact validation (link repair)` comment to state
+  - [x] Update the block's `# Non-blocking artifact validation (link repair)` comment to state
         that the sweep is now instrumented and reports unconditionally.
 
 - **Timing:** 0.5 hours
