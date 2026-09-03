@@ -1,19 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 13,
-  "session_id": "sess_1788456363_df3984_13",
-  "phase_count": 6,
-  "estimated_hours": 4.5,
-  "dependency_waves": [[1], [2], [3], [4, 6], [5]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/013_instrument_gate_out_auto_repair_reporting/plans/01_gate-out-repair-reporting.md",
-      "summary": "Six-phase plan propagating validate-artifact.sh fix/error/warning counts through skill_validate_task_artifacts via caller-visible globals, adding an always-on gate-out console report plus a durable events.jsonl row, and closing the function's zero-test-coverage gap with a both-directions regression suite."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 13 to execute the plan"
+  "session_id": "sess_1788456363_df3984"
 }

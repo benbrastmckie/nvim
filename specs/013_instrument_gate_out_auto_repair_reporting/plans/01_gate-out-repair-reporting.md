@@ -1,7 +1,7 @@
 # Implementation Plan: Instrument gate-out auto-repair reporting
 
 - **Task**: 13 - Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md
@@ -152,39 +152,39 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Propagate counts through skill_validate_task_artifacts [NOT STARTED]
+### Phase 1: Propagate counts through skill_validate_task_artifacts [COMPLETED]
 
 - **Goal:** `skill_validate_task_artifacts` captures each `validate-artifact.sh` invocation's
   stdout, parses its terminal summary line under exit-code discrimination, and aggregates the
   results into caller-visible globals — while preserving today's console output verbatim.
 
 - **Tasks:**
-  - [ ] In `agent-system/extensions/core/scripts/skill-base.sh`, rewrite the body of
+  - [x] In `agent-system/extensions/core/scripts/skill-base.sh`, rewrite the body of
         `skill_validate_task_artifacts` to reset `SKILL_VALIDATE_FIXES`,
         `SKILL_VALIDATE_ERRORS`, `SKILL_VALIDATE_WARNINGS`, and `SKILL_VALIDATE_FIXED_FILES` at
         function entry (unconditionally, before the sweep loop) so no caller can read a stale
         value from a prior invocation.
-  - [ ] Replace the bare `if ! bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix
+  - [x] Replace the bare `if ! bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix
         2>/dev/null; then` invocation with a `set -e`-safe capture:
         `rc=0; out=$(bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix 2>/dev/null) || rc=$?`
         followed by `echo "$out"`, so the human-visible console log is byte-identical to today's.
-  - [ ] Parse `printf '%s\n' "$out" | tail -1` under a `case "$rc"` with four branches:
+  - [x] Parse `printf '%s\n' "$out" | tail -1` under a `case "$rc"` with four branches:
         `0` extracts the warning count; `1` extracts errors and warnings; `2` extracts the
         `[FIXED] N` fix count plus errors and warnings; the `*` default (exit 3/4/5,
         validation-could-not-run) sets one error explicitly and never falls through to zero.
-  - [ ] Default every extracted value with `${var:-0}` before arithmetic, then accumulate into
+  - [x] Default every extracted value with `${var:-0}` before arithmetic, then accumulate into
         the three aggregate globals.
-  - [ ] Append each file whose fix count is greater than zero to `SKILL_VALIDATE_FIXED_FILES` as
+  - [x] Append each file whose fix count is greater than zero to `SKILL_VALIDATE_FIXED_FILES` as
         a comma-joined path list.
-  - [ ] Enrich the existing non-blocking `WARNING` line with the per-file numbers
+  - [x] Enrich the existing non-blocking `WARNING` line with the per-file numbers
         (`N fixed, E error(s), W warning(s)`) instead of the current numberless string; keep it
         on stderr and keep it non-blocking.
-  - [ ] Keep the unconditional `return 0` — this function stays non-blocking.
-  - [ ] Add a comment block above the function recording D-A (why `--fix` stays in-place-mutating
+  - [x] Keep the unconditional `return 0` — this function stays non-blocking.
+  - [x] Add a comment block above the function recording D-A (why `--fix` stays in-place-mutating
         on this path) and D-B (why the summary line is parsed rather than
         `validate-artifact.sh` modified), so the reasoning is durable in the code and not only in
         this plan. Reference the research report by path, not by task number.
-  - [ ] Extend the function's existing header comment to document the four globals as its return
+  - [x] Extend the function's existing header comment to document the four globals as its return
         channel, matching how `skill_preflight_update`'s globals are documented.
 
 - **Timing:** 0.75 hours

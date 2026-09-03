@@ -474,17 +474,118 @@ skill_validate_artifact() {
 # and one type per invocation, so a whole-directory sweep needs its own abstraction — centralizing
 # it here is what keeps the per-file-type convention (reports/*.md -> report, plans/*.md -> plan,
 # summaries/*.md -> summary) from drifting again at future call sites.
+#
+# RETURN CHANNEL: this function stays non-blocking (always `return 0`), so its aggregate results
+# are reported to the caller through four uppercase globals -- the same convention already used
+# for TASK_DIR/ARTIFACT_PATH/SUBAGENT_STATUS elsewhere in this file. All four are reset
+# unconditionally at function entry, before the sweep loop, so a caller never reads a stale value
+# left over from a prior invocation:
+#   SKILL_VALIDATE_FIXES        -- total auto-repaired field count across every artifact swept
+#   SKILL_VALIDATE_ERRORS       -- total error count (includes one synthetic error per
+#                                  validation-could-not-run result -- see the `*` case below)
+#   SKILL_VALIDATE_WARNINGS     -- total warning count
+#   SKILL_VALIDATE_FIXED_FILES  -- comma-joined paths of every artifact whose own fix count > 0
+#
+# DECISION D-A (recorded durably here, not only in the authoring plan): `--fix` remains
+# in-place-mutating on this gate-out path. The mutation is narrow and self-flagging --
+# validate-artifact.sh's fix block only ever inserts a literal `- **Field**: TBD` placeholder for
+# a missing metadata field; it never fabricates prose and never touches required sections, so it
+# cannot manufacture a false appearance of completeness. Every artifact under specs/ is
+# git-tracked, so the mutation's *content* was always auditable via `git diff` -- what was
+# missing was a record that a repair happened at all, which is what this function's four globals
+# and command-gate-out.sh's report line now supply. Disabling --fix here would turn every trivial
+# missing-metadata-field omission into a hard stop in an otherwise-automated lifecycle step, which
+# the reporting gap this closes does not itself justify. Residual risk carried forward on
+# purpose: exit 2 conflates "fixed and now fully clean" with "fixed a field but a required
+# *section* is still missing" -- both cases share one exit code in validate-artifact.sh. This
+# function surfaces the errors-remaining count *alongside* the fix count specifically so the
+# second case stays visible instead of reintroducing a narrower silence one field over.
+#
+# DECISION D-B (resolves the open scope fork in the research that led to this design):
+# validate-artifact.sh's existing terminal summary line is parsed here; that script is not
+# modified. This keeps the change contained to the two files this capability touches instead of
+# widening blast radius onto a script with many callers. The fragility a machine-readable output
+# format would have removed is instead removed by pinning: the regression suite for this function
+# asserts all three summary-line shapes verbatim, so a future wording change fails loudly in that
+# suite rather than silently degrading these counts back to zero.
+#
+# See specs/013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md
+# for the full call-chain trace behind both decisions.
 skill_validate_task_artifacts() {
   local task_dir="$1"
-  local subdir type f
+  local subdir type f rc out last_line
+  local file_fixes file_errors file_warnings
+
+  # Unconditional reset -- before the loop, always, so a caller can never observe a stale value
+  # from a previous invocation of this function.
+  SKILL_VALIDATE_FIXES=0
+  SKILL_VALIDATE_ERRORS=0
+  SKILL_VALIDATE_WARNINGS=0
+  SKILL_VALIDATE_FIXED_FILES=""
+
   for pair in "reports:report" "plans:plan" "summaries:summary"; do
     subdir="${pair%%:*}"
     type="${pair##*:}"
     for f in "$task_dir"/"$subdir"/*.md; do
       [ -e "$f" ] || continue
       echo "Validating ${type} artifact: ${f}"
-      if ! bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix 2>/dev/null; then
-        echo "WARNING: ${type} artifact ${f} has format issues (non-blocking). Review output above." >&2
+      # set -e-safe capture: `out=$(...) || rc=$?` never aborts the caller under `set -e`, and
+      # the immediate `echo "$out"` below keeps the human-visible console log byte-identical to
+      # what this function printed before this change.
+      rc=0
+      out=$(bash .claude/scripts/validate-artifact.sh "$f" "$type" --fix 2>/dev/null) || rc=$?
+      echo "$out"
+
+      # Parse validate-artifact.sh's terminal summary line (always its last printed line) under
+      # exit-code discrimination (D-B). Exit 3/4/5 are validation-could-not-run states carrying
+      # no counts at all -- the `*` default below records one explicit error rather than falling
+      # through to zero, which would hide a real failure behind an apparent all-clear.
+      last_line=$(printf '%s\n' "$out" | tail -1)
+      file_fixes=0
+      file_errors=0
+      file_warnings=0
+      case "$rc" in
+        0)
+          # "[PASS] {type} artifact is valid (W warning(s))"
+          if [[ "$last_line" =~ \(([0-9]+)\ warning ]]; then
+            file_warnings="${BASH_REMATCH[1]}"
+          fi
+          ;;
+        1)
+          # "[FAIL] E error(s), W warning(s)"
+          if [[ "$last_line" =~ ([0-9]+)\ error\(s\),\ ([0-9]+)\ warning ]]; then
+            file_errors="${BASH_REMATCH[1]}"
+            file_warnings="${BASH_REMATCH[2]}"
+          fi
+          ;;
+        2)
+          # "[FIXED] N field(s) auto-repaired, E error(s), W warning(s) remaining"
+          if [[ "$last_line" =~ ^\[FIXED\]\ ([0-9]+)\ field\(s\)\ auto-repaired,\ ([0-9]+)\ error\(s\),\ ([0-9]+)\ warning ]]; then
+            file_fixes="${BASH_REMATCH[1]}"
+            file_errors="${BASH_REMATCH[2]}"
+            file_warnings="${BASH_REMATCH[3]}"
+          fi
+          ;;
+        *)
+          # Validation could not run at all (file not found, unknown type, missing usage args,
+          # or the shared phase-heading library missing). Never silently reported as zero.
+          file_errors=1
+          ;;
+      esac
+
+      SKILL_VALIDATE_FIXES=$((SKILL_VALIDATE_FIXES + ${file_fixes:-0}))
+      SKILL_VALIDATE_ERRORS=$((SKILL_VALIDATE_ERRORS + ${file_errors:-0}))
+      SKILL_VALIDATE_WARNINGS=$((SKILL_VALIDATE_WARNINGS + ${file_warnings:-0}))
+      if [ "${file_fixes:-0}" -gt 0 ]; then
+        if [ -z "$SKILL_VALIDATE_FIXED_FILES" ]; then
+          SKILL_VALIDATE_FIXED_FILES="$f"
+        else
+          SKILL_VALIDATE_FIXED_FILES="${SKILL_VALIDATE_FIXED_FILES},${f}"
+        fi
+      fi
+
+      if [ "$rc" -ne 0 ]; then
+        echo "WARNING: ${type} artifact ${f} has format issues (non-blocking): ${file_fixes:-0} fixed, ${file_errors:-0} error(s), ${file_warnings:-0} warning(s). Review output above." >&2
       fi
     done
   done
