@@ -1,0 +1,29 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and confirm the fix survives regeneration",
+  "started_at": "2026-09-03T19:32:32Z",
+  "last_updated": "2026-09-03T20:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no edits landed under .claude/** during Phases 1-4", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Diff deployed update-plan-status.sh against source-store copy", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run test-update-plan-status.sh from deployed location", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run run-all.sh full regression net", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run verify-deploy.sh and confirm green", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"], "note": "verify-deploy showed 3 pre-existing failures unrelated to this task's files (doc-lint line_count drift on return-metadata-file.md/return-meta-artifacts-template.md caused by other concurrently-dispatched tasks; state-writer-boundary violations in test-force-phases.sh; a stale pre-existing root-level .claude/index-entries.json orphan predating this session). Fixed the one finding this task's own Phase 3 edit caused: plan-format.md's index-entries.json line_count was stale (431 vs actual 453) after the new tolerance-policy prose was added -- corrected to 453 and reconfirmed via check-extension-docs.sh."},
+    {"id": 7, "description": "Walk ACCEPTANCE list item by item, record evidence", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "run bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write to fix the doc-lint line_count mismatch", "result": "rejected", "reason": "would also rewrite line_count for return-metadata-file.md and return-meta-artifacts-template.md, files owned by other concurrently-dispatched tasks in this session; chose a scoped manual Edit of only the plan-format.md entry instead to avoid racing another agent's in-flight edits"}
+  ],
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "Run agent-system/extensions/core/scripts/verify-deploy.sh and confirm it is green",
+      "type": "altered",
+      "reason": "27/30 gates pass. The 3 remaining failures (doc-lint on 2 files, state-writer-boundary on 1 file, whole-tree-orphan on 1 stale root file) are all confirmed pre-existing and attributable to files this task never touched -- closed via the phase's Reasoned Exclusions record (COMPLETED WITH EXCLUSIONS) rather than left as unresolved residual work.",
+      "annotation": "*(deviation: altered — see Reasoned Exclusions below)*"
+    }
+  ],
+  "handoff_count": 0
+}
