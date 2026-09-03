@@ -159,18 +159,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Behavioral smoke test and final consistency gate [NOT STARTED]
+### Phase 4: Behavioral smoke test and final consistency gate [COMPLETED]
 
 **Goal**: Prove the gate behaves correctly against a real git remote and that a passing run's tag literally satisfies the CI predicate.
 
 **Tasks**:
-- [ ] Extract every fenced `bash` block from the edited SKILL.md into a scratch file and run `bash -n` over each; all must parse.
-- [ ] Build a throwaway fixture in the scratchpad directory (never inside this repository): a bare repo acting as `origin`, plus a clone with a commit history, so `origin/<branch>` is a real ref.
-- [ ] Drive Step 2's logic against the fixture in four states and assert the outcome of each: **(a)** branch fully pushed -> passes, prints the revised "fully pushed" success line; **(b)** branch ahead -> exits non-zero with the ahead message naming the correct count and branch; **(c)** branch behind -> exits non-zero with the *behind* message (confirming the existing check still fires first, including on a diverged branch that is both ahead and behind); **(d)** each of (a)-(c) again with `--dry-run` -> the gate still fires, because Step 2 precedes Step 5's early exit.
-- [ ] For case (a), complete the tag creation and assert `git merge-base --is-ancestor "$new_version" "origin/$current_branch"` returns 0 -- the literal reference-gate assertion, not a stand-in.
-- [ ] Confirm the `$ahead` count rendered in case (b)'s message equals the fixture's actual unpushed-commit count.
-- [ ] Run `git status --short` and confirm no file under `.claude/` was modified and no fixture artifacts leaked into the repository.
-- [ ] Read SKILL.md and `commands/tag.md` end to end once more and confirm they agree: same conditions, same remedy, no flag added in either.
+- [x] Extract every fenced `bash` block from the edited SKILL.md into a scratch file and run `bash -n` over each; all must parse. *(completed: 12 fenced bash blocks extracted, all pass bash -n)*
+- [x] Build a throwaway fixture in the scratchpad directory (never inside this repository): a bare repo acting as `origin`, plus a clone with a commit history, so `origin/<branch>` is a real ref. *(completed: bare origin + clone fixture built in scratchpad)*
+- [x] Drive Step 2's logic against the fixture in four states and assert the outcome of each: **(a)** branch fully pushed -> passes, prints the revised "fully pushed" success line; **(b)** branch ahead -> exits non-zero with the ahead message naming the correct count and branch; **(c)** branch behind -> exits non-zero with the *behind* message (confirming the existing check still fires first, including on a diverged branch that is both ahead and behind); **(d)** each of (a)-(c) again with `--dry-run` -> the gate still fires, because Step 2 precedes Step 5's early exit. *(completed: (a) pass, (b) ahead exit1, (c) behind exit1 fires first on diverged, (d) dry_run=true does not change Step2 outcome for any state)*
+- [x] For case (a), complete the tag creation and assert `git merge-base --is-ancestor "$new_version" "origin/$current_branch"` returns 0 -- the literal reference-gate assertion, not a stand-in. *(completed: git merge-base --is-ancestor v0.0.1-test origin/main exit=0)*
+- [x] Confirm the `$ahead` count rendered in case (b)'s message equals the fixture's actual unpushed-commit count. *(completed: ahead=5 matched actual unpushed commit count)*
+- [x] Run `git status --short` and confirm no file under `.claude/` was modified and no fixture artifacts leaked into the repository. *(completed: git status --short shows no .claude/ modification; fixture confined to scratchpad)*
+- [x] Read SKILL.md and `commands/tag.md` end to end once more and confirm they agree: same conditions, same remedy, no flag added in either. *(completed: SKILL.md and commands/tag.md agree on conditions, remedy, and absence of override flag)*
 
 **Timing**: 0.75 hours
 
@@ -193,15 +193,15 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on every fenced bash block extracted from `agent-system/extensions/core/skills/skill-tag/SKILL.md`.
-- [ ] Fully-pushed branch: Step 2 passes and prints `Git state: OK (clean working tree, fully pushed, up-to-date with remote)`.
-- [ ] Ahead branch: non-zero exit; message names the correct commit count, the correct branch, the consequence, and the `git push origin $current_branch` remedy.
-- [ ] Behind branch: non-zero exit with the pre-existing behind message (unchanged behavior).
-- [ ] Diverged branch (ahead and behind): behind message fires first -- documented, asserted ordering.
-- [ ] `--dry-run` under each of the three branch states: the gate fires identically; `--dry-run` never reports success where a real run would refuse.
-- [ ] A tag created by a passing run satisfies `git merge-base --is-ancestor "$new_version" "origin/$current_branch"`.
-- [ ] No `--skip-*` flag exists for this gate in either SKILL.md or `commands/tag.md`.
-- [ ] No file under any `.claude/` directory was modified.
+- [x] `bash -n` passes on every fenced bash block extracted from `agent-system/extensions/core/skills/skill-tag/SKILL.md`. *(completed)*
+- [x] Fully-pushed branch: Step 2 passes and prints `Git state: OK (clean working tree, fully pushed, up-to-date with remote)`. *(completed)*
+- [x] Ahead branch: non-zero exit; message names the correct commit count, the correct branch, the consequence, and the `git push origin $current_branch` remedy. *(completed)*
+- [x] Behind branch: non-zero exit with the pre-existing behind message (unchanged behavior). *(completed)*
+- [x] Diverged branch (ahead and behind): behind message fires first -- documented, asserted ordering. *(completed)*
+- [x] `--dry-run` under each of the three branch states: the gate fires identically; `--dry-run` never reports success where a real run would refuse. *(completed)*
+- [x] A tag created by a passing run satisfies `git merge-base --is-ancestor "$new_version" "origin/$current_branch"`. *(completed)*
+- [x] No `--skip-*` flag exists for this gate in either SKILL.md or `commands/tag.md`. *(completed)*
+- [x] No file under any `.claude/` directory was modified. *(completed)*
 
 ## Artifacts & Outputs
 
