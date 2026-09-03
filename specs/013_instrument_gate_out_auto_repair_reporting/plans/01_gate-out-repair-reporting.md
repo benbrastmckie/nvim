@@ -1,7 +1,7 @@
 # Implementation Plan: Instrument gate-out auto-repair reporting
 
 - **Task**: 13 - Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md

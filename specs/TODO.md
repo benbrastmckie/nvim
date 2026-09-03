@@ -11,7 +11,7 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 13,22,29,39,43,44,45,89,91,127,134,137,139,143 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,89,91,127,137,139,143 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,136,140,148 | 29,91,139,143 | core-agent-system, extensions |
 | 3 | 74,88 | 148 | core-agent-system, extensions |
 | 4 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
@@ -20,13 +20,11 @@ next_project_number: 151
 
 ### Core Agent System
 
-13 [IMPLEMENTING] — The acceptance criterion "gate-out reports zero format errors and
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [PLANNED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-134 [IMPLEMENTING] — Close the third and last uncovered gate in the /tag release prefl
 137 [IMPLEMENTING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
@@ -398,7 +396,7 @@ PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the Bimodal
 ---
 
 ### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1010,7 +1008,7 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ---
 
 ### 13. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
