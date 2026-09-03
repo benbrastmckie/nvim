@@ -499,16 +499,136 @@ else
   fi
 fi
 
-# ─── Provisional output (extended by Phase 4-5) ────────────────────────────────────────────────
+# ─── WORK (f): status transition, completion-claim gate, completion propagation ────────────────
+offschema_dispatch_status=false
+implemented_gate_passed="null"
+inferred_phase=""
+
+if [ "$force_invoked" = "true" ]; then
+  clamp_mode="monotonic-max"
+else
+  clamp_mode=""
+fi
+
+if [ "$have_outcome" = "true" ]; then
+  case "$dispatch_status" in
+    researched)
+      skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      ;;
+    planned)
+      skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      ;;
+    implemented)
+      if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
+           "$plan_markers_verified" "$notice_prefix"; then
+        implemented_gate_passed=true
+        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode"
+        skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
+          "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+      else
+        implemented_gate_passed=false
+        # Case 3/3 (phases_total==0 AND plan_markers_verified != "true") already recorded inside
+        # the gate; re-derive that case here for the caller-side observation log. Case 1 (phases
+        # accounting present, incomplete) is an ordinary refuse and is NOT a defect.
+        if [ "${phases_total:-0}" -eq 0 ] && [ "${plan_markers_verified:-}" != "true" ]; then
+          skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+            "META_MISSING_AFTER_NARRATION" "$attributed_path" \
+            "scripts/skill-base.sh:skill_gate_completion_claim" \
+            "completion claimed with phases_total=0 and unverified plan markers" ""
+        fi
+      fi
+      ;;
+    partial|failed|blocked)
+      echo "${notice_prefix} Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition performed; the task remains at its current in-flight status." >&2
+      ;;
+    *)
+      offschema_dispatch_status=true
+      case "$artifact_type" in
+        report)  inferred_phase="research" ;;
+        plan)    inferred_phase="plan" ;;
+        summary) inferred_phase="implement" ;;
+        *)       inferred_phase="unknown" ;;
+      esac
+      offschema_display="${dispatch_status:-<empty>}"
+      echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
+      echo "${notice_prefix} ERROR: task ${task_number} outcome carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): ${inferred_phase}. Remedy: inspect the handoff/.return-meta.json by hand, then re-run /orchestrate ${task_number}${command_suffix}." >&2
+      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class OFF_SCHEMA_STATUS \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-tier-c" \
+        --task "$task_number" --session "$session_id" \
+        --message "dispatch_status '${offschema_display}' is off-schema" \
+        --attributed-path "$attributed_path" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "OFF_SCHEMA_STATUS" "$attributed_path" "${detecting_site_prefix}:cycle-postflight-tier-c" \
+        "dispatch_status '${offschema_display}' is off-schema" "$record_result"
+      ;;
+  esac
+fi
+
+# ─── WORK (g): artifact link + artifact-round advance ──────────────────────────────────────────
+artifact_linked=false
+if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
+  case "$artifact_type" in
+    report)  field_name='**Research**'; next_field='**Plan**' ;;
+    plan)    field_name='**Plan**';     next_field='**Description**' ;;
+    summary) field_name='**Summary**';  next_field='**Description**' ;;
+    *)       field_name='**Summary**';  next_field='**Description**' ;;
+  esac
+  skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" \
+    "$artifact_summary" "$field_name" "$next_field" "$session_id"
+  artifact_linked=true
+fi
+
+do_artifact_round_advance=false
+if [ "$dispatch_status" = "researched" ]; then
+  do_artifact_round_advance=true
+elif [ "$force_invoked" = "true" ] && { [ "$dispatch_status" = "planned" ] || [ "$dispatch_status" = "implemented" ]; }; then
+  do_artifact_round_advance=true
+fi
+if [ "$do_artifact_round_advance" = "true" ]; then
+  echo "${notice_prefix} Advancing next_artifact_number (dispatch_status=${dispatch_status}, force_invoked=${force_invoked})..." >&2
+  bash "${SCRIPT_DIR}/state-write.sh" \
+    '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
+      ((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1' \
+    --session-id "$session_id" \
+    --argjson num "$task_number" \
+    || echo "${notice_prefix} WARNING: Failed to advance next_artifact_number (non-blocking)" >&2
+fi
+
+# ─── WORK (h): modified_files vs file_scope excursion advisory (detection only) ────────────────
+meta_file="${TASK_DIR}/.return-meta.json"
+modified_files_json=$(jq -c '.modified_files // []' "$meta_file" 2>/dev/null) || modified_files_json='[]'
+file_scope_json=$(jq -c --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .file_scope // []' "$STATE_FILE" 2>/dev/null) || file_scope_json='[]'
+excursions_json='[]'
+if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
+  # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
+  # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
+  # argument's own evaluation (jq evaluates a builtin's argument against ITS OWN input, i.e. the
+  # value just piped in), making `startswith(.)` degenerate to `startswith($p)` — always true.
+  # Capturing the generator's value into `$f` before touching `.` sidesteps this entirely.
+  excursions_json=$(jq -c -n --argjson mf "$modified_files_json" --argjson fs "$file_scope_json" \
+    '[$mf[] | select(. as $p | any($fs[]; . as $f | $p == $f or ($p | startswith($f))) | not)]' 2>/dev/null) || excursions_json='[]'
+  excursion_count=$(echo "$excursions_json" | jq 'length' 2>/dev/null) || excursion_count=0
+  if [ "$excursion_count" -gt 0 ]; then
+    echo "${notice_prefix} ADVISORY: task ${task_number} reported modified_files outside its declared file_scope: $(echo "$excursions_json" | jq -c '.')  (detection only — no gate, no exit-code, no verdict effect)." >&2
+  fi
+fi
+
+# ─── Provisional output (extended by Phase 5) ──────────────────────────────────────────────────
 jq -n -c \
   --argjson task "$task_number" \
   --arg phase "$phase" \
   --arg status "$dispatch_status" \
   --argjson phases_completed "$phases_completed" \
   --argjson phases_total "$phases_total" \
+  --argjson offschema "$offschema_dispatch_status" \
+  --argjson artifact_linked "$artifact_linked" \
   --arg verdict "ok" \
-  --arg note "PROVISIONAL (Phase 3 of 5) — status transition, commit, and lock release not yet implemented." \
+  --arg note "PROVISIONAL (Phase 4 of 5) — user_decision relay, commit, multi-state update, and lock release not yet implemented." \
   '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
-    phases_total: $phases_total, verdict: $verdict, note: $note}'
+    phases_total: $phases_total, offschema_dispatch_status: $offschema, artifact_linked: $artifact_linked,
+    verdict: $verdict, note: $note}'
 
 exit 0

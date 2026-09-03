@@ -1,0 +1,62 @@
+{
+  "phase": 4,
+  "phase_name": "Status transition, artifact link, round advance, excursion advisory (WORK f, g, h)",
+  "started_at": "2026-09-03T20:05:00Z",
+  "last_updated": "2026-09-03T20:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Port researched/planned/implemented/partial-failed-blocked/Tier-C case ladder with completion-claim gate",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Transition via skill_postflight_update with monotonic-max clamp threaded from --force-invoked",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Completion propagation via skill_orchestrate_propagate_completion, reusing recover_json when present",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Artifact link via skill_link_artifacts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Artifact-round advance: unconditional on researched, additionally on forced planned/implemented",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Excursion advisory (modified_files vs file_scope), detection only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"],
+      "note": "Found and fixed a real jq bug during hand-testing: `$p | startswith(.)` rebinds `.` to `$p` itself for the argument's own evaluation, making the check vacuously true. Fixed via `any($fs[]; . as $f | $p == $f or ($p | startswith($f)))`."
+    },
+    {
+      "id": 7,
+      "description": "Off-schema dispatch_status: banner, OFF_SCHEMA_STATUS record, no transition",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"],
+      "note": "offschema_dispatch_status exposed in the (still-provisional) output JSON; final verdict mapping is Phase 5's own task per the plan's phase split."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "Initial excursion-advisory jq predicate: any($fs[]; $p == . or ($p | startswith(.)))",
+      "result": "failed",
+      "reason": "jq evaluates a builtin's argument against the input just piped into it, so `$p | startswith(.)` degenerates to `startswith($p)` (always true) rather than comparing against the any() generator's current value. Hand-testing against a real excursion fixture caught this before Phase 6's fixture suite would have."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

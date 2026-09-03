@@ -304,31 +304,31 @@ seq-checked — and defect recording respects the per-dispatch writer contract.
 
 ---
 
-### Phase 4: Status transition, artifact link, round advance, excursion advisory (WORK f, g, h) [NOT STARTED]
+### Phase 4: Status transition, artifact link, round advance, excursion advisory (WORK f, g, h) [COMPLETED]
 
 **Goal**: The script performs the state transitions and artifact bookkeeping the two precedent
 postflight paths perform, plus the multi-task artifact-round advance that has no current mechanism,
 plus the advisory excursion check.
 
 **Tasks**:
-- [ ] Port the `researched|planned|implemented|partial|failed|blocked|*` case ladder, including the
+- [x] Port the `researched|planned|implemented|partial|failed|blocked|*` case ladder, including the
       `skill_gate_completion_claim` gate on `implemented` (allow → `skill_postflight_update ...
       implemented "warn"`; refuse → no transition, task stays `implementing`, and the
-      `META_MISSING_AFTER_NARRATION` caller-side discriminant still appends).
-- [ ] Transition via `update-task-status.sh` with the monotonic-max clamp threaded from
-      `--force-invoked`, so a forced earlier phase never regresses status.
-- [ ] Port `skill_propagate_completion_summary` on an allowed `implemented`, reusing this task's own
-      recovery JSON when present rather than re-reading.
-- [ ] Artifact link via `skill_link_artifacts` (same-type supersession, append-only otherwise).
-- [ ] Artifact-round advance via `state-write.sh`: unconditional on `researched`, and additionally
+      `META_MISSING_AFTER_NARRATION` caller-side discriminant still appends). *(completed)*
+- [x] Transition via `update-task-status.sh` with the monotonic-max clamp threaded from
+      `--force-invoked`, so a forced earlier phase never regresses status. *(completed)*
+- [x] Port `skill_propagate_completion_summary` on an allowed `implemented`, reusing this task's own
+      recovery JSON when present rather than re-reading. *(completed)*
+- [x] Artifact link via `skill_link_artifacts` (same-type supersession, append-only otherwise). *(completed)*
+- [x] Artifact-round advance via `state-write.sh`: unconditional on `researched`, and additionally
       on a **forced** `planned`/`implemented` — closing the multi-task gap. Verify the call graph
       first: the single-task advance lives in `orchestrate-stage5-postflight.sh`, **not**
-      `orchestrator-postflight.sh`, which `/orchestrate` never calls.
-- [ ] Excursion advisory: read `modified_files[]` from this task's `.return-meta.json`, read
+      `orchestrator-postflight.sh`, which `/orchestrate` never calls. *(completed)*
+- [x] Excursion advisory: read `modified_files[]` from this task's `.return-meta.json`, read
       `file_scope[]` from `state.json`, log every path outside the declared scope. Detection only —
-      it must not influence exit code, `verdict`, or any transition.
-- [ ] Off-schema `dispatch_status` (including `null`, empty, `in_progress`): emit the existing
-      banner, record `OFF_SCHEMA_STATUS`, perform no transition, and surface it through `verdict`.
+      it must not influence exit code, `verdict`, or any transition. *(completed)*
+- [x] Off-schema `dispatch_status` (including `null`, empty, `in_progress`): emit the existing
+      banner, record `OFF_SCHEMA_STATUS`, perform no transition, and surface it through `verdict`. *(completed: banner/record/no-transition land in Phase 4; the `offschema_dispatch_status` field is exposed for Phase 5's own verdict-mapping task to consume, per the plan's own phase split)*
 
 **Timing**: 2 hours
 
