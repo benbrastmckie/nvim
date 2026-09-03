@@ -383,24 +383,24 @@ turns out already conforming as an explicit negative.
 
 ---
 
-### Phase 6: Redeploy and Static Conformance Gate [NOT STARTED]
+### Phase 6: Redeploy and Static Conformance Gate [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Confirm the source-store edits regenerate correctly into `.claude/` and that every
 edited skeleton is statically conformant, closing the "survives regeneration" acceptance clause.
 
 **Tasks**:
-- [ ] Re-run the Phase 1 validator-array transcription as a drift gate; if task 136 changed the
-      arrays mid-flight, reconcile the skeletons before proceeding.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh /home/benjamin/.config/nvim` (default
-      non-destructive resync mode).
+- [x] Re-run the Phase 1 validator-array transcription as a drift gate; if task 136 changed the
+      arrays mid-flight, reconcile the skeletons before proceeding. *(completed: done, no drift -- arrays unchanged from Phase 1)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh /home/benjamin/.config/nvim` (default
+      non-destructive resync mode). *(deviation: altered — ran successfully (deploy itself landed) but exited 3, not 0, due to pre-existing verification-gate failures unrelated to this task; see Reasoned Exclusions)*
 - [ ] Diff each of the eight edited source files against its deployed counterpart under
       `.claude/agents/` -- the skeletons must be byte-identical, confirming the edits landed in
-      the source store and not only in the deploy tree.
-- [ ] Run the full field/section grep matrix against the eight *deployed* files (not just the
-      source ones), recording a pass/fail cell per file per required field and section.
-- [ ] Confirm no file under `.claude/` was hand-edited during this task: `git status` shows no
-      unexpected `.claude/` modifications beyond what the redeploy produced.
-- [ ] Commit the source-store edits.
+      the source store and not only in the deploy tree. *(deviation: skipped — lean/formal extensions are not installed/active in this repository's .claude-extensions.json, so no deployed counterpart exists to diff against; this check is deferred to Phase 7's cross-repo deploy into BimodalLogic, which already performs a deploy-then-verify step there)*
+- [x] Run the full field/section grep matrix against the eight *deployed* files (not just the
+      source ones), recording a pass/fail cell per file per required field and section. *(deviation: altered — ran the matrix against the eight source files instead of deployed files, since lean/formal are not deployed in this repo; all 8 pass with zero missing fields/sections)*
+- [x] Confirm no file under `.claude/` was hand-edited during this task: `git status` shows no
+      unexpected `.claude/` modifications beyond what the redeploy produced. *(completed: done -- .claude/ is fully gitignored here; confirmed no Write/Edit tool call targeted .claude/** during this task)*
+- [x] Commit the source-store edits. *(completed: done, each phase committed per green sub-step)*
 
 **Timing**: 0.75 hours
 
@@ -419,6 +419,14 @@ edited skeleton is statically conformant, closing the "survives regeneration" ac
   (lean-research, lean-research-hard, and the four formal -- 6 report skeletons total) and 6
   metadata fields x 2 summary skeletons, plus every required section.
 - The repository's standard gate set for a documentation/agent-file change passes.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Diff each of the eight edited source files against its deployed counterpart under `.claude/agents/` | The lean and formal extensions are not installed/active in this repository -- `.claude/` here only carries agents for the extensions this repo actually uses | `python3 -c "import json; print(list(json.load(open('.claude-extensions.json'))['extensions'].keys()))"` -> `['memory', 'literature', 'nix', 'core', 'email', 'nvim']` (no `lean`/`formal`); `ls .claude/agents/` lists no `lean-*.md` or `formal-*.md` file. `deploy-headless.sh` only resyncs extensions the state file already marks active (confirmed by reading its own header comment), so it cannot deploy these files here regardless of source content. The equivalent check is not dropped -- it is performed in Phase 7, which already deploys into `/home/benjamin/Projects/BimodalLogic`, a repo where these extensions ARE installed. |
+| Run the full field/section grep matrix against the eight *deployed* files | Same root cause: no deployed copy of any of the eight files exists in this repo to grep | Same evidence as above. Substitute check performed instead: the identical field/section grep matrix run directly against the eight *source* files (`agent-system/extensions/{lean,formal}/agents/*.md`) -- recorded per-phase in `progress/phase-{2,3,4,5}-progress.json` and re-confirmed in one consolidated pass at Phase 6: all 6 report skeletons (8/8 metadata fields, 5/5 sections) and both summary skeletons (6/6 metadata fields, 6/6 sections) pass with zero missing entries. |
+| `deploy-headless.sh` exits 0 | The deploy itself landed (source-store changes propagated to every extension this repo has active), but the script's own post-deploy verification gate fails on defects with no connection to `agent-system/extensions/{lean,formal}/**`: two `index-entries.json` line-count drifts under `core`/`literature` (`patterns/postflight-control.md`, `schemas/state-schema.json`, `project/literature/patterns/zotero-item-creation.md`), a whole-tree orphan finding on `index-entries.json` itself, a failing shell test-suite run, and a state-writer boundary lint finding | `bash .claude/scripts/deploy-headless.sh /home/benjamin/.config/nvim; echo "EXIT: $?"` -> `EXIT: 3`; `bash .claude/scripts/check-extension-docs.sh` isolates the two failing extensions as `core` and `literature` only -- both `lean` and `formal` report `PASS`; none of the four failure lines named above mention any file this task touched. These are pre-existing repo-wide conditions (concurrent work from other in-flight tasks in this session), out of scope for a task whose acceptance criterion is specific to the eight lean/formal agent files. |
 
 ---
 
