@@ -1,7 +1,7 @@
 # Implementation Plan: Task #91
 
 - **Task**: 91 - Fail loudly on nonconforming plan status line
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md
@@ -137,19 +137,19 @@ files (`tests/test-update-plan-status.sh`, `context/formats/plan-format.md`,
 
 ---
 
-### Phase 1: Diagnose loudly and tolerate trailing text in update-plan-status.sh [NOT STARTED]
+### Phase 1: Diagnose loudly and tolerate trailing text in update-plan-status.sh [COMPLETED]
 
 **Goal**: Replace the generic failure with three classified line-numbered diagnostics, make the
 mutating `sed` preserve trailing text, and make the no-op path echo the plan path.
 
 **Tasks**:
-- [ ] Add a shared helper near the top of the script that locates the plan-level Status line:
+- [x] Add a shared helper near the top of the script that locates the plan-level Status line:
       `grep -n "^- \*\*Status\*\*:" "$plan_file" | head -1 | cut -d: -f1`, mirroring
       `update-phase-status.sh:299`. Both the idempotency read and the post-`sed` verification
       read must go through it, so the two sites cannot drift.
-- [ ] Add a second helper that extracts the bracketed token from a given line number using the
+- [x] Add a second helper that extracts the bracketed token from a given line number using the
       already-trailing-text-tolerant `s/.*\[\([^]]*\)\].*/\1/` form.
-- [ ] Insert classification **before** the idempotency check (so a malformed line is diagnosed,
+- [x] Insert classification **before** the idempotency check (so a malformed line is diagnosed,
       never silently carried into the `sed`), emitting to stderr and exiting 1:
       - **M1** (no matching line): `Plan-level Status line not found in <file>` plus a statement
         that a line of the form `- **Status**: [STATUS]` is required.
@@ -159,17 +159,17 @@ mutating `sed` preserve trailing text, and make the no-op path echo the plan pat
         unexpected-text-before-bracket condition, followed by the same `Line ${n}: ...` quote.
       Each of the three messages must be textually distinct from the other two and from the
       pre-existing "Plan directory not found" / "No plan file found" messages.
-- [ ] Change the idempotency early-exit (currently lines 63-66) from a bare `exit 0` to
+- [x] Change the idempotency early-exit (currently lines 63-66) from a bare `exit 0` to
       `echo "$plan_file"; exit 0`.
-- [ ] Replace line 69's substitution so the trailing remainder is captured and re-emitted:
+- [x] Replace line 69's substitution so the trailing remainder is captured and re-emitted:
       `s/^- \*\*Status\*\*: \[[^]]*\]\(.*\)$/- **Status**: [${new_status}]\1/` — dropping the
       `$`-immediately-after-`]` requirement while keeping the bracket anchored to the prefix.
-- [ ] Rewrite the post-`sed` verification block (lines 72-78) to use the shared helpers and, on
+- [x] Rewrite the post-`sed` verification block (lines 72-78) to use the shared helpers and, on
       mismatch, report wanted-vs-got plus the quoted line, in the shape of
       `update-phase-status.sh:325-329`.
-- [ ] Update the script header comment (line 6) so the stated Outputs contract matches the new
+- [x] Update the script header comment (line 6) so the stated Outputs contract matches the new
       behavior: the plan path is echoed on success **and on the already-at-target no-op**.
-- [ ] Smoke-test by hand against the five shapes (M1, M2, M3, trailing-annotation, well-formed)
+- [x] Smoke-test by hand against the five shapes (M1, M2, M3, trailing-annotation, well-formed)
       plus the already-at-target no-op, using scratch fixtures, before closing the phase.
 
 **Timing**: 1.25 hours

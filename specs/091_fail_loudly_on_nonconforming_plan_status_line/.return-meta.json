@@ -1,77 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/091_fail_loudly_on_nonconforming_plan_status_line/plans/01_status-line-diagnostics-and-tolerance.md",
-      "summary": "Five-phase plan fixing update-plan-status.sh diagnostics and $-anchor intolerance, documenting the trailing-text policy, adding a dedicated test suite, and redeploying."
-    }
-  ],
-  "next_steps": "Run /implement 91 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788456363_df3984_91",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ],
-    "phase_count": 5,
-    "estimated_hours": 3.5,
-    "dependency_waves": [
-      [
-        1
-      ],
-      [
-        2,
-        3,
-        4
-      ],
-      [
-        5
-      ]
-    ]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this codebase's status-mutation scripts, update-phase-status.sh already implements the canonical line-numbered diagnostic idiom: locate the target line via `grep -n PATTERN file | head -1 | cut -d: -f1`, then on failure print both a stated reason and `\"Line ${n}: $(sed -n \"${n}p\" \"$file\")\"` to quote the offending content verbatim. Any new fail-loudly fix to a sibling status-mutating script (e.g. update-plan-status.sh, update-task-status.sh) should reuse this exact idiom rather than inventing a new diagnostic style, so all consumers of plan-format.md's Status/heading contracts converge on one diagnostic convention.",
-      "category": "PATTERN",
-      "source_artifact": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "update-plan-status.sh",
-        "update-phase-status.sh",
-        "diagnostic",
-        "line-numbered-error",
-        "shell-script-pattern"
-      ]
-    },
-    {
-      "content": "commands/implement.md (and research.md/plan.md) were deleted from agent-system/extensions/core/commands/ in commit ff08eb967 (\"task 124 phase 4: delete lifecycle command files and de-register from manifest\") when general/meta/markdown task types moved to route directly through skill-orchestrate's agent dispatch instead of dedicated lifecycle commands. Any older task filing, memory, or doc that cites a specific line in commands/implement.md, research.md, or plan.md as a live call site is citing a file that no longer exists in the current core command set -- verify against `ls agent-system/extensions/core/commands/` before trusting such a citation.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "commands/implement.md",
-        "lifecycle-commands",
-        "stale-citation",
-        "skill-orchestrate",
-        "task-124"
-      ]
-    },
-    {
-      "content": "When a task description leaves an either/or policy choice open (e.g. accept vs. reject a malformed input shape) but its ACCEPTANCE list was written assuming one branch, the acceptance criteria silently become inconsistent once the other branch is chosen. The planner must not satisfy the criterion literally nor drop it: re-derive its INTENT under the chosen branch and state the reconciliation explicitly in the plan. Concrete instance: an acceptance criterion demanding three distinct diagnostics for {trailing text, no brackets, missing prefix} presupposed rejecting trailing text; choosing tolerance made trailing-text a success case, so the three-distinct-diagnostics intent was preserved by re-partitioning the still-malformed shapes (missing prefix / no brackets / text before bracket) instead.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/091_fail_loudly_on_nonconforming_plan_status_line/plans/01_status-line-diagnostics-and-tolerance.md",
-      "confidence": 0.65,
-      "suggested_keywords": [
-        "acceptance-criteria",
-        "policy-choice",
-        "planning",
-        "either-or-branch",
-        "criterion-intent"
-      ]
-    }
-  ]
+    "session_id": "sess_1788456363_df3984",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

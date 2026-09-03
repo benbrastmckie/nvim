@@ -1,0 +1,75 @@
+{
+  "phase": 1,
+  "phase_name": "Diagnose loudly and tolerate trailing text in update-plan-status.sh",
+  "started_at": "2026-09-03T19:05:39Z",
+  "last_updated": "2026-09-03T19:06:57Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add shared line-lookup helper for plan-level Status line",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add extraction helper for bracketed token",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Insert M1/M2/M3 classification before idempotency check",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "No-op path echoes plan file path",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Trailing-text-tolerant mutating sed",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Rewrite verification block using shared helpers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Update header Outputs contract comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Hand smoke-test all 6 shapes",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-plan-status.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
