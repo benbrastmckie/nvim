@@ -57,7 +57,7 @@ in how far they split the postflight stages apart (see "Two Postflight Shapes").
 | 5b | Self-Execution Fallback | The `.return-meta.json` write obligation when the skill performed work without spawning a subagent, imported via `@.claude/context/patterns/skill-self-execution-fallback.md` | same shared block |
 | 5c | *(implement dispatch only, historical)* Continuation Loop Init | Prose: multi-turn continuation guard setup — folded into `skill-orchestrate`'s own `.orchestrator-loop-guard` handling now that the base lifecycle implement skill is deleted | `skill-orchestrate/SKILL.md` |
 | 6 | Parse Subagent Return | Read and `jq`-parse `.return-meta.json`; `skill_read_metadata()` is the available helper | `scripts/skill-base.sh` |
-| 6a | Validate Artifact Content | `skill_validate_artifact()` / `skill_validate_task_artifacts()` — non-blocking `validate-artifact.sh --fix` pass | `scripts/skill-base.sh` |
+| 6a | Validate Artifact Content | `skill_validate_artifact()` / `skill_validate_task_artifacts()` — non-blocking `validate-artifact.sh --fix` pass. `skill_validate_task_artifacts()` (the whole-directory sweep, called from `command-gate-out.sh`) now aggregates auto-repair, error, and warning counts across the sweep into four caller-visible globals — `SKILL_VALIDATE_FIXES`, `SKILL_VALIDATE_ERRORS`, `SKILL_VALIDATE_WARNINGS`, `SKILL_VALIDATE_FIXED_FILES` — instead of discarding them; `command-gate-out.sh` reports them unconditionally (repaired and clean alike) and appends one `artifact_auto_repair` row to `specs/events.jsonl`. See the "In-Place `--fix` Mutation on the Gate-Out Path (D-A)" subsection below for the reasoning. | `scripts/skill-base.sh`, `scripts/command-gate-out.sh` |
 | 7 | Update Task Status (Postflight) | `skill_postflight_update()`, imported via `@.claude/context/patterns/skill-postflight-flow.md` | same shared block |
 | 7a | Propagate Memory Candidates | `skill_propagate_memory_candidates()` | same shared block |
 | 8 | Link Artifacts | `skill_link_artifacts()` (two-step `jq` pattern, Issue #1132-safe) | same shared block |
@@ -88,6 +88,35 @@ call-site fact, and are stated that way on purpose rather than glossed over:
 A future conversion could route Stage 1 and Stage 3a through these functions the same way Stages
 2/3/6/7/7a/8/8a/9(cleanup)/5b already were converted — that is out of scope for this rewrite,
 which documents what skills actually do today.
+
+### In-Place `--fix` Mutation on the Gate-Out Path (D-A)
+
+`skill_validate_task_artifacts()`'s non-blocking sweep calls `validate-artifact.sh ... --fix`,
+which mutates an artifact in place when it can. That mutation remains in-place-mutating on the
+`command-gate-out.sh` path deliberately, not by default:
+
+- The mutation is narrow and self-flagging: `validate-artifact.sh`'s fix block only ever inserts
+  a literal `- **Field**: TBD` placeholder for a missing metadata field. It never fabricates
+  prose and never touches required sections, so it cannot manufacture a false appearance of
+  completeness.
+- Every artifact under `specs/` is git-tracked, so the mutation's *content* was always auditable
+  via `git diff`. The real gap was a missing *record that a repair happened at all* — that gap is
+  what Stage 6a's aggregation globals and `command-gate-out.sh`'s report/events leg (see the
+  Stage 6a table row above) now close.
+- Disabling `--fix` on this path would turn every trivial missing-metadata-field omission into a
+  hard stop in an otherwise-automated lifecycle step, which the reporting gap alone did not
+  justify.
+- Residual risk carried forward on purpose: `validate-artifact.sh` exits 2 for both "fixed and
+  now fully clean" and "fixed a field but a required *section* is still missing." The gate-out
+  report surfaces the errors-remaining count *alongside* the fix count specifically so the second
+  case stays visible.
+
+**Known sibling gap (deliberately out of scope for this record):** `skill_validate_artifact()`
+(singular — the per-artifact validator used by ordinary per-command postflight, distinct from the
+directory-sweep `skill_validate_task_artifacts()` documented above) discards
+`validate-artifact.sh`'s fix/error/warning counts the same way `skill_validate_task_artifacts()`
+used to before this aggregation was added. It can adopt the identical
+exit-code-discriminated-parsing approach directly. Both functions live in `scripts/skill-base.sh`.
 
 ---
 

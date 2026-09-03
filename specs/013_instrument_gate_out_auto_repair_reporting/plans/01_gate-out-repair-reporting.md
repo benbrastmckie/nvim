@@ -421,28 +421,28 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 6: Document the instrumented sweep and file the sibling follow-up [NOT STARTED]
+### Phase 6: Document the instrumented sweep and file the sibling follow-up [COMPLETED]
 
 - **Goal:** the lifecycle documentation reflects that Stage 6a's directory sweep is now
   instrumented, and the identical unfixed defect in the sibling `skill_validate_artifact` is
   recorded durably instead of being rediscovered from scratch later.
 
 - **Tasks:**
-  - [ ] Update the Stage 6a row in
+  - [x] Update the Stage 6a row in
         `agent-system/extensions/core/context/patterns/skill-lifecycle.md` to state that
         `skill_validate_task_artifacts` now reports aggregate fix/error/warning counts through
         caller-visible globals, naming the four global names.
-  - [ ] Add a short subsection to the same file (or the nearest appropriate context file)
+  - [x] Add a short subsection to the same file (or the nearest appropriate context file)
         recording D-A: `--fix` remains in-place-mutating on the gate-out path, with the
         one-paragraph reasoning, so the decision is discoverable by a future reader who does not
         have this plan open.
-  - [ ] Record the known, deliberately-out-of-scope gap: `skill_validate_artifact` (singular,
+  - [x] Record the known, deliberately-out-of-scope gap: `skill_validate_artifact` (singular,
         used by ordinary per-command postflight) has the same discard-the-counts pattern and can
         adopt this task's aggregation approach directly. Reference the pattern by file and
         function name.
-  - [ ] Verify no task-number references appear in any file touched outside `specs/**` — cite
+  - [x] Verify no task-number references appear in any file touched outside `specs/**` — cite
         the research report by path where provenance is needed.
-  - [ ] Run `bash .claude/scripts/check-task-references.sh` (or the repo's equivalent lint) over
+  - [x] Run `bash .claude/scripts/check-task-references.sh` (or the repo's equivalent lint) over
         the changed files and confirm it passes.
 
 - **Timing:** 0.5 hours
