@@ -132,6 +132,7 @@
       "orchestrate-batch-admit.sh",
       "orchestrate-build-dispatch.sh",
       "orchestrate-cycle-plan.sh",
+      "orchestrate-cycle-postflight.sh",
       "orchestrate-predispatch-review.sh",
       "orchestrate-loop-guard-init.sh",
       "orchestrate-recover-outcome.sh",

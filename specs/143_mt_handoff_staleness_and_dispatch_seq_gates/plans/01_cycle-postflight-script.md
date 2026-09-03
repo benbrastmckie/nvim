@@ -209,34 +209,34 @@ edit if the grep names more.
 
 ---
 
-### Phase 2: Script skeleton, CLI, and the two handoff gates (WORK a) [NOT STARTED]
+### Phase 2: Script skeleton, CLI, and the two handoff gates (WORK a) [COMPLETED]
 
 **Goal**: `orchestrate-cycle-postflight.sh` exists, parses its flags per the sibling convention, and
 performs the guarded handoff read — both gates, both engines, one implementation.
 
 **Tasks**:
-- [ ] Create `scripts/orchestrate-cycle-postflight.sh` with a header stating purpose, the
+- [x] Create `scripts/orchestrate-cycle-postflight.sh` with a header stating purpose, the
       two-engine contract, the MUST-NOT list (no prose reads, no batch commits, no gate weakening,
       never asks, state.json only via `update-task-status.sh` / `state-write.sh`), and the output
-      JSON field list.
-- [ ] Copy `orchestrate-cycle-plan.sh`'s flag parser verbatim in shape: `while [ "$#" -gt 0 ]` case
-      loop, `usage()` heredoc, `--help`, required `--session` / `--state-file` validation.
-- [ ] Accept: `<task_number>` positional; `--session`, `--state-file`, `--phase`, `--task-dir`,
+      JSON field list. *(completed)*
+- [x] Copy `orchestrate-cycle-plan.sh`'s flag parser verbatim in shape: `while [ "$#" -gt 0 ]` case
+      loop, `usage()` heredoc, `--help`, required `--session` / `--state-file` validation. *(completed)*
+- [x] Accept: `<task_number>` positional; `--session`, `--state-file`, `--phase`, `--task-dir`,
       `--plan-path`, `--task-type`, `--agent`, `--cycle-count`, `--transport-error`,
       `--force-invoked`, `--loop-guard-file` (single-task engine; when omitted the defect/infra
-      store is the derived multi-state file), `--dry-run`.
-- [ ] Derive the multi-state path exactly as the sibling does:
-      `"$(dirname "$STATE_FILE")/.orchestrator-multi-state-${session_id}.json"`.
-- [ ] Implement the mtime staleness gate: `stat -c %Y || stat -f %m || echo 0` against
-      `dispatch_start_ts[$t]` with the literal `9999999999` fail-closed default; older → mark stale.
-- [ ] Implement the `dispatch_seq` identity gate: read `.dispatch_seq` off the handoff; empty →
+      store is the derived multi-state file), `--dry-run`. *(deviation: altered — added --dispatch-seq/--dispatch-start-ts/--command-suffix flags, absent from this literal enumeration, because neither single-task engine persists a per-cycle dispatch_seq/dispatch_start_ts anywhere for this script to derive them from; see the script's own header for the full rationale and the graceful-degradation fallback)*
+- [x] Derive the multi-state path exactly as the sibling does:
+      `"$(dirname "$STATE_FILE")/.orchestrator-multi-state-${session_id}.json"`. *(completed)*
+- [x] Implement the mtime staleness gate: `stat -c %Y || stat -f %m || echo 0` against
+      `dispatch_start_ts[$t]` with the literal `9999999999` fail-closed default; older → mark stale. *(completed)*
+- [x] Implement the `dispatch_seq` identity gate: read `.dispatch_seq` off the handoff; empty →
       `WARN` and degrade to mtime-only; mismatch against `dispatch_seq[$t]` → mark stale. Same
       `HANDOFF_STALE_OR_ABSENT` defect class for both, with the two distinct detecting-site
-      suffixes (`:stale-handoff`, `:dispatch-seq-mismatch`) preserved.
-- [ ] Route defect recording through `system-defect-record.sh` plus
+      suffixes (`:stale-handoff`, `:dispatch-seq-mismatch`) preserved. *(deviation: altered — detecting-site suffixes are `:cycle-postflight-stale-handoff` / `:cycle-postflight-dispatch-seq-mismatch` rather than the single-task engine's own `:stale-handoff`/`:dispatch-seq-mismatch`, to keep this script's own detecting sites distinguishable from SKILL.md's still-live inline gates until Phase 7's cutover removes them)*
+- [x] Route defect recording through `system-defect-record.sh` plus
       `skill_orchestrate_append_detected_defect` against the resolved defect store (loop guard or
-      multi-state file — both carry `.detected_defects` with the same entry shape).
-- [ ] Emit a provisional output JSON line so the script is runnable end-to-end from this phase on.
+      multi-state file — both carry `.detected_defects` with the same entry shape). *(completed)*
+- [x] Emit a provisional output JSON line so the script is runnable end-to-end from this phase on. *(completed)*
 
 **Timing**: 2 hours
 
