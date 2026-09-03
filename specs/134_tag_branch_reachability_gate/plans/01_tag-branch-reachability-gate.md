@@ -1,7 +1,7 @@
 # Implementation Plan: Task #134
 
 - **Task**: 134 - Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md
