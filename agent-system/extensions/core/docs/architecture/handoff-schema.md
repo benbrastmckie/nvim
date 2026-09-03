@@ -409,6 +409,41 @@ case" paragraph covering exactly that scenario; those paragraphs are the fallbac
 this categorical decision, and they pin the `artifacts[]` element shape (see `### artifacts
 (required)` above) alongside their `dispatch_seq` echo instruction rather than restating it.
 
+### Writer-Contract Determination (D1) — where a future writer registers
+
+`orchestrate-cycle-postflight.sh` must decide, for every dispatch it postflights, whether "no
+handoff" means "this dispatch's writer never produces one" (no defect) or "a contractual writer
+silently failed to write one" (a genuine defect). The mechanism, recorded here as the single
+place a future hard-mode writer registers itself:
+
+**Recorded-agent-name allowlist.** The script resolves the question by reading the agent name the
+dispatch composer already recorded for this task this cycle (the caller's own `--agent` value —
+`research_agents[$t]` / `implement_agents[$t]` on the multi-state file for multi-task callers, the
+literal `planner-agent` for the plan phase, or the dispatch's own recorded agent for single-task
+callers) and testing it against a **small, single-site allowlist** of contractual handoff
+writers, implemented as `is_contractual_handoff_writer()` inside
+`orchestrate-cycle-postflight.sh` itself. Today that allowlist holds exactly the two entries the
+table above names as active writers: `cslib-implementation-hard-agent` and
+`lean-implementation-hard-agent`. Combined with `dispatch_seq` (the dispatch-identity gate above),
+that pair *is* this dispatch's identity — the writer-contract check is keyed on dispatch identity,
+not on phase alone.
+
+**Direction of the staleness hazard.** An agent name **absent** from the allowlist is treated as a
+**non-writer** — no defect is recorded for an absent handoff from it — and the script emits a
+loud, named `WARN` identifying the unrecognized agent. Rationale: base mode is the overwhelming
+default and every core agent is a non-writer, so recording a defect on an unrecognized name would
+reproduce exactly the spurious-defect bug this mechanism exists to fix; the WARN keeps a genuinely
+new, unregistered hard-mode writer visible rather than silently swallowed. **This suppression
+narrows only the absent-handoff case.** A handoff that IS present but fails the mtime or
+`dispatch_seq` gate above still records `HANDOFF_STALE_OR_ABSENT` unconditionally, regardless of
+the dispatched agent's writer-contract status — the writer-contract check is consulted only when
+deciding whether a genuinely missing file is expected or suspicious.
+
+**Registering a new writer**: add its agent name to the `case` statement inside
+`is_contractual_handoff_writer()` in `orchestrate-cycle-postflight.sh`, and add a row to the
+Handoff Writers table above. Both edits belong together in the same commit — an agent added to
+one without the other leaves the two records disagreeing about which agents are active writers.
+
 **Open question, not decided here**: live delegation contexts have been observed supplying a
 `handoff_path` and an instruction to write to a base-mode research agent, contradicting the
 categorical "research agents never write a handoff" claim stated above. This document does not

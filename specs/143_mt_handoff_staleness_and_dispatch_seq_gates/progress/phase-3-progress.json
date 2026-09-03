@@ -1,0 +1,54 @@
+{
+  "phase": 3,
+  "phase_name": "Recovery, corroboration, and writer-contract-aware recording (WORK b, c, d)",
+  "started_at": "2026-09-03T19:40:00Z",
+  "last_updated": "2026-09-03T20:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Call orchestrate-recover-outcome.sh with expected_dispatch_seq when handoff missing/stale; populate outcome fields",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Port PHASES_ZERO_ON_SUCCESS and ARTIFACTS_SHAPE_MISMATCH evidence-corroboration arms (both recovered and handoff-present paths)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Implement D1 writer-contract allowlist (is_contractual_handoff_writer), consulted before recording an absent-handoff defect",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Unknown agent name treated as non-writer plus loud named WARN",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Verify present-but-stale/mismatched recordings stay unconditional regardless of writer contract",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Port infra-failure discrimination (scalar for single-task, per-task map for multi-task) and phase-marker recovery grep",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Record D1's mechanism in docs/architecture/handoff-schema.md after the Handoff Writers table",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

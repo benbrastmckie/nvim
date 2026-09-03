@@ -258,29 +258,29 @@ performs the guarded handoff read — both gates, both engines, one implementati
 
 ---
 
-### Phase 3: Recovery, corroboration, and writer-contract-aware recording (WORK b, c, d) [NOT STARTED]
+### Phase 3: Recovery, corroboration, and writer-contract-aware recording (WORK b, c, d) [COMPLETED]
 
 **Goal**: A stale or absent handoff routes into the existing return-meta recovery path — now
 seq-checked — and defect recording respects the per-dispatch writer contract.
 
 **Tasks**:
-- [ ] Call `orchestrate-recover-outcome.sh` with `<task_dir> <window_start_ts>
+- [x] Call `orchestrate-recover-outcome.sh` with `<task_dir> <window_start_ts>
       <expected_dispatch_seq>` whenever the handoff is missing or gated stale; populate
       `dispatch_status`, `phases_completed`, `phases_total`, `plan_markers_verified="absent"`, and
-      artifact path/type/summary from its JSON.
-- [ ] Port the evidence-corroboration arms unchanged: `PHASES_ZERO_ON_SUCCESS` calling
+      artifact path/type/summary from its JSON. *(completed)*
+- [x] Port the evidence-corroboration arms unchanged: `PHASES_ZERO_ON_SUCCESS` calling
       `skill_corroborate_phase_counts` (count-only greps, unchanged bounds), and the sibling
-      `ARTIFACTS_SHAPE_MISMATCH` arm's non-fatal recorder call.
-- [ ] Implement D1's writer-contract resolution: read this cycle's recorded agent name for this
+      `ARTIFACTS_SHAPE_MISMATCH` arm's non-fatal recorder call. *(completed)*
+- [x] Implement D1's writer-contract resolution: read this cycle's recorded agent name for this
       task, test against the single-site contractual-writer allowlist, and consult it **before**
-      recording `HANDOFF_STALE_OR_ABSENT` for an *absent* handoff.
-- [ ] Unknown agent name → treat as non-writer AND emit the loud named `WARN` required by D1.
-- [ ] Keep the present-but-stale / present-but-mismatched recordings unconditional — the writer
-      contract never suppresses those.
-- [ ] Port the non-recovered branch: infra-failure discrimination (two corroborating signals) and
-      the sanctioned phase-marker recovery grep, diagnostic only.
-- [ ] Record D1's chosen mechanism in `docs/architecture/handoff-schema.md`, immediately after the
-      existing "Handoff Writers" table, as the one place a future writer registers.
+      recording `HANDOFF_STALE_OR_ABSENT` for an *absent* handoff. *(completed)*
+- [x] Unknown agent name → treat as non-writer AND emit the loud named `WARN` required by D1. *(completed)*
+- [x] Keep the present-but-stale / present-but-mismatched recordings unconditional — the writer
+      contract never suppresses those. *(completed)*
+- [x] Port the non-recovered branch: infra-failure discrimination (two corroborating signals) and
+      the sanctioned phase-marker recovery grep, diagnostic only. *(completed)*
+- [x] Record D1's chosen mechanism in `docs/architecture/handoff-schema.md`, immediately after the
+      existing "Handoff Writers" table, as the one place a future writer registers. *(completed)*
 
 **Timing**: 2 hours
 

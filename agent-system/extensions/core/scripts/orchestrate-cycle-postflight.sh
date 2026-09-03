@@ -289,27 +289,225 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
   fi
 fi
 
-# ─── Provisional output (extended by later phases) ─────────────────────────────────────────────
-# This is a placeholder emission so the script is runnable end-to-end from Phase 2 on; Phase 3-5
-# replace this tail with the full recovery/status/commit/lock pipeline.
+# ─── D1: writer-contract allowlist (single site) ───────────────────────────────────────────────
+# The complete, closed set of contractual `.orchestrator-handoff.json` writers today — verified by
+# reading every core/extension agent's own contract (grep 'formally hard-mode-implement-only').
+# An agent name absent from this list is a NON-writer: an absent handoff from it records no
+# defect. Widening this list is a one-line edit, here, when a new hard-mode writer is added.
+is_contractual_handoff_writer() {
+  case "$1" in
+    cslib-implementation-hard-agent|lean-implementation-hard-agent) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+have_outcome=false
+recovered=false
+dispatch_status=""
+dispatch_summary=""
+phases_completed=0
+phases_total=0
+plan_markers_verified=""
+artifact_path=""
+artifact_type=""
+artifact_summary=""
+infra_exempt_cycle=false
+
 if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
-  provisional_status=$(jq -r '.status // ""' "$handoff_file" 2>/dev/null)
-  provisional_phases_completed=$(jq -r '.phases_completed // 0' "$handoff_file" 2>/dev/null)
-  provisional_phases_total=$(jq -r '.phases_total // 0' "$handoff_file" 2>/dev/null)
+  # ─── Handoff-present path ─────────────────────────────────────────────────────────────────────
+  handoff=$(cat "$handoff_file")
+  dispatch_status=$(echo "$handoff" | jq -r '.status // ""')
+  dispatch_summary=$(echo "$handoff" | jq -r '.summary // ""')
+  phases_completed=$(echo "$handoff" | jq -r '.phases_completed // 0')
+  phases_total=$(echo "$handoff" | jq -r '.phases_total // 0')
+  plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "absent"')
+  artifact_path=$(echo "$handoff" | jq -r '.artifacts[0].path // ""')
+  artifact_type=$(echo "$handoff" | jq -r '.artifacts[0].type // ""')
+  artifact_summary=$(echo "$handoff" | jq -r '.artifacts[0].summary // ""')
+  echo "${notice_prefix} Dispatch result: $dispatch_status — $dispatch_summary" >&2
+  [ "$phases_total" -gt 0 ] && echo "${notice_prefix} Phase progress: $phases_completed/$phases_total" >&2
+
+  # ── WORK (c): evidence corroboration (handoff-present branch), D3/D4 precondition ─────────────
+  # phases_total -eq 0 ALONE (not the recovered path's both-zero PHASES_ZERO_ON_SUCCESS signature)
+  # — matches skill_gate_completion_claim's own Case 3 precondition exactly.
+  if [ "$dispatch_status" = "implemented" ] && [ "$phases_total" -eq 0 ]; then
+    corroboration_plan_path="${plan_path:-}"
+    if [ -z "$corroboration_plan_path" ]; then
+      corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+    fi
+    cpc_line=$(skill_corroborate_phase_counts "$task_number" "$corroboration_plan_path" "$notice_prefix" "$handoff_file")
+    IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+    phases_completed="${cpc_a#phases_completed=}"
+    phases_total="${cpc_b#phases_total=}"
+    plan_markers_verified="${cpc_c#plan_markers_verified=}"
+  fi
+
+  # ── Advisory ARTIFACTS_SHAPE_MISMATCH probe (handoff-present path) ─────────────────────────────
+  artifacts_probe_json=$(bash "${SCRIPT_DIR}/orchestrate-recover-outcome.sh" "$TASK_DIR" "$dispatch_start_ts" 2>/dev/null)
+  artifacts_probe_exit=$?
+  if [ "$artifacts_probe_exit" -eq 0 ]; then
+    artifacts_probe_suspect=$(echo "$artifacts_probe_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || artifacts_probe_suspect=false
+    artifacts_probe_reason=$(echo "$artifacts_probe_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || artifacts_probe_reason="NONE"
+    if [ "$artifacts_probe_suspect" = "true" ] && [ "$artifacts_probe_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+      echo "${notice_prefix} EVIDENCE: advisory probe over this dispatch's .return-meta.json (handoff-present path) reports a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — advisory only; the handoff-derived outcome above is unaffected." >&2
+      probe_record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class ARTIFACTS_SHAPE_MISMATCH \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-handoff-present-probe" \
+        --task "$task_number" --session "$session_id" \
+        --message "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+        --attributed-path "$attributed_path" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "ARTIFACTS_SHAPE_MISMATCH" "$attributed_path" \
+        "${detecting_site_prefix}:cycle-postflight-handoff-present-probe" \
+        "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+        "$probe_record_result"
+    fi
+  fi
+
+  have_outcome=true
 else
-  provisional_status=""
-  provisional_phases_completed=0
-  provisional_phases_total=0
+  # ─── WORK (b): return-meta recovery (handoff missing or gated stale) ───────────────────────────
+  recover_json=$(bash "${SCRIPT_DIR}/orchestrate-recover-outcome.sh" "$TASK_DIR" "$dispatch_start_ts" "$expected_dispatch_seq" 2>/dev/null)
+  recover_exit=$?
+  if [ "$recover_exit" -eq 0 ]; then
+    recovered=$(echo "$recover_json" | jq -r '.recovered // false' 2>/dev/null) || recovered=false
+  else
+    recovered=false
+  fi
+
+  if [ "$recovered" = "true" ]; then
+    dispatch_status=$(echo "$recover_json" | jq -r '.status')
+    phases_completed=$(echo "$recover_json" | jq -r '.phases_completed // 0')
+    phases_total=$(echo "$recover_json" | jq -r '.phases_total // 0')
+    plan_markers_verified="absent"
+    artifact_path=$(echo "$recover_json" | jq -r '.artifact_path // ""')
+    artifact_type=$(echo "$recover_json" | jq -r '.artifact_type // ""')
+    artifact_summary=$(echo "$recover_json" | jq -r '.artifact_summary // ""')
+    echo "${notice_prefix} RECOVERY: no handoff written for this dispatch — expected outcome for this phase's writer (base-mode research/plan/implement never write one). .return-meta.json (fresh, within this dispatch window) reports status=${dispatch_status}; recovering the dispatch outcome from it." >&2
+    have_outcome=true
+
+    evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
+    evidence_reason=$(echo "$recover_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || evidence_reason="NONE"
+    if [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "PHASES_ZERO_ON_SUCCESS" ] && [ "$dispatch_status" = "implemented" ]; then
+      corroboration_plan_path="${plan_path:-}"
+      if [ -z "$corroboration_plan_path" ]; then
+        corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+      fi
+      cpc_line=$(skill_corroborate_phase_counts "$task_number" "$corroboration_plan_path" "$notice_prefix")
+      IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+      phases_completed="${cpc_a#phases_completed=}"
+      phases_total="${cpc_b#phases_total=}"
+      plan_markers_verified="${cpc_c#plan_markers_verified=}"
+    elif [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
+      echo "${notice_prefix} EVIDENCE: recovered .return-meta.json reports status=${dispatch_status} with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
+      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class ARTIFACTS_SHAPE_MISMATCH \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-recovered" \
+        --task "$task_number" --session "$session_id" \
+        --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
+        --attributed-path "$attributed_path" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "ARTIFACTS_SHAPE_MISMATCH" "$attributed_path" \
+        "${detecting_site_prefix}:cycle-postflight-recovered" \
+        "recovered return-meta carried a non-empty artifacts array yielding no path" \
+        "$record_result"
+    fi
+  else
+    # ─── WORK (d): writer-contract-aware recording for an ABSENT handoff ─────────────────────────
+    # Only reachable here when the handoff was genuinely ABSENT (never for a present-but-stale or
+    # present-but-mismatched handoff — those already recorded unconditionally above, before this
+    # branch is ever reached, per D1's narrowing).
+    if [ ! -f "$handoff_file" ]; then
+      if is_contractual_handoff_writer "$agent_name"; then
+        echo "${notice_prefix} ERROR: Skill did not write orchestrator handoff (agent '${agent_name}' is a contractual handoff writer)." >&2
+        record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+          --defect-class HANDOFF_STALE_OR_ABSENT \
+          --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
+          --task "$task_number" --session "$session_id" \
+          --message "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
+          --attributed-path "$attributed_path" \
+          2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+        skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+          "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
+          "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
+          "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
+          "$record_result"
+      else
+        echo "${notice_prefix} WARN: agent name '${agent_name}' is not on the contractual handoff-writer allowlist — treated as a non-writer, no defect recorded for the absent handoff. If '${agent_name}' is a genuine new hard-mode writer, add it to is_contractual_handoff_writer() in this script." >&2
+      fi
+    fi
+
+    out_recovered_reported_status=$(echo "${recover_json:-{}}" | jq -r '.status // "unknown"' 2>/dev/null) || out_recovered_reported_status="unknown"
+    if [ "$out_recovered_reported_status" != "unknown" ]; then
+      echo "${notice_prefix} .return-meta.json reports status=${out_recovered_reported_status} (not recovered as a successful outcome)." >&2
+    fi
+
+    # ── Infra-failure discrimination (single-task: scalar; multi-task: per-task map) ─────────────
+    meta_file="${TASK_DIR}/.return-meta.json"
+    meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
+    if [ "$meta_mtime" -ge "$dispatch_start_ts" ]; then
+      meta_touched=true
+    else
+      meta_touched=false
+    fi
+
+    if [ "${transport_error:-false}" = "true" ] && [ "$meta_touched" = "false" ]; then
+      if [ -n "$loop_guard_file" ]; then
+        infra_failures=$(jq -r '.infra_failures // 0' "$defect_store" 2>/dev/null) || infra_failures=0
+        infra_failures=$((infra_failures + 1))
+        jq --argjson infra "$infra_failures" --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          '.infra_failures = $infra | .last_updated = $updated' \
+          "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+      else
+        infra_failures=$(jq -r --arg t "$task_number" '.infra_failures[$t] // 0' "$defect_store" 2>/dev/null) || infra_failures=0
+        infra_failures=$((infra_failures + 1))
+        jq --arg t "$task_number" --argjson infra "$infra_failures" \
+          '.infra_failures[$t] = $infra' \
+          "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+      fi
+      echo "${notice_prefix} INFRA FAILURE ${infra_failures} — Agent tool transport/API failure with no subagent footprint. Not charged against the cycle budget." >&2
+      infra_exempt_cycle=true
+    else
+      echo "${notice_prefix} Missing handoff charged as a genuine work cycle (transport_error=${transport_error:-false}, meta_touched=${meta_touched})." >&2
+    fi
+
+    # ── Phase-marker recovery grep (sanctioned narrow exception, diagnostic only) ─────────────────
+    recovery_plan_path="${plan_path:-}"
+    if [ -z "$recovery_plan_path" ]; then
+      recovery_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
+    fi
+    if [ -n "$recovery_plan_path" ] && [ -f "$recovery_plan_path" ]; then
+      if [ -f ".claude/scripts/lib/phase-heading-patterns.sh" ]; then
+        . .claude/scripts/lib/phase-heading-patterns.sh
+      else
+        . "${SCRIPT_DIR}/lib/phase-heading-patterns.sh"
+      fi
+      recovered_completed=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_completed=0
+      recovered_total=$(grep -cE "$PHASE_HEADING_ERE" "$recovery_plan_path" 2>/dev/null) || recovered_total=0
+      if has_nonconforming_phase_headings "$recovery_plan_path"; then
+        warn_nonconforming "$recovery_plan_path" "orchestrate-cycle-postflight" || true
+        echo "${notice_prefix} RECOVERY: non-conforming phase heading(s) in ${recovery_plan_path} — recovered phase count is unreliable (treated as unknown, not refused)." >&2
+      fi
+      echo "${notice_prefix} RECOVERY: handoff unusable — plan headings show ${recovered_completed}/${recovered_total} phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in ${recovery_plan_path}." >&2
+    elif [ -d "${TASK_DIR}/plans" ]; then
+      echo "${notice_prefix} RECOVERY: no plan file available — phase progress cannot be recovered this cycle." >&2
+    else
+      echo "${notice_prefix} RECOVERY: no plans/ directory yet (normal after a research-phase dispatch) — phase progress recovery does not apply this cycle." >&2
+    fi
+  fi
 fi
 
+# ─── Provisional output (extended by Phase 4-5) ────────────────────────────────────────────────
 jq -n -c \
   --argjson task "$task_number" \
   --arg phase "$phase" \
-  --arg status "$provisional_status" \
-  --argjson phases_completed "$provisional_phases_completed" \
-  --argjson phases_total "$provisional_phases_total" \
+  --arg status "$dispatch_status" \
+  --argjson phases_completed "$phases_completed" \
+  --argjson phases_total "$phases_total" \
   --arg verdict "ok" \
-  --arg note "PROVISIONAL (Phase 2 of 5) — recovery, status transition, commit, and lock release not yet implemented." \
+  --arg note "PROVISIONAL (Phase 3 of 5) — status transition, commit, and lock release not yet implemented." \
   '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
     phases_total: $phases_total, verdict: $verdict, note: $note}'
 
