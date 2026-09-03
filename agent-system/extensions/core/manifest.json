@@ -191,6 +191,7 @@
       "tests/test-mint-dispatch-seq.sh",
       "tests/test-orchestrate-build-dispatch.sh",
       "tests/test-orchestrate-cycle-plan.sh",
+      "tests/test-orchestrate-recover-outcome.sh",
       "tests/test-orchestrate-triage-classify.sh",
       "tests/test-phase-heading-patterns.sh",
       "tests/test-phase-heartbeat.sh",

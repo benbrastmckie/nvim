@@ -630,6 +630,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
 ```json
 {
   "status": "implemented",
+  "dispatch_seq": 17,
   "artifacts": [
     {
       "type": "summary",
@@ -652,6 +653,15 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
   }
 }
 ```
+
+**`dispatch_seq` (sibling top-level field)**: echo the delegation context's `dispatch_seq` value
+(or the dispatch file's Identity section `dispatch_seq:` line) verbatim as shown above — never
+invent or recompute it. See `@.claude/context/contracts/return-meta-artifacts-template.md`'s `##
+The dispatch_seq Sibling Field` section. Omit it only when this dispatch's context carries no
+`dispatch_seq` at all (a call path that predates the contract). This is the SAME value, echoed
+into a second file, that the "Defensive case" paragraph below already documents for
+`.orchestrator-handoff.json` — the two writes always agree because they read the same source
+value.
 
 **If returning `partial` and a handoff artifact was written** (Stage 4C), include `handoff_path` in `partial_progress`:
 

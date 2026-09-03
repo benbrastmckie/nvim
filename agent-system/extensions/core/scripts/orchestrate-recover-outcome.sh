@@ -18,12 +18,28 @@
 # outcome signal. This script extends the same channel to the orchestrator path.
 #
 # Usage:
-#   orchestrate-recover-outcome.sh <task_dir> <window_start_ts>
+#   orchestrate-recover-outcome.sh <task_dir> <window_start_ts> [expected_dispatch_seq]
 #
 # where <task_dir> is the task's directory (relative or absolute; this script does not care which,
 # it only ever appends "/.return-meta.json") and <window_start_ts> is the Unix epoch second the
 # current dispatch started (the same `dispatch_start_ts` Stage 5 already captures via `date -u
 # +%s` immediately before the Agent tool call, for its handoff staleness gate).
+#
+# <expected_dispatch_seq> (OPTIONAL, appended so every existing 2-arg call site keeps working
+# unchanged) is the orchestrator-minted `dispatch_seq` for THIS dispatch — the same identity value
+# the handoff gate's `dispatch-seq-gate:begin`/`:end` region already compares against a handoff's
+# own `.dispatch_seq`. When omitted or empty, this script performs mtime-only discrimination
+# exactly as before (no dispatch_seq comparison of any kind — this is the pre-D2 behavior, not a
+# degraded path). When present, it is compared against the file's own top-level `.dispatch_seq`
+# field (`context/formats/return-metadata-file.md`'s `### dispatch_seq (optional)` field):
+#   - file field absent/empty  -> WARN (named, to stderr) and degrade to mtime-only — the file
+#     predates the dispatch_seq contract, not a bug.
+#   - file field present, mismatched -> recovered=false, reason=META_DISPATCH_SEQ_MISMATCH. This
+#     is the ONLY check in this script that can reject a git-restored predecessor's
+#     `.return-meta.json`: such a file is restored with a fresh, in-window mtime by construction,
+#     so the mtime gate above is provably inert against it (see the header's "Item C decision"
+#     paragraph's sibling incident, evt_1788246742189_Fodegl).
+#   - file field present, matches -> proceed exactly as the pre-D2 path.
 #
 # Forbidden calls (this script is read-only; it must never be the mechanism by which a Stage 5 or
 # Stage MT-4 caller mutates anything):
@@ -64,7 +80,8 @@
 #                                even when recovered=false, so callers can log a
 #                                partial/failed/blocked/in_progress outcome without acting on it.
 #   reason             string  one of: NONE (recovered=true), META_MISSING, META_STALE,
-#                                META_UNPARSEABLE, STATUS_IN_PROGRESS, STATUS_NOT_SUCCESS, USAGE.
+#                                META_UNPARSEABLE, META_DISPATCH_SEQ_MISMATCH,
+#                                STATUS_IN_PROGRESS, STATUS_NOT_SUCCESS, USAGE.
 #   artifact_path       string  .artifacts[0].path, or "" when absent/not recovered.
 #   artifact_type       string  .artifacts[0].type, or "".
 #   artifact_summary    string  .artifacts[0].summary, or "".
@@ -106,9 +123,10 @@ set -euo pipefail
 
 task_dir="${1:-}"
 window_start_ts="${2:-}"
+expected_dispatch_seq="${3:-}"
 
-if [ -z "$task_dir" ] || [ "$#" -ne 2 ]; then
-  echo "ERROR: orchestrate-recover-outcome.sh: usage: orchestrate-recover-outcome.sh <task_dir> <window_start_ts>" >&2
+if [ -z "$task_dir" ] || [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+  echo "ERROR: orchestrate-recover-outcome.sh: usage: orchestrate-recover-outcome.sh <task_dir> <window_start_ts> [expected_dispatch_seq]" >&2
   exit 2
 fi
 
@@ -169,6 +187,22 @@ fi
 if ! meta_json=$(jq -c '.' "$meta_file" 2>/dev/null); then
   emit false "unknown" "META_UNPARSEABLE" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
   exit 1
+fi
+
+# ── dispatch_seq identity check (D2) ─────────────────────────────────────────────────────────
+# Only performed when the caller supplied a third argument. Omitting it (the pre-D2, 2-arg call
+# shape) skips this block entirely -- not a degraded path, the ordinary one for a caller that
+# has not adopted dispatch_seq threading yet.
+if [ -n "$expected_dispatch_seq" ]; then
+  meta_dispatch_seq=$(echo "$meta_json" | jq -r '.dispatch_seq // empty' 2>/dev/null)
+  if [ -z "$meta_dispatch_seq" ]; then
+    echo "WARN: orchestrate-recover-outcome.sh: .return-meta.json has no dispatch_seq field — writer predates the dispatch_seq contract; degrading to mtime-only discrimination." >&2
+  elif [ "$meta_dispatch_seq" != "$expected_dispatch_seq" ]; then
+    status=$(echo "$meta_json" | jq -r '.status // "unknown"')
+    echo "ERROR: orchestrate-recover-outcome.sh: DISPATCH_SEQ MISMATCH — .return-meta.json carries dispatch_seq=$meta_dispatch_seq, this cycle expected dispatch_seq=$expected_dispatch_seq. Not this dispatch's own report (a still-live/resurrected predecessor, or a git-restored file) — treating as unrecovered." >&2
+    emit false "$status" "META_DISPATCH_SEQ_MISMATCH" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
+    exit 1
+  fi
 fi
 
 status=$(echo "$meta_json" | jq -r '.status // "unknown"')

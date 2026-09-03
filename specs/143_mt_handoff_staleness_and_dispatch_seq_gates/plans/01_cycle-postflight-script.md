@@ -1,7 +1,7 @@
 # Implementation Plan: Build `orchestrate-cycle-postflight.sh`
 
 - **Task**: 143 - Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: 147 (`orchestrate-cycle-plan.sh`, satisfied and archived)
 - **Research Inputs**: specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md
@@ -154,29 +154,29 @@ and are therefore deliberately serialized rather than parallelized.
 
 ---
 
-### Phase 1: `dispatch_seq` on the return-meta channel [NOT STARTED]
+### Phase 1: `dispatch_seq` on the return-meta channel [COMPLETED]
 
 **Goal**: Close the schema gap that makes acceptance condition (3) reachable — `.return-meta.json`
 carries `dispatch_seq`, and `orchestrate-recover-outcome.sh` gates on it with graceful degradation.
 
 **Tasks**:
-- [ ] Add a `dispatch_seq` field specification to `context/formats/return-metadata-file.md`:
+- [x] Add a `dispatch_seq` field specification to `context/formats/return-metadata-file.md`:
       optional top-level integer, producer-owned, echoed verbatim from the dispatch context /
-      dispatch-file Identity section; absent means "writer predates the contract".
-- [ ] Add the field to the copyable contract fragment
-      `context/contracts/return-meta-artifacts-template.md` so agents inherit it from one place.
-- [ ] Update the core agent contracts that write `.return-meta.json` under `/orchestrate`
-      (`general-research-agent`, `planner-agent`, `general-implementation-agent`) to echo it.
-- [ ] Extend `orchestrate-recover-outcome.sh` with an OPTIONAL third positional
+      dispatch-file Identity section; absent means "writer predates the contract". *(completed)*
+- [x] Add the field to the copyable contract fragment
+      `context/contracts/return-meta-artifacts-template.md` so agents inherit it from one place. *(completed)*
+- [x] Update the core agent contracts that write `.return-meta.json` under `/orchestrate`
+      (`general-research-agent`, `planner-agent`, `general-implementation-agent`) to echo it. *(completed)*
+- [x] Extend `orchestrate-recover-outcome.sh` with an OPTIONAL third positional
       `<expected_dispatch_seq>`, appended after `<window_start_ts>` so every existing 2-arg call
-      site keeps working unchanged.
-- [ ] Implement the comparison: empty/absent field on the file → `WARN` + degrade to mtime-only;
+      site keeps working unchanged. *(completed)*
+- [x] Implement the comparison: empty/absent field on the file → `WARN` + degrade to mtime-only;
       mismatch → `recovered=false` with a named reason token (mirror the existing reason-token
-      convention already in that script); match → proceed.
-- [ ] Create `scripts/tests/test-orchestrate-recover-outcome.sh` covering: no-arg backward
+      convention already in that script); match → proceed. *(completed)*
+- [x] Create `scripts/tests/test-orchestrate-recover-outcome.sh` covering: no-arg backward
       compatibility, absent-field degradation, match, mismatch, and the git-restored shape
-      (fresh in-window mtime + predecessor `dispatch_seq`).
-- [ ] Register the new test in `manifest.json`'s scripts list.
+      (fresh in-window mtime + predecessor `dispatch_seq`). *(completed)*
+- [x] Register the new test in `manifest.json`'s scripts list. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -509,7 +509,7 @@ references the sentinel, it joins the batch rather than being committed separate
 
 ## Testing & Validation
 
-- [ ] `test-orchestrate-recover-outcome.sh` — new suite, all cases pass (Phase 1).
+- [x] `test-orchestrate-recover-outcome.sh` — new suite, all cases pass (Phase 1). *(completed)*
 - [ ] `test-orchestrate-cycle-postflight.sh` — acceptance (1)-(5) plus the three invariants (Phase 6).
 - [ ] `test-handoff-dispatch-identity.sh` — retargeted and green (Phase 7).
 - [ ] `scripts/tests/run-all.sh` — every suite in every extension green.

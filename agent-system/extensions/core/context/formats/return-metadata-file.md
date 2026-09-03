@@ -160,6 +160,26 @@ fragment holds the exact copyable text.
 **Type**: string
 **Description**: What the user/orchestrator should do next
 
+### dispatch_seq (optional)
+
+**Type**: integer
+**Description**: Echoed verbatim from this dispatch's own identity — the delegation context's
+`dispatch_seq` field, or (equivalently) the dispatch file's Identity section `dispatch_seq` line.
+Producer-owned: the agent copies the value it was given, never invents or increments one.
+
+**Placement**: top-level, exactly like `.orchestrator-handoff.json`'s own `dispatch_seq` field
+(`handoff-schema.md`) — the two files share this field's meaning and nesting so a single
+identity-comparison consumer (e.g. `orchestrate-recover-outcome.sh`) can read either without a
+file-specific special case. This is the ONE field this schema and the handoff schema agree to
+nest identically; see the `phases_completed`/`phases_total` callout immediately below for a field
+where they deliberately do not.
+
+**Absent means**: the writer predates this contract, or is a call path (e.g. a non-`/orchestrate`
+`/research`/`/plan`/`/implement` invocation) that never received a `dispatch_seq` to echo. A
+consumer gating on this field MUST degrade gracefully on an absent value — emit a named `WARN`
+and fall back to mtime-only discrimination — never treat absence as a hard failure. See
+`orchestrate-recover-outcome.sh`'s own header for the consumer-side contract.
+
 ### metadata (required)
 
 **Type**: object

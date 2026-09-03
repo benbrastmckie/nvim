@@ -343,6 +343,13 @@ object. Minimal example:
 See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
 full field spec — this is a call-site reminder, not a replacement for that reference.
 
+**`dispatch_seq` (sibling top-level field)**: echo the delegation context's `dispatch_seq` value
+(or the dispatch file's Identity section `dispatch_seq:` line) verbatim as a top-level
+`"dispatch_seq"` key alongside `"artifacts"` — never invent or recompute it. See
+`@.claude/context/contracts/return-meta-artifacts-template.md`'s `## The dispatch_seq Sibling
+Field` section. Omit it only when this dispatch's context carries no `dispatch_seq` at all (a
+call path that predates the contract).
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: key findings, patterns discovered, report path, metadata status.

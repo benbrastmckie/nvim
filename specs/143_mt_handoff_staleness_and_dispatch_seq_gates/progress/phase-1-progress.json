@@ -1,0 +1,58 @@
+{
+  "phase": 1,
+  "phase_name": "dispatch_seq on the return-meta channel",
+  "started_at": "2026-09-03T19:04:42Z",
+  "last_updated": "2026-09-03T19:10:41Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add dispatch_seq field spec to context/formats/return-metadata-file.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add dispatch_seq to return-meta-artifacts-template.md copyable fragment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"]
+    },
+    {
+      "id": 3,
+      "description": "Update general-research-agent, planner-agent, general-implementation-agent contracts to echo dispatch_seq",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/agents/general-implementation-agent.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Extend orchestrate-recover-outcome.sh with optional 3rd positional <expected_dispatch_seq>",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Implement comparison: empty/absent -> WARN+degrade, mismatch -> recovered=false+reason token, match -> proceed",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Create test-orchestrate-recover-outcome.sh covering backward-compat, degradation, match, mismatch, git-restored shape",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Register new test in manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md",
-      "summary": "7-phase plan to build orchestrate-cycle-postflight.sh (both-engine per-task postflight with the ported mtime and dispatch_seq gates), resolving the writer-contract and return-meta dispatch_seq schema questions research left open."
-    }
-  ],
-  "next_steps": "Run /implement 143 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788456363_df3984_143",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 11,
-    "dependency_waves": [[1, 2], [3], [4], [5], [6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a detection gate gains a suppression predicate (e.g. 'do not record a missing-artifact defect when this dispatch's writer was contractually not expected to produce one'), the fail-direction for an UNRECOGNIZED input must be chosen explicitly and paired with a loud named WARN, not left implicit. In this repo's orchestrator, an agent name absent from the contractual-handoff-writer allowlist is treated as a NON-writer (suppress the defect) because the overwhelming default is non-writers and recording-on-unknown reproduces exactly the spurious-defect bug the suppression exists to fix; the WARN naming the unrecognized agent is what keeps the allowlist gap visible instead of silent. Critically, the suppression is narrowed to the ABSENT case only -- a present-but-stale or present-but-identity-mismatched artifact still records unconditionally, so fail-open on the suppression predicate never widens into fail-open on the gate itself.",
-      "category": "PATTERN",
-      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["suppression predicate", "fail-direction", "allowlist staleness", "defect recording", "handoff writer contract"]
-    }
-  ]
+    "session_id": "sess_1788456363_df3984",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

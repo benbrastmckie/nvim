@@ -86,6 +86,34 @@ shapes are visible. Where an agent carries only a prose warning about `.artifact
 no inline JSON template), keep the prose and add the template — prose alone does not substitute
 for a copyable example.
 
+## The `dispatch_seq` Sibling Field
+
+Every agent in scope under the Classification Rule above also echoes a top-level `dispatch_seq`
+field, a sibling of `artifacts` — not a member of the `artifacts` array itself. Copy the value
+verbatim from this dispatch's own identity: the delegation context's `dispatch_seq` field when
+present, or the dispatch file's Identity section `dispatch_seq:` line otherwise. Never invent,
+increment, or recompute this value — it exists solely so a downstream identity-comparison
+consumer (`orchestrate-recover-outcome.sh`) can discriminate this dispatch's own report from a
+still-live or resurrected predecessor's, mirroring `.orchestrator-handoff.json`'s own
+`dispatch_seq` field.
+
+```json
+{
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+      "summary": "One-line description of what the summary covers."
+    }
+  ]
+}
+```
+
+See `context/formats/return-metadata-file.md`'s `### dispatch_seq (optional)` section for the
+full normative field spec, including the graceful-degradation contract for an absent value.
+
 ## Normative Cross-Reference
 
 This fragment records the copyable template; `.claude/context/formats/return-metadata-file.md`
