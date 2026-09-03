@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy and demonstrate both directions live",
+  "started_at": "2026-09-03T18:07:00Z",
+  "last_updated": "2026-09-03T18:20:42Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Deploy, verify-deploy findings unchanged, diff deployed vs source-store, demonstrate both directions live, clean up scratch artifacts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Deployed via deploy-headless.sh; diffed pre/post verify-deploy --findings sets; confirmed zero NEW findings introduced (3 findings this phase's own manifest/index registration resolved; 8 pre-existing unrelated findings unchanged)",
+      "result": "confirmed"
+    }
+  ],
+  "handoff_count": 0
+}

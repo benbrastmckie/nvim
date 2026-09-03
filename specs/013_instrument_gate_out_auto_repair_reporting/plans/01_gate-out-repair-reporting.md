@@ -375,30 +375,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Deploy and demonstrate both directions live [NOT STARTED]
+### Phase 5: Deploy and demonstrate both directions live [COMPLETED]
 
 - **Goal:** the source-store changes are deployed into `.claude/`, and both acceptance directions
   are demonstrated against a real gate-out invocation, not only against test fixtures.
 
 - **Tasks:**
-  - [ ] Run `bash .claude/scripts/deploy-headless.sh` so the edited
+  - [x] Run `bash .claude/scripts/deploy-headless.sh` so the edited
         `agent-system/extensions/core/**` files land in `.claude/scripts/`.
-  - [ ] Run `bash .claude/scripts/verify-deploy.sh --findings` and confirm no new findings
+  - [x] Run `bash .claude/scripts/verify-deploy.sh --findings` and confirm no new findings
         relative to the pre-change baseline (capture the baseline before deploying).
-  - [ ] Confirm the deployed `.claude/scripts/skill-base.sh` and
+  - [x] Confirm the deployed `.claude/scripts/skill-base.sh` and
         `.claude/scripts/command-gate-out.sh` byte-match their source-store originals for the
         changed regions (`diff` the two pairs).
-  - [ ] **Demonstration A (nonzero):** against a scratch task directory containing an artifact
+  - [x] **Demonstration A (nonzero):** against a scratch task directory containing an artifact
         with a deliberately removed metadata field, invoke `command-gate-out.sh` and capture the
         report line showing a nonzero repaired-field count. Record the verbatim line.
-  - [ ] **Demonstration B (zero):** against a scratch task directory of valid artifacts, invoke
+  - [x] **Demonstration B (zero):** against a scratch task directory of valid artifacts, invoke
         `command-gate-out.sh` and capture the report line showing zero. Record the verbatim line.
-  - [ ] Confirm each demonstration appended the expected `artifact_auto_repair` row, and remove
+  - [x] Confirm each demonstration appended the expected `artifact_auto_repair` row, and remove
         any scratch rows the demonstration wrote to the real `specs/events.jsonl` if the
         demonstration was not fully isolated.
-  - [ ] Confirm the scratch directories are removed and `git status` shows no stray fixture
+  - [x] Confirm the scratch directories are removed and `git status` shows no stray fixture
         files.
-  - [ ] Capture both verbatim report lines for the implementation summary — they are the
+  - [x] Capture both verbatim report lines for the implementation summary — they are the
         evidence the acceptance criterion demands.
 
 - **Timing:** 0.75 hours

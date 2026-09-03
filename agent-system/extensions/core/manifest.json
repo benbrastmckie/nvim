@@ -165,6 +165,7 @@
       "tests/test-corroborate-phase-counts.sh",
       "tests/test-errors-append.sh",
       "tests/test-force-phases.sh",
+      "tests/test-gate-out-repair-reporting.sh",
       "tests/test-git-commit-scoped.sh",
       "tests/test-guard-destructive-git.sh",
       "tests/test-deploy-freshness.sh",

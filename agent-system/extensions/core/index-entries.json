@@ -1164,7 +1164,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 316,
+      "line_count": 345,
       "keywords": [
         "patterns",
         "skill",
