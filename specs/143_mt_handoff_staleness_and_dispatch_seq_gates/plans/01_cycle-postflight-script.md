@@ -355,37 +355,37 @@ adding the new advance, so this does not become a second double-incrementing sit
 
 ---
 
-### Phase 5: `user_decision` relay, commit, multi-state update, lock release, output (WORK e, i, j) [NOT STARTED]
+### Phase 5: `user_decision` relay, commit, multi-state update, lock release, output (WORK e, i, j) [COMPLETED]
 
 **Goal**: The script's tail — relay, commit, state, lock — and the single JSON line contract are
 complete, so the script is callable as one unit.
 
 **Tasks**:
-- [ ] `user_decision` relay: when `.return-meta.json` or the handoff carries `user_decision`, emit
+- [x] `user_decision` relay: when `.return-meta.json` or the handoff carries `user_decision`, emit
       `verdict: "ask_user"` with the payload **relayed verbatim** (never re-derived or rephrased)
       and leave `status` exactly as the agent left it. The script never asks and never writes
-      `.decisions.json`.
-- [ ] Per-task scoped commit via `git-commit-scoped.sh --message ... --session ...
+      `.decisions.json`. *(completed)*
+- [x] Per-task scoped commit via `git-commit-scoped.sh --message ... --session ...
       --honest-index-rows ... -- "${stage_paths[@]}"`, with the staging set built from `task_dir/`,
       `specs/TODO.md`, `specs/state.json`, the plan path on implement dispatches, and every
-      `modified_files[]` entry. Never a batch commit.
-- [ ] Emit the canonical zero-`modified_files` fail-safe warning verbatim (the only sanctioned
-      wording — do not invent a second).
-- [ ] Commit-message selection keyed off `dispatch_status` and the post-gate `fresh_status`, per the
+      `modified_files[]` entry. Never a batch commit. *(completed)*
+- [x] Emit the canonical zero-`modified_files` fail-safe warning verbatim (the only sanctioned
+      wording — do not invent a second). *(completed)*
+- [x] Commit-message selection keyed off `dispatch_status` and the post-gate `fresh_status`, per the
       Standard Actions table in `rules/git-workflow.md`; every branch, including off-schema, assigns
-      a message so none falls through unassigned.
-- [ ] Commit failure is non-blocking: log and continue to the lock release, which must never be
-      withheld.
-- [ ] Multi-state update: `current_statuses`, `completed_tasks`, `failed_tasks`, and accumulate this
+      a message so none falls through unassigned. *(completed)*
+- [x] Commit failure is non-blocking: log and continue to the lock release, which must never be
+      withheld. *(completed)*
+- [x] Multi-state update: `current_statuses`, `completed_tasks`, `failed_tasks`, and accumulate this
       task's `modified_files` into `cycle_modified_files` (accumulated here, not re-read later,
-      because postflight cleanup may remove the `.return-meta.json`).
-- [ ] Unconditional per-task lock release: `task-lock.sh release "$task_num" "$session_id"` with the
-      **bare** session_id, matching the acquire invariant.
-- [ ] Assemble and print the single compact JSON line:
+      because postflight cleanup may remove the `.return-meta.json`). *(completed: scoped to the multi-task engine only — single-task callers, identified by a non-empty --loop-guard-file, have no current_statuses/completed_tasks/failed_tasks bookkeeping at all, since there is inherently only one task in single-task mode; see the script's own WORK (j) comment)*
+- [x] Unconditional per-task lock release: `task-lock.sh release "$task_num" "$session_id"` with the
+      **bare** session_id, matching the acquire invariant. *(completed: scoped to the multi-task engine only — single-task mode holds its task lock across the WHOLE invocation, released once at the outer command-gate-out.sh boundary this per-cycle script does not own; see the script's own WORK (j) comment)*
+- [x] Assemble and print the single compact JSON line:
       `{task, phase, status, phases_completed, phases_total, verdict, user_decision?, note}` with
-      `verdict` ∈ `ok|defer|blocked|failed|ask_user`.
-- [ ] Honour `--dry-run`: identical decision output, zero side effects (no commit, no state write,
-      no lock release, no defect recording).
+      `verdict` ∈ `ok|defer|blocked|failed|ask_user`. *(completed)*
+- [x] Honour `--dry-run`: identical decision output, zero side effects (no commit, no state write,
+      no lock release, no defect recording). *(completed)*
 
 **Timing**: 2 hours
 

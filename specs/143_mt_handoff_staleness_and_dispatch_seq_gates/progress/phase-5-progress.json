@@ -1,0 +1,73 @@
+{
+  "phase": 5,
+  "phase_name": "user_decision relay, commit, multi-state update, lock release, output (WORK e, i, j)",
+  "started_at": "2026-09-03T20:40:00Z",
+  "last_updated": "2026-09-03T21:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "user_decision relay: verdict=ask_user, payload relayed verbatim, status left as agent reported it",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Per-task scoped commit via git-commit-scoped.sh with --honest-index-rows and modified_files staging",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Zero-modified_files fail-safe warning (canonical wording)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Commit-message selection keyed off dispatch_status and implemented_gate_passed",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Non-blocking commit failure, lock release never withheld",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Multi-state update (current_statuses/completed_tasks/failed_tasks/cycle_modified_files), scoped to multi-task engine only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Unconditional per-task lock release, scoped to multi-task engine only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 8,
+      "description": "Assemble final compact JSON line with resolved verdict (ok|defer|blocked|failed|ask_user)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 9,
+      "description": "Honour --dry-run across every mutating call site added in Phases 2-5 (retroactive gating)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"],
+      "note": "Required touching Phase 2-4 code too, since --dry-run's 'zero side effects' contract spans the whole script, not just Phase 5's own additions. One KNOWN, DELIBERATE exception recorded in is_live()'s header: skill_gate_completion_claim's own internal non-fatal system-defect-record.sh call in its Case 3/3 refuse branch is not gated, since skipping the call would also lose the allow/refuse decision the output needs."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "out_recovered_reported_status=$(echo \"${recover_json:-{}}\" | jq -r '.status // \"unknown\"' 2>/dev/null) || out_recovered_reported_status=\"unknown\"",
+      "result": "failed",
+      "reason": "Bash parameter-expansion default-word matching stops at the FIRST unescaped '}', so \"${recover_json:-{}}\"  silently appends a stray trailing '}' to any non-empty recover_json, corrupting the JSON. jq's -r mode still printed the correct value to stdout before hitting the trailing garbage, but its own exit code 5 (parse error) triggered the || fallback, silently overwriting the correct value with the literal string 'unknown'. This is the exact landmine skill_orchestrate_propagate_completion's own header comment in skill-base.sh already documents for a different variable (completion_json) -- caught here by hand-testing the user_decision relay against a 'partial'-status fixture before Phase 6's fixture suite would have. Fixed via the documented safe pattern: `var=\"$x\"; [ -z \"$var\" ] && var='{}'`."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

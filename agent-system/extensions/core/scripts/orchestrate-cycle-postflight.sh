@@ -237,6 +237,21 @@ elif [ -z "$loop_guard_file" ] && [ -f "$mt_state_file" ]; then
 fi
 expected_dispatch_seq="${expected_dispatch_seq:-}"
 
+# is_live: false under --dry-run. Gates EVERY mutating call in this script (defect recording,
+# status transition, artifact link, round advance, commit, multi-state update, lock release) —
+# per this script's own --dry-run contract ("identical decision output, zero side effects").
+# Read-only calls (orchestrate-recover-outcome.sh, skill_corroborate_phase_counts' count-only
+# greps) are NOT gated — they never mutate anything regardless of dry_run.
+#
+# KNOWN, DELIBERATE EXCEPTION: skill_gate_completion_claim (scripts/skill-base.sh) makes its own
+# internal, non-fatal, best-effort system-defect-record.sh call in its Case 3/3 refuse branch.
+# That call is NOT gated by is_live, because skill_gate_completion_claim is a shared decision
+# function this script does not own or duplicate — skipping the call entirely under --dry-run
+# would also lose the allow/refuse decision the output JSON's implemented_gate_passed field
+# needs. This is a narrow, named, non-blocking side effect (a defect-log entry, not a state
+# mutation) and is recorded here rather than silently overreaching into shared code.
+is_live() { [ "$dry_run" != "true" ]; }
+
 handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
 notice_prefix="[orchestrate]"
 attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
@@ -250,18 +265,22 @@ if [ -f "$handoff_file" ]; then
     handoff_stale=true
     echo "${notice_prefix} ERROR: STALE HANDOFF — $handoff_file has mtime $handoff_mtime, older than this dispatch window ($dispatch_start_ts)." >&2
     echo "${notice_prefix} This dispatch did not write it. Treating as a missing handoff, not a successful read." >&2
-    record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-      --defect-class HANDOFF_STALE_OR_ABSENT \
-      --detecting-site "${detecting_site_prefix}:cycle-postflight-stale-handoff" \
-      --task "$task_number" --session "$session_id" \
-      --message "handoff mtime $handoff_mtime predates this dispatch window ($dispatch_start_ts)" \
-      --attributed-path "$attributed_path" \
-      2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-    skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-      "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
-      "${detecting_site_prefix}:cycle-postflight-stale-handoff" \
-      "handoff mtime $handoff_mtime predates this dispatch window ($dispatch_start_ts)" \
-      "$record_result"
+    if is_live; then
+      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class HANDOFF_STALE_OR_ABSENT \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-stale-handoff" \
+        --task "$task_number" --session "$session_id" \
+        --message "handoff mtime $handoff_mtime predates this dispatch window ($dispatch_start_ts)" \
+        --attributed-path "$attributed_path" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
+        "${detecting_site_prefix}:cycle-postflight-stale-handoff" \
+        "handoff mtime $handoff_mtime predates this dispatch window ($dispatch_start_ts)" \
+        "$record_result"
+    else
+      echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (stale) — no write performed." >&2
+    fi
   fi
 fi
 
@@ -272,18 +291,22 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
   elif [ -n "$expected_dispatch_seq" ] && [ "$handoff_dispatch_seq" != "$expected_dispatch_seq" ]; then
     handoff_stale=true
     echo "${notice_prefix} ERROR: DISPATCH_SEQ MISMATCH — handoff carries dispatch_seq=$handoff_dispatch_seq, this cycle minted dispatch_seq=${expected_dispatch_seq}. This handoff was NOT written by the current dispatch (a still-live predecessor's late write, or a stale copy) — treating as missing." >&2
-    record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-      --defect-class HANDOFF_STALE_OR_ABSENT \
-      --detecting-site "${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch" \
-      --task "$task_number" --session "$session_id" \
-      --message "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}" \
-      --attributed-path "$attributed_path" \
-      2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-    skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-      "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
-      "${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch" \
-      "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}" \
-      "$record_result"
+    if is_live; then
+      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class HANDOFF_STALE_OR_ABSENT \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch" \
+        --task "$task_number" --session "$session_id" \
+        --message "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}" \
+        --attributed-path "$attributed_path" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
+        "${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch" \
+        "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}" \
+        "$record_result"
+    else
+      echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (dispatch_seq mismatch) — no write performed." >&2
+    fi
   elif [ -n "$expected_dispatch_seq" ]; then
     echo "${notice_prefix} dispatch_seq match ($handoff_dispatch_seq) — handoff confirmed as this dispatch's own report." >&2
   fi
@@ -350,18 +373,22 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
     artifacts_probe_reason=$(echo "$artifacts_probe_json" | jq -r '.evidence_reason // "NONE"' 2>/dev/null) || artifacts_probe_reason="NONE"
     if [ "$artifacts_probe_suspect" = "true" ] && [ "$artifacts_probe_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
       echo "${notice_prefix} EVIDENCE: advisory probe over this dispatch's .return-meta.json (handoff-present path) reports a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — advisory only; the handoff-derived outcome above is unaffected." >&2
-      probe_record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-        --defect-class ARTIFACTS_SHAPE_MISMATCH \
-        --detecting-site "${detecting_site_prefix}:cycle-postflight-handoff-present-probe" \
-        --task "$task_number" --session "$session_id" \
-        --message "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
-        --attributed-path "$attributed_path" \
-        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-        "ARTIFACTS_SHAPE_MISMATCH" "$attributed_path" \
-        "${detecting_site_prefix}:cycle-postflight-handoff-present-probe" \
-        "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
-        "$probe_record_result"
+      if is_live; then
+        probe_record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+          --defect-class ARTIFACTS_SHAPE_MISMATCH \
+          --detecting-site "${detecting_site_prefix}:cycle-postflight-handoff-present-probe" \
+          --task "$task_number" --session "$session_id" \
+          --message "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+          --attributed-path "$attributed_path" \
+          2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+        skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+          "ARTIFACTS_SHAPE_MISMATCH" "$attributed_path" \
+          "${detecting_site_prefix}:cycle-postflight-handoff-present-probe" \
+          "advisory probe over .return-meta.json on the handoff-present path found a non-empty artifacts array yielding no path" \
+          "$probe_record_result"
+      else
+        echo "${notice_prefix} [dry-run] would record ARTIFACTS_SHAPE_MISMATCH (handoff-present probe) — no write performed." >&2
+      fi
     fi
   fi
 
@@ -401,18 +428,22 @@ else
       plan_markers_verified="${cpc_c#plan_markers_verified=}"
     elif [ "$evidence_suspect" = "true" ] && [ "$evidence_reason" = "ARTIFACTS_SHAPE_MISMATCH" ]; then
       echo "${notice_prefix} EVIDENCE: recovered .return-meta.json reports status=${dispatch_status} with a non-empty artifacts array yielding no resolvable path (evidence_reason=ARTIFACTS_SHAPE_MISMATCH) — this is proof of a shape mismatch (e.g. a bare-string artifacts array), not proof of \"no artifacts\"." >&2
-      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-        --defect-class ARTIFACTS_SHAPE_MISMATCH \
-        --detecting-site "${detecting_site_prefix}:cycle-postflight-recovered" \
-        --task "$task_number" --session "$session_id" \
-        --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
-        --attributed-path "$attributed_path" \
-        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-        "ARTIFACTS_SHAPE_MISMATCH" "$attributed_path" \
-        "${detecting_site_prefix}:cycle-postflight-recovered" \
-        "recovered return-meta carried a non-empty artifacts array yielding no path" \
-        "$record_result"
+      if is_live; then
+        record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+          --defect-class ARTIFACTS_SHAPE_MISMATCH \
+          --detecting-site "${detecting_site_prefix}:cycle-postflight-recovered" \
+          --task "$task_number" --session "$session_id" \
+          --message "recovered return-meta carried a non-empty artifacts array yielding no path" \
+          --attributed-path "$attributed_path" \
+          2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+        skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+          "ARTIFACTS_SHAPE_MISMATCH" "$attributed_path" \
+          "${detecting_site_prefix}:cycle-postflight-recovered" \
+          "recovered return-meta carried a non-empty artifacts array yielding no path" \
+          "$record_result"
+      else
+        echo "${notice_prefix} [dry-run] would record ARTIFACTS_SHAPE_MISMATCH (recovered path) — no write performed." >&2
+      fi
     fi
   else
     # ─── WORK (d): writer-contract-aware recording for an ABSENT handoff ─────────────────────────
@@ -422,25 +453,44 @@ else
     if [ ! -f "$handoff_file" ]; then
       if is_contractual_handoff_writer "$agent_name"; then
         echo "${notice_prefix} ERROR: Skill did not write orchestrator handoff (agent '${agent_name}' is a contractual handoff writer)." >&2
-        record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-          --defect-class HANDOFF_STALE_OR_ABSENT \
-          --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
-          --task "$task_number" --session "$session_id" \
-          --message "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
-          --attributed-path "$attributed_path" \
-          2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-        skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-          "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
-          "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
-          "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
-          "$record_result"
+        if is_live; then
+          record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+            --defect-class HANDOFF_STALE_OR_ABSENT \
+            --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
+            --task "$task_number" --session "$session_id" \
+            --message "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
+            --attributed-path "$attributed_path" \
+            2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+          skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+            "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
+            "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
+            "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
+            "$record_result"
+        else
+          echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (absent, contractual writer) — no write performed." >&2
+        fi
       else
         echo "${notice_prefix} WARN: agent name '${agent_name}' is not on the contractual handoff-writer allowlist — treated as a non-writer, no defect recorded for the absent handoff. If '${agent_name}' is a genuine new hard-mode writer, add it to is_contractual_handoff_writer() in this script." >&2
       fi
     fi
 
-    out_recovered_reported_status=$(echo "${recover_json:-{}}" | jq -r '.status // "unknown"' 2>/dev/null) || out_recovered_reported_status="unknown"
+    # NOTE: default via `[ -z ] && recover_json_for_status='{}'`, never `"${recover_json:-{}}"` —
+    # bash parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that
+    # inline idiom silently appends a stray trailing `}` to any non-empty value, corrupting the
+    # JSON and forcing this read to fail closed to "unknown" via `2>/dev/null` even when
+    # recover_json correctly carried a real status. See skill_orchestrate_propagate_completion's
+    # own header comment in scripts/skill-base.sh for the same landmine, documented once there.
+    recover_json_for_status="$recover_json"
+    [ -z "$recover_json_for_status" ] && recover_json_for_status='{}'
+    out_recovered_reported_status=$(echo "$recover_json_for_status" | jq -r '.status // "unknown"' 2>/dev/null) || out_recovered_reported_status="unknown"
     if [ "$out_recovered_reported_status" != "unknown" ]; then
+      # Diagnostic only — this does NOT make the outcome "recovered" (have_outcome stays false,
+      # so no status transition is ever attempted on the strength of this value alone). It only
+      # lets the final output JSON's own `status` field echo what the agent actually reported
+      # (e.g. "partial") instead of an uninformative empty string — most useful for WORK (e)'s
+      # user_decision relay, where "leave status exactly as the agent left it" reads best as the
+      # agent's own reported status, not blank.
+      dispatch_status="$out_recovered_reported_status"
       echo "${notice_prefix} .return-meta.json reports status=${out_recovered_reported_status} (not recovered as a successful outcome)." >&2
     fi
 
@@ -454,18 +504,22 @@ else
     fi
 
     if [ "${transport_error:-false}" = "true" ] && [ "$meta_touched" = "false" ]; then
-      if [ -n "$loop_guard_file" ]; then
-        infra_failures=$(jq -r '.infra_failures // 0' "$defect_store" 2>/dev/null) || infra_failures=0
-        infra_failures=$((infra_failures + 1))
-        jq --argjson infra "$infra_failures" --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-          '.infra_failures = $infra | .last_updated = $updated' \
-          "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+      if is_live; then
+        if [ -n "$loop_guard_file" ]; then
+          infra_failures=$(jq -r '.infra_failures // 0' "$defect_store" 2>/dev/null) || infra_failures=0
+          infra_failures=$((infra_failures + 1))
+          jq --argjson infra "$infra_failures" --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '.infra_failures = $infra | .last_updated = $updated' \
+            "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+        else
+          infra_failures=$(jq -r --arg t "$task_number" '.infra_failures[$t] // 0' "$defect_store" 2>/dev/null) || infra_failures=0
+          infra_failures=$((infra_failures + 1))
+          jq --arg t "$task_number" --argjson infra "$infra_failures" \
+            '.infra_failures[$t] = $infra' \
+            "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+        fi
       else
-        infra_failures=$(jq -r --arg t "$task_number" '.infra_failures[$t] // 0' "$defect_store" 2>/dev/null) || infra_failures=0
-        infra_failures=$((infra_failures + 1))
-        jq --arg t "$task_number" --argjson infra "$infra_failures" \
-          '.infra_failures[$t] = $infra' \
-          "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+        infra_failures="<dry-run, not incremented>"
       fi
       echo "${notice_prefix} INFRA FAILURE ${infra_failures} — Agent tool transport/API failure with no subagent footprint. Not charged against the cycle budget." >&2
       infra_exempt_cycle=true
@@ -513,28 +567,47 @@ fi
 if [ "$have_outcome" = "true" ]; then
   case "$dispatch_status" in
     researched)
-      skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      if is_live; then
+        skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      else
+        echo "${notice_prefix} [dry-run] would transition task ${task_number} to researched — no write performed." >&2
+      fi
       ;;
     planned)
-      skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      if is_live; then
+        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      else
+        echo "${notice_prefix} [dry-run] would transition task ${task_number} to planned — no write performed." >&2
+      fi
       ;;
     implemented)
+      # skill_gate_completion_claim is a pure decision function (see is_live()'s own header
+      # comment for its one KNOWN, DELIBERATE non-gated internal side effect) — always called,
+      # even under --dry-run, so implemented_gate_passed is always a real decision in the output.
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "$notice_prefix"; then
         implemented_gate_passed=true
-        skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode"
-        skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
-          "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+        if is_live; then
+          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode"
+          skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
+            "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+        else
+          echo "${notice_prefix} [dry-run] would transition task ${task_number} to completed and propagate completion_summary/roadmap_items — no write performed." >&2
+        fi
       else
         implemented_gate_passed=false
         # Case 3/3 (phases_total==0 AND plan_markers_verified != "true") already recorded inside
         # the gate; re-derive that case here for the caller-side observation log. Case 1 (phases
         # accounting present, incomplete) is an ordinary refuse and is NOT a defect.
         if [ "${phases_total:-0}" -eq 0 ] && [ "${plan_markers_verified:-}" != "true" ]; then
-          skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-            "META_MISSING_AFTER_NARRATION" "$attributed_path" \
-            "scripts/skill-base.sh:skill_gate_completion_claim" \
-            "completion claimed with phases_total=0 and unverified plan markers" ""
+          if is_live; then
+            skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+              "META_MISSING_AFTER_NARRATION" "$attributed_path" \
+              "scripts/skill-base.sh:skill_gate_completion_claim" \
+              "completion claimed with phases_total=0 and unverified plan markers" ""
+          else
+            echo "${notice_prefix} [dry-run] would record META_MISSING_AFTER_NARRATION — no write performed." >&2
+          fi
         fi
       fi
       ;;
@@ -552,16 +625,20 @@ if [ "$have_outcome" = "true" ]; then
       offschema_display="${dispatch_status:-<empty>}"
       echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
       echo "${notice_prefix} ERROR: task ${task_number} outcome carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): ${inferred_phase}. Remedy: inspect the handoff/.return-meta.json by hand, then re-run /orchestrate ${task_number}${command_suffix}." >&2
-      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-        --defect-class OFF_SCHEMA_STATUS \
-        --detecting-site "${detecting_site_prefix}:cycle-postflight-tier-c" \
-        --task "$task_number" --session "$session_id" \
-        --message "dispatch_status '${offschema_display}' is off-schema" \
-        --attributed-path "$attributed_path" \
-        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-        "OFF_SCHEMA_STATUS" "$attributed_path" "${detecting_site_prefix}:cycle-postflight-tier-c" \
-        "dispatch_status '${offschema_display}' is off-schema" "$record_result"
+      if is_live; then
+        record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+          --defect-class OFF_SCHEMA_STATUS \
+          --detecting-site "${detecting_site_prefix}:cycle-postflight-tier-c" \
+          --task "$task_number" --session "$session_id" \
+          --message "dispatch_status '${offschema_display}' is off-schema" \
+          --attributed-path "$attributed_path" \
+          2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+        skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+          "OFF_SCHEMA_STATUS" "$attributed_path" "${detecting_site_prefix}:cycle-postflight-tier-c" \
+          "dispatch_status '${offschema_display}' is off-schema" "$record_result"
+      else
+        echo "${notice_prefix} [dry-run] would record OFF_SCHEMA_STATUS — no write performed." >&2
+      fi
       ;;
   esac
 fi
@@ -575,8 +652,12 @@ if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
     summary) field_name='**Summary**';  next_field='**Description**' ;;
     *)       field_name='**Summary**';  next_field='**Description**' ;;
   esac
-  skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" \
-    "$artifact_summary" "$field_name" "$next_field" "$session_id"
+  if is_live; then
+    skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" \
+      "$artifact_summary" "$field_name" "$next_field" "$session_id"
+  else
+    echo "${notice_prefix} [dry-run] would link artifact ${artifact_path} (type=${artifact_type}) — no write performed." >&2
+  fi
   artifact_linked=true
 fi
 
@@ -587,13 +668,17 @@ elif [ "$force_invoked" = "true" ] && { [ "$dispatch_status" = "planned" ] || [ 
   do_artifact_round_advance=true
 fi
 if [ "$do_artifact_round_advance" = "true" ]; then
-  echo "${notice_prefix} Advancing next_artifact_number (dispatch_status=${dispatch_status}, force_invoked=${force_invoked})..." >&2
-  bash "${SCRIPT_DIR}/state-write.sh" \
-    '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
-      ((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1' \
-    --session-id "$session_id" \
-    --argjson num "$task_number" \
-    || echo "${notice_prefix} WARNING: Failed to advance next_artifact_number (non-blocking)" >&2
+  if is_live; then
+    echo "${notice_prefix} Advancing next_artifact_number (dispatch_status=${dispatch_status}, force_invoked=${force_invoked})..." >&2
+    bash "${SCRIPT_DIR}/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).next_artifact_number =
+        ((.active_projects[] | select(.project_number == $num)).next_artifact_number // 1) + 1' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      || echo "${notice_prefix} WARNING: Failed to advance next_artifact_number (non-blocking)" >&2
+  else
+    echo "${notice_prefix} [dry-run] would advance next_artifact_number (dispatch_status=${dispatch_status}, force_invoked=${force_invoked}) — no write performed." >&2
+  fi
 fi
 
 # ─── WORK (h): modified_files vs file_scope excursion advisory (detection only) ────────────────
@@ -616,19 +701,153 @@ if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
   fi
 fi
 
-# ─── Provisional output (extended by Phase 5) ──────────────────────────────────────────────────
-jq -n -c \
-  --argjson task "$task_number" \
-  --arg phase "$phase" \
-  --arg status "$dispatch_status" \
-  --argjson phases_completed "$phases_completed" \
-  --argjson phases_total "$phases_total" \
-  --argjson offschema "$offschema_dispatch_status" \
-  --argjson artifact_linked "$artifact_linked" \
-  --arg verdict "ok" \
-  --arg note "PROVISIONAL (Phase 4 of 5) — user_decision relay, commit, multi-state update, and lock release not yet implemented." \
-  '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
-    phases_total: $phases_total, offschema_dispatch_status: $offschema, artifact_linked: $artifact_linked,
-    verdict: $verdict, note: $note}'
+# ─── WORK (e): user_decision relay ──────────────────────────────────────────────────────────────
+# Relayed VERBATIM from whichever source carries it, never re-derived or rephrased. Checked here
+# (not earlier) so it reflects the SAME .return-meta.json this run already resolved outcome
+# fields from — a fresh read would risk a second file open racing a concurrent writer for no
+# benefit, since nothing above this point could have changed the file's own user_decision field.
+user_decision_json="null"
+if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
+  hd_ud=$(jq -c '.user_decision // empty' "$handoff_file" 2>/dev/null)
+  [ -n "$hd_ud" ] && user_decision_json="$hd_ud"
+fi
+if [ "$user_decision_json" = "null" ] && [ -f "${TASK_DIR}/.return-meta.json" ]; then
+  rm_ud=$(jq -c '.user_decision // empty' "${TASK_DIR}/.return-meta.json" 2>/dev/null)
+  [ -n "$rm_ud" ] && user_decision_json="$rm_ud"
+fi
+if [ "$user_decision_json" != "null" ]; then
+  echo "${notice_prefix} USER_DECISION payload present for task ${task_number} — relaying verbatim as verdict=ask_user. Status is left exactly as the agent reported it (${dispatch_status:-<empty>}); this script never asks and never writes .decisions.json." >&2
+fi
+
+# ─── Verdict resolution ──────────────────────────────────────────────────────────────────────────
+# ask_user takes precedence over every other signal — a pending question is always surfaced,
+# regardless of what the status ladder above did with the underlying dispatch_status.
+if [ "$user_decision_json" != "null" ]; then
+  verdict="ask_user"
+elif [ "$offschema_dispatch_status" = "true" ]; then
+  verdict="failed"
+elif [ "$have_outcome" = "true" ]; then
+  case "$dispatch_status" in
+    researched|planned) verdict="ok" ;;
+    implemented)
+      if [ "$implemented_gate_passed" = "true" ]; then verdict="ok"; else verdict="defer"; fi
+      ;;
+    partial) verdict="defer" ;;
+    failed)  verdict="failed" ;;
+    blocked) verdict="blocked" ;;
+    *)       verdict="failed" ;;
+  esac
+elif [ "$infra_exempt_cycle" = "true" ]; then
+  verdict="defer"
+else
+  # Genuinely missing handoff, recovery also declined, not an infra-exempt cycle — the historical
+  # multi-task fallback ("Add to failed_tasks") applies uniformly to both engines here.
+  verdict="failed"
+fi
+
+# ─── WORK (i): per-task scoped commit ───────────────────────────────────────────────────────────
+if is_live; then
+  stage_paths=("${TASK_DIR}/" "$(dirname "$STATE_FILE")/TODO.md" "$STATE_FILE")
+  [ -n "${plan_path:-}" ] && [ "$phase" = "implement" ] && stage_paths+=("$plan_path")
+  meta_file="${TASK_DIR}/.return-meta.json"
+  modified_count=0
+  while IFS= read -r f; do
+    if [ -n "$f" ]; then
+      stage_paths+=("$f")
+      modified_count=$((modified_count + 1))
+    fi
+  done < <(jq -r '.modified_files[]? // empty' "$meta_file" 2>/dev/null)
+
+  if [ "$modified_count" -eq 0 ]; then
+    echo "[postflight] WARNING: no modified_files reported for task #${task_number}; source-file changes NOT committed automatically. Review and commit manually." >&2
+  fi
+
+  case "$dispatch_status" in
+    researched) commit_message="task ${task_number}: complete research" ;;
+    planned)    commit_message="task ${task_number}: create implementation plan" ;;
+    implemented)
+      if [ "$implemented_gate_passed" = "true" ]; then
+        commit_message="task ${task_number}: complete implementation"
+      else
+        commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})"
+      fi
+      ;;
+    partial) commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})" ;;
+    failed|blocked) commit_message="task ${task_number}: orchestration dispatch ${dispatch_status}" ;;
+    *) commit_message="task ${task_number}: orchestration dispatch off-schema" ;;
+  esac
+
+  bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
+    --message "$commit_message" \
+    --session "$session_id" \
+    --honest-index-rows "$task_number" \
+    -- "${stage_paths[@]}" \
+    || echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
+else
+  echo "${notice_prefix} [dry-run] would commit task ${task_number}'s changes — no commit performed." >&2
+fi
+
+# ─── WORK (j): multi-state update and per-task lock release (multi-task engine only) ───────────
+# Single-task callers (--loop-guard-file given) hold the task lock across the WHOLE invocation,
+# releasing it once at the outer command-gate-out.sh boundary this per-cycle script does not
+# own, and have no "multi-state" bookkeeping at all (current_statuses/completed_tasks/failed_tasks
+# are inherently multi-task concepts — there is only ever one task in single-task mode). Both
+# steps below are therefore scoped to the multi-task engine (loop_guard_file empty) only.
+if [ -z "$loop_guard_file" ]; then
+  if is_live; then
+    fresh_status=$(jq -r --argjson num "$task_number" \
+      '.active_projects[] | select(.project_number == $num) | .status // ""' "$STATE_FILE" 2>/dev/null)
+    jq --arg t "$task_number" --arg fs "${fresh_status:-}" \
+      '.current_statuses[$t] = $fs' \
+      "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+
+    if [ "$fresh_status" = "completed" ]; then
+      jq --argjson t "$task_number" '.completed_tasks = ((.completed_tasks // []) + [$t] | unique)' \
+        "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+    fi
+    if [ "$dispatch_status" = "failed" ] || [ "$dispatch_status" = "blocked" ] || [ "$offschema_dispatch_status" = "true" ]; then
+      jq --argjson t "$task_number" '.failed_tasks = ((.failed_tasks // []) + [$t] | unique)' \
+        "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+    fi
+
+    # Accumulate modified_files into cycle_modified_files HERE (not re-read later) — the
+    # scoped commit above may have already cleaned up ephemeral per-task files, and cleanup can
+    # remove .return-meta.json before Stage MT-3 step 7's overlap computation would otherwise run.
+    while IFS= read -r f; do
+      [ -n "$f" ] && jq --arg f "$f" '.cycle_modified_files = ((.cycle_modified_files // []) + [$f] | unique)' \
+        "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+    done < <(jq -r '.modified_files[]? // empty' "${TASK_DIR}/.return-meta.json" 2>/dev/null)
+
+    bash "${SCRIPT_DIR}/task-lock.sh" release "$task_number" "$session_id"
+  else
+    echo "${notice_prefix} [dry-run] would update multi-state bookkeeping and release the per-task lock for task ${task_number} — no write, no release performed." >&2
+  fi
+fi
+
+# ─── Final output ────────────────────────────────────────────────────────────────────────────────
+if [ "$user_decision_json" != "null" ]; then
+  jq -n -c \
+    --argjson task "$task_number" \
+    --arg phase "$phase" \
+    --arg status "$dispatch_status" \
+    --argjson phases_completed "$phases_completed" \
+    --argjson phases_total "$phases_total" \
+    --arg verdict "$verdict" \
+    --argjson user_decision "$user_decision_json" \
+    --arg note "" \
+    '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
+      phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision, note: $note}'
+else
+  jq -n -c \
+    --argjson task "$task_number" \
+    --arg phase "$phase" \
+    --arg status "$dispatch_status" \
+    --argjson phases_completed "$phases_completed" \
+    --argjson phases_total "$phases_total" \
+    --arg verdict "$verdict" \
+    --arg note "" \
+    '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
+      phases_total: $phases_total, verdict: $verdict, note: $note}'
+fi
 
 exit 0
