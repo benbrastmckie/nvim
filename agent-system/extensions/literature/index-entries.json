@@ -202,7 +202,7 @@
         "in_zotero_no_pdf"
       ],
       "summary": "How literature-ingest-online.sh creates a Zotero item with PDF attachment (item-add wrapping zot add --pdf), envelope-field mitigation, %PDF gate, storage re-pointing, in_zotero_no_pdf sub-path",
-      "line_count": 208,
+      "line_count": 234,
       "load_when": {
         "agents": [
           "literature-agent",

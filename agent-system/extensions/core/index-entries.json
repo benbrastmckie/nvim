@@ -1120,7 +1120,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Postflight control flow patterns",
-      "line_count": 318,
+      "line_count": 405,
       "keywords": [
         "patterns",
         "postflight",
@@ -1516,7 +1516,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 12-value task-status enum",
-      "line_count": 267,
+      "line_count": 271,
       "keywords": [
         "state",
         "schema",
