@@ -303,46 +303,46 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Fixture-driven regression suite, both directions [NOT STARTED]
+### Phase 4: Fixture-driven regression suite, both directions [COMPLETED]
 
 - **Goal:** a new committed test suite proves the nonzero and the zero direction from the same
   code path, pins the three `validate-artifact.sh` summary-line shapes, and covers the
   validation-could-not-run branch — closing the zero-coverage gap this function has today.
 
 - **Tasks:**
-  - [ ] Create `agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh`,
+  - [x] Create `agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh`,
         modeled structurally on `test-skill-base-lifecycle.sh`: `mktemp -d` workdir with an
         EXIT-trap cleanup, deploy-tree-first / source-store-fallback candidate resolution,
         `pass()`/`fail()`/`info()` helpers with integer counters, exit 0 all-pass / 1 any-fail /
         2 environment error.
-  - [ ] Adopt that suite's isolation contract verbatim: build an isolated fixture repo under the
+  - [x] Adopt that suite's isolation contract verbatim: build an isolated fixture repo under the
         workdir, `cd` into it before exercising anything that uses the bare relative
         `.claude/scripts/...` paths, and assert a pre/post `git status --porcelain specs/`
         baseline so the real `specs/` tree is provably untouched.
-  - [ ] Case: **repaired direction** — a plan artifact missing a required metadata field produces
+  - [x] Case: **repaired direction** — a plan artifact missing a required metadata field produces
         `SKILL_VALIDATE_FIXES` greater than zero and a gate-out report line naming that nonzero
         count.
-  - [ ] Case: **clean direction** — a fully valid artifact produces zero fixes and a report line
+  - [x] Case: **clean direction** — a fully valid artifact produces zero fixes and a report line
         naming zero. Assert the line is *present*, not merely that no error occurred; a report
         that only appears on repair fails the acceptance criterion.
-  - [ ] Case: **multi-file aggregation** — two repairable artifacts across two subdirectories sum
+  - [x] Case: **multi-file aggregation** — two repairable artifacts across two subdirectories sum
         correctly and both paths appear in `SKILL_VALIDATE_FIXED_FILES`.
-  - [ ] Case: **errors-remaining alongside fixes** — an artifact that gets a metadata field fixed
+  - [x] Case: **errors-remaining alongside fixes** — an artifact that gets a metadata field fixed
         while a required *section* is still missing reports nonzero fixes *and* nonzero errors,
         pinning the exit-2 conflation named in D-A's residual-risk bullet.
-  - [ ] Case: **validation could not run** — a type or path that drives exit 3/4/5 yields a
+  - [x] Case: **validation could not run** — a type or path that drives exit 3/4/5 yields a
         nonzero error count, never a silent zero.
-  - [ ] Case: **no stale globals** — a call over a repairable fixture followed by a call over a
+  - [x] Case: **no stale globals** — a call over a repairable fixture followed by a call over a
         clean fixture reports zero on the second call.
-  - [ ] Case: **summary-line format pinning** — assert `validate-artifact.sh`'s three terminal
+  - [x] Case: **summary-line format pinning** — assert `validate-artifact.sh`'s three terminal
         shapes match their expected patterns (`^\[FIXED\] [0-9]+ field\(s\) auto-repaired`,
         `^\[PASS\] `, `^\[FAIL\] [0-9]+ error`), so a future wording change fails here loudly
         rather than degrading counts to zero (D-B's mitigation).
-  - [ ] Case: **events row** — the repaired direction appends exactly one
+  - [x] Case: **events row** — the repaired direction appends exactly one
         `artifact_auto_repair` row with the matching counts in its `detail` object.
-  - [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm the new
+  - [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm the new
         suite is glob-discovered and passes alongside the existing suites.
-  - [ ] Update `test-skill-base-lifecycle.sh`'s "Residual (uncovered)" footer to remove
+  - [x] Update `test-skill-base-lifecycle.sh`'s "Residual (uncovered)" footer to remove
         `skill_validate_task_artifacts`, which is no longer uncovered, and to point at the new
         suite.
 

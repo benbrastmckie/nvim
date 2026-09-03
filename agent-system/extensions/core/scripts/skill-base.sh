@@ -549,13 +549,22 @@ skill_validate_task_artifacts() {
           # "[PASS] {type} artifact is valid (W warning(s))"
           if [[ "$last_line" =~ \(([0-9]+)\ warning ]]; then
             file_warnings="${BASH_REMATCH[1]}"
+          else
+            # Unrecognized exit-0 shape: never silently zero (D-B's own mitigation applied to
+            # itself) -- an unparseable summary line is reported as one error, not an all-clear.
+            file_errors=1
           fi
           ;;
         1)
-          # "[FAIL] E error(s), W warning(s)"
+          # "[FAIL] E error(s), W warning(s)" -- the counted shape. validate-artifact.sh also
+          # exits 1 for the uncounted "[FAIL] File is empty: ..." shape, which this regex does
+          # NOT match; the else branch below covers that case (and any other unrecognized exit-1
+          # shape) with an explicit error rather than a silent zero.
           if [[ "$last_line" =~ ([0-9]+)\ error\(s\),\ ([0-9]+)\ warning ]]; then
             file_errors="${BASH_REMATCH[1]}"
             file_warnings="${BASH_REMATCH[2]}"
+          else
+            file_errors=1
           fi
           ;;
         2)
@@ -564,6 +573,8 @@ skill_validate_task_artifacts() {
             file_fixes="${BASH_REMATCH[1]}"
             file_errors="${BASH_REMATCH[2]}"
             file_warnings="${BASH_REMATCH[3]}"
+          else
+            file_errors=1
           fi
           ;;
         *)

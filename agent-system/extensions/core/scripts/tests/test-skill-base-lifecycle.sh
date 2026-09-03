@@ -634,8 +634,10 @@ echo "Residual (uncovered by this suite, out of scope per this suite's own autho
 echo "  skill_get_extension_dir, skill_run_extension_hook, _events_append_observable,"
 echo "  skill_validate_input, skill_create_postflight_marker, skill_context_injection,"
 echo "  skill_read_artifact_number, skill_read_metadata, skill_validate_artifact,"
-echo "  skill_validate_task_artifacts, skill_propagate_completion_summary,"
+echo "  skill_propagate_completion_summary,"
 echo "  skill_corroborate_phase_counts (already covered by test-corroborate-phase-counts.sh)."
+echo "  skill_validate_task_artifacts is now covered by test-gate-out-repair-reporting.sh"
+echo "  (its SKILL_VALIDATE_* aggregation globals and command-gate-out.sh's report/events leg)."
 
 if [[ "$FAILED" -gt 0 ]]; then
   exit 1

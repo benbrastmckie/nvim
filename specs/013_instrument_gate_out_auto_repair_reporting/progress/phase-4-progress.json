@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Fixture-driven regression suite, both directions",
+  "started_at": "2026-09-03T17:53:00Z",
+  "last_updated": "2026-09-03T18:03:54Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-gate-out-repair-reporting.sh with 8 cases + run-all.sh discovery check + residuals footer fix",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+        "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Confirmed reverting Phase 1 exit-code parsing in a scratch copy makes 9/19 new cases fail (non-vacuous)",
+      "result": "confirmed"
+    }
+  ],
+  "handoff_count": 0
+}
