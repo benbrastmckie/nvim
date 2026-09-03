@@ -105,7 +105,10 @@ three: `update-phase-status.sh` (mutates a single phase's status in place), `upd
 (the plan-level status-field equivalent), and `update-task-status.sh`'s opt-in `--phase-check`
 backstop (counts conforming headings across the whole plan to decide whether an implement
 postflight transition may proceed). All three treat this heading — never the `- [ ]`/`- [x]`
-task checklist — as the authoritative phase-completion signal.
+task checklist — as the authoritative phase-completion signal. The plan-level `- **Status**:`
+field parsed by `update-plan-status.sh` has its own, separate trailing-text rule — see
+"Trailing annotations on the plan-level Status line" under "Plan-level vs. phase-level markers"
+below; the two grains are cross-referenced but not conflated.
 
 ### Canonical phase-heading shape
 
@@ -363,6 +366,25 @@ vocabularies at two distinct grains, and their divergence is intentional, not an
   resumable; `[COMPLETED WITH EXCLUSIONS]` = every remaining item was decided, justified, and will
   not be revisited. See status-markers.md's `[COMPLETED WITH EXCLUSIONS]` subsection for the full
   admission test and `## Reasoned Exclusions` above for its required record format.
+
+#### Trailing annotations on the plan-level Status line
+
+The plan-level Status line MUST begin `- **Status**: ` followed immediately by a single
+`[...]` pair drawn from the six-value vocabulary above. Arbitrary trailing text after the
+closing `]` is **accepted and preserved** across status transitions — this is what makes a
+resumed plan's annotation (e.g. noting which phases were re-opened) survive a later stamp. Text
+between the prefix and the opening `[`, or a line with no bracket pair at all, is malformed and
+rejected loudly rather than silently accepted or silently ignored.
+
+- **Accepted** (trailing annotation preserved verbatim across a stamp):
+  `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)`
+- **Rejected** (text intrudes before the bracket, not after it):
+  `- **Status**: see [NOTE]`
+
+`update-plan-status.sh` is the enforcing consumer. A malformed line produces a line-numbered
+diagnostic to stderr naming the specific failing condition (missing `- **Status**:` prefix, no
+bracket pair, or unexpected text before the bracket) and quoting the offending line verbatim,
+rather than a single undifferentiated failure message.
 
 See status-markers.md for the full task-level vocabulary and the cross-reference to this
 subsection.

@@ -776,6 +776,10 @@ update_plan_file() {
       exit 3
     else
       echo "Warning: plan file update failed (non-fatal)" >&2
+      echo "         Task $task_number ($project_name): the line-numbered diagnostic from" >&2
+      echo "         update-plan-status.sh above names the malformed plan-level Status line." >&2
+      echo "         This is the leading indicator of a fatal failure at implement postflight" >&2
+      echo "         (exit 3) if the plan file is not fixed before then." >&2
     fi
   fi
 }

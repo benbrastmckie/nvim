@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Document the trailing-text tolerance policy in plan-format.md",
+  "started_at": "2026-09-03T19:29:39Z",
+  "last_updated": "2026-09-03T19:31:38Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add trailing-annotation policy passage under Plan-level vs. phase-level markers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add forward pointer at Consumers of this heading contract paragraph",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

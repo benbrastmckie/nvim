@@ -206,6 +206,7 @@
       "tests/test-roadmap-items-producer.sh",
       "tests/test-routing-resolution.sh",
       "tests/test-skill-base-lifecycle.sh",
+      "tests/test-update-plan-status.sh",
       "tests/test-update-task-status.sh",
       "tests/test-validate-handoff.sh",
       "tests/test-validate-handoff-location.sh",

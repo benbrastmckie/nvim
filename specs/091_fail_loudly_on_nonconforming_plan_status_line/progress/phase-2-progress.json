@@ -1,0 +1,71 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture-driven test suite for update-plan-status.sh",
+  "started_at": "2026-09-03T19:08:02Z",
+  "last_updated": "2026-09-03T19:29:20Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-update-plan-status.sh with pass/fail/info scaffolding and REPO_ROOT/script resolution",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Build mktemp-d scratch fixture tree shaped as specs/{NNN}_{slug}/plans",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Cover all cases: M1, M2, M3, trailing annotation, two bracket pairs, well-formed, no-op, unknown status, missing dir/file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Assert pairwise distinctness of M1/M2/M3 stderr",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Assert no mutation on every failing case via checksum",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "chmod +x and run the suite; run run-all.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Deploy new test file via deploy-headless.sh alone (without a manifest.json provides.scripts entry)",
+      "result": "failed",
+      "reason": "deploy-headless.sh only copies files declared in the extension manifest's provides.scripts list; a new file not listed there is silently never deployed. Fixed by adding 'tests/test-update-plan-status.sh' to agent-system/extensions/core/manifest.json's provides.scripts array, then redeploying."
+    }
+  ],
+  "handoff_count": 0
+}

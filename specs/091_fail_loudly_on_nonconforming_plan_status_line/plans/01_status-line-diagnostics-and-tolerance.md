@@ -204,33 +204,33 @@ into an existing message, and record the widened count here.
 
 ---
 
-### Phase 2: Fixture-driven test suite for update-plan-status.sh [NOT STARTED]
+### Phase 2: Fixture-driven test suite for update-plan-status.sh [COMPLETED]
 
 **Goal**: Create the missing dedicated regression suite covering every shape Phase 1 defines.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-update-plan-status.sh`, following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-update-plan-status.sh`, following
       the structural model of `test-phase-heading-patterns.sh`: `set -uo pipefail`,
       `pass()`/`fail()`/`info()` helpers, PASSED/FAILED counters, exit 0 all-pass / 1 any-fail /
       2 environment error, and the git-root-first REPO_ROOT resolution so the suite runs from
       both the source-store and deployed locations.
-- [ ] Resolve the script under test via the same deploy-tree-first / source-store-fallback
+- [x] Resolve the script under test via the same deploy-tree-first / source-store-fallback
       candidate list that sibling suites use, so Phase 5 can run this identical file against the
       deployed copy.
-- [ ] Build fixtures in a `mktemp -d` scratch tree shaped as `specs/{NNN}_{slug}/plans/01_*.md`,
+- [x] Build fixtures in a `mktemp -d` scratch tree shaped as `specs/{NNN}_{slug}/plans/01_*.md`,
       since the script resolves its target from that layout; `cd` into the scratch root so the
       script's relative `specs/...` resolution works, and clean up on `trap EXIT`.
-- [ ] Cases: M1 missing prefix; M2 no brackets; M3 text before bracket
+- [x] Cases: M1 missing prefix; M2 no brackets; M3 text before bracket
       (`- **Status**: see [NOTE]`); trailing annotation (success + preservation); two bracket
       pairs on one line (first rewritten, remainder preserved verbatim); well-formed transition;
       already-at-target no-op (rc=0, stdout equals plan path, file unchanged); unknown status
       token still rejected; missing plan dir and missing plan file still produce their own
       pre-existing messages.
-- [ ] Assert **distinctness**: collect the stderr of M1/M2/M3 and fail if any two are equal, so a
+- [x] Assert **distinctness**: collect the stderr of M1/M2/M3 and fail if any two are equal, so a
       future regression that collapses them back to one message is caught mechanically.
-- [ ] Assert no mutation on every failing case by checksumming the fixture before and after.
-- [ ] `chmod +x` the suite so `run-all.sh` does not report it as a loud `[SKIP]`.
-- [ ] Run the suite; then run `bash agent-system/extensions/core/scripts/tests/run-all.sh` to
+- [x] Assert no mutation on every failing case by checksumming the fixture before and after.
+- [x] `chmod +x` the suite so `run-all.sh` does not report it as a loud `[SKIP]`.
+- [x] Run the suite; then run `bash agent-system/extensions/core/scripts/tests/run-all.sh` to
       confirm discovery picks it up and no sibling suite regressed.
 
 **Timing**: 1 hour
@@ -258,29 +258,29 @@ leaving the asserted count stale.
 
 ---
 
-### Phase 3: Document the trailing-text tolerance policy in plan-format.md [NOT STARTED]
+### Phase 3: Document the trailing-text tolerance policy in plan-format.md [COMPLETED]
 
 **Goal**: Make the accepted plan-level Status-line shape an explicit, exampled part of the
 format standard rather than an undocumented script behavior.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/formats/plan-format.md`, inside the
+- [x] In `agent-system/extensions/core/context/formats/plan-format.md`, inside the
       "Plan-level vs. phase-level markers" subsection under `## Status Marker Requirements`, add
       a short "Trailing annotations on the plan-level Status line" passage stating: the line MUST
       begin `- **Status**: ` followed immediately by a single `[...]` pair drawn from the
       six-value plan-level vocabulary; arbitrary trailing text after the closing `]` is
       **accepted and preserved** across status transitions; text between the prefix and the
       opening bracket, or an absent bracket pair, is malformed and rejected loudly.
-- [ ] Include the concrete accepted example verbatim:
+- [x] Include the concrete accepted example verbatim:
       `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)`, and at least one rejected
       example (`- **Status**: see [NOTE]`), so the rule is not prose-only.
-- [ ] Name `update-plan-status.sh` as the enforcing consumer and state that a malformed line
+- [x] Name `update-plan-status.sh` as the enforcing consumer and state that a malformed line
       produces a line-numbered diagnostic naming the failing condition.
-- [ ] Add a one-line forward pointer in the "Consumers of this heading contract" paragraph
+- [x] Add a one-line forward pointer in the "Consumers of this heading contract" paragraph
       (the phase-heading contract, currently near line 102) noting that the plan-level Status
       field has its own separate trailing-text rule documented in the plan-level-vs-phase-level
       subsection — keeping the two grains cross-referenced without conflating them.
-- [ ] Re-read the surrounding prose to confirm no existing sentence now contradicts the new
+- [x] Re-read the surrounding prose to confirm no existing sentence now contradicts the new
       allowance (in particular the metadata examples at the top of the file and the
       `## Example Skeleton` block, which show the bare `[NOT STARTED]` form — these stay correct
       and need no change, since trailing text is permitted, not required).
@@ -313,21 +313,21 @@ record the actual locations edited.
 
 ---
 
-### Phase 4: Enrich the preflight warning without changing fatality [NOT STARTED]
+### Phase 4: Enrich the preflight warning without changing fatality [COMPLETED]
 
 **Goal**: Give the operator a one-line, actionable warning at preflight — the leading indicator
 of the fatal postflight failure — while leaving the deliberate asymmetry untouched.
 
 **Tasks**:
-- [ ] Re-read `update_plan_file()` in `agent-system/extensions/core/scripts/update-task-status.sh`
+- [x] Re-read `update_plan_file()` in `agent-system/extensions/core/scripts/update-task-status.sh`
       (currently lines 751-780) and confirm the caller still branches on exit code only and never
       reads `update-plan-status.sh`'s stdout — reconfirming Phase 1's stdout change is inert here.
-- [ ] In the non-fatal `else` branch only (currently line 778), add one or two additional stderr
+- [x] In the non-fatal `else` branch only (currently line 778), add one or two additional stderr
       echo lines after the existing `Warning: plan file update failed (non-fatal)`, naming the
       plan file's task/project and stating that the underlying line-numbered diagnostic was
       printed above and that this same failure will hard-fail at postflight (`exit 3`) if left
       unresolved.
-- [ ] Leave the `if [[ "$operation" == "postflight" ]]` branch, its three explanatory echo lines,
+- [x] Leave the `if [[ "$operation" == "postflight" ]]` branch, its three explanatory echo lines,
       the `exit 3`, and the rationale comment at lines 762-768 byte-identical.
 
 **Timing**: 0.25 hours
