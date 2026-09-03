@@ -237,6 +237,28 @@ if [ -d "$task_dir" ]; then
   if [ "${SKILL_VALIDATE_FIXES:-0}" -gt 0 ]; then
     echo "[gate-out] Auto-repaired artifact(s): ${SKILL_VALIDATE_FIXED_FILES}"
   fi
+
+  # D-C: the report above is console-only and ephemeral. Mirror skill_validate_artifact's own
+  # pattern and additionally emit one durable specs/events.jsonl row per gate-out run, so the
+  # counts survive past scrollback in automated (non-interactive) runs. category is
+  # deviation-discriminated the same way skill_validate_artifact discriminates by status: a
+  # nonzero fix or error count is a deviation from the plan, a fully clean sweep is a milestone.
+  gate_out_repair_category="milestone"
+  if [ "${SKILL_VALIDATE_FIXES:-0}" -gt 0 ] || [ "${SKILL_VALIDATE_ERRORS:-0}" -gt 0 ]; then
+    gate_out_repair_category="deviation"
+  fi
+  gate_out_repair_detail_json=$(jq -c -n \
+    --argjson fixes "${SKILL_VALIDATE_FIXES:-0}" \
+    --argjson errors "${SKILL_VALIDATE_ERRORS:-0}" \
+    --argjson warnings "${SKILL_VALIDATE_WARNINGS:-0}" \
+    --arg files "${SKILL_VALIDATE_FIXED_FILES:-}" \
+    '{fixes: $fixes, errors: $errors, warnings: $warnings,
+      fixed_files: (if $files == "" then [] else ($files | split(",")) end)}')
+  _events_append_observable ".claude/scripts/events-append.sh" \
+    --event-type artifact_auto_repair --category "$gate_out_repair_category" \
+    --task "$task_number" --session "$session_id" --checkpoint gate_out \
+    --message "Artifact validation for task ${task_number}: ${SKILL_VALIDATE_FIXES:-0} field(s) auto-repaired, ${SKILL_VALIDATE_ERRORS:-0} error(s), ${SKILL_VALIDATE_WARNINGS:-0} warning(s) remaining" \
+    --detail-json "$gate_out_repair_detail_json"
 fi
 
 # NOTE: this script MUST NOT delete .return-meta.json. Two reasons: (1) skill-orchestrate never

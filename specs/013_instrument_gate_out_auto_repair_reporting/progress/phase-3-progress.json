@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Emit a durable events.jsonl record of the counts",
+  "started_at": "2026-09-03T17:52:00Z",
+  "last_updated": "2026-09-03T17:50:50Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Emit artifact_auto_repair event via _events_append_observable after report lines, category discriminated by fixes/errors > 0, jq-built detail-json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/command-gate-out.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -260,23 +260,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Emit a durable events.jsonl record of the counts [NOT STARTED]
+### Phase 3: Emit a durable events.jsonl record of the counts [COMPLETED]
 
 - **Goal:** the same aggregate counts land as one row in `specs/events.jsonl`, so the record
   survives past a console scrollback in automated runs (D-C).
 
 - **Tasks:**
-  - [ ] In `command-gate-out.sh`, after the report lines from Phase 2, call
+  - [x] In `command-gate-out.sh`, after the report lines from Phase 2, call
         `_events_append_observable ".claude/scripts/events-append.sh"` with
         `--event-type artifact_auto_repair`, `--task "$task_number"`,
         `--session "$session_id"`, `--checkpoint gate_out`, a one-line `--message`, and
         `--detail-json` carrying the fix/error/warning counts and the repaired file list.
-  - [ ] Discriminate `--category`: `deviation` when the fix count or the error count is greater
+  - [x] Discriminate `--category`: `deviation` when the fix count or the error count is greater
         than zero, `milestone` otherwise — mirroring the status-discriminated category logic
         already in `skill_validate_artifact`.
-  - [ ] Build the `--detail-json` payload with `jq -c -n` and `--arg`/`--argjson`, never string
+  - [x] Build the `--detail-json` payload with `jq -c -n` and `--arg`/`--argjson`, never string
         concatenation, so a path containing a quote cannot produce malformed JSON.
-  - [ ] Confirm the call goes through `_events_append_observable` (already in scope via the
+  - [x] Confirm the call goes through `_events_append_observable` (already in scope via the
         sourced `skill-base.sh`) rather than invoking `events-append.sh` directly, so a missing
         or failing helper stays non-blocking and self-reporting.
 
