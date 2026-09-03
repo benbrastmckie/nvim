@@ -407,31 +407,31 @@ complete, so the script is callable as one unit.
 
 ---
 
-### Phase 6: Fixture regression suite [NOT STARTED]
+### Phase 6: Fixture regression suite [COMPLETED]
 
 **Goal**: `test-orchestrate-cycle-postflight.sh` proves all five acceptance conditions against
 fixtures modelled on the two live incidents and the spurious-defect case.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-orchestrate-cycle-postflight.sh` using
+- [x] Create `scripts/tests/test-orchestrate-cycle-postflight.sh` using
       `test-orchestrate-cycle-plan.sh`'s sandbox model (copy real collaborators into a synthetic
-      `$WORKDIR/.claude/scripts/` tree; stub only collaborators whose own behavior is out of scope).
-- [ ] Acceptance (1): a handoff whose mtime predates the dispatch window routes to recovery rather
-      than being trusted.
-- [ ] Acceptance (2): a handoff whose `dispatch_seq` does not match the minted value routes to
+      `$WORKDIR/.claude/scripts/` tree; stub only collaborators whose own behavior is out of scope). *(completed)*
+- [x] Acceptance (1): a handoff whose mtime predates the dispatch window routes to recovery rather
+      than being trusted. *(completed)*
+- [x] Acceptance (2): a handoff whose `dispatch_seq` does not match the minted value routes to
       recovery — including the incident shape where the mtime is *newer* than the window and the
-      mtime gate alone would pass it.
-- [ ] Acceptance (3): a git-restored predecessor `.return-meta.json` (fresh in-window mtime,
-      predecessor `dispatch_seq`) is rejected by recovery.
-- [ ] Acceptance (4): both directions — a contractual non-writer with no handoff records **no**
-      defect; a genuine seq-mismatched late write still records one.
-- [ ] Acceptance (5): a `user_decision` payload is relayed intact with status unchanged.
-- [ ] Invariant assertions: the `9999999999` sentinel is literal and shared; the excursion check
-      never changes exit code or verdict; `--dry-run` mutates nothing.
-- [ ] Follow the suite naming discipline — fixture numbers are synthetic, described as
+      mtime gate alone would pass it. *(completed)*
+- [x] Acceptance (3): a git-restored predecessor `.return-meta.json` (fresh in-window mtime,
+      predecessor `dispatch_seq`) is rejected by recovery. *(completed)*
+- [x] Acceptance (4): both directions — a contractual non-writer with no handoff records **no**
+      defect; a genuine seq-mismatched late write still records one. *(completed)*
+- [x] Acceptance (5): a `user_decision` payload is relayed intact with status unchanged. *(completed)*
+- [x] Invariant assertions: the `9999999999` sentinel is literal and shared; the excursion check
+      never changes exit code or verdict; `--dry-run` mutates nothing. *(completed)*
+- [x] Follow the suite naming discipline — fixture numbers are synthetic, described as
       "candidate #N"/"project #N", never "task N", per
-      `rules/no-task-references-in-deliverables.md`.
-- [ ] Register the suite in `manifest.json` (`run-all.sh` discovers it automatically).
+      `rules/no-task-references-in-deliverables.md`. *(completed)*
+- [x] Register the suite in `manifest.json` (`run-all.sh` discovers it automatically). *(completed)*
 
 **Timing**: 2 hours
 
@@ -510,7 +510,7 @@ references the sentinel, it joins the batch rather than being committed separate
 ## Testing & Validation
 
 - [x] `test-orchestrate-recover-outcome.sh` — new suite, all cases pass (Phase 1). *(completed)*
-- [ ] `test-orchestrate-cycle-postflight.sh` — acceptance (1)-(5) plus the three invariants (Phase 6).
+- [x] `test-orchestrate-cycle-postflight.sh` — acceptance (1)-(5) plus the three invariants (Phase 6). *(completed: 21/21 assertions pass)*
 - [ ] `test-handoff-dispatch-identity.sh` — retargeted and green (Phase 7).
 - [ ] `scripts/tests/run-all.sh` — every suite in every extension green.
 - [ ] `scripts/verify-deploy.sh` — full gate run green.

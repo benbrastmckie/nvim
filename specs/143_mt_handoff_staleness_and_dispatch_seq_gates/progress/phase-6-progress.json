@@ -1,0 +1,75 @@
+{
+  "phase": 6,
+  "phase_name": "Fixture regression suite",
+  "started_at": "2026-09-03T21:35:00Z",
+  "last_updated": "2026-09-03T22:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-orchestrate-cycle-postflight.sh using test-orchestrate-cycle-plan.sh's sandbox model with real (unstubbed) collaborators, including a real git repo for commit testing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Acceptance (1): stale mtime routes to recovery",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Acceptance (2): dispatch_seq mismatch routes to recovery even with newer mtime",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Acceptance (3): git-restored predecessor return-meta rejected",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Acceptance (4): both directions of writer-contract-aware recording",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Acceptance (5): user_decision payload relayed intact",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Invariants: 9999999999 sentinel shared, excursion advisory never a gate, --dry-run mutates nothing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Suite naming discipline (candidate #N, never task N)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Register suite in manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "Initial test assertions checked stderr text directly for D2's DISPATCH_SEQ MISMATCH notice, and used jq -r with an inline escaped-comma join() for the user_decision options array",
+      "result": "failed",
+      "reason": "orchestrate-cycle-postflight.sh discards orchestrate-recover-outcome.sh's stderr by design (2>/dev/null, matching orchestrate-stage5-gates.sh's own established precedent), so the notice is never observable from the caller's own stderr -- fixed by probing orchestrate-recover-outcome.sh directly with the same arguments. The join() quoting inside a nested jqf() call did not survive shell interpolation cleanly -- fixed by comparing the whole user_decision object via jq -c round-tripping instead of picking fields."
+    }
+  ],
+  "real_bugs_found_during_this_phase": [
+    "git-commit-scoped.sh's own commit-summary echo was leaking onto orchestrate-cycle-postflight.sh's stdout (uncontained by any redirect at the call site), corrupting the single-JSON-line stdout contract every caller of this script depends on. Same issue independently discovered for skill_postflight_update (-> update-task-status.sh's own 'OK: task N status -> ...' echo) and skill_link_artifacts (-> generate-todo.sh's own stdout). Fixed by redirecting each of these four call sites' stdout to stderr (>&2) -- none of them needed to affect this script's own exit code, only their side effects and their own (now-redirected) diagnostic text."
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

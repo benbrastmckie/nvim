@@ -568,14 +568,14 @@ if [ "$have_outcome" = "true" ]; then
   case "$dispatch_status" in
     researched)
       if is_live; then
-        skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+        skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode" >&2
       else
         echo "${notice_prefix} [dry-run] would transition task ${task_number} to researched — no write performed." >&2
       fi
       ;;
     planned)
       if is_live; then
-        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode" >&2
       else
         echo "${notice_prefix} [dry-run] would transition task ${task_number} to planned — no write performed." >&2
       fi
@@ -588,9 +588,9 @@ if [ "$have_outcome" = "true" ]; then
            "$plan_markers_verified" "$notice_prefix"; then
         implemented_gate_passed=true
         if is_live; then
-          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode"
+          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode" >&2
           skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
-            "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+            "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix" >&2
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to completed and propagate completion_summary/roadmap_items — no write performed." >&2
         fi
@@ -654,7 +654,7 @@ if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
   esac
   if is_live; then
     skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" \
-      "$artifact_summary" "$field_name" "$next_field" "$session_id"
+      "$artifact_summary" "$field_name" "$next_field" "$session_id" >&2
   else
     echo "${notice_prefix} [dry-run] would link artifact ${artifact_path} (type=${artifact_type}) — no write performed." >&2
   fi
@@ -777,11 +777,14 @@ if is_live; then
     *) commit_message="task ${task_number}: orchestration dispatch off-schema" ;;
   esac
 
+  # Redirected to stderr: git-commit-scoped.sh prints its own commit summary to STDOUT, which
+  # would otherwise corrupt this script's own single-JSON-line stdout contract (every caller of
+  # this script parses stdout as exactly one JSON object).
   bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
     --message "$commit_message" \
     --session "$session_id" \
     --honest-index-rows "$task_number" \
-    -- "${stage_paths[@]}" \
+    -- "${stage_paths[@]}" >&2 \
     || echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
 else
   echo "${notice_prefix} [dry-run] would commit task ${task_number}'s changes — no commit performed." >&2
