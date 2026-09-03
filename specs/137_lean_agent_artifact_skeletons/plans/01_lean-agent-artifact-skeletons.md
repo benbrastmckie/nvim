@@ -323,33 +323,33 @@ the inventory rather than dropping it.
 
 ---
 
-### Phase 5: Amend the Four Formal-Extension Report Skeletons [NOT STARTED]
+### Phase 5: Amend the Four Formal-Extension Report Skeletons [COMPLETED]
 
 **Goal**: Bring the four existing (present-but-incomplete) formal-extension report skeletons up
 to full `REPORT_METADATA`/`REPORT_SECTIONS` coverage, adding lines only.
 
 **Tasks**:
-- [ ] Per file, re-confirm the gap before editing: for each of the eight `REPORT_METADATA` fields
+- [x] Per file, re-confirm the gap before editing: for each of the eight `REPORT_METADATA` fields
       run `grep -F '**<field>**:'` *scoped to the fenced skeleton block* (not the whole file --
       `logic-research-agent.md`'s file-wide `**Standards**:` hit at :89 comes from its Context
       References prose and is a false positive for the produced artifact), and
-      `grep -E '^##+ Decisions'` for the section.
-- [ ] `formal-research-agent.md` (Stage 4, skeleton at :145-185): add the missing `**Effort**:`,
+      `grep -E '^##+ Decisions'` for the section. *(completed: done, negatives recorded in progress file)*
+- [x] `formal-research-agent.md` (Stage 4, skeleton at :145-185): add the missing `**Effort**:`,
       `**Dependencies**:`, `**Sources/Inputs**:`, `**Artifacts**:`, `**Standards**:` lines and a
       `## Decisions` section. Also add `## Context & Scope` -- this file uses `## Domain Analysis`
       in its place, which does not satisfy the literal-heading check; keep `## Domain Analysis`
-      as well.
-- [ ] `logic-research-agent.md` (Stage 5, skeleton at :221-269): add `**Effort**:`,
+      as well. *(completed: done)*
+- [x] `logic-research-agent.md` (Stage 5, skeleton at :221-269): add `**Effort**:`,
       `**Dependencies**:`, `**Sources/Inputs**:`, `**Artifacts**:`, `**Standards**:` (inside the
-      skeleton, regardless of the Context References hit) and a `## Decisions` section.
-- [ ] `math-research-agent.md` (Stage 5, skeleton at :210-254): same five metadata lines plus
-      `## Decisions`.
-- [ ] `physics-research-agent.md` (Stage 5, skeleton at :204-248): same five metadata lines plus
-      `## Decisions`.
-- [ ] Add the `general-research-agent.md` copy-source cross-reference line to each of the four.
-- [ ] Preserve every existing domain section untouched: `## Domain Analysis`,
+      skeleton, regardless of the Context References hit) and a `## Decisions` section. *(completed: done)*
+- [x] `math-research-agent.md` (Stage 5, skeleton at :210-254): same five metadata lines plus
+      `## Decisions`. *(completed: done)*
+- [x] `physics-research-agent.md` (Stage 5, skeleton at :204-248): same five metadata lines plus
+      `## Decisions`. *(completed: done)*
+- [x] Add the `general-research-agent.md` copy-source cross-reference line to each of the four. *(completed: done)*
+- [x] Preserve every existing domain section untouched: `## Domain Analysis`,
       `### Mathlib Theorems`, `### Context File Review`, `### Cross-Domain Synthesis`,
-      `### Recommendations`, `## Risks & Mitigations`, `## Appendix`.
+      `### Recommendations`, `## Risks & Mitigations`, `## Appendix`. *(completed: done, confirmed via heading-list diff)*
 
 **Timing**: 1 hour
 

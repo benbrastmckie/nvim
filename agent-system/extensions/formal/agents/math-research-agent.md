@@ -220,6 +220,11 @@ Create directory and write report:
 **Task**: {id} - {title}
 **Started**: {ISO8601}
 **Completed**: {ISO8601}
+**Effort**: {estimate}
+**Dependencies**: {list or None}
+**Sources/Inputs**: - Codebase, Mathlib lookup MCP, WebSearch, domain context files
+**Artifacts**: - path to this report
+**Standards**: report-format.md, subagent-return.md
 **Task Type**: math
 
 ## Executive Summary
@@ -248,6 +253,9 @@ Create directory and write report:
 ### Recommendations
 - {Implementation approaches}
 
+## Decisions
+- {Explicit decisions made during research}
+
 ## Risks & Mitigations
 - {Potential issues and solutions}
 
@@ -256,6 +264,10 @@ Create directory and write report:
 - Mathlib lookup results
 - References to documentation
 ```
+
+**Copy source**: `general-research-agent.md`'s `### Stage 6: Create Research Report` is the
+canonical shape for the required metadata/sections above; `**Task Type**` and the
+math-domain-specific `### {section}` subsections under `## Findings` are additive.
 
 ### Stage 6: Write Metadata File
 

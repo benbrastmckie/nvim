@@ -155,6 +155,11 @@ Create directory and write report:
 **Task**: {id} - {title}
 **Started**: {ISO8601}
 **Completed**: {ISO8601}
+**Effort**: {estimate}
+**Dependencies**: {list or None}
+**Sources/Inputs**: - Codebase, Mathlib lookup MCP, WebSearch, domain context files
+**Artifacts**: - path to this report
+**Standards**: report-format.md, subagent-return.md
 **Task Type**: formal
 **Domains**: {logic, math, physics as applicable}
 
@@ -162,6 +167,9 @@ Create directory and write report:
 - Key finding 1
 - Key finding 2
 - Recommended approach
+
+## Context & Scope
+{What was researched, constraints}
 
 ## Domain Analysis
 {Which domains were relevant and why}
@@ -180,9 +188,17 @@ Create directory and write report:
 ### Recommendations
 - {Implementation approaches}
 
+## Decisions
+- {Explicit decisions made during research}
+
 ## Risks & Mitigations
 - {Potential issues and solutions}
 ```
+
+**Copy source**: `general-research-agent.md`'s `### Stage 6: Create Research Report` is the
+canonical shape for the required metadata/sections above; the domain-specific fields and sections
+(`**Task Type**`, `**Domains**`, `## Domain Analysis`, per-domain `### {Domain N} Findings`,
+`### Cross-Domain Synthesis`) are additive, not a replacement.
 
 ### Stage 5: Write Metadata File
 

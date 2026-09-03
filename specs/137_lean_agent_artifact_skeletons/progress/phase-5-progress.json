@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Amend the Four Formal-Extension Report Skeletons",
+  "started_at": "2026-09-03T00:40:00Z",
+  "last_updated": "2026-09-03T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm per-file gap before editing", "status": "done", "files_touched": [], "note": "Confirmed via direct read of each file's skeleton block before editing (matching the plan's exact line citations): formal-research-agent.md (:145-185) missing Effort/Dependencies/Sources-Inputs/Artifacts/Standards/Decisions/Context & Scope (uses Domain Analysis in its place); logic-research-agent.md (:221-269), math-research-agent.md (:210-254), physics-research-agent.md (:204-248) each already had Context & Scope but were missing the same 5 metadata fields plus Decisions. No file was found already fully conforming -- negative recorded explicitly: none of the four were already conforming."},
+    {"id": 2, "description": "Amend formal-research-agent.md: 5 metadata fields, Decisions, Context & Scope (Domain Analysis kept)", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/formal-research-agent.md"], "note": "Verified via scoped grep: all 8 REPORT_METADATA fields and 5 REPORT_SECTIONS present in fenced block; Domain Analysis, Cross-Domain Synthesis preserved."},
+    {"id": 3, "description": "Amend logic-research-agent.md: 5 metadata fields, Decisions", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/logic-research-agent.md"], "note": "Verified via scoped grep; heading-list diff shows only ## Decisions added, all prior headings (Context & Scope, Findings subsections, Appendix, Risks & Mitigations) intact."},
+    {"id": 4, "description": "Amend math-research-agent.md: 5 metadata fields, Decisions", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/math-research-agent.md"], "note": "Verified via scoped grep; heading-list diff shows only ## Decisions added."},
+    {"id": 5, "description": "Amend physics-research-agent.md: 5 metadata fields, Decisions", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/physics-research-agent.md"], "note": "Verified via scoped grep; heading-list diff shows only ## Decisions added."},
+    {"id": 6, "description": "Add general-research-agent.md copy-source cross-reference to each of the four", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/formal-research-agent.md", "agent-system/extensions/formal/agents/logic-research-agent.md", "agent-system/extensions/formal/agents/math-research-agent.md", "agent-system/extensions/formal/agents/physics-research-agent.md"]},
+    {"id": 7, "description": "Preserve every existing domain section untouched", "status": "done", "files_touched": [], "note": "Confirmed via post-edit heading-list diff on all four files: Domain Analysis, Mathlib Theorems, Context File Review, Cross-Domain Synthesis, Recommendations, Risks & Mitigations, Appendix all present unchanged, no removals or renames."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
