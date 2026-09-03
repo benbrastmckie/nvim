@@ -113,7 +113,7 @@
       "project_number": 13,
       "project_name": "instrument_gate_out_auto_repair_reporting",
       "title": "Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "dependencies": [],
@@ -123,7 +123,7 @@
       ],
       "description": "The acceptance criterion \"gate-out reports zero format errors and zero auto-repaired fields\" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.\n\nTRACED PATH: command-gate-out.sh (134 lines) has no counter, aggregate, or exit-code surface for auto-repairs; its only related line is a comment. The real repair path is\n    command-gate-out.sh -> skill_validate_task_artifacts (skill-base.sh) -> validate-artifact.sh \"$f\" \"$type\" --fix 2>/dev/null\nvalidate-artifact.sh DOES emit a terminal line of the form \"[FIXED] N field(s) auto-repaired, E error(s), W warning(s) remaining\" and exits 2. But skill_validate_task_artifacts discards stderr, collapses every non-zero exit into a single generic non-blocking WARNING carrying no numeric detail, and always returns 0. command-gate-out.sh therefore receives no signal at all.\n\nPRIMARY HAZARD (the reason this is not merely cosmetic): --fix MUTATES THE ARTIFACT IN PLACE. A repair both happens and goes uncounted, so an artifact can be silently rewritten with nothing anywhere recording that it was. The instrumentation gap and the silent-mutation hazard are the same defect seen from two ends.\n\nWORK:\n  1. Propagate validate-artifact.sh fix/error/warning counts through skill_validate_task_artifacts instead of discarding them.\n  2. Give command-gate-out.sh a reportable surface for those counts.\n  3. Decide explicitly whether --fix should remain in-place-mutating on the gate-out path, or whether a repair should be reported and left for a human. State the decision and its reasoning.\n\nACCEPTANCE: a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count, and a task needing none reports zero. Both directions must be demonstrated - a report that can only ever say zero is not instrumentation.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "created": "2026-08-10T13:26:30Z",
-      "last_updated": "2026-09-03T17:43:33Z",
+      "last_updated": "2026-09-03T17:43:54Z",
       "artifacts": [
         {
           "path": "specs/013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md",
@@ -134,9 +134,15 @@
           "path": "specs/013_instrument_gate_out_auto_repair_reporting/plans/01_gate-out-repair-reporting.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/013_instrument_gate_out_auto_repair_reporting/summaries/01_gate-out-repair-reporting-summary.md",
+          "type": "summary",
+          "summary": "implementation summary"
         }
       ],
-      "session_id": "sess_1788456363_df3984_13"
+      "session_id": "sess_1788456363_df3984",
+      "completion_summary": "Propagated validate-artifact.sh's fix/error/warning counts through skill_validate_task_artifacts via four caller-visible globals, added an always-on gate-out console report plus a durable specs/events.jsonl row, wrote a fixture-driven regression suite proving both acceptance directions, deployed, and demonstrated both directions live against the real command-gate-out.sh."
     },
     {
       "project_number": 14,
@@ -499,14 +505,14 @@
     {
       "project_number": 134,
       "project_name": "tag_branch_reachability_gate",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits",
       "description": "Close the third and last uncovered gate in the /tag release preflight: a tag created from a branch with unpushed commits points at a commit absent from origin/<branch>, so a consuming repo's release.yml preflight rejects it -- AFTER the tag has already been pushed, requiring a delete-and-re-push to recover.\n\nCANONICAL SOURCE. Edit `agent-system/extensions/core/skills/skill-tag/SKILL.md` and, if the user-facing contract changes, `agent-system/extensions/core/commands/tag.md`. Do NOT edit any repo's deployed `.claude/skills/skill-tag/SKILL.md` -- it is a disposable artifact regenerated from this source store (see `.claude/rules/source-store-deploy-boundary.md`).\n\nTHE DEFECT, observed live during a real v1.3.9 release in a consuming repo:\n- Step 2 (\"Validate Git State\") fetches `origin/$current_branch`, then computes ONLY `behind=$(git rev-list --count \"HEAD..origin/$current_branch\")` and errors solely when `behind > 0`. It never computes or acts on the symmetric `ahead`.\n- Step 6 runs `git push origin \"$new_version\"` alone, with no corresponding branch push.\n- The release only succeeded because the operator manually pushed the branch before tagging. Following the skill literally, from a branch 36 commits ahead, would have produced a pushed tag pointing at a commit absent from the remote.\n\nPRIOR ART -- BUILD ON, DO NOT RE-DERIVE. This is the follow-up that the completed annotated-tag/changelog work explicitly filed rather than folded in. Read both before starting:\n- `specs/131_tag_annotated_and_changelog_preflight/reports/01_tag-annotated-and-changelog-preflight.md` -- see its \"Decisions\" section, finding (4).\n- `specs/131_tag_annotated_and_changelog_preflight/summaries/01_tag-annotated-changelog-preflight-summary.md` -- see its \"Follow-ups\" section, which quotes finding (4) verbatim precisely so this task need not rediscover it.\n\nQuoting that recorded finding: \"the fix is cheap and reuses data Step 2 already fetches. Step 2 already does `git fetch origin \\\"$current_branch\\\"` and computes `behind=$(git rev-list --count \\\"HEAD..origin/$current_branch\\\")`; the symmetric 'ahead' check is `git rev-list --count \\\"origin/$current_branch..HEAD\\\"` -- if nonzero, local `HEAD` has commits not yet on the remote, which is exactly the condition that will make a tag created against it unreachable from `origin/<branch>` and fail the reference preflight's third assertion. A follow-up task should point directly at `SKILL.md`'s Step 2 (not Step 3.5/3.6) and can almost certainly reuse the `remote_sha`/`behind` variables already computed there.\"\n\nREFERENCE GATE, to verify the fix against a real assertion rather than an imagined one. The reference preflight (ModelChecker `.github/workflows/release.yml`) asserts, after fetching the tag ref:\n    TAG_TYPE=$(git cat-file -t \"refs/tags/${GITHUB_REF_NAME}\")     # already satisfied\n    git merge-base --is-ancestor \"${GITHUB_REF_NAME}\" origin/master  # NOT satisfied\nThe first half is closed by the annotated-tag work. The second half -- ancestry of the TAGGED COMMIT from `origin/<branch>` -- is what this task closes.\n\nDESIGN QUESTIONS TO RESOLVE DELIBERATELY, NOT BY REFLEX. Each must be decided and the judgment recorded in the research report, in the same way the annotated-tag message source and the `-a` vs `-s` choice were recorded rather than defaulted into:\n\n1. REFUSE vs. AUTO-PUSH. Either refuse when the branch is not fully pushed, with actionable resolution text (\"Push the branch with `git push origin $current_branch` before tagging\"), or push the branch automatically ahead of the tag push in Step 6. Default to REFUSE unless auto-push is affirmatively justified: pushing a branch is an outward-facing action with materially different risk than pushing a tag, and /tag is user-only precisely because deployment timing is a human decision. An auto-push silently publishes work the operator may not have intended to publish yet. If auto-push is chosen anyway, it must be explicit, previewed by --dry-run, and confirmed in the Step 5 interactive prompt -- never a silent side effect.\n\n2. PLACEMENT. Step 2 (\"Validate Git State\", which already holds the `behind` check and the fetch this needs) versus a new step adjacent to Step 3.6. Step 2 is the natural home per the recorded finding above, but note the ordering consequence: the tag ref does not exist yet at Step 2, so a Step 2-placed check can only test HEAD, not the tag. Reconcile that against design question 3 before deciding.\n\n3. EXACT PREDICATE, not a proxy. `ahead == 0` on HEAD is a PROXY for the CI gate; the CI gate's actual predicate is that the TAGGED COMMIT is an ancestor of `origin/<branch>`. These diverge whenever the tag is not created at HEAD. Determine whether /tag can ever tag a non-HEAD commit as currently written (Step 4 reports `git rev-parse HEAD` and Step 6 tags with no commit-ish argument, i.e. HEAD) and decide whether to mirror the CI predicate exactly via `git merge-base --is-ancestor` against the fetched remote ref, or to accept the `ahead` proxy with the equivalence explicitly recorded as a documented assumption. Do not leave the divergence unexamined.\n\n4. --dry-run TRUTHFULNESS. The annotated-tag work established that the --dry-run preview must not misrepresent what a real run does (the preview line and the real command were required to change in step). Apply the same standard here: the new check must run before Step 5's `--dry-run` early exit (as Steps 3.5 and 3.6 already do), and if auto-push is chosen, the dry-run \"Would execute:\" block must list the branch push alongside the tag push.\n\n5. OVERRIDE FLAG. Decide whether an escape hatch is warranted at all. If yes, follow the established `--skip-version-check` / `--skip-changelog-check` convention exactly: the flag suppresses the BLOCK, not the DISCLOSURE -- print the full failure detail first, then the override warning, so the transcript records what was overridden. If no flag is warranted, record why (this gate, unlike a version or changelog mismatch, has a trivially safe remedy: push the branch).\n\nALSO UPDATE. `agent-system/extensions/core/commands/tag.md` documents the flag table, workflow, and Requirements; keep it in sync with whatever is decided, or the command doc silently contradicts the skill. Also update the \"Behind Remote\" entry in SKILL.md's own Error Handling section neighborhood with the corresponding not-fully-pushed example output.\n\nNON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do not add a check for the reference workflow's fourth assertion (tagged release.yml matching origin's copy) -- it is workflow-file-content-specific and out of scope for a repo-agnostic skill, as already recorded. Do not couple the skill to any single repository's branch name; `origin/master` appears in the reference gate but the skill must use `$current_branch`.\n\nVERIFICATION. At minimum: `bash -n` on extracted blocks; a behavioral smoke test covering (a) branch fully pushed, (b) branch ahead, (c) branch behind, (d) --dry-run under each; and a literal check that the resulting tag satisfies `git merge-base --is-ancestor \"$new_version\" \"origin/$current_branch\"`.",
       "topic": "core-agent-system",
       "created": "2026-09-01T16:09:45Z",
-      "last_updated": "2026-09-03T17:43:38Z",
-      "session_id": "sess_1788456363_df3984_134",
+      "last_updated": "2026-09-03T17:43:55Z",
+      "session_id": "sess_1788456363_df3984",
       "dependencies": [],
       "artifacts": [
         {
@@ -518,8 +524,14 @@
           "path": "specs/134_tag_branch_reachability_gate/plans/01_tag-branch-reachability-gate.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/134_tag_branch_reachability_gate/summaries/01_tag-branch-reachability-gate-summary.md",
+          "type": "summary",
+          "summary": "implementation summary"
         }
-      ]
+      ],
+      "completion_summary": "Closed the third and last uncovered gate in the /tag release preflight by adding an ahead-of-remote REFUSE check to Step 2 (reusing the existing fetch/remote_sha), documenting the new failure mode in SKILL.md's Error Handling section, syncing commands/tag.md's Workflow and Requirements, and verifying behaviorally against a real bare-origin/clone fixture including the literal git merge-base --is-ancestor assertion the consuming repo's release.yml preflight uses."
     },
     {
       "project_number": 136,
@@ -548,7 +560,7 @@
     {
       "project_number": 137,
       "project_name": "lean_agent_artifact_skeletons",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -559,8 +571,8 @@
         "agent-system/extensions/lean/agents/lean-implementation-agent.md"
       ],
       "created": "2026-09-01T16:36:18Z",
-      "last_updated": "2026-09-03T17:43:42Z",
-      "session_id": "sess_1788456363_df3984_137",
+      "last_updated": "2026-09-03T17:43:57Z",
+      "session_id": "sess_1788456363_df3984",
       "description": "The lean extension's research and implementation agents have no artifact skeletons, so the artifacts they author fail validate-artifact.sh on required sections that their general-* counterparts get right by construction. Observed on a real completed task, not inferred.\n\nOBSERVED FAILURES (BimodalLogic task 507, gate-out validation output, 2026-09-01):\n  summaries/01_frame-level-validity-indexing-summary.md -> [FAIL] 6 error(s)\n      Missing required section: ## Overview, ## What Changed, ## Decisions, ## Impacts, ## Follow-ups, ## References\n      (4 metadata fields -- Started, Completed, Artifacts, Standards -- were auto-repaired to \"TBD\" placeholders)\n  reports/01_frameclass-indexed-validity.md -> [FAIL] 13 error(s), 1 warning\n      [WARN] Cannot auto-fix: no existing metadata lines found to anchor insertion\nThe report case is the worse of the two: with zero conforming metadata lines present, validate-artifact.sh's --fix path has no anchor to insert against and gives up entirely. The artifact is left non-conforming with no repair path.\n\nROOT CAUSE -- MISSING TEMPLATES, NOT MISBEHAVING AGENTS.\nextensions/core/agents/general-implementation-agent.md carries a full inline summary skeleton (around :468-482): the metadata block, the bracketed Status vocabulary spelled out (\"Use `**Status**: [COMPLETED]` when every plan phase is done, `**Status**: [IN PROGRESS]` on a partial run, `**Status**: [BLOCKED]` when blocked, matching summary-format.md's declared vocabulary\"), and the required sections. An agent handed that template produces a conforming artifact without needing to consult the format spec.\nThe lean agents carry no such thing:\n  extensions/lean/agents/lean-implementation-agent.md  -- grep for summary-format / ## What Changed / ## Decisions / ## Impacts / ## Follow-ups / ## References returns ZERO hits (its own `## Overview` at :9 is the agent file's own document heading, not a template)\n  extensions/lean/agents/lean-research-agent.md        -- grep for report-format / ## Findings / ## Executive Summary / `**Task**:` returns ZERO hits\nThe agents are behaving reasonably given what they were handed. The defect is the missing contract.\n\nAUTHORITATIVE REQUIREMENTS (from extensions/core/scripts/validate-artifact.sh, lines 19-44 -- transcribe from the script, do not retype from this description):\n  REPORT_METADATA   = Task, Started, Completed, Effort, Dependencies, Sources/Inputs, Artifacts, Standards\n  REPORT_SECTIONS   = Executive Summary, Context & Scope, Findings, Decisions, Recommendations\n  SUMMARY_METADATA  = Task, Status, Started, Completed, Artifacts, Standards\n  SUMMARY_SECTIONS  = Overview, What Changed, Decisions, Impacts, Follow-ups, References\n  SUMMARY_SECTIONS_OPTIONAL = Plan Deviations\n  Note the script's own comment: SUMMARY_SECTIONS is a required MINIMUM, not an exhaustive whitelist.\nThe prose specs are extensions/core/context/formats/summary-format.md (its Example Skeleton section) and the report-format equivalent.\n\nWORK.\n(a) Add an inline summary skeleton to extensions/lean/agents/lean-implementation-agent.md, modelled on general-implementation-agent.md's, including the explicit bracketed-Status vocabulary sentence -- that sentence is why the general agent's summaries carry a well-formed Status line, and its absence is directly implicated in the sibling defect this task's peer covers.\n(b) Add an inline report skeleton to extensions/lean/agents/lean-research-agent.md covering REPORT_METADATA and REPORT_SECTIONS.\n(c) SWEEP the other extensions' agents for the same gap rather than assuming lean is the only one. Known candidates to CHECK (not assume defective): extensions/lean/agents/lean-implementation-hard-agent.md, lean-research-hard-agent.md, and the formal extension's research agents. Report what was checked and what was found, including negatives.\n(d) Where a skeleton already exists but is incomplete, prefer amending it over replacing it.\n\nEXPLICIT NON-GOAL. Do not weaken validate-artifact.sh's required-section lists to make existing non-conforming artifacts pass. The artifacts are wrong, not the validator. Task 136 is separately TIGHTENING that validator; a loosening here would fight it directly.\n\nACCEPTANCE.\n  - A lean-language task run end to end produces a summary and a report that both pass validate-artifact.sh with zero errors and zero auto-repairs -- demonstrated on a real dispatch, not on a hand-written fixture.\n  - The sweep in (c) is reported with explicit negatives (\"checked X, already conforming\") so a later reader knows the search happened.\n  - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/lean/).\n\nRELATED, NOT DUPLICATE. Task 13 (instrument_gate_out_auto_repair_reporting) covers REPORTING of auto-repair counts through command-gate-out.sh and skill-base.sh, and flags the silent-in-place-mutation hazard. It does not add any missing agent template. This task removes the need for those repairs at the source; 13 makes the repairs visible when they still happen. Both are worth having.\n\nPROVENANCE. Surfaced 2026-09-01 by gate-out validation during an /orchestrate 507 run in the BimodalLogic repo. The validation warnings are non-blocking, which is why this had gone unnoticed: the task completed successfully with two non-conforming artifacts on disk.",
       "artifacts": [
         {
@@ -572,6 +584,11 @@
           "path": "specs/137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/137_lean_agent_artifact_skeletons/summaries/01_lean-agent-artifact-skeletons-summary.md",
+          "type": "summary",
+          "summary": "implementation summary (6/7 phases; phase 7 blocked)"
         }
       ]
     },

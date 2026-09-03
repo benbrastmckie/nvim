@@ -20,14 +20,14 @@ next_project_number: 151
 
 ### Core Agent System
 
-13 [PLANNED] — The acceptance criterion "gate-out reports zero format errors and
+13 [IMPLEMENTING] — The acceptance criterion "gate-out reports zero format errors and
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 91 [PLANNED] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-134 [PLANNED] — Close the third and last uncovered gate in the /tag release prefl
-137 [PLANNED] — The lean extension's research and implementation agents have no a
+134 [IMPLEMENTING] — Close the third and last uncovered gate in the /tag release prefl
+137 [IMPLEMENTING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
@@ -290,12 +290,13 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 ---
 
 ### 137. Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md]
 - **Plan**: [137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md]
+- **Summary**: [137_lean_agent_artifact_skeletons/summaries/01_lean-agent-artifact-skeletons-summary.md]
 
 **Description**: The lean extension's research and implementation agents have no artifact skeletons, so the artifacts they author fail validate-artifact.sh on required sections that their general-* counterparts get right by construction. Observed on a real completed task, not inferred.
 
@@ -397,12 +398,13 @@ PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the Bimodal
 ---
 
 ### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md]
 - **Plan**: [134_tag_branch_reachability_gate/plans/01_tag-branch-reachability-gate.md]
+- **Summary**: [134_tag_branch_reachability_gate/summaries/01_tag-branch-reachability-gate-summary.md]
 
 **Description**: Close the third and last uncovered gate in the /tag release preflight: a tag created from a branch with unpushed commits points at a commit absent from origin/<branch>, so a consuming repo's release.yml preflight rejects it -- AFTER the tag has already been pushed, requiring a delete-and-re-push to recover.
 
@@ -1008,12 +1010,13 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ---
 
 ### 13. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md]
 - **Plan**: [013_instrument_gate_out_auto_repair_reporting/plans/01_gate-out-repair-reporting.md]
+- **Summary**: [013_instrument_gate_out_auto_repair_reporting/summaries/01_gate-out-repair-reporting-summary.md]
 
 **Description**: The acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.
 
