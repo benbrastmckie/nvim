@@ -1,5 +1,5 @@
 ---
-next_project_number: 151
+next_project_number: 153
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 151
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,89,91,127,137,139,143 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,89,91,127,137,139,143,151,152 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,136,140,148 | 29,91,139,143 | core-agent-system, extensions |
 | 3 | 74,88 | 148 | core-agent-system, extensions |
 | 4 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
@@ -22,14 +22,14 @@ next_project_number: 151
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-91 [PLANNED] — update-plan-status.sh reports every non-conforming plan Status li
+91 [IMPLEMENTING] — update-plan-status.sh reports every non-conforming plan Status li
   └─ 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 137 [IMPLEMENTING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-143 [PLANNED] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
+143 [IMPLEMENTING] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
   └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
   └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
     └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
@@ -37,6 +37,8 @@ next_project_number: 151
       └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
       └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
       └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
+151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
+152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 
 ### Extensions
 
@@ -60,6 +62,86 @@ next_project_number: 151
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
 
 ## Tasks
+
+### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: An unrelated multi-task /orchestrate batch was fully blocked by three stale line_count integers. This entry addresses the CLASS of defect, not the instances (a sibling task fixes the two live remaining gate failures).
+
+WHAT HAPPENED, verified.
+index-entries.json declares a line_count per context entry, hand-maintained, and check-extension-docs.sh Rule R fails when a declaration drifts from the file's actual line count. Three entries had drifted:
+  core/index-entries.json  patterns/postflight-control.md   declared 318, actual 405
+  core/index-entries.json  schemas/state-schema.json        declared 267, actual 271
+  literature/index-entries.json  project/literature/patterns/zotero-item-creation.md  declared 208, actual 234
+In every case the FILE was unchanged (byte-identical across many commits) and only the DECLARATION was stale; the last commits touching those files belonged to unrelated earlier tasks. The failing declarations had nothing to do with the work in flight.
+
+THE COUPLING THAT TURNED THREE INTEGERS INTO A FULL BATCH STALL.
+  1. check-extension-docs.sh Rule R fails on the drift.
+  2. verify-deploy.sh gate 3 (doc-lint) therefore fails.
+  3. deploy-headless.sh runs verify-deploy.sh after deploying and exits non-zero on ANY gate failure.
+  4. skill-orchestrate's inter-cycle redeploy checkpoint (scripts/orchestrate-cycle-plan.sh, the `if bash deploy-headless.sh; then ... else` branch) treats a non-zero deploy-headless exit as a deploy FAILURE and moves EVERY remaining task into deferred_deploy_checkpoint, stopping the batch.
+Note the asymmetry that makes this worse than it needs to be: that checkpoint ALREADY has a pre-existing-baseline branch (compare pre- and post-redeploy findings; proceed when 0 are newly introduced, recording a verify_deploy_baseline_notices entry). But that branch lives INSIDE the deploy-succeeded arm, so it is unreachable whenever deploy-headless.sh itself exits non-zero -- which is exactly what a pre-existing verify failure causes. The tolerance mechanism that was built for this situation cannot fire in this situation.
+Independently confirmed: the completion-deploy gate (update-task-status.sh exit 6) checks only per-task deploy FRESHNESS, not whole-repo verify health -- after a successful resync it passed and both blocked tasks completed, even with two unrelated gates still failing. So the batch-level stall was strictly harsher than the per-task gate required.
+
+WORK -- two independent axes; both are in scope, and each should be justified separately.
+
+(a) STOP HAND-MAINTAINING line_count. A declared integer that must be manually kept in sync with a file's length is a drift generator: it carries no information a reader needs that `wc -l` cannot produce on demand, and every edit to any indexed file is a chance to forget it. Evaluate, and pick with stated reasoning: (i) derive line_count at deploy/index-generation time instead of declaring it, (ii) keep the declaration but auto-repair it (the codebase already has a --fix idiom in validate-artifact.sh; note that the auto-repair-reporting task decided in-place repair must be REPORTED, never silent -- honor that precedent), or (iii) drop line_count entirely if nothing consumes it for more than display. DETERMINE WHAT ACTUALLY READS line_count before choosing (iii); do not assume it is unused.
+
+(b) DECOUPLE unrelated gate health from task completion and batch progress. A pre-existing failure in a gate that has nothing to do with the changed files should not deny an unrelated task its completion transition, nor defer an entire batch. Evaluate, with reasoning: extending the checkpoint's existing pre-existing-baseline tolerance to cover a non-zero deploy-headless exit (so the baseline comparison decides, rather than being skipped); and/or having deploy-headless.sh distinguish "the deploy itself failed" from "the deploy succeeded but a pre-existing, unrelated gate is red", which are today the same exit code. A THIRD, ALREADY-OBSERVED confound belongs in this analysis: deploy-headless.sh also exits 3 merely because OTHER consumer repos are stale, a condition it explicitly refuses to act on ("this script never redeploys into a consumer") and which says nothing about this repo's deploy health.
+
+CONSTRAINTS.
+  - All edits target agent-system/extensions/**, never .claude/**.
+  - Do NOT make gates non-blocking wholesale. The goal is that a failure blocks what it is actually evidence about, not everything. A genuinely broken deploy must still stop the batch.
+  - scripts/orchestrate-cycle-plan.sh and update-task-status.sh are orchestrator-critical paths; expect the self-modification ordering gate to apply.
+
+ACCEPTANCE.
+  - A line_count drift can no longer occur silently, by whichever mechanism (a) selects; demonstrated by editing an indexed file and showing the gate stays green without a manual declaration edit.
+  - A pre-existing, unrelated red gate no longer defers an entire /orchestrate batch; demonstrated against a deliberately-introduced pre-existing failure, showing the baseline branch fires and the batch proceeds with a recorded notice.
+  - A genuinely NEW failure introduced by the batch's own changes still stops it; demonstrated, so the tolerance is proven narrow rather than assumed narrow.
+  - The three confounded exit-3 causes (deploy failed / pre-existing red gate / stale consumer repos) are distinguishable by a caller.
+
+---
+
+### 151. Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Two verify-deploy.sh gate failures are live in this repo today, both PRE-EXISTING and unrelated to whatever task happens to be running when they surface. They were observed blocking an unrelated multi-task /orchestrate batch: verify-deploy.sh reported "FAIL -- 3 of 29 check(s) failed", deploy-headless.sh therefore exited 3, and the orchestrator's inter-cycle redeploy checkpoint deferred EVERY task in the batch. One of the three (doc-lint, stale index-entries.json line_count declarations) was fixed at that time; these two remain.
+
+FAILURE 1 -- STATE-WRITER BOUNDARY LINT (gate 12).
+scripts/lint/lint-state-writer-boundary.sh reports "Found 4 hand-rolled state.json write(s)", all four in ONE file:
+  agent-system/extensions/core/scripts/tests/test-force-phases.sh:261
+    jq '.active_projects[0].status = "planned"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+  agent-system/extensions/core/scripts/tests/test-force-phases.sh:307
+    jq '.active_projects[0].next_artifact_number = 2' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv ...
+  agent-system/extensions/core/scripts/tests/test-force-phases.sh:317  (same shape as :307, .status = "planned")
+  agent-system/extensions/core/scripts/tests/test-force-phases.sh:327  (same shape as :307, .status = "planned")
+Last commit touching that file is an earlier, unrelated task's phase-7 work; the file appears in NO recent task's modified_files. These are test-fixture writes against a scratch $WORKDIR, not production state mutations -- which is precisely the judgment call this task must make explicitly rather than reflexively rewriting them.
+
+DECIDE, do not assume: is the correct remedy (a) route these through state-write.sh like production callers, (b) add a scoped allowlist entry for test-fixture writes against a scratch WORKDIR (the lint already has a file-level allowlist mechanism, used by task.md, todo.md, validation.md, jq-escaping-workarounds.md, vault-operation.sh and the lint's own header), or (c) narrow the lint's own detection so a non-specs/ scratch path is not matched? Note that :261 writes the REAL specs/state.json path, while :307/:317/:327 write "$WORKDIR/specs/state.json" -- these two shapes may not deserve the same answer. State the choice and its reasoning; do not silently weaken a boundary lint that exists to protect the single-writer invariant.
+
+FAILURE 2 -- WHOLE-TREE ORPHAN DETECTION (gate 13).
+verify-deploy.sh reports "whole-tree orphan detection reported 1 finding(s)" (find_orphans: deployed-but-undeclared files, ghost index rows). The specific finding was NOT captured at observation time -- the detail run exceeds a 120s timeout because the gate suite runs the full shell test suite. RESEARCH MUST establish what the single finding actually is before planning a fix; do not assume it is the same class as FAILURE 1. Remedy pointer named by the gate output itself: context/patterns/deploy-orphan-detection.md. Re-run detail with: bash agent-system/extensions/core/scripts/verify-deploy.sh (without --quiet), allowing several minutes.
+
+CONSTRAINTS.
+  - All edits target agent-system/extensions/**, never .claude/** (deploy artifact).
+  - Do not weaken a gate merely to make it pass. If a finding is a genuine false positive, fix the DETECTION and say so; if it is a real violation, fix the violation.
+  - Redeploy and confirm verify-deploy.sh reports 0 failures afterwards.
+
+ACCEPTANCE.
+  - lint-state-writer-boundary.sh --verbose reports 0 violations, with the chosen remedy and its reasoning recorded in the summary.
+  - Whole-tree orphan detection reports 0 findings, with the finding's actual identity documented (not merely made to disappear).
+  - bash verify-deploy.sh completes with all gates passing.
+  - A regression note explains why each fix will not silently re-break.
+
+RELATED, not a dependency: the sibling task on line_count/gate-coupling brittleness addresses the CLASS of problem (why an unrelated pre-existing lint failure can gate every task's completion). This task fixes the two live instances; that one changes the coupling. Either can land first.
+
+---
 
 ### 150. Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it
 - **Status**: [NOT STARTED]
@@ -116,7 +198,7 @@ Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so
 ---
 
 ### 143. Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 147
@@ -517,7 +599,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
