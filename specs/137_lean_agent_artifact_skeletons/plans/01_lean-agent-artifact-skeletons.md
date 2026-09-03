@@ -430,7 +430,25 @@ edited skeleton is statically conformant, closing the "survives regeneration" ac
 
 ---
 
-### Phase 7: End-to-End Demonstration on a Real Lean Dispatch [NOT STARTED]
+### Phase 7: End-to-End Demonstration on a Real Lean Dispatch [BLOCKED]
+
+**BLOCKER** (Phase 7):
+- **What failed**: This phase's own first task requires explicit user go-ahead before any
+  cross-repo deployment or dispatch into `/home/benjamin/Projects/BimodalLogic`. This dispatch is
+  running autonomously under `/orchestrate` (`orchestrator_mode: true`) with no interactive user
+  in the loop to grant that go-ahead.
+- **What was tried**: Phases 1-6 were completed in this repository first (all static/local work);
+  Phase 7 was reached with all of its dependencies satisfied.
+- **Why it's stuck**: The plan itself gates this phase on explicit human approval because it is
+  outward-facing and has real cost (deploying into and dispatching a real agent run inside a
+  second repository) — an autonomous agent cannot self-authorize this per this project's approval
+  norms for irreversible/costly, outside-this-repository actions.
+- **What is needed**: The user reviews this task and either approves proceeding with Phase 7
+  (deploy to BimodalLogic, run a real lean dispatch, validate its report/summary with zero errors
+  and zero auto-repairs) or declines/defers it. See the `user_decision` field on
+  `.return-meta.json` for the exact question.
+- **Prohibited workarounds**: Do NOT substitute a hand-written fixture for the real dispatch — the
+  acceptance criterion explicitly rules this out, and a fixture pass would be false evidence.
 
 **Goal**: Satisfy the acceptance criterion that a lean-language task run end to end produces a
 summary and a report that both pass `validate-artifact.sh` with zero errors and zero

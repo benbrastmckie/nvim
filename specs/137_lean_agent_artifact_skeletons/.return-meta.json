@@ -1,5 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "partial",
+  "requires_user_review": true,
+  "review_reason": "Phase 7 blocked: real end-to-end lean-dispatch demonstration requires deploying into and dispatching a real agent run inside a second repository (/home/benjamin/Projects/BimodalLogic), an outward-facing, real-cost action the plan itself gates on explicit user go-ahead. This autonomous /orchestrate run has no interactive user in the loop to grant it.",
+  "user_decision": {
+    "question": "Task 137's Phase 7 needs to deploy the updated lean/formal agents into /home/benjamin/Projects/BimodalLogic and run a real lean-type dispatch there to demonstrate that the produced report and summary validate with zero errors and zero auto-repairs. This is a cross-repo, outward-facing action with real cost. Should this proceed?",
+    "options": [
+      "Approve — deploy to BimodalLogic and run the real lean dispatch now",
+      "Decline — leave Phase 7 blocked; Phases 1-6 (all agent-skeleton edits, statically verified) stand as delivered",
+      "Defer — revisit this decision at a later time"
+    ],
+    "recommended": "Approve — deploy to BimodalLogic and run the real lean dispatch now",
+    "blocking": true
+  },
+  "partial_progress": {
+    "stage": "phase_7_blocked",
+    "details": "Phases 1-5 [COMPLETED]; Phase 6 [COMPLETED WITH EXCLUSIONS] (source/deployed diff and deployed-file grep matrix could not run in this repo -- lean/formal extensions not installed here; substitute source-level grep matrix passed 100%, see plan's Reasoned Exclusions). Phase 7 [BLOCKED] pending user go-ahead for cross-repo deploy+dispatch into BimodalLogic.",
+    "phases_completed": 6,
+    "phases_total": 7,
+    "handoff_path": "specs/137_lean_agent_artifact_skeletons/handoffs/phase-7-handoff-20260903T013000Z.md"
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/137_lean_agent_artifact_skeletons/summaries/01_lean-agent-artifact-skeletons-summary.md",
+      "summary": "Six of seven phases complete: all eight lean/formal agent files now carry validator-conforming inline skeletons, statically verified with zero missing fields/sections; Phase 6 closed with reasoned exclusions (extensions not installed in this repo); Phase 7 (real cross-repo lean dispatch) blocked pending user go-ahead."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a report-writing stage to lean-research-agent.md and a summary-writing stage to lean-implementation-agent.md (neither had one at all), amended the two lean hard agents' write stages in place preserving all domain content, and amended all four formal-extension research agents with their missing metadata fields and Decisions section -- all eight files now statically pass validate-artifact.sh's full field/section matrix with zero gaps. The real-dispatch demonstration (Phase 7) is blocked on user approval for a cross-repo action."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/agents/lean-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/formal/agents/formal-research-agent.md",
+    "agent-system/extensions/formal/agents/logic-research-agent.md",
+    "agent-system/extensions/formal/agents/math-research-agent.md",
+    "agent-system/extensions/formal/agents/physics-research-agent.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an agent's own report/summary skeleton is being audited for validate-artifact.sh conformance, check the skeleton in isolation (the fenced block only), not the whole file: the validator's metadata check is `grep -qF \"**Field**:\"` (whole-document, literal substring) and the section check is `grep -qE \"^##+ Section\"` (whole-document, prefix-match at any heading depth) -- both can produce false positives from an agent-authoring-prose hit (e.g. a Context References bullet mentioning '**Standards**:') that never reaches the produced artifact. Scope every verification grep to the fenced ```markdown ... ``` skeleton block itself, e.g. `awk '/^## Stage N: .../{f=1} f && /^```markdown$/{c=1;next} f && c && /^```$/{exit} f && c' file.md`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/137_lean_agent_artifact_skeletons/summaries/01_lean-agent-artifact-skeletons-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-artifact", "skeleton-audit", "scoped-grep", "false-positive", "agent-authoring"]
+    },
+    {
+      "content": "Before running a same-repo 'redeploy and diff source vs. .claude/' verification step for an extension-specific agent file, confirm the extension is actually installed/active in that repo's .claude-extensions.json. deploy-headless.sh only resyncs extensions the state file already marks active -- it will not deploy a source-store agent file for an extension the current repo never installed, so `.claude/agents/<file>.md` will simply be absent and a diff step will silently have nothing to compare against. When this happens, close the phase with a `#### Reasoned Exclusions` record (evidence: the .claude-extensions.json extensions list, plus `ls .claude/agents/`) and defer the deployed-copy verification to whichever phase/repo actually has the extension installed, rather than forcing the check or leaving the phase open indefinitely.",
+      "category": "PATTERN",
+      "source_artifact": "specs/137_lean_agent_artifact_skeletons/summaries/01_lean-agent-artifact-skeletons-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "extension-not-installed", "reasoned-exclusions", "cross-repo-verification", "source-store-deploy-boundary"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788456363_df3984",
     "agent_type": "general-implementation-agent",
