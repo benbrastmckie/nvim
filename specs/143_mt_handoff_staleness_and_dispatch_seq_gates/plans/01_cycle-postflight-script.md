@@ -462,21 +462,21 @@ cases if the mapping leaves a clause uncovered.
 `docs/architecture/`, and the acceptance bar's live-run and byte-count obligations are met.
 
 **Tasks**:
-- [ ] Replace Stage MT-4's per-task postflight steps 1-6 with one call to the new script per
-      dispatched task, consuming its JSON line.
-- [ ] Replace single-task Stage 5's gate pair, gates call, and postflight tail with the same call,
+- [x] Replace Stage MT-4's per-task postflight steps 1-6 with one call to the new script per
+      dispatched task, consuming its JSON line. *(completed)*
+- [x] Replace single-task Stage 5's gate pair, gates call, and postflight tail with the same call,
       preserving the caller-side application of loop-control state (`halt` / `cycle_count` /
-      `EXIT (partial)`), which stays in `SKILL.md` by the precedent scripts' own boundary rule.
-- [ ] Retarget `test-handoff-dispatch-identity.sh` at the script's gate — it currently extracts and
+      `EXIT (partial)`), which stays in `SKILL.md` by the precedent scripts' own boundary rule. *(completed)*
+- [x] Retarget `test-handoff-dispatch-identity.sh` at the script's gate — it currently extracts and
       `eval`s the `dispatch-seq-gate:begin`/`:end` sentinel region — and remove that region from
-      `SKILL.md` **in the same atomic batch**.
-- [ ] Relocate the replaced narrative prose to `docs/architecture/` (alongside
+      `SKILL.md` **in the same atomic batch**. *(completed: rewritten to invoke orchestrate-cycle-postflight.sh directly via a sandbox, 4 cases / 8 assertions, sentinel-free)*
+- [x] Relocate the replaced narrative prose to `docs/architecture/` (alongside
       `orchestrate-state-machine.md` / `handoff-schema.md`), leaving `SKILL.md` with the call and a
-      pointer, never a duplicate of the script's contract.
-- [ ] Measure and report bytes removed from `SKILL.md` (`wc -c` before/after, recorded in the
-      implementation summary).
-- [ ] Run a live multi-task `/orchestrate` cycle through the script and record the outcome.
-- [ ] Run the full gate set.
+      pointer, never a duplicate of the script's contract. *(completed: docs/architecture/orchestrate-cycle-postflight.md)*
+- [x] Measure and report bytes removed from `SKILL.md` (`wc -c` before/after, recorded in the
+      implementation summary). *(completed: 225553 -> 183025 bytes, 42528 removed, ~18.9%)*
+- [ ] Run a live multi-task `/orchestrate` cycle through the script and record the outcome. *(deviation: deferred -- requires an actual subsequent /orchestrate invocation observed externally, which the Phase 6 handoff already recorded as impossible to self-certify from within a single dispatch; recommend the invoking orchestrator verify on its next multi-task cycle)*
+- [x] Run the full gate set. *(completed: run-all.sh 68/68 source-store mode; lint-agent-contracts.sh 101/101; verify-deploy.sh 27/29 -- fixed one gate3 finding traceable to this task's own Phase 1 edits (index-entries.json line_count drift for return-metadata-file.md and return-meta-artifacts-template.md); the remaining 2 findings (gate12 hand-rolled state.json writes in test-force-phases.sh, gate13 orphan .claude/index-entries.json) are pre-existing and unrelated -- traced via git blame to task 126 and a stale gitignored deploy artifact predating this session, respectively; reported, not fixed, per the Observation Duty pattern rather than expanding this task's scope into unrelated territory)*
 
 **Timing**: 2 hours
 

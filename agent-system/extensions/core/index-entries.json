@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 675,
+      "line_count": 695,
       "keywords": [
         "format",
         "metadata",
@@ -3167,7 +3167,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Canonical copyable artifacts-array template for .return-meta.json; generated-copy source read by lint-agent-contracts.sh Check F, not @-imported at spawn time",
-      "line_count": 96,
+      "line_count": 124,
       "keywords": [
         "return-meta-artifacts-template",
         "artifacts",

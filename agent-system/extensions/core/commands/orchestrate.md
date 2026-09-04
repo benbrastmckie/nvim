@@ -334,7 +334,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --honest-index-rows "{N}" \
   -- "${stage_paths[@]}"
 # Deletion is completion-branch-only: .return-meta.json is already staged/committed above (its
-# modified_files were read into stage_paths above), and orchestrate-stage5-gates.sh's
+# modified_files were read into stage_paths above), and orchestrate-cycle-postflight.sh's
 # mtime-freshness-windowed outcome-recovery fallback (used by a still-running loop's next cycle)
 # would lose its source if this ran on the partial branch below -- never add it there.
 rm -f "${metadata_file}"
@@ -369,7 +369,7 @@ as the batch section, for visual consistency:
 
 | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
 |------|--------------|-------------------------|------------------|--------|
-| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:stage-5-stale-handoff | handoff mtime predates this dispatch window |
+| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff | handoff mtime predates this dispatch window |
 
 Operator remedy: fix the named source-store path under `agent-system/extensions/**`; the durable
 record is already in `specs/events.jsonl`. No task status was mutated because of these rows.

@@ -17,7 +17,7 @@
 #                           Signal A table) -- validated against a closed enum, failing loudly on
 #                           an unknown value.
 #   --detecting-site SITE  Free-text identifying the call site (e.g.
-#                           "skill-orchestrate/SKILL.md:stage-5-tier-c").
+#                           "skill-orchestrate/SKILL.md:cycle-postflight-tier-c").
 #   --message "..."        Short human-readable one-line summary.
 #   --attributed-path / --dispatched-agent
 #                           At least one is required (Signal B attribution). When both are given,

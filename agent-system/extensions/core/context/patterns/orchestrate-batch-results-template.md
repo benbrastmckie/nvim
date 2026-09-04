@@ -150,7 +150,7 @@ predicate.)
 
 | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
 |------|--------------|-------------------------|------------------|--------|
-| #{N} | OFF_SCHEMA_STATUS | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:stage-mt4-tier-c | handoff dispatch_status is off-schema |
+| #{N} | OFF_SCHEMA_STATUS | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:cycle-postflight-tier-c | handoff dispatch_status is off-schema |
 
 These rows name a defect in the agent system itself, not in any task's work. Operator remedy: fix
 the named source-store path under `agent-system/extensions/**`; the durable record of each firing

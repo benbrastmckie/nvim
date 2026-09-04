@@ -1,27 +1,38 @@
 #!/usr/bin/env bash
-# test-handoff-reader-parity.sh - Single-engine reader presence/correctness suite for
-# skill-orchestrate/SKILL.md's Stage 5 result-read block (and the Stage 4 H1 / Stage 5b hard-only
-# reads it used to compare against a second file). Builds ONE shared
-# .orchestrator-handoff.json fixture, extracts the literal jq filter strings the merged engine
-# actually ships for each field, and asserts each filter is present and produces the expected
-# value against the shared fixture. This suite used to diff those same filter strings against a
-# SECOND file (the former standalone hard-mode orchestrate skill) for byte-equality -- since the
-# two engines were merged into one `hard_mode`-gated file, that comparison premise no longer
-# exists: with one engine there is nothing left to diff against, so the checks below were
-# converted from extract-twice-and-compare to extract-once-and-verify, preserving every
-# field/value assertion the old comparison implied without the vacuous self-comparison.
+# test-handoff-reader-parity.sh - Reader presence/correctness suite for the handoff fields both
+# /orchestrate engines consume. Builds ONE shared .orchestrator-handoff.json fixture, extracts
+# the literal jq filter strings the current implementation actually ships for each field, and
+# asserts each filter is present and produces the expected value against the shared fixture.
+#
+# RETARGETED (Phase 7 of the task that built orchestrate-cycle-postflight.sh): the
+# `dispatch_status`/`dispatch_summary`/`phases_completed`/`phases_total`/`plan_markers_verified`/
+# `artifacts[0].*` reads this suite used to extract from skill-orchestrate/SKILL.md's own Stage 5
+# now live inside `orchestrate-cycle-postflight.sh` (the single shared per-cycle postflight
+# script both engines call) -- extraction for those fields is retargeted at `$SCRIPT_FILE`
+# accordingly. `blockers` still lives in SKILL.md's own Stage 5 (a caller-side re-derivation
+# `orchestrate-cycle-postflight.sh`'s compact JSON output does not carry -- see
+# docs/architecture/orchestrate-cycle-postflight.md), so its extraction stays targeted at
+# `$SKILL_FILE`, unchanged in form. `next_action_hint`/`continuation` are RETIRED from this
+# suite: neither field has a live reader in either file any more (verified by inspection --
+# Stage 4's OWN independent continuation-normalization read, for the NEXT cycle's dispatch
+# context, is a structurally different mechanism reading the handoff fresh from disk, not a
+# consumer of Stage 5's old `continuation`/`next_hint` variables, which had no downstream
+# consumer even before this cutover). The hard_mode-only fields (.skeleton, .sorry_inventory,
+# .blockers[0].target/.verbatim_goal) are UNCHANGED -- they live in Stage 4's H1 branch and
+# Stage 5b, neither of which Phase 7 touched, so their extraction stays targeted at
+# `$SKILL_FILE` exactly as before.
 #
 # Structural model: scripts/tests/test-validate-handoff.sh / test-corroborate-phase-counts.sh
 # (mktemp -d workdir with an EXIT-trap cleanup, source-store-first candidate resolution for the
-# SKILL.md file under active development, pass()/fail()/info() helpers with integer counters,
+# files under active development, pass()/fail()/info() helpers with integer counters,
 # exit 0 all-pass / 1 any-fail / 2 environment error).
 #
 # Why extraction, not hand-copied jq: hand-copying the filter strings into this test would not
-# catch drift if a future editor changes the engine's Stage 5 read without updating this test to
-# match -- the whole point of extraction is proving the SHIPPED file's actual filter still does
-# what this test expects, not that this test agrees with itself. Extraction is anchored on
-# stable, already-unique surrounding text (verified via grep -c == 1 at authoring time) rather
-# than raw line numbers, so it survives ordinary prose edits elsewhere in the file.
+# catch drift if a future editor changes the actual read without updating this test to match --
+# the whole point of extraction is proving the SHIPPED file's actual filter still does what this
+# test expects, not that this test agrees with itself. Extraction is anchored on stable,
+# already-unique surrounding text (verified via grep -c == 1 at authoring time) rather than raw
+# line numbers, so it survives ordinary prose edits elsewhere in either file.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (a
 # required file was not found at any candidate path).
@@ -59,6 +70,21 @@ SKILL_FILE="$(resolve_candidate "skills/skill-orchestrate/SKILL.md")" || {
   echo "ERROR: skill-orchestrate/SKILL.md not found (source store or deploy tree)" >&2
   exit 2
 }
+SCRIPT_FILE_CANDIDATES=(
+  "$SCRIPT_DIR/../orchestrate-cycle-postflight.sh"
+  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-postflight.sh"
+)
+SCRIPT_FILE=""
+for candidate in "${SCRIPT_FILE_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    SCRIPT_FILE="$candidate"
+    break
+  fi
+done
+if [[ -z "$SCRIPT_FILE" ]]; then
+  echo "ERROR: orchestrate-cycle-postflight.sh not found at any candidate path" >&2
+  exit 2
+fi
 VALIDATOR_CANDIDATES=(
   "$SCRIPT_DIR/../validate-handoff.sh"
   "$REPO_ROOT/.claude/scripts/validate-handoff.sh"
@@ -144,82 +170,81 @@ extract_jq_filter() {
     | grep -oP "jq -[rc] '\K[^']*(?=')"
 }
 
-# Anchor: the comment immediately preceding the merged engine's Stage 5 dispatch_status read.
-# Verified unique (grep -c == 1) in the merged file.
-ANCHOR='not bare `.status`) so a handoff with a missing'
+# Anchor: the comment immediately preceding orchestrate-cycle-postflight.sh's handoff-present
+# field-read block (Phase 7 retarget -- these reads used to live inline in skill-orchestrate/
+# SKILL.md's own Stage 5). Verified unique (grep -c == 1) in the script.
+ANCHOR='─── Handoff-present path ───'
 
-# Fields the Stage 5 result-read block extracts. Each field's EXPECTED value is derived from the
-# shared fixture above by hand, once, at authoring time (not re-derived from the filter under
-# test -- that would make the assertion vacuous).
-SHARED_FIELDS=(dispatch_status dispatch_summary blockers next_hint phases_completed phases_total plan_markers_verified)
+# Fields the script's handoff-present block extracts. Each field's EXPECTED value is derived from
+# the shared fixture above by hand, once, at authoring time (not re-derived from the filter under
+# test -- that would make the assertion vacuous). `next_action_hint`/`continuation` are
+# deliberately absent -- retired, see this file's header comment.
+SHARED_FIELDS=(dispatch_status dispatch_summary phases_completed phases_total plan_markers_verified)
 declare -A SHARED_FIELD_EXPECTED=(
   [dispatch_status]="implemented"
   [dispatch_summary]="Completed all phases with one tracked strategic sorry and one historical blocker entry."
-  [blockers]='[{"phase":2,"target":"example-target.sh","verbatim_goal":"example verbatim goal text","what_was_tried":"attempted approach","why_it_failed":"reason it failed"}]'
-  [next_hint]="implement"
   [phases_completed]="1"
   [phases_total]="3"
   [plan_markers_verified]="true"
 )
 
 for field in "${SHARED_FIELDS[@]}"; do
-  filter="$(extract_jq_filter "$SKILL_FILE" "$ANCHOR" "$field")"
+  filter="$(extract_jq_filter "$SCRIPT_FILE" "$ANCHOR" "$field")"
   if [[ -z "$filter" ]]; then
-    fail "$field: could not extract jq filter from skill-orchestrate/SKILL.md"
+    fail "$field: could not extract jq filter from orchestrate-cycle-postflight.sh"
     continue
   fi
   val="$(jq -r "$filter" "$FIXTURE" 2>/dev/null)"
   expected="${SHARED_FIELD_EXPECTED[$field]}"
-  if [[ "$field" == "blockers" ]]; then
-    # blockers is a jq -c array; compare parsed JSON structurally, not as a raw string, so key
-    # ordering in the filter's own output can't cause a spurious mismatch.
-    val_c="$(jq -c "$filter" "$FIXTURE" 2>/dev/null)"
-    if [[ "$(jq -c -e --argjson a "$val_c" --argjson b "$expected" -n '$a == $b' 2>/dev/null)" == "true" ]]; then
-      pass "$field: filter ('$filter') present and produces the expected value against the shared fixture"
-    else
-      fail "$field: filter present but value diverges from expected -- got='$val_c' expected='$expected'"
-    fi
-  elif [[ "$val" == "$expected" ]]; then
+  if [[ "$val" == "$expected" ]]; then
     pass "$field: filter ('$filter') present and produces the expected value ('$val') against the shared fixture"
   else
     fail "$field: filter present but value diverges -- got='$val' expected='$expected'"
   fi
 done
 
-# ── Continuation dual-form resolution: multi-line jq -c block, compared as a normalized string ──
-extract_continuation_block() {
-  local file="$1"
-  grep -A80 -F -- "$ANCHOR" "$file" \
-    | grep -A4 -P '^\s*continuation=\$\(echo "\$handoff" \| jq -c '"'"'$' \
-    | sed -n '2,5p' \
-    | tr -s ' \t' ' ' \
-    | sed 's/^ *//;s/ *$//'
-}
-continuation_block="$(extract_continuation_block "$SKILL_FILE")"
-if [[ -z "$continuation_block" ]]; then
-  fail "continuation: could not extract the multi-line jq -c block from skill-orchestrate/SKILL.md"
+# ── blockers: caller-side re-derivation in skill-orchestrate/SKILL.md's own Stage 5 ─────────────
+# NOT extracted from $SCRIPT_FILE -- orchestrate-cycle-postflight.sh's compact JSON output does
+# not carry the handoff's `blockers[]` array (Context Flatness Constraint; see
+# docs/architecture/orchestrate-cycle-postflight.md). Stage 5b (hard mode) needs it, so Stage 5
+# re-derives it, read-only, from the same accepted handoff. Anchored on the comment immediately
+# preceding that re-derivation (verified unique, grep -c == 1, in skill-orchestrate/SKILL.md).
+BLOCKERS_ANCHOR="Caller-side re-derivation of \`handoff\` / \`blockers\`"
+blockers_filter="$(extract_jq_filter "$SKILL_FILE" "$BLOCKERS_ANCHOR" "blockers")"
+if [[ -z "$blockers_filter" ]]; then
+  fail "blockers: could not extract jq filter from skill-orchestrate/SKILL.md"
 else
-  pass "continuation: multi-line dual-form-resolution jq block present"
-  cont_val="$(jq -c "$continuation_block" "$FIXTURE" 2>/dev/null)"
-  if [[ "$cont_val" == *"phase-1-handoff-20260101T000000Z.md"* ]]; then
-    pass "continuation: resolved value from shared fixture contains the expected handoff_path"
+  blockers_expected='[{"phase":2,"target":"example-target.sh","verbatim_goal":"example verbatim goal text","what_was_tried":"attempted approach","why_it_failed":"reason it failed"}]'
+  # blockers is a jq -c array; compare parsed JSON structurally, not as a raw string, so key
+  # ordering in the filter's own output can't cause a spurious mismatch.
+  blockers_val_c="$(jq -c "$blockers_filter" "$FIXTURE" 2>/dev/null)"
+  if [[ "$(jq -c -e --argjson a "$blockers_val_c" --argjson b "$blockers_expected" -n '$a == $b' 2>/dev/null)" == "true" ]]; then
+    pass "blockers: filter ('$blockers_filter') present and produces the expected value against the shared fixture"
   else
-    fail "continuation: resolved value unexpected: $cont_val"
+    fail "blockers: filter present but value diverges from expected -- got='$blockers_val_c' expected='$blockers_expected'"
   fi
 fi
 
+# `next_action_hint`/`continuation` (dual-form resolution): RETIRED from this suite as of Phase 7
+# -- neither field has a live reader in either file any more. See this file's header comment for
+# the full reasoning (Stage 4's own, structurally distinct continuation-normalization read is
+# unaffected and untested here by design -- it was never this suite's subject).
+
 # ── artifacts[0].{path,type,summary}: presence + expected value against the shared fixture ─────
-ARTIFACT_ANCHOR='handoff_artifact_path=\$(echo "\$handoff" \| jq -r'\''\.artifacts\[0\]\.path'
+# Phase 7 retarget: these now live in orchestrate-cycle-postflight.sh's handoff-present block
+# (same $ANCHOR as SHARED_FIELDS above), under the variable names `artifact_path`/`artifact_type`/
+# `artifact_summary` -- NOT `handoff_artifact_*`, which was skill-orchestrate/SKILL.md's own old
+# naming for the same values before this cutover.
 declare -A ARTIFACT_SUB_EXPECTED=(
   [path]="specs/000_x/summaries/01_x-summary.md"
   [type]="summary"
   [summary]="Partial summary"
 )
 for sub in path type summary; do
-  var="handoff_artifact_${sub}"
-  filter="$(grep -oP "${var}=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$SKILL_FILE" | head -1)"
+  var="artifact_${sub}"
+  filter="$(extract_jq_filter "$SCRIPT_FILE" "$ANCHOR" "$var")"
   if [[ -z "$filter" ]]; then
-    fail "artifacts[0].$sub: could not extract from skill-orchestrate/SKILL.md"
+    fail "artifacts[0].$sub: could not extract from orchestrate-cycle-postflight.sh"
     continue
   fi
   val="$(jq -r "$filter" "$FIXTURE" 2>/dev/null)"
