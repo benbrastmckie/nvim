@@ -17,6 +17,9 @@
 # structurally incapable of disagreeing.
 #
 # WORK performed, in order (each maps to a lettered item in this task's own dispatch WORK list):
+#   (a.0) Stray-handoff sweep (Phase 7 addition — absorbed from the single-task-only
+#       orchestrate-stage5-gates.sh so BOTH engines get it; see the "decide and record the
+#       reasoning either way" note at this section's own call site for the decision record).
 #   (a) Handoff read guarded by the mtime staleness gate (fail-closed 9999999999 default) and the
 #       dispatch_seq identity gate.
 #   (b) Return-meta recovery via orchestrate-recover-outcome.sh (now dispatch_seq-aware, D2).
@@ -265,6 +268,45 @@ handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
 notice_prefix="[orchestrate]"
 attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 detecting_site_prefix="skill-orchestrate/SKILL.md"
+
+# ─── WORK (a.0): stray-handoff sweep (both engines, by construction) ───────────────────────────
+# Historically single-task-only (orchestrate-stage5-gates.sh, called only from single-task
+# Stage 5). A mechanism-agnostic backstop for a handoff written outside its task directory (the
+# validate-handoff-location.sh PostToolUse hook cannot see a Bash-redirect write). Bounded to two
+# exact paths (repo root, specs/), never a recursive find. Decided here, at Phase 7 cutover time
+# (the originating dispatch left this as an open "decide and record the reasoning either way"
+# question): absorbed into this ONE script rather than either (a) left single-task-only via a
+# separate orchestrate-stage5-gates.sh call bolted onto both call sites, or (b) dropped
+# entirely for multi-task's sake. Run unconditionally, every call, exactly like the pre-dedup
+# inline code and the old orchestrate-stage5-gates.sh's own "always run" placement — never gated
+# on handoff_stale, since a stray file sits OUTSIDE handoff_file and this check does not touch
+# handoff_file at all.
+for stray in "${PROJECT_ROOT}/.orchestrator-handoff.json" "${PROJECT_ROOT}/specs/.orchestrator-handoff.json"; do
+  if [ -e "$stray" ]; then
+    echo "${notice_prefix} ERROR: STRAY HANDOFF at $stray — a writer produced the handoff outside its task directory." >&2
+    echo "${notice_prefix} The correct destination is $handoff_file." >&2
+    if is_live; then
+      record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class HANDOFF_MISLOCATED \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-stray-handoff" \
+        --task "$task_number" --session "$session_id" \
+        --message "stray handoff found at $stray, outside its task directory" \
+        --attributed-path "$attributed_path" \
+        --extra-detail-json "$(jq -c -n --arg stray "$stray" '{stray_path: $stray}')" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "HANDOFF_MISLOCATED" "$attributed_path" \
+        "${detecting_site_prefix}:cycle-postflight-stray-handoff" \
+        "stray handoff found at $stray, outside its task directory" \
+        "$record_result"
+      mv "$stray" "${TASK_DIR}/.stray-handoff-$(date -u +%s).json" 2>/dev/null \
+        && echo "${notice_prefix} Stray moved into ${TASK_DIR}/ for inspection." >&2 \
+        || echo "${notice_prefix} WARNING: could not move stray aside; remove it manually before the next cycle." >&2
+    else
+      echo "${notice_prefix} [dry-run] would record HANDOFF_MISLOCATED and move the stray handoff aside — no write performed." >&2
+    fi
+  fi
+done
 
 # ─── WORK (a): Handoff read guarded by both gates ──────────────────────────────────────────────
 handoff_stale=false

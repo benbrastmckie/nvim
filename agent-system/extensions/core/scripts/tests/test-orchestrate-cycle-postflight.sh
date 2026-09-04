@@ -536,6 +536,55 @@ else
   fail "invariant: expected halt=false for a corroborated infra failure, got: $LAST_STDOUT"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Invariant: the stray-handoff sweep (Phase 7 addition, absorbed from the single-task-only
+# orchestrate-stage5-gates.sh) fires for BOTH engines -- exercised here via the multi-task path
+# (no --loop-guard-file), since the single-task path already had this coverage historically.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Invariant: stray-handoff sweep fires and records HANDOFF_MISLOCATED (multi-task path)"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/708_candidate/summaries"
+echo x > "$WORKDIR/specs/708_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 708, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #708", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_708.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"708": 1}, "dispatch_start_ts": {}}
+EOF
+cat > "$WORKDIR/specs/708_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/708_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1}}
+EOF
+# The stray file itself, at repo root -- a writer that mis-resolved its own task_dir.
+echo '{"status":"implemented"}' > "$WORKDIR/.orchestrator-handoff.json"
+run_sut specs/708_candidate --session sess_708 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 708
+
+if echo "$LAST_STDERR" | grep -q "STRAY HANDOFF"; then
+  pass "invariant: stray handoff at repo root is detected"
+else
+  fail "invariant: no STRAY HANDOFF notice in stderr: $LAST_STDERR"
+fi
+if [ ! -e "$WORKDIR/.orchestrator-handoff.json" ]; then
+  pass "invariant: stray handoff was moved aside (not left at repo root)"
+else
+  fail "invariant: stray handoff was NOT moved aside"
+fi
+if jq -e '.detected_defects | map(select(.defect_class == "HANDOFF_MISLOCATED")) | length >= 1' \
+     "$WORKDIR/specs/.orchestrator-multi-state-sess_708.json" >/dev/null 2>&1; then
+  pass "invariant: HANDOFF_MISLOCATED recorded in the multi-state file (not just the loop guard)"
+else
+  fail "invariant: no HANDOFF_MISLOCATED recorded in the multi-state file"
+fi
+# The task's own outcome (recovered via .return-meta.json, since no handoff sits at the correct
+# path) must still resolve normally -- the sweep is a side observation, never a gate.
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "invariant: the stray-handoff sweep never blocks this dispatch's own outcome resolution"
+else
+  fail "invariant: expected verdict=ok despite the stray handoff, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
