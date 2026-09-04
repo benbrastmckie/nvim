@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Wire hard mode and the aux signals into orchestrate-cycle-postflight.sh",
+  "started_at": "2026-09-04T07:40:00Z",
+  "last_updated": "2026-09-04T08:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --hard (default off) flag/usage; script-side of the caller threading", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Call orchestrate-churn.sh when --hard, after status transition, before commit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Persist audit_requested/target/verbatim_goal to aux_pending[task] in the resolved defect_store", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Emit base-mode drift-inspection aux signal below 70% phase completion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Emit blocker-research aux signal on verdict=blocked (mode-independent)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Extend output JSON with aux_signal informational field only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 7, "description": "Update header WORK list and docs/architecture/orchestrate-cycle-postflight.md", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md"]},
+    {"id": 8, "description": "Extend test-orchestrate-cycle-postflight.sh with churn/drift/blocker cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Placed the WORK (k) block after verdict resolution and before WORK (i)'s commit, rather than immediately after WORK (f)'s status transition, since the blocker-research signal needs the resolved verdict.", "result": "kept", "reason": "Task phrasing ('after status transition, before commit') is satisfied by any point in that range; verdict availability is required for the blocker signal."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "3.1", "description": "thread it from orchestrate-cycle-plan.sh's per-row hard mode through the caller", "type": "deferred", "reason": "orchestrate-cycle-plan.sh never calls orchestrate-cycle-postflight.sh directly -- SKILL.md is the actual caller of both scripts, and threading --hard into SKILL.md's own postflight call sites is explicitly Phase 6's task ('Thread --hard into the Stage MT-4 postflight call so Phase 3's wiring is reachable'). This phase completes the script-side half (accepting and using --hard); the caller-side SKILL.md edit is deferred to Phase 6 per the plan's own dependency graph.", "annotation": "*(deviation: deferred to Phase 6)*"}
+  ]
+}

@@ -21,9 +21,22 @@ implementation, so they are structurally incapable of disagreeing on gate semant
 
 Both `skill-orchestrate/SKILL.md`'s Stage 5 and Stage MT-4 call this script and consume its
 compact JSON output; neither carries its own copy of the logic below any more. See the script's
-own header comment for the authoritative, line-numbered WORK (a)–(j) list; this document is the
+own header comment for the authoritative, line-numbered WORK (a)–(k) list; this document is the
 narrative account of WHY each piece exists and how the two callers apply what the script does
 not and must not own.
+
+**WORK (k), added by the task that ported single-task-only features into the batch engine**:
+when `--hard` is given, the script calls `orchestrate-churn.sh` with this cycle's
+`dispatch_status`/`blockers`/`phases_completed` and, on a three-strikes audit REQUEST, persists it
+to `aux_pending[task]` in the resolved state store (`$defect_store` — the same
+loop-guard-file-or-multi-state-file resolution WORK (d) already uses). In base mode, a `partial`
+outcome below 70% phase completion records a `drift-inspection` aux signal instead (mutually
+exclusive with the churn branch by construction, since `hard_mode` is one flag for the whole
+cycle). Independent of either mode, `verdict=blocked` records a `blocker-research` aux signal
+carrying `state.json`'s own `.blockers` description. All three are informational-only — they
+never change `verdict`, `halt`, or `infra_exempt_cycle`, and this script never dispatches
+anything; the NEXT cycle's `orchestrate-cycle-plan.sh` is what turns a recorded `aux_pending`
+entry into an `aux_dispatch[]` row (Decision 2 of that task's plan).
 
 ## What The Script Owns vs. What The Callers Own
 

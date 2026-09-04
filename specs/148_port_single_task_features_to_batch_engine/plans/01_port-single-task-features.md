@@ -326,30 +326,33 @@ wrong and should be re-examined before committing.
 
 ---
 
-### Phase 3: Wire hard mode and the aux signals into `orchestrate-cycle-postflight.sh` [NOT STARTED]
+### Phase 3: Wire hard mode and the aux signals into `orchestrate-cycle-postflight.sh` [COMPLETED]
 
 **Goal**: Postflight calls `orchestrate-churn.sh` when hard mode is on, and persists the two
 signals the next cycle's aux emission needs.
 
 **Tasks**:
-- [ ] Add `--hard` (default off) to `orchestrate-cycle-postflight.sh`'s flag parser and usage
+- [x] Add `--hard` (default off) to `orchestrate-cycle-postflight.sh`'s flag parser and usage
       block; thread it from `orchestrate-cycle-plan.sh`'s per-row hard mode through the caller.
-- [ ] After the status transition and before the commit, call `orchestrate-churn.sh` when
+      *(deviation: altered — the script-side half (accepting/using `--hard`) is done here; the
+      caller-side SKILL.md threading is deferred to Phase 6, which already owns "Thread --hard
+      into the Stage MT-4 postflight call")*
+- [x] After the status transition and before the commit, call `orchestrate-churn.sh` when
       `--hard`, passing `$TASK_DIR`, `dispatch_status`, the handoff's `blockers`, and
       `phases_completed`.
-- [ ] Persist the churn script's `audit_requested`/`target`/`verbatim_goal` to the resolved state
+- [x] Persist the churn script's `audit_requested`/`target`/`verbatim_goal` to the resolved state
       store (multi-state file, or the loop-guard file for a single-task caller) as
       `aux_pending[task]`.
-- [ ] Emit the base-mode drift signal: when `hard_mode` is false, `dispatch_status = partial` and
+- [x] Emit the base-mode drift signal: when `hard_mode` is false, `dispatch_status = partial` and
       `phases_completed / max(phases_total,1) < 0.70`, record `aux_pending[task] =
       {kind: "drift-inspection"}`.
-- [ ] Emit the blocker signal: when `verdict = blocked`, record
+- [x] Emit the blocker signal: when `verdict = blocked`, record
       `aux_pending[task] = {kind: "blocker-research", blocker_desc}`.
-- [ ] Extend the output JSON with the churn/aux outcome as informational fields only; do **not**
+- [x] Extend the output JSON with the churn/aux outcome as informational fields only; do **not**
       change `verdict`, `halt`, or `infra_exempt_cycle` semantics.
-- [ ] Update the script's header WORK list and `docs/architecture/orchestrate-cycle-postflight.md`
+- [x] Update the script's header WORK list and `docs/architecture/orchestrate-cycle-postflight.md`
       with the new lettered items.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-postflight.sh`: `--hard` invokes the churn
+- [x] Extend `scripts/tests/test-orchestrate-cycle-postflight.sh`: `--hard` invokes the churn
       script and a base-mode run does not; each of the three `aux_pending` writes fires on its own
       trigger and on no other.
 

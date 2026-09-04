@@ -38,6 +38,7 @@ require_file() {
 SUT_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
 require_file "$SUT_SRC"
 for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
+         orchestrate-churn.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
          errors-append.sh events-append.sh; do
@@ -61,6 +62,7 @@ setup_sandbox() {
   rm -rf "$WORKDIR"
   mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
+           orchestrate-churn.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
            errors-append.sh events-append.sh; do
@@ -534,6 +536,194 @@ if [ "$(jqf '.halt')" = "false" ]; then
   pass "invariant: a corroborated infra failure does not halt"
 else
   fail "invariant: expected halt=false for a corroborated infra failure, got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# WORK (k): --hard invokes orchestrate-churn.sh (three consecutive zero-progress partials on one
+# blocker target reach the three-strikes threshold and request a divergence audit); a base-mode
+# run never invokes it at all.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "WORK (k): --hard invokes orchestrate-churn.sh; base mode does not"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/820_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 820, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #820", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/820_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 4, "detected_defects": [], "infra_failures": 0}
+EOF
+
+run_churn_cycle() {
+  # Usage: run_churn_cycle <dispatch_seq>
+  local seq="$1"
+  cat > "$WORKDIR/specs/820_candidate/.orchestrator-handoff.json" <<EOF
+{"status": "partial", "dispatch_seq": ${seq}, "phases_completed": 2, "phases_total": 5, "blockers": [{"target": "foo", "verbatim_goal": "do foo"}]}
+EOF
+  run_sut specs/820_candidate --session sess_820 --phase implement --task-type general \
+    --agent general-implementation-agent --loop-guard-file specs/820_candidate/.orchestrator-loop-guard \
+    --dispatch-seq "$seq" --dispatch-start-ts "$(( $(now_ts) - 5 ))" --hard 820
+}
+
+run_churn_cycle 1
+if [ -f "$WORKDIR/specs/820_candidate/.orchestrator-churn-state.json" ]; then
+  pass "churn: --hard invokes orchestrate-churn.sh (churn-state file created)"
+else
+  fail "churn: --hard did not invoke orchestrate-churn.sh (no churn-state file)"
+fi
+if [ "$(jqf '.aux_signal')" = "null" ]; then
+  pass "churn: cycle 1 (no prior phases_completed_last) records no aux_signal yet"
+else
+  fail "churn: cycle 1 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
+fi
+
+run_churn_cycle 2
+if [ "$(jqf '.aux_signal')" = "null" ]; then
+  pass "churn: cycle 2 (churn count 1) does not yet request an audit"
+else
+  fail "churn: cycle 2 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
+fi
+
+run_churn_cycle 3
+if [ "$(jqf '.aux_signal')" = "null" ]; then
+  pass "churn: cycle 3 (churn count 2) does not yet request an audit"
+else
+  fail "churn: cycle 3 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
+fi
+
+run_churn_cycle 4
+if [ "$(jqf '.aux_signal.kind')" = "divergence-audit" ] && [ "$(jqf '.aux_signal.target')" = "foo" ] \
+   && [ "$(jqf '.aux_signal.verbatim_goal')" = "do foo" ]; then
+  pass "churn: cycle 4 (churn count 3) requests a divergence-audit aux_signal"
+else
+  fail "churn: cycle 4 did not request a divergence-audit (stdout: $LAST_STDOUT)"
+fi
+if jq -e '.aux_pending."820".kind == "divergence-audit" and .aux_pending."820".target == "foo"' \
+     "$WORKDIR/specs/820_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "churn: aux_pending[820] persisted to the resolved state store (loop-guard file)"
+else
+  fail "churn: aux_pending[820] not found in the loop-guard file"
+fi
+if [ "$(jqf '.verdict')" != "null" ] && [ "$(jqf '.halt')" = "false" ]; then
+  pass "churn: recording an aux_signal never changes verdict/halt (still an ordinary defer outcome)"
+else
+  fail "churn: recording an aux_signal unexpectedly changed verdict/halt: $LAST_STDOUT"
+fi
+
+# Base-mode companion: the SAME churn signature, without --hard, must never invoke the script.
+mkdir -p "$WORKDIR/specs/821_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 821, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #821", "dependencies": [], "file_scope": []}]}
+EOF
+commit_fixture
+cat > "$WORKDIR/specs/821_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/821_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 2, "phases_total": 5, "blockers": [{"target": "foo", "verbatim_goal": "do foo"}]}
+EOF
+run_sut specs/821_candidate --session sess_821 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/821_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 821
+
+if [ ! -f "$WORKDIR/specs/821_candidate/.orchestrator-churn-state.json" ]; then
+  pass "churn: a base-mode run (no --hard) never invokes orchestrate-churn.sh"
+else
+  fail "churn: a base-mode run unexpectedly created a churn-state file"
+fi
+# NOTE: this handoff (2/5 phases, 40%) also happens to be below the drift threshold, so a
+# drift-inspection aux_signal IS correctly expected here (base mode's own trigger) -- the
+# invariant under test is narrower: never a divergence-audit signal outside --hard.
+if [ "$(jqf '.aux_signal.kind')" != "divergence-audit" ]; then
+  pass "churn: a base-mode run with a churn-shaped handoff never records a divergence-audit aux_signal"
+else
+  fail "churn: a base-mode run unexpectedly recorded a divergence-audit aux_signal: $(jqf '.aux_signal')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# WORK (k): base-mode drift-inspection aux signal (phases_completed/phases_total < 70%)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "WORK (k): base-mode drift-inspection aux signal fires below the 70% threshold, not above it"
+mkdir -p "$WORKDIR/specs/822_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 822, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #822", "dependencies": [], "file_scope": []}]}
+EOF
+commit_fixture
+cat > "$WORKDIR/specs/822_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/822_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 1, "phases_total": 5}
+EOF
+run_sut specs/822_candidate --session sess_822 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/822_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 822
+
+if [ "$(jqf '.aux_signal.kind')" = "drift-inspection" ]; then
+  pass "drift: 1/5 phases (20%, below 70%) records a drift-inspection aux_signal"
+else
+  fail "drift: expected a drift-inspection aux_signal at 1/5 phases, got: $LAST_STDOUT"
+fi
+if jq -e '.aux_pending."822".kind == "drift-inspection"' \
+     "$WORKDIR/specs/822_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "drift: aux_pending[822] persisted to the loop-guard file"
+else
+  fail "drift: aux_pending[822] not found in the loop-guard file"
+fi
+
+# Negative case: 4/5 phases (80%, at/above 70%) must NOT record a drift signal.
+mkdir -p "$WORKDIR/specs/823_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 823, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #823", "dependencies": [], "file_scope": []}]}
+EOF
+commit_fixture
+cat > "$WORKDIR/specs/823_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/823_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 4, "phases_total": 5}
+EOF
+run_sut specs/823_candidate --session sess_823 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/823_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 823
+
+if [ "$(jqf '.aux_signal')" = "null" ]; then
+  pass "drift: 4/5 phases (80%, at/above 70%) records no drift-inspection aux_signal"
+else
+  fail "drift: unexpected aux_signal at 4/5 phases: $(jqf '.aux_signal')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# WORK (k): blocker-research aux signal fires unconditionally on verdict=blocked (either mode)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "WORK (k): blocker-research aux signal fires on verdict=blocked"
+mkdir -p "$WORKDIR/specs/824_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 824, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #824", "dependencies": [], "file_scope": [], "blockers": "Missing API key"}]}
+EOF
+commit_fixture
+cat > "$WORKDIR/specs/824_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/824_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "blocked", "dispatch_seq": 1}
+EOF
+run_sut specs/824_candidate --session sess_824 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/824_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 824
+
+if [ "$(jqf '.verdict')" = "blocked" ] && [ "$(jqf '.aux_signal.kind')" = "blocker-research" ] \
+   && [ "$(jqf '.aux_signal.blocker_desc')" = "Missing API key" ]; then
+  pass "blocker-research: verdict=blocked records a blocker-research aux_signal with the state.json blocker description"
+else
+  fail "blocker-research: expected a blocker-research aux_signal, got: $LAST_STDOUT"
+fi
+if jq -e '.aux_pending."824".kind == "blocker-research"' \
+     "$WORKDIR/specs/824_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "blocker-research: aux_pending[824] persisted to the loop-guard file"
+else
+  fail "blocker-research: aux_pending[824] not found in the loop-guard file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

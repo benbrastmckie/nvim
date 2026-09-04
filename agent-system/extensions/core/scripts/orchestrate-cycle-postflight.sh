@@ -36,6 +36,14 @@
 #   (h) modified_files vs file_scope excursion advisory — detection only, never a gate.
 #   (i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit).
 #   (j) Multi-state update and per-task lock release.
+#   (k) Hard-mode churn detection (originating plan's Decision 3, item 2 HARD): when --hard,
+#       calls orchestrate-churn.sh with this cycle's dispatch_status/blockers/phases_completed and
+#       persists an audit REQUEST (never a dispatch) to aux_pending[task] in the resolved state
+#       store (`$defect_store` — the same loop-guard-file-or-multi-state-file resolution WORK (d)
+#       already uses). Base-mode drift and blocker-research aux signals are recorded the same way,
+#       on their own triggers, mutually exclusive with the churn signal by hard_mode. Informational
+#       only: none of this changes `verdict`, `halt`, or `infra_exempt_cycle`. The NEXT cycle's
+#       orchestrate-cycle-plan.sh turns a recorded aux_pending entry into an `aux_dispatch[]` row.
 #
 # MUST NOT (Context Flatness Constraint and gate-integrity invariants):
 #   - Read report, plan, summary, or handoff PROSE. Only named-field jq reads and count-only
@@ -76,11 +84,11 @@
 #     --task-dir DIR --task-type TYPE --agent NAME \
 #     [--plan-path PATH] [--cycle-count N] [--transport-error true|false] \
 #     [--force-invoked true|false] [--loop-guard-file PATH] [--dispatch-seq N] \
-#     [--dispatch-start-ts N] [--command-suffix SUFFIX] [--dry-run]
+#     [--dispatch-start-ts N] [--command-suffix SUFFIX] [--hard] [--dry-run]
 #
 # Output: one compact JSON line on stdout:
 #   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, halt,
-#    infra_exempt_cycle, note}
+#    infra_exempt_cycle, aux_signal, note}
 #   verdict ∈ ok|defer|blocked|failed|ask_user
 #   halt: true only when dispatch_status was off-schema (garbage/unrecognized) — the ONE case
 #     that still means "stop the whole /orchestrate invocation" (mirrors the single-task engine's
@@ -90,6 +98,11 @@
 #     corroborated infra-failure discrimination (WORK (a)'s recovery-declined branch) — the ONE
 #     case where the caller must NOT increment cycle_count. Every other verdict="defer" (partial
 #     dispatch, or implemented with the completion-claim gate refused) charges a cycle normally.
+#   aux_signal: null, or WORK (k)'s informational record of what (if anything) was persisted to
+#     `aux_pending[task]` this cycle — {kind: "divergence-audit", target, verbatim_goal} |
+#     {kind: "drift-inspection"} | {kind: "blocker-research", blocker_desc}. Never changes
+#     verdict/halt/infra_exempt_cycle; the NEXT cycle's orchestrate-cycle-plan.sh is what actually
+#     turns a recorded aux_pending entry into a dispatch.
 #
 # Exit codes: 0 — a decision was printed on stdout, regardless of its verdict (verdicts are data,
 # not errors — mirrors orchestrate-cycle-plan.sh's and orchestrate-batch-admit.sh's convention).
@@ -108,7 +121,7 @@ Usage: orchestrate-cycle-postflight.sh <task_number> --session SID --state-file 
          --task-dir DIR --task-type TYPE --agent NAME \
          [--plan-path PATH] [--cycle-count N] [--transport-error true|false] \
          [--force-invoked true|false] [--loop-guard-file PATH] [--dispatch-seq N] \
-         [--dispatch-start-ts N] [--command-suffix SUFFIX] [--dry-run]
+         [--dispatch-start-ts N] [--command-suffix SUFFIX] [--hard] [--dry-run]
 USAGE
 }
 
@@ -128,6 +141,7 @@ loop_guard_file=""
 dispatch_seq_flag=""
 dispatch_start_ts_flag=""
 command_suffix=""
+hard_mode="false"
 dry_run="false"
 
 while [ "$#" -gt 0 ]; do
@@ -146,6 +160,7 @@ while [ "$#" -gt 0 ]; do
     --dispatch-seq) dispatch_seq_flag="${2:-}"; shift 2 ;;
     --dispatch-start-ts) dispatch_start_ts_flag="${2:-}"; shift 2 ;;
     --command-suffix) command_suffix="${2:-}"; shift 2 ;;
+    --hard) hard_mode="true"; shift ;;
     --dry-run) dry_run="true"; shift ;;
     --help|-h) usage; exit 0 ;;
     --*)
@@ -796,6 +811,74 @@ else
   verdict="failed"
 fi
 
+# ─── WORK (k): hard-mode churn detection; base-mode drift and blocker-research aux signals ─────
+# Informational only — none of this ever changes verdict/halt/infra_exempt_cycle, and every write
+# below targets `$defect_store` (the same loop-guard-file-or-multi-state-file resolution WORK (d)
+# already uses), never state.json. `aux_pending[task]` is read and cleared by the NEXT cycle's
+# orchestrate-cycle-plan.sh, which turns it into an `aux_dispatch[]` row (Decision 2) — this
+# script never dispatches anything itself.
+churn_verdict_json="null"
+aux_signal_json="null"
+if [ "$hard_mode" = "true" ] && [ "$have_outcome" = "true" ] && [ -n "${handoff:-}" ]; then
+  # H6/H5 (Decision 3): the churn signature and three-strikes threshold require a genuine
+  # handoff (blockers is a handoff-only field) — mirrors single-task Stage 5b's own
+  # `[ -n "${handoff:-}" ]` presence gate exactly, never applied on the return-meta recovery path.
+  churn_blockers_json=$(echo "$handoff" | jq -c '.blockers // []' 2>/dev/null) || churn_blockers_json="[]"
+  if is_live; then
+    churn_verdict_json=$(bash "${SCRIPT_DIR}/orchestrate-churn.sh" \
+      --task-dir "$TASK_DIR" --dispatch-status "$dispatch_status" \
+      --blockers "$churn_blockers_json" --phases-completed "$phases_completed" \
+      --session "$session_id") || churn_verdict_json="null"
+    churn_audit_requested=$(echo "${churn_verdict_json:-null}" | jq -r '.audit_requested // false' 2>/dev/null) || churn_audit_requested="false"
+    if [ "$churn_audit_requested" = "true" ]; then
+      churn_target=$(echo "$churn_verdict_json" | jq -r '.target')
+      churn_goal=$(echo "$churn_verdict_json" | jq -r '.verbatim_goal')
+      jq --arg t "$task_number" --arg target "$churn_target" --arg goal "$churn_goal" \
+        '.aux_pending[$t] = {kind: "divergence-audit", target: $target, verbatim_goal: $goal}' \
+        "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+      aux_signal_json=$(jq -n -c --arg target "$churn_target" --arg goal "$churn_goal" \
+        '{kind: "divergence-audit", target: $target, verbatim_goal: $goal}')
+      echo "${notice_prefix} H5: divergence-audit REQUESTED for task ${task_number} target '${churn_target}' — the next cycle's orchestrate-cycle-plan.sh will emit the aux_dispatch[] row." >&2
+    fi
+  else
+    echo "${notice_prefix} [dry-run] would call orchestrate-churn.sh for task ${task_number} — no write performed." >&2
+  fi
+elif [ "$hard_mode" != "true" ] && [ "$dispatch_status" = "partial" ] && [ "$phases_total" -gt 0 ]; then
+  # Base-mode drift signal (Decision 2): mutually exclusive with the divergence-audit branch
+  # above by construction (hard_mode is a single flag for the whole cycle-plan invocation, so
+  # exactly one of the two `if`/`elif` arms above can ever fire for a given cycle).
+  drift_pct_x100=$(( phases_completed * 10000 / phases_total ))
+  if [ "$drift_pct_x100" -lt 7000 ]; then
+    if is_live; then
+      jq --arg t "$task_number" \
+        '.aux_pending[$t] = {kind: "drift-inspection"}' \
+        "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+      aux_signal_json='{"kind":"drift-inspection"}'
+      echo "${notice_prefix} Drift signal recorded for task ${task_number} (${phases_completed}/${phases_total} phases, below the 70% threshold) — the next cycle's orchestrate-cycle-plan.sh will emit the aux_dispatch[] row." >&2
+    else
+      echo "${notice_prefix} [dry-run] would record a drift-inspection aux signal for task ${task_number} — no write performed." >&2
+    fi
+  fi
+fi
+
+if [ "$verdict" = "blocked" ]; then
+  # Blocker-research aux signal: unconditional on hard_mode (single-task Stage 6's own Blocker
+  # Escalation handler applies in either mode) — naturally disjoint from both branches above since
+  # dispatch_status="blocked" can never also be "partial".
+  blocker_desc=$(jq -r --argjson num "$task_number" \
+    '.active_projects[] | select(.project_number == $num) | .blockers // "Unspecified blocker"' \
+    "$STATE_FILE" 2>/dev/null) || blocker_desc="Unspecified blocker"
+  if is_live; then
+    jq --arg t "$task_number" --arg d "$blocker_desc" \
+      '.aux_pending[$t] = {kind: "blocker-research", blocker_desc: $d}' \
+      "$defect_store" > "${defect_store}.tmp" && mv "${defect_store}.tmp" "$defect_store"
+    aux_signal_json=$(jq -n -c --arg d "$blocker_desc" '{kind: "blocker-research", blocker_desc: $d}')
+    echo "${notice_prefix} Blocker-research signal recorded for task ${task_number} — the next cycle's orchestrate-cycle-plan.sh will emit the aux_dispatch[] row." >&2
+  else
+    echo "${notice_prefix} [dry-run] would record a blocker-research aux signal for task ${task_number} — no write performed." >&2
+  fi
+fi
+
 # ─── WORK (i): per-task scoped commit ───────────────────────────────────────────────────────────
 if is_live; then
   stage_paths=("${TASK_DIR}/" "$(dirname "$STATE_FILE")/TODO.md" "$STATE_FILE")
@@ -900,10 +983,11 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson user_decision "$user_decision_json" \
     --argjson halt "$offschema_dispatch_status" \
     --argjson infra_exempt_cycle "$infra_exempt_cycle" \
+    --argjson aux_signal "$aux_signal_json" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
       phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision,
-      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, note: $note}'
+      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}'
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -914,10 +998,11 @@ else
     --arg verdict "$verdict" \
     --argjson halt "$offschema_dispatch_status" \
     --argjson infra_exempt_cycle "$infra_exempt_cycle" \
+    --argjson aux_signal "$aux_signal_json" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
       phases_total: $phases_total, verdict: $verdict, halt: $halt,
-      infra_exempt_cycle: $infra_exempt_cycle, note: $note}'
+      infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}'
 fi
 
 exit 0
