@@ -2,18 +2,20 @@
   "phase": 7,
   "phase_name": "Both-engine cutover, prose relocation, full gate run",
   "started_at": "2026-09-03T20:00:00Z",
-  "last_updated": "2026-09-03T20:00:00Z",
+  "last_updated": "2026-09-03T22:10:00Z",
   "objectives": [
     {"id": 1, "description": "Extend orchestrate-cycle-postflight.sh output with halt/infra_exempt_cycle fields needed for caller-side loop-control (surfaced necessity during cutover; committed as its own green sub-step, outside the Phase 7 atomic batch)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
-    {"id": 2, "description": "Replace Stage MT-4's per-task postflight steps 1-6 with one call to the new script per dispatched task", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Replace single-task Stage 5's gate pair, gates call, and postflight tail with the same call, preserving caller-side loop-control", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Retarget test-handoff-dispatch-identity.sh at the script's gate and remove the sentinel region from SKILL.md in the same atomic batch", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Relocate replaced narrative prose to docs/architecture/", "status": "not_started", "files_touched": []},
-    {"id": 6, "description": "Measure and report bytes removed from SKILL.md", "status": "not_started", "files_touched": []},
-    {"id": 7, "description": "Run a live multi-task /orchestrate cycle through the script and record the outcome", "status": "not_started", "files_touched": []},
-    {"id": 8, "description": "Run the full gate set", "status": "not_started", "files_touched": []}
+    {"id": 1.5, "description": "Thread a force field through orchestrate-cycle-plan.sh dispatch rows (needed by Stage MT-4's --force-invoked wiring; the only point in the pipeline where the fact is still observable), committed as its own green sub-step", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 1.6, "description": "Absorb the stray-handoff sweep into orchestrate-cycle-postflight.sh for both engines (decided the open 'decide and record the reasoning either way' question from the originating dispatch), committed as its own green sub-step", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Replace Stage MT-4's per-task postflight steps 1-6 with one call to the new script per dispatched task", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Replace single-task Stage 5's gate pair, gates call, and postflight tail with the same call, preserving caller-side loop-control", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Retarget test-handoff-dispatch-identity.sh at the script's gate and remove the sentinel region from SKILL.md in the same atomic batch", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"]},
+    {"id": 5, "description": "Relocate replaced narrative prose to docs/architecture/", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md", "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "Measure and report bytes removed from SKILL.md", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run a live multi-task /orchestrate cycle through the script and record the outcome", "status": "blocked", "files_touched": []},
+    {"id": 8, "description": "Run the full gate set", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [
@@ -23,6 +25,48 @@
       "type": "altered",
       "reason": "Necessary correction discovered while implementing Phase 7's explicit requirement to preserve caller-side loop-control (halt / cycle_count / EXIT (partial)); without these fields the cutover could not be implemented correctly. Not part of Phase 7's declared atomic batch (skill-orchestrate/SKILL.md + test-handoff-dispatch-identity.sh + docs/architecture/) -- committed as its own preceding green sub-step instead.",
       "annotation": "*(deviation: altered — extended the Phase-6 script's output contract with halt/infra_exempt_cycle fields, committed separately before the Phase 7 atomic batch)*"
+    },
+    {
+      "task_id": "7.pre2",
+      "description": "orchestrate-cycle-plan.sh's dispatch rows carried no field indicating whether a given row's phase was forced this cycle (force_phases_remaining is popped before the row is built, so the fact is lost by postflight time). Added a `force` boolean field to each dispatch row (both the live and --dry-run code paths), with 4 new regression assertions in test-orchestrate-cycle-plan.sh.",
+      "type": "altered",
+      "reason": "Needed for Stage MT-4's --force-invoked wiring to orchestrate-cycle-postflight.sh, which closes the historical 'multi-task never advances next_artifact_number on a forced dispatch' gap this task's own WORK (g) names. Not part of Phase 7's declared atomic batch -- committed as its own preceding green sub-step instead.",
+      "annotation": "*(deviation: altered — threaded a force field through orchestrate-cycle-plan.sh dispatch rows, committed separately before the Phase 7 atomic batch)*"
+    },
+    {
+      "task_id": "7.pre3",
+      "description": "The originating dispatch's ORIGINAL DESCRIPTION explicitly left open whether the single-task-only stray-handoff sweep (orchestrate-stage5-gates.sh) should also serve the multi-task path. Decided: absorbed into orchestrate-cycle-postflight.sh itself (both engines get it by construction), with 4 new regression assertions.",
+      "type": "altered",
+      "reason": "Resolves an explicitly-flagged open question from the originating dispatch's WORK section (\"decide and record the reasoning either way\"). Not part of Phase 7's declared atomic batch -- committed as its own preceding green sub-step instead.",
+      "annotation": "*(deviation: altered — absorbed the stray-handoff sweep into orchestrate-cycle-postflight.sh, committed separately before the Phase 7 atomic batch)*"
+    },
+    {
+      "task_id": "7.1",
+      "description": "test-handoff-reader-parity.sh (not in Phase 7's declared file list) failed 11/17 assertions after the cutover: it extracted literal jq filter strings from skill-orchestrate/SKILL.md's own Stage 5 text, which no longer exists inline (moved into orchestrate-cycle-postflight.sh). Retargeted the extraction at the script for dispatch_status/dispatch_summary/phases_completed/phases_total/plan_markers_verified/artifacts[0].*, kept blockers targeted at SKILL.md's own caller-side re-derivation, and retired next_action_hint/continuation (confirmed dead reads with no consumer in either file).",
+      "type": "altered",
+      "reason": "Surfaced by the mandatory full gate run (run-all.sh); a genuine regression this cutover caused, fixed within the same phase rather than deferred.",
+      "annotation": "*(deviation: altered — retargeted test-handoff-reader-parity.sh's field extraction at orchestrate-cycle-postflight.sh, retired two dead-read field checks)*"
+    },
+    {
+      "task_id": "7.2",
+      "description": "verify-deploy.sh gate3 (index-entries.json line_count audit) failed for two files this task's own Phase 1 modified (context/formats/return-metadata-file.md, context/contracts/return-meta-artifacts-template.md) whose declared line_count in agent-system/extensions/core/index-entries.json was never updated. Fixed both entries (675->695, 96->124).",
+      "type": "altered",
+      "reason": "Traceable to this task's own Phase 1 edits; verify-deploy.sh was never run during Phases 1-6 (deliberately deferred per the Phase 6 handoff), so this drift was never caught until Phase 7's own gate run.",
+      "annotation": "*(deviation: altered — fixed two stale line_count entries in agent-system/extensions/core/index-entries.json)*"
+    },
+    {
+      "task_id": "7.3",
+      "description": "Two verify-deploy.sh findings (gate12 hand-rolled state.json writes in test-force-phases.sh; gate13 orphan .claude/index-entries.json) are pre-existing and unrelated to this task -- confirmed via git blame (test-force-phases.sh last touched by an unrelated task's own Phase 7) and gitignore/mtime inspection (.claude/index-entries.json is a stale, gitignored deploy-tree leftover predating this session). Reported, not fixed -- see the plan's own Phase 7 Reasoned Exclusions table for the full record.",
+      "type": "deferred",
+      "reason": "Fixing another task's test fixture or hand-tidying the disposable, gitignored deploy tree is out of this task's scope and mandate; reported per the Observation Duty pattern.",
+      "annotation": "*(deviation: deferred — see Phase 7's #### Reasoned Exclusions table)*"
+    },
+    {
+      "task_id": "7.4",
+      "description": "The live multi-task /orchestrate cycle observation (Phase 7's own task list item) could not be performed from within this single-task implementer dispatch -- it requires an actual subsequent /orchestrate invocation in multi-task mode, observed externally.",
+      "type": "deferred",
+      "reason": "Already recorded as impossible to self-certify from within one dispatch by the Phase 6 handoff; the code path is exhaustively fixture-tested instead (test-orchestrate-cycle-postflight.sh's multi-task-scoped assertions, test-orchestrate-cycle-plan.sh's force-field assertions).",
+      "annotation": "*(deviation: deferred — see Phase 7's #### Reasoned Exclusions table)*"
     }
   ]
 }

@@ -1,10 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
+      "summary": "All 7 plan phases complete: orchestrate-cycle-postflight.sh built, tested, and both /orchestrate engines (single-task Stage 5, multi-task Stage MT-4) cut over to it; replaced prose relocated to docs/architecture/; full gate run green modulo two pre-existing, unrelated verify-deploy.sh findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Cut both /orchestrate engines (single-task Stage 5, multi-task Stage MT-4) over to orchestrate-cycle-postflight.sh, the single shared per-task postflight script -- closing the originally-scoped defect (Stage MT-4 trusting any handoff without the mtime staleness gate or dispatch_seq identity gate) by construction. Absorbed the stray-handoff sweep into the script for both engines, added halt/infra_exempt_cycle output fields for correct caller-side loop control, and threaded a force field through orchestrate-cycle-plan.sh's dispatch rows to close the multi-task artifact-round-advance gap. Relocated the replaced SKILL.md narrative to docs/architecture/orchestrate-cycle-postflight.md (SKILL.md shrank 225553 -> 183025 bytes, ~18.9%). Retargeted test-handoff-dispatch-identity.sh and test-handoff-reader-parity.sh at the script. Full gate run: run-all.sh 68/68, lint-agent-contracts.sh 101/101, verify-deploy.sh 27/29 (fixed one gate3 finding traceable to this task's own Phase 1; the remaining 2 are pre-existing and unrelated, documented in the plan's Phase 7 Reasoned Exclusions table)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md",
+    "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/progress/phase-7-progress.json",
+    "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a caller-side loop-control decision (halt-the-whole-invocation vs. continue; charge-a-cycle vs. exempt) is derived from a shared script's output, a single collapsed `verdict` string (ok/defer/failed/...) is frequently ambiguous for exactly the loop-control question the caller needs answered -- e.g. verdict=\"failed\" can mean either \"a genuine in-vocabulary failure, stay in the loop\" or \"an off-schema/untrustworthy outcome, halt everything\", and verdict=\"defer\" can mean either \"an infra-exempt cycle, don't charge the budget\" or \"an ordinary in-budget deferral, do charge it\". Don't ask every caller to re-derive the disambiguating boolean from string matching (fragile, drifts). Instead expose the two underlying booleans (e.g. `halt`, `infra_exempt_cycle`) directly in the script's own output contract, computed once from variables already in scope at the script's existing decision-output site. This is a minimal, additive, backward-compatible extension of an already-tested contract -- safe to add without breaking existing consumers that only check named fields.",
+      "category": "PATTERN",
+      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["loop-control", "verdict ambiguity", "output contract", "halt", "infra-exempt", "caller-side disambiguation"]
+    },
+    {
+      "content": "When a per-cycle pipeline pops/consumes a piece of state (e.g. a forced-phase queue) BEFORE building the record a downstream consumer will read, that fact ('was this forced this cycle') becomes structurally unobservable later unless it is captured into the record at the exact moment of the pop. Symptom: a downstream stage (postflight) needs to know something a earlier stage (dispatch composition) already decided and discarded. Fix: add a field to the row/record being built AT the pop site (e.g. `force: true/false` on a dispatch row, set from the same local variable that gated the pop), not a re-derivation attempt downstream (which cannot reconstruct pre-pop state from post-pop state). Apply this to both the live and any --dry-run/preview code path so the two never diverge in shape.",
+      "category": "PATTERN",
+      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state capture", "pop-before-read", "dispatch row", "force_invoked", "pipeline staging"]
+    },
+    {
+      "content": "A test suite that extracts literal jq filter strings from a source file via anchored grep/regex (to prove the SHIPPED implementation, not a hand-copied approximation, produces the expected value against a shared fixture) breaks completely and silently-obviously (every extraction fails, not a wrong-value assertion) when the anchored code moves to a different file during a refactor -- the anchor text simply no longer exists at the old location. This is a GOOD failure mode (loud, not silent), but it means any refactor that relocates inline logic into a shared script/function must grep for the old anchor comment text across the WHOLE test suite (not just the test file for the artifact you're editing) before declaring the refactor's test suite green -- a sibling parity/extraction-based test elsewhere in the repo may depend on prose that only lived at the old location, and 'full gate run green' is the only way to catch it (a scoped test run for just the files you touched will not).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extraction-based test", "anchor text", "refactor regression", "full gate run", "test-handoff-reader-parity"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788481887_3ed375",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

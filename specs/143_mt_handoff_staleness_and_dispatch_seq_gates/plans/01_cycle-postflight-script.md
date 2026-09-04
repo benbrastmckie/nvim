@@ -1,7 +1,7 @@
 # Implementation Plan: Build `orchestrate-cycle-postflight.sh`
 
 - **Task**: 143 - Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: 147 (`orchestrate-cycle-plan.sh`, satisfied and archived)
 - **Research Inputs**: specs/143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md
@@ -456,7 +456,7 @@ cases if the mapping leaves a clause uncovered.
 
 ---
 
-### Phase 7: Both-engine cutover, prose relocation, full gate run [IN PROGRESS]
+### Phase 7: Both-engine cutover, prose relocation, full gate run [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Both engines call the script, the replaced prose leaves `SKILL.md` for
 `docs/architecture/`, and the acceptance bar's live-run and byte-count obligations are met.
@@ -504,6 +504,21 @@ references the sentinel, it joins the batch rather than being committed separate
 - `bash agent-system/extensions/core/scripts/verify-deploy.sh` green.
 - A live multi-task cycle completes with per-task JSON lines and per-task scoped commits.
 - `grep -c 'dispatch-seq-gate' skill-orchestrate/SKILL.md` returns 0; bytes removed reported.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Live multi-task `/orchestrate` cycle observed end-to-end through the new script | Requires an actual subsequent `/orchestrate` invocation observed externally -- the Phase 6 handoff already recorded this as impossible to self-certify from within a single implementer dispatch, since this dispatch IS itself one cycle of a single-task `/orchestrate` invocation, not a multi-task one. The code path is fully exercised by fixture: `test-orchestrate-cycle-postflight.sh` (30 assertions, including the multi-task-only stray-sweep and dry-run invariants) and `test-orchestrate-cycle-plan.sh` (35 assertions, including the `force` field's live and dry-run paths) both drive the real multi-task call graph in a sandbox. | `specs/143_mt_handoff_staleness_and_dispatch_seq_gates/handoffs/phase-6-handoff-20260903T195215Z.md`'s own "Phase 7's own acceptance bar has TWO obligations this handoff could not itself satisfy from inside a single dispatch" paragraph; `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` and `test-orchestrate-cycle-plan.sh`, both 100% green |
+| `verify-deploy.sh` gate12 (state-writer boundary lint): hand-rolled `jq`-write-then-`mv` state.json mutations in `test-force-phases.sh` | Pre-existing, unrelated to this task's own file_scope or WORK items -- `test-force-phases.sh` was last touched by an unrelated task's own Phase 7, entirely before this task's Phase 1 began, and exercises `orchestrate-stage5-postflight.sh`/`skill_postflight_update` fixtures, not `orchestrate-cycle-postflight.sh`. Fixing another task's test fixture is out of this task's scope; reported per the Observation Duty pattern rather than silently expanded into. | `git log --oneline -- agent-system/extensions/core/scripts/tests/test-force-phases.sh` shows `c7c133a4e task 126 phase 7: tests, docs sync, and deferred multi-task defect filing` as the sole prior touch; `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings` names the exact violating lines (261, 307, 317, 327) |
+| `verify-deploy.sh` gate13 (whole-tree orphan detection): `.claude/index-entries.json` reported as an orphan file | `.claude/` is entirely gitignored (a disposable deploy artifact regenerated from the source store -- `.gitignore`'s own `/.claude/` rule), and this specific file's mtime predates every redeploy this task's own dispatch performed, confirming it is stray content left over from an earlier, unrelated session rather than something this task's `deploy-headless.sh` run produced. Hand-editing or deleting content inside the deploy tree is itself prohibited by `rules/source-store-deploy-boundary.md`; the correct remedy (a future full `--wipe` redeploy) is outside this task's mandate. | `git check-ignore .claude/index-entries.json` confirms it is gitignored; `ls -la .claude/index-entries.json` timestamp predates this dispatch's own `deploy-headless.sh` invocations |
+
+The ONE `verify-deploy.sh` finding (gate3, `index-entries.json` `line_count` drift for
+`context/formats/return-metadata-file.md` and `context/contracts/return-meta-artifacts-template.md`)
+that WAS traceable to this task's own Phase 1 edits was fixed directly (not excluded) -- see this
+phase's own commit and the implementation summary's Verification section for the before/after
+counts. `verify-deploy.sh` improved from 3 failing gates (before this phase's fix) to the 2
+pre-existing, unrelated ones enumerated above.
 
 ---
 
