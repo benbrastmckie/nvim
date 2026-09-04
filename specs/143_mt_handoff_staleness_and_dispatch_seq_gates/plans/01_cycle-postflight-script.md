@@ -456,7 +456,7 @@ cases if the mapping leaves a clause uncovered.
 
 ---
 
-### Phase 7: Both-engine cutover, prose relocation, full gate run [NOT STARTED]
+### Phase 7: Both-engine cutover, prose relocation, full gate run [IN PROGRESS]
 
 **Goal**: Both engines call the script, the replaced prose leaves `SKILL.md` for
 `docs/architecture/`, and the acceptance bar's live-run and byte-count obligations are met.

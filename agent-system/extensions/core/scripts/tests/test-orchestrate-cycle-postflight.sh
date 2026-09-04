@@ -441,6 +441,101 @@ else
   fail "invariant: --dry-run's decision output diverged, got verdict=$(jqf '.verdict')"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Invariant: halt=true only for an off-schema dispatch_status; a genuine verdict=failed does not
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Motivates why `halt` and `infra_exempt_cycle` were added to the output contract during Phase 7
+# of this task's own plan: verdict="failed" alone cannot tell a caller whether to EXIT the whole
+# /orchestrate invocation (off-schema — the outcome cannot be trusted at all) or simply let the
+# task stay in-flight for the next cycle (a genuine in-vocabulary dispatch_status="failed").
+info "Invariant: halt=true only for an off-schema dispatch_status"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/705_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 705, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #705", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/705_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+cat > "$WORKDIR/specs/705_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "garbage-not-in-vocabulary", "dispatch_seq": 1}
+EOF
+run_sut specs/705_candidate --session sess_705 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/705_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 705
+
+if [ "$(jqf '.verdict')" = "failed" ] && [ "$(jqf '.halt')" = "true" ]; then
+  pass "invariant: an off-schema dispatch_status yields verdict=failed AND halt=true"
+else
+  fail "invariant: expected verdict=failed halt=true for an off-schema status, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.infra_exempt_cycle')" = "false" ]; then
+  pass "invariant: an off-schema dispatch_status is not infra-exempt"
+else
+  fail "invariant: expected infra_exempt_cycle=false for an off-schema status, got: $LAST_STDOUT"
+fi
+# Cross-check, same sandbox: a genuine IN-VOCABULARY dispatch_status="failed" (a present, fresh,
+# correctly-seq'd handoff -- the ordinary "the dispatched agent reported it failed" case) must
+# NOT set halt=true, or every caller's loop-control would incorrectly stop the whole invocation
+# on an ordinary in-budget failure instead of leaving the task in-flight for the next cycle.
+mkdir -p "$WORKDIR/specs/707_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 707, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #707", "dependencies": [], "file_scope": []}]}
+EOF
+commit_fixture
+cat > "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/707_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "failed", "dispatch_seq": 1}
+EOF
+run_sut specs/707_candidate --session sess_707 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/707_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 707
+
+if [ "$(jqf '.verdict')" = "failed" ] && [ "$(jqf '.halt')" = "false" ]; then
+  pass "invariant: a genuine in-vocabulary dispatch_status=failed leaves halt=false (does not stop the loop)"
+else
+  fail "invariant: expected verdict=failed halt=false for an in-vocabulary failed status, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Invariant: infra_exempt_cycle=true only for a corroborated infra failure, never for an ordinary
+# defer (partial dispatch, or implemented with the completion-claim gate refused)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Invariant: infra_exempt_cycle=true when the infra-failure discrimination is corroborated"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/706_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 706, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #706", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/706_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+# No handoff, no .return-meta.json at all -- meta_touched is structurally false (stat on a
+# missing file yields mtime 0, always older than any window). Corroborated by --transport-error
+# true, matching the two-signal contract WORK (a)'s header documents.
+window_start=$(now_ts)
+run_sut specs/706_candidate --session sess_706 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/706_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" --transport-error true 706
+
+if [ "$(jqf '.infra_exempt_cycle')" = "true" ] && [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "invariant: a corroborated infra failure yields infra_exempt_cycle=true (verdict=defer)"
+else
+  fail "invariant: expected infra_exempt_cycle=true verdict=defer for a corroborated infra failure, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.halt')" = "false" ]; then
+  pass "invariant: a corroborated infra failure does not halt"
+else
+  fail "invariant: expected halt=false for a corroborated infra failure, got: $LAST_STDOUT"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

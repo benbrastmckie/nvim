@@ -76,8 +76,17 @@
 #     [--dispatch-start-ts N] [--command-suffix SUFFIX] [--dry-run]
 #
 # Output: one compact JSON line on stdout:
-#   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, note}
+#   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, halt,
+#    infra_exempt_cycle, note}
 #   verdict ∈ ok|defer|blocked|failed|ask_user
+#   halt: true only when dispatch_status was off-schema (garbage/unrecognized) — the ONE case
+#     that still means "stop the whole /orchestrate invocation" (mirrors the single-task engine's
+#     historical `EXIT (partial)`). A genuine in-vocabulary verdict="failed"
+#     (dispatch_status="failed") leaves halt=false — the task stays in-flight for the next cycle.
+#   infra_exempt_cycle: true only when this cycle was exempted from the cycle_count budget by the
+#     corroborated infra-failure discrimination (WORK (a)'s recovery-declined branch) — the ONE
+#     case where the caller must NOT increment cycle_count. Every other verdict="defer" (partial
+#     dispatch, or implemented with the completion-claim gate refused) charges a cycle normally.
 #
 # Exit codes: 0 — a decision was printed on stdout, regardless of its verdict (verdicts are data,
 # not errors — mirrors orchestrate-cycle-plan.sh's and orchestrate-batch-admit.sh's convention).
@@ -828,6 +837,16 @@ if [ -z "$loop_guard_file" ]; then
 fi
 
 # ─── Final output ────────────────────────────────────────────────────────────────────────────────
+# `halt` and `infra_exempt_cycle` are caller-side loop-control signals a bare `verdict` string
+# cannot carry unambiguously: verdict="failed" is produced BOTH by a genuine in-vocabulary
+# dispatch_status="failed" (no halt — the task stays in-flight, the next cycle re-evaluates it)
+# AND by an off-schema dispatch_status (halt — the outcome cannot be trusted at all), and
+# verdict="defer" is produced both by a corroborated infra-exempt cycle (do not charge
+# cycle_count) and by ordinary in-budget outcomes (partial dispatch, or implemented with the
+# completion-claim gate refused — both DO charge cycle_count). Exposing the two underlying
+# booleans directly, rather than asking every caller to re-derive them from `verdict`, is what
+# lets both engines apply the identical loop-control decision this script does not own (see the
+# file header's MUST NOT list — this script never applies EXIT/cycle_count itself).
 if [ "$user_decision_json" != "null" ]; then
   jq -n -c \
     --argjson task "$task_number" \
@@ -837,9 +856,12 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson phases_total "$phases_total" \
     --arg verdict "$verdict" \
     --argjson user_decision "$user_decision_json" \
+    --argjson halt "$offschema_dispatch_status" \
+    --argjson infra_exempt_cycle "$infra_exempt_cycle" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
-      phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision, note: $note}'
+      phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision,
+      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, note: $note}'
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -848,9 +870,12 @@ else
     --argjson phases_completed "$phases_completed" \
     --argjson phases_total "$phases_total" \
     --arg verdict "$verdict" \
+    --argjson halt "$offschema_dispatch_status" \
+    --argjson infra_exempt_cycle "$infra_exempt_cycle" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
-      phases_total: $phases_total, verdict: $verdict, note: $note}'
+      phases_total: $phases_total, verdict: $verdict, halt: $halt,
+      infra_exempt_cycle: $infra_exempt_cycle, note: $note}'
 fi
 
 exit 0

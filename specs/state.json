@@ -36,6 +36,11 @@
           "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md",
           "type": "plan",
           "summary": "implementation plan"
+        },
+        {
+          "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: 01_cycle-postflight-script-summary.md"
         }
       ]
     },

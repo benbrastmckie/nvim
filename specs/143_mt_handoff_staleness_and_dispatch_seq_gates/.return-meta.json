@@ -1,60 +1,8 @@
 {
-  "status": "partial",
-  "dispatch_seq": 17,
-  "partial_progress": {
-    "stage": "phase_7_of_7_remaining",
-    "details": "Phases 1-6 of the 7-phase plan are COMPLETED, tested (68/68 gate suites green in source-store mode, including 2 new suites totaling 28 assertions), and committed (one scoped commit per phase, no batch commits). Phase 7 -- the live both-engine cutover of skill-orchestrate/SKILL.md, prose relocation, retargeting test-handoff-dispatch-identity.sh, byte-removal measurement, a live multi-task /orchestrate cycle run, and the full gate run including verify-deploy.sh -- is handed off intact. Deliberately deferred rather than rushed: it is the ONLY phase that changes live orchestrator behavior, its own acceptance bar requires an externally-observed live multi-task cycle no single dispatch can self-certify, and this session is one of several concurrent /orchestrate dispatches sharing the same deployed .claude/ tree, making a mid-batch redeploy inappropriate.",
-    "handoff_path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/handoffs/phase-6-handoff-20260903T195215Z.md",
-    "phases_completed": 6,
-    "phases_total": 7
-  },
-  "artifacts": [
-    {
-      "type": "summary",
-      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
-      "summary": "Phases 1-6 of orchestrate-cycle-postflight.sh built, tested, and committed; Phase 7 (live cutover) handed off."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/handoffs/phase-6-handoff-20260903T195215Z.md",
-      "summary": "Immediate next action, decisions, deviations, and What-NOT-to-Try guidance for Phase 7's live cutover."
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Built orchestrate-cycle-postflight.sh, the unified per-task postflight script for both /orchestrate engines: the mtime staleness gate, the dispatch_seq identity gate, return-meta recovery with dispatch_seq awareness (D2), writer-contract-aware defect recording (D1), the status-transition/completion-claim/artifact-link/round-advance pipeline, a modified_files-vs-file_scope excursion advisory, user_decision relay, and per-task scoped commit/multi-state/lock-release tail. 6 of 7 plan phases complete and green; Phase 7 (the live SKILL.md cutover) is handed off to a follow-up dispatch."
-  },
-  "modified_files": [
-    "agent-system/extensions/core/agents/general-implementation-agent.md",
-    "agent-system/extensions/core/agents/general-research-agent.md",
-    "agent-system/extensions/core/agents/planner-agent.md",
-    "agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md",
-    "agent-system/extensions/core/context/formats/return-metadata-file.md",
-    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh"
-  ],
-  "memory_candidates": [
-    {
-      "content": "A script contracted to emit exactly one JSON line on stdout (a 'decision line' consumed by a caller via command substitution) must redirect the stdout of every shared helper it calls, not just its own echoes. Several common lifecycle helpers in this codebase print their own diagnostic text to real stdout with no redirect of their own: git-commit-scoped.sh's final `echo \"$commit_output\"`, update-task-status.sh's `OK: task N status -> ...` line (reached transitively through skill_postflight_update), and generate-todo.sh's own output (reached transitively through skill_link_artifacts). Calling any of these from inside a single-JSON-line-contract script without appending `>&2` at the CALL SITE silently corrupts the caller's own stdout contract -- caught only by an integration test that actually parses the script's stdout as JSON (a stub-based unit test of the same call site would not have caught it, since a stub does not reproduce the leaked stdout). The fix is always at the call site (redirect), never inside the shared helper (which has its own legitimate callers that want that stdout visible).",
-      "category": "PATTERN",
-      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["stdout contamination", "single-json-line contract", "git-commit-scoped.sh", "skill_postflight_update", "shared helper redirect"]
-    },
-    {
-      "content": "The bash parameter-expansion landmine `\"${var:-{}}\"` (intending 'default to empty-object JSON') is NOT just a documented pitfall in one place in this codebase (skill_orchestrate_propagate_completion's own header comment in skill-base.sh) -- it is easy to independently reintroduce, because it looks correct and even mostly works: bash's default-word matching stops at the FIRST unescaped `}`, so a NON-empty $var gets a stray trailing `}` appended, producing invalid JSON. A `jq -r '.field // \"default\"' 2>/dev/null` read against that corrupted JSON often still prints the CORRECT value to stdout before jq hits the trailing garbage and exits nonzero on a parse error -- so a naive `$(...) || fallback=\"...\"` idiom silently discards the correct value and substitutes the fallback, with no visible error (stderr was suppressed). The only safe pattern is `var=\"$x\"; [ -z \"$var\" ] && var='{}'` (a plain -z test, never inline default-word `:-`) before ever piping the variable into jq. Grep for `:-{}}\"` when reviewing any new script that defaults a possibly-empty JSON variable this way.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["bash parameter expansion", "default value landmine", "jq parse error", "silent fallback", "JSON corruption"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 143 to resume with Phase 7 (the live both-engine cutover). See the phase-6 handoff artifact for the full next-action detail.",
+  "status": "in_progress",
+  "dispatch_seq": 1,
   "metadata": {
-    "session_id": "sess_1788456363_df3984",
+    "session_id": "sess_1788481887_3ed375",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]

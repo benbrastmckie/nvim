@@ -6,7 +6,7 @@ next_project_number: 153
 
 ## Task Order
 
-*Updated 2026-09-03. Generated from state.json dependency graph.*
+*Updated 2026-09-04. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -203,6 +203,7 @@ Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so
 - **Dependencies**: Task 147
 - **Research**: [143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md]
 - **Plan**: [143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md]
+- **Summary**: [143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md]
 
 **Description**: === REVISED 2026-09-02 (thin-lead path: widened into the per-task postflight script) ===
 SUPERSEDING SCOPE. The two gates below are the seed of scripts/orchestrate-cycle-postflight.sh, Stage A.4 of specs/PATH.md: ONE script that performs everything the lead does after an agent returns, for both engines, returning one JSON line. This absorbs three sibling tasks whose work is the same script (each abandoned with a pointer here): the expected-handoff-absence recording-order defect, the multi-task artifact-round advance, and the aggregator file_scope excursion advisory.

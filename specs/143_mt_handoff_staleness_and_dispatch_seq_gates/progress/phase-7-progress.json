@@ -1,0 +1,28 @@
+{
+  "phase": 7,
+  "phase_name": "Both-engine cutover, prose relocation, full gate run",
+  "started_at": "2026-09-03T20:00:00Z",
+  "last_updated": "2026-09-03T20:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend orchestrate-cycle-postflight.sh output with halt/infra_exempt_cycle fields needed for caller-side loop-control (surfaced necessity during cutover; committed as its own green sub-step, outside the Phase 7 atomic batch)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Replace Stage MT-4's per-task postflight steps 1-6 with one call to the new script per dispatched task", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Replace single-task Stage 5's gate pair, gates call, and postflight tail with the same call, preserving caller-side loop-control", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Retarget test-handoff-dispatch-identity.sh at the script's gate and remove the sentinel region from SKILL.md in the same atomic batch", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Relocate replaced narrative prose to docs/architecture/", "status": "not_started", "files_touched": []},
+    {"id": 6, "description": "Measure and report bytes removed from SKILL.md", "status": "not_started", "files_touched": []},
+    {"id": 7, "description": "Run a live multi-task /orchestrate cycle through the script and record the outcome", "status": "not_started", "files_touched": []},
+    {"id": 8, "description": "Run the full gate set", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.pre",
+      "description": "orchestrate-cycle-postflight.sh's output contract (task, phase, status, phases_completed, phases_total, verdict, user_decision?, note) did not expose enough information for a caller to apply loop-control correctly: verdict=\"failed\" is produced both by a genuine in-vocabulary dispatch_status=\"failed\" (should NOT halt) and by an off-schema dispatch_status (SHOULD halt, matching the single-task engine's historical EXIT (partial)); verdict=\"defer\" is produced both by a corroborated infra-exempt cycle (must NOT charge cycle_count) and by ordinary in-budget outcomes (partial dispatch, or implemented with the completion-claim gate refused -- both DO charge). Added two new boolean fields, halt and infra_exempt_cycle, computed from variables already in scope at the script's existing final-output site, with 5 new regression assertions (26/26 total, up from 21/21).",
+      "type": "altered",
+      "reason": "Necessary correction discovered while implementing Phase 7's explicit requirement to preserve caller-side loop-control (halt / cycle_count / EXIT (partial)); without these fields the cutover could not be implemented correctly. Not part of Phase 7's declared atomic batch (skill-orchestrate/SKILL.md + test-handoff-dispatch-identity.sh + docs/architecture/) -- committed as its own preceding green sub-step instead.",
+      "annotation": "*(deviation: altered — extended the Phase-6 script's output contract with halt/infra_exempt_cycle fields, committed separately before the Phase 7 atomic batch)*"
+    }
+  ]
+}
