@@ -273,32 +273,32 @@ durably backed by the per-task loop-guard file, with `--continue-budget` honored
 
 ---
 
-### Phase 2: Build `orchestrate-churn.sh` and its test [NOT STARTED]
+### Phase 2: Build `orchestrate-churn.sh` and its test [COMPLETED]
 
 **Goal**: Implement Decision 3's script — task-directory-scoped churn/three-strikes state, an
 audit *request* return value, and a burnout-signal mode — with no caller wired up yet.
 
 **Tasks**:
-- [ ] Create `scripts/orchestrate-churn.sh` with the codebase's standard header/usage/exit-code
+- [x] Create `scripts/orchestrate-churn.sh` with the codebase's standard header/usage/exit-code
       conventions (model it on `orchestrate-triage-classify.sh`).
-- [ ] Lazy init/resume of `${TASK_DIR}/.orchestrator-churn-state.json` via `task-lock.sh
+- [x] Lazy init/resume of `${TASK_DIR}/.orchestrator-churn-state.json` via `task-lock.sh
       init-marker`, with the observational-only `session_id` mismatch INFO log ported verbatim
       (never a gate). Add `phases_completed_last` to the record.
-- [ ] Port the Stage 5b churn signature: `dispatch_status = partial` AND non-empty blockers AND
+- [x] Port the Stage 5b churn signature: `dispatch_status = partial` AND non-empty blockers AND
       `phases_delta == 0` increments `target_churn[blocker_target]` and `total_churn`, with the
       atomic `jq > tmp && mv` write idiom.
-- [ ] Port the three-strikes branch as a *request*: at `target_churn >= 3`, return
+- [x] Port the three-strikes branch as a *request*: at `target_churn >= 3`, return
       `audit_requested: true` with `target` and `verbatim_goal`, reset that target's counter and
       increment `audit_dispatches`. Never invoke the Agent tool.
-- [ ] Implement `--burnout-signal <task_dir>`: increment `burnout_signals_this_session` in the
+- [x] Implement `--burnout-signal <task_dir>`: increment `burnout_signals_this_session` in the
       loop-guard file and emit the existing `[orchestrate] H-orch: burnout signal detected ...`
       message verbatim.
-- [ ] Emit one compact JSON line; exit 0 for any verdict, 2 for usage/environment errors.
-- [ ] Create `scripts/tests/test-orchestrate-churn.sh` covering: fresh init; resume across two
+- [x] Emit one compact JSON line; exit 0 for any verdict, 2 for usage/environment errors.
+- [x] Create `scripts/tests/test-orchestrate-churn.sh` covering: fresh init; resume across two
       different `session_id`s against one task dir; the three-strikes threshold and its counter
       reset; the first-cycle skip when `phases_completed_last` is absent; the burnout counter
       write; the non-churn signature (progress made, or no blockers) leaving state untouched.
-- [ ] Register both files wherever the deploy manifest enumerates scripts and tests
+- [x] Register both files wherever the deploy manifest enumerates scripts and tests
       (`manifest.json`, `scripts/tests/run-all.sh` if it enumerates explicitly).
 
 **Timing**: 2 hours

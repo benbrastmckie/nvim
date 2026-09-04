@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Build orchestrate-churn.sh and its test",
+  "started_at": "2026-09-04T07:10:00Z",
+  "last_updated": "2026-09-04T07:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/orchestrate-churn.sh with standard header/usage/exit-code conventions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-churn.sh"]},
+    {"id": 2, "description": "Lazy init/resume of the churn-state file via task-lock.sh init-marker, with phases_completed_last", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-churn.sh"]},
+    {"id": 3, "description": "Port the Stage 5b churn signature (partial + blockers + phases_delta==0)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-churn.sh"]},
+    {"id": 4, "description": "Port the three-strikes branch as an audit REQUEST (never invokes Agent tool)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-churn.sh"]},
+    {"id": 5, "description": "Implement --burnout-signal mode against the existing loop-guard file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-churn.sh"]},
+    {"id": 6, "description": "One compact JSON line output; exit 0 for verdicts, 2 for usage/env errors", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-churn.sh"]},
+    {"id": 7, "description": "Create scripts/tests/test-orchestrate-churn.sh covering all six named cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh"]},
+    {"id": 8, "description": "Register both files in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
