@@ -28,7 +28,7 @@ next_project_number: 153
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+148 [RESEARCHED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
   └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
     └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
     └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
@@ -167,10 +167,11 @@ REFERENCE: specs/PATH.md, "Decisions".
 ---
 
 ### 148. Port hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 143
+- **Research**: [148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md]
 
 **Description**: Port team fan-out, hard-mode counters, loop guard, and the auxiliary dispatches into the multi-task engine as per-dispatch options, so that a single task number runs as a batch of one. Stage A.5 of specs/PATH.md (thin-lead path); the precondition for deleting the single-task engine. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
