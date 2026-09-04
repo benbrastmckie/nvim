@@ -1,52 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
-      "summary": "8-phase plan porting hard-mode churn/burnout counters, the cycle budget, and the drift/blocker auxiliary dispatches into the batch engine, plus a feature-flagged batch-of-one route for a single task number."
-    }
-  ],
-  "next_steps": "Run /implement 148 to execute the plan",
-  "dispatch_seq": 2,
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1788502984_4c5fb5_148",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 13.5,
-    "dependency_waves": [[1, 2], [3, 4], [5], [6], [7], [8]]
-  },
-  "proposed_file_scope": [
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/commands/orchestrate.md",
-    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
-    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
-    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/orchestrate-churn.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh",
-    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
-    "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
-  ],
-  "modified_files": [
-    "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's script-composed /orchestrate engine, a shell script never invokes the Agent tool -- only the lead does. So any single-task stage that both DETECTED a condition and DISPATCHED an agent inline (Stage 5b's three-strikes divergence audit, Stage 6's blocker-escalation fork, Stage 5a's drift-inspection fork) ports in two halves: the detecting script returns a REQUEST ({audit_requested, target, verbatim_goal}) which postflight persists as an aux_pending entry, and the NEXT cycle's orchestrate-cycle-plan.sh turns it into a dispatch row. Such rows belong in a sibling aux_dispatch[] array, never in dispatch[] -- widening dispatch[]'s phase vocabulary would break orchestrate-cycle-postflight.sh's --phase contract (phase-count corroboration, artifact-round advance) and risks silently routing a fixed-agent (fork/reviser-agent) dispatch through command-route-agent.sh's task-type resolution.",
-      "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate", "aux-dispatch", "cycle-plan", "fixed-agent", "script-never-dispatches", "postflight-phase-contract"]
-    }
-  ]
+    "session_id": "sess_1788502984_4c5fb5",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

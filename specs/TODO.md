@@ -28,7 +28,7 @@ next_project_number: 153
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-148 [PLANNED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+148 [IMPLEMENTING] — Port team fan-out, hard-mode counters, loop guard, and the auxili
   └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
     └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
     └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
@@ -167,7 +167,7 @@ REFERENCE: specs/PATH.md, "Decisions".
 ---
 
 ### 148. Port hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 143

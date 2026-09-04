@@ -23,7 +23,7 @@
 # this script and remains the field list's canonical initializer for the live path; this script
 # additionally self-initializes any field found missing, via non-destructive `//=`, so it also
 # runs standalone against a freshly-touched or nonexistent file, e.g. for --dry-run or tests):
-#   session_id, task_numbers, max_cycles, cycle_count, failed_tasks, completed_tasks,
+#   session_id, task_numbers, cycle_counts, max_cycles_per_task, failed_tasks, completed_tasks,
 #   current_statuses, task_dirs, research_agents, implement_agents, descriptions, infra_failures,
 #   dispatch_start_ts, dispatch_seq_counter, dispatch_seq, deferred_self_modifying,
 #   deferred_deploy_checkpoint, deployed_critical_paths, consecutive_no_dispatch_cycles,
@@ -34,6 +34,21 @@
 #   phases, canonical research/plan/implement order, popped as each forced phase is dispatched).
 # Stage MT-5 (multi-task postflight/report, untouched by this task) still reads every one of the
 # pre-existing fields above; this script never renames or drops one.
+#
+# Decision 1 (originating plan's Phase 1) — per-task cumulative cycle budget: the batch-wide
+# scalars `max_cycles`/`cycle_count` are REPLACED by `max_cycles_per_task`/`cycle_counts`, both
+# maps keyed by task_number(string). `cycle_counts[t]` is a LIVE, in-memory-this-invocation mirror
+# of a DURABLE per-task counter whose real home is the pre-existing, gitignored, reap-exempt
+# `${TASK_DIR}/.orchestrator-loop-guard` file's own `cycle_count` field (read/written via
+# `orchestrate-loop-guard-init.sh --seed`/`--flush` — see that script's header). This is
+# deliberate: `mt_state_file` itself is minted fresh every `/orchestrate` invocation (a new
+# `session_id` each time), so a field living ONLY there could never be cumulative across
+# invocations — exactly the trap `test-session-runtime-files.sh` Case 3 exists to catch for the
+# single-task engine's own `cycle_count`. Routing a single task through this batch path must not
+# become a silent way to bypass that same budget. `max_cycles_per_task[t]` is instead re-derived
+# FRESH every invocation from the CURRENT run's `--hard` flag (13 under hard mode, 5 otherwise —
+# ported verbatim from single-task Stage 2), matching single-task's own non-persisted MAX_CYCLES
+# computation; it is never seeded from the durable file and is always overwritten, never `//=`.
 #
 # Bare-vs-suffixed session_id invariant (load-bearing; get this wrong and the lock layer, the
 # session registry, and a dispatched agent's own heartbeat desync from each other):
@@ -316,17 +331,24 @@ if [ "$dry_run" != "true" ] && [ -f "$mt_state_file" ]; then
   mt_json=$(jq -c '.' "$mt_state_file" 2>/dev/null) || mt_json="{}"
 fi
 
-default_max_cycles=$(( ${#task_args[@]} * 5 ))
-[ "$default_max_cycles" -gt 25 ] && default_max_cycles=25
+# Decision 1: the batch-wide `default_max_cycles = ntasks * 5` (capped 25) budget is RETIRED.
+# `.cycle_count` below is KEPT, unchanged, for its pre-existing NON-budget role only — a
+# batch-wide invocation-sequence counter used for the output `cycle` field and ledger `cycle:`
+# audit stamps (`idle_overlap_ledger`, `defer_ledger`, `verify_deploy_baseline_notices`); no
+# decision in this script has ever branched on it as a budget, and none does after this change.
+# The per-task budget mechanism lives entirely in the NEW `.cycle_counts`/`.max_cycles_per_task`
+# maps below — see the header's Decision 1 note for the full rationale.
+per_task_max_cycles=5
+[ "$hard_mode" = "true" ] && per_task_max_cycles=13
 
 mt_json=$(jq -c \
   --arg sid "$session_id" \
   --argjson tasks "$(printf '%s\n' "${task_args[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0) | tonumber)')" \
-  --argjson max_cycles "$default_max_cycles" \
   '
   .session_id //= $sid
   | .task_numbers //= $tasks
-  | .max_cycles //= $max_cycles
+  | .cycle_counts //= {}
+  | .max_cycles_per_task //= {}
   | .cycle_count //= 0
   | .failed_tasks //= []
   | .completed_tasks //= []
@@ -378,7 +400,14 @@ mt_set() {
 
 mt_save
 
-max_cycles=$(mt_get '.max_cycles')
+# Re-derive every task's max_cycles FRESH this invocation from the CURRENT --hard flag (never
+# `//=` — a task must not stay pinned to whichever effort mode first saw it; mirrors single-task
+# Stage 2's own non-persisted MAX_CYCLES computation).
+for _mt_t in "${task_args[@]}"; do
+  mt_set --arg t "$_mt_t" --argjson m "$per_task_max_cycles" '.max_cycles_per_task[$t] = $m'
+done
+mt_save
+
 cycle_count=$(mt_get '.cycle_count')
 
 stop_reason=""
@@ -451,12 +480,12 @@ emit_and_exit() {
   exit 0
 }
 
-# ── (k, part 1) Budget guard — the re-sited `while cycle_count < MAX_CYCLES_MT` loop condition ──
-if [ "$cycle_count" -ge "$max_cycles" ] && [ "$continue_budget" != "true" ]; then
-  stop_reason="max_cycles"
-  stop_message="MAX_CYCLES_MT ($max_cycles) reached; pass --continue-budget to authorize continuing past the budget."
-  emit_and_exit "$cycle_count"
-fi
+# ── (k, part 1) Budget guard — Decision 1: no longer a single whole-invocation check here. Each
+# task's OWN cycle_counts[t]/max_cycles_per_task[t] is checked per candidate inside (c) Eligibility
+# below (mirroring the pre-existing MAX_INFRA_FAILURES per-task pattern exactly); the WHOLE-batch
+# `stop_reason="max_cycles"` outcome is derived by the "No-eligible circuit breaker" section further
+# down, which fires it only when EVERY non-terminal task was excluded specifically for budget
+# exhaustion this cycle — the batch-of-one case reduces exactly to the old whole-invocation stop.
 
 # ── (k, part 2) Inter-cycle redeploy checkpoint — consumes the PRIOR cycle's cycle_modified_files
 # (see the header note on re-siting). Always a no-op today until the future postflight composer
@@ -551,6 +580,21 @@ if [ "$dry_run" != "true" ]; then
   bash "$SCRIPT_DIR/task-lock.sh" session-heartbeat "$session_id" 2>/dev/null || true
 fi
 
+# ── (a2) Seed per-task cycle_counts from the durable per-task guard file, on first sight of a
+# task THIS invocation (idempotent across the SAME session's later cycles via `//=` — only a fresh
+# session_id, i.e. a fresh mt_state_file, ever re-seeds). READ-ONLY (orchestrate-loop-guard-init.sh
+# --seed never mutates or `mkdir -p`s), so this is safe under --dry-run — Decision 1's durable
+# backing store is peeked, never written, until an actual LIVE dispatch flushes it back below.
+for t in "${task_args[@]}"; do
+  [ -z "${project_names[$t]:-}" ] && continue
+  _padded=$(printf "%03d" "$t")
+  _task_dir_abs="${PROJECT_ROOT}/specs/${_padded}_${project_names[$t]}"
+  _seeded=$(bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --seed "$_task_dir_abs" 2>/dev/null | jq -r '.cycle_count // 0' 2>/dev/null) || _seeded=0
+  case "$_seeded" in ''|*[!0-9]*) _seeded=0 ;; esac
+  mt_set --arg t "$t" --argjson v "$_seeded" '.cycle_counts[$t] //= $v'
+done
+mt_save
+
 is_terminal_status() {
   case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')" in
     completed|abandoned|expanded) return 0 ;;
@@ -582,6 +626,7 @@ fi
 
 # ── (c) Eligibility ───────────────────────────────────────────────────────────────────────────────
 declare -a eligible_tasks=()
+declare -A budget_blocked_tasks=()
 for t in "${task_args[@]}"; do
   if is_terminal_status "${current_statuses[$t]}"; then continue; fi
   if in_json_array "$t" "$failed_tasks_json"; then continue; fi
@@ -643,6 +688,38 @@ for t in "${task_args[@]}"; do
     continue
   fi
 
+  # Decision 1 — per-task cumulative cycle budget (this task's own cycle_counts[t], seeded above
+  # from the durable ${TASK_DIR}/.orchestrator-loop-guard file, against max_cycles_per_task[t],
+  # re-derived fresh this invocation from --hard). Mirrors MAX_INFRA_FAILURES's own per-task shape
+  # immediately above; --continue-budget authorizes proceeding past it exactly as it already does
+  # for MAX_INFRA_FAILURES and (formerly) the whole-batch scalar.
+  _task_cycle_count=$(mt_get --arg t "$t" '.cycle_counts[$t] // 0')
+  _task_max_cycles=$(mt_get --arg t "$t" '.max_cycles_per_task[$t] // 0')
+  if [ "$_task_cycle_count" -ge "$_task_max_cycles" ]; then
+    if [ "$continue_budget" = "true" ]; then
+      # budget-continuation-override (Decision 1, ported from single-task Stage 2's locked
+      # `budget-continuation-override` region): archive the exhausted durable guard aside and
+      # reset cycle_count to 0 IN PLACE, preserving every other field (dispatch_seq_counter,
+      # detected_defects, ...) via orchestrate-loop-guard-init.sh --flush. Never touches disk
+      # under --dry-run — the live path re-applies this on the next real invocation.
+      if [ "$dry_run" != "true" ]; then
+        _task_dir_abs="${PROJECT_ROOT}/specs/$(printf "%03d" "$t")_${project_names[$t]}"
+        _guard_file="${_task_dir_abs}/.orchestrator-loop-guard"
+        if [ -f "$_guard_file" ]; then
+          _exhausted_dest="${_task_dir_abs}/.exhausted-loop-guard-$(date -u +%s).json"
+          cp "$_guard_file" "$_exhausted_dest" 2>/dev/null || true
+          echo "[orchestrate] BUDGET EXHAUSTED for task #$t (cycle_count=${_task_cycle_count}/${_task_max_cycles}) — --continue-budget authorized a fresh budget. Archived exhausted guard to ${_exhausted_dest}." >&2
+        fi
+        bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$_task_dir_abs" 0 >/dev/null 2>&1 || true
+      fi
+      mt_set --arg t "$t" '.cycle_counts[$t] = 0'
+    else
+      budget_blocked_tasks[$t]=1
+      out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_task_cycle_count" --argjson m "$_task_max_cycles" '{task: $t, reason: ("MAX_CYCLES reached (" + ($n|tostring) + "/" + ($m|tostring) + " work cycles for this task); pass --continue-budget to authorize continuing past the budget")}')")
+      continue
+    fi
+  fi
+
   eligible_tasks+=("$t")
 done
 mt_save
@@ -651,14 +728,21 @@ failed_tasks_json=$(mt_get_json '.failed_tasks')
 # ── No-eligible circuit breaker ──────────────────────────────────────────────────────────────────
 if [ "${#eligible_tasks[@]}" -eq 0 ]; then
   any_stuck=false
+  any_stuck_not_budget=false
   for t in "${task_args[@]}"; do
     is_terminal_status "${current_statuses[$t]}" && continue
     in_json_array "$t" "$failed_tasks_json" && continue
     in_json_array "$t" "$deferred_deploy_checkpoint_json" && continue
     any_stuck=true
-    break
+    [ -z "${budget_blocked_tasks[$t]:-}" ] && any_stuck_not_budget=true
   done
-  if [ "$any_stuck" = "true" ]; then
+  if [ "$any_stuck" = "true" ] && [ "$any_stuck_not_budget" != "true" ]; then
+    # Decision 1: EVERY non-terminal task was excluded specifically for budget exhaustion this
+    # cycle — the batch-wide stop this reduces to for a batch of one, matching single-task Stage
+    # 2's own MAX_CYCLES refusal exactly.
+    stop_reason="max_cycles"
+    stop_message="Every remaining task has reached its own per-task work-cycle budget; pass --continue-budget to authorize continuing past the budget."
+  elif [ "$any_stuck" = "true" ]; then
     stop_reason="no_eligible_stuck"
     stop_message="No task is eligible this cycle (all remaining tasks are waiting on in-progress predecessors); waiting for next cycle."
   fi
@@ -987,6 +1071,14 @@ for t in "${probed_dispatch[@]}"; do
     mt_set --arg t "$t" --arg a "$agent" '.implement_agents[$t] = $a'
   fi
   mt_set --arg t "$t" --arg d "${task_descriptions[$t]:-}" '.descriptions[$t] = $d'
+
+  # Decision 1 — charge this task's per-task cycle budget now that a dispatch row for it is
+  # actually being built this cycle (mirrors single-task Stage 7's "increment cycle_count after a
+  # dispatch" idiom, scoped per task), and flush the new value back to the durable
+  # ${TASK_DIR}/.orchestrator-loop-guard file so it survives past this ephemeral mt_state_file.
+  task_new_cycle_count=$(mt_get --arg t "$t" '((.cycle_counts[$t] // 0) + 1)')
+  mt_set --arg t "$t" --argjson v "$task_new_cycle_count" '.cycle_counts[$t] = $v'
+  bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$task_dir_abs" "$task_new_cycle_count" >/dev/null 2>&1 || true
 
   # `force` (Phase 7 addition, orchestrate-cycle-postflight.sh's --force-invoked wiring): this is
   # the ONLY point in the whole per-cycle pipeline where "was this task's phase forced this

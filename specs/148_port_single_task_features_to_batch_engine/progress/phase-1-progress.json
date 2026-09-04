@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Per-task cumulative cycle budget in orchestrate-cycle-plan.sh",
+  "started_at": "2026-09-04T06:39:21Z",
+  "last_updated": "2026-09-04T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate every reader/writer of the multi-state .cycle_count/.max_cycles scalars", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace the scalars with cycle_counts and max_cycles_per_task maps in the //= init block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Extend orchestrate-loop-guard-init.sh into a shared read/seed/flush helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh"]},
+    {"id": 4, "description": "Set per-task max_cycles to 13 under --hard, 5 otherwise; retire default_max_cycles", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Re-site the top-of-script budget guard to trip per task", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Port budget-continuation-override behavior into --continue-budget branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Record Decision 1 in orchestrate-cycle-plan.sh header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Extend test-orchestrate-cycle-plan.sh with new cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Kept .cycle_count scalar unchanged for its pre-existing non-budget invocation-numbering role (output 'cycle' field, ledger cycle: stamps), rather than literally deleting it, since no consumer treats it as a budget and Stage MT-5's ledger stamps still need it.", "result": "kept", "reason": "Lower risk than deriving a new scheme for an unrelated concern; nothing in Decision 1's own text discusses ledger stamping."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

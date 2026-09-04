@@ -51,6 +51,7 @@ require_file() {
 SUT_SRC="$CORE_DIR/orchestrate-cycle-plan.sh"
 require_file "$SUT_SRC"
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh \
+         orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh; do
@@ -69,7 +70,8 @@ trap cleanup EXIT
 
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
 for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage-classify.sh \
-         task-lock.sh deploy-root-guard.sh command-route-agent.sh skill-base.sh; do
+         task-lock.sh orchestrate-loop-guard-init.sh \
+         deploy-root-guard.sh command-route-agent.sh skill-base.sh; do
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh; do
@@ -483,6 +485,152 @@ for n in 710 711 712 713; do
     fail "archive-deps: candidate #$n vanished from the plan entirely -- the silent-drop regression (stdout: $LAST_STDOUT)"
   fi
 done
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 8: Decision 1 — per-task cumulative cycle budget (durable across sessions, mode-aware
+# max_cycles, --continue-budget reset)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 8: per-task cumulative cycle budget"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 801, "project_name": "g8_budget", "task_type": "general", "status": "implementing", "description": "budget candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/801_g8_budget"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_sess_a.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_sess_b.json"
+
+# Invocation 1, session A: live dispatch charges this task's durable guard file to cycle_count=1.
+run_sut --session g8_sess_a -- 801
+guard_file="$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"
+if [ -f "$guard_file" ] && [ "$(jq -r '.cycle_count' "$guard_file")" = "1" ]; then
+  pass "budget: live dispatch flushes cycle_count=1 to the durable per-task guard file"
+else
+  fail "budget: durable guard file missing or wrong cycle_count after invocation 1 (got: $(cat "$guard_file" 2>/dev/null || echo MISSING))"
+fi
+
+# Invocation 2, session B: a FRESH session_id (fresh mt_state_file) must still resume from the
+# durable file's cycle_count=1, seeding cycle_counts[801]=1, then charge it to 2 on dispatch --
+# this is the cross-invocation cumulative guarantee Decision 1 exists to preserve. Release session
+# A's task-lock first (mirroring the real postflight's own release once a dispatched agent
+# returns) -- otherwise session B's candidate is merely deferred as locked, never re-evaluated.
+bash "$WORKDIR/.claude/scripts/task-lock.sh" release 801 g8_sess_a >/dev/null 2>&1 || true
+run_sut --session g8_sess_b -- 801
+if [ -f "$guard_file" ] && [ "$(jq -r '.cycle_count' "$guard_file")" = "2" ]; then
+  pass "budget: a second invocation with a FRESH session_id resumes the prior cycle_count (cumulative across invocations)"
+else
+  fail "budget: cross-session resume failed (got: $(cat "$guard_file" 2>/dev/null || echo MISSING))"
+fi
+
+# ── Mode-aware max_cycles: base mode's 5 vs. hard mode's 13, observed behaviorally via --dry-run
+# (dry-run never flushes, so the durable guard file is pre-seeded directly at exactly 5).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 802, "project_name": "g8_mode_aware", "task_type": "general", "status": "implementing", "description": "mode-aware max_cycles candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/802_g8_mode_aware"
+jq -n '{cycle_count: 5}' > "$WORKDIR/specs/802_g8_mode_aware/.orchestrator-loop-guard"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_base.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_hard.json"
+
+run_sut --session g8_mode_base --dry-run -- 802
+if [ "$(jqf '.blocked | map(select(.task == 802)) | length')" = "1" ] && \
+   [[ "$(jqf '.blocked | map(select(.task == 802)) | .[0].reason')" == *MAX_CYCLES* ]]; then
+  pass "budget: base mode (max_cycles=5) blocks a candidate already at cycle_count=5"
+else
+  fail "budget: base-mode candidate at cycle_count=5 was not blocked for MAX_CYCLES (stdout: $LAST_STDOUT)"
+fi
+
+run_sut --session g8_mode_hard --dry-run --hard -- 802
+if [ "$(jqf '.dispatch | map(select(.task == 802)) | length')" = "1" ]; then
+  pass "budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_count=5"
+else
+  fail "budget: hard-mode candidate at cycle_count=5 did not dispatch (stdout: $LAST_STDOUT)"
+fi
+
+# ── Batch-of-one budget-exhaustion stop, and --continue-budget's reset+resume override.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 803, "project_name": "g8_exhausted", "task_type": "general", "status": "implementing", "description": "exhausted budget candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/803_g8_exhausted"
+jq -n '{cycle_count: 5, dispatch_seq_counter: 9, detected_defects: ["kept"]}' > "$WORKDIR/specs/803_g8_exhausted/.orchestrator-loop-guard"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_exhausted_sess.json"
+
+run_sut --session g8_exhausted_sess -- 803
+if [ "$(jqf '.stop.reason')" = "max_cycles" ]; then
+  pass "budget: a batch-of-one whose only task is budget-exhausted stops with reason=max_cycles"
+else
+  fail "budget: batch-of-one exhaustion did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | length')" = "0" ]; then
+  pass "budget: exhausted batch-of-one dispatches nothing"
+else
+  fail "budget: exhausted batch-of-one unexpectedly dispatched (stdout: $LAST_STDOUT)"
+fi
+
+run_sut --session g8_exhausted_sess --continue-budget -- 803
+exhausted_guard="$WORKDIR/specs/803_g8_exhausted/.orchestrator-loop-guard"
+if [ "$(jqf '.dispatch | map(select(.task == 803)) | length')" = "1" ]; then
+  pass "budget: --continue-budget authorizes dispatching the same exhausted candidate"
+else
+  fail "budget: --continue-budget did not dispatch the exhausted candidate (stdout: $LAST_STDOUT)"
+fi
+if [ -f "$exhausted_guard" ] && [ "$(jq -r '.dispatch_seq_counter' "$exhausted_guard")" = "9" ] && \
+   [ "$(jq -r '.detected_defects | length' "$exhausted_guard")" = "1" ]; then
+  pass "budget: --continue-budget's reset preserves dispatch_seq_counter and detected_defects"
+else
+  fail "budget: --continue-budget's reset did not preserve cross-invocation history fields (got: $(cat "$exhausted_guard" 2>/dev/null))"
+fi
+if [ "$(jq -r '.cycle_count' "$exhausted_guard")" = "1" ]; then
+  pass "budget: --continue-budget resets cycle_count to 0 then charges this cycle's own dispatch (now 1)"
+else
+  fail "budget: --continue-budget did not reset+recharge cycle_count correctly (got: $(jq -r '.cycle_count' "$exhausted_guard" 2>/dev/null))"
+fi
+exhausted_archive_count=$(find "$WORKDIR/specs/803_g8_exhausted" -maxdepth 1 -name '.exhausted-loop-guard-*.json' | wc -l)
+if [ "$exhausted_archive_count" -ge 1 ]; then
+  pass "budget: --continue-budget archives the exhausted guard aside for auditability"
+else
+  fail "budget: --continue-budget did not archive the exhausted guard"
+fi
+
+# ── Mixed batch: one task's budget exhaustion excludes only that task, never the whole batch.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 804, "project_name": "g8_mixed_exhausted", "task_type": "general", "status": "implementing", "description": "exhausted sibling", "dependencies": [], "file_scope": []},
+    {"project_number": 805, "project_name": "g8_mixed_fresh", "task_type": "general", "status": "implementing", "description": "fresh sibling", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/804_g8_mixed_exhausted"
+jq -n '{cycle_count: 5}' > "$WORKDIR/specs/804_g8_mixed_exhausted/.orchestrator-loop-guard"
+rm -rf "$WORKDIR/specs/805_g8_mixed_fresh"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_mixed_sess.json"
+
+run_sut --session g8_mixed_sess -- 804 805
+if [ "$(jqf '.blocked | map(select(.task == 804)) | length')" = "1" ] && \
+   [[ "$(jqf '.blocked | map(select(.task == 804)) | .[0].reason')" == *MAX_CYCLES* ]]; then
+  pass "budget: mixed batch blocks only the exhausted sibling (#804), never the whole batch"
+else
+  fail "budget: mixed batch did not block only the exhausted sibling (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 805)) | length')" = "1" ] && [ "$(jqf '.stop')" = "null" ]; then
+  pass "budget: mixed batch's fresh sibling (#805) still dispatches this cycle; no whole-batch stop"
+else
+  fail "budget: mixed batch's fresh sibling failed to dispatch or the batch stopped (stdout: $LAST_STDOUT)"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

@@ -1,7 +1,7 @@
 # Implementation Plan: Port single-task-only orchestrator features into the batch engine
 
 - **Task**: 148 - Port hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 13.5 hours
 - **Dependencies**: 143 (`orchestrate-cycle-postflight.sh`) — completed
 - **Research Inputs**: specs/148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md
@@ -225,31 +225,31 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Per-task cumulative cycle budget in `orchestrate-cycle-plan.sh` [NOT STARTED]
+### Phase 1: Per-task cumulative cycle budget in `orchestrate-cycle-plan.sh` [COMPLETED]
 
 **Goal**: Implement Decision 1 — one cycle-budget counter per task, live in the multi-state file,
 durably backed by the per-task loop-guard file, with `--continue-budget` honored in one place.
 
 **Tasks**:
-- [ ] Enumerate every reader/writer of the multi-state `.cycle_count` / `.max_cycles` scalars
+- [x] Enumerate every reader/writer of the multi-state `.cycle_count` / `.max_cycles` scalars
       (`orchestrate-cycle-plan.sh`, `SKILL.md` MT-3/MT-4, `orchestrate-cycle-postflight.sh`'s
       `--cycle-count`, `scripts/tests/test-orchestrate-cycle-plan.sh`) before changing the shape.
-- [ ] Replace the scalars with `cycle_counts` and `max_cycles_per_task` maps in the multi-state
+- [x] Replace the scalars with `cycle_counts` and `max_cycles_per_task` maps in the multi-state
       file's `//=` initialization block; keep every other field name byte-identical.
-- [ ] Extend `orchestrate-loop-guard-init.sh` into the shared read/seed/flush helper for
+- [x] Extend `orchestrate-loop-guard-init.sh` into the shared read/seed/flush helper for
       `${TASK_DIR}/.orchestrator-loop-guard` (seed `cycle_count` on first sight of a task, flush
       it back at cycle end), leaving that file's JSON schema unchanged.
-- [ ] Set per-task `max_cycles` to 13 when `--hard` is passed, 5 otherwise; retire
+- [x] Set per-task `max_cycles` to 13 when `--hard` is passed, 5 otherwise; retire
       `default_max_cycles = ntasks * 5` (cap 25).
-- [ ] Re-site the top-of-script budget guard to trip per task; the batch stops only when every
+- [x] Re-site the top-of-script budget guard to trip per task; the batch stops only when every
       non-terminal task has exhausted its own budget, with the existing `stop.reason="max_cycles"`
       string preserved.
-- [ ] Port the `budget-continuation-override` behavior (archive the exhausted guard aside, reset
+- [x] Port the `budget-continuation-override` behavior (archive the exhausted guard aside, reset
       `cycle_count` to 0 in place, preserve `dispatch_seq_counter`/`detected_defects`) into the
       `--continue-budget` branch of that guard.
-- [ ] Record Decision 1 in `orchestrate-cycle-plan.sh`'s header comment, naming
+- [x] Record Decision 1 in `orchestrate-cycle-plan.sh`'s header comment, naming
       `test-session-runtime-files.sh` Case 3 explicitly.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh`: a second invocation with a fresh
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh`: a second invocation with a fresh
       `session_id` resumes the prior `cycle_count`; `--continue-budget` resets it; hard mode gets
       13 and base mode 5.
 
