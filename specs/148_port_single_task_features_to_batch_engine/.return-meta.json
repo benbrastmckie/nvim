@@ -1,42 +1,52 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md",
-      "summary": "Maps single-task Stages 2/2b/3b-hard/5a/5b/6/7 against the current batch engine (orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh) for the four surviving WORK items (HARD, LOOP GUARD, AUXILIARY DISPATCHES, single-task routing flag), confirming orchestrate-churn.sh is a pure gap, identifying the per-task-cumulative vs. per-session loop-guard reconciliation as an open decision, flagging the fixed-agent/dispatch-row schema mismatch for aux dispatches, and confirming commands/orchestrate.md already has the branch point item (5) needs."
+      "type": "plan",
+      "path": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
+      "summary": "8-phase plan porting hard-mode churn/burnout counters, the cycle budget, and the drift/blocker auxiliary dispatches into the batch engine, plus a feature-flagged batch-of-one route for a single task number."
     }
   ],
-  "next_steps": "Run /plan 148 to create the implementation plan, resolving the loop-guard reconciliation direction (item 3) and the auxiliary-dispatch row representation (item 4) explicitly before implementation.",
-  "dispatch_seq": 1,
+  "next_steps": "Run /implement 148 to execute the plan",
+  "dispatch_seq": 2,
   "metadata": {
     "session_id": "sess_1788502984_4c5fb5_148",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 13.5,
+    "dependency_waves": [[1, 2], [3, 4], [5], [6], [7], [8]]
   },
+  "proposed_file_scope": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-churn.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "modified_files": [
+    "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md"
+  ],
   "memory_candidates": [
     {
-      "content": "In this repo's /orchestrate engine, single-task cycle_count is stored per-task-directory (.orchestrator-loop-guard) and is deliberately CUMULATIVE across /orchestrate re-invocations (never reset on a new session_id, protected by test-session-runtime-files.sh Case 3), while multi-task cycle_count lives in a per-session file (specs/.orchestrator-multi-state-${session_id}.json) that starts fresh every invocation. Any work that routes single-task runs through the multi-task path must explicitly decide whether to preserve the cumulative-budget guarantee or document its relaxation -- it is not automatically preserved.",
+      "content": "In this repo's script-composed /orchestrate engine, a shell script never invokes the Agent tool -- only the lead does. So any single-task stage that both DETECTED a condition and DISPATCHED an agent inline (Stage 5b's three-strikes divergence audit, Stage 6's blocker-escalation fork, Stage 5a's drift-inspection fork) ports in two halves: the detecting script returns a REQUEST ({audit_requested, target, verbatim_goal}) which postflight persists as an aux_pending entry, and the NEXT cycle's orchestrate-cycle-plan.sh turns it into a dispatch row. Such rows belong in a sibling aux_dispatch[] array, never in dispatch[] -- widening dispatch[]'s phase vocabulary would break orchestrate-cycle-postflight.sh's --phase contract (phase-count corroboration, artifact-round advance) and risks silently routing a fixed-agent (fork/reviser-agent) dispatch through command-route-agent.sh's task-type resolution.",
       "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "loop-guard", "cycle_count", "multi-state", "MAX_CYCLES_MT", "session_id"]
-    },
-    {
-      "content": "orchestrate-churn.sh's target state file (.orchestrator-churn-state.json) is task-directory-scoped, not session-scoped -- verified via reap-session-runtime-files.sh and check-runtime-file-tracking.sh, which both classify it as a per-task runtime file requiring no session-based reaping. This makes churn/three-strikes state independent of whatever the loop-guard/session reconciliation decides, since the two state files answer different questions.",
-      "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md",
+      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
       "confidence": 0.8,
-      "suggested_keywords": ["orchestrate", "churn-state", "task-scoped", "runtime-files", "H5", "H6"]
-    },
-    {
-      "content": "commands/orchestrate.md's STAGE 0 already branches cleanly on len(TASK_NUMBERS): ==1 falls through to the single-task Skill call, >1 builds waves_json/task_numbers_json/dep_graph_json and calls skill-orchestrate with multi_task_mode=true. Routing a single task number through the multi-task path only requires making the ==1 branch build the same trivial one-task inputs ([N], [[N]], {\"N\":[]}) and take the multi_task_mode=true path -- SKILL.md's own Stage 0 already dispatches correctly on that flag regardless of task count, so no new routing surface is needed.",
-      "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate", "commands/orchestrate.md", "multi_task_mode", "routing", "single-task"]
+      "suggested_keywords": ["orchestrate", "aux-dispatch", "cycle-plan", "fixed-agent", "script-never-dispatches", "postflight-phase-contract"]
     }
   ]
 }
