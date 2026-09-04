@@ -11,16 +11,16 @@ next_project_number: 153
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,89,127,136,137,139,143,151,152 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,140,148 | 29,139,143 | core-agent-system, extensions |
-| 3 | 74,88 | 148 | core-agent-system, extensions |
-| 4 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
+| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,74,88,140 | 29,139,148 | core-agent-system, extensions |
+| 3 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
@@ -28,14 +28,12 @@ next_project_number: 153
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-143 [IMPLEMENTING] — === REVISED 2026-09-02 (thin-lead path: widened into the per-task
-  └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-  └─ 148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
-    └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
-      └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
-      └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-      └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-      └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
+148 [NOT STARTED] — Port team fan-out, hard-mode counters, loop guard, and the auxili
+  └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+    └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
+    └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+    └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+    └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 
@@ -197,7 +195,7 @@ Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so
 ---
 
 ### 143. Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 147

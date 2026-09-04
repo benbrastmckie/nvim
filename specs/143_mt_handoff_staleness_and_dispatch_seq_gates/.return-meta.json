@@ -34,29 +34,57 @@
       "category": "PATTERN",
       "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["loop-control", "verdict ambiguity", "output contract", "halt", "infra-exempt", "caller-side disambiguation"]
+      "suggested_keywords": [
+        "loop-control",
+        "verdict ambiguity",
+        "output contract",
+        "halt",
+        "infra-exempt",
+        "caller-side disambiguation"
+      ]
     },
     {
       "content": "When a per-cycle pipeline pops/consumes a piece of state (e.g. a forced-phase queue) BEFORE building the record a downstream consumer will read, that fact ('was this forced this cycle') becomes structurally unobservable later unless it is captured into the record at the exact moment of the pop. Symptom: a downstream stage (postflight) needs to know something a earlier stage (dispatch composition) already decided and discarded. Fix: add a field to the row/record being built AT the pop site (e.g. `force: true/false` on a dispatch row, set from the same local variable that gated the pop), not a re-derivation attempt downstream (which cannot reconstruct pre-pop state from post-pop state). Apply this to both the live and any --dry-run/preview code path so the two never diverge in shape.",
       "category": "PATTERN",
       "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["state capture", "pop-before-read", "dispatch row", "force_invoked", "pipeline staging"]
+      "suggested_keywords": [
+        "state capture",
+        "pop-before-read",
+        "dispatch row",
+        "force_invoked",
+        "pipeline staging"
+      ]
     },
     {
       "content": "A test suite that extracts literal jq filter strings from a source file via anchored grep/regex (to prove the SHIPPED implementation, not a hand-copied approximation, produces the expected value against a shared fixture) breaks completely and silently-obviously (every extraction fails, not a wrong-value assertion) when the anchored code moves to a different file during a refactor -- the anchor text simply no longer exists at the old location. This is a GOOD failure mode (loud, not silent), but it means any refactor that relocates inline logic into a shared script/function must grep for the old anchor comment text across the WHOLE test suite (not just the test file for the artifact you're editing) before declaring the refactor's test suite green -- a sibling parity/extraction-based test elsewhere in the repo may depend on prose that only lived at the old location, and 'full gate run green' is the only way to catch it (a scoped test run for just the files you touched will not).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extraction-based test", "anchor text", "refactor regression", "full gate run", "test-handoff-reader-parity"]
+      "suggested_keywords": [
+        "extraction-based test",
+        "anchor text",
+        "refactor regression",
+        "full gate run",
+        "test-handoff-reader-parity"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788481887_3ed375",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
-    "phases_total": 7
-  }
+    "phases_total": 7,
+    "cycles_used": 1,
+    "final_state": "completed",
+    "detected_defects": []
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
