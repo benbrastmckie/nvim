@@ -377,31 +377,31 @@ signals the next cycle's aux emission needs.
 
 ---
 
-### Phase 4: Move the H1 per-phase limiter into `orchestrate-cycle-plan.sh` [NOT STARTED]
+### Phase 4: Move the H1 per-phase limiter into `orchestrate-cycle-plan.sh` [COMPLETED]
 
 **Goal**: Under hard mode, an `implement` row dispatches exactly one open phase, selected by the
 shared heading-scan machinery, with H1's two refusal paths mapped to per-task blocked rows
 (Decision 4).
 
 **Tasks**:
-- [ ] Source `scripts/lib/phase-heading-patterns.sh` in `orchestrate-cycle-plan.sh`; do not
+- [x] Source `scripts/lib/phase-heading-patterns.sh` in `orchestrate-cycle-plan.sh`; do not
       re-derive any pattern inline.
-- [ ] Port the resume-scan conformance gate: run `has_nonconforming_phase_headings` over the whole
+- [x] Port the resume-scan conformance gate: run `has_nonconforming_phase_headings` over the whole
       plan file **before** the filtered scan; on a hit emit a blocked row carrying the existing
       "the true next phase is UNKNOWN" reason verbatim.
-- [ ] Port the heading-scan `next_phase` selection (`PHASE_HEADING_ERE` + `PHASE_STATUS_OPEN_ERE`,
+- [x] Port the heading-scan `next_phase` selection (`PHASE_HEADING_ERE` + `PHASE_STATUS_OPEN_ERE`,
       `extract_phase_number`).
-- [ ] Port the pre-dispatch marker/handoff crosscheck, including the disputed-heading downgrade to
+- [x] Port the pre-dispatch marker/handoff crosscheck, including the disputed-heading downgrade to
       `[PARTIAL]`; on a mismatch emit a blocked row with the existing MARKER/HANDOFF MISMATCH
       reason instead of `EXIT (partial)`.
-- [ ] Port the H7 territory literal and pass it to `orchestrate-build-dispatch.sh` via the
+- [x] Port the H7 territory literal and pass it to `orchestrate-build-dispatch.sh` via the
       existing `--territory` flag for hard-mode implement rows.
-- [ ] Add `--phase-number N` to `orchestrate-build-dispatch.sh` so the dispatch file records the
+- [x] Add `--phase-number N` to `orchestrate-build-dispatch.sh` so the dispatch file records the
       selected phase; keep it optional and absent from base-mode calls.
-- [ ] Confirm the "exactly one blocking phase per cycle" property holds by construction (at most
+- [x] Confirm the "exactly one blocking phase per cycle" property holds by construction (at most
       one implement row per task per cycle) and record that in the header rather than adding a
       second limiter.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` and
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` and
       `scripts/tests/test-orchestrate-build-dispatch.sh` for the new behavior.
 
 **Timing**: 2 hours

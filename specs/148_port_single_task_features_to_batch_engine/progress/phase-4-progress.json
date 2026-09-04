@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Move the H1 per-phase limiter into orchestrate-cycle-plan.sh",
+  "started_at": "2026-09-04T08:20:00Z",
+  "last_updated": "2026-09-04T09:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source scripts/lib/phase-heading-patterns.sh in orchestrate-cycle-plan.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Port the resume-scan conformance gate (blocked row on non-conforming headings)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Port the heading-scan next_phase selection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Port the pre-dispatch marker/handoff crosscheck with disputed-heading downgrade", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Port the H7 territory literal, threaded via --territory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Add --phase-number N to orchestrate-build-dispatch.sh (Phase Mission section)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 7, "description": "Confirm one-blocking-phase-per-cycle holds by construction; record in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Extend test-orchestrate-cycle-plan.sh and test-orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Computed the H1 decision (blocked-reason / next_phase / territory) ONCE in a shared per-task loop before the dry-run/live fork, then filtered probed_dispatch into probed_dispatch_post_h1 for both loops to consume, rather than duplicating the heading-scan logic in each loop.", "result": "kept", "reason": "Matches the script's own header mandate of exactly one computation of every admission verdict; keeps dry-run and live buckets structurally guaranteed identical."},
+    {"approach": "Initially left `h1_next_heading=$(grep ... | head -1)` unguarded against a no-match exit status.", "result": "failed", "reason": "orchestrate-cycle-plan.sh runs under `set -euo pipefail`; a grep finding zero matches exits the whole script silently (no stdout/stderr) under errexit. Fixed with `|| true`, matching the `// 0`/`|| echo 0` guard idiom already used elsewhere in this same script for the identical hazard."},
+    {"approach": "Deliberately did NOT port single-task H1's `elif last_skeleton` skeleton-exhaustion routing branch, and treated 'no open heading, not inconclusive' as an ORDINARY status-derived implement dispatch (not a no-dispatch fallthrough).", "result": "kept", "reason": "Neither is in this phase's own 8-item task list; recorded as a named, deliberate scope boundary in the script's own header comment (Scope Hypothesis confirmation) rather than a silent gap. orchestrate-cycle-postflight.sh's existing completion-claim gate already handles the non-skeleton 'all phases done' case correctly regardless of which path dispatched the last one."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

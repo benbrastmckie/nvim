@@ -334,6 +334,45 @@ fi
 rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 6c: --phase-number (hard mode's per-phase dispatch, H1) -- Phase Mission section, and
+# absence from every base-mode / no-flag call.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 6c: --phase-number adds a Phase Mission section; absent without the flag"
+cat > "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 2, "phases_total": 5, "blockers": []}
+EOF
+run_sut implement --seq 6c --hard --clean --phase-number 3
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Phase Mission" "phase-number: Phase Mission section present"
+  assert_contains "$content" "Implement phase 3 only" "phase-number: mission names the exact phase number"
+  assert_contains "$content" "PHASES COMPLETED: 2 of 5" "phase-number: phases_completed/phases_total read from the handoff"
+else
+  fail "phase-number: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# No handoff at all (first cycle for this task) -- defaults to 0 of 0, matching single-task
+# Stage 4's H1 branch's own defaults.
+rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
+run_sut implement --seq 6c2 --hard --clean --phase-number 1
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "PHASES COMPLETED: 0 of 0" "phase-number: absent handoff defaults phases_completed/phases_total to 0/0"
+else
+  fail "phase-number (no handoff): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Base-mode / no-flag call: never emits a Phase Mission section.
+run_sut implement --seq 6c3 --clean
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "## Phase Mission" "phase-number: absent from a call with no --phase-number"
+else
+  fail "phase-number (absent flag): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 7: Anti-drift -- the continuation-pointer resolution is a SHARED helper, not two
 # independently hand-copied jq expressions. Structural check: both this SUT and
 # orchestrate-triage-classify.sh source the same library file (scripts/lib/continuation-pointer-lib.sh)

@@ -968,8 +968,141 @@ resolve_agent() {
   echo "$AGENT_NAME"
 }
 
+# ── H1: hard-mode per-phase dispatch selection (Phase 4 of the task that ported single-task
+# features into the batch engine) — one blocking phase per task per cycle, selected by the SAME
+# shared heading-scan machinery single-task Stage 4's H1 branch uses. Runs ONCE, here, in the
+# shared decision section BEFORE the dry-run/live fork (never two independently-computed
+# renderings — mirrors this script's own header mandate), so a hard-mode implement candidate's
+# blocked-vs-dispatch bucketing is identical in both modes. Only the plan-file repair (the
+# disputed-heading downgrade) is deferred to the live-only continuation below, since --dry-run
+# must mutate nothing.
+#
+# The "exactly one blocking phase per cycle" property (H1's own name for this behavior) holds BY
+# CONSTRUCTION and needs no second limiter: this script already builds at most one dispatch row
+# per task per cycle (the per-task loops below iterate `probed_dispatch` once), so a hard-mode
+# implement candidate never receives more than one phase-scoped dispatch in a single cycle.
+#
+# Scope Hypothesis confirmation (diffed end-to-end against SKILL.md's own
+# "##### Hard branch: Per-Phase Dispatch (H1)" section): every region of that section is either
+# ported below, already owned elsewhere in this script, or deliberately left out of THIS phase's
+# scope, named here rather than silently dropped:
+#   - Ported: the conformance gate, the heading-scan `next_phase` selection, the pre-dispatch
+#     marker/handoff crosscheck (with the disputed-heading downgrade), and the H7 territory
+#     literal — all four regions this phase's own task list names.
+#   - Already owned elsewhere, unchanged by this port: `dispatch_seq` minting and
+#     `skill_preflight_update` (the existing per-task live-dispatch loop below already does both,
+#     unconditionally, for every implement row — not H1-specific); `phases_completed_before`
+#     capture (superseded by `orchestrate-churn.sh`'s own `phases_completed_last` persistence,
+#     Decision 3 / Phase 2); the phase-mission prompt text (ported into
+#     `orchestrate-build-dispatch.sh`'s new `--phase-number`-gated "## Phase Mission" section).
+#   - Deliberately NOT ported by this phase (named exclusions, not gaps): (1) the Agent tool
+#     invocation table itself — this script only ever PREPARES a dispatch row; issuing the Agent
+#     tool call is `SKILL.md` Stage MT-4's job (Phase 6). (2) The `elif last_skeleton` branch
+#     (skeleton-exhaustion routing: `pr_ready` postflight, completion-summary propagation,
+#     `.dispatch/`/loop-guard cleanup, `EXIT (success)`) — a Lean/formal skeleton-plan-specific
+#     completion path outside this phase's task list; a hard-mode skeleton plan routed through the
+#     batch engine today falls through to the "no open heading" branch below (ordinary dispatch)
+#     rather than the single-task engine's specialized skeleton-completion handling. Recorded here
+#     as a known, out-of-scope gap for a future phase/task, not a silent omission.
+declare -A h1_blocked_reason=()      # t -> blocked-row reason string (H1 refusal)
+declare -A h1_next_phase=()          # t -> selected phase number (only when actually dispatching)
+declare -A h1_territory=()           # t -> H7 territory JSON literal (only when dispatching)
+declare -A h1_disputed_plan_path=()  # t -> plan_path (live-only repair, paired with the next map)
+declare -A h1_disputed_linenum=()    # t -> line number to downgrade to [PARTIAL]
+
+if [ "$hard_mode" = "true" ]; then
+  # shellcheck disable=SC1091
+  . "$SCRIPT_DIR/lib/phase-heading-patterns.sh"
+fi
+
+for t in "${probed_dispatch[@]}"; do
+  [ "$hard_mode" != "true" ] && continue
+  [ "${effective_group[$t]}" != "implement" ] && continue
+  h1_project_name="${project_names[$t]:-}"
+  [ -z "$h1_project_name" ] && continue
+  h1_padded=$(printf "%03d" "$t")
+  h1_task_dir_abs="${PROJECT_ROOT}/specs/${h1_padded}_${h1_project_name}"
+  h1_plan_path=$(ls -1 "${h1_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || h1_plan_path=""
+  h1_handoff_file="${h1_task_dir_abs}/.orchestrator-handoff.json"
+  if [ -f "$h1_handoff_file" ]; then
+    h1_phases_completed=$(jq -r '.phases_completed // 0' "$h1_handoff_file" 2>/dev/null) || h1_phases_completed=0
+  else
+    h1_phases_completed=0
+  fi
+  case "$h1_phases_completed" in ''|*[!0-9]*) h1_phases_completed=0 ;; esac
+
+  h1_next_phase_val=""
+  h1_inconclusive="false"
+  if [ -n "$h1_plan_path" ] && [ -f "$h1_plan_path" ]; then
+    # --- resume-scan-conformance-gate: whole-file check BEFORE the filtered scan, ported
+    # verbatim from single-task's own H1 branch (same sentinel name, same rationale: a
+    # non-conforming heading is INVISIBLE to PHASE_HEADING_ERE, not merely unmatched). ---
+    if has_nonconforming_phase_headings "$h1_plan_path"; then
+      warn_nonconforming "$h1_plan_path" "orchestrate-cycle-plan-h1-next-phase" || true
+      h1_inconclusive="true"
+    else
+      h1_next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$h1_plan_path" | head -1) || true
+      if [ -n "$h1_next_heading" ]; then
+        h1_next_phase_val=$(extract_phase_number "$h1_next_heading") || h1_next_phase_val=""
+        [ -z "$h1_next_phase_val" ] && h1_inconclusive="true"
+      fi
+    fi
+  fi
+
+  if [ "$h1_inconclusive" = "true" ]; then
+    h1_blocked_reason[$t]="H1: non-conforming phase heading(s) in ${h1_plan_path} — the filtered resume scan cannot see them, so the true next phase is UNKNOWN. Fix the plan's heading grammar (see plan-format.md's canonical phase-heading shape) and re-run."
+  elif [ -n "$h1_next_phase_val" ]; then
+    # --- marker-handoff-crosscheck-predispatch: Defect 6, PRE-dispatch and dispatch-REFUSING
+    # (distinct from base Stage 5's own POST-dispatch, diagnostic-and-downgrading crosscheck).
+    # Ported verbatim from single-task's H1 branch, EXIT (partial) mapped to a blocked row per
+    # Decision 4. ---
+    h1_marker_completed_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$h1_plan_path" 2>/dev/null || echo 0)
+    if [ "$h1_marker_completed_count" != "$h1_phases_completed" ]; then
+      h1_blocked_reason[$t]="H1: MARKER/HANDOFF MISMATCH — plan file shows ${h1_marker_completed_count} phase(s) marked [COMPLETED]/[COMPLETED WITH EXCLUSIONS], but the handoff's own phases_completed=${h1_phases_completed}. Not dispatching the successor over unconfirmed work."
+      if [ "$h1_marker_completed_count" -gt "$h1_phases_completed" ]; then
+        h1_disputed_line=$(grep -nE "$PHASE_HEADING_DONE_ERE" "$h1_plan_path" | sed -n "$((h1_phases_completed + 1))p")
+        if [ -n "$h1_disputed_line" ]; then
+          h1_disputed_plan_path[$t]="$h1_plan_path"
+          h1_disputed_linenum[$t]="${h1_disputed_line%%:*}"
+        fi
+      fi
+    else
+      h1_next_phase[$t]="$h1_next_phase_val"
+      # H7 territory literal, ported verbatim (Defect 5 — a woken PREDECESSOR dispatch resuming
+      # outside this orchestrator's own control flow, never a same-cycle sibling-file conflict).
+      h1_territory[$t]='{
+    "owned_files": "derive from plan_path'"'"'s Phase '"$h1_next_phase_val"' \"Files to modify\" list",
+    "read_only_files": [],
+    "forbidden_files": [],
+    "concurrency_note": "This declaration asserts only which files THIS dispatch owns. It does NOT assert exclusive access -- a still-live predecessor may exist. If you observe foreign commits, foreign uncommitted modifications, or a running build you did not start, STOP and report it rather than proceeding or dismissing it. See context/contracts/territory.md and context/patterns/dispatch-report-not-termination.md."
+  }'
+    fi
+  fi
+  # else: no OPEN heading found, not inconclusive -- falls through to ORDINARY status-derived
+  # implement dispatch for this task below (no phase-number, no territory). Mirrors single-task's
+  # own "all genuinely complete / not a skeleton plan" fallthrough, which defers to the
+  # completion-claim gate rather than blocking or forcing a phase — orchestrate-cycle-postflight.sh
+  # already owns that gate for the batch engine.
+done
+
+# Move every H1-refused candidate straight to blocked[] and out of BOTH per-mode loops below —
+# never built as a dispatch row in either mode. Live-only: apply the disputed-heading downgrade
+# to [PARTIAL] (a plan-file repair; --dry-run must mutate nothing).
+declare -a probed_dispatch_post_h1=()
+for t in "${probed_dispatch[@]}"; do
+  if [ -n "${h1_blocked_reason[$t]:-}" ]; then
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg r "${h1_blocked_reason[$t]}" '{task: $t, reason: $r}')")
+    if [ "$dry_run" != "true" ] && [ -n "${h1_disputed_linenum[$t]:-}" ]; then
+      echo "[orchestrate] H1: downgrading disputed phase heading to [PARTIAL] in ${h1_disputed_plan_path[$t]} (line ${h1_disputed_linenum[$t]})" >&2
+      sed -i -E "${h1_disputed_linenum[$t]}s/\[(COMPLETED|COMPLETED WITH EXCLUSIONS)\]/[PARTIAL]/" "${h1_disputed_plan_path[$t]}"
+    fi
+    continue
+  fi
+  probed_dispatch_post_h1+=("$t")
+done
+
 if [ "$dry_run" = "true" ]; then
-  for t in "${probed_dispatch[@]}"; do
+  for t in "${probed_dispatch_post_h1[@]}"; do
     g="${effective_group[$t]}"
     agent=$(resolve_agent "$g" "${task_types[$t]}")
     dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
@@ -989,7 +1122,7 @@ cd "$SKILL_REPO_ROOT"
 
 new_cycle_count=$(( cycle_count + 1 ))
 
-for t in "${probed_dispatch[@]}"; do
+for t in "${probed_dispatch_post_h1[@]}"; do
   g="${effective_group[$t]}"
   project_name="${project_names[$t]}"
   if [ -z "$project_name" ]; then
@@ -1050,6 +1183,12 @@ for t in "${probed_dispatch[@]}"; do
   [ "$hard_mode" = "true" ] && build_args+=(--hard)
   [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
   [ -n "$model_flag" ] && build_args+=(--model "$model_flag")
+  # H1 (Phase 4): only ever set for a hard-mode implement candidate whose heading-scan selected
+  # a phase this cycle — absent from every base-mode call and from a hard-mode implement candidate
+  # that fell through to ordinary status-derived dispatch (no open heading found, not inconclusive).
+  if [ -n "${h1_next_phase[$t]:-}" ]; then
+    build_args+=(--phase-number "${h1_next_phase[$t]}" --territory "${h1_territory[$t]}")
+  fi
   if dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}" 2>&1); then
     build_exit=0
   else

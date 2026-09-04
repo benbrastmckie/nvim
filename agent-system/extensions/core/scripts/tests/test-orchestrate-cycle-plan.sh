@@ -54,7 +54,7 @@ for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh 
          orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
-         lib/manifest-routing-lib.sh; do
+         lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh; do
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
@@ -74,7 +74,8 @@ for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage
          deploy-root-guard.sh command-route-agent.sh skill-base.sh; do
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
-for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh; do
+for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
+         phase-heading-patterns.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -630,6 +631,192 @@ if [ "$(jqf '.dispatch | map(select(.task == 805)) | length')" = "1" ] && [ "$(j
   pass "budget: mixed batch's fresh sibling (#805) still dispatches this cycle; no whole-batch stop"
 else
   fail "budget: mixed batch's fresh sibling failed to dispatch or the batch stopped (stdout: $LAST_STDOUT)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 9: H1 hard-mode per-phase dispatch (heading-scan, conformance gate, marker crosscheck,
+# territory, fixed-agent-never fallthrough)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 9: H1 hard-mode per-phase dispatch"
+
+# ── Case A: a non-conforming heading (3a-style) produces a blocked row, never a dispatch row ──
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 901, "project_name": "g9_nonconforming", "task_type": "general", "status": "implementing", "description": "H1 non-conforming heading", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/901_g9_nonconforming/plans"
+cat > "$WORKDIR/specs/901_g9_nonconforming/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 3a: Bad heading [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9a_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9a_sess --hard -- 901
+if [ "$(jqf '.dispatch | map(select(.task == 901)) | length')" = "0" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 901)) | length')" = "1" ]; then
+  pass "H1: a non-conforming heading blocks the candidate, never dispatches it"
+else
+  fail "H1: non-conforming-heading candidate not blocked as expected (stdout: $LAST_STDOUT)"
+fi
+if [[ "$(jqf '.blocked | map(select(.task == 901)) | .[0].reason')" == *"true next phase is UNKNOWN"* ]]; then
+  pass "H1: blocked reason names the true-next-phase-UNKNOWN text"
+else
+  fail "H1: blocked reason missing the expected text (got: $(jqf '.blocked | map(select(.task == 901)) | .[0].reason'))"
+fi
+
+# ── Case B: marker/handoff mismatch -- blocked row AND the disputed heading downgrades to
+# [PARTIAL] ──
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 902, "project_name": "g9_mismatch", "task_type": "general", "status": "implementing", "description": "H1 marker/handoff mismatch", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/902_g9_mismatch/plans"
+cat > "$WORKDIR/specs/902_g9_mismatch/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [NOT STARTED]
+EOF
+cat > "$WORKDIR/specs/902_g9_mismatch/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 0, "phases_total": 2}
+EOF
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9b_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9b_sess --hard -- 902
+if [ "$(jqf '.dispatch | map(select(.task == 902)) | length')" = "0" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 902)) | length')" = "1" ]; then
+  pass "H1: a marker/handoff mismatch blocks the candidate, never dispatches it"
+else
+  fail "H1: mismatch candidate not blocked as expected (stdout: $LAST_STDOUT)"
+fi
+if [[ "$(jqf '.blocked | map(select(.task == 902)) | .[0].reason')" == *"MARKER/HANDOFF MISMATCH"* ]]; then
+  pass "H1: blocked reason names MARKER/HANDOFF MISMATCH"
+else
+  fail "H1: blocked reason missing MARKER/HANDOFF MISMATCH text"
+fi
+if grep -q '^### Phase 1: One \[PARTIAL\]$' "$WORKDIR/specs/902_g9_mismatch/plans/01_plan.md"; then
+  pass "H1: the disputed phase heading is downgraded to [PARTIAL] in place"
+else
+  fail "H1: disputed heading was not downgraded (plan content: $(cat "$WORKDIR/specs/902_g9_mismatch/plans/01_plan.md"))"
+fi
+
+# ── Case C: a well-formed plan with an open heading dispatches WITH --phase-number/--territory ──
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 903, "project_name": "g9_dispatch", "task_type": "general", "status": "implementing", "description": "H1 successful phase selection", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/903_g9_dispatch/plans"
+cat > "$WORKDIR/specs/903_g9_dispatch/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [NOT STARTED]
+EOF
+cat > "$WORKDIR/specs/903_g9_dispatch/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 1, "phases_total": 2}
+EOF
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9c_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9c_sess --hard -- 903
+if [ "$(jqf '.dispatch | map(select(.task == 903)) | length')" = "1" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 903)) | length')" = "0" ]; then
+  pass "H1: a well-formed open heading dispatches (not blocked)"
+else
+  fail "H1: well-formed candidate did not dispatch as expected (stdout: $LAST_STDOUT)"
+fi
+dispatch_argv=$(grep '^903 implement' "$ARGV_LOG" || true)
+if echo "$dispatch_argv" | grep -q -- "--phase-number 2"; then
+  pass "H1: orchestrate-build-dispatch.sh receives --phase-number 2 (the selected open phase)"
+else
+  fail "H1: --phase-number 2 missing from orchestrate-build-dispatch.sh argv (argv: '$dispatch_argv')"
+fi
+if echo "$dispatch_argv" | grep -q -- "--territory"; then
+  pass "H1: orchestrate-build-dispatch.sh receives --territory for the hard-mode implement row"
+else
+  fail "H1: --territory missing from orchestrate-build-dispatch.sh argv (argv: '$dispatch_argv')"
+fi
+
+# ── Case D: no open heading, not inconclusive -- falls through to ORDINARY dispatch, never a
+# --phase-number (never resolved through a phase-scoped path when nothing is left open) ──
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 904, "project_name": "g9_fallthrough", "task_type": "general", "status": "implementing", "description": "H1 no-open-heading fallthrough", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/904_g9_fallthrough/plans"
+cat > "$WORKDIR/specs/904_g9_fallthrough/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+EOF
+cat > "$WORKDIR/specs/904_g9_fallthrough/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 1, "phases_total": 1}
+EOF
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9d_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9d_sess --hard -- 904
+if [ "$(jqf '.dispatch | map(select(.task == 904)) | length')" = "1" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 904)) | length')" = "0" ]; then
+  pass "H1: no open heading (not inconclusive) falls through to ordinary dispatch"
+else
+  fail "H1: no-open-heading candidate did not fall through as expected (stdout: $LAST_STDOUT)"
+fi
+fallthrough_argv=$(grep '^904 implement' "$ARGV_LOG" || true)
+if echo "$fallthrough_argv" | grep -q -- "--phase-number"; then
+  fail "H1: fallthrough dispatch unexpectedly carries --phase-number (argv: '$fallthrough_argv')"
+else
+  pass "H1: fallthrough dispatch carries no --phase-number (ordinary status-derived dispatch)"
+fi
+
+# ── Case E: --dry-run parity -- the SAME blocked verdict, with NO plan-file mutation ──
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 905, "project_name": "g9_dryrun", "task_type": "general", "status": "implementing", "description": "H1 dry-run parity", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/905_g9_dryrun/plans"
+cat > "$WORKDIR/specs/905_g9_dryrun/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [NOT STARTED]
+EOF
+cat > "$WORKDIR/specs/905_g9_dryrun/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 0, "phases_total": 2}
+EOF
+plan_before=$(cat "$WORKDIR/specs/905_g9_dryrun/plans/01_plan.md")
+run_sut --session g9e_sess --hard --dry-run -- 905
+if [ "$(jqf '.blocked | map(select(.task == 905)) | length')" = "1" ] && \
+   [[ "$(jqf '.blocked | map(select(.task == 905)) | .[0].reason')" == *"MARKER/HANDOFF MISMATCH"* ]]; then
+  pass "H1: --dry-run reports the SAME blocked verdict as the live path"
+else
+  fail "H1: --dry-run did not report the expected blocked verdict (stdout: $LAST_STDOUT)"
+fi
+plan_after=$(cat "$WORKDIR/specs/905_g9_dryrun/plans/01_plan.md")
+if [ "$plan_before" = "$plan_after" ]; then
+  pass "H1: --dry-run performs NO disputed-heading downgrade (mutates nothing)"
+else
+  fail "H1: --dry-run unexpectedly mutated the plan file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

@@ -21,7 +21,14 @@
 # Usage:
 #   orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
 #     [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."]
-#     [--dispatch-start-ts TS]
+#     [--phase-number N] [--dispatch-start-ts TS]
+#
+# --phase-number N (implement phase only, hard mode's per-phase dispatch -- Decision Structure H1
+# in the task that ported single-task features into the batch engine): records the SINGLE plan
+# phase this dispatch is scoped to. Adds a "## Phase Mission" section to the dispatch file naming
+# the phase and this task's own phases_completed/phases_total (read from the handoff file, the
+# same named-field read the caller's own heading-scan already performs). Optional and absent from
+# every base-mode call.
 #
 # where <phase> is one of: research | plan | implement
 #
@@ -49,7 +56,7 @@ usage() {
   cat <<'USAGE'
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
          [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."]
-         [--dispatch-start-ts TS]
+         [--phase-number N] [--dispatch-start-ts TS]
 
 <phase> is one of: research | plan | implement
 USAGE
@@ -82,11 +89,13 @@ model_flag=""
 focus_prompt=""
 territory=""
 dispatch_start_ts=""
+phase_number=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --session) session_id="${2:-}"; shift 2 ;;
     --seq) dispatch_seq="${2:-}"; shift 2 ;;
+    --phase-number) phase_number="${2:-}"; shift 2 ;;
     --clean) clean_flag="true"; shift ;;
     --lit) lit_flag="true"; shift ;;
     --hard) hard_mode="true"; effort_flag="hard"; shift ;;
@@ -159,6 +168,20 @@ if [ "$phase" = "implement" ]; then
   # shellcheck disable=SC1091
   source "${SCRIPT_DIR}/lib/continuation-pointer-lib.sh"
   continuation=$(resolve_continuation_pointer "$handoff_path_abs")
+
+  # phases_completed/phases_total for --phase-number's "## Phase Mission" section below (hard
+  # mode's per-phase dispatch only) — the same named-field handoff read single-task Stage 4's H1
+  # branch performs before any dispatch. Absent handoff (first cycle) defaults to 0/0, matching
+  # that branch's own defaults exactly.
+  if [ -n "$phase_number" ]; then
+    if [ -f "$handoff_path_abs" ]; then
+      phases_completed_for_mission=$(jq -r '.phases_completed // 0' "$handoff_path_abs" 2>/dev/null) || phases_completed_for_mission=0
+      phases_total_for_mission=$(jq -r '.phases_total // 0' "$handoff_path_abs" 2>/dev/null) || phases_total_for_mission=0
+    else
+      phases_completed_for_mission=0
+      phases_total_for_mission=0
+    fi
+  fi
 fi
 
 # ─── Stage 3.5 output 1: memory_context (Auto retrieval), skipped when --clean ─────────────────
@@ -312,6 +335,22 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "${continuation}"
     echo '```'
     echo ""
+    if [ -n "$phase_number" ]; then
+      # Hard mode's per-phase dispatch (H1) — ported from single-task Stage 4's
+      # build_hard_mode_phase_mission(). Deliberately does NOT restate anti-analysis, wrap-up,
+      # recovery, phase-closure, or pre-edit-gate -- hard_contracts_block (below) already injects
+      # all of those as <hard-mode-contracts> entries; this section carries only the genuinely
+      # per-cycle residue (which phase, and the running phase count).
+      echo "## Phase Mission"
+      echo ""
+      echo "HARD MODE DISPATCH — PHASE MISSION:"
+      echo ""
+      echo "1. Mission: Implement phase ${phase_number} only. Do not continue past this phase."
+      echo "2. Settled Design Preamble: State the decided design before first tool call."
+      echo ""
+      echo "PHASES COMPLETED: ${phases_completed_for_mission} of ${phases_total_for_mission}"
+      echo ""
+    fi
   fi
   echo "## Handoff"
   echo ""
