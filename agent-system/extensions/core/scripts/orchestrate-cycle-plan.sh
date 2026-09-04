@@ -96,10 +96,16 @@
 # withdrawn; no `team` key is ever emitted on a dispatch row.
 #
 # Output: a single line of compact JSON on stdout:
-#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file}],
+#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force}],
 #    deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}
 # `model`/`dispatch_file` are `null` on every dispatch row in --dry-run mode (nothing was built),
-# and are the real resolved values in the live path.
+# and are the real resolved values in the live path. `force` (Phase 7 addition of the task that
+# built orchestrate-cycle-postflight.sh) is `true` only when this row's phase was popped off that
+# task's own `force_phases_remaining` queue THIS cycle -- the only point in the pipeline where
+# that fact is still observable, since the queue is popped before this row is built. Consumed by
+# Stage MT-4's postflight call as `--force-invoked`, mirroring single-task Stage 5's own
+# `force_invoked` (A2) semantics for the monotonic-max status clamp and the forced-dispatch
+# artifact-round advance.
 #
 # Exit codes:
 #   0 - a plan was printed on stdout, regardless of its dispatch/deferred/blocked/stop contents
@@ -882,8 +888,9 @@ if [ "$dry_run" = "true" ]; then
   for t in "${probed_dispatch[@]}"; do
     g="${effective_group[$t]}"
     agent=$(resolve_agent "$g" "${task_types[$t]}")
-    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" \
-      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null}')")
+    dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
+    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" \
+      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force}')")
   done
   emit_and_exit "$cycle_count"
 fi
@@ -981,8 +988,16 @@ for t in "${probed_dispatch[@]}"; do
   fi
   mt_set --arg t "$t" --arg d "${task_descriptions[$t]:-}" '.descriptions[$t] = $d'
 
-  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" \
-    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df}')")
+  # `force` (Phase 7 addition, orchestrate-cycle-postflight.sh's --force-invoked wiring): this is
+  # the ONLY point in the whole per-cycle pipeline where "was this task's phase forced this
+  # cycle" is known -- forced_this_cycle[$t] was computed above (per-candidate force_phases
+  # consumption) and the queue is popped just above this row, so by the time Stage MT-4 reads
+  # this row back the pop has already happened and the information would otherwise be lost.
+  # Threading it through the row (rather than recomputing it downstream) is the same shape as
+  # every other per-task field this row already carries.
+  force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && force_json="true"
+  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" \
+    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force}')")
 done
 
 mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'

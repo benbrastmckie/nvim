@@ -164,6 +164,11 @@ if [ "$(jqf '.dispatch | map(select(.task == 201)) | .[0].phase')" = "research" 
 else
   fail "forced-phases: candidate #201 did not dispatch to research first (stdout: $LAST_STDOUT)"
 fi
+if [ "$(jqf '.dispatch | map(select(.task == 201)) | .[0].force')" = "true" ]; then
+  pass "forced-phases: dispatch row's force field is true for a task whose phase was popped off force_phases_remaining this cycle"
+else
+  fail "forced-phases: expected .dispatch[].force=true for candidate #201, got: $LAST_STDOUT"
+fi
 # A separate invocation (no --force-phases, a fresh session so no queue carries over) against the
 # SAME candidate set's other member proves the mechanism is gated by the flag, not hardcoded.
 run_sut --session g2_sess_plain --dry-run -- 202
@@ -171,6 +176,11 @@ if [ "$(jqf '.dispatch | map(select(.task == 202)) | .[0].phase')" = "plan" ]; t
   pass "forced-phases: without --force-phases, classification stays ordinary status-derived (researched -> plan)"
 else
   fail "forced-phases: candidate #202 did not classify status-derived (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 202)) | .[0].force')" = "false" ]; then
+  pass "forced-phases: dispatch row's force field is false for an ordinary status-derived dispatch"
+else
+  fail "forced-phases: expected .dispatch[].force=false for candidate #202, got: $LAST_STDOUT"
 fi
 # Stop-after-last-named fall-through -- exercised on the LIVE path (Group 4/5's stubbed
 # build-dispatch/update-task-status fixture, below), since --dry-run never persists
@@ -348,6 +358,11 @@ if [ "$cycle1_phase" = "research" ]; then
 else
   fail "stop-after-last-named: cycle 1 did not force research (stdout: $LAST_STDOUT)"
 fi
+if [ "$(jqf '.dispatch | map(select(.task == 501)) | .[0].force')" = "true" ]; then
+  pass "stop-after-last-named: cycle 1's dispatch row carries force=true (live path, not just --dry-run)"
+else
+  fail "stop-after-last-named: expected .dispatch[].force=true on cycle 1 (live path), got: $LAST_STDOUT"
+fi
 # Cycle 2, same session (mt_state_file persists live state across separate invocations, mirroring
 # how the thin lead's loop calls this script once per cycle): the one-item queue popped in cycle 1
 # is now empty, so this cycle must fall through to ORDINARY status-derived classification
@@ -360,6 +375,11 @@ if [ "$cycle2_phase" = "implement" ]; then
   pass "stop-after-last-named: cycle 2 falls through to status-derived classification (implement) once the forced queue is exhausted"
 else
   fail "stop-after-last-named: cycle 2 did not fall through (got '$cycle2_phase', stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 501)) | .[0].force')" = "false" ]; then
+  pass "stop-after-last-named: cycle 2's dispatch row carries force=false (queue exhausted, ordinary dispatch)"
+else
+  fail "stop-after-last-named: expected .dispatch[].force=false on cycle 2, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
