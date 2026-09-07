@@ -286,6 +286,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Dependencies**: None
 - **Research**: [158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md]
 - **Plan**: [158_vmswap_aware_refresh_memory_accounting/plans/01_vmswap-aware-memory-accounting.md]
+- **Summary**: [158_vmswap_aware_refresh_memory_accounting/summaries/01_vmswap-aware-memory-accounting-summary.md]
 
 **Description**: Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless.
 

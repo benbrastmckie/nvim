@@ -667,13 +667,19 @@
           "path": "specs/158_vmswap_aware_refresh_memory_accounting/plans/01_vmswap-aware-memory-accounting.md",
           "type": "plan",
           "summary": "4-phase plan adding a PROC_ROOT-seamed get_vmswap_kb() helper, swap-inclusive accumulators, a separate Swap display column, the header snapshot-invariant ruling, and fixture-driven matcher cases."
+        },
+        {
+          "path": "specs/158_vmswap_aware_refresh_memory_accounting/summaries/01_vmswap-aware-memory-accounting-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for VmSwap-aware refresh memory accounting: all four plan phases completed, 18/18 matcher tests passing."
         }
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/claude-refresh.sh",
         "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Made claude-refresh.sh's memory accounting VmSwap-aware: added an overridable PROC_ROOT seam and get_vmswap_kb() helper, threaded combined RSS+swap through all three memory accumulators with a separate Swap display column, recorded the required snapshot-invariant ruling in the script header, and added six fixture-driven test cases (18/18 passing, existing cases unchanged)."
     },
     {
       "project_number": 159,
