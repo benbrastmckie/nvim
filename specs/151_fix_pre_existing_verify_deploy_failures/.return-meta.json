@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md",
+      "summary": "Confirms both named gate failures (state-writer boundary, whole-tree orphan) currently pass with 0 findings, documents the state-writer remedy already applied and its reasoning, explains the orphan finding's likely transient/concurrent-batch cause, and flags an unrelated out-of-scope doc-lint line_count drift observed live."
+    }
+  ],
+  "next_steps": "Run /plan 151 to formalize the remedy documentation and regression note; a full bash agent-system/extensions/core/scripts/verify-deploy.sh run already confirms gates 12 and 13 pass, so implementation should be limited to recording/confirming rather than further code changes unless the plan phase finds otherwise.",
+  "metadata": {
+    "session_id": "sess_1788815202_e9189b_151",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "lint-state-writer-boundary.sh's guard is checked against a fixture's OWN copy of state-write.sh, not the real one: test-force-phases.sh's setup block copies state-write.sh plus its full dependency chain (task-lock.sh, generate-todo.sh, deploy-root-guard.sh, lib/*.sh) into $WORKDIR/.claude/scripts/ before running. Since state-write.sh resolves PROJECT_ROOT from its OWN invoked script path (common_repo_root \"$SCRIPT_DIR\" 2), not from $SKILL_REPO_ROOT/cwd/env, invoking \"$WORKDIR/.claude/scripts/state-write.sh\" self-targets $WORKDIR/specs/state.json correctly with zero extra plumbing. This means a test fixture writing to a scratch WORKDIR should route through its own copy of the sanctioned writer rather than hand-rolling jq+mv or reaching for an allowlist/lint-narrowing exception -- the sanctioned writer already supports being pointed at an arbitrary root.",
+      "category": "PATTERN",
+      "source_artifact": "specs/151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["state-write.sh", "test-fixture", "lint-state-writer-boundary", "PROJECT_ROOT resolution", "WORKDIR"]
+    },
+    {
+      "content": "verify-deploy.sh's gate 13 (find_orphans) and gate 5 only extract and expose their raw per-finding detail lines into FINDINGS_LIST when run with --findings; a plain default run discards the specific finding text even though the shell variable holding it (e.g. orphan_output) was already captured. This is why a transient gate-13 finding observed during an unrelated multi-task /orchestrate batch could not be re-diagnosed later -- only the summary count survived. Any future occurrence should be captured immediately (re-run with --findings, or log $orphan_output to a file) rather than relying on the summary alone.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-deploy.sh", "find_orphans", "gate13", "FINDINGS_LIST", "diagnosability"]
+    }
+  ]
+}
