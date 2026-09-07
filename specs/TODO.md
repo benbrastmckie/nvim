@@ -43,7 +43,7 @@ next_project_number: 158
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-153 [PLANNED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+153 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
     └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 154 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
@@ -531,7 +531,7 @@ ACCEPTANCE.
 ---
 
 ### 153. Build a clean-room Comparator runner script for the lean extension
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -773,6 +773,7 @@ REFERENCE: specs/PATH.md, "Decisions".
 - **Dependencies**: Task 143
 - **Research**: [148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md]
 - **Plan**: [148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md]
+- **Summary**: [148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md]
 
 **Description**: Port team fan-out, hard-mode counters, loop guard, and the auxiliary dispatches into the multi-task engine as per-dispatch options, so that a single task number runs as a batch of one. Stage A.5 of specs/PATH.md (thin-lead path); the precondition for deleting the single-task engine. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
