@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md",
+      "summary": "Decides R1 (plan-declared, additive new plan section) over R2 (git extraction) for the trusted Challenge source, designs lean-challenge-snapshot.sh's commit-and-manifest immutability mechanism, and recommends a Statement Fidelity clause for plan-compliance.md."
+    }
+  ],
+  "dispatch_seq": 4,
+  "findings_count": 4,
+  "next_steps": "Run /plan 154 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788795618_182fd3_154",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "lean-comparator-run.sh's --commit REF checks out ONE git worktree containing both Challenge and Solution modules at that single commit -- it never synthesizes .lean file content itself, only a lakefile.toml declaring lean_lib targets when not already declared. Any Challenge-producing tool must therefore commit real .lean source into the target project's own git history and hand callers a SHA; immutability comes from git history, not filesystem permissions.",
+      "category": "PATTERN",
+      "source_artifact": "specs/154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lean-comparator-run.sh", "challenge", "git worktree", "immutability", "commit-pinning"]
+    },
+    {
+      "content": "plan-format.md already has precedent for a conditionally-present top-level plan section (## Planned Strategic Sorries, gated on plan_metadata.skeleton). When a task-type-specific plan extension is needed, add a new additively-gated section rather than amending a shared field like **Goals**: that every task type's format contract depends on -- this keeps the change provably inert for unrelated task types.",
+      "category": "PATTERN",
+      "source_artifact": "specs/154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["plan-format.md", "additive section", "task-type gating", "shared format contract"]
+    }
+  ]
+}
