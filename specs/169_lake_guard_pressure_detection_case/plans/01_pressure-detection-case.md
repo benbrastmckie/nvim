@@ -245,21 +245,21 @@ narrowed before the demonstration is recorded.
 
 ---
 
-### Phase 4: Ambient-Pressure Robustness Verification [NOT STARTED]
+### Phase 4: Ambient-Pressure Robustness Verification [COMPLETED]
 
 **Goal**: Empirically confirm the dispatch's third acceptance bullet — that the suite still passes
 on a host whose real memory state is pressured above the guard's own threshold — rather than
 relying on an argument from construction alone.
 
 **Tasks**:
-- [ ] Write a pressured meminfo file and a pressured PSI file outside the suite (in the session
-      scratchpad) representing a host over the guard's thresholds.
-- [ ] Run the full suite with `LAKE_BUILD_GUARD_MEMINFO_PATH` and `LAKE_BUILD_GUARD_PSI_PATH`
+- [x] Write a pressured meminfo file and a pressured PSI file outside the suite (in the session
+      scratchpad) representing a host over the guard's thresholds. *(completed)*
+- [x] Run the full suite with `LAKE_BUILD_GUARD_MEMINFO_PATH` and `LAKE_BUILD_GUARD_PSI_PATH`
       pre-set in the invoking environment to those pressured files, simulating the ambient
-      condition that produced the original defect.
-- [ ] Confirm the suite's own suite-wide exports win and every case, including the new one, still
-      passes with the same counts as the clean-environment run.
-- [ ] Record the two runs' summary lines side by side as the robustness evidence.
+      condition that produced the original defect. *(completed)*
+- [x] Confirm the suite's own suite-wide exports win and every case, including the new one, still
+      passes with the same counts as the clean-environment run. *(completed: both runs 29/0)*
+- [x] Record the two runs' summary lines side by side as the robustness evidence. *(completed)*
 
 **Timing**: 0.25 hours
 

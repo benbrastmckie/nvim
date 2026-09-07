@@ -1,0 +1,39 @@
+{
+  "phase": 4,
+  "phase_name": "Ambient-Pressure Robustness Verification",
+  "started_at": "2026-09-07T00:35:00Z",
+  "last_updated": "2026-09-07T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write pressured meminfo and PSI fixtures outside the suite (scratchpad)",
+      "status": "done",
+      "note": "Written to the session scratchpad (never the repo): ambient-pressured-meminfo (avail_ratio=5%, swap_used_ratio=75%) and ambient-pressured-psi (some avg10=25.00 > 10.0 threshold, full avg10=15.00 > 5.0 threshold).",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run full suite with those pre-set in the invoking environment",
+      "status": "done",
+      "note": "LAKE_BUILD_GUARD_MEMINFO_PATH / LAKE_BUILD_GUARD_PSI_PATH exported to the pressured scratchpad files before invoking the suite.",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm the suite-wide exports win and every case still passes with the same counts",
+      "status": "done",
+      "note": "Both runs (ordinary environment and pressured-ambient environment) report identical 'Passed: 29 / Failed: 0'. The suite's own `export LAKE_BUILD_GUARD_PSI_PATH`/`export LAKE_BUILD_GUARD_MEMINFO_PATH` (lines 104-105) unconditionally override the inherited environment.",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Record the two runs' summary lines side by side",
+      "status": "done",
+      "note": "Ordinary run: 'Passed: 29 / Failed: 0'. Pressured-ambient-environment run: 'Passed: 29 / Failed: 0'. Identical.",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
