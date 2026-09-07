@@ -1,0 +1,20 @@
+{
+  "phase": 7,
+  "phase_name": "Regression suite",
+  "started_at": "2026-09-07T17:50:00Z",
+  "last_updated": "2026-09-07T18:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-lean-comparator-run.sh: verdict classification cases, comparator_unavailable cases, guard routing cases, anti-vacuous/mutation cases, skip-with-report for real-binary-dependent cases",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "local name=\"$1\" dir=\"$WORKDIR/repo-$name\" on one local statement", "result": "failed", "reason": "under set -u, bash expands all word values on a local statement before any of the names become visible to later words in the SAME statement, so $name in the second assignment referenced the (unset) outer/global name, not the just-assigned $1. Split into two separate local statements."},
+    {"approach": "returning captured tool output via a function's own stdout (command-substituted by the caller) while the same function also calls pass()/fail() which echo to stdout", "result": "failed", "reason": "capturing the function's stdout via $(...) to grab the tool output also silently swallowed the pass()/fail() announcements for every case redirected to /dev/null, making 8 of the 11 verdict cases invisible in suite output despite passing. Fixed by returning the captured output through a global LAST_CASE_OUTPUT variable instead."}
+  ],
+  "handoff_count": 0
+}

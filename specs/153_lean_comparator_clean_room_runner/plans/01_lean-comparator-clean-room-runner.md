@@ -476,34 +476,46 @@ one and update this list rather than narrowing the criterion.
 
 ---
 
-### Phase 7: Regression suite [NOT STARTED]
+### Phase 7: Regression suite [COMPLETED]
 
 **Goal**: `test-lean-comparator-run.sh` following `test-lean-sorry-census.sh` conventions,
 including its anti-vacuous-test discipline.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh` with the
+- [x] Create `agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh` with the
       established convention: header comment stating what each fixture group discriminates,
       `pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED` counters, `mktemp -d` workdir with
       `trap EXIT` cleanup, exit 0 all-pass / exit 1 any-fail, `SCRIPT_DIR`-relative tool
-      resolution.
-- [ ] Cases for verdict classification driven by canned stdout/stderr through the classifier —
-      one per category, all eight.
-- [ ] Cases for `comparator_unavailable`: each of the four binaries missing in turn, asserting the
+      resolution. *(completed; also added a `skip()` helper and SKIPPED counter for the
+      deferred-real-binary cases, matching the plan's own skip-with-report requirement below)*
+- [x] Cases for verdict classification driven by canned stdout/stderr through the classifier —
+      one per category, all eight. *(completed: Cases V1-V11 cover all 8 named verdicts plus
+      reason_detail preservation; the 9th unclassified_failure escape hatch added in Phase 5 is
+      also covered as Case V10)*
+- [x] Cases for `comparator_unavailable`: each of the four binaries missing in turn, asserting the
       message names both the binary and its override variable and that exit 69 differs from every
-      rejection code.
-- [ ] Cases for guard routing: stub guard asserting `--no-share` present and `--memory-bound`
+      rejection code. *(completed: Cases U1-U4 cover comparator/landrun/lean4export/lake)*
+- [x] Cases for guard routing: stub guard asserting `--no-share` present and `--memory-bound`
       absent on the captured command line; guard-absent + lake-present degradation; lake-absent
-      `comparator_unavailable`.
-- [ ] Case for `timeout` using a stub comparator that outlives `--timeout`.
-- [ ] **Anti-vacuous-test guard** (carrying `test-lean-sorry-census.sh`'s own discipline): at
+      `comparator_unavailable`. *(completed: Case G1 guard-present argv assertion, Case G2
+      guard-absent+lake-present, Case U4 lake-absent)*
+- [x] Case for `timeout` using a stub comparator that outlives `--timeout`. *(completed: Case G3)*
+- [x] **Anti-vacuous-test guard** (carrying `test-lean-sorry-census.sh`'s own discipline): at
       least two cases must assert the tool's output DIFFERS from a naive/degraded implementation
       on the same input — specifically, that a naive "exit code 1 means rejected, full stop"
       classifier and this script's classifier disagree on the `axiom_violation` vs
-      `config_error` fixtures, proving the classification is doing work.
-- [ ] Skip-with-explicit-report (never silent pass) for any case requiring the real `comparator`
+      `config_error` fixtures, proving the classification is doing work. *(completed: Case AV1,
+      plus a mutation check that runs a deliberately-broken copy of the tool and asserts its
+      verdict changes)*
+- [x] Skip-with-explicit-report (never silent pass) for any case requiring the real `comparator`
       or `lean4export` binaries when those are absent, printing which acceptance criterion is
-      thereby deferred.
+      thereby deferred. *(completed: Cases E1/E2. NOTE -- discovered during this phase: real
+      `comparator` (nix store path confirms build commit 2312244a, matching the vendored
+      fixtures) and real `landrun` (v0.1.17) are NOW present on this host, contradicting the
+      dispatch's "ALL MISSING" statement from earlier the same day -- the sibling ~/.dotfiles/
+      provisioning task appears to have partially landed. `lean4export` and `nanoda_bin` remain
+      absent, so Case E1 still correctly SKIPs (it requires both comparator AND lean4export) --
+      see Phase 8 for the updated acceptance-evidence attempt this unblocks.)*
 
 **Timing**: 2 hours
 
