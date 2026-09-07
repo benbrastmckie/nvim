@@ -766,14 +766,14 @@
     {
       "project_number": 161,
       "project_name": "unattended_refresh_policy_and_surfaces",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Settle the unattended-refresh policy and update the systemd, skill, and command surfaces",
       "description": "Settle the unattended-refresh policy and update the systemd, skill, and command surfaces.\n\nPOLICY IS ALREADY LARGELY SETTLED -- CONFIRM, DO NOT RE-LITIGATE: claude-refresh.service already runs --dry-run, and its comment block states verbatim that \"this unattended, hourly, no-confirmation cadence is intentionally non-destructive -- it reports/logs found orphans rather than terminating them. A matcher bug must never again be amplifiable into unattended hourly kills, regardless of how correct the matcher looks at review time.\" So the open question is narrow: confirm that the new passes added by the earlier tasks in this chain require NO unit change -- expected, since the timer never terminates anything -- and record that reasoning in the unit comment so a future reader does not re-open it.\n\nDEPLOY-PATH DECISION: ExecStart points at %h/.config/nvim/.claude/scripts/claude-refresh.sh, inside the gitignored, regenerated deploy tree. That is arguably correct for a unit installed on a machine, but it means the unit silently breaks whenever the deploy tree is absent. Decide explicitly whether to keep it as-is, add a ConditionPathExists, or document the dependency -- and record the choice.\n\nSURFACES: finish by making skill-refresh/SKILL.md and commands/refresh.md describe the full pass inventory coherently -- orphaned Claude processes, ~/.claude/ cleanup, orphaned postflight markers, stale task .lock dirs, Lean LSP reclamation, MCP fan-out reporting, zombie reporting -- each with its gate and whether it is destructive, rather than as four bolted-on additions to a document written for the original four.\n\nFILES: agent-system/extensions/core/systemd/claude-refresh.service; agent-system/extensions/core/systemd/claude-refresh.timer; agent-system/extensions/core/skills/skill-refresh/SKILL.md; agent-system/extensions/core/commands/refresh.md; possibly agent-system/extensions/core/scripts/claude-refresh.sh for --help text only.\n\nACCEPTANCE: `systemd-analyze verify` passes on both units; the service comment states the ruling on new destructive passes and the deploy-path dependency; SKILL.md documents every pass with its gate and destructiveness; `/refresh --dry-run` help text matches the documented inventory; the doc-lint script check-extension-docs.sh exits zero.\n\nTOOLING-AVAILABILITY RISK: this task's acceptance depends on `systemd-analyze verify` and check-extension-docs.sh both being available in the implementing agent's environment. If either is absent, REPORT THE GATE AS UNRUN rather than assumed-green. A truthful \"could not verify\" is the correct outcome; silently treating an unavailable check as passing is not.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "topic": "core-agent-system",
       "priority": "medium",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-07T20:54:12Z",
+      "last_updated": "2026-09-07T20:58:27Z",
       "session_id": "sess_1788808797_82397b",
       "dependencies": [
         160
@@ -783,6 +783,11 @@
           "path": "specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md",
           "type": "report",
           "summary": "Confirms both systemd units already verify clean and check-extension-docs.sh's core row already passes; verifies at the code level that all four claude-refresh.sh passes run unconditionally through the timer's single --dry-run ExecStart; recommends adding ConditionPathExists to the service unit for the deploy-path gap; and recommends a single small pass-inventory table (name/gate/destructive) added to SKILL.md and refresh.md rather than a rewrite of the existing step-by-step content."
+        },
+        {
+          "path": "specs/161_unattended_refresh_policy_and_surfaces/plans/01_unattended-refresh-policy.md",
+          "type": "plan",
+          "summary": "Five-phase plan settling the unattended-refresh policy rulings in claude-refresh.service and rebuilding the SKILL.md/refresh.md pass inventory; 3 hours across 3 dependency waves."
         }
       ],
       "file_scope": [
