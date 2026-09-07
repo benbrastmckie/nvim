@@ -1,7 +1,7 @@
 # Implementation Plan: Task #154
 
 - **Task**: 154 - Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 12.75 hours
 - **Dependencies**: None (wave 1 of the Comparator integration group; downstream compare-step tasks consume this task's manifest schema)
 - **Research Inputs**: specs/154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md

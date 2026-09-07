@@ -11,8 +11,8 @@ next_project_number: 158
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,154,157 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,74,88,140,155 | 29,137,139,148,154 | core-agent-system, extensions |
+| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,157 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,74,88,140,155 | 29,137,139,148 | core-agent-system, extensions |
 | 3 | 14,75,76,129,142,150,156 | 74,88,139,155 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -43,12 +43,11 @@ next_project_number: 158
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-154 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
-  └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
-    └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
+155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+  └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 
 ### Literature
 
@@ -415,12 +414,13 @@ ACCEPTANCE.
 ---
 
 ### 154. Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md]
 - **Plan**: [154_lean_challenge_statement_snapshot/plans/01_lean-challenge-statement-snapshot.md]
+- **Summary**: [154_lean_challenge_statement_snapshot/summaries/01_lean-challenge-statement-snapshot-summary.md]
 
 **Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
