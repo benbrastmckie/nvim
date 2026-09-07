@@ -1,7 +1,7 @@
 # Implementation Plan: Fix the two pre-existing verify-deploy gate failures
 
 - **Task**: 151 - Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md
@@ -116,29 +116,32 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Confirm the FAILURE 1 remedy and capture its decision evidence [NOT STARTED]
+### Phase 1: Confirm the FAILURE 1 remedy and capture its decision evidence [COMPLETED]
 
 **Goal**: Establish from live re-runs (not from the research report's transcription) that gate 12
 is green, and capture the exact command output that the summary's decision record will cite.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose`
-      and record the files-checked / exempted / violations triple verbatim.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-force-phases.sh` and record the
-      pass/fail counts.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh` and
-      record the pass/fail counts.
-- [ ] Read the four converted call sites in
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh --verbose`
+      and record the files-checked / exempted / violations triple verbatim. *(completed: Files
+      checked: 1075, Candidate lines exempted: 22, Total violations: 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-force-phases.sh` and record the
+      pass/fail counts. *(completed: 19 passed, 0 failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh` and
+      record the pass/fail counts. *(completed: 8 passed, 0 failed)*
+- [x] Read the four converted call sites in
       `agent-system/extensions/core/scripts/tests/test-force-phases.sh` and confirm all four now
       invoke `"$WORKDIR/.claude/scripts/state-write.sh"`, with no residual `jq ... > tmp && mv`
-      state write in the file.
-- [ ] Confirm the in-file regression comment (added by commit `89f575aed` above the first
+      state write in the file. *(completed: lines 265, 312, 323, 334 all route through
+      state-write.sh; no state.json.tmp pattern remains)*
+- [x] Confirm the in-file regression comment (added by commit `89f575aed` above the first
       converted site) states why the suite is not exempt from the boundary contract. If the
       comment is absent or does not name the contract, add a one-line pointer near the remaining
-      converted sites; otherwise change nothing.
-- [ ] Draft the decision record text for the summary: remedy (a), uniform across all four sites,
+      converted sites; otherwise change nothing. *(completed: comment present at lines 261-264,
+      names lint-state-writer-boundary.sh's boundary contract explicitly; no edit needed)*
+- [x] Draft the decision record text for the summary: remedy (a), uniform across all four sites,
       with the `PROJECT_ROOT`-self-resolution reasoning and the explicit rejection of (b)
-      allowlist and (c) narrow-detection.
+      allowlist and (c) narrow-detection. *(completed)*
 
 **Timing**: 30 minutes
 

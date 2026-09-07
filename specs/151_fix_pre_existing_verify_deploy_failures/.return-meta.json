@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 3,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/151_fix_pre_existing_verify_deploy_failures/plans/01_verify-deploy-gate-remediation.md",
-      "summary": "5-phase plan confirming the already-landed gate-12 state-writer remedy, recording gate-13's non-reproducible finding honestly, fixing the false 'non-quiet shows detail' hint in gates 13 and 5, and reconciling the full verify-deploy run with an explicit decision rule for the residual out-of-scope gate-3 line_count drift."
-    }
-  ],
-  "next_steps": "Run /implement 151 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1788815202_e9189b_151",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3,
-    "dependency_waves": [[1, 2], [3], [4], [5]]
-  },
-  "memory_candidates": [],
-  "modified_files": [
-    "specs/151_fix_pre_existing_verify_deploy_failures/plans/01_verify-deploy-gate-remediation.md"
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/verify-deploy.sh",
-    "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md",
-    "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
-  ]
+    "session_id": "sess_1788815202_e9189b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

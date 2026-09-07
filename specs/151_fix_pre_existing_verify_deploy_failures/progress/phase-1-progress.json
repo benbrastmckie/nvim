@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Confirm the FAILURE 1 remedy and capture its decision evidence",
+  "started_at": "2026-09-07T21:24:00Z",
+  "last_updated": "2026-09-07T21:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run lint-state-writer-boundary.sh --verbose and record files-checked/exempted/violations triple", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run test-force-phases.sh and record pass/fail counts", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run test-lint-state-writer-boundary.sh and record pass/fail counts", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Read the four converted call sites and confirm no residual jq/mv pattern", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm in-file regression comment exists and names the contract", "status": "done", "files_touched": [], "note": "Comment already present at test-force-phases.sh:261-264 (commit 89f575aed); no edit needed"},
+    {"id": 6, "description": "Draft decision record text for the summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "evidence": {
+    "lint_state_writer_boundary": "Files checked: 1075, Candidate lines exempted: 22, Total violations: 0",
+    "test_force_phases": "19 passed, 0 failed",
+    "test_lint_state_writer_boundary": "8 passed, 0 failed",
+    "four_sites_confirmed": "lines 265, 312, 323, 334 in test-force-phases.sh all invoke $WORKDIR/.claude/scripts/state-write.sh; no state.json.tmp or jq...>tmp&&mv pattern remains",
+    "regression_comment": "Present at test-force-phases.sh:261-264, added by commit 89f575aed, names lint-state-writer-boundary.sh boundary contract explicitly"
+  }
+}
