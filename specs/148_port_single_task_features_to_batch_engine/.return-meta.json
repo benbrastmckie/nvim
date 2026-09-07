@@ -1,11 +1,65 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md",
+      "summary": "Full 8-phase execution summary: hard-mode churn/burnout counters, per-task cycle budget, aux_dispatch[] auxiliary flows, and a single task number routed through the batch engine behind ORCHESTRATE_BATCH_OF_ONE, all verified live."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed all 8 phases porting single-task-only orchestrator features (hard-mode churn/three-strikes/burnout counters, per-task cumulative cycle budget, the four aux_dispatch[] auxiliary flows, and a single-task-through-the-batch-path opt-in flag) into the multi-task batch engine. Phase 8's live acceptance runs (real fixture, real deployed scripts, no test-harness stubs) discovered and fixed a genuine placement bug in aux_dispatch[] emission (row-building ran after, not before, the all-terminal early-exit check), then re-verified all three acceptance cases end-to-end. Full gate green: run-all.sh 70/70, check-task-references.sh clean, verify-deploy.sh's one finding confirmed attributable to a different concurrently-running task."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-churn.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In orchestrate-cycle-plan.sh (and similarly-shaped per-cycle decision scripts), a 'compute the decision early, apply the side effect late' architecture is only correct if EVERY early-exit path (all_terminal, no_eligible_stuck, convergence_guard, max_cycles, etc. -- anywhere emit_and_exit is called before the main flow reaches its normal end) also reaches the side-effect step. If a per-task side effect (e.g. an auxiliary dispatch row) is built only in the 'normal' continuation path, and a task can become terminal/failed FOR THIS EXACT CYCLE precisely because that side effect is needed (e.g. a blocked verdict both requests an escalation AND charges the task to failed_tasks in the same postflight call), the early-exit path silently drops it. Existing test suites can all stay green despite this because none of their fixtures happen to combine 'aux signal present' with 'task is also terminal this cycle' -- the bug is a coverage gap in the fixture design, not the implementation logic per se. Fix: move the side-effect BUILD step to run immediately after the decision, before any early-exit check, not just the decision itself. When reviewing similar scripts, check every emit_and_exit/early-return call site for whether it bypasses a later side-effect block.",
+      "category": "PATTERN",
+      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["early-exit-bypass", "orchestrate-cycle-plan", "aux_dispatch", "side-effect-ordering", "test-coverage-gap"]
+    },
+    {
+      "content": "Live, real-fixture acceptance demonstrations (a genuine git repo scratch fixture running the ACTUAL deployed scripts as real subprocesses, chained across multiple real invocations) are a stronger and different verification signal than 'the test suite passes' -- they exercise the exact call sequence a live /orchestrate run would produce, including cross-invocation state (mt_state_file, loop-guard file, chain marker files) that isolated unit-test fixtures often construct independently per case and never chain together. In this task, 77+18 passing unit-test cases across two suites did not catch a real placement bug that a single live acceptance chain surfaced immediately. When a plan phase says 'demonstrate on a live invocation', treat that literally -- build a real fixture and chain real script calls -- rather than treating a green test suite as equivalent evidence.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["acceptance-testing", "live-fixture", "orchestrate-cycle-plan", "integration-vs-unit", "verification-tier"]
+    },
+    {
+      "content": "In this codebase's plan-file phase headings (`### Phase N: {name} [STATUS]`), update-phase-status.sh's status-substitution is a greedy bracket match across the FIRST '[' to the LAST ']' on the heading line. A phase name that itself contains a literal bracket pair (e.g. a backtick-quoted code identifier like `aux_dispatch[]`) will have its own trailing text consumed and replaced along with the real status marker, corrupting the heading. Work around it by hand-editing that specific heading transition via the Edit tool instead of the script, or by naming phases to avoid literal brackets in the first place.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["update-phase-status.sh", "phase-heading", "bracket-name-collision", "plan-file-corruption"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788792002_e61e2d",
     "agent_type": "general-implementation-agent",
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 4,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }
