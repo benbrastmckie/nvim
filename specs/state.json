@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 171,
+  "next_project_number": 172,
   "active_projects": [
+    {
+      "project_number": 171,
+      "project_name": "fix_literature_ingest_dedup_hang",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix the literature online-ingest hang caused by an O(n) per-title subprocess loop. check_duplicate_title() in agent-system/extensions/literature/scripts/literature-ingest-online.sh iterates every title in the global Literature index and spawns a separate python3 process per title to run .zotero-title-sim.py (11845 titles as of 2026-09-07), so any in_zotero_no_pdf or open_access ingest stalls for roughly 9-10 minutes before emitting any directive token. Observed: an in_zotero_no_pdf record (Zotero citation_key xu2001facing, item key Z8QNQKNL) logged \"Resolved doc_id=... (tier=matched-no-pdf)\" to stderr and then produced no stdout directive token at all until killed by a 540s timeout (rc=124), so the caller cannot distinguish a hang from a slow success. The Unpaywall lookup already carries curl --max-time 10 and the download path --max-time 30, so this is not network-bound; the stall is the subprocess-per-title loop. Fix direction: collapse the similarity pass into a single python3 invocation (pass the candidate title and the whole title list once, or precompute a normalized-title map), and short-circuit on exact or normalized-equality before any similarity scoring. Because the check is documented as non-blocking and recommendation-only, it must also fail fast and never gate ingestion. Preserve the existing WARNING output contract and the 0.85 similarity threshold. Note for scope: the sibling literature defect found in the same session (literature-briefing.sh exiting 141/SIGPIPE from piping a multi-line jq object into head -1 under set -euo pipefail) is ALREADY FIXED in this source store, which now uses jq -c first(...); no work is needed for it here, only redeployment of stale consumer repos",
+      "topic": "literature",
+      "created": "2026-09-07T23:10:59Z",
+      "last_updated": "2026-09-07T23:10:59Z"
+    },
     {
       "project_number": 168,
       "project_name": "correct_opencode_mcp_scoping_claim",
@@ -968,14 +978,14 @@
     {
       "project_number": 169,
       "project_name": "lake_guard_pressure_detection_case",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Add a positive-direction memory-pressure detection case to test-lake-build-guard.sh",
       "description": "Add a positive-direction case to `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` asserting that memory pressure IS detected, closing the regression-masking gap opened by the suite-wide clean-fixture default.\n\n=== WHY THIS EXISTS (the immediate fix created this gap) ===\n\nCommit `878043472` isolated the suite from ambient host state by exporting\n`LAKE_BUILD_GUARD_PSI_PATH` and `LAKE_BUILD_GUARD_MEMINFO_PATH` suite-wide to clean fixture\nfiles written into the suite's own mktemp workdir, using the script-under-test's own documented\nenv seams. That fix is correct and is ALREADY LANDED -- do not redo it, do not revert it.\n\nThe gap it introduces: with a clean fixture as the suite-wide default and NO case driving the\npressured direction, a regression that disabled pressure detection entirely would leave all\n27 cases green. The suite would assert only that the guard does not fire, never that it can.\n\nThe already-landed commit anticipates this. `test-lake-build-guard.sh` around line 84 carries an\nexplicit in-file note that the positive direction must override the two variables LOCALLY with a\npressured fixture rather than mutating the suite-wide clean default. Case 11 already demonstrates\nthe local-override idiom for the degradation direction (it sets\n`LAKE_BUILD_GUARD_PSI_PATH=\"$WORKDIR/does-not-exist-psi\"` on the single invocation). Follow that\nsame shape.\n\n=== WHAT TO ADD ===\n\nA new case that:\n  1. Writes a PRESSURED meminfo fixture (and, if the guard's PSI path participates in the\n     assertion, a pressured PSI fixture) into the suite's existing mktemp workdir, alongside\n     the existing `PSI_FIXTURE_CLEAN` / `MEMINFO_FIXTURE_CLEAN` files.\n  2. Overrides `LAKE_BUILD_GUARD_MEMINFO_PATH` (and `LAKE_BUILD_GUARD_PSI_PATH` as needed) on\n     that single guard invocation ONLY -- never by reassigning the suite-wide exports set near\n     the top of the file.\n  3. Asserts the guard's preflight exits non-zero with the documented pressure return code and\n     that its output names the reason(s) the fixture encodes.\n\nThe verification already performed against the immediate fix is the reference behavior to\nreproduce here: a deliberately pressured fixture yields preflight rc=11 reporting BOTH the\nMemAvailable reason and the swap-in-use reason. Confirm those exact values against\n`lake-build-guard.sh` itself rather than hardcoding them from this description -- the return\ncode and reason strings must be read from the script under test.\n\n=== CONSTRAINTS ===\n\n- Edits target `agent-system/extensions/core/**` ONLY. Never hand-author anything under\n  `.claude/**`; that tree is a disposable deploy artifact regenerated from source\n  (see `.claude/rules/source-store-deploy-boundary.md`).\n- NEVER weaken, raise, or bypass `SWAP_USED_RATIO_THRESHOLD` or any other guard threshold to\n  make a case pass. This task adds an assertion; it does not touch `lake-build-guard.sh`'s logic\n  or its constants.\n- Derive the pressured fixture values from the guard's own thresholds, so the case stays correct\n  if a threshold is later retuned deliberately.\n\n=== ACCEPTANCE ===\n\n- The full suite passes (previously 27/27; expect 28/28 or more after this addition).\n- The new case is non-vacuous: temporarily neutering pressure detection in `lake-build-guard.sh`\n  makes the new case -- and only the new case -- fail. Demonstrate this during implementation and\n  record the demonstration in the summary; do not commit the neutered guard.\n- The suite still passes on a host that is actively swapping above the guard's own threshold,\n  which is the ambient condition that produced the original defect.\n",
       "topic": "core-agent-system",
       "priority": "high",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-07T23:10:06Z",
+      "last_updated": "2026-09-07T23:10:21Z",
       "session_id": "sess_1788822258_a6100e",
       "dependencies": [],
       "artifacts": [

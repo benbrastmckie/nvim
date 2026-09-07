@@ -1,5 +1,5 @@
 ---
-next_project_number: 171
+next_project_number: 172
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 171
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,169 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,169,171 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,156,164,170 | 29,74,88,139,151,155,162,169 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -37,7 +37,7 @@ next_project_number: 171
 152 [PLANNED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
-169 [RESEARCHED] — Add a positive-direction case to `agent-system/extensions/core/sc
+169 [PLANNING] — Add a positive-direction case to `agent-system/extensions/core/sc
   └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh (see above)
 
 ### Extensions
@@ -55,6 +55,7 @@ next_project_number: 171
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
+171 [NOT STARTED] — Fix the literature online-ingest hang caused by an O(n) per-title
 
 ### Neovim
 
@@ -74,6 +75,16 @@ next_project_number: 171
   └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
 
 ## Tasks
+
+### 171. Fix literature ingest dedup hang
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix the literature online-ingest hang caused by an O(n) per-title subprocess loop. check_duplicate_title() in agent-system/extensions/literature/scripts/literature-ingest-online.sh iterates every title in the global Literature index and spawns a separate python3 process per title to run .zotero-title-sim.py (11845 titles as of 2026-09-07), so any in_zotero_no_pdf or open_access ingest stalls for roughly 9-10 minutes before emitting any directive token. Observed: an in_zotero_no_pdf record (Zotero citation_key xu2001facing, item key Z8QNQKNL) logged "Resolved doc_id=... (tier=matched-no-pdf)" to stderr and then produced no stdout directive token at all until killed by a 540s timeout (rc=124), so the caller cannot distinguish a hang from a slow success. The Unpaywall lookup already carries curl --max-time 10 and the download path --max-time 30, so this is not network-bound; the stall is the subprocess-per-title loop. Fix direction: collapse the similarity pass into a single python3 invocation (pass the candidate title and the whole title list once, or precompute a normalized-title map), and short-circuit on exact or normalized-equality before any similarity scoring. Because the check is documented as non-blocking and recommendation-only, it must also fail fast and never gate ingestion. Preserve the existing WARNING output contract and the 0.85 similarity threshold. Note for scope: the sibling literature defect found in the same session (literature-briefing.sh exiting 141/SIGPIPE from piping a multi-line jq object into head -1 under set -euo pipefail) is ALREADY FIXED in this source store, which now uses jq -c first(...); no work is needed for it here, only redeployment of stale consumer repos
+
+---
 
 ### 170. Audit and isolate shell test suites from ambient host state (memory and timing axes), and record the convention
 - **Status**: [NOT STARTED]
@@ -285,7 +296,7 @@ Place it so it composes with, not duplicates, what is already there.
 ---
 
 ### 169. Add a positive-direction memory-pressure detection case to test-lake-build-guard.sh
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
