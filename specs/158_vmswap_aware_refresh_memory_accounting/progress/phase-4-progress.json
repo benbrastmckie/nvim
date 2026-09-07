@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Add fixture-driven VmSwap test cases and run the acceptance pass",
+  "started_at": "2026-09-07T00:45:00Z",
+  "last_updated": "2026-09-07T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Assertion (e) VmSwap test cases and extend mutation-check marker list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "Run full acceptance pass and confirm each dispatch criterion", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.output-shape",
+      "description": "Assert on full --dry-run output that the table carries both Memory and Swap columns as a single case",
+      "type": "altered",
+      "reason": "Split into two separate pass/fail assertions (header shape check, then row-value check) for clearer failure diagnosis; both cover the same output-shape scenario the task describes.",
+      "annotation": "*(deviation: altered — implemented as two separate assertions rather than one combined case)*"
+    }
+  ],
+  "handoff_count": 0
+}

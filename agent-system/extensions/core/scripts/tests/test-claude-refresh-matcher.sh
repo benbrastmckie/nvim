@@ -287,6 +287,97 @@ FAKE_PS_EOF
 fi
 
 # =====================================================================
+# Assertion (e): VmSwap-aware memory accounting
+# =====================================================================
+# Fixtures live under $WORKDIR/fakeproc/<pid>/status (heredocs), never against live /proc or a
+# real PID, per shell-script-testing.md. PROC_ROOT is restored/unset immediately after use, the
+# same discipline assertion (c) applies to the _pid_is_alive seam, so it cannot leak into any
+# assertion below.
+FAKE_PROC_DIR="$WORKDIR/fakeproc"
+mkdir -p "$FAKE_PROC_DIR/70001" "$FAKE_PROC_DIR/70002"
+
+# Case: known value.
+printf 'Name:\tworker\nVmSwap:\t   12345 kB\n' > "$FAKE_PROC_DIR/70001/status"
+PROC_ROOT="$FAKE_PROC_DIR"
+KNOWN_SWAP="$(get_vmswap_kb 70001)"
+if [ "$KNOWN_SWAP" = "12345" ]; then
+  pass "get_vmswap_kb: known VmSwap value fixture returns 12345"
+else
+  fail "get_vmswap_kb: known VmSwap value fixture returned '$KNOWN_SWAP', expected 12345"
+fi
+
+# Case: absent line -- no-swap-configured host must render cleanly, not error.
+printf 'Name:\tworker\n' > "$FAKE_PROC_DIR/70002/status"
+ABSENT_SWAP="$(get_vmswap_kb 70002)"
+if [ "$ABSENT_SWAP" = "0" ]; then
+  pass "get_vmswap_kb: status file with no VmSwap line returns 0, not an error"
+else
+  fail "get_vmswap_kb: absent-line fixture returned '$ABSENT_SWAP', expected 0"
+fi
+
+# Case: missing file -- candidate exited between snapshot and read; must not error or abort.
+MISSING_SWAP="$(get_vmswap_kb 70099)"
+if [ "$MISSING_SWAP" = "0" ]; then
+  pass "get_vmswap_kb: nonexistent PID path returns 0, not an error"
+else
+  fail "get_vmswap_kb: missing-file fixture returned '$MISSING_SWAP', expected 0"
+fi
+
+unset PROC_ROOT
+
+# Case: formatting -- closes a pre-existing format_memory coverage gap noted in research.
+FORMATTED="$(format_memory 12345)"
+if [ "$FORMATTED" = "12.0 MB" ]; then
+  pass "format_memory: 12345 KB formats to '12.0 MB'"
+else
+  fail "format_memory: 12345 KB formatted to '$FORMATTED', expected '12.0 MB'"
+fi
+
+# Case: output shape -- assert on full --dry-run output (not only the isolated helper) that
+# the table carries both a Memory and a Swap column with correct values, structurally catching
+# an orphan_details field-count mismatch between the write site and the read site -- matching
+# how (d-2) above asserts on full script output rather than an isolated function call.
+SWAP_FAKE_BIN_DIR="$WORKDIR/fakebin-swap"
+mkdir -p "$SWAP_FAKE_BIN_DIR"
+SWAP_ROW_PID=700055
+cat > "$SWAP_FAKE_BIN_DIR/ps" <<'FAKE_PS_SWAP_EOF'
+#!/usr/bin/env bash
+# Fake ps used only by test-claude-refresh-matcher.sh's VmSwap output-shape case (e).
+has_p_flag=false
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+cur_uid="$(id -u)"
+printf '%s 1 %s ? 100 2048 claude 0::/user.slice/user-1000.slice/session.scope claude --dangerously-skip-permissions\n' "__SWAP_ROW_PID__" "$cur_uid"
+FAKE_PS_SWAP_EOF
+sed -i "s/__SWAP_ROW_PID__/$SWAP_ROW_PID/" "$SWAP_FAKE_BIN_DIR/ps"
+chmod +x "$SWAP_FAKE_BIN_DIR/ps"
+
+SWAP_FAKE_PROC_DIR="$WORKDIR/fakeproc-swap"
+mkdir -p "$SWAP_FAKE_PROC_DIR/$SWAP_ROW_PID"
+printf 'Name:\tclaude\nVmSwap:\t 1258291 kB\n' > "$SWAP_FAKE_PROC_DIR/$SWAP_ROW_PID/status"
+
+SWAP_OUT="$(PATH="$SWAP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$SWAP_FAKE_PROC_DIR" bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+if echo "$SWAP_OUT" | grep -qE '^PID[[:space:]]+Memory[[:space:]]+Swap[[:space:]]+Age[[:space:]]+Command'; then
+  pass "--dry-run output shape: table header carries both Memory and Swap columns"
+else
+  fail "--dry-run output shape: table header missing expected Memory/Swap columns"
+  info "output was: $SWAP_OUT"
+fi
+
+if echo "$SWAP_OUT" | grep -q "$SWAP_ROW_PID" && echo "$SWAP_OUT" | grep -qE '2\.0 MB[[:space:]]+1\.1 GB'; then
+  pass "--dry-run output shape: row shows RSS 2.0 MB alongside swap 1.1 GB (no field-count mismatch)"
+else
+  fail "--dry-run output shape: expected row with RSS 2.0 MB and swap 1.1 GB not found"
+  info "output was: $SWAP_OUT"
+fi
+
+# =====================================================================
 # Mutation check: pre-fix script cannot run any of this suite's assertions
 # =====================================================================
 # NOTE: this deliberately pins the specific commit immediately BEFORE the matcher rewrite
@@ -301,7 +392,7 @@ PREFIX_COMMIT="7e79b2695"
 PREFIX_SCRIPT="$WORKDIR/prefix.sh"
 if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core/scripts/$SCRIPT_UNDER_TEST" > "$PREFIX_SCRIPT" 2>/dev/null; then
   MISSING_IN_PREFIX=()
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target; do
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -310,11 +401,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 4 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 5 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the four predicates or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 5 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 6 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the five predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 5 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 6 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

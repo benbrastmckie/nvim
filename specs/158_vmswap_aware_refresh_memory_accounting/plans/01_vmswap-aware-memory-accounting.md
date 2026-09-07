@@ -1,7 +1,7 @@
 # Implementation Plan: Task #158
 
 - **Task**: 158 - Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md
@@ -237,38 +237,41 @@ re-derive the edit set from the grep rather than following this list.
 
 ---
 
-### Phase 4: Add fixture-driven VmSwap test cases and run the acceptance pass [NOT STARTED]
+### Phase 4: Add fixture-driven VmSwap test cases and run the acceptance pass [COMPLETED]
 
 **Goal**: Close the verification bar with deterministic, machine-independent cases for the new
 helper and the changed output shape, plus a `format_memory` case that closes a pre-existing coverage
 gap at near-zero marginal cost.
 
 **Tasks**:
-- [ ] Append a `# Assertion (e): VmSwap-aware memory accounting` section to
+- [x] Append a `# Assertion (e): VmSwap-aware memory accounting` section to
       `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh`, before the
       mutation-check section, following the file's `# =====` banner convention and its
-      `pass`/`fail`/`info` helper structure.
-- [ ] Build fixtures as heredocs under `$WORKDIR/fakeproc/<pid>/status` — never against live `/proc`
-      or a real PID — per `.claude/context/standards/shell-script-testing.md`.
-- [ ] Case: known value. A fixture containing `VmSwap:\t    12345 kB` yields `get_vmswap_kb` ==
-      `12345`.
-- [ ] Case: absent line. A fixture status file with no `VmSwap:` line at all yields `0`, not an
-      error (no-swap-configured host).
-- [ ] Case: missing file. A nonexistent `<pid>/status` path yields `0`, not an error, and does not
-      abort the sourced test shell.
-- [ ] Case: formatting. `format_memory 12345` renders the expected unit string — closes the
-      pre-existing `format_memory` coverage gap noted in research.
-- [ ] Case: output shape. Assert on full `--dry-run` output (not only the isolated helper) that the
+      `pass`/`fail`/`info` helper structure. *(completed)*
+- [x] Build fixtures as heredocs under `$WORKDIR/fakeproc/<pid>/status` — never against live `/proc`
+      or a real PID — per `.claude/context/standards/shell-script-testing.md`. *(completed)*
+- [x] Case: known value. A fixture containing `VmSwap:\t    12345 kB` yields `get_vmswap_kb` ==
+      `12345`. *(completed)*
+- [x] Case: absent line. A fixture status file with no `VmSwap:` line at all yields `0`, not an
+      error (no-swap-configured host). *(completed)*
+- [x] Case: missing file. A nonexistent `<pid>/status` path yields `0`, not an error, and does not
+      abort the sourced test shell. *(completed)*
+- [x] Case: formatting. `format_memory 12345` renders the expected unit string — closes the
+      pre-existing `format_memory` coverage gap noted in research. *(completed: renders "12.0 MB")*
+- [x] Case: output shape. Assert on full `--dry-run` output (not only the isolated helper) that the
       table carries both a `Memory` and a `Swap` column, structurally catching an
       `orphan_details` field-count mismatch — matching how the existing (d-2) case asserts on full
-      script output.
-- [ ] Set `PROC_ROOT="$WORKDIR/fakeproc"` for the block and restore/unset it immediately afterward,
-      exactly as `_pid_is_alive` is restored after Assertion (c), so it cannot leak.
-- [ ] Extend the mutation-check section's static-absence marker list to include `get_vmswap_kb`,
+      script output. *(deviation: altered — implemented as two separate pass/fail assertions (header
+      shape, then row values) rather than one combined case, for clearer failure diagnosis; both
+      assertions cover the same single output-shape scenario the task describes)*
+- [x] Set `PROC_ROOT="$WORKDIR/fakeproc"` for the block and restore/unset it immediately afterward,
+      exactly as `_pid_is_alive` is restored after Assertion (c), so it cannot leak. *(completed)*
+- [x] Extend the mutation-check section's static-absence marker list to include `get_vmswap_kb`,
       keeping its existing framing: against today's pre-fix HEAD the function does not exist, so
       every new case fails with `command not found` (RED confirmed) — a static absence check, not a
-      fabricated dynamic re-run.
-- [ ] Run the full acceptance pass and confirm each dispatch acceptance criterion individually.
+      fabricated dynamic re-run. *(completed)*
+- [x] Run the full acceptance pass and confirm each dispatch acceptance criterion individually.
+      *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -299,20 +302,29 @@ to adjust.
 
 ## Testing & Validation
 
-- [ ] `bash -n agent-system/extensions/core/scripts/claude-refresh.sh` exits 0.
-- [ ] `bash -n agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` exits 0;
-      existing cases (a)-(d) pass unchanged, new (e) cases pass.
-- [ ] `bash agent-system/extensions/core/scripts/claude-refresh.sh --dry-run` displays a `Swap`
-      column with a value for every listed process, columns aligned.
-- [ ] A process with zero or absent `VmSwap` renders as `0 KB` (or equivalent) rather than erroring
-      or producing an empty column.
-- [ ] The synthetic known-VmSwap fixture formats to the expected string.
-- [ ] The header comment states the snapshot-invariant ruling, with the reporting-only,
-      post-classification, and normalize-to-zero grounds argued explicitly.
-- [ ] No file outside `agent-system/extensions/core/` was modified; no `.claude/**` file was
-      hand-edited (canonical-source constraint).
-- [ ] No task-number references appear in either modified file (deliverable rule).
+- [x] `bash -n agent-system/extensions/core/scripts/claude-refresh.sh` exits 0. *(completed)*
+- [x] `bash -n agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` exits 0.
+      *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` exits 0;
+      existing cases (a)-(d) pass unchanged, new (e) cases pass. *(completed: 18/18 passed, 3
+      consecutive runs, pre-existing 12 [PASS] lines byte-identical)*
+- [x] `bash agent-system/extensions/core/scripts/claude-refresh.sh --dry-run` displays a `Swap`
+      column with a value for every listed process, columns aligned. *(completed: verified via
+      fixture-driven fake-ps/PROC_ROOT harness in Assertion (e) since no live orphans exist on this
+      machine at implementation time; live run confirms no-orphan path unaffected)*
+- [x] A process with zero or absent `VmSwap` renders as `0 KB` (or equivalent) rather than erroring
+      or producing an empty column. *(completed: get_vmswap_kb returns "0" for absent-line and
+      missing-file fixtures)*
+- [x] The synthetic known-VmSwap fixture formats to the expected string. *(completed: 12345 kB ->
+      "12.0 MB")*
+- [x] The header comment states the snapshot-invariant ruling, with the reporting-only,
+      post-classification, and normalize-to-zero grounds argued explicitly. *(completed)*
+- [x] No file outside `agent-system/extensions/core/` was modified; no `.claude/**` file was
+      hand-edited (canonical-source constraint). *(completed: git status confirms only
+      claude-refresh.sh, test-claude-refresh-matcher.sh, and specs/158_.../ paths touched by this
+      dispatch)*
+- [x] No task-number references appear in either modified file (deliverable rule). *(completed:
+      grep for task-number patterns in both files returns none)*
 
 ## Artifacts & Outputs
 
