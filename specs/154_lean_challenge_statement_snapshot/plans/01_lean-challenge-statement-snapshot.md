@@ -464,26 +464,26 @@ adding cases is fine, dropping one requires a stated reason in the phase record.
 
 ---
 
-### Phase 7: Statement Fidelity clause in `plan-compliance.md` [NOT STARTED]
+### Phase 7: Statement Fidelity clause in `plan-compliance.md` [COMPLETED]
 
 **Goal**: Make a declaration's *signature*, not just its name and the plan's decomposition, part
 of the contract the rule enforces.
 
 **Tasks**:
 
-- [ ] Add a `## Statement Fidelity` subsection to
+- [x] Add a `## Statement Fidelity` subsection to *(completed)*
       `agent-system/extensions/lean/rules/plan-compliance.md` stating that when a plan carries a
       `## Lean Challenge Statements` section, the named declarations' **signatures** are part of
       the contract — not only their identifiers.
-- [ ] Add to the existing `## Forbidden Patterns` list: *"Weakening a recorded Challenge statement
+- [x] Add to the existing `## Forbidden Patterns` list: *"Weakening a recorded Challenge statement
       — adding a hypothesis, specialising a quantifier, or restating a strictly weaker claim under
-      the same name."*
-- [ ] Cross-reference the rule's existing escalate-rather-than-substitute behaviour (mark the
+      the same name."* *(completed)*
+- [x] Cross-reference the rule's existing escalate-rather-than-substitute behaviour (mark the *(completed)*
       phase `[BLOCKED]` and raise it) so a genuinely wrong recorded statement has a sanctioned
       route that is not "quietly change it".
-- [ ] Point at `lean-challenge-snapshot.sh --check` as the cheap mechanical check available
+- [x] Point at `lean-challenge-snapshot.sh --check` as the cheap mechanical check available *(completed)*
       independently of Comparator, and state plainly that its verdict is advisory.
-- [ ] No task-number citations — this file is a deliverable outside `specs/**`.
+- [x] No task-number citations — this file is a deliverable outside `specs/**`. *(completed)*
 
 **Timing**: 0.75 hours
 

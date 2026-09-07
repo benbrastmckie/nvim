@@ -35,6 +35,40 @@ edited:
 - **Routing through different helper lemmas** than the plan specifies
 - **"Cleaner approach" rationalizations** — a cleaner-seeming shortcut discovered mid-proof is
   not license to abandon the plan's decomposition
+- **Weakening a recorded Challenge statement** — adding a hypothesis, specialising a quantifier,
+  or restating a strictly weaker claim under the same name. See "Statement Fidelity" below.
+
+## Statement Fidelity
+
+Everything above governs *decomposition* fidelity — following the plan's chosen lemma structure
+and proof order. It says nothing about whether a declaration's *signature* is part of the
+contract, which leaves a gap: a same-named, strictly weaker restatement of a theorem violates
+nothing in the rule as written above, yet is a more serious defect than any decomposition
+deviation, because it passes a name-existence check while proving less than what was intended.
+
+**When a plan carries a `## Lean Challenge Statements` section** (see
+`context/formats/plan-format.md`), the named declarations' **signatures** — not only their
+identifiers — are part of the contract this rule enforces. The section fixes the exact intended
+statement of each theorem before implementation begins; an implementation that proves a
+same-named but different (typically weaker) statement has not executed the plan, regardless of
+whether the declaration name matches.
+
+**Mechanical check**: `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh --check`
+compares each named theorem's pinned signature (recorded at snapshot time, before
+implementation) against the current working tree's same-named declaration, independently of
+whether Comparator is ever wired in — see
+`context/project/lean4/domain/challenge-snapshot.md` for the full design. **Its verdict is
+ADVISORY ONLY**: a drift finding from `--check` MUST NOT be treated as grounds to fail a task,
+set `verification_passed` false, or downgrade a status on its own. Treat a `--check` drift
+finding the same way any other plan-compliance concern is treated under this rule: as a signal
+to investigate, not an automatic verdict.
+
+**If a drift finding turns out to reflect a genuinely wrong recorded statement** (the plan
+itself specified something that should not have been specified), the sanctioned route is the
+same escalate-rather-than-substitute behavior this rule already mandates above: mark the phase
+`[BLOCKED]` and raise it. Do not quietly change the implementation to match a different, more
+convenient statement, and do not quietly edit the recorded Challenge to match what was
+implemented — either move silently launders the exact defect this section exists to catch.
 
 ## Required Behavior
 
