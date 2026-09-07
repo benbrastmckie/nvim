@@ -1,7 +1,7 @@
 # Implementation Plan: Report-Only MCP Fan-Out and Zombie Passes
 
 - **Task**: 160 - Add report-only refresh passes for unused MCP fan-out and unreaped child processes
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 159 (Lean LSP reclamation pass) — file-overlap serialization on `claude-refresh.sh` only, not a logical prerequisite
 - **Research Inputs**: specs/160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md
@@ -371,28 +371,33 @@ explicitly stating they never terminate anything and need no confirmation wiring
 
 ---
 
-### Phase 6: Acceptance verification [NOT STARTED]
+### Phase 6: Acceptance verification [COMPLETED]
 
 **Goal**: Discharge every acceptance criterion mechanically and record the evidence.
 
 **Tasks**:
-- [ ] Capture `claude-refresh.sh --dry-run` and `claude-refresh.sh --force` output; diff the two
+- [x] Capture `claude-refresh.sh --dry-run` and `claude-refresh.sh --force` output; diff the two
       new passes' sections and confirm they are identical apart from the `[DRY RUN]` banner
-- [ ] `grep -n 'kill\|terminate_pid'` over the extracted bodies of both new passes and their
-      helpers — confirm zero matches (grep, not inspection)
-- [ ] Grep the emitted advisory text for `cannot access project-scoped` / `subagents cannot` —
-      confirm the phrase does not appear
-- [ ] Grep the emitted advisory text for workspace-trust wording — confirm it does appear
-- [ ] Confirm the zombie pass distinguishes `Z` from live states in the running output
-- [ ] Confirm the MCP pass reports server name, session count, and aggregate memory computed via
+      *(completed: identical, modulo the banner and blank-line squeeze)*
+- [x] `grep -n 'kill\|terminate_pid'` over the extracted bodies of both new passes and their
+      helpers — confirm zero matches (grep, not inspection) *(completed: zero matches in both blocks)*
+- [x] Grep the emitted advisory text for `cannot access project-scoped` / `subagents cannot` —
+      confirm the phrase does not appear *(completed: clean)*
+- [x] Grep the emitted advisory text for workspace-trust wording — confirm it does appear
+      *(completed: present)*
+- [x] Confirm the zombie pass distinguishes `Z` from live states in the running output
+      *(completed: live run lists only `Z`/`Z+` rows grouped under their live parents)*
+- [x] Confirm the MCP pass reports server name, session count, and aggregate memory computed via
       the VmSwap-aware path (spot-check one server's total against a manual
-      `/proc/PID/status` VmSwap + RSS sum)
-- [ ] `grep -rn "cannot access project-scoped" agent-system/extensions/core/docs/docs-README.md`
-      returns nothing
-- [ ] Run the full test suite one final time; confirm `Failed: 0`
-- [ ] `git status --short` shows no modified file under `.claude/` — confirm every edit landed in
-      `agent-system/extensions/core/`
-- [ ] Confirm no task-number references were introduced outside `specs/**`
+      `/proc/PID/status` VmSwap + RSS sum) *(completed: manual sum over lean-lsp's 6 live PIDs =
+      321.7 MB, exact match to the pass's own reported total)*
+- [x] `grep -rn "cannot access project-scoped" agent-system/extensions/core/docs/docs-README.md`
+      returns nothing *(completed: confirmed)*
+- [x] Run the full test suite one final time; confirm `Failed: 0` *(completed: Passed: 76, Failed: 0)*
+- [x] `git status --short` shows no modified file under `.claude/` — confirm every edit landed in
+      `agent-system/extensions/core/` *(completed: confirmed)*
+- [x] Confirm no task-number references were introduced outside `specs/**` *(completed: grepped
+      every file this task touched, all clean)*
 
 **Timing**: 0.5 hours
 
