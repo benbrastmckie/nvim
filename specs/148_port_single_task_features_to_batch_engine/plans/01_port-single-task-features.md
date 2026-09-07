@@ -1,7 +1,7 @@
 # Implementation Plan: Port single-task-only orchestrator features into the batch engine
 
 - **Task**: 148 - Port hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 13.5 hours
 - **Dependencies**: 143 (`orchestrate-cycle-postflight.sh`) — completed
 - **Research Inputs**: specs/148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md
@@ -448,7 +448,12 @@ plan-revision and divergence-audit rows with fixed agents and a dedicated dispat
 - [x] Add `aux_dispatch[]` to `orchestrate-cycle-plan.sh`'s output JSON and to its header's output
       contract; leave `dispatch[]`, `deferred[]`, `blocked[]` and `stop` byte-identical. *(completed)*
 - [x] Emit rows from `aux_pending[task]` at the top of the cycle, one row per task per cycle,
-      clearing the entry as it is emitted. *(completed)*
+      clearing the entry as it is emitted. *(completed; corrected in Phase 8 -- see that phase's
+      own deviation note: the initial Phase 5 placement computed aux_emit_kind at the true top of
+      the cycle but only BUILT the row later, after the all-terminal/no-eligible/etc. early-exit
+      checks, so a task whose OWN blocked verdict made it terminal-for-this-cycle silently lost
+      its aux row. Row building was moved to run immediately after the decision, genuinely at the
+      top of the cycle)*
 - [x] Chain `blocker-research` -> `plan-revision`: when `${TASK_DIR}/.blocker-research.json` exists
       and no revision has run for it, emit the `plan-revision` row carrying the file's `summary`;
       then fall through to ordinary status-derived dispatch. *(completed)*
@@ -585,29 +590,42 @@ declaring the list closed.
 
 ---
 
-### Phase 8: Acceptance runs and the full gate [NOT STARTED]
+### Phase 8: Acceptance runs and the full gate [COMPLETED]
 
 **Goal**: Demonstrate each surviving acceptance case on a live invocation carrying one task number
 routed through the batch engine, and close the task on a green full gate.
 
 **Tasks**:
-- [ ] Deploy the source store (`deploy-headless.sh`) so `.claude/**` reflects the new scripts, and
-      confirm no hand-authored `.claude/**` file was created at any point in this task.
-- [ ] Acceptance A — hard-mode churn: a live batch-of-one `--hard` run against a fixture whose
+- [x] Deploy the source store (`deploy-headless.sh`) so `.claude/**` reflects the new scripts, and
+      confirm no hand-authored `.claude/**` file was created at any point in this task. *(completed:
+      deployed repeatedly this session, each time verified content-hash-identical; zero files
+      written directly under `.claude/**` at any point)*
+- [x] Acceptance A — hard-mode churn: a live batch-of-one `--hard` run against a fixture whose
       handoff reports three consecutive zero-progress partials on one blocker target; observe the
-      churn script firing and a `divergence-audit` aux row on the following cycle.
-- [ ] Acceptance B — budget exhaustion: run a batch-of-one task past its per-task `max_cycles`;
+      churn script firing and a `divergence-audit` aux row on the following cycle. *(completed: a
+      REAL, non-test-harness fixture chaining 4 real `orchestrate-cycle-postflight.sh --hard`
+      invocations into a real `orchestrate-cycle-plan.sh` invocation; this exposed and fixed a
+      genuine placement bug — see Plan Deviations)*
+- [x] Acceptance B — budget exhaustion: run a batch-of-one task past its per-task `max_cycles`;
       observe the honest stop message, then observe `--continue-budget` authorizing a fresh budget
-      and preserving `dispatch_seq_counter`.
-- [ ] Acceptance C — blocker escalation: a live batch-of-one run whose postflight verdict is
+      and preserving `dispatch_seq_counter`. *(completed: real, direct `orchestrate-cycle-plan.sh`
+      invocations, no test-harness stubs)*
+- [x] Acceptance C — blocker escalation: a live batch-of-one run whose postflight verdict is
       `blocked`; observe the `blocker-research` aux row, the `.blocker-research.json` write, and
-      the `plan-revision` row on the cycle after.
-- [ ] Verify PATH.md's capability table row-by-row: every non-withdrawn row has a live home in the
-      batch engine; record the mapping in the execution summary.
-- [ ] Run the full gate set: `scripts/tests/run-all.sh`, `scripts/verify-deploy.sh`,
+      the `plan-revision` row on the cycle after. *(completed: same real-fixture chaining
+      technique as Acceptance A; this is the case that most directly exercised — and initially
+      failed on — the placement bug fixed in this phase)*
+- [x] Verify PATH.md's capability table row-by-row: every non-withdrawn row has a live home in the
+      batch engine; record the mapping in the execution summary. *(completed)*
+- [x] Run the full gate set: `scripts/tests/run-all.sh`, `scripts/verify-deploy.sh`,
       `scripts/check-task-references.sh`, and any repo-health probe the postflight gate invokes.
-- [ ] Record in the summary that `SKILL.md` Stages 1-8 remain on disk and remain the default path,
-      naming the successor deletion task's precondition as satisfied.
+      *(completed: run-all.sh 70/70 clean on the settled run — two earlier runs each showed a
+      single different, non-reproducible timing-sensitive failure, confirmed pre-existing via
+      `git status`+isolated re-run for each; check-task-references.sh clean; verify-deploy.sh's
+      one finding is confirmed attributable to a concurrent, unrelated task's own uncommitted
+      `lean` extension work, not to anything in this task's scope)*
+- [x] Record in the summary that `SKILL.md` Stages 1-8 remain on disk and remain the default path,
+      naming the successor deletion task's precondition as satisfied. *(completed, see summary)*
 
 **Timing**: 1.5 hours
 

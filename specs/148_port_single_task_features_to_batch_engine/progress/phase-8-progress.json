@@ -1,0 +1,24 @@
+{
+  "phase": 8,
+  "phase_name": "Acceptance runs and the full gate",
+  "started_at": "2026-09-07T16:45:00Z",
+  "last_updated": "2026-09-07T17:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy the source store; confirm no hand-authored .claude/** file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Acceptance A: hard-mode churn -> divergence-audit aux row, live", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Acceptance B: budget exhaustion + --continue-budget, live", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Acceptance C: blocker escalation -> plan-revision chain, live", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify PATH.md's capability table row-by-row", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Fix the aux-emission placement bug found by Acceptance A/C (row building moved to run before the all-terminal/no-eligible early-exit checks)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Run the full gate: run-all.sh, verify-deploy.sh, check-task-references.sh", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Write the execution summary", "status": "done", "files_touched": ["specs/148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Built a REAL (non-test-harness) scratch fixture under the scratchpad directory -- a genuine git repo with real state.json/task directories, running the ACTUAL deployed orchestrate-cycle-plan.sh/orchestrate-cycle-postflight.sh/orchestrate-build-aux-dispatch.sh scripts as real subprocesses, chained across multiple real invocations -- rather than treating 'the test suites already pass' as equivalent to a live acceptance demonstration.", "result": "kept", "reason": "This is what actually exposed the Phase 5 placement bug (see below): every existing test suite happened to construct fixtures where the aux-emitting task was never simultaneously in failed_tasks/all-terminal THIS SAME cycle, so the bug was invisible to Groups 1-10 of test-orchestrate-cycle-plan.sh despite 77 passing cases. A live, multi-invocation chain surfaced it within the first real run of Acceptance A."},
+    {"approach": "DISCOVERED AND FIXED a real placement bug in Phase 5's own aux_dispatch[] emission: the AUX DECISION section (computing WHICH kind to emit) correctly ran before the all-terminal check, but the actual ROW-BUILDING step (both --dry-run rendering and the live build) was placed much later in the script, after the H1 section, reached only via the normal dispatch/live fork -- which the all-terminal/no-eligible/convergence-guard/max-cycles early-exit paths bypass entirely via their own emit_and_exit calls. A task whose OWN postflight verdict (blocked) both records an aux_pending signal AND charges it to failed_tasks in the same cycle therefore silently lost its aux row the instant the batch had nothing else to do.", "result": "kept", "reason": "Moved row-building (dry-run render OR live build+consume) to run immediately after the AUX DECISION section, before ANY early-exit check -- genuinely 'at the top of the cycle' per the plan's own Decision 2 language, not just the decision but the emission too. Re-verified end-to-end with the SAME live fixture (Acceptance C now correctly produces the blocker-research row despite an all_terminal stop, and the follow-on plan-revision chain). Added a dedicated regression case (Group 10 Case I) to test-orchestrate-cycle-plan.sh reproducing the exact scenario so this cannot silently regress again."},
+    {"approach": "Attributed a verify-deploy.sh finding (lean extension's lean-comparator-run.sh not in provides.scripts) to a DIFFERENT, concurrently-running task (git status showed it as a modification to a file this task never touched, and specs/153_lean_comparator_clean_room_runner/ exists as an unrelated in-flight task directory) rather than treating it as a regression from this task's own work.", "result": "kept", "reason": "Observation-duty compliant: named the foreign work plainly (in this progress file and the execution summary) rather than either silently ignoring it or incorrectly attempting to fix another task's in-flight work."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

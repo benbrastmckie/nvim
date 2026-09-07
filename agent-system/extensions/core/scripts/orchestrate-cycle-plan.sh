@@ -749,6 +749,113 @@ for t in "${task_args[@]}"; do
   esac
 done
 
+# ── AUX EMISSION (Decision 2, Phase 5): build every aux_dispatch[] row decided above IMMEDIATELY,
+# here, at the true top of the cycle — BEFORE the all-terminal check, the no-eligible circuit
+# breaker, and every other early `emit_and_exit` call below. This placement is load-bearing, not
+# cosmetic: a task can become failed_tasks/terminal-for-this-cycle PRECISELY BECAUSE it needs an
+# aux escalation (a `blocked` verdict is charged to `failed_tasks` by
+# orchestrate-cycle-postflight.sh's own WORK (j) in the SAME cycle its `blocker-research` signal
+# is recorded), so building aux rows any later than this would let the all-terminal short-circuit
+# silently swallow the very escalation that task needs. `--dry-run` renders the identical choice
+# with no side effects; the live branch performs the real dispatch-file build, counter increments,
+# and aux_pending/chain-marker consumption -- neither needs `skill-base.sh` or a `cd`, since
+# `orchestrate-build-aux-dispatch.sh` resolves its own `SKILL_REPO_ROOT` independently as a
+# subprocess. ─────────────────────────────────────────────────────────────────────────────────
+aux_fixed_agent() {
+  local kind="$1" t="$2"
+  case "$kind" in
+    drift-inspection|blocker-research) echo "fork" ;;
+    plan-revision) echo "reviser-agent" ;;
+    divergence-audit) mt_get --arg t "$t" '.research_agents[$t] // "general-research-agent"' ;;
+    *) echo "" ;;
+  esac
+}
+
+if [ "$dry_run" = "true" ]; then
+  for t in "${task_args[@]}"; do
+    [ -z "${aux_emit_kind[$t]:-}" ] && continue
+    aux_agent=$(aux_fixed_agent "${aux_emit_kind[$t]}" "$t")
+    out_aux_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg k "${aux_emit_kind[$t]}" --arg a "$aux_agent" \
+      '{task: $t, kind: $k, agent: $a, model: null, dispatch_file: null, orchestrator_mode: false}')")
+  done
+else
+  for t in "${task_args[@]}"; do
+    [ -z "${aux_emit_kind[$t]:-}" ] && continue
+    aux_kind="${aux_emit_kind[$t]}"
+    aux_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
+    aux_dispatch_start_ts=$(date -u +%s)
+    mt_set --argjson seq "$aux_dispatch_seq" '.dispatch_seq_counter = $seq'
+
+    build_aux_args=(--session "$session_id" --seq "$aux_dispatch_seq" --dispatch-start-ts "$aux_dispatch_start_ts")
+    case "$aux_kind" in
+      drift-inspection)
+        build_aux_args+=(--plan-path "${aux_emit_plan_path[$t]:-}")
+        ;;
+      blocker-research)
+        build_aux_args+=(--blocker-desc "${aux_emit_blocker_desc[$t]:-Unspecified blocker}")
+        ;;
+      plan-revision)
+        build_aux_args+=(--revision-reason "${aux_emit_revision_reason[$t]}" --plan-path "${aux_emit_plan_path[$t]:-}")
+        if [ "${aux_emit_revision_reason[$t]}" = "blocker" ]; then
+          build_aux_args+=(--blocker-desc "${aux_emit_blocker_desc[$t]:-Unspecified blocker}" --findings-summary "${aux_emit_findings_summary[$t]:-No findings}")
+        else
+          build_aux_args+=(--drift-pct "${aux_emit_drift_pct[$t]:-0}" --drift-summary "${aux_emit_drift_summary[$t]:-No summary}")
+        fi
+        ;;
+      divergence-audit)
+        aux_research_agent=$(mt_get --arg t "$t" '.research_agents[$t] // "general-research-agent"')
+        build_aux_args+=(--target "${aux_emit_target[$t]:-unknown}" --verbatim-goal "${aux_emit_verbatim_goal[$t]:-}" --research-agent "$aux_research_agent")
+        ;;
+    esac
+
+    if aux_dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-aux-dispatch.sh" "$t" "$aux_kind" "${build_aux_args[@]}" 2>&1); then
+      aux_build_exit=0
+    else
+      aux_build_exit=$?
+    fi
+    if [ "$aux_build_exit" -ne 0 ]; then
+      echo "[orchestrate] WARNING: orchestrate-build-aux-dispatch.sh failed for task #$t kind=$aux_kind (exit $aux_build_exit): $aux_dispatch_json" >&2
+      continue
+    fi
+    aux_file=$(echo "$aux_dispatch_json" | jq -r '.dispatch_file')
+    aux_agent=$(echo "$aux_dispatch_json" | jq -r '.agent')
+    aux_model=$(echo "$aux_dispatch_json" | jq -r '.model')
+    [ -z "$aux_model" ] && aux_model_json="null" || aux_model_json="\"$aux_model\""
+
+    out_aux_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg k "$aux_kind" --arg a "$aux_agent" \
+      --argjson m "$aux_model_json" --arg df "$aux_file" \
+      '{task: $t, kind: $k, agent: $a, model: $m, dispatch_file: $df, orchestrator_mode: false}')")
+
+    case "$aux_kind" in
+      drift-inspection)
+        aux_new_cnt=$(mt_get --arg t "$t" '((.drift_inspection_count[$t] // 0) + 1)')
+        mt_set --arg t "$t" --argjson v "$aux_new_cnt" '.drift_inspection_count[$t] = $v'
+        ;;
+      blocker-research)
+        aux_new_cnt=$(mt_get --arg t "$t" '((.blocker_escalation_count[$t] // 0) + 1)')
+        mt_set --arg t "$t" --argjson v "$aux_new_cnt" '.blocker_escalation_count[$t] = $v'
+        ;;
+    esac
+  done
+  # Consume aux_pending[t] and any chain marker file for every task decided above, whether a row
+  # was actually built or the cap/mutual-exclusion guard suppressed it — a suppressed entry must
+  # not be re-evaluated every subsequent cycle of this SAME invocation.
+  for t in "${task_args[@]}"; do
+    if [ "${aux_clear_pending[$t]:-}" = "true" ]; then
+      mt_set --arg t "$t" 'del(.aux_pending[$t])'
+    fi
+    if [ "${aux_consume_blocker_file[$t]:-}" = "true" ]; then
+      aux_padded2=$(printf "%03d" "$t")
+      rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.blocker-research.json"
+    fi
+    if [ "${aux_consume_drift_file[$t]:-}" = "true" ]; then
+      aux_padded2=$(printf "%03d" "$t")
+      rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.drift-inspection.json"
+    fi
+  done
+  mt_save
+fi
+
 is_terminal_status() {
   case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')" in
     completed|abandoned|expanded) return 0 ;;
@@ -1109,21 +1216,6 @@ else
   mt_save
 fi
 
-# ── Resolve an aux row's FIXED agent (Decision 2 -- never task-type-routed, never
-# command-route-agent.sh): mirrors orchestrate-build-aux-dispatch.sh's own mapping exactly, so
-# --dry-run's rendering (no side effects, no file written) shows the SAME agent the live path's
-# actual dispatch-file build would resolve. divergence-audit uses this task's own already-resolved
-# research_agents[t] (never re-resolved), defaulting to "general-research-agent" when absent. ───
-aux_fixed_agent() {
-  local kind="$1" t="$2"
-  case "$kind" in
-    drift-inspection|blocker-research) echo "fork" ;;
-    plan-revision) echo "reviser-agent" ;;
-    divergence-audit) mt_get --arg t "$t" '.research_agents[$t] // "general-research-agent"' ;;
-    *) echo "" ;;
-  esac
-}
-
 # ── Resolve agent per candidate (needed for both dry-run rendering and live dispatch) ────────────
 resolve_agent() {
   local op="$1" ttype="$2"
@@ -1278,12 +1370,6 @@ if [ "$dry_run" = "true" ]; then
     out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" \
       '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force}')")
   done
-  for t in "${task_args[@]}"; do
-    [ -z "${aux_emit_kind[$t]:-}" ] && continue
-    aux_agent=$(aux_fixed_agent "${aux_emit_kind[$t]}" "$t")
-    out_aux_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg k "${aux_emit_kind[$t]}" --arg a "$aux_agent" \
-      '{task: $t, kind: $k, agent: $a, model: null, dispatch_file: null, orchestrator_mode: false}')")
-  done
   emit_and_exit "$cycle_count"
 fi
 
@@ -1294,87 +1380,6 @@ fi
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/skill-base.sh"
 cd "$SKILL_REPO_ROOT"
-
-# ── Aux dispatch build (Decision 2, Phase 5) — live-only side effects for every task the shared
-# AUX DECISION section above chose a kind for: mint a dispatch_seq off the SAME
-# dispatch_seq_counter the per-task implement/research/plan loop below also mints from, call
-# orchestrate-build-aux-dispatch.sh, bump the relevant escalation counter, and consume
-# aux_pending[t]/the chain marker file so this SAME kind is never re-emitted next cycle. ─────────
-for t in "${task_args[@]}"; do
-  [ -z "${aux_emit_kind[$t]:-}" ] && continue
-  aux_kind="${aux_emit_kind[$t]}"
-  aux_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
-  aux_dispatch_start_ts=$(date -u +%s)
-  mt_set --argjson seq "$aux_dispatch_seq" '.dispatch_seq_counter = $seq'
-
-  build_aux_args=(--session "$session_id" --seq "$aux_dispatch_seq" --dispatch-start-ts "$aux_dispatch_start_ts")
-  case "$aux_kind" in
-    drift-inspection)
-      build_aux_args+=(--plan-path "${aux_emit_plan_path[$t]:-}")
-      ;;
-    blocker-research)
-      build_aux_args+=(--blocker-desc "${aux_emit_blocker_desc[$t]:-Unspecified blocker}")
-      ;;
-    plan-revision)
-      build_aux_args+=(--revision-reason "${aux_emit_revision_reason[$t]}" --plan-path "${aux_emit_plan_path[$t]:-}")
-      if [ "${aux_emit_revision_reason[$t]}" = "blocker" ]; then
-        build_aux_args+=(--blocker-desc "${aux_emit_blocker_desc[$t]:-Unspecified blocker}" --findings-summary "${aux_emit_findings_summary[$t]:-No findings}")
-      else
-        build_aux_args+=(--drift-pct "${aux_emit_drift_pct[$t]:-0}" --drift-summary "${aux_emit_drift_summary[$t]:-No summary}")
-      fi
-      ;;
-    divergence-audit)
-      aux_research_agent=$(mt_get --arg t "$t" '.research_agents[$t] // "general-research-agent"')
-      build_aux_args+=(--target "${aux_emit_target[$t]:-unknown}" --verbatim-goal "${aux_emit_verbatim_goal[$t]:-}" --research-agent "$aux_research_agent")
-      ;;
-  esac
-
-  if aux_dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-aux-dispatch.sh" "$t" "$aux_kind" "${build_aux_args[@]}" 2>&1); then
-    aux_build_exit=0
-  else
-    aux_build_exit=$?
-  fi
-  if [ "$aux_build_exit" -ne 0 ]; then
-    echo "[orchestrate] WARNING: orchestrate-build-aux-dispatch.sh failed for task #$t kind=$aux_kind (exit $aux_build_exit): $aux_dispatch_json" >&2
-    continue
-  fi
-  aux_file=$(echo "$aux_dispatch_json" | jq -r '.dispatch_file')
-  aux_agent=$(echo "$aux_dispatch_json" | jq -r '.agent')
-  aux_model=$(echo "$aux_dispatch_json" | jq -r '.model')
-  [ -z "$aux_model" ] && aux_model_json="null" || aux_model_json="\"$aux_model\""
-
-  out_aux_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg k "$aux_kind" --arg a "$aux_agent" \
-    --argjson m "$aux_model_json" --arg df "$aux_file" \
-    '{task: $t, kind: $k, agent: $a, model: $m, dispatch_file: $df, orchestrator_mode: false}')")
-
-  case "$aux_kind" in
-    drift-inspection)
-      aux_new_cnt=$(mt_get --arg t "$t" '((.drift_inspection_count[$t] // 0) + 1)')
-      mt_set --arg t "$t" --argjson v "$aux_new_cnt" '.drift_inspection_count[$t] = $v'
-      ;;
-    blocker-research)
-      aux_new_cnt=$(mt_get --arg t "$t" '((.blocker_escalation_count[$t] // 0) + 1)')
-      mt_set --arg t "$t" --argjson v "$aux_new_cnt" '.blocker_escalation_count[$t] = $v'
-      ;;
-  esac
-done
-# Consume aux_pending[t] and any chain marker file for every task decided above, whether a row was
-# actually built or the cap/mutual-exclusion guard suppressed it — a suppressed entry must not be
-# re-evaluated every subsequent cycle of this SAME invocation.
-for t in "${task_args[@]}"; do
-  if [ "${aux_clear_pending[$t]:-}" = "true" ]; then
-    mt_set --arg t "$t" 'del(.aux_pending[$t])'
-  fi
-  if [ "${aux_consume_blocker_file[$t]:-}" = "true" ]; then
-    aux_padded2=$(printf "%03d" "$t")
-    rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.blocker-research.json"
-  fi
-  if [ "${aux_consume_drift_file[$t]:-}" = "true" ]; then
-    aux_padded2=$(printf "%03d" "$t")
-    rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.drift-inspection.json"
-  fi
-done
-mt_save
 
 new_cycle_count=$(( cycle_count + 1 ))
 

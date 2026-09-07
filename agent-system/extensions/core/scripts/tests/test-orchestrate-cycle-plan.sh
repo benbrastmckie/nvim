@@ -1013,6 +1013,38 @@ else
 fi
 rm -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
 
+# ── Case I: REGRESSION -- an aux row is still built even when the ONLY task in the batch is
+# terminal/all-terminal THIS SAME cycle. A `blocked` verdict from orchestrate-cycle-postflight.sh
+# both (a) records a blocker-research aux_pending signal and (b) charges the task to failed_tasks
+# in the SAME cycle -- so the all-terminal short-circuit must never suppress the very aux row that
+# task needs to get unstuck. This is a placement regression test: aux emission must happen BEFORE
+# the all-terminal check's own emit_and_exit, not after. ─────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1002, "project_name": "g10_terminal_aux", "task_type": "general", "status": "implementing", "description": "aux row survives all-terminal", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/1002_g10_terminal_aux"
+mkdir -p "$WORKDIR/specs/1002_g10_terminal_aux"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_j.json"
+jq -n --arg t "1002" '{failed_tasks: [1002], aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_j.json"
+run_sut --session g10_j -- 1002
+if [ "$(jqf '.stop.reason')" = "all_terminal" ]; then
+  pass "aux: fixture confirms the all-terminal short-circuit actually fires this cycle (failed_tasks pre-seeded)"
+else
+  fail "aux: fixture did not reach the all-terminal short-circuit as expected (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1002 and .kind == "blocker-research")) | length')" = "1" ] && \
+   [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ]; then
+  pass "aux: REGRESSION -- an aux_dispatch[] row is still built even though this cycle stops for all_terminal"
+else
+  fail "aux: REGRESSION -- aux row was suppressed by the all-terminal short-circuit (stdout: $LAST_STDOUT)"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
