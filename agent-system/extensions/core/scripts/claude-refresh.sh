@@ -176,6 +176,137 @@ is_live_inhibitor_target() {
     _pid_is_alive "$target_pid"
 }
 
+# --- Lean LSP reclamation pass: independently-gated predicates and snapshot ---
+#
+# This is a SEPARATE, independently-gated detection pass for orphaned Lean LSP process trees.
+# lean-lsp-mcp spawns `lake serve` -> `lean --server` -> one `lean --worker` per open file, with
+# no idle timeout or LRU eviction of its own (lean_lsp_mcp/client_utils.py's _close_client is
+# called only at shutdown/explicit eviction, never on an idle timer -- confirmed by reading the
+# installed package source). This pass shares NOTHING with the Claude pass's candidacy logic
+# above: `is_claude_executable_comm` is never touched by it, `is_system_slice_cgroup` and
+# `is_owned_by_current_uid` are reused UNMODIFIED as defense-in-depth, and it takes its own
+# `ps -C lake,lean` snapshot rather than widening `SNAPSHOT_PS_FIELDS` (which would force every
+# existing fake-`ps` test fixture to emit an extra column for a feature explicitly scoped as
+# separate).
+#
+# Why three predicates, not comm alone: live verification (see the research report) shows `ps`'s
+# `comm` field for all three Lean-family processes is just `lake` or `lean` -- the three-way
+# distinction (`lake serve` vs `lean --server` vs `lean --worker`) exists only in `args`. This
+# mirrors `is_claude_executable_comm`'s own `node` branch shape (comm gate + argv substring gate).
+#
+# Why the TTY gate cannot be reused here: live inspection showed `lake serve`/`lean --server`
+# retain a non-`?` controlling tty inherited from their spawning pty even when fully orphaned;
+# only `lean --worker` children show `?`. The Lean pass therefore gates candidacy on
+# comm+args+cpu+age (added in a later phase), never on tty.
+#
+# Zombie exclusion is deliberate, not accidental: `ps` renders a defunct row's comm as
+# `lake <defunct>` (observed live), which the exact `case "$comm" in lake) ...` match below
+# already rejects -- signaling an already-dead zombie reclaims nothing; only its parent's `wait()`
+# can reap it. Do not "fix" this into a substring match later; it would defeat the exclusion.
+is_lean_serve_comm() {
+    local comm="$1"
+    local args="${2:-}"
+
+    case "$comm" in
+        lake)
+            # Matches the leanclient-spawned shape
+            # (`.../bin/lake serve -- -Dserver.reportDelayMs=0`); rejects other `lake`
+            # subcommands such as `lake build` or `lake exe cache get`, which
+            # leanclient/base_client.py also invokes via subprocess.run.
+            case "$args" in
+                *" serve"*)
+                    return 0
+                    ;;
+                *)
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+is_lean_server_comm() {
+    local comm="$1"
+    local args="${2:-}"
+
+    case "$comm" in
+        lean)
+            case "$args" in
+                *--server*)
+                    return 0
+                    ;;
+                *)
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+is_lean_worker_comm() {
+    local comm="$1"
+    local args="${2:-}"
+
+    case "$comm" in
+        lean)
+            case "$args" in
+                *--worker*)
+                    return 0
+                    ;;
+                *)
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# Idle-reclamation threshold (minutes) for the Lean pass, independent of anything the Claude
+# pass uses. Default: 240 minutes, matching this repo's existing reap-threshold precedent
+# (ORCHESTRATOR_SESSION_REAP_MIN, TASK_LOCK_REAP_MIN). Deliberately conservative: the single
+# observed 13h-idle data point that motivated this pass argues for something well below 13h but
+# still generous, since a threshold set too low costs a rebuild (lean-lsp-mcp respawns
+# automatically on the next tool call) rather than any data loss. Override via
+# LEAN_LSP_IDLE_THRESHOLD_MIN for a different posture.
+LEAN_LSP_IDLE_THRESHOLD_MIN="${LEAN_LSP_IDLE_THRESHOLD_MIN:-240}"
+
+# --- Lean snapshot field-index map (separate, independently-gated `ps -C lake,lean` reading) ---
+# $1 pid   $2 ppid   $3 uid   $4 etimes   $5 rss   $6 pcpu   $7 cgroup   $8 comm   $9..NF args
+# (cgroup is requested at the same explicit 200-column width as SNAPSHOT_PS_FIELDS above, for the
+# same long-cgroup-path reason; args is again captured by `read`'s "last variable gets the
+# remainder of the line" behavior.)
+#
+# NOTE: `-C` must not be combined with `-e` in the same invocation -- `ps -eo ... -C lake,lean`
+# silently ignores the `-C` filter and returns the whole process table; `ps -C lake,lean -o ...`
+# is the correct, order-sensitive form (verified live).
+LEAN_SNAPSHOT_PS_FIELDS='pid,ppid,uid,etimes,rss,pcpu,cgroup:200,comm,args'
+
+# Take the Lean-scoped process snapshot. Fails loudly (non-zero exit, explicit message) rather
+# than silently degrading if `ps` itself fails, mirroring take_snapshot() above. An EMPTY result
+# (no lake/lean processes running at all) is the NORMAL case, not an error -- `ps -C` with zero
+# matches exits 1 with empty stdout/stderr, which is distinguished below from a genuine `ps`
+# failure (which always emits a non-empty error message).
+take_lean_snapshot() {
+    local out
+    local rc=0
+    out=$(ps -C lake,lean -o "$LEAN_SNAPSHOT_PS_FIELDS" --no-headers 2>&1) || rc=$?
+    if [ "$rc" -ne 0 ] && [ -n "$out" ]; then
+        echo "ERROR: 'ps -C lake,lean -o $LEAN_SNAPSHOT_PS_FIELDS' failed:" >&2
+        echo "$out" >&2
+        exit 1
+    fi
+    printf '%s\n' "$out"
+}
+
 # Function to get process age in human-readable format. Reads etimes from the
 # already-captured snapshot -- no re-query of ps for a candidate PID.
 get_process_age() {
@@ -267,6 +398,11 @@ print_help() {
     echo "  --force      Skip confirmation prompt and terminate immediately"
     echo "  --dry-run    Preview mode (identical to the no-flag path, with a DRY RUN banner)"
     echo "  (none)       Show status and exit (for use with /refresh command)"
+    echo ""
+    echo "Environment:"
+    echo "  LEAN_LSP_IDLE_THRESHOLD_MIN   Idle-reclamation threshold in minutes for the"
+    echo "                                separately-gated Lean LSP process-tree pass"
+    echo "                                (default: 240)"
 }
 
 main() {
