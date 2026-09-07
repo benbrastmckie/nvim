@@ -352,30 +352,30 @@ passes, the assertion is vacuous and must be strengthened.
 
 ---
 
-### Phase 6: Documentation, Confirmation Prompt, and Acceptance Sweep [NOT STARTED]
+### Phase 6: Documentation, Confirmation Prompt, and Acceptance Sweep [COMPLETED]
 
 **Goal**: Document the new pass in both user-facing files, add the `AskUserQuestion` confirmation
 block `SKILL.md` currently lacks, and verify every acceptance-bar item including the
 `is_claude_executable_comm` byte-identity constraint.
 
 **Tasks**:
-- [ ] Add a fifth bullet to `skill-refresh/SKILL.md`'s "Process Safety" section describing the
+- [x] Add a fifth bullet to `skill-refresh/SKILL.md`'s "Process Safety" section describing the
       Lean pass: separate snapshot, comm+argv predicate, tree-wide idle gate, configurable
       threshold, reused cgroup/UID exclusions, strict termination order — matching the existing
-      four bullets' prose style.
-- [ ] Add the parallel bullet to `commands/refresh.md`'s "Process Protection" section.
-- [ ] Note in both files that the Lean pass deliberately does *not* use the TTY signal, with the
-      live-verified reason (inherited pty survives orphaning).
-- [ ] Document `LEAN_LSP_IDLE_THRESHOLD_MIN` (default 240 minutes, why conservative, how to
-      override) in both files.
-- [ ] Add an explicit `AskUserQuestion` block to `SKILL.md` Step 2 covering both Claude and Lean
+      four bullets' prose style. *(completed)*
+- [x] Add the parallel bullet to `commands/refresh.md`'s "Process Protection" section. *(completed)*
+- [x] Note in both files that the Lean pass deliberately does *not* use the TTY signal, with the
+      live-verified reason (inherited pty survives orphaning). *(completed)*
+- [x] Document `LEAN_LSP_IDLE_THRESHOLD_MIN` (default 240 minutes, why conservative, how to
+      override) in both files. *(completed)*
+- [x] Add an explicit `AskUserQuestion` block to `SKILL.md` Step 2 covering both Claude and Lean
       orphans in a single confirmation, then re-running with `--force` when confirmed — closing
-      the pre-existing gap the script's own comment already assumes.
-- [ ] Acceptance sweep: confirm `is_claude_executable_comm` is byte-identical to its pre-task form
+      the pre-existing gap the script's own comment already assumes. *(completed)*
+- [x] Acceptance sweep: confirm `is_claude_executable_comm` is byte-identical to its pre-task form
       via `git show <pre-task-ref>:agent-system/extensions/core/scripts/claude-refresh.sh` and an
       extracted-function diff; confirm the `--dry-run`/`--force` contract and flag parsing are
-      unchanged; run the full test suite; run `--dry-run` live and verify nothing is terminated.
-- [ ] Confirm no task-number references appear in any edited deliverable outside `specs/**`.
+      unchanged; run the full test suite; run `--dry-run` live and verify nothing is terminated. *(completed)*
+- [x] Confirm no task-number references appear in any edited deliverable outside `specs/**`. *(completed)*
 
 **Timing**: 1 hour
 

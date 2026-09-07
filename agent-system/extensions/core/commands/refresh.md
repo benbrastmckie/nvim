@@ -144,6 +144,22 @@ with the predicates above rather than used alone. This design deliberately trade
 safety: a leaked process this allow-list fails to recognize survives, which is strictly
 preferable to ever terminating a live system daemon or another live session's process.
 
+- **Lean LSP process-tree pass (separately gated)**: a second, independent detection+termination
+  pass identifies orphaned `lake serve` -> `lean --server` -> `lean --worker` process trees
+  spawned by `lean-lsp-mcp` (which has no idle timeout or LRU eviction of its own). It takes its
+  own `ps -C lake,lean` snapshot, uses its own comm+argv predicates (`comm` alone cannot
+  distinguish the three Lean process forms), and reuses the system-slice/UID exclusions above
+  unmodified as defense-in-depth. A tree is a candidate only if every member (root, server, all
+  workers) is idle -- near-zero CPU and elapsed time at/beyond a configurable threshold.
+  Termination is strictly ordered workers -> server -> `lake serve` root, so a signaled parent
+  never orphans its children into PID 1. This pass deliberately does **not** use the `TTY == "?"`
+  signal -- live verification showed `lake serve`/`lean --server` retain a non-`?` controlling
+  tty inherited from their spawning pty even once fully orphaned. Reclaiming a tree is fully
+  recoverable: `lean-lsp-mcp` respawns a fresh one automatically on the next tool call.
+- **`LEAN_LSP_IDLE_THRESHOLD_MIN`**: the Lean pass's idle-reclamation threshold in minutes
+  (default: 240, matching this repo's existing reap-threshold precedent, deliberately
+  conservative). Override via the environment variable; see `claude-refresh.sh --help`.
+
 ## Examples
 
 ### Interactive Cleanup (Recommended)

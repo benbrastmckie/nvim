@@ -35,13 +35,53 @@ fi
 ### Step 2: Run Process Cleanup
 
 Execute process cleanup script, forwarding `--dry-run` through when set (reusing the `dry_run`
-boolean already parsed in Step 1 -- no new argument parsing):
+boolean already parsed in Step 1 -- no new argument parsing). This one invocation covers BOTH the
+Claude-process pass and the separately-gated Lean LSP process-tree pass (see "Process Safety"
+below); the script always runs both and reports/terminates each independently:
 
 ```bash
-.claude/scripts/claude-refresh.sh $( [ "$force" = true ] && echo "--force" ) $( [ "$dry_run" = true ] && echo "--dry-run" )
+process_output=$(.claude/scripts/claude-refresh.sh $( [ "$force" = true ] && echo "--force" ) $( [ "$dry_run" = true ] && echo "--dry-run" ))
 ```
 
 Store process cleanup output for display.
+
+**Interactive confirmation** (only when neither `force` nor `dry_run` was set at invocation --
+`--force` already terminates immediately with no prompt per the existing contract, and
+`--dry-run` never terminates regardless): closes a pre-existing gap where this step stored
+output but never actually prompted, despite this skill's frontmatter declaring `AskUserQuestion`
+and the script's own header comment already assuming a prompt exists ("skill will prompt with
+AskUserQuestion and re-run with --force if confirmed"). Check `process_output` for candidates
+from either pass by testing for the absence of BOTH "No orphaned processes found." and "No idle
+Lean LSP process trees found." -- if either line is absent (that pass found something), prompt
+once with a single combined confirmation covering both passes:
+
+```json
+{
+  "question": "Terminate the orphaned Claude processes and/or idle Lean LSP process trees found above?",
+  "header": "Process Cleanup",
+  "multiSelect": false,
+  "options": [
+    {
+      "label": "Yes, terminate",
+      "description": "Terminate every orphaned Claude process and idle Lean LSP process tree reported above"
+    },
+    {
+      "label": "No, skip",
+      "description": "Leave everything reported above running"
+    }
+  ]
+}
+```
+
+If the user selects "Yes, terminate", re-run with `--force` and replace the stored output:
+
+```bash
+process_output=$(.claude/scripts/claude-refresh.sh --force)
+```
+
+If the user selects "No, skip" -- or if both "No orphaned processes found." and "No idle Lean
+LSP process trees found." were already present in `process_output` -- skip this prompt entirely
+and proceed to Step 3 with the already-stored `process_output`.
 
 ### Step 3: Clean Orphaned Postflight Markers
 
@@ -438,6 +478,27 @@ above, never used alone as the sole discriminator.
 This design deliberately trades recall for safety: a leaked process this allow-list fails to
 recognize survives (false negative), which is strictly preferable to ever terminating a live
 system daemon or another live session's process (false positive).
+
+- **Lean LSP process-tree pass (separately gated)**: a second, independent detection+termination
+  pass identifies orphaned `lake serve` -> `lean --server` -> `lean --worker` process trees
+  spawned by `lean-lsp-mcp` (which has no idle timeout or LRU eviction of its own). It takes its
+  own `ps -C lake,lean` snapshot, uses its own comm+argv predicate set (`comm` alone cannot
+  distinguish the three Lean process forms -- the distinction lives in `args`), and reuses
+  `is_system_slice_cgroup`/`is_owned_by_current_uid` unmodified as defense-in-depth. A tree is a
+  reclamation candidate only if **every** member (root, server, and all workers) is idle:
+  near-zero CPU and elapsed time at/beyond a configurable threshold (see below). Termination is
+  strictly ordered workers -> server -> `lake serve` root, so a signaled parent never orphans its
+  children into PID 1. Deliberately, this pass does **not** use the `TTY == "?"` signal at all --
+  live verification showed `lake serve`/`lean --server` retain a non-`?` controlling tty
+  inherited from their spawning pty even once fully orphaned, so tty cannot discriminate here.
+  Reclaiming a tree is fully recoverable: `lean-lsp-mcp` respawns a fresh one automatically on the
+  next tool call, at the cost of a rebuild.
+- **`LEAN_LSP_IDLE_THRESHOLD_MIN`**: the Lean pass's idle-reclamation threshold, in minutes
+  (default: 240, matching this repo's existing reap-threshold precedent). Deliberately
+  conservative -- a single observed 13-hour-idle data point motivated this pass, but the default
+  is set well below that to reclaim well before it while still avoiding reclaiming a tree the
+  user is about to reuse. Override via the environment variable for a different posture; see
+  `--help`.
 
 ---
 

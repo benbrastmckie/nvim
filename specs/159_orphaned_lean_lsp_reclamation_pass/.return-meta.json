@@ -1,9 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/159_orphaned_lean_lsp_reclamation_pass/summaries/01_lean-lsp-reclamation-pass-summary.md",
+      "summary": "All 6 plan phases completed: Lean LSP process-tree reclamation pass added to claude-refresh.sh as a separately-gated pass; test suite grew from 17 to 49 passing assertions; is_claude_executable_comm byte-identical to pre-task form; docs updated."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented an independently-gated reclamation pass for orphaned Lean LSP process trees (lake serve -> lean --server -> lean --worker) in claude-refresh.sh, with its own predicates, snapshot, tree-wide idle gate, and strict workers->server->root termination order, plus cross-contamination and ordering test coverage and updated skill/command documentation."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/commands/refresh.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "bash's `kill` is a shell BUILTIN, not an external command. A test fixture pattern that fakes external commands via `PATH=\"$FAKE_BIN_DIR:$PATH\" bash script.sh` (works fine for `ps`, `ls`, etc.) silently does NOT intercept `kill` -- bash resolves builtins before consulting $PATH. To fake `kill` deterministically in a test, disable the builtin for one dedicated subshell via `enable -n kill` BEFORE the script under test is sourced (not executed) into that same subshell, then call its `main` function explicitly (sourcing bypasses a `BASH_SOURCE[0]==$0` dual-mode guard, so main() won't auto-run).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/summaries/01_lean-lsp-reclamation-pass-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "kill-builtin", "shell-testing", "enable-n", "fake-command", "test-fixture"]
+    },
+    {
+      "content": "When a shell script's numeric fields (like ps's pcpu%) need comparison without a bc/float dependency, truncate to the pre-decimal integer via bash's `${var%%.*}` parameter expansion (e.g. \"0.3\" -> \"0\", \"555\" -> \"555\"), then use plain integer `-gt`/`-ge` comparisons. This is a reusable pattern for any percentage-shaped ps/proc field in a script that otherwise avoids bc/jq.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/summaries/01_lean-lsp-reclamation-pass-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["bash", "integer-truncation", "percentage-parsing", "ps-pcpu", "no-bc-dependency"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788808797_82397b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
