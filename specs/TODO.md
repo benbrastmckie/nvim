@@ -36,7 +36,7 @@ next_project_number: 168
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-160 [RESEARCHED] — Add report-only refresh passes for unused MCP fan-out and unreape
+160 [PLANNED] — Add report-only refresh passes for unused MCP fan-out and unreape
   └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
@@ -427,11 +427,12 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 160. Add report-only refresh passes for unused MCP fan-out and unreaped child processes
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 159
 - **Research**: [160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md]
+- **Plan**: [160_report_only_mcp_and_zombie_passes/plans/01_mcp-fanout-and-zombie-passes.md]
 
 **Description**: Add report-only refresh passes for unused MCP fan-out and unreaped child processes.
 
