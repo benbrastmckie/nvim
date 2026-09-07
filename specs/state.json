@@ -647,21 +647,28 @@
     {
       "project_number": 158,
       "project_name": "vmswap_aware_refresh_memory_accounting",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless",
       "description": "Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless.\n\nPROBLEM: the snapshot field list in claude-refresh.sh is `pid,ppid,uid,tty,etimes,rss,comm,cgroup:200,args` -- RSS only. Live diagnosis found Lean workers at ~2 MB RSS holding ~1.2 GB VmSwap each, because the kernel had compressed untouched pages into zram (zramctl showed 9.1 GB data in 2.3 GB of RAM). Any threshold or report built on RSS alone classifies these as harmless. This is a cross-cutting concern: it changes how every other refresh pass reports memory, which is why it is sequenced first.\n\nWORK: add a swap-reading helper alongside format_memory() that reads VmSwap from /proc/PID/status, and thread combined RSS+swap through all existing reporting output.\n\nINVARIANT RULING REQUIRED: the script header (lines 12-17) documents that a single atomic `ps -eo` snapshot is taken once per invocation and that no candidate PID is ever re-queried live, which is the basis of its race-freedom argument. A per-candidate /proc read is the first thing to touch that invariant. Decide and RECORD IN THE HEADER COMMENT whether this breaches it; the defensible position is that it does not, because it is a reporting-only read that never gates a termination decision -- but it must be argued in the header, not silently assumed. Handle missing VmSwap (no swap configured, or the process exited between snapshot and read) without failing the run.\n\nFILES: agent-system/extensions/core/scripts/claude-refresh.sh (snapshot fields, format_memory, new helper, header invariant comment); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh (new cases).\n\nACCEPTANCE: --dry-run output shows RSS and swap for every listed process; a process with zero or absent VmSwap renders cleanly rather than erroring; a synthetic fixture with a known VmSwap value formats correctly; existing matcher tests still pass unchanged; `bash -n` clean; the header comment states the snapshot-invariant ruling.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "topic": "core-agent-system",
       "priority": "medium",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-07T00:00:00Z",
-      "session_id": "sess_1788805139_4519af",
+      "last_updated": "2026-09-07T19:24:38Z",
+      "session_id": "sess_1788808797_82397b",
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md",
+          "type": "report",
+          "summary": "Research on making claude-refresh.sh's memory accounting VmSwap-aware: a PROC_ROOT-overridable get_vmswap_kb() helper beside format_memory(), threading combined RSS+swap through all accumulators/display, an invariant ruling that a post-classification /proc read does not breach the snapshot race-freedom argument, and new matcher test cases."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/claude-refresh.sh",
         "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"
-      ]
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 159,
