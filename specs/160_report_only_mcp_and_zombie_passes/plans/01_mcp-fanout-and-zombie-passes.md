@@ -1,7 +1,7 @@
 # Implementation Plan: Report-Only MCP Fan-Out and Zombie Passes
 
 - **Task**: 160 - Add report-only refresh passes for unused MCP fan-out and unreaped child processes
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: 159 (Lean LSP reclamation pass) — file-overlap serialization on `claude-refresh.sh` only, not a logical prerequisite
 - **Research Inputs**: specs/160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md
@@ -111,27 +111,27 @@ and is genuinely parallel to Phase 2.
 
 ---
 
-### Phase 1: Correct the MCP scoping claim in docs-README.md [NOT STARTED]
+### Phase 1: Correct the MCP scoping claim in docs-README.md [COMPLETED]
 
 **Goal**: Remove the disproven "custom subagents cannot access project-scoped MCP servers" claim
 and replace it with the accurate workspace-trust cost, pointing to the authority document.
 
 **Tasks**:
-- [ ] Read the `### MCP Configuration` section of
-      `agent-system/extensions/core/docs/docs-README.md` (immediately before `## Guides`)
-- [ ] Replace the two-sentence claim with text stating: project-scoped `.mcp.json` servers are
+- [x] Read the `### MCP Configuration` section of
+      `agent-system/extensions/core/docs/docs-README.md` (immediately before `## Guides`) *(completed)*
+- [x] Replace the two-sentence claim with text stating: project-scoped `.mcp.json` servers are
       fully reachable by dispatched subagents once the workspace is trusted; the real cost is a
       one-time interactive trust approval in an untrusted workspace, and a cloned repository
       cannot pre-authorize its own servers from inside the repo — a one-time setup cost, not a
-      per-call or per-session obstacle
-- [ ] Mirror the wording of `context/patterns/mcp-server-ownership.md`'s "Workspace trust"
-      section rather than inventing new phrasing
-- [ ] Add a pointer naming `context/patterns/mcp-server-ownership.md` as the authority
-- [ ] Add a one-line note that a session's tool registry is a startup snapshot, so any
+      per-call or per-session obstacle *(completed)*
+- [x] Mirror the wording of `context/patterns/mcp-server-ownership.md`'s "Workspace trust"
+      section rather than inventing new phrasing *(completed)*
+- [x] Add a pointer naming `context/patterns/mcp-server-ownership.md` as the authority *(completed)*
+- [x] Add a one-line note that a session's tool registry is a startup snapshot, so any
       re-verification must use a fresh session or `claude -p` — this affects the main session
-      identically and is not subagent-specific
-- [ ] Confirm by grep that no subagent-barrier phrasing remains anywhere under
-      `agent-system/extensions/core/`
+      identically and is not subagent-specific *(completed)*
+- [x] Confirm by grep that no subagent-barrier phrasing remains anywhere under
+      `agent-system/extensions/core/` *(completed: grep returns no matches)*
 
 **Timing**: 0.25 hours
 

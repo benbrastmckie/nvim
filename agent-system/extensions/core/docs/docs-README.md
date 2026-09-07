@@ -75,8 +75,21 @@ Clean up Claude Code resources:
 
 ### MCP Configuration
 
-Custom subagents cannot access project-scoped MCP servers (`.mcp.json`). For subagent access,
-configure servers in user scope (`~/.claude.json`).
+Once a workspace is trusted, project-scoped `.mcp.json` servers are fully reachable by dispatched
+subagents — there is no categorical subagent access barrier to project scope. The real cost of
+project scope is workspace trust: a fresh clone (or any not-yet-trusted workspace) requires a
+one-time interactive approval before a project-scoped server is used, and a cloned repository
+cannot pre-authorize its own servers from inside the repo. That is a one-time setup cost, not a
+per-call or per-session obstacle, and it is not a reason to avoid project scope for a genuinely
+repo-local server.
+
+A session's tool registry is also a snapshot taken at startup, so an already-running session
+cannot see a server added to `.mcp.json` after it started — this affects the main session
+identically to any subagent and is not subagent-specific. Any re-verification of registration or
+reachability must use a fresh session (or `claude -p`), never an already-running one.
+
+See `context/patterns/mcp-server-ownership.md` for the full registration/permission model and the
+authoritative account of this trade-off.
 
 ---
 

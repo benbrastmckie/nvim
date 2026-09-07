@@ -1,20 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 160,
-  "session_id": "sess_1788808797_82397b_160",
-  "dispatch_seq": 10,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/160_report_only_mcp_and_zombie_passes/plans/01_mcp-fanout-and-zombie-passes.md",
-      "summary": "6-phase, 5-hour plan adding two report-only claude-refresh.sh passes (MCP fan-out, unreaped children) plus the docs-README.md MCP-scoping correction."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 5,
-  "dependency_waves": [[1, 2], [3], [4, 5], [6]],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 160 to execute the plan"
+  "session_id": "sess_1788808797_82397b",
+  "dispatch_seq": 11
 }
