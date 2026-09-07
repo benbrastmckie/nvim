@@ -133,25 +133,26 @@ the justification is present in the file at the moment the code that needs it ar
 
 ---
 
-### Phase 2: Add the PROC_ROOT seam and get_vmswap_kb() helper [NOT STARTED]
+### Phase 2: Add the PROC_ROOT seam and get_vmswap_kb() helper [COMPLETED]
 
 **Goal**: Introduce the swap-reading primitive as a standalone, directly-callable, fixture-testable
 function with no call sites yet — so it can be verified in isolation before any reporting path
 depends on it.
 
 **Tasks**:
-- [ ] Add `PROC_ROOT="${PROC_ROOT:-/proc}"` as an overridable path seam, with a comment noting it
+- [x] Add `PROC_ROOT="${PROC_ROOT:-/proc}"` as an overridable path seam, with a comment noting it
       mirrors the `_pid_is_alive` overridable-seam precedent and exists so tests can point at a
-      synthetic fixture directory.
-- [ ] Add `get_vmswap_kb()` immediately after `format_memory()`, extracting the value with
+      synthetic fixture directory. *(completed)*
+- [x] Add `get_vmswap_kb()` immediately after `format_memory()`, extracting the value with
       `awk '/^VmSwap:/ {print $2; exit}' "$PROC_ROOT/$pid/status" 2>/dev/null` and echoing `0` when
       the result is empty — no `bc`, no `jq`, integer-only, consistent with `format_memory`'s
-      existing no-external-dependency constraint.
-- [ ] Document in the function's comment that a `0` return covers two distinct benign cases (no
+      existing no-external-dependency constraint. *(completed)*
+- [x] Document in the function's comment that a `0` return covers two distinct benign cases (no
       `VmSwap` line because the host has no swap configured; unreadable file because the process
-      exited between snapshot and read) and that neither is an error condition.
-- [ ] Confirm the helper cannot abort the run under `set -euo pipefail`: the `2>/dev/null` plus the
+      exited between snapshot and read) and that neither is an error condition. *(completed)*
+- [x] Confirm the helper cannot abort the run under `set -euo pipefail`: the `2>/dev/null` plus the
       empty-result branch must leave no path where a nonzero `awk`/redirect status propagates.
+      *(completed: verified via ad-hoc known/absent-line/missing-file checks with `set -u`, exit 0)*
 
 **Timing**: 0.25 hours
 

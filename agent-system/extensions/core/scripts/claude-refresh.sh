@@ -212,6 +212,28 @@ format_memory() {
     fi
 }
 
+# Overridable /proc root seam. Mirrors the _pid_is_alive overridable-seam precedent above:
+# production always resolves to the real /proc, while a test can point this at a synthetic
+# fixture directory (e.g. PROC_ROOT="$WORKDIR/fakeproc") without instrumenting or otherwise
+# teaching get_vmswap_kb() below that it is under test.
+PROC_ROOT="${PROC_ROOT:-/proc}"
+
+# Read VmSwap (kB) for a single PID from its /proc/<pid>/status, for reporting/accounting
+# only -- see the header's invariant ruling for why this per-candidate read does not
+# reopen the single-snapshot race-freedom argument. Echoes `0`, never an error, for either
+# of two distinct benign cases: (1) the host has no swap configured, so the status file
+# has no `VmSwap:` line at all; (2) the candidate PID already exited between the snapshot
+# and this read, so the status file is unreadable. Neither case is a failure condition.
+# Integer-only, no `bc`/`jq` dependency, consistent with format_memory() above. The
+# `2>/dev/null` plus the empty-result fallback below leave no path where a nonzero
+# awk/redirect status could propagate and abort the run under `set -euo pipefail`.
+get_vmswap_kb() {
+    local pid="$1"
+    local kb
+    kb=$(awk '/^VmSwap:/ {print $2; exit}' "$PROC_ROOT/$pid/status" 2>/dev/null || true)
+    echo "${kb:-0}"
+}
+
 # Take the single atomic process snapshot. Fails loudly (non-zero exit, explicit
 # message) rather than silently degrading if `ps` itself fails.
 take_snapshot() {
