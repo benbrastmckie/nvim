@@ -1,61 +1,7 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": [
-    "orchestrator",
-    "plan",
-    "planner-agent"
-  ],
-  "session_id": "sess_1788815202_e9189b_152",
-  "dispatch_seq": 4,
-  "phase_count": 7,
-  "estimated_hours": 7,
-  "dependency_waves": [
-    [
-      1,
-      4
-    ],
-    [
-      2,
-      3,
-      5
-    ],
-    [
-      6,
-      7
-    ]
-  ],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
-      "summary": "7-phase plan covering both axes: line_count auto-repair wired pre-deploy into deploy-headless.sh (reported, never silent), and the inter-cycle redeploy checkpoint rewired onto the (a)/(b)/(c) baseline contract via a new shared scripts/lib/deploy-baseline-lib.sh sourced by both call sites."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "Doc-vs-code contract drift in this codebase is undetected by any gate: batch-orchestration-guardrails.md documented the redeploy checkpoint's three-branch (a)/(b)/(c) failure contract, command-gate-out.sh implemented it correctly, and orchestrate-cycle-plan.sh's checkpoint implemented only two of the three branches -- for a long time, with the doc asserting both sites matched. When a pattern file claims to be 'the single authoritative statement' of a contract with multiple implementing call sites, verify each call site against it rather than trusting the claim; the durable fix is extracting the contract into one sourced scripts/lib/*.sh anchor (the deploy-freshness-lib.sh / phase-heading-patterns.sh idiom) so a second site cannot re-diverge.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
-      "confidence": 0.75,
-      "suggested_keywords": [
-        "contract drift",
-        "scripts/lib",
-        "single sourced anchor",
-        "batch-orchestration-guardrails",
-        "redeploy checkpoint"
-      ]
-    }
-  ],
-  "next_steps": "Run /implement 152 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1788815202_e9189b_152",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ]
-  }
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1788824504_ea0ae3",
+  "dispatch_seq": 1
 }

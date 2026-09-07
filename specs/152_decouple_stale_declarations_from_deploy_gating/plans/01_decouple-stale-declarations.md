@@ -1,7 +1,7 @@
 # Implementation Plan: Decouple stale declarations from deploy gating
 
 - **Task**: 152 - Decouple stale declarations from deploy gating
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None (a sibling task fixes the two live `line_count` gate failures; this task
   addresses the defect class)
@@ -130,7 +130,7 @@ Phases within the same wave can execute in parallel. Phases 4 and 5 both edit
 `deploy-headless.sh` and are deliberately serialized (5 depends on 4) to avoid a same-file
 collision; Phases 2 and 3 touch disjoint files and are genuinely parallel.
 
-### Phase 1: Extract the deploy-baseline decision into a shared library [NOT STARTED]
+### Phase 1: Extract the deploy-baseline decision into a shared library [COMPLETED]
 
 **Goal**: Create one sourced home for the pre/post `verify-deploy.sh --findings` snapshot and the
 new-findings set difference, so the two consumers of the (a)/(b)/(c) contract share an
@@ -138,23 +138,23 @@ implementation instead of each carrying their own.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh`, modelled
+- [x] Create `agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh`, modelled
       structurally on `lib/deploy-freshness-lib.sh` (header stating it is the single home of the
       algorithm, safe to source, sets no shell options a caller inherits, exports nothing a
       caller must guess at).
-- [ ] Export `deploy_findings_snapshot <verify_deploy_path>`: runs `verify-deploy.sh --findings
+- [x] Export `deploy_findings_snapshot <verify_deploy_path>`: runs `verify-deploy.sh --findings
       --quiet`, folds exit 2 into the findings vocabulary as the single sentinel line
       `FINDING gate0 [SENTINEL] verify-deploy could not run (exit 2)`, otherwise prints
       `^FINDING ` lines `sort -u`'d. This is `command-gate-out.sh`'s `_gate_out_deploy_findings`
       behavior, moved here.
-- [ ] Export `deploy_baseline_new_findings <pre> <post>`: the `comm -13` set difference over the
+- [x] Export `deploy_baseline_new_findings <pre> <post>`: the `comm -13` set difference over the
       two snapshots, printing only newly-introduced findings.
-- [ ] Document in the header the three-branch contract this library serves, cross-referencing
+- [x] Document in the header the three-branch contract this library serves, cross-referencing
       `context/patterns/batch-orchestration-guardrails.md`'s "### The Inter-Cycle Redeploy
       Checkpoint" subsection by path rather than restating it.
-- [ ] Register `lib/deploy-baseline-lib.sh` in `agent-system/extensions/core/manifest.json`
+- [x] Register `lib/deploy-baseline-lib.sh` in `agent-system/extensions/core/manifest.json`
       `provides.scripts`, in the existing `lib/*.sh` block.
-- [ ] Change no call site in this phase.
+- [x] Change no call site in this phase.
 
 **Timing**: 0.75 hours
 

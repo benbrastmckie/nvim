@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Extract the deploy-baseline decision into a shared library",
+  "started_at": "2026-09-07T23:44:16Z",
+  "last_updated": "2026-09-07T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/lib/deploy-baseline-lib.sh with deploy_findings_snapshot and deploy_baseline_new_findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]},
+    {"id": 2, "description": "Register lib/deploy-baseline-lib.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

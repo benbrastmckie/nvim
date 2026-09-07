@@ -106,6 +106,7 @@
       "lake-build-guard.sh",
       "lib/common.sh",
       "lib/continuation-pointer-lib.sh",
+      "lib/deploy-baseline-lib.sh",
       "lib/deploy-freshness-lib.sh",
       "lib/file-scope-overlap.sh",
       "lib/manifest-routing-lib.sh",
