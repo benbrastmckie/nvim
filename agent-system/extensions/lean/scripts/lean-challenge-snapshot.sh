@@ -160,6 +160,9 @@ PLAN_FILE_ABS=$(cd "$(dirname "$PLAN_FILE")" && pwd)/$(basename "$PLAN_FILE")
 PROJECT_ROOT_ABS=$(cd "$PROJECT_ROOT" && pwd)
 PLAN_FILE_REL=$(python3 -c "import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$PLAN_FILE_ABS" "$PROJECT_ROOT_ABS")
 
+MANIFEST_PATH="$TASK_DIR/challenge/manifest.json"
+STATE_JSON="specs/state.json"
+
 # ---------------------------------------------------------------------------
 # Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented).
 # ---------------------------------------------------------------------------
@@ -469,3 +472,141 @@ if $DRY_RUN; then
   cat "$MODULE_FILE"
   exit 0
 fi
+
+# ---------------------------------------------------------------------------
+# Status gate -- the process-level guard against regeneration after implementation has started.
+# Only {not_started, researching, researched, planning, planned} are allowed without --force; any
+# later status (implementing, pr_ready, completed, blocked, partial, abandoned, expanded) is
+# refused with exit 73, since a Challenge must predate implementation to certify anything.
+# ---------------------------------------------------------------------------
+read_task_status() {
+  python3 - "$STATE_JSON" "$TASK_NUMBER" <<'PYEOF'
+import json
+import sys
+
+state_path, task_number = sys.argv[1], int(sys.argv[2])
+try:
+    with open(state_path, encoding="utf-8") as f:
+        data = json.load(f)
+except (OSError, json.JSONDecodeError) as e:
+    sys.stderr.write(f"ERROR: could not read/parse {state_path}: {e}\n")
+    sys.exit(2)
+
+for entry in data.get("active_projects", []):
+    if entry.get("project_number") == task_number:
+        print(entry.get("status", ""))
+        sys.exit(0)
+sys.exit(1)
+PYEOF
+}
+
+PRE_IMPLEMENTATION_STATUSES="not_started researching researched planning planned"
+
+TASK_STATUS=""
+if [ -f "$STATE_JSON" ]; then
+  set +e
+  TASK_STATUS=$(read_task_status)
+  status_lookup_rc=$?
+  set -e 2>/dev/null || true
+  set -uo pipefail
+  if [ "$status_lookup_rc" -eq 2 ]; then
+    echo "ERROR: could not read $STATE_JSON" >&2
+    exit 71
+  fi
+fi
+
+is_pre_implementation() {
+  local s="$1"
+  for allowed in $PRE_IMPLEMENTATION_STATUSES; do
+    [ "$s" = "$allowed" ] && return 0
+  done
+  return 1
+}
+
+if [ -n "$TASK_STATUS" ] && ! is_pre_implementation "$TASK_STATUS"; then
+  if ! $FORCE; then
+    echo "ERROR: snapshot refused -- task $TASK_NUMBER's status is '$TASK_STATUS' (past 'planned')." >&2
+    echo "       A Challenge must predate implementation to certify anything; re-run with --force" >&2
+    echo "       only if you understand the consequences (see below)." >&2
+    exit 73
+  fi
+  echo "================================================================================" >&2
+  echo "INCIDENT: --force bypassing the status gate for task $TASK_NUMBER" >&2
+  echo "  Current status: $TASK_STATUS (past 'planned')" >&2
+  echo "  Any previously recorded manifest SHA at $MANIFEST_PATH is now STALE for any caller" >&2
+  echo "  still holding it -- a Challenge produced after implementation has started certifies" >&2
+  echo "  nothing about what the implementation agent actually saw." >&2
+  echo "================================================================================" >&2
+fi
+
+if [ -f "$MANIFEST_PATH" ] && ! $FORCE; then
+  echo "ERROR: snapshot refused -- manifest already exists at $MANIFEST_PATH. Use --force to" >&2
+  echo "       overwrite (this does NOT change what any already-recorded commit SHA points to)." >&2
+  exit 73
+fi
+
+# ---------------------------------------------------------------------------
+# Write the assembled module, commit it into PROJECT_ROOT's own git history, and record the
+# manifest. This is the immutability mechanism itself: `git show <SHA>:<path>` retrieves exactly
+# these bytes forever, regardless of what happens to the working tree or HEAD afterward.
+# ---------------------------------------------------------------------------
+CHALLENGE_REL_PATH="${CHALLENGE_MODULE}.lean"
+CHALLENGE_ABS_PATH="$PROJECT_ROOT_ABS/$CHALLENGE_REL_PATH"
+
+CONTENT_SHA256=$(sha256sum "$MODULE_FILE" | awk '{print $1}')
+
+cp "$MODULE_FILE" "$CHALLENGE_ABS_PATH"
+git -C "$PROJECT_ROOT" add "$CHALLENGE_REL_PATH"
+# --allow-empty: a regeneration whose content happens to be byte-identical to what is already
+# committed (e.g. a --force re-run against an unchanged plan) must still produce a genuinely NEW
+# commit -- every snapshot run is its own regeneration event and gets its own SHA in the
+# manifest, never silently reusing a prior commit just because `git add` staged nothing.
+git -C "$PROJECT_ROOT" commit -q --allow-empty -m "task ${TASK_NUMBER}: snapshot lean challenge statements"
+COMMIT_SHA=$(git -C "$PROJECT_ROOT" rev-parse HEAD)
+
+CREATED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+mkdir -p "$(dirname "$MANIFEST_PATH")"
+python3 - "$MANIFEST_PATH" <<PYEOF
+import json
+
+manifest = {
+    "schema_version": 1,
+    "task_number": ${TASK_NUMBER},
+    "plan_path": "${PLAN_FILE}",
+    "project_root": "${PROJECT_ROOT_ABS}",
+    "challenge_module": "${CHALLENGE_MODULE}",
+    "challenge_path": "${CHALLENGE_REL_PATH}",
+    "theorem_names": "${THEOREM_NAMES}".split(",") if "${THEOREM_NAMES}" else [],
+    "route": "${ROUTE}",
+    "commit": "${COMMIT_SHA}",
+    "content_sha256": "${CONTENT_SHA256}",
+    "created_at": "${CREATED_AT}",
+}
+with open("$MANIFEST_PATH", "w", encoding="utf-8") as f:
+    json.dump(manifest, f, indent=2)
+    f.write("\n")
+PYEOF
+
+if $JSON_OUT; then
+  python3 -c "
+import json
+print(json.dumps({
+    'route': '$ROUTE',
+    'theorem_names': '$THEOREM_NAMES'.split(',') if '$THEOREM_NAMES' else [],
+    'commit': '$COMMIT_SHA',
+    'content_sha256': '$CONTENT_SHA256',
+    'manifest_path': '$MANIFEST_PATH',
+    'challenge_path': '$CHALLENGE_REL_PATH',
+}))
+"
+else
+  echo "route: $ROUTE"
+  echo "theorem_names: $THEOREM_NAMES"
+  echo "commit: $COMMIT_SHA"
+  echo "content_sha256: $CONTENT_SHA256"
+  echo "manifest_path: $MANIFEST_PATH"
+  echo "challenge_path: $CHALLENGE_REL_PATH"
+fi
+
+exit 0

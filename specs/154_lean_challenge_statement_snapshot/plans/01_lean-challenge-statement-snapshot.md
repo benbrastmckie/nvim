@@ -313,30 +313,30 @@ plan's approval commit; anything else fails loudly.
 
 ---
 
-### Phase 4: Commit, manifest, and the immutability status gate [NOT STARTED]
+### Phase 4: Commit, manifest, and the immutability status gate [COMPLETED]
 
 **Goal**: Turn an assembled Challenge into a durable, SHA-pinned artifact, and make regeneration
 after implementation has started a loud refusal.
 
 **Tasks**:
 
-- [ ] Write the assembled module to `<project_root>/<challenge_module>.lean`, `git add` it, and
+- [x] Write the assembled module to `<project_root>/<challenge_module>.lean`, `git add` it, and *(completed: uses —allow-empty so a byte-identical regeneration still records a fresh commit)*
       commit it as an isolated commit with message
       `task {N}: snapshot lean challenge statements` (the existing task-scoped git convention;
       task numbers are permitted in commit messages).
-- [ ] Compute `content_sha256` of the assembled module before committing — a second, independent
+- [x] Compute `content_sha256` of the assembled module before committing — a second, independent *(completed)*
       immutability witness that does not require the project repo to be reachable later.
-- [ ] Write `specs/{NNN}_{SLUG}/challenge/manifest.json` with the Phase 1 schema, including the
+- [x] Write `specs/{NNN}_{SLUG}/challenge/manifest.json` with the Phase 1 schema, including the *(completed)*
       resulting commit SHA.
-- [ ] **Status gate**: read the task's status from `specs/state.json`. If it is anything past
+- [x] **Status gate**: read the task's status from `specs/state.json`. If it is anything past *(completed)*
       `planned` (`implementing`, `pr_ready`, `completed`, ...), refuse with exit `73` and a
       message naming the task, its current status, and that the Challenge must predate
       implementation to certify anything.
-- [ ] Refuse (exit `73`) to overwrite an existing manifest even at `planned`, unless `--force`.
-- [ ] `--force` past `planned` proceeds but prints an incident-shaped warning naming the task, its
+- [x] Refuse (exit `73`) to overwrite an existing manifest even at `planned`, unless `--force`. *(completed)*
+- [x] `--force` past `planned` proceeds but prints an incident-shaped warning naming the task, its *(completed)*
       status, and the fact that any previously recorded manifest SHA is now stale for callers
       still holding it. Never a silent success.
-- [ ] Emit the verdict record in the sibling script's style: key/value lines by default, one JSON
+- [x] Emit the verdict record in the sibling script's style: key/value lines by default, one JSON *(completed)*
       object under `--json`.
 
 **Timing**: 1.5 hours

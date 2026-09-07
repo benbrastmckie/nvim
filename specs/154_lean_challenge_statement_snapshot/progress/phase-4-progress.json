@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Commit, manifest, and the immutability status gate",
+  "started_at": "2026-09-07T02:05:00Z",
+  "last_updated": "2026-09-07T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write module, git commit (--allow-empty), content_sha256, manifest write", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh"]},
+    {"id": 2, "description": "Status gate (73), manifest-overwrite refusal, --force incident warning, verdict output", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "plain git commit without --allow-empty", "result": "failed", "reason": "a --force re-run whose content is byte-identical to what's already committed stages nothing, so a plain `git commit` fails with exit 1 and no new SHA -- fixed by --allow-empty"}
+  ],
+  "handoff_count": 0
+}
