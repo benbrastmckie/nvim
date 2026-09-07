@@ -2529,8 +2529,45 @@ identically to the single-task engine's own `--continue-budget` contract.
 **If `stop_json` is non-null**: log `.reason`/`.message` to the transcript and exit the
 lifecycle-cycling loop — `all_terminal` is a success exit; `max_cycles`, `no_eligible_stuck`,
 `max_infra_failures`, and `convergence_guard` are partial exits. Proceed to Stage MT-5. **If
-`stop_json` is null**: continue to Stage MT-4's dispatch composition below, using this cycle's
-`plan_json.dispatch[]` rows.
+`stop_json` is null**: continue to MT-3-hard below, then to Stage MT-4's dispatch composition,
+using this cycle's `plan_json.dispatch[]` rows.
+
+**MT-3-hard. Burnout circuit-breaker gate (hard mode only)**
+
+**MANDATORY when `$hard_mode` is true — runs EVERY cycle**, after `plan_json` is known and
+`stop_json` has been confirmed null, strictly before Stage MT-4's dispatch composition. Skipped
+entirely when `hard_mode` is false. The batch engine has no per-invocation state-machine copy of
+its own for this self-check — it is the SAME behavioral gate single-task Stage 3b-hard states,
+reused verbatim rather than duplicated, per
+`.claude/context/contracts/orchestrator-discipline.md`. Check all three self-checks, for whichever
+task in this cycle's `plan_json.dispatch[]` you are currently reasoning about, before proceeding:
+
+1. **If you are about to Read a path you have already read this session without an
+   intervening `Agent` dispatch having produced new information, STOP and dispatch
+   `$RESEARCH_AGENT` instead** (focus_prompt = a literal restatement of the exact unresolved
+   question) — do not complete the re-read.
+2. **If this is the second or later consecutive orchestrator turn reasoning about task content
+   with no `Agent` tool call in between, STOP reasoning immediately and take response (a) or
+   (b) from the contract now** — do not produce a third such turn.
+3. **If you are about to reverse a phase, target, or escalation decision without a fresh
+   dispatch having just produced the new finding that justifies it, STOP and either dispatch
+   `$RESEARCH_AGENT` to obtain that finding or let the NEXT cycle's `aux_pending`/`aux_dispatch[]`
+   machinery (Decision 2) carry the escalation instead — never reverse on inline reasoning alone.**
+
+**On any signal firing**, call `orchestrate-churn.sh --burnout-signal "$task_dir_abs"` for the
+task the signal fired on (resolved the same way the dispatch-composition loop above resolves
+`task_dir_abs`) — replacing single-task 3b-hard's own inline `loop_guard_file` jq write with a
+single script call, since the durable counter's home
+(`${TASK_DIR}/.orchestrator-loop-guard`'s `burnout_signals_this_session` field) and its exact log
+line (`"[orchestrate] H-orch: burnout signal detected ..."`) are already owned by that script (see
+its own `--burnout-signal` mode, built by the earlier phase of this same task):
+
+```bash
+if [ "${hard_mode:-false}" = "true" ]; then
+  # <signal fired — see the three self-checks above>
+  bash .claude/scripts/orchestrate-churn.sh --burnout-signal "$task_dir_abs" >/dev/null
+fi
+```
 
 ### Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight
 
@@ -2561,9 +2598,45 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
 done
 ```
 
-**BATCHING RULE** (unchanged): ALL Agent tool calls composed by the loop above MUST be issued in a
-SINGLE orchestrator message with multiple tool-use content blocks — Claude Code processes all
-calls in a single message concurrently; multiple messages force sequential execution.
+**Aux dispatch composition (Decision 2 — the task that ported single-task's Stage 5a/5b/6
+auxiliary flows into the batch engine)**: a SECOND, adjacent loop, over `plan_json.aux_dispatch[]`
+rather than `plan_json.dispatch[]`. Each row already carries `task`, `kind`, `agent`, `model`, and
+`dispatch_file` — `orchestrate-cycle-plan.sh` already called `orchestrate-build-aux-dispatch.sh`
+for every row, so the dispatch file itself names the prompt and every input this dispatch carries.
+`agent` here is FIXED by `kind` (`fork`, `fork`, `reviser-agent`, or the task's own already-resolved
+research agent — see that script's own header), never task-type-routed.
+
+Prompt for every row: `"You are dispatched by /orchestrate for task $t (auxiliary: $kind). Read
+$dispatch_file first and execute it exactly; it names every input, output path and contract."`
+Context for every row: `{ task_number: t, orchestrator_mode: false, session_id: session_id,
+task_dir: task_dir_abs }` — deliberately NO `handoff_path` key at all (not even null): an aux
+dispatch runs with `orchestrator_mode: false` and, per the decided one-channel-per-mode contract
+(`docs/architecture/handoff-schema.md`'s "Handoff Writers" table), writes NO
+`.orchestrator-handoff.json` — the same reasoning single-task Stage 6 Step 3 already documents for
+its own research fork.
+
+```bash
+echo "$plan_json" | jq -c '.aux_dispatch[]' | while IFS= read -r row; do
+  t=$(jq -r .task <<<"$row"); kind=$(jq -r .kind <<<"$row"); agent=$(jq -r .agent <<<"$row")
+  model=$(jq -r '.model // empty' <<<"$row"); dispatch_file=$(jq -r .dispatch_file <<<"$row")
+  task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/$(jq -r --arg t "$t" '.task_dirs[$t]' "$mt_state_file")"
+  # Invoke Agent tool: subagent_type = agent (model, if non-empty, as the Agent tool's `model`
+  # parameter); prompt and context per the two field mappings named just above.
+done
+```
+
+**MUST NOT**: an `aux_dispatch[]` row NEVER reaches `orchestrate-cycle-postflight.sh` and NEVER
+contributes to `failed_tasks` — true by construction (the postflight loop below iterates
+`plan_json.dispatch[]` only, never `plan_json.aux_dispatch[]`), stated here explicitly so it is
+never "fixed" by adding a postflight call for aux rows. An aux dispatch's only effect is a written
+file (`.blocker-research.json`, `.drift-inspection.json`) or a revised plan, which the NEXT
+cycle's `orchestrate-cycle-plan.sh` AUX DECISION section and ordinary status-derived dispatch pick
+up on their own.
+
+**BATCHING RULE** (unchanged, now covering BOTH loops above): ALL Agent tool calls composed by
+either loop MUST be issued in a SINGLE orchestrator message with multiple tool-use content blocks
+— Claude Code processes all calls in a single message concurrently; multiple messages force
+sequential execution.
 
 Log every `plan_json.deferred[]` and `plan_json.blocked[]` row's `reason` verbatim to the
 transcript — informational only, no further action required (a deferred task becomes eligible
@@ -2619,7 +2692,8 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
     --task-dir "$task_dir_rel" --task-type "$task_type" --agent "$agent" \
     --plan-path "$plan_path_for_task" --cycle-count "${cycle_count:-0}" \
     --transport-error "${task_transport_error:-false}" \
-    --force-invoked "$force")
+    --force-invoked "$force" \
+    $( [ "${hard_mode:-false}" = "true" ] && echo --hard ))
 
   dispatch_status=$(echo "$postflight_json" | jq -r '.status')
   verdict=$(echo "$postflight_json" | jq -r '.verdict')

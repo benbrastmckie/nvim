@@ -420,6 +420,32 @@ separate concern of a not-yet-built postflight composer (see that task's own sco
 └──────────────────────────────────────────────────┘
 ```
 
+### Auxiliary Dispatch (`aux_dispatch[]`)
+
+**Added (task that ported single-task's Stage 5a/5b/6 auxiliary flows into the batch engine)**:
+alongside step 5's `dispatch[]` rows, `scripts/orchestrate-cycle-plan.sh` emits a SIBLING array,
+`aux_dispatch[]`, for `drift-inspection`/`blocker-research`/`plan-revision`/`divergence-audit`
+work — single-task's own Stage 5a Drift Inspection, Stage 5b's H5 three-strikes divergence-audit
+dispatch, and Stage 6 Blocker Escalation's research-fork/plan-revision steps, each having no
+task-type to route by (their agent is FIXED per kind: `fork`, `fork`, `reviser-agent`, or the
+task's own already-resolved research agent). The full decision record — why a sibling array
+rather than widening `dispatch[]`'s own `phase` vocabulary, the escalation caps
+(`MAX_BLOCKER_ESCALATIONS`/`MAX_DRIFT_INSPECTIONS`), the `.blocker-research.json`/
+`.drift-inspection.json` chaining into a follow-on `plan-revision` row, and the hard/base-mode
+mutual exclusion between `divergence-audit` and `drift-inspection` — lives in that task's own
+plan (Decision 2) and in `orchestrate-cycle-plan.sh`'s header comment; it is not restated here.
+
+Dispatch composition mirrors step 5's own `dispatch[]` loop exactly, as a second adjacent loop in
+`SKILL.md` Stage MT-4 over `aux_dispatch[]` instead: same single-message batching rule, but
+`orchestrator_mode: false` and no `handoff_path`. An aux row NEVER reaches step 7's per-task
+postflight and NEVER contributes to `failed_tasks` — its only effect is a written file or a
+revised plan for a LATER cycle's `dispatch[]` to pick up.
+
+The hard-mode burnout circuit-breaker (single-task Stage 3b-hard) has a batch-engine counterpart
+too, `SKILL.md`'s own "MT-3-hard" subsection: the same three self-checks, reused verbatim rather
+than duplicated, with the signal-firing action replaced by one call to
+`scripts/orchestrate-churn.sh --burnout-signal`.
+
 ### Batch Size Cap (MAX_TASKS)
 
 Before entering multi-task dispatch, the batch size is capped at `MAX_TASKS=8`. A request

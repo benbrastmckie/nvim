@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Wire aux rows and the burnout breaker into the engine's MT stages",
+  "started_at": "2026-09-07T15:30:00Z",
+  "last_updated": "2026-09-07T15:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add a second, adjacent aux_dispatch[] composition loop to Stage MT-4 (orchestrator_mode: false, no handoff_path)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "State the MUST NOT: aux rows never reach orchestrate-cycle-postflight.sh, never contribute to failed_tasks", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Add the MT-3-hard burnout circuit-breaker self-check, calling orchestrate-churn.sh --burnout-signal", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Thread --hard into the Stage MT-4 orchestrate-cycle-postflight.sh call", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Document the aux-row contract in docs/architecture/orchestrate-state-machine.md's MT-mode section", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 6, "description": "Remove the stale force_phases 'accepted-and-ignored' notice in commands/orchestrate.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Read the CURRENT live text of SKILL.md's Stage MT-3/MT-4 fresh (rather than trusting the plan's own Decision-record prose describing single-task Stage 5a/5b/6) before editing.", "result": "kept", "reason": "Confirmed the MT stages were already heavily collapsed by a prior task (one call to orchestrate-cycle-plan.sh, one dispatch[] composition loop, one postflight call site) -- the plan's own prose describes the SOURCE single-task stages being ported FROM, not the current shape of the MT stages being ported INTO, so editing against a fresh read avoided introducing a second, stale rendering."},
+    {"approach": "Grepped the whole core/ tree for 'accepted-and-ignored'/'diagnostics only'/'never fanned' before touching any notice.", "result": "kept", "reason": "Found exactly one stale hit (commands/orchestrate.md's force_phases bullet); SKILL.md's own Stage MT-1 field-list section already correctly described force_phases as honored per-task (updated by whichever prior task collapsed MT-3), confirming the fix was scoped correctly and no other notice needed touching."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

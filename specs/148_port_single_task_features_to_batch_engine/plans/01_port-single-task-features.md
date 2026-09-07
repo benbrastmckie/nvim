@@ -488,26 +488,27 @@ plan-revision and divergence-audit rows with fixed agents and a dedicated dispat
 
 ---
 
-### Phase 6: Wire aux rows and the burnout breaker into the engine's MT stages [NOT STARTED]
+### Phase 6: Wire aux rows and the burnout breaker into the engine's MT stages [COMPLETED]
 
 **Goal**: `SKILL.md`'s MT-3/MT-4 dispatch the new rows correctly and never postflight them; the
 hard-mode burnout self-check reaches `orchestrate-churn.sh`.
 
 **Tasks**:
-- [ ] In Stage MT-4's dispatch-composition loop, add a second, adjacent loop over
+- [x] In Stage MT-4's dispatch-composition loop, add a second, adjacent loop over
       `plan_json.aux_dispatch[]` issuing its Agent calls in the SAME single message (the batching
-      rule is unchanged), with `context.orchestrator_mode = false` and no `handoff_path`.
-- [ ] State explicitly, as a MUST NOT, that aux rows never reach
-      `orchestrate-cycle-postflight.sh` and never contribute to `failed_tasks`.
-- [ ] Add the hard-mode burnout circuit-breaker self-check to the MT loop as a short MUST that
+      rule is unchanged), with `context.orchestrator_mode = false` and no `handoff_path`. *(completed)*
+- [x] State explicitly, as a MUST NOT, that aux rows never reach
+      `orchestrate-cycle-postflight.sh` and never contribute to `failed_tasks`. *(completed)*
+- [x] Add the hard-mode burnout circuit-breaker self-check to the MT loop as a short MUST that
       calls `orchestrate-churn.sh --burnout-signal`, replacing inline reasoning with a dispatch,
-      and delete no single-task copy.
-- [ ] Thread `--hard` into the Stage MT-4 postflight call so Phase 3's wiring is reachable.
-- [ ] Update `docs/architecture/orchestrate-state-machine.md`'s MT-mode section with the aux-row
+      and delete no single-task copy. *(completed: new "MT-3-hard" subsection)*
+- [x] Thread `--hard` into the Stage MT-4 postflight call so Phase 3's wiring is reachable. *(completed)*
+- [x] Update `docs/architecture/orchestrate-state-machine.md`'s MT-mode section with the aux-row
       contract and Decision 2's rationale; keep `SKILL.md` itself terse (it is under a byte
-      ceiling).
-- [ ] Remove any stale "accepted-and-ignored" notice for flags the batch engine now honors,
-      leaving genuinely ignored flags' notices intact.
+      ceiling). *(completed: new "Auxiliary Dispatch (aux_dispatch[])" subsection)*
+- [x] Remove any stale "accepted-and-ignored" notice for flags the batch engine now honors,
+      leaving genuinely ignored flags' notices intact. *(completed: commands/orchestrate.md's
+      force_phases bullet corrected — it is honored per-task, not diagnostics-only)*
 
 **Timing**: 1.5 hours
 
@@ -529,28 +530,36 @@ hard-mode burnout self-check reaches `orchestrate-churn.sh`.
 
 ---
 
-### Phase 7: Route one task number through the batch path behind a flag; retarget the tests [NOT STARTED]
+### Phase 7: Route one task number through the batch path behind a flag; retarget the tests [COMPLETED]
 
 **Goal**: `/orchestrate N` can run as a batch of one, opt-in, with the hard-mode and loop-guard
 test set exercising the new scripts.
 
 **Tasks**:
-- [ ] In `commands/orchestrate.md` STAGE 0, gate the `len(TASK_NUMBERS) == 1` branch on
+- [x] In `commands/orchestrate.md` STAGE 0, gate the `len(TASK_NUMBERS) == 1` branch on
       `ORCHESTRATE_BATCH_OF_ONE` (env var, default unset): when set, build
       `waves_json=[[N]]`, `task_numbers_json=[N]`, `dep_graph_json={"N":[]}` and take the same
-      `multi_task_mode=true` Skill invocation the `> 1` branch already uses.
-- [ ] Leave the unset path falling through to CHECKPOINT 1 exactly as today; document the flag in
-      the command's Options section as experimental and temporary.
-- [ ] Confirm `SKILL.md` Stage 0 needs no change (it already branches on the delegation-context
+      `multi_task_mode=true` Skill invocation the `> 1` branch already uses. *(completed: the
+      existing multi-task dispatch block needs no special-casing for a batch of one -- its own
+      dependency-graph construction naturally narrows to `{"N":[]}` and waves/task_numbers to
+      `[[N]]`/`[N]`)*
+- [x] Leave the unset path falling through to CHECKPOINT 1 exactly as today; document the flag in
+      the command's Options section as experimental and temporary. *(completed)*
+- [x] Confirm `SKILL.md` Stage 0 needs no change (it already branches on the delegation-context
       flag regardless of task count) and record that as a verified fact, not an assumption.
-- [ ] Retarget `scripts/tests/test-loop-guard-budget-override.sh`: add cases running the budget
+      *(completed: verified by reading Stage 0 -- it parses `multi_task_mode` from the delegation
+      context only, with no task-count logic of its own)*
+- [x] Retarget `scripts/tests/test-loop-guard-budget-override.sh`: add cases running the budget
       guard and `--continue-budget` path of `orchestrate-cycle-plan.sh` directly, keeping the
       existing `SKILL.md` sentinel-region cases (the single-task engine is still live and still
-      the default).
-- [ ] Retarget `scripts/tests/test-loop-guard-staleness.sh` the same way against whichever script
+      the default). *(completed: new TARGET 2 section, 5 new cases, 41/41 green)*
+- [x] Retarget `scripts/tests/test-loop-guard-staleness.sh` the same way against whichever script
       now owns the staleness region for the batch path, or record explicitly that the detector
-      stays single-task-only for now and why.
-- [ ] Update both suites' HONEST SCOPE LIMIT headers to describe the two-target structure.
+      stays single-task-only for now and why. *(completed: recorded explicitly -- grep-verified
+      neither batch-engine script references plan_version/mtime/staleness; porting this detector
+      was never in this task's item (2) HARD scope)*
+- [x] Update both suites' HONEST SCOPE LIMIT headers to describe the two-target structure.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,23 @@
+{
+  "phase": 7,
+  "phase_name": "Route one task number through the batch path behind a flag; retarget the tests",
+  "started_at": "2026-09-07T16:00:00Z",
+  "last_updated": "2026-09-07T16:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Gate the len(TASK_NUMBERS)==1 branch on ORCHESTRATE_BATCH_OF_ONE in commands/orchestrate.md STAGE 0", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 2, "description": "Document ORCHESTRATE_BATCH_OF_ONE in the Options section as experimental/temporary", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 3, "description": "Verify SKILL.md Stage 0 needs no change (reads only multi_task_mode, no task-count logic)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Retarget test-loop-guard-budget-override.sh with a direct orchestrate-cycle-plan.sh TARGET 2 section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]},
+    {"id": 5, "description": "Record test-loop-guard-staleness.sh as single-task-only (detector not ported; out of this task's scope)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]},
+    {"id": 6, "description": "Update both suites' HONEST SCOPE LIMIT headers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh", "agent-system/extensions/core/scripts/tests/test-loop-guard-staleness.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Confirmed via grep that the multi-task dispatch block in commands/orchestrate.md needs NO special-casing for a batch of one: its existing dependency-graph construction already filters a task's dependencies[] down to only those ALSO in validated_tasks, so a single-task validated_tasks=(N) naturally produces dep_graph_json={\"N\":[]}, and waves_json/task_numbers_json naturally reduce to [[N]]/[N].", "result": "kept", "reason": "Avoided writing a second, parallel single-task construction path that would need to be kept in sync with the >1 branch's own logic -- the existing generic block already does exactly what the plan's literal JSON example describes, for free."},
+    {"approach": "Built TARGET 2's fixture in test-loop-guard-budget-override.sh by copying real collaborator scripts into a synthetic .claude/scripts/ tree (mirroring test-orchestrate-cycle-plan.sh's own convention) rather than duplicating that suite's much larger Group 8.", "result": "kept", "reason": "Keeps this suite's own two headline properties (refusal without --continue-budget, archive+reset+preserve+dispatch with it) demonstrable from ITS OWN name/entry point without re-authoring Group 8's cross-session/mode-aware/mixed-batch coverage a second time."},
+    {"approach": "First wrote TARGET 2's orchestrate-cycle-plan.sh invocations with a literal '--' end-of-options separator (copied from test-orchestrate-cycle-plan.sh's own run_sut helper convention).", "result": "failed", "reason": "orchestrate-cycle-plan.sh's own flag parser has no '--' end-of-options handling -- it falls through to the unrecognized-flag catch-all and exits 2. The helper that supports '--' strips it itself before invoking the SUT; calling the script directly (as TARGET 2 does) must omit it entirely."},
+    {"approach": "TARGET 2 case T2-2 (the live --continue-budget path) initially had no update-task-status.sh/orchestrate-build-dispatch.sh stubs in its minimal fixture.", "result": "failed", "reason": "skill_preflight_update (called via skill-base.sh on the live dispatch path) shells out to update-task-status.sh, which does not exist in a minimal fixture missing it -- exit 127. Added both stubs (mirroring test-orchestrate-cycle-plan.sh's own Group 4/5 convention) before case T2-2 runs; case T2-1 never reaches either script (it refuses before any dispatch), so both stubs are harmless there."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
