@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788808797_82397b_160",
+  "task_number": 160,
+  "dispatch_seq": 9,
+  "findings_count": 6,
+  "next_steps": "Run /plan 160 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md",
+      "summary": "Confirms the disproven subagent-barrier claim already corrected in mcp-server-ownership.md, pinpoints docs-README.md line 78 as the sole in-scope stale claim, reproduces live MCP fan-out (6 sessions x 3 procs, ~976MB VmSwap-aware) and both zombie classes (7 sd_* + 1 lake <defunct>) with real PIDs, and recommends extending claude-refresh.sh with two new report-only pass functions following the task-159 two-pass precedent."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "context/patterns/mcp-server-ownership.md already contains the corrected workspace-trust framing for MCP subagent access (sections 'Workspace trust' and 'The session-start snapshot trap') — it is not itself in need of correction; only docs/docs-README.md's older categorical 'subagents cannot access project-scoped MCP servers' claim lags behind it. When auditing for this claim repo-wide, .opencode/docs/README.md and .opencode/extensions/core/docs/README.md carry the identical stale wording but are a separate system's docs, out of scope for agent-system/extensions/core/ edits.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mcp-server-ownership", "docs-README", "subagent-barrier-claim", "workspace-trust", "opencode-docs-drift"]
+    },
+    {
+      "content": "claude-refresh.sh's established multi-pass pattern (set by the Lean LSP reclamation task): main() calls independent run_*_pass(\"$FORCE\" \"$DRY_RUN\") functions unconditionally in sequence, each taking its own ps snapshot, reusing get_vmswap_kb/format_memory/get_process_age/is_system_slice_cgroup/is_owned_by_current_uid as shared helpers, and calling terminate_pid only if the pass is actually destructive. A report-only pass should never call terminate_pid/kill at all — grep-verifiable, and produces byte-identical --dry-run/--force output modulo the [DRY RUN] banner, which is the mechanical proof of non-destructiveness.",
+      "category": "PATTERN",
+      "source_artifact": "specs/160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["claude-refresh.sh", "multi-pass-pattern", "report-only-pass", "non-destructive", "VmSwap-accounting"]
+    }
+  ]
+}
