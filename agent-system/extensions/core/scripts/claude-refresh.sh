@@ -1192,8 +1192,8 @@ run_mcp_fanout_pass() {
     local -a flagged_servers=()
 
     echo ""
-    printf "%-16s %-10s %-10s %s\n" "Server" "Sessions" "Procs" "Memory"
-    printf "%-16s %-10s %-10s %s\n" "----------------" "----------" "----------" "----------"
+    printf "%-16s %-10s %-10s %-12s %s\n" "Server" "Sessions" "Procs" "Memory" "Evidence"
+    printf "%-16s %-10s %-10s %-12s %s\n" "----------------" "----------" "----------" "------------" "--------"
 
     local server_key
     while IFS= read -r server_key; do
@@ -1256,15 +1256,25 @@ run_mcp_fanout_pass() {
         done
         local n_sessions="${#uniq_roots[@]}"
 
-        printf "%-16s %-10s %-10s %s\n" "$server_key" "$n_sessions" "$n_procs" "$(format_memory "$server_mem")"
-        total_servers_mem=$((total_servers_mem + server_mem))
-
         # Invoked via `||` rather than as a bare statement: under this script's `set -e`, a bare
         # call whose return is 1 (or 2) would abort the whole script right here -- the same
         # set -e hazard the escalation helper defined earlier in this script guards against by
         # documenting that its own callers must use an if/||/&& context, never a bare invocation.
         local evidence_rc=0
         mcp_server_evidence_of_use "$server_key" || evidence_rc=$?
+
+        # Evidence-column text: three distinct outcomes, per the plan's explicit requirement that
+        # "no available signal" is reported as its own outcome, never conflated with "unused".
+        local evidence_label
+        case "$evidence_rc" in
+            0) evidence_label="in use" ;;
+            1) evidence_label="no evidence of use" ;;
+            *) evidence_label="no use signal available" ;;
+        esac
+
+        printf "%-16s %-10s %-10s %-12s %s\n" "$server_key" "$n_sessions" "$n_procs" "$(format_memory "$server_mem")" "$evidence_label"
+        total_servers_mem=$((total_servers_mem + server_mem))
+
         if [ "$evidence_rc" -eq 1 ]; then
             flagged_servers+=("$server_key")
         fi

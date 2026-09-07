@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Test-suite assertions for both passes",
+  "started_at": "2026-09-07T21:08:00Z",
+  "last_updated": "2026-09-07T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Assertion block (h): zombie-state discrimination on synthetic fixture rows", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "Assertion block (h) continuation: zombie pass output shape over synthetic snapshot", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 3, "description": "Assertion block (i): MCP pass session-count/memory aggregation over synthetic rows", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 4, "description": "Assertion block (i) continuation: evidence-of-use discriminator fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 5, "description": "Assertion block (j): grep for zero kill/terminate_pid in new function bodies", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 6, "description": "Assertion block (j) continuation: advisory text grep", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 7, "description": "Extend mutation check function-name loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 8, "description": "Update mutation check exact-count guard and message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 9, "description": "Run full suite, confirm zero failures", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Added an Evidence column to run_mcp_fanout_pass's report table during Phase 4 test-writing (gap found: plan requires explicit 'no use signal available' reporting, not just silent non-flagging)", "result": "success", "reason": "amended Phase 3 code before writing Phase 4 tests against it"},
+    {"approach": "Diffed --dry-run vs --force zombie output via simple grep -v of banner lines", "result": "failed", "reason": "left an extra blank line behind (banner removal artifact); fixed by squeezing consecutive blanks with cat -s on both sides before comparing"}
+  ],
+  "handoff_count": 0
+}

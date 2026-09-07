@@ -689,6 +689,300 @@ fi
 unset PROC_ROOT KILL_LOG_FILE
 
 # =====================================================================
+# Assertion (h): zombie-state discrimination (unit) and full pass output shape (end-to-end)
+# =====================================================================
+# Unit-level: zombie_row_is_defunct must accept Z/Z+ and reject every live state code.
+if zombie_row_is_defunct "Z"; then
+  pass "zombie_row_is_defunct: accepts 'Z'"
+else
+  fail "zombie_row_is_defunct: rejected 'Z'"
+fi
+if zombie_row_is_defunct "Z+"; then
+  pass "zombie_row_is_defunct: accepts 'Z+'"
+else
+  fail "zombie_row_is_defunct: rejected 'Z+'"
+fi
+for live_stat in S R D T I S+ Ss Rl; do
+  if zombie_row_is_defunct "$live_stat"; then
+    fail "zombie_row_is_defunct: incorrectly accepted live state '$live_stat'"
+  else
+    pass "zombie_row_is_defunct: rejects live state '$live_stat'"
+  fi
+done
+
+# End-to-end: full --dry-run/--force output shape over a synthetic snapshot, proving grouping by
+# parent, correct child count, live-vs-zombie discrimination, and age reporting -- via a
+# dedicated fake `ps` on PATH exactly like assertions (d-2)/(e)/(g) above. Every OTHER pass's own
+# ps invocation (Claude/Lean/MCP) sees an empty process table via this same fake ps, isolating
+# this assertion to the zombie pass's own output. CLAUDE_JSON_PATH is pointed at a nonexistent
+# file so the MCP pass short-circuits before ever calling ps, keeping this fixture minimal.
+ZOMBIE_PARENT1=910101   # speech-dispatcher-style parent (live)
+ZOMBIE_CHILD1=910102    # zombie child 1 (Z)
+ZOMBIE_CHILD2=910103    # zombie child 2 (Z+)
+ZOMBIE_PARENT2=910111   # lean-lsp-mcp-style parent (live)
+ZOMBIE_CHILD3=910112    # zombie child 3 (Z)
+
+ZOMBIE_FAKE_BIN_DIR="$WORKDIR/fakebin-zombie"
+mkdir -p "$ZOMBIE_FAKE_BIN_DIR"
+cat > "$ZOMBIE_FAKE_BIN_DIR/ps" <<'FAKE_PS_ZOMBIE_EOF'
+#!/usr/bin/env bash
+# Fake ps used only by test-claude-refresh-matcher.sh's zombie-pass output-shape case (h).
+has_p_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+
+case "$field_spec" in
+  *stat*)
+    # take_zombie_snapshot(): pid,ppid,stat,etimes,comm
+    printf '%s %s %s %s %s\n' __PARENT1__ 1          S  90000 speech-dispatch
+    printf '%s %s %s %s %s\n' __CHILD1__  __PARENT1__ Z  50000 "sd_voxin <defunct>"
+    printf '%s %s %s %s %s\n' __CHILD2__  __PARENT1__ Z+ 40000 "sd_kali <defunct>"
+    printf '%s %s %s %s %s\n' __PARENT2__ 1          S  20000 python3.13
+    printf '%s %s %s %s %s\n' __CHILD3__  __PARENT2__ Z  60    "lake <defunct>"
+    ;;
+  *)
+    # Every other snapshot (Claude/Lean/MCP passes) sees an empty process table.
+    ;;
+esac
+exit 0
+FAKE_PS_ZOMBIE_EOF
+sed -i "s/__PARENT1__/$ZOMBIE_PARENT1/g; s/__CHILD1__/$ZOMBIE_CHILD1/g; s/__CHILD2__/$ZOMBIE_CHILD2/g; s/__PARENT2__/$ZOMBIE_PARENT2/g; s/__CHILD3__/$ZOMBIE_CHILD3/g" "$ZOMBIE_FAKE_BIN_DIR/ps"
+chmod +x "$ZOMBIE_FAKE_BIN_DIR/ps"
+
+ZOMBIE_DRY_OUT="$(PATH="$ZOMBIE_FAKE_BIN_DIR:$PATH" CLAUDE_JSON_PATH="$WORKDIR/nonexistent-claude.json" bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+ZOMBIE_FORCE_OUT="$(PATH="$ZOMBIE_FAKE_BIN_DIR:$PATH" CLAUDE_JSON_PATH="$WORKDIR/nonexistent-claude.json" bash "$WORKDIR/$SCRIPT_UNDER_TEST" --force 2>&1)"
+
+if echo "$ZOMBIE_DRY_OUT" | grep -q "Found 3 unreaped child process(es) across 2 parent(s)."; then
+  pass "Zombie pass (h): reports 3 zombies across 2 parents (grouping by ppid correct)"
+else
+  fail "Zombie pass (h): did not report 3 zombies across 2 parents"
+  info "output was: $ZOMBIE_DRY_OUT"
+fi
+
+if echo "$ZOMBIE_DRY_OUT" | grep -q "Parent: speech-dispatch (PID $ZOMBIE_PARENT1)" \
+   && echo "$ZOMBIE_DRY_OUT" | grep -q "Parent: python3.13 (PID $ZOMBIE_PARENT2)"; then
+  pass "Zombie pass (h): resolves each parent's comm from the shared snapshot"
+else
+  fail "Zombie pass (h): did not resolve parent comm names correctly"
+  info "output was: $ZOMBIE_DRY_OUT"
+fi
+
+if echo "$ZOMBIE_DRY_OUT" | grep -q "$ZOMBIE_CHILD1" && echo "$ZOMBIE_DRY_OUT" | grep -q "$ZOMBIE_CHILD2" \
+   && echo "$ZOMBIE_DRY_OUT" | grep -q "$ZOMBIE_CHILD3"; then
+  pass "Zombie pass (h): all three zombie child PIDs appear in the report"
+else
+  fail "Zombie pass (h): one or more zombie child PIDs missing from the report"
+  info "output was: $ZOMBIE_DRY_OUT"
+fi
+
+if echo "$ZOMBIE_DRY_OUT" | grep -qE "^  ${ZOMBIE_PARENT1}[[:space:]]"; then
+  fail "Zombie pass (h): the LIVE parent PID ($ZOMBIE_PARENT1) was incorrectly listed as a zombie child row"
+else
+  pass "Zombie pass (h): the live parent PID is never listed as a zombie child row (Z vs live discrimination)"
+fi
+
+if echo "$ZOMBIE_DRY_OUT" | grep -q "Zombie memory cost: 0"; then
+  pass "Zombie pass (h): reports zombie memory cost as explicitly zero"
+else
+  fail "Zombie pass (h): did not report the explicit zero-memory-cost line"
+fi
+
+# --dry-run vs --force: identical apart from the [DRY RUN] banner (its own two lines). Removing
+# those two lines leaves a doubled blank line behind (one on each side of the banner block) that
+# the --force path never has -- `cat -s` squeezes runs of blank lines on BOTH sides before
+# comparing, so this normalizes that harmless removal artifact rather than treating it as a
+# real divergence.
+ZOMBIE_DRY_STRIPPED="$(echo "$ZOMBIE_DRY_OUT" | grep -v '\[DRY RUN\]' | grep -v "can only be reaped by its own parent" | cat -s)"
+ZOMBIE_FORCE_SQUEEZED="$(echo "$ZOMBIE_FORCE_OUT" | cat -s)"
+if [ "$ZOMBIE_DRY_STRIPPED" = "$ZOMBIE_FORCE_SQUEEZED" ]; then
+  pass "Zombie pass (h): --dry-run and --force output identical modulo the DRY RUN banner"
+else
+  fail "Zombie pass (h): --dry-run and --force output diverged beyond the DRY RUN banner"
+  info "dry (stripped) was: $ZOMBIE_DRY_STRIPPED"
+  info "force was: $ZOMBIE_FORCE_SQUEEZED"
+fi
+
+# =====================================================================
+# Assertion (i): MCP fan-out pass -- session-count/memory arithmetic and evidence discriminator
+# =====================================================================
+# Synthetic fixture: two sessions each for "playwright" (2 procs/session: an exec wrapper plus a
+# node child, mirroring the live-observed shape) and "lean-lsp" (1 proc/session), plus a third,
+# unrecognized "unknown-server" key to prove the "no use signal available" outcome is distinct
+# from both "in use" and "no evidence of use". Session-root attribution is exercised directly:
+# each playwright child's ppid IS its own session's exec-wrapper row (matched-to-matched chain).
+MCP_FAKE_BIN_DIR="$WORKDIR/fakebin-mcp"
+mkdir -p "$MCP_FAKE_BIN_DIR"
+cat > "$MCP_FAKE_BIN_DIR/ps" <<'FAKE_PS_MCP_EOF'
+#!/usr/bin/env bash
+# Fake ps used only by test-claude-refresh-matcher.sh's MCP fan-out case (i).
+has_p_flag=false
+has_c_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  if [ "$a" = "-C" ]; then has_c_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+if $has_c_flag; then
+  # take_lean_snapshot(): pid,ppid,uid,etimes,rss,pcpu,cgroup:200,comm,args -- one ACTIVE
+  # lake-serve row, proving lean-lsp's evidence-of-use detector finds it (independent of the
+  # Lean idle-reclamation pass's own idle gate, which this row deliberately fails: etimes=60).
+  printf '%s %s %s %s %s %s %s %s %s\n' 920201 1 1000 60 5000 0.0 "0::/user.slice/x" lake ".../bin/lake serve -- -Dserver.reportDelayMs=0"
+  exit 0
+fi
+
+case "$field_spec" in
+  comm)
+    if [ "${FAKE_HAS_CHROMIUM:-false}" = "true" ]; then
+      echo "chromium"
+    fi
+    ;;
+  *rss*args*)
+    # run_mcp_fanout_pass's own snapshot: pid,ppid,rss,args
+    printf '%s %s %s %s\n' 920001 920050 1000 "npm exec @playwright/mcp@latest --config x"
+    printf '%s %s %s %s\n' 920002 920001 2000 "node .../playwright-mcp --config x"
+    printf '%s %s %s %s\n' 920011 920060 1500 "npm exec @playwright/mcp@latest --config x"
+    printf '%s %s %s %s\n' 920012 920011 2500 "node .../playwright-mcp --config x"
+    printf '%s %s %s %s\n' 920021 920050 3000 ".../bin/lean-lsp-mcp --lean-project-path x"
+    printf '%s %s %s %s\n' 920022 920060 3500 ".../bin/lean-lsp-mcp --lean-project-path x"
+    ;;
+  *)
+    ;;
+esac
+exit 0
+FAKE_PS_MCP_EOF
+chmod +x "$MCP_FAKE_BIN_DIR/ps"
+
+MCP_PROC_DIR="$WORKDIR/fakeproc-mcp"
+for p in 920001 920002 920011 920012 920021 920022 920201; do
+  mkdir -p "$MCP_PROC_DIR/$p"
+  printf 'Name:\tproc\nVmSwap:\t   100 kB\n' > "$MCP_PROC_DIR/$p/status"
+done
+
+CLAUDE_JSON_FIXTURE="$WORKDIR/claude-mcp-fixture.json"
+cat > "$CLAUDE_JSON_FIXTURE" <<'FIXTURE_EOF'
+{"mcpServers": {"playwright": {"command": "playwright-mcp", "args": []}, "lean-lsp": {"command": "x", "args": []}, "unknown-server": {"command": "y", "args": []}}}
+FIXTURE_EOF
+
+# Run 1: no chromium/headless_shell anywhere -- playwright must be flagged, lean-lsp must not
+# (its lake-serve tree is present), unknown-server gets "no use signal available".
+MCP_OUT_NOCHROME="$(PATH="$MCP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$MCP_PROC_DIR" CLAUDE_JSON_PATH="$CLAUDE_JSON_FIXTURE" FAKE_HAS_CHROMIUM=false bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+# Expected arithmetic (worked by hand from the fixture above):
+#   playwright: 4 procs (920001/920002 session A, 920011/920012 session B), 2 sessions,
+#               rss 1000+2000+1500+2500=7000 + swap 4*100=400 -> 7400 KB -> "7.2 MB"
+#   lean-lsp:   2 procs (920021 session A, 920022 session B), 2 sessions,
+#               rss 3000+3500=6500 + swap 2*100=200 -> 6700 KB -> "6.5 MB"
+#   unknown-server: 0 procs, 0 sessions, 0 KB
+#   total: 7400+6700+0=14100 KB -> mb=14100/1024=13, frac=(14100%1024)*10/1024=7 -> "13.7 MB"
+if echo "$MCP_OUT_NOCHROME" | grep -qE '^playwright[[:space:]]+2[[:space:]]+4[[:space:]]+7\.2 MB[[:space:]]+no evidence of use'; then
+  pass "MCP pass (i): playwright row -- 2 sessions, 4 procs, 7.2 MB, flagged 'no evidence of use'"
+else
+  fail "MCP pass (i): playwright row did not match expected session/proc/memory/evidence arithmetic"
+  info "output was: $MCP_OUT_NOCHROME"
+fi
+
+if echo "$MCP_OUT_NOCHROME" | grep -qE '^lean-lsp[[:space:]]+2[[:space:]]+2[[:space:]]+6\.5 MB[[:space:]]+in use'; then
+  pass "MCP pass (i): lean-lsp row -- 2 sessions, 2 procs, 6.5 MB, 'in use' (lake-serve tree present)"
+else
+  fail "MCP pass (i): lean-lsp row did not match expected session/proc/memory/evidence arithmetic"
+  info "output was: $MCP_OUT_NOCHROME"
+fi
+
+if echo "$MCP_OUT_NOCHROME" | grep -qE '^unknown-server[[:space:]]+0[[:space:]]+0[[:space:]]+0 KB[[:space:]]+no use signal available'; then
+  pass "MCP pass (i): unrecognized server key reports 'no use signal available', never 'unused'"
+else
+  fail "MCP pass (i): unrecognized server key did not report the 'no use signal available' outcome"
+  info "output was: $MCP_OUT_NOCHROME"
+fi
+
+if echo "$MCP_OUT_NOCHROME" | grep -q "Total MCP server memory: 13.7 MB"; then
+  pass "MCP pass (i): total memory sums all three servers correctly (13.7 MB)"
+else
+  fail "MCP pass (i): total memory did not match expected sum"
+  info "output was: $MCP_OUT_NOCHROME"
+fi
+
+ADVISORY_PARAGRAPH_COUNT="$(echo "$MCP_OUT_NOCHROME" | grep -c "no live evidence of use")"
+if [ "$ADVISORY_PARAGRAPH_COUNT" -eq 1 ]; then
+  pass "MCP pass (i): exactly one advisory paragraph emitted (only playwright flagged)"
+else
+  fail "MCP pass (i): expected exactly one advisory paragraph, found $ADVISORY_PARAGRAPH_COUNT"
+  info "output was: $MCP_OUT_NOCHROME"
+fi
+
+# Run 2: chromium IS present -- playwright's evidence-of-use flips to "in use", no advisory at all.
+MCP_OUT_CHROME="$(PATH="$MCP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$MCP_PROC_DIR" CLAUDE_JSON_PATH="$CLAUDE_JSON_FIXTURE" FAKE_HAS_CHROMIUM=true bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+if echo "$MCP_OUT_CHROME" | grep -qE '^playwright[[:space:]]+2[[:space:]]+4[[:space:]]+7\.2 MB[[:space:]]+in use'; then
+  pass "MCP pass (i): evidence discriminator flips to 'in use' when a chromium-like row is present"
+else
+  fail "MCP pass (i): playwright was not reclassified 'in use' with chromium present"
+  info "output was: $MCP_OUT_CHROME"
+fi
+
+if echo "$MCP_OUT_CHROME" | grep -q "Scoping advisory"; then
+  fail "MCP pass (i): a scoping advisory was emitted even though no server was flagged"
+else
+  pass "MCP pass (i): no scoping advisory is emitted when no server is flagged"
+fi
+
+# =====================================================================
+# Assertion (j): structural absence of any signal call; advisory text content
+# =====================================================================
+# Extracted from the FILE on disk (the copy this suite sourced), not from the live shell
+# functions -- "sed-extracted body", exactly as the plan's verification step names it.
+ZOMBIE_BODY="$(sed -n '/^ZOMBIE_SNAPSHOT_PS_FIELDS=/,/^MCP_SNAPSHOT_PS_FIELDS=/p' "$WORKDIR/$SCRIPT_UNDER_TEST")"
+MCP_BODY="$(sed -n '/^MCP_SNAPSHOT_PS_FIELDS=/,/^main() {/p' "$WORKDIR/$SCRIPT_UNDER_TEST")"
+
+if echo "$ZOMBIE_BODY" | grep -qE '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid'; then
+  fail "Structural (j): zombie pass block contains a kill/terminate_pid reference"
+  info "matched: $(echo "$ZOMBIE_BODY" | grep -E '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid')"
+else
+  pass "Structural (j): zombie pass block (constant + predicate + run_zombie_pass) contains zero kill/terminate_pid references"
+fi
+
+if echo "$MCP_BODY" | grep -qE '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid'; then
+  fail "Structural (j): MCP fan-out pass block contains a kill/terminate_pid reference"
+  info "matched: $(echo "$MCP_BODY" | grep -E '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid')"
+else
+  pass "Structural (j): MCP fan-out pass block (constants + predicates + run_mcp_fanout_pass) contains zero kill/terminate_pid references"
+fi
+
+# Advisory text content, reusing the MCP_OUT_NOCHROME captured output from assertion (i) above --
+# this IS the emitted advisory text the acceptance bar requires be grepped.
+if echo "$MCP_OUT_NOCHROME" | grep -qE 'cannot access project-scoped|subagents cannot'; then
+  fail "Advisory text (j): contains banned subagent-barrier phrasing"
+else
+  pass "Advisory text (j): contains no subagent-barrier phrasing"
+fi
+
+if echo "$MCP_OUT_NOCHROME" | grep -qi 'workspace trust'; then
+  pass "Advisory text (j): mentions workspace trust"
+else
+  fail "Advisory text (j): does not mention workspace trust"
+fi
+
+# =====================================================================
 # Mutation check: pre-fix script cannot run any of this suite's assertions
 # =====================================================================
 # NOTE: this deliberately pins the specific commit immediately BEFORE the matcher rewrite
@@ -705,14 +999,20 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   MISSING_IN_PREFIX=()
   # Extended for the Lean LSP reclamation pass: is_lean_serve_comm, is_lean_server_comm,
   # is_lean_worker_comm, take_lean_snapshot, lean_row_is_idle, detect_lean_candidate_trees,
-  # terminate_pid, run_claude_pass, and run_lean_pass are all brand-NEW functions this task adds
+  # terminate_pid, run_claude_pass, and run_lean_pass are all brand-NEW functions that pass added
   # (not modifications of existing ones -- terminate_pid/run_claude_pass/run_lean_pass are the
-  # Phase 4 extraction/restructure of what used to be inlined directly in main()), so their
-  # absence from any pre-task commit -- this same pinned PREFIX_COMMIT included, since it
-  # predates this task entirely -- is itself the non-vacuousness proof the plan calls for:
-  # assertions (f) and (g) above call each of them by name and would fail with "command not
-  # found" against a script that lacks them.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass; do
+  # extraction/restructure of what used to be inlined directly in main()), so their absence from
+  # any pre-task commit -- this same pinned PREFIX_COMMIT included, since it predates all of this
+  # entirely -- is itself the non-vacuousness proof the plan calls for: assertions (f) and (g)
+  # above call each of them by name and would fail with "command not found" against a script that
+  # lacks them.
+  #
+  # Further extended for the report-only MCP fan-out and zombie passes: take_zombie_snapshot,
+  # zombie_row_is_defunct, run_zombie_pass, mcp_playwright_evidence_of_use,
+  # mcp_lean_lsp_evidence_of_use, mcp_server_evidence_of_use, and run_mcp_fanout_pass are all
+  # brand-NEW functions this change adds, so their absence from the same pinned pre-fix commit is
+  # the identical non-vacuousness proof for assertions (h), (i), and (j) above.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -721,11 +1021,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 14 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 15 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the fourteen predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 21 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 22 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the twenty-one predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 15 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 22 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

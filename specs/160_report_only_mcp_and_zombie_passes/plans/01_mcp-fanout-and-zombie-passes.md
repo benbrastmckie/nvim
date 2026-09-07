@@ -274,35 +274,38 @@ branch rather than being mis-flagged as unused.
 
 ---
 
-### Phase 4: Test-suite assertions for both passes [NOT STARTED]
+### Phase 4: Test-suite assertions for both passes [COMPLETED]
 
 **Goal**: Extend `test-claude-refresh-matcher.sh` with lettered assertion blocks proving zombie
 discrimination, MCP aggregation and discrimination, and — by grep — the absence of any signal
 call in either new pass.
 
 **Tasks**:
-- [ ] Add assertion block (h): zombie-state discrimination using **synthetic fixture rows**
+- [x] Add assertion block (h): zombie-state discrimination using **synthetic fixture rows**
       (not real zombies, which may not exist at test time) — `Z` and `Z+` rows accepted, `S`,
-      `R`, `S+`, `Ss`, `Rl` rows rejected by `zombie_row_is_defunct`
-- [ ] Add assertion block (h) continuation: full `--dry-run` output shape for the zombie pass
-      over a synthetic snapshot — grouping by parent, correct child count, age reported
-- [ ] Add assertion block (i): MCP pass per-server session-count and memory-aggregation
-      arithmetic over synthetic rows with known RSS/VmSwap values
-- [ ] Add assertion block (i) continuation: the evidence-of-use discriminator — a fixture with a
-      chromium-like row present (not flagged) versus absent (flagged)
-- [ ] Add assertion block (j): structural grep assertion that the extracted bodies of
+      `R`, `S+`, `Ss`, `Rl` rows rejected by `zombie_row_is_defunct` *(completed)*
+- [x] Add assertion block (h) continuation: full `--dry-run` output shape for the zombie pass
+      over a synthetic snapshot — grouping by parent, correct child count, age reported *(completed)*
+- [x] Add assertion block (i): MCP pass per-server session-count and memory-aggregation
+      arithmetic over synthetic rows with known RSS/VmSwap values *(completed)*
+- [x] Add assertion block (i) continuation: the evidence-of-use discriminator — a fixture with a
+      chromium-like row present (not flagged) versus absent (flagged) *(completed)*
+- [x] Add assertion block (j): structural grep assertion that the extracted bodies of
       `run_mcp_fanout_pass` and `run_zombie_pass` (and their helper predicates) contain zero
       `kill` / `terminate_pid` invocations — this is the acceptance bar's "verify by grep, not by
-      inspection" discharged in the suite
-- [ ] Add assertion block (j) continuation: the advisory text emitted by `run_mcp_fanout_pass`
-      contains no subagent-barrier phrasing and does contain workspace-trust phrasing
-- [ ] Extend the mutation check's function-name loop with the new function names
+      inspection" discharged in the suite *(completed)*
+- [x] Add assertion block (j) continuation: the advisory text emitted by `run_mcp_fanout_pass`
+      contains no subagent-barrier phrasing and does contain workspace-trust phrasing *(completed)*
+- [x] Extend the mutation check's function-name loop with the new function names
       (`take_zombie_snapshot`, `zombie_row_is_defunct`, `run_zombie_pass`,
-      `run_mcp_fanout_pass`, plus any new predicate helpers actually added)
-- [ ] Update the mutation check's exact-count guard (`-eq 14` / `-eq 15`) and its pass/fail
+      `run_mcp_fanout_pass`, plus any new predicate helpers actually added) *(completed: also added
+      mcp_playwright_evidence_of_use, mcp_lean_lsp_evidence_of_use, mcp_server_evidence_of_use --
+      7 new names total)*
+- [x] Update the mutation check's exact-count guard (`-eq 14` / `-eq 15`) and its pass/fail
       message text to the new expected count in the same edit — the existing pinned
       `PREFIX_COMMIT` stays valid and needs no new pin, since it predates this task entirely
-- [ ] Run the full suite and confirm zero failures
+      *(completed: updated to -eq 21 / -eq 22)*
+- [x] Run the full suite and confirm zero failures *(completed: Passed: 76, Failed: 0)*
 
 **Timing**: 1.25 hours
 
