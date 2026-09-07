@@ -51,7 +51,7 @@ require_file() {
 SUT_SRC="$CORE_DIR/orchestrate-cycle-plan.sh"
 require_file "$SUT_SRC"
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh \
-         orchestrate-loop-guard-init.sh \
+         orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh; do
@@ -70,7 +70,7 @@ trap cleanup EXIT
 
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
 for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage-classify.sh \
-         task-lock.sh orchestrate-loop-guard-init.sh \
+         task-lock.sh orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh; do
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
@@ -818,6 +818,200 @@ if [ "$plan_before" = "$plan_after" ]; then
 else
   fail "H1: --dry-run unexpectedly mutated the plan file"
 fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 10: Decision 2 — aux_dispatch[] emission (fixed agents, per-task caps, chaining,
+# mutual exclusion, --dry-run parity)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 10: aux_dispatch[] emission"
+
+# The REAL orchestrate-build-aux-dispatch.sh runs in this group (never stubbed) -- it never calls
+# memory/lit/command-route-agent.sh by its own design, so it is safe to exercise for real; this is
+# what lets Case A below grep the WRITTEN dispatch file for the absence of a memory/lit block.
+# A tiny fake agent directory gives the model-resolution assertion (Case F) something real to find
+# (EXT_ROOT is the SUT's own two-levels-up from its script path, i.e. $WORKDIR here).
+mkdir -p "$WORKDIR/fakeext/agents"
+cat > "$WORKDIR/fakeext/agents/reviser-agent.md" <<'EOF'
+---
+model: opus
+---
+EOF
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1001, "project_name": "g10_aux", "task_type": "general", "status": "implementing", "description": "aux dispatch candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/1001_g10_aux"
+mkdir -p "$WORKDIR/specs/1001_g10_aux/plans"
+cat > "$WORKDIR/specs/1001_g10_aux/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"
+
+# ── Case A: aux_pending = blocker-research produces exactly one aux_dispatch[] row with
+# agent=fork, orchestrator_mode=false, and a dispatch file with no memory/lit block ──────────────
+jq -n --arg t "1001" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"
+run_sut --session g10_a -- 1001
+if [ "$(jqf '.aux_dispatch | length')" = "1" ] && \
+   [ "$(jqf '.aux_dispatch[0].kind')" = "blocker-research" ] && \
+   [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ] && \
+   [ "$(jqf '.aux_dispatch[0].orchestrator_mode')" = "false" ]; then
+  pass "aux: blocker-research aux_pending produces exactly one row (agent=fork, orchestrator_mode=false)"
+else
+  fail "aux: blocker-research row missing or malformed (stdout: $LAST_STDOUT)"
+fi
+aux_file_a=$(jqf '.aux_dispatch[0].dispatch_file')
+if [ -n "$aux_file_a" ] && [ -f "$aux_file_a" ] && ! grep -qi "memory\|literature" "$aux_file_a"; then
+  pass "aux: blocker-research dispatch file exists and carries no memory/literature block"
+else
+  fail "aux: blocker-research dispatch file missing or unexpectedly carries a memory/lit block ($aux_file_a)"
+fi
+if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ] && \
+   [ "$(jq -r --arg t "1001" '.blocker_escalation_count[$t] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json")" = "1" ]; then
+  pass "aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1"
+else
+  fail "aux: aux_pending not cleared or counter not incremented ($(cat "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"))"
+fi
+
+# ── Case B: MAX_BLOCKER_ESCALATIONS=2 cap -- a third blocker-research signal emits no row ───────
+jq -n --arg t "1001" '{blocker_escalation_count: {($t): 2}, aux_pending: {($t): {kind: "blocker-research", blocker_desc: "third strike"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"
+run_sut --session g10_a -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
+  pass "aux: MAX_BLOCKER_ESCALATIONS cap suppresses a third blocker-research row"
+else
+  fail "aux: blocker-research cap did not suppress the row (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ]; then
+  pass "aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)"
+else
+  fail "aux: capped-out aux_pending entry was not cleared"
+fi
+
+# ── Case C: MAX_DRIFT_INSPECTIONS=1 cap -- base mode ─────────────────────────────────────────────
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_c.json"
+jq -n --arg t "1001" '{aux_pending: {($t): {kind: "drift-inspection"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_c.json"
+run_sut --session g10_c -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "drift-inspection")) | length')" = "1" ] && \
+   [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ]; then
+  pass "aux: drift-inspection aux_pending (base mode) produces one row, agent=fork"
+else
+  fail "aux: drift-inspection row missing or malformed (stdout: $LAST_STDOUT)"
+fi
+jq -n --arg t "1001" '{drift_inspection_count: {($t): 1}, aux_pending: {($t): {kind: "drift-inspection"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_c.json"
+run_sut --session g10_c -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
+  pass "aux: MAX_DRIFT_INSPECTIONS cap suppresses a second drift-inspection row"
+else
+  fail "aux: drift-inspection cap did not suppress the row (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case D: mutual exclusion -- drift-inspection aux_pending under --hard is suppressed, never
+# co-occurring with divergence-audit's own hard-mode-only gate ──────────────────────────────────
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_d.json"
+jq -n --arg t "1001" '{aux_pending: {($t): {kind: "drift-inspection"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_d.json"
+run_sut --session g10_d --hard -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
+  pass "aux: mutual exclusion -- a drift-inspection aux_pending under --hard emits no row"
+else
+  fail "aux: drift-inspection under --hard unexpectedly emitted a row (stdout: $LAST_STDOUT)"
+fi
+
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_e.json"
+jq -n --arg t "1001" '{aux_pending: {($t): {kind: "divergence-audit", target: "the flaky step", verbatim_goal: "make it pass"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_e.json"
+run_sut --session g10_e -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
+  pass "aux: mutual exclusion -- a divergence-audit aux_pending in base mode emits no row"
+else
+  fail "aux: divergence-audit in base mode unexpectedly emitted a row (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case E: divergence-audit under --hard dispatches with the task's own already-resolved
+# research agent, never task-type re-resolved through command-route-agent.sh ────────────────────
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_f.json"
+jq -n --arg t "1001" \
+  '{research_agents: {($t): "stub-research-agent"}, aux_pending: {($t): {kind: "divergence-audit", target: "the flaky step", verbatim_goal: "make it pass"}}}' \
+  > "$WORKDIR/specs/.orchestrator-multi-state-g10_f.json"
+run_sut --session g10_f --hard -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "divergence-audit")) | length')" = "1" ] && \
+   [ "$(jqf '.aux_dispatch[0].agent')" = "stub-research-agent" ]; then
+  pass "aux: divergence-audit under --hard dispatches with the task's stored research_agents[t], never re-resolved"
+else
+  fail "aux: divergence-audit row missing or used the wrong agent (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case F: chaining -- a completed blocker-research fork's .blocker-research.json produces a
+# plan-revision row (agent=reviser-agent, model read from that agent's own frontmatter), and the
+# marker file is consumed (removed) once the row is built ───────────────────────────────────────
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_g.json"
+jq -n '{summary: "root cause found", blocker_desc: "widget X is missing", root_cause: "typo", solution_path: "fix the typo"}' \
+  > "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
+run_sut --session g10_g -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "plan-revision")) | length')" = "1" ] && \
+   [ "$(jqf '.aux_dispatch[0].agent')" = "reviser-agent" ] && \
+   [ "$(jqf '.aux_dispatch[0].model')" = "opus" ]; then
+  pass "aux: a completed .blocker-research.json chains to a plan-revision row (agent=reviser-agent, model=opus from frontmatter)"
+else
+  fail "aux: blocker-research chain did not produce the expected plan-revision row (stdout: $LAST_STDOUT)"
+fi
+if [ ! -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json" ]; then
+  pass "aux: .blocker-research.json is consumed (removed) once chained into a plan-revision row"
+else
+  fail "aux: .blocker-research.json was not removed after chaining"
+fi
+
+# ── Case G: chaining -- drift_pct <= 0.30 logs "Drift check passed" and emits NO row; the marker
+# file is still consumed either way ──────────────────────────────────────────────────────────────
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_h.json"
+jq -n '{drift_pct: 0.10, summary: "low drift"}' > "$WORKDIR/specs/1001_g10_aux/.drift-inspection.json"
+run_sut --session g10_h -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ] && [[ "$LAST_STDERR" == *"Drift check passed"* ]]; then
+  pass "aux: drift_pct <= 0.30 emits no row and logs 'Drift check passed'"
+else
+  fail "aux: low-drift chain unexpectedly emitted a row or omitted the log line (stderr: $LAST_STDERR)"
+fi
+if [ ! -f "$WORKDIR/specs/1001_g10_aux/.drift-inspection.json" ]; then
+  pass "aux: .drift-inspection.json is consumed (removed) even when drift_pct is below threshold"
+else
+  fail "aux: .drift-inspection.json was not removed after a below-threshold chain check"
+fi
+
+# ── Case H: --dry-run parity -- same kind/agent rendered, dispatch_file/model null, NO mutation.
+# Uses the CHAIN file (.blocker-research.json), never a pre-seeded mt_state_file -- mt_state_file
+# is never read back under --dry-run by this script's own two-function design (dry-run runs only
+# the read-only decision pass; the ONLY per-invocation state --dry-run ever consults is on-disk
+# task-directory files, exactly like H1's own --dry-run parity case above), so aux_pending seeded
+# directly into a fixture mt_state_file would never be visible to a --dry-run invocation -- this
+# is expected, not a gap this phase's own scope covers. ──────────────────────────────────────────
+jq -n '{summary: "dry-run findings", blocker_desc: "dry-run case", root_cause: "x", solution_path: "y"}' \
+  > "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
+run_sut --session g10_i --dry-run -- 1001
+if [ "$(jqf '.aux_dispatch | length')" = "1" ] && \
+   [ "$(jqf '.aux_dispatch[0].kind')" = "plan-revision" ] && \
+   [ "$(jqf '.aux_dispatch[0].agent')" = "reviser-agent" ] && \
+   [ "$(jqf '.aux_dispatch[0].dispatch_file')" = "null" ] && \
+   [ "$(jqf '.aux_dispatch[0].model')" = "null" ]; then
+  pass "aux: --dry-run renders the SAME aux row (dispatch_file/model null)"
+else
+  fail "aux: --dry-run aux rendering incorrect (stdout: $LAST_STDOUT)"
+fi
+if [ -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json" ]; then
+  pass "aux: --dry-run mutates nothing (chain marker file left in place)"
+else
+  fail "aux: --dry-run unexpectedly consumed the chain marker file"
+fi
+rm -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

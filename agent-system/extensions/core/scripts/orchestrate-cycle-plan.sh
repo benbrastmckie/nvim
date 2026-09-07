@@ -32,6 +32,11 @@
 #   (per-task force_phases consumption, a feature gap no prior stage closed):
 #   force_phases_remaining (map task_number(string) -> ordered array of not-yet-dispatched forced
 #   phases, canonical research/plan/implement order, popped as each forced phase is dispatched).
+# PLUS THREE MORE new fields (Phase 5's Decision 2 aux_dispatch[] emission): aux_pending (map
+#   task_number(string) -> {kind, ...} | absent — written by orchestrate-cycle-postflight.sh,
+#   read and cleared here), blocker_escalation_count and drift_inspection_count (maps
+#   task_number(string) -> int, the per-task per-invocation caps MAX_BLOCKER_ESCALATIONS/
+#   MAX_DRIFT_INSPECTIONS below).
 # Stage MT-5 (multi-task postflight/report, untouched by this task) still reads every one of the
 # pre-existing fields above; this script never renames or drops one.
 #
@@ -110,8 +115,32 @@
 # `--team`/`--team-size` are REJECTED as unrecognized flags (usage error, exit 2) — team mode is
 # withdrawn; no `team` key is ever emitted on a dispatch row.
 #
+# Decision 2 (originating plan's Phase 5) — aux_dispatch[]: a SIBLING array, never widening
+# `dispatch[]`'s own `phase` vocabulary (which stays exactly {research, plan, implement} so the
+# `--phase` contract of orchestrate-cycle-postflight.sh is never touched by an aux row). Rows are
+# `{task, kind, agent, model, dispatch_file, orchestrator_mode: false}` with
+# `kind ∈ {drift-inspection, blocker-research, plan-revision, divergence-audit}` and a FIXED
+# `agent` chosen by `orchestrate-build-aux-dispatch.sh`'s own emitting logic (`fork`, `fork`,
+# `reviser-agent`, and the task's own already-resolved `research_agents[t]` respectively) — never
+# resolved through `command-route-agent.sh`. Emitted from `aux_pending[task]` (written by
+# orchestrate-cycle-postflight.sh's WORK (k) — divergence-audit under hard mode, drift-inspection
+# or blocker-research under base mode) and from the blocker-research/drift-inspection CHAIN
+# (`${TASK_DIR}/.blocker-research.json` / `.drift-inspection.json`, written by a PRIOR cycle's own
+# aux dispatch once it actually runs), which take priority over a fresh `aux_pending` entry for
+# the SAME task this cycle and produce a `plan-revision` row instead. Aux rows never reach
+# `orchestrate-cycle-postflight.sh` and never contribute to `failed_tasks` — their only effect is
+# a written file or a revised plan, which the NEXT cycle's ordinary status-derived dispatch picks
+# up. Computed in the SAME shared decision section as everything else (both --dry-run and live
+# render the identical choice of kind/target per task); only the dispatch-file WRITE, the
+# `aux_pending`/marker-file consumption, and the two per-task escalation counters
+# (`blocker_escalation_count`/`drift_inspection_count`, capped at `MAX_BLOCKER_ESCALATIONS`=2 /
+# `MAX_DRIFT_INSPECTIONS`=1 per task per invocation — i.e. per `mt_state_file`, which is fresh
+# every `/orchestrate` invocation, matching single-task's own "reset each invocation" caps) are
+# live-only side effects.
+#
 # Output: a single line of compact JSON on stdout:
 #   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force}],
+#    aux_dispatch: [{task, kind, agent, model, dispatch_file, orchestrator_mode: false}],
 #    deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}
 # `model`/`dispatch_file` are `null` on every dispatch row in --dry-run mode (nothing was built),
 # and are the real resolved values in the live path. `force` (Phase 7 addition of the task that
@@ -142,6 +171,11 @@ if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
 fi
 
 MAX_INFRA_FAILURES=3
+# Decision 2 (Phase 5) — aux_dispatch[] escalation caps, ported verbatim from single-task Stage
+# 2/5a/6's own values; per-task per-invocation (i.e. per mt_state_file, fresh every /orchestrate
+# invocation — matching single-task's own "reset each invocation" semantics).
+MAX_BLOCKER_ESCALATIONS=2
+MAX_DRIFT_INSPECTIONS=1
 
 usage() {
   cat <<'USAGE'
@@ -372,6 +406,9 @@ mt_json=$(jq -c \
   | .idle_overlap_ledger //= []
   | .cycle_modified_files //= []
   | .force_phases_remaining //= {}
+  | .aux_pending //= {}
+  | .blocker_escalation_count //= {}
+  | .drift_inspection_count //= {}
   ' <<<"$mt_json")
 
 mt_save() {
@@ -413,16 +450,22 @@ cycle_count=$(mt_get '.cycle_count')
 stop_reason=""
 stop_message=""
 declare -a out_dispatch_rows=()   # each element: a compact JSON object
+declare -a out_aux_dispatch_rows=()
 declare -a out_deferred_rows=()
 declare -a out_blocked_rows=()
 
 emit_and_exit() {
   local cycle_val="$1"
-  local dispatch_json deferred_json blocked_json stop_json
+  local dispatch_json aux_dispatch_json deferred_json blocked_json stop_json
   if [ "${#out_dispatch_rows[@]}" -gt 0 ]; then
     dispatch_json="[$(IFS=,; echo "${out_dispatch_rows[*]}")]"
   else
     dispatch_json="[]"
+  fi
+  if [ "${#out_aux_dispatch_rows[@]}" -gt 0 ]; then
+    aux_dispatch_json="[$(IFS=,; echo "${out_aux_dispatch_rows[*]}")]"
+  else
+    aux_dispatch_json="[]"
   fi
   if [ "${#out_deferred_rows[@]}" -gt 0 ]; then
     deferred_json="[$(IFS=,; echo "${out_deferred_rows[*]}")]"
@@ -441,8 +484,9 @@ emit_and_exit() {
   fi
   local plan_json
   plan_json=$(jq -n -c --argjson cycle "$cycle_val" --argjson dispatch "$dispatch_json" \
+    --argjson aux_dispatch "$aux_dispatch_json" \
     --argjson deferred "$deferred_json" --argjson blocked "$blocked_json" --argjson stop "$stop_json" \
-    '{cycle: $cycle, dispatch: $dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}')
+    '{cycle: $cycle, dispatch: $dispatch, aux_dispatch: $aux_dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}')
   printf '%s\n' "$plan_json"
   # --dry-run human table (STDERR only — stdout stays pure, single-line JSON in both modes, per
   # this script's own Output contract). Rendered by reading back plan_json ALONE: no second
@@ -457,6 +501,13 @@ emit_and_exit() {
         echo "0 dispatched."
       else
         echo "$plan_json" | jq -r '.dispatch[] | "#\(.task)  phase=\(.phase)  agent=\(.agent)"'
+      fi
+      echo ""
+      echo "-- Aux Dispatch --"
+      if [ "$(echo "$plan_json" | jq '.aux_dispatch | length')" -eq 0 ]; then
+        echo "0 aux-dispatched."
+      else
+        echo "$plan_json" | jq -r '.aux_dispatch[] | "#\(.task)  kind=\(.kind)  agent=\(.agent)"'
       fi
       echo ""
       echo "-- Deferred --"
@@ -594,6 +645,109 @@ for t in "${task_args[@]}"; do
   mt_set --arg t "$t" --argjson v "$_seeded" '.cycle_counts[$t] //= $v'
 done
 mt_save
+
+# ── AUX DECISION (Decision 2, Phase 5): choose, for every task named on the command line, which
+# aux_dispatch[] row (if any) this cycle emits — read-only, computed identically for --dry-run and
+# live (the shared-decision-section mandate this script's header already states). A task's
+# blocker-research/drift-inspection CHAIN (its own dispatch file's JSON output, written by a PRIOR
+# cycle's aux dispatch once it actually ran) takes priority over a fresh `aux_pending[t]` entry for
+# the SAME task this cycle, and always produces a `plan-revision` row. Mutual exclusion between
+# `drift-inspection` (base mode) and `divergence-audit` (hard mode) is asserted defensively even
+# though it already holds by construction (postflight only ever writes one or the other, gated on
+# the SAME `hard_mode` flag this whole invocation shares). ─────────────────────────────────────
+declare -A aux_emit_kind=()             # t -> drift-inspection|blocker-research|plan-revision|divergence-audit
+declare -A aux_emit_target=()
+declare -A aux_emit_verbatim_goal=()
+declare -A aux_emit_blocker_desc=()
+declare -A aux_emit_revision_reason=()  # plan-revision only: blocker|drift
+declare -A aux_emit_findings_summary=()
+declare -A aux_emit_drift_pct=()
+declare -A aux_emit_drift_summary=()
+declare -A aux_emit_plan_path=()
+declare -A aux_clear_pending=()         # t -> true: clear aux_pending[t] in the live-only half
+declare -A aux_consume_blocker_file=()  # t -> true: rm .blocker-research.json in the live-only half
+declare -A aux_consume_drift_file=()    # t -> true: rm .drift-inspection.json in the live-only half
+
+for t in "${task_args[@]}"; do
+  [ -z "${project_names[$t]:-}" ] && continue
+  aux_padded=$(printf "%03d" "$t")
+  aux_task_dir_abs="${PROJECT_ROOT}/specs/${aux_padded}_${project_names[$t]}"
+  aux_blocker_file="${aux_task_dir_abs}/.blocker-research.json"
+  aux_drift_file="${aux_task_dir_abs}/.drift-inspection.json"
+
+  if [ -f "$aux_blocker_file" ] && jq empty "$aux_blocker_file" 2>/dev/null; then
+    aux_emit_kind[$t]="plan-revision"
+    aux_emit_revision_reason[$t]="blocker"
+    aux_emit_blocker_desc[$t]=$(jq -r '.blocker_desc // "Unspecified blocker"' "$aux_blocker_file" 2>/dev/null) || aux_emit_blocker_desc[$t]="Unspecified blocker"
+    aux_emit_findings_summary[$t]=$(jq -r '.summary // "No findings"' "$aux_blocker_file" 2>/dev/null) || aux_emit_findings_summary[$t]="No findings"
+    aux_emit_plan_path[$t]=$(ls -1 "${aux_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || aux_emit_plan_path[$t]=""
+    aux_consume_blocker_file[$t]="true"
+    continue
+  fi
+  if [ -f "$aux_drift_file" ] && jq empty "$aux_drift_file" 2>/dev/null; then
+    aux_consume_drift_file[$t]="true"
+    aux_drift_pct=$(jq -r '.drift_pct // 0' "$aux_drift_file" 2>/dev/null) || aux_drift_pct=0
+    aux_drift_over=$(awk -v p="$aux_drift_pct" 'BEGIN{ printf (p+0 > 0.30) ? "true" : "false" }' 2>/dev/null) || aux_drift_over="false"
+    if [ "$aux_drift_over" = "true" ]; then
+      aux_emit_kind[$t]="plan-revision"
+      aux_emit_revision_reason[$t]="drift"
+      aux_emit_drift_pct[$t]="$aux_drift_pct"
+      aux_emit_drift_summary[$t]=$(jq -r '.summary // "No summary"' "$aux_drift_file" 2>/dev/null) || aux_emit_drift_summary[$t]="No summary"
+      aux_emit_plan_path[$t]=$(ls -1 "${aux_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || aux_emit_plan_path[$t]=""
+    else
+      echo "[orchestrate] Drift check passed. Continuing." >&2
+    fi
+    continue
+  fi
+
+  aux_pending_json=$(mt_get_json --arg t "$t" '.aux_pending[$t] // null')
+  [ "$aux_pending_json" = "null" ] && continue
+  aux_kind=$(echo "$aux_pending_json" | jq -r '.kind // ""')
+
+  if [ "$aux_kind" = "drift-inspection" ] && [ "$hard_mode" = "true" ]; then
+    aux_clear_pending[$t]="true"
+    continue
+  fi
+  if [ "$aux_kind" = "divergence-audit" ] && [ "$hard_mode" != "true" ]; then
+    aux_clear_pending[$t]="true"
+    continue
+  fi
+
+  case "$aux_kind" in
+    drift-inspection)
+      aux_cnt=$(mt_get --arg t "$t" '.drift_inspection_count[$t] // 0')
+      if [ "$aux_cnt" -ge "$MAX_DRIFT_INSPECTIONS" ]; then
+        echo "[orchestrate] MAX_DRIFT_INSPECTIONS ($MAX_DRIFT_INSPECTIONS) reached for task #$t this invocation — skipping the drift-inspection aux dispatch." >&2
+        aux_clear_pending[$t]="true"
+        continue
+      fi
+      aux_emit_kind[$t]="drift-inspection"
+      aux_emit_plan_path[$t]=$(ls -1 "${aux_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || aux_emit_plan_path[$t]=""
+      aux_clear_pending[$t]="true"
+      ;;
+    blocker-research)
+      aux_cnt=$(mt_get --arg t "$t" '.blocker_escalation_count[$t] // 0')
+      if [ "$aux_cnt" -ge "$MAX_BLOCKER_ESCALATIONS" ]; then
+        echo "[orchestrate] MAX_BLOCKER_ESCALATIONS ($MAX_BLOCKER_ESCALATIONS) reached for task #$t. Manual intervention required. Suggest: (1) /research $t, (2) /revise $t, (3) /implement $t." >&2
+        aux_clear_pending[$t]="true"
+        continue
+      fi
+      aux_emit_kind[$t]="blocker-research"
+      aux_emit_blocker_desc[$t]=$(echo "$aux_pending_json" | jq -r '.blocker_desc // "Unspecified blocker"')
+      aux_clear_pending[$t]="true"
+      ;;
+    divergence-audit)
+      aux_emit_kind[$t]="divergence-audit"
+      aux_emit_target[$t]=$(echo "$aux_pending_json" | jq -r '.target // "unknown"')
+      aux_emit_verbatim_goal[$t]=$(echo "$aux_pending_json" | jq -r '.verbatim_goal // ""')
+      aux_clear_pending[$t]="true"
+      ;;
+    *)
+      aux_clear_pending[$t]="true"
+      continue
+      ;;
+  esac
+done
 
 is_terminal_status() {
   case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')" in
@@ -955,6 +1109,21 @@ else
   mt_save
 fi
 
+# ── Resolve an aux row's FIXED agent (Decision 2 -- never task-type-routed, never
+# command-route-agent.sh): mirrors orchestrate-build-aux-dispatch.sh's own mapping exactly, so
+# --dry-run's rendering (no side effects, no file written) shows the SAME agent the live path's
+# actual dispatch-file build would resolve. divergence-audit uses this task's own already-resolved
+# research_agents[t] (never re-resolved), defaulting to "general-research-agent" when absent. ───
+aux_fixed_agent() {
+  local kind="$1" t="$2"
+  case "$kind" in
+    drift-inspection|blocker-research) echo "fork" ;;
+    plan-revision) echo "reviser-agent" ;;
+    divergence-audit) mt_get --arg t "$t" '.research_agents[$t] // "general-research-agent"' ;;
+    *) echo "" ;;
+  esac
+}
+
 # ── Resolve agent per candidate (needed for both dry-run rendering and live dispatch) ────────────
 resolve_agent() {
   local op="$1" ttype="$2"
@@ -1109,6 +1278,12 @@ if [ "$dry_run" = "true" ]; then
     out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" \
       '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force}')")
   done
+  for t in "${task_args[@]}"; do
+    [ -z "${aux_emit_kind[$t]:-}" ] && continue
+    aux_agent=$(aux_fixed_agent "${aux_emit_kind[$t]}" "$t")
+    out_aux_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg k "${aux_emit_kind[$t]}" --arg a "$aux_agent" \
+      '{task: $t, kind: $k, agent: $a, model: null, dispatch_file: null, orchestrator_mode: false}')")
+  done
   emit_and_exit "$cycle_count"
 fi
 
@@ -1119,6 +1294,87 @@ fi
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/skill-base.sh"
 cd "$SKILL_REPO_ROOT"
+
+# ── Aux dispatch build (Decision 2, Phase 5) — live-only side effects for every task the shared
+# AUX DECISION section above chose a kind for: mint a dispatch_seq off the SAME
+# dispatch_seq_counter the per-task implement/research/plan loop below also mints from, call
+# orchestrate-build-aux-dispatch.sh, bump the relevant escalation counter, and consume
+# aux_pending[t]/the chain marker file so this SAME kind is never re-emitted next cycle. ─────────
+for t in "${task_args[@]}"; do
+  [ -z "${aux_emit_kind[$t]:-}" ] && continue
+  aux_kind="${aux_emit_kind[$t]}"
+  aux_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
+  aux_dispatch_start_ts=$(date -u +%s)
+  mt_set --argjson seq "$aux_dispatch_seq" '.dispatch_seq_counter = $seq'
+
+  build_aux_args=(--session "$session_id" --seq "$aux_dispatch_seq" --dispatch-start-ts "$aux_dispatch_start_ts")
+  case "$aux_kind" in
+    drift-inspection)
+      build_aux_args+=(--plan-path "${aux_emit_plan_path[$t]:-}")
+      ;;
+    blocker-research)
+      build_aux_args+=(--blocker-desc "${aux_emit_blocker_desc[$t]:-Unspecified blocker}")
+      ;;
+    plan-revision)
+      build_aux_args+=(--revision-reason "${aux_emit_revision_reason[$t]}" --plan-path "${aux_emit_plan_path[$t]:-}")
+      if [ "${aux_emit_revision_reason[$t]}" = "blocker" ]; then
+        build_aux_args+=(--blocker-desc "${aux_emit_blocker_desc[$t]:-Unspecified blocker}" --findings-summary "${aux_emit_findings_summary[$t]:-No findings}")
+      else
+        build_aux_args+=(--drift-pct "${aux_emit_drift_pct[$t]:-0}" --drift-summary "${aux_emit_drift_summary[$t]:-No summary}")
+      fi
+      ;;
+    divergence-audit)
+      aux_research_agent=$(mt_get --arg t "$t" '.research_agents[$t] // "general-research-agent"')
+      build_aux_args+=(--target "${aux_emit_target[$t]:-unknown}" --verbatim-goal "${aux_emit_verbatim_goal[$t]:-}" --research-agent "$aux_research_agent")
+      ;;
+  esac
+
+  if aux_dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-aux-dispatch.sh" "$t" "$aux_kind" "${build_aux_args[@]}" 2>&1); then
+    aux_build_exit=0
+  else
+    aux_build_exit=$?
+  fi
+  if [ "$aux_build_exit" -ne 0 ]; then
+    echo "[orchestrate] WARNING: orchestrate-build-aux-dispatch.sh failed for task #$t kind=$aux_kind (exit $aux_build_exit): $aux_dispatch_json" >&2
+    continue
+  fi
+  aux_file=$(echo "$aux_dispatch_json" | jq -r '.dispatch_file')
+  aux_agent=$(echo "$aux_dispatch_json" | jq -r '.agent')
+  aux_model=$(echo "$aux_dispatch_json" | jq -r '.model')
+  [ -z "$aux_model" ] && aux_model_json="null" || aux_model_json="\"$aux_model\""
+
+  out_aux_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg k "$aux_kind" --arg a "$aux_agent" \
+    --argjson m "$aux_model_json" --arg df "$aux_file" \
+    '{task: $t, kind: $k, agent: $a, model: $m, dispatch_file: $df, orchestrator_mode: false}')")
+
+  case "$aux_kind" in
+    drift-inspection)
+      aux_new_cnt=$(mt_get --arg t "$t" '((.drift_inspection_count[$t] // 0) + 1)')
+      mt_set --arg t "$t" --argjson v "$aux_new_cnt" '.drift_inspection_count[$t] = $v'
+      ;;
+    blocker-research)
+      aux_new_cnt=$(mt_get --arg t "$t" '((.blocker_escalation_count[$t] // 0) + 1)')
+      mt_set --arg t "$t" --argjson v "$aux_new_cnt" '.blocker_escalation_count[$t] = $v'
+      ;;
+  esac
+done
+# Consume aux_pending[t] and any chain marker file for every task decided above, whether a row was
+# actually built or the cap/mutual-exclusion guard suppressed it — a suppressed entry must not be
+# re-evaluated every subsequent cycle of this SAME invocation.
+for t in "${task_args[@]}"; do
+  if [ "${aux_clear_pending[$t]:-}" = "true" ]; then
+    mt_set --arg t "$t" 'del(.aux_pending[$t])'
+  fi
+  if [ "${aux_consume_blocker_file[$t]:-}" = "true" ]; then
+    aux_padded2=$(printf "%03d" "$t")
+    rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.blocker-research.json"
+  fi
+  if [ "${aux_consume_drift_file[$t]:-}" = "true" ]; then
+    aux_padded2=$(printf "%03d" "$t")
+    rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.drift-inspection.json"
+  fi
+done
+mt_save
 
 new_cycle_count=$(( cycle_count + 1 ))
 

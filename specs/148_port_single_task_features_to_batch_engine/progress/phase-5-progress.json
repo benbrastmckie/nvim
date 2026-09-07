@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Emit aux_dispatch[] rows and build their dispatch files",
+  "started_at": "2026-09-07T14:41:00Z",
+  "last_updated": "2026-09-07T15:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/orchestrate-build-aux-dispatch.sh (fixed agent per kind, no memory/lit/route-agent path)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"]},
+    {"id": 2, "description": "Add aux_dispatch[] to orchestrate-cycle-plan.sh's output JSON and header contract", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Emit rows from aux_pending[task] at the top of the cycle, clearing the entry as emitted", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Chain blocker-research -> plan-revision via .blocker-research.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Chain drift-inspection -> plan-revision via .drift-inspection.json (drift_pct > 0.30 threshold)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Enforce MAX_BLOCKER_ESCALATIONS=2 / MAX_DRIFT_INSPECTIONS=1 per-task caps in the multi-state file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Enforce drift-inspection/divergence-audit mutual exclusion by hard_mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Resolve model from the fixed agent's own frontmatter, never --model/effort routing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"]},
+    {"id": 9, "description": "Extend test-orchestrate-cycle-plan.sh (Group 10) and add a dedicated test-orchestrate-build-aux-dispatch.sh unit suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh"]},
+    {"id": 10, "description": "Register both new files in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Ran the AUX DECISION block (which kind, if any, to emit per task) as a single shared, read-only computation placed right after the (a2) cycle_counts seeding step and before the (b) all-terminal check, so it runs identically whether the cycle later stops for all-terminal/no-eligible reasons or proceeds -- matching the plan's own 'top of the cycle' instruction and this script's own single-decision-pass mandate.", "result": "kept", "reason": "Placing it before (b) is load-bearing: (b)'s all-terminal short-circuit calls emit_and_exit directly, bypassing the dry-run/live fork entirely, so any aux logic placed AFTER (b) would never run for an all-terminal batch."},
+    {"approach": "Discovered that orchestrate-cycle-plan.sh's mt_json is NEVER loaded from the on-disk mt_state_file under --dry-run (a pre-existing, Phase-1-era design choice, not something this phase introduced) -- so aux_pending seeded directly into a fixture mt_state_file is invisible to a --dry-run invocation.", "result": "kept", "reason": "This is consistent with the script's own two-function design (dry-run is a pure, on-disk-task-directory-only preview) and matches how Group 9's own H1 --dry-run parity case is built (task-directory files, never mt_state_file). The Phase 5 dry-run parity test case was built against the .blocker-research.json CHAIN file instead, which IS read regardless of dry_run (a plain file check, no mt_json gate) -- this correctly exercises real dry-run behavior rather than asserting a behavior the SUT was never designed to have."},
+    {"approach": "Used update-phase-status.sh to flip Phase 5's own heading to [IN PROGRESS]; it corrupted the heading (Phase 5's name itself contains a literal `aux_dispatch[]` bracket pair, and the script's status-substitution regex is greedy across the FIRST '[' to the LAST ']' on the line, consuming the phase name's own trailing text).", "result": "failed", "reason": "Manually repaired the heading via a direct Edit. Avoided update-phase-status.sh for the REST of this task's phase-heading transitions on phases whose names contain literal brackets (Phases 6/7/8 have no such brackets in their names, so this is not expected to recur for the remaining phases of this task)."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

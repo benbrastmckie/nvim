@@ -1,61 +1,8 @@
 {
-  "status": "partial",
-  "dispatch_seq": 3,
-  "partial_progress": {
-    "stage": "phase_end_handoff",
-    "details": "Phases 1-4 of 8 (Waves 1-2) completed, independently tested, and committed. Phase 5 (aux_dispatch[] emission) is next; its dependencies (Phases 3 and 4) are both satisfied. See the phase-4 handoff artifact for full resume context.",
-    "handoff_path": "specs/148_port_single_task_features_to_batch_engine/handoffs/phase-4-handoff-20260904T074241Z.md",
-    "phases_completed": 4,
-    "phases_total": 8
-  },
-  "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/148_port_single_task_features_to_batch_engine/handoffs/phase-4-handoff-20260904T074241Z.md",
-      "summary": "Phase-end handoff after Phase 4: state, decisions, pitfalls to avoid, and Phase 5 resume point"
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Completed Phases 1-4 of the 8-phase plan: per-task cumulative cycle budget with durable cross-invocation backing (Phase 1), a new orchestrate-churn.sh script for hard-mode three-strikes/burnout detection (Phase 2), wired hard-mode churn calls and base-mode drift/blocker aux signals into orchestrate-cycle-postflight.sh (Phase 3), and ported the H1 per-phase dispatch heading-scan/conformance-gate/marker-crosscheck/territory machinery into orchestrate-cycle-plan.sh with a new --phase-number flag on orchestrate-build-dispatch.sh (Phase 4). All four phases are independently committed with full test coverage (180+ new test assertions across 4 test suites); the full gate (run-all.sh, 69/69) and verify-deploy.sh (2 pre-existing, unrelated findings only) are green."
-  },
-  "modified_files": [
-    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/orchestrate-churn.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
-  ],
-  "memory_candidates": [
-    {
-      "content": "orchestrate-cycle-plan.sh (and sibling batch-engine scripts) run under `set -euo pipefail`. Any `grep`-based command substitution that can legitimately find ZERO matches (e.g. \"is there an open plan-phase heading left\") must be guarded (`|| true`, `|| echo 0`) or the whole script aborts silently -- no stdout, no stderr, just exit 1 -- the moment that code path is hit. This is easy to miss when porting single-task SKILL.md prose bash (which is not run under `set -e`) into one of these scripts verbatim; add the guard at port time, not after a silent-failure debugging session.",
-      "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["set -euo pipefail", "grep no-match", "orchestrate-cycle-plan", "silent-exit", "bash-porting"]
-    },
-    {
-      "content": "This repo's shell test suites use two different collaborator-resolution patterns: some (test-orchestrate-cycle-plan.sh, test-orchestrate-churn.sh) copy collaborator scripts directly FROM the agent-system source store into a synthetic fixture tree, so they always test source-store edits immediately. Others (test-orchestrate-build-dispatch.sh, test-mint-dispatch-seq.sh) use a resolve_candidate() helper that checks the DEPLOYED .claude/scripts/ tree FIRST and falls back to source-store only if absent -- so a fresh source-store edit is invisible to these suites until `bash .claude/scripts/deploy-headless.sh` is re-run. When a test for a script you just edited reports a stale/unrelated failure (e.g. \"unrecognized argument\" for a flag you just added), check which resolution pattern that suite uses before assuming a code bug.",
-      "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["test fixtures", "deploy-headless", "resolve_candidate", "source-store-vs-deployed", "shell-test-suites"]
-    },
-    {
-      "content": "orchestrate-cycle-plan.sh's own architectural mandate (\"one computation of every admission verdict, never two independently-maintained renderings\") extends cleanly to a NEW decision layer added later (H1's per-task phase-selection/blocked-reason/territory decision): compute it ONCE in the shared section before the --dry-run/live fork, store per-task results in associative arrays, then have BOTH the dry-run rendering loop and the live dispatch-building loop consume a shared filtered candidate list (e.g. probed_dispatch_post_h1) built from those same arrays -- rather than duplicating the decision logic in each loop or only running it in the live path.",
-      "category": "PATTERN",
-      "source_artifact": "specs/148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-cycle-plan", "dry-run parity", "single-computation", "decision-layer", "shared-decision-pass"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 1,
   "metadata": {
-    "session_id": "sess_1788502984_4c5fb5",
+    "session_id": "sess_1788792002_e61e2d",
     "agent_type": "general-implementation-agent",
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "phases_completed": 4,

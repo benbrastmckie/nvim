@@ -434,37 +434,38 @@ end-to-end and listing anything left behind, before closing the phase.
 
 ---
 
-### Phase 5: Emit `aux_dispatch[]` rows and build their dispatch files [NOT STARTED]
+### Phase 5: Emit `aux_dispatch[]` rows and build their dispatch files [COMPLETED]
 
 **Goal**: Implement Decision 2 — the next-cycle emission of drift-inspection, blocker-research,
 plan-revision and divergence-audit rows with fixed agents and a dedicated dispatch-file writer.
 
 **Tasks**:
-- [ ] Create `scripts/orchestrate-build-aux-dispatch.sh`: writes
+- [x] Create `scripts/orchestrate-build-aux-dispatch.sh`: writes
       `specs/{NNN}_{slug}/.dispatch/{seq}-aux-{kind}.md` carrying the kind's prompt content and
       the "read your dispatch file first" pointer convention; never calls
       `orchestrate-build-dispatch.sh`, never touches memory retrieval, the `--lit` briefing, or
-      `command-route-agent.sh`.
-- [ ] Add `aux_dispatch[]` to `orchestrate-cycle-plan.sh`'s output JSON and to its header's output
-      contract; leave `dispatch[]`, `deferred[]`, `blocked[]` and `stop` byte-identical.
-- [ ] Emit rows from `aux_pending[task]` at the top of the cycle, one row per task per cycle,
-      clearing the entry as it is emitted.
-- [ ] Chain `blocker-research` -> `plan-revision`: when `${TASK_DIR}/.blocker-research.json` exists
+      `command-route-agent.sh`. *(completed)*
+- [x] Add `aux_dispatch[]` to `orchestrate-cycle-plan.sh`'s output JSON and to its header's output
+      contract; leave `dispatch[]`, `deferred[]`, `blocked[]` and `stop` byte-identical. *(completed)*
+- [x] Emit rows from `aux_pending[task]` at the top of the cycle, one row per task per cycle,
+      clearing the entry as it is emitted. *(completed)*
+- [x] Chain `blocker-research` -> `plan-revision`: when `${TASK_DIR}/.blocker-research.json` exists
       and no revision has run for it, emit the `plan-revision` row carrying the file's `summary`;
-      then fall through to ordinary status-derived dispatch.
-- [ ] Chain `drift-inspection` -> `plan-revision`: read `${TASK_DIR}/.drift-inspection.json` and
+      then fall through to ordinary status-derived dispatch. *(completed)*
+- [x] Chain `drift-inspection` -> `plan-revision`: read `${TASK_DIR}/.drift-inspection.json` and
       emit the revision row only when `drift_pct > 0.30`; otherwise log the existing "Drift check
-      passed" message and emit nothing.
-- [ ] Enforce the caps: `MAX_BLOCKER_ESCALATIONS=2` and `MAX_DRIFT_INSPECTIONS=1` per task per
+      passed" message and emit nothing. *(completed)*
+- [x] Enforce the caps: `MAX_BLOCKER_ESCALATIONS=2` and `MAX_DRIFT_INSPECTIONS=1` per task per
       invocation, held in the per-session multi-state file; at the cap, log the existing manual-
-      intervention guidance and emit no row.
-- [ ] Enforce mutual exclusion: `drift-inspection` only when hard mode is off,
-      `divergence-audit` only when it is on.
-- [ ] Set each row's `model` from the fixed agent's own frontmatter (null when the agent declares
-      none), never from `--model`/effort routing.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh`: each kind emits on its own trigger and
+      intervention guidance and emit no row. *(completed)*
+- [x] Enforce mutual exclusion: `drift-inspection` only when hard mode is off,
+      `divergence-audit` only when it is on. *(completed)*
+- [x] Set each row's `model` from the fixed agent's own frontmatter (null when the agent declares
+      none), never from `--model`/effort routing. *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh`: each kind emits on its own trigger and
       no other; agents are the fixed four and are never task-type-resolved; caps hold; the two
-      mutually exclusive kinds never co-occur.
+      mutually exclusive kinds never co-occur. *(completed: also added a dedicated
+      test-orchestrate-build-aux-dispatch.sh unit suite, 18 cases)*
 
 **Timing**: 2 hours
 
