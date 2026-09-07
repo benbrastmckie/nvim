@@ -159,29 +159,29 @@ verification notes rather than silently editing only the first.
 
 ---
 
-### Phase 2: Zombie / unreaped-child reporting pass [NOT STARTED]
+### Phase 2: Zombie / unreaped-child reporting pass [COMPLETED]
 
 **Goal**: Add `run_zombie_pass` to `claude-refresh.sh`, detecting `<defunct>` processes by `stat`
 state, grouping them by parent, and reporting them without ever signalling anything.
 
 **Tasks**:
-- [ ] Add a `ZOMBIE_SNAPSHOT_PS_FIELDS`-style constant and a `take_zombie_snapshot` function
+- [x] Add a `ZOMBIE_SNAPSHOT_PS_FIELDS`-style constant and a `take_zombie_snapshot` function
       taking its own independent `ps -eo pid,ppid,stat,etimes,comm` snapshot — do NOT widen
-      `SNAPSHOT_PS_FIELDS` or the Lean pass's fields
-- [ ] Add a `zombie_row_is_defunct` predicate matching a `stat` field containing `Z` (covering
+      `SNAPSHOT_PS_FIELDS` or the Lean pass's fields *(completed)*
+- [x] Add a `zombie_row_is_defunct` predicate matching a `stat` field containing `Z` (covering
       both `Z` and `Z+`), and rejecting live states (`S`, `R`, `D`, `T`, `I` and their suffixed
-      forms) — an independent detection axis not reused by any existing predicate
-- [ ] Add `run_zombie_pass "$FORCE" "$DRY_RUN"` grouping defunct rows by `ppid`, resolving each
+      forms) — an independent detection axis not reused by any existing predicate *(completed)*
+- [x] Add `run_zombie_pass "$FORCE" "$DRY_RUN"` grouping defunct rows by `ppid`, resolving each
       parent's `comm`, and reporting per parent: parent comm, parent PID, zombie child count,
-      the child `comm` names, and the oldest child's age via the existing `get_process_age`
-- [ ] Report zombie memory as zero-cost explicitly (a zombie holds a PID slot and exit-status
-      record, no pages) so the output cannot be misread as reclaimable memory
-- [ ] Emit a clean "No unreaped child processes found." line when none are present, matching the
-      existing passes' no-findings line convention
-- [ ] Branch on `$DRY_RUN` only for the `[DRY RUN]` banner line; take no `$FORCE` branch at all
-- [ ] Wire `run_zombie_pass "$FORCE" "$DRY_RUN"` into `main()` after `run_lean_pass`, using the
-      same calling convention for symmetry
-- [ ] Confirm `terminate_pid` and `kill` appear nowhere in the new function bodies
+      the child `comm` names, and the oldest child's age via the existing `get_process_age` *(completed)*
+- [x] Report zombie memory as zero-cost explicitly (a zombie holds a PID slot and exit-status
+      record, no pages) so the output cannot be misread as reclaimable memory *(completed)*
+- [x] Emit a clean "No unreaped child processes found." line when none are present, matching the
+      existing passes' no-findings line convention *(completed)*
+- [x] Branch on `$DRY_RUN` only for the `[DRY RUN]` banner line; take no `$FORCE` branch at all *(completed)*
+- [x] Wire `run_zombie_pass "$FORCE" "$DRY_RUN"` into `main()` after `run_lean_pass`, using the
+      same calling convention for symmetry *(completed)*
+- [x] Confirm `terminate_pid` and `kill` appear nowhere in the new function bodies *(completed: verified by grep)*
 
 **Timing**: 1 hour
 

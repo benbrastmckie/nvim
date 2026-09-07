@@ -900,6 +900,163 @@ run_lean_pass() {
     echo "Memory reclaimed: ~$(format_memory "$total_mem_kb")"
 }
 
+# --- Unreaped-child (zombie) reporting pass: independently-gated, report-only ---
+#
+# A third, independently-gated pass. Unlike run_claude_pass()/run_lean_pass() above, this pass
+# NEVER terminates anything under ANY flag combination -- there is no `$FORCE` branch at all,
+# because a zombie can only be reaped by its own parent calling wait(); no external signal can
+# reap one (sending a zombie a signal is a silent no-op -- it is already dead, only its exit
+# status remains). Reporting this is still valuable: an unreaped zombie is a symptom of a parent
+# that leaked a wait() call (lean-lsp-mcp never wait()s its `lake` child; speech-dispatcher has
+# been observed leaking `sd_*` zombies over days), and surfacing it lets a human decide whether
+# the owning daemon itself needs fixing -- this pass's job stops at reporting, not fixing.
+#
+# Takes its OWN independent `ps -eo` snapshot (ZOMBIE_SNAPSHOT_PS_FIELDS below) rather than
+# widening SNAPSHOT_PS_FIELDS or LEAN_SNAPSHOT_PS_FIELDS, mirroring the Lean pass's own
+# independent-snapshot precedent above: widening an existing fixed-width `read` would silently
+# break every synthetic test fixture that reads a fixed field count for those OTHER passes.
+ZOMBIE_SNAPSHOT_PS_FIELDS='pid,ppid,stat,etimes,comm'
+
+# Take the zombie-scoped process snapshot. Fails loudly (non-zero exit, explicit message) rather
+# than silently degrading if `ps` itself fails, mirroring take_snapshot()/take_lean_snapshot()
+# above. An EMPTY result is the normal, common case (no zombies at all), not an error.
+take_zombie_snapshot() {
+    local out
+    if ! out=$(ps -eo "$ZOMBIE_SNAPSHOT_PS_FIELDS" --no-headers 2>&1); then
+        echo "ERROR: 'ps -eo $ZOMBIE_SNAPSHOT_PS_FIELDS' failed:" >&2
+        echo "$out" >&2
+        exit 1
+    fi
+    printf '%s\n' "$out"
+}
+
+# --- Zombie-state predicate ---
+# Returns 0 (true) only when a snapshot row's `stat` field identifies a defunct (zombie) process.
+# Linux/procps renders a zombie's stat as exactly `Z` or `Z+` (the trailing `+` marks a
+# foreground-process-group member) -- never any other combination -- so a substring match on `Z`
+# is both sufficient and precise: no live state code (`S`, `R`, `D`, `T`, `I`, and their `s`/`l`/
+# `<`/`N`/`+` suffixes) ever contains the letter `Z`. This is an independent detection axis from
+# every existing predicate in this script -- it reads `stat`, a column none of the Claude-pass or
+# Lean-pass predicates above ever consult.
+zombie_row_is_defunct() {
+    local stat="$1"
+    case "$stat" in
+        *Z*)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# Run the unreaped-child (zombie) reporting pass. Always runs after run_lean_pass(), same
+# unconditional-sequence convention main() already uses for the Claude/Lean passes. Accepts the
+# same ($FORCE, $DRY_RUN) calling convention as the other two passes purely for call-site
+# symmetry -- $FORCE is intentionally never branched on inside this function, since there is no
+# force-mode action for this pass to take (see the header comment above for why a zombie cannot
+# be reaped by an external signal at all). $DRY_RUN only gates the `[DRY RUN]` banner line, so
+# --dry-run and --force/no-flag output is identical apart from that one banner, exactly like the
+# other two passes' documented --dry-run/--force equivalence.
+run_zombie_pass() {
+    local FORCE="$1"
+    local DRY_RUN="$2"
+
+    local snapshot
+    snapshot=$(take_zombie_snapshot)
+
+    local -a all_pid=() all_comm=()
+    local -a zpid=() zppid=() zetimes=() zcomm=()
+
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+
+        local pid ppid stat etimes comm
+        read -r pid ppid stat etimes comm <<< "$line"
+
+        all_pid+=("$pid")
+        all_comm+=("$comm")
+
+        if zombie_row_is_defunct "$stat"; then
+            zpid+=("$pid")
+            zppid+=("$ppid")
+            zetimes+=("$etimes")
+            zcomm+=("$comm")
+        fi
+    done <<< "$snapshot"
+
+    local n_zombies="${#zpid[@]}"
+
+    echo ""
+    echo -e "${GREEN}Unreaped Child Process Report${NC}"
+    echo "=============================="
+
+    if [ "$n_zombies" -eq 0 ]; then
+        echo ""
+        echo "No unreaped child processes found."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        echo ""
+        echo -e "${BLUE}[DRY RUN]${NC} Preview only -- this pass never terminates anything (a zombie"
+        echo "can only be reaped by its own parent's wait() call, never by an external signal)."
+    fi
+
+    # Group by ppid, first-seen order. No associative arrays, matching this script's existing
+    # style (parallel indexed arrays throughout).
+    local -a parent_pids=()
+    local i k already_seen ppid_i
+    for ((i = 0; i < n_zombies; i++)); do
+        ppid_i="${zppid[$i]}"
+        already_seen=false
+        for k in "${!parent_pids[@]}"; do
+            if [ "${parent_pids[$k]}" = "$ppid_i" ]; then
+                already_seen=true
+                break
+            fi
+        done
+        $already_seen || parent_pids+=("$ppid_i")
+    done
+
+    echo ""
+    echo "Found $n_zombies unreaped child process(es) across ${#parent_pids[@]} parent(s)."
+    echo "Zombie memory cost: 0 (a zombie retains only a PID slot and exit-status record -- no reclaimable pages)."
+
+    local ppid parent_comm j
+    for ppid in "${parent_pids[@]}"; do
+        parent_comm="unknown (parent not present in this snapshot)"
+        for ((j = 0; j < ${#all_pid[@]}; j++)); do
+            if [ "${all_pid[$j]}" = "$ppid" ]; then
+                parent_comm="${all_comm[$j]}"
+                break
+            fi
+        done
+
+        local -a child_pids=() child_comms=() child_ages=()
+        local oldest_etimes=-1
+        for ((i = 0; i < n_zombies; i++)); do
+            [ "${zppid[$i]}" = "$ppid" ] || continue
+            child_pids+=("${zpid[$i]}")
+            child_comms+=("${zcomm[$i]}")
+            child_ages+=("$(get_process_age "${zetimes[$i]}")")
+            if [ "${zetimes[$i]}" -gt "$oldest_etimes" ]; then
+                oldest_etimes="${zetimes[$i]}"
+            fi
+        done
+
+        echo ""
+        echo "Parent: $parent_comm (PID $ppid) -- ${#child_pids[@]} zombie child(ren), oldest age $(get_process_age "$oldest_etimes"):"
+        printf "  %-8s %-24s %s\n" "PID" "Comm" "Age"
+        printf "  %-8s %-24s %s\n" "-----" "------------------------" "-------"
+        for ((i = 0; i < ${#child_pids[@]}; i++)); do
+            printf "  %-8s %-24s %s\n" "${child_pids[$i]}" "${child_comms[$i]}" "${child_ages[$i]}"
+        done
+    done
+
+    echo ""
+}
+
 main() {
     local FORCE=false
     local DRY_RUN=false
@@ -932,6 +1089,7 @@ main() {
     # returning functions called unconditionally in sequence.
     run_claude_pass "$FORCE" "$DRY_RUN"
     run_lean_pass "$FORCE" "$DRY_RUN"
+    run_zombie_pass "$FORCE" "$DRY_RUN"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

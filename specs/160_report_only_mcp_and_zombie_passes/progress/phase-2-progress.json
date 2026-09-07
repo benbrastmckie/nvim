@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Zombie / unreaped-child reporting pass",
+  "started_at": "2026-09-07T20:35:00Z",
+  "last_updated": "2026-09-07T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ZOMBIE_SNAPSHOT_PS_FIELDS constant and take_zombie_snapshot function", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Add zombie_row_is_defunct predicate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Add run_zombie_pass grouping defunct rows by parent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "Report zombie memory as zero-cost explicitly", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Emit clean no-findings line", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Branch on DRY_RUN only for banner", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Wire run_zombie_pass into main() after run_lean_pass", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 8, "description": "Confirm terminate_pid/kill appear nowhere in new function bodies", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
