@@ -1,7 +1,91 @@
 {
   "version": "1.1.0",
-  "next_project_number": 172,
+  "next_project_number": 176,
   "active_projects": [
+    {
+      "project_number": 172,
+      "project_name": "bounded_build_waiter_idiom",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Define a canonical bounded-wait idiom for detached builds",
+      "description": "Close the taught-pattern gap that produced 22 unreapable poll loops during a multi-task /orchestrate run in ~/Projects/BimodalLogic. Investigation finding: the observed waiter shape `until grep -q \"^EXIT=\" <log>; do sleep ...; done` appears NOWHERE in this source store -- it is agent-improvised. Two forces create it: (a) the harness's own Bash guidance blocks foreground `sleep` and points agents at a Monitor until-loop to wait on a condition, and (b) extensions/lean/context/project/lean4/operations/long-builds.md mandates `Bash(run_in_background: true)` detachment for every `lake build` but offers no sanctioned way to BLOCK on a detached build -- its only stated discipline is 'wait for the harness completion notification', with four Passive progress checks explicitly labeled liveness-only. An agent that needs to block therefore invents an unbounded sentinel poll. The defect class: a poll loop whose exit condition is a sentinel written by a process that may die first has no bounded termination. In the observed run the agent-side wrapper was of the form `cmd > b2b.log 2>&1; echo \"EXIT=$?\" >> b2b.log`; when the guarded build was cancelled/superseded by lock contention with a concurrent session, the `echo` never ran, so the sentinel became unwritable by construction. 22 loops watched the same b2b.log (2 more watched b9b.log), aged 24-55 minutes, at 0% CPU -- the cost is background-shell-slot exhaustion and operator confusion, not throughput. Deliverable: a new core context pattern file (suggested agent-system/extensions/core/context/patterns/bounded-build-waiter.md) stating the defect class once, canonically, and defining a safe waiter with three mandatory properties -- (1) a hard timeout so the waiter cannot outlive its writer, (2) a writer-liveness check (`kill -0 <pid>`) rather than sentinel-polling alone, so a dead writer terminates the wait immediately, and (3) one-waiter-per-log enforcement, so a superseded build's waiter is reaped before a replacement waiter is spawned. Wire the new anchor into long-builds.md with a one-line pointer under a new section covering the blocking case (do NOT restate the model there -- follow the existing single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md). This task is foundational: it settles the waiter/writer contract that the guard-side, reaper-side, and agent-contract tasks all consume. Do not modify lake-build-guard.sh, claude-refresh.sh, or any agent file here -- those are separate dependent tasks.",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "effort": "2-3 hours",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+        "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md"
+      ],
+      "artifacts": [],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-07T23:37:35Z"
+    },
+    {
+      "project_number": 173,
+      "project_name": "guard_terminal_record_every_exit",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Guarantee lake-build-guard.sh writes a terminal record on every exit path",
+      "description": "Make the guard-side analogue of the poll-loop leak impossible, so that any correctly-written waiter can always drain. Investigation finding: lake-build-guard.sh does NOT write the observed `EXIT=` sentinel at all -- that was agent-side. What it does write is a structured record at <root>/.lake/build-guard.result via two functions: write_inflight_record() emits `state=in_flight`, `holder_pid=$$`, `start_epoch=`, empty `exit_status=`, and `log_path=`; finalize_record() rewrites it as `state=complete` with the real `exit_status=`. The defect: finalize_record() is reached only on the normal return path out of run_as_holder(). There is no trap, so if the holder shell is killed, cancelled, or superseded (exactly the lock-contention scenario that triggered the observed leak), the record is left permanently at `state=in_flight` with a `holder_pid` that names a dead process. A waiter consuming that record has no terminal transition to observe -- the same unbounded-termination defect, one layer down. Fix directions to evaluate (not prescriptive): install an EXIT/INT/TERM trap in run_as_holder() that finalizes the record with a distinguishable terminal state (e.g. state=aborted with a reserved exit_status) so existing waiters drain rather than hang; confirm holder_pid is documented as the liveness handle that the bounded-waiter contract's `kill -0` check reads, since it is already written and is the natural handle; and make sure the waiter/sharing path in cmd_build treats an in_flight record whose holder_pid is dead as stale rather than as a live build to wait behind. Preserve the guard's existing documented contracts: the subcommand shape (status/preflight/build), the reserved 77 usage band, exit 75 on lock-wait timeout, the five-condition staleness policy on the sharing decision, and the `--timeout` semantics (a lock-WAIT budget, never a build-duration limit). Extend agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh with coverage for the killed-holder case: a holder killed mid-build must leave a terminal record, and a waiter must not block on a record whose holder_pid is dead. Land the fix in the nvim source store only.",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "effort": "3-4 hours",
+      "dependencies": [
+        172
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/lake-build-guard.sh",
+        "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
+      ],
+      "artifacts": [],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-07T23:37:35Z"
+    },
+    {
+      "project_number": 174,
+      "project_name": "refresh_orphan_waiter_reaper",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Add a self-excluding orphaned-build-waiter reaper pass to /refresh",
+      "description": "Give the system a way to clean up waiters that already leaked, correct by construction against the self-match bug observed while cleaning up manually. Second observed defect, same bug class as the primary one: an ad-hoc cleanup command of the form `pgrep -f 'until grep' | ... kill` matched ITS OWN command line -- the command string contained the very pattern it was searching for -- and killed its own shell (exit 144). This happened twice. Any reaper for this must exclude itself and its own process group, or it kills the reaper. Investigation finding: agent-system/extensions/core/scripts/claude-refresh.sh already solves exactly this, and the fix should reuse its architecture rather than invent a new one. It takes a single atomic `ps -eo` snapshot per invocation (take_snapshot()) with every exclusion evaluated against that frozen snapshot, and it already implements what its own header calls zero-query self-exclusion -- `if [ \"$pid\" = \"$$\" ] || [ \"$ppid\" = \"$$\" ]; then` skip -- applied in both the Claude-process pass and the Lean-LSP pass. That idiom is known at parse time, needs no second query, and is race-free; it is the correct-by-construction answer to the pgrep self-match bug. Scope: add a new pass that identifies orphaned build-waiter poll loops (matching the process signature settled by the bounded-waiter contract) whose watched log has a dead or absent writer, reusing the existing snapshot and the existing self-exclusion, and extend the exclusion to the reaper's own process group as well as its pid/ppid. Decide and document the pass's gate class explicitly -- the existing passes are split between interactive-confirm (rows 1-2), report-only-always (rows 3-4), and age-threshold-only (rows 5-8); an age-threshold-only gate matching the stale-lock passes is the closest existing precedent, since these waiters are 0% CPU and provably unreapable rather than merely idle. Then update the pass inventory in BOTH places that must agree row-for-row on gate and destructiveness: agent-system/extensions/core/commands/refresh.md ('What It Cleans' table plus a new owning subsection) and agent-system/extensions/core/skills/skill-refresh/SKILL.md (its Pass Inventory table). State whether the new pass is reached by the hourly claude-refresh.timer cadence -- only the four passes internal to claude-refresh.sh currently are.",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "effort": "3-4 hours",
+      "dependencies": [
+        172
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
+        "agent-system/extensions/core/commands/refresh.md",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
+      ],
+      "artifacts": [],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-07T23:37:35Z"
+    },
+    {
+      "project_number": 175,
+      "project_name": "enforce_waiter_teardown_contracts",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Enforce waiter teardown in the agent contracts that spawn build waiters",
+      "description": "Wire the already-written teardown rule into the specific contracts whose agents actually spawn build waiters, so the leak is prevented at its source rather than only cleaned up afterward. Investigation finding: the governing rule already exists and was violated. agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md carries a normative section titled 'Tear Down Watchers/Monitors Before Reporting' stating that every agent which arms a watcher/monitor process during its own dispatch MUST tear it down before reporting a terminal result. The 22 leaked waiters are a direct violation of that existing rule -- so this is an enforcement-and-wiring problem, not a missing-prose problem. That file's own 'Where This Is Referenced' section lists exactly three fix sites today (skill-orchestrate's Stage 5 staleness-gate comment block, context/contracts/territory.md's Territory Declaration Template, and context/standards/orchestrator-runtime-files.md), none of which covers a build waiter armed by a dispatched implementation agent. Scope: (1) extend the teardown rule to name the supersession case explicitly -- a waiter must be torn down not only before REPORTING but before its watched build is cancelled or superseded, which is the transition that actually orphaned the observed loops -- and add the new fix sites to its 'Where This Is Referenced' list; (2) add the corresponding one-line pointer obligations to the agent contracts that dispatch guarded builds, i.e. the lean implementation agents (agent-system/extensions/lean/agents/lean-implementation-agent.md and lean-implementation-hard-agent.md), pointing at the bounded-waiter anchor and the teardown rule rather than restating either. Follow the established single-statement-plus-pointer convention: the model lives in one file, fix sites point at it. Do not duplicate the waiter contract text into the agent files.",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "effort": "1-2 hours",
+      "dependencies": [
+        172
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+      ],
+      "artifacts": [],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-07T23:37:35Z"
+    },
     {
       "project_number": 171,
       "project_name": "fix_literature_ingest_dedup_hang",
