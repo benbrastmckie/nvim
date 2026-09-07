@@ -1,60 +1,24 @@
 {
   "status": "implemented",
-  "dispatch_seq": 3,
+  "dispatch_seq": 5,
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/158_vmswap_aware_refresh_memory_accounting/summaries/01_vmswap-aware-memory-accounting-summary.md",
-      "summary": "Implementation summary for VmSwap-aware refresh memory accounting: all four plan phases completed, 18/18 matcher tests passing."
+      "summary": "Verification pass confirming all four plan phases genuinely hold in the working tree: header invariant ruling present, PROC_ROOT seam and get_vmswap_kb() helper defined, combined RSS+swap threaded through all accumulators and the orphan table's Swap column, and 18/18 matcher tests passing. No re-implementation was needed; a prior dispatch had already landed and committed the work, and .claude/ deploy staleness (the sole reason the prior postflight was refused) has since been resolved."
     }
   ],
   "completion_data": {
-    "completion_summary": "Made claude-refresh.sh's memory accounting VmSwap-aware: added an overridable PROC_ROOT seam and get_vmswap_kb() helper, threaded combined RSS+swap through all three memory accumulators with a separate Swap display column, recorded the required snapshot-invariant ruling in the script header, and added six fixture-driven test cases (18/18 passing, existing cases unchanged)."
+    "completion_summary": "Verified (not re-implemented) that claude-refresh.sh's VmSwap-aware memory accounting is complete and correct: all four plan phases hold in the current working tree, the deployed .claude/ tree matches the source store byte-for-byte, bash -n is clean on both files, and the full matcher suite passes 18/18 including the 6 new VmSwap fixture cases."
   },
-  "modified_files": [
-    "agent-system/extensions/core/scripts/claude-refresh.sh",
-    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"
-  ],
-  "memory_candidates": [
-    {
-      "content": "For a shell script under set -euo pipefail that needs a live /proc read alongside an existing single-atomic-snapshot race-freedom argument, the correct pattern is: (1) do the live read strictly AFTER the row's classification is fixed from the snapshot, never before or interleaved with it, so nothing downstream of the read can change which branch a row took; (2) normalize any read failure (missing line, unreadable file for an already-exited PID) to a benign default (e.g. 0) rather than propagating an error; (3) record the invariant ruling explicitly in the file's own header comment at the moment the code is introduced, arguing why the read does not reopen the snapshot's race-freedom guarantee, rather than leaving reviewers to infer it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/158_vmswap_aware_refresh_memory_accounting/summaries/01_vmswap-aware-memory-accounting-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "proc-read",
-        "race-freedom",
-        "snapshot-invariant",
-        "shell-script",
-        "reporting-only"
-      ]
-    },
-    {
-      "content": "For shell-script-testing.md-style fixture harnesses that override an environment-seam variable (e.g. PROC_ROOT pointing at a fake /proc), combine it with a fake-ps-on-PATH subprocess harness (as already used for self-exclusion end-to-end tests) to assert on FULL script output shape rather than only the isolated helper function. This catches field-count/column mismatches between a write site (building a pipe-delimited string) and its corresponding read site (destructuring it) that a unit-level test of the helper alone would miss.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/158_vmswap_aware_refresh_memory_accounting/summaries/01_vmswap-aware-memory-accounting-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "fixture-testing",
-        "fake-ps",
-        "output-shape",
-        "field-count-mismatch",
-        "shell-script-testing"
-      ]
-    }
-  ],
+  "modified_files": [],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1788808797_82397b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "phases_completed": 4,
     "phases_total": 4
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }

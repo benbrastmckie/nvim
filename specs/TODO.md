@@ -11,10 +11,9 @@ next_project_number: 166
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,158,162,163 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,155,159,164 | 29,74,88,137,139,158,162 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 156,160,165 | 155,159,163,164 | core-agent-system, extensions, file-scope-lifecycle |
-| 4 | 161 | 160 | core-agent-system |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,159,162,163 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,155,160,164 | 29,74,88,137,139,159,162 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 156,161,165 | 155,160,163,164 | core-agent-system, extensions, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -37,10 +36,9 @@ next_project_number: 166
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-158 [IMPLEMENTING] — Make refresh memory accounting VmSwap-aware so zram-compressed id
-  └─ 159 [NOT STARTED] — Add an independently-gated reclamation pass for orphaned Lean LSP
-    └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
-      └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
+159 [NOT STARTED] — Add an independently-gated reclamation pass for orphaned Lean LSP
+  └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
+    └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
 
 ### Extensions
 
@@ -280,7 +278,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 158. Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

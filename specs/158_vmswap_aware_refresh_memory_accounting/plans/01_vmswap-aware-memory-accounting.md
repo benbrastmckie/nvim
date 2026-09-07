@@ -1,7 +1,7 @@
 # Implementation Plan: Task #158
 
 - **Task**: 158 - Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md
