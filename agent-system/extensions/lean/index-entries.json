@@ -662,6 +662,29 @@
         "routing",
         "contracts"
       ]
+    },
+    {
+      "path": "project/lean4/domain/comparator-integration.md",
+      "line_count": 219,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent",
+          "lean-research-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Comparator clean-room runner design record: clean-room trust chain, verdict-string table, C3 version-coupling caveat, advisory-only gate decision",
+      "keywords": [
+        "comparator",
+        "clean-room",
+        "verdict",
+        "sandbox",
+        "axiom-violation"
+      ]
     }
   ]
 }

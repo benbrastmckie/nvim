@@ -1,45 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 153,
-  "session_id": "sess_1788795618_182fd3_153",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/153_lean_comparator_clean_room_runner/plans/01_lean-comparator-clean-room-runner.md",
-      "summary": "8-phase plan for lean-comparator-run.sh: design record and clean-room trust chain, runner skeleton with an 8-value verdict vocabulary, clean-room/config synthesis, sandboxed guard-serialised invocation, stderr-based verdict classification, fixtures, regression suite, and manifest wiring with an honest deferred-criteria report."
-    }
-  ],
-  "plan_metadata": {
-    "phases": 8,
-    "total_effort_hours": 12,
-    "complexity": "complex",
-    "research_integrated": true,
-    "plan_version": 1,
-    "dependency_waves": [[1], [2, 6], [3, 4], [5], [7], [8]],
-    "reports_integrated": [
-      {
-        "path": "reports/01_lean-comparator-clean-room-runner.md",
-        "integrated_in_plan_version": 1,
-        "integrated_date": "2026-09-07"
-      }
-    ],
-    "skeleton": false,
-    "follow_up_tasks": []
-  },
-  "phase_count": 8,
-  "estimated_hours": 12,
-  "dependency_waves": [[1], [2, 6], [3, 4], [5], [7], [8]],
-  "memory_candidates": [
-    {
-      "content": "Shared build-guard / caching wrappers whose result-sharing key is a hash of the wrapped command's ARGUMENT VECTOR are unsafe for any call site whose behaviour is determined by the CONTENT of a file named by a constant path argument. lake-build-guard.sh's scope_key hashes `env <binary> <config.json>` (the path, not the body) and its tree fingerprint covers *.lean/lakefile/lean-toolchain but not config.json -- so two runs differing only in a JSON config's body are indistinguishable and a stale REPLAY returns the wrong answer. Before reusing a shared guard at a new call site, ask what determines the wrapped command's output and check that ALL of it is in either the cache key or the fingerprint; if not, pass --no-share (a correctness requirement, not a performance choice) or fold a content hash into argv. Do not copy a sibling call site's flag set without this check -- the sibling may be safe only because its output is fully determined by the fingerprinted tree.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/153_lean_comparator_clean_room_runner/plans/01_lean-comparator-clean-room-runner.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["lake-build-guard", "cache-key", "scope_key", "result-sharing", "no-share", "correctness"]
-    }
-  ],
-  "next_steps": "Run /implement 153 to execute the plan"
+  "session_id": "sess_1788795618_182fd3",
+  "dispatch_seq": 3
 }

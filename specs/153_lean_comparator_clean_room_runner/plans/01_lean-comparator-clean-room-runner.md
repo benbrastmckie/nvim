@@ -1,7 +1,7 @@
 # Implementation Plan: Task #153
 
 - **Task**: 153 - lean_comparator_clean_room_runner
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: None in-repo. End-to-end acceptance additionally requires `landrun`,
   `lean4export` and the `comparator` binary, provisioned by a sibling `~/.dotfiles/` task
@@ -148,7 +148,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Design record — clean-room decision, trust chain, verdict contract [NOT STARTED]
+### Phase 1: Design record — clean-room decision, trust chain, verdict contract [COMPLETED]
 
 **Goal**: Write the decision down with its reasoning before any code encodes it, satisfying the
 dispatch's explicit acceptance criterion that "the clean-room decision in (a) is written down
@@ -156,35 +156,35 @@ with its reasoning, including what is trusted and why, not left implicit in the 
 closing the research report's flagged zero-coverage context gap.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md`.
-- [ ] Record the **clean-room decision**: fresh `git worktree add` of the target project at the
+- [x] Create `agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md`. *(completed)*
+- [x] Record the **clean-room decision**: fresh `git worktree add` of the target project at the
       exact commit to be checked, taken BEFORE the runner is ever invoked with an untrusted
       Solution, with `.lake/` populated by `lake exe cache get` in that same fresh worktree
-      before the Solution file is written into it.
-- [ ] Record the **alternatives evaluated and rejected**: a scratch copy without a prebuilt
+      before the Solution file is written into it. *(completed)*
+- [x] Record the **alternatives evaluated and rejected**: a scratch copy without a prebuilt
       `.lake` (forces a full in-sandbox rebuild, compounding C4, and satisfies README
       precondition 2 no better than the cache route); `git clone --depth 1` (does not share the
-      object store, so is slower to create and discard per run than a worktree).
-- [ ] Record the **trust chain explicitly**: "trusted" for the reused `.lake` means the cache is
+      object store, so is slower to create and discard per run than a worktree). *(completed)*
+- [x] Record the **trust chain explicitly**: "trusted" for the reused `.lake` means the cache is
       the project's own published build artifacts fetched over its normal cache-server pipeline,
       under the same trust the operator already extends to every ordinary `lake build` of that
       project — i.e. NOT a stronger boundary than the project's existing supply chain. Quote the
       README's own caveat that this is acceptable "if you trust the cache to not be modified as
-      to, e.g. contain different definitions from the one you would expect".
-- [ ] Record the **verdict-string table** verbatim (upstream source file per row), the closed
-      eight-value verdict vocabulary, and the exit-code assignment from Goals above.
-- [ ] Record the **C3 version-coupling caveat**: Comparator's own toolchain is
+      to, e.g. contain different definitions from the one you would expect". *(completed)*
+- [x] Record the **verdict-string table** verbatim (upstream source file per row), the closed
+      eight-value verdict vocabulary, and the exit-code assignment from Goals above. *(completed)*
+- [x] Record the **C3 version-coupling caveat**: Comparator's own toolchain is
       `leanprover/lean4:v4.34.0-rc2` and its lakefile pulls `lean4export` at `rev = "master"`
       built against that toolchain; `lean4export` must instead match the TARGET project's
       `lean-toolchain`, so `COMPARATOR_LEAN4EXPORT` must never default to a Comparator-checkout
-      path.
-- [ ] Record the **guard `--no-share` correctness requirement** with its scope_key/fingerprint
+      path. *(completed)*
+- [x] Record the **guard `--no-share` correctness requirement** with its scope_key/fingerprint
       reasoning, and the wrapper nesting order (README `systemd-run` OUTER, guard INNER, no
-      `--memory-bound`).
-- [ ] Record the binding **advisory-only gate strength decision** and that promotion is a
-      separate later decision.
-- [ ] Add the new file to the lean extension's context index if the extension maintains one
-      (`index-entries.json`), matching the surrounding entries' shape.
+      `--memory-bound`). *(completed)*
+- [x] Record the binding **advisory-only gate strength decision** and that promotion is a
+      separate later decision. *(completed)*
+- [x] Add the new file to the lean extension's context index if the extension maintains one
+      (`index-entries.json`), matching the surrounding entries' shape. *(completed)*
 
 **Timing**: 1 hour
 
