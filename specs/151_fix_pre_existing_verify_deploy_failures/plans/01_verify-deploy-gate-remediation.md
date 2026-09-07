@@ -219,31 +219,39 @@ handles. Do not carry the 5353 figure into the summary without re-observing it.
 
 ---
 
-### Phase 3: Make gates 13 and 5 emit their per-finding detail in non-quiet output [NOT STARTED]
+### Phase 3: Make gates 13 and 5 emit their per-finding detail in non-quiet output [COMPLETED]
 
 **Goal**: Remove the defect that made FAILURE 2's identity unrecoverable — both gates instruct the
 operator to "re-run without `--quiet` for detail", but their per-finding lines are appended only to
 `FINDINGS_LIST` under `--findings`, so a non-quiet run prints nothing extra.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/verify-deploy.sh`, in the gate 13 failure branch,
+- [x] In `agent-system/extensions/core/scripts/verify-deploy.sh`, in the gate 13 failure branch,
       emit each extracted `ORPHAN_FINDING` line to the operator-visible output on failure,
       independent of the `--findings` flag, keeping the existing `--findings`
-      `FINDINGS_LIST` population exactly as it is (additive change only).
-- [ ] Apply the identical change to the gate 5 failure branch (`VERIFY_FINDING` lines), which
-      shares the same suppress-and-extract shape and the same hint text.
-- [ ] Update both `fail` hint strings so they describe what the script actually does now.
-- [ ] Confirm no exit code, no `CHECKS`/`FAILURES` accounting, and no `--findings` output line
+      `FINDINGS_LIST` population exactly as it is (additive change only). *(completed)*
+- [x] Apply the identical change to the gate 5 failure branch (`VERIFY_FINDING` lines), which
+      shares the same suppress-and-extract shape and the same hint text. *(completed)*
+- [x] Update both `fail` hint strings so they describe what the script actually does now.
+      *(completed: both changed to "see findings below" / "...classify against
+      deploy-orphan-detection.md's exclusion classes", replacing the false self-referential
+      "re-run without --quiet for detail: bash verify-deploy.sh" hint)*
+- [x] Confirm no exit code, no `CHECKS`/`FAILURES` accounting, and no `--findings` output line
       changes as a result — the sorted-unique `FINDING ` block must be byte-identical for the same
-      input.
-- [ ] Add a short subsection to
+      input. *(completed: diff reviewed, only the hint string and print statement changed; the
+      `FINDING gateN <detail>` entries retain identical shape)*
+- [x] Add a short subsection to
       `agent-system/extensions/core/context/patterns/deploy-orphan-detection.md` recording that a
       gate-13 failure now prints its findings directly, so the measurement recipe is a
       follow-up-classification tool rather than the only way to learn what was found.
-- [ ] End-to-end check: with `trap`-guarded cleanup in a single command, create one deliberately
+      *(completed: "Fail-time detail output" subsection added)*
+- [x] End-to-end check: with `trap`-guarded cleanup in a single command, create one deliberately
       undeclared file under `.claude/` (e.g. `.claude/context/__orphan-probe-151.md`), run the
       gate-13 detection, confirm the probe path is named in the non-quiet output, then delete the
       probe and re-run detection to confirm it returns to 0 findings and the tree is clean.
+      *(completed: probe named in output as "orphan file: context/__orphan-probe-151.md" with
+      FINDINGS_LIST empty since --findings was not passed; cleanup confirmed via re-run, 0
+      findings, checked=5353, git status clean)*
 
 **Timing**: 60 minutes
 

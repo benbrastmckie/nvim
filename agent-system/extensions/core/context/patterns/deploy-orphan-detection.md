@@ -104,6 +104,21 @@ detector's job stops at *reporting* -- gate 13 in `verify-deploy.sh` -- so that 
 caught within one verification cycle instead of persisting silently for weeks, without changing
 the safety property that a deploy never removes anything from a target repo on its own.
 
+## Fail-time detail output (non-quiet, no `--findings` required)
+
+Gate 13's failure branch in `verify-deploy.sh` prints every `ORPHAN_FINDING` line to the
+operator-visible stderr stream unconditionally on failure -- not only when `--findings` is
+passed. Before this, the gate's own hint text told the operator to "re-run without `--quiet` for
+detail", but the per-finding lines were appended to the `--findings`-only `FINDINGS_LIST` array
+and nowhere else, so a plain non-quiet re-run printed nothing beyond the aggregate "N finding(s)"
+count -- the hint was false. The fix is additive only: the existing `--findings` `FINDINGS_LIST`
+population is unchanged in shape (same `FINDING gate13 <detail>` entries), and no exit code or
+`CHECKS`/`FAILURES` accounting changed. Gate 5 (`verify.lua`'s manifest-driven
+declared-vs-deployed parity check) shared the identical suppress-and-extract shape and the same
+false hint, and received the same fix in the same change. The measurement recipe above remains a
+useful *classification* tool once a finding is known -- it is no longer the only way to learn a
+finding occurred.
+
 ## See also
 
 - `verify.lua`'s `M.find_orphans` (declared-set union across all loaded extensions, deployed-tree

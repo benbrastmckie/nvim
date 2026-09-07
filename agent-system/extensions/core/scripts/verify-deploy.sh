@@ -384,18 +384,25 @@ else
     else
       # Third arg "" suppresses the default aggregate finding -- the per-underlying-VERIFY_FINDING
       # lines extracted below are the findings-mode representation of this failure, mirroring
-      # gate 3's doc-lint per-FAIL: line extraction.
+      # gate 3's doc-lint per-FAIL: line extraction. The loop below ALSO prints each finding to
+      # the operator-visible stderr stream unconditionally (fail()'s own [FAIL]/hint lines are
+      # not gated by --quiet either, so this is consistent with the rest of the gate's output),
+      # independent of --findings -- see context/patterns/deploy-orphan-detection.md's fail-time
+      # detail subsection for why: without this, "re-run for detail" was a false promise, since
+      # the per-finding lines were previously appended to FINDINGS_LIST only.
       fail "manifest-driven verification reported $verify_finding_count finding(s)" \
-           "re-run without --quiet for detail: bash .claude/scripts/verify-deploy.sh" ""
-      if [ "$FINDINGS" = "true" ]; then
+           "see findings below" ""
+      while IFS= read -r verify_finding_line; do
         # -o 'VERIFY_FINDING .*' extracts from the token onward regardless of what (if anything)
         # precedes it on the line -- same OSC7 robustness rationale as verify_finding_count above.
         # '#*VERIFY_FINDING ' (not '#VERIFY_FINDING ') strips everything up to and including the
         # token wherever it falls, not only at position 0.
-        while IFS= read -r verify_finding_line; do
-          FINDINGS_LIST+=("FINDING gate5 ${verify_finding_line#*VERIFY_FINDING }")
-        done < <(echo "$verify_output" | grep -o 'VERIFY_FINDING .*')
-      fi
+        verify_finding_detail="${verify_finding_line#*VERIFY_FINDING }"
+        echo "         - $verify_finding_detail" >&2
+        if [ "$FINDINGS" = "true" ]; then
+          FINDINGS_LIST+=("FINDING gate5 $verify_finding_detail")
+        fi
+      done < <(echo "$verify_output" | grep -o 'VERIFY_FINDING .*')
     fi
   fi
 fi
@@ -655,14 +662,21 @@ else
     else
       # Third arg "" suppresses the default aggregate finding -- the per-underlying-
       # ORPHAN_FINDING lines extracted below are the findings-mode representation, mirroring
-      # gate 5's own suppress-and-extract pattern.
+      # gate 5's own suppress-and-extract pattern. The loop below ALSO prints each finding to the
+      # operator-visible stderr stream unconditionally (fail()'s own [FAIL]/hint lines are not
+      # gated by --quiet either), independent of --findings -- see
+      # context/patterns/deploy-orphan-detection.md's fail-time detail subsection for why:
+      # without this, "re-run without --quiet for detail" was a false promise, since the
+      # per-finding lines were previously appended to FINDINGS_LIST only.
       fail "whole-tree orphan detection reported $orphan_finding_count finding(s)" \
-           "re-run without --quiet for detail: bash agent-system/extensions/core/scripts/verify-deploy.sh; see context/patterns/deploy-orphan-detection.md" ""
-      if [ "$FINDINGS" = "true" ]; then
-        while IFS= read -r orphan_finding_line; do
-          FINDINGS_LIST+=("FINDING gate13 ${orphan_finding_line#*ORPHAN_FINDING }")
-        done < <(echo "$orphan_output" | grep -o 'ORPHAN_FINDING .*')
-      fi
+           "see findings below; classify against context/patterns/deploy-orphan-detection.md's exclusion classes" ""
+      while IFS= read -r orphan_finding_line; do
+        orphan_finding_detail="${orphan_finding_line#*ORPHAN_FINDING }"
+        echo "         - $orphan_finding_detail" >&2
+        if [ "$FINDINGS" = "true" ]; then
+          FINDINGS_LIST+=("FINDING gate13 $orphan_finding_detail")
+        fi
+      done < <(echo "$orphan_output" | grep -o 'ORPHAN_FINDING .*')
     fi
   fi
 fi

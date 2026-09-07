@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Make gates 13 and 5 emit their per-finding detail in non-quiet output",
+  "started_at": "2026-09-07T21:42:00Z",
+  "last_updated": "2026-09-07T21:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Gate 13 failure branch: emit each ORPHAN_FINDING line unconditionally on failure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Gate 5 failure branch: identical change for VERIFY_FINDING lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Update both fail hint strings to describe actual behavior", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Confirm no exit code / CHECKS-FAILURES accounting / --findings output shape change", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add fail-time-detail subsection to deploy-orphan-detection.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/deploy-orphan-detection.md"]},
+    {"id": 6, "description": "End-to-end orphan-probe check with trap-guarded cleanup", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "evidence": {
+    "bash_n_syntax_check": "bash -n verify-deploy.sh: clean",
+    "diff_scope": "Additive-only diff to two failure branches (gate5 line ~384-403, gate13 line ~662-679): fail() hint text changed from self-referential false 're-run without --quiet for detail: bash verify-deploy.sh' to accurate 'see findings below'; the previously --findings-gated FINDINGS_LIST loop is now unconditional-print + conditionally-still-append-to-FINDINGS_LIST, same FINDING gateN string shape",
+    "grep_confirms_exactly_two_sites": "grep for the self-referential 're-run without --quiet for detail: bash ...verify-deploy.sh' hint pattern found it only at gate5 and gate13 (pre-edit); all other gates' hints point at a standalone underlying script that DOES print detail on direct re-invocation, so their hints were already true and untouched",
+    "dependent_reruns": {
+      "test-deploy-verify-wiring.sh": "9 passed, 0 failed",
+      "test-postflight-deploy-gate.sh": "19 passed, 0 failed",
+      "test-deploy-orphans.sh": "5 passed, 0 failed"
+    },
+    "end_to_end_probe_check": {
+      "method": "isolated gate-13 shell logic exercised directly (say/pass/fail sourced from the real script) against a real headless-nvim find_orphans run with .claude/context/__orphan-probe-151.md planted",
+      "result": "[FAIL] whole-tree orphan detection reported 1 finding(s) / see findings below.../  - orphan file: context/__orphan-probe-151.md -- printed unconditionally with FINDINGS=false (no --findings), FINDINGS_LIST stayed empty as expected",
+      "cleanup": "probe removed; re-run confirmed 0 findings, checked=5353, git status shows no leftover probe path"
+    }
+  }
+}
