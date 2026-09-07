@@ -264,7 +264,7 @@ commit rather than introducing an undocumented code.
 
 ---
 
-### Phase 3: R2 git-baseline fallback [NOT STARTED]
+### Phase 3: R2 git-baseline fallback [COMPLETED]
 
 **Goal**: Legacy lean plans with no `## Lean Challenge Statements` section still yield a
 Challenge when — and only when — every named identifier already exists as a declaration at the
@@ -272,21 +272,21 @@ plan's approval commit; anything else fails loudly.
 
 **Tasks**:
 
-- [ ] When the R1 section is absent, log a prominent degradation notice naming the plan file and
+- [x] When the R1 section is absent, log a prominent degradation notice naming the plan file and *(completed)*
       the reason (pre-feature plan), then enter the fallback. The notice must be unmissable in
       normal output, never a debug-only line.
-- [ ] Resolve the plan's approval commit as `git log -1 --format=%H -- <plan_path>`.
-- [ ] For each identifier in `theorem_names`, locate its declaration in the target project's tree
+- [x] Resolve the plan's approval commit as `git log -1 --format=%H -- <plan_path>`. *(completed: resolved against project_root's own repo via a project_root-relative plan path, since a lean/lean4 task's specs/ tree lives inside the target project it concerns)*
+- [x] For each identifier in `theorem_names`, locate its declaration in the target project's tree *(completed)*
       at that commit (`git show <commit>:<path>`), extract the declaration header up to the
       body-introducing `:=` / `by`, and emit it with a `sorry` body.
-- [ ] Lift the source file's own `import` lines into the assembled module so the extracted
+- [x] Lift the source file's own `import` lines into the assembled module so the extracted *(completed)*
       signature can type-check standalone.
-- [ ] Any identifier resolvable by neither R1 nor R2 is a hard `71` failure naming the specific
+- [x] Any identifier resolvable by neither R1 nor R2 is a hard `71` failure naming the specific *(completed)*
       missing identifier. Never emit a partial Challenge — Comparator would silently accept it as
       "no theorem named here to check", which is the exact failure this task exists to prevent.
-- [ ] Treat extraction ambiguity (unbalanced construct, unrecognised declaration shape, more than
+- [x] Treat extraction ambiguity (unbalanced construct, unrecognised declaration shape, more than *(completed)*
       one declaration matching the name) as a hard error rather than a best-effort guess.
-- [ ] Record `route` (`"plan-declared"` vs `"git-baseline"`) for the manifest Phase 4 writes.
+- [x] Record `route` (`"plan-declared"` vs `"git-baseline"`) for the manifest Phase 4 writes. *(completed)*
 
 **Timing**: 1.5 hours
 

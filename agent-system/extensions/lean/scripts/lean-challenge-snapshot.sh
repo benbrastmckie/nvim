@@ -150,6 +150,16 @@ fi
 TASK_DIR=$(dirname "$(dirname "$PLAN_FILE")")
 PROJECT_NAME=$(basename "$TASK_DIR" | sed "s/^${PADDED_NUM}_//")
 
+# Path of the plan file EXPRESSED RELATIVE TO PROJECT_ROOT -- required by the R2 fallback, which
+# resolves "the plan's approval commit" via `git -C "$PROJECT_ROOT" log -- <path>`. This assumes
+# the plan and the target project's .lean sources share ONE git repository (the normal case for a
+# lean/lean4 task: its own specs/{padded}_{slug}/ tree lives inside the Lean project it is a task
+# for). When the plan is not tracked inside PROJECT_ROOT's own repository at all, R2 cannot find
+# an approval commit and fails loudly (see extract_r2 below) rather than silently guessing.
+PLAN_FILE_ABS=$(cd "$(dirname "$PLAN_FILE")" && pwd)/$(basename "$PLAN_FILE")
+PROJECT_ROOT_ABS=$(cd "$PROJECT_ROOT" && pwd)
+PLAN_FILE_REL=$(python3 -c "import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))" "$PLAN_FILE_ABS" "$PROJECT_ROOT_ABS")
+
 # ---------------------------------------------------------------------------
 # Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented).
 # ---------------------------------------------------------------------------
@@ -266,6 +276,156 @@ cross_validate_identifiers() {
       echo "  declared but not named in **Goals**:  $(echo "$only_in_declared" | tr '\n' ' ')" >&2
     fi
     exit 71
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# R2: git-baseline extraction -- the loudly-degraded LEGACY FALLBACK, used only when the plan
+# carries no `## Lean Challenge Statements` section at all. Every identifier named under
+# **Goals**: must already exist as a real declaration in PROJECT_ROOT's git tree at the plan's
+# approval commit; any that does not is a hard 71 failure naming that identifier -- R2 never
+# emits a partial Challenge silently omitting an unresolvable name.
+#
+# extract_r2 <plan_file> <goals_file> <names_out> <module_out>
+# ---------------------------------------------------------------------------
+extract_r2() {
+  local plan_file="$1" goals_file="$2" names_out="$3" module_out="$4"
+
+  echo "================================================================================" >&2
+  echo "DEGRADED FALLBACK (R2 -- git-baseline extraction)" >&2
+  echo "  Plan file: $plan_file" >&2
+  echo "  Reason:    this plan predates the '## Lean Challenge Statements' section (R1) and" >&2
+  echo "             carries no such section. Falling back to extracting statements already" >&2
+  echo "             present in $PROJECT_ROOT's git tree at the plan's approval commit." >&2
+  echo "  R1 (plan-declared statements) is the PRIMARY route and should be used for any new" >&2
+  echo "  lean/lean4 plan -- see challenge-snapshot.md for why R2 cannot serve a greenfield" >&2
+  echo "  theorem (nothing to extract when no declaration exists yet)." >&2
+  echo "================================================================================" >&2
+
+  local approval_commit
+  approval_commit=$(git -C "$PROJECT_ROOT" log -1 --format=%H -- "$PLAN_FILE_REL" 2>/dev/null || true)
+  if [ -z "$approval_commit" ]; then
+    echo "ERROR: R2 fallback could not resolve an approval commit for '$PLAN_FILE_REL' inside" >&2
+    echo "       $PROJECT_ROOT's git history. R2 requires the plan and the target project's" >&2
+    echo "       .lean sources to share one repository -- see challenge-snapshot.md." >&2
+    exit 71
+  fi
+  echo "  Approval commit: $approval_commit" >&2
+
+  python3 - "$PROJECT_ROOT" "$approval_commit" "$goals_file" "$names_out" "$module_out" <<'PYEOF'
+import re
+import subprocess
+import sys
+
+project_root, commit, goals_file, names_out, module_out = sys.argv[1:6]
+
+with open(goals_file, encoding="utf-8") as f:
+    names = [line.strip() for line in f if line.strip()]
+
+def git(*args):
+    return subprocess.run(
+        ["git", "-C", project_root, *args],
+        capture_output=True, text=True, check=False,
+    )
+
+tree = git("ls-tree", "-r", "--name-only", commit)
+if tree.returncode != 0:
+    sys.stderr.write(f"ERROR: R2 fallback could not list the tree at commit {commit}: {tree.stderr}\n")
+    sys.exit(71)
+lean_files = [p for p in tree.stdout.splitlines() if p.endswith(".lean")]
+
+DECL_HEADER_RE = re.compile(
+    r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
+    r"(?:(?:private|protected|noncomputable)\s+)*"
+    r"(theorem|lemma|def|instance)\s+([A-Za-z_][A-Za-zA-Z0-9_']*)"
+)
+
+def find_top_level_assign_or_by(s):
+    depth = 0
+    i = 0
+    n = len(s)
+    while i < n:
+        c = s[i]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif depth == 0 and s[i : i + 2] == ":=":
+            return i
+        i += 1
+    return -1
+
+# name -> list of (file, declaration_text, import_lines)
+found = {}
+file_cache = {}
+for path in lean_files:
+    show = git("show", f"{commit}:{path}")
+    if show.returncode != 0:
+        continue
+    content = show.stdout
+    file_cache[path] = content
+    matches = list(DECL_HEADER_RE.finditer(content))
+    for idx, m in enumerate(matches):
+        decl_name = m.group(2)
+        if decl_name not in names:
+            continue
+        start = m.start()
+        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(content)
+        chunk = content[start:end]
+        assign_pos = find_top_level_assign_or_by(chunk)
+        header = chunk[:assign_pos].rstrip() if assign_pos != -1 else chunk.rstrip()
+        decl_text = header + " := sorry\n"
+        imports = [l for l in content.splitlines() if l.startswith("import ")]
+        found.setdefault(decl_name, []).append((path, decl_text, imports))
+
+missing = [n for n in names if n not in found]
+ambiguous = {n: locs for n, locs in found.items() if len(locs) > 1}
+
+if ambiguous:
+    for n, locs in ambiguous.items():
+        files = ", ".join(loc[0] for loc in locs)
+        sys.stderr.write(
+            f"ERROR: R2 fallback found more than one declaration named '{n}' at commit "
+            f"{commit[:12]}: {files}. Extraction ambiguity is a hard error, never a "
+            "best-effort guess.\n"
+        )
+    sys.exit(71)
+
+if missing:
+    sys.stderr.write(
+        "ERROR: R2 fallback could not resolve the following identifier(s) as declarations in "
+        f"{project_root}'s tree at commit {commit[:12]} (resolvable by neither R1 nor R2):\n"
+    )
+    for n in missing:
+        sys.stderr.write(f"  {n}\n")
+    sys.stderr.write("No Challenge content is emitted -- an incomplete Challenge is never produced.\n")
+    sys.exit(71)
+
+all_imports = []
+seen_imports = set()
+decl_texts = []
+for n in names:
+    path, decl_text, imports = found[n][0]
+    for imp in imports:
+        if imp not in seen_imports:
+            seen_imports.add(imp)
+            all_imports.append(imp)
+    decl_texts.append(decl_text)
+
+module_body = ""
+if all_imports:
+    module_body += "\n".join(all_imports) + "\n\n"
+module_body += "\n".join(decl_texts)
+
+with open(module_out, "w", encoding="utf-8") as f:
+    f.write(module_body)
+with open(names_out, "w", encoding="utf-8") as f:
+    f.write("\n".join(sorted(names)) + "\n")
+sys.exit(0)
+PYEOF
+  local r2_status=$?
+  if [ "$r2_status" -ne 0 ]; then
+    exit "$r2_status"
   fi
 }
 
