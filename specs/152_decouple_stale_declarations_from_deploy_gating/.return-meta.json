@@ -1,32 +1,61 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": [
+    "orchestrator",
+    "plan",
+    "planner-agent"
+  ],
   "session_id": "sess_1788815202_e9189b_152",
-  "dispatch_seq": 2,
-  "findings_count": 12,
+  "dispatch_seq": 4,
+  "phase_count": 7,
+  "estimated_hours": 7,
+  "dependency_waves": [
+    [
+      1,
+      4
+    ],
+    [
+      2,
+      3,
+      5
+    ],
+    [
+      6,
+      7
+    ]
+  ],
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/152_decouple_stale_declarations_from_deploy_gating/reports/01_decouple-stale-declarations.md",
-      "summary": "Confirms line_count is consumed by budget-calculation scripts (rules out dropping it); recommends a report-and-repair auto-fix using the existing generate-context-line-counts.sh --write, following the validate-artifact.sh --fix precedent. Confirms the batch-stall root cause in orchestrate-cycle-plan.sh's redeploy checkpoint (baseline-tolerance branch unreachable on deploy-headless.sh exit 3) and identifies command-gate-out.sh's existing rc==6 handler as a working precedent implementing the exact (a)/(b)/(c) split needed, ready to port. Flags that the third 'stale consumer repos' confound does not reproduce from static reading of current deploy-headless.sh (guarded with || true) and recommends a runtime check before the plan designs a fix for it."
+      "type": "plan",
+      "path": "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
+      "summary": "7-phase plan covering both axes: line_count auto-repair wired pre-deploy into deploy-headless.sh (reported, never silent), and the inter-cycle redeploy checkpoint rewired onto the (a)/(b)/(c) baseline contract via a new shared scripts/lib/deploy-baseline-lib.sh sourced by both call sites."
     }
   ],
-  "next_steps": "Run /plan 152 to create implementation plan",
   "memory_candidates": [
     {
-      "content": "command-gate-out.sh's postflight completion-deploy-gate handler (rc==6 branch) already implements a reusable (a)/(b)/(c) pattern for distinguishing deploy-headless.sh's exit 1/2 (deploy failed, unconditional defer) from exit 3 (deploy landed but verify-deploy.sh reported failures, fall through to a pre/post --findings baseline comparison via comm -13). Any future site needing to decide whether to tolerate a pre-existing vs. newly-introduced verify-deploy.sh failure after a deploy-headless.sh call should port this exact pattern rather than reinventing it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/reports/01_decouple-stale-declarations.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless.sh", "verify-deploy.sh", "baseline comparison", "exit code 3", "command-gate-out.sh"]
-    },
-    {
-      "content": "generate-context-line-counts.sh already implements wc -l based --check/--write regeneration for index-entries.json line_count fields, doing a surgical line-oriented text substitution (not a jq round-trip) specifically to keep diffs reviewable. Any future 'stop hand-maintaining a derived integer' task in this codebase should check for an existing regenerator script of this shape before writing new counting logic.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/reports/01_decouple-stale-declarations.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["line_count", "generate-context-line-counts.sh", "index-entries.json", "auto-repair", "drift"]
+      "content": "Doc-vs-code contract drift in this codebase is undetected by any gate: batch-orchestration-guardrails.md documented the redeploy checkpoint's three-branch (a)/(b)/(c) failure contract, command-gate-out.sh implemented it correctly, and orchestrate-cycle-plan.sh's checkpoint implemented only two of the three branches -- for a long time, with the doc asserting both sites matched. When a pattern file claims to be 'the single authoritative statement' of a contract with multiple implementing call sites, verify each call site against it rather than trusting the claim; the durable fix is extracting the contract into one sourced scripts/lib/*.sh anchor (the deploy-freshness-lib.sh / phase-heading-patterns.sh idiom) so a second site cannot re-diverge.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "contract drift",
+        "scripts/lib",
+        "single sourced anchor",
+        "batch-orchestration-guardrails",
+        "redeploy checkpoint"
+      ]
     }
-  ]
+  ],
+  "next_steps": "Run /implement 152 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1788815202_e9189b_152",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ]
+  }
 }

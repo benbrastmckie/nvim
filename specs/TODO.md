@@ -1,5 +1,5 @@
 ---
-next_project_number: 168
+next_project_number: 169
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 168
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,156,164 | 29,74,88,139,155,162 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -32,8 +32,8 @@ next_project_number: 168
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-151 [RESEARCHED] — Two verify-deploy.sh gate failures are live in this repo today, b
-152 [RESEARCHED] — An unrelated multi-task /orchestrate batch was fully blocked by t
+151 [PLANNING] — Two verify-deploy.sh gate failures are live in this repo today, b
+152 [PLANNING] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
@@ -60,6 +60,7 @@ next_project_number: 168
 ### Opencode
 
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
+168 [NOT STARTED] — Correct the disproven project-scoped MCP claim in the OpenCode do
 
 ### File Scope Lifecycle
 
@@ -70,6 +71,33 @@ next_project_number: 168
   └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
 
 ## Tasks
+
+### 168. Correct opencode mcp scoping claim
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: opencode
+- **Dependencies**: None
+
+**Description**: Correct the disproven project-scoped MCP claim in the OpenCode doc tree.
+
+An earlier task verified against Claude Code's actual behavior that there is NO categorical subagent barrier to project-scoped MCP servers (.mcp.json) -- the real constraint is one-time workspace trust, not per-call access -- and landed the corrected wording in agent-system/extensions/core/docs/docs-README.md (see its "MCP Configuration" section). Two tracked, live files in the parallel OpenCode tree still carry the disproven claim verbatim and were explicitly scoped OUT of that task under its canonical-source constraint:
+  .opencode/extensions/core/docs/README.md:227
+  .opencode/docs/README.md:227
+The two are currently byte-identical. Establish which is source and which is deployed BEFORE editing, and edit the source, not the deploy.
+
+STALE TEXT (both files):
+  "Custom subagents cannot access project-scoped MCP servers (`.mcp.json`). For subagent access, configure servers in user scope (`~/.claude.json`)."
+
+WHY THIS MATTERS. The earlier task's research documented that this specific false claim had already propagated into research findings, implementation plans, and user-facing handoffs, each concluding that subagents were barred from project scope. It is a decision-corrupting premise with a demonstrated track record, not a cosmetic doc nit.
+
+SCOPE. Correct the claim and align it with the corrected core wording. context/patterns/mcp-server-ownership.md already carries the accurate framing and needs NO edits -- consult it, do not modify it. Do NOT re-derive or re-litigate the underlying MCP behavior; it is already verified, and this is a propagation fix, not a research question. Keep the correction proportionate to the one-line defect: do not restructure the surrounding "MCP Configuration" section.
+
+ACCEPTANCE.
+  - Repo-wide grep for "cannot access project-scoped MCP" returns zero hits outside historical specs/ artifacts.
+  - Both OpenCode files carry wording consistent with the corrected core version.
+  - If the two files are in a source/deploy relationship, the deployed copy is REGENERATED rather than hand-edited.
+
+---
 
 ### 167. Make vimtex continuous-build safety always-in-effect via the latex extension rule
 - **Status**: [NOT STARTED]
@@ -868,7 +896,7 @@ ACCEPTANCE.
 ---
 
 ### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -911,7 +939,7 @@ ACCEPTANCE.
 ---
 
 ### 151. Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
