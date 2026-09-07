@@ -303,32 +303,42 @@ Solution has not previously been compiled, and generate a `config.json` matching
 
 ---
 
-### Phase 4: Sandbox invocation, guard serialisation, timeout [NOT STARTED]
+### Phase 4: Sandbox invocation, guard serialisation, timeout [COMPLETED]
 
 **Goal**: Implement dispatch items (b) and (d) — emit the README's mandated `systemd-run` form,
 nest the shared build guard inside it, and bound the run's cost.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/lake-build-guard.sh`'s contract (subcommands,
+- [x] Read `agent-system/extensions/core/scripts/lake-build-guard.sh`'s contract (subcommands,
       exit-code band, `--no-share`, `--dir`) before writing the call, per dispatch item (d)'s
-      "read that guard's contract before inventing a second one".
-- [ ] Resolve the guard via `LEAN_COMPARATOR_RUN_GUARD_BIN`, defaulting to the `dirname`-relative
+      "read that guard's contract before inventing a second one". *(completed)*
+- [x] Resolve the guard via `LEAN_COMPARATOR_RUN_GUARD_BIN`, defaulting to the `dirname`-relative
       sibling `lake-build-guard.sh`, exactly as `lean-sorry-census.sh` resolves it (the two ship
-      from different source-store extensions and are literal siblings only post-deploy).
-- [ ] Emit the README's wrapper verbatim in shape:
+      from different source-store extensions and are literal siblings only post-deploy). *(completed)*
+- [x] Emit the README's wrapper verbatim in shape:
       `systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty -E PATH="$PATH"
       --working-directory <workdir> -- bash -c '<inner>'`, where `<inner>` is
       `lake-build-guard.sh build --dir <workdir> --no-share -- env <comparator> config.json`.
-- [ ] **Always pass `--no-share`** — a correctness requirement here, not a performance choice,
+      *(completed: also forwards COMPARATOR_LANDRUN/COMPARATOR_LEAN4EXPORT/COMPARATOR_NANODA via
+      -E using resolved absolute paths)*
+- [x] **Always pass `--no-share`** — a correctness requirement here, not a performance choice,
       because the guard's `scope_key` hashes the argument vector (the config.json *path*) and its
-      fingerprint excludes `config.json`'s content. Do NOT pass `--memory-bound`.
-- [ ] Implement the three-way degradation branch mirroring `lean-sorry-census.sh`: guard present /
+      fingerprint excludes `config.json`'s content. Do NOT pass `--memory-bound`. *(completed;
+      verified against a stub guard's logged argv)*
+- [x] Implement the three-way degradation branch mirroring `lean-sorry-census.sh`: guard present /
       guard absent but `lake` present (ungated invocation with a loud stderr warning) / `lake`
-      absent (`comparator_unavailable`). Never a silent skip.
-- [ ] Implement `--timeout` (default: pick a value and justify it in the header comment) wrapping
-      the whole invocation; expiry emits the `timeout` verdict and exits 70.
-- [ ] Capture stdout and stderr separately into workdir files for Phase 5 to classify, preserving
-      the raw text for the emitted message.
+      absent (`comparator_unavailable`). Never a silent skip. *(completed; all three branches
+      verified manually with stub binaries and an isolated no-lake PATH)*
+- [x] Implement `--timeout` (default: pick a value and justify it in the header comment) wrapping
+      the whole invocation; expiry emits the `timeout` verdict and exits 70. *(completed: timeout
+      wrapping via `timeout --signal=TERM --kill-after=10`, sets TIMED_OUT for Phase 5's
+      classify_verdict to consume; verified elapsed-time bound against a sleeping stub comparator)*
+- [x] Capture stdout and stderr separately into workdir files for Phase 5 to classify, preserving
+      the raw text for the emitted message. *(completed: RUN_STDOUT_LOG receives Comparator's
+      true merged stdout+stderr because the mandated `--pty` wrapper merges them at the child
+      level before systemd-run forwards them to its own stdout; RUN_STDERR_LOG receives only
+      systemd-run's own diagnostic chatter -- documented in-script, verified against real
+      systemd-run on this host)*
 
 **Timing**: 1.5 hours
 

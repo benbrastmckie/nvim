@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Sandbox invocation, guard serialisation, timeout",
+  "started_at": "2026-09-07T16:50:00Z",
+  "last_updated": "2026-09-07T17:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Implement run_sandboxed(): guard resolution + 3-way degradation branch, README systemd-run wrapper with --no-share/no --memory-bound, --timeout wrapping, separate stdout/stderr capture",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

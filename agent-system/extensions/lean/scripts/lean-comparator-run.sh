@@ -404,9 +404,79 @@ PYEOF
   fi
 }
 
+# ---------------------------------------------------------------------------
+# Sandbox invocation, guard serialisation, timeout (dispatch items (b) and (d))
+# ---------------------------------------------------------------------------
+
+GUARD_BIN=""
+RUN_STDOUT_LOG=""
+RUN_STDERR_LOG=""
+RUN_EXIT_STATUS=""
+TIMED_OUT=0
+
 run_sandboxed() {
-  echo "lean-comparator-run.sh: internal error: run_sandboxed not yet implemented" >&2
-  return 1
+  # Resolve the guard the same way lean-sorry-census.sh resolves it: an overridable env var
+  # defaulting to a dirname-relative sibling path. This script and lake-build-guard.sh ship from
+  # different source-store extensions (lean/ vs core/) but land as literal siblings only
+  # post-deploy in .claude/scripts/ -- LEAN_COMPARATOR_RUN_GUARD_BIN exists primarily as a test
+  # seam for running this script directly from the source store.
+  GUARD_BIN="${LEAN_COMPARATOR_RUN_GUARD_BIN:-$(dirname "${BASH_SOURCE[0]:-$0}")/lake-build-guard.sh}"
+
+  local -a inner_argv
+  if [ -x "$GUARD_BIN" ]; then
+    # --no-share is a CORRECTNESS requirement at this call site, not a performance choice: the
+    # guard's scope_key hashes the argument vector (the config.json PATH, not its content) and
+    # its tree fingerprint excludes config.json -- see the design record. Never pass
+    # --memory-bound here: the README's OUTER systemd-run wrapper below is a security boundary,
+    # not a memory bound, and stacking a second systemd-run --user scope inside it adds
+    # complexity with no stated benefit.
+    inner_argv=("$GUARD_BIN" build --dir "$WORKDIR" --no-share -- env "$COMPARATOR_PATH" config.json)
+  elif command -v lake >/dev/null 2>&1; then
+    echo "lean-comparator-run.sh: WARNING: lake-build-guard.sh not found at '$GUARD_BIN' (override via LEAN_COMPARATOR_RUN_GUARD_BIN); running Comparator WITHOUT build serialisation against concurrent agent builds of the same project." >&2
+    inner_argv=(lake env "$COMPARATOR_PATH" config.json)
+  else
+    emit_verdict comparator_unavailable "" "" "neither lake-build-guard.sh nor a bare 'lake' binary is available on PATH; cannot invoke Comparator"
+  fi
+
+  # bash -c takes ONE string; quote each inner argv element so embedded spaces/specials in
+  # $WORKDIR or a resolved binary path survive the systemd-run -> bash -c boundary intact.
+  local inner_cmd
+  printf -v inner_cmd '%q ' "${inner_argv[@]}"
+
+  RUN_STDOUT_LOG="$WORKDIR/.comparator-stdout.log"
+  RUN_STDERR_LOG="$WORKDIR/.comparator-stderr.log"
+
+  # Forward Comparator's own override env vars into the sandbox using RESOLVED absolute paths
+  # (not the caller's possibly-unset originals) so the sandboxed process resolves the exact
+  # binary this script already validated exists, rather than repeating its own PATH lookup.
+  local -a env_flags=(-E "PATH=$PATH" -E "COMPARATOR_LANDRUN=$LANDRUN_PATH" -E "COMPARATOR_LEAN4EXPORT=$LEAN4EXPORT_PATH")
+  [ -n "$NANODA_PATH" ] && env_flags+=(-E "COMPARATOR_NANODA=$NANODA_PATH")
+
+  # The README's mandated wrapper, verbatim in shape (landrun-escape mitigation -- Comparator
+  # never loads .olean files itself on the stated grounds that they are mmapped and dereferenced
+  # and are therefore an attack surface). OUTER = this systemd-run invocation; INNER =
+  # lake-build-guard.sh (or the ungated fallback above).
+  local -a cmd=(systemd-run "--property=RestrictAddressFamilies=~AF_UNIX" --user --pty \
+    "${env_flags[@]}" --working-directory "$WORKDIR" -- bash -c "$inner_cmd")
+
+  # NOTE on --pty and stream separation: --pty allocates a pseudo-tty for the WRAPPED command,
+  # which merges that command's own stdout and stderr into ONE duplex channel before it ever
+  # reaches this script -- systemd-run then forwards that merged pty stream to ITS OWN stdout.
+  # So RUN_STDOUT_LOG below receives Comparator's TRUE combined stdout+stderr (everything
+  # classify_verdict() needs, including strings the upstream source emits on its own stderr,
+  # e.g. "Illegal axiom detected") -- while RUN_STDERR_LOG receives only systemd-run's OWN
+  # diagnostic chatter (transient unit name, TTY-disconnect instructions), which is never
+  # classification-relevant and is kept only for debugging.
+  set +e
+  timeout --signal=TERM --kill-after=10 "$TIMEOUT_SECS" "${cmd[@]}" >"$RUN_STDOUT_LOG" 2>"$RUN_STDERR_LOG"
+  RUN_EXIT_STATUS=$?
+  set -e
+
+  # `timeout` exits 124 when it had to send SIGTERM, or 128+signal (137 for SIGKILL) if the
+  # command was still alive after --kill-after and had to be force-killed.
+  if [ "$RUN_EXIT_STATUS" -eq 124 ] || [ "$RUN_EXIT_STATUS" -eq 137 ]; then
+    TIMED_OUT=1
+  fi
 }
 
 classify_verdict() {
