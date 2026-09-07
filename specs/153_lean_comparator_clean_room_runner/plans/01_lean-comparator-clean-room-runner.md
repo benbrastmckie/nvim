@@ -419,33 +419,36 @@ unstructured stdout/stderr, since Comparator itself exposes only a binary exit c
 
 ---
 
-### Phase 6: Test fixtures [NOT STARTED]
+### Phase 6: Test fixtures [COMPLETED]
 
 **Goal**: Assemble the fixture tree the suite needs, reusing upstream's Apache-2.0 shape rather
 than inventing one, and authoring only the single fixture upstream genuinely lacks.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/tests/fixtures/comparator/` and vendor
+- [x] Create `agent-system/extensions/lean/scripts/tests/fixtures/comparator/` and vendor
       upstream `scripts/fake-landrun.sh` verbatim with an Apache-2.0 attribution header naming
       `leanprover/comparator` as the source (an argument-swallowing shim that execs its trailing
       command unsandboxed after discarding recognised landrun flags, printing its loud
-      `WARNING: THIS IS NOT REAL LANDRUN!` line).
-- [ ] Vendor `def_hole_axiom_issue` (Challenge.lean, Solution.lean, config.json, test.json) with
+      `WARNING: THIS IS NOT REAL LANDRUN!` line). *(completed; vendored from commit
+      2312244ac716564a61cc0bf4e107d9abf1757a61)*
+- [x] Vendor `def_hole_axiom_issue` (Challenge.lean, Solution.lean, config.json, test.json) with
       attribution — the ready-made transitively-hidden-axiom fixture required by the acceptance
       criterion that the violation be reached TRANSITIVELY, not via a literal `axiom` line.
-- [ ] Vendor `simple_match` with attribution as the `verified`-direction fixture.
-- [ ] Author ONE new fixture, `statement_weakened/`, because no upstream fixture isolates a pure
+      *(completed)*
+- [x] Vendor `simple_match` with attribution as the `verified`-direction fixture. *(completed)*
+- [x] Author ONE new fixture, `statement_weakened/`, because no upstream fixture isolates a pure
       same-kind statement weakening (all of `simple_mismatch`, `simple_axiom_issue`,
       `simple_kind_mismatch` conflate a theorem-vs-axiom kind mismatch with it). Shape:
       Challenge `theorem comm (n m : Nat) : n + m = m + n := sorry`; Solution
       `theorem comm (n m : Nat) (h : n = m) : n + m = m + n := by omega` — same declaration kind,
       added hypothesis, strictly weaker, hits the statement-mismatch arm without touching the
-      kind-mismatch path.
-- [ ] Adopt upstream's `test.json` (`{"exit_code": N}`) oracle shape per fixture so the suite can
+      kind-mismatch path. *(completed, exact shape as specified)*
+- [x] Adopt upstream's `test.json` (`{"exit_code": N}`) oracle shape per fixture so the suite can
       be data-driven rather than one function per case — but record this repo's own verdict-name
       expectation alongside the exit code, since this wrapper's codes are not Comparator's.
-- [ ] Write a short `fixtures/comparator/README.md` recording provenance, upstream commit, and
-      the licence of each vendored file.
+      *(completed: added `lean_comparator_run_verdict` field to each fixture's test.json)*
+- [x] Write a short `fixtures/comparator/README.md` recording provenance, upstream commit, and
+      the licence of each vendored file. *(completed)*
 
 **Timing**: 1.5 hours
 
