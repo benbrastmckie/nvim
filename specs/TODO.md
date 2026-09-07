@@ -33,7 +33,7 @@ next_project_number: 168
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 151 [RESEARCHED] — Two verify-deploy.sh gate failures are live in this repo today, b
-152 [RESEARCHING] — An unrelated multi-task /orchestrate batch was fully blocked by t
+152 [RESEARCHED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
@@ -868,10 +868,11 @@ ACCEPTANCE.
 ---
 
 ### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [152_decouple_stale_declarations_from_deploy_gating/reports/01_decouple-stale-declarations.md]
 
 **Description**: An unrelated multi-task /orchestrate batch was fully blocked by three stale line_count integers. This entry addresses the CLASS of defect, not the instances (a sibling task fixes the two live remaining gate failures).
 
