@@ -634,6 +634,10 @@ terminate_pid() {
 print_help() {
     echo "Usage: $0 [--force|--dry-run]"
     echo ""
+    echo "Runs four passes every invocation, in this fixed order: Claude-process reclamation,"
+    echo "Lean LSP process-tree reclamation, zombie (unreaped-child) reporting, and MCP server"
+    echo "fan-out reporting. Only the first two ever terminate anything, and only under --force."
+    echo ""
     echo "Options:"
     echo "  --force      Skip confirmation prompt and terminate immediately"
     echo "  --dry-run    Preview mode (identical to the no-flag path, with a DRY RUN banner)"

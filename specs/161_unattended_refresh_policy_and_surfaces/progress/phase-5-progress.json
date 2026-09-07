@@ -1,0 +1,34 @@
+{
+  "phase": 5,
+  "phase_name": "Help Text and Full Acceptance Gate Run",
+  "started_at": "2026-09-07T01:00:00Z",
+  "last_updated": "2026-09-07T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add pass-list line to print_help()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Run systemd-analyze verify on both units", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run check-extension-docs.sh, record core row and overall code", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run --help and confirm consistency with documented inventory", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no .claude/** hand-edit", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no task-number reference outside specs/**", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record UNRUN for any unavailable gate", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "Ran deploy-headless.sh (default, non-destructive resync mode) to resolve a transient deployed-script-content-drift FAIL surfaced by check-extension-docs.sh's core row after editing agent-system/extensions/core/scripts/claude-refresh.sh in source but before the deployed .claude/ tree caught up",
+      "result": "success",
+      "reason": "This is the sanctioned regeneration mechanism (source-store-deploy-boundary.md's explicit exemption: 'The deploy/reload process, which writes the entire .claude/ tree by design, is not a violation'), not a hand-edit of .claude/**. Post-redeploy, core returned to PASS and the deployed script diffed byte-identical to the source-store copy."
+    }
+  ],
+  "handoff_count": 0,
+  "acceptance_gate_results": {
+    "systemd_analyze_verify_service": "PASS (exit 0)",
+    "systemd_analyze_verify_timer": "PASS (exit 0)",
+    "check_extension_docs_core_row": "PASS",
+    "check_extension_docs_overall": "1 issue reported, solely the pre-existing out-of-scope lean FAIL (index-entries.json line_count mismatch, unrelated to this task's file scope)",
+    "help_text_matches_inventory": true,
+    "no_dotclaude_hand_edit": true,
+    "no_task_number_reference_outside_specs": true,
+    "unrun_gates": "none -- both tools were available"
+  }
+}

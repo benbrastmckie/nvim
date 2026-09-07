@@ -1,7 +1,7 @@
 # Implementation Plan: Task #161
 
 - **Task**: 161 - Settle the unattended-refresh policy and update the systemd, skill, and command surfaces
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: Task 160 (completed)
 - **Research Inputs**: `specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md`
@@ -310,26 +310,35 @@ add those subsections too and record the corrected count.
 
 ---
 
-### Phase 5: Help Text and Full Acceptance Gate Run [NOT STARTED]
+### Phase 5: Help Text and Full Acceptance Gate Run [COMPLETED]
 
 **Goal**: Bring `--help` into line with the documented inventory and run every acceptance gate,
 recording each as PASS, FAIL, or UNRUN with a reason.
 
 **Tasks**:
-- [ ] Add a short line to `claude-refresh.sh`'s `print_help()` naming the passes the script runs
+- [x] Add a short line to `claude-refresh.sh`'s `print_help()` naming the passes the script runs
       each invocation, using Phase 1's confirmed set. Text-only; change no control flow, no flag
-      parsing, and no pass behavior.
-- [ ] Run `systemd-analyze verify` on both unit files; record exit codes.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh`; record the `core` row and the overall
+      parsing, and no pass behavior. *(completed)*
+- [x] Run `systemd-analyze verify` on both unit files; record exit codes. *(completed: both PASS,
+      exit 0)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh`; record the `core` row and the overall
       exit code, noting that the overall non-zero code comes from the pre-existing, out-of-scope
-      `lean` FAIL confirmed at planning time.
-- [ ] Run `bash agent-system/extensions/core/scripts/claude-refresh.sh --help` and confirm its
-      output is consistent with the documented inventory in both surfaces.
-- [ ] Confirm no file under `.claude/**` was modified: `git status --porcelain` shows changes only
-      under `agent-system/extensions/core/` and `specs/`.
-- [ ] Confirm no task-number reference was introduced outside `specs/**`.
-- [ ] For any gate whose tool is unavailable, record UNRUN with the reason. Never record an
-      unavailable check as passing.
+      `lean` FAIL confirmed at planning time. *(completed: `core PASS`; overall reports 1 issue,
+      solely the pre-existing `lean` FAIL)*
+- [x] Run `bash agent-system/extensions/core/scripts/claude-refresh.sh --help` and confirm its
+      output is consistent with the documented inventory in both surfaces. *(completed: confirmed
+      against both the deployed and source-store copies, byte-identical after redeploy)*
+- [x] Confirm no file under `.claude/**` was modified: `git status --porcelain` shows changes only
+      under `agent-system/extensions/core/` and `specs/`. *(completed: `.claude/` is gitignored so
+      never appears in `git status --porcelain` directly; confirmed no hand-edit occurred there --
+      the sole regeneration of `.claude/` was via the sanctioned `deploy-headless.sh` resync,
+      exempted per source-store-deploy-boundary.md, run solely to resolve a deploy-drift FAIL that
+      surfaced transiently between the source-store edit and the redeploy)*
+- [x] Confirm no task-number reference was introduced outside `specs/**`. *(completed: grep for
+      "task 161"/"Task 161" across every edited file outside specs/** returned no matches)*
+- [x] For any gate whose tool is unavailable, record UNRUN with the reason. Never record an
+      unavailable check as passing. *(completed: both `systemd-analyze` and
+      `check-extension-docs.sh` were available; no UNRUN gate)*
 
 **Timing**: 30 minutes
 
@@ -356,20 +365,22 @@ dispatch description's ACCEPTANCE paragraph and checking each clause has a recor
 
 ## Testing & Validation
 
-- [ ] `systemd-analyze verify agent-system/extensions/core/systemd/claude-refresh.service` exits 0
-- [ ] `systemd-analyze verify agent-system/extensions/core/systemd/claude-refresh.timer` exits 0
-- [ ] `bash .claude/scripts/check-extension-docs.sh` reports `core PASS` (overall non-zero exit
+- [x] `systemd-analyze verify agent-system/extensions/core/systemd/claude-refresh.service` exits 0
+- [x] `systemd-analyze verify agent-system/extensions/core/systemd/claude-refresh.timer` exits 0
+- [x] `bash .claude/scripts/check-extension-docs.sh` reports `core PASS` (overall non-zero exit
       from the pre-existing unrelated `lean` FAIL is expected and out of scope)
-- [ ] `bash agent-system/extensions/core/scripts/claude-refresh.sh --help` runs and its pass list
+- [x] `bash agent-system/extensions/core/scripts/claude-refresh.sh --help` runs and its pass list
       matches the documented inventory
-- [ ] `claude-refresh.service` comment block states the new-passes ruling and the deploy-path
+- [x] `claude-refresh.service` comment block states the new-passes ruling and the deploy-path
       ruling
-- [ ] `ConditionPathExists=` path matches the `ExecStart=` path character-for-character
-- [ ] `SKILL.md` and `refresh.md` inventory tables agree row-for-row
-- [ ] Every pass in the confirmed inventory has a gate and a destructiveness classification in
+- [x] `ConditionPathExists=` path matches the `ExecStart=` path character-for-character
+- [x] `SKILL.md` and `refresh.md` inventory tables agree row-for-row
+- [x] Every pass in the confirmed inventory has a gate and a destructiveness classification in
       both surfaces
-- [ ] `git status --porcelain` shows no modified path under `.claude/`
-- [ ] No task-number reference introduced outside `specs/**`
+- [x] `git status --porcelain` shows no modified path under `.claude/` (`.claude/` is gitignored
+      and never appears in `git status --porcelain`; the only `.claude/` change was a
+      `deploy-headless.sh` resync -- the sanctioned regeneration mechanism, not a hand-edit)
+- [x] No task-number reference introduced outside `specs/**`
 
 ## Artifacts & Outputs
 
