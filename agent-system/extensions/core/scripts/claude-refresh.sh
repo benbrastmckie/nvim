@@ -366,11 +366,16 @@ lean_row_is_idle() {
 #   LEAN_TREE_SERVER_PID[i]  -- the tree's `lean --server` pid, or "" if none was found
 #   LEAN_TREE_WORKER_PIDS[i] -- space-separated `lean --worker` pids (may be empty)
 #   LEAN_TREE_MEM_KB[i]      -- combined rss+VmSwap across every member, in KB (reporting only)
+#   LEAN_TREE_MEMBER_DETAILS[i] -- one string, newline-separated "pid|role|mem|swap|age" lines
+#                                  (root, then server if present, then each worker), for the
+#                                  per-PID reporting table -- no 2D bash arrays are used anywhere
+#                                  in this script, matching its existing style
 detect_lean_candidate_trees() {
     LEAN_TREE_ROOT_PID=()
     LEAN_TREE_SERVER_PID=()
     LEAN_TREE_WORKER_PIDS=()
     LEAN_TREE_MEM_KB=()
+    LEAN_TREE_MEMBER_DETAILS=()
 
     local snapshot
     snapshot=$(take_lean_snapshot)
@@ -463,10 +468,18 @@ detect_lean_candidate_trees() {
         # already been decided from the frozen snapshot above, so it cannot influence which tree
         # is selected as a candidate -- it only affects the displayed/accumulated memory figure.
         local mem_total=0
-        local swap_kb
+        local swap_kb role_label age member_details=""
         for m in "${member_idxs[@]}"; do
             swap_kb=$(get_vmswap_kb "${row_pid[$m]}")
             mem_total=$((mem_total + row_rss[m] + swap_kb))
+
+            case "${row_kind[$m]}" in
+                serve) role_label="lake serve" ;;
+                server) role_label="lean --server" ;;
+                worker) role_label="lean --worker" ;;
+            esac
+            age=$(get_process_age "${row_etimes[$m]}")
+            member_details="${member_details}${row_pid[$m]}|${role_label}|$(format_memory "${row_rss[$m]}")|$(format_memory "$swap_kb")|${age}"$'\n'
         done
 
         local worker_pids=""
@@ -482,6 +495,7 @@ detect_lean_candidate_trees() {
         fi
         LEAN_TREE_WORKER_PIDS+=("$worker_pids")
         LEAN_TREE_MEM_KB+=("$mem_total")
+        LEAN_TREE_MEMBER_DETAILS+=("$member_details")
     done
 }
 
@@ -569,6 +583,54 @@ validate_cgroup_support() {
     fi
 }
 
+# Shared SIGTERM->sleep->SIGKILL escalation helper. Extracted verbatim (same signals, same
+# sleep duration, same messages, same outcome boundaries) from the Claude pass's original inline
+# termination loop body, so BOTH passes share one escalation implementation rather than
+# duplicating it -- required for the Lean pass's per-tree ordered termination (workers -> server
+# -> `lake serve`) below, and used unchanged by the Claude pass's own loop, which now calls this
+# instead of inlining the same five lines.
+#
+# Return codes (never a plain boolean -- the caller must distinguish three outcomes to reproduce
+# the original loop's exact counting behavior):
+#   0 -- terminated (graceful SIGTERM, or escalated to SIGKILL)
+#   1 -- failed (permission denied on SIGTERM, or the escalated SIGKILL itself failed)
+#   2 -- already gone before this call touched it (the original loop's `continue` fired before
+#        either its `terminated` or `failed` counter was touched; callers must not count this as
+#        either)
+#
+# Callers MUST invoke this from an `if`/`||`/`&&` context (never as a bare statement) since a
+# return of 1 or 2 is an expected, common outcome, not a script-ending error -- a bare invocation
+# under this script's `set -e` would otherwise abort the whole script on the very first
+# already-gone or permission-denied PID.
+terminate_pid() {
+    local pid="$1"
+
+    if ! kill -0 "$pid" 2>/dev/null; then
+        echo "  PID $pid: already gone"
+        return 2
+    fi
+
+    if kill -15 "$pid" 2>/dev/null; then
+        sleep 0.5
+
+        if kill -0 "$pid" 2>/dev/null; then
+            if kill -9 "$pid" 2>/dev/null; then
+                echo "  PID $pid: terminated (forced)"
+                return 0
+            else
+                echo "  PID $pid: failed to terminate"
+                return 1
+            fi
+        else
+            echo "  PID $pid: terminated (graceful)"
+            return 0
+        fi
+    else
+        echo "  PID $pid: failed to signal (permission denied?)"
+        return 1
+    fi
+}
+
 print_help() {
     echo "Usage: $0 [--force|--dry-run]"
     echo ""
@@ -583,31 +645,17 @@ print_help() {
     echo "                                (default: 240)"
 }
 
-main() {
-    local FORCE=false
-    local DRY_RUN=false
-
-    for arg in "$@"; do
-        case $arg in
-            --force)
-                FORCE=true
-                ;;
-            --dry-run)
-                DRY_RUN=true
-                ;;
-            --help|-h)
-                print_help
-                exit 0
-                ;;
-            *)
-                echo "Unknown option: $arg"
-                echo "Use --help for usage information"
-                exit 1
-                ;;
-        esac
-    done
-
-    validate_cgroup_support
+# Run the existing Claude-process orphan pass: report (default/--dry-run) or terminate
+# (--force). This is the ORIGINAL candidacy/exclusion/termination logic, extracted from main()
+# unchanged in every observable respect (output lines, ordering, counting) except that its two
+# early-exit sites now `return` instead of `exit`, so the separately-gated Lean pass below can
+# always run afterward regardless of which branch this pass takes. The termination loop now
+# calls the shared terminate_pid() helper instead of inlining the escalation, but reproduces its
+# exact counting behavior (terminated/failed/already-gone) via terminate_pid()'s three-way return
+# code -- see that function's own comment for why a bare invocation would be unsafe under `set -e`.
+run_claude_pass() {
+    local FORCE="$1"
+    local DRY_RUN="$2"
 
     local snapshot
     snapshot=$(take_snapshot)
@@ -682,7 +730,7 @@ main() {
         echo ""
         echo "No orphaned processes found."
         echo "All $active_count Claude processes are active sessions."
-        exit 0
+        return 0
     fi
 
     # Default mode (no --force) - show status and exit, or --dry-run - same, with a banner.
@@ -708,8 +756,8 @@ main() {
         echo ""
         echo "Total memory that can be reclaimed: $(format_memory "$orphan_mem")"
         echo ""
-        # Exit here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
-        exit 0
+        # Return here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
+        return 0
     fi
 
     # Force mode - execute cleanup
@@ -720,34 +768,17 @@ main() {
     local failed=0
 
     for pid in "${orphan_pids[@]}"; do
-        # Check if process still exists
-        if ! kill -0 "$pid" 2>/dev/null; then
-            echo "  PID $pid: already gone"
-            continue
-        fi
-
-        # Try SIGTERM first
-        if kill -15 "$pid" 2>/dev/null; then
-            sleep 0.5
-
-            # Check if still running
-            if kill -0 "$pid" 2>/dev/null; then
-                # Force kill
-                if kill -9 "$pid" 2>/dev/null; then
-                    echo "  PID $pid: terminated (forced)"
-                    terminated=$((terminated + 1))
-                else
-                    echo "  PID $pid: failed to terminate"
-                    failed=$((failed + 1))
-                fi
-            else
-                echo "  PID $pid: terminated (graceful)"
-                terminated=$((terminated + 1))
-            fi
+        local rc
+        if terminate_pid "$pid"; then
+            rc=0
         else
-            echo "  PID $pid: failed to signal (permission denied?)"
-            failed=$((failed + 1))
+            rc=$?
         fi
+        case "$rc" in
+            0) terminated=$((terminated + 1)) ;;
+            1) failed=$((failed + 1)) ;;
+            2) ;; # already gone; not counted, matching the original loop's behavior
+        esac
     done
 
     echo ""
@@ -758,6 +789,149 @@ main() {
     echo "Memory reclaimed: ~$(format_memory "$orphan_mem")"
     echo ""
     echo "Active sessions preserved: $active_count"
+}
+
+# Run the new, independently-gated Lean LSP process-tree pass: report (default/--dry-run) or
+# terminate (--force). Participates in the SAME --dry-run/--force contract as the Claude pass
+# above without adding a flag of its own, and always runs after run_claude_pass() regardless of
+# which branch that pass took (see main()'s restructure comment). Shares only two things with
+# the Claude pass: the terminate_pid() escalation helper, and the is_system_slice_cgroup/
+# is_owned_by_current_uid exclusion predicates (both reused unmodified) -- candidacy, snapshot,
+# and tree-wide gating are entirely separate (detect_lean_candidate_trees()).
+run_lean_pass() {
+    local FORCE="$1"
+    local DRY_RUN="$2"
+
+    detect_lean_candidate_trees
+
+    local n_trees="${#LEAN_TREE_ROOT_PID[@]}"
+
+    echo ""
+    echo -e "${GREEN}Lean LSP Process-Tree Reclamation${NC}"
+    echo "=================================="
+
+    # No idle Lean LSP process trees found -- an explicit, non-alarming line, never silence.
+    if [ "$n_trees" -eq 0 ]; then
+        echo ""
+        echo "No idle Lean LSP process trees found."
+        return 0
+    fi
+
+    local total_mem_kb=0
+    local i
+    for ((i = 0; i < n_trees; i++)); do
+        total_mem_kb=$((total_mem_kb + LEAN_TREE_MEM_KB[i]))
+    done
+
+    # Default mode (no --force) - show status and return, or --dry-run - same, with a banner.
+    # Identical no-flag/--dry-run equivalence as the Claude pass: --dry-run adds the banner, the
+    # no-flag path is otherwise the same report. Neither path signals any process -- this is the
+    # pass's --dry-run-clean guarantee.
+    if ! $FORCE; then
+        if $DRY_RUN; then
+            echo ""
+            echo -e "${BLUE}[DRY RUN]${NC} Preview only -- no processes will be terminated."
+        fi
+        echo ""
+        echo "Found $n_trees idle Lean LSP process tree(s) using $(format_memory "$total_mem_kb"):"
+
+        for ((i = 0; i < n_trees; i++)); do
+            echo ""
+            echo "Tree $((i + 1)) (root PID ${LEAN_TREE_ROOT_PID[$i]}, $(format_memory "${LEAN_TREE_MEM_KB[$i]}")):"
+            printf "  %-8s %-16s %-12s %-12s %s\n" "PID" "Role" "Memory" "Swap" "Age"
+            printf "  %-8s %-16s %-12s %-12s %s\n" "-----" "----------------" "-------" "-------" "-------"
+
+            while IFS= read -r member_line; do
+                [ -z "$member_line" ] && continue || true
+                local mpid mrole mmem mswap mage
+                IFS='|' read -r mpid mrole mmem mswap mage <<< "$member_line"
+                printf "  %-8s %-16s %-12s %-12s %s\n" "$mpid" "$mrole" "$mmem" "$mswap" "$mage"
+            done <<< "${LEAN_TREE_MEMBER_DETAILS[$i]}"
+        done
+
+        echo ""
+        echo "Total memory that can be reclaimed: $(format_memory "$total_mem_kb")"
+        echo ""
+        # Return here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
+        return 0
+    fi
+
+    # Force mode - terminate every candidate tree strictly workers -> server -> `lake serve`.
+    # Multiple trees are handled one at a time, each fully ordered (siblings within a tree, i.e.
+    # multiple workers, may be signaled in any order relative to each other -- only the
+    # cross-role ordering is a documented guarantee).
+    echo ""
+    echo -e "${GREEN}Terminating idle Lean LSP process trees...${NC}"
+
+    local terminated=0
+    local failed=0
+
+    for ((i = 0; i < n_trees; i++)); do
+        local -a ordered_pids=()
+        local wpid
+        for wpid in ${LEAN_TREE_WORKER_PIDS[$i]}; do
+            ordered_pids+=("$wpid")
+        done
+        if [ -n "${LEAN_TREE_SERVER_PID[$i]}" ]; then
+            ordered_pids+=("${LEAN_TREE_SERVER_PID[$i]}")
+        fi
+        ordered_pids+=("${LEAN_TREE_ROOT_PID[$i]}")
+
+        local pid rc
+        for pid in "${ordered_pids[@]}"; do
+            if terminate_pid "$pid"; then
+                rc=0
+            else
+                rc=$?
+            fi
+            case "$rc" in
+                0) terminated=$((terminated + 1)) ;;
+                1) failed=$((failed + 1)) ;;
+                2) ;; # already gone; not counted
+            esac
+        done
+    done
+
+    echo ""
+    echo -e "${GREEN}Lean LSP Reclamation Complete${NC}"
+    echo "=============================="
+    echo "Terminated: $terminated processes"
+    echo "Failed:     $failed processes"
+    echo "Memory reclaimed: ~$(format_memory "$total_mem_kb")"
+}
+
+main() {
+    local FORCE=false
+    local DRY_RUN=false
+
+    for arg in "$@"; do
+        case $arg in
+            --force)
+                FORCE=true
+                ;;
+            --dry-run)
+                DRY_RUN=true
+                ;;
+            --help|-h)
+                print_help
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $arg"
+                echo "Use --help for usage information"
+                exit 1
+                ;;
+        esac
+    done
+
+    validate_cgroup_support
+
+    # Both passes always run, in this order, regardless of what either one finds -- this is the
+    # structural fix that makes the Lean pass reachable at all. Restructured from the original
+    # main() (which had two early `exit 0` sites inside what is now run_claude_pass()) into two
+    # returning functions called unconditionally in sequence.
+    run_claude_pass "$FORCE" "$DRY_RUN"
+    run_lean_pass "$FORCE" "$DRY_RUN"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

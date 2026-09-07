@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Ordered Termination and main() Wiring",
+  "started_at": "2026-09-07T00:50:00Z",
+  "last_updated": "2026-09-07T01:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract terminate_pid(pid) from the existing escalation loop; Claude pass calls it unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Restructure main()'s two exit-0 sites into run_claude_pass()/run_lean_pass() returning functions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Add Lean pass default/--dry-run reporting with per-PID role/memory/swap/age table and total", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "Add --force Lean termination in strict workers->server->root order per tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "Explicit non-alarming 'nothing found' lines for both passes; exit code semantics unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -254,31 +254,31 @@ rather than assuming a single child.
 
 ---
 
-### Phase 4: Ordered Termination and main() Wiring [NOT STARTED]
+### Phase 4: Ordered Termination and main() Wiring [COMPLETED]
 
 **Goal**: Factor the existing SIGTERM->sleep->SIGKILL escalation into a shared helper, add strict
 per-tree workers -> server -> root termination, and restructure `main()` so the Lean pass is
 reachable and participates in the existing `--dry-run`/`--force` contract without changing it.
 
 **Tasks**:
-- [ ] Extract the existing termination loop body into `terminate_pid(pid)` returning success/
+- [x] Extract the existing termination loop body into `terminate_pid(pid)` returning success/
       failure and emitting the same `PID N: terminated (graceful|forced)` / `already gone` /
       `failed to ...` lines verbatim; rewrite the Claude pass's loop to call it. No behavior or
-      output change for the Claude pass.
-- [ ] Restructure `main()`'s two `exit 0` sites (the `orphan_count -eq 0` early return and the
+      output change for the Claude pass. *(completed)*
+- [x] Restructure `main()`'s two `exit 0` sites (the `orphan_count -eq 0` early return and the
       non-`--force` report-and-exit path) so the Claude pass's reporting and termination bodies
       become functions that *return* instead of exiting, and the Lean pass always runs afterward.
-      Preserve every existing output line and its ordering for the Claude portion.
-- [ ] Add the Lean pass's default/`--dry-run` reporting: candidate trees with per-tree PIDs,
+      Preserve every existing output line and its ordering for the Claude portion. *(completed)*
+- [x] Add the Lean pass's default/`--dry-run` reporting: candidate trees with per-tree PIDs,
       roles, ages, `format_memory` RSS and swap columns, and a total reclaimable figure, under a
       clearly separated heading. `--dry-run` adds the same `[DRY RUN]` banner semantics already
       used; the no-flag path is identical to `--dry-run` minus the banner, exactly as the Claude
-      pass does.
-- [ ] Add the `--force` Lean termination: iterate candidate trees; within each tree call
+      pass does. *(completed)*
+- [x] Add the `--force` Lean termination: iterate candidate trees; within each tree call
       `terminate_pid` for every worker first (siblings in any order), then the server, then the
-      `lake serve` root. Multiple trees are handled one at a time, each fully ordered.
-- [ ] Ensure the "nothing found" case for either pass prints an explicit, non-alarming line rather
-      than silence, and that the script's exit code semantics are unchanged.
+      `lake serve` root. Multiple trees are handled one at a time, each fully ordered. *(completed)*
+- [x] Ensure the "nothing found" case for either pass prints an explicit, non-alarming line rather
+      than silence, and that the script's exit code semantics are unchanged. *(completed)*
 
 **Timing**: 1.5 hours
 
