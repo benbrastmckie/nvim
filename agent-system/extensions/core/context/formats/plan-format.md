@@ -68,9 +68,10 @@ reintroduced, not as a description of live behavior.
 3. **Risks & Mitigations** – bullets.
 4. **Implementation Phases** – under `## Implementation Phases`, preceded by a **Dependency Analysis** wave table (see below), with each phase at level `###` and including a status marker at the end of the heading.
 5. **Planned Strategic Sorries** (hard-mode skeleton plans only) – under `## Planned Strategic Sorries`, present only when `plan_metadata.skeleton: true`; see below.
-6. **Testing & Validation** – bullets/tests to run.
-7. **Artifacts & Outputs** – enumerate expected outputs with paths.
-8. **Rollback/Contingency** – brief plan if changes must be reverted.
+6. **Lean Challenge Statements** (lean/lean4 plans only) – under `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`; see below.
+7. **Testing & Validation** – bullets/tests to run.
+8. **Artifacts & Outputs** – enumerate expected outputs with paths.
+9. **Rollback/Contingency** – brief plan if changes must be reverted.
 
 ## Implementation Phases (format)
 - Heading: `### Phase N: {name} [STATUS]`
@@ -297,6 +298,48 @@ a planned strategic-sorry division point (`strategic: true` is implicit for the 
 this table is a plan-unanticipated deviation. It is evaluated under a weaker claim on the
 `anti-analysis.md` 5-condition strategic-sorry test's condition 1 (not pre-declared) and MUST be
 flagged in the implementation summary, not silently accepted as equivalent to a planned one.
+
+## Lean Challenge Statements (format, lean/lean4 plans only)
+
+Present only when the plan's `task_type` is `lean`/`lean4` — mirroring how
+`## Planned Strategic Sorries` above is gated on `plan_metadata.skeleton: true`; this is not a
+novel conditional-section shape, the precedent already exists in this same file. Non-lean plans
+are completely unaffected by this section's existence: it is purely additive to the shared
+`- **Goals**:`/`- **Non-Goals**:` bullet format defined under `## Goals & Non-Goals` above, which
+remains unchanged for every task type.
+
+This section exists to fix the *statement* of each theorem a lean plan commits to, not merely its
+*identifier*. `- **Goals**:` bullets name identifiers only (a backtick-delimited list, e.g.
+`` `comm` ``); this section carries the literal, exact signature each identifier resolves to, with
+a `sorry` body, so a downstream tool (`lean-challenge-snapshot.sh` — see
+`context/project/lean4/domain/challenge-snapshot.md` for the full design record) can turn a
+plan into a trusted, immutable Challenge module *before* the implementation agent runs.
+
+```
+## Lean Challenge Statements
+
+```lean
+import Mathlib.Algebra.Group.Basic
+
+theorem comm (n m : Nat) : n + m = m + n := sorry
+```
+```
+
+- One or more ```` ```lean ```` fenced blocks. When more than one is present, they concatenate **in
+  document order** to form the Challenge module body.
+- Every declaration body in every block MUST be `sorry` — this section pins statements only, never
+  a real proof. A snapshot tool consuming this section forces the body to `sorry` regardless of
+  what the block actually contains, so authoring a non-`sorry` body here is harmless but
+  discouraged (it does not do what it looks like it does).
+- **The identifier set declared here MUST equal the identifier set named under `- **Goals**:`.**
+  This is a hard requirement, not a style preference: a snapshot tool cross-validates the two sets
+  and fails loudly on any disagreement (naming the specific identifiers unique to each side)
+  rather than silently unioning, intersecting, or ignoring the mismatch. A plan that intends to
+  prove `comm` and `assoc` must name both `comm` and `assoc` in this section's declarations, no
+  more and no fewer.
+- Include whatever `import` lines each fenced block needs to type-check standalone as an isolated
+  Challenge module — this section is the sole source of import context for the assembled module,
+  distinct from (and not automatically inherited from) any other file in the target project.
 
 ## Reasoned Exclusions (format)
 

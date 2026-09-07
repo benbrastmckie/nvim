@@ -685,6 +685,29 @@
         "sandbox",
         "axiom-violation"
       ]
+    },
+    {
+      "path": "project/lean4/domain/challenge-snapshot.md",
+      "line_count": 172,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent",
+          "lean-research-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Challenge statement snapshot design record: R1-vs-R2 decision, git-SHA immutability mechanism, manifest schema, exit-code vocabulary, advisory-only gate decision",
+      "keywords": [
+        "challenge",
+        "snapshot",
+        "statement-fidelity",
+        "immutability",
+        "r1-vs-r2"
+      ]
     }
   ]
 }

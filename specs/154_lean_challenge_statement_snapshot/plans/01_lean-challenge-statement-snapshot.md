@@ -1,7 +1,7 @@
 # Implementation Plan: Task #154
 
 - **Task**: 154 - Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12.75 hours
 - **Dependencies**: None (wave 1 of the Comparator integration group; downstream compare-step tasks consume this task's manifest schema)
 - **Research Inputs**: specs/154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md
@@ -125,14 +125,14 @@ Phases within the same wave can execute in parallel. Phases 2 and 7 touch disjoi
 
 ---
 
-### Phase 1: Decision record and the `## Lean Challenge Statements` plan section [NOT STARTED]
+### Phase 1: Decision record and the `## Lean Challenge Statements` plan section [COMPLETED]
 
 **Goal**: Fix the contract everything else consumes — the written R1-vs-R2 decision, the new plan
 section's exact shape, and the manifest schema — before any script exists to consume it.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md` as
+- [x] Create `agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md` as *(completed)*
       the design record. It must contain, at minimum:
   - The **R1-vs-R2 decision in writing**, with the comparison table from the research report
     (greenfield case, cost to shared format, fidelity to planner intent, mechanism complexity,
@@ -152,21 +152,21 @@ section's exact shape, and the manifest schema — before any script exists to c
     refused. Document the alignment as intentional.
   - A restatement of the ADVISORY FIRST gate-strength decision, in the same binding language
     `comparator-integration.md` already uses.
-- [ ] Add `## Lean Challenge Statements` to
+- [x] Add `## Lean Challenge Statements` to *(completed)*
       `agent-system/extensions/core/context/formats/plan-format.md`: one or more ```` ```lean ````
       fenced blocks that concatenate in order to form the Challenge module body; bodies are
       `sorry`; present only when the plan's task type is `lean`/`lean4`. Document the gating
       explicitly, mirroring how `## Planned Strategic Sorries` documents its own
       `plan_metadata.skeleton` gate, and add it to the numbered `## Structure` list in the same
       conditional style.
-- [ ] State in the new section that the identifiers declared there MUST equal the identifier set
+- [x] State in the new section that the identifiers declared there MUST equal the identifier set *(completed)*
       under `- **Goals**:`, and that disagreement is a hard error at snapshot time (settling the
       research report's flagged phase-1 decision point).
-- [ ] Register the design record in `agent-system/extensions/lean/index-entries.json` following
+- [x] Register the design record in `agent-system/extensions/lean/index-entries.json` following *(completed)*
       the `comparator-integration.md` entry's shape (`load_when.agents`:
       `lean-implementation-agent`, `lean-research-agent`; `load_when.task_types`: `lean4`;
       summary; keywords).
-- [ ] Use durable anchors only — the design record is a deliverable outside `specs/**`, so it
+- [x] Use durable anchors only — the design record is a deliverable outside `specs/**`, so it *(completed)*
       MUST NOT cite task numbers; refer to "the Comparator compare step" and to file names.
 
 **Timing**: 1.5 hours

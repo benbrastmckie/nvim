@@ -43,7 +43,7 @@ next_project_number: 158
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-154 [PLANNED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+154 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
     └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
@@ -415,7 +415,7 @@ ACCEPTANCE.
 ---
 
 ### 154. Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

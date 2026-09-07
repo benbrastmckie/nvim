@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/154_lean_challenge_statement_snapshot/plans/01_lean-challenge-statement-snapshot.md",
-      "summary": "8-phase plan delivering lean-challenge-snapshot.sh (R1 plan-declared Challenge with R2 git-baseline fallback), an additive `## Lean Challenge Statements` plan-format section, a Comparator-independent --check drift mode, a git-SHA immutability gate, and a real-project acceptance demonstration."
-    }
-  ],
-  "dispatch_seq": 5,
-  "next_steps": "Run /implement 154 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1788795618_182fd3_154",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 12.75,
-    "dependency_waves": [[1], [2, 7], [3], [4], [5], [6], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a verification tool's own artifact must be trustworthy against the agent that produced it, do not rely on filesystem permissions or a specs/-side copy for immutability. Commit the artifact into the target repository's git history, record the resulting SHA plus a content hash in a manifest, and pin every consumer to the SHA. Git content-addressing makes the guarantee hold even if the process-level refusal gate is force-bypassed -- a later illicit commit cannot change what an already-recorded SHA points to. Pair the mechanism-level SHA pin with a process-level status gate (refuse to regenerate once task status has advanced past `planned`) so bypass is loud rather than silent.",
-      "category": "PATTERN",
-      "source_artifact": "specs/154_lean_challenge_statement_snapshot/plans/01_lean-challenge-statement-snapshot.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["immutability", "git-sha-pinning", "trusted-artifact", "status-gate", "verification-tooling"]
-    }
-  ]
+    "session_id": "sess_1788795618_182fd3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
