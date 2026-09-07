@@ -48,9 +48,10 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
 | `--fable` | Use Fable model (claude-fable-5) | false |
-| `--research` | Force a research round even if the task progressed past it. Composable with `--plan`/`--implement`: canonical lifecycle order (research, plan, implement) regardless of typed order, STOPS after the last named phase, opens a new `MM_` artifact round, never regresses status. Accepted and ignored (loud notice) in multi-task mode today — per-task in the batch engine once the feature-port task lands | false |
-| `--plan` | Force a plan round even if the task progressed past it. Composable on the same terms as `--research` above. Accepted and ignored (loud notice) in multi-task mode today — per-task once the feature-port task lands | false |
-| `--implement` | Force an implement round even if the task progressed past it. Composable on the same terms as `--research` above. Accepted and ignored (loud notice) in multi-task mode today — per-task once the feature-port task lands | false |
+| `--research` | Force a research round even if the task progressed past it. Composable with `--plan`/`--implement`: canonical lifecycle order (research, plan, implement) regardless of typed order, STOPS after the last named phase, opens a new `MM_` artifact round, never regresses status. Honored per-task in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`/`force_phases_remaining` | false |
+| `--plan` | Force a plan round even if the task progressed past it. Composable on the same terms as `--research` above. Honored per-task in multi-task mode too, on the same terms | false |
+| `--implement` | Force an implement round even if the task progressed past it. Composable on the same terms as `--research` above. Honored per-task in multi-task mode too, on the same terms | false |
+| `ORCHESTRATE_BATCH_OF_ONE` (env var, not a `--flag`) | **EXPERIMENTAL, TEMPORARY.** When set (any non-empty value) with exactly ONE task number given, routes that single task through the multi-task batch engine (`orchestrate-cycle-plan.sh`/`orchestrate-cycle-postflight.sh`) instead of `SKILL.md`'s single-task Stages 1-8. See STAGE 0 below for the exact branch. Will be retired once the successor task deletes Stages 1-8 | unset |
 
 ## Anti-Bypass Constraint
 
@@ -86,8 +87,10 @@ forwarded to `orchestrate-batch-admit.sh`:
 - `effort_flag` (default `""`) / `model_flag` (default `""`, not `null`) — reasoning-depth
   guidance and model-family selection for every lifecycle dispatch.
 - `force_phases` (default `""`) — the composable `--research`/`--plan`/`--implement` surface (A2).
-  Single-task: read only by `skill-orchestrate`'s Stage 2b. Multi-task: diagnostics only — Stage
-  MT-1 emits an accepted-and-ignored notice, never fanned into per-task dispatch.
+  Single-task: read only by `skill-orchestrate`'s Stage 2b. Multi-task: honored per-task —
+  `orchestrate-cycle-plan.sh` seeds each eligible task's own `force_phases_remaining` queue from
+  this value and pops one forced phase per cycle until exhausted, then falls through to ordinary
+  status-derived classification for that task (see that script's header, Section (f)).
 
 **Dry-run short-circuit** (before the `len(TASK_NUMBERS)` branch): `SESSION_ID` may be unset here
 (minted at CHECKPOINT 1), so `--session` is passed to the report only when non-empty.
@@ -115,11 +118,30 @@ dispatch below, MUST NOT reach CHECKPOINT 1 (GATE IN), MUST NOT invoke the Skill
 MUST NOT acquire a task lock, and MUST NOT run CHECKPOINT 3 (COMMIT) — mirroring the Anti-Bypass
 Constraint above, the STOP HERE is absolute, not advisory.
 
-If `len(TASK_NUMBERS) == 1`: extract `task_number=$(echo "$TASK_NUMBERS" | awk '{print $1}')` and fall through to CHECKPOINT 1: GATE IN.
+If `len(TASK_NUMBERS) == 1` AND `$ORCHESTRATE_BATCH_OF_ONE` is unset: extract
+`task_number=$(echo "$TASK_NUMBERS" | awk '{print $1}')` and fall through to CHECKPOINT 1: GATE IN.
 
-If `len(TASK_NUMBERS) > 1`: continue to the multi-task dispatch block below.
+Otherwise (`len(TASK_NUMBERS) > 1`, OR `len(TASK_NUMBERS) == 1` with `$ORCHESTRATE_BATCH_OF_ONE`
+set): continue to the multi-task dispatch block below.
 
-**Multi-task dispatch** (`len(TASK_NUMBERS) > 1`):
+**`ORCHESTRATE_BATCH_OF_ONE` (environment variable, default unset — EXPERIMENTAL, TEMPORARY)**:
+the precondition flag for routing a single task number through the batch engine (task that ported
+single-task's hard-mode counters, loop guard and auxiliary dispatches into
+`orchestrate-cycle-plan.sh`/`orchestrate-cycle-postflight.sh`). When set to any non-empty value
+with exactly one task number given, this command takes the SAME multi-task dispatch path (and
+therefore the same `skill-orchestrate` MT-1..MT-5 stages) the `> 1` branch already uses, rather
+than `SKILL.md`'s single-task Stages 1-8. The multi-task dispatch block below needs NO special
+casing for a batch of one: given `validated_tasks=(N)`, its existing dependency-graph construction
+naturally narrows to `dep_graph_json={"N":[]}` (any of N's real `dependencies[]` are filtered out
+by the SAME intra-batch-membership check that already applies when `len > 1`, since N cannot
+depend on itself), and `waves_json`/`task_numbers_json` naturally reduce to `[[N]]`/`[N]`. This
+flag exists ONLY to allow a live demonstration/test of the batch engine on a single task while
+`SKILL.md`'s single-task Stages 1-8 remain the DEFAULT, unconditional path for `len == 1` — it is
+not a general-purpose feature and will be retired once the successor task deletes Stages 1-8 (see
+`specs/PATH.md`, "One engine, batch of one").
+
+**Multi-task dispatch** (`len(TASK_NUMBERS) > 1`, or `len(TASK_NUMBERS) == 1` with
+`ORCHESTRATE_BATCH_OF_ONE` set):
 
 ```bash
 validated_tasks=(); skipped_tasks=()

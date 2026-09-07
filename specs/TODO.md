@@ -43,7 +43,7 @@ next_project_number: 158
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-153 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+153 [RESEARCHING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
     └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 154 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
@@ -531,7 +531,7 @@ ACCEPTANCE.
 ---
 
 ### 153. Build a clean-room Comparator runner script for the lean extension
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

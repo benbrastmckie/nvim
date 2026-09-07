@@ -28,6 +28,20 @@
 # suite declares Site D's own scope limit rather than reproducing task-lock.sh's mutex machinery
 # as a fixture.
 #
+# SINGLE-TARGET, RECORDED (not the two-target structure `test-loop-guard-budget-override.sh`
+# gained): the task that ported single-task's loop guard/hard-mode counters/auxiliary dispatches
+# into the batch engine (`orchestrate-cycle-plan.sh`/`orchestrate-cycle-postflight.sh`) did NOT
+# port this detector -- grep-verified: neither script references `plan_version`, `mtime`, or
+# `staleness` anywhere. This is a deliberate scope boundary, not an oversight: that task's own
+# item (2) HARD names only churn/three-strikes detection and the burnout circuit breaker as
+# porting targets (both now live in `orchestrate-churn.sh`); operational staleness is a THIRD,
+# separate hard-mode mechanism this suite's own header already distinguishes from those two
+# ("Operational staleness: a second, orthogonal freshness axis"), and porting it to the batch
+# engine is out of scope for that task -- an explicitly separate, undecided question (see that
+# task's own Non-Goals: "Extending the hard-only `loop-guard-staleness` detector to base mode").
+# This suite therefore stays single-task-only for now; it should gain a second target the same
+# way its sibling did only if and when a future task actually ports this detector.
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (a
 # required SKILL.md file or sentinel marker pair not found).
 
