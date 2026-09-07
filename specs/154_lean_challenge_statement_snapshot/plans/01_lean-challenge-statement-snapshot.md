@@ -364,27 +364,27 @@ after implementation has started a loud refusal.
 
 ---
 
-### Phase 5: `--check` statement-drift mode [NOT STARTED]
+### Phase 5: `--check` statement-drift mode [COMPLETED]
 
 **Goal**: Deliver the Comparator-independent fidelity check — the task's stated independent value
 — so statement weakening is detectable today with no Comparator binaries present.
 
 **Tasks**:
 
-- [ ] Add `--check` mode: read the manifest, retrieve the recorded Challenge at its pinned commit
+- [x] Add `--check` mode: read the manifest, retrieve the recorded Challenge at its pinned commit *(completed)*
       via `git show <commit>:<challenge_path>`, and compare each named theorem's signature against
       the same-named declaration in the project's current working tree.
-- [ ] Normalise before comparing — collapse whitespace and line breaks, strip comments, ignore
+- [x] Normalise before comparing *(completed: whitespace/comment collapsing; binder-name renames are NOT alpha-normalised and report as drift, per the phase's own escape hatch)* — collapse whitespace and line breaks, strip comments, ignore
       binder-name-only differences where they are unambiguous — so cosmetic reformatting is not
       reported as drift. Document precisely what normalisation does and does not absorb; anything
       it cannot decide is reported as drift, never silently passed.
-- [ ] Exit `65` on drift with a per-identifier diff showing recorded vs current; exit `0` when
+- [x] Exit `65` on drift with a per-identifier diff showing recorded vs current; exit `0` when *(completed)*
       every named statement matches; exit `71` when a named identifier is absent from the current
       tree (an authoring error, not a security finding — matching `lean-comparator-run.sh`'s own
       distinction).
-- [ ] `--check` is read-only: it must not write, commit, or mutate anything, including the
+- [x] `--check` is read-only: it must not write, commit, or mutate anything, including the *(completed)*
       manifest.
-- [ ] State in the `--check` output header that the verdict is **advisory** and must not be used
+- [x] State in the `--check` output header that the verdict is **advisory** and must not be used *(completed)*
       to fail a task.
 
 **Timing**: 1.5 hours

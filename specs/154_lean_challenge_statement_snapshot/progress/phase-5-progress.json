@@ -1,0 +1,14 @@
+{
+  "phase": 5,
+  "phase_name": "--check statement-drift mode",
+  "started_at": "2026-09-07T02:35:00Z",
+  "last_updated": "2026-09-07T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "do_check: manifest read, pinned-commit retrieval, normalized comparison, exit 0/65/71, read-only, advisory header", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "pipe pinned Challenge content to embedded python3 via stdin heredoc", "result": "failed", "reason": "python3 - <<PYEOF consumes stdin as the script source itself; sys.stdin.read() inside returns empty. Fixed by writing pinned content to a temp file and passing its path as argv."}
+  ],
+  "handoff_count": 0
+}

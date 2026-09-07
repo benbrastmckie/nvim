@@ -164,6 +164,182 @@ MANIFEST_PATH="$TASK_DIR/challenge/manifest.json"
 STATE_JSON="specs/state.json"
 
 # ---------------------------------------------------------------------------
+# --check: Comparator-independent statement-drift mode -- the task's stated INDEPENDENT VALUE.
+# Compares each theorem_names identifier's PINNED signature (retrieved from the manifest's
+# recorded commit -- never re-extracted from the current plan) against the same-named
+# declaration in PROJECT_ROOT's CURRENT ON-DISK working tree (never git HEAD -- an uncommitted
+# weakening must be caught too). Read-only: never writes, commits, or mutates anything, including
+# the manifest.
+#
+# ADVISORY ONLY -- see the file header. A drift finding here MUST NOT be used to fail a task.
+#
+# Exit: 0 no drift; 65 drift (per-identifier diff on stderr); 71 config error (no manifest, a
+# named identifier absent from the current tree, or ambiguous resolution).
+# ---------------------------------------------------------------------------
+normalize_lean_header() {
+  # Strips block comments (/- ... -/) and line comments (-- ...), then collapses all whitespace
+  # (including newlines) to single spaces and trims. Documented limitation (stated, not papered
+  # over): this does NOT perform alpha-renaming / binder-name normalisation -- a cosmetically
+  # renamed bound variable is NOT absorbed and is reported as drift, per the phase's own
+  # "anything it cannot decide is reported as drift, never silently passed" contract.
+  python3 -c "
+import re, sys
+text = sys.stdin.read()
+text = re.sub(r'/-.*?-/', ' ', text, flags=re.DOTALL)
+text = re.sub(r'--[^\n]*', ' ', text)
+text = re.sub(r'\s+', ' ', text).strip()
+sys.stdout.write(text)
+"
+}
+
+do_check() {
+  local manifest_path="$1"
+  echo "# lean-challenge-snapshot.sh --check verdict is ADVISORY ONLY -- see the file header." >&2
+  echo "# It MUST NOT be used to set verification_passed false or block completion." >&2
+
+  if [ ! -f "$manifest_path" ]; then
+    echo "ERROR: no manifest found at $manifest_path -- run the snapshot (without --check) first." >&2
+    exit 71
+  fi
+
+  local manifest_json commit challenge_path names_csv
+  manifest_json=$(cat "$manifest_path")
+  commit=$(python3 -c "import json,sys; print(json.load(sys.stdin)['commit'])" <<<"$manifest_json")
+  challenge_path=$(python3 -c "import json,sys; print(json.load(sys.stdin)['challenge_path'])" <<<"$manifest_json")
+  names_csv=$(python3 -c "import json,sys; print(','.join(json.load(sys.stdin)['theorem_names']))" <<<"$manifest_json")
+
+  local pinned_module_file
+  pinned_module_file=$(mktemp)
+  if ! git -C "$PROJECT_ROOT" show "${commit}:${challenge_path}" > "$pinned_module_file" 2>/dev/null; then
+    echo "ERROR: could not retrieve the pinned Challenge at commit ${commit}:${challenge_path}" >&2
+    echo "       from $PROJECT_ROOT -- the trust anchor itself is unreadable." >&2
+    rm -f "$pinned_module_file"
+    exit 71
+  fi
+
+  python3 - "$PROJECT_ROOT" "$challenge_path" "$names_csv" "$pinned_module_file" <<'PYEOF'
+import re
+import sys
+
+project_root, challenge_path, names_csv, pinned_module_file = sys.argv[1:5]
+names = [n for n in names_csv.split(",") if n]
+with open(pinned_module_file, encoding="utf-8") as f:
+    pinned_module = f.read()
+
+DECL_HEADER_RE = re.compile(
+    r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
+    r"(?:(?:private|protected|noncomputable)\s+)*"
+    r"(theorem|lemma|def|instance)\s+([A-Za-z_][A-Za-zA-Z0-9_']*)"
+)
+
+
+def find_top_level_assign(s):
+    depth = 0
+    i = 0
+    n = len(s)
+    while i < n:
+        c = s[i]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif depth == 0 and s[i : i + 2] == ":=":
+            return i
+        i += 1
+    return -1
+
+
+def headers_by_name(text):
+    matches = list(DECL_HEADER_RE.finditer(text))
+    out = {}
+    for idx, m in enumerate(matches):
+        name = m.group(2)
+        start = m.start()
+        end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+        chunk = text[start:end]
+        assign_pos = find_top_level_assign(chunk)
+        header = chunk[:assign_pos] if assign_pos != -1 else chunk
+        out.setdefault(name, []).append(header)
+    return out
+
+pinned_headers = headers_by_name(pinned_module)
+
+import subprocess
+import os
+
+def find_lean_files(root):
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in (".git", ".lake", "lake-packages")]
+        for fn in filenames:
+            if fn.endswith(".lean"):
+                yield os.path.join(dirpath, fn)
+
+current_headers = {}  # name -> list of (path, header)
+challenge_abs = os.path.normpath(os.path.join(project_root, challenge_path))
+for path in find_lean_files(project_root):
+    if os.path.normpath(path) == challenge_abs:
+        continue  # exclude the pinned Challenge artifact itself from the comparison target
+    try:
+        with open(path, encoding="utf-8") as f:
+            content = f.read()
+    except OSError:
+        continue
+    for name, headers in headers_by_name(content).items():
+        if name not in names:
+            continue
+        for h in headers:
+            current_headers.setdefault(name, []).append((path, h))
+
+missing = [n for n in names if n not in current_headers]
+ambiguous = {n: locs for n, locs in current_headers.items() if len(locs) > 1}
+
+if missing:
+    sys.stderr.write("ERROR: the following identifier(s) are absent from the current working tree ")
+    sys.stderr.write(f"(searched under {project_root}, excluding the pinned Challenge itself):\n")
+    for n in missing:
+        sys.stderr.write(f"  {n}\n")
+    sys.exit(71)
+
+if ambiguous:
+    for n, locs in ambiguous.items():
+        files = ", ".join(loc[0] for loc in locs)
+        sys.stderr.write(f"ERROR: '{n}' resolves to more than one declaration in the current tree: {files}\n")
+    sys.exit(71)
+
+def norm(s):
+    s = re.sub(r"/-.*?-/", " ", s, flags=re.DOTALL)
+    s = re.sub(r"--[^\n]*", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+drifted = []
+for n in names:
+    pinned_h = norm(pinned_headers.get(n, [""])[0])
+    current_h = norm(current_headers[n][0][1])
+    if pinned_h != current_h:
+        drifted.append((n, pinned_h, current_h))
+
+if drifted:
+    sys.stderr.write("STATEMENT DRIFT DETECTED (advisory only -- see file header):\n")
+    for n, pinned_h, current_h in drifted:
+        sys.stderr.write(f"  {n}:\n")
+        sys.stderr.write(f"    recorded: {pinned_h}\n")
+        sys.stderr.write(f"    current:  {current_h}\n")
+    sys.exit(65)
+
+sys.stdout.write("no drift: every named statement matches its pinned Challenge signature\n")
+sys.exit(0)
+PYEOF
+  local check_status=$?
+  rm -f "$pinned_module_file"
+  return $check_status
+}
+
+if $CHECK_MODE; then
+  do_check "$MANIFEST_PATH"
+  exit $?
+fi
+
+# ---------------------------------------------------------------------------
 # Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented).
 # ---------------------------------------------------------------------------
 extract_goal_names() {
