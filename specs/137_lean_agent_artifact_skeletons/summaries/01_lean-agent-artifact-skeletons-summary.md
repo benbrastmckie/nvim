@@ -1,10 +1,10 @@
 # Implementation Summary: Task #137
 
 - **Task**: 137 - Lean agent artifact skeletons
-- **Status**: [BLOCKED]
+- **Status**: [COMPLETED]
 - **Started**: 2026-09-03T00:00:00Z
-- **Completed**: 2026-09-03T01:35:00Z
-- **Effort**: ~2 hours
+- **Completed**: 2026-09-07T21:00:00Z
+- **Effort**: ~2 hours (Phases 1-6) + Phase 7 acceptance on live dispatches
 - **Dependencies**: None (task 136 is a sequencing risk, not a blocker)
 - **Artifacts**: plans/01_lean-agent-artifact-skeletons.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
@@ -16,10 +16,11 @@ Six of seven plan phases are complete: all eight target agent files
 report or summary skeleton, statically verified against `validate-artifact.sh`'s
 `REPORT_METADATA`/`REPORT_SECTIONS`/`SUMMARY_METADATA`/`SUMMARY_SECTIONS` arrays with zero missing
 fields or sections. Phase 6's redeploy-and-diff step closed with reasoned, evidenced exclusions
-because this repository does not have the lean/formal extensions installed. Phase 7 (the real
-cross-repo lean-dispatch demonstration) is `[BLOCKED]` pending explicit user go-ahead, since this
-`/orchestrate` run is fully autonomous and the phase is an outward-facing, real-cost action in a
-second repository that the plan itself gates on human approval.
+because this repository does not have the lean/formal extensions installed. Phase 7 (the real cross-repo lean-dispatch
+demonstration) is now `[COMPLETED]`: the user granted the go-ahead, and the demonstration was
+satisfied by four real dispatches in the Lean repository — three research reports and one
+implementation summary, every one validating with zero errors, zero warnings and zero
+auto-repairs. All seven phases are closed.
 
 ## What Changed
 
@@ -112,6 +113,43 @@ second repository that the plan itself gates on human approval.
   `formal/agents/*-research-agent.md` files (found present-but-incomplete, amended in Phase 5).
   Confirmed there is no formal-extension implementation agent (negative recorded). No file was
   found already fully conforming — every one of the eight had a genuine gap.
+
+### Phase 7 acceptance — live cross-repo demonstration
+
+Target: `/home/benjamin/Projects/BimodalLogic`. Agents were put in place by the user's own
+in-editor agent-system reload at 11:13 local on 2026-09-07; a fresh `deploy-headless.sh` run was
+deliberately not issued, because the deployed tree was verified byte-identical (`diff -q`) to the
+`agent-system/extensions/` source store for all eight agent files — a redeploy would have added
+risk to a repository with three concurrent live dispatches and changed nothing.
+
+Provenance rule applied throughout: an artifact counts only if the dispatch that authored it
+BEGAN after the 11:13 reload. A dispatch already in flight holds the pre-amendment agent
+definition for its whole run.
+
+| Task | Artifact | Type | Dispatch window | `validate-artifact.sh` (no `--fix`) |
+|------|----------|------|-----------------|-------------------------------------|
+| 544 | `reports/01_sp-underivable-native-bl-soundness.md` | report | research completed 12:13 | `[PASS] ... (0 warning(s))` |
+| 545 | `reports/01_hg-completeness-dense-dedekind.md` | report | research completed 12:13 | `[PASS] ... (0 warning(s))` |
+| 539 | `reports/01_linter-debt-burndown.md` | report | research completed 12:41 | `[PASS] ... (0 warning(s))` |
+| 539 | `summaries/01_linter-debt-burndown-summary.md` | summary | implement lock 12:48, phases 13:00-13:55 | `[PASS] ... (0 warning(s))` |
+
+All four exit 0 with zero errors, zero warnings and zero `[FIXED]` auto-repair lines. No
+hand-written fixture was used, as the acceptance criterion requires.
+
+One post-reload artifact was examined and correctly EXCLUDED rather than counted as a failure:
+task 546's summary (written 12:09) fails validation with 4 missing metadata fields and 5 missing
+sections. Its implement dispatch started at 09:08 and ran continuously through phase commits at
+09:21, 10:21, 11:26, 11:47 and 11:54 to completion at 12:10 — it spans the 11:13 reload, so the
+pre-amendment agent (which carried no summary skeleton at all) was in force for the entire run.
+That artifact is a demonstration of the original defect, not a regression, and excluding it is a
+provenance judgement rather than a convenience.
+
+A separate, genuinely distinct defect surfaced during this phase and was filed as its own task
+rather than absorbed here: a research report whose author agent DOES carry a conforming skeleton
+can still fail validation by paraphrasing a required heading (observed: `## Recommended Next
+Steps` and `## Context Extension Recommendations`, neither matching the validator's
+`^##+ Recommendations`). That is skeleton-to-artifact drift, not a missing skeleton, and it is out
+of scope for this task.
 
 ## Impacts
 

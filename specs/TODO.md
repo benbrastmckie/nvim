@@ -11,9 +11,9 @@ next_project_number: 168
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,161,162,163,166,167 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,155,164 | 29,74,88,137,139,162 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 156,165 | 155,163,164 | extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,161,162,163,166,167 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164 | 29,74,88,139,155,162 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -29,14 +29,13 @@ next_project_number: 168
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
-137 [IMPLEMENTING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-161 [PLANNED] — Settle the unattended-refresh policy and update the systemd, skil
+161 [IMPLEMENTING] — Settle the unattended-refresh policy and update the systemd, skil
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
 ### Extensions
@@ -47,9 +46,9 @@ next_project_number: 168
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 
 ### Literature
 
@@ -402,7 +401,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 161. Settle the unattended-refresh policy and update the systemd, skill, and command surfaces
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 160
@@ -1102,7 +1101,7 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 ---
 
 ### 137. Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

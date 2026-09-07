@@ -1,7 +1,7 @@
 # Implementation Plan: Task #137
 
 - **Task**: 137 - Lean agent artifact skeletons
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (task 136 is a sequencing risk, not a blocker -- see Risks)
 - **Research Inputs**: specs/137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md
@@ -430,7 +430,7 @@ edited skeleton is statically conformant, closing the "survives regeneration" ac
 
 ---
 
-### Phase 7: End-to-End Demonstration on a Real Lean Dispatch [IN PROGRESS]
+### Phase 7: End-to-End Demonstration on a Real Lean Dispatch [COMPLETED]
 
 **GO-AHEAD GRANTED** (Phase 7): the user approved the cross-repo deploy and dispatch. The
 blocker recorded here previously (no interactive user in an autonomous run) is resolved.
@@ -466,12 +466,41 @@ implement dispatch STARTED at 09:08 and ran continuously through phase commits a
 definition in force for the whole run was the PRE-amendment one, which had no summary skeleton.
 Its failure is a demonstration of the original defect, not of a regression.
 
-**What remains**: one summary authored by an implement dispatch that BEGAN after the reload. Task
-539 is that dispatch — `implement` lock acquired 2026-09-07T19:48:57Z (12:48 local), plan created
-12:48, both unambiguously post-reload. When it writes `specs/539_*/summaries/`, validate it
-without `--fix`; zero errors and zero `[FIXED]` lines closes this phase. No new dispatch was
-created: the phase's own instruction is to use a suitable EXISTING lean-type task, and starting a
-competing run would collide with the live one.
+**SUMMARY HALF — SATISFIED. PHASE 7 ACCEPTANCE MET IN FULL.**
+
+Task 539's implement dispatch supplied the missing summary. Provenance is unambiguous: the
+`implement` lock was acquired 2026-09-07T19:48:57Z (12:48 local) and every phase commit lands
+between 13:00 and 13:55 — the entire run is after the 11:13 agent reload, so the amended
+`lean-implementation-agent` was in force throughout.
+
+Artifact: `specs/539_linter_debt_burndown_nolints_dupnamespace/summaries/01_linter-debt-burndown-summary.md`
+(written 13:54). Verbatim validator output, run WITHOUT `--fix`:
+
+```
+Validating summary: specs/539_linter_debt_burndown_nolints_dupnamespace/summaries/01_linter-debt-burndown-summary.md
+[PASS] summary artifact is valid (0 warning(s))
+```
+
+Exit 0. Zero errors, zero warnings, zero `[FIXED]` auto-repair lines. Structural confirmation: the
+artifact carries all eight required metadata fields (`Task`, `Status`, `Started`, `Completed`,
+`Effort`, `Dependencies`, `Artifacts`, `Standards`) and all six required sections (`Overview`,
+`What Changed`, `Decisions`, `Impacts`, `Follow-ups`, `References`) as authored — no repair was
+needed or applied.
+
+**Acceptance tally**: report half proven three times over (tasks 539, 544, 545 — all
+`[PASS] ... (0 warning(s))`); summary half proven once (task 539). Both artifact classes
+demonstrated on real dispatches; no hand-written fixture was used anywhere, as the criterion
+requires.
+
+**Phase 6 exclusion retired as a side effect.** Phase 6 closed `[COMPLETED WITH EXCLUSIONS]`
+because the source-vs-deployed diff and the deployed-file grep matrix could not run in this
+repository (the lean/formal extensions are not installed here). Both checks ran in the Lean
+repository during this phase: all eight deployed `lean-*`/`formal-*`/`logic-*`/`math-*`/
+`physics-*` agent files were confirmed byte-identical (`diff -q`) to their
+`agent-system/extensions/` source-store originals, and the deployed
+`lean-implementation-agent.md` skeleton was machine-checked against the validator's own
+`SUMMARY_SECTIONS`/metadata vocabulary. The exclusion's deferred verification is therefore
+discharged; the Phase 6 marker is left as recorded for historical accuracy.
 
 **Goal**: Satisfy the acceptance criterion that a lean-language task run end to end produces a
 summary and a report that both pass `validate-artifact.sh` with zero errors and zero
