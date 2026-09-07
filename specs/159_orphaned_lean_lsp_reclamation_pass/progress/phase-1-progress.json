@@ -2,14 +2,15 @@
   "phase": 1,
   "phase_name": "Lean Predicates and Separately-Scoped Snapshot",
   "started_at": "2026-09-07T00:00:00Z",
-  "last_updated": "2026-09-07T00:00:00Z",
+  "last_updated": "2026-09-07T00:10:00Z",
   "objectives": [
-    {"id": 1, "description": "Add is_lean_serve_comm/is_lean_server_comm/is_lean_worker_comm predicates + header comment", "status": "not_started"},
-    {"id": 2, "description": "Add LEAN_LSP_IDLE_THRESHOLD_MIN constant", "status": "not_started"},
-    {"id": 3, "description": "Add LEAN_SNAPSHOT_PS_FIELDS + take_lean_snapshot() + field-map comment", "status": "not_started"},
-    {"id": 4, "description": "Extend print_help() with threshold doc line", "status": "not_started"}
+    {"id": 1, "description": "Add is_lean_serve_comm/is_lean_server_comm/is_lean_worker_comm predicates + header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Add LEAN_LSP_IDLE_THRESHOLD_MIN constant", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Add LEAN_SNAPSHOT_PS_FIELDS + take_lean_snapshot() + field-map comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "Extend print_help() with threshold doc line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]}
   ],
-  "current_objective": 1,
+  "current_objective": null,
   "approaches_tried": [],
-  "handoff_count": 0
+  "handoff_count": 0,
+  "deviations": []
 }

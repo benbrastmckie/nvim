@@ -103,33 +103,33 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Lean Predicates and Separately-Scoped Snapshot [IN PROGRESS]
+### Phase 1: Lean Predicates and Separately-Scoped Snapshot [COMPLETED]
 
 **Goal**: Add the additive, independently-callable Lean detection primitives to
 `claude-refresh.sh` — three predicates and one snapshot function — with no wiring into `main()`
 yet, so nothing in the existing Claude pass can be perturbed.
 
 **Tasks**:
-- [ ] Add `is_lean_serve_comm(comm, args)`: comm exactly `lake` AND args matching ` serve` in the
+- [x] Add `is_lean_serve_comm(comm, args)`: comm exactly `lake` AND args matching ` serve` in the
       leanclient-spawned shape (`.../bin/lake serve -- -Dserver.reportDelayMs=0`), rejecting other
-      `lake` subcommands (`lake build`, `lake exe cache get`).
-- [ ] Add `is_lean_server_comm(comm, args)`: comm exactly `lean` AND args containing `--server`.
-- [ ] Add `is_lean_worker_comm(comm, args)`: comm exactly `lean` AND args containing `--worker`.
-- [ ] Write a header comment block above the three predicates recording *why* they exist as a
+      `lake` subcommands (`lake build`, `lake exe cache get`). *(completed)*
+- [x] Add `is_lean_server_comm(comm, args)`: comm exactly `lean` AND args containing `--server`. *(completed)*
+- [x] Add `is_lean_worker_comm(comm, args)`: comm exactly `lean` AND args containing `--worker`. *(completed)*
+- [x] Write a header comment block above the three predicates recording *why* they exist as a
       separate gate: comm alone cannot distinguish the three forms; the TTY gate is unusable here
       (live-verified: `lake serve`/`lean --server` keep an inherited pty); exact-`case` matching
       deliberately excludes `<defunct>` zombie rows (signaling a zombie reclaims nothing — only
-      the parent's `wait()` reaps it), which must not be "fixed" into substring matching later.
-- [ ] Add `LEAN_LSP_IDLE_THRESHOLD_MIN="${LEAN_LSP_IDLE_THRESHOLD_MIN:-240}"` with a comment
-      citing the 240-min precedent and the single-data-point nature of the 13h observation.
-- [ ] Add `LEAN_SNAPSHOT_PS_FIELDS` and `take_lean_snapshot()` using
+      the parent's `wait()` reaps it), which must not be "fixed" into substring matching later. *(completed)*
+- [x] Add `LEAN_LSP_IDLE_THRESHOLD_MIN="${LEAN_LSP_IDLE_THRESHOLD_MIN:-240}"` with a comment
+      citing the 240-min precedent and the single-data-point nature of the 13h observation. *(completed)*
+- [x] Add `LEAN_SNAPSHOT_PS_FIELDS` and `take_lean_snapshot()` using
       `ps -C lake,lean -o pid,ppid,uid,etimes,rss,pcpu,cgroup:200,comm,args --no-headers`, with a
       comment recording that `-C` must not be combined with `-e` (the `-eo ... -C` form silently
       returns the whole table), and the same loud-failure-on-`ps`-error convention as
-      `take_snapshot()`. An empty result is normal (no Lean processes), not an error.
-- [ ] Add a field-index map comment for the Lean snapshot mirroring the existing
-      `SNAPSHOT_PS_FIELDS` map comment.
-- [ ] Extend `print_help()` with a line documenting `LEAN_LSP_IDLE_THRESHOLD_MIN`.
+      `take_snapshot()`. An empty result is normal (no Lean processes), not an error. *(completed)*
+- [x] Add a field-index map comment for the Lean snapshot mirroring the existing
+      `SNAPSHOT_PS_FIELDS` map comment. *(completed)*
+- [x] Extend `print_help()` with a line documenting `LEAN_LSP_IDLE_THRESHOLD_MIN`. *(completed)*
 
 **Timing**: 1 hour
 
