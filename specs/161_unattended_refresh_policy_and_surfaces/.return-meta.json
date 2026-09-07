@@ -1,8 +1,44 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "task_number": 161,
-  "session_id": "sess_1788808797_82397b",
-  "dispatch_seq": 14
+  "status": "implemented",
+  "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/161_unattended_refresh_policy_and_surfaces/summaries/01_unattended-refresh-policy-summary.md",
+      "summary": "Recorded both rulings in claude-refresh.service (new-passes ruling + ConditionPathExists deploy-path ruling), rebuilt a ten-item canonical pass inventory in SKILL.md and refresh.md, and confirmed every acceptance gate green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Settled the unattended-refresh policy by recording both rulings in claude-refresh.service's comment block and implementing ConditionPathExists, then rebuilt skill-refresh/SKILL.md and commands/refresh.md around a from-source-derived ten-pass canonical inventory (correcting both the task description's seven and the research report's nine). All five acceptance gates ran green: both systemd units verify, check-extension-docs.sh reports core PASS, --help matches the documented inventory, and no task-number or .claude/** hand-edit was introduced."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/systemd/claude-refresh.service",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/scripts/claude-refresh.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When editing a source-store script under agent-system/extensions/*/scripts/** that check-extension-docs.sh also drift-checks against its deployed .claude/ copy, an edit to the source alone transiently FAILs the 'core' row with 'deployed script content drift' until the deployed tree catches up. Resolve by running `bash .claude/scripts/deploy-headless.sh` (default, non-destructive resync mode) rather than hand-editing .claude/** -- this is the sanctioned deploy/reload mechanism explicitly exempted by source-store-deploy-boundary.md, and it also surfaces a useful post-deploy report of stale consumer repos.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/161_unattended_refresh_policy_and_surfaces/summaries/01_unattended-refresh-policy-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs", "deploy-headless", "source-store-deploy-boundary", "deployed script drift", "core PASS"]
+    },
+    {
+      "content": "When a task description asserts a specific count of items to inventory (e.g. 'seven passes'), treat that count as a hypothesis to verify, not ground truth -- even an upstream research report's own count can be wrong. Derive the real count by enumerating directly from source (function calls in a script's main(), heading/subsection structure in docs) in a dedicated phase before any downstream phase consumes the inventory; this caught two omitted items (a directory-cleanup operation and a stale-backup-file cleanup step) that both the task description and the research report missed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/161_unattended_refresh_policy_and_surfaces/summaries/01_unattended-refresh-policy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["inventory derivation", "scope hypothesis", "enumerate from source", "count verification", "documentation coherence"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788808797_82397b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
