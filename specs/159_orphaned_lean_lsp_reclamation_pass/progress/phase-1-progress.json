@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Lean Predicates and Separately-Scoped Snapshot",
+  "started_at": "2026-09-07T00:00:00Z",
+  "last_updated": "2026-09-07T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add is_lean_serve_comm/is_lean_server_comm/is_lean_worker_comm predicates + header comment", "status": "not_started"},
+    {"id": 2, "description": "Add LEAN_LSP_IDLE_THRESHOLD_MIN constant", "status": "not_started"},
+    {"id": 3, "description": "Add LEAN_SNAPSHOT_PS_FIELDS + take_lean_snapshot() + field-map comment", "status": "not_started"},
+    {"id": 4, "description": "Extend print_help() with threshold doc line", "status": "not_started"}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

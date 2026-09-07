@@ -1,5 +1,5 @@
 ---
-next_project_number: 167
+next_project_number: 168
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 167
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,159,162,163,166 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,159,162,163,166,167 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,155,160,164 | 29,74,88,137,139,159,162 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 156,161,165 | 155,160,163,164 | core-agent-system, extensions, file-scope-lifecycle |
 
@@ -36,7 +36,7 @@ next_project_number: 167
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-159 [PLANNED] — Add an independently-gated reclamation pass for orphaned Lean LSP
+159 [IMPLEMENTING] — Add an independently-gated reclamation pass for orphaned Lean LSP
   └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
     └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
@@ -49,6 +49,7 @@ next_project_number: 167
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
+167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 
@@ -73,6 +74,170 @@ next_project_number: 167
   └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
 
 ## Tasks
+
+### 167. Make vimtex continuous-build safety always-in-effect via the latex extension rule
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Make continuous-build (vimtex `latexmk -pvc`) safety guidance always-in-effect for every agent and command, not only latex-typed dispatches, by extending the latex extension's EXISTING deployed rule file rather than adding a new mechanism.
+
+=== MOTIVATING INCIDENT (2026-09-07, PossibleWorlds paper repo, JPL/ subdirectory) ===
+
+Command-line `latexmk -pdf` runs issued during an ordinary editing conversation (NOT a latex-typed task) raced a running vimtex `latexmk -pvc` watcher on the same shared build/ directory.
+
+Symptoms: empty .aux file; deleted PDF; spurious "Build failed" entries appended to build/compile.log by the .latexmkrc $failure_cmd; bibtex reporting "I found no \citation commands"; latexmk exit code 12 despite ZERO LaTeX errors in the log. The exit-12-with-clean-log signature was misread as a LaTeX error, prompting repeated rebuilds that compounded the race.
+
+Verified during diagnosis:
+  - `pgrep -af 'latexmk'` showed the vimtex process with flags:
+      -pvc -pvctimeout- -view=none -outdir=build -emulate-aux-dir -auxdir=build
+  - An isolated build succeeded cleanly and was the correct verification path:
+      latexmk -pdf -outdir=$SCRATCH -auxdir=$SCRATCH -r /dev/null file.tex
+  - A direct `pdflatex -output-directory=build` also exited 0, confirming the source was fine
+    and the failure was latexmk-level contention, not a LaTeX error.
+
+=== ROOT-CAUSE FINDING (drives the recommendation) ===
+
+The rule `agent-system/extensions/latex/rules/latex.md` ALREADY exists, ALREADY declares
+`paths: "**/*.tex"`, and is ALREADY deployed to the paper repo as `.claude/rules/latex.md`
+(confirmed present). Because the incident conversation was editing `JPL/possible_worlds.tex`,
+that rule was almost certainly auto-loaded at the time.
+
+The rule was therefore not silent -- it was the proximate source of the harmful advice. Its
+"Build Commands" section currently prescribes, with no watcher guard whatsoever:
+
+    latexmk -pdf document.tex
+    latexmk -c
+
+These are exactly the two commands that must NOT be run against a shared -outdir while a
+`-pvc` watcher owns it. Separately, `context/project/latex/tools/compilation-guide.md:215`
+documents `latexmk -pdf -pvc` as something to run, with no note that an agent must never
+start, kill, or race one.
+
+So the lowest-impact fix is not to add a mechanism. It is to correct an existing file that
+already fires on the right trigger and currently says the wrong thing.
+
+=== RECOMMENDED MECHANISM (minimal pair -- option (a) primary + option (b) one-pointer) ===
+
+PRIMARY (option a) -- edit `agent-system/extensions/latex/rules/latex.md`:
+  1. Widen the frontmatter glob from `paths: "**/*.tex"` to also cover build/aux surfaces that
+     a bare compile command references without touching a .tex file, e.g.
+     `**/*.tex`, `**/*.latexmkrc`, `**/build/**`, `**/*.bib`.
+     (Confirm the deployer's supported frontmatter syntax for multiple globs before writing --
+     every current rule in the source store uses a single-string `paths:` value, so a list form
+     must be validated against the loader, not assumed.)
+  2. Insert a "Continuous Build Safety" section ABOVE the existing "Build Commands" section, so
+     the guard is read before the commands it constrains.
+  3. Repair the existing "Build Commands" and "Validation Checklist" blocks so they no longer
+     present bare `latexmk -pdf` / `latexmk -c` / "Builds successfully with pdflatex" as
+     unconditional instructions.
+
+COMPLEMENT (option b) -- add 3-4 lines to `agent-system/extensions/latex/EXTENSION.md`, the merge
+source for the CLAUDE.md "LaTeX Extension" section (merge_targets.claudemd, section_id
+`extension_latex`). This is a POINTER ONLY, not a copy of the rule. Rationale: it closes the one
+residual gap where an agent issues a bare `latexmk` Bash call having never touched or referenced
+any .tex/build path in the session, so no paths-glob match ever fires. Keep it to a few lines --
+this text lands in the eager session prefix, which the system explicitly budgets (see
+`measure-eager-context.sh` / `measure-eager-surface.sh`).
+
+Also update `context/project/latex/tools/compilation-guide.md` (around the `-pvc` line, ~215) with
+a one-line cross-reference to the new rule section, so the lazily-loaded guide does not contradict
+the eagerly-loaded rule.
+
+=== ACCEPTANCE CRITERIA (the five behavioral points; the rule text must make each actionable) ===
+
+AC1. DETECT BEFORE COMPILING. Before any latexmk/pdflatex/xelatex/lualatex invocation, check for a
+     running continuous watcher on the same source:
+         pgrep -af 'latexmk.*-pvc'
+     and/or any latexmk/pdflatex process whose arguments name the same .tex file or the same
+     -outdir. The rule must give the literal command, not a paraphrase.
+
+AC2. IF A WATCHER IS RUNNING, DO NOT CONTEND. Never run latexmk/pdflatex into the shared build/
+     (or whatever -outdir the watcher uses). Never kill, stop, or restart the watcher. Never run
+     `latexmk -C` or `latexmk -c` against the shared directory.
+
+AC3. USE A NON-CONTENDING PATH INSTEAD. Either (i) make the edit and let vimtex rebuild -- it is
+     already watching the file -- or (ii) verify compilation with an isolated build into the
+     session scratchpad and inspect the log there:
+         latexmk -pdf -outdir="$SCRATCH" -auxdir="$SCRATCH" -r /dev/null file.tex
+     `-r /dev/null` bypasses the project .latexmkrc (which is what appends the spurious
+     "Build failed" entries via $failure_cmd).
+
+AC4. REPORT, DO NOT REPAIR. Report the isolated build's result. If the shared build directory
+     looks broken (missing PDF, empty .aux, "Build failed" entries in build/compile.log), tell the
+     user to run `:VimtexClean` then `:VimtexCompile`. Do not attempt repairs against the shared
+     directory.
+
+AC5. CLASSIFY THE FAILURE BEFORE RERUNNING. When diagnosing a nonzero latexmk exit code,
+     distinguish latexmk-level failure (exit 12, bibtex/aux complaints such as "I found no
+     \citation commands") from an actual LaTeX error (a `^!` line, or a file-line-error
+     `file.tex:N:` line) BEFORE rerunning anything. A clean log with a nonzero exit code is a
+     contention signal, not a source error.
+
+AC6. NO DUPLICATION. The guidance lives in exactly one authoritative place (the rule). EXTENSION.md
+     and compilation-guide.md carry pointers, not restatements.
+
+AC7. VERIFY THE TRIGGER, DO NOT ASSUME IT. Before closing, empirically confirm whether the widened
+     paths glob actually fires for a Bash tool call that merely names a .tex path in its command
+     string, versus only for Read/Edit/Write on that path. This determines whether the option (b)
+     pointer is load-bearing or merely belt-and-braces, and the finding must be recorded in the
+     task report either way.
+
+=== OPTION ANALYSIS (rationale for rejecting the alternatives) ===
+
+(a) RULE FILE via provides.rules with a paths glob -- CHOSEN.
+    Already exists, already deployed, already fires on .tex touches, already declared in
+    manifest.json provides.rules (["latex.md"]). No manifest change, no new file, no deploy
+    topology change. Precedent for the pattern: lean's rules/lean4.md with `paths: "**/*.lean"`.
+    Fires regardless of task type -- the harness paths-glob mechanism is independent of task
+    routing, of index.json, and of any @-import list (see
+    `context/patterns/context-discovery.md`, "Rule Loading: Two Independent Paths").
+    Residual gap: a bare Bash `latexmk` that references no matching path -- covered by (b).
+
+(b) MERGE-SOURCE ADDITION to EXTENSION.md -> CLAUDE.md -- CHOSEN AS MINIMAL COMPLEMENT, pointer only.
+    Always in the eager session prefix whenever the latex extension is loaded, so it is
+    unconditionally task-type-independent and has no trigger dependency at all. Cost: eager
+    context bytes, which the system budgets. Hence a pointer, not a copy.
+
+(c) PREFLIGHT LIFECYCLE HOOK in the manifest `hooks` object -- REJECTED. CONFIRMED to fail the
+    requirement. Lifecycle hooks run only at skill lifecycle stages via skill-base.sh
+    (preflight/context_injection/verification/postflight), so they fire only inside a dispatched
+    skill. The motivating incident occurred in an ordinary editing conversation with no skill
+    lifecycle active -- exactly the case a lifecycle hook cannot reach. The latex manifest
+    currently has `provides.hooks: []` and no top-level `hooks` object.
+
+(d) CONTEXT FILE under context/project/latex/ -- REJECTED. CONFIRMED to fail the requirement.
+    Every latex entry in `index-entries.json` is gated on `load_when.task_types: ["latex"]` and
+    on the latex agents, making it lazily loaded and task-typed -- precisely the two properties
+    the requirement excludes. compilation-guide.md, which already contains the only `-pvc` mention
+    in the extension, was NOT loaded during the incident for exactly this reason.
+
+(e) PreToolUse Bash-matcher HOOK via settings-fragment.json -- CONSIDERED AND REJECTED as
+    disproportionate, though it is the only mechanism that fires with certainty on a bare
+    `latexmk` Bash call carrying no path reference. Precedent exists: the email extension
+    registers `mail-guard.sh` as a PreToolUse "Bash" matcher through its settings-fragment.json
+    plus `provides.hooks`. Rejected because it requires a new script, a new settings-fragment.json
+    for an extension that has none, a manifest provides.hooks change, and it imposes a hook
+    invocation on EVERY Bash call system-wide to guard one narrow case. Record this as the
+    documented escalation path if AC7 shows the paths glob does not fire for Bash-only references
+    and the (b) pointer proves insufficient in practice.
+
+COMPLEMENT, OUT OF SCOPE FOR THIS TASK: the PossibleWorlds paper repo's own CLAUDE.md already has
+a "Build Workflow: Preventing Aux File Corruption" section documenting this exact race from the
+latexmk side. A short pointer there is warranted, but that file belongs to the paper repo, not to
+this source store, and is user-owned. Note it in the report as a follow-up suggestion; do not edit
+it from this task.
+
+=== SCOPE BOUNDARY ===
+
+All edits target the SOURCE STORE at `agent-system/extensions/latex/**`. Never hand-author
+anything under `.claude/**` -- that tree is a disposable deploy artifact regenerated from source
+(see `.claude/rules/source-store-deploy-boundary.md`). Verify the change by redeploying and
+confirming the regenerated `.claude/rules/latex.md` and the CLAUDE.md `extension_latex` section
+carry the new text.
+
+---
 
 ### 166. Stop research reports drifting from validate-artifact.sh's required section headings
 - **Status**: [NOT STARTED]
@@ -297,7 +462,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 159. Add an independently-gated reclamation pass for orphaned Lean LSP process trees
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 158

@@ -1,33 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md",
-      "summary": "6-phase plan (~6.5h) adding an independently-gated orphaned Lean LSP process-tree reclamation pass to claude-refresh.sh, with cross-contamination and termination-ordering test assertions."
-    }
-  ],
-  "next_steps": "Run /implement 159 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788808797_82397b_159",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6.5,
-    "dependency_waves": 5
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding a second, independently-gated detection pass to a shell script whose main() already contains early `exit 0` sites (e.g. claude-refresh.sh's 'no orphans found' and 'report-and-exit without --force' branches), the new pass appended after them is structurally unreachable. Plan a dedicated restructure step that converts those exit sites into returning functions BEFORE wiring the second pass, and grep for `exit 0` inside main() to confirm the site count rather than assuming it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["shell-script", "early-exit", "second-pass", "main-restructure", "claude-refresh"]
-    }
-  ],
-  "modified_files": [
-    "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md"
-  ],
-  "dispatch_seq": 7
+    "session_id": "sess_1788808797_82397b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
