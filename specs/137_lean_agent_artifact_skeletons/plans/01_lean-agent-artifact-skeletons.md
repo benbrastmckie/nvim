@@ -430,25 +430,48 @@ edited skeleton is statically conformant, closing the "survives regeneration" ac
 
 ---
 
-### Phase 7: End-to-End Demonstration on a Real Lean Dispatch [BLOCKED]
+### Phase 7: End-to-End Demonstration on a Real Lean Dispatch [IN PROGRESS]
 
-**BLOCKER** (Phase 7):
-- **What failed**: This phase's own first task requires explicit user go-ahead before any
-  cross-repo deployment or dispatch into `/home/benjamin/Projects/BimodalLogic`. This dispatch is
-  running autonomously under `/orchestrate` (`orchestrator_mode: true`) with no interactive user
-  in the loop to grant that go-ahead.
-- **What was tried**: Phases 1-6 were completed in this repository first (all static/local work);
-  Phase 7 was reached with all of its dependencies satisfied.
-- **Why it's stuck**: The plan itself gates this phase on explicit human approval because it is
-  outward-facing and has real cost (deploying into and dispatching a real agent run inside a
-  second repository) — an autonomous agent cannot self-authorize this per this project's approval
-  norms for irreversible/costly, outside-this-repository actions.
-- **What is needed**: The user reviews this task and either approves proceeding with Phase 7
-  (deploy to BimodalLogic, run a real lean dispatch, validate its report/summary with zero errors
-  and zero auto-repairs) or declines/defers it. See the `user_decision` field on
-  `.return-meta.json` for the exact question.
-- **Prohibited workarounds**: Do NOT substitute a hand-written fixture for the real dispatch — the
-  acceptance criterion explicitly rules this out, and a fixture pass would be false evidence.
+**GO-AHEAD GRANTED** (Phase 7): the user approved the cross-repo deploy and dispatch. The
+blocker recorded here previously (no interactive user in an autonomous run) is resolved.
+
+**EVIDENCE RECORD — report half SATISFIED, summary half PENDING.**
+
+Deploy step: satisfied without a fresh `deploy-headless.sh` run. The user reloaded the agent
+system into the Lean repository from nvim at 11:13 local on 2026-09-07. All eight lean/formal
+agent files there were verified byte-identical (`diff -q`) to their `agent-system/extensions/`
+source-store originals, and the deployed `lean-implementation-agent.md` summary skeleton was
+machine-checked to carry all six required SUMMARY sections and all eight metadata fields.
+
+Report half — THREE independent passes, all from research dispatches that completed AFTER the
+11:13 reload, so all authored by the amended `lean-research-agent`:
+
+| Task | Artifact | Research completed | `validate-artifact.sh <path> report` |
+|------|----------|--------------------|--------------------------------------|
+| 539 | `reports/01_linter-debt-burndown.md` | 12:41 | `[PASS] report artifact is valid (0 warning(s))` |
+| 544 | `reports/01_sp-underivable-native-bl-soundness.md` | 12:13 | `[PASS] report artifact is valid (0 warning(s))` |
+| 545 | `reports/01_hg-completeness-dense-dedekind.md` | 12:13 | `[PASS] report artifact is valid (0 warning(s))` |
+
+All three run without `--fix`; zero errors, zero warnings, zero `[FIXED]` auto-repair lines. The
+pre-reload `lean-research-agent` carried no report-writing stage at all, so a conforming report is
+positive evidence of the amended agent rather than of chance.
+
+Summary half — NOT YET SATISFIED, and deliberately NOT closed with the one summary available.
+The only summary written after the reload is task 546's
+`summaries/01_ztime-rtime-rename-summary.md` (12:09), and it FAILS validation (4 missing metadata
+fields, 5 missing sections, including `## What changed` whose lowercase `c` alone defeats the
+validator's case-sensitive `^##+ What Changed`). This is NOT counter-evidence: that task's
+implement dispatch STARTED at 09:08 and ran continuously through phase commits at 09:21, 10:21,
+11:26, 11:47 and 11:54 to completion at 12:10 — it spans the 11:13 reload, so the agent
+definition in force for the whole run was the PRE-amendment one, which had no summary skeleton.
+Its failure is a demonstration of the original defect, not of a regression.
+
+**What remains**: one summary authored by an implement dispatch that BEGAN after the reload. Task
+539 is that dispatch — `implement` lock acquired 2026-09-07T19:48:57Z (12:48 local), plan created
+12:48, both unambiguously post-reload. When it writes `specs/539_*/summaries/`, validate it
+without `--fix`; zero errors and zero `[FIXED]` lines closes this phase. No new dispatch was
+created: the phase's own instruction is to use a suitable EXISTING lean-type task, and starting a
+competing run would collide with the live one.
 
 **Goal**: Satisfy the acceptance criterion that a lean-language task run end to end produces a
 summary and a report that both pass `validate-artifact.sh` with zero errors and zero
