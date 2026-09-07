@@ -37,7 +37,7 @@ next_project_number: 172
 152 [PLANNED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
-169 [PLANNED] — Add a positive-direction case to `agent-system/extensions/core/sc
+169 [IMPLEMENTING] — Add a positive-direction case to `agent-system/extensions/core/sc
   └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh (see above)
 
 ### Extensions
@@ -296,7 +296,7 @@ Place it so it composes with, not duplicates, what is already there.
 ---
 
 ### 169. Add a positive-direction memory-pressure detection case to test-lake-build-guard.sh
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

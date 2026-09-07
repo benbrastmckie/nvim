@@ -1,28 +1,10 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "task_number": 169,
-  "session_id": "sess_1788822258_a6100e",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/169_lake_guard_pressure_detection_case/plans/01_pressure-detection-case.md",
-      "summary": "5-phase plan adding a positive-direction memory-pressure case, a non-vacuousness mutation check, and an ambient-pressure robustness check to test-lake-build-guard.sh."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 1.75,
-  "dependency_waves": [[1], [2], [3, 4], [5]],
-  "memory_candidates": [
-    {
-      "content": "Making a test suite hermetic against ambient host state (by redirecting the script-under-test's env seams to clean fixture files suite-wide) silently opens a regression-masking gap: with a clean fixture as the universal default and no case driving the positive direction, a regression that disables the detector entirely leaves every case green. The suite then asserts only that the detector does not fire, never that it can. The paired fix is a positive-direction case that overrides the env seam PER-INVOCATION with a pressured fixture (never by reassigning the suite-wide export), plus a scripted mutation that neuters the detector and proves only that one case goes red. Derive the pressured fixture's values from the script's own threshold constants, read at run time via grep, so the case survives a deliberate threshold retune. Generalization: any hermeticity fix that pins an input to a known-safe value should be reviewed for whether the unsafe direction is still covered anywhere.",
-      "category": "PATTERN",
-      "source_artifact": "specs/169_lake_guard_pressure_detection_case/plans/01_pressure-detection-case.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["test-hermeticity", "fixture-isolation", "regression-masking", "mutation-testing", "positive-direction-case", "threshold-derivation"]
-    }
-  ],
-  "next_steps": "Run /implement 169 to execute the plan"
+  "status": "in_progress",
+  "dispatch_seq": 3,
+  "metadata": {
+    "session_id": "sess_1788822258_a6100e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

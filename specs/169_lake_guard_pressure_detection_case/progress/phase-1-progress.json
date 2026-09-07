@@ -1,0 +1,46 @@
+{
+  "phase": 1,
+  "phase_name": "Ground-Truth Confirmation and Baseline Capture",
+  "started_at": "2026-09-07T00:00:00Z",
+  "last_updated": "2026-09-07T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read check_memory_pressure() reason-string templates and threshold names/values",
+      "status": "done",
+      "note": "MEM_AVAILABLE_RATIO_THRESHOLD=10 (line 183), SWAP_USED_RATIO_THRESHOLD=50 (line 184). Reason templates (lake-build-guard.sh lines 491, 497): 'MemAvailable/MemTotal = ${avail_ratio}% is below threshold ${MEM_AVAILABLE_RATIO_THRESHOLD}%' and 'swap-in-use = ${swap_used_ratio}% of SwapTotal exceeds threshold ${SWAP_USED_RATIO_THRESHOLD}%'.",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Read cmd_preflight() exit code and header line",
+      "status": "done",
+      "note": "cmd_preflight() (lines 606-616): exit 11 on pressure; header line 'lake-build-guard: memory pressure detected:' printed to stderr, followed by '  - {reason}' per PRESSURE_REASONS entry.",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm meminfo keys read by check_memory_pressure()",
+      "status": "done",
+      "note": "MemTotal, MemAvailable, SwapTotal, SwapFree (lines 483-486) -- exactly these four awk-extracted keys.",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm grep-extractable shape of threshold assignments",
+      "status": "done",
+      "note": "Both anchored '^NAME=' at line start: 'MEM_AVAILABLE_RATIO_THRESHOLD=10' and 'SWAP_USED_RATIO_THRESHOLD=50', lines 183-184.",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run the suite and record baseline Passed/Failed",
+      "status": "done",
+      "note": "bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh -> Passed: 27, Failed: 0. Matches the plan's Scope Hypothesis exactly.",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

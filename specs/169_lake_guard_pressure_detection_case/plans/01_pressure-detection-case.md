@@ -1,7 +1,7 @@
 # Implementation Plan: Task #169
 
 - **Task**: 169 - Add a positive-direction memory-pressure case to test-lake-build-guard.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (builds on already-landed commit `878043472`)
 - **Research Inputs**: `specs/169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md`
@@ -102,24 +102,24 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Ground-Truth Confirmation and Baseline Capture [NOT STARTED]
+### Phase 1: Ground-Truth Confirmation and Baseline Capture [COMPLETED]
 
 **Goal**: Read the exact return code, reason-string literals, and threshold constant names out of
 `lake-build-guard.sh` itself, and record the suite's current pass/fail baseline. No edits.
 
 **Tasks**:
-- [ ] Read `check_memory_pressure()` in
+- [x] Read `check_memory_pressure()` in
       `agent-system/extensions/core/scripts/lake-build-guard.sh` and record the two
       meminfo-derived reason-string templates verbatim, along with the exact names and current
-      values of `MEM_AVAILABLE_RATIO_THRESHOLD` and `SWAP_USED_RATIO_THRESHOLD`.
-- [ ] Read `cmd_preflight()` and record the exact pressure exit code and the exact header line it
-      prints to stderr.
-- [ ] Confirm which meminfo keys `check_memory_pressure()` actually reads (so the fixture supplies
-      those and only those).
-- [ ] Confirm the grep-extractable shape of both threshold assignments (anchored `^NAME=` at line
-      start), so the test can read them at run time.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` and record the
-      exact `Passed:` / `Failed:` numbers as the baseline.
+      values of `MEM_AVAILABLE_RATIO_THRESHOLD` and `SWAP_USED_RATIO_THRESHOLD`. *(completed: MEM_AVAILABLE_RATIO_THRESHOLD=10, SWAP_USED_RATIO_THRESHOLD=50)*
+- [x] Read `cmd_preflight()` and record the exact pressure exit code and the exact header line it
+      prints to stderr. *(completed: exit 11, header 'lake-build-guard: memory pressure detected:')*
+- [x] Confirm which meminfo keys `check_memory_pressure()` actually reads (so the fixture supplies
+      those and only those). *(completed: MemTotal, MemAvailable, SwapTotal, SwapFree)*
+- [x] Confirm the grep-extractable shape of both threshold assignments (anchored `^NAME=` at line
+      start), so the test can read them at run time. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` and record the
+      exact `Passed:` / `Failed:` numbers as the baseline. *(completed: Passed: 27 / Failed: 0)*
 
 **Timing**: 0.25 hours
 
