@@ -43,7 +43,7 @@ next_project_number: 158
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-154 [RESEARCHED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+154 [PLANNED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
     └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
@@ -415,11 +415,12 @@ ACCEPTANCE.
 ---
 
 ### 154. Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md]
+- **Plan**: [154_lean_challenge_statement_snapshot/plans/01_lean-challenge-statement-snapshot.md]
 
 **Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
