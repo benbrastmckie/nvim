@@ -508,36 +508,36 @@ of the contract the rule enforces.
 
 ---
 
-### Phase 8: Acceptance demonstration on a real Lean project [NOT STARTED]
+### Phase 8: Acceptance demonstration on a real Lean project [COMPLETED]
 
 **Goal**: Discharge the dispatch's four acceptance criteria with recorded evidence rather than
 assertions.
 
 **Tasks**:
 
-- [ ] `git clone --no-hardlinks ~/Projects/cslib` (or `~/Projects/BimodalLogic`) into a scratch
+- [x] `git clone --no-hardlinks ~/Projects/cslib` (or `~/Projects/BimodalLogic`) into a scratch *(completed: cslib chosen)*
       directory. All demonstration commits land in the clone; the operator's live repositories are
       never mutated.
-- [ ] Build a realistic scratch task directory and `state.json` entry at status `planned`, with a
+- [x] Build a realistic scratch task directory and `state.json` entry at status `planned`, with a *(completed: scratch task 998 naming two real theorems, embedFormula_neg and embedFormula_and, from Cslib/Logics/Bimodal/Metalogic/ConservativeExtension/ExtFormula.lean)*
       plan carrying a `## Lean Challenge Statements` block naming two or three real theorems from
       the chosen project.
-- [ ] **Criterion: Comparator-acceptable Challenge.** Run the snapshot, then show the emitted
+- [x] **Criterion: Comparator-acceptable Challenge.** Run the snapshot, then show the emitted *(completed: module/theorem_names match fixture shape, commit+content_sha256 both independently verified; end-to-end comparator/lean4export run SKIPPED and named -- lean4export absent)*
       module and `theorem_names` satisfy `lean-comparator-run.sh`'s input contract — same module
       shape as the existing `tests/fixtures/comparator/*/Challenge.lean` fixtures, resolvable as a
       `lean_lib` target, `--commit` retrievable. Where the run itself cannot proceed because
       `comparator`/`landrun`/`lean4export` are absent on this host, record an explicit SKIP naming
       the deferred criterion — never a silent pass.
-- [ ] **Criterion: drift detected, both directions.** Weaken one theorem statement in the clone's
+- [x] **Criterion: drift detected, both directions.** Weaken one theorem statement in the clone's *(completed: real embedFormula_neg weakened -> exit 65 naming it only; restored -> exit 0)*
       working tree; `--check` exits `65` naming that theorem. Restore an honest implementation of
       the same statement; `--check` exits `0`. Record both transcripts.
-- [ ] **Criterion: immutability demonstrated.** Advance the scratch task to `implementing`, re-run
+- [x] **Criterion: immutability demonstrated.** Advance the scratch task to `implementing`, re-run *(completed: 73 refusal, --force incident warning, original SHA content + content_sha256 both intact after bypass)*
       the snapshot, capture the `73` refusal. Then `--force` (or hand-commit a different
       `Challenge.lean`) and show `git show <original SHA>:<Challenge>` still returns the original
       bytes and the recorded `content_sha256` still matches them.
-- [ ] Fold the transcripts and the SKIP record into the Phase 1 design record's own
+- [x] Fold the transcripts and the SKIP record into the Phase 1 design record's own *(completed)*
       "Demonstrated behaviour" section (durable, outside `specs/**`, no task numbers) and into the
       task summary.
-- [ ] Remove the scratch clone; confirm `~/Projects/*` are untouched (`git status` clean, no new
+- [x] Remove the scratch clone; confirm `~/Projects/*` are untouched (`git status` clean, no new *(completed: cslib and BimodalLogic both confirmed byte-identical status/HEAD before and after)*
       commits).
 
 **Timing**: 2 hours

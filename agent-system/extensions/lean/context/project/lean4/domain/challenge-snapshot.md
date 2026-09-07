@@ -133,26 +133,42 @@ verdict into a completion gate.
 
 ## Demonstrated Behaviour
 
-Recorded here rather than asserted, per the task's acceptance criteria (each item below points at
-the transcript or fixture that discharges it — see the task's implementation summary for the
-literal commands and captured output):
+Recorded here rather than asserted. The demonstration ran against a `git clone --no-hardlinks`
+scratch copy of a real, operator-owned Lean project (Apache-2.0-licensed research library, ~700
+tracked `.lean` files, `leanprover/lean4:v4.33.0-rc1`), targeting two real, already-proved
+theorems (`embedFormula_neg`, `embedFormula_and`) from its conservative-extension metatheory —
+never a synthetic fixture. The scratch clone was deleted afterward; the operator's live
+repository was confirmed byte-for-byte unaffected (`git status --porcelain` and `git log -1`
+identical before and after). See the task summary's Phase 8 section for the literal commands.
 
-- **Comparator-acceptable Challenge**: `lean-challenge-snapshot.sh` was run against a real
-  target project and the emitted module/`theorem_names` match the shape of the vendored
-  `tests/fixtures/comparator/*/Challenge.lean` fixtures (a small, standalone file containing only
-  the named declarations, bodies `sorry`) — resolvable as a `lean_lib` target and retrievable via
-  `--commit`. The end-to-end `comparator`/`landrun`/`lean4export` run itself is recorded as an
-  explicit, named SKIP where any of those binaries are absent on the demonstration host — see the
-  task summary's Phase 8 transcript for exactly which binaries were present or missing at
-  demonstration time.
-- **Statement drift, both directions**: `--check` was run against a deliberately weakened
-  theorem statement (exit `65`, naming that theorem only) and against an honest, faithful
-  implementation of the same statement (exit `0`, no drift reported). Both transcripts are
-  recorded in the task summary.
-- **Immutability**: the status gate's `73` refusal was captured after advancing the demonstration
-  task past `planned`, and `git show <original-SHA>:<challenge-path>` was shown to still return
-  the original bytes (and `content_sha256` to still match them) after a `--force` bypass attempted
-  to change the Challenge. See the task summary's Phase 8 transcript.
+**Environment measured at demonstration time** (differs from the shared background's 2026-09-07
+measurement): `landrun` and `comparator` ARE present (`~/.nix-profile/bin/`); `lean4export` and
+`nanoda_bin` remain absent.
+
+- **Comparator-acceptable Challenge**: `lean-challenge-snapshot.sh` produced
+  `theorem_names: embedFormula_and,embedFormula_neg` and a Challenge module containing exactly
+  those two declarations, bodies forced to `sorry` — the same shape as the vendored
+  `tests/fixtures/comparator/simple_match/Challenge.lean` fixture (a small, standalone file with
+  only the named declarations). The module was committed into the scratch clone
+  (`git commit --allow-empty`-backed) and the resulting commit SHA was independently confirmed
+  retrievable: `git show <SHA>:Challenge.lean` returned exactly the assembled bytes, and their
+  `sha256sum` matched the manifest's recorded `content_sha256`. **SKIPPED, named explicitly**: the
+  end-to-end sandboxed `comparator` run (build/export/kernel-replay) and the "resolvable as a
+  `lean_lib` target" sub-check that depends on it — both require `lean4export`, absent on this
+  host, and synthesizing the `lakefile.toml`/`Solution.lean` machinery `lean-comparator-run.sh`
+  needs is explicitly the downstream compare-step task's concern (see Non-Goals), not this task's.
+- **Statement drift, both directions**: the real, already-honest `embedFormula_neg` declaration
+  was weakened in the scratch clone's working tree by adding a vacuous hypothesis
+  (`(h : True)`); `--check` exited `65`, naming `embedFormula_neg` only — `embedFormula_and` was
+  correctly NOT flagged. The original declaration was then restored verbatim; `--check` exited
+  `0` (no drift).
+- **Immutability**: the scratch task was advanced from `planned` to `implementing`; re-running
+  the snapshot exited `73`, naming the task and its status, with the working tree unchanged
+  (`git status --porcelain` showed only the deliberate `state.json` status edit). `--force`
+  then succeeded, printing the incident warning naming the task and status, and producing a
+  SECOND commit SHA — yet `git show <ORIGINAL-SHA>:Challenge.lean` still returned exactly the
+  original bytes, and their `sha256sum` still matched the original manifest's `content_sha256`,
+  confirming the bypass could not retroactively change what the original SHA points to.
 
 ## Alternatives Evaluated and Rejected
 

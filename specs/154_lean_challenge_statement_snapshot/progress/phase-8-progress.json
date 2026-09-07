@@ -1,0 +1,19 @@
+{
+  "phase": 8,
+  "phase_name": "Acceptance demonstration on a real Lean project",
+  "started_at": "2026-09-07T04:00:00Z",
+  "last_updated": "2026-09-07T04:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Scratch clone of cslib, scratch task 998 naming two real theorems (embedFormula_neg, embedFormula_and)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Comparator-acceptable Challenge criterion: shape match, commit+content_sha256 verified; end-to-end run SKIPPED (lean4export absent)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Drift both directions: real weakened embedFormula_neg -> 65; restored -> 0", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Immutability: 73 refusal, --force incident warning, original SHA/hash intact after bypass", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fold transcripts and SKIP record into challenge-snapshot.md Demonstrated Behaviour", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md", "agent-system/extensions/lean/index-entries.json"]},
+    {"id": 6, "description": "Remove scratch clone; confirm cslib and BimodalLogic untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "R2 extraction against cslib's real namespaced/dotted theorem names (e.g. Proposition.map_injective)", "result": "not attempted", "reason": "cslib heavily uses dotted namespace.member theorem names which the extractor's identifier regex does not capture as a single identifier; avoided by choosing two plain, undotted real theorem names (embedFormula_neg, embedFormula_and) and using R1 (plan-declared) rather than R2 for this demonstration -- R2's dotted-name gap is a known limitation, not exercised or fixed in this task (R2 is the degraded fallback, scoped to declaration shapes this codebase's own style guide produces, per the plan's own risk mitigation)"}
+  ],
+  "handoff_count": 0
+}
