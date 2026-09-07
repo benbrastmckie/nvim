@@ -209,38 +209,41 @@ into the implementation or its comments.
 
 ---
 
-### Phase 3: MCP fan-out reporting pass and scoping advisory [NOT STARTED]
+### Phase 3: MCP fan-out reporting pass and scoping advisory [COMPLETED]
 
 **Goal**: Add `run_mcp_fanout_pass` reporting each user-scope MCP server's live session count and
 aggregate VmSwap-aware memory, flagging servers with no evidence of use and emitting the
 conditional scoping advisory.
 
 **Tasks**:
-- [ ] Guard `jq` availability at the top of `run_mcp_fanout_pass`; on absence, print a named
-      failure line and return — fail loudly, never silently skip
-- [ ] Read user-scope server names from `~/.claude.json`'s top-level `mcpServers` via `jq`;
-      handle the absent-file and empty-object cases with an explicit no-findings line
-- [ ] Take an independent `ps` snapshot and attribute each server's processes to a session,
-      computing the session count dynamically — never hard-code a count
-- [ ] Aggregate memory per server as RSS + VmSwap using the existing `get_vmswap_kb` and
-      `format_memory` helpers, unmodified
-- [ ] Implement the evidence-of-use check as a **per-server** discriminator, not a generic
+- [x] Guard `jq` availability at the top of `run_mcp_fanout_pass`; on absence, print a named
+      failure line and return — fail loudly, never silently skip *(completed)*
+- [x] Read user-scope server names from `~/.claude.json`'s top-level `mcpServers` via `jq`;
+      handle the absent-file and empty-object cases with an explicit no-findings line *(completed)*
+- [x] Take an independent `ps` snapshot and attribute each server's processes to a session,
+      computing the session count dynamically — never hard-code a count *(completed: ppid-chain
+      connected-component grouping)*
+- [x] Aggregate memory per server as RSS + VmSwap using the existing `get_vmswap_kb` and
+      `format_memory` helpers, unmodified *(completed)*
+- [x] Implement the evidence-of-use check as a **per-server** discriminator, not a generic
       heuristic: for `playwright`, absence of any `chromium`/`headless_shell` process anywhere on
       the system is the zero-evidence signal; for `lean-lsp`, presence of its `lake serve` tree
       (reusing the Lean pass's existing detection) counts as evidence of use; a server with no
-      available signal is reported as "no use signal available", explicitly NOT as unused
-- [ ] Emit the report: one row per server with name, session count, process count, and aggregate
-      memory, plus a total
-- [ ] Emit the conditional scoping advisory only for servers flagged as showing no evidence of
+      available signal is reported as "no use signal available", explicitly NOT as unused *(completed:
+      verified live -- playwright flagged, lean-lsp not flagged)*
+- [x] Emit the report: one row per server with name, session count, process count, and aggregate
+      memory, plus a total *(completed)*
+- [x] Emit the conditional scoping advisory only for servers flagged as showing no evidence of
       use. It MUST: be conditional ("if this server is genuinely repo-local, consider project
       scope in `.mcp.json`"); state that the cost of project scope is a one-time interactive
       workspace-trust approval, and that a cloned repository cannot pre-authorize its own
-      servers; and MUST NOT assert or imply that subagents cannot reach project-scoped servers
-- [ ] Point the advisory at `context/patterns/mcp-server-ownership.md` as the authority, and note
-      that document classifies some user-scope registrations as correct by design
-- [ ] Branch on `$DRY_RUN` only for the `[DRY RUN]` banner; take no `$FORCE` branch at all
-- [ ] Wire `run_mcp_fanout_pass "$FORCE" "$DRY_RUN"` into `main()` after `run_zombie_pass`
-- [ ] Confirm `terminate_pid` and `kill` appear nowhere in the new function bodies
+      servers; and MUST NOT assert or imply that subagents cannot reach project-scoped servers *(completed)*
+- [x] Point the advisory at `context/patterns/mcp-server-ownership.md` as the authority, and note
+      that document classifies some user-scope registrations as correct by design *(completed)*
+- [x] Branch on `$DRY_RUN` only for the `[DRY RUN]` banner; take no `$FORCE` branch at all *(completed)*
+- [x] Wire `run_mcp_fanout_pass "$FORCE" "$DRY_RUN"` into `main()` after `run_zombie_pass` *(completed)*
+- [x] Confirm `terminate_pid` and `kill` appear nowhere in the new function bodies *(completed:
+      verified by grep)*
 
 **Timing**: 1.5 hours
 

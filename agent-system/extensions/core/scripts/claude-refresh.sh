@@ -1057,6 +1057,251 @@ run_zombie_pass() {
     echo ""
 }
 
+# --- MCP server fan-out reporting pass: independently-gated, report-only ---
+#
+# A fourth, independently-gated pass. User-scope MCP servers declared in `~/.claude.json`'s
+# top-level `mcpServers` object fan out into EVERY session unconditionally -- this is real,
+# unavoidable per-session process/memory cost, not a bug, and this pass reports it live rather
+# than guessing at it. It never terminates or reconfigures anything; there is no `$FORCE` branch
+# here, mirroring run_zombie_pass() above.
+#
+# Attribution model (deliberately simple, not a generic cross-server heuristic): a process row is
+# attributed to a server when its `args` contains that server's own registered key (read live
+# from `~/.claude.json`, never hard-coded) as a case-insensitive substring -- e.g. server key
+# "lean-lsp" matches an argv mentioning "lean-lsp-mcp"; server key "playwright" matches an argv
+# mentioning "playwright-mcp" or "@playwright/mcp". This mirrors what live inspection actually
+# shows for both currently registered servers.
+#
+# Session-count model: a server's matched rows are grouped into connected components by `ppid`
+# chains -- a matched row whose `ppid` is ALSO a matched row belongs to the SAME session instance
+# as that parent (e.g. playwright's node child inherits its exec parent's session); a matched row
+# whose `ppid` is NOT itself matched (its parent is the invoking Claude session process) is its
+# OWN session root. The number of distinct roots is the live session count -- computed fresh
+# every invocation, never hard-coded.
+MCP_SNAPSHOT_PS_FIELDS='pid,ppid,rss,args'
+
+# Overridable seam for ~/.claude.json's path, mirroring the PROC_ROOT seam above -- lets a test
+# point this at a synthetic fixture file without instrumenting the production function.
+CLAUDE_JSON_PATH="${CLAUDE_JSON_PATH:-$HOME/.claude.json}"
+
+# --- Per-server evidence-of-use discriminators (server-shaped, not a generic heuristic) ---
+#
+# playwright: the zero-evidence signal is the total ABSENCE of any chromium/headless_shell
+# process anywhere on the system -- a live browser process is unambiguous, direct evidence the
+# server is actually driving a page. Returns 0 (true, i.e. "evidence of use found") when at least
+# one such process exists.
+mcp_playwright_evidence_of_use() {
+    ps -eo comm --no-headers 2>/dev/null | grep -qiE 'chromium|headless_shell'
+}
+
+# lean-lsp: evidence of use is the presence of its own `lake serve` tree, reusing
+# take_lean_snapshot()/is_lean_serve_comm() exactly as the separately-gated Lean pass above
+# defines them -- not a new detector. An ACTIVE or merely-idle-but-present tree both count as "in
+# use" here; idleness is a decision for the Lean reclamation pass, not this advisory.
+mcp_lean_lsp_evidence_of_use() {
+    local snapshot line
+    snapshot=$(take_lean_snapshot)
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+        local pid ppid uid etimes rss pcpu cgroup comm args
+        read -r pid ppid uid etimes rss pcpu cgroup comm args <<< "$line"
+        if is_lean_serve_comm "$comm" "$args"; then
+            return 0
+        fi
+    done <<< "$snapshot"
+    return 1
+}
+
+# Dispatch table: returns 0 ("in use", never flag) / 1 ("no evidence found", flag) / 2 ("no
+# detector available for this server -- report as 'no use signal available', NEVER as unused").
+# A server with no detector must never be silently treated as "unused" -- see the plan's Risks
+# table (an over-generic heuristic false-flagging a legitimately idle server).
+mcp_server_evidence_of_use() {
+    local server_key="$1"
+    case "$server_key" in
+        playwright)
+            if mcp_playwright_evidence_of_use; then return 0; else return 1; fi
+            ;;
+        lean-lsp)
+            if mcp_lean_lsp_evidence_of_use; then return 0; else return 1; fi
+            ;;
+        *)
+            return 2
+            ;;
+    esac
+}
+
+# Run the MCP server fan-out reporting pass. Always runs last, after run_zombie_pass(), same
+# unconditional-sequence convention main() already uses. Accepts the same ($FORCE, $DRY_RUN)
+# calling convention as the other passes purely for call-site symmetry -- $FORCE is intentionally
+# never branched on inside this function, since there is no force-mode action to take (report-only,
+# same rationale as run_zombie_pass()). $DRY_RUN only gates the `[DRY RUN]` banner line.
+run_mcp_fanout_pass() {
+    local FORCE="$1"
+    local DRY_RUN="$2"
+
+    echo ""
+    echo -e "${GREEN}MCP Server Fan-Out Report${NC}"
+    echo "=========================="
+
+    # Fail loudly, not silently: an absent `jq` must never make this pass vanish without
+    # explanation, matching take_snapshot()'s fail-loudly convention for a failed `ps`.
+    if ! command -v jq >/dev/null 2>&1; then
+        echo ""
+        echo "ERROR: 'jq' is required for the MCP fan-out pass but was not found on PATH -- skipping this pass."
+        return 0
+    fi
+
+    if [ ! -f "$CLAUDE_JSON_PATH" ]; then
+        echo ""
+        echo "No $CLAUDE_JSON_PATH found -- no user-scope MCP servers to report."
+        return 0
+    fi
+
+    local server_keys
+    server_keys=$(jq -r '.mcpServers // {} | keys[]' "$CLAUDE_JSON_PATH" 2>/dev/null)
+
+    if [ -z "$server_keys" ]; then
+        echo ""
+        echo "No user-scope MCP servers registered in $CLAUDE_JSON_PATH."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        echo ""
+        echo -e "${BLUE}[DRY RUN]${NC} Preview only -- this pass never changes any configuration."
+    fi
+
+    local snapshot
+    if ! snapshot=$(ps -eo "$MCP_SNAPSHOT_PS_FIELDS" --no-headers 2>&1); then
+        echo "ERROR: 'ps -eo $MCP_SNAPSHOT_PS_FIELDS' failed:" >&2
+        echo "$snapshot" >&2
+        exit 1
+    fi
+
+    local -a all_pid=() all_ppid=() all_rss=() all_args=()
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+        local pid ppid rss args
+        read -r pid ppid rss args <<< "$line"
+        all_pid+=("$pid"); all_ppid+=("$ppid"); all_rss+=("$rss"); all_args+=("$args")
+    done <<< "$snapshot"
+
+    local n_total="${#all_pid[@]}"
+    local total_servers_mem=0
+    local -a flagged_servers=()
+
+    echo ""
+    printf "%-16s %-10s %-10s %s\n" "Server" "Sessions" "Procs" "Memory"
+    printf "%-16s %-10s %-10s %s\n" "----------------" "----------" "----------" "----------"
+
+    local server_key
+    while IFS= read -r server_key; do
+        [ -z "$server_key" ] && continue || true
+
+        local -a match_idx=()
+        local i
+        for ((i = 0; i < n_total; i++)); do
+            local lc_args="${all_args[$i],,}"
+            local lc_key="${server_key,,}"
+            case "$lc_args" in
+                *"$lc_key"*)
+                    match_idx+=("$i")
+                    ;;
+            esac
+        done
+
+        local n_procs="${#match_idx[@]}"
+        local server_mem=0
+        local -a roots=()
+
+        local idx pid swap_kb
+        for idx in "${match_idx[@]}"; do
+            pid="${all_pid[$idx]}"
+            swap_kb=$(get_vmswap_kb "$pid")
+            server_mem=$((server_mem + all_rss[idx] + swap_kb))
+
+            # Walk the ppid chain upward while the parent is ALSO a matched row, to find this
+            # row's session root (see header comment's session-count model).
+            local cur_idx="$idx" cur_ppid root_pid found_parent j
+            root_pid="${all_pid[$idx]}"
+            while true; do
+                cur_ppid="${all_ppid[$cur_idx]}"
+                found_parent=""
+                for j in "${match_idx[@]}"; do
+                    if [ "${all_pid[$j]}" = "$cur_ppid" ]; then
+                        found_parent="$j"
+                        break
+                    fi
+                done
+                if [ -n "$found_parent" ]; then
+                    cur_idx="$found_parent"
+                    root_pid="${all_pid[$cur_idx]}"
+                else
+                    break
+                fi
+            done
+            roots+=("$root_pid")
+        done
+
+        # Deduplicate roots to get the live session count.
+        local -a uniq_roots=()
+        local r already ur
+        for r in "${roots[@]}"; do
+            already=false
+            for ur in "${uniq_roots[@]}"; do
+                [ "$ur" = "$r" ] && { already=true; break; }
+            done
+            $already || uniq_roots+=("$r")
+        done
+        local n_sessions="${#uniq_roots[@]}"
+
+        printf "%-16s %-10s %-10s %s\n" "$server_key" "$n_sessions" "$n_procs" "$(format_memory "$server_mem")"
+        total_servers_mem=$((total_servers_mem + server_mem))
+
+        # Invoked via `||` rather than as a bare statement: under this script's `set -e`, a bare
+        # call whose return is 1 (or 2) would abort the whole script right here -- the same
+        # set -e hazard the escalation helper defined earlier in this script guards against by
+        # documenting that its own callers must use an if/||/&& context, never a bare invocation.
+        local evidence_rc=0
+        mcp_server_evidence_of_use "$server_key" || evidence_rc=$?
+        if [ "$evidence_rc" -eq 1 ]; then
+            flagged_servers+=("$server_key")
+        fi
+    done <<< "$server_keys"
+
+    echo ""
+    echo "Total MCP server memory: $(format_memory "$total_servers_mem")"
+
+    if [ "${#flagged_servers[@]}" -gt 0 ]; then
+        echo ""
+        echo -e "${YELLOW}Scoping advisory${NC}"
+        echo "-----------------"
+        local flagged
+        for flagged in "${flagged_servers[@]}"; do
+            echo ""
+            echo "'$flagged' shows no live evidence of use on this system right now. If this"
+            echo "server is genuinely repo-local, consider registering it in project scope"
+            echo "(.mcp.json) instead of user scope (~/.claude.json) -- project scope fans out"
+            echo "only into projects that actually use it, not into every session unconditionally."
+            echo ""
+            echo "The real cost of project scope is workspace trust, not a subagent access"
+            echo "barrier: a fresh clone (or any not-yet-trusted workspace) requires a one-time"
+            echo "interactive approval before a project-scoped server is used, and a cloned"
+            echo "repository cannot pre-authorize its own servers from inside the repo. That is a"
+            echo "one-time setup cost, not a per-call or per-session obstacle -- once a workspace"
+            echo "is trusted, project-scoped servers are fully reachable by dispatched subagents."
+        done
+        echo ""
+        echo "See context/patterns/mcp-server-ownership.md for the full registration/permission"
+        echo "model; that document also classifies some user-scope registrations as correct by"
+        echo "design (a genuine machine capability, or a server needing per-project computed"
+        echo "arguments), so this advisory is a prompt to reconsider, not a directive."
+    fi
+
+    echo ""
+}
+
 main() {
     local FORCE=false
     local DRY_RUN=false
@@ -1090,6 +1335,7 @@ main() {
     run_claude_pass "$FORCE" "$DRY_RUN"
     run_lean_pass "$FORCE" "$DRY_RUN"
     run_zombie_pass "$FORCE" "$DRY_RUN"
+    run_mcp_fanout_pass "$FORCE" "$DRY_RUN"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

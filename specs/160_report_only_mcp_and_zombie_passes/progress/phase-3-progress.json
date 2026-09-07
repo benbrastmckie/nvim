@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "MCP fan-out reporting pass and scoping advisory",
+  "started_at": "2026-09-07T20:48:00Z",
+  "last_updated": "2026-09-07T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Guard jq availability at top of run_mcp_fanout_pass", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Read user-scope server names from ~/.claude.json via jq", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Take independent ps snapshot, attribute processes to sessions, compute session count dynamically", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Aggregate memory per server via get_vmswap_kb/format_memory", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Per-server evidence-of-use discriminator (playwright/lean-lsp)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Emit report row per server with totals", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Emit conditional scoping advisory for flagged servers", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Point advisory at mcp-server-ownership.md authority", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Branch on DRY_RUN only for banner", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Wire run_mcp_fanout_pass into main() after run_zombie_pass", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Confirm terminate_pid/kill appear nowhere in new function bodies", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "Called mcp_server_evidence_of_use as a bare statement then read $?", "result": "failed", "reason": "under set -e, a bare command returning nonzero aborts the script -- fixed by invoking via ||"}
+  ],
+  "handoff_count": 0
+}
