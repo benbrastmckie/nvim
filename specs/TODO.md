@@ -36,7 +36,7 @@ next_project_number: 166
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-159 [NOT STARTED] — Add an independently-gated reclamation pass for orphaned Lean LSP
+159 [RESEARCHED] — Add an independently-gated reclamation pass for orphaned Lean LSP
   └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
     └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
 
@@ -252,10 +252,11 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 159. Add an independently-gated reclamation pass for orphaned Lean LSP process trees
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 158
+- **Research**: [159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md]
 
 **Description**: Add an independently-gated reclamation pass for orphaned Lean LSP process trees.
 
