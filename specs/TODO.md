@@ -1,5 +1,5 @@
 ---
-next_project_number: 158
+next_project_number: 162
 ---
 
 # TODO
@@ -11,9 +11,10 @@ next_project_number: 158
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,157 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,74,88,140,155 | 29,137,139,148 | core-agent-system, extensions |
-| 3 | 14,75,76,129,142,150,156 | 74,88,139,155 | core-agent-system, extensions |
+| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,157,158 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,74,88,140,155,159 | 29,137,139,148,158 | core-agent-system, extensions |
+| 3 | 14,75,76,129,142,150,156,160 | 74,88,139,155,159 | core-agent-system, extensions |
+| 4 | 161 | 160 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -37,6 +38,10 @@ next_project_number: 158
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
+158 [NOT STARTED] — Make refresh memory accounting VmSwap-aware so zram-compressed id
+  └─ 159 [NOT STARTED] — Add an independently-gated reclamation pass for orphaned Lean LSP
+    └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
+      └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
 
 ### Extensions
 
@@ -62,6 +67,106 @@ next_project_number: 158
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
 
 ## Tasks
+
+### 161. Settle the unattended-refresh policy and update the systemd, skill, and command surfaces
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 160
+
+**Description**: Settle the unattended-refresh policy and update the systemd, skill, and command surfaces.
+
+POLICY IS ALREADY LARGELY SETTLED -- CONFIRM, DO NOT RE-LITIGATE: claude-refresh.service already runs --dry-run, and its comment block states verbatim that "this unattended, hourly, no-confirmation cadence is intentionally non-destructive -- it reports/logs found orphans rather than terminating them. A matcher bug must never again be amplifiable into unattended hourly kills, regardless of how correct the matcher looks at review time." So the open question is narrow: confirm that the new passes added by the earlier tasks in this chain require NO unit change -- expected, since the timer never terminates anything -- and record that reasoning in the unit comment so a future reader does not re-open it.
+
+DEPLOY-PATH DECISION: ExecStart points at %h/.config/nvim/.claude/scripts/claude-refresh.sh, inside the gitignored, regenerated deploy tree. That is arguably correct for a unit installed on a machine, but it means the unit silently breaks whenever the deploy tree is absent. Decide explicitly whether to keep it as-is, add a ConditionPathExists, or document the dependency -- and record the choice.
+
+SURFACES: finish by making skill-refresh/SKILL.md and commands/refresh.md describe the full pass inventory coherently -- orphaned Claude processes, ~/.claude/ cleanup, orphaned postflight markers, stale task .lock dirs, Lean LSP reclamation, MCP fan-out reporting, zombie reporting -- each with its gate and whether it is destructive, rather than as four bolted-on additions to a document written for the original four.
+
+FILES: agent-system/extensions/core/systemd/claude-refresh.service; agent-system/extensions/core/systemd/claude-refresh.timer; agent-system/extensions/core/skills/skill-refresh/SKILL.md; agent-system/extensions/core/commands/refresh.md; possibly agent-system/extensions/core/scripts/claude-refresh.sh for --help text only.
+
+ACCEPTANCE: `systemd-analyze verify` passes on both units; the service comment states the ruling on new destructive passes and the deploy-path dependency; SKILL.md documents every pass with its gate and destructiveness; `/refresh --dry-run` help text matches the documented inventory; the doc-lint script check-extension-docs.sh exits zero.
+
+TOOLING-AVAILABILITY RISK: this task's acceptance depends on `systemd-analyze verify` and check-extension-docs.sh both being available in the implementing agent's environment. If either is absent, REPORT THE GATE AS UNRUN rather than assumed-green. A truthful "could not verify" is the correct outcome; silently treating an unavailable check as passing is not.
+
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 160. Add report-only refresh passes for unused MCP fan-out and unreaped child processes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 159
+
+**Description**: Add report-only refresh passes for unused MCP fan-out and unreaped child processes.
+
+Two non-destructive diagnostic passes, independently gated; neither ever terminates anything.
+
+(a) UNUSED PER-SESSION MCP FAN-OUT: ~/.claude.json defines lean-lsp and playwright at USER scope, so every session inherits both unconditionally -- 5 sessions x 3 procs = 15 procs / 346 MB. playwright-mcp was running in all 5 sessions having spawned ZERO browsers (no chromium/headless_shell present anywhere on the system). Detect user-scope servers running with no evidence of use, report them, and advise per-project scoping -- while citing the repo README caveat that project-scoped .mcp.json servers are invisible to custom subagents, so per-project scoping is not a free win.
+
+(b) UNREAPED CHILDREN / ZOMBIES: lean-lsp-mcp never wait()s its lake child, leaving `lake <defunct>`; speech-dispatcher has leaked 7 sd_* zombies over 6 days. Cosmetic -- PID slots only -- but should be reported, never silently ignored.
+
+Both passes report memory using the VmSwap-aware accounting from the earlier task in this chain.
+
+CROSS-REFERENCE, NO DEPENDENCY: tasks #29 (generate_mcp_json_from_extension_manifests) and #30 (register_obsidian_memory_mcp_server) both concern GENERATING .mcp.json from extension manifests -- #29 the deploy-engine mechanism, #30 registering obsidian-memory through it. This task only REPORTS unused user-scope fan-out and touches no manifest or deploy-engine code, so there is no file overlap and deliberately no dependency edge; blocking a report-only change behind a deploy-engine rewrite would be wrong. The relationship runs the useful direction: the empirical finding here -- that user-scope servers fan out unconditionally into every session at real memory cost -- is direct evidence for the premise behind that other work.
+
+SEQUENCING NOTE: this task's dependency on the Lean reclamation task is FILE-OVERLAP SERIALIZATION, not a logical prerequisite. Both edit claude-refresh.sh. The user explicitly chose to keep all passes in claude-refresh.sh rather than extracting them into a separate sourced file, so the serialization stands.
+
+FILES: agent-system/extensions/core/scripts/claude-refresh.sh (two passes + predicates); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh; agent-system/extensions/core/skills/skill-refresh/SKILL.md; agent-system/extensions/core/commands/refresh.md.
+
+ACCEPTANCE: both passes produce identical output under --dry-run and --force, proving non-destructiveness; zombie detection distinguishes `Z` state from live processes; the MCP pass reports server name, session count, aggregate memory via the VmSwap-aware accounting, and the subagent-visibility caveat; no code path in either pass reaches a signal call -- verify by grep, not by inspection.
+
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 159. Add an independently-gated reclamation pass for orphaned Lean LSP process trees
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 158
+
+**Description**: Add an independently-gated reclamation pass for orphaned Lean LSP process trees.
+
+PROBLEM: lean-lsp-mcp spawns `lake serve` -> `lean --server` -> one `lean --worker` per file opened, and source grep shows teardown ONLY at shutdown (lean_lsp_mcp/client_utils.py:196 `_close_client`). There is no idle timeout and no LRU eviction, so workers live as long as the Claude session does. Observed: a tree idle 13h holding 2.06 GiB of swap. Reclaimed live during diagnosis via SIGTERM children-first with zero loss -- lean-lsp-mcp respawns a fresh tree on the next tool call.
+
+WORK: implement this as a NEW, SEPARATELY-GATED detection pass with its own predicate. Detection keys: comm in (`lake serve`, `lean --server`, `lean --worker`), 0% CPU, and idle beyond a configurable threshold. Reuse the existing is_system_slice_cgroup and is_owned_by_current_uid exclusions as defense in depth. Report memory using the VmSwap-aware accounting from the prerequisite task.
+
+HARD SAFETY CONSTRAINT -- MUST NOT BE VIOLATED: the claude-refresh.sh header documents is_claude_executable_comm as a deliberate narrow executable allow-list that trades recall for safety, stating verbatim "Do not widen `is_claude_executable_comm` to match on a bare argv substring -- that is exactly the defect this rewrite removes." DO NOT loosen or widen that matcher. The new Lean predicate is separate and independently gated. Preserve the existing --dry-run/--force contract and the AskUserQuestion confirmation flow; the new pass must be dry-run-clean.
+
+TERMINATION ORDER: strictly workers -> server -> `lake serve`. Killing the parent first orphans workers into PID 1.
+
+FILES: agent-system/extensions/core/scripts/claude-refresh.sh (new predicate + pass + termination ordering); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh; agent-system/extensions/core/skills/skill-refresh/SKILL.md (pass description, AskUserQuestion option); agent-system/extensions/core/commands/refresh.md.
+
+ACCEPTANCE: the new predicate has its own test block asserting it matches the three Lean comms and rejects the existing Claude comms, and vice versa -- no cross-contamination between the two matchers; --dry-run lists a Lean tree without terminating anything; --force on a fixture tree terminates in the documented order, verified by an ORDERING assertion, not merely final state; the existing --dry-run/--force contract and confirmation flow are unchanged; is_claude_executable_comm is byte-identical to its pre-task form.
+
+THRESHOLD RISK: the 13h idle observation is a single data point. A threshold set too low will reclaim a tree the user is about to reuse -- recoverable, since the MCP respawns, but it costs a rebuild. Default conservatively and make the threshold configurable.
+
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 158. Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless.
+
+PROBLEM: the snapshot field list in claude-refresh.sh is `pid,ppid,uid,tty,etimes,rss,comm,cgroup:200,args` -- RSS only. Live diagnosis found Lean workers at ~2 MB RSS holding ~1.2 GB VmSwap each, because the kernel had compressed untouched pages into zram (zramctl showed 9.1 GB data in 2.3 GB of RAM). Any threshold or report built on RSS alone classifies these as harmless. This is a cross-cutting concern: it changes how every other refresh pass reports memory, which is why it is sequenced first.
+
+WORK: add a swap-reading helper alongside format_memory() that reads VmSwap from /proc/PID/status, and thread combined RSS+swap through all existing reporting output.
+
+INVARIANT RULING REQUIRED: the script header (lines 12-17) documents that a single atomic `ps -eo` snapshot is taken once per invocation and that no candidate PID is ever re-queried live, which is the basis of its race-freedom argument. A per-candidate /proc read is the first thing to touch that invariant. Decide and RECORD IN THE HEADER COMMENT whether this breaches it; the defensible position is that it does not, because it is a reporting-only read that never gates a termination decision -- but it must be argued in the header, not silently assumed. Handle missing VmSwap (no swap configured, or the process exited between snapshot and read) without failing the run.
+
+FILES: agent-system/extensions/core/scripts/claude-refresh.sh (snapshot fields, format_memory, new helper, header invariant comment); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh (new cases).
+
+ACCEPTANCE: --dry-run output shows RSS and swap for every listed process; a process with zero or absent VmSwap renders cleanly rather than erroring; a synthetic fixture with a known VmSwap value formats correctly; existing matcher tests still pass unchanged; `bash -n` clean; the header comment states the snapshot-invariant ruling.
+
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 157. Fix TODO.md summary lines: prefer .title, and stop the blind slice from splitting inline-code spans
 - **Status**: [NOT STARTED]
