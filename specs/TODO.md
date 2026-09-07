@@ -32,7 +32,7 @@ next_project_number: 169
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-151 [PLANNING] — Two verify-deploy.sh gate failures are live in this repo today, b
+151 [PLANNED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [PLANNING] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
@@ -939,11 +939,12 @@ ACCEPTANCE.
 ---
 
 ### 151. Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md]
+- **Plan**: [151_fix_pre_existing_verify_deploy_failures/plans/01_verify-deploy-gate-remediation.md]
 
 **Description**: Two verify-deploy.sh gate failures are live in this repo today, both PRE-EXISTING and unrelated to whatever task happens to be running when they surface. They were observed blocking an unrelated multi-task /orchestrate batch: verify-deploy.sh reported "FAIL -- 3 of 29 check(s) failed", deploy-headless.sh therefore exited 3, and the orchestrator's inter-cycle redeploy checkpoint deferred EVERY task in the batch. One of the three (doc-lint, stale index-entries.json line_count declarations) was fixed at that time; these two remain.
 
