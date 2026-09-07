@@ -1,8 +1,66 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "task_number": 153,
-  "session_id": "sess_1788795618_182fd3",
-  "dispatch_seq": 3
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/153_lean_comparator_clean_room_runner/summaries/01_lean-comparator-clean-room-runner-summary.md",
+      "summary": "All 8 plan phases completed: lean-comparator-run.sh clean-room wrapper CLI, its regression suite, vendored/authored fixtures, a design record, and manifest wiring. Real comparator_unavailable demonstrated against the genuinely-missing lean4export binary; full real end-to-end acceptance remains deferred (lean4export absent, plus a newly-discovered landrun/lake permission finding) to the sibling ~/.dotfiles/ provisioning task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built agent-system/extensions/lean/scripts/lean-comparator-run.sh (clean-room wrapper around leanprover/comparator: git-worktree materialisation, config.json synthesis, README-mandated systemd-run+lake-build-guard.sh sandbox invocation, and a 9-value verdict classifier), its regression suite (22 passing assertions, 1 skip-with-report, live mutation check), vendored/authored fixtures with attribution, a design record capturing the clean-room trust chain and verdict-string table, and manifest.json wiring. All 8 plan phases COMPLETED. Advisory-only gate strength preserved as bound by the operator decision -- nothing wired into any completion gate."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/scripts/lean-comparator-run.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/README.md",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/def_hole_axiom_issue/Challenge.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/def_hole_axiom_issue/Solution.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/def_hole_axiom_issue/config.json",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/def_hole_axiom_issue/test.json",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/fake-landrun.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/simple_match/Challenge.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/simple_match/Solution.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/simple_match/config.json",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/simple_match/test.json",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/statement_weakened/Challenge.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/statement_weakened/Solution.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/statement_weakened/config.json",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/statement_weakened/test.json",
+    "agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A `set +e` / `set -e` toggle placed inside a bash FUNCTION to bracket one risky command leaks: `set -e`/`set +e` are GLOBAL shell attributes, not function-scoped, so if the enclosing script never otherwise uses `-e` (e.g. it runs under `set -uo pipefail` only, a common convention in this repo's scripts), turning `-e` ON inside the function silently activates errexit for the REST of the script after that function returns -- including any later code whose legitimate design relies on inspecting a non-zero exit status from a plain pipeline (e.g. a `grep -qF ... ; if [ $? ...]` idiom, or a bare `var=\"$(cmd | grep ... )\"` assignment where the pipeline's expected-to-sometimes-fail exit code should NOT abort the script). The bug manifests as a silent, no-error-message, unexpected script termination -- `bash -x` tracing is required to see it (the trace simply stops after the risky command's line, no further output). Fix: don't toggle `-e` at all if the script doesn't otherwise use it; just capture `$?` directly (`cmd; rc=$?`) without any `set +e`/`set -e` bracketing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/153_lean_comparator_clean_room_runner/summaries/01_lean-comparator-clean-room-runner-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["set -e", "errexit", "bash", "global shell state", "function scope", "silent failure"]
+    },
+    {
+      "content": "Under `set -u`, combining multiple assignments on ONE `local` statement where a later variable's value expression references an earlier variable from the SAME statement (e.g. `local name=\"$1\" dir=\"$WORKDIR/repo-$name\"`) fails with an 'unbound variable' error on the second variable. Bash expands all the word values for a compound `local a=X b=Y` command before the `local` builtin declares/assigns any of them, so `$name` in the second word is evaluated against whatever `name` was BEFORE this statement ran (typically unset), not the `$1` just assigned in the same statement. Fix: split into separate `local` statements, one per line, when a later variable's value depends on an earlier one declared in the same group.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/153_lean_comparator_clean_room_runner/summaries/01_lean-comparator-clean-room-runner-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["local", "set -u", "unbound variable", "bash", "word expansion order"]
+    },
+    {
+      "content": "In this repo's extension manifest.json schema, the `provides.scripts` deploy category (`entry_kind = \"file\"` in lua/neotex/plugins/ai/shared/extensions/loader.lua) copies each listed entry as an individual flat FILE from `scripts/<entry>` to `.claude/scripts/<entry>` -- there is no directory-glob or recursive-directory support for this category. A test fixture TREE (e.g. `scripts/tests/fixtures/<name>/*`) must be listed as one explicit manifest entry PER FILE, not as a single directory path, or the untracked files are silently never deployed. The literature extension's manifest.json already demonstrates this precedent (`tests/fixtures/tier3-*.json` listed individually); a new extension adding fixture files should follow the same pattern rather than assuming a directory entry works.",
+      "category": "CONFIG",
+      "source_artifact": "specs/153_lean_comparator_clean_room_runner/summaries/01_lean-comparator-clean-room-runner-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "deploy", "extension", "fixtures", "entry_kind"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788795618_182fd3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
+  }
 }
