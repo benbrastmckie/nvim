@@ -1,8 +1,54 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "task_number": 160,
-  "session_id": "sess_1788808797_82397b",
-  "dispatch_seq": 11
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/160_report_only_mcp_and_zombie_passes/summaries/01_mcp-fanout-and-zombie-passes-summary.md",
+      "summary": "Added report-only zombie and MCP fan-out passes to claude-refresh.sh, corrected the disproven subagent MCP-scoping claim in docs-README.md, and extended the test suite with 22 new assertions (76 total, 0 failures)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added two report-only diagnostic passes (unreaped-child/zombie reporting and MCP server fan-out with a conditional workspace-trust scoping advisory) to claude-refresh.sh, corrected the disproven subagent-cannot-reach-project-scope claim in docs-README.md, documented both passes in SKILL.md/refresh.md, and verified all six acceptance criteria mechanically via grep/diff against both the live system and a synthetic test fixture (76 assertions, 0 failures)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/docs/docs-README.md",
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "specs/160_report_only_mcp_and_zombie_passes/plans/01_mcp-fanout-and-zombie-passes.md",
+    "specs/160_report_only_mcp_and_zombie_passes/summaries/01_mcp-fanout-and-zombie-passes-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When attributing ps-snapshot process rows to a live 'session' with no direct session-id column available, group matched rows into connected components by walking the ppid chain: a row whose ppid is ALSO a matched row belongs to the same session as that parent; a row whose ppid is not itself matched is its own session root. Deduplicating roots gives the live session count, computed fresh per invocation with no hard-coded assumption about how many processes per session.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/160_report_only_mcp_and_zombie_passes/summaries/01_mcp-fanout-and-zombie-passes-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["ppid-chain", "session-attribution", "ps-snapshot", "connected-components", "bash"]
+    },
+    {
+      "content": "For a per-item 'evidence of use' or similar discriminator report, use a three-outcome dispatch (found / not-found / no-detector-available) rather than a boolean flag. Collapsing 'no detector for this item' into 'not found' silently mis-flags anything without a bespoke detector as if it were confirmed unused. Report the third outcome as its own distinct label so a reader can tell 'confirmed absent' apart from 'we simply don't know'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/160_report_only_mcp_and_zombie_passes/summaries/01_mcp-fanout-and-zombie-passes-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["evidence-of-use", "discriminator", "false-flagging", "reporting", "dispatch-table"]
+    },
+    {
+      "content": "Under `set -e`, calling a function as a bare statement and reading `$?` afterward is unsafe when that function's return code is a meaningful, expected-nonzero outcome (not just an error) -- a nonzero return aborts the whole script at that line before `$?` is ever read. Always invoke such a function via `fn_call || rc=$?` (with `rc` pre-initialized to the success value) instead of a bare call followed by `rc=$?`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/160_report_only_mcp_and_zombie_passes/summaries/01_mcp-fanout-and-zombie-passes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["set -e", "bash", "exit-code", "hazard", "shell-scripting"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788808797_82397b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
