@@ -12,7 +12,7 @@ next_project_number: 171
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,169 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,170 | 29,74,88,139,155,162,169 | core-agent-system, extensions, file-scope-lifecycle |
+| 2 | 14,30,75,76,129,140,142,150,156,164,170 | 29,74,88,139,151,155,162,169 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -33,11 +33,12 @@ next_project_number: 171
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 151 [IMPLEMENTING] — Two verify-deploy.sh gate failures are live in this repo today, b
+  └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
 152 [PLANNED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 169 [NOT STARTED] — Add a positive-direction case to `agent-system/extensions/core/sc
-  └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
+  └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh (see above)
 
 ### Extensions
 
@@ -74,43 +75,85 @@ next_project_number: 171
 
 ## Tasks
 
-### 170. Audit and isolate shell test suites from ambient host state, and record the convention
+### 170. Audit and isolate shell test suites from ambient host state (memory and timing axes), and record the convention
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 169
+- **Dependencies**: Task 151, Task 169
 
-**Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams, and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
+**Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
-=== MOTIVATING LIVE FAILURE ===
+=== TWO CONFIRMED INSTANCES -- THE DEFECT CLASS IS NOT A SINGLE-SUITE ANOMALY ===
 
-`test-lake-build-guard.sh` cases 1, 3 and 11 failed because `lake-build-guard.sh` read the REAL
-`/proc/pressure/memory` and `/proc/meminfo`, and the host was swapping at 57% of SwapTotal --
-over the guard's own `SWAP_USED_RATIO_THRESHOLD=50`. Cases 1 and 3 assert byte-identical
-transparency on the guard's clean path; case 11 asserts preflight exits 0 when the PSI path is
-unavailable. All three therefore pass on an idle machine and fail on a busy one -- and a busy
-machine is exactly what a multi-task `/orchestrate` batch produces.
+Both were observed live. They sit on DIFFERENT axes and need DIFFERENT remedies.
 
-BLAST RADIUS (why this is worth a dedicated audit, not a one-off patch): that single suite
-failure failed `verify-deploy.sh`'s shell-test-suite gate (1 of 30 checks), which failed
-`deploy-headless.sh`, which made `skill-orchestrate`'s inter-cycle redeploy checkpoint defer an
-ENTIRE two-task orchestrate batch. One host-coupled assertion in one suite stalled unrelated
-work. The defect class is therefore load-bearing on throughput, not merely on test hygiene.
+--- INSTANCE A (memory axis) -- `test-lake-build-guard.sh`, cases 1, 3, 11 ---
 
-ALREADY DONE -- DO NOT REDO. Commit `878043472` isolates `test-lake-build-guard.sh` suite-wide by
-redirecting `LAKE_BUILD_GUARD_PSI_PATH` and `LAKE_BUILD_GUARD_MEMINFO_PATH` to clean fixture files
-in the suite's own mktemp workdir, via the script's documented env seams. Verified 27/27 pass and
-verified non-vacuous. That suite is the EXEMPLAR this audit generalizes from, not work to repeat.
-The separate positive-direction case for that same suite is tracked as its own prerequisite task
-(this task depends on it) -- do not duplicate that work either.
+Failed because `lake-build-guard.sh` read the REAL `/proc/pressure/memory` and `/proc/meminfo`,
+and the host was swapping at 57% of SwapTotal -- over the guard's own
+`SWAP_USED_RATIO_THRESHOLD=50`. Cases 1 and 3 assert byte-identical transparency on the guard's
+clean path; case 11 asserts preflight exits 0 when the PSI path is unavailable. All three pass on
+an idle machine and fail on a busy one -- and a busy machine is exactly what a multi-task
+`/orchestrate` batch produces.
+
+ALREADY FIXED -- DO NOT REDO. Commit `878043472` isolates this suite suite-wide by redirecting
+`LAKE_BUILD_GUARD_PSI_PATH` and `LAKE_BUILD_GUARD_MEMINFO_PATH` to clean fixture files in the
+suite's own mktemp workdir, via the script's documented env seams. Verified 27/27 pass and
+verified non-vacuous. This suite is the EXEMPLAR the audit generalizes from, not work to repeat.
+The separate positive-direction case for it is tracked as its own prerequisite task (this task
+depends on it) -- do not duplicate that either.
+
+--- INSTANCE B (timing axis) -- `test-four-tier-conflict.sh`, case 6 "budget-bound" ---
+
+CONFIRMED AFFECTED, NOT YET FIXED. This one is the task's primary unsolved exemplar.
+
+Evidence, all observed live:
+  - Pre-fix full `run-all.sh`: this suite PASSED (only `test-lake-build-guard.sh` failed).
+  - Post-fix full `run-all.sh`: this suite FAILED with
+      `6: budget-bound -- rc=1 elapsed_ms=2989 budget_ms=1000`
+  - Immediate ISOLATED re-run of the same suite: PASSED, with
+      `6: budget-bound -- exhaustion elapsed 1752ms within [1000ms, 2000ms)`
+
+Commit `878043472` touched exactly one file (`test-lake-build-guard.sh`), so it cannot have
+caused this. The discriminating fact is the isolated re-run passing. The assertion at
+`test-four-tier-conflict.sh:294` is a wall-clock window:
+
+    [ "$rc6" -eq 1 ] && [ "$elapsed6_ms" -ge "$BUDGET_MS" ] && [ "$elapsed6_ms" -lt $(( BUDGET_MS * 2 )) ]
+
+with `BUDGET_MS=1000`. The window `[1000ms, 2000ms)` holds on an unloaded machine and breaks under
+concurrent load. Same "outcome determined by ambient host state" shape as instance A, on the
+timing axis instead of the memory axis.
+
+ADJACENT, SAME SUITE, LIKELY SAME DEFECT: case 5 (`test-four-tier-conflict.sh:271`) asserts
+`elapsed5_ms -lt 500` as a proxy for "the retry loop was never entered". That is the same
+wall-clock-as-proxy shape and is expected to flake under load for the same reason; triage it
+alongside case 6 rather than treating case 6 as isolated. Case 1 also reports elapsed wall
+clock -- check whether it merely reports or actually asserts on it.
+
+--- WHAT THE SECOND INSTANCE CHANGES ABOUT SCOPING ---
+
+1. The audit premise is confirmed empirically, not speculative.
+2. The timing axis is genuinely represented, so the audit MUST cover wall-clock windows and
+   elapsed-time proxies, not only `/proc` reads.
+3. The shell-test-suite gate is currently FLAKY, not simply red: `run-all.sh` has now failed
+   twice in a row for two DIFFERENT single-suite reasons. Acceptance is set accordingly below.
+
+=== BLAST RADIUS (why this warrants a dedicated audit, not a one-off patch) ===
+
+A single suite failure fails `verify-deploy.sh`'s shell-test-suite gate (1 of 30 checks), which
+fails `deploy-headless.sh`, which makes `skill-orchestrate`'s inter-cycle redeploy checkpoint
+defer an ENTIRE orchestrate batch. One host-coupled assertion in one suite stalls unrelated work.
+The defect class is load-bearing on throughput, not merely on test hygiene. A flaky gate is worse
+than a red one: it defers batches nondeterministically and trains readers to re-run rather than
+diagnose.
 
 === THE DEFECT CLASS TO HUNT ===
 
 Any assertion whose outcome depends on ambient host state:
-  - memory (`/proc/meminfo`, `/proc/pressure/memory`, swap usage, `free`)
+  - memory (`/proc/meminfo`, `/proc/pressure/memory`, swap usage, `free`)          [instance A]
+  - wall-clock timing (elapsed-time windows, `sleep`-dependent ordering,
+    `date +%s` / `%N` deltas, `SECONDS`, `timeout` values tuned to a fast machine)  [instance B]
   - load / CPU count (`/proc/loadavg`, `nproc`, `getconf`, `uptime`)
-  - wall-clock timing (races, `sleep`-dependent ordering, `date +%s` deltas, `SECONDS`,
-    `timeout` values tuned to a fast machine)
   - network reachability (`curl`, `wget`, `ping`, DNS, any live API)
   - free disk (`df`)
   - the process table (`pgrep`, `ps`, PID reuse, pre-existing processes matching a pattern)
@@ -119,10 +162,10 @@ Any assertion whose outcome depends on ambient host state:
 === SURVEY ALREADY PERFORMED (starting point, NOT the answer) ===
 
 72 files match `test*.sh` under `agent-system/extensions/**`. A keyword grep over the signals
-above flagged 25 of them. Ordered by raw hit count:
+above flagged 25. Ordered by raw hit count:
 
-  13  core/scripts/test-four-tier-conflict.sh
-  12  core/scripts/tests/test-lake-build-guard.sh          (exemplar -- already isolated)
+  13  core/scripts/test-four-tier-conflict.sh               (INSTANCE B -- confirmed affected)
+  12  core/scripts/tests/test-lake-build-guard.sh           (INSTANCE A -- already isolated)
    6  literature/scripts/test-lit-pipeline.sh
    6  core/scripts/tests/test-validate-state.sh
    6  core/scripts/tests/test-claude-refresh-matcher.sh
@@ -142,53 +185,78 @@ above flagged 25 of them. Ordered by raw hit count:
           test-skill-base-lifecycle,test-phase-heartbeat,test-phase-heading-patterns,
           test-guard-destructive-git,test-common-lib}.sh
 
-RAW HIT COUNT IS NOT SEVERITY and this list is neither sound nor complete:
+Both confirmed instances rank first and second, which is mild evidence the ranking carries signal
+-- but RAW HIT COUNT IS NOT SEVERITY, and this list is neither sound nor complete:
   - FALSE POSITIVES ARE EXPECTED. A `sleep` inside a concurrency suite that deliberately
-    exercises lock contention may be legitimate and intended; `pgrep` inside a suite whose
-    subject IS process matching (`test-claude-refresh-matcher.sh`, `test-task-lock-reap.sh`)
-    may be exercising the real behavior under test. Triage each hit; do not mechanically
-    "fix" every match.
-  - FALSE NEGATIVES ARE LIKELY. The grep cannot see host coupling that enters through a
-    library the suite sources, through the script under test rather than the suite itself
-    (which is exactly how the lake-build-guard defect arrived), or through a helper that
-    shells out. Read the scripts under test, not only the suites.
-  - Suites NOT on this list are not thereby cleared. Confirm or refute per suite.
+    exercises lock contention may be legitimate; `pgrep` inside a suite whose subject IS process
+    matching (`test-claude-refresh-matcher.sh`, `test-task-lock-reap.sh`) may be exercising the
+    real behavior under test. Triage each hit; do not mechanically "fix" every match.
+  - FALSE NEGATIVES ARE LIKELY. The grep cannot see host coupling entering through a library the
+    suite sources, through the script under test rather than the suite itself (exactly how
+    instance A arrived), or through a helper that shells out. Read the scripts under test, not
+    only the suites. Suites absent from this list are NOT thereby cleared.
+  - Names containing `timing`, `concurrency`, `heartbeat`, `budget`, `reap`, or `staleness` are
+    prior-suspect on the timing axis regardless of hit count.
 
-=== REQUIRED APPROACH PER AFFECTED SUITE ===
+=== REQUIRED APPROACH -- SEAM-FIRST, BUT DO NOT PRESUME THE SEAM REMEDY TRANSFERS ===
 
-1. Identify the script-under-test's OWN documented env seam (the pattern
-   `lake-build-guard.sh` provides via `LAKE_BUILD_GUARD_PSI_PATH` /
-   `LAKE_BUILD_GUARD_MEMINFO_PATH`). Prefer an existing seam.
-2. If no seam exists, adding one to the script under test is in scope -- but it must be a
-   genuine, documented override point with a real-host default, never a test-only branch or an
-   "if running under test" conditional.
-3. Point the seam at a fixture authored into the suite's own mktemp workdir, per the existing
-   fixture convention in `context/standards/shell-script-testing.md` (heredoc-authored, fresh
-   per case where staleness would otherwise mask behavior, never resolved against the live tree).
-4. NON-VACUOUSNESS CHECK PER ISOLATED SUITE, mandatory. After isolating, demonstrate that the
-   logic under test is still genuinely exercised -- typically by driving the opposite direction
-   with a fixture that SHOULD trip the behavior and confirming it does. An isolation that makes
-   a suite assert nothing is worse than the host coupling it replaced. Record each check.
+For state READ FROM A FILE OR COMMAND (the memory/`proc`/disk/network/process axes), instance A's
+remedy is the model:
+  1. Identify the script-under-test's OWN documented env seam (`lake-build-guard.sh` provides
+     `LAKE_BUILD_GUARD_PSI_PATH` / `LAKE_BUILD_GUARD_MEMINFO_PATH`). Prefer an existing seam.
+  2. If none exists, adding one to the script under test is in scope -- but it must be a genuine,
+     documented override point with a real-host default, NEVER a test-only branch or an
+     "if running under test" conditional.
+  3. Point the seam at a fixture authored into the suite's own mktemp workdir, per the existing
+     fixture convention in `context/standards/shell-script-testing.md` (heredoc-authored, fresh
+     per case where staleness would otherwise mask behavior, never resolved against the live tree).
+
+For WALL-CLOCK TIMING (instance B), THE SEAM REMEDY MAY NOT APPLY AT ALL. There may be nothing to
+redirect: the quantity is elapsed real time, not a readable input. Do not force the memory-case
+technique onto it. Evaluate at least these, per assertion, and justify the choice:
+  - Inject the clock -- give the script under test a seam for its time source so the suite can
+    drive elapsed time deterministically. Strongest option where feasible.
+  - Assert ORDERING or CAUSALITY instead of elapsed wall clock -- e.g. for case 6, that the retry
+    loop terminated on budget exhaustion rather than on a lock acquisition, and for case 5, that
+    the retry loop was never entered at all. Both are the property the elapsed-time window is
+    only a PROXY for; asserting the property directly removes the host coupling without weakening
+    anything. Prefer this where the underlying property is observable (a counter, a log line, a
+    return path).
+  - Widen the window to generous-but-still-bounded ONLY as a last resort, and only when the
+    widened bound still falsifies the failure mode the assertion exists to catch (for case 6:
+    "nowhere near a minutes-scale wait"). A bound that no longer discriminates is a deleted test.
+    This option requires explicit justification in the summary naming what it still catches.
+
+NON-VACUOUSNESS CHECK PER ISOLATED SUITE, MANDATORY on every axis. After isolating, demonstrate
+the logic under test is still genuinely exercised -- typically by driving the opposite direction
+with a fixture or condition that SHOULD trip the behavior and confirming it does. An isolation
+that makes a suite assert nothing is worse than the host coupling it replaced. Record each check.
 
 === CONSTRAINTS ===
 
 - All edits target `agent-system/extensions/**` ONLY. Never hand-author anything under
   `.claude/**`; that tree is a disposable deploy artifact regenerated from source
   (see `.claude/rules/source-store-deploy-boundary.md`).
-- NEVER weaken, raise, or bypass a guard threshold, loosen an assertion, widen a tolerance, or
-  mark a case skipped to make a suite pass. Isolate the INPUT; do not relax the ASSERTION.
-- Where a suite legitimately depends on real host state and cannot be isolated, use the
-  loud-skip discipline already documented in `shell-script-testing.md` rather than a silent
-  skip, and justify the exemption in the summary.
+- NEVER weaken, raise, or bypass a guard threshold, loosen an assertion into vacuity, or mark a
+  case skipped to make a suite pass. Isolate the INPUT; do not relax the ASSERTION. The
+  last-resort window-widening above is a bounded, justified exception on the timing axis only --
+  it is NOT licence to relax thresholds generally, and never applies to a guard's own constants.
+- Where a suite legitimately depends on real host state and cannot be isolated, use the loud-skip
+  discipline already documented in `shell-script-testing.md` rather than a silent skip, and
+  justify the exemption in the summary.
 
-=== DELIVERABLE 3: THE CONVENTION ===
+=== DELIVERABLE: THE CONVENTION ===
 
 Extend `agent-system/extensions/core/context/standards/shell-script-testing.md` (127 lines;
 existing sections: Location rule, Helper-naming convention, Fixture convention including "Never
 resolve a path against the live tree", Loud-skip discipline, Mutation checks for regex-shaped
 fixes, Registration, Related). Add an ambient-host-state isolation section that:
-  - names the defect class and why it is load-bearing (the deploy-gate blast radius above);
-  - states the seam-first rule, and the bar for adding a new seam;
+  - names the defect class and why it is load-bearing (the deploy-gate blast radius above),
+    citing both confirmed instances as the worked examples -- one per axis;
+  - states the seam-first rule for readable-input axes, and the bar for adding a new seam;
+  - states separately that the timing axis needs a different technique, with the
+    inject-clock / assert-causality / bounded-widening ladder and the rule that elapsed wall
+    clock must not be used as a proxy for a property that is directly observable;
   - requires the per-suite non-vacuousness check;
   - forbids threshold relaxation as a remedy;
   - cross-references the existing Fixture convention and Loud-skip discipline sections rather
@@ -199,11 +267,20 @@ Place it so it composes with, not duplicates, what is already there.
 
 - Every one of the 72 suites has been triaged, with a recorded verdict: affected-and-isolated,
   false-positive-with-reason, or legitimately-host-dependent-and-loud-skipped.
+- Instance B (`test-four-tier-conflict.sh` cases 6 and 5) is fixed, with the chosen technique
+  justified against the ladder above.
 - Each isolated suite carries a demonstrated non-vacuousness check.
-- The full shell-test-suite gate in `verify-deploy.sh` passes while the host is under memory
-  pressure above the lake guard's own threshold -- the exact ambient condition that produced
-  the original failure.
-- `shell-script-testing.md` documents the convention.
+- REPEATED-RUN ACCEPTANCE, NOT A SINGLE GREEN RUN. "run-all.sh passes once" is too weak: the gate
+  has already failed twice consecutively for two different single-suite reasons, and instance B
+  passes in isolation while failing in a full run. Require instead:
+    (a) `run-all.sh` green across multiple consecutive runs (at least 3);
+    (b) at least one of those runs under DELIBERATE concurrent load -- both memory pressure above
+        the lake guard's own threshold and CPU/IO contention sufficient to have reproduced the
+        case 6 failure, verified by first confirming the load reproduces the ORIGINAL failures on
+        a pre-fix checkout;
+    (c) full-run and isolated-run results agreeing for every suite -- a suite that passes alone
+        but fails in the batch is still affected.
+  Record the load-generation method used so the check is reproducible.
 
 ---
 
