@@ -169,6 +169,10 @@ if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
   exit 2
 fi
+if ! . "${SCRIPT_DIR}/lib/deploy-baseline-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/deploy-baseline-lib.sh." >&2
+  exit 2
+fi
 
 MAX_INFRA_FAILURES=3
 # Decision 2 (Phase 5) — aux_dispatch[] escalation caps, ported verbatim from single-task Stage
@@ -539,8 +543,22 @@ emit_and_exit() {
 # exhaustion this cycle — the batch-of-one case reduces exactly to the old whole-invocation stop.
 
 # ── (k, part 2) Inter-cycle redeploy checkpoint — consumes the PRIOR cycle's cycle_modified_files
-# (see the header note on re-siting). Always a no-op today until the future postflight composer
-# starts populating cycle_modified_files; the mechanism is otherwise complete and ready. ─────────
+# (see the header note on re-siting). orchestrate-cycle-postflight.sh DOES populate
+# cycle_modified_files (the composer landed); this checkpoint is live, not a no-op. ─────────────
+#
+# Failure contract (the same three-branch (a)/(b)/(c) contract
+# context/patterns/batch-orchestration-guardrails.md's "### The Inter-Cycle Redeploy Checkpoint"
+# subsection documents, and command-gate-out.sh's rc==6 handler already implements):
+#   (a) deploy-headless.sh exit 1 or 2 (the deploy did not land) -- unconditional defer, no
+#       baseline consultation. Exit 3 is deliberately EXCLUDED from this branch: it means the
+#       deploy LANDED but inline verification reported failures, which belongs to the
+#       baseline-relative comparison below, not here.
+#   (b)/(c) deploy landed (exit 0 or 3) -- compare pre/post verify-deploy.sh --findings snapshots
+#       (via lib/deploy-baseline-lib.sh, which also folds a verify-deploy.sh exit 2 into the
+#       single FINDING gate0 [SENTINEL] line per the documented exit-2 resolution rule). Any
+#       newly-introduced finding defers (b); an unchanged or shrunk finding set proceeds loudly
+#       with a recorded verify_deploy_baseline_notices entry (c) -- this is what makes a
+#       pre-existing, unrelated red gate stop deferring the whole batch.
 CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json"
 cycle_modified_files_json=$(mt_get_json '.cycle_modified_files')
 if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" != "null" ] && [ -f "$CRITICAL_PATHS_FILE" ]; then
@@ -558,39 +576,54 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
   if [ "$matched_count" -gt 0 ] && [ "$dry_run" != "true" ]; then
     echo "[orchestrate] REDEPLOY CHECKPOINT: this cycle's modified files touched $matched_count orchestrator-critical path(s):" >&2
     echo "$matched_json" | jq -r '.[] | "  - \(.path) (\(.label))"' >&2
-    if pre_raw=$(bash "$SCRIPT_DIR/verify-deploy.sh" --findings --quiet 2>/dev/null); then :; fi
-    pre_findings=$(printf '%s\n' "$pre_raw" | grep '^FINDING ' | sort -u) || true
-    if bash "$SCRIPT_DIR/deploy-headless.sh" >&2; then
-      if post_raw=$(bash "$SCRIPT_DIR/verify-deploy.sh" --findings --quiet 2>/dev/null); then
-        post_exit=0
-      else
-        post_exit=$?
-      fi
-      post_findings=$(printf '%s\n' "$post_raw" | grep '^FINDING ' | sort -u) || true
+    pre_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
+
+    deploy_exit=0
+    bash "$SCRIPT_DIR/deploy-headless.sh" >&2 || deploy_exit=$?
+
+    if [ "$deploy_exit" -eq 1 ] || [ "$deploy_exit" -eq 2 ]; then
+      # Branch (a): the redeploy itself failed to land -- NO baseline consultation, do not
+      # re-attempt. See the header comment above for why exit 3 is excluded from this branch.
+      echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: deploy-headless.sh exited $deploy_exit -- the deploy did not land; deferring remaining tasks. Fix the deploy failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+      mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
+        .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
+      mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson e "$deploy_exit" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("deploy-headless.sh exit " + ($e|tostring))}')" '.defer_ledger += [$entry]'
+    else
+      # Deploy landed (exit 0 or 3) -- reachable from exit 3 for the first time. A fresh,
+      # FULL (non-`--skip-slow`) post-redeploy findings snapshot is taken independently of
+      # deploy-headless.sh's own internal `--skip-slow` verify -- exactly as before this phase --
+      # so the baseline comparison below sees slow-gate findings too, not only the fast subset
+      # deploy-headless.sh itself checked. deploy_findings_snapshot's FINDING-line vocabulary is
+      # empty if and only if verify-deploy.sh exited 0 (see its own FAILURES-eq-0 exit-0 rule),
+      # so an empty post_findings is a reliable, cheaper stand-in for a separately-captured exit
+      # code; post_exit below is derived from that emptiness (and the exit-2 sentinel marker)
+      # purely for the diagnostic notice field, not as a second live invocation.
+      post_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
       matched_paths_json=$(echo "$matched_json" | jq -c '[.[].path]')
-      if [ "$post_exit" -eq 0 ]; then
+      if [ -z "$post_findings" ]; then
+        post_exit=0
         mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
         echo "[orchestrate] REDEPLOY CHECKPOINT: deploy-headless.sh succeeded; verify-deploy.sh clean." >&2
       else
-        new_findings=$(comm -13 <(printf '%s\n' "$pre_findings") <(printf '%s\n' "$post_findings")) || true
+        post_exit=1
+        printf '%s\n' "$post_findings" | grep -q '\[SENTINEL\]' && post_exit=2
+        new_findings=$(deploy_baseline_new_findings "$pre_findings" "$post_findings")
         if [ -z "$new_findings" ]; then
+          # Branch (c): every post-redeploy finding was already present pre-redeploy -- proceed,
+          # loudly, and record a baseline notice.
           echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE - findings predate this redeploy, 0 newly introduced; batch continuing]" >&2
           echo "<!-- verify-deploy-baseline pre=$(echo "$pre_findings" | grep -c .) post=$(echo "$post_findings" | grep -c .) new=0 proceeded=true -->" >&2
           mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
           mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe}')" '.verify_deploy_baseline_notices += [$entry]'
         else
+          # Branch (b): at least one newly-introduced finding relative to the pre-redeploy
+          # baseline -- defer, do not re-attempt.
           echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline; deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
           mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
             .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
           mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:"verify-deploy.sh new findings vs. pre-redeploy baseline"}')" '.defer_ledger += [$entry]'
         fi
       fi
-    else
-      deploy_exit=$?
-      echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: deploy-headless.sh exited $deploy_exit; deferring remaining tasks. Fix the deploy failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
-      mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
-        .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
-      mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson e "$deploy_exit" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("deploy-headless.sh exit " + ($e|tostring))}')" '.defer_ledger += [$entry]'
     fi
   fi
 fi

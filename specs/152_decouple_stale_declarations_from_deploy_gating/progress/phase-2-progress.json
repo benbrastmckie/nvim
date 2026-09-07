@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Rewire the inter-cycle redeploy checkpoint onto the three-branch contract",
+  "started_at": "2026-09-07T23:50:30Z",
+  "last_updated": "2026-09-07T23:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source lib/deploy-baseline-lib.sh; capture deploy_exit; branch (a) exit 1/2 unconditional defer; fall-through to baseline comparison for exit 0/3 using library snapshots; correct stale comment", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+    ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Also updated the existing test fixture's collaborator-copy list to include lib/deploy-baseline-lib.sh (it was missing, which broke all 70 non-checkpoint cases via a source failure at script startup). Full Phase 7 branch-coverage cases for the checkpoint itself are still pending."
+}

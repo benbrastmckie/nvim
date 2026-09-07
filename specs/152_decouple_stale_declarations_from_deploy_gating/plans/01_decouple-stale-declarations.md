@@ -178,7 +178,7 @@ implementation instead of each carrying their own.
 
 ---
 
-### Phase 2: Rewire the inter-cycle redeploy checkpoint onto the three-branch contract [NOT STARTED]
+### Phase 2: Rewire the inter-cycle redeploy checkpoint onto the three-branch contract [COMPLETED]
 
 **Goal**: Make `orchestrate-cycle-plan.sh`'s checkpoint reach its own baseline-tolerance branch
 when `deploy-headless.sh` exits 3, so a pre-existing unrelated red gate no longer defers the
@@ -186,25 +186,25 @@ whole batch, while exit 1/2 still does.
 
 **Tasks**:
 
-- [ ] Source `lib/deploy-baseline-lib.sh` alongside the existing `lib/common.sh` source.
-- [ ] Replace the bare `if bash deploy-headless.sh; then ... else ... fi` with a captured exit
+- [x] Source `lib/deploy-baseline-lib.sh` alongside the existing `lib/common.sh` source.
+- [x] Replace the bare `if bash deploy-headless.sh; then ... else ... fi` with a captured exit
       code (`deploy_exit=0; bash "$SCRIPT_DIR/deploy-headless.sh" >&2 || deploy_exit=$?`),
       mirroring `command-gate-out.sh`'s `gate_out_deploy_rc` shape.
-- [ ] Branch (a): `[ "$deploy_exit" -eq 1 ] || [ "$deploy_exit" -eq 2 ]` → the existing
+- [x] Branch (a): `[ "$deploy_exit" -eq 1 ] || [ "$deploy_exit" -eq 2 ]` → the existing
       unconditional defer, unchanged in behavior, with the warning text tightened to say the
       deploy did not land. Carry over `command-gate-out.sh`'s comment explaining that exit 3 is
       deliberately excluded from this branch.
-- [ ] All other exit codes (0 and 3) fall through to the existing `post_findings` /
+- [x] All other exit codes (0 and 3) fall through to the existing `post_findings` /
       `new_findings` logic, which becomes reachable from exit 3 for the first time. Branch (b)
       (non-empty `new_findings`) defers as today; branch (c) (empty) proceeds, records
       `deployed_critical_paths`, appends the `verify_deploy_baseline_notices` entry, and prints
       the existing banner and machine marker.
-- [ ] Replace the two ad hoc `pre_raw`/`post_raw` captures with `deploy_findings_snapshot`, so
+- [x] Replace the two ad hoc `pre_raw`/`post_raw` captures with `deploy_findings_snapshot`, so
       the checkpoint gains the exit-2 sentinel folding its own documented contract requires and
       the two call sites compute findings identically.
-- [ ] Preserve the existing `post_exit -eq 0` fast path's behavior (clean verify → record and
+- [x] Preserve the existing `post_exit -eq 0` fast path's behavior (clean verify → record and
       announce) rather than collapsing it into the baseline branch.
-- [ ] Correct the stale comment above the checkpoint that claims it is "always a no-op today
+- [x] Correct the stale comment above the checkpoint that claims it is "always a no-op today
       until the future postflight composer starts populating cycle_modified_files" —
       `orchestrate-cycle-postflight.sh` populates it; the checkpoint is live.
 
