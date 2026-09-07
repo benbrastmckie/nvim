@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788795618_182fd3_153",
+  "task_number": 153,
+  "dispatch_seq": 1,
+  "findings_count": 5,
+  "next_steps": "Run /plan 153 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/153_lean_comparator_clean_room_runner/reports/01_lean-comparator-clean-room-runner.md",
+      "summary": "Research into leanprover/comparator's invocation contract, verdict message strings, clean-room trust chain, lake-build-guard.sh integration (including a novel scope_key/config.json REPLAY correctness hazard), version coupling, and the tests/projects/ fixture catalogue to reuse for lean-comparator-run.sh."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "lake-build-guard.sh's REPLAY result-sharing keys scope_key on the wrapped command's argument VECTOR (e.g. a config file's path), not on the CONTENT of any file that argument names, and its tree fingerprint excludes non-*.lean/non-lakefile files like a JSON config. A wrapper that invokes `lake env <tool> <config.json>` through the guard with a fixed config.json path but varying config content MUST pass --no-share, or a stale verdict/result can be silently replayed for a different config against an unchanged source tree.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/153_lean_comparator_clean_room_runner/reports/01_lean-comparator-clean-room-runner.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lake-build-guard", "REPLAY", "scope_key", "cache-invalidation", "comparator"]
+    },
+    {
+      "content": "leanprover/comparator exposes zero structured output: every failure path is an uncaught IO.userError reported by Lean's runtime as 'uncaught exception: <message>' on stderr with exit code 1 (confirmed against all 20 tests/projects/*/test.json fixtures, which use only exit_code 0/1). Fine-grained verdict classification (statement mismatch vs illegal axiom vs kernel rejection) must be done by a caller via stderr/stdout substring matching against Comparator's own throw-site strings: 'Challenge and solution theorem statement do not match', 'Illegal axiom detected', 'Lean default kernel rejects the solution', 'Your solution is okay!' (success marker).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/153_lean_comparator_clean_room_runner/reports/01_lean-comparator-clean-room-runner.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["comparator", "lean4", "verdict-parsing", "IO.userError", "exit-code"]
+    },
+    {
+      "content": "leanprover/comparator's tests/projects/ fixture tree (Apache-2.0) has no fixture isolating a pure same-kind weakened-statement mismatch: simple_mismatch/simple_axiom_issue/simple_kind_mismatch all conflate a theorem-vs-axiom KIND mismatch with the statement difference. def_hole_axiom_issue IS a ready-made, well-documented transitively-hidden-axiom fixture (hides sorryAx behind a body that beta-reduces away the hole reference) and should be reused verbatim for any 'axiom_violation demonstrated transitively' acceptance criterion.",
+      "category": "PATTERN",
+      "source_artifact": "specs/153_lean_comparator_clean_room_runner/reports/01_lean-comparator-clean-room-runner.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["comparator", "lean4", "test-fixtures", "axiom-violation", "statement-mismatch"]
+    }
+  ]
+}
