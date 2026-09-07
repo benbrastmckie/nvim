@@ -43,7 +43,7 @@ next_project_number: 158
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-153 [RESEARCHED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+153 [PLANNED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
     └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 154 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
@@ -531,11 +531,12 @@ ACCEPTANCE.
 ---
 
 ### 153. Build a clean-room Comparator runner script for the lean extension
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [153_lean_comparator_clean_room_runner/reports/01_lean-comparator-clean-room-runner.md]
+- **Plan**: [153_lean_comparator_clean_room_runner/plans/01_lean-comparator-clean-room-runner.md]
 
 **Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
