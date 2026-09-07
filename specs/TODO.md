@@ -1,5 +1,5 @@
 ---
-next_project_number: 166
+next_project_number: 167
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 166
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,159,162,163 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,159,162,163,166 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,155,160,164 | 29,74,88,137,139,159,162 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 156,161,165 | 155,160,163,164 | core-agent-system, extensions, file-scope-lifecycle |
 
@@ -36,9 +36,10 @@ next_project_number: 166
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-159 [RESEARCHED] — Add an independently-gated reclamation pass for orphaned Lean LSP
+159 [PLANNING] — Add an independently-gated reclamation pass for orphaned Lean LSP
   └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
     └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
+166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
 ### Extensions
 
@@ -72,6 +73,50 @@ next_project_number: 166
   └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
 
 ## Tasks
+
+### 166. Stop research reports drifting from validate-artifact.sh's required section headings
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the "agent has no skeleton at all" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.
+
+VERIFIED EVIDENCE.
+1. THE CHECK. agent-system/extensions/core/scripts/validate-artifact.sh:20 declares
+     REPORT_SECTIONS=("Executive Summary" "Context & Scope" "Findings" "Decisions" "Recommendations")
+   and :170-173 matches each with `grep -qE "^##+ ${section}"` -- an any-depth heading PREFIX match, unanchored at the end.
+2. THE ARTIFACT. ~/Projects/BimodalLogic specs/461_acquire_goldblatt_1989_varieties_of_complex_algebras/reports/01_acquisition-verified-corpus-status.md, authored 2026-09-07 12:39 -- AFTER that repo's agent reload at 11:13, so by the current deployed agent. task_type=general, therefore written by general-research-agent. `validate-artifact.sh <path> report` without --fix: FAIL, 1 error, "Missing required section: ## Recommendations".
+3. WHY IT FAILED. The report does address recommendations, under two headings:
+     :331  ## Context Extension Recommendations
+     :337  ## Recommended Next Steps (for the plan phase)
+   Neither matches `^##+ Recommendations`: the first because the text after "## " begins "Context", the second because "Recommended" is not "Recommendations". Both directions verified by running the validator's exact regex against both literal strings.
+4. THE SKELETON IS NOT THE DEFECT. agent-system/extensions/core/agents/general-research-agent.md:277 carries a report skeleton that DOES include a conforming `### Recommendations`, which satisfies `^##+ Recommendations`. The agent departed from its own template when writing a real report.
+
+TWO CONTRIBUTING FACTORS TO EVALUATE (do not assume either is the cause).
+(a) BURIAL. In the skeleton, `### Recommendations` is a third-level subsection of `## Findings`, sitting alongside `### Codebase Patterns` and `### External Resources`. Every other required section is top-level. An agent restructuring Findings for a real report gets no signal that this one subsection is load-bearing for validation.
+(b) NEAR-MISS TRAP. The same skeleton separately contains `## Context Extension Recommendations`. An agent writing that heading may reasonably believe the Recommendations requirement is met. The observed artifact contains exactly that heading.
+
+DECIDE, do not assume. Candidate remedies, each with a real cost:
+  (i)   AGENT-SIDE: state the five required heading strings verbatim in the agent contract and mark them non-paraphrasable. Cheapest; relies on instruction-following, which is precisely what failed here.
+  (ii)  SKELETON-SIDE: promote `### Recommendations` to a top-level `## Recommendations`. Structurally removes factor (a); changes the report shape.
+  (iii) VALIDATOR-SIDE: relax matching. DANGEROUS -- a substring match would let `## Context Extension Recommendations` satisfy `Recommendations`, converting a true failure into a false pass. Do not weaken a check to make it green.
+State the ruling and its reasoning. Combining (i) and (ii) is permitted; (iii) requires an explicit argument that it creates no false passes.
+
+SCOPE. Determine whether this is general-research-agent alone or a shared shape. Enumerate every core agent carrying a report or summary skeleton and machine-check each skeleton's headings against REPORT_SECTIONS/SUMMARY_SECTIONS using the validator's own regex -- not by eye.
+
+NOT IN SCOPE: pre-existing non-conforming artifacts authored before their agent gained a conforming skeleton. Those fail for a different reason and are a separate backfill question.
+
+ACCEPTANCE.
+  - The exact failure is reproduced in a fixture (a report carrying `## Recommended Next Steps` and `## Context Extension Recommendations` but no `## Recommendations`) and shown to pass after the chosen remedy.
+  - The chosen remedy is recorded with reasoning, including why the validator was or was not changed.
+  - If the validator is touched, a fixture proves `## Context Extension Recommendations` ALONE still fails.
+  - An enumeration of all core report/summary-writing agent skeletons, machine-checked against the validator's own regex, with any further gaps listed.
+  - A real general-type research dispatch produces a report validating with 0 errors and 0 auto-repairs.
+
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 165. Decide and implement the admission posture for an absent file_scope in orchestrate-batch-admit.sh
 - **Status**: [NOT STARTED]
@@ -252,7 +297,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 159. Add an independently-gated reclamation pass for orphaned Lean LSP process trees
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 158

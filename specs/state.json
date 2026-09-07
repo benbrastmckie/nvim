@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 166,
+  "next_project_number": 167,
   "active_projects": [
     {
       "project_number": 142,
@@ -684,15 +684,15 @@
     {
       "project_number": 159,
       "project_name": "orphaned_lean_lsp_reclamation_pass",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Add an independently-gated reclamation pass for orphaned Lean LSP process trees",
       "description": "Add an independently-gated reclamation pass for orphaned Lean LSP process trees.\n\nPROBLEM: lean-lsp-mcp spawns `lake serve` -> `lean --server` -> one `lean --worker` per file opened, and source grep shows teardown ONLY at shutdown (lean_lsp_mcp/client_utils.py:196 `_close_client`). There is no idle timeout and no LRU eviction, so workers live as long as the Claude session does. Observed: a tree idle 13h holding 2.06 GiB of swap. Reclaimed live during diagnosis via SIGTERM children-first with zero loss -- lean-lsp-mcp respawns a fresh tree on the next tool call.\n\nWORK: implement this as a NEW, SEPARATELY-GATED detection pass with its own predicate. Detection keys: comm in (`lake serve`, `lean --server`, `lean --worker`), 0% CPU, and idle beyond a configurable threshold. Reuse the existing is_system_slice_cgroup and is_owned_by_current_uid exclusions as defense in depth. Report memory using the VmSwap-aware accounting from the prerequisite task.\n\nHARD SAFETY CONSTRAINT -- MUST NOT BE VIOLATED: the claude-refresh.sh header documents is_claude_executable_comm as a deliberate narrow executable allow-list that trades recall for safety, stating verbatim \"Do not widen `is_claude_executable_comm` to match on a bare argv substring -- that is exactly the defect this rewrite removes.\" DO NOT loosen or widen that matcher. The new Lean predicate is separate and independently gated. Preserve the existing --dry-run/--force contract and the AskUserQuestion confirmation flow; the new pass must be dry-run-clean.\n\nTERMINATION ORDER: strictly workers -> server -> `lake serve`. Killing the parent first orphans workers into PID 1.\n\nFILES: agent-system/extensions/core/scripts/claude-refresh.sh (new predicate + pass + termination ordering); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh; agent-system/extensions/core/skills/skill-refresh/SKILL.md (pass description, AskUserQuestion option); agent-system/extensions/core/commands/refresh.md.\n\nACCEPTANCE: the new predicate has its own test block asserting it matches the three Lean comms and rejects the existing Claude comms, and vice versa -- no cross-contamination between the two matchers; --dry-run lists a Lean tree without terminating anything; --force on a fixture tree terminates in the documented order, verified by an ORDERING assertion, not merely final state; the existing --dry-run/--force contract and confirmation flow are unchanged; is_claude_executable_comm is byte-identical to its pre-task form.\n\nTHRESHOLD RISK: the 13h idle observation is a single data point. A threshold set too low will reclaim a tree the user is about to reuse -- recoverable, since the MCP respawns, but it costs a rebuild. Default conservatively and make the threshold configurable.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "topic": "core-agent-system",
       "priority": "high",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-07T19:52:33Z",
-      "session_id": "sess_1788808797_82397b",
+      "last_updated": "2026-09-07T19:52:38Z",
+      "session_id": "sess_1788808797_82397b_159",
       "dependencies": [
         158
       ],
@@ -837,6 +837,25 @@
       "artifacts": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"
+      ]
+    },
+    {
+      "project_number": 166,
+      "project_name": "enforce_required_section_heading_conformance",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Stop research reports drifting from validate-artifact.sh's required section headings",
+      "description": "DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the \"agent has no skeleton at all\" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.\n\nVERIFIED EVIDENCE.\n1. THE CHECK. agent-system/extensions/core/scripts/validate-artifact.sh:20 declares\n     REPORT_SECTIONS=(\"Executive Summary\" \"Context & Scope\" \"Findings\" \"Decisions\" \"Recommendations\")\n   and :170-173 matches each with `grep -qE \"^##+ ${section}\"` -- an any-depth heading PREFIX match, unanchored at the end.\n2. THE ARTIFACT. ~/Projects/BimodalLogic specs/461_acquire_goldblatt_1989_varieties_of_complex_algebras/reports/01_acquisition-verified-corpus-status.md, authored 2026-09-07 12:39 -- AFTER that repo's agent reload at 11:13, so by the current deployed agent. task_type=general, therefore written by general-research-agent. `validate-artifact.sh <path> report` without --fix: FAIL, 1 error, \"Missing required section: ## Recommendations\".\n3. WHY IT FAILED. The report does address recommendations, under two headings:\n     :331  ## Context Extension Recommendations\n     :337  ## Recommended Next Steps (for the plan phase)\n   Neither matches `^##+ Recommendations`: the first because the text after \"## \" begins \"Context\", the second because \"Recommended\" is not \"Recommendations\". Both directions verified by running the validator's exact regex against both literal strings.\n4. THE SKELETON IS NOT THE DEFECT. agent-system/extensions/core/agents/general-research-agent.md:277 carries a report skeleton that DOES include a conforming `### Recommendations`, which satisfies `^##+ Recommendations`. The agent departed from its own template when writing a real report.\n\nTWO CONTRIBUTING FACTORS TO EVALUATE (do not assume either is the cause).\n(a) BURIAL. In the skeleton, `### Recommendations` is a third-level subsection of `## Findings`, sitting alongside `### Codebase Patterns` and `### External Resources`. Every other required section is top-level. An agent restructuring Findings for a real report gets no signal that this one subsection is load-bearing for validation.\n(b) NEAR-MISS TRAP. The same skeleton separately contains `## Context Extension Recommendations`. An agent writing that heading may reasonably believe the Recommendations requirement is met. The observed artifact contains exactly that heading.\n\nDECIDE, do not assume. Candidate remedies, each with a real cost:\n  (i)   AGENT-SIDE: state the five required heading strings verbatim in the agent contract and mark them non-paraphrasable. Cheapest; relies on instruction-following, which is precisely what failed here.\n  (ii)  SKELETON-SIDE: promote `### Recommendations` to a top-level `## Recommendations`. Structurally removes factor (a); changes the report shape.\n  (iii) VALIDATOR-SIDE: relax matching. DANGEROUS -- a substring match would let `## Context Extension Recommendations` satisfy `Recommendations`, converting a true failure into a false pass. Do not weaken a check to make it green.\nState the ruling and its reasoning. Combining (i) and (ii) is permitted; (iii) requires an explicit argument that it creates no false passes.\n\nSCOPE. Determine whether this is general-research-agent alone or a shared shape. Enumerate every core agent carrying a report or summary skeleton and machine-check each skeleton's headings against REPORT_SECTIONS/SUMMARY_SECTIONS using the validator's own regex -- not by eye.\n\nNOT IN SCOPE: pre-existing non-conforming artifacts authored before their agent gained a conforming skeleton. Those fail for a different reason and are a separate backfill question.\n\nACCEPTANCE.\n  - The exact failure is reproduced in a fixture (a report carrying `## Recommended Next Steps` and `## Context Extension Recommendations` but no `## Recommendations`) and shown to pass after the chosen remedy.\n  - The chosen remedy is recorded with reasoning, including why the validator was or was not changed.\n  - If the validator is touched, a fixture proves `## Context Extension Recommendations` ALONE still fails.\n  - An enumeration of all core report/summary-writing agent skeletons, machine-checked against the validator's own regex, with any further gaps listed.\n  - A real general-type research dispatch produces a report validating with 0 errors and 0 auto-repairs.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "created": "2026-09-07T00:00:00Z",
+      "last_updated": "2026-09-07T00:00:00Z",
+      "session_id": "sess_1788809689_86fcdd",
+      "dependencies": [],
+      "artifacts": [],
+      "file_scope": [
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/scripts/validate-artifact.sh"
       ]
     }
   ],
