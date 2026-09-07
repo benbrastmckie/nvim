@@ -11,9 +11,9 @@ next_project_number: 166
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,157,158,162,163 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,74,88,140,155,159,164 | 29,137,139,148,158,162 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 14,75,76,129,142,150,156,160,165 | 74,88,139,155,159,163,164 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,158,162,163 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,155,159,164 | 29,74,88,137,139,158,162 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 156,160,165 | 155,159,163,164 | core-agent-system, extensions, file-scope-lifecycle |
 | 4 | 161 | 160 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -22,19 +22,18 @@ next_project_number: 166
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+  └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+  └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 137 [IMPLEMENTING] — The lean extension's research and implementation agents have no a
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
-  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-148 [IMPLEMENTING] — Port team fan-out, hard-mode counters, loop guard, and the auxili
-  └─ 88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
-    └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
-    └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-    └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-    └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
@@ -652,254 +651,6 @@ ACCEPTANCE.
 
 ---
 
-### 154. Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: extensions
-- **Dependencies**: None
-- **Research**: [154_lean_challenge_statement_snapshot/reports/01_lean-challenge-statement-snapshot.md]
-- **Plan**: [154_lean_challenge_statement_snapshot/plans/01_lean-challenge-statement-snapshot.md]
-- **Summary**: [154_lean_challenge_statement_snapshot/summaries/01_lean-challenge-statement-snapshot-summary.md]
-
-**Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
-leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
-lean-toolchain leanprover/lean4:v4.34.0-rc2, last push 2026-08-30) is a trustworthy judge for
-Lean proofs from untrusted sources, built by Lean FRO with AIMO feedback expressly to enable
-trustworthy LLM Lean evaluation. Given a trusted Challenge.lean (statements, bodies may be
-sorry), an untrusted Solution.lean, and a JSON config naming challenge_module, solution_module,
-theorem_names, permitted_axioms (and optionally definition_names and external_kernels), it:
-  1. builds Challenge with lake inside a landrun sandbox, then runs lean4export on the .olean
-  2. repeats build-sandboxed and export-sandboxed for Solution
-  3. verifies every declaration used in the STATEMENT of each named theorem is identical between
-     the Challenge and Solution environments
-  4. verifies the bodies of the named theorems use no axioms outside permitted_axioms
-  5. replays the Solution environment into the Lean kernel (optionally also external kernels)
-It deliberately never loads .olean files, on the stated grounds that they are mmapped into the
-address space and dereferenced and are therefore an attack surface.
-
-WHY THIS MATTERS TO THIS AGENT SYSTEM. lean-implementation-agent is precisely an untrusted
-LLM proof producer, and its Final Verification Stage currently gates on four text heuristics,
-each with a hole Comparator closes:
-  - plan compliance (agents/lean-implementation-agent.md, Final Verification Stage step 5) greps
-    only that a declaration NAMED X exists in Theories/. It never checks that X states what the
-    plan intended. Statement weakening -- adding a hypothesis, specialising a quantifier,
-    restating a weaker claim -- passes this gate silently. Comparator step 3 is exactly the
-    missing check.
-  - the new-axiom gate is `grep -rn "^axiom " Theories/ | wc -l`, a textual match on one source
-    form. It does not see sorryAx, axioms reached transitively through imports, or the axioms
-    native_decide introduces. Comparator step 4 is a transitive check against a whitelist.
-  - the vacuous-definition gate is a single-line grep for `:= True|Unit|trivial|Trivial`; the
-    agent file itself already records that multi-line vacuous definitions require manual review.
-  - `lake build` elaborates but never replays into the kernel, and it runs agent-authored Lean
-    UNSANDBOXED. Elaboration executes arbitrary code (#eval, initialize, run_cmd, macros,
-    native_decide plugins). Comparator steps 1-2 sandbox both builds and step 5 replays.
-So the role Comparator serves is specific and bounded: it upgrades the "did the agent cheat?"
-question from grep heuristics to a kernel-backed guarantee. It is the natural terminal gate for
-context/project/lean4/standards/proof-debt-policy.md's zero-debt completion requirement, which
-today is enforced by exactly those greps.
-
-FOUR CONSTRAINTS ANY INTEGRATION MUST HANDLE (all read off the tool's own README).
-  C1 NO CHALLENGE EXISTS TODAY. Comparator's guarantee is relative to a Challenge you trust.
-     Plans in this system name goal IDENTIFIERS, not statements (context/formats/plan-format.md
-     defines only `- **Goals**: ...` under `## Goals & Non-Goals`). Something must fix the
-     intended statements before the agent works.
-  C2 ASSUMPTION 2 IS VIOLATED BY THE NORMAL WORKFLOW. The README requires that you have not
-     previously tried to compile the Solution file, "as that might compromise your Challenge file
-     to make it seem like you are looking for a different proof than you actually are". The
-     implementation agent compiles continuously. The README does bless a mitigation: with a fully
-     pre-built .lake obtained without compromising the checking environment, Solution.lean is not
-     rebuilt.
-  C3 VERSION COUPLING. lean4export must match the Lean version of the TARGET project, not
-     Comparator's own v4.34.0-rc2.
-  C4 COST. Two sandboxed full builds plus two exports plus a kernel replay. On a Mathlib
-     dependant project this is minutes to tens of minutes. Opt-in only, scoped to named theorems.
-
-ENVIRONMENT AS MEASURED ON THIS MACHINE 2026-09-07: lake, lean, elan present (~/.elan/bin);
-landrun, lean4export, nanoda_bin, comparator ALL MISSING. landrun is in nixpkgs at 0.1.15. The
-kernel is Linux 7.1.3, past the landrun issue the README's systemd-run wrapper guards against
-("will be fixed in Linux 7.1") -- the wrapper is still required for portability, not for this
-host.
-
-GATE STRENGTH DECISION (already made by the operator, do not relitigate): ADVISORY FIRST. A
-Comparator rejection records its finding and surfaces it prominently, but MUST NOT set
-verification_passed false, MUST NOT downgrade status to partial, and MUST NOT block completion.
-Promotion to a hard gate is a separate, later decision to be taken on evidence from real runs.
-
-SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
-WORK -- establish the trusted Challenge that C1 says does not exist yet. Two candidate routes;
-evaluate BOTH and choose with stated reasoning rather than picking one by default:
-
-  R1 PLAN-DECLARED STATEMENTS. Extend what a lean4 plan records so it carries the exact intended
-     theorem STATEMENT, not just the identifier. Today context/formats/plan-format.md defines
-     only `- **Goals**: ...`; the lean implementation agent's compliance step reads identifiers
-     out of it with a backtick regex. Under R1 the Challenge is generated from the plan.
-     Cost: touches a core format consumed by every task type, so scope the change so non-lean
-     plans are unaffected.
-  R2 GIT-BASELINE EXTRACTION. The Challenge is the .lean sources as they stood at the commit the
-     plan was approved on -- sorried statements the agent has not yet touched. Cost: only works
-     when the statements already exist as declarations; a greenfield proof task has nothing to
-     extract, so R2 needs a stated fallback.
-
-Deliver agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh which, given a task
-number and a project root, writes a Challenge module plus the theorem_names list that
-lean-comparator-run.sh consumes. Whichever route wins, the snapshot must be taken BEFORE the
-implementation agent runs and must be immutable thereafter -- a Challenge the agent can rewrite
-certifies nothing. Say where it is stored and what stops it being regenerated from post-hoc
-sources.
-
-Also in scope: rules/plan-compliance.md currently makes the plan the contract for .lean files but
-has no notion of statement fidelity. State whether it should gain one and why.
-
-INDEPENDENT VALUE. This task is worth doing on its own terms even if Comparator is never wired
-in. The name-only compliance grep is the system's single largest verification hole: it cannot
-distinguish "proved the theorem" from "proved a weaker theorem with the right name". A recorded
-intended statement closes that regardless of who checks it.
-
-ACCEPTANCE.
-  - R1 vs R2 is decided in writing with reasoning, including the greenfield case R2 cannot serve.
-  - The snapshot script produces a Challenge module that lean-comparator-run.sh accepts as input,
-    demonstrated on a real Lean project.
-  - Statement drift is DETECTED: take a real task, weaken one theorem statement in the
-    implementation, and show the snapshot-versus-implementation comparison flags it. Then show an
-    honest implementation is not flagged. Both directions.
-  - The immutability claim is demonstrated, not asserted: show what happens when something tries
-    to regenerate the Challenge after implementation started.
-
----
-
-### 153. Build a clean-room Comparator runner script for the lean extension
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: extensions
-- **Dependencies**: None
-- **Research**: [153_lean_comparator_clean_room_runner/reports/01_lean-comparator-clean-room-runner.md]
-- **Plan**: [153_lean_comparator_clean_room_runner/plans/01_lean-comparator-clean-room-runner.md]
-- **Summary**: [153_lean_comparator_clean_room_runner/summaries/01_lean-comparator-clean-room-runner-summary.md]
-
-**Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
-leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
-lean-toolchain leanprover/lean4:v4.34.0-rc2, last push 2026-08-30) is a trustworthy judge for
-Lean proofs from untrusted sources, built by Lean FRO with AIMO feedback expressly to enable
-trustworthy LLM Lean evaluation. Given a trusted Challenge.lean (statements, bodies may be
-sorry), an untrusted Solution.lean, and a JSON config naming challenge_module, solution_module,
-theorem_names, permitted_axioms (and optionally definition_names and external_kernels), it:
-  1. builds Challenge with lake inside a landrun sandbox, then runs lean4export on the .olean
-  2. repeats build-sandboxed and export-sandboxed for Solution
-  3. verifies every declaration used in the STATEMENT of each named theorem is identical between
-     the Challenge and Solution environments
-  4. verifies the bodies of the named theorems use no axioms outside permitted_axioms
-  5. replays the Solution environment into the Lean kernel (optionally also external kernels)
-It deliberately never loads .olean files, on the stated grounds that they are mmapped into the
-address space and dereferenced and are therefore an attack surface.
-
-WHY THIS MATTERS TO THIS AGENT SYSTEM. lean-implementation-agent is precisely an untrusted
-LLM proof producer, and its Final Verification Stage currently gates on four text heuristics,
-each with a hole Comparator closes:
-  - plan compliance (agents/lean-implementation-agent.md, Final Verification Stage step 5) greps
-    only that a declaration NAMED X exists in Theories/. It never checks that X states what the
-    plan intended. Statement weakening -- adding a hypothesis, specialising a quantifier,
-    restating a weaker claim -- passes this gate silently. Comparator step 3 is exactly the
-    missing check.
-  - the new-axiom gate is `grep -rn "^axiom " Theories/ | wc -l`, a textual match on one source
-    form. It does not see sorryAx, axioms reached transitively through imports, or the axioms
-    native_decide introduces. Comparator step 4 is a transitive check against a whitelist.
-  - the vacuous-definition gate is a single-line grep for `:= True|Unit|trivial|Trivial`; the
-    agent file itself already records that multi-line vacuous definitions require manual review.
-  - `lake build` elaborates but never replays into the kernel, and it runs agent-authored Lean
-    UNSANDBOXED. Elaboration executes arbitrary code (#eval, initialize, run_cmd, macros,
-    native_decide plugins). Comparator steps 1-2 sandbox both builds and step 5 replays.
-So the role Comparator serves is specific and bounded: it upgrades the "did the agent cheat?"
-question from grep heuristics to a kernel-backed guarantee. It is the natural terminal gate for
-context/project/lean4/standards/proof-debt-policy.md's zero-debt completion requirement, which
-today is enforced by exactly those greps.
-
-FOUR CONSTRAINTS ANY INTEGRATION MUST HANDLE (all read off the tool's own README).
-  C1 NO CHALLENGE EXISTS TODAY. Comparator's guarantee is relative to a Challenge you trust.
-     Plans in this system name goal IDENTIFIERS, not statements (context/formats/plan-format.md
-     defines only `- **Goals**: ...` under `## Goals & Non-Goals`). Something must fix the
-     intended statements before the agent works.
-  C2 ASSUMPTION 2 IS VIOLATED BY THE NORMAL WORKFLOW. The README requires that you have not
-     previously tried to compile the Solution file, "as that might compromise your Challenge file
-     to make it seem like you are looking for a different proof than you actually are". The
-     implementation agent compiles continuously. The README does bless a mitigation: with a fully
-     pre-built .lake obtained without compromising the checking environment, Solution.lean is not
-     rebuilt.
-  C3 VERSION COUPLING. lean4export must match the Lean version of the TARGET project, not
-     Comparator's own v4.34.0-rc2.
-  C4 COST. Two sandboxed full builds plus two exports plus a kernel replay. On a Mathlib
-     dependant project this is minutes to tens of minutes. Opt-in only, scoped to named theorems.
-
-ENVIRONMENT AS MEASURED ON THIS MACHINE 2026-09-07: lake, lean, elan present (~/.elan/bin);
-landrun, lean4export, nanoda_bin, comparator ALL MISSING. landrun is in nixpkgs at 0.1.15. The
-kernel is Linux 7.1.3, past the landrun issue the README's systemd-run wrapper guards against
-("will be fixed in Linux 7.1") -- the wrapper is still required for portability, not for this
-host.
-
-GATE STRENGTH DECISION (already made by the operator, do not relitigate): ADVISORY FIRST. A
-Comparator rejection records its finding and surfaces it prominently, but MUST NOT set
-verification_passed false, MUST NOT downgrade status to partial, and MUST NOT block completion.
-Promotion to a hard gate is a separate, later decision to be taken on evidence from real runs.
-
-SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
-WORK -- build agent-system/extensions/lean/scripts/lean-comparator-run.sh, the single executable
-core every later Comparator work depends on. It takes a project root, a Challenge module, a
-Solution module, a theorem-name list, and an axiom whitelist, and returns a machine-readable
-verdict. It must handle C2, C3 and C4 rather than assume them away:
-
-  (a) CLEAN ROOM. Materialise the checking environment so the Solution has not previously been
-      compiled there. Evaluate and choose with stated reasoning between a fresh clone/worktree
-      plus a trusted pre-built .lake (the README's own blessed route), and a scratch copy. State
-      explicitly what "trusted" means for the .lake you reuse and where it comes from; if the
-      answer is `lake exe cache get`, say so and record that the README accepts this only if you
-      trust the cache not to contain different definitions from the ones you expect.
-  (b) SANDBOX INVOCATION. Emit the README's systemd-run form
-        systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty -E PATH="$PATH" \
-          --working-directory $(pwd) -- bash -c 'lake env <comparator> <config.json>'
-      Resolve binaries via COMPARATOR_LANDRUN / COMPARATOR_LEAN4EXPORT / COMPARATOR_NANODA when
-      set, falling back to PATH. Degrade LOUDLY, never silently: a missing binary is a reported
-      `comparator_unavailable` verdict, never a skipped check that reads as a pass.
-  (c) CONFIG SYNTHESIS. Generate config.json from the arguments. Support definition_names, and
-      carry through the README's requirement that any definition-hole result be marked as
-      REQUIRING an additional (potentially human) verifier -- the README gives the concrete
-      gaming example where `def ChallengeSolution : Prop := sorry` is answered with
-      `:= RiemannHypothesis` and closed by rfl.
-  (d) COST CONTROL. A timeout, and serialisation against the existing
-      core/scripts/lake-build-guard.sh so a Comparator run and an ordinary agent build cannot
-      contend for the same project. Read that guard's contract before inventing a second one.
-  (e) VERDICT. Structured output distinguishing at minimum: verified; statement_mismatch;
-      axiom_violation; kernel_rejected; definition_hole_needs_human; comparator_unavailable;
-      timeout. These categories are consumed downstream, so name them once, here.
-  (f) TEST at scripts/tests/test-lean-comparator-run.sh, following the existing
-      scripts/tests/test-lean-sorry-census.sh conventions. Comparator's own repo ships
-      scripts/fake-landrun.sh for exactly this purpose (development substitute for landrun) and
-      a tests/projects/ tree of Challenge/Solution/config triples covering simple_mismatch,
-      def_hole, def_hole_axiom_issue, def_hole_type_mismatch, olean_issue, opaque_value and
-      others -- reuse that shape rather than inventing fixtures.
-
-DEPENDENCY OUTSIDE THIS REPO: end-to-end acceptance needs landrun, lean4export and the
-comparator binary present. A sibling task in ~/.dotfiles/ provisions them. Until it lands, prove
-what can be proved with fake-landrun.sh and report honestly which acceptance criteria are
-deferred rather than claiming a pass.
-
-ACCEPTANCE.
-  - The script produces a `verified` verdict on a Challenge/Solution pair that genuinely matches,
-    and a `statement_mismatch` verdict on a pair where the Solution weakened the statement.
-    BOTH directions demonstrated on real files; a checker that can only ever say one thing is not
-    a checker.
-  - An `axiom_violation` verdict is demonstrated against a Solution that reaches an axiom outside
-    the whitelist TRANSITIVELY, not by a literal `axiom` line -- that is the case the existing
-    grep already catches and is therefore not evidence of anything new.
-  - A missing binary produces `comparator_unavailable` with a message naming which binary and
-    which env var would override it, and exits distinguishably from a real rejection.
-  - The clean-room decision in (a) is written down with its reasoning, including what is trusted
-    and why, not left implicit in the code.
-
----
-
 ### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -1003,83 +754,6 @@ ACCEPTANCE: a specification-shaped task goes [NOT STARTED] -> [PLANNED] -> [COMP
 
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 REFERENCE: specs/PATH.md, "Decisions".
-
----
-
-### 148. Port hard-mode counters, loop guard and auxiliary dispatches into the batch engine as per-dispatch options
-- **Status**: [IMPLEMENTING]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 143
-- **Research**: [148_port_single_task_features_to_batch_engine/reports/01_port-single-task-features.md]
-- **Plan**: [148_port_single_task_features_to_batch_engine/plans/01_port-single-task-features.md]
-- **Summary**: [148_port_single_task_features_to_batch_engine/summaries/01_port-single-task-features-summary.md]
-
-**Description**: Port team fan-out, hard-mode counters, loop guard, and the auxiliary dispatches into the multi-task engine as per-dispatch options, so that a single task number runs as a batch of one. Stage A.5 of specs/PATH.md (thin-lead path); the precondition for deleting the single-task engine. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-DECIDED DESIGN (do not re-litigate). Single-task mode is deleted by the successor task; /orchestrate N becomes a batch whose wave table has one row. Every capability that exists only in single-task Stages 1-8 today must exist as a per-row option or a script in the batch engine first.
-
-WORK.
-(1) TEAM. Stage 3.6 / 3.6a (19,414 B) becomes scripts/orchestrate-team-fanout.sh: teammate-plan construction, per-teammate dispatch files via orchestrate-build-dispatch.sh, {NN}_{letter}-findings.md naming, territory contracts, and the synthesis dispatch (synthesis-agent unchanged). A cycle-plan row with team=true is dispatched through it; the graceful degradation when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is unset lives in the script. `--team` in multi-task mode applies per row (remove the accepted-and-ignored notice); the planner of this task decides and records any cap on total concurrent teammates across a wave.
-(2) HARD. The Stage 2 loop-guard/churn-state initialization, Stage 5b churn detection and three-strikes, and the Stage 3c burnout circuit-breaker move into scripts/orchestrate-churn.sh, called from the cycle-postflight script when hard_mode; the H1 single-blocking-phase-per-cycle limiter moves into orchestrate-cycle-plan.sh. Contract injection is already script-side (build-dispatch) and needs no change.
-(3) LOOP GUARD. Single-task Stage 2/7's budget and orchestrate-loop-guard-init.sh reconcile with MAX_CYCLES_MT into ONE counter in the multi-state file, --continue-budget honored in one place.
-(4) AUXILIARY DISPATCHES. Stage 5a drift inspection and Stage 6 blocker escalation become rows the cycle-plan script emits on the next cycle when a postflight verdict is `blocked` or a drift signal fires; they keep their frontmatter models and never call build-dispatch's memory/lit path (as today).
-(5) Route a single task number through the batch path behind a feature flag (or an environment variable) and run the retargeted hard-mode/team test set against it. Leave Stages 1-8 on disk, unreachable, for the successor deletion task.
-
-MUST NOT: drop any row of specs/PATH.md's capability table; change any decision the existing scripts make; touch user-prompting (the orchestrator never asks on its own).
-
-ACCEPTANCE: each of the five items demonstrated on a live invocation carrying ONE task number routed through the batch engine (a --team run, a --hard run with the churn script firing on a fixture, a budget-exhaustion stop, a blocker-escalation row); hard-mode and team tests green; full gate run green.
-
-DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
-REFERENCE: specs/PATH.md, "One engine, batch of one".
-=== ADDENDUM 2026-09-02 (team mode deleted; hard mode kept in full) ===
-Item (1) TEAM is withdrawn: team mode is deleted by its own predecessor task, so there is no fan-out to port and no orchestrate-team-fanout.sh to build; the `team` field on cycle-plan rows is dropped. Item (2) HARD stands as written and in full -- the decision is to KEEP the stateful half (churn / three-strikes counters and the burnout breaker) alongside contract injection, so orchestrate-churn.sh is built as specified. Items (3), (4) and (5) stand. The --team acceptance case is withdrawn; the remaining acceptance cases stand.
-
----
-
-### 143. Build orchestrate-cycle-postflight.sh: per-task postflight as one script (absorbs the MT handoff gates)
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 147
-- **Research**: [143_mt_handoff_staleness_and_dispatch_seq_gates/reports/01_cycle-postflight-consolidation.md]
-- **Plan**: [143_mt_handoff_staleness_and_dispatch_seq_gates/plans/01_cycle-postflight-script.md]
-- **Summary**: [143_mt_handoff_staleness_and_dispatch_seq_gates/summaries/01_cycle-postflight-script-summary.md]
-
-**Description**: === REVISED 2026-09-02 (thin-lead path: widened into the per-task postflight script) ===
-SUPERSEDING SCOPE. The two gates below are the seed of scripts/orchestrate-cycle-postflight.sh, Stage A.4 of specs/PATH.md: ONE script that performs everything the lead does after an agent returns, for both engines, returning one JSON line. This absorbs three sibling tasks whose work is the same script (each abandoned with a pointer here): the expected-handoff-absence recording-order defect, the multi-task artifact-round advance, and the aggregator file_scope excursion advisory.
-
-WORK. Script scripts/orchestrate-cycle-postflight.sh <task_number> --session SID --state-file F performing, in order:
-(a) Handoff read guarded by the mtime staleness gate (fail-closed 9999999999 default) and the dispatch_seq identity gate -- the original defect below, now on both paths by construction.
-(b) Return-meta recovery via orchestrate-recover-outcome.sh, which must gain the same dispatch_seq identity check it lacks today (its fallback is mtime-windowed only; the git-restored-predecessor incident recorded under the absorbed recording-order task shows mtime alone is inert against that shape).
-(c) Phase-count corroboration via skill_corroborate_phase_counts (count-only greps, unchanged bounds).
-(d) Writer-contract-aware recording: BEFORE recording HANDOFF_STALE_OR_ABSENT, consult whether the dispatched writer is a contractual non-writer for this phase, keyed on dispatch identity (dispatch_seq) and not on phase alone. A contractual non-writer leaving no fresh handoff records no defect; a seq-mismatched late write from a live or resurrected predecessor still does. Both live incidents recorded under the absorbed task (evt_1787614360544_SgKpRP, evt_1788246742189_Fodegl) become fixtures.
-(e) user_decision relay: when .return-meta.json or the handoff carries `user_decision`, emit verdict `ask_user` with the payload and leave status exactly as the agent left it; the lead asks, writes the answer to specs/{NNN}_{slug}/.decisions.json, and the next dispatch file carries it. The script never asks and never decides.
-(f) Status transition via update-task-status.sh with the monotonic-max clamp for forced phases.
-(g) Artifact link (same-type supersession, append-only otherwise) and the artifact-round advance on research and on a forced plan/implement -- closing the multi-task advance gap (verify the call graph: the single-task advance lives in orchestrate-stage5-postflight.sh, not orchestrator-postflight.sh, which /orchestrate never calls).
-(h) modified_files vs file_scope excursion advisory: compare the agent's reported modified_files against the task's declared file_scope and log any path outside it (detection only; no gate change).
-(i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit).
-(j) Multi-state update and task-lock release.
-Output: ONE JSON line {task, phase, status, phases_completed, phases_total, verdict: ok|defer|blocked|failed|ask_user, user_decision?, note}. Both engines call it (single-task Stage 5/8 and MT-4/MT-5) until the single-task engine is deleted; the relocated prose goes to docs/architecture/, which the lead never loads.
-
-MUST NOT: read report, plan, summary or handoff prose; batch commits; weaken either gate; ask the user; move state.json except through update-task-status.sh / state-write.sh.
-
-ACCEPTANCE: fixture regression tests proving (1) a handoff with mtime predating the dispatch window and (2) a dispatch_seq mismatch each route to recovery rather than being trusted; (3) git-restored predecessor files are rejected by recovery too; (4) a contractual non-writer with no handoff records no defect while a genuine late write still does; (5) a user_decision payload is relayed intact; a live multi-task cycle run through the script; bytes removed from SKILL.md reported; full gate run green.
-
-REFERENCE: specs/PATH.md, "The four moves per cycle".
-=== ORIGINAL DESCRIPTION FOLLOWS ===Port the handoff staleness gate and the dispatch_seq identity gate to the multi-task postflight path in skill-orchestrate/SKILL.md. Both gates exist in single-task Stage 5 and neither exists in Stage MT-4; the multi-task path therefore trusts any handoff file that happens to sit at the expected path.
-
-DEFECT. Single-task Stage 5 applies two checks before trusting .orchestrator-handoff.json: (a) an mtime staleness gate comparing the handoff's mtime against this dispatch's own dispatch_start_ts, fail-closed via a 9999999999 default so a dispatch site that forgot to set its window marks the handoff stale rather than trusting it; and (b) a dispatch_seq identity gate comparing the handoff's echoed dispatch_seq against the value the orchestrator minted for this cycle, which is the only check that can discriminate a woken predecessor's late write (such a write always carries a NEWER mtime and so passes the mtime check looking exactly like an on-time report). Either failing sets handoff_stale=true, routes to .return-meta.json recovery, and records a HANDOFF_STALE_OR_ABSENT system defect. Stage MT-4 step 1 has neither gate: it reads the handoff whenever the file exists and only attempts recovery when the file is absent.
-
-OBSERVED. During a live multi-task run, a task directory carried a handoff left by an earlier interrupted session, with mtime predating the dispatch window and dispatch_seq=4 against the cycle's minted 1, reporting status "planned" and phases_completed 0 -- while the dispatch that had just returned actually completed 6 of 6 phases. Stage MT-4 step 1 as written would have consumed that stale file and reported a completed task as planned with zero phases done, regressing real work. The correct outcome was only reached by checking mtime and dispatch_seq by hand and routing to the return-meta recovery path instead.
-
-WHY THIS IS CHEAP. Multi-task mode already records both inputs the gates need: Stage MT-4's own dispatch-time mint snippet writes dispatch_start_ts[task_num] and dispatch_seq[task_num] into the multi-state file in one atomic read-modify-write. Nothing new needs to be captured -- only the comparison is missing.
-
-WORK. Add both gates to Stage MT-4 step 1, ahead of its existing "if present, continue to step 2" branch, mirroring single-task Stage 5's shape and semantics rather than inventing a second convention. A stale or seq-mismatched handoff must route into the EXISTING return-meta recovery path, not a new branch. Record the detection through the existing append_detected_defect_mt idiom with defect_class HANDOFF_STALE_OR_ABSENT. While there, evaluate whether the stray-handoff sweep that single-task mode gets from orchestrate-stage5-gates.sh should also serve the multi-task path, or whether a narrower fix is correct -- decide and record the reasoning either way.
-
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md (never .claude/**).
-
-ACCEPTANCE. A fixture-driven regression test proving that (1) a handoff with mtime predating the dispatch window and (2) a handoff whose dispatch_seq does not match the minted value each route to return-meta recovery rather than being trusted; both engines visibly agree on the gate semantics; full gate run green.
 
 ---
 
@@ -1318,55 +992,6 @@ PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the Bimodal
 
 ---
 
-### 134. Close the tag-reachability gap so /tag never pushes a tag pointing at unpushed commits
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [134_tag_branch_reachability_gate/reports/01_tag-branch-reachability-gate.md]
-- **Plan**: [134_tag_branch_reachability_gate/plans/01_tag-branch-reachability-gate.md]
-- **Summary**: [134_tag_branch_reachability_gate/summaries/01_tag-branch-reachability-gate-summary.md]
-
-**Description**: Close the third and last uncovered gate in the /tag release preflight: a tag created from a branch with unpushed commits points at a commit absent from origin/<branch>, so a consuming repo's release.yml preflight rejects it -- AFTER the tag has already been pushed, requiring a delete-and-re-push to recover.
-
-CANONICAL SOURCE. Edit `agent-system/extensions/core/skills/skill-tag/SKILL.md` and, if the user-facing contract changes, `agent-system/extensions/core/commands/tag.md`. Do NOT edit any repo's deployed `.claude/skills/skill-tag/SKILL.md` -- it is a disposable artifact regenerated from this source store (see `.claude/rules/source-store-deploy-boundary.md`).
-
-THE DEFECT, observed live during a real v1.3.9 release in a consuming repo:
-- Step 2 ("Validate Git State") fetches `origin/$current_branch`, then computes ONLY `behind=$(git rev-list --count "HEAD..origin/$current_branch")` and errors solely when `behind > 0`. It never computes or acts on the symmetric `ahead`.
-- Step 6 runs `git push origin "$new_version"` alone, with no corresponding branch push.
-- The release only succeeded because the operator manually pushed the branch before tagging. Following the skill literally, from a branch 36 commits ahead, would have produced a pushed tag pointing at a commit absent from the remote.
-
-PRIOR ART -- BUILD ON, DO NOT RE-DERIVE. This is the follow-up that the completed annotated-tag/changelog work explicitly filed rather than folded in. Read both before starting:
-- `specs/131_tag_annotated_and_changelog_preflight/reports/01_tag-annotated-and-changelog-preflight.md` -- see its "Decisions" section, finding (4).
-- `specs/131_tag_annotated_and_changelog_preflight/summaries/01_tag-annotated-changelog-preflight-summary.md` -- see its "Follow-ups" section, which quotes finding (4) verbatim precisely so this task need not rediscover it.
-
-Quoting that recorded finding: "the fix is cheap and reuses data Step 2 already fetches. Step 2 already does `git fetch origin \"$current_branch\"` and computes `behind=$(git rev-list --count \"HEAD..origin/$current_branch\")`; the symmetric 'ahead' check is `git rev-list --count \"origin/$current_branch..HEAD\"` -- if nonzero, local `HEAD` has commits not yet on the remote, which is exactly the condition that will make a tag created against it unreachable from `origin/<branch>` and fail the reference preflight's third assertion. A follow-up task should point directly at `SKILL.md`'s Step 2 (not Step 3.5/3.6) and can almost certainly reuse the `remote_sha`/`behind` variables already computed there."
-
-REFERENCE GATE, to verify the fix against a real assertion rather than an imagined one. The reference preflight (ModelChecker `.github/workflows/release.yml`) asserts, after fetching the tag ref:
-    TAG_TYPE=$(git cat-file -t "refs/tags/${GITHUB_REF_NAME}")     # already satisfied
-    git merge-base --is-ancestor "${GITHUB_REF_NAME}" origin/master  # NOT satisfied
-The first half is closed by the annotated-tag work. The second half -- ancestry of the TAGGED COMMIT from `origin/<branch>` -- is what this task closes.
-
-DESIGN QUESTIONS TO RESOLVE DELIBERATELY, NOT BY REFLEX. Each must be decided and the judgment recorded in the research report, in the same way the annotated-tag message source and the `-a` vs `-s` choice were recorded rather than defaulted into:
-
-1. REFUSE vs. AUTO-PUSH. Either refuse when the branch is not fully pushed, with actionable resolution text ("Push the branch with `git push origin $current_branch` before tagging"), or push the branch automatically ahead of the tag push in Step 6. Default to REFUSE unless auto-push is affirmatively justified: pushing a branch is an outward-facing action with materially different risk than pushing a tag, and /tag is user-only precisely because deployment timing is a human decision. An auto-push silently publishes work the operator may not have intended to publish yet. If auto-push is chosen anyway, it must be explicit, previewed by --dry-run, and confirmed in the Step 5 interactive prompt -- never a silent side effect.
-
-2. PLACEMENT. Step 2 ("Validate Git State", which already holds the `behind` check and the fetch this needs) versus a new step adjacent to Step 3.6. Step 2 is the natural home per the recorded finding above, but note the ordering consequence: the tag ref does not exist yet at Step 2, so a Step 2-placed check can only test HEAD, not the tag. Reconcile that against design question 3 before deciding.
-
-3. EXACT PREDICATE, not a proxy. `ahead == 0` on HEAD is a PROXY for the CI gate; the CI gate's actual predicate is that the TAGGED COMMIT is an ancestor of `origin/<branch>`. These diverge whenever the tag is not created at HEAD. Determine whether /tag can ever tag a non-HEAD commit as currently written (Step 4 reports `git rev-parse HEAD` and Step 6 tags with no commit-ish argument, i.e. HEAD) and decide whether to mirror the CI predicate exactly via `git merge-base --is-ancestor` against the fetched remote ref, or to accept the `ahead` proxy with the equivalence explicitly recorded as a documented assumption. Do not leave the divergence unexamined.
-
-4. --dry-run TRUTHFULNESS. The annotated-tag work established that the --dry-run preview must not misrepresent what a real run does (the preview line and the real command were required to change in step). Apply the same standard here: the new check must run before Step 5's `--dry-run` early exit (as Steps 3.5 and 3.6 already do), and if auto-push is chosen, the dry-run "Would execute:" block must list the branch push alongside the tag push.
-
-5. OVERRIDE FLAG. Decide whether an escape hatch is warranted at all. If yes, follow the established `--skip-version-check` / `--skip-changelog-check` convention exactly: the flag suppresses the BLOCK, not the DISCLOSURE -- print the full failure detail first, then the override warning, so the transcript records what was overridden. If no flag is warranted, record why (this gate, unlike a version or changelog mismatch, has a trivially safe remedy: push the branch).
-
-ALSO UPDATE. `agent-system/extensions/core/commands/tag.md` documents the flag table, workflow, and Requirements; keep it in sync with whatever is decided, or the command doc silently contradicts the skill. Also update the "Behind Remote" entry in SKILL.md's own Error Handling section neighborhood with the corresponding not-fully-pushed example output.
-
-NON-GOALS. Do not change /tag's user-only status or its agent prohibition. Do not add a check for the reference workflow's fourth assertion (tagged release.yml matching origin's copy) -- it is workflow-file-content-specific and out of scope for a repo-agnostic skill, as already recorded. Do not couple the skill to any single repository's branch name; `origin/master` appears in the reference gate but the skill must use `$current_branch`.
-
-VERIFICATION. At minimum: `bash -n` on extracted blocks; a behavioral smoke test covering (a) branch fully pushed, (b) branch ahead, (c) branch behind, (d) --dry-run under each; and a literal check that the resulting tag satisfies `git merge-base --is-ancestor "$new_version" "origin/$current_branch"`.
-
----
-
 ### 129. Empirically audit \b word-boundary grep patterns for compositional failure under the deployed grep
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -1436,52 +1061,6 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/manifest.json (all 19
 DELIVERABLE RULE: no task-number references in any deliverable outside specs/**.
 
 REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A3).
-
----
-
-### 91. Make update-plan-status.sh diagnose non-conforming Status lines, and settle the trailing-text tolerance policy
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [091_fail_loudly_on_nonconforming_plan_status_line/reports/01_diagnostic-opacity-and-anchor-fix.md]
-- **Plan**: [091_fail_loudly_on_nonconforming_plan_status_line/plans/01_status-line-diagnostics-and-tolerance.md]
-- **Summary**: [091_fail_loudly_on_nonconforming_plan_status_line/summaries/01_status-line-diagnostics-and-tolerance-summary.md]
-
-**Description**: update-plan-status.sh reports every non-conforming plan Status line with one generic, undiagnosable message, and hard-fails /orchestrate postflight on a plan shape that a legitimate resume workflow produces. Reported independently by a peer session reviewing a consuming repo (BimodalLogic) and re-derived by execution against the source store on 2026-08-24.
-
-CORRECTION TO THE ORIGINAL FILING. This task previously led with a claim that lines 62/72 compare two EMPTY strings and yield a silent SUCCESS. That is false, and it was verified false by running the script against fixtures for all three malformed shapes. Do not go looking for that path.
-  - Line 62's `grep -m1 "^- \*\*Status\*\*:" | sed 's/.*\[\([^]]*\)\].*/\1/'` does NOT return empty on a bracket-less line. grep matches (the `- **Status**:` prefix is present), so `|| echo ""` never fires, and sed's substitution simply does not apply -- so the whole line comes back verbatim as `current_status`. It is non-empty, and it never equals a bare status token, so the equality check cannot pass.
-  - Measured outcomes: trailing-text shape -> rc=1; no-brackets shape (target PARTIAL and target COMPLETED alike) -> rc=1; missing-`- `-prefix shape -> rc=1; well-formed change -> rc=0 and correctly stamped. There is no false-success input.
-  - Consequently the old acceptance criterion "no input produces an empty-equals-empty pass" was already vacuously satisfied and has been dropped.
-
-WHAT IS ACTUALLY WRONG. Four distinct defects, all confirmed:
-
-1. DIAGNOSTIC OPACITY (the core defect). All three malformed shapes exit 1 with the byte-identical message `Failed to update status in <file>`. It names no line number, quotes no line content, and states no reason. The operator must reverse-engineer which of three different problems occurred.
-
-2. `$`-ANCHOR INTOLERANCE OF TRAILING ANNOTATIONS. Line 69's replacement pattern `s/^- \*\*Status\*\*: \[.*\]$/.../` requires the line to END at the closing bracket. A plan carrying `- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)` can therefore NEVER be stamped -- the sed is a permanent no-op and every transition on that plan fails. This shape arose from a legitimate resume workflow, which is the argument for tolerating it rather than rejecting it.
-
-3. PREFLIGHT MASKS THE LEADING INDICATOR. update-task-status.sh:515-525 branches fatal-vs-warn on operation. Preflight prints only `Warning: plan file update failed (non-fatal)`, so a malformed Status line survives an entire task and only bites at POSTFLIGHT, where the same failure is `exit 3`. Note carefully: postflight does NOT silently diverge. It fails loudly and calls itself retryable. The "state.json says completed while the plan still reads [IMPLEMENTING], and generate-todo.sh reads only state.json" sentence in the original filing is the code comment's RATIONALE for making postflight fatal, not a description of an undetected outcome. The real cost is a late, expensive failure that a preflight warning already knew about.
-
-4. stdout/rc CONTRACT AMBIGUITY. The script header promises "Outputs: Updated plan file path on success, empty on failure/no-op". The idempotency early-exit (lines 62-66, already-at-target) returns rc=0 with EMPTY stdout -- so stdout alone cannot distinguish success from failure. The sole current caller branches on rc and is unaffected, but commands/implement.md:353 documents a defensive call site, and any future stdout-consuming caller would be misled.
-
-REQUIRED FIX.
-(a) Diagnose loudly. On no-match, print the offending line VERBATIM with its line number and state WHICH condition failed: missing `- **Status**:` prefix, missing brackets, or trailing text after the closing bracket. Replace the single generic message with these three distinct ones.
-(b) Decide and implement a tolerance policy for trailing text after `]`. Either accept it -- rewriting only the bracketed token and preserving the remainder, which defect 2 argues for -- or reject it explicitly as malformed. Apply the choice consistently and document it in context/formats/plan-format.md, which is where plan format is specified (see its existing line 99 discussion of the three status-mutating scripts).
-(c) PRESERVE the deliberate preflight/postflight asymmetry. update-task-status.sh's error text acknowledges it on purpose. The fix is diagnosability, not flipping fatality.
-
-ALSO EVALUATE (evaluate, do not assume).
-  - Whether the preflight non-fatal path should emit a one-line operator-visible WARNING naming the malformed line, given that a preflight no-op is the leading indicator of the fatal postflight failure.
-  - Whether a plan-format lint should validate the Status line at plan-creation time, so a malformed line never reaches a dispatch.
-  - Whether the idempotent-no-op path (defect 4) should echo the plan path rather than empty, making stdout a reliable success signal.
-
-ACCEPTANCE.
-  - Each of the three malformed shapes (trailing text, no brackets, missing prefix) produces a DISTINCT, line-numbered diagnostic quoting the offending line.
-  - A well-formed plan still stamps correctly, and the already-at-target path stays a no-op.
-  - The chosen trailing-text policy is implemented and documented in plan-format.md.
-  - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/core/).
-
-PROVENANCE. Originally filed in the BimodalLogic repo and abandoned there on 2026-08-24 because its entire work product lands in this repo -- BimodalLogic's .claude/ is a gitignored deploy artifact wiped on every reload, so the fix was not executable from there. That repo's specs/archive/state.json retains the original description and its specs/PATH.md records the handoff. This entry closes that handoff and supersedes the peer session's request to file a second task.
 
 ---
 
@@ -1928,32 +1507,3 @@ for putting it in the contract.
 ACCEPTANCE (extends, does not replace, the original): the terminal-status requirement and the
 fan-out resolution apply to extension implementation agents as well as the core one, demonstrated
 against a lean4 dispatch; and marker/reality divergence is caught in BOTH directions.
-
----
-
-### 13. Instrument gate-out auto-repair reporting; stop silent in-place artifact mutation
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [013_instrument_gate_out_auto_repair_reporting/reports/01_gate-out-repair-reporting.md]
-- **Plan**: [013_instrument_gate_out_auto_repair_reporting/plans/01_gate-out-repair-reporting.md]
-- **Summary**: [013_instrument_gate_out_auto_repair_reporting/summaries/01_gate-out-repair-reporting-summary.md]
-
-**Description**: The acceptance criterion "gate-out reports zero format errors and zero auto-repaired fields" is unverifiable as written, because no reporting surface exists. Recorded as err_1786350581339_Q4VnFy.
-
-TRACED PATH: command-gate-out.sh (134 lines) has no counter, aggregate, or exit-code surface for auto-repairs; its only related line is a comment. The real repair path is
-    command-gate-out.sh -> skill_validate_task_artifacts (skill-base.sh) -> validate-artifact.sh "$f" "$type" --fix 2>/dev/null
-validate-artifact.sh DOES emit a terminal line of the form "[FIXED] N field(s) auto-repaired, E error(s), W warning(s) remaining" and exits 2. But skill_validate_task_artifacts discards stderr, collapses every non-zero exit into a single generic non-blocking WARNING carrying no numeric detail, and always returns 0. command-gate-out.sh therefore receives no signal at all.
-
-PRIMARY HAZARD (the reason this is not merely cosmetic): --fix MUTATES THE ARTIFACT IN PLACE. A repair both happens and goes uncounted, so an artifact can be silently rewritten with nothing anywhere recording that it was. The instrumentation gap and the silent-mutation hazard are the same defect seen from two ends.
-
-WORK:
-  1. Propagate validate-artifact.sh fix/error/warning counts through skill_validate_task_artifacts instead of discarding them.
-  2. Give command-gate-out.sh a reportable surface for those counts.
-  3. Decide explicitly whether --fix should remain in-place-mutating on the gate-out path, or whether a repair should be reported and left for a human. State the decision and its reasoning.
-
-ACCEPTANCE: a task whose artifact required auto-repair produces a gate-out report naming a nonzero repaired-field count, and a task needing none reports zero. Both directions must be demonstrated - a report that can only ever say zero is not instrumentation.
-
-SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.

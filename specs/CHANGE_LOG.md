@@ -12,6 +12,92 @@ Each entry includes:
 
 ---
 
+### 2026-09-07
+
+**Task 154: lean_challenge_statement_snapshot**
+- Status: completed
+- Type: meta
+- Summary: Delivered lean-challenge-snapshot.sh establishing an immutable, git-SHA-pinned trusted
+  Challenge module from a plan's new '## Lean Challenge Statements' section (R1), with a
+  git-baseline fallback (R2), a Comparator-independent --check statement-drift mode, and a
+  plan-compliance.md Statement Fidelity clause. Demonstrated on a real Lean project (cslib):
+  statement drift detected in both directions and the immutability status-gate refusal, all
+  verified with real commit SHAs and content hashes.
+
+**Task 153: lean_comparator_clean_room_runner**
+- Status: completed
+- Type: meta
+- Summary: Built agent-system/extensions/lean/scripts/lean-comparator-run.sh (clean-room wrapper
+  around leanprover/comparator: git-worktree materialisation, config.json synthesis,
+  README-mandated systemd-run+lake-build-guard.sh sandbox invocation, and a 9-value verdict
+  classifier), its regression suite (22 passing assertions, 1 skip-with-report, live mutation
+  check), vendored/authored fixtures with attribution, a design record capturing the clean-room
+  trust chain and verdict-string table, and manifest.json wiring. All 8 plan phases COMPLETED.
+  Advisory-only gate strength preserved as bound by the operator decision.
+
+**Task 148: port_single_task_features_to_batch_engine**
+- Status: completed
+- Type: meta
+- Summary: Completed all 8 phases porting single-task-only orchestrator features (hard-mode
+  churn/three-strikes/burnout counters, per-task cumulative cycle budget, the four aux_dispatch[]
+  auxiliary flows, and a single-task-through-the-batch-path opt-in flag) into the multi-task batch
+  engine. Phase 8's live acceptance runs discovered and fixed a genuine placement bug in
+  aux_dispatch[] emission, then re-verified all three acceptance cases end-to-end. Full gate
+  green: run-all.sh 70/70. (Status reconciled from stranded `implementing` to `completed` during
+  archival — plan showed 8/8 phases closed and the summary artifact was already linked.)
+
+**Task 143: mt_handoff_staleness_and_dispatch_seq_gates**
+- Status: completed
+- Type: meta
+- Summary: Cut both /orchestrate engines (single-task Stage 5, multi-task Stage MT-4) over to
+  orchestrate-cycle-postflight.sh, the single shared per-task postflight script -- closing the
+  originally-scoped defect (Stage MT-4 trusting any handoff without the mtime staleness gate or
+  dispatch_seq identity gate) by construction. Absorbed the stray-handoff sweep into the script
+  for both engines, added halt/infra_exempt_cycle output fields, and threaded a force field
+  through orchestrate-cycle-plan.sh's dispatch rows. Full gate run: run-all.sh 68/68,
+  lint-agent-contracts.sh 101/101, verify-deploy.sh 27/29 (one finding fixed, two pre-existing and
+  unrelated).
+
+**Task 134: tag_branch_reachability_gate**
+- Status: completed
+- Type: meta
+- Summary: Closed the third and last uncovered gate in the /tag release preflight by adding an
+  ahead-of-remote REFUSE check to Step 2 (reusing the existing fetch/remote_sha), documenting the
+  new failure mode in SKILL.md's Error Handling section, syncing commands/tag.md, and verifying
+  behaviorally against a real bare-origin/clone fixture including the literal
+  `git merge-base --is-ancestor` assertion the consuming repo's release.yml preflight uses.
+
+**Task 91: fail_loudly_on_nonconforming_plan_status_line**
+- Status: completed
+- Type: meta
+- Summary: Replaced update-plan-status.sh's single generic failure message with three classified,
+  line-numbered diagnostics (missing prefix, missing brackets, text before bracket); made the
+  mutating sed preserve trailing annotations after the closing bracket so resumed plans are
+  stampable; corrected the idempotent no-op path to echo the plan path; documented the policy in
+  plan-format.md; added a 28-case fixture-driven test suite; and redeployed, confirming the fix
+  survives regeneration via a live acceptance walk against the deployed script.
+
+**Task 13: instrument_gate_out_auto_repair_reporting**
+- Status: completed
+- Type: meta
+- Summary: Propagated validate-artifact.sh's fix/error/warning counts through
+  skill_validate_task_artifacts via four caller-visible globals, added an always-on gate-out
+  console report plus a durable specs/events.jsonl row, wrote a fixture-driven regression suite
+  proving both acceptance directions, deployed, and demonstrated both directions live against the
+  real command-gate-out.sh.
+
+**Orphan directories tracked:** 4 (031_opencode_extensions_sync_mechanism,
+094_wire_lit_flag_through_team_skills, 115_mirror_model_flag_into_hard_orchestrate,
+132_register_ambient_binding_defect_class) -- already present in specs/archive/ with no
+archive/state.json entry; added `orphan_archived` entries via the orphan recovery path.
+
+**Status reconciliation:** Task 148 promoted `implementing` -> `completed` (stranded with a
+linked summary artifact and an already-COMPLETED plan status). Task 137 was also checked but the
+phase-accounting backstop correctly refused promotion (6/7 phases closed) and it remains
+`implementing`, not archived this run.
+
+---
+
 ### 2026-08-24
 
 **Deploy: `agent-system/extensions/**` source store resynced to `.claude/` (16 files, 4 previously-completed fixes made live)**
