@@ -159,6 +159,20 @@ preferable to ever terminating a live system daemon or another live session's pr
 - **`LEAN_LSP_IDLE_THRESHOLD_MIN`**: the Lean pass's idle-reclamation threshold in minutes
   (default: 240, matching this repo's existing reap-threshold precedent, deliberately
   conservative). Override via the environment variable; see `claude-refresh.sh --help`.
+- **Unreaped-child (zombie) reporting pass (report-only)**: a third, independently-gated pass
+  detects `<defunct>` (zombie) child processes by `stat` state and reports them grouped by
+  parent, with each child's age. It never terminates anything under any flag combination -- there
+  is no recoverability question because there is no action taken: a zombie can only be reaped by
+  its own parent calling `wait()`, never by an external signal, so this pass exists purely to
+  surface the symptom (a parent daemon leaking zombies over time) for a human to act on.
+- **MCP server fan-out reporting pass (report-only)**: a fourth, independently-gated pass reports
+  live per-session process/memory fan-out for every MCP server registered in user scope
+  (`~/.claude.json`'s `mcpServers`) -- every session inherits every user-scope server
+  unconditionally, so this cost is real and unavoidable, not a bug. It flags a server showing no
+  live evidence of use with a conditional scoping advisory (never a directive) suggesting
+  project-scoped `.mcp.json` registration where the server is genuinely repo-local, and names the
+  one-time workspace-trust approval as the real cost of that move -- never a subagent-access
+  barrier. Like the zombie pass, it never terminates or reconfigures anything.
 
 ## Examples
 

@@ -73,6 +73,14 @@ once with a single combined confirmation covering both passes:
 }
 ```
 
+**The confirmation trigger above is scoped to exactly these two passes, deliberately.** The
+script also runs a zombie (unreaped-child) reporting pass and an MCP server fan-out reporting
+pass (see "Process Safety" below) as part of the SAME invocation, but neither offers a terminate
+action to confirm -- both are report-only, with no `--force` branch of their own. The
+absence-of-both-no-findings-lines check above MUST NOT be extended to key off either new pass's
+own no-findings line ("No unreaped child processes found." / a server-table with no flagged
+rows); doing so would prompt the user for a confirmation that has nothing to confirm.
+
 If the user selects "Yes, terminate", re-run with `--force` and replace the stored output:
 
 ```bash
@@ -499,6 +507,20 @@ system daemon or another live session's process (false positive).
   is set well below that to reclaim well before it while still avoiding reclaiming a tree the
   user is about to reuse. Override via the environment variable for a different posture; see
   `--help`.
+- **Unreaped-child (zombie) reporting pass (report-only)**: a third, independently-gated pass
+  detects `<defunct>` (zombie) child processes by `stat` state and reports them grouped by
+  parent, with each child's age. It never terminates anything under any flag combination -- there
+  is no recoverability question because there is no action taken: a zombie can only be reaped by
+  its own parent calling `wait()`, never by an external signal, so this pass exists purely to
+  surface the symptom (a parent daemon leaking zombies over time) for a human to act on.
+- **MCP server fan-out reporting pass (report-only)**: a fourth, independently-gated pass reports
+  live per-session process/memory fan-out for every MCP server registered in user scope
+  (`~/.claude.json`'s `mcpServers`) -- every session inherits every user-scope server
+  unconditionally, so this cost is real and unavoidable, not a bug. It flags a server showing no
+  live evidence of use with a conditional scoping advisory (never a directive) suggesting
+  project-scoped `.mcp.json` registration where the server is genuinely repo-local, and names the
+  one-time workspace-trust approval as the real cost of that move -- never a subagent-access
+  barrier. Like the zombie pass, it never terminates or reconfigures anything.
 
 ---
 

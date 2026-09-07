@@ -332,24 +332,25 @@ the check into a hard failure.
 
 ---
 
-### Phase 5: Skill and command documentation for both passes [NOT STARTED]
+### Phase 5: Skill and command documentation for both passes [COMPLETED]
 
 **Goal**: Document both new passes in `SKILL.md` and `refresh.md` as report-only advisories,
 explicitly stating they never terminate anything and need no confirmation wiring.
 
 **Tasks**:
-- [ ] Add a "MCP fan-out reporting pass (report-only)" bullet under `### Process Safety` in
+- [x] Add a "MCP fan-out reporting pass (report-only)" bullet under `### Process Safety` in
       `agent-system/extensions/core/commands/refresh.md`, matching the existing Lean bullet's
-      gate/mechanism/recoverability shape but stating that nothing is ever terminated
-- [ ] Add a matching "Unreaped-child (zombie) reporting pass (report-only)" bullet in the same
-      section
-- [ ] Add the same two bullets to `agent-system/extensions/core/skills/skill-refresh/SKILL.md`'s
-      `### Process Safety` section
-- [ ] Update `SKILL.md`'s Step 2 narrative to state explicitly that the two new passes are NOT
+      gate/mechanism/recoverability shape but stating that nothing is ever terminated *(completed)*
+- [x] Add a matching "Unreaped-child (zombie) reporting pass (report-only)" bullet in the same
+      section *(completed)*
+- [x] Add the same two bullets to `agent-system/extensions/core/skills/skill-refresh/SKILL.md`'s
+      `### Process Safety` section *(completed)*
+- [x] Update `SKILL.md`'s Step 2 narrative to state explicitly that the two new passes are NOT
       part of the `AskUserQuestion` confirmation trigger — the prompt logic keys only on the
       Claude-pass and Lean-pass no-findings lines, and must not be extended to the new passes
-      since neither offers a terminate action to confirm
-- [ ] Verify no observed memory or session figures are baked into either doc
+      since neither offers a terminate action to confirm *(completed)*
+- [x] Verify no observed memory or session figures are baked into either doc *(completed: grep
+      for observed figures returns no matches)*
 
 **Timing**: 0.5 hours
 
