@@ -3140,7 +3140,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Exclusion contract and measurement recipe for reverse-direction (deployed-but-undeclared) orphan detection, gate 13",
-      "line_count": 115,
+      "line_count": 130,
       "keywords": [
         "orphan",
         "deploy",

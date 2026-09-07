@@ -284,18 +284,20 @@ extend the re-run set if the grep finds more.
 
 ---
 
-### Phase 4: Redeploy, run the full gate suite, and reconcile any residual failure [NOT STARTED]
+### Phase 4: Redeploy, run the full gate suite, and reconcile any residual failure [COMPLETED]
 
 **Goal**: Reach the acceptance state — a full `verify-deploy.sh` run with gates 12 and 13 passing
 and every other gate either passing or explicitly, reasonedly excluded.
 
 **Tasks**:
-- [ ] Redeploy from the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
+- [x] Redeploy from the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
       (allow several minutes; it runs verification inline and exits 3 on gate failure).
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` in full (no `--quiet`,
+      *(completed: first redeploy exited 3, 1 of 29 check(s) failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` in full (no `--quiet`,
       several minutes) and record the per-gate result line for gates 12 and 13 plus the final
-      `N of M check(s)` summary.
-- [ ] If any gate other than 12/13 fails, apply this decision rule, in order:
+      `N of M check(s)` summary. *(completed: 1 of 30 check(s) failed; gate 3 doc-lint FAIL;
+      gates 12 and 13 both explicitly PASS)*
+- [x] If any gate other than 12/13 fails, apply this decision rule, in order:
       (a) if it is a stale `index-entries.json` `line_count` declaration and the owning
       `index-entries.json` is not currently being edited by another in-flight task (check
       `git status --short` and recent `git log` on that file), correct the declaration using the
@@ -303,10 +305,17 @@ and every other gate either passing or explicitly, reasonedly excluded.
       this synchronizes a declaration to reality and weakens no check — then re-run gate 3;
       (b) otherwise, do NOT fix it here: record it as an explicit, named exclusion with its
       reasoning, mark this phase `[COMPLETED WITH EXCLUSIONS]`, and carry the exclusion into the
-      summary.
-- [ ] Re-run `verify-deploy.sh` after any correction and record the final gate tally.
-- [ ] Confirm no edit made in this task targets `.claude/**` (source-store boundary rule): review
-      the phase's diff paths before committing.
+      summary. *(completed via branch (a): two mismatches found, not one — the hypothesized
+      lean/comparator-integration.md (219->247) AND core/deploy-orphan-detection.md (115->130,
+      caused by this task's own Phase 3 doc edit). Neither file was concurrently owned by
+      another in-flight task; both corrected via generate-context-line-counts.sh --write)*
+- [x] Re-run `verify-deploy.sh` after any correction and record the final gate tally.
+      *(completed: deploy-headless.sh redeploy -> [verify-deploy] PASS -- 29 check(s), 0
+      failure(s); DEPLOY EXIT 0)*
+- [x] Confirm no edit made in this task targets `.claude/**` (source-store boundary rule): review
+      the phase's diff paths before committing. *(completed: all edits under
+      agent-system/extensions/**; .claude/ only changed via the deploy-headless.sh regeneration,
+      never hand-authored)*
 
 **Timing**: 45 minutes
 

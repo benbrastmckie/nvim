@@ -665,7 +665,7 @@
     },
     {
       "path": "project/lean4/domain/comparator-integration.md",
-      "line_count": 219,
+      "line_count": 247,
       "load_when": {
         "agents": [
           "lean-implementation-agent",

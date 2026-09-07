@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy, run the full gate suite, and reconcile any residual failure",
+  "started_at": "2026-09-07T22:05:00Z",
+  "last_updated": "2026-09-07T22:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy from source store", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run full verify-deploy.sh, record per-gate result for 12/13 plus summary", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Apply decision rule to any residual failure", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json", "agent-system/extensions/core/index-entries.json"], "note": "Two mismatches found and corrected: the plan's hypothesized lean/comparator-integration.md (219->247) AND core/deploy-orphan-detection.md (115->130), the latter caused by this task's own Phase 3 doc edit. Both corrected via the sanctioned generate-context-line-counts.sh --write tool per decision-rule branch (a): neither file was concurrently owned by another in-flight task (git status clean, no recent conflicting commits)."},
+    {"id": 4, "description": "Re-run verify-deploy.sh after correction, record final tally", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no edit targets .claude/** (source-store boundary)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "evidence": {
+    "first_full_run_after_deploy": "1 of 30 check(s) failed -- gate 3 doc-lint FAIL, gates 12 and 13 both PASS explicitly",
+    "doc_lint_direct_run": "FAIL: 2 issue(s) found -- core FAIL, lean FAIL (matches the two generate-context-line-counts.sh mismatches exactly)",
+    "ownership_check": "git status --short on both agent-system/extensions/lean/index-entries.json and agent-system/extensions/core/index-entries.json showed no pending modifications before the fix; git log showed no other in-flight task's recent commits touching either file (core's mismatch is this task's own Phase 3 edit to deploy-orphan-detection.md, not a concurrent task's)",
+    "generate_context_line_counts_write": "Changed: 2 -- lean/comparator-integration.md 219->247, core/deploy-orphan-detection.md 115->130. All other 500 entries across 20 extensions already exact.",
+    "redeploy_after_fix": "bash agent-system/extensions/core/scripts/deploy-headless.sh: [verify-deploy] PASS -- 29 check(s), 0 failure(s); DEPLOY EXIT 0",
+    "source_store_boundary_check": "All edits this phase (index-entries.json corrections, Phase 3's verify-deploy.sh and deploy-orphan-detection.md edits) are under agent-system/extensions/**, never hand-authored under .claude/**"
+  }
+}
