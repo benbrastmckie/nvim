@@ -306,7 +306,7 @@ main() {
     while IFS= read -r line; do
         [ -z "$line" ] && continue || true
 
-        local pid ppid uid tty etimes rss comm cgroup args
+        local pid ppid uid tty etimes rss comm cgroup args swap_kb combined
         read -r pid ppid uid tty etimes rss comm cgroup args <<< "$line"
 
         # Zero-query self-exclusion: known at parse time, no second query, no race.
@@ -319,15 +319,20 @@ main() {
             continue
         fi
 
+        # Reporting-only VmSwap read (see header's invariant ruling): bounded to the
+        # already-narrow comm-gated candidate set above, never the full process table.
+        swap_kb=$(get_vmswap_kb "$pid")
+        combined=$((rss + swap_kb))
+
         total_count=$((total_count + 1))
-        total_mem=$((total_mem + rss))
+        total_mem=$((total_mem + combined))
 
         # tty == "?" is necessary-but-not-sufficient: true of every systemd-managed
         # process by construction, so it discriminates nothing on its own -- it is
         # combined with the exclusion predicates below, never used alone.
         if [ "$tty" != "?" ]; then
             active_count=$((active_count + 1))
-            active_mem=$((active_mem + rss))
+            active_mem=$((active_mem + combined))
             continue
         fi
 
@@ -344,14 +349,14 @@ main() {
 
         # Survives every predicate: a genuine orphan.
         orphan_count=$((orphan_count + 1))
-        orphan_mem=$((orphan_mem + rss))
+        orphan_mem=$((orphan_mem + combined))
 
         local age cmd_display
         age=$(get_process_age "$etimes")
         cmd_display=$(echo "$args" | cut -c1-50)
 
         orphan_pids+=("$pid")
-        orphan_details+=("$pid|$(format_memory "$rss")|$age|$cmd_display")
+        orphan_details+=("$pid|$(format_memory "$rss")|$(format_memory "$swap_kb")|$age|$cmd_display")
     done <<< "$snapshot"
 
     echo ""
@@ -378,12 +383,12 @@ main() {
         echo ""
         echo "Found $orphan_count orphaned processes using $(format_memory "$orphan_mem"):"
         echo ""
-        printf "%-8s %-12s %-10s %s\n" "PID" "Memory" "Age" "Command"
-        printf "%-8s %-12s %-10s %s\n" "-----" "-------" "-------" "--------------------------------"
+        printf "%-8s %-12s %-12s %-10s %s\n" "PID" "Memory" "Swap" "Age" "Command"
+        printf "%-8s %-12s %-12s %-10s %s\n" "-----" "-------" "-------" "-------" "--------------------------------"
 
         for detail in "${orphan_details[@]}"; do
-            IFS='|' read -r pid mem age cmd <<< "$detail"
-            printf "%-8s %-12s %-10s %s\n" "$pid" "$mem" "$age" "$cmd"
+            IFS='|' read -r pid mem swap age cmd <<< "$detail"
+            printf "%-8s %-12s %-12s %-10s %s\n" "$pid" "$mem" "$swap" "$age" "$cmd"
         done
 
         echo ""

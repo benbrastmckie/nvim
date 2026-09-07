@@ -174,31 +174,39 @@ depends on it.
 
 ---
 
-### Phase 3: Thread combined RSS+swap through the reporting path [NOT STARTED]
+### Phase 3: Thread combined RSS+swap through the reporting path [COMPLETED]
 
 **Goal**: Make every memory figure the script prints swap-inclusive, and give the orphan table a
 separate `Swap` column, with the `orphan_details` field-count change applied atomically across its
 write site, read site, and both `printf` lines.
 
 **Tasks**:
-- [ ] In the main loop, immediately after
+- [x] In the main loop, immediately after
       `read -r pid ppid uid tty etimes rss comm cgroup args <<< "$line"`, add
       `local swap_kb; swap_kb=$(get_vmswap_kb "$pid")` and `local combined=$((rss + swap_kb))`.
       Declare `swap_kb` and `combined` alongside the existing `local` declaration line.
-- [ ] Replace `rss` with `combined` in all three accumulations: `total_mem=$((total_mem + rss))`,
-      `active_mem=$((active_mem + rss))`, and `orphan_mem=$((orphan_mem + rss))`.
-- [ ] Extend the `orphan_details` entry to
+      *(deviation: altered — swap_kb/combined are declared on the existing `local` line as
+      instructed, but the assignment is placed after the candidacy gate (`is_claude_executable_comm`)
+      rather than immediately after the `read -r ... <<< "$line"` line, so the reporting-only /proc
+      read is bounded to the already-narrow comm-gated candidate set per the Risks & Mitigations
+      table's "per matched row" framing, instead of firing for every row in the full system-wide `ps`
+      snapshot)*
+- [x] Replace `rss` with `combined` in all three accumulations: `total_mem=$((total_mem + rss))`,
+      `active_mem=$((active_mem + rss))`, and `orphan_mem=$((orphan_mem + rss))`. *(completed)*
+- [x] Extend the `orphan_details` entry to
       `"$pid|$(format_memory "$rss")|$(format_memory "$swap_kb")|$age|$cmd_display"` — RSS and swap
-      stay separate strings, deliberately not pre-collapsed into one combined figure.
-- [ ] In the same edit, update the consumer `IFS='|' read -r pid mem age cmd <<< "$detail"` to
+      stay separate strings, deliberately not pre-collapsed into one combined figure. *(completed)*
+- [x] In the same edit, update the consumer `IFS='|' read -r pid mem age cmd <<< "$detail"` to
       `IFS='|' read -r pid mem swap age cmd <<< "$detail"`, and update both the header `printf` and
       the row `printf` to a five-column form adding `Swap` between `Memory` and `Age` (header labels
-      and the dashed separator row both).
-- [ ] Leave `format_memory()` itself unchanged — it is reused as-is for RSS, swap, and totals
-      individually.
-- [ ] Confirm the "Found N orphaned processes using ...", "Total memory that can be reclaimed: ...",
+      and the dashed separator row both). *(completed)*
+- [x] Leave `format_memory()` itself unchanged — it is reused as-is for RSS, swap, and totals
+      individually. *(completed)*
+- [x] Confirm the "Found N orphaned processes using ...", "Total memory that can be reclaimed: ...",
       and force-mode "Memory reclaimed: ~..." lines now render swap-inclusive totals by virtue of
-      `orphan_mem` alone; they need no edit of their own.
+      `orphan_mem` alone; they need no edit of their own. *(completed: verified via live fake-ps/fake-proc
+      run reproducing the dispatch's ~2 MB RSS / ~1.2 GB VmSwap scenario — totals and Swap column both
+      render correctly)*
 
 **Timing**: 0.5 hours
 

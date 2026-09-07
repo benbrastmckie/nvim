@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Thread combined RSS+swap through the reporting path",
+  "started_at": "2026-09-07T00:25:00Z",
+  "last_updated": "2026-09-07T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compute swap_kb/combined per candidate, thread through accumulators and orphan_details, update read/printf sites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Place swap_kb/combined assignment immediately after read -r ... <<< \"$line\"",
+      "type": "altered",
+      "reason": "Plan's Risks & Mitigations table states the extra /proc read is 'bounded by the already-narrow comm-gated candidate set' (per-matched-row framing); computing swap_kb before the is_claude_executable_comm gate would instead run get_vmswap_kb for every row in the full system-wide ps snapshot. Moved the assignment to immediately after the candidacy gate passes, keeping the declaration on the existing local line as instructed.",
+      "annotation": "*(deviation: altered — swap_kb/combined assignment moved to after the candidacy gate; declaration stays on the existing local line)*"
+    }
+  ],
+  "handoff_count": 0
+}
