@@ -1,45 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md",
-      "summary": "Research on adding an independently-gated orphaned Lean LSP process-tree reclamation pass to claude-refresh.sh, grounded in live process inspection and leanclient/lean_lsp_mcp source."
+      "type": "plan",
+      "path": "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md",
+      "summary": "6-phase plan (~6.5h) adding an independently-gated orphaned Lean LSP process-tree reclamation pass to claude-refresh.sh, with cross-contamination and termination-ordering test assertions."
     }
   ],
-  "next_steps": "Run /plan 159 to create implementation plan",
+  "next_steps": "Run /implement 159 to execute the plan",
   "metadata": {
     "session_id": "sess_1788808797_82397b_159",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 8
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": 5
   },
   "memory_candidates": [
     {
-      "content": "On Linux, ps's `comm` field for lean-lsp-mcp's spawned processes is just `lake` or `lean` -- it never renders the full argv (`lake serve`, `lean --server`, `lean --worker`). Distinguishing these three requires an args-substring match in addition to the comm gate, the same two-part pattern claude-refresh.sh's is_claude_executable_comm already uses for its `node` branch (comm gate + argv pattern gate). Also: `ps -eo ... -C <name>` silently ignores the -C filter and returns the whole process table; `ps -C <name> -o ...` (without -e) is the correct filtered form.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["ps", "comm", "process-matching", "lean-lsp-mcp", "claude-refresh"]
-    },
-    {
-      "content": "lake serve / lean --server retain a controlling TTY inherited from the pty of whatever spawned them (e.g. lean-lsp-mcp), even when the owning session is fully gone -- only lean --worker children show tty=='?'. Any orphan-detection heuristic keyed on tty=='?' as a necessary signal will miss an orphaned lake serve/lean --server pair; a process-family-specific detection pass needs its own candidacy predicate independent of TTY.",
+      "content": "When adding a second, independently-gated detection pass to a shell script whose main() already contains early `exit 0` sites (e.g. claude-refresh.sh's 'no orphans found' and 'report-and-exit without --force' branches), the new pass appended after them is structurally unreachable. Plan a dedicated restructure step that converts those exit sites into returning functions BEFORE wiring the second pass, and grep for `exit 0` inside main() to confirm the site count rather than assuming it.",
       "category": "PATTERN",
-      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md",
+      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md",
       "confidence": 0.8,
-      "suggested_keywords": ["tty", "orphan-detection", "process-tree", "lean-lsp-mcp"]
-    },
-    {
-      "content": "leanclient's BaseLeanLSPClient spawns `subprocess.Popen([\"lake\", \"serve\", \"--\", \"-Dserver.reportDelayMs=0\"], ...)` (base_client.py) and lean_lsp_mcp's client_utils.py only tears clients down via _close_client() at explicit eviction/restart-failure/shutdown -- there is no idle-timeout or LRU-by-inactivity mechanism in the installed package, so a spawned lake serve -> lean --server -> lean --worker* tree lives as long as the MCP host process does unless something external reclaims it.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lean-lsp-mcp", "leanclient", "process-lifecycle", "idle-timeout"]
+      "suggested_keywords": ["shell-script", "early-exit", "second-pass", "main-restructure", "claude-refresh"]
     }
   ],
   "modified_files": [
-    "specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md"
+    "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md"
   ],
-  "dispatch_seq": 6
+  "dispatch_seq": 7
 }
