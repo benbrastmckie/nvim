@@ -1,10 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/154_lean_challenge_statement_snapshot/summaries/01_lean-challenge-statement-snapshot-summary.md",
+      "summary": "All 8 plan phases completed: R1-vs-R2 decision record, additive plan-format.md section, lean-challenge-snapshot.sh (R1/R2 extraction, commit+manifest immutability, --check drift mode), 13-case regression suite with fixtures, plan-compliance.md Statement Fidelity clause, and a real-project (cslib) acceptance demonstration of both drift directions and immutability."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Delivered lean-challenge-snapshot.sh establishing an immutable, git-SHA-pinned trusted Challenge module from a plan's new '## Lean Challenge Statements' section (R1), with a git-baseline fallback (R2), a Comparator-independent --check statement-drift mode, and a plan-compliance.md Statement Fidelity clause. Demonstrated on a real Lean project (cslib): statement drift detected in both directions and the immutability status-gate refusal, all verified with real commit SHAs and content hashes."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/rules/plan-compliance.md",
+    "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_legacy.md",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_mismatched.md",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_r1.md",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/solution_cosmetic.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/solution_honest.lean",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/solution_weakened.lean",
+    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an embedded `python3 - <<'PYEOF' ... PYEOF` heredoc is used to run an inline Python script from a bash script, stdin is already consumed by the heredoc supplying the script source itself -- a subsequent `sys.stdin.read()` inside that script returns empty, not the data you intended to pipe in. Fix: write the data to a temp file first and pass its path as an argv element, never try to layer a second stdin stream underneath the heredoc.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/154_lean_challenge_statement_snapshot/summaries/01_lean-challenge-statement-snapshot-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "python3", "heredoc", "stdin", "embedded-script"]
+    },
+    {
+      "content": "A CLI tool that regenerates and commits an artifact into a git repo (e.g. an immutability-pinning snapshot tool) must use `git commit --allow-empty` for the write, not a plain `git commit`. A regeneration whose content happens to be byte-identical to what is already committed (e.g. a --force re-run against an unchanged source) stages nothing via `git add`, so a plain `git commit` fails with exit 1 and no new SHA -- silently breaking any caller expecting every regeneration event to produce a fresh, distinguishable commit.",
+      "category": "PATTERN",
+      "source_artifact": "specs/154_lean_challenge_statement_snapshot/summaries/01_lean-challenge-statement-snapshot-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git", "allow-empty", "immutability", "regeneration", "idempotency"]
+    },
+    {
+      "content": "A naive identifier regex like `[A-Za-z_][A-Za-zA-Z0-9_']*` silently truncates at the first `.`, so it cannot capture Lean's common namespaced/dotted theorem names (e.g. `Proposition.map_injective`) as a single token -- it matches only the leading namespace segment. Any tool parsing real-world Lean declaration names by name should either widen the character class to include `.` or explicitly document (and test for) the dotted-name gap as a known limitation, since Mathlib-style codebases use dotted names pervasively.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/154_lean_challenge_statement_snapshot/summaries/01_lean-challenge-statement-snapshot-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lean4", "regex", "namespaced-identifiers", "declaration-parsing", "limitation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788795618_182fd3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
