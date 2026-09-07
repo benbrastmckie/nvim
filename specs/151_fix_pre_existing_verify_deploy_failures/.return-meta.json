@@ -1,10 +1,63 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md",
+      "summary": "Confirms the already-landed gate-12 state-writer boundary remedy (option (a), uniform across all four sites) from live re-runs; documents gate-13's non-reproducible original finding honestly, including a correction to the dispatch's own literature-pyenv classification hypothesis; fixes the false 're-run without --quiet for detail' hint in gates 13 and 5 with an additive fail-time detail print, verified end-to-end with a planted orphan probe; and reconciles the full verify-deploy run by correcting two stale index-entries.json line_count declarations (the plan-hypothesized lean one plus a second in core caused by this task's own doc edit)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed both pre-existing verify-deploy gate failures: confirmed and recorded the already-applied gate-12 state-writer boundary remedy, and closed gate-13's diagnosability gap by making gates 13 and 5 print per-finding detail unconditionally on failure in verify-deploy.sh. Corrected two stale line_count declarations blocking the full gate run. bash .claude/scripts/verify-deploy.sh now reports PASS -- 29 check(s), 0 failure(s), and deploy-headless.sh exits 0."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh gate failure branches that suppress-and-extract per-finding detail into a --findings-only FINDINGS_LIST array while their fail() hint says 're-run without --quiet for detail' carry a latent diagnosability bug: --quiet controls a different code path than --findings, so a plain non-quiet re-run prints nothing beyond the aggregate count. The fix is to print each extracted finding line unconditionally in the failure branch (fail()'s own [FAIL]/hint lines already bypass --quiet via unconditional stderr echo), while leaving the --findings FINDINGS_LIST population as an additive, unchanged-shape side effect. Grep for the exact self-referential hint text (pointing back at verify-deploy.sh itself, not a standalone underlying script) to find all affected gates precisely.",
+      "category": "PATTERN",
+      "source_artifact": "specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate-diagnosability",
+        "fail-time-detail",
+        "findings-list",
+        "quiet-flag"
+      ]
+    },
+    {
+      "content": "generate-context-line-counts.sh --write is repo-wide (recomputes line_count for every entry across every extension's index-entries.json), so a doc edit made anywhere in a task's own scope can introduce a NEW line_count mismatch that only surfaces when the full gate-3 doc-lint runs post-redeploy -- not just the pre-existing drift the task set out to fix. Always re-run --check (or the full doc-lint) after any content edit to a file with an index-entries.json line_count declaration, even when the edit's own phase already 'closed'.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "line_count",
+        "index-entries.json",
+        "doc-lint",
+        "self-inflicted-drift",
+        "generate-context-line-counts"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788815202_e9189b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -542,7 +542,7 @@
     {
       "project_number": 151,
       "project_name": "fix_pre_existing_verify_deploy_failures",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -554,7 +554,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-09-03T19:59:13Z",
-      "last_updated": "2026-09-07T21:23:38Z",
+      "last_updated": "2026-09-07T21:24:09Z",
       "session_id": "sess_1788815202_e9189b",
       "description": "Two verify-deploy.sh gate failures are live in this repo today, both PRE-EXISTING and unrelated to whatever task happens to be running when they surface. They were observed blocking an unrelated multi-task /orchestrate batch: verify-deploy.sh reported \"FAIL -- 3 of 29 check(s) failed\", deploy-headless.sh therefore exited 3, and the orchestrator's inter-cycle redeploy checkpoint deferred EVERY task in the batch. One of the three (doc-lint, stale index-entries.json line_count declarations) was fixed at that time; these two remain.\n\nFAILURE 1 -- STATE-WRITER BOUNDARY LINT (gate 12).\nscripts/lint/lint-state-writer-boundary.sh reports \"Found 4 hand-rolled state.json write(s)\", all four in ONE file:\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:261\n    jq '.active_projects[0].status = \"planned\"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:307\n    jq '.active_projects[0].next_artifact_number = 2' \"$WORKDIR/specs/state.json\" > \"$WORKDIR/specs/state.json.tmp\" && mv ...\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:317  (same shape as :307, .status = \"planned\")\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:327  (same shape as :307, .status = \"planned\")\nLast commit touching that file is an earlier, unrelated task's phase-7 work; the file appears in NO recent task's modified_files. These are test-fixture writes against a scratch $WORKDIR, not production state mutations -- which is precisely the judgment call this task must make explicitly rather than reflexively rewriting them.\n\nDECIDE, do not assume: is the correct remedy (a) route these through state-write.sh like production callers, (b) add a scoped allowlist entry for test-fixture writes against a scratch WORKDIR (the lint already has a file-level allowlist mechanism, used by task.md, todo.md, validation.md, jq-escaping-workarounds.md, vault-operation.sh and the lint's own header), or (c) narrow the lint's own detection so a non-specs/ scratch path is not matched? Note that :261 writes the REAL specs/state.json path, while :307/:317/:327 write \"$WORKDIR/specs/state.json\" -- these two shapes may not deserve the same answer. State the choice and its reasoning; do not silently weaken a boundary lint that exists to protect the single-writer invariant.\n\nFAILURE 2 -- WHOLE-TREE ORPHAN DETECTION (gate 13).\nverify-deploy.sh reports \"whole-tree orphan detection reported 1 finding(s)\" (find_orphans: deployed-but-undeclared files, ghost index rows). The specific finding was NOT captured at observation time -- the detail run exceeds a 120s timeout because the gate suite runs the full shell test suite. RESEARCH MUST establish what the single finding actually is before planning a fix; do not assume it is the same class as FAILURE 1. Remedy pointer named by the gate output itself: context/patterns/deploy-orphan-detection.md. Re-run detail with: bash agent-system/extensions/core/scripts/verify-deploy.sh (without --quiet), allowing several minutes.\n\nCONSTRAINTS.\n  - All edits target agent-system/extensions/**, never .claude/** (deploy artifact).\n  - Do not weaken a gate merely to make it pass. If a finding is a genuine false positive, fix the DETECTION and say so; if it is a real violation, fix the violation.\n  - Redeploy and confirm verify-deploy.sh reports 0 failures afterwards.\n\nACCEPTANCE.\n  - lint-state-writer-boundary.sh --verbose reports 0 violations, with the chosen remedy and its reasoning recorded in the summary.\n  - Whole-tree orphan detection reports 0 findings, with the finding's actual identity documented (not merely made to disappear).\n  - bash verify-deploy.sh completes with all gates passing.\n  - A regression note explains why each fix will not silently re-break.\n\nRELATED, not a dependency: the sibling task on line_count/gate-coupling brittleness addresses the CLASS of problem (why an unrelated pre-existing lint failure can gate every task's completion). This task fixes the two live instances; that one changes the coupling. Either can land first.",
       "artifacts": [
@@ -567,9 +567,15 @@
           "path": "specs/151_fix_pre_existing_verify_deploy_failures/plans/01_verify-deploy-gate-remediation.md",
           "type": "plan",
           "summary": "5-phase plan confirming the already-landed gate-12 state-writer remedy, recording gate-13's non-reproducible finding honestly, fixing the false 'non-quiet shows detail' hint in gates 13 and 5, and reconciling the full verify-deploy run with an explicit decision rule for the residual out-of-scope gate-3 line_count drift."
+        },
+        {
+          "path": "specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md",
+          "type": "summary",
+          "summary": "Confirms the already-landed gate-12 state-writer boundary remedy (option (a), uniform across all four sites) from live re-runs; documents gate-13's non-reproducible original finding honestly, including a correction to the dispatch's own literature-pyenv classification hypothesis; fixes the false 're-run without --quiet for detail' hint in gates 13 and 5 with an additive fail-time detail print, verified end-to-end with a planted orphan probe; and reconciles the full verify-deploy run by correcting two stale index-entries.json line_count declarations (the plan-hypothesized lean one plus a second in core caused by this task's own doc edit)."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed both pre-existing verify-deploy gate failures: confirmed and recorded the already-applied gate-12 state-writer boundary remedy, and closed gate-13's diagnosability gap by making gates 13 and 5 print per-finding detail unconditionally on failure in verify-deploy.sh. Corrected two stale line_count declarations blocking the full gate run. bash .claude/scripts/verify-deploy.sh now reports PASS -- 29 check(s), 0 failure(s), and deploy-headless.sh exits 0."
     },
     {
       "project_number": 152,
