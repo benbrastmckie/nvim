@@ -1,5 +1,5 @@
 ---
-next_project_number: 169
+next_project_number: 171
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 169
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164 | 29,74,88,139,155,162 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,169 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164,170 | 29,74,88,139,155,162,169 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -36,6 +36,8 @@ next_project_number: 169
 152 [PLANNED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
+169 [NOT STARTED] — Add a positive-direction case to `agent-system/extensions/core/sc
+  └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
 
 ### Extensions
 
@@ -71,6 +73,205 @@ next_project_number: 169
   └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
 
 ## Tasks
+
+### 170. Audit and isolate shell test suites from ambient host state, and record the convention
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 169
+
+**Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams, and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
+
+=== MOTIVATING LIVE FAILURE ===
+
+`test-lake-build-guard.sh` cases 1, 3 and 11 failed because `lake-build-guard.sh` read the REAL
+`/proc/pressure/memory` and `/proc/meminfo`, and the host was swapping at 57% of SwapTotal --
+over the guard's own `SWAP_USED_RATIO_THRESHOLD=50`. Cases 1 and 3 assert byte-identical
+transparency on the guard's clean path; case 11 asserts preflight exits 0 when the PSI path is
+unavailable. All three therefore pass on an idle machine and fail on a busy one -- and a busy
+machine is exactly what a multi-task `/orchestrate` batch produces.
+
+BLAST RADIUS (why this is worth a dedicated audit, not a one-off patch): that single suite
+failure failed `verify-deploy.sh`'s shell-test-suite gate (1 of 30 checks), which failed
+`deploy-headless.sh`, which made `skill-orchestrate`'s inter-cycle redeploy checkpoint defer an
+ENTIRE two-task orchestrate batch. One host-coupled assertion in one suite stalled unrelated
+work. The defect class is therefore load-bearing on throughput, not merely on test hygiene.
+
+ALREADY DONE -- DO NOT REDO. Commit `878043472` isolates `test-lake-build-guard.sh` suite-wide by
+redirecting `LAKE_BUILD_GUARD_PSI_PATH` and `LAKE_BUILD_GUARD_MEMINFO_PATH` to clean fixture files
+in the suite's own mktemp workdir, via the script's documented env seams. Verified 27/27 pass and
+verified non-vacuous. That suite is the EXEMPLAR this audit generalizes from, not work to repeat.
+The separate positive-direction case for that same suite is tracked as its own prerequisite task
+(this task depends on it) -- do not duplicate that work either.
+
+=== THE DEFECT CLASS TO HUNT ===
+
+Any assertion whose outcome depends on ambient host state:
+  - memory (`/proc/meminfo`, `/proc/pressure/memory`, swap usage, `free`)
+  - load / CPU count (`/proc/loadavg`, `nproc`, `getconf`, `uptime`)
+  - wall-clock timing (races, `sleep`-dependent ordering, `date +%s` deltas, `SECONDS`,
+    `timeout` values tuned to a fast machine)
+  - network reachability (`curl`, `wget`, `ping`, DNS, any live API)
+  - free disk (`df`)
+  - the process table (`pgrep`, `ps`, PID reuse, pre-existing processes matching a pattern)
+  - anything else read from the live host rather than from a fixture
+
+=== SURVEY ALREADY PERFORMED (starting point, NOT the answer) ===
+
+72 files match `test*.sh` under `agent-system/extensions/**`. A keyword grep over the signals
+above flagged 25 of them. Ordered by raw hit count:
+
+  13  core/scripts/test-four-tier-conflict.sh
+  12  core/scripts/tests/test-lake-build-guard.sh          (exemplar -- already isolated)
+   6  literature/scripts/test-lit-pipeline.sh
+   6  core/scripts/tests/test-validate-state.sh
+   6  core/scripts/tests/test-claude-refresh-matcher.sh
+   4  core/scripts/test-state-write-concurrency.sh
+   3  literature/scripts/tests/test-literature-convert.sh
+   3  lean/scripts/tests/test-lean-comparator-run.sh
+   3  core/scripts/tests/test-loop-guard-budget-override.sh
+   2  literature/scripts/tests/test-literature-discover-tier3.sh
+   2  core/scripts/tests/test-subagent-postflight-marker.sh
+   2  core/scripts/tests/test-lint-branch-gated-sections.sh
+   2  core/scripts/tests/test-handoff-dispatch-identity.sh
+   2  core/scripts/test-state-write-regen-timing.sh
+   2  core/scripts/test-session-registry.sh
+   2  core/scripts/test-conflict-predicate.sh
+   1  each: core/scripts/test-task-lock-reap.sh, core/scripts/test-session-runtime-files.sh,
+          core/scripts/tests/{test-validate-return-meta,test-status-vocabulary,
+          test-skill-base-lifecycle,test-phase-heartbeat,test-phase-heading-patterns,
+          test-guard-destructive-git,test-common-lib}.sh
+
+RAW HIT COUNT IS NOT SEVERITY and this list is neither sound nor complete:
+  - FALSE POSITIVES ARE EXPECTED. A `sleep` inside a concurrency suite that deliberately
+    exercises lock contention may be legitimate and intended; `pgrep` inside a suite whose
+    subject IS process matching (`test-claude-refresh-matcher.sh`, `test-task-lock-reap.sh`)
+    may be exercising the real behavior under test. Triage each hit; do not mechanically
+    "fix" every match.
+  - FALSE NEGATIVES ARE LIKELY. The grep cannot see host coupling that enters through a
+    library the suite sources, through the script under test rather than the suite itself
+    (which is exactly how the lake-build-guard defect arrived), or through a helper that
+    shells out. Read the scripts under test, not only the suites.
+  - Suites NOT on this list are not thereby cleared. Confirm or refute per suite.
+
+=== REQUIRED APPROACH PER AFFECTED SUITE ===
+
+1. Identify the script-under-test's OWN documented env seam (the pattern
+   `lake-build-guard.sh` provides via `LAKE_BUILD_GUARD_PSI_PATH` /
+   `LAKE_BUILD_GUARD_MEMINFO_PATH`). Prefer an existing seam.
+2. If no seam exists, adding one to the script under test is in scope -- but it must be a
+   genuine, documented override point with a real-host default, never a test-only branch or an
+   "if running under test" conditional.
+3. Point the seam at a fixture authored into the suite's own mktemp workdir, per the existing
+   fixture convention in `context/standards/shell-script-testing.md` (heredoc-authored, fresh
+   per case where staleness would otherwise mask behavior, never resolved against the live tree).
+4. NON-VACUOUSNESS CHECK PER ISOLATED SUITE, mandatory. After isolating, demonstrate that the
+   logic under test is still genuinely exercised -- typically by driving the opposite direction
+   with a fixture that SHOULD trip the behavior and confirming it does. An isolation that makes
+   a suite assert nothing is worse than the host coupling it replaced. Record each check.
+
+=== CONSTRAINTS ===
+
+- All edits target `agent-system/extensions/**` ONLY. Never hand-author anything under
+  `.claude/**`; that tree is a disposable deploy artifact regenerated from source
+  (see `.claude/rules/source-store-deploy-boundary.md`).
+- NEVER weaken, raise, or bypass a guard threshold, loosen an assertion, widen a tolerance, or
+  mark a case skipped to make a suite pass. Isolate the INPUT; do not relax the ASSERTION.
+- Where a suite legitimately depends on real host state and cannot be isolated, use the
+  loud-skip discipline already documented in `shell-script-testing.md` rather than a silent
+  skip, and justify the exemption in the summary.
+
+=== DELIVERABLE 3: THE CONVENTION ===
+
+Extend `agent-system/extensions/core/context/standards/shell-script-testing.md` (127 lines;
+existing sections: Location rule, Helper-naming convention, Fixture convention including "Never
+resolve a path against the live tree", Loud-skip discipline, Mutation checks for regex-shaped
+fixes, Registration, Related). Add an ambient-host-state isolation section that:
+  - names the defect class and why it is load-bearing (the deploy-gate blast radius above);
+  - states the seam-first rule, and the bar for adding a new seam;
+  - requires the per-suite non-vacuousness check;
+  - forbids threshold relaxation as a remedy;
+  - cross-references the existing Fixture convention and Loud-skip discipline sections rather
+    than restating them.
+Place it so it composes with, not duplicates, what is already there.
+
+=== ACCEPTANCE ===
+
+- Every one of the 72 suites has been triaged, with a recorded verdict: affected-and-isolated,
+  false-positive-with-reason, or legitimately-host-dependent-and-loud-skipped.
+- Each isolated suite carries a demonstrated non-vacuousness check.
+- The full shell-test-suite gate in `verify-deploy.sh` passes while the host is under memory
+  pressure above the lake guard's own threshold -- the exact ambient condition that produced
+  the original failure.
+- `shell-script-testing.md` documents the convention.
+
+---
+
+### 169. Add a positive-direction memory-pressure detection case to test-lake-build-guard.sh
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add a positive-direction case to `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` asserting that memory pressure IS detected, closing the regression-masking gap opened by the suite-wide clean-fixture default.
+
+=== WHY THIS EXISTS (the immediate fix created this gap) ===
+
+Commit `878043472` isolated the suite from ambient host state by exporting
+`LAKE_BUILD_GUARD_PSI_PATH` and `LAKE_BUILD_GUARD_MEMINFO_PATH` suite-wide to clean fixture
+files written into the suite's own mktemp workdir, using the script-under-test's own documented
+env seams. That fix is correct and is ALREADY LANDED -- do not redo it, do not revert it.
+
+The gap it introduces: with a clean fixture as the suite-wide default and NO case driving the
+pressured direction, a regression that disabled pressure detection entirely would leave all
+27 cases green. The suite would assert only that the guard does not fire, never that it can.
+
+The already-landed commit anticipates this. `test-lake-build-guard.sh` around line 84 carries an
+explicit in-file note that the positive direction must override the two variables LOCALLY with a
+pressured fixture rather than mutating the suite-wide clean default. Case 11 already demonstrates
+the local-override idiom for the degradation direction (it sets
+`LAKE_BUILD_GUARD_PSI_PATH="$WORKDIR/does-not-exist-psi"` on the single invocation). Follow that
+same shape.
+
+=== WHAT TO ADD ===
+
+A new case that:
+  1. Writes a PRESSURED meminfo fixture (and, if the guard's PSI path participates in the
+     assertion, a pressured PSI fixture) into the suite's existing mktemp workdir, alongside
+     the existing `PSI_FIXTURE_CLEAN` / `MEMINFO_FIXTURE_CLEAN` files.
+  2. Overrides `LAKE_BUILD_GUARD_MEMINFO_PATH` (and `LAKE_BUILD_GUARD_PSI_PATH` as needed) on
+     that single guard invocation ONLY -- never by reassigning the suite-wide exports set near
+     the top of the file.
+  3. Asserts the guard's preflight exits non-zero with the documented pressure return code and
+     that its output names the reason(s) the fixture encodes.
+
+The verification already performed against the immediate fix is the reference behavior to
+reproduce here: a deliberately pressured fixture yields preflight rc=11 reporting BOTH the
+MemAvailable reason and the swap-in-use reason. Confirm those exact values against
+`lake-build-guard.sh` itself rather than hardcoding them from this description -- the return
+code and reason strings must be read from the script under test.
+
+=== CONSTRAINTS ===
+
+- Edits target `agent-system/extensions/core/**` ONLY. Never hand-author anything under
+  `.claude/**`; that tree is a disposable deploy artifact regenerated from source
+  (see `.claude/rules/source-store-deploy-boundary.md`).
+- NEVER weaken, raise, or bypass `SWAP_USED_RATIO_THRESHOLD` or any other guard threshold to
+  make a case pass. This task adds an assertion; it does not touch `lake-build-guard.sh`'s logic
+  or its constants.
+- Derive the pressured fixture values from the guard's own thresholds, so the case stays correct
+  if a threshold is later retuned deliberately.
+
+=== ACCEPTANCE ===
+
+- The full suite passes (previously 27/27; expect 28/28 or more after this addition).
+- The new case is non-vacuous: temporarily neutering pressure detection in `lake-build-guard.sh`
+  makes the new case -- and only the new case -- fail. Demonstrate this during implementation and
+  record the demonstration in the summary; do not commit the neutered guard.
+- The suite still passes on a host that is actively swapping above the guard's own threshold,
+  which is the ambient condition that produced the original defect.
+
+---
 
 ### 168. Correct opencode mcp scoping claim
 - **Status**: [NOT STARTED]
