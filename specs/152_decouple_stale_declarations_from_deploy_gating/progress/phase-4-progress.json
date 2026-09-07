@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Make deploy-headless.sh's three outcomes distinguishable by a caller",
+  "started_at": "2026-09-08T00:06:00Z",
+  "last_updated": "2026-09-08T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Runtime-confirm the consumer-staleness guard cannot influence exit code before writing any fix", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Emit CONSUMERS_STALE=<n> marker and RESULT= outcome markers at each exit path; tighten header exit-code block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Runtime confirmation performed against a real scratch git-init target using this repo's OWN real (populated) consumer registry -- bash -x trace showed verify_rc set before the consumer-freshness block and never reassigned by it, and a subsequent direct scratch-deploy run (invoking the SOURCE-STORE deploy-headless.sh, not the not-yet-redeployed .claude/ copy) confirmed CONSUMERS_STALE=44 and RESULT=landed_verify_red co-occurring with exit 3, and RESULT=not_landed with exit 1 on a usage error. Guard confirmed to hold; no code fix needed for the confound itself, matching the Scope Hypothesis's predicted branch."
+}

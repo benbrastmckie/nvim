@@ -276,7 +276,7 @@ again — the drift that made this defect possible in the first place.
 
 ---
 
-### Phase 4: Make `deploy-headless.sh`'s three outcomes distinguishable by a caller [NOT STARTED]
+### Phase 4: Make `deploy-headless.sh`'s three outcomes distinguishable by a caller [COMPLETED]
 
 **Goal**: Resolve the dispatch's third confound with evidence rather than assumption, and give a
 caller a machine-readable way to tell "did not land" from "landed, gate red" from "consumer repos
@@ -284,21 +284,21 @@ stale".
 
 **Tasks**:
 
-- [ ] **Runtime confirmation first** (the research's verify-then-decide item): register a
+- [x] **Runtime confirmation first** (the research's verify-then-decide item): register a
       deliberately-stale consumer repo, run `deploy-headless.sh` against this repo, and record
       the observed exit code. Static reading says the consumer report is `|| true`-guarded and
       never reaches `exit "$verify_rc"`; confirm or refute that before writing any fix.
-- [ ] If the runtime check confirms the guard holds: do NOT add a new exit code for the consumer
+- [x] If the runtime check confirms the guard holds: do NOT add a new exit code for the consumer
       condition. Instead emit a machine-readable marker line so the condition is legible without
       prose parsing — `[deploy-headless] CONSUMERS_STALE=<n>` alongside the existing human
       report.
 - [ ] If the runtime check refutes it (the consumer path can influence the exit code): fix the
-      leak so it cannot, and record the reproduction in the phase notes.
-- [ ] Emit a single machine-readable outcome marker before the final exit —
+      leak so it cannot, and record the reproduction in the phase notes. *(deviation: skipped — the runtime check confirmed the guard holds, not refuted it; this conditional branch was inapplicable)*
+- [x] Emit a single machine-readable outcome marker before the final exit —
       `[deploy-headless] RESULT=landed_verify_clean` (0), `RESULT=landed_verify_red` (3), and
       `RESULT=not_landed` on the exit-1/2 paths — so callers stop having to infer the
       distinction from an exit code plus log prose.
-- [ ] Tighten the header's `# Exit codes:` block to state explicitly that consumer staleness is
+- [x] Tighten the header's `# Exit codes:` block to state explicitly that consumer staleness is
       report-only and can never change the exit code, naming the `|| true` guard as the
       mechanism.
 

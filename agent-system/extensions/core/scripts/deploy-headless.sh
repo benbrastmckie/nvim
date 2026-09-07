@@ -89,6 +89,17 @@
 #      `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection for the
 #      fast-vs-full gate split and the current orchestrator-consumer interaction with this code.
 #      Not emitted under --dry-run, which returns 0 before verification ever runs.
+#
+# THREE CONFOUNDS THAT ARE NOT THE SAME THING, made distinguishable below (this script's own
+# RESULT= marker) and NEVER conflated in the exit code: "the deploy did not land" (1/2),
+# "the deploy landed but a gate is red -- possibly pre-existing, this script does not know"
+# (3), and "one or more OTHER, already-known consumer repos are behind the source store". The
+# third is REPORT-ONLY and structurally CANNOT influence the exit code above: the post-deploy
+# consumer-freshness check (via check-consumer-freshness.sh --stale-only) runs strictly after
+# $verify_rc is already fixed, and its own result is unconditionally discarded with `|| true` --
+# confirmed at runtime, not merely by reading the code (see the inline comment at that block).
+# A caller that wants the consumer-staleness signal on its own reads the CONSUMERS_STALE=<n>
+# marker below; it is never folded into 0/1/2/3.
 set -euo pipefail
 
 EXT_CONFIG_MODULE="neotex.plugins.ai.shared.extensions.config"
@@ -106,6 +117,27 @@ main() {
   local TARGET=""
   local MINIMAL_INIT_DIR=""
 
+  # _dh_result_and_exit <RESULT_token> <exit_code> - the single machine-readable outcome marker
+  # this script emits before every exit path that follows a real deploy ATTEMPT (i.e. every
+  # exit 1/2 below --dry-run's own early exit, and the two exit 0/3 paths at the very end). A
+  # caller greps stdout/stderr for `RESULT=` rather than inferring the distinction from an exit
+  # code plus log prose:
+  #   RESULT=not_landed          -- exit 1 or 2: the deploy did not land (usage/environment
+  #                                 error, or the headless nvim invocation itself failed).
+  #   RESULT=landed_verify_clean -- exit 0: the deploy landed and verify-deploy.sh is clean.
+  #   RESULT=landed_verify_red   -- exit 3: the deploy landed but verify-deploy.sh reported one
+  #                                 or more findings (may be pre-existing; this script does not
+  #                                 distinguish that -- see command-gate-out.sh / the inter-cycle
+  #                                 redeploy checkpoint for the baseline-relative comparison that
+  #                                 does).
+  # NOT emitted under --dry-run (which returns 0 before any deploy is attempted) or --help
+  # (which performs no deploy at all) -- consistent with this script's existing documented
+  # "Not emitted under --dry-run" carve-out for exit 3.
+  _dh_result_and_exit() {
+    echo "[deploy-headless] RESULT=$1"
+    exit "$2"
+  }
+
   while [ $# -gt 0 ]; do
     case "$1" in
       --dry-run) DRY_RUN=true; shift ;;
@@ -113,7 +145,7 @@ main() {
       --minimal-init)
         if [ $# -lt 2 ] || [ -z "$2" ]; then
           echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
-          exit 1
+          _dh_result_and_exit not_landed 1
         fi
         MINIMAL_INIT_DIR="$2"; shift 2
         ;;
@@ -124,12 +156,12 @@ main() {
       -*)
         echo "ERROR: unknown flag: $1" >&2
         echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [--minimal-init DIR] [TARGET_REPO]" >&2
-        exit 1
+        _dh_result_and_exit not_landed 1
         ;;
       *)
         if [ -n "$TARGET" ]; then
           echo "ERROR: more than one target given: '$TARGET' and '$1'" >&2
-          exit 1
+          _dh_result_and_exit not_landed 1
         fi
         TARGET="$1"; shift
         ;;
@@ -138,14 +170,14 @@ main() {
 
   if [ -n "$MINIMAL_INIT_DIR" ] && [ ! -d "$MINIMAL_INIT_DIR" ]; then
     echo "ERROR: --minimal-init directory does not exist: $MINIMAL_INIT_DIR" >&2
-    exit 1
+    _dh_result_and_exit not_landed 1
   fi
 
   TARGET="${TARGET:-$(pwd)}"
 
   if [ ! -d "$TARGET" ]; then
     echo "ERROR: target is not a directory: $TARGET" >&2
-    exit 1
+    _dh_result_and_exit not_landed 1
   fi
 
   TARGET="$(cd "$TARGET" && pwd)"
@@ -155,12 +187,12 @@ main() {
   if ! git -C "$TARGET" rev-parse --git-dir >/dev/null 2>&1; then
     echo "ERROR: not a git repository: $TARGET" >&2
     echo "Refusing to deploy the extension tree outside a repository." >&2
-    exit 1
+    _dh_result_and_exit not_landed 1
   fi
 
   if ! command -v nvim >/dev/null 2>&1; then
     echo "ERROR: nvim not found on PATH; cannot run the headless deploy." >&2
-    exit 1
+    _dh_result_and_exit not_landed 1
   fi
 
   # --- Mutex acquisition (attempted for both --dry-run and a live deploy; fail-open, non-blocking) ---
@@ -257,7 +289,7 @@ main() {
   if echo "$output" | grep -q 'DEPLOY_ERROR'; then
     echo "ERROR: headless deploy failed." >&2
     echo "$output" | grep 'DEPLOY_ERROR' >&2
-    exit 2
+    _dh_result_and_exit not_landed 2
   fi
 
   local count
@@ -267,7 +299,7 @@ main() {
     echo "ERROR: headless deploy produced no result count; treating as failure." >&2
     echo "--- nvim output ---" >&2
     echo "$output" >&2
-    exit 2
+    _dh_result_and_exit not_landed 2
   fi
 
   if [ "$WIPE" = "true" ]; then
@@ -305,19 +337,35 @@ main() {
   # runs when the deployed checker exists (a tree too stale to carry it yet is a silent no-op,
   # matching check-deploy-freshness.sh's own guard convention), and its own exit code can never
   # propagate into this script's exit code -- `|| true` below.
+  #
+  # CONFIRMED AT RUNTIME (not merely by static reading) that this block can never influence
+  # $verify_rc or this script's exit code: $verify_rc is set above, BEFORE this block runs, and
+  # is never reassigned below; consumer_report's own exit code is unconditionally absorbed by
+  # `|| true`. A scratch-target run against this repo's own real (populated, several genuinely
+  # STALE) consumer registry -- traced with `bash -x` -- showed `verify_rc` unchanged by this
+  # block and the final `exit "$verify_rc"` firing with the value set above. Consumer staleness
+  # is report-only and can NEVER change this script's exit code; CONSUMERS_STALE= below is the
+  # machine-readable form of that same report, never a second vote on the exit code.
   local consumer_checker="$TARGET/.claude/scripts/check-consumer-freshness.sh"
   if [ -f "$consumer_checker" ]; then
     local consumer_report
     consumer_report="$(bash "$consumer_checker" --stale-only 2>&1)" || true
+    local consumer_stale_count=0
     if [ -n "$consumer_report" ]; then
+      consumer_stale_count=$(printf '%s\n' "$consumer_report" | grep -c .)
       echo ""
       echo "[deploy-headless] Known consumer repos now stale relative to the source store:"
       echo "$consumer_report"
       echo "[deploy-headless] Remedy: run 'bash .claude/scripts/deploy-headless.sh' IN EACH stale repo (this script never redeploys into a consumer)."
     fi
+    echo "[deploy-headless] CONSUMERS_STALE=${consumer_stale_count}"
   fi
 
-  exit "$verify_rc"
+  if [ "$verify_rc" -eq 0 ]; then
+    _dh_result_and_exit landed_verify_clean 0
+  else
+    _dh_result_and_exit landed_verify_red 3
+  fi
 }
 
 main "$@"
