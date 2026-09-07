@@ -410,27 +410,27 @@ after implementation has started a loud refusal.
 
 ---
 
-### Phase 6: Regression suite, fixtures, and manifest registration [NOT STARTED]
+### Phase 6: Regression suite, fixtures, and manifest registration [COMPLETED]
 
 **Goal**: Lock every behaviour above behind an executable suite in the house style, and register
 the new files so they actually deploy.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh`
+- [x] Create `agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` *(completed)*
       following the established convention (`pass()/fail()/info()/skip()` helpers, PASSED/FAILED/
       SKIPPED counters, `mktemp -d` workdir with `trap EXIT` cleanup, exit 0 all-pass / 1 any-fail),
       with a header comment enumerating the regression concerns it covers.
-- [ ] Cases: R1 extraction; identifier-set mismatch -> `71`; R2 fallback success plus its
+- [x] Cases: R1 extraction; identifier-set mismatch -> `71`; R2 fallback success plus its *(completed: 13 cases -- R1,R2,R3,R4,M1,M2,M3,C1-C5,AV1 -- exceeding the 11-case hypothesis; none dropped)*
       degradation notice; greenfield unresolvable -> `71`; commit+manifest+SHA round-trip; status
       gate refusal -> `73`; `--force` incident warning text; `--check` drift -> `65`; `--check`
       honest -> `0`; `--check` cosmetic-only -> `0`; `--check` missing identifier -> `71`.
-- [ ] Carry the **anti-vacuous-test guard** the sibling suites use: assert that a naive
+- [x] Carry the **anti-vacuous-test guard** the sibling suites use: assert that a naive *(completed)*
       "exit code non-zero means bad" classifier cannot distinguish the `65` drift case from the
       `71` config-error case, proving the exit-code vocabulary is doing real work.
-- [ ] Add fixtures under `tests/fixtures/challenge/`: a plan with an R1 section, a legacy plan
+- [x] Add fixtures under `tests/fixtures/challenge/`: a plan with an R1 section, a legacy plan *(completed)*
       without one, a mismatched-identifier plan, and honest/weakened/cosmetic Solution variants.
-- [ ] Register the script, the test, and every fixture file in
+- [x] Register the script, the test, and every fixture file in *(completed)*
       `agent-system/extensions/lean/manifest.json` under `provides.scripts`, matching the
       `lean-comparator-run.sh` registration pattern exactly.
 

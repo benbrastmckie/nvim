@@ -1,0 +1,23 @@
+{
+  "phase": 6,
+  "phase_name": "Regression suite, fixtures, and manifest registration",
+  "started_at": "2026-09-07T03:05:00Z",
+  "last_updated": "2026-09-07T03:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lean-challenge-snapshot.sh with 13 cases (R1-R4, M1-M3, C1-C5, AV1)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"]},
+    {"id": 2, "description": "Add 6 fixtures under tests/fixtures/challenge/", "status": "done", "files_touched": [
+      "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_r1.md",
+      "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_legacy.md",
+      "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_mismatched.md",
+      "agent-system/extensions/lean/scripts/tests/fixtures/challenge/solution_honest.lean",
+      "agent-system/extensions/lean/scripts/tests/fixtures/challenge/solution_weakened.lean",
+      "agent-system/extensions/lean/scripts/tests/fixtures/challenge/solution_cosmetic.lean"
+    ]},
+    {"id": 3, "description": "Register script/test/fixtures in lean/manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/lean/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "R2 fixture test adding baseline .lean file in a commit AFTER the plan commit", "result": "failed", "reason": "R2 resolves declarations at the plan's approval commit (git log -1 -- plan_path); a baseline added in a later commit is invisible there. Fixed by committing plan + baseline .lean file together in one commit."}
+  ],
+  "handoff_count": 0
+}

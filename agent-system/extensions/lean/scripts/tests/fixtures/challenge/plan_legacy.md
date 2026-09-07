@@ -1,0 +1,18 @@
+- **Task**: {N} - test
+- **Status**: [NOT STARTED]
+- **Effort**: 1 hour
+- **Dependencies**: None
+- **Research Inputs**: None
+- **Artifacts**: plans/01_test.md
+- **Standards**: plan-format.md
+- **Type**: lean
+
+## Goals & Non-Goals
+
+**Goals**:
+
+- Prove `comm` for natural number addition.
+
+**Non-Goals**:
+
+- None.
