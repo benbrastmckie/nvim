@@ -572,18 +572,18 @@ signature the extractor rejects), switch to the other confirmed project and reco
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` exits 0,
+- [x] `bash agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` exits 0, *(completed: 13/13 pass)*
       with every case PASS or explicitly SKIP.
-- [ ] Sibling suites `test-lean-comparator-run.sh` and `test-lean-sorry-census.sh` still pass.
-- [ ] Anti-vacuous guard passes: a naive exit-code-only classifier provably disagrees with this
+- [x] Sibling suites `test-lean-comparator-run.sh` and `test-lean-sorry-census.sh` still pass. *(completed)*
+- [x] Anti-vacuous guard passes: a naive exit-code-only classifier provably disagrees with this *(completed)*
       script's `65`-vs-`71` classification.
-- [ ] The artifact validator's outcome on existing non-lean plans is identical before and after
+- [x] The artifact validator's outcome on existing non-lean plans is identical before and after *(completed)*
       the `plan-format.md` edit.
-- [ ] Every path registered in `lean/manifest.json` exists; `check-deploy-freshness.sh` clean.
-- [ ] No `.claude/**` file is modified by any phase (`git status --short` review before each
+- [x] Every path registered in `lean/manifest.json` exists; `check-deploy-freshness.sh` clean. *(completed)*
+- [x] No `.claude/**` file is modified by any phase (`git status --short` review before each *(completed)*
       commit).
-- [ ] No task-number citation appears in any deliverable outside `specs/**`.
-- [ ] Both operator Lean projects are unmodified after Phase 8.
+- [x] No task-number citation appears in any deliverable outside `specs/**`. *(completed)*
+- [x] Both operator Lean projects are unmodified after Phase 8. *(completed)*
 
 ## Artifacts & Outputs
 
