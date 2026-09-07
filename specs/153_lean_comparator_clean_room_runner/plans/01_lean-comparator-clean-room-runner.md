@@ -204,32 +204,34 @@ closing the research report's flagged zero-coverage context gap.
 
 ---
 
-### Phase 2: Runner skeleton — CLI, binary resolution, verdict emitter [NOT STARTED]
+### Phase 2: Runner skeleton — CLI, binary resolution, verdict emitter [COMPLETED]
 
 **Goal**: A runnable `lean-comparator-run.sh` that parses its arguments, resolves its three
 external binaries, and can emit every verdict in the closed vocabulary — including a correct
 `comparator_unavailable` — before any Comparator run exists.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/lean-comparator-run.sh` with a header comment
-      block matching `lean-sorry-census.sh`'s style (purpose, usage, output shape, exit codes).
-- [ ] Implement CLI: `--project-root`, `--challenge-module`, `--solution-module`,
+- [x] Create `agent-system/extensions/lean/scripts/lean-comparator-run.sh` with a header comment
+      block matching `lean-sorry-census.sh`'s style (purpose, usage, output shape, exit codes). *(completed)*
+- [x] Implement CLI: `--project-root`, `--challenge-module`, `--solution-module`,
       `--theorems <comma-list>`, `--permitted-axioms <comma-list>`, `--definitions <comma-list>`
       (optional), `--timeout <seconds>`, `--keep-workdir`, `--json`. Usage error -> exit 64.
-- [ ] Implement binary resolution honouring `COMPARATOR_LANDRUN`, `COMPARATOR_LEAN4EXPORT`,
+      *(completed: also added `--commit`, `--enable-nanoda`, `--external-kernels` required by
+      Phase 3's mutual-exclusion usage-error task)*
+- [x] Implement binary resolution honouring `COMPARATOR_LANDRUN`, `COMPARATOR_LEAN4EXPORT`,
       `COMPARATOR_NANODA` (upstream's own variable names, carried through, not invented here),
       plus a `COMPARATOR_BIN` for the comparator binary itself, each falling back to `PATH`.
-      Never default `COMPARATOR_LEAN4EXPORT` to a Comparator-checkout path (C3).
-- [ ] Implement the `comparator_unavailable` path: on any unresolved binary, emit a verdict whose
+      Never default `COMPARATOR_LEAN4EXPORT` to a Comparator-checkout path (C3). *(completed)*
+- [x] Implement the `comparator_unavailable` path: on any unresolved binary, emit a verdict whose
       message names BOTH the missing binary and the environment variable that would override it,
-      and exit 69 — distinguishable from every real-rejection code.
-- [ ] Implement the verdict emitter: one function taking `(verdict, reason_detail,
+      and exit 69 — distinguishable from every real-rejection code. *(completed)*
+- [x] Implement the verdict emitter: one function taking `(verdict, reason_detail,
       underlying_verdict, message)` and producing the machine-readable record (key: value lines
-      by default, JSON under `--json`), then exiting with the code from the Goals table.
-- [ ] Reuse the guard's `have_systemd_run()` probe pattern (a real
+      by default, JSON under `--json`), then exiting with the code from the Goals table. *(completed)*
+- [x] Reuse the guard's `have_systemd_run()` probe pattern (a real
       `systemd-run --user --scope --quiet --collect -- true` invocation, not `command -v`) as a
       usability check; an unusable `systemd-run` is `comparator_unavailable`, not a silent
-      unsandboxed fallback.
+      unsandboxed fallback. *(completed)*
 
 **Timing**: 1.5 hours
 
