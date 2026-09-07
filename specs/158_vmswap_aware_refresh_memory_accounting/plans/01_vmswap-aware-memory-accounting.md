@@ -1,7 +1,7 @@
 # Implementation Plan: Task #158
 
 - **Task**: 158 - Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md
@@ -94,25 +94,25 @@ where the logical dependency is weak.
 
 ---
 
-### Phase 1: Record the snapshot-invariant ruling in the header [NOT STARTED]
+### Phase 1: Record the snapshot-invariant ruling in the header [COMPLETED]
 
 **Goal**: Land the argued invariant ruling in the script header *before* any `/proc` read exists, so
 the justification is present in the file at the moment the code that needs it arrives.
 
 **Tasks**:
-- [ ] Add a new paragraph to the header comment block in
+- [x] Add a new paragraph to the header comment block in
       `agent-system/extensions/core/scripts/claude-refresh.sh`, placed after the existing
       "If the platform's `ps` does not support the `cgroup` column..." paragraph and before
-      `set -euo pipefail`.
-- [ ] State the ruling explicitly: a per-candidate `/proc/PID/status` read for `VmSwap` does NOT
+      `set -euo pipefail`. *(completed)*
+- [x] State the ruling explicitly: a per-candidate `/proc/PID/status` read for `VmSwap` does NOT
       breach the single-snapshot race-freedom argument, because (a) it is reporting-only and feeds
       no `if` that decides active/orphan/excluded, (b) it is performed strictly after the row's
       classification has already been made from the snapshot, and (c) a process that exited between
-      snapshot and read yields an empty read normalized to `0`, never a misclassification.
-- [ ] Name the residual PID-reuse risk in the same paragraph (worst case: a cosmetic figure briefly
-      attributed to the wrong process; never a termination decision) rather than leaving it silent.
-- [ ] Match the surrounding header's existing voice and the "read this before touching the
-      predicates below" register — this block is prescriptive documentation, not a changelog entry.
+      snapshot and read yields an empty read normalized to `0`, never a misclassification. *(completed)*
+- [x] Name the residual PID-reuse risk in the same paragraph (worst case: a cosmetic figure briefly
+      attributed to the wrong process; never a termination decision) rather than leaving it silent. *(completed)*
+- [x] Match the surrounding header's existing voice and the "read this before touching the
+      predicates below" register — this block is prescriptive documentation, not a changelog entry. *(completed)*
 
 **Timing**: 0.25 hours
 

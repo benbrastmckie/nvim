@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "phase_name": "Record the snapshot-invariant ruling in the header",
+  "started_at": "2026-09-07T00:00:00Z",
+  "last_updated": "2026-09-07T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add argued invariant-ruling paragraph to script header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

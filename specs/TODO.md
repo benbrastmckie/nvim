@@ -37,7 +37,7 @@ next_project_number: 166
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-158 [PLANNED] — Make refresh memory accounting VmSwap-aware so zram-compressed id
+158 [IMPLEMENTING] — Make refresh memory accounting VmSwap-aware so zram-compressed id
   └─ 159 [NOT STARTED] — Add an independently-gated reclamation pass for orphaned Lean LSP
     └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
       └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
@@ -280,7 +280,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 158. Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

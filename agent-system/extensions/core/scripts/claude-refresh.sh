@@ -43,6 +43,24 @@
 #   If the platform's `ps` does not support the `cgroup` column (or the invocation
 #   fails), this script refuses to run rather than silently falling back to the old,
 #   unsafe argv-substring behavior. See validate_cgroup_support() below.
+#
+#   Invariant ruling -- VmSwap accounting and the single-snapshot argument above:
+#   get_vmswap_kb() performs a per-candidate read of /proc/PID/status, taken AFTER the
+#   snapshot above, which is the first thing in this script to touch a live PID rather
+#   than the frozen `ps -eo` snapshot. Ruling: this does NOT breach the race-freedom
+#   argument above. (a) It is reporting-only -- its result feeds no `if` that decides
+#   active/orphan/excluded status; every candidacy and exclusion decision is still made
+#   exclusively from the original snapshot, unchanged. (b) It is performed strictly
+#   after a row's classification has already been fixed from the snapshot, so nothing
+#   downstream of the read can change which branch a row took. (c) A candidate that
+#   exited between the snapshot and this read yields an empty `/proc` read, which
+#   get_vmswap_kb() normalizes to `0` -- never an error, and never a misclassification,
+#   because classification has already happened. Residual risk, named rather than left
+#   silent: if the original PID exits and the kernel reuses that PID number for an
+#   unrelated process before this read runs, the swap figure reported for that row could
+#   be attributed to the wrong process. This is accepted because the consequence is
+#   purely cosmetic -- a display/accumulation number -- and it never gates a termination
+#   decision; the four predicates above remain the sole authority over what gets killed.
 
 set -euo pipefail
 
