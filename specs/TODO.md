@@ -302,6 +302,7 @@ Place it so it composes with, not duplicates, what is already there.
 - **Dependencies**: None
 - **Research**: [169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md]
 - **Plan**: [169_lake_guard_pressure_detection_case/plans/01_pressure-detection-case.md]
+- **Summary**: [169_lake_guard_pressure_detection_case/summaries/01_pressure-detection-case-summary.md]
 
 **Description**: Add a positive-direction case to `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` asserting that memory pressure IS detected, closing the regression-masking gap opened by the suite-wide clean-fixture default.
 

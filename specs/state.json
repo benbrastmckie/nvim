@@ -998,12 +998,18 @@
           "path": "specs/169_lake_guard_pressure_detection_case/plans/01_pressure-detection-case.md",
           "type": "plan",
           "summary": "5-phase plan adding a positive-direction memory-pressure case, a non-vacuousness mutation check, and an ambient-pressure robustness check to test-lake-build-guard.sh."
+        },
+        {
+          "path": "specs/169_lake_guard_pressure_detection_case/summaries/01_pressure-detection-case-summary.md",
+          "type": "summary",
+          "summary": "Added case 22 (positive-direction memory-pressure detection) and Mutation F to test-lake-build-guard.sh, demonstrated non-vacuousness and ambient-pressure robustness; suite passes 29/29."
         }
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a positive-direction memory-pressure case (case 22) and a corresponding non-vacuousness mutation (Mutation F) to test-lake-build-guard.sh, closing the regression-masking gap where the suite-wide clean-fixture default left no case asserting pressure detection actually fires. Demonstrated via an out-of-band neutered-guard run that case 22 -- and only case 22 -- fails when check_memory_pressure() is disabled, and confirmed the suite still passes under an ambient pressured environment. Full suite: 29/29 passed, up from the 27/27 baseline; lake-build-guard.sh is untouched."
     },
     {
       "project_number": 170,
