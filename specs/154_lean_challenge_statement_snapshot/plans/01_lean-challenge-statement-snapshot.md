@@ -204,7 +204,7 @@ with `git status --short` before committing; if a fourth file proves necessary (
 
 ---
 
-### Phase 2: Snapshot script CLI and R1 extraction (assemble-only, no writes) [NOT STARTED]
+### Phase 2: Snapshot script CLI and R1 extraction (assemble-only, no writes) [COMPLETED]
 
 **Goal**: A runnable `lean-challenge-snapshot.sh` that resolves a task's plan, extracts the
 plan-declared statements and the goal identifiers, cross-validates them, and prints the assembled
@@ -212,27 +212,27 @@ Challenge module to stdout — with no filesystem or git side effects yet.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh` with the header
+- [x] Create `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh` with the header *(completed)*
       comment convention `lean-comparator-run.sh` uses: purpose, usage, required/optional args,
       env-var seams, exit-code table, and an explicit ADVISORY-ONLY gate-strength paragraph.
-- [ ] CLI:
+- [x] CLI: *(completed)*
       `lean-challenge-snapshot.sh <task_number> <project_root> [--commit REF]
       [--challenge-module NAME] [--force] [--dry-run] [--json]`, plus the `--check` mode added in
       Phase 5. Default `--challenge-module` is `Challenge`, matching the fixtures.
-- [ ] Resolve the plan file exactly as `lean-implementation-agent.md` already does
+- [x] Resolve the plan file exactly as `lean-implementation-agent.md` already does *(completed)*
       (`specs/{padded}_{slug}/plans/*.md`, `sort -V | tail -1`) — reuse, do not reinvent.
-- [ ] Extract goal identifiers with the existing backtick regex, reused **verbatim**:
+- [x] Extract goal identifiers with the existing backtick regex, reused **verbatim**: *(completed)*
       `sed -n '/^\*\*Goals\*\*:/,/^\*\*[^G]/p' "$plan_file" | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`'`.
       This is `theorem_names`.
-- [ ] Extract every ```` ```lean ```` fenced block under `## Lean Challenge Statements` and
+- [x] Extract every ```` ```lean ```` fenced block under `## Lean Challenge Statements` and *(completed)*
       concatenate in document order as the Challenge module body. Force every declaration body to
       `sorry` regardless of what the block contains — a Challenge pins statements only and must
       never carry a real proof.
-- [ ] Cross-validate: the identifier set declared in the section must equal the `- **Goals**:`
+- [x] Cross-validate: the identifier set declared in the section must equal the `- **Goals**:` *(completed)*
       set. On disagreement exit `71` naming the specific identifiers on each side.
-- [ ] `--dry-run` prints the assembled module and the resolved `theorem_names` to stdout and
+- [x] `--dry-run` prints the assembled module and the resolved `theorem_names` to stdout and *(completed)*
       exits 0 without touching anything.
-- [ ] Set the standard bash preamble used by the sibling scripts (`set -uo pipefail`,
+- [x] Set the standard bash preamble used by the sibling scripts (`set -uo pipefail`, *(completed)*
       `SCRIPT_DIR` resolution) and make usage errors exit `64`.
 
 **Timing**: 2 hours
