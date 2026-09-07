@@ -11,8 +11,8 @@ next_project_number: 172
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,169,171 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,170 | 29,74,88,139,151,155,162,169 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,171 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164,170 | 29,74,88,139,151,155,162 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -37,8 +37,6 @@ next_project_number: 172
 152 [PLANNED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
-169 [IMPLEMENTING] — Add a positive-direction case to `agent-system/extensions/core/sc
-  └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh (see above)
 
 ### Extensions
 
@@ -296,7 +294,7 @@ Place it so it composes with, not duplicates, what is already there.
 ---
 
 ### 169. Add a positive-direction memory-pressure detection case to test-lake-build-guard.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

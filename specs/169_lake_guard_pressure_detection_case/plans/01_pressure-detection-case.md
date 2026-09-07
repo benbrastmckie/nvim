@@ -1,7 +1,7 @@
 # Implementation Plan: Task #169
 
 - **Task**: 169 - Add a positive-direction memory-pressure case to test-lake-build-guard.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (builds on already-landed commit `878043472`)
 - **Research Inputs**: `specs/169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md`
