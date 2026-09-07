@@ -258,22 +258,33 @@ no row, blocks closure.
 
 ---
 
-### Phase 4: Add the Matching Inventory to refresh.md [NOT STARTED]
+### Phase 4: Add the Matching Inventory to refresh.md [COMPLETED]
 
 **Goal**: Make the user-facing command doc carry the same inventory as the skill, and close its
 two mirror gaps.
 
 **Tasks**:
-- [ ] Insert the same inventory table into `agent-system/extensions/core/commands/refresh.md`,
+- [x] Insert the same inventory table into `agent-system/extensions/core/commands/refresh.md`,
       near the top of `## What It Cleans`, populated from Phase 1's confirmed inventory.
-- [ ] Add the missing `### Orphaned Postflight Markers` subsection under `## What It Cleans`,
+      *(completed: 10 rows)*
+- [x] Add the missing `### Orphaned Postflight Markers` subsection under `## What It Cleans`,
       including its age threshold, its gate, and the fact that it is `/refresh`-only and never
-      reached by the hourly cadence.
-- [ ] Add the missing `### Stale Session Registry Entries` subsection, mirroring `SKILL.md`'s
-      Step 4.6, so every Step 3-4.6 item has a `refresh.md` counterpart.
-- [ ] Verify the table's rows, gates, and destructiveness classifications are identical to the
-      `SKILL.md` table from Phase 3 -- same inventory, adapted wording only.
-- [ ] Confirm the `## Options` flag descriptions remain accurate against the inventory.
+      reached by the hourly cadence. *(completed)*
+- [x] Add the missing `### Stale Session Registry Entries` subsection, mirroring `SKILL.md`'s
+      Step 4.6, so every Step 3-4.6 item has a `refresh.md` counterpart. *(completed)*
+- [x] Verify the table's rows, gates, and destructiveness classifications are identical to the
+      `SKILL.md` table from Phase 3 -- same inventory, adapted wording only. *(completed: 10/10
+      rows match on gate/destructive/cadence; the sole textual difference is each file's own
+      correct section-name pointer, "Safety Measures" in SKILL.md vs "Safety" in refresh.md)*
+- [x] Confirm the `## Options` flag descriptions remain accurate against the inventory.
+      *(completed: updated both `--dry-run` and `--force` rows, which previously undercounted
+      scope by naming only "process" and "directory" cleanup, to also name the age-threshold-only
+      spec-directory sweeps and stale-backup-file cleanup)*
+- [x] Added the missing `### Stale Backup Files` subsection, mirroring `SKILL.md`'s Step 5, which
+      Phase 1's Scope Hypothesis flagged as a live candidate omission. *(deviation: added --
+      confirmed present as SKILL.md Step 5 but absent from refresh.md and from both the task
+      description's list of seven and the research report's nine-row table; see
+      progress/phase-1-progress.json's divergence_note)*
 
 **Timing**: 45 minutes
 

@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "Add the Matching Inventory to refresh.md",
+  "started_at": "2026-09-07T00:40:00Z",
+  "last_updated": "2026-09-07T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert inventory table near top of ## What It Cleans", "status": "done", "files_touched": ["agent-system/extensions/core/commands/refresh.md"]},
+    {"id": 2, "description": "Add Orphaned Postflight Markers subsection", "status": "done", "files_touched": ["agent-system/extensions/core/commands/refresh.md"]},
+    {"id": 3, "description": "Add Stale Session Registry Entries subsection", "status": "done", "files_touched": ["agent-system/extensions/core/commands/refresh.md"]},
+    {"id": 4, "description": "Verify tables agree row-for-row", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify Options flag descriptions remain accurate", "status": "done", "files_touched": ["agent-system/extensions/core/commands/refresh.md"]},
+    {"id": 6, "description": "Add Stale Backup Files subsection (Phase 1 flagged omission)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/refresh.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.6",
+      "description": "Add missing ### Stale Backup Files subsection to refresh.md",
+      "type": "altered",
+      "reason": "Not explicitly named in the plan's Phase 4 task list, but the plan's own Scope Hypothesis for this phase named it a live candidate omission and required adding it if Phase 1 confirmed the omission. Phase 1 confirmed refresh.md has zero mention of .backup file cleanup, so this subsection was added to keep every Phase-1-confirmed pass mirrored in both surfaces.",
+      "annotation": "*(deviation: added -- confirmed present as SKILL.md Step 5 but absent from refresh.md and from both the task description's list of seven and the research report's nine-row table)*"
+    }
+  ],
+  "verification": {
+    "rows_match_between_surfaces": "10/10 on gate/destructive/cadence; sole textual diff is each file's own correct section-name pointer",
+    "check_extension_docs_core": "PASS"
+  }
+}

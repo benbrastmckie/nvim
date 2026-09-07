@@ -18,11 +18,31 @@ Comprehensive cleanup of Claude Code resources - terminate orphaned processes an
 
 | Flag | Description |
 |------|-------------|
-| `--dry-run` | Preview both process and directory cleanup without making changes. Process cleanup shows the same orphan report as the no-flag path, labeled with an explicit `[DRY RUN]` banner; directory cleanup shows the 8-hour preview. |
-| `--force` | Skip confirmation and execute immediately (8-hour default for directory cleanup) |
+| `--dry-run` | Preview every pass without making changes: process cleanup shows the same orphan report as the no-flag path, labeled with an explicit `[DRY RUN]` banner; the spec-directory sweeps (postflight markers, task locks, session-scoped orchestration files, session registry entries) and stale-backup-file cleanup list what they would delete; directory cleanup shows the 8-hour preview. |
+| `--force` | Skip confirmation and execute immediately (age-threshold-only spec-directory sweeps and stale-backup-file cleanup are unaffected by this flag -- they already act unconditionally past their own threshold whenever `--dry-run` is not set; 8-hour default for directory cleanup) |
 | (no flags) | Interactive mode with process cleanup and age threshold selection |
 
 ## What It Cleans
+
+The single canonical list of every pass `/refresh` runs, each with its owning subsection below (a
+thin pointer -- see that subsection for the full behavior, not restated here), its gate, whether
+it is destructive, and whether the hourly `claude-refresh.timer` cadence reaches it. Only rows 1-4
+(the four passes internal to `claude-refresh.sh`) are reached by that cadence; the remaining six
+run only on explicit `/refresh` invocation. This table agrees row-for-row on gate and
+destructiveness with `skill-refresh/SKILL.md`'s own Pass Inventory table.
+
+| # | Pass | Owning subsection | Gate | Destructive | Hourly cadence |
+|---|------|--------------------|------|--------------|-----------------|
+| 1 | Orphaned Claude processes | Process Cleanup / Process Protection | interactive-confirm (AskUserQuestion) / `--dry-run` preview / `--force` terminates immediately | Yes | Yes |
+| 2 | Lean LSP process-tree reclamation | Process Protection | interactive-confirm (same combined prompt as row 1) / `--dry-run` preview / `--force` terminates immediately | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
+| 3 | Zombie (unreaped-child) reporting | Process Protection | report-only-always (no `--force` branch exists) | No | Yes |
+| 4 | MCP server fan-out reporting | Process Protection | report-only-always (never terminates or reconfigures) | No | Yes |
+| 5 | Orphaned postflight markers | Orphaned Postflight Markers | age-threshold-only (60 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 6 | Stale task `.lock` dirs | Stale Task Locks | age-threshold-only (`TASK_LOCK_REAP_MIN`, default 120 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 7 | Stale session-scoped orchestration files | Stale Session-Scoped Orchestration Files | age-threshold-only (`ORCHESTRATOR_SESSION_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 8 | Stale session registry entries | Stale Session Registry Entries | age-threshold-only (`SESSION_REGISTRY_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 9 | Stale `.backup` files | Stale Backup Files | `--dry-run` preview / unconditional delete otherwise (no age threshold, no confirmation) | Yes | No (`/refresh`-only) |
+| 10 | `~/.claude/` directory cleanup | Directory Cleanup | interactive-confirm (age-threshold selection) / `--dry-run` preview / `--force` immediate (8h default) | Yes -- protected filenames and the 1-hour safety margin (see "Safety" below) are exempted | No (`/refresh`-only) |
 
 ### Process Cleanup
 
@@ -43,6 +63,18 @@ Cleans accumulated files in ~/.claude/:
 | shell-snapshots/ | Shell state |
 | plugins/cache/ | Old plugin versions |
 | cache/ | General cache |
+
+### Orphaned Postflight Markers
+
+`/refresh` also cleans orphaned postflight coordination markers
+(`.postflight-pending`/`.postflight-loop-guard`) from `specs/`. These files should normally be
+removed by skills after postflight completes, but may be left behind if a process is
+interrupted. The gate is age-threshold-only: any marker older than 60 minutes is deleted
+unconditionally when `--dry-run` is not set, with no interactive confirmation at any age -- a
+different gate class from the confirmation-gated process passes above.
+
+This cleanup runs **only on explicit `/refresh` invocation**, never on the hourly systemd
+cadence, which runs process cleanup only and does not sweep `specs/`.
 
 ### Stale Task Locks
 
@@ -84,6 +116,30 @@ Like the task-lock reap above, this cleanup runs **only on explicit `/refresh` i
 on the hourly systemd cadence -- and, like the task-lock section above, that hourly cadence is
 itself non-destructive (`claude-refresh.timer` runs `claude-refresh.sh --dry-run`, reporting
 rather than terminating; `--force` is a deliberate manual opt-in only).
+
+### Stale Session Registry Entries
+
+`/refresh` also sweeps `specs/.sessions/` for stale in-flight orchestration session registry
+entries via `task-lock.sh session-reap`, reporting each one found (session id, command, task
+numbers, age in minutes, reap reason) on both the dry-run and live paths. This is a distinct
+cleanup target from the two sweeps above: the session registry
+(`specs/.sessions/{session_id}.json`) is a separate, additive mechanism produced by
+`task-lock.sh session-register`/`session-heartbeat`, not one of the files the orchestration-file
+sweep above cleans. See `.claude/context/patterns/task-lock.md`'s Session-Registry CLI section
+for the full threshold derivation (`SESSION_REGISTRY_REAP_MIN`, default 240 minutes).
+
+Like the two sweeps above, this cleanup runs **only on explicit `/refresh` invocation**, never on
+the hourly `claude-refresh.timer` cadence, which runs process cleanup only and does not sweep
+`specs/`.
+
+### Stale Backup Files
+
+`/refresh` also scans `.claude/` for `.backup` files left over from a deprecated backup mechanism
+and removes them: `--dry-run` lists what would be deleted, and any other invocation deletes them
+immediately -- there is no age threshold and no interactive confirmation gating this pass, unlike
+every other file-cleanup pass above.
+
+This cleanup runs **only on explicit `/refresh` invocation**, never on the hourly systemd cadence.
 
 ## Interactive Mode
 
