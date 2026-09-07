@@ -1,0 +1,29 @@
+{
+  "phase": 5,
+  "phase_name": "Ordering and Dry-Run-Clean Assertions",
+  "started_at": "2026-09-07T01:10:00Z",
+  "last_updated": "2026-09-07T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fake ps recognizing -C lake,lean emitting synthetic 5-row tree, plus same rows on the plain -eo invocation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "Fixture /proc/<pid>/status files via PROC_ROOT for the synthetic PIDs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 3, "description": "Dry-run-clean assertion: lists all 5 PIDs + total, fake-kill log empty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 4, "description": "Fake kill (via enable -n kill, since kill is a bash builtin) logging signal+pid", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 5, "description": "ORDERING assertion: workers before server before root, via log sequence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 6, "description": "Claude pass's own --dry-run unaffected by Lean rows in its snapshot", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 7, "description": "Extend mutation-check marker list with new function/fixture names", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Override kill via plain PATH=fakebin:... env var (mirroring the fake-ps pattern)", "result": "failed", "reason": "kill is a bash builtin, not an external command -- PATH override is silently ignored by bash's command lookup, which resolves builtins before consulting PATH; all synthetic PIDs came back 'already gone' since the real kill -0 saw genuinely nonexistent PIDs"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Add a fake ps on PATH ... while delegating every other ps invocation to the real ps resolved to an absolute path before PATH is overridden -- the same ancestry-safe technique assertion (d-2) already uses.",
+      "type": "altered",
+      "reason": "This fixture's fake ps answers every invocation shape itself (-p self-check, -C lake,lean, and the plain -eo table) rather than delegating non-matching calls to the real ps; the ancestry-walk self-pid trick from (d-2) is not needed here since no row in this fixture needs to distinguish the running test script's own pid -- all 5 rows are synthetic Lean-tree PIDs unrelated to $$.",
+      "annotation": "*(deviation: altered -- this fixture's fake ps answers every invocation shape itself (-p self-check, -C lake,lean, and the plain -eo table) rather than delegating non-matching calls to the real ps; the ancestry-walk self-pid trick from (d-2) is not needed here since no row in this fixture needs to distinguish the running test script's own pid -- all 5 rows are synthetic Lean-tree PIDs unrelated to $$)*"
+    }
+  ]
+}

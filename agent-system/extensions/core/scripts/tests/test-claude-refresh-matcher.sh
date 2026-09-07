@@ -514,6 +514,181 @@ else
 fi
 
 # =====================================================================
+# Assertion (g): Lean tree end-to-end -- dry-run-clean and termination ORDERING
+# =====================================================================
+# Extends the fake-ps-on-PATH pattern already used by (d-2)/(e) with a fake ps that additionally
+# recognizes the `-C lake,lean` invocation and emits a synthetic 5-row tree (1 lake serve root,
+# 1 lean --server, 3 lean --worker), with old etimes and zero pcpu so it is unconditionally idle.
+# The SAME synthetic rows are also emitted from the plain `-eo ...` (no `-C`) invocation that
+# run_claude_pass()'s take_snapshot() uses -- proving the Claude pass's own candidacy gate
+# independently rejects these rows (wrong comm) regardless of their presence in the full process
+# table, not merely that the Lean pass's separately-scoped snapshot never sees Claude rows.
+LEAN_TREE_ROOT=800001
+LEAN_TREE_SERVER=800002
+LEAN_TREE_WORKER1=800003
+LEAN_TREE_WORKER2=800004
+LEAN_TREE_WORKER3=800005
+
+LEAN_FAKE_BIN_DIR="$WORKDIR/fakebin-lean"
+mkdir -p "$LEAN_FAKE_BIN_DIR"
+cat > "$LEAN_FAKE_BIN_DIR/ps" <<'FAKE_PS_LEAN_EOF'
+#!/usr/bin/env bash
+# Fake ps used only by test-claude-refresh-matcher.sh's Lean tree end-to-end case (g).
+has_p_flag=false
+has_c_flag=false
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  if [ "$a" = "-C" ]; then has_c_flag=true; fi
+done
+if $has_p_flag; then
+  # validate_cgroup_support()'s self-check.
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+
+cur_uid="$(id -u)"
+CG="0::/user.slice/user-1000.slice/session.scope"
+
+if $has_c_flag; then
+  # take_lean_snapshot(): pid,ppid,uid,etimes,rss,pcpu,cgroup:200,comm,args
+  printf '%s %s %s %s %s %s %s %s %s\n' __ROOT__    1         "$cur_uid" 20000 10240  0.0 "$CG" lake ".../bin/lake serve -- -Dserver.reportDelayMs=0"
+  printf '%s %s %s %s %s %s %s %s %s\n' __SERVER__  __ROOT__   "$cur_uid" 20000 675000 0.0 "$CG" lean ".../bin/lean --server -Dserver.reportDelayMs=0"
+  printf '%s %s %s %s %s %s %s %s %s\n' __WORKER1__ __SERVER__ "$cur_uid" 19998 35000  0.0 "$CG" lean ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///a.lean"
+  printf '%s %s %s %s %s %s %s %s %s\n' __WORKER2__ __SERVER__ "$cur_uid" 19995 115000 0.0 "$CG" lean ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///b.lean"
+  printf '%s %s %s %s %s %s %s %s %s\n' __WORKER3__ __SERVER__ "$cur_uid" 19990 114000 0.0 "$CG" lean ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///c.lean"
+  exit 0
+fi
+
+# take_snapshot() (Claude pass): pid,ppid,uid,tty,etimes,rss,comm,cgroup:200,args -- same
+# synthetic Lean rows, as they would genuinely appear in the full process table.
+printf '%s %s %s %s %s %s %s %s %s\n' __ROOT__    1          "$cur_uid" pts/11 20000 10240  lake "$CG" ".../bin/lake serve -- -Dserver.reportDelayMs=0"
+printf '%s %s %s %s %s %s %s %s %s\n' __SERVER__  __ROOT__    "$cur_uid" pts/11 20000 675000 lean "$CG" ".../bin/lean --server -Dserver.reportDelayMs=0"
+printf '%s %s %s %s %s %s %s %s %s\n' __WORKER1__ __SERVER__  "$cur_uid" ?      19998 35000  lean "$CG" ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///a.lean"
+printf '%s %s %s %s %s %s %s %s %s\n' __WORKER2__ __SERVER__  "$cur_uid" ?      19995 115000 lean "$CG" ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///b.lean"
+printf '%s %s %s %s %s %s %s %s %s\n' __WORKER3__ __SERVER__  "$cur_uid" ?      19990 114000 lean "$CG" ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///c.lean"
+exit 0
+FAKE_PS_LEAN_EOF
+sed -i "s/__ROOT__/$LEAN_TREE_ROOT/g; s/__SERVER__/$LEAN_TREE_SERVER/g; s/__WORKER1__/$LEAN_TREE_WORKER1/g; s/__WORKER2__/$LEAN_TREE_WORKER2/g; s/__WORKER3__/$LEAN_TREE_WORKER3/g" "$LEAN_FAKE_BIN_DIR/ps"
+chmod +x "$LEAN_FAKE_BIN_DIR/ps"
+
+# Fixture /proc/<pid>/status files, driven via the PROC_ROOT seam -- get_vmswap_kb() reads these,
+# never live /proc.
+LEAN_FAKE_PROC_DIR="$WORKDIR/fakeproc-lean"
+for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEAN_TREE_WORKER2" "$LEAN_TREE_WORKER3"; do
+  mkdir -p "$LEAN_FAKE_PROC_DIR/$lean_pid"
+  printf 'Name:\tlean\nVmSwap:\t   1024 kB\n' > "$LEAN_FAKE_PROC_DIR/$lean_pid/status"
+done
+
+# Fake kill: logs "<signal> <pid>" for every SIGTERM(-15)/SIGKILL(-9) to $KILL_LOG_FILE; a
+# `kill -0` liveness probe always reports "alive" (exit 0) for these synthetic PIDs, which drives
+# every one of them through terminate_pid()'s SIGTERM->sleep->SIGKILL "forced" branch
+# deterministically. No real process is ever signaled by this fixture.
+KILL_LOG_FILE="$WORKDIR/kill.log"
+: > "$KILL_LOG_FILE"
+LEAN_FAKE_KILL_DIR="$WORKDIR/fakebin-kill"
+mkdir -p "$LEAN_FAKE_KILL_DIR"
+cat > "$LEAN_FAKE_KILL_DIR/kill" <<'FAKE_KILL_EOF'
+#!/usr/bin/env bash
+sig=""
+pid=""
+for a in "$@"; do
+  case "$a" in
+    -0|-15|-9) sig="$a" ;;
+    *) pid="$a" ;;
+  esac
+done
+if [ "$sig" = "-0" ]; then
+  exit 0
+fi
+echo "${sig#-} ${pid}" >> "$KILL_LOG_FILE"
+exit 0
+FAKE_KILL_EOF
+chmod +x "$LEAN_FAKE_KILL_DIR/kill"
+export KILL_LOG_FILE
+
+# --- Dry-run-clean assertion: lists all 5 synthetic PIDs + total, terminates nothing ---
+LEAN_DRY_RUN_OUT="$(PATH="$LEAN_FAKE_BIN_DIR:$LEAN_FAKE_KILL_DIR:$PATH" PROC_ROOT="$LEAN_FAKE_PROC_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+LEAN_DRY_RUN_OK=true
+for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEAN_TREE_WORKER2" "$LEAN_TREE_WORKER3"; do
+  if ! echo "$LEAN_DRY_RUN_OUT" | grep -q "$lean_pid"; then
+    LEAN_DRY_RUN_OK=false
+  fi
+done
+if $LEAN_DRY_RUN_OK && echo "$LEAN_DRY_RUN_OUT" | grep -q "Found 1 idle Lean LSP process tree"; then
+  pass "Lean tree (g): --dry-run lists all five synthetic PIDs and the tree count"
+else
+  fail "Lean tree (g): --dry-run did not list all five synthetic PIDs / tree count"
+  info "output was: $LEAN_DRY_RUN_OUT"
+fi
+
+if echo "$LEAN_DRY_RUN_OUT" | grep -q "Total memory that can be reclaimed"; then
+  pass "Lean tree (g): --dry-run shows a total reclaimable memory figure"
+else
+  fail "Lean tree (g): --dry-run did not show a total reclaimable memory figure"
+  info "output was: $LEAN_DRY_RUN_OUT"
+fi
+
+if [ ! -s "$KILL_LOG_FILE" ]; then
+  pass "Lean tree (g): dry-run-clean -- fake-kill log is empty (nothing terminated)"
+else
+  fail "Lean tree (g): dry-run-clean VIOLATED -- fake-kill log is non-empty after --dry-run"
+  info "kill log was: $(cat "$KILL_LOG_FILE")"
+fi
+
+# --- Claude pass unaffected by the presence of Lean rows in its own snapshot ---
+if echo "$LEAN_DRY_RUN_OUT" | grep -q "No orphaned processes found."; then
+  pass "Lean tree (g): Claude pass's own --dry-run output is unaffected by Lean rows in its snapshot"
+else
+  fail "Lean tree (g): Claude pass's --dry-run output was affected by the presence of Lean rows"
+  info "output was: $LEAN_DRY_RUN_OUT"
+fi
+
+# --- ORDERING assertion: --force terminates workers before server before root (log sequence) ---
+# `kill` is a bash BUILTIN, not an external command -- a plain `PATH=...` override (as used for
+# the fake `ps` above) is silently ignored for it, since bash resolves builtins before consulting
+# $PATH. The builtin must be disabled for this one subshell via `enable -n kill` BEFORE the
+# script under test is sourced, so its own `kill -0`/`kill -15`/`kill -9` calls resolve to the
+# fake `kill` on $PATH instead. Sourcing (rather than executing) means the script's own
+# `BASH_SOURCE[0] == $0` dual-mode guard does not auto-invoke main() here (`$0` is this `bash -c`
+# invocation, not the script), so main() is called explicitly after sourcing.
+: > "$KILL_LOG_FILE"
+LEAN_FORCE_OUT="$(bash -c '
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export PROC_ROOT="$3"
+  export LEAN_LSP_IDLE_THRESHOLD_MIN="$4"
+  # shellcheck disable=SC1090
+  source "$5"
+  main --force
+' _ "$LEAN_FAKE_BIN_DIR" "$LEAN_FAKE_KILL_DIR" "$LEAN_FAKE_PROC_DIR" 1 "$WORKDIR/$SCRIPT_UNDER_TEST" 2>&1)"
+
+if [ -s "$KILL_LOG_FILE" ]; then
+  # Find the LAST line number at which each pid appears (a pid may appear twice: SIGTERM then
+  # SIGKILL -- the ordering claim is about pid-to-pid order, not signal count per pid).
+  worker1_line=$(grep -n " ${LEAN_TREE_WORKER1}\$" "$KILL_LOG_FILE" | tail -1 | cut -d: -f1)
+  worker2_line=$(grep -n " ${LEAN_TREE_WORKER2}\$" "$KILL_LOG_FILE" | tail -1 | cut -d: -f1)
+  worker3_line=$(grep -n " ${LEAN_TREE_WORKER3}\$" "$KILL_LOG_FILE" | tail -1 | cut -d: -f1)
+  server_line=$(grep -n " ${LEAN_TREE_SERVER}\$" "$KILL_LOG_FILE" | head -1 | cut -d: -f1)
+  root_line=$(grep -n " ${LEAN_TREE_ROOT}\$" "$KILL_LOG_FILE" | head -1 | cut -d: -f1)
+
+  if [ -n "$worker1_line" ] && [ -n "$worker2_line" ] && [ -n "$worker3_line" ] \
+     && [ -n "$server_line" ] && [ -n "$root_line" ] \
+     && [ "$worker1_line" -lt "$server_line" ] && [ "$worker2_line" -lt "$server_line" ] \
+     && [ "$worker3_line" -lt "$server_line" ] && [ "$server_line" -lt "$root_line" ]; then
+    pass "Lean tree (g): --force ORDERING -- all workers precede server, server precedes root (log sequence)"
+  else
+    fail "Lean tree (g): --force ORDERING violated or log incomplete"
+    info "kill log was: $(cat "$KILL_LOG_FILE")"
+  fi
+else
+  fail "Lean tree (g): --force produced an empty fake-kill log -- harness defect, not a real assertion"
+  info "output was: $LEAN_FORCE_OUT"
+fi
+
+unset PROC_ROOT KILL_LOG_FILE
+
+# =====================================================================
 # Mutation check: pre-fix script cannot run any of this suite's assertions
 # =====================================================================
 # NOTE: this deliberately pins the specific commit immediately BEFORE the matcher rewrite
@@ -529,12 +704,15 @@ PREFIX_SCRIPT="$WORKDIR/prefix.sh"
 if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core/scripts/$SCRIPT_UNDER_TEST" > "$PREFIX_SCRIPT" 2>/dev/null; then
   MISSING_IN_PREFIX=()
   # Extended for the Lean LSP reclamation pass: is_lean_serve_comm, is_lean_server_comm,
-  # is_lean_worker_comm, and take_lean_snapshot are brand-NEW functions this task adds (not
-  # modifications of existing ones), so their absence from any pre-task commit -- this same
-  # pinned PREFIX_COMMIT included, since it predates this task entirely -- is itself the
-  # non-vacuousness proof the plan calls for: assertion (f) above calls each of them by name and
-  # would fail with "command not found" against a script that lacks them.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot; do
+  # is_lean_worker_comm, take_lean_snapshot, lean_row_is_idle, detect_lean_candidate_trees,
+  # terminate_pid, run_claude_pass, and run_lean_pass are all brand-NEW functions this task adds
+  # (not modifications of existing ones -- terminate_pid/run_claude_pass/run_lean_pass are the
+  # Phase 4 extraction/restructure of what used to be inlined directly in main()), so their
+  # absence from any pre-task commit -- this same pinned PREFIX_COMMIT included, since it
+  # predates this task entirely -- is itself the non-vacuousness proof the plan calls for:
+  # assertions (f) and (g) above call each of them by name and would fail with "command not
+  # found" against a script that lacks them.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -543,11 +721,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 9 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 10 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the nine predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 14 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 15 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the fourteen predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 10 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 15 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

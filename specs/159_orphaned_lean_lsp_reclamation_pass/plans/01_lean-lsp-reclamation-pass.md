@@ -304,30 +304,30 @@ editing; restructure every site found inside `main()`, not only two.
 
 ---
 
-### Phase 5: Ordering and Dry-Run-Clean Assertions [NOT STARTED]
+### Phase 5: Ordering and Dry-Run-Clean Assertions [COMPLETED]
 
 **Goal**: Prove the acceptance bar's two behavioral claims with fixtures, not inspection: that
 `--dry-run` lists a Lean tree without terminating anything, and that `--force` signals in the
 documented order.
 
 **Tasks**:
-- [ ] Add a fake `ps` on `PATH` (extending the suite's existing `FAKE_BIN_DIR` pattern) that
+- [x] Add a fake `ps` on `PATH` (extending the suite's existing `FAKE_BIN_DIR` pattern) that
       recognizes the `-C lake,lean` invocation and emits a synthetic 5-row tree (root, server,
       three workers) with old `etimes` and zero `pcpu`, while delegating every other `ps`
       invocation to the real `ps` resolved to an absolute path before `PATH` is overridden — the
-      same ancestry-safe technique assertion (d-2) already uses.
-- [ ] Add fixture `/proc/<pid>/status` files for the synthetic PIDs and drive them via the
-      existing `PROC_ROOT` seam so `get_vmswap_kb` reads fixtures, never live `/proc`.
-- [ ] Assert `--dry-run` output lists all five synthetic PIDs and the reclaimable total, and that
-      no `kill` was invoked (fake-`kill` log absent or empty) — the dry-run-clean assertion.
-- [ ] Add a fake `kill` on `PATH` that appends `"<signal> <pid>"` lines to a log file and exits 0
+      same ancestry-safe technique assertion (d-2) already uses. *(deviation: altered — this fixture's fake ps answers every invocation shape itself (-p self-check, -C lake,lean, and the plain -eo table) rather than delegating non-matching calls to the real ps; the ancestry-walk self-pid trick from (d-2) is not needed here since no row in this fixture needs to distinguish the running test script's own pid -- all 5 rows are synthetic Lean-tree PIDs unrelated to $$)*
+- [x] Add fixture `/proc/<pid>/status` files for the synthetic PIDs and drive them via the
+      existing `PROC_ROOT` seam so `get_vmswap_kb` reads fixtures, never live `/proc`. *(completed)*
+- [x] Assert `--dry-run` output lists all five synthetic PIDs and the reclaimable total, and that
+      no `kill` was invoked (fake-`kill` log absent or empty) — the dry-run-clean assertion. *(completed)*
+- [x] Add a fake `kill` on `PATH` that appends `"<signal> <pid>"` lines to a log file and exits 0
       without signaling anything; ensure it also answers `kill -0` liveness probes deterministically
-      so the escalation path is exercised without real processes.
-- [ ] Assert against the log that the three worker PIDs all appear before the server PID, and the
+      so the escalation path is exercised without real processes. *(completed: kill is a bash builtin; used `enable -n kill` in a dedicated subshell to shadow it, not a plain PATH override)*
+- [x] Assert against the log that the three worker PIDs all appear before the server PID, and the
       server PID before the `lake serve` root PID — an ORDERING assertion on the log sequence, not
-      a final-state check. Sibling worker order is unconstrained.
-- [ ] Assert the Claude pass's own `--dry-run` output is unaffected by the presence of Lean rows.
-- [ ] Add the new function/fixture names to the mutation-check marker list where applicable.
+      a final-state check. Sibling worker order is unconstrained. *(completed)*
+- [x] Assert the Claude pass's own `--dry-run` output is unaffected by the presence of Lean rows. *(completed)*
+- [x] Add the new function/fixture names to the mutation-check marker list where applicable. *(completed)*
 
 **Timing**: 1.5 hours
 
