@@ -6,11 +6,37 @@ allowed-tools: Bash, AskUserQuestion
 
 # Refresh Skill (Direct Execution)
 
-Direct execution skill for managing Claude Code resources. Performs two operations:
-1. **Process cleanup**: Identify and terminate orphaned Claude Code processes
-2. **Directory cleanup**: Clean up accumulated files in ~/.claude/
+Direct execution skill for managing Claude Code resources. Runs ten distinct passes across three
+areas, each with its own gate and destructiveness -- see the Pass Inventory table below for the
+complete, authoritative list:
+1. **Process cleanup**: orphaned Claude processes, idle Lean LSP process trees, unreaped-child
+   (zombie) reporting, and MCP server fan-out reporting.
+2. **Spec-directory cleanup**: orphaned postflight markers, stale task `.lock` dirs, stale
+   session-scoped orchestration files, and stale session registry entries.
+3. **File cleanup**: stale `.backup` files and `~/.claude/` directory age-threshold cleanup.
 
 This skill executes inline without spawning a subagent.
+
+## Pass Inventory
+
+The single canonical list of every pass this skill runs, each with its owning Step/section (a
+thin pointer -- see that Step for the full behavior, not restated here), its gate, whether it is
+destructive, and whether the hourly `claude-refresh.timer` cadence reaches it. Only
+`claude-refresh.sh`'s four internal passes (rows 1-4) are reached by that cadence; the remaining
+six are `/refresh`-only.
+
+| # | Pass | Owning Step / Section | Gate | Destructive | Hourly cadence |
+|---|------|------------------------|------|--------------|-----------------|
+| 1 | Orphaned Claude processes | Step 2 / "Process Safety" | interactive-confirm (AskUserQuestion) / `--dry-run` preview / `--force` terminates immediately | Yes | Yes |
+| 2 | Lean LSP process-tree reclamation | Step 2 / "Process Safety" | interactive-confirm (same combined prompt as row 1) / `--dry-run` preview / `--force` terminates immediately | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
+| 3 | Zombie (unreaped-child) reporting | "Process Safety" | report-only-always (no `--force` branch exists) | No | Yes |
+| 4 | MCP server fan-out reporting | "Process Safety" | report-only-always (never terminates or reconfigures) | No | Yes |
+| 5 | Orphaned postflight markers | Step 3 | age-threshold-only (60 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 6 | Stale task `.lock` dirs | Step 4 | age-threshold-only (`TASK_LOCK_REAP_MIN`, default 120 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 7 | Stale session-scoped orchestration files | Step 4.5 | age-threshold-only (`ORCHESTRATOR_SESSION_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 8 | Stale session registry entries | Step 4.6 | age-threshold-only (`SESSION_REGISTRY_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 9 | Stale `.backup` files | Step 5 | `--dry-run` preview / unconditional delete otherwise (no age threshold, no confirmation) | Yes | No (`/refresh`-only) |
+| 10 | `~/.claude/` directory cleanup | Steps 6-7 | interactive-confirm (age-threshold selection) / `--dry-run` preview / `--force` immediate (8h default) | Yes -- protected filenames and the 1-hour safety margin (see "Safety Measures" below) are exempted | No (`/refresh`-only) |
 
 ## Execution
 
@@ -94,6 +120,12 @@ and proceed to Step 3 with the already-stored `process_output`.
 ### Step 3: Clean Orphaned Postflight Markers
 
 Clean any orphaned postflight coordination files from the specs directory. These files should normally be cleaned up by skills after postflight completes, but may be left behind if a process is interrupted.
+
+**Destructiveness**: this pass deletes unconditionally past a 60-minute age threshold, with no
+interactive confirmation, whenever `--dry-run` is not set. This is a different gate class from
+the confirmation-gated process-termination passes above (Step 2): there is no "yes/no" prompt at
+any age, only the age threshold itself. It is also `/refresh`-only -- the hourly
+`claude-refresh.timer` cadence never reaches this step.
 
 ```bash
 echo ""

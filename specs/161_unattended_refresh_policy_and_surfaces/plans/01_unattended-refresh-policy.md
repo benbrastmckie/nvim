@@ -211,27 +211,29 @@ against the confirmed set and note the discrepancy.
 
 ---
 
-### Phase 3: Add the Pass Inventory to SKILL.md [NOT STARTED]
+### Phase 3: Add the Pass Inventory to SKILL.md [COMPLETED]
 
 **Goal**: Give `skill-refresh/SKILL.md` one place a reader can scan for every pass, its gate, and
 its destructiveness, and close the postflight-marker framing gap.
 
 **Tasks**:
-- [ ] Insert a single inventory table into
+- [x] Insert a single inventory table into
       `agent-system/extensions/core/skills/skill-refresh/SKILL.md`, placed before the step-by-step
-      `## Execution` procedure so it reads as an orientation summary.
-- [ ] Populate it from Phase 1's confirmed inventory, one row per pass, with columns: pass name,
+      `## Execution` procedure so it reads as an orientation summary. *(completed)*
+- [x] Populate it from Phase 1's confirmed inventory, one row per pass, with columns: pass name,
       owning Step / section, gate, destructive (yes / no / yes-but-recoverable), and whether the
-      hourly systemd cadence reaches it.
-- [ ] Keep every row a thin pointer that cites its owning Step number or section name rather than
-      restating that step's content.
-- [ ] Add an explicit destructiveness statement to `### Step 3: Clean Orphaned Postflight Markers`:
+      hourly systemd cadence reaches it. *(completed: 10 rows)*
+- [x] Keep every row a thin pointer that cites its owning Step number or section name rather than
+      restating that step's content. *(completed)*
+- [x] Add an explicit destructiveness statement to `### Step 3: Clean Orphaned Postflight Markers`:
       it deletes unconditionally past a 60-minute age threshold with no interactive confirmation
       when not `--dry-run`, which is a different gate class from the confirmation-gated process
-      passes.
-- [ ] Update the skill's opening "Performs two operations" framing if Phase 1's inventory shows it
-      understates the current pass set.
-- [ ] Confirm no edit lands inside an executable bash fence.
+      passes. *(completed)*
+- [x] Update the skill's opening "Performs two operations" framing if Phase 1's inventory shows it
+      understates the current pass set. *(completed: rewritten to three areas / ten passes, with a
+      pointer to the new Pass Inventory table)*
+- [x] Confirm no edit lands inside an executable bash fence. *(completed: both hunks are prose/table
+      additions outside any ```bash fence, confirmed via git diff)*
 
 **Timing**: 45 minutes
 
