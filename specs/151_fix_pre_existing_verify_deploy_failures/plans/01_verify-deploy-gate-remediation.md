@@ -167,31 +167,37 @@ observed numbers rather than the planned ones.
 
 ---
 
-### Phase 2: Establish gate 13's current state and record the orphan-finding identity question [NOT STARTED]
+### Phase 2: Establish gate 13's current state and record the orphan-finding identity question [COMPLETED]
 
 **Goal**: Re-run whole-tree orphan detection directly, classify anything it reports, and produce
 the honest, evidence-backed record of what the original single finding was and was not.
 
 **Tasks**:
-- [ ] Run gate 13's detection directly (the headless-nvim `manager.find_orphans` snippet from
+- [x] Run gate 13's detection directly (the headless-nvim `manager.find_orphans` snippet from
       `verify-deploy.sh`'s gate 13 block, against this repo root) and record the `ORPHAN_DONE
-      checked=` count and every `ORPHAN_FINDING` line, if any.
-- [ ] Capture the concurrent-activity context at the same moment: `git status --short` and a check
-      for other running `verify-deploy.sh` / `/orchestrate` processes.
-- [ ] If any finding IS reported: classify it against the four exclusion classes in
+      checked=` count and every `ORPHAN_FINDING` line, if any. *(completed: ORPHAN_DONE
+      checked=5353, 0 ORPHAN_FINDING lines)*
+- [x] Capture the concurrent-activity context at the same moment: `git status --short` and a check
+      for other running `verify-deploy.sh` / `/orchestrate` processes. *(completed: several
+      modified/untracked paths from concurrent in-flight sibling tasks; no verify-deploy.sh or
+      /orchestrate process running via pgrep)*
+- [x] If any finding IS reported: classify it against the four exclusion classes in
       `agent-system/extensions/core/context/patterns/deploy-orphan-detection.md` (runtime
       artifact, merged/generated artifact, `.syncprotect`-protected path, uncommitted source-store
       working-tree artifact). Record the class and the evidence. Only if it fits none of the four
       is it a real orphan requiring a source-store remedy — in that case, stop and re-scope rather
-      than deleting anything.
-- [ ] If 0 findings are reported: record that outcome, plus the explicit statement that the
+      than deleting anything. *(deviation: skipped — not applicable, 0 findings reported)*
+- [x] If 0 findings are reported: record that outcome, plus the explicit statement that the
       original finding's identity was never captured and is not reproducible, plus research's
       falsifiable transient-concurrency hypothesis and how a future occurrence would confirm or
-      refute it.
-- [ ] Note the untracked source-store path currently present in `git status`
+      refute it. *(completed: recorded in progress/phase-2-progress.json evidence.identity_conclusion)*
+- [x] Note the untracked source-store path currently present in `git status`
       (`agent-system/extensions/literature/scripts/literature-pyenv/`) as a concrete live example
       of the "uncommitted source-store working-tree artifact" class, since it is exactly the shape
-      the hypothesis names.
+      the hypothesis names. *(deviation: altered — the path is actually already an explicitly
+      named example of the Runtime artifact class in deploy-orphan-detection.md's own table
+      (`scripts/literature-pyenv/venv/**`), not the uncommitted-source-store class this task text
+      hypothesized; recorded honestly as a correction rather than forced to fit the guess)*
 
 **Timing**: 30 minutes
 
