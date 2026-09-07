@@ -784,6 +784,33 @@ else
   fail "mutation E: the REPLAY: marker still appeared after removing its emission line -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
+# --- Mutation F (positive-direction non-vacuousness): neuter check_memory_pressure() so it
+# unconditionally clears PRESSURE_REASONS and reports "no pressure" (same function-shadowing
+# trick as mutations B/C above) -> case 22's pressured invocation must now go RED (preflight
+# exits 0 with no reasons against the SAME pressured fixture that made case 22 pass), confirming
+# case 22 is not vacuously green.
+MUTANT_NOPRESSURE="$MUTANT_DIR/no-pressure.sh"
+sed 's/^check_memory_pressure() {/check_memory_pressure() { PRESSURE_REASONS=(); return 1; } ; _disabled_check_memory_pressure() {/' "$GUARD" > "$MUTANT_NOPRESSURE"
+chmod +x "$MUTANT_NOPRESSURE"
+
+if [ -z "${CASE22_MEM_AVAIL_THRESH:-}" ] || [ -z "${CASE22_SWAP_USED_THRESH:-}" ] || [ -z "${MEMINFO_FIXTURE_PRESSURED:-}" ]; then
+  fail "mutation F: case 22's pressured fixture is unavailable -- inconclusive, recorded rather than silently skipped"
+else
+  MUTANTF_ROOT="$WORKDIR/mutant_nopressure_fixture"
+  build_fixture "$MUTANTF_ROOT"
+  MUTANTF_RC=0
+  LAKE_BUILD_GUARD_MEMINFO_PATH="$MEMINFO_FIXTURE_PRESSURED" \
+    PATH="$MUTANTF_ROOT/bin:$PATH" "$MUTANT_NOPRESSURE" preflight --dir "$MUTANTF_ROOT" \
+    > /dev/null 2>"$WORKDIR/mutantf.err" || MUTANTF_RC=$?
+  MUTANTF_ERR="$(cat "$WORKDIR/mutantf.err")"
+
+  if [ "$MUTANTF_RC" = "0" ] && [ -z "$MUTANTF_ERR" ]; then
+    pass "mutation F: neutering check_memory_pressure() to always report no pressure makes the SAME pressured fixture that made case 22 fire now pass silently (exit 0, no reasons) -- confirms case 22 is not vacuously green"
+  else
+    fail "mutation F: expected preflight exit 0 with no output against the neutered guard; got rc=$MUTANTF_RC err=[$MUTANTF_ERR] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+  fi
+fi
+
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not
 # separately scripted, per the plan's "state briefly how it fails" instruction): ---
 info "mutation reasoning (cases 2,3,5,6,7,8,9,11,12,13,16,21 -- by inspection, not separately scripted):"

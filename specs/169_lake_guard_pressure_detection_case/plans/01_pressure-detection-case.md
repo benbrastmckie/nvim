@@ -197,7 +197,7 @@ exactly +1, investigate before proceeding rather than accepting the number.
 
 ---
 
-### Phase 3: Add Mutation F and Demonstrate Non-Vacuousness [NOT STARTED]
+### Phase 3: Add Mutation F and Demonstrate Non-Vacuousness [COMPLETED]
 
 **Goal**: Add a scripted mutation, in the existing Mutation A-E shape, that neuters
 `check_memory_pressure()` so it always reports "no pressure", and assert that the new case's
@@ -205,20 +205,20 @@ pressured invocation then fails to detect pressure. Then run the full suite agai
 demonstrate that only the new case goes red.
 
 **Tasks**:
-- [ ] Add Mutation F to the existing mutation section: `sed`-patch a copy of `$GUARD` into
+- [x] Add Mutation F to the existing mutation section: `sed`-patch a copy of `$GUARD` into
       `$MUTANT_DIR` so `check_memory_pressure()` unconditionally reports no pressure (clearing
       `PRESSURE_REASONS` and returning the no-pressure status), following Mutation B's
-      function-shadowing shape.
-- [ ] Invoke the mutant against a fresh fixture root with the pressured meminfo fixture and assert
+      function-shadowing shape. *(completed)*
+- [x] Invoke the mutant against a fresh fixture root with the pressured meminfo fixture and assert
       the OPPOSITE of the real case's outcome (preflight now exits 0 with no reasons), so a
       matching mutation is a `pass()` and a non-matching `sed` is a loud, recorded `fail()` marked
-      inconclusive — never a silent skip.
-- [ ] Perform the acceptance demonstration: build the same neutered guard once out-of-band, run the
-      FULL suite against it, and confirm the new case — and only the new case — reports failure.
-- [ ] Capture the demonstration's output (the failure line and the summary counts) for the
-      implementation summary.
-- [ ] Confirm nothing neutered persists: no modified `lake-build-guard.sh` in the working tree, and
-      no mutant file outside the suite's mktemp workdir.
+      inconclusive — never a silent skip. *(completed)*
+- [x] Perform the acceptance demonstration: build the same neutered guard once out-of-band, run the
+      FULL suite against it, and confirm the new case — and only the new case — reports failure. *(completed: 28 passed / 1 failed, sole failure is case 22)*
+- [x] Capture the demonstration's output (the failure line and the summary counts) for the
+      implementation summary. *(completed)*
+- [x] Confirm nothing neutered persists: no modified `lake-build-guard.sh` in the working tree, and
+      no mutant file outside the suite's mktemp workdir. *(completed)*
 
 **Timing**: 0.5 hours
 

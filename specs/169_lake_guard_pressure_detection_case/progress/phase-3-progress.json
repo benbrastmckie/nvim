@@ -1,0 +1,46 @@
+{
+  "phase": 3,
+  "phase_name": "Add Mutation F and Demonstrate Non-Vacuousness",
+  "started_at": "2026-09-07T00:20:00Z",
+  "last_updated": "2026-09-07T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Mutation F to the mutation section",
+      "status": "done",
+      "note": "Mutation F sed-shadows check_memory_pressure() to unconditionally clear PRESSURE_REASONS and return 1 (Mutation B/C's function-shadowing shape). Verified in-suite: mutation F passes, total 29/29.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Invoke mutant against pressured fixture and assert the OPPOSITE outcome",
+      "status": "done",
+      "note": "Reuses case 22's exact pressured meminfo fixture; asserts preflight exit 0 with empty stderr against the neutered guard. Guards on the fixture/threshold variables being unset with a loud fail() rather than silent skip.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Perform the acceptance demonstration: build the neutered guard once out-of-band, run the FULL suite, confirm only case 22 fails",
+      "status": "done",
+      "note": "Backed up lake-build-guard.sh, applied the same sed mutation in place, ran the full suite (log saved to scratchpad neutered-run.log), restored the original file byte-identically (diff confirmed empty), confirmed git diff --stat shows the guard untouched. Result: Passed: 28 / Failed: 1, with the sole failure being '[FAIL] case 22: expected preflight exit 11 with both the MemAvailable and swap-in-use reasons; got rc=0 err=[]'. No other case regressed.",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Capture the demonstration output for the summary",
+      "status": "done",
+      "note": "Captured verbatim: '[FAIL] case 22: expected preflight exit 11 with both the MemAvailable and swap-in-use reasons; got rc=0 err=[]' / 'Passed: 28' / 'Failed: 1'.",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Confirm nothing neutered persists",
+      "status": "done",
+      "note": "git status --short on lake-build-guard.sh is empty; no *mutant* files found anywhere in the repo tree (mutants only ever exist inside the suite's own mktemp workdir during a run).",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
