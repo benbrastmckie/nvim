@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md",
+      "summary": "Maps the exact rc/reason-string contract, the case-11 local-override idiom, threshold-derivation math, and the Mutation A-E non-vacuousness mechanism to extend with a new Mutation F for the positive-direction pressure-detection case."
+    }
+  ],
+  "next_steps": "Run /plan 169 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788822258_a6100e",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh, threshold constants declared in the script under test (e.g. MEM_AVAILABLE_RATIO_THRESHOLD, SWAP_USED_RATIO_THRESHOLD in lake-build-guard.sh) can be read at test-run time via `grep -oE '^NAME=[0-9]+' \"$GUARD\" | cut -d= -f2` rather than hardcoded, so a fixture derived from them (e.g. THRESH/2 for a below-threshold target, (THRESH+100)/2 for an above-threshold target, with totals as exact multiples of 100 to avoid integer-division rounding mismatches) stays correct if the threshold is later retuned. This generalizes the existing grep-from-source-under-test idiom already used by cases 12/13 in the same suite.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shell-testing", "mutation-testing", "threshold-derivation", "lake-build-guard", "fixture-design"]
+    },
+    {
+      "content": "The core shell-test convention (context/standards/shell-script-testing.md, 'Mutation checks for regex-shaped fixes') is implemented in practice in test-lake-build-guard.sh as a scripted MUTANT_DIR section: sed-patch a scratch copy of the script under test to neuter one specific behavior (e.g. `sed 's/^some_fn() {/some_fn() { return 1; } ; _disabled_some_fn() {/'`), run it against a fresh fixture, and assert the targeted case's assertion now fails on the mutant while the fail() message names 'inconclusive (sed pattern did not match)' as the fallback interpretation if the sed silently no-ops. This is the reusable non-vacuousness proof pattern for any new positive-assertion test case in this suite, not just the pressure-detection one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mutation-testing", "non-vacuousness", "shell-script-testing", "sed-patch", "regression-suite"]
+    }
+  ]
+}
