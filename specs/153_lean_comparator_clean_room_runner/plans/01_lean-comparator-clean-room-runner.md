@@ -90,6 +90,13 @@ No ROADMAP.md found at `specs/ROADMAP.md`; no roadmap phases added.
 
   Usage errors exit 64 (matching `lean-sorry-census.sh`); 75-79 stays reserved for
   `lake-build-guard.sh` and must not be reused.
+
+  **Amendment (Phase 5)**: a 9th, INTERNAL escape-hatch value `unclassified_failure` (exit 72)
+  was added for classify_verdict()'s fail-closed fallthrough — a non-zero (or unexpectedly
+  bare-0) Comparator exit whose captured output matches none of the 8 named strings above. This
+  is distinct from the 8 named categories the "extended by exactly one" decision above settles
+  on; it exists only so a genuinely unrecognised failure is never misreported as `verified` or
+  `comparator_unavailable`. See the design record's Verdict Vocabulary table for the same row.
 - **Decision (resolves research open question 2, and reconciles it with the dispatch)**:
   `statement_mismatch` absorbs the textually-distinguishable kind-mismatch and definition-hole-
   mismatch strings rather than splintering the vocabulary; the distinguishing string is preserved
@@ -357,13 +364,13 @@ nest the shared build guard inside it, and bound the run's cost.
 
 ---
 
-### Phase 5: Verdict classification [NOT STARTED]
+### Phase 5: Verdict classification [COMPLETED]
 
 **Goal**: Implement dispatch item (e) — recover the closed verdict vocabulary from Comparator's
 unstructured stdout/stderr, since Comparator itself exposes only a binary exit code.
 
 **Tasks**:
-- [ ] Implement one `classify_verdict()` function matching, in priority order (most specific
+- [x] Implement one `classify_verdict()` function matching, in priority order (most specific
       first), with the upstream source file quoted beside each arm:
       - stdout `Your solution is okay!` + exit 0 -> `verified`
       - stdout `Lean default kernel rejects the solution` or `<kernel> kernel rejected the
@@ -379,14 +386,22 @@ unstructured stdout/stderr, since Comparator itself exposes only a binary exit c
         with `reason_detail=const_closure` (note in a comment that this one string covers two
         distinct upstream call sites and cannot distinguish hole-itself from transitive-dependency
         mismatch)
-- [ ] Fall through: a non-zero exit matching no arm emits a loud unclassified failure that is
+      *(completed; all eight arms verified individually against canned stdout/stderr through the
+      real pipeline. NOTE: because of the mandated --pty wrapper, both "stdout" and "stderr"
+      upstream strings land in RUN_STDOUT_LOG -- classify_verdict searches that one file for all
+      arms; see the in-script comment and the Phase 4 stdout/stderr capture note.)*
+- [x] Fall through: a non-zero exit matching no arm emits a loud unclassified failure that is
       NOT `verified` and NOT `comparator_unavailable`, carrying the raw stderr. Failing closed
       here is mandatory — the dispatch's whole point is that a check which cannot say "no" is not
-      a checker.
-- [ ] Overlay `definition_hole_needs_human` when the run classified as `verified` and
+      a checker. *(completed: added a 9th verdict value `unclassified_failure` (exit 72), the
+      only vocabulary member beyond the Goals table's closed 8, since the 8 named categories all
+      require the exact matching string to be present -- see the design record and the Goals
+      table exit-code list, both updated to record it)*
+- [x] Overlay `definition_hole_needs_human` when the run classified as `verified` and
       `definition_names` was non-empty, emitting `underlying_verdict: verified` alongside it.
-- [ ] Check the `Your solution is okay!` marker in addition to exit 0, not instead of it (the
-      stronger positive signal, per the research report).
+      *(completed)*
+- [x] Check the `Your solution is okay!` marker in addition to exit 0, not instead of it (the
+      stronger positive signal, per the research report). *(completed)*
 
 **Timing**: 1.5 hours
 

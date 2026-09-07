@@ -113,6 +113,11 @@
 #   config_error                   71  Comparator reported a name in --theorems/--definitions
 #                                      absent from one side (an authoring error, not a security
 #                                      finding).
+#   unclassified_failure           72  INTERNAL escape hatch, distinct from the 8 named
+#                                      categories above: Comparator exited non-zero (or
+#                                      unexpectedly 0) with output matching NONE of the known
+#                                      verdict strings. Never silently reported as `verified` --
+#                                      a checker that can only ever say "pass" is not a checker.
 #   (usage error)                  64  Bad CLI arguments. Matches lean-sorry-census.sh's own
 #                                      convention. 75-79 is reserved by lake-build-guard.sh and
 #                                      MUST NOT be reused here.
@@ -175,6 +180,12 @@ verdict_exit_code() {
     comparator_unavailable) echo 69 ;;
     timeout) echo 70 ;;
     config_error) echo 71 ;;
+    # unclassified_failure is a 9th, INTERNAL escape-hatch verdict -- distinct from the 8 named
+    # categories the design record settles on -- for the fail-closed fallthrough in
+    # classify_verdict(): a non-zero (or unexpectedly bare-0) Comparator exit matching none of
+    # the known verdict strings must never be reported as verified or comparator_unavailable. A
+    # checker that can only ever say "pass" is not a checker.
+    unclassified_failure) echo 72 ;;
     *)
       echo "lean-comparator-run.sh: internal error: unknown verdict '$1'" >&2
       echo 1
@@ -467,10 +478,15 @@ run_sandboxed() {
   # e.g. "Illegal axiom detected") -- while RUN_STDERR_LOG receives only systemd-run's OWN
   # diagnostic chatter (transient unit name, TTY-disconnect instructions), which is never
   # classification-relevant and is kept only for debugging.
-  set +e
+  # This script only ever runs under `set -uo pipefail` (never `-e`, matching
+  # lean-sorry-census.sh's own convention -- see the top of this file), so no `set +e`/`set -e`
+  # toggle is needed around a command whose non-zero exit is expected and explicitly captured
+  # below. (A `set -e` toggle here would be an outright bug: `set -e`/`set +e` are GLOBAL shell
+  # attributes, not function-scoped, so turning it ON here would silently activate errexit for
+  # the REST of the script after this function returns -- including classify_verdict()'s later
+  # substring-matching pipelines, most of which legitimately return non-zero on a non-match.)
   timeout --signal=TERM --kill-after=10 "$TIMEOUT_SECS" "${cmd[@]}" >"$RUN_STDOUT_LOG" 2>"$RUN_STDERR_LOG"
   RUN_EXIT_STATUS=$?
-  set -e
 
   # `timeout` exits 124 when it had to send SIGTERM, or 128+signal (137 for SIGKILL) if the
   # command was still alive after --kill-after and had to be force-killed.
@@ -479,9 +495,94 @@ run_sandboxed() {
   fi
 }
 
+# ---------------------------------------------------------------------------
+# Verdict classification (dispatch item (e)) -- Comparator itself exposes only a binary exit
+# code (every failure path is an uncaught IO.userError -> stderr "uncaught exception: <message>",
+# exit 1). This function owns 100% of the classification logic via priority-ordered substring
+# matching against RUN_STDOUT_LOG (which -- because the mandated --pty wrapper merges the
+# wrapped command's stdout and stderr -- holds Comparator's TRUE combined output regardless of
+# which stream upstream's own source writes to). Every arm is quoted verbatim from
+# Comparator/Compare.lean or Comparator/Axioms.lean; see the design record's verdict-string table
+# for the full per-row upstream source citation.
+# ---------------------------------------------------------------------------
+
 classify_verdict() {
-  echo "lean-comparator-run.sh: internal error: classify_verdict not yet implemented" >&2
-  return 1
+  if [ "$TIMED_OUT" -eq 1 ]; then
+    emit_verdict timeout "" "" "sandboxed Comparator run exceeded --timeout (${TIMEOUT_SECS}s) and was terminated"
+  fi
+
+  local out
+  out="$(cat "$RUN_STDOUT_LOG" 2>/dev/null || true)"
+
+  # 1. verified -- the single authoritative positive signal is the FINAL stdout line, checked
+  #    in addition to (never instead of) exit 0, since an exit-0 with early-return semantics
+  #    anywhere in Comparator's pipeline would itself be a Comparator bug this wrapper should not
+  #    paper over.
+  if [ "$RUN_EXIT_STATUS" -eq 0 ] && printf '%s' "$out" | grep -qF "Your solution is okay!"; then
+    if [ -n "$DEFINITIONS" ]; then
+      emit_verdict definition_hole_needs_human "" verified \
+        "Comparator verified the named theorems, but --definitions was non-empty; per the design record this REQUIRES additional (potentially human) verification that the filled-in definition(s) are a legitimate answer, not merely structurally/kernel-consistent with the Challenge hole."
+    fi
+    emit_verdict verified "" "" "Comparator printed 'Your solution is okay!' and exited 0."
+  fi
+
+  # 2. kernel_rejected -- default kernel (fixed stdout marker) or an external kernel (name
+  #    interpolated into the marker; the THROWN message text itself is not fixed, so match the
+  #    stdout marker line, never the exception text).
+  if printf '%s' "$out" | grep -qF "Lean default kernel rejects the solution"; then
+    emit_verdict kernel_rejected "" "" "the Lean default kernel rejected the Solution's replay"
+  fi
+  local kernel_name
+  kernel_name="$(printf '%s' "$out" | grep -oE '[A-Za-z0-9_]+ kernel rejected the solution' | head -1 | awk '{print $1}')"
+  if [ -n "$kernel_name" ]; then
+    emit_verdict kernel_rejected "" "" "the external kernel '$kernel_name' rejected the Solution's replay"
+  fi
+
+  # 3. axiom_violation -- Axioms.loop walks the FULL TRANSITIVE closure of used constants from
+  #    every theorem/definition target, so this arm fires for an axiom reached indirectly, not
+  #    just a literal top-level `axiom` declaration.
+  local axiom_name
+  axiom_name="$(printf '%s' "$out" | grep -oE "Illegal axiom detected: '[^']*'" | head -1 | sed -E "s/Illegal axiom detected: '([^']*)'/\1/")"
+  if [ -n "$axiom_name" ]; then
+    emit_verdict axiom_violation "" "" "a named theorem's body transitively reaches axiom '$axiom_name', which is outside --permitted-axioms"
+  fi
+
+  # 4. config_error -- an authoring error (a name in --theorems/--definitions absent from one
+  #    side), not a security finding. Checked BEFORE the statement/kind/const-closure arms below
+  #    since it is more specific (a setup failure, not a comparison result).
+  local missing_const
+  missing_const="$(printf '%s' "$out" | grep -oE "Const not found in (challenge|solution): '[^']*'" | head -1)"
+  if [ -n "$missing_const" ]; then
+    emit_verdict config_error "" "" "$missing_const -- a name in --theorems/--definitions is absent from one side; this is an authoring error, not a security finding"
+  fi
+
+  # 5-7. statement_mismatch -- three textually-distinguishable upstream strings folded into one
+  #    verdict, losslessly preserving which one fired via reason_detail (statement / kind /
+  #    const_closure).
+  if printf '%s' "$out" | grep -qF "Challenge and solution theorem statement do not match"; then
+    local name
+    name="$(printf '%s' "$out" | grep -oE "Challenge and solution theorem statement do not match: '[^']*'" | head -1 | sed -E "s/.*: '([^']*)'/\1/")"
+    emit_verdict statement_mismatch statement "" "theorem statement mismatch for '$name'"
+  fi
+
+  if printf '%s' "$out" | grep -qF "Challenge and solution constant kind don't match"; then
+    local name
+    name="$(printf '%s' "$out" | grep -oE "Challenge and solution constant kind don't match: '[^']*'" | head -1 | sed -E "s/.*: '([^']*)'/\1/")"
+    emit_verdict statement_mismatch kind "" "declaration-kind mismatch for '$name' (e.g. theorem vs axiom)"
+  fi
+
+  if printf '%s' "$out" | grep -qF "Const does not match between challenge and target"; then
+    local name
+    name="$(printf '%s' "$out" | grep -oE "Const does not match between challenge and target '[^']*'" | head -1 | sed -E "s/.*target '([^']*)'/\1/")"
+    emit_verdict statement_mismatch const_closure "" "constant mismatch for '$name' (may be the definition hole itself, or something it transitively depends on -- this single upstream string cannot distinguish the two)"
+  fi
+
+  # Fail-closed fallthrough: a non-zero (or unexpectedly bare-0) exit matching none of the named
+  # arms above is NEVER reported as verified or comparator_unavailable. See unclassified_failure
+  # in verdict_exit_code() above.
+  local truncated
+  truncated="$(printf '%s' "$out" | tr '\n' ' ' | cut -c1-2000)"
+  emit_verdict unclassified_failure "" "" "Comparator exited $RUN_EXIT_STATUS with output matching none of the known verdict strings; raw output (truncated): $truncated"
 }
 
 # ---------------------------------------------------------------------------

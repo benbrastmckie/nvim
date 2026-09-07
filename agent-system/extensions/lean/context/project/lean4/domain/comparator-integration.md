@@ -131,6 +131,7 @@ order (most specific first).
 | `comparator_unavailable` | a required binary (`comparator`, `landrun`, `lean4export`, `nanoda_bin`) could not be resolved, or the sandbox wrapper (`systemd-run`) is unusable | 69 | wrapper-only |
 | `timeout` | the run exceeded `--timeout` | 70 | wrapper-only |
 | `config_error` | stderr `Const not found in challenge: '<name>'` or `Const not found in solution: '<name>'` -- an authoring error (a name in `theorem_names`/`definition_names` absent from one side), not a security finding | 71 | `Comparator/Compare.lean` |
+| `unclassified_failure` | a non-zero (or unexpectedly bare-0) exit whose captured output matches NONE of the strings above -- a 9th, INTERNAL escape-hatch value, distinct from the 8 named categories the design settles on. Never silently folded into `verified` or `comparator_unavailable`: a checker that can only ever say "pass" is not a checker. | 72 | wrapper-only (fail-closed fallthrough) |
 
 Usage errors (bad CLI arguments) exit 64, matching `lean-sorry-census.sh`. Exit codes 75-79 are
 reserved by `lake-build-guard.sh` and MUST NOT be reused by this script.
