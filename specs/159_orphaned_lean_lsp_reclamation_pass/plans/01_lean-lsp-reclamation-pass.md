@@ -158,7 +158,7 @@ predicate set rather than silently ignoring it.
 
 ---
 
-### Phase 2: Predicate Test Block with Cross-Contamination Assertions [NOT STARTED]
+### Phase 2: Predicate Test Block with Cross-Contamination Assertions [COMPLETED]
 
 **Goal**: Add the acceptance bar's dedicated predicate test block to
 `test-claude-refresh-matcher.sh`, proving the Lean matcher matches the three Lean forms and
@@ -166,21 +166,21 @@ rejects Claude comms, and that `is_claude_executable_comm` rejects all three Lea
 cross-contamination in either direction.
 
 **Tasks**:
-- [ ] Add assertion block `(f)` following the suite's existing `pass()`/`fail()`/`info()` and
-      `WORKDIR` conventions.
-- [ ] Assert each Lean predicate returns true for its own form using the research report's live
-      argv strings verbatim as fixtures.
-- [ ] Assert each Lean predicate returns false for the other two Lean forms (mutual exclusivity).
-- [ ] Assert all three Lean predicates return false for every Claude comm the existing suite
-      exercises (`claude`, `node` with `claude-code` argv, `bash` with the script's own path).
-- [ ] Assert `is_claude_executable_comm` returns false for all three Lean rows (the reverse
-      direction the acceptance bar requires).
-- [ ] Assert the zombie rows `lake <defunct>` / `lean <defunct>` are rejected by all three Lean
-      predicates, with an inline comment naming this as a deliberate, tested exclusion.
-- [ ] Assert `is_lean_serve_comm` rejects `lake build` and `lake exe cache get` argv forms.
-- [ ] Extend the existing mutation check's marker list with the three new predicate names and
+- [x] Add assertion block `(f)` following the suite's existing `pass()`/`fail()`/`info()` and
+      `WORKDIR` conventions. *(completed)*
+- [x] Assert each Lean predicate returns true for its own form using the research report's live
+      argv strings verbatim as fixtures. *(completed)*
+- [x] Assert each Lean predicate returns false for the other two Lean forms (mutual exclusivity). *(completed)*
+- [x] Assert all three Lean predicates return false for every Claude comm the existing suite
+      exercises (`claude`, `node` with `claude-code` argv, `bash` with the script's own path). *(completed)*
+- [x] Assert `is_claude_executable_comm` returns false for all three Lean rows (the reverse
+      direction the acceptance bar requires). *(completed)*
+- [x] Assert the zombie rows `lake <defunct>` / `lean <defunct>` are rejected by all three Lean
+      predicates, with an inline comment naming this as a deliberate, tested exclusion. *(completed)*
+- [x] Assert `is_lean_serve_comm` rejects `lake build` and `lake exe cache get` argv forms. *(completed)*
+- [x] Extend the existing mutation check's marker list with the three new predicate names and
       `take_lean_snapshot`, so the pre-task blob demonstrably defines none of them
-      (function-absence non-vacuousness proof, matching the suite's own recorded reasoning).
+      (function-absence non-vacuousness proof, matching the suite's own recorded reasoning). *(completed)*
 
 **Timing**: 1 hour
 

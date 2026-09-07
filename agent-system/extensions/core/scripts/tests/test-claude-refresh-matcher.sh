@@ -378,6 +378,142 @@ else
 fi
 
 # =====================================================================
+# Assertion (f): Lean LSP predicate cross-contamination
+# =====================================================================
+# Fixtures are the live-verified argv strings recorded in the task's research report (a real,
+# currently-running lean-lsp-mcp tree on this machine). Proves, in both directions, that the
+# Lean predicates and is_claude_executable_comm never accept each other's rows -- the
+# independently-gated pass this task adds must never widen or be widened by the existing gate.
+LAKE_SERVE_ARGS="/home/user/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/bin/lake serve -- -Dserver.reportDelayMs=0"
+LEAN_SERVER_ARGS="/home/user/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/bin/lean --server -Dserver.reportDelayMs=0"
+LEAN_WORKER_ARGS="/home/user/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/bin/lean --worker -Dserver.reportDelayMs=0 file:///home/user/Project/File.lean"
+LAKE_BUILD_ARGS="/home/user/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/bin/lake build"
+LAKE_EXE_CACHE_ARGS="/home/user/.elan/toolchains/leanprover--lean4---v4.33.0-rc1/bin/lake exe cache get"
+LAKE_DEFUNCT_COMM="lake <defunct>"
+LEAN_DEFUNCT_COMM="lean <defunct>"
+
+# --- Each predicate matches its own form ---
+if is_lean_serve_comm "lake" "$LAKE_SERVE_ARGS"; then
+  pass "is_lean_serve_comm: matches its own form (lake serve)"
+else
+  fail "is_lean_serve_comm: did NOT match its own form (lake serve)"
+fi
+
+if is_lean_server_comm "lean" "$LEAN_SERVER_ARGS"; then
+  pass "is_lean_server_comm: matches its own form (lean --server)"
+else
+  fail "is_lean_server_comm: did NOT match its own form (lean --server)"
+fi
+
+if is_lean_worker_comm "lean" "$LEAN_WORKER_ARGS"; then
+  pass "is_lean_worker_comm: matches its own form (lean --worker)"
+else
+  fail "is_lean_worker_comm: did NOT match its own form (lean --worker)"
+fi
+
+# --- Mutual exclusivity: each predicate rejects the OTHER two Lean forms ---
+if is_lean_serve_comm "lean" "$LEAN_SERVER_ARGS"; then
+  fail "is_lean_serve_comm: incorrectly matched a lean --server row (comm mismatch)"
+else
+  pass "is_lean_serve_comm: rejects lean --server (comm mismatch)"
+fi
+if is_lean_serve_comm "lean" "$LEAN_WORKER_ARGS"; then
+  fail "is_lean_serve_comm: incorrectly matched a lean --worker row (comm mismatch)"
+else
+  pass "is_lean_serve_comm: rejects lean --worker (comm mismatch)"
+fi
+
+if is_lean_server_comm "lake" "$LAKE_SERVE_ARGS"; then
+  fail "is_lean_server_comm: incorrectly matched a lake serve row (comm mismatch)"
+else
+  pass "is_lean_server_comm: rejects lake serve (comm mismatch)"
+fi
+if is_lean_server_comm "lean" "$LEAN_WORKER_ARGS"; then
+  fail "is_lean_server_comm: incorrectly matched a lean --worker row (args mismatch)"
+else
+  pass "is_lean_server_comm: rejects lean --worker (args mismatch)"
+fi
+
+if is_lean_worker_comm "lake" "$LAKE_SERVE_ARGS"; then
+  fail "is_lean_worker_comm: incorrectly matched a lake serve row (comm mismatch)"
+else
+  pass "is_lean_worker_comm: rejects lake serve (comm mismatch)"
+fi
+if is_lean_worker_comm "lean" "$LEAN_SERVER_ARGS"; then
+  fail "is_lean_worker_comm: incorrectly matched a lean --server row (args mismatch)"
+else
+  pass "is_lean_worker_comm: rejects lean --server (args mismatch)"
+fi
+
+# --- Lean predicates reject every Claude comm the existing suite exercises ---
+for lean_fn in is_lean_serve_comm is_lean_server_comm is_lean_worker_comm; do
+  if "$lean_fn" "claude" "claude --dangerously-skip-permissions"; then
+    fail "$lean_fn: incorrectly matched a genuine 'claude' comm row"
+  else
+    pass "$lean_fn: rejects a genuine 'claude' comm row"
+  fi
+
+  if "$lean_fn" "node" "$EARLYOOM_ARGS"; then
+    fail "$lean_fn: incorrectly matched a node/claude-code-style argv row"
+  else
+    pass "$lean_fn: rejects a node/claude-code-style argv row"
+  fi
+
+  if "$lean_fn" "bash" "$SELF_PATH_ARGS"; then
+    fail "$lean_fn: incorrectly matched a bash row mentioning the refresh script's own path"
+  else
+    pass "$lean_fn: rejects a bash row mentioning the refresh script's own path"
+  fi
+done
+
+# --- Reverse direction: is_claude_executable_comm rejects all three Lean rows ---
+if is_claude_executable_comm "lake" "$LAKE_SERVE_ARGS"; then
+  fail "is_claude_executable_comm: incorrectly accepted a lake serve row"
+else
+  pass "is_claude_executable_comm: rejects a lake serve row"
+fi
+if is_claude_executable_comm "lean" "$LEAN_SERVER_ARGS"; then
+  fail "is_claude_executable_comm: incorrectly accepted a lean --server row"
+else
+  pass "is_claude_executable_comm: rejects a lean --server row"
+fi
+if is_claude_executable_comm "lean" "$LEAN_WORKER_ARGS"; then
+  fail "is_claude_executable_comm: incorrectly accepted a lean --worker row"
+else
+  pass "is_claude_executable_comm: rejects a lean --worker row"
+fi
+
+# --- Zombie rows: deliberate, tested exclusion (comm rendered "lake <defunct>"/"lean <defunct>"
+# by ps; an exact `case` match on "lake"/"lean" never matches these strings) ---
+if is_lean_serve_comm "$LAKE_DEFUNCT_COMM" "[lake] <defunct>"; then
+  fail "is_lean_serve_comm: incorrectly matched a zombie 'lake <defunct>' row"
+else
+  pass "is_lean_serve_comm: rejects a zombie 'lake <defunct>' row (deliberate exclusion)"
+fi
+if is_lean_server_comm "$LEAN_DEFUNCT_COMM" "[lean] <defunct>"; then
+  fail "is_lean_server_comm: incorrectly matched a zombie 'lean <defunct>' row"
+else
+  pass "is_lean_server_comm: rejects a zombie 'lean <defunct>' row (deliberate exclusion)"
+fi
+if is_lean_worker_comm "$LEAN_DEFUNCT_COMM" "[lean] <defunct>"; then
+  fail "is_lean_worker_comm: incorrectly matched a zombie 'lean <defunct>' row"
+else
+  pass "is_lean_worker_comm: rejects a zombie 'lean <defunct>' row (deliberate exclusion)"
+fi
+
+# --- is_lean_serve_comm rejects other `lake` subcommands ---
+if is_lean_serve_comm "lake" "$LAKE_BUILD_ARGS"; then
+  fail "is_lean_serve_comm: incorrectly matched 'lake build'"
+else
+  pass "is_lean_serve_comm: rejects 'lake build'"
+fi
+if is_lean_serve_comm "lake" "$LAKE_EXE_CACHE_ARGS"; then
+  fail "is_lean_serve_comm: incorrectly matched 'lake exe cache get'"
+else
+  pass "is_lean_serve_comm: rejects 'lake exe cache get'"
+fi
+
+# =====================================================================
 # Mutation check: pre-fix script cannot run any of this suite's assertions
 # =====================================================================
 # NOTE: this deliberately pins the specific commit immediately BEFORE the matcher rewrite
@@ -392,7 +528,13 @@ PREFIX_COMMIT="7e79b2695"
 PREFIX_SCRIPT="$WORKDIR/prefix.sh"
 if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core/scripts/$SCRIPT_UNDER_TEST" > "$PREFIX_SCRIPT" 2>/dev/null; then
   MISSING_IN_PREFIX=()
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb; do
+  # Extended for the Lean LSP reclamation pass: is_lean_serve_comm, is_lean_server_comm,
+  # is_lean_worker_comm, and take_lean_snapshot are brand-NEW functions this task adds (not
+  # modifications of existing ones), so their absence from any pre-task commit -- this same
+  # pinned PREFIX_COMMIT included, since it predates this task entirely -- is itself the
+  # non-vacuousness proof the plan calls for: assertion (f) above calls each of them by name and
+  # would fail with "command not found" against a script that lacks them.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -401,11 +543,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 5 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 6 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the five predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 9 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 10 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the nine predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 6 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 10 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

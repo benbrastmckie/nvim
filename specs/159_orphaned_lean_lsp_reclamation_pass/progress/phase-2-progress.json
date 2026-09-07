@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Predicate Test Block with Cross-Contamination Assertions",
+  "started_at": "2026-09-07T00:15:00Z",
+  "last_updated": "2026-09-07T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add assertion block (f) with cross-contamination coverage (own-form match, mutual exclusivity, Claude-comm rejection, reverse-direction rejection, zombie rejection, lake-subcommand rejection)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "Extend mutation-check marker list with the three new predicate names and take_lean_snapshot", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
