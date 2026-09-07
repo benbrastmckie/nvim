@@ -239,22 +239,22 @@ requires updating `docs/architecture/orchestrate-state-machine.md` as well.
 
 ---
 
-### Phase 3: Adopt the shared library at the `command-gate-out.sh` call site [NOT STARTED]
+### Phase 3: Adopt the shared library at the `command-gate-out.sh` call site [COMPLETED]
 
 **Goal**: Remove the second, now-duplicate implementation so the two sites cannot drift apart
 again — the drift that made this defect possible in the first place.
 
 **Tasks**:
 
-- [ ] Source `lib/deploy-baseline-lib.sh` in `command-gate-out.sh` (it already sources
+- [x] Source `lib/deploy-baseline-lib.sh` in `command-gate-out.sh` (it already sources
       `.claude/scripts/skill-base.sh`; follow that path convention).
-- [ ] Delete the inline `_gate_out_deploy_findings()` definition and call
+- [x] Delete the inline `_gate_out_deploy_findings()` definition and call
       `deploy_findings_snapshot` for both the pre and post captures.
-- [ ] Replace the inline `comm -13` with `deploy_baseline_new_findings`.
-- [ ] Leave every branch's message text, the retry-once policy, and the `[PRE-EXISTING
+- [x] Replace the inline `comm -13` with `deploy_baseline_new_findings`.
+- [x] Leave every branch's message text, the retry-once policy, and the `[PRE-EXISTING
       VERIFY-DEPLOY FAILURE]` banner exactly as they are — this is a substitution, not a
       behavior change.
-- [ ] Add a one-line comment at the deleted helper's former site pointing to the library, so a
+- [x] Add a one-line comment at the deleted helper's former site pointing to the library, so a
       reader following `batch-orchestration-guardrails.md` still lands somewhere useful.
 
 **Timing**: 0.5 hours

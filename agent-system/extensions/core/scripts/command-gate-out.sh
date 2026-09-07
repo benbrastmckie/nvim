@@ -36,6 +36,11 @@ set -e
 # here at the top, matching orchestrator-postflight.sh's precedent.
 source .claude/scripts/skill-base.sh
 
+# Source the shared deploy-baseline decision library (deploy_findings_snapshot,
+# deploy_baseline_new_findings) for the rc==6 redeploy-trigger handler below. Same deployed-path
+# convention as the skill-base.sh source immediately above.
+source .claude/scripts/lib/deploy-baseline-lib.sh
+
 task_number="$1"
 operation="$2"
 session_id="$3"
@@ -159,22 +164,13 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
       gate_out_matched_paths="$(jq -r '.modified_files // [] | .[] | select(startswith("agent-system/extensions/"))' "$meta_file" 2>/dev/null | tr '\n' ' ')"
       echo "[gate-out] Postflight completion-deploy gate refused task $task_number (deploy-pending: modified_files overlap agent-system/extensions/** and the deploy is stale). Matched path(s): ${gate_out_matched_paths:-<unresolved>}. Running the sanctioned single-task redeploy trigger." >&2
 
-      # _gate_out_deploy_findings: sorted, deduplicated FINDING lines from a --findings run, with
-      # verify-deploy.sh exit 2 ("cannot run") folded into the SAME findings vocabulary as one
-      # synthesized sentinel line rather than special-cased, matching the Inter-Cycle Redeploy
-      # Checkpoint's own "Exit-2 resolution" rule.
-      _gate_out_deploy_findings() {
-        local _vd_rc=0
-        local _vd_out
-        _vd_out="$(bash .claude/scripts/verify-deploy.sh --findings --quiet 2>/dev/null)" || _vd_rc=$?
-        if [ "$_vd_rc" -eq 2 ]; then
-          echo "FINDING gate0 [SENTINEL] verify-deploy could not run (exit 2)"
-        else
-          printf '%s\n' "$_vd_out" | grep '^FINDING ' | sort -u
-        fi
-      }
-
-      gate_out_pre_findings="$(_gate_out_deploy_findings)"
+      # Sorted, deduplicated FINDING lines from a --findings run, with verify-deploy.sh exit 2
+      # ("cannot run") folded into the SAME findings vocabulary as one synthesized sentinel line
+      # rather than special-cased -- deploy_findings_snapshot (scripts/lib/deploy-baseline-lib.sh,
+      # sourced at the top of this file), matching the Inter-Cycle Redeploy Checkpoint's own
+      # "Exit-2 resolution" rule and shared with that checkpoint's own call site so the two
+      # cannot drift apart again.
+      gate_out_pre_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh)"
 
       gate_out_deploy_rc=0
       gate_out_deploy_log="$(bash .claude/scripts/deploy-headless.sh 2>&1)" || gate_out_deploy_rc=$?
@@ -187,10 +183,8 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
         echo "[gate-out] Redeploy trigger FAILED for task $task_number (deploy-headless.sh exited ${gate_out_deploy_rc} -- the deploy did not land). Leaving status as '$current_status'." >&2
         printf '%s\n' "$gate_out_deploy_log" | tail -20 >&2
       else
-        gate_out_post_findings="$(_gate_out_deploy_findings)"
-        gate_out_new_findings="$(comm -13 \
-          <(printf '%s\n' "$gate_out_pre_findings" | sort -u) \
-          <(printf '%s\n' "$gate_out_post_findings" | sort -u))"
+        gate_out_post_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh)"
+        gate_out_new_findings="$(deploy_baseline_new_findings "$gate_out_pre_findings" "$gate_out_post_findings")"
 
         if [ -n "$gate_out_new_findings" ]; then
           # Branch (b): at least one newly-introduced finding relative to the pre-redeploy

@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Adopt the shared library at the command-gate-out.sh call site",
+  "started_at": "2026-09-07T23:59:00Z",
+  "last_updated": "2026-09-08T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source lib/deploy-baseline-lib.sh in command-gate-out.sh, delete the inline helper, call the two exported functions, leave every message/behavior identical", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/command-gate-out.sh"
+    ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "bash -n clean. Full test-gate-out-repair-reporting.sh regression run deferred until after a redeploy of .claude/ from the source store -- the test copies collaborator scripts from the DEPLOYED .claude/scripts/ tree, which does not yet carry lib/deploy-baseline-lib.sh (bootstrapping hazard named in the plan's risk table). Will re-run after Phase 6's redeploy."
+}
