@@ -1,0 +1,93 @@
+{
+  "phase": 1,
+  "phase_name": "Derive the Authoritative Pass Inventory",
+  "started_at": "2026-09-07T00:00:00Z",
+  "last_updated": "2026-09-07T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate Step headings and echo banners in SKILL.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Enumerate pass functions called from claude-refresh.sh main(), confirm unconditional and FORCE/DRY_RUN gating", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Enumerate subsections under refresh.md's What It Cleans and Safety", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Classify each pass's gate", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Classify each pass's destructiveness", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record whether hourly systemd cadence reaches each pass", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record canonical inventory as input to Phases 2-4, noting divergence from task description's list of seven", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "canonical_inventory": [
+    {
+      "name": "Orphaned Claude processes",
+      "source": "claude-refresh.sh run_claude_pass() (~L656-792); SKILL.md Step 2; refresh.md Process Cleanup/Process Protection",
+      "gate": "interactive-confirm (SKILL.md AskUserQuestion) / --dry-run preview / --force terminates immediately with no prompt",
+      "destructive": "yes (terminates live process; not auto-recoverable)",
+      "hourly_cadence_reached": true
+    },
+    {
+      "name": "Lean LSP process-tree reclamation",
+      "source": "claude-refresh.sh run_lean_pass() (~L801-901); SKILL.md/refresh.md Process Safety/Protection narrative",
+      "gate": "interactive-confirm (same combined SKILL.md prompt as Claude-process pass) / --dry-run preview / --force terminates immediately",
+      "destructive": "yes, but recoverable -- lean-lsp-mcp respawns a fresh tree automatically on next tool call",
+      "hourly_cadence_reached": true
+    },
+    {
+      "name": "Zombie (unreaped-child) reporting",
+      "source": "claude-refresh.sh run_zombie_pass() (~L961-1058); SKILL.md/refresh.md Process Safety/Protection narrative",
+      "gate": "report-only-always (no $FORCE branch exists at all)",
+      "destructive": "no",
+      "hourly_cadence_reached": true
+    },
+    {
+      "name": "MCP server fan-out reporting",
+      "source": "claude-refresh.sh run_mcp_fanout_pass() (~L1139-1313); SKILL.md/refresh.md Process Safety/Protection narrative",
+      "gate": "report-only-always (never terminates or reconfigures under any flag)",
+      "destructive": "no",
+      "hourly_cadence_reached": true
+    },
+    {
+      "name": "Orphaned postflight markers",
+      "source": "SKILL.md Step 3 (bash block, not claude-refresh.sh)",
+      "gate": "age-threshold-only (60 min), no interactive confirmation when not --dry-run",
+      "destructive": "yes (deletes files unconditionally past threshold)",
+      "hourly_cadence_reached": false,
+      "note": "/refresh-only; claude-refresh.sh's main() never calls this"
+    },
+    {
+      "name": "Stale task .lock dirs",
+      "source": "SKILL.md Step 4; task-lock.sh cmd_reap() (TASK_LOCK_REAP_MIN, default 120min)",
+      "gate": "age-threshold-only, no interactive confirmation",
+      "destructive": "yes (removes stale lock dirs)",
+      "hourly_cadence_reached": false
+    },
+    {
+      "name": "Stale session-scoped orchestration files",
+      "source": "SKILL.md Step 4.5; reap-session-runtime-files.sh (ORCHESTRATOR_SESSION_REAP_MIN, default 240min)",
+      "gate": "age-threshold-only, no interactive confirmation",
+      "destructive": "yes (deletes stale singleton files)",
+      "hourly_cadence_reached": false
+    },
+    {
+      "name": "Stale session registry entries",
+      "source": "SKILL.md Step 4.6; task-lock.sh cmd_session_reap() (SESSION_REGISTRY_REAP_MIN, default 240min)",
+      "gate": "age-threshold-only, no interactive confirmation",
+      "destructive": "yes (removes stale registry entries)",
+      "hourly_cadence_reached": false
+    },
+    {
+      "name": "Stale .backup files",
+      "source": "SKILL.md Step 5 (bash block)",
+      "gate": "--dry-run preview / unconditional delete otherwise (no age threshold, no confirmation)",
+      "destructive": "yes",
+      "hourly_cadence_reached": false,
+      "note": "Confirmed omission from the research report's 9-row table and from the task description's list of seven; genuinely a 10th pass."
+    },
+    {
+      "name": "~/.claude/ directory cleanup",
+      "source": "SKILL.md Steps 6-7; claude-cleanup.sh",
+      "gate": "interactive-confirm (age-threshold selection prompt, default path) / --dry-run preview / --force (immediate, 8h default, no prompt)",
+      "destructive": "yes (protected filenames and 1-hour safety margin exempted)",
+      "hourly_cadence_reached": false
+    }
+  ],
+  "divergence_note": "Task description named seven passes; research report's own table listed nine (omitting 'Stale .backup files', SKILL.md Step 5). Enumeration here confirms the real, authoritative count is TEN distinct passes/cleanup targets. The two additional beyond the description's seven are the directory-cleanup operation (SKILL.md Steps 6-7 / claude-cleanup.sh, already covered by the SKILL's own 'two operations' framing but omitted from the description's per-pass list) and 'Stale .backup files' (SKILL.md Step 5), which is missing from both the task description and the research report's table."
+}

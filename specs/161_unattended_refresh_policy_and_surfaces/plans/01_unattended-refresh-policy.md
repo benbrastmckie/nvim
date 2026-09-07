@@ -1,7 +1,7 @@
 # Implementation Plan: Task #161
 
 - **Task**: 161 - Settle the unattended-refresh policy and update the systemd, skill, and command surfaces
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: Task 160 (completed)
 - **Research Inputs**: `specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md`
@@ -101,28 +101,33 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Derive the Authoritative Pass Inventory [NOT STARTED]
+### Phase 1: Derive the Authoritative Pass Inventory [COMPLETED]
 
 **Goal**: Produce the single canonical list of passes -- each with its owning source location,
 its gate, and whether it is destructive -- that Phases 2, 3, and 4 all consume. Nothing downstream
 should re-derive this.
 
 **Tasks**:
-- [ ] Enumerate every `### Step N` heading in `skill-refresh/SKILL.md` and every `echo "=== ... ==="`
-      banner it emits. Do not assume the count from the task description.
-- [ ] Enumerate every pass function called from `claude-refresh.sh`'s `main()`, confirming each is
-      called unconditionally and which `$FORCE`/`$DRY_RUN` gating it applies.
-- [ ] Enumerate every `###` subsection under `commands/refresh.md`'s `## What It Cleans` and
-      `## Safety`.
-- [ ] For each pass, classify its gate as exactly one of: interactive-confirm, `--dry-run`
-      preview, age-threshold-only (no confirmation), or report-only-always.
-- [ ] For each pass, classify destructiveness as: destructive / non-destructive / destructive but
-      recoverable (note the recovery mechanism).
-- [ ] For each pass, record whether the hourly systemd cadence reaches it (only
+- [x] Enumerate every `### Step N` heading in `skill-refresh/SKILL.md` and every `echo "=== ... ==="`
+      banner it emits. Do not assume the count from the task description. *(completed: 9 Step
+      headings found -- Step 1, 2, 3, 4, 4.5, 4.6, 5, 6, 7)*
+- [x] Enumerate every pass function called from `claude-refresh.sh`'s `main()`, confirming each is
+      called unconditionally and which `$FORCE`/`$DRY_RUN` gating it applies. *(completed: 4
+      functions, all unconditional -- run_claude_pass, run_lean_pass, run_zombie_pass,
+      run_mcp_fanout_pass)*
+- [x] Enumerate every `###` subsection under `commands/refresh.md`'s `## What It Cleans` and
+      `## Safety`. *(completed)*
+- [x] For each pass, classify its gate as exactly one of: interactive-confirm, `--dry-run`
+      preview, age-threshold-only (no confirmation), or report-only-always. *(completed)*
+- [x] For each pass, classify destructiveness as: destructive / non-destructive / destructive but
+      recoverable (note the recovery mechanism). *(completed)*
+- [x] For each pass, record whether the hourly systemd cadence reaches it (only
       `claude-refresh.sh`'s internal passes are reached; the file/spec cleanup passes are
-      `/refresh`-only).
-- [ ] Record the resulting inventory in the progress file as the canonical input to Phases 2-4,
-      and note explicitly any pass the task description's list of seven omitted.
+      `/refresh`-only). *(completed)*
+- [x] Record the resulting inventory in the progress file as the canonical input to Phases 2-4,
+      and note explicitly any pass the task description's list of seven omitted. *(completed: real
+      count is 10, not 7 or the research report's 9 -- see progress/phase-1-progress.json's
+      canonical_inventory and divergence_note)*
 
 **Timing**: 40 minutes
 
