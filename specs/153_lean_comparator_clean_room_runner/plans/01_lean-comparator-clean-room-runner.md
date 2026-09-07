@@ -1,7 +1,7 @@
 # Implementation Plan: Task #153
 
 - **Task**: 153 - lean_comparator_clean_room_runner
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 12 hours
 - **Dependencies**: None in-repo. End-to-end acceptance additionally requires `landrun`,
   `lean4export` and the `comparator` binary, provisioned by a sibling `~/.dotfiles/` task
