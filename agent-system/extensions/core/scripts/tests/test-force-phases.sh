@@ -258,7 +258,12 @@ else
 fi
 
 # Reset fixture status back to planned for the arity-preservation cases below.
-jq '.active_projects[0].status = "planned"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json
+# Routed through the fixture's own copy of state-write.sh (the sanctioned state.json
+# writer) rather than a hand-rolled `jq ... > tmp && mv` sequence -- see
+# scripts/lint/lint-state-writer-boundary.sh's boundary contract, which this suite is not
+# exempt from (unlike test-update-task-status.sh's deliberate corrupt-state fixture).
+"$WORKDIR/.claude/scripts/state-write.sh" '.active_projects[0].status = "planned"' \
+  --session-id "sess_test_arity_setup"
 
 # =====================================================================
 # Arity preservation: a 4-argument and a 5-argument call still behave exactly as before
@@ -304,7 +309,8 @@ run_stage5() {
 }
 mkdir -p "$WORKDIR/specs/001_fixture_task"
 
-jq '.active_projects[0].next_artifact_number = 2' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+"$WORKDIR/.claude/scripts/state-write.sh" '.active_projects[0].next_artifact_number = 2' \
+  --session-id "sess_test_advance_setup"
 BEFORE_RESEARCHED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
 run_stage5 researched false sess_test_advance_r >/dev/null 2>&1
 AFTER_RESEARCHED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
@@ -314,7 +320,8 @@ else
   fail "researched dispatch: next_artifact_number $BEFORE_RESEARCHED -> $AFTER_RESEARCHED (expected +1)"
 fi
 
-jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+"$WORKDIR/.claude/scripts/state-write.sh" '.active_projects[0].status = "planned"' \
+  --session-id "sess_test_advance_pu_setup"
 BEFORE_UNFORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
 run_stage5 planned false sess_test_advance_pu >/dev/null 2>&1
 AFTER_UNFORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
@@ -324,7 +331,8 @@ else
   fail "planned dispatch, force_invoked=false: next_artifact_number $BEFORE_UNFORCED -> $AFTER_UNFORCED (expected no change)"
 fi
 
-jq '.active_projects[0].status = "planned"' "$WORKDIR/specs/state.json" > "$WORKDIR/specs/state.json.tmp" && mv "$WORKDIR/specs/state.json.tmp" "$WORKDIR/specs/state.json"
+"$WORKDIR/.claude/scripts/state-write.sh" '.active_projects[0].status = "planned"' \
+  --session-id "sess_test_advance_pf_setup"
 BEFORE_FORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
 run_stage5 planned true sess_test_advance_pf >/dev/null 2>&1
 AFTER_FORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
