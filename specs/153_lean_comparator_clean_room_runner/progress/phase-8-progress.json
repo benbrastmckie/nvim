@@ -1,0 +1,31 @@
+{
+  "phase": 8,
+  "phase_name": "Manifest wiring, acceptance evidence, deferred-criteria report",
+  "started_at": "2026-09-07T18:40:00Z",
+  "last_updated": "2026-09-07T19:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add scripts to manifest.json provides.scripts; verify manifest parses",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/manifest.json"]
+    },
+    {
+      "id": 2,
+      "description": "Attempt real acceptance demonstrations with newly-discovered real comparator+landrun; report honestly which criteria proven vs deferred (lean4export/nanoda_bin still absent, plus new landrun/lake permission finding)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]
+    },
+    {
+      "id": 3,
+      "description": "Confirm no .claude/** writes, no task-number refs outside specs/**; write implementation summary",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "invoke real comparator directly against simple_match fixture to test full end-to-end pipeline", "result": "failed", "reason": "comparator's own internal landrun-sandboxed lake invocation failed with Permission denied (os error 13) -- a Landlock grant issue internal to Comparator's own Main.lean, not this wrapper's concern; independent of lean4export's continued absence"}
+  ],
+  "handoff_count": 0
+}

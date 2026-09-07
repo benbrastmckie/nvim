@@ -205,6 +205,33 @@ this is minutes to tens of minutes. This runner is opt-in and standalone, scoped
 theorems, and is never wired into a per-iteration implementation loop. A `--timeout` bounds any
 single run; expiry emits the `timeout` verdict rather than hanging indefinitely.
 
+## Binary Provisioning Status (as measured 2026-09-07, mid-implementation)
+
+At the start of this integration's implementation, `landrun`, `lean4export`, `nanoda_bin`, and
+`comparator` were ALL absent on this host. By the time the regression suite and acceptance
+evidence were assembled (same day), real `comparator` (nix store path confirms build commit
+`2312244a`, matching this integration's vendored fixtures) and real `landrun` (v0.1.17) had
+become available via the user's home-manager profile -- the sibling `~/.dotfiles/` provisioning
+task appears to have partially landed. `lean4export` and `nanoda_bin` remain absent.
+
+**New finding, diagnostic only (no provisioning or patching attempted, per this task's binding
+Non-Goal)**: invoking the real `comparator` binary directly against the vendored `simple_match`
+fixture (bypassing this runner) failed with `error: command failed: 'lake' / Permission denied
+(os error 13)` before ever reaching the lean4export-dependent export step. Comparator's OWN
+internal invocation of `landrun` around its internal `lake` build appears to deny an operation
+`lake` needs -- Landlock sandboxing requires explicit `--ro`/`--rw`/`--rox`/`--rwx` grants (per
+`landrun --help`), and diagnosing the exact grant Comparator's own `Main.lean` would need is
+Comparator's own internal concern, not this wrapper's. This is a SEPARATE blocker from
+`lean4export`'s absence -- provisioning `lean4export` alone would not resolve it. Both blockers
+are left for the sibling `~/.dotfiles/` provisioning task or a dedicated follow-up.
+
+**Demonstrated for real regardless**: this runner's `comparator_unavailable` verdict was
+exercised against the genuinely-missing `lean4export` binary using the actual, unmodified runner
+script and the now-present real `comparator`/`landrun` -- verdict `comparator_unavailable`,
+message names `lean4export` and `COMPARATOR_LEAN4EXPORT`, exit 69. This is the one acceptance
+demonstration in this integration's acceptance criteria achievable against fully real binaries on
+this host today.
+
 ## References
 
 - Upstream: https://github.com/leanprover/comparator (Apache-2.0, default branch `master`, as

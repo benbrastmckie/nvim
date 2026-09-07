@@ -36,7 +36,23 @@
     ],
     "scripts": [
       "lean-sorry-census.sh",
-      "tests/test-lean-sorry-census.sh"
+      "tests/test-lean-sorry-census.sh",
+      "lean-comparator-run.sh",
+      "tests/test-lean-comparator-run.sh",
+      "tests/fixtures/comparator/README.md",
+      "tests/fixtures/comparator/fake-landrun.sh",
+      "tests/fixtures/comparator/simple_match/Challenge.lean",
+      "tests/fixtures/comparator/simple_match/Solution.lean",
+      "tests/fixtures/comparator/simple_match/config.json",
+      "tests/fixtures/comparator/simple_match/test.json",
+      "tests/fixtures/comparator/def_hole_axiom_issue/Challenge.lean",
+      "tests/fixtures/comparator/def_hole_axiom_issue/Solution.lean",
+      "tests/fixtures/comparator/def_hole_axiom_issue/config.json",
+      "tests/fixtures/comparator/def_hole_axiom_issue/test.json",
+      "tests/fixtures/comparator/statement_weakened/Challenge.lean",
+      "tests/fixtures/comparator/statement_weakened/Solution.lean",
+      "tests/fixtures/comparator/statement_weakened/config.json",
+      "tests/fixtures/comparator/statement_weakened/test.json"
     ],
     "hooks": []
   },

@@ -534,30 +534,67 @@ including its anti-vacuous-test discipline.
 
 ---
 
-### Phase 8: Manifest wiring, acceptance evidence, deferred-criteria report [NOT STARTED]
+### Phase 8: Manifest wiring, acceptance evidence, deferred-criteria report [COMPLETED]
 
 **Goal**: Make the script actually deployable, and record honestly which acceptance criteria are
 proven and which are deferred to the sibling provisioning task.
 
 **Tasks**:
-- [ ] Add `scripts/lean-comparator-run.sh` and `scripts/tests/test-lean-comparator-run.sh` (and
+- [x] Add `scripts/lean-comparator-run.sh` and `scripts/tests/test-lean-comparator-run.sh` (and
       the fixture tree, if the manifest schema tracks non-script assets) to
       `agent-system/extensions/lean/manifest.json`'s `provides.scripts`. A script left off this
       list is never deployed to `.claude/scripts/` and is therefore invisible to the agent.
-- [ ] Verify the manifest still parses (`python3 -m json.tool`) and that a deploy/sync dry run,
-      if one exists, lists the new files.
-- [ ] Run the acceptance demonstrations and capture their output:
+      *(completed: 16 new entries -- 2 scripts + 14 individual fixture-tree files, matching the
+      `scripts` deploy category's flat per-file `entry_kind` (no directory-glob support),
+      confirmed against the literature extension's own identical precedent for its
+      `tests/fixtures/*.json` entries)*
+- [x] Verify the manifest still parses (`python3 -m json.tool`) and that a deploy/sync dry run,
+      if one exists, lists the new files. *(completed: parses; every listed path confirmed to
+      exist on disk via a script-driven check)*
+- [x] Run the acceptance demonstrations and capture their output:
       - `verified` on `simple_match`
       - `statement_mismatch` on `statement_weakened`
       - `axiom_violation` on `def_hole_axiom_issue` (transitive, not a literal `axiom` line)
       - `comparator_unavailable` naming binary + override var, exiting distinguishably
-- [ ] For any demonstration that cannot run because `landrun`/`lean4export`/`comparator` are
+      *(PARTIALLY completed -- see the deferred-criteria note below. `comparator_unavailable`
+      demonstrated for REAL against the genuinely-missing `lean4export` binary using the actual,
+      unmodified runner script and the now-present real `comparator`/`landrun` binaries: verdict
+      `comparator_unavailable`, message names `lean4export` and `COMPARATOR_LEAN4EXPORT`, exit 69.
+      `verified`/`statement_mismatch`/`axiom_violation` are proven at the WRAPPER-LOGIC level
+      (Phase 7's Cases V1/V5/V7-V9 exercise classify_verdict() through the real
+      git-worktree+systemd-run+guard pipeline against upstream's own exact verbatim message
+      strings) but NOT against a real end-to-end Comparator run -- see below for why.)*
+- [x] For any demonstration that cannot run because `landrun`/`lean4export`/`comparator` are
       absent on this host, state explicitly WHICH criterion is deferred and to WHAT (the sibling
       `~/.dotfiles/` provisioning work) — never report it as a pass. Consider, and record a
       decision on, whether building `comparator` + `lean4export` locally is feasible within
       budget (neither depends on Mathlib and `lake`/`lean`/`elan` are present) versus deferring.
-- [ ] Confirm no file under `.claude/**` was written at any point in this task.
-- [ ] Confirm no task-number reference appears in any deliverable outside `specs/**`.
+      *(completed -- DEFERRED, with a new finding recorded. Discovered mid-Phase-8 (re-probed
+      live, not assumed from the dispatch's earlier same-day snapshot): real `comparator`
+      (nix store path confirms build commit `2312244a`, matching this task's vendored fixtures)
+      and real `landrun` (v0.1.17) are NOW present via the user's home-manager profile -- the
+      sibling `~/.dotfiles/` task has partially landed since the dispatch was written. `lean4export`
+      and `nanoda_bin` remain absent. Diagnostic-only (no provisioning attempted, per the binding
+      Non-Goal): invoking the real `comparator` binary directly against the real `simple_match`
+      fixture (bypassing this wrapper) failed with `error: command failed: 'lake' / Permission
+      denied (os error 13)` before ever reaching the lean4export-dependent export step --
+      Comparator's OWN internal invocation of `landrun` around its internal `lake` build appears
+      to deny an operation `lake` needs (Landlock sandboxing requires explicit `--ro`/`--rw`/
+      `--rox`/`--rwx` grants per `landrun --help`; diagnosing the exact grant Comparator's own
+      `Main.lean` would need is squarely Comparator's own internal concern, not this wrapper's,
+      and is left to the sibling provisioning task). DECISION: do not attempt to build/patch
+      `lean4export` or debug Comparator's internal landrun invocation within this task's budget --
+      both are explicit Non-Goals (provisioning is the sibling task's job) and the second finding
+      is a NEW blocker independent of lean4export's absence, discovered live during this phase,
+      that provisioning `lean4export` alone would not resolve. Full real end-to-end acceptance
+      (a genuine Comparator run reaching `verified`/`statement_mismatch`/`axiom_violation`) is
+      DEFERRED to the sibling `~/.dotfiles/` task, now with two concrete remaining blockers
+      recorded for it: `lean4export` provisioning, and the landrun permission-denial on `lake`.)*
+- [x] Confirm no file under `.claude/**` was written at any point in this task. *(completed:
+      `git status --short .claude/` empty)*
+- [x] Confirm no task-number reference appears in any deliverable outside `specs/**`. *(completed:
+      `bash .claude/scripts/check-task-references.sh agent-system/extensions/lean/` reports 0
+      occurrences)*
 
 **Timing**: 1 hour
 
@@ -583,20 +620,37 @@ directory-glob entry, add it rather than assuming the two script paths cover the
 
 ## Testing & Validation
 
-- [ ] `bash -n` and `shellcheck` (if available) clean on `lean-comparator-run.sh`,
-      `test-lean-comparator-run.sh`, and the vendored `fake-landrun.sh`.
-- [ ] `test-lean-comparator-run.sh` exits 0 with every non-deferred case passing.
-- [ ] `test-lean-sorry-census.sh` still exits 0 (sibling-suite regression check).
-- [ ] Mutation check: breaking one classifier arm makes the suite fail.
-- [ ] All eight verdict categories reachable and each maps to its documented exit code.
-- [ ] `comparator_unavailable` exit code is distinct from every rejection code, verified by
-      asserting the numeric codes differ, not by inspection.
-- [ ] Both acceptance directions demonstrated on real files: a `verified` pass AND a
+- [x] `bash -n` and `shellcheck` (if available) clean on `lean-comparator-run.sh`,
+      `test-lean-comparator-run.sh`, and the vendored `fake-landrun.sh`. *(completed; shellcheck
+      not available in this environment, per the "if available" carve-out)*
+- [x] `test-lean-comparator-run.sh` exits 0 with every non-deferred case passing. *(completed:
+      22 passed, 0 failed, 1 skipped-with-report)*
+- [x] `test-lean-sorry-census.sh` still exits 0 (sibling-suite regression check). *(completed)*
+- [x] Mutation check: breaking one classifier arm makes the suite fail. *(completed: a mutated
+      copy of the tool with the axiom_violation string broken was run against the FULL suite and
+      the suite exited 1, with Case V5 the specific failure -- demonstrated live, not merely
+      asserted)*
+- [x] All eight verdict categories reachable and each maps to its documented exit code.
+      *(completed: Cases V1-V10 cover all 8 named verdicts plus timeout (Case G3) and the 9th
+      unclassified_failure escape hatch)*
+- [x] `comparator_unavailable` exit code is distinct from every rejection code, verified by
+      asserting the numeric codes differ, not by inspection. *(completed: a standalone Python
+      assertion confirmed all 9 verdict exit codes are pairwise distinct and none collides with
+      the 75-79 guard-reserved band)*
+- [x] Both acceptance directions demonstrated on real files: a `verified` pass AND a
       `statement_mismatch` rejection. A checker that can only ever say one thing is not a checker.
-- [ ] Transitive `axiom_violation` demonstrated via `def_hole_axiom_issue` (not a literal
-      `axiom` line, which the existing grep already catches).
-- [ ] `manifest.json` parses and lists the new files.
-- [ ] No `.claude/**` file modified; no task-number reference outside `specs/**`.
+      *(completed at the wrapper-logic level via Cases V1/V7-V9, using upstream's own exact
+      verbatim message strings through the real git-worktree+systemd-run+guard pipeline; NOT
+      demonstrated against a real end-to-end Comparator run -- see Phase 8's deferred-criteria
+      note for why, and what remains for the sibling task)*
+- [x] Transitive `axiom_violation` demonstrated via `def_hole_axiom_issue` (not a literal
+      `axiom` line, which the existing grep already catches). *(completed at the wrapper-logic
+      level via Case V5, using the exact `Illegal axiom detected` string Axioms.loop's transitive
+      closure walk produces; the `def_hole_axiom_issue` fixture itself demonstrates the
+      TRANSITIVE gaming mechanism via its own Solution.lean comment, though a real Comparator run
+      reaching this fixture was not achieved on this host -- see the deferred-criteria note)*
+- [x] `manifest.json` parses and lists the new files. *(completed)*
+- [x] No `.claude/**` file modified; no task-number reference outside `specs/**`. *(completed)*
 
 ## Artifacts & Outputs
 
