@@ -341,30 +341,37 @@ apply the decision rule to what is actually observed rather than to this hypothe
 
 ---
 
-### Phase 5: Write the decision record and regression notes into the summary [NOT STARTED]
+### Phase 5: Write the decision record and regression notes into the summary [COMPLETED]
 
 **Goal**: Satisfy the acceptance criteria's recording obligations in the implementation summary.
 
 **Tasks**:
-- [ ] Record the FAILURE 1 remedy decision from Phase 1: option (a), uniform across all four sites,
+- [x] Record the FAILURE 1 remedy decision from Phase 1: option (a), uniform across all four sites,
       with the reasoning and the explicit rejection of (b) and (c), and the verbatim lint/test
-      evidence.
-- [ ] Record the FAILURE 2 outcome from Phase 2: gate 13's observed state, the honest statement
+      evidence. *(completed: summary "Decisions" section, first subsection)*
+- [x] Record the FAILURE 2 outcome from Phase 2: gate 13's observed state, the honest statement
       that the original finding's identity was never captured and is not reproducible, the
       evidenced transient-concurrency hypothesis, and the classification of anything newly
-      observed.
-- [ ] Record the Phase 3 change as the substantive FAILURE 2 remedy: the false hint is now true,
+      observed. *(completed: summary "Decisions" section, second subsection, including the
+      literature-pyenv classification correction)*
+- [x] Record the Phase 3 change as the substantive FAILURE 2 remedy: the false hint is now true,
       and the next gate-13 (or gate-5) failure names its findings at first observation.
-- [ ] Write the two regression notes: (1) FAILURE 1 cannot silently re-break because gate 12 runs
+      *(completed: summary "Decisions" section, third subsection)*
+- [x] Write the two regression notes: (1) FAILURE 1 cannot silently re-break because gate 12 runs
       `lint-state-writer-boundary.sh` over the whole source store on every `verify-deploy.sh`, and
       `test-lint-state-writer-boundary.sh` pins the lint's own detection behavior; (2) FAILURE 2's
       diagnosability cannot silently re-break because gate 13 runs on every redeploy checkpoint
-      and now prints its findings unconditionally on failure.
-- [ ] Record any Phase 4 exclusion explicitly, including that gate 3's `line_count` drift class is
-      the sibling task's scope.
-- [ ] State the deviation plainly: the acceptance criterion "the finding's actual identity
+      and now prints its findings unconditionally on failure. *(completed: summary "Regression
+      Notes" section, items 1-2; a third note was added for the line_count corrections since
+      Phase 4 introduced that fix)*
+- [x] Record any Phase 4 exclusion explicitly, including that gate 3's `line_count` drift class is
+      the sibling task's scope. *(completed: no exclusion was needed — both mismatches were
+      corrected via decision-rule branch (a), not excluded; the class-level problem is noted as
+      the sibling task's scope in summary "Regression Notes" item 3 and "Follow-ups")*
+- [x] State the deviation plainly: the acceptance criterion "the finding's actual identity
       documented" is satisfied by an honest non-reproducibility record plus a diagnosability fix,
-      not by naming a file that was never observed.
+      not by naming a file that was never observed. *(completed: summary "Decisions" section,
+      second subsection, opening sentence)*
 
 **Timing**: 30 minutes
 

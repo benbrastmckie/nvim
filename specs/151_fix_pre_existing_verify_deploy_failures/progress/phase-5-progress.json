@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Write the decision record and regression notes into the summary",
+  "started_at": "2026-09-07T22:26:00Z",
+  "last_updated": "2026-09-07T22:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record FAILURE 1 remedy decision from Phase 1", "status": "done", "files_touched": ["specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md"]},
+    {"id": 2, "description": "Record FAILURE 2 outcome from Phase 2", "status": "done", "files_touched": ["specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md"]},
+    {"id": 3, "description": "Record Phase 3 change as substantive FAILURE 2 remedy", "status": "done", "files_touched": ["specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md"]},
+    {"id": 4, "description": "Write two regression notes", "status": "done", "files_touched": ["specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md"]},
+    {"id": 5, "description": "Record any Phase 4 exclusion", "status": "done", "files_touched": [], "note": "No exclusion needed -- both line_count mismatches were corrected, not excluded"},
+    {"id": 6, "description": "State the identity-documentation deviation plainly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
