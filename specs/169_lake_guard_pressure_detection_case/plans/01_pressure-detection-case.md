@@ -142,7 +142,7 @@ Phase 2 uses the observed value, not the value written here.
 
 ---
 
-### Phase 2: Add Pressured Fixture and the Positive-Direction Case [NOT STARTED]
+### Phase 2: Add Pressured Fixture and the Positive-Direction Case [COMPLETED]
 
 **Goal**: Add one new numbered case to `test-lake-build-guard.sh` that writes a pressured meminfo
 fixture into the existing mktemp workdir, overrides `LAKE_BUILD_GUARD_MEMINFO_PATH` on a single
@@ -150,24 +150,24 @@ fixture into the existing mktemp workdir, overrides `LAKE_BUILD_GUARD_MEMINFO_PA
 plus both meminfo-derived reason substrings on stderr.
 
 **Tasks**:
-- [ ] At the new case's own site (not up with the suite-wide clean fixtures), grep both threshold
-      constants out of `$GUARD` at run time into local variables.
-- [ ] Derive target ratios from those constants: available-ratio target `THRESH/2` (strictly below
+- [x] At the new case's own site (not up with the suite-wide clean fixtures), grep both threshold
+      constants out of `$GUARD` at run time into local variables. *(completed)*
+- [x] Derive target ratios from those constants: available-ratio target `THRESH/2` (strictly below
       the MemAvailable threshold), swap-used-ratio target `(THRESH+100)/2` (strictly above the
       swap threshold). Guard against a degenerate/unreadable grep result with a loud `fail()`
-      rather than a silent fallback.
-- [ ] Write the pressured meminfo fixture (e.g. `$WORKDIR/fixture-meminfo-pressured`) using
+      rather than a silent fallback. *(completed: targets 5% and 75%)*
+- [x] Write the pressured meminfo fixture (e.g. `$WORKDIR/fixture-meminfo-pressured`) using
       `MemTotal`/`SwapTotal` values that are exact multiples of 100 so the ratio arithmetic
-      round-trips exactly, computing `MemAvailable` and `SwapFree` from the derived targets.
-- [ ] Build a fresh package root for the case via the suite's existing `build_fixture` helper.
-- [ ] Invoke the guard with a per-invocation env prefix in Case 11's shape:
+      round-trips exactly, computing `MemAvailable` and `SwapFree` from the derived targets. *(completed)*
+- [x] Build a fresh package root for the case via the suite's existing `build_fixture` helper. *(completed)*
+- [x] Invoke the guard with a per-invocation env prefix in Case 11's shape:
       `LAKE_BUILD_GUARD_MEMINFO_PATH="$PRESSURED" run_guard "$ROOT" preflight`, capturing stderr to
-      a workdir file in Case 10's shape and the exit code into a variable.
-- [ ] Assert the exit code equals the pressure return code recorded in Phase 1, and that the
+      a workdir file in Case 10's shape and the exit code into a variable. *(completed)*
+- [x] Assert the exit code equals the pressure return code recorded in Phase 1, and that the
       captured stderr contains both the MemAvailable reason and the swap-in-use reason, matched
-      against substrings derived from the Phase 1 literals.
-- [ ] Add a short comment above the case explaining that it is the positive-direction counterpart
-      to the suite-wide clean default, and why the override is per-invocation.
+      against substrings derived from the Phase 1 literals. *(completed: verified 28/28)*
+- [x] Add a short comment above the case explaining that it is the positive-direction counterpart
+      to the suite-wide clean default, and why the override is per-invocation. *(completed)*
 
 **Timing**: 0.5 hours
 

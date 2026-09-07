@@ -579,6 +579,63 @@ else
 fi
 
 # =====================================================================================
+# Case 22: positive direction -- a pressured meminfo fixture makes preflight DETECT pressure
+# =====================================================================================
+# Counterpart to the suite-wide clean-fixture default set up above. With no case driving the
+# pressured direction, a regression that disabled check_memory_pressure() entirely would leave
+# every other case green -- this case closes that gap. Follows case 11's per-invocation
+# local-override idiom (LAKE_BUILD_GUARD_MEMINFO_PATH is overridden on this ONE invocation only;
+# the suite-wide exports at lines 104-105 are never reassigned) and case 10's stderr-capture
+# idiom. LAKE_BUILD_GUARD_PSI_PATH is deliberately left at the suite-wide clean fixture, so only
+# the two meminfo-derived reasons fire, not a PSI reason.
+#
+# Threshold constants are grep'd out of $GUARD at run time (never hardcoded) so this case stays
+# correct if MEM_AVAILABLE_RATIO_THRESHOLD / SWAP_USED_RATIO_THRESHOLD are ever retuned. MemTotal
+# and SwapTotal are exact multiples of 100 and the target ratios (THRESH/2 for availability,
+# (THRESH+100)/2 for swap-in-use) are chosen so the integer-truncating ratio arithmetic in
+# check_memory_pressure() lands comfortably past each threshold, never on the boundary.
+CASE22_MEM_AVAIL_THRESH="$(grep -oE '^MEM_AVAILABLE_RATIO_THRESHOLD=[0-9]+' "$GUARD" | cut -d= -f2)"
+CASE22_SWAP_USED_THRESH="$(grep -oE '^SWAP_USED_RATIO_THRESHOLD=[0-9]+' "$GUARD" | cut -d= -f2)"
+
+if [ -z "$CASE22_MEM_AVAIL_THRESH" ] || [ -z "$CASE22_SWAP_USED_THRESH" ]; then
+  fail "case 22: could not read MEM_AVAILABLE_RATIO_THRESHOLD / SWAP_USED_RATIO_THRESHOLD out of $GUARD"
+else
+  CASE22_ROOT="$WORKDIR/case22"
+  build_fixture "$CASE22_ROOT"
+
+  CASE22_AVAIL_RATIO_TARGET=$(( CASE22_MEM_AVAIL_THRESH / 2 ))
+  CASE22_SWAP_RATIO_TARGET=$(( (CASE22_SWAP_USED_THRESH + 100) / 2 ))
+
+  CASE22_MEM_TOTAL=32000000
+  CASE22_SWAP_TOTAL=32000000
+  CASE22_MEM_AVAIL=$(( CASE22_MEM_TOTAL * CASE22_AVAIL_RATIO_TARGET / 100 ))
+  CASE22_SWAP_USED=$(( CASE22_SWAP_TOTAL * CASE22_SWAP_RATIO_TARGET / 100 ))
+  CASE22_SWAP_FREE=$(( CASE22_SWAP_TOTAL - CASE22_SWAP_USED ))
+
+  MEMINFO_FIXTURE_PRESSURED="$WORKDIR/fixture-meminfo-pressured"
+  cat > "$MEMINFO_FIXTURE_PRESSURED" <<EOF
+MemTotal:       $CASE22_MEM_TOTAL kB
+MemFree:        $CASE22_MEM_AVAIL kB
+MemAvailable:   $CASE22_MEM_AVAIL kB
+SwapTotal:      $CASE22_SWAP_TOTAL kB
+SwapFree:       $CASE22_SWAP_FREE kB
+EOF
+
+  CASE22_RC=0
+  LAKE_BUILD_GUARD_MEMINFO_PATH="$MEMINFO_FIXTURE_PRESSURED" \
+    run_guard "$CASE22_ROOT" preflight > /dev/null 2> "$WORKDIR/c22.err" || CASE22_RC=$?
+  CASE22_ERR="$(cat "$WORKDIR/c22.err")"
+
+  if [ "$CASE22_RC" = "11" ] \
+     && printf '%s' "$CASE22_ERR" | grep -qF "MemAvailable/MemTotal = ${CASE22_AVAIL_RATIO_TARGET}% is below threshold ${CASE22_MEM_AVAIL_THRESH}%" \
+     && printf '%s' "$CASE22_ERR" | grep -qF "swap-in-use = ${CASE22_SWAP_RATIO_TARGET}% of SwapTotal exceeds threshold ${CASE22_SWAP_USED_THRESH}%"; then
+    pass "case 22: positive direction -- a pressured meminfo fixture, overriding LAKE_BUILD_GUARD_MEMINFO_PATH on this single invocation only, makes preflight exit 11 and report both the MemAvailable and swap-in-use reasons"
+  else
+    fail "case 22: expected preflight exit 11 with both the MemAvailable and swap-in-use reasons; got rc=$CASE22_RC err=[$CASE22_ERR]"
+  fi
+fi
+
+# =====================================================================================
 # Non-vacuousness (mutation) checks
 # =====================================================================================
 # Per context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes", and

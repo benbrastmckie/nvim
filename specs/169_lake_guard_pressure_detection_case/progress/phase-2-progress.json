@@ -1,0 +1,53 @@
+{
+  "phase": 2,
+  "phase_name": "Add Pressured Fixture and the Positive-Direction Case",
+  "started_at": "2026-09-07T00:05:00Z",
+  "last_updated": "2026-09-07T00:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Grep both threshold constants out of $GUARD at the new case's site",
+      "status": "done",
+      "note": "CASE22_MEM_AVAIL_THRESH / CASE22_SWAP_USED_THRESH read via grep -oE '^NAME=[0-9]+' | cut -d= -f2, with a loud fail() guard if either is empty.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Derive target ratios from thresholds (THRESH/2 and (THRESH+100)/2)",
+      "status": "done",
+      "note": "avail target=5 (below 10), swap target=75 (above 50), both exact integer results (MemTotal/SwapTotal=32000000, a multiple of 100), no boundary truncation risk.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Write the pressured meminfo fixture",
+      "status": "done",
+      "note": "fixture-meminfo-pressured written into $WORKDIR with MemTotal/MemAvailable/SwapTotal/SwapFree computed from the derived targets.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Build fresh fixture root via build_fixture and invoke guard with per-invocation override",
+      "status": "done",
+      "note": "CASE22_ROOT via build_fixture(); LAKE_BUILD_GUARD_MEMINFO_PATH=... run_guard $CASE22_ROOT preflight, stderr captured to $WORKDIR/c22.err (case 10 idiom), rc captured (case 11 idiom). PSI left at suite-wide clean fixture.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Assert exit code and both reason substrings",
+      "status": "done",
+      "note": "Asserts rc=11 and both reason substrings present, built from the Phase 1 literals and the run-time-derived ratio/threshold values (grep -qF, no hardcoded numbers). Verified live: case 22 passes, full suite 28/28 (27 baseline + 1).",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Add explanatory comment above the case",
+      "status": "done",
+      "note": "Comment block explains the positive-direction rationale and the per-invocation-only override discipline.",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
