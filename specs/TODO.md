@@ -11,9 +11,9 @@ next_project_number: 168
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,159,162,163,166,167 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,155,160,164 | 29,74,88,137,139,159,162 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 156,161,165 | 155,160,163,164 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,137,139,151,152,157,160,162,163,166,167 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,155,161,164 | 29,74,88,137,139,160,162 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 156,165 | 155,163,164 | extensions, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -36,9 +36,8 @@ next_project_number: 168
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-159 [IMPLEMENTING] — Add an independently-gated reclamation pass for orphaned Lean LSP
-  └─ 160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
-    └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
+160 [NOT STARTED] — Add report-only refresh passes for unused MCP fan-out and unreape
+  └─ 161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
 ### Extensions
@@ -462,12 +461,13 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 159. Add an independently-gated reclamation pass for orphaned Lean LSP process trees
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 158
 - **Research**: [159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md]
 - **Plan**: [159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md]
+- **Summary**: [159_orphaned_lean_lsp_reclamation_pass/summaries/01_lean-lsp-reclamation-pass-summary.md]
 
 **Description**: Add an independently-gated reclamation pass for orphaned Lean LSP process trees.
 

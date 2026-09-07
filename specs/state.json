@@ -684,14 +684,14 @@
     {
       "project_number": 159,
       "project_name": "orphaned_lean_lsp_reclamation_pass",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Add an independently-gated reclamation pass for orphaned Lean LSP process trees",
       "description": "Add an independently-gated reclamation pass for orphaned Lean LSP process trees.\n\nPROBLEM: lean-lsp-mcp spawns `lake serve` -> `lean --server` -> one `lean --worker` per file opened, and source grep shows teardown ONLY at shutdown (lean_lsp_mcp/client_utils.py:196 `_close_client`). There is no idle timeout and no LRU eviction, so workers live as long as the Claude session does. Observed: a tree idle 13h holding 2.06 GiB of swap. Reclaimed live during diagnosis via SIGTERM children-first with zero loss -- lean-lsp-mcp respawns a fresh tree on the next tool call.\n\nWORK: implement this as a NEW, SEPARATELY-GATED detection pass with its own predicate. Detection keys: comm in (`lake serve`, `lean --server`, `lean --worker`), 0% CPU, and idle beyond a configurable threshold. Reuse the existing is_system_slice_cgroup and is_owned_by_current_uid exclusions as defense in depth. Report memory using the VmSwap-aware accounting from the prerequisite task.\n\nHARD SAFETY CONSTRAINT -- MUST NOT BE VIOLATED: the claude-refresh.sh header documents is_claude_executable_comm as a deliberate narrow executable allow-list that trades recall for safety, stating verbatim \"Do not widen `is_claude_executable_comm` to match on a bare argv substring -- that is exactly the defect this rewrite removes.\" DO NOT loosen or widen that matcher. The new Lean predicate is separate and independently gated. Preserve the existing --dry-run/--force contract and the AskUserQuestion confirmation flow; the new pass must be dry-run-clean.\n\nTERMINATION ORDER: strictly workers -> server -> `lake serve`. Killing the parent first orphans workers into PID 1.\n\nFILES: agent-system/extensions/core/scripts/claude-refresh.sh (new predicate + pass + termination ordering); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh; agent-system/extensions/core/skills/skill-refresh/SKILL.md (pass description, AskUserQuestion option); agent-system/extensions/core/commands/refresh.md.\n\nACCEPTANCE: the new predicate has its own test block asserting it matches the three Lean comms and rejects the existing Claude comms, and vice versa -- no cross-contamination between the two matchers; --dry-run lists a Lean tree without terminating anything; --force on a fixture tree terminates in the documented order, verified by an ORDERING assertion, not merely final state; the existing --dry-run/--force contract and confirmation flow are unchanged; is_claude_executable_comm is byte-identical to its pre-task form.\n\nTHRESHOLD RISK: the 13h idle observation is a single data point. A threshold set too low will reclaim a tree the user is about to reuse -- recoverable, since the MCP respawns, but it costs a rebuild. Default conservatively and make the threshold configurable.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "topic": "core-agent-system",
       "priority": "high",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-07T19:56:47Z",
+      "last_updated": "2026-09-07T20:18:41Z",
       "session_id": "sess_1788808797_82397b",
       "dependencies": [
         158
@@ -706,6 +706,11 @@
           "path": "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md",
           "type": "plan",
           "summary": "6-phase plan (~6.5h) adding an independently-gated orphaned Lean LSP process-tree reclamation pass to claude-refresh.sh, with cross-contamination and termination-ordering test assertions."
+        },
+        {
+          "path": "specs/159_orphaned_lean_lsp_reclamation_pass/summaries/01_lean-lsp-reclamation-pass-summary.md",
+          "type": "summary",
+          "summary": "All 6 plan phases completed: Lean LSP process-tree reclamation pass added to claude-refresh.sh as a separately-gated pass; test suite grew from 17 to 49 passing assertions; is_claude_executable_comm byte-identical to pre-task form; docs updated."
         }
       ],
       "file_scope": [
@@ -714,7 +719,8 @@
         "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
         "agent-system/extensions/core/commands/refresh.md"
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented an independently-gated reclamation pass for orphaned Lean LSP process trees (lake serve -> lean --server -> lean --worker) in claude-refresh.sh, with its own predicates, snapshot, tree-wide idle gate, and strict workers->server->root termination order, plus cross-contamination and ordering test coverage and updated skill/command documentation."
     },
     {
       "project_number": 160,

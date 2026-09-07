@@ -1,7 +1,7 @@
 # Implementation Plan: Task #159
 
 - **Task**: 159 - Add an independently-gated reclamation pass for orphaned Lean LSP process trees
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: Task 158 (VmSwap-aware refresh memory accounting) — completed; provides `get_vmswap_kb`/`format_memory` and the `PROC_ROOT` test seam
 - **Research Inputs**: specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md
