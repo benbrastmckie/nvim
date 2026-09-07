@@ -156,30 +156,33 @@ that is the expected outcome, not an error; carry the real number forward.
 
 ---
 
-### Phase 2: Record Both Rulings in the Service Unit [NOT STARTED]
+### Phase 2: Record Both Rulings in the Service Unit [COMPLETED]
 
 **Goal**: Make `claude-refresh.service` self-documenting on the two questions this task exists to
 settle, so a future reader does not reopen either, and implement the deploy-path ruling.
 
 **Tasks**:
-- [ ] Extend the existing `# Policy:` comment block in `agent-system/extensions/core/systemd/claude-refresh.service`
+- [x] Extend the existing `# Policy:` comment block in `agent-system/extensions/core/systemd/claude-refresh.service`
       with a short addendum recording the confirmed ruling on passes added after the unit was
       authored: every pass runs unconditionally from one `main()` sequence threading the single
       `ExecStart` line's `--dry-run`, so no new pass has required or requires its own flag or
       `ExecStart` line; the report-only passes never terminate under any flag, and the Lean pass
-      terminates only under `--force`, which this unit never passes.
-- [ ] State in the same comment that the file/spec cleanup passes are `/refresh`-only and are
+      terminates only under `--force`, which this unit never passes. *(completed)*
+- [x] State in the same comment that the file/spec cleanup passes are `/refresh`-only and are
       never reached by this unit, so the ruling is scoped to the script's internal passes.
-- [ ] Add `ConditionPathExists=%h/.config/nvim/.claude/scripts/claude-refresh.sh` to the `[Unit]`
-      section.
-- [ ] Add a comment above that directive recording the deploy-path ruling: `ExecStart` targets the
+      *(completed)*
+- [x] Add `ConditionPathExists=%h/.config/nvim/.claude/scripts/claude-refresh.sh` to the `[Unit]`
+      section. *(completed)*
+- [x] Add a comment above that directive recording the deploy-path ruling: `ExecStart` targets the
       gitignored, regenerated deploy tree; when that tree is absent the condition makes systemd
       skip the run as informational rather than failing the unit hourly into `systemctl --failed`;
       this was chosen over leaving it as-is or documenting alone because it is the only option
-      that changes the failure mode.
-- [ ] Leave `claude-refresh.timer` unedited unless Phase 1's inventory surfaces a concrete reason;
-      record "no change needed" if none.
-- [ ] Run `systemd-analyze verify` on both unit files and confirm exit 0.
+      that changes the failure mode. *(completed)*
+- [x] Leave `claude-refresh.timer` unedited unless Phase 1's inventory surfaces a concrete reason;
+      record "no change needed" if none. *(completed: no change needed -- timer's behavior is
+      fully governed by the service unit)*
+- [x] Run `systemd-analyze verify` on both unit files and confirm exit 0. *(completed: both exit 0,
+      sole output the unrelated cups.socket legacy-path warning)*
 
 **Timing**: 30 minutes
 

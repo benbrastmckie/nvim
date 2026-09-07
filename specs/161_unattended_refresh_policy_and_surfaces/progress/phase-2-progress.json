@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Record Both Rulings in the Service Unit",
+  "started_at": "2026-09-07T00:10:00Z",
+  "last_updated": "2026-09-07T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend Policy comment with new-passes ruling", "status": "done", "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.service"]},
+    {"id": 2, "description": "State file/spec cleanup passes are /refresh-only, never reached by this unit", "status": "done", "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.service"]},
+    {"id": 3, "description": "Add ConditionPathExists to [Unit] section", "status": "done", "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.service"]},
+    {"id": 4, "description": "Add comment recording deploy-path ruling", "status": "done", "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.service"]},
+    {"id": 5, "description": "Leave timer unedited; confirm and record no change needed", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run systemd-analyze verify on both units, confirm exit 0", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": {
+    "systemd_analyze_verify_service": "PASS (exit 0; only unrelated cups.socket warning)",
+    "systemd_analyze_verify_timer": "PASS (exit 0; only unrelated cups.socket warning)",
+    "condition_path_matches_execstart": true,
+    "timer_change": "none needed -- Phase 1's inventory confirms the timer's ExecStart-adjacent behavior is entirely governed by the service unit; no timer-specific concern surfaced"
+  }
+}

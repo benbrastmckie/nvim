@@ -1,6 +1,19 @@
 [Unit]
 Description=Claude Code orphaned process refresh
 Documentation=https://github.com/anthropics/claude-code
+#
+# Deploy-path ruling: ExecStart below targets the gitignored, regenerated
+# deploy tree (%h/.config/nvim/.claude/), not the source store. On a machine
+# where that tree has not yet been generated (or has been removed), the
+# ConditionPathExists directive below makes systemd log a clean informational
+# skip for that run instead of failing the unit hourly into `systemctl
+# --failed`. This was chosen over the two bare alternatives -- leaving
+# ExecStart unconditional, or merely documenting the dependency without
+# enforcing it -- because it is the only option that actually changes the
+# failure mode rather than only describing it. Point ConditionPathExists at
+# your own deploy path if you installed this unit somewhere other than the
+# default; it must match ExecStart's path character-for-character.
+ConditionPathExists=%h/.config/nvim/.claude/scripts/claude-refresh.sh
 
 [Service]
 Type=oneshot
@@ -12,6 +25,28 @@ Type=oneshot
 # A matcher bug must never again be amplifiable into unattended hourly kills,
 # regardless of how correct the matcher looks at review time. --force remains
 # available as a deliberate opt-in via manual invocation or a hand-edited unit.
+#
+# New-passes ruling (confirmed at code level, not merely asserted): as of this
+# writing, claude-refresh.sh's main() calls exactly four pass functions --
+# run_claude_pass, run_lean_pass, run_zombie_pass, run_mcp_fanout_pass -- all
+# unconditionally, in one fixed sequence, all threading the single $FORCE/
+# $DRY_RUN pair this ExecStart line supplies. No pass added since this unit was
+# first authored has required, or requires, its own flag or ExecStart line: the
+# zombie and MCP-fan-out passes never terminate anything under any flag (they
+# have no --force branch at all), and the Lean LSP pass terminates only under
+# --force, which this unit never passes. A future pass follows the same rule
+# as long as it, too, is wired into main()'s unconditional sequence rather than
+# given its own gating -- if a future pass is instead independently gated (its
+# own flag, its own ExecStart), re-derive this ruling rather than assuming it
+# still holds. This reasoning is recorded here so a future reader does not
+# reopen it; see SKILL.md/refresh.md for the full per-pass inventory.
+#
+# Scope note: the file/spec cleanup passes (orphaned postflight markers, stale
+# task locks, stale session-scoped orchestration files, stale session registry
+# entries, stale .backup files, and the ~/.claude/ directory cleanup) are
+# /refresh-only -- this unit's ExecStart never reaches any of them. The ruling
+# above is scoped to claude-refresh.sh's four internal passes, not to the full
+# ten-item surface-level inventory.
 ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --dry-run
 # Alternatively, if installed system-wide:
 # ExecStart=/usr/local/bin/claude-refresh.sh --dry-run
