@@ -36,7 +36,7 @@ next_project_number: 168
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-161 [NOT STARTED] — Settle the unattended-refresh policy and update the systemd, skil
+161 [RESEARCHED] — Settle the unattended-refresh policy and update the systemd, skil
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 
 ### Extensions
@@ -402,10 +402,11 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 161. Settle the unattended-refresh policy and update the systemd, skill, and command surfaces
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 160
+- **Research**: [161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md]
 
 **Description**: Settle the unattended-refresh policy and update the systemd, skill, and command surfaces.
 

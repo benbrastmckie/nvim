@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md",
+      "summary": "Confirms both systemd units already verify clean and check-extension-docs.sh's core row already passes; verifies at the code level that all four claude-refresh.sh passes run unconditionally through the timer's single --dry-run ExecStart; recommends adding ConditionPathExists to the service unit for the deploy-path gap; and recommends a single small pass-inventory table (name/gate/destructive) added to SKILL.md and refresh.md rather than a rewrite of the existing step-by-step content."
+    }
+  ],
+  "next_steps": "Run /plan 161 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788808797_82397b_161",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "systemd Condition*= directives (e.g. ConditionPathExists) cause a unit to be skipped (informational log, not counted as a failure in systemctl --failed) rather than fail, when the condition evaluates false. For an unattended/no-confirmation timer-triggered oneshot service whose ExecStart target may not exist on every machine (e.g. a gitignored, regenerated deploy tree), adding a matching ConditionPathExists is a low-cost way to convert a silent/failed-unit outcome into a clean skip.",
+      "category": "PATTERN",
+      "source_artifact": "specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["systemd", "ConditionPathExists", "unit-file", "deploy-tree", "oneshot-timer"]
+    },
+    {
+      "content": "check-extension-docs.sh refuses to run from the agent-system/extensions/ source-store tree itself (its relative path math assumes a deployed .claude/scripts/ or .opencode/scripts/ location); it must be invoked against the deployed tree (bash .claude/scripts/check-extension-docs.sh) to get a real PASS/FAIL result. Its overall exit code reflects ALL extensions' status, so a single unrelated extension's FAIL does not mean the extension you actually edited regressed -- check that extension's own PASS/FAIL row in the per-extension summary table, not just the final exit code.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs", "doc-lint", "deploy-tree", "verification-gate"]
+    }
+  ],
+  "dispatch_seq": 12
+}
