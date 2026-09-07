@@ -256,31 +256,34 @@ the report's finding, re-pick codes and update the Phase 1 design record in the 
 
 ---
 
-### Phase 3: Clean room materialisation and config synthesis [NOT STARTED]
+### Phase 3: Clean room materialisation and config synthesis [COMPLETED]
 
 **Goal**: Implement dispatch items (a) and (c) — materialise a checking environment in which the
 Solution has not previously been compiled, and generate a `config.json` matching Comparator's
 `structure Config` schema.
 
 **Tasks**:
-- [ ] Implement clean-room materialisation per the Phase 1 decision: `git worktree add` of the
+- [x] Implement clean-room materialisation per the Phase 1 decision: `git worktree add` of the
       target project into a `mktemp -d` workdir at the requested commit (default `HEAD`), with a
-      `trap EXIT` cleanup honouring `--keep-workdir`.
-- [ ] Populate `.lake/` in the fresh worktree via `lake exe cache get` (skipped with a loud
-      notice when the project has no cache target), BEFORE the Solution module is placed.
-- [ ] Copy the target project's `lean-toolchain` into the workdir so the Comparator run uses the
-      TARGET project's Lean version, not Comparator's (C3).
-- [ ] Synthesise the lakefile when the project does not already declare `Challenge`/`Solution` as
+      `trap EXIT` cleanup honouring `--keep-workdir`. *(completed)*
+- [x] Populate `.lake/` in the fresh worktree via `lake exe cache get` (skipped with a loud
+      notice when the project has no cache target), BEFORE the Solution module is placed. *(completed)*
+- [x] Copy the target project's `lean-toolchain` into the workdir so the Comparator run uses the
+      TARGET project's Lean version, not Comparator's (C3). *(completed)*
+- [x] Synthesise the lakefile when the project does not already declare `Challenge`/`Solution` as
       `lean_lib` targets, reusing upstream `runtests.lean`'s exact generated shape
       (`name = "comparatortest"`, two `[[lean_lib]]` blocks named `Solution` and `Challenge`).
-- [ ] Synthesise `config.json` with `challenge_module`, `solution_module`, `theorem_names`,
+      *(completed: parameterised by the actual --challenge-module/--solution-module names rather
+      than the literal strings "Challenge"/"Solution", since this runner accepts arbitrary module
+      names; see the in-script comment)*
+- [x] Synthesise `config.json` with `challenge_module`, `solution_module`, `theorem_names`,
       `permitted_axioms`, and `definition_names` when `--definitions` was passed. Do not emit
       `enable_nanoda` and a non-empty `external_kernels` together — Comparator throws if both are
-      set; make that a usage error (exit 64) rather than letting Comparator discover it.
-- [ ] When `definition_names` is non-empty, record that the eventual result requires additional
+      set; make that a usage error (exit 64) rather than letting Comparator discover it. *(completed)*
+- [x] When `definition_names` is non-empty, record that the eventual result requires additional
       (potentially human) verification, carrying the README's concrete gaming example
       (`def ChallengeSolution : Prop := sorry` answered with `:= RiemannHypothesis` and closed by
-      `rfl`) into the emitted message text, not just a code comment.
+      `rfl`) into the emitted message text, not just a code comment. *(completed)*
 
 **Timing**: 2 hours
 

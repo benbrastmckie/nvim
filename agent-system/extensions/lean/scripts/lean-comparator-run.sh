@@ -255,19 +255,153 @@ resolve_binary() {
 }
 
 # ---------------------------------------------------------------------------
-# Phase 3/4/5 stubs -- filled in by later phases of this same script; kept as explicit,
-# loudly-failing stubs here (rather than omitted) so this file is a complete, sourceable,
-# `bash -n`-clean script at every intermediate phase boundary.
+# Clean-room materialisation (dispatch item (a)) -- see the design record
+# (agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md) for the
+# full trust-chain reasoning behind this exact sequence: fresh worktree, THEN `lake exe cache
+# get`, THEN (only if needed) lakefile synthesis and config.json -- never the reverse.
 # ---------------------------------------------------------------------------
 
-clean_room_setup() {
-  echo "lean-comparator-run.sh: internal error: clean_room_setup not yet implemented" >&2
-  return 1
+ABS_PROJECT_ROOT=""
+WORKDIR=""
+
+# lakefile_declares_lib <dir> <lib-name> -- true if <dir>'s lakefile already declares <lib-name>
+# as a lean_lib target (either lakefile.toml or lakefile.lean shape).
+lakefile_declares_lib() {
+  local dir="$1" name="$2"
+  if [ -f "$dir/lakefile.toml" ]; then
+    grep -qE "^[[:space:]]*name[[:space:]]*=[[:space:]]*\"${name}\"[[:space:]]*\$" "$dir/lakefile.toml" 2>/dev/null
+  elif [ -f "$dir/lakefile.lean" ]; then
+    grep -qE "lean_lib[[:space:]]+\`?${name}\b" "$dir/lakefile.lean" 2>/dev/null
+  else
+    return 1
+  fi
 }
 
+cleanup_workdir() {
+  [ -n "$WORKDIR" ] && [ -d "$WORKDIR" ] || return 0
+  if [ -n "$ABS_PROJECT_ROOT" ] && git -C "$ABS_PROJECT_ROOT" worktree remove --force "$WORKDIR" >/dev/null 2>&1; then
+    return 0
+  fi
+  rm -rf "$WORKDIR"
+}
+
+clean_room_setup() {
+  ABS_PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)" || \
+    emit_verdict comparator_unavailable "" "" "could not resolve --project-root '$PROJECT_ROOT' to an absolute path"
+
+  if ! git -C "$ABS_PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    emit_verdict comparator_unavailable "" "" "--project-root '$ABS_PROJECT_ROOT' is not a git repository; the clean-room route requires 'git worktree add' (see the design record)"
+  fi
+
+  WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/lean-comparator-run.XXXXXX")"
+  # `git worktree add` requires the target path to not already exist as a non-empty directory;
+  # mktemp -d creates it empty, which `git worktree add <path> <ref>` accepts.
+  local worktree_log
+  worktree_log="$(mktemp)"
+  if ! git -C "$ABS_PROJECT_ROOT" worktree add --detach --quiet "$WORKDIR" "$COMMIT_REF" >"$worktree_log" 2>&1; then
+    local err
+    err="$(cat "$worktree_log")"
+    rm -f "$worktree_log"
+    rmdir "$WORKDIR" 2>/dev/null || true
+    emit_verdict comparator_unavailable "" "" "git worktree add failed for commit '$COMMIT_REF' of '$ABS_PROJECT_ROOT': $err"
+  fi
+  rm -f "$worktree_log"
+
+  if [ "$KEEP_WORKDIR" -eq 0 ]; then
+    trap cleanup_workdir EXIT
+  fi
+
+  # Populate .lake BEFORE anything else is written into the worktree -- the clean-room ordering
+  # from the design record. Non-fatal on failure: a project with no `cache` executable (no
+  # Mathlib-style cache target) is expected to fail here, and forcing a from-source rebuild
+  # inside the sandbox is slower (compounds C4) but does not by itself violate the clean-room
+  # guarantee -- the worktree is still one that has never compiled Solution.
+  local cache_log="$WORKDIR/.lean-comparator-cache-get.log"
+  if ! ( cd "$WORKDIR" && lake exe cache get ) >"$cache_log" 2>&1; then
+    echo "lean-comparator-run.sh: WARNING: 'lake exe cache get' failed or is unavailable for '$ABS_PROJECT_ROOT' (see $cache_log); proceeding without a prebuilt .lake -- the sandboxed build will build from source, which is slower (compounds cost constraint C4) but does not by itself violate the clean-room guarantee." >&2
+  fi
+
+  # Defensive: ensure the checking environment uses the TARGET project's own lean-toolchain,
+  # never Comparator's own (C3). `git worktree add` already checks out any git-TRACKED
+  # lean-toolchain automatically; this copy is a defensive belt-and-suspenders step for the case
+  # it is untracked in this project.
+  if [ -f "$ABS_PROJECT_ROOT/lean-toolchain" ]; then
+    cp -f "$ABS_PROJECT_ROOT/lean-toolchain" "$WORKDIR/lean-toolchain"
+  else
+    echo "lean-comparator-run.sh: WARNING: no lean-toolchain found at '$ABS_PROJECT_ROOT'; the sandboxed build will resolve lean/lake however elan/PATH ordinarily would for this directory, which is NOT guaranteed to match any specific target version." >&2
+  fi
+
+  # Synthesise a Comparator-shaped lakefile ONLY if the project does not already declare
+  # CHALLENGE_MODULE/SOLUTION_MODULE as lean_lib targets. This generalises upstream
+  # runtests.lean's exact generated SHAPE (name = "comparatortest", two [[lean_lib]] blocks) to
+  # this runner's arbitrary --challenge-module/--solution-module names, rather than hardcoding
+  # upstream's literal "Challenge"/"Solution" strings -- upstream's own harness never takes
+  # arbitrary module names, so there is no literal precedent to match beyond the shape itself.
+  if ! lakefile_declares_lib "$WORKDIR" "$CHALLENGE_MODULE" || ! lakefile_declares_lib "$WORKDIR" "$SOLUTION_MODULE"; then
+    cat > "$WORKDIR/lakefile.toml" <<EOF
+name = "comparatortest"
+version = "0.1.0"
+
+[[lean_lib]]
+name = "$SOLUTION_MODULE"
+
+[[lean_lib]]
+name = "$CHALLENGE_MODULE"
+EOF
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Config synthesis (dispatch item (c))
+# ---------------------------------------------------------------------------
+
+CONFIG_PATH=""
+
 synth_config() {
-  echo "lean-comparator-run.sh: internal error: synth_config not yet implemented" >&2
-  return 1
+  CONFIG_PATH="$WORKDIR/config.json"
+
+  if [ -n "$DEFINITIONS" ]; then
+    echo "lean-comparator-run.sh: NOTE: --definitions is non-empty; per Comparator's README, a definition-hole result additionally REQUIRES human (or other additional automated) verification. Comparator's structural/kernel checks alone cannot detect the concrete gaming example where 'def ChallengeSolution : Prop := sorry' in Challenge is answered with 'def ChallengeSolution : Prop := RiemannHypothesis' in Solution and closed by 'rfl' -- both sides match each other and the kernel accepts the replay, yet the filled-in value is not a legitimate answer. A definition_hole_needs_human verdict reflects this; it is not a Comparator failure." >&2
+  fi
+
+  CHALLENGE_MODULE="$CHALLENGE_MODULE" SOLUTION_MODULE="$SOLUTION_MODULE" THEOREMS="$THEOREMS" \
+  PERMITTED_AXIOMS="$PERMITTED_AXIOMS" DEFINITIONS="$DEFINITIONS" ENABLE_NANODA="$ENABLE_NANODA" \
+  EXTERNAL_KERNELS="$EXTERNAL_KERNELS" python3 - "$CONFIG_PATH" <<'PYEOF'
+import json
+import os
+import sys
+
+
+def csv_list(val):
+    return [x.strip() for x in val.split(",") if x.strip()] if val else []
+
+
+config = {
+    "challenge_module": os.environ["CHALLENGE_MODULE"],
+    "solution_module": os.environ["SOLUTION_MODULE"],
+    "theorem_names": csv_list(os.environ["THEOREMS"]),
+    "permitted_axioms": csv_list(os.environ["PERMITTED_AXIOMS"]),
+}
+
+definitions = csv_list(os.environ.get("DEFINITIONS", ""))
+if definitions:
+    config["definition_names"] = definitions
+
+if os.environ.get("ENABLE_NANODA") == "1":
+    config["enable_nanoda"] = True
+
+external_kernels_raw = os.environ.get("EXTERNAL_KERNELS", "")
+if external_kernels_raw:
+    config["external_kernels"] = json.loads(external_kernels_raw)
+
+with open(sys.argv[1], "w", encoding="utf-8") as fh:
+    json.dump(config, fh, indent=2)
+    fh.write("\n")
+PYEOF
+
+  if [ ! -s "$CONFIG_PATH" ] || ! python3 -c 'import json, sys; json.load(open(sys.argv[1]))' "$CONFIG_PATH" >/dev/null 2>&1; then
+    emit_verdict comparator_unavailable "" "" "internal error: synthesised config.json failed to parse at $CONFIG_PATH"
+  fi
 }
 
 run_sandboxed() {
@@ -341,6 +475,11 @@ esac
 if [ "$ENABLE_NANODA" -eq 1 ] && [ -n "$EXTERNAL_KERNELS" ]; then
   die_usage "--enable-nanoda and --external-kernels are mutually exclusive (Comparator throws if both are set)"
 fi
+if [ -n "$EXTERNAL_KERNELS" ]; then
+  if ! python3 -c 'import json, sys; json.loads(sys.argv[1])' "$EXTERNAL_KERNELS" >/dev/null 2>&1; then
+    die_usage "--external-kernels is not valid JSON: $EXTERNAL_KERNELS"
+  fi
+fi
 
 # ---------------------------------------------------------------------------
 # Binary resolution (dispatch item (b)) -- loud, never-silent degradation
@@ -367,7 +506,6 @@ have_systemd_run || fail_unavailable "systemd-run (present but unusable, or abse
 # Main flow (Phases 3-5 fill in the bodies of these calls)
 # ---------------------------------------------------------------------------
 
-WORKDIR=""
 clean_room_setup
 synth_config
 run_sandboxed
