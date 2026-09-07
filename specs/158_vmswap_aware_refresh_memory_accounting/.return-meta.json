@@ -1,35 +1,20 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "task_number": 158,
+  "session_id": "sess_1788808797_82397b_158",
+  "dispatch_seq": 2,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md",
-      "summary": "Research on making claude-refresh.sh's memory accounting VmSwap-aware: a PROC_ROOT-overridable get_vmswap_kb() helper beside format_memory(), threading combined RSS+swap through all accumulators/display, an invariant ruling that a post-classification /proc read does not breach the snapshot race-freedom argument, and new matcher test cases."
+      "type": "plan",
+      "path": "specs/158_vmswap_aware_refresh_memory_accounting/plans/01_vmswap-aware-memory-accounting.md",
+      "summary": "4-phase plan adding a PROC_ROOT-seamed get_vmswap_kb() helper, swap-inclusive accumulators, a separate Swap display column, the header snapshot-invariant ruling, and fixture-driven matcher cases."
     }
   ],
-  "next_steps": "Run /plan 158 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1788808797_82397b_158",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "Shell script testability pattern: when a function under test needs to read from a system path that varies at runtime (e.g. /proc/PID/status), use a plain environment-overridable path variable (e.g. PROC_ROOT=\"${PROC_ROOT:-/proc}\") as the seam rather than wrapping the read in a function-override seam. This is lighter-weight than a function-seam (like claude-refresh.sh's existing _pid_is_alive override for kill -0) and sufficient when only a path, not a syscall, needs to be redirected. Tests point the variable at a mktemp -d fixture directory built with inline heredocs (e.g. $WORKDIR/fakeproc/<pid>/status), never at the live /proc tree.",
-      "category": "PATTERN",
-      "source_artifact": "specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["shell-testing", "proc-filesystem", "testability-seam", "fixture", "PROC_ROOT"]
-    },
-    {
-      "content": "When adding a per-candidate live read (e.g. /proc/PID/status) to a script whose header documents a single-atomic-snapshot race-freedom argument, the read does not breach that invariant IF it is reporting-only (never gates the active/orphan/exclusion decision) and is performed strictly after classification, failing closed (e.g. to 0) rather than erroring when the target has since exited. This distinction (decision-gating live re-query vs. post-decision reporting-only read) should be recorded explicitly in the header comment, not silently assumed, whenever such a read is added.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["race-freedom", "snapshot-invariant", "proc-read", "reporting-only", "claude-refresh"]
-    }
-  ],
-  "dispatch_seq": 1
+  "phase_count": 4,
+  "estimated_hours": 1.75,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 158 to execute the plan"
 }
