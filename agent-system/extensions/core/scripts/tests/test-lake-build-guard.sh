@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # test-lake-build-guard.sh - Toolchain-free regression suite for lake-build-guard.sh.
 #
-# Covers 21 acceptance-mapped cases below (the original 13 plus 8 added for the truthful-success
+# Covers 22 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
 # fixes: subcommand validation, scope-keyed sharing, the REPLAY marker, and the --help wait
-# idiom), plus a non-vacuousness (mutation) section. The script under test is invoked as a REAL
+# idiom, plus 1 for positive-direction memory-pressure detection), plus a non-vacuousness
+# (mutation) section spanning mutations A-F. Running the suite reports 29 [PASS] lines: the 22
+# numbered cases (case 12 splits into 12a/12b, so 23 case-level passes) plus the 6 mutation
+# checks. The script under test is invoked as a REAL
 # SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
 # process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
 # `systemd-run`), none of which are meaningfully testable by calling functions directly in-process
@@ -80,9 +83,11 @@ trap cleanup EXIT
 # threshold or altering the guard's behavior -- the pressure logic under test is unchanged and
 # still fully exercised; it is merely fed a known input instead of an arbitrary one.
 #
-# No case in this suite asserts that pressure IS detected. Any future case that wants to test the
-# positive direction must override these two variables locally with a pressured fixture rather
-# than relying on the host to happen to be under load.
+# Case 22 below covers the positive direction: it overrides LAKE_BUILD_GUARD_MEMINFO_PATH locally
+# with a pressured fixture to assert that preflight DOES detect pressure, closing the gap where a
+# regression disabling check_memory_pressure() entirely would otherwise leave every case green.
+# Any further case that wants to test the positive direction should follow the same local-override
+# idiom rather than relying on the host to happen to be under load.
 PSI_FIXTURE_CLEAN="$WORKDIR/fixture-psi-clean"
 MEMINFO_FIXTURE_CLEAN="$WORKDIR/fixture-meminfo-clean"
 

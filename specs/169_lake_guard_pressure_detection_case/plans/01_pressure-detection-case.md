@@ -282,22 +282,22 @@ scratchpad, never in the repository).
 
 ---
 
-### Phase 5: Header-Comment Accuracy and Final Count Reconciliation [NOT STARTED]
+### Phase 5: Header-Comment Accuracy and Final Count Reconciliation [COMPLETED]
 
 **Goal**: Update the suite's now-stale header comments so they describe the file as it actually is,
 and reconcile the documented case count with the observed pass count.
 
 **Tasks**:
-- [ ] Update the ambient-host-isolation comment block's closing statement — currently "No case in
+- [x] Update the ambient-host-isolation comment block's closing statement — currently "No case in
       this suite asserts that pressure IS detected. Any future case that wants to test the positive
       direction must override these two variables locally..." — to state that the positive
       direction IS now covered, naming the new case and preserving the local-override guidance for
-      future cases.
-- [ ] Update the file's top-of-script "Covers N acceptance-mapped cases" line to the new count.
-- [ ] Reconcile the header's stated case count against the observed `Passed:` total, noting in a
+      future cases. *(completed)*
+- [x] Update the file's top-of-script "Covers N acceptance-mapped cases" line to the new count. *(completed: 21 -> 22)*
+- [x] Reconcile the header's stated case count against the observed `Passed:` total, noting in a
       comment how numbered cases and mutation checks each contribute, so the two numbers are no
-      longer silently inconsistent.
-- [ ] Re-run the full suite one final time and record the final `Passed:` / `Failed:` line.
+      longer silently inconsistent. *(completed: 29 = 23 case-level passes (22 cases, case 12 splits into 12a/12b) + 6 mutation checks)*
+- [x] Re-run the full suite one final time and record the final `Passed:` / `Failed:` line. *(completed: Passed: 29 / Failed: 0)*
 
 **Timing**: 0.25 hours
 
