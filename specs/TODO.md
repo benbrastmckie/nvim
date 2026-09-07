@@ -1,19 +1,19 @@
 ---
-next_project_number: 153
+next_project_number: 157
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-04. Generated from state.json dependency graph.*
+*Updated 2026-09-07. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,74,88,140 | 29,139,148 | core-agent-system, extensions |
-| 3 | 14,75,76,129,142,150 | 74,88,139 | core-agent-system, extensions |
+| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,153,154 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,74,88,140,155 | 29,137,139,148,153,154 | core-agent-system, extensions |
+| 3 | 14,75,76,129,142,150,156 | 74,88,139,155 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -42,6 +42,11 @@ next_project_number: 153
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
 43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
+153 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+  └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+    └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+154 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+  └─ 155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks). (see above)
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
@@ -59,6 +64,488 @@ next_project_number: 153
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
 
 ## Tasks
+
+### 156. Surface a Comparator doctor mode and document what a green result does and does not certify
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 155
+
+**Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
+lean-toolchain leanprover/lean4:v4.34.0-rc2, last push 2026-08-30) is a trustworthy judge for
+Lean proofs from untrusted sources, built by Lean FRO with AIMO feedback expressly to enable
+trustworthy LLM Lean evaluation. Given a trusted Challenge.lean (statements, bodies may be
+sorry), an untrusted Solution.lean, and a JSON config naming challenge_module, solution_module,
+theorem_names, permitted_axioms (and optionally definition_names and external_kernels), it:
+  1. builds Challenge with lake inside a landrun sandbox, then runs lean4export on the .olean
+  2. repeats build-sandboxed and export-sandboxed for Solution
+  3. verifies every declaration used in the STATEMENT of each named theorem is identical between
+     the Challenge and Solution environments
+  4. verifies the bodies of the named theorems use no axioms outside permitted_axioms
+  5. replays the Solution environment into the Lean kernel (optionally also external kernels)
+It deliberately never loads .olean files, on the stated grounds that they are mmapped into the
+address space and dereferenced and are therefore an attack surface.
+
+WHY THIS MATTERS TO THIS AGENT SYSTEM. lean-implementation-agent is precisely an untrusted
+LLM proof producer, and its Final Verification Stage currently gates on four text heuristics,
+each with a hole Comparator closes:
+  - plan compliance (agents/lean-implementation-agent.md, Final Verification Stage step 5) greps
+    only that a declaration NAMED X exists in Theories/. It never checks that X states what the
+    plan intended. Statement weakening -- adding a hypothesis, specialising a quantifier,
+    restating a weaker claim -- passes this gate silently. Comparator step 3 is exactly the
+    missing check.
+  - the new-axiom gate is `grep -rn "^axiom " Theories/ | wc -l`, a textual match on one source
+    form. It does not see sorryAx, axioms reached transitively through imports, or the axioms
+    native_decide introduces. Comparator step 4 is a transitive check against a whitelist.
+  - the vacuous-definition gate is a single-line grep for `:= True|Unit|trivial|Trivial`; the
+    agent file itself already records that multi-line vacuous definitions require manual review.
+  - `lake build` elaborates but never replays into the kernel, and it runs agent-authored Lean
+    UNSANDBOXED. Elaboration executes arbitrary code (#eval, initialize, run_cmd, macros,
+    native_decide plugins). Comparator steps 1-2 sandbox both builds and step 5 replays.
+So the role Comparator serves is specific and bounded: it upgrades the "did the agent cheat?"
+question from grep heuristics to a kernel-backed guarantee. It is the natural terminal gate for
+context/project/lean4/standards/proof-debt-policy.md's zero-debt completion requirement, which
+today is enforced by exactly those greps.
+
+FOUR CONSTRAINTS ANY INTEGRATION MUST HANDLE (all read off the tool's own README).
+  C1 NO CHALLENGE EXISTS TODAY. Comparator's guarantee is relative to a Challenge you trust.
+     Plans in this system name goal IDENTIFIERS, not statements (context/formats/plan-format.md
+     defines only `- **Goals**: ...` under `## Goals & Non-Goals`). Something must fix the
+     intended statements before the agent works.
+  C2 ASSUMPTION 2 IS VIOLATED BY THE NORMAL WORKFLOW. The README requires that you have not
+     previously tried to compile the Solution file, "as that might compromise your Challenge file
+     to make it seem like you are looking for a different proof than you actually are". The
+     implementation agent compiles continuously. The README does bless a mitigation: with a fully
+     pre-built .lake obtained without compromising the checking environment, Solution.lean is not
+     rebuilt.
+  C3 VERSION COUPLING. lean4export must match the Lean version of the TARGET project, not
+     Comparator's own v4.34.0-rc2.
+  C4 COST. Two sandboxed full builds plus two exports plus a kernel replay. On a Mathlib
+     dependant project this is minutes to tens of minutes. Opt-in only, scoped to named theorems.
+
+ENVIRONMENT AS MEASURED ON THIS MACHINE 2026-09-07: lake, lean, elan present (~/.elan/bin);
+landrun, lean4export, nanoda_bin, comparator ALL MISSING. landrun is in nixpkgs at 0.1.15. The
+kernel is Linux 7.1.3, past the landrun issue the README's systemd-run wrapper guards against
+("will be fixed in Linux 7.1") -- the wrapper is still required for portability, not for this
+host.
+
+GATE STRENGTH DECISION (already made by the operator, do not relitigate): ADVISORY FIRST. A
+Comparator rejection records its finding and surfaces it prominently, but MUST NOT set
+verification_passed false, MUST NOT downgrade status to partial, and MUST NOT block completion.
+Promotion to a hard gate is a separate, later decision to be taken on evidence from real runs.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+WORK -- make the trust boundary legible to a human, and give the environment a doctor.
+
+  (a) DOCTOR MODE. Add a Comparator mode to commands/lean.md alongside check/upgrade/rollback,
+      routed through skills/skill-lean-version/SKILL.md (which is already the direct-execution
+      home for toolchain-version concerns and already reads lean-toolchain and elan state). It
+      probes for landrun, lean4export, comparator and optionally nanoda_bin; reports which are
+      present and via which env var each may be overridden; and CHECKS THE C3 VERSION MATCH --
+      lean4export must match the target project's lean-toolchain, not Comparator's own. A doctor
+      that only reports presence and not version match will pass on a setup that cannot work.
+  (b) TRUST-MODEL DOCUMENT at context/project/lean4/tools/comparator-guide.md. This is the
+      important half of the task. It must state, plainly and without overclaiming, WHAT A GREEN
+      COMPARATOR RESULT DOES AND DOES NOT CERTIFY:
+        - it certifies the named theorems prove the Challenge's statements, use no axioms outside
+          the whitelist, and are accepted by the kernel;
+        - it does NOT certify that the Challenge asked the right question;
+        - it does NOT certify definition-hole solutions -- the tool's own README requires an
+          additional, potentially human, verifier for those, and gives the RiemannHypothesis
+          gaming example;
+        - its guarantee is conditional on the README's six assumptions, of which at least two are
+          live concerns here: that the Solution was not previously compiled in the checking
+          environment, and that landrun sandboxes correctly on the host;
+        - the trusted computing base includes the OS, the hardware, and landrun's sandboxing.
+      Register the file in index-entries.json with an accurate line_count and link it from
+      context/project/lean4/README.md.
+  (c) POLICY UPDATE. context/project/lean4/standards/proof-debt-policy.md states a zero-debt
+      completion requirement enforced today by greps. Record what Comparator adds, and be
+      explicit that while --compare is advisory the greps remain the operative gate. Do not write
+      the policy as though the hard gate already exists.
+  (d) EXTENSION SURFACE. Update EXTENSION.md, README.md, manifest.json and index-entries.json to
+      reflect the new command mode, script(s) and context file. check-extension-docs.sh Rule R
+      compares declared line_count against actual, so a stale declaration here will fail the
+      doc-lint gate.
+
+ACCEPTANCE.
+  - The doctor reports correctly in three distinct states: all binaries present and versions
+    matched; a binary missing; a binary present but lean4export mismatched against the project
+    toolchain. The third state is the one that matters and must be demonstrated, not assumed.
+  - comparator-guide.md contains an explicit "what this does not certify" section naming the
+    definition-hole caveat and the previously-compiled-Solution assumption.
+  - A fresh deploy passes check-extension-docs.sh with the new entries registered.
+  - No task-number references appear in any of these deliverables (all live outside specs/).
+
+---
+
+### 155. Thread an advisory --compare flag through the lean implementation path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 137, Task 153, Task 154
+
+**Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
+lean-toolchain leanprover/lean4:v4.34.0-rc2, last push 2026-08-30) is a trustworthy judge for
+Lean proofs from untrusted sources, built by Lean FRO with AIMO feedback expressly to enable
+trustworthy LLM Lean evaluation. Given a trusted Challenge.lean (statements, bodies may be
+sorry), an untrusted Solution.lean, and a JSON config naming challenge_module, solution_module,
+theorem_names, permitted_axioms (and optionally definition_names and external_kernels), it:
+  1. builds Challenge with lake inside a landrun sandbox, then runs lean4export on the .olean
+  2. repeats build-sandboxed and export-sandboxed for Solution
+  3. verifies every declaration used in the STATEMENT of each named theorem is identical between
+     the Challenge and Solution environments
+  4. verifies the bodies of the named theorems use no axioms outside permitted_axioms
+  5. replays the Solution environment into the Lean kernel (optionally also external kernels)
+It deliberately never loads .olean files, on the stated grounds that they are mmapped into the
+address space and dereferenced and are therefore an attack surface.
+
+WHY THIS MATTERS TO THIS AGENT SYSTEM. lean-implementation-agent is precisely an untrusted
+LLM proof producer, and its Final Verification Stage currently gates on four text heuristics,
+each with a hole Comparator closes:
+  - plan compliance (agents/lean-implementation-agent.md, Final Verification Stage step 5) greps
+    only that a declaration NAMED X exists in Theories/. It never checks that X states what the
+    plan intended. Statement weakening -- adding a hypothesis, specialising a quantifier,
+    restating a weaker claim -- passes this gate silently. Comparator step 3 is exactly the
+    missing check.
+  - the new-axiom gate is `grep -rn "^axiom " Theories/ | wc -l`, a textual match on one source
+    form. It does not see sorryAx, axioms reached transitively through imports, or the axioms
+    native_decide introduces. Comparator step 4 is a transitive check against a whitelist.
+  - the vacuous-definition gate is a single-line grep for `:= True|Unit|trivial|Trivial`; the
+    agent file itself already records that multi-line vacuous definitions require manual review.
+  - `lake build` elaborates but never replays into the kernel, and it runs agent-authored Lean
+    UNSANDBOXED. Elaboration executes arbitrary code (#eval, initialize, run_cmd, macros,
+    native_decide plugins). Comparator steps 1-2 sandbox both builds and step 5 replays.
+So the role Comparator serves is specific and bounded: it upgrades the "did the agent cheat?"
+question from grep heuristics to a kernel-backed guarantee. It is the natural terminal gate for
+context/project/lean4/standards/proof-debt-policy.md's zero-debt completion requirement, which
+today is enforced by exactly those greps.
+
+FOUR CONSTRAINTS ANY INTEGRATION MUST HANDLE (all read off the tool's own README).
+  C1 NO CHALLENGE EXISTS TODAY. Comparator's guarantee is relative to a Challenge you trust.
+     Plans in this system name goal IDENTIFIERS, not statements (context/formats/plan-format.md
+     defines only `- **Goals**: ...` under `## Goals & Non-Goals`). Something must fix the
+     intended statements before the agent works.
+  C2 ASSUMPTION 2 IS VIOLATED BY THE NORMAL WORKFLOW. The README requires that you have not
+     previously tried to compile the Solution file, "as that might compromise your Challenge file
+     to make it seem like you are looking for a different proof than you actually are". The
+     implementation agent compiles continuously. The README does bless a mitigation: with a fully
+     pre-built .lake obtained without compromising the checking environment, Solution.lean is not
+     rebuilt.
+  C3 VERSION COUPLING. lean4export must match the Lean version of the TARGET project, not
+     Comparator's own v4.34.0-rc2.
+  C4 COST. Two sandboxed full builds plus two exports plus a kernel replay. On a Mathlib
+     dependant project this is minutes to tens of minutes. Opt-in only, scoped to named theorems.
+
+ENVIRONMENT AS MEASURED ON THIS MACHINE 2026-09-07: lake, lean, elan present (~/.elan/bin);
+landrun, lean4export, nanoda_bin, comparator ALL MISSING. landrun is in nixpkgs at 0.1.15. The
+kernel is Linux 7.1.3, past the landrun issue the README's systemd-run wrapper guards against
+("will be fixed in Linux 7.1") -- the wrapper is still required for portability, not for this
+host.
+
+GATE STRENGTH DECISION (already made by the operator, do not relitigate): ADVISORY FIRST. A
+Comparator rejection records its finding and surfaces it prominently, but MUST NOT set
+verification_passed false, MUST NOT downgrade status to partial, and MUST NOT block completion.
+Promotion to a hard gate is a separate, later decision to be taken on evidence from real runs.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+WORK -- thread `--compare` end to end, ADVISORY ONLY.
+
+  (a) FLAG SPINE. Add COMPARE_FLAG to core/scripts/parse-command-args.sh. Model it on LIT_FLAG
+      and CLEAN_FLAG (boolean mode hints), NOT on EFFORT_FLAG: --compare must compose with --hard
+      rather than compete with it. The file's header comment block enumerates every exported
+      variable and is load-bearing documentation -- extend it, do not just add the assignment.
+  (b) SKILL THREADING. skills/skill-lean-implementation/SKILL.md and
+      skills/skill-lean-implementation-hard/SKILL.md pass the flag into the delegation context
+      they hand to the Agent tool. Both, not just the standard one.
+  (c) AGENT GATE. In agents/lean-implementation-agent.md, add a Comparator step to the Final
+      Verification Stage, and the same in agents/lean-implementation-hard-agent.md. The step
+      invokes lean-comparator-run.sh against the snapshot Challenge and the implemented Solution,
+      scoped to the theorem names the plan declares. It runs ONLY when --compare was passed.
+  (d) METADATA. Record a `comparator` block in .return-meta.json carrying the verdict category,
+      the theorem names checked, the axiom whitelist used, and the runtime. Update
+      core/context/formats/return-metadata-file.md so the block is part of the documented schema
+      rather than an undeclared field. The verification block's existing keys
+      (verification_passed, sorry_count, vacuous_count, axiom_count, build_passed) are NOT
+      touched by this task.
+  (e) POSTFLIGHT SURFACE. The skill's postflight reads the comparator block and surfaces it in
+      the returned summary. Per the operator's decision it MUST NOT downgrade status. Note that
+      skill postflight is bound by context/standards/postflight-tool-restrictions.md -- the skill
+      READS the agent's recorded result and must not re-run the check itself, exactly as it
+      already reads compliance_check at Stage 6b rather than re-running the grep.
+
+ADVISORY MEANS ADVISORY. The failure mode to design against is not a false block, it is a finding
+nobody ever reads. Make a rejection loud in the returned summary and in the written summary
+artifact. Record, in the implementation summary, what the promotion criteria to a hard gate would
+be, so that decision later has evidence to stand on rather than being taken on vibes.
+
+FILE COLLISION, READ BEFORE STARTING: the lean artifact-skeletons task is in [IMPLEMENTING] and
+edits agents/lean-implementation-agent.md and lean-research-agent.md. This task is dependency
+ordered behind it for that reason. Re-read those files at dispatch time rather than working from
+the state described here.
+
+ACCEPTANCE.
+  - A lean4 dispatch WITHOUT --compare behaves exactly as today: no Comparator invocation, no new
+    metadata block, no runtime cost. Demonstrated, because a mode hint that fires unconditionally
+    is a regression for every existing task.
+  - A dispatch WITH --compare on an honest implementation records a `verified` verdict and
+    completes normally.
+  - A dispatch WITH --compare on an implementation that weakened a statement records the
+    rejection, surfaces it in the summary, and STILL COMPLETES -- proving the advisory contract
+    holds in the direction that actually tests it.
+  - --compare --hard routes to the hard agent AND runs the Comparator step, proving composition.
+  - Missing binaries produce a reported comparator_unavailable, not a silent pass and not a
+    block.
+
+---
+
+### 154. Make lean plans carry exact theorem statements and emit an immutable trusted Challenge snapshot
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
+lean-toolchain leanprover/lean4:v4.34.0-rc2, last push 2026-08-30) is a trustworthy judge for
+Lean proofs from untrusted sources, built by Lean FRO with AIMO feedback expressly to enable
+trustworthy LLM Lean evaluation. Given a trusted Challenge.lean (statements, bodies may be
+sorry), an untrusted Solution.lean, and a JSON config naming challenge_module, solution_module,
+theorem_names, permitted_axioms (and optionally definition_names and external_kernels), it:
+  1. builds Challenge with lake inside a landrun sandbox, then runs lean4export on the .olean
+  2. repeats build-sandboxed and export-sandboxed for Solution
+  3. verifies every declaration used in the STATEMENT of each named theorem is identical between
+     the Challenge and Solution environments
+  4. verifies the bodies of the named theorems use no axioms outside permitted_axioms
+  5. replays the Solution environment into the Lean kernel (optionally also external kernels)
+It deliberately never loads .olean files, on the stated grounds that they are mmapped into the
+address space and dereferenced and are therefore an attack surface.
+
+WHY THIS MATTERS TO THIS AGENT SYSTEM. lean-implementation-agent is precisely an untrusted
+LLM proof producer, and its Final Verification Stage currently gates on four text heuristics,
+each with a hole Comparator closes:
+  - plan compliance (agents/lean-implementation-agent.md, Final Verification Stage step 5) greps
+    only that a declaration NAMED X exists in Theories/. It never checks that X states what the
+    plan intended. Statement weakening -- adding a hypothesis, specialising a quantifier,
+    restating a weaker claim -- passes this gate silently. Comparator step 3 is exactly the
+    missing check.
+  - the new-axiom gate is `grep -rn "^axiom " Theories/ | wc -l`, a textual match on one source
+    form. It does not see sorryAx, axioms reached transitively through imports, or the axioms
+    native_decide introduces. Comparator step 4 is a transitive check against a whitelist.
+  - the vacuous-definition gate is a single-line grep for `:= True|Unit|trivial|Trivial`; the
+    agent file itself already records that multi-line vacuous definitions require manual review.
+  - `lake build` elaborates but never replays into the kernel, and it runs agent-authored Lean
+    UNSANDBOXED. Elaboration executes arbitrary code (#eval, initialize, run_cmd, macros,
+    native_decide plugins). Comparator steps 1-2 sandbox both builds and step 5 replays.
+So the role Comparator serves is specific and bounded: it upgrades the "did the agent cheat?"
+question from grep heuristics to a kernel-backed guarantee. It is the natural terminal gate for
+context/project/lean4/standards/proof-debt-policy.md's zero-debt completion requirement, which
+today is enforced by exactly those greps.
+
+FOUR CONSTRAINTS ANY INTEGRATION MUST HANDLE (all read off the tool's own README).
+  C1 NO CHALLENGE EXISTS TODAY. Comparator's guarantee is relative to a Challenge you trust.
+     Plans in this system name goal IDENTIFIERS, not statements (context/formats/plan-format.md
+     defines only `- **Goals**: ...` under `## Goals & Non-Goals`). Something must fix the
+     intended statements before the agent works.
+  C2 ASSUMPTION 2 IS VIOLATED BY THE NORMAL WORKFLOW. The README requires that you have not
+     previously tried to compile the Solution file, "as that might compromise your Challenge file
+     to make it seem like you are looking for a different proof than you actually are". The
+     implementation agent compiles continuously. The README does bless a mitigation: with a fully
+     pre-built .lake obtained without compromising the checking environment, Solution.lean is not
+     rebuilt.
+  C3 VERSION COUPLING. lean4export must match the Lean version of the TARGET project, not
+     Comparator's own v4.34.0-rc2.
+  C4 COST. Two sandboxed full builds plus two exports plus a kernel replay. On a Mathlib
+     dependant project this is minutes to tens of minutes. Opt-in only, scoped to named theorems.
+
+ENVIRONMENT AS MEASURED ON THIS MACHINE 2026-09-07: lake, lean, elan present (~/.elan/bin);
+landrun, lean4export, nanoda_bin, comparator ALL MISSING. landrun is in nixpkgs at 0.1.15. The
+kernel is Linux 7.1.3, past the landrun issue the README's systemd-run wrapper guards against
+("will be fixed in Linux 7.1") -- the wrapper is still required for portability, not for this
+host.
+
+GATE STRENGTH DECISION (already made by the operator, do not relitigate): ADVISORY FIRST. A
+Comparator rejection records its finding and surfaces it prominently, but MUST NOT set
+verification_passed false, MUST NOT downgrade status to partial, and MUST NOT block completion.
+Promotion to a hard gate is a separate, later decision to be taken on evidence from real runs.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+WORK -- establish the trusted Challenge that C1 says does not exist yet. Two candidate routes;
+evaluate BOTH and choose with stated reasoning rather than picking one by default:
+
+  R1 PLAN-DECLARED STATEMENTS. Extend what a lean4 plan records so it carries the exact intended
+     theorem STATEMENT, not just the identifier. Today context/formats/plan-format.md defines
+     only `- **Goals**: ...`; the lean implementation agent's compliance step reads identifiers
+     out of it with a backtick regex. Under R1 the Challenge is generated from the plan.
+     Cost: touches a core format consumed by every task type, so scope the change so non-lean
+     plans are unaffected.
+  R2 GIT-BASELINE EXTRACTION. The Challenge is the .lean sources as they stood at the commit the
+     plan was approved on -- sorried statements the agent has not yet touched. Cost: only works
+     when the statements already exist as declarations; a greenfield proof task has nothing to
+     extract, so R2 needs a stated fallback.
+
+Deliver agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh which, given a task
+number and a project root, writes a Challenge module plus the theorem_names list that
+lean-comparator-run.sh consumes. Whichever route wins, the snapshot must be taken BEFORE the
+implementation agent runs and must be immutable thereafter -- a Challenge the agent can rewrite
+certifies nothing. Say where it is stored and what stops it being regenerated from post-hoc
+sources.
+
+Also in scope: rules/plan-compliance.md currently makes the plan the contract for .lean files but
+has no notion of statement fidelity. State whether it should gain one and why.
+
+INDEPENDENT VALUE. This task is worth doing on its own terms even if Comparator is never wired
+in. The name-only compliance grep is the system's single largest verification hole: it cannot
+distinguish "proved the theorem" from "proved a weaker theorem with the right name". A recorded
+intended statement closes that regardless of who checks it.
+
+ACCEPTANCE.
+  - R1 vs R2 is decided in writing with reasoning, including the greenfield case R2 cannot serve.
+  - The snapshot script produces a Challenge module that lean-comparator-run.sh accepts as input,
+    demonstrated on a real Lean project.
+  - Statement drift is DETECTED: take a real task, weaken one theorem statement in the
+    implementation, and show the snapshot-versus-implementation comparison flags it. Then show an
+    honest implementation is not flagged. Both directions.
+  - The immutability claim is demonstrated, not asserted: show what happens when something tries
+    to regenerate the Challenge after implementation started.
+
+---
+
+### 153. Build a clean-room Comparator runner script for the lean extension
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
+lean-toolchain leanprover/lean4:v4.34.0-rc2, last push 2026-08-30) is a trustworthy judge for
+Lean proofs from untrusted sources, built by Lean FRO with AIMO feedback expressly to enable
+trustworthy LLM Lean evaluation. Given a trusted Challenge.lean (statements, bodies may be
+sorry), an untrusted Solution.lean, and a JSON config naming challenge_module, solution_module,
+theorem_names, permitted_axioms (and optionally definition_names and external_kernels), it:
+  1. builds Challenge with lake inside a landrun sandbox, then runs lean4export on the .olean
+  2. repeats build-sandboxed and export-sandboxed for Solution
+  3. verifies every declaration used in the STATEMENT of each named theorem is identical between
+     the Challenge and Solution environments
+  4. verifies the bodies of the named theorems use no axioms outside permitted_axioms
+  5. replays the Solution environment into the Lean kernel (optionally also external kernels)
+It deliberately never loads .olean files, on the stated grounds that they are mmapped into the
+address space and dereferenced and are therefore an attack surface.
+
+WHY THIS MATTERS TO THIS AGENT SYSTEM. lean-implementation-agent is precisely an untrusted
+LLM proof producer, and its Final Verification Stage currently gates on four text heuristics,
+each with a hole Comparator closes:
+  - plan compliance (agents/lean-implementation-agent.md, Final Verification Stage step 5) greps
+    only that a declaration NAMED X exists in Theories/. It never checks that X states what the
+    plan intended. Statement weakening -- adding a hypothesis, specialising a quantifier,
+    restating a weaker claim -- passes this gate silently. Comparator step 3 is exactly the
+    missing check.
+  - the new-axiom gate is `grep -rn "^axiom " Theories/ | wc -l`, a textual match on one source
+    form. It does not see sorryAx, axioms reached transitively through imports, or the axioms
+    native_decide introduces. Comparator step 4 is a transitive check against a whitelist.
+  - the vacuous-definition gate is a single-line grep for `:= True|Unit|trivial|Trivial`; the
+    agent file itself already records that multi-line vacuous definitions require manual review.
+  - `lake build` elaborates but never replays into the kernel, and it runs agent-authored Lean
+    UNSANDBOXED. Elaboration executes arbitrary code (#eval, initialize, run_cmd, macros,
+    native_decide plugins). Comparator steps 1-2 sandbox both builds and step 5 replays.
+So the role Comparator serves is specific and bounded: it upgrades the "did the agent cheat?"
+question from grep heuristics to a kernel-backed guarantee. It is the natural terminal gate for
+context/project/lean4/standards/proof-debt-policy.md's zero-debt completion requirement, which
+today is enforced by exactly those greps.
+
+FOUR CONSTRAINTS ANY INTEGRATION MUST HANDLE (all read off the tool's own README).
+  C1 NO CHALLENGE EXISTS TODAY. Comparator's guarantee is relative to a Challenge you trust.
+     Plans in this system name goal IDENTIFIERS, not statements (context/formats/plan-format.md
+     defines only `- **Goals**: ...` under `## Goals & Non-Goals`). Something must fix the
+     intended statements before the agent works.
+  C2 ASSUMPTION 2 IS VIOLATED BY THE NORMAL WORKFLOW. The README requires that you have not
+     previously tried to compile the Solution file, "as that might compromise your Challenge file
+     to make it seem like you are looking for a different proof than you actually are". The
+     implementation agent compiles continuously. The README does bless a mitigation: with a fully
+     pre-built .lake obtained without compromising the checking environment, Solution.lean is not
+     rebuilt.
+  C3 VERSION COUPLING. lean4export must match the Lean version of the TARGET project, not
+     Comparator's own v4.34.0-rc2.
+  C4 COST. Two sandboxed full builds plus two exports plus a kernel replay. On a Mathlib
+     dependant project this is minutes to tens of minutes. Opt-in only, scoped to named theorems.
+
+ENVIRONMENT AS MEASURED ON THIS MACHINE 2026-09-07: lake, lean, elan present (~/.elan/bin);
+landrun, lean4export, nanoda_bin, comparator ALL MISSING. landrun is in nixpkgs at 0.1.15. The
+kernel is Linux 7.1.3, past the landrun issue the README's systemd-run wrapper guards against
+("will be fixed in Linux 7.1") -- the wrapper is still required for portability, not for this
+host.
+
+GATE STRENGTH DECISION (already made by the operator, do not relitigate): ADVISORY FIRST. A
+Comparator rejection records its finding and surfaces it prominently, but MUST NOT set
+verification_passed false, MUST NOT downgrade status to partial, and MUST NOT block completion.
+Promotion to a hard gate is a separate, later decision to be taken on evidence from real runs.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+WORK -- build agent-system/extensions/lean/scripts/lean-comparator-run.sh, the single executable
+core every later Comparator work depends on. It takes a project root, a Challenge module, a
+Solution module, a theorem-name list, and an axiom whitelist, and returns a machine-readable
+verdict. It must handle C2, C3 and C4 rather than assume them away:
+
+  (a) CLEAN ROOM. Materialise the checking environment so the Solution has not previously been
+      compiled there. Evaluate and choose with stated reasoning between a fresh clone/worktree
+      plus a trusted pre-built .lake (the README's own blessed route), and a scratch copy. State
+      explicitly what "trusted" means for the .lake you reuse and where it comes from; if the
+      answer is `lake exe cache get`, say so and record that the README accepts this only if you
+      trust the cache not to contain different definitions from the ones you expect.
+  (b) SANDBOX INVOCATION. Emit the README's systemd-run form
+        systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty -E PATH="$PATH" \
+          --working-directory $(pwd) -- bash -c 'lake env <comparator> <config.json>'
+      Resolve binaries via COMPARATOR_LANDRUN / COMPARATOR_LEAN4EXPORT / COMPARATOR_NANODA when
+      set, falling back to PATH. Degrade LOUDLY, never silently: a missing binary is a reported
+      `comparator_unavailable` verdict, never a skipped check that reads as a pass.
+  (c) CONFIG SYNTHESIS. Generate config.json from the arguments. Support definition_names, and
+      carry through the README's requirement that any definition-hole result be marked as
+      REQUIRING an additional (potentially human) verifier -- the README gives the concrete
+      gaming example where `def ChallengeSolution : Prop := sorry` is answered with
+      `:= RiemannHypothesis` and closed by rfl.
+  (d) COST CONTROL. A timeout, and serialisation against the existing
+      core/scripts/lake-build-guard.sh so a Comparator run and an ordinary agent build cannot
+      contend for the same project. Read that guard's contract before inventing a second one.
+  (e) VERDICT. Structured output distinguishing at minimum: verified; statement_mismatch;
+      axiom_violation; kernel_rejected; definition_hole_needs_human; comparator_unavailable;
+      timeout. These categories are consumed downstream, so name them once, here.
+  (f) TEST at scripts/tests/test-lean-comparator-run.sh, following the existing
+      scripts/tests/test-lean-sorry-census.sh conventions. Comparator's own repo ships
+      scripts/fake-landrun.sh for exactly this purpose (development substitute for landrun) and
+      a tests/projects/ tree of Challenge/Solution/config triples covering simple_mismatch,
+      def_hole, def_hole_axiom_issue, def_hole_type_mismatch, olean_issue, opaque_value and
+      others -- reuse that shape rather than inventing fixtures.
+
+DEPENDENCY OUTSIDE THIS REPO: end-to-end acceptance needs landrun, lean4export and the
+comparator binary present. A sibling task in ~/.dotfiles/ provisions them. Until it lands, prove
+what can be proved with fake-landrun.sh and report honestly which acceptance criteria are
+deferred rather than claiming a pass.
+
+ACCEPTANCE.
+  - The script produces a `verified` verdict on a Challenge/Solution pair that genuinely matches,
+    and a `statement_mismatch` verdict on a pair where the Solution weakened the statement.
+    BOTH directions demonstrated on real files; a checker that can only ever say one thing is not
+    a checker.
+  - An `axiom_violation` verdict is demonstrated against a Solution that reaches an axiom outside
+    the whitelist TRANSITIVELY, not by a literal `axiom` line -- that is the case the existing
+    grep already catches and is therefore not evidence of anything new.
+  - A missing binary produces `comparator_unavailable` with a message naming which binary and
+    which env var would override it, and exits distinguishably from a real rejection.
+  - The clean-room decision in (a) is written down with its reasoning, including what is trusted
+    and why, not left implicit in the code.
+
+---
 
 ### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
 - **Status**: [NOT STARTED]
