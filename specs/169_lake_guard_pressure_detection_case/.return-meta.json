@@ -1,10 +1,26 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/169_lake_guard_pressure_detection_case/summaries/01_pressure-detection-case-summary.md",
+      "summary": "Added case 22 (positive-direction memory-pressure detection) and Mutation F to test-lake-build-guard.sh, demonstrated non-vacuousness and ambient-pressure robustness; suite passes 29/29."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a positive-direction memory-pressure case (case 22) and a corresponding non-vacuousness mutation (Mutation F) to test-lake-build-guard.sh, closing the regression-masking gap where the suite-wide clean-fixture default left no case asserting pressure detection actually fires. Demonstrated via an out-of-band neutered-guard run that case 22 -- and only case 22 -- fails when check_memory_pressure() is disabled, and confirmed the suite still passes under an ambient pressured environment. Full suite: 29/29 passed, up from the 27/27 baseline; lake-build-guard.sh is untouched."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1788822258_a6100e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
