@@ -65,6 +65,45 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# --- Ambient-host isolation: deterministic memory-pressure inputs --------------------------------
+# lake-build-guard.sh consults a PSI file and a meminfo file to decide whether the machine is
+# under memory pressure, and emits a stderr notice (or, in preflight mode, exits 11) when it is.
+# Read from the REAL /proc, that verdict is a property of whatever else happens to be running on
+# the developer's machine at the time -- so cases asserting the guard's clean/quiet path (1, 3)
+# and the preflight-proceeds path (11) would pass on an idle host and fail on a busy one. This was
+# observed live: a host swapping at 57% of SwapTotal (over the guard's own 50% threshold) made
+# exactly those three cases fail while every other case passed.
+#
+# Both inputs are redirected, suite-wide, at the script's OWN documented seams
+# (LAKE_BUILD_GUARD_PSI_PATH / LAKE_BUILD_GUARD_MEMINFO_PATH) to fixture files describing an
+# unpressured machine. This isolates the tests from ambient host state WITHOUT weakening any
+# threshold or altering the guard's behavior -- the pressure logic under test is unchanged and
+# still fully exercised; it is merely fed a known input instead of an arbitrary one.
+#
+# No case in this suite asserts that pressure IS detected. Any future case that wants to test the
+# positive direction must override these two variables locally with a pressured fixture rather
+# than relying on the host to happen to be under load.
+PSI_FIXTURE_CLEAN="$WORKDIR/fixture-psi-clean"
+MEMINFO_FIXTURE_CLEAN="$WORKDIR/fixture-meminfo-clean"
+
+cat > "$PSI_FIXTURE_CLEAN" <<'PSI_EOF'
+some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+full avg10=0.00 avg60=0.00 avg300=0.00 total=0
+PSI_EOF
+
+# MemAvailable = 50% of MemTotal (threshold is "below 10% is pressure"); SwapFree = SwapTotal, so
+# swap-in-use is 0% (threshold is "above 50% is pressure"). Comfortably clean on both signals.
+cat > "$MEMINFO_FIXTURE_CLEAN" <<'MEMINFO_EOF'
+MemTotal:       32000000 kB
+MemFree:        16000000 kB
+MemAvailable:   16000000 kB
+SwapTotal:      32000000 kB
+SwapFree:       32000000 kB
+MEMINFO_EOF
+
+export LAKE_BUILD_GUARD_PSI_PATH="$PSI_FIXTURE_CLEAN"
+export LAKE_BUILD_GUARD_MEMINFO_PATH="$MEMINFO_FIXTURE_CLEAN"
+
 # --- Fixture builder ------------------------------------------------------------------------------
 # Builds a synthetic Lean package at $1: lakefile.toml, lean-toolchain, a couple of .lean
 # sources, and a fake `lake` in $1/bin controlled entirely via environment variables at
