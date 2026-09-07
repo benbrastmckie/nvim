@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Tree Assembly and Tree-Wide Idle Candidacy Gate",
+  "started_at": "2026-09-07T00:30:00Z",
+  "last_updated": "2026-09-07T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Parse take_lean_snapshot() rows into pid-keyed classified arrays with self-exclusion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Resolve server/worker children by ppid entirely in-memory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Implement lean_row_is_idle() with integer-only pcpu handling", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "Implement tree-wide gate (all members must pass idle+exclusion) with named edge cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "Accumulate per-tree VmSwap-aware memory via get_vmswap_kb/format_memory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

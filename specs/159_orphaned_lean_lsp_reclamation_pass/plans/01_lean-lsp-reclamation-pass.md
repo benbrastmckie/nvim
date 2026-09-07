@@ -204,30 +204,30 @@ writing; renumber if the count differs.
 
 ---
 
-### Phase 3: Tree Assembly and Tree-Wide Idle Candidacy Gate [NOT STARTED]
+### Phase 3: Tree Assembly and Tree-Wide Idle Candidacy Gate [COMPLETED]
 
 **Goal**: Turn the Lean snapshot into candidate trees and decide reclamation eligibility entirely
 from the frozen snapshot, with VmSwap-aware memory accounting for reporting.
 
 **Tasks**:
-- [ ] Parse `take_lean_snapshot()` rows into parallel indexed arrays keyed by pid (pid, ppid, uid,
-      etimes, rss, pcpu, cgroup, comm, args), classifying each row via the Phase 1 predicates.
-- [ ] For each `lake serve` root, resolve its `lean --server` child by `ppid`, then that server's
-      `lean --worker` children by `ppid`, entirely in-memory with no live re-query.
-- [ ] Apply zero-query self-exclusion (`pid`/`ppid` == `$$`) to every Lean row, matching the
-      Claude pass.
-- [ ] Implement `lean_row_is_idle(etimes, pcpu)`: `pcpu` at/near zero AND
+- [x] Parse `take_lean_snapshot()` rows into parallel indexed arrays keyed by pid (pid, ppid, uid,
+      etimes, rss, pcpu, cgroup, comm, args), classifying each row via the Phase 1 predicates. *(completed)*
+- [x] For each `lake serve` root, resolve its `lean --server` child by `ppid`, then that server's
+      `lean --worker` children by `ppid`, entirely in-memory with no live re-query. *(completed)*
+- [x] Apply zero-query self-exclusion (`pid`/`ppid` == `$$`) to every Lean row, matching the
+      Claude pass. *(completed)*
+- [x] Implement `lean_row_is_idle(etimes, pcpu)`: `pcpu` at/near zero AND
       `etimes >= LEAN_LSP_IDLE_THRESHOLD_MIN * 60`. Handle `pcpu`'s decimal form without
-      `bc`/floats (integer comparison on the pre-decimal portion, documented inline).
-- [ ] Implement the tree-wide gate: a tree is a candidate only if **every** member (root, server
+      `bc`/floats (integer comparison on the pre-decimal portion, documented inline). *(completed)*
+- [x] Implement the tree-wide gate: a tree is a candidate only if **every** member (root, server
       if present, all workers) passes `lean_row_is_idle` AND `! is_system_slice_cgroup` AND
-      `is_owned_by_current_uid`. Any single failure disqualifies the whole tree.
-- [ ] Handle the two edge cases the research names: a `lake serve` with no server child, and a
-      server with zero workers — both still eligible when idle; record the ruling inline.
-- [ ] Accumulate per-tree reclaimable memory as `rss + get_vmswap_kb(pid)` summed over members,
-      formatted with `format_memory` (both reused unmodified from task 158).
-- [ ] Add a comment recording that `get_vmswap_kb`'s post-snapshot `/proc` read is reporting-only
-      here too, so the existing header's invariant ruling continues to hold for the new pass.
+      `is_owned_by_current_uid`. Any single failure disqualifies the whole tree. *(completed)*
+- [x] Handle the two edge cases the research names: a `lake serve` with no server child, and a
+      server with zero workers — both still eligible when idle; record the ruling inline. *(completed)*
+- [x] Accumulate per-tree reclaimable memory as `rss + get_vmswap_kb(pid)` summed over members,
+      formatted with `format_memory` (both reused unmodified from task 158). *(completed)*
+- [x] Add a comment recording that `get_vmswap_kb`'s post-snapshot `/proc` read is reporting-only
+      here too, so the existing header's invariant ruling continues to hold for the new pass. *(completed)*
 
 **Timing**: 1.5 hours
 

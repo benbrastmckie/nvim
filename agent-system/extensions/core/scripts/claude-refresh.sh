@@ -307,6 +307,184 @@ take_lean_snapshot() {
     printf '%s\n' "$out"
 }
 
+# --- Lean tree-wide idle gate ---
+# Returns 0 (true) when a SINGLE snapshot row (already comm+args-classified as lake-serve/
+# lean-server/lean-worker) is individually idle: `pcpu` at/near zero AND `etimes` at/beyond the
+# configurable threshold. Called once per tree MEMBER by detect_lean_candidate_trees() below; a
+# tree as a whole is a reclamation candidate only if EVERY member independently passes this gate
+# -- one freshly-spawned or actively-computing member protects the entire tree, not just itself.
+#
+# pcpu handling: ps's `pcpu` column (procps-ng) is a decaying-average percentage rendered as a
+# decimal (e.g. "0.3", "3.0", "555"). This script's other numeric helpers (format_memory,
+# get_vmswap_kb) are integer-only by convention (no bc/jq dependency); the same convention is
+# followed here by comparing only the pre-decimal portion via bash's `${pcpu%%.*}` parameter
+# expansion. A value like "0.3" truncates to "0" (treated as idle -- a genuinely idle process
+# occasionally reports a small nonzero decaying average, and 240-minute-default etimes gating is
+# the primary discriminator, not sub-1% pcpu noise); a value like "3.0" truncates to "3" (treated
+# as busy). This is documented, not incidental: it means anything reporting 1% or more CPU is
+# never considered idle, while sub-1% readings defer entirely to the etimes threshold.
+lean_row_is_idle() {
+    local etimes="$1"
+    local pcpu="$2"
+    local pcpu_int="${pcpu%%.*}"
+
+    # Defensive guard: a malformed/empty field must never be misjudged as "idle" by an arithmetic
+    # fallback. This should not happen from a well-formed ps row, but is not assumed.
+    [[ "$pcpu_int" =~ ^[0-9]+$ ]] || return 1
+    [[ "$etimes" =~ ^[0-9]+$ ]] || return 1
+
+    if [ "$pcpu_int" -gt 0 ]; then
+        return 1
+    fi
+
+    local threshold_seconds=$((LEAN_LSP_IDLE_THRESHOLD_MIN * 60))
+    [ "$etimes" -ge "$threshold_seconds" ]
+}
+
+# --- Lean tree assembly and tree-wide candidacy gate ---
+# Parses take_lean_snapshot()'s frozen rows into pid-keyed, comm-classified data, assembles each
+# `lake serve` -> `lean --server` -> N x `lean --worker` tree via `ppid` links entirely in-memory
+# (no live re-query -- the same single-atomic-snapshot philosophy as the Claude pass, applied to
+# this separately-gated pass's own snapshot), and populates the LEAN_TREE_* arrays below for
+# every tree that passes the tree-wide gate. `is_system_slice_cgroup`/`is_owned_by_current_uid`
+# are reused UNMODIFIED against every Lean row, exactly as the Claude pass uses them, per the
+# dispatch's "reuse as defense in depth" instruction.
+#
+# Edge cases (named, not accidental): a `lake serve` with no discovered `lean --server` child is
+# still eligible when idle (tree = {root only} -- a done-but-not-yet-torn-down `lake serve` with
+# no server is itself reclaimable); a server with zero workers (no files open) is likewise still
+# eligible when idle (tree = {root, server}).
+#
+# Uses parallel indexed arrays throughout, no associative arrays, matching this script's existing
+# style (no bash-4-only features required). Safe to call standalone/repeatedly (e.g. from tests):
+# it only reads take_lean_snapshot()'s output and this function's own local/global arrays, and
+# never signals a process.
+#
+# Populated on return (indexed 0..N-1, one entry per ELIGIBLE tree; all four arrays are reset at
+# the start of every call):
+#   LEAN_TREE_ROOT_PID[i]    -- the tree's `lake serve` pid
+#   LEAN_TREE_SERVER_PID[i]  -- the tree's `lean --server` pid, or "" if none was found
+#   LEAN_TREE_WORKER_PIDS[i] -- space-separated `lean --worker` pids (may be empty)
+#   LEAN_TREE_MEM_KB[i]      -- combined rss+VmSwap across every member, in KB (reporting only)
+detect_lean_candidate_trees() {
+    LEAN_TREE_ROOT_PID=()
+    LEAN_TREE_SERVER_PID=()
+    LEAN_TREE_WORKER_PIDS=()
+    LEAN_TREE_MEM_KB=()
+
+    local snapshot
+    snapshot=$(take_lean_snapshot)
+
+    local -a row_pid=() row_ppid=() row_uid=() row_etimes=() row_rss=() row_pcpu=() row_cgroup=()
+    local -a row_kind=()  # serve|server|worker (rows failing all three predicates are dropped)
+
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+
+        local pid ppid uid etimes rss pcpu cgroup comm args
+        read -r pid ppid uid etimes rss pcpu cgroup comm args <<< "$line"
+
+        # Zero-query self-exclusion, same rationale as the Claude pass above.
+        if [ "$pid" = "$$" ] || [ "$ppid" = "$$" ]; then
+            continue
+        fi
+
+        local kind=""
+        if is_lean_serve_comm "$comm" "$args"; then
+            kind="serve"
+        elif is_lean_server_comm "$comm" "$args"; then
+            kind="server"
+        elif is_lean_worker_comm "$comm" "$args"; then
+            kind="worker"
+        else
+            continue
+        fi
+
+        row_pid+=("$pid"); row_ppid+=("$ppid"); row_uid+=("$uid")
+        row_etimes+=("$etimes"); row_rss+=("$rss"); row_pcpu+=("$pcpu")
+        row_cgroup+=("$cgroup"); row_kind+=("$kind")
+    done <<< "$snapshot"
+
+    local n="${#row_pid[@]}"
+    local i j
+
+    for ((i = 0; i < n; i++)); do
+        [ "${row_kind[$i]}" = "serve" ] || continue
+
+        local root_pid="${row_pid[$i]}"
+        local server_idx=-1
+        local -a worker_idxs=()
+
+        for ((j = 0; j < n; j++)); do
+            if [ "${row_kind[$j]}" = "server" ] && [ "${row_ppid[$j]}" = "$root_pid" ]; then
+                server_idx=$j
+                break
+            fi
+        done
+
+        if [ "$server_idx" -ge 0 ]; then
+            local server_pid="${row_pid[$server_idx]}"
+            for ((j = 0; j < n; j++)); do
+                if [ "${row_kind[$j]}" = "worker" ] && [ "${row_ppid[$j]}" = "$server_pid" ]; then
+                    worker_idxs+=("$j")
+                fi
+            done
+        fi
+
+        # Tree-wide gate: EVERY member (root + server if present + all workers) must pass
+        # idle+exclusion. A single non-passing member disqualifies the whole tree.
+        local -a member_idxs=("$i")
+        [ "$server_idx" -ge 0 ] && member_idxs+=("$server_idx")
+        member_idxs+=("${worker_idxs[@]}")
+
+        local tree_ok=true
+        local m
+        for m in "${member_idxs[@]}"; do
+            if is_system_slice_cgroup "${row_cgroup[$m]}"; then
+                tree_ok=false
+                break
+            fi
+            if ! is_owned_by_current_uid "${row_uid[$m]}"; then
+                tree_ok=false
+                break
+            fi
+            if ! lean_row_is_idle "${row_etimes[$m]}" "${row_pcpu[$m]}"; then
+                tree_ok=false
+                break
+            fi
+        done
+
+        if ! $tree_ok; then
+            continue
+        fi
+
+        # Reporting-only, same invariant ruling as the header comment above documents for the
+        # Claude pass: this per-member get_vmswap_kb() read happens strictly AFTER tree_ok has
+        # already been decided from the frozen snapshot above, so it cannot influence which tree
+        # is selected as a candidate -- it only affects the displayed/accumulated memory figure.
+        local mem_total=0
+        local swap_kb
+        for m in "${member_idxs[@]}"; do
+            swap_kb=$(get_vmswap_kb "${row_pid[$m]}")
+            mem_total=$((mem_total + row_rss[m] + swap_kb))
+        done
+
+        local worker_pids=""
+        for j in "${worker_idxs[@]}"; do
+            worker_pids="${worker_pids:+$worker_pids }${row_pid[$j]}"
+        done
+
+        LEAN_TREE_ROOT_PID+=("$root_pid")
+        if [ "$server_idx" -ge 0 ]; then
+            LEAN_TREE_SERVER_PID+=("${row_pid[$server_idx]}")
+        else
+            LEAN_TREE_SERVER_PID+=("")
+        fi
+        LEAN_TREE_WORKER_PIDS+=("$worker_pids")
+        LEAN_TREE_MEM_KB+=("$mem_total")
+    done
+}
+
 # Function to get process age in human-readable format. Reads etimes from the
 # already-captured snapshot -- no re-query of ps for a candidate PID.
 get_process_age() {
