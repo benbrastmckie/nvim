@@ -1,5 +1,5 @@
 ---
-next_project_number: 157
+next_project_number: 158
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 157
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,153,154 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,89,127,136,137,139,148,151,152,153,154,157 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,74,88,140,155 | 29,137,139,148,153,154 | core-agent-system, extensions |
 | 3 | 14,75,76,129,142,150,156 | 74,88,139,155 | core-agent-system, extensions |
 
@@ -36,6 +36,7 @@ next_project_number: 157
     └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 151 [NOT STARTED] — Two verify-deploy.sh gate failures are live in this repo today, b
 152 [NOT STARTED] — An unrelated multi-task /orchestrate batch was fully blocked by t
+157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 
 ### Extensions
 
@@ -64,6 +65,116 @@ next_project_number: 157
 22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
 
 ## Tasks
+
+### 157. Fix TODO.md summary lines: prefer .title, and stop the blind slice from splitting inline-code spans
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: The "Grouped by Topic" summary lines in TODO.md are cut with a blind character slice
+that can land inside an inline-code span, leaving an unclosed backtick that corrupts markdown
+highlighting for the rest of the line. Separately and more consequentially, those lines slice
+.description when 23 of 29 active tasks carry a purpose-written .title the generator never
+consults. Observed on screen by the operator, then confirmed against the live file; not inferred.
+
+ROOT CAUSE, VERIFIED 2026-09-07.
+scripts/generate-task-order.sh:155 populates the task_desc map that every summary emit site
+reads:
+    "\(.project_number)|\((.description // .project_name) | ltrimstr(" ") | .[0:65])"
+`.[0:65]` is a blind character slice. Nothing balances markdown inline formatting across the cut.
+
+EVIDENCE -- exactly one line in the current TODO.md carries an odd backtick count, and it is the
+one that renders wrong:
+    44 [PLANNED] -- LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+One backtick, never closed, so the span bleeds onward. Two neighbouring lines survive only by
+luck of where character 65 happened to fall:
+    139 ... Bare git history rewrites (`git commit --amend`, `git reset` with     -- 4, balanced
+    129 ... Audit every `\b` word-boundary construct used in a grep pattern a     -- 2, balanced
+This is therefore intermittent by position, not by content, which is why it reads as a random
+highlighting glitch rather than a bug.
+
+SECOND, COMPOUNDING SLICE SITE. scripts/generate-task-order.sh:592 applies `${desc:0:40}` to the
+ALREADY-SLICED value for cross-topic "(see above)" annotations. A pair the first cut left intact
+can be split by the second. Both sites need the same treatment; there is no third slice -- the
+other emit sites at :593, :600 and :766 all consume task_desc unmodified, so fixing :155 fixes
+them.
+
+THE LARGER DEFECT UNDERNEATH. Line 155 reads `(.description // .project_name)` and never consults
+`.title`. Coverage measured on the live state.json: 29 active non-terminal tasks, 23 with a
+non-empty title. The six without are 29, 30, 45, 51, 89 and 127. What the section shows today
+versus what was already available:
+    44   shown: LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+         title: Slim commands/task.md, the largest per-invocation context contributor
+    88   shown: === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+         title: Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
+    137  shown: The lean extension's research and implementation agents have no a
+         title: Give the lean research and implementation agents the artifact skeletons their
+                general-* counterparts already have
+Every truncated fragment the operator observed on screen -- "larg", "present-r", "auxili",
+"have no a", and the "=== REVISED" / "=== ADDENDUM" administrative preambles for 127 and 88 --
+is this same cause: the top of a long prose description shown where a written summary existed.
+
+WORK -- three independent sub-fixes, all at scripts/generate-task-order.sh:155, plus :592.
+
+  (a) PREFER .title. Change the source expression to `(.title // .description // .project_name)`.
+      .description remains the fallback for the six title-less tasks. Note honestly that this
+      CHANGES WHAT ~23 LINES SAY, not merely how they are cut -- it is a content change to the
+      section, and the regenerated output must be eyeballed, not just diffed for line count.
+
+  (b) MAKE TRUNCATION MARKDOWN-SAFE. Strip inline-code backticks before slicing rather than
+      trying to balance them after. Stripping eliminates the whole class -- backticks, and also
+      `*`, `_` and unclosed `[` -- where a parity check only handles the one symptom observed.
+      Record the rejected alternative and why: appending a closing backtick when the count is odd
+      preserves code styling but fabricates a span around a truncated fragment, rendering
+      `commands/` as though it named a real path when the actual content was longer. At a 65
+      character budget the styling buys nothing. If the implementer disagrees after looking at
+      real output, they may choose the parity approach instead, but must say why in the summary.
+
+  (c) CUT ON A WORD BOUNDARY AND SIGNAL TRUNCATION. Back off to the last space at or before the
+      budget and append an ellipsis. Nothing currently signals that a line was cut at all, which
+      is why the fragments read as corrupted text rather than as elisions.
+
+A composed form satisfying all three (illustrative, not prescriptive -- verify against real data
+before committing to it):
+    "\(.project_number)|\((.title // .description // .project_name)
+       | ltrimstr(" ") | gsub("`";"") | gsub("\n";" ")
+       | if length > 65 then (.[0:65] | sub(" [^ ]*$";"")) + "..." else . end)"
+Note it contains no `!=`, so it is clear of the jq escaping hazard documented in CLAUDE.md's
+"jq Command Safety" section. Confirm that holds for whatever is finally written.
+
+TEST COVERAGE. scripts/tests/ currently contains NO test for generate-task-order.sh or
+generate-todo.sh -- verified by listing the directory. A regression this cheap to assert should
+not go back in uncovered. Add scripts/tests/test-generate-task-order.sh following the conventions
+of the existing tests in that directory.
+
+CONSTRAINTS.
+  - Edit agent-system/extensions/core/scripts/**, never .claude/**. The deployed
+    .claude/scripts/generate-task-order.sh is regenerated and any edit there is wiped.
+  - TODO.md is wholly generated from state.json by generate-todo.sh (which delegates the Task
+    Order section to generate-task-order.sh --print). Do NOT hand-edit TODO.md to fix the
+    rendering; that would be papered over on the next regeneration.
+  - No file_scope collision was found: no other active task lists generate-task-order.sh or
+    generate-todo.sh in its file_scope, checked 2026-09-07.
+
+ACCEPTANCE.
+  - Every line of the regenerated "Grouped by Topic" section has an EVEN backtick count,
+    asserted mechanically over the whole section, not spot-checked. The task-44 line is the
+    specific regression witness and must be shown before and after.
+  - A description crafted to place a backtick exactly at the cut boundary produces a balanced
+    line. This is the case the current code fails, so a test that only uses today's data proves
+    nothing -- construct the adversarial input deliberately.
+  - Lines for tasks WITH a title show the title; lines for the six WITHOUT one still render from
+    .description and are not made worse. Both directions demonstrated.
+  - No line exceeds the budget, and every truncated line ends at a word boundary with a
+    truncation marker; untruncated lines carry no marker.
+  - The second slice at :592 is covered by the same guarantees, demonstrated on a cross-topic
+    "(see above)" line rather than assumed to follow from the :155 fix.
+  - A test exists under scripts/tests/ and fails against the pre-fix script.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 156. Surface a Comparator doctor mode and document what a green result does and does not certify
 - **Status**: [NOT STARTED]
