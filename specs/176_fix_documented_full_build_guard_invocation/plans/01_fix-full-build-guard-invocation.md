@@ -171,7 +171,7 @@ number 5.
 
 ---
 
-### Phase 2: Prove the corrected form runs, and audit the whole source store [IN PROGRESS]
+### Phase 2: Prove the corrected form runs, and audit the whole source store [COMPLETED]
 
 **Goal**: The corrected invocation is demonstrated to reach `lake` (not merely to parse), and no
 broken variant remains anywhere in the source store.
@@ -222,25 +222,32 @@ broken variant remains anywhere in the source store.
 
 ---
 
-### Phase 3: Record deployment and consumer-propagation status [NOT STARTED]
+### Phase 3: Record deployment and consumer-propagation status [COMPLETED]
 
 **Goal**: The deploy acceptance clause is resolved honestly: the in-repo constraint is stated,
 the affected consumers are named, and the propagation path is recorded.
 
 **Tasks**:
-- [ ] Confirm and record that `lean` is not among this repo's active extensions
+- [x] Confirm and record that `lean` is not among this repo's active extensions
       (`.claude-extensions.json`), so `deploy-headless.sh` here regenerates no lean artifact --
       the dispatch's "confirm the regenerated `.claude/**` copies carry the fix" cannot be
-      satisfied in this repository
-- [ ] Confirm the four touched files are all deploy-carried by
+      satisfied in this repository *(completed: active extensions are literature, nvim, memory,
+      nix, email, core -- no lean)*
+- [x] Confirm the four touched files are all deploy-carried by
       `agent-system/extensions/lean/manifest.json` (`provides.agents`, `provides.rules`,
       `provides.skills`), so a consumer resync will propagate the fix with no manifest change
-- [ ] Run `bash .claude/scripts/check-consumer-freshness.sh --stale-only` (read-only; guard with
-      `|| true`) and record which lean-active consumers are behind source
-- [ ] Record the three lean-active consumers found during planning
+      *(completed: all 4 confirmed in provides.agents/provides.rules/provides.skills)*
+- [x] Run `bash .claude/scripts/check-consumer-freshness.sh --stale-only` (read-only; guard with
+      `|| true`) and record which lean-active consumers are behind source *(completed)*
+- [x] Record the three lean-active consumers found during planning
       (`~/Projects/BimodalLogic`, `~/Projects/cslib`, `~/Projects/Logos/Theory`) and confirm
       which of their deployed copies still carry the broken string, read-only
-- [ ] Do NOT write into any consumer repository on this path -- see the `user_decision`
+      *(completed with a deviation: check-consumer-freshness.sh actually found 5 lean-registered
+      consumers, not 3 -- see the phase-3 progress file's `notes` and the summary's propagation
+      record)*
+- [x] Do NOT write into any consumer repository on this path -- see the `user_decision`
+      *(completed: no consumer repository was written; orchestrator-mode instruction confirmed
+      the source-store-only recommended option)*
 
 **Timing**: 0.4 hours
 
@@ -266,26 +273,29 @@ trusting these numbers.
 
 ---
 
-### Phase 4: Hand off the guard usage-banner discrepancy [NOT STARTED]
+### Phase 4: Hand off the guard usage-banner discrepancy [COMPLETED]
 
 **Goal**: The second, separate discrepancy is recorded and explicitly assigned, without being
 fixed here.
 
 **Tasks**:
-- [ ] Record the contradiction precisely: `lake-build-guard.sh`'s header USAGE block (line ~77)
+- [x] Record the contradiction precisely: `lake-build-guard.sh`'s header USAGE block (line ~77)
       and `print_help`'s Usage block (line ~201) both document the trailing lake arguments as
       optional (`[--] [LAKE ARGS...]`), while `validate_build_subcommand()` (line 773) requires a
-      non-empty vector and exits 77 without one
-- [ ] Note the causal hypothesis: the optional-looking banner is the plausible origin of the
+      non-empty vector and exits 77 without one *(completed: confirmed exact lines 75-77 and
+      200-202, and validator at line 773)*
+- [x] Note the causal hypothesis: the optional-looking banner is the plausible origin of the
       broken form corrected in Phase 1, which makes fixing the banner a genuine recurrence
-      guard, not cosmetics
-- [ ] Name the owner: the guard-terminal-record task, whose `file_scope` already covers
+      guard, not cosmetics *(completed)*
+- [x] Name the owner: the guard-terminal-record task, whose `file_scope` already covers
       `lake-build-guard.sh`; state that this task deliberately did not edit that file to avoid a
-      same-file collision
-- [ ] Also surface, as a distinct out-of-scope observation, the unguarded bare `lake build` at
+      same-file collision *(completed: identified as project_number 173,
+      "guard_terminal_record_every_exit", file_scope includes lake-build-guard.sh and its test)*
+- [x] Also surface, as a distinct out-of-scope observation, the unguarded bare `lake build` at
       `context/project/lean4/agents/lean-implementation-flow.md:123-126`, which contradicts
-      `long-builds.md`'s detach-and-guard mandate
-- [ ] Note the declined follow-up: no regression lint was added for the corrected strings
+      `long-builds.md`'s detach-and-guard mandate *(completed: confirmed present)*
+- [x] Note the declined follow-up: no regression lint was added for the corrected strings
+      *(completed)*
 
 **Timing**: 0.35 hours
 
