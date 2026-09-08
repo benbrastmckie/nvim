@@ -980,6 +980,71 @@ else
   fail "invariant: expected verdict=ok despite the stray handoff, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Invariant: entry-point fd-3 emit discipline (mirrors orchestrate-cycle-plan.sh's own Group 16).
+#
+# update-task-status.sh's own final confirmation lines (`OK: ... status -> ...` /
+# `OK: ... state.json already at ... (no-op)`) are written unconditionally to STDOUT for every
+# live, non-dry-run call -- including postflight calls, since it is one shared script used by
+# both preflight and postflight. skill_postflight_update invokes it directly, NOT through any
+# capture-and-parse wrapper, and after this phase's `exec 3>&1 1>&2` entry-point redirect it
+# carries no per-call-site `>&2` guard of its own any more (the prior stopgap was removed as
+# redundant). This uses the REAL, unmodified update-task-status.sh (already copied into the
+# sandbox by setup_sandbox) rather than a stub, since the real script's own final lines already
+# reproduce the exact shape this phase fixes structurally.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Invariant: entry-point fd-3 redirect keeps the postflight verdict JSON pure against update-task-status.sh's own stdout confirmation"
+setup_sandbox
+candidate_num=1601
+mkdir -p "$WORKDIR/specs/${candidate_num}_candidate"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${candidate_num}, "project_name": "candidate", "task_type": "meta", "status": "planning", "description": "candidate #${candidate_num} -- fd-3 emit discipline invariant", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${candidate_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"planned","dispatch_seq":1,"artifacts":[],"metadata":{"phase_count":0,"estimated_hours":1}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/${candidate_num}_candidate" --session sess_fd3 --phase plan --task-type meta \
+  --agent planner-agent --loop-guard-file "specs/${candidate_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" "$candidate_num"
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "invariant (fd-3): SUT exits 0 with the real update-task-status.sh confirmation on its own stdout"
+else
+  fail "invariant (fd-3): SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  pass "invariant (fd-3): stdout parses as a single JSON object"
+else
+  fail "invariant (fd-3): stdout is not parseable JSON -- '$LAST_STDOUT'"
+fi
+
+g_fd3_lines=$(printf '%s\n' "$LAST_STDOUT" | grep -c . || true)
+if [ "$g_fd3_lines" -eq 1 ]; then
+  pass "invariant (fd-3): stdout is exactly one line (no confirmation preamble)"
+else
+  fail "invariant (fd-3): expected exactly 1 stdout line, got $g_fd3_lines: '$LAST_STDOUT'"
+fi
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "invariant (fd-3): verdict=ok, the underlying postflight write still succeeded"
+else
+  fail "invariant (fd-3): expected verdict=ok, got: $LAST_STDOUT"
+fi
+
+g_fd3_marker="OK: task ${candidate_num}"
+if echo "$LAST_STDERR" | grep -qF "$g_fd3_marker"; then
+  pass "invariant (fd-3): update-task-status.sh's own stdout confirmation landed on stderr, not the data channel"
+else
+  fail "invariant (fd-3): expected update-task-status.sh's confirmation on stderr; got: '$LAST_STDERR'"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

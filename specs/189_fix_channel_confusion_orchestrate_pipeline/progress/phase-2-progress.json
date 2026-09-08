@@ -1,0 +1,59 @@
+{
+  "phase": 2,
+  "phase_name": "Same fd-3 discipline in orchestrate-cycle-postflight.sh; audit the siblings",
+  "started_at": "2026-09-08T00:35:00Z",
+  "last_updated": "2026-09-08T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply exec 3>&1 1>&2 to orchestrate-cycle-postflight.sh, fd-3 emits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Remove redundant >&2 on skill_postflight_update/skill_link_artifacts/git-commit-scoped.sh calls",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Audit orchestrate-batch-admit.sh and orchestrate-triage-classify.sh; record audited-clean in headers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add stdout-purity group to test-orchestrate-cycle-postflight.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Run both affected suites",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "Add a stdout-purity test group using a stubbed helper writing prose to stdout",
+      "type": "altered",
+      "reason": "Used the real, unmodified update-task-status.sh instead of a synthetic stub -- its own final confirmation line is already unconditional on stdout for every live call, reproducing the exact defect shape without a stub.",
+      "annotation": "*(completed: used the REAL, unmodified update-task-status.sh rather than a synthetic stub ...)*"
+    }
+  ]
+}

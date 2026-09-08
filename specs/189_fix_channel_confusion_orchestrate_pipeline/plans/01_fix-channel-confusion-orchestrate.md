@@ -188,27 +188,30 @@ findings and handle them explicitly rather than assuming this list is complete.
 
 ---
 
-### Phase 2: Same fd-3 discipline in orchestrate-cycle-postflight.sh; audit the siblings [NOT STARTED]
+### Phase 2: Same fd-3 discipline in orchestrate-cycle-postflight.sh; audit the siblings [COMPLETED]
 
 **Goal**: the second script sharing the defect gets the same structural treatment; the two that
 do not are audited and the result recorded, so no one re-audits them later.
 
 **Tasks**:
-- [ ] Apply the identical `exec 3>&1 1>&2` entry-point redirect to
+- [x] Apply the identical `exec 3>&1 1>&2` entry-point redirect to
       `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, and change its two
       final `jq -n -c` emits (the `user_decision` and non-`user_decision` branches, ~`:1002` and
-      ~`:1018`) to write to fd 3.
-- [ ] Remove the now-redundant per-call-site `>&2` on `skill_postflight_update` (4 call sites),
+      ~`:1018`) to write to fd 3. *(completed)*
+- [x] Remove the now-redundant per-call-site `>&2` on `skill_postflight_update` (4 call sites),
       `skill_link_artifacts`, and the `git-commit-scoped.sh` call, updating each preceding comment
-      to reference the entry-point redirect.
-- [ ] Audit `orchestrate-batch-admit.sh` and `orchestrate-triage-classify.sh`: both already emit
+      to reference the entry-point redirect. *(completed)*
+- [x] Audit `orchestrate-batch-admit.sh` and `orchestrate-triage-classify.sh`: both already emit
       once at the end (`printf '%s\n' "$verdicts"`) with every diagnostic on stderr. Record this
       "audited clean, no change needed" result in each script's header rather than editing them,
-      so the next reader does not re-open the question.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-postflight.sh` with a stdout-purity group
+      so the next reader does not re-open the question. *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-cycle-postflight.sh` with a stdout-purity group
       mirroring Phase 1's Group 16: a stubbed helper writing prose to stdout, asserting the
-      postflight verdict JSON still parses.
-- [ ] Run both affected suites.
+      postflight verdict JSON still parses. *(completed: used the REAL, unmodified
+      update-task-status.sh rather than a synthetic stub -- its own final confirmation line is
+      already unconditional on stdout for every live call, so it reproduces the exact defect
+      shape without needing a stub)*
+- [x] Run both affected suites. *(completed)*
 
 **Timing**: 1 hour
 

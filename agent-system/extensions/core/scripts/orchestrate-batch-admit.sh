@@ -324,6 +324,12 @@
 #       integer, or a non-integer --invocation-count value), or state unavailable (jq missing, or
 #       STATE_FILE missing/unparseable). Nothing is printed on stdout in either case; a single
 #       loud line naming the reason goes to stderr.
+#
+# Output-channel discipline — AUDITED CLEAN, no change needed (audited alongside the fd-3
+# structural fix in orchestrate-cycle-plan.sh/orchestrate-cycle-postflight.sh): this script
+# already emits exactly once at the end (`printf '%s\n' "$verdicts"`), and every diagnostic
+# above that point is already `>&2`. There is no per-call-site stopgap to remove and no
+# entry-point redirect needed here. Do not re-open this question without new evidence.
 
 set -euo pipefail
 

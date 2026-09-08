@@ -107,14 +107,29 @@
 #     verdict/halt/infra_exempt_cycle; the NEXT cycle's orchestrate-cycle-plan.sh is what actually
 #     turns a recorded aux_pending entry into a dispatch.
 #
-# Exit codes: 0 — a decision was printed on stdout, regardless of its verdict (verdicts are data,
-# not errors — mirrors orchestrate-cycle-plan.sh's and orchestrate-batch-admit.sh's convention).
+# Exit codes: 0 — a decision was printed on the process's original stdout (fd 3 from this
+# script's own perspective after its entry-point `exec 3>&1 1>&2` — see that redirect's own
+# comment below; unchanged from an ordinary caller's point of view), regardless of its verdict
+# (verdicts are data, not errors — mirrors orchestrate-cycle-plan.sh's and
+# orchestrate-batch-admit.sh's convention).
 # 2 — usage error or a missing required collaborator (jq unavailable, skill-base.sh not found).
 
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+
+# ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
+# Same fd-3 discipline as orchestrate-cycle-plan.sh (see that script's own header for the full
+# rationale): fd 3 is dup'd from the original stdout once, here, at entry, and every subsequent
+# stdout write (fd 1) — ours or any uncaptured callee's — lands on the original stderr instead.
+# The sole intentional writes to fd 3 are the two final `jq -n -c` verdict emits below. This
+# replaces the per-call-site `>&2` stopgaps previously carried by the four `skill_postflight_update`
+# call sites, the `skill_orchestrate_propagate_completion` call, the `skill_link_artifacts` call,
+# and the `git-commit-scoped.sh` call — all now redundant and removed. Command substitution
+# ($(...)) is unaffected by this redirect.
+exec 3>&1 1>&2
+
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 
@@ -637,14 +652,18 @@ if [ "$have_outcome" = "true" ]; then
   case "$dispatch_status" in
     researched)
       if is_live; then
-        skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode" >&2
+        # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
+        # this call's stdout to the diagnostic stream structurally.
+        skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
       else
         echo "${notice_prefix} [dry-run] would transition task ${task_number} to researched — no write performed." >&2
       fi
       ;;
     planned)
       if is_live; then
-        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode" >&2
+        # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
+        # this call's stdout to the diagnostic stream structurally.
+        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
       else
         echo "${notice_prefix} [dry-run] would transition task ${task_number} to planned — no write performed." >&2
       fi
@@ -657,9 +676,11 @@ if [ "$have_outcome" = "true" ]; then
            "$plan_markers_verified" "$notice_prefix"; then
         implemented_gate_passed=true
         if is_live; then
-          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode" >&2
+          # No per-call-site >&2 on either call below: the entry-point exec 3>&1 1>&2 redirect
+          # above already routes their stdout to the diagnostic stream structurally.
+          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode"
           skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
-            "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix" >&2
+            "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to completed and propagate completion_summary/roadmap_items — no write performed." >&2
         fi
@@ -695,7 +716,9 @@ if [ "$have_outcome" = "true" ]; then
       # catch-all below: this arm must not set offschema_dispatch_status=true and must not reach
       # system-defect-record.sh.
       if is_live; then
-        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode" >&2
+        # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
+        # this call's stdout to the diagnostic stream structurally.
+        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
       else
         echo "${notice_prefix} [dry-run] would transition task ${task_number} to researching (needs_research verdict) and persist research_questions — no write performed." >&2
       fi
@@ -739,8 +762,10 @@ if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
     *)       field_name='**Summary**';  next_field='**Description**' ;;
   esac
   if is_live; then
+    # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes this
+    # call's stdout to the diagnostic stream structurally.
     skill_link_artifacts "$task_number" "$artifact_path" "$artifact_type" \
-      "$artifact_summary" "$field_name" "$next_field" "$session_id" >&2
+      "$artifact_summary" "$field_name" "$next_field" "$session_id"
   else
     echo "${notice_prefix} [dry-run] would link artifact ${artifact_path} (type=${artifact_type}) — no write performed." >&2
   fi
@@ -937,14 +962,16 @@ if is_live; then
     *) commit_message="task ${task_number}: orchestration dispatch off-schema" ;;
   esac
 
-  # Redirected to stderr: git-commit-scoped.sh prints its own commit summary to STDOUT, which
+  # No per-call-site >&2: git-commit-scoped.sh prints its own commit summary to STDOUT, which
   # would otherwise corrupt this script's own single-JSON-line stdout contract (every caller of
-  # this script parses stdout as exactly one JSON object).
+  # this script parses stdout as exactly one JSON object) -- but the entry-point exec 3>&1 1>&2
+  # redirect above already routes it to the diagnostic stream structurally, so no redirect is
+  # needed at this call site any more.
   bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
     --message "$commit_message" \
     --session "$session_id" \
     --honest-index-rows "$task_number" \
-    -- "${stage_paths[@]}" >&2 \
+    -- "${stage_paths[@]}" \
     || echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
 else
   echo "${notice_prefix} [dry-run] would commit task ${task_number}'s changes — no commit performed." >&2
@@ -1013,7 +1040,7 @@ if [ "$user_decision_json" != "null" ]; then
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
       phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision,
-      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}'
+      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -1028,7 +1055,7 @@ else
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
       phases_total: $phases_total, verdict: $verdict, halt: $halt,
-      infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}'
+      infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}' >&3
 fi
 
 exit 0
