@@ -101,10 +101,10 @@ probe_out="$(bash "$TOOL" single 999 2>&1)"
 probe_exit=$?
 probe_group="$(echo "$probe_out" | jq -r '.group' 2>/dev/null)"
 
-if [ "$probe_exit" -eq 0 ] && [ "$probe_group" = "research" ]; then
+if [ "$probe_exit" -eq 0 ] && [ "$probe_group" = "plan" ]; then
   pass "sandbox shape: \$WORKDIR/.claude/scripts/ satisfies deploy-root-guard.sh, PROJECT_ROOT == \$WORKDIR (no STATE_FILE override needed)"
 else
-  fail "sandbox shape: expected exit 0 and group=research for the not_started probe task, got exit=$probe_exit output=$probe_out"
+  fail "sandbox shape: expected exit 0 and group=plan for the not_started probe task (research on demand, Stage A.8), got exit=$probe_exit output=$probe_out"
   echo ""
   echo "Results: ${PASSED} passed, ${FAILED} failed"
   echo "ERROR: sandbox probe failed; aborting before building fixtures (per Rollback/Contingency: escalate rather than route around the friction)." >&2
@@ -232,8 +232,12 @@ cat > "$WORKDIR/specs/state.json" <<'EOF'
 EOF
 
 # --- not_started: mt engine (pairs with the single-engine sandbox probe above) ---
-check_fixture "mt" 105 "not_applicable" "research" \
-  "not_started (mt engine, pairs with the single-engine sandbox probe)"
+# Research on demand (Stage A.8): not_started now routes to plan, not research -- the planner
+# itself requests a research phase via needs_research if the description does not suffice. See
+# the researching -> research mutation-check fixture (project 112) below for the surviving
+# research-routing row.
+check_fixture "mt" 105 "not_applicable" "plan" \
+  "not_started (mt engine, pairs with the single-engine sandbox probe) -- research on demand default"
 
 # --- researched -> plan, both engines ---
 check_fixture "single" 106 "not_applicable" "plan" \
@@ -290,7 +294,8 @@ cat > "$WORKDIR/specs/state.json" <<'EOF'
     {"project_number": 125, "project_name": "fixture_dep_abandoned", "status": "blocked", "previous_status": "planned", "dependencies": [126]},
     {"project_number": 126, "project_name": "fixture_dep_abandoned_target", "status": "abandoned"},
     {"project_number": 127, "project_name": "fixture_empty_deps", "status": "blocked", "previous_status": "planned", "dependencies": []},
-    {"project_number": 128, "project_name": "fixture_missing_prev_status", "status": "blocked", "dependencies": [121]}
+    {"project_number": 128, "project_name": "fixture_missing_prev_status", "status": "blocked", "dependencies": [121]},
+    {"project_number": 129, "project_name": "fixture_discharged_not_started", "status": "blocked", "previous_status": "not_started", "dependencies": [121]}
   ]
 }
 EOF
@@ -308,6 +313,14 @@ check_fixture "single" 120 "absent" "implement" \
   "blocked, discharged (dependency completed, previous_status=planned) -> implement"
 check_fixture "mt" 120 "absent" "implement" \
   "blocked, discharged (dependency completed, previous_status=planned) -> implement cross-engine agreement"
+
+# --- (a2) discharged, previous_status=not_started -- research on demand (Stage A.8): routes to
+# plan, not research, mirroring the live not_started row's own flip. Dependency 121 is NOT passed
+# as a classifier argument below, same mechanism-discrimination shape as (a) above. ---
+check_fixture "single" 129 "absent" "plan" \
+  "blocked, discharged (dependency completed, previous_status=not_started) -> plan (research on demand default)"
+check_fixture "mt" 129 "absent" "plan" \
+  "blocked, discharged (dependency completed, previous_status=not_started) -> plan cross-engine agreement"
 
 # --- (b) discharged but handoff blockers present -- needs_human overrides discharge, BOTH engines ---
 check_fixture "single" 122 "blockers" "needs_human" \

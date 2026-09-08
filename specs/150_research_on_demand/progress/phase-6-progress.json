@@ -1,0 +1,30 @@
+{
+  "phase": 6,
+  "phase_name": "Fixture tests and full gate run",
+  "started_at": "2026-09-08T04:00:00Z",
+  "last_updated": "2026-09-08T05:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-orchestrate-triage-classify.sh: not_started->plan and researching->research fixtures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"], "note": "Fixed the sandbox probe (expected group changed research->plan) and fixture 105's mt-engine check; the pre-existing researching->research mutation-check fixture (project 112) already covered the surviving row unchanged; added a new dedicated blocked-discharge previous_status=not_started fixture (project 129) since the blocked-discharge table is a separate code path I also modified in Phase 4. Suite: 38/38 passed."},
+    {"id": 2, "description": "Degraded-classifier fallback table fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"], "note": "New Group 13: stubs orchestrate-triage-classify.sh to exit 3, dispatches a not_started and a researching candidate via --dry-run, confirms the inline fallback case in orchestrate-cycle-plan.sh routes them to plan/research respectively, matching the live classifier."},
+    {"id": 3, "description": "test-orchestrate-cycle-postflight.sh: needs_research hazard fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"], "note": "New Acceptance (6), modeled directly on Acceptance (4a)'s researched-outcome template. Asserts verdict=needs_research, halt=false, zero detected_defects, no off-schema stderr mention, state.json status->researching, research_questions persisted, next_artifact_number unchanged."},
+    {"id": 4, "description": "Force-invoked variant (clamp behavior)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"], "note": "New Acceptance (7): same needs_research outcome but --force-invoked true (clamp_mode=monotonic-max), current status='planning' (rank 3), confirms the write to 'researching' (rank 1) still proceeds -- the clamp never blocks needs_research, per Phase 2's recorded decision."},
+    {"id": 5, "description": "test-orchestrate-cycle-plan.sh: research_questions --focus wiring fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"], "note": "New Group 14: stubs orchestrate-build-dispatch.sh to log argv, dispatches a researching task with research_questions and one without; confirms --focus with the joined questions appears for the former and no --focus flag at all for the latter. Tests the WIRING only -- the flag's own rendering into 'User focus:' is orchestrate-build-dispatch.sh's own contract, already covered by test-orchestrate-build-dispatch.sh's existing 'focus_prompt threaded into prompt text' assertion, confirmed present by inspection (not re-tested here to avoid duplicate coverage)."},
+    {"id": 6, "description": "End-to-end acceptance assertion (not_started -> planned in one dispatch, plan passes validate-artifact.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"], "note": "New Acceptance (8): a genuinely conforming plan artifact (the same minimal-valid-plan shape test-gate-out-repair-reporting.sh's write_valid_plan() uses) is validated directly against validate-artifact.sh (8a), then orchestrate-cycle-postflight.sh resolves a planned dispatch_status to [PLANNED] and links that exact artifact for a task whose description records it as reached directly from not_started with no prior research round (8b) -- composing the two halves this suite can mechanically verify (a real planner-agent LLM dispatch cannot be fixture-tested)."},
+    {"id": 7, "description": "Run the full gate set", "status": "done", "note": "Ran: test-orchestrate-triage-classify.sh (38/38), test-orchestrate-cycle-plan.sh (96/96), test-orchestrate-cycle-postflight.sh (57/57); validate-artifact.sh on this task's own plan (PASS, 0 warnings); lint-agent-contracts.sh (101 passed, 0 warnings, 0 failed, global run); check-task-references.sh via the deployed .claude/scripts/ copy, scanning agent-system/extensions directly (0 unexempted occurrences); 8 additional scripts/lint/*.sh scripts (lint-branch-gated-sections, lint-contract-compliance, lint-lifecycle-status-var, lint-postflight-boundary, lint-routing-wiring [259 passed], lint-scoped-commit-boundary, lint-state-writer-boundary, lint-task-lookup-adoption) all exit 0 with zero violations. Also re-ran test-update-task-status.sh (29/29) as a regression check on Phase 2's script."},
+    {"id": 8, "description": "Confirm no task-number reference introduced under agent-system/**", "status": "done", "note": "check-task-references.sh's deployed copy scans agent-system/extensions directly (not merely the deployed .claude/ mirror) and reported 0 unexempted occurrences -- directly confirms every phase's source-store edits this session."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_results": {
+    "test_orchestrate_triage_classify": "38/38 PASS",
+    "test_orchestrate_cycle_plan": "96/96 PASS",
+    "test_orchestrate_cycle_postflight": "57/57 PASS",
+    "validate_artifact_on_own_plan": "PASS, 0 warnings",
+    "lint_agent_contracts": "101 passed, 0 warnings, 0 failed",
+    "check_task_references": "0 unexempted occurrences across agent-system/extensions, .opencode, lua, .memory",
+    "additional_lint_scripts": "8/8 additional scripts/lint/*.sh scripts green, including lint-routing-wiring (259 passed)",
+    "regression_check_test_update_task_status": "29/29 PASS (Phase 2's edited script, re-verified)"
+  }
+}

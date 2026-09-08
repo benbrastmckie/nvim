@@ -344,6 +344,211 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Acceptance (6): research on demand (Stage A.8) -- the needs_research hazard fixture. The
+# consequential hazard this task's own plan names: a needs_research status with no dedicated
+# postflight arm falls into the off-schema catch-all, which sets halt=true and records an
+# OFF_SCHEMA_STATUS system defect. This fixture pins the fix -- modeled directly on the
+# "researched" fixture template (Acceptance (4a) above): planner-agent never writes a handoff
+# (base-mode, mirroring general-implementation-agent), so recovery reads .return-meta.json.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Acceptance (6): needs_research verdict -- halt=false, no OFF_SCHEMA_STATUS, researching state write, no artifact-round advance"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/900_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 900, "project_name": "candidate", "task_type": "meta", "status": "planning", "description": "candidate #900", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/900_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/900_candidate/.return-meta.json" <<'EOF'
+{"status":"needs_research","dispatch_seq":1,"artifacts":[],"research_questions":["Does library X expose a streaming API?","Is the retry policy configurable?"],"metadata":{"phases_completed":0,"phases_total":0}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/900_candidate --session sess_900 --phase plan --task-type meta \
+  --agent planner-agent --loop-guard-file specs/900_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 900
+
+if [ "$(jqf '.verdict')" = "needs_research" ]; then
+  pass "acceptance (6): verdict=needs_research"
+else
+  fail "acceptance (6): expected verdict=needs_research, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.halt')" = "false" ]; then
+  pass "acceptance (6): halt=false"
+else
+  fail "acceptance (6): expected halt=false, got: $(jqf '.halt')"
+fi
+defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/900_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$defect_count" = "0" ]; then
+  pass "acceptance (6): zero defects recorded (no OFF_SCHEMA_STATUS)"
+else
+  fail "acceptance (6): expected 0 detected_defects, got $defect_count: $(jq -c '.detected_defects' "$WORKDIR/specs/900_candidate/.orchestrator-loop-guard")"
+fi
+if ! echo "$LAST_STDERR" | grep -qi "OFF-SCHEMA\|OFF_SCHEMA"; then
+  pass "acceptance (6): no off-schema mention in stderr"
+else
+  fail "acceptance (6): unexpected off-schema mention in stderr: $LAST_STDERR"
+fi
+new_status=$(jq -r --argjson n 900 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status" = "researching" ]; then
+  pass "acceptance (6): state.json status -> researching"
+else
+  fail "acceptance (6): expected state.json status=researching, got: $new_status"
+fi
+new_rq=$(jq -c --argjson n 900 '.active_projects[] | select(.project_number == $n) | .research_questions' "$WORKDIR/specs/state.json")
+if [ "$new_rq" = '["Does library X expose a streaming API?","Is the retry policy configurable?"]' ]; then
+  pass "acceptance (6): research_questions persisted to state.json"
+else
+  fail "acceptance (6): expected research_questions persisted, got: $new_rq"
+fi
+new_next_artifact=$(jq -r --argjson n 900 '.active_projects[] | select(.project_number == $n) | .next_artifact_number' "$WORKDIR/specs/state.json")
+if [ "$new_next_artifact" = "1" ]; then
+  pass "acceptance (6): next_artifact_number NOT advanced (no plan artifact was produced)"
+else
+  fail "acceptance (6): expected next_artifact_number unchanged at 1, got: $new_next_artifact"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Acceptance (7): needs_research under a forced dispatch (clamp_mode=monotonic-max) -- the
+# monotonic-max clamp interaction Phase 3/skill-base.sh recorded as intended: needs_research is
+# deliberately absent from STATUS_VOCABULARY_LIFECYCLE_RANK, so the clamp can never skip this
+# write, even when the task's current status (planning, rank 3) outranks the resting state the
+# write resolves to (researching, rank 1) -- which a naive monotonic-max check would otherwise
+# treat as a regression and skip.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Acceptance (7): needs_research under --force-invoked (monotonic-max clamp does not block it)"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/901_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 901, "project_name": "candidate", "task_type": "meta", "status": "planning", "description": "candidate #901", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/901_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/901_candidate/.return-meta.json" <<'EOF'
+{"status":"needs_research","dispatch_seq":1,"artifacts":[],"research_questions":["Is the vendor SDK still maintained?"],"metadata":{"phases_completed":0,"phases_total":0}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/901_candidate --session sess_901 --phase plan --task-type meta \
+  --agent planner-agent --loop-guard-file specs/901_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" --force-invoked true 901
+
+if [ "$(jqf '.verdict')" = "needs_research" ] && [ "$(jqf '.halt')" = "false" ]; then
+  pass "acceptance (7): force-invoked needs_research still yields verdict=needs_research, halt=false"
+else
+  fail "acceptance (7): expected verdict=needs_research/halt=false under force-invoked, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+new_status_901=$(jq -r --argjson n 901 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_901" = "researching" ]; then
+  pass "acceptance (7): state.json status -> researching even though current status (planning, rank 3) outranks the resting state (researching, rank 1) -- clamp does not apply, by construction"
+else
+  fail "acceptance (7): expected state.json status=researching (clamp must not block needs_research), got: $new_status_901"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Acceptance (8): end-to-end assertion for this task's own ACCEPTANCE line -- "a
+# specification-shaped task goes [NOT STARTED] -> [PLANNED] -> [COMPLETED] in two dispatches with
+# a plan that passes validate-artifact.sh". This suite cannot dispatch a real planner-agent (an
+# LLM), so it composes the two halves this suite CAN mechanically verify into one fixture: (a) a
+# genuinely conforming plan artifact -- the SAME minimal-valid-plan shape
+# test-gate-out-repair-reporting.sh's write_valid_plan() uses -- passes validate-artifact.sh
+# directly, and (b) orchestrate-cycle-postflight.sh resolves a "planned" dispatch_status to
+# [PLANNED] and links that exact artifact, for a task whose PRECEDING dispatch was the task's
+# very first (no prior research round) -- i.e. the "one dispatch" half of not_started->planned
+# that Phase 4's triage-classify fixtures (not_started routes to plan, not research) already
+# proved is reachable in a single hop under the research-on-demand default.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Acceptance (8): not_started -> planned in one dispatch, with a plan that passes validate-artifact.sh"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/902_candidate/plans"
+cat > "$WORKDIR/specs/902_candidate/plans/01_fixture-spec.md" << 'EOF'
+# Fixture Plan
+
+- **Task**: 902 - fixture
+- **Status**: [NOT STARTED]
+- **Effort**: 1h
+- **Dependencies**: None
+- **Research Inputs**: none
+- **Artifacts**: plans/01_fixture-spec.md
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+**Dependency Analysis**:
+
+| Wave | Phases |
+|------|--------|
+| 1 | 1 |
+
+### Phase 1: Fixture [NOT STARTED]
+- **Verification Tier**: local
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+
+if bash "$CORE_DIR/validate-artifact.sh" "$WORKDIR/specs/902_candidate/plans/01_fixture-spec.md" plan >/tmp/va-out-$$.log 2>&1; then
+  pass "acceptance (8a): the plan artifact passes validate-artifact.sh"
+else
+  fail "acceptance (8a): plan artifact failed validate-artifact.sh: $(cat /tmp/va-out-$$.log)"
+fi
+rm -f /tmp/va-out-$$.log
+
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 902, "project_name": "candidate", "task_type": "meta", "status": "planning", "description": "candidate #902 -- no research_path, no prior report: this is the task's FIRST dispatch, reached directly from not_started via the research-on-demand default", "dependencies": [], "file_scope": [], "next_artifact_number": 2}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/902_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/902_candidate/.return-meta.json" <<'EOF'
+{"status":"planned","dispatch_seq":1,"artifacts":[{"type":"plan","path":"specs/902_candidate/plans/01_fixture-spec.md","summary":"fixture plan"}],"metadata":{"phase_count":1,"estimated_hours":1}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/902_candidate --session sess_902 --phase plan --task-type meta \
+  --agent planner-agent --loop-guard-file specs/902_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 902
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "acceptance (8b): verdict=ok for a planned outcome reached directly from not_started (no research round)"
+else
+  fail "acceptance (8b): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+new_status_902=$(jq -r --argjson n 902 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_902" = "planned" ]; then
+  pass "acceptance (8b): state.json status -> planned (the [NOT STARTED] -> [PLANNED] half of the acceptance line, in one dispatch)"
+else
+  fail "acceptance (8b): expected state.json status=planned, got: $new_status_902"
+fi
+linked_artifact=$(jq -r --argjson n 902 '.active_projects[] | select(.project_number == $n) | .artifacts // [] | map(select(.type == "plan")) | .[0].path // ""' "$WORKDIR/specs/state.json")
+if [ "$linked_artifact" = "specs/902_candidate/plans/01_fixture-spec.md" ]; then
+  pass "acceptance (8b): the validate-artifact.sh-passing plan was linked into state.json's artifacts"
+else
+  fail "acceptance (8b): expected the fixture plan linked as a plan artifact, got: $linked_artifact"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the 9999999999 sentinel is literal and shared across the two gate scripts
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Invariant: 9999999999 fail-closed sentinel is the same literal in both scripts"

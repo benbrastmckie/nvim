@@ -1261,6 +1261,119 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 13: degraded-classifier fallback table (research on demand, Stage A.8) -- the path taken
+# ONLY when orchestrate-triage-classify.sh itself exits non-zero. This is the drift risk the live
+# classifier's own header discipline note does not, by itself, prevent: a fourth site
+# (orchestrate-cycle-plan.sh's inline fallback `case` statement) that must move in lockstep with
+# the live classifier but is normally dormant, so a missed edit here would silently ship a
+# not_started->research fallback while the live path correctly routes to plan. --dry-run is
+# sufficient: the decision pass (which the fallback table lives inside) runs unconditionally and
+# --dry-run renders its output directly, per this script's own header.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 13: degraded-classifier fallback table (orchestrate-triage-classify.sh exit != 0)"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "orchestrate-triage-classify.sh: simulated degraded exit (fixture)" >&2
+exit 3
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1301, "project_name": "g13_not_started", "task_type": "general", "status": "not_started", "description": "fresh task, degraded-fallback default-flip check", "dependencies": [], "file_scope": []},
+    {"project_number": 1302, "project_name": "g13_researching", "task_type": "general", "status": "researching", "description": "in-flight research, degraded-fallback researching row check", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g13_sess --dry-run -- 1301 1302
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 13: SUT exits 0 despite the degraded classifier"
+else
+  fail "Group 13: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if echo "$LAST_STDERR" | grep -q "orchestrate-triage-classify.sh degraded"; then
+  pass "Group 13: degraded-classifier WARNING logged"
+else
+  fail "Group 13: no degraded-classifier WARNING in stderr: $LAST_STDERR"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 1301)) | .[0].phase')" = "plan" ]; then
+  pass "Group 13: fallback table routes not_started -> plan (research on demand default, matching the live classifier)"
+else
+  fail "Group 13: expected not_started candidate #1301 to route to plan via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 1302)) | .[0].phase')" = "research" ]; then
+  pass "Group 13: fallback table keeps researching -> research (load-bearing for the needs_research return path)"
+else
+  fail "Group 13: expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
+fi
+
+# Restore the real classifier for any test run after this point (none currently follow, but this
+# keeps the sandbox state honest rather than leaving a degraded stub as the last-written copy).
+cp "$CORE_DIR/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 14: research_questions --focus wiring (research on demand, Stage A.8). Tests the WIRING
+# only (orchestrate-cycle-plan.sh reads state.json's research_questions, joins them, and forwards
+# as --focus to orchestrate-build-dispatch.sh) -- the --focus flag's own rendering into the
+# dispatch file's "User focus:" line is orchestrate-build-dispatch.sh's OWN contract, already
+# covered by test-orchestrate-build-dispatch.sh (its own "focus_prompt threaded into prompt text"
+# assertion). No change was needed inside that script for this task, so this suite does not
+# re-test its rendering.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 14: research_questions --focus wiring at the research-dispatch build call"
+
+G14_ARGV_LOG="$WORKDIR/g14-build-dispatch-argv.log"
+: > "$G14_ARGV_LOG"
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$G14_ARGV_LOG"
+proj_num="\$1"; phase="\$2"
+jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1401, "project_name": "g14_needs_research", "task_type": "meta", "status": "researching", "description": "planner requested research", "dependencies": [], "file_scope": [], "research_questions": ["Does library X expose a streaming API?", "Is the retry policy configurable?"]},
+    {"project_number": 1402, "project_name": "g14_ordinary_research", "task_type": "meta", "status": "researching", "description": "ordinary in-flight research, no research_questions", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g14_sess -- 1401 1402
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 14: SUT exits 0"
+else
+  fail "Group 14: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+g14_line_1401=$(grep '^1401 research' "$G14_ARGV_LOG" || true)
+if echo "$g14_line_1401" | grep -qF -- "--focus Does library X expose a streaming API?; Is the retry policy configurable?"; then
+  pass "Group 14: research_questions joined and forwarded as --focus for the needs_research-originated task"
+else
+  fail "Group 14: expected --focus with the joined research_questions in argv, got: '$g14_line_1401'"
+fi
+
+g14_line_1402=$(grep '^1402 research' "$G14_ARGV_LOG" || true)
+if [ -n "$g14_line_1402" ] && ! echo "$g14_line_1402" | grep -q -- "--focus"; then
+  pass "Group 14: no research_questions -> no --focus flag passed (byte-for-byte no-op)"
+else
+  fail "Group 14: unexpected --focus (or missing argv line) for the ordinary research candidate: '$g14_line_1402'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

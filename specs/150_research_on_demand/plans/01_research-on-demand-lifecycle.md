@@ -449,38 +449,38 @@ that is a scope expansion to record and handle, not to absorb silently.
 
 ---
 
-### Phase 6: Fixture tests and full gate run [NOT STARTED]
+### Phase 6: Fixture tests and full gate run [COMPLETED]
 
 **Goal**: Pin both routes with fixtures in the existing paired-fixture style, and run the full
 gate green.
 
 **Tasks**:
-- [ ] In `tests/test-orchestrate-triage-classify.sh`, add fixtures asserting `not_started` routes
+- [x] In `tests/test-orchestrate-triage-classify.sh`, add fixtures asserting `not_started` routes
       to `plan` (live jq path) and `researching` still routes to `research`. Follow the existing
       paired sandbox-probe / mt-engine fixture convention so both code paths see the same status,
-      rather than introducing a new fixture style.
-- [ ] Add a fixture pinning the degraded-classifier fallback table specifically -- the path taken
+      rather than introducing a new fixture style. *(completed: fixed the sandbox probe + fixture 105's expected group; the pre-existing researching->research mutation-check fixture already covered the surviving row; also added a dedicated blocked-discharge previous_status=not_started fixture)*
+- [x] Add a fixture pinning the degraded-classifier fallback table specifically -- the path taken
       only when the classifier script exits non-zero. This is the drift risk the classifier's own
-      header discipline does not currently cover.
-- [ ] In `tests/test-orchestrate-cycle-postflight.sh`, add the hazard fixture: a
+      header discipline does not currently cover. *(completed: Group 13 in test-orchestrate-cycle-plan.sh, stubs orchestrate-triage-classify.sh to exit non-zero)*
+- [x] In `tests/test-orchestrate-cycle-postflight.sh`, add the hazard fixture: a
       `needs_research` `.return-meta.json` must yield `verdict=needs_research`, `halt=false`, no
       `OFF_SCHEMA_STATUS` defect recorded, a `researching` state write, and no
       `next_artifact_number` advance. Read the existing `researched` fixture first and use it as
-      the direct template.
-- [ ] Add the force-invoked variant of that fixture, asserting whichever clamp behavior Phase 3
-      recorded as intended.
-- [ ] In `tests/test-orchestrate-cycle-plan.sh`, add a fixture asserting that a task carrying
+      the direct template. *(completed: Acceptance (6), modeled on Acceptance (4a))*
+- [x] Add the force-invoked variant of that fixture, asserting whichever clamp behavior Phase 3
+      recorded as intended. *(completed: Acceptance (7))*
+- [x] In `tests/test-orchestrate-cycle-plan.sh`, add a fixture asserting that a task carrying
       `research_questions` and dispatched to `research` produces a dispatch file with a
       `User focus:` block containing the joined questions, and that a task without the field
       passes no `--focus`. Read the existing `not_started`/`researched` fixtures first as the
-      template.
-- [ ] Add an end-to-end assertion for the acceptance criterion: a specification-shaped task goes
-      `not_started -> planned` in one dispatch with a plan that passes `validate-artifact.sh`.
-- [ ] Run the full gate set: the three modified test scripts, `validate-artifact.sh` on this
+      template. *(completed: Group 14, tests the wiring into --focus's argv; the flag's own rendering into "User focus:" is orchestrate-build-dispatch.sh's own contract, already covered by test-orchestrate-build-dispatch.sh)*
+- [x] Add an end-to-end assertion for the acceptance criterion: a specification-shaped task goes
+      `not_started -> planned` in one dispatch with a plan that passes `validate-artifact.sh`. *(completed: Acceptance (8) in test-orchestrate-cycle-postflight.sh)*
+- [x] Run the full gate set: the three modified test scripts, `validate-artifact.sh` on this
       plan, `lint-agent-contracts.sh`, `check-task-references.sh`, and any repo-level shell lint
-      the gate normally includes. All green before the phase closes.
-- [ ] Confirm no task-number reference was introduced anywhere under `agent-system/**` --
-      deliverables cite durable anchors (filenames, section headings), never task numbers.
+      the gate normally includes. All green before the phase closes. *(completed: 38+96+57=191 fixture passes across the three suites, validate-artifact.sh passes on this plan, lint-agent-contracts.sh 101/101, check-task-references.sh 0 occurrences, and 8 additional lint-*.sh scripts under scripts/lint/ all green -- see progress notes)*
+- [x] Confirm no task-number reference was introduced anywhere under `agent-system/**` --
+      deliverables cite durable anchors (filenames, section headings), never task numbers. *(completed: check-task-references.sh's deployed copy scans agent-system/extensions directly -- 0 unexempted occurrences)*
 
 **Timing**: 2 hours
 
@@ -512,19 +512,30 @@ fourth test file turns out to cover any of these paths, that is a scope expansio
 
 ## Testing & Validation
 
-- [ ] A `.return-meta.json` with `status: needs_research` and empty artifacts passes
+- [x] A `.return-meta.json` with `status: needs_research` and empty artifacts passes
       `validate-return-meta.sh` and is recovered by `orchestrate-recover-outcome.sh` with
-      `recovered=true`, `evidence_suspect=false`.
-- [ ] `orchestrate-cycle-postflight.sh` on that outcome yields `verdict=needs_research`,
-      `halt=false`, no `OFF_SCHEMA_STATUS` defect, and a `researching` state write.
-- [ ] `orchestrate-triage-classify.sh` routes `not_started` to `plan` on both the live jq path
-      and the degraded fallback path.
-- [ ] A task carrying `research_questions` produces a research dispatch file with a `User focus:`
-      block containing the joined questions.
-- [ ] `--research` on a fresh task dispatches research first, unchanged.
-- [ ] A specification-shaped task reaches `[PLANNED]` in one dispatch with a plan passing
-      `validate-artifact.sh`, and `[COMPLETED]` in a second.
-- [ ] `lint-agent-contracts.sh`, `check-task-references.sh`, and the full gate run are green.
+      `recovered=true`, `evidence_suspect=false`. *(verified: fixture in Phase 1, plus the manual
+      end-to-end scratch fixture reproduced in Phase 3's progress notes)*
+- [x] `orchestrate-cycle-postflight.sh` on that outcome yields `verdict=needs_research`,
+      `halt=false`, no `OFF_SCHEMA_STATUS` defect, and a `researching` state write. *(verified:
+      Phase 6's Acceptance (6)/(7) fixtures in test-orchestrate-cycle-postflight.sh)*
+- [x] `orchestrate-triage-classify.sh` routes `not_started` to `plan` on both the live jq path
+      and the degraded fallback path. *(verified: test-orchestrate-triage-classify.sh's sandbox
+      probe/fixture 105, plus Group 13 in test-orchestrate-cycle-plan.sh for the fallback path)*
+- [x] A task carrying `research_questions` produces a research dispatch file with a `User focus:`
+      block containing the joined questions. *(verified: Group 14 in test-orchestrate-cycle-plan.sh
+      for the wiring; the rendering itself is orchestrate-build-dispatch.sh's own pre-existing,
+      already-tested contract)*
+- [x] `--research` on a fresh task dispatches research first, unchanged. *(verified by code
+      reading: effective_group[$t] is sourced from force_phases_remaining when non-empty,
+      unconditionally overriding the classifier's triage_group[$t] -- see Phase 4's progress notes)*
+- [x] A specification-shaped task reaches `[PLANNED]` in one dispatch with a plan passing
+      `validate-artifact.sh`, and `[COMPLETED]` in a second. *(the [PLANNED] half is verified by
+      Phase 6's Acceptance (8); the [PLANNED] -> [COMPLETED] implement-phase transition is
+      entirely pre-existing, unmodified code this task never touches, and is already covered by
+      the repo's own pre-existing implement-phase test coverage)*
+- [x] `lint-agent-contracts.sh`, `check-task-references.sh`, and the full gate run are green.
+      *(verified: see Phase 6's progress notes for the full gate-run enumeration and results)*
 
 ## Artifacts & Outputs
 
