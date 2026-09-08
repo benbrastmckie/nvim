@@ -20,7 +20,10 @@
     "context": [
       "project/typst"
     ],
-    "scripts": [],
+    "scripts": [
+      "typst-element-lint.sh",
+      "tests/test-typst-element-lint.sh"
+    ],
     "hooks": []
   },
   "routing": {

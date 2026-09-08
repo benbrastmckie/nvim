@@ -105,6 +105,15 @@ Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status*
   applied before proceeding — a "no violations found" conclusion is itself part of the required
   output, not an implicit pass. `typst compile` exiting 0 does NOT satisfy this sub-step;
   compilation success and structural correctness are independent checks.
+- **Mechanical placement/density lint (executed, not a reminder; alongside the prose
+  self-review above, never replacing it)**: for every `.typ` file created or modified in this
+  phase, run
+  `bash .claude/scripts/typst-element-lint.sh --verbose {changed .typ file}`. This is the
+  mechanical backstop for the same standard the prose self-review above checks by hand — a
+  placement `[FAIL]` finding blocks marking the phase complete (fix the file, then re-run the
+  lint) exactly as a `typst compile` failure would. `[WARN]` advisory findings (remark item
+  count, remark density) do not block the phase, but MUST be reported in the phase's output —
+  silently ignoring a `[WARN]` is not acceptable.
 
 **D. Mark Phase Complete**
 Edit plan file heading to show the phase is finished.
@@ -136,6 +145,17 @@ bash .claude/scripts/git-commit-scoped.sh \
 ```bash
 typst compile document.typ
 ```
+
+Alongside — never replacing — `typst compile`, run one whole-document lint pass before writing
+final metadata. This guards a run that resumed mid-plan and skipped one or more per-phase
+Stage 4C invocations, ensuring every `.typ` file touched by this task gets at least one lint pass
+before completion:
+```bash
+bash .claude/scripts/typst-element-lint.sh --verbose {every .typ file touched by this task}
+```
+A placement `[FAIL]` here is the same blocking condition as at Stage 4C. `[WARN]` advisory
+findings are reported, not silently dropped, in the implementation summary's Verification
+section.
 
 ### Stage 6: Create Implementation Summary
 Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`. Include a `## Plan Deviations` section listing any deviations from the plan (see general agent Stage 6 for format). Use `- None (implementation followed plan)` when no deviations occurred.
@@ -179,6 +199,10 @@ section. Copy this exact shape (source:
 5. Include PDF in artifacts if compilation succeeds
 6. Perform the Stage 4C structural self-review against `standards/semantic-element-usage.md`
    before marking any phase complete -- compile-green is never a substitute for this check
+7. Run `bash .claude/scripts/typst-element-lint.sh --verbose` against every `.typ` file created
+   or modified, both at Stage 4C (per phase) and Stage 5 (whole-document final pass) -- a
+   placement `[FAIL]` blocks completion the same way a compilation failure does; `[WARN]`
+   advisory findings must be reported, not silently dropped
 
 **MUST NOT**:
 1. Return JSON to console

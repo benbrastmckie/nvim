@@ -376,37 +376,37 @@ is not a lint defect, but a defect found at a *different* structural position is
 
 ---
 
-### Phase 6: Manifest, Agent, and Extension Documentation Wiring [NOT STARTED]
+### Phase 6: Manifest, Agent, and Extension Documentation Wiring [COMPLETED]
 
 **Goal**: The lint is declared in the manifest, invoked from the implementation agent's
 verification path alongside `typst compile`, and mentioned in the extension's tooling
 documentation.
 
 **Tasks**:
-- [ ] `agent-system/extensions/typst/manifest.json`: set `provides.scripts` to
+- [x] `agent-system/extensions/typst/manifest.json`: set `provides.scripts` to
       `["typst-element-lint.sh", "tests/test-typst-element-lint.sh"]`, matching the
       array-of-relative-paths shape used by `lean/manifest.json`. Leave `provides.hooks` and
-      `provides.rules` as `[]`.
-- [ ] Validate the manifest still parses: `jq . manifest.json` exits 0.
-- [ ] `agents/typst-implementation-agent.md` Stage 4C: add the mechanical invocation immediately
+      `provides.rules` as `[]`. *(completed)*
+- [x] Validate the manifest still parses: `jq . manifest.json` exits 0. *(completed)*
+- [x] `agents/typst-implementation-agent.md` Stage 4C: add the mechanical invocation immediately
       alongside the existing "Structural self-review (executed, not a reminder)" prose block, as
       its counterpart — `bash .claude/scripts/typst-element-lint.sh {changed .typ file}` per
       changed file. State that a placement FAIL blocks marking the phase complete and that
-      advisory warnings must be reported, not silently ignored.
-- [ ] `agents/typst-implementation-agent.md` Stage 5: add a whole-document lint pass alongside
+      advisory warnings must be reported, not silently ignored. *(completed)*
+- [x] `agents/typst-implementation-agent.md` Stage 5: add a whole-document lint pass alongside
       the existing `typst compile` — explicitly "alongside, not replacing" — so a run that
       resumed mid-plan and skipped per-phase Stage 4C still gets one full pass before final
-      metadata.
-- [ ] Add a MUST DO bullet to the agent's Critical Requirements naming the lint, and confirm the
-      existing MUST NOT #7/#8 prose (from the semantic-element contract) is left intact.
-- [ ] Use the DEPLOYED path `.claude/scripts/typst-element-lint.sh` in every agent invocation,
-      never the `agent-system/extensions/typst/scripts/` source-store path.
-- [ ] `EXTENSION.md`: extend the "Language Routing" table's Implementation Tools cell from
+      metadata. *(completed)*
+- [x] Add a MUST DO bullet to the agent's Critical Requirements naming the lint, and confirm the
+      existing MUST NOT #7/#8 prose (from the semantic-element contract) is left intact. *(completed)*
+- [x] Use the DEPLOYED path `.claude/scripts/typst-element-lint.sh` in every agent invocation,
+      never the `agent-system/extensions/typst/scripts/` source-store path. *(completed)*
+- [x] `EXTENSION.md`: extend the "Language Routing" table's Implementation Tools cell from
       `Bash (typst compile)` to also name the lint, and add a line under "Common Operations"
-      showing the invocation.
-- [ ] Confirm no task-number reference ("task N") appears in any file touched outside `specs/**`
-      per `no-task-references-in-deliverables.md`.
-- [ ] Confirm no file under `.claude/**` was written by this task.
+      showing the invocation. *(completed)*
+- [x] Confirm no task-number reference ("task N") appears in any file touched outside `specs/**`
+      per `no-task-references-in-deliverables.md`. *(completed)*
+- [x] Confirm no file under `.claude/**` was written by this task. *(completed)*
 
 **Timing**: 0.75 hours
 
