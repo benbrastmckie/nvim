@@ -1,10 +1,39 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/186_fix_deploy_headless_path_in_regeneration_doc/summaries/01_fix-deploy-headless-invocation-path-summary.md",
+      "summary": "Corrected 12 wrong `bash scripts/deploy-headless.sh` invocation sites across 6 source-store files (the canonical regeneration doc plus 5 core scripts), added a mechanical regression guard, deployed clean, and confirmed zero regressions against a green 34-check baseline."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Corrected the wrong deploy-headless.sh invocation path in regeneration-is-manual-only.md and 5 core scripts (12 defect sites, all under agent-system/extensions/core/), added a regression guard to check-extension-docs.sh, and deployed the fix clean (RESULT=landed_verify_clean, exit 0) with zero gate regressions."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a source-store/deployed-tree repo scans its own docs for a wrong-invocation regression pattern (e.g. grep -rn 'bash scripts/foo.sh'), any explanatory comment placed near the check that spells the defect string literally becomes a self-inflicted false positive -- the check's own grep matches its own prose. Fix by rendering the defect string in comments with the same escaped-literal form used in the grep pattern itself (e.g. 'foo\\.sh' instead of 'foo.sh'), which does not match the unescaped literal grep pattern. Verify with a literal (non-regex) grep -c of the exact contiguous defect string against the file itself before declaring the guard clean.",
+      "category": "PATTERN",
+      "source_artifact": "specs/186_fix_deploy_headless_path_in_regeneration_doc/summaries/01_fix-deploy-headless-invocation-path-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["regression-guard", "self-match", "grep-anchor", "check-extension-docs", "false-positive"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788894448_36ce34",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

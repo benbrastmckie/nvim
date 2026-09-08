@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 739,
+      "line_count": 770,
       "keywords": [
         "format",
         "metadata",
@@ -1358,7 +1358,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 515,
+      "line_count": 545,
       "keywords": [
         "reference",
         "state",
@@ -1516,7 +1516,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 12-value task-status enum",
-      "line_count": 271,
+      "line_count": 276,
       "keywords": [
         "state",
         "schema",
@@ -1859,7 +1859,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 413,
+      "line_count": 438,
       "keywords": [
         "standards",
         "status",
@@ -2524,7 +2524,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 519,
+      "line_count": 540,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2548,7 +2548,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 939,
+      "line_count": 1014,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2951,7 +2951,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 327,
+      "line_count": 356,
       "keywords": [
         "runtime-files",
         "cleanup",

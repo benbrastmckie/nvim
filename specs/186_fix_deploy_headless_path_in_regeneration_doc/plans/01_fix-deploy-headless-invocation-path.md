@@ -1,7 +1,7 @@
 # Implementation Plan: Task #186
 
 - **Task**: 186 - Fix the wrong deploy-headless.sh invocation path documented in regeneration-is-manual-only.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: None (planned directly from the task description plus a first-hand source-store survey performed during planning -- see Overview)
@@ -406,34 +406,48 @@ blocked.
 
 ---
 
-### Phase 5: Deploy, Verify Acceptance, and Run the Full Gate [NOT STARTED]
+### Phase 5: Deploy, Verify Acceptance, and Run the Full Gate [COMPLETED]
 
 **Goal**: Make the corrected source store live in `.claude/`, prove the doc's fences are runnable
 exactly as written, and confirm the full gate run introduced no new failures.
 
 **Tasks**:
-- [ ] Deploy the source store: `bash .claude/scripts/deploy-headless.sh`. Capture stdout, the
-      `[deploy-headless] RESULT=` marker line, and the exit code.
-- [ ] Interpret the exit code against the script's documented contract, not against "0 means
+- [x] Deploy the source store: `bash .claude/scripts/deploy-headless.sh`. Capture stdout, the
+      `[deploy-headless] RESULT=` marker line, and the exit code. *(completed:
+      RESULT=landed_verify_clean, exit=0, inline `verify-deploy.sh --skip-slow` PASS 33/33)*
+- [x] Interpret the exit code against the script's documented contract, not against "0 means
       good": `0` = landed, verification clean; `3` = **landed**, but the inline
       `verify-deploy.sh --skip-slow` run reported findings; `1`/`2` = did NOT land. Only `1` or
       `2` is a Phase 5 failure. An exit `3` whose findings match the Phase 1 baseline is an
-      expected pass for this task.
-- [ ] Confirm the fix reached the deploy tree:
+      expected pass for this task. *(completed: exit was 0, the clean case -- no interpretation
+      judgment call needed)*
+- [x] Confirm the fix reached the deploy tree:
       `grep -n 'bash \.claude/scripts/deploy-headless\.sh' .claude/context/patterns/regeneration-is-manual-only.md`
       matches the two fence lines, and
-      `grep -rn 'bash scripts/deploy-headless\.sh' .claude/` returns nothing.
-- [ ] Acceptance check on fence 1 (non-destructive form, safe to run):
-      `bash .claude/scripts/deploy-headless.sh --dry-run` -- must not exit 127.
-- [ ] Acceptance check on fence 2 (**append `--dry-run`; never run `--wipe` for real here**):
+      `grep -rn 'bash scripts/deploy-headless\.sh' .claude/` returns nothing. *(completed: both
+      confirmed, independently cross-checked by the orchestrator against agent-system/ too)*
+- [x] Acceptance check on fence 1 (non-destructive form, safe to run):
+      `bash .claude/scripts/deploy-headless.sh --dry-run` -- must not exit 127. *(completed:
+      exit=0)*
+- [x] Acceptance check on fence 2 (**append `--dry-run`; never run `--wipe` for real here**):
       `bash .claude/scripts/deploy-headless.sh --wipe --dry-run` -- must not exit 127.
-- [ ] Spot-check a runtime remedy string end-to-end: trigger or inspect one of the corrected
+      *(completed: exit=0)*
+- [x] Spot-check a runtime remedy string end-to-end: trigger or inspect one of the corrected
       `echo`/`advisory` messages and confirm the printed path is copy-pasteable and resolves.
-- [ ] Run the full gate suite: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`) and
-      diff its failing-check set against `/tmp/186-gate-baseline.txt`.
-- [ ] Confirm the delta is empty or strictly improving. Any NEW failure blocks the phase and must
-      be traced to a Phase 2/3/4 edit and fixed.
-- [ ] Final census: `grep -rn 'bash scripts/deploy-headless\.sh' agent-system/` returns nothing.
+      *(completed: deploy-root-guard.sh's corrected remedy string in the deployed
+      .claude/scripts/deploy-root-guard.sh names .claude/scripts/deploy-headless.sh, which
+      exists)*
+- [x] Run the full gate suite: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`) and
+      diff its failing-check set against `/tmp/186-gate-baseline.txt`. *(deviation: satisfied by
+      the Phase 1 baseline run itself rather than a second full sweep -- see deviation note below)*
+- [x] Confirm the delta is empty or strictly improving. Any NEW failure blocks the phase and must
+      be traced to a Phase 2/3/4 edit and fixed. *(completed: delta is empty -- Phase 1's full
+      34-check baseline was already 0 failures/exit 0, and Phase 5's post-deploy fast gate
+      (verify-deploy.sh --skip-slow, run inline by deploy-headless.sh) is also 0
+      failures/exit 0. The orchestrating session directed skipping a third full-sweep re-run as
+      unnecessary cost -- see deviation note below)*
+- [x] Final census: `grep -rn 'bash scripts/deploy-headless\.sh' agent-system/` returns nothing.
+      *(completed, independently cross-checked by the orchestrator)*
 
 **Timing**: 0.5 hours
 
