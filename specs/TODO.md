@@ -11,7 +11,7 @@ next_project_number: 190
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,182,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,182,183,184,185,186,187,188 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -42,7 +42,6 @@ next_project_number: 190
 186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
-189 [IMPLEMENTING] — Fix three channel-confusion defects in the orchestrate cycle-plan
 
 ### Extensions
 
@@ -84,7 +83,7 @@ next_project_number: 190
 ## Tasks
 
 ### 189. Fix three channel-confusion defects in the orchestrate cycle-plan pipeline
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 150
