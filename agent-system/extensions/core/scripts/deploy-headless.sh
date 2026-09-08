@@ -309,18 +309,16 @@ main() {
       printf '%s\n' "$line_count_output" | grep -i 'missing source' >&2 || true
     fi
 
-    local line_count_category="milestone"
-    [ "$line_count_changed" -gt 0 ] && line_count_category="deviation"
-
-    local line_count_events="$TARGET/.claude/scripts/events-append.sh"
-    if [ -f "$line_count_events" ]; then
-      bash "$line_count_events" \
-        --event-type index_line_count_auto_repair --category "$line_count_category" \
-        --session "${SESSION_ID:-sess_$(date +%s)_deploy}" --checkpoint deploy_headless \
-        --message "deploy-headless.sh line_count auto-repair: ${line_count_changed} entry/entries corrected from wc -l" \
-        --detail-json "$(jq -n -c --argjson n "$line_count_changed" --argjson exts "$line_count_exts" '{corrected_count: $n, extensions: $exts}')" \
-        >/dev/null 2>&1 || true
-    fi
+    # A durable specs/events.jsonl row was considered here (event type
+    # index_line_count_auto_repair) but deliberately dropped, per this task's own risk-table
+    # contingency: events-append.sh requires --session, and deploy-headless.sh has no natural
+    # source for one -- it never sources scripts/lib/common.sh (the single canonical session-ID
+    # generator; see test-common-lib.sh's single-source assertion) for the same self-overwrite
+    # reason it never sources scripts/task-lock.sh (see the header's "specs/.deploy-lock/
+    # fail-open mutex" comment above main()). Synthesizing an ad hoc id inline was tried and
+    # reverted: it tripped that exact single-source lint. The console report two lines above is
+    # the durable, unconditional record; dropping the event row keeps the report, never the
+    # reverse.
   fi
 
   echo "[deploy-headless] Deploying extension tree into $TARGET/.claude ..."

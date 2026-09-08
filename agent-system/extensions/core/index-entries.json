@@ -2524,7 +2524,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 469,
+      "line_count": 519,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2548,7 +2548,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 928,
+      "line_count": 939,
       "keywords": [
         "patterns",
         "orchestrate",
