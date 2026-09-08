@@ -202,30 +202,34 @@ removal rather than a judgment call under time pressure.
 
 ---
 
-### Phase 2: Add the `.decisions.json` read path to the dispatch builder [NOT STARTED]
+### Phase 2: Add the `.decisions.json` read path to the dispatch builder [COMPLETED]
 
 **Goal**: Fix the `.decisions.json` schema and ship the *reader* first, so the lead-side writer
 built in Phase 4 has a stable, already-tested target to write against.
 
 **Tasks**:
 
-- [ ] Define the `specs/{NNN}_{slug}/.decisions.json` schema and record it in
+- [x] Define the `specs/{NNN}_{slug}/.decisions.json` schema and record it in
       `docs/architecture/handoff-schema.md` as a named section: an array of entries carrying at
       minimum the question text, the chosen answer, the answering cycle, and a timestamp.
       Nothing else in the repo defines this file today (the only existing references are three
-      comments stating the postflight script never writes it).
-- [ ] Extend `scripts/orchestrate-build-dispatch.sh` to emit a new `## Prior Decisions` section
+      comments stating the postflight script never writes it). *(completed: new "## Decisions
+      File Schema (.decisions.json)" section)*
+- [x] Extend `scripts/orchestrate-build-dispatch.sh` to emit a new `## Prior Decisions` section
       into the written dispatch file when the task's `.decisions.json` exists and is non-empty,
       following the same section-emission convention as the existing `## Identity`,
       `## Description`, `## Artifact Round`, `## Research Artifact`, `## Handoff`, and
-      `## User-Decision Contract` sections.
-- [ ] Preserve the script's byte-identical-when-absent property: a dispatch built for a task with
+      `## User-Decision Contract` sections. *(completed)*
+- [x] Preserve the script's byte-identical-when-absent property: a dispatch built for a task with
       no `.decisions.json` must be byte-identical to one built before this change, matching the
-      precedent the `--compare` flag already set.
-- [ ] Update the script's own header comment to document the new section and its trigger.
-- [ ] Extend `scripts/tests/test-orchestrate-build-dispatch.sh` with cases for: absent file
+      precedent the `--compare` flag already set. *(completed: verified by test Group 10 Case A/B)*
+- [x] Update the script's own header comment to document the new section and its trigger.
+      *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-build-dispatch.sh` with cases for: absent file
       (byte-identical output), present-and-empty file, and present-with-entries file (section
-      emitted, content faithful).
+      emitted, content faithful). *(completed: Group 10, all cases passing; full suite 66/66
+      green after redeploying the source store so the test's deploy-tree-first resolution picked
+      up the new code)*
 
 **Timing**: 1.5 hours
 

@@ -28,6 +28,13 @@
 # file's `## Identity` section — emitted ONLY when the flag is true, so a no-flag dispatch file
 # is byte-identical to one built before this flag existed.
 #
+# Prior Decisions: when `specs/{NNN}_{slug}/.decisions.json` exists and is non-empty (schema in
+# docs/architecture/handoff-schema.md's "## Decisions File Schema (.decisions.json)" section),
+# emits a "## Prior Decisions" section listing each entry's question/answer/cycle/timestamp, so a
+# dispatched agent sees what the lead's batched AskUserQuestion relay already settled. Absent or
+# empty file emits nothing — a dispatch built for a task with no .decisions.json stays
+# byte-identical to one built before this feature existed.
+#
 # --phase-number N (implement phase only, hard mode's per-phase dispatch -- Decision Structure H1
 # in the task that ported single-task features into the batch engine): records the SINGLE plan
 # phase this dispatch is scoped to. Adds a "## Phase Mission" section to the dispatch file naming
@@ -288,6 +295,21 @@ fi
 # ─── model resolution: pass-through, empty (never "null") when unset ───────────────────────────
 model="$model_flag"
 
+# ─── Prior decisions read path: specs/{NNN}_{slug}/.decisions.json (schema in
+# docs/architecture/handoff-schema.md's "## Decisions File Schema (.decisions.json)" section) ───
+# Byte-identical-when-absent: prior_decisions_block stays empty (and no section is emitted) when
+# the file is absent or empty, matching the --compare flag's own no-flag-no-change precedent.
+prior_decisions_block=""
+decisions_file="${TASK_DIR_ABS}/.decisions.json"
+if [ -f "$decisions_file" ]; then
+  decisions_content=$(cat "$decisions_file" 2>/dev/null) || decisions_content="[]"
+  decisions_count=$(echo "$decisions_content" | jq 'length' 2>/dev/null) || decisions_count=0
+  if [ "$decisions_count" -gt 0 ]; then
+    prior_decisions_block=$(echo "$decisions_content" | jq -r \
+      '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"')
+  fi
+fi
+
 # ─── Write specs/{NNN}_{slug}/.dispatch/{seq}.md ────────────────────────────────────────────────
 dispatch_dir="${TASK_DIR_ABS}/.dispatch"
 mkdir -p "$dispatch_dir"
@@ -389,6 +411,16 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   fi
   if [ -n "$hard_contracts_block" ]; then
     echo "$hard_contracts_block"
+    echo ""
+  fi
+  if [ -n "$prior_decisions_block" ]; then
+    echo "## Prior Decisions"
+    echo ""
+    echo "Answers relayed from a prior cycle's batched \`AskUserQuestion\` call (see"
+    echo "\`specs/${PADDED_NUM}_${PROJECT_NAME}/.decisions.json\`). Treat these as settled — do not"
+    echo "re-ask a question already answered here."
+    echo ""
+    echo "$prior_decisions_block"
     echo ""
   fi
   echo "## User-Decision Contract"

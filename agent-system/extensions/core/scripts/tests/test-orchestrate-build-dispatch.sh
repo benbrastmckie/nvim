@@ -460,6 +460,67 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 10: .decisions.json read path -- absent (byte-identical), present-and-empty (no section),
+# present-with-entries (## Prior Decisions section emitted, content faithful).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 10: .decisions.json read path"
+
+DECISIONS_FILE="$FIXTURE/${TASK_DIR_REL}/.decisions.json"
+
+# Case A: absent file -- byte-identical to a dispatch built before this feature existed (no
+# .decisions.json ever written in this fixture up to this point).
+rm -f "$DECISIONS_FILE"
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_absent="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_absent" "## Prior Decisions" "decisions absent: no Prior Decisions section"
+  cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-decisions.md"
+else
+  fail "decisions absent: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case B: present-and-empty file -- still no section, and still byte-identical to the absent case
+# (an empty array is not a reason to change the rendered dispatch file at all).
+echo '[]' > "$DECISIONS_FILE"
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_empty="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_empty" "## Prior Decisions" "decisions present-and-empty: no Prior Decisions section"
+  if diff -q "$WORKDIR/dispatch-no-decisions.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
+    pass "decisions present-and-empty: byte-identical to the absent-file dispatch"
+  else
+    fail "decisions present-and-empty: expected byte-identical output to the absent-file dispatch, got a diff"
+  fi
+else
+  fail "decisions present-and-empty: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case C: present-with-entries -- ## Prior Decisions section emitted, content faithful to the
+# question/answer/cycle/timestamp fields.
+cat > "$DECISIONS_FILE" <<'EOF'
+[
+  {
+    "question": "Which logging backend should the new metrics pipeline use?",
+    "answer": "Use the existing structured-logging module; do not add a new dependency.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T04:00:00Z"
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_entries="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_entries" "## Prior Decisions" "decisions present-with-entries: Prior Decisions section present"
+  assert_contains "$content_entries" "Which logging backend should the new metrics pipeline use?" "decisions present-with-entries: question text present"
+  assert_contains "$content_entries" "Use the existing structured-logging module" "decisions present-with-entries: answer text present"
+  assert_contains "$content_entries" "cycle 3" "decisions present-with-entries: cycle number present"
+  assert_contains "$content_entries" "2026-09-08T04:00:00Z" "decisions present-with-entries: timestamp present"
+else
+  fail "decisions present-with-entries: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+rm -f "$DECISIONS_FILE"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

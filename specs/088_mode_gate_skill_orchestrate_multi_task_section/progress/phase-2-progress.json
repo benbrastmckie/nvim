@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Add the .decisions.json read path to the dispatch builder",
+  "started_at": "2026-09-08T04:50:00Z",
+  "last_updated": "2026-09-08T05:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Define .decisions.json schema in handoff-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 2, "description": "Emit ## Prior Decisions section in orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Preserve byte-identical-when-absent property", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Update script header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Extend test suite with 3 new cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

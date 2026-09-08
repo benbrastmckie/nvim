@@ -912,3 +912,47 @@ This is distinct from, and additive to, the Context Flatness Constraint (`docs/a
 The per-dispatch postflight phase is limited to: reading the dispatch's `.orchestrator-handoff.json` (or the bounded return-meta/phase-marker recovery exceptions the Context Flatness doc names), driving the state-machine transition to the next stage, and cleanup of temp/marker files. `orchestrate-cycle-postflight.sh` is the sole implementation of this boundary for every task in a batch (including a batch of one) — there is no second, inline copy of this logic in `skill-orchestrate/SKILL.md` to keep in sync. `lint-postflight-boundary.sh` enforces that `skill-orchestrate/SKILL.md` carries a heading its heuristic can locate as this boundary's home; see that script's own header for the current heading pattern it matches.
 
 Reference: `context/standards/postflight-tool-restrictions.md`.
+
+---
+
+## Decisions File Schema (`.decisions.json`)
+
+`specs/{NNN}_{slug}/.decisions.json` persists the answers to `user_decision` questions the loop's
+batched `AskUserQuestion` relay has already asked and the user has already answered, so a later
+dispatch file (built by `orchestrate-build-dispatch.sh`) can carry the settled answer forward
+instead of the same question surfacing again. The file does not exist until the first cycle in
+which the loop asks and receives an answer for that task; its absence is the normal, expected
+state for a task that has never surfaced a `user_decision`.
+
+**Shape**: a JSON array of entries, each carrying at minimum:
+
+```json
+[
+  {
+    "question": "Which logging backend should the new metrics pipeline use?",
+    "answer": "Use the existing structured-logging module; do not add a new dependency.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T04:00:00Z"
+  }
+]
+```
+
+- `question` (string, required) — the question text exactly as surfaced to `AskUserQuestion`.
+- `answer` (string, required) — the user's chosen answer (or free-text response).
+- `cycle` (integer, required) — the loop cycle number during which the question was asked and
+  answered (so a later reader can tell how stale the decision is relative to the current cycle).
+- `timestamp` (string, required, ISO 8601 UTC) — when the answer was recorded.
+
+**Writer**: the loop's own branch move, after every other task's postflight has run for the
+cycle, batches every accumulated `ask_user` verdict into one `AskUserQuestion` call and appends
+one entry per answered question to this file (creating it if absent). This is additive —
+existing entries are never removed or rewritten by a later cycle's append.
+
+**Reader**: `orchestrate-build-dispatch.sh` (see its own header comment and the "## Prior
+Decisions" section it conditionally emits) reads this file when building the NEXT dispatch file
+for the same task, rendering every entry so the dispatched agent can see what has already been
+settled rather than re-surfacing the same ambiguity. `orchestrate-cycle-postflight.sh` never
+writes this file — see the Context Flatness / Postflight Boundary sections above for why a
+per-task postflight body must not itself prompt or persist a user-facing decision; only the
+lead's own loop-level branch move, running after every task's postflight for the cycle has
+completed, does that.
