@@ -11,7 +11,7 @@ next_project_number: 178
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,152,155,157,162,163,166,167,168,170,171,172,176,177 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175 | 29,74,88,139,155,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -32,7 +32,6 @@ next_project_number: 178
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-152 [IMPLEMENTING] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
@@ -1296,12 +1295,13 @@ ACCEPTANCE.
 ---
 
 ### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [152_decouple_stale_declarations_from_deploy_gating/reports/01_decouple-stale-declarations.md]
 - **Plan**: [152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md]
+- **Summary**: [152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md]
 
 **Description**: An unrelated multi-task /orchestrate batch was fully blocked by three stale line_count integers. This entry addresses the CLASS of defect, not the instances (a sibling task fixes the two live remaining gate failures).
 
