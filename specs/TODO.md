@@ -1,5 +1,5 @@
 ---
-next_project_number: 178
+next_project_number: 180
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 178
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175 | 29,74,88,139,155,162,172 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177,178 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175,179 | 29,74,88,139,155,162,172,178 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -51,6 +51,8 @@ next_project_number: 178
 155 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
+178 [NOT STARTED] — Author the missing semantics layer for the typst extension's sema
+  └─ 179 [NOT STARTED] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
 
@@ -80,6 +82,84 @@ next_project_number: 178
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
+
+### 179. Add an element placement and density lint to the typst extension
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 178
+
+**Description**: Add a mechanical element-placement and density lint to the typst extension, and wire it into the implementation agent's verification stage.
+
+WHY A LINT, NOT JUST PROSE. The companion task authors the semantic-element usage contract as prose. Prose alone is the weaker half of the fix, for one specific and evidenced reason: the "prose guidance is enough" hypothesis has already been tested in this extension and falsified. `templates/chapter-template.md` already required an "Opening paragraph explaining chapter purpose", the implementation agent already loads that file via index-entries.json, and a 25-item `#remark` tracking checklist still landed where a chapter's opening prose belongs in `typst/manual/chapters/08-agency.typ`. Adding better prose to a system that already ignored adequate prose needs a mechanical backstop.
+
+CURRENT STATE. The extension carries NO mechanical infrastructure to hang a check on: `manifest.json` declares `provides.scripts: []`, `provides.hooks: []`, and `provides.rules: []`. This is new infrastructure, not a tweak, and there is no existing script convention in this extension to conform to. The only present gate is `typst compile` exit 0, which is blind to rhetorical and structural misuse.
+
+CHECKS TO IMPLEMENT.
+1. Placement: a semantic element standing as the first body content after a `= ` chapter heading, with no intervening prose. Implementation is a line scan -- find `^= `, skip blank lines and `//` comments, flag if the next content line opens a semantic element.
+2. Enumerated list inside a remark exceeding a threshold item count. Needs brace matching over the remark block to find its extent; tractable in a small script.
+3. Per-file / per-chapter remark density.
+
+TWO CONSTRAINTS THE USER SPECIFICALLY ENDORSED. Build these in; do not rediscover them during implementation.
+
+CONSTRAINT 1 -- the check must be PLACEMENT-SPECIFIC, NOT BLANKET. `08-agency.typ` legitimately opens with roughly 50 lines of chapter-local `#let` macro definitions and explanatory comments BEFORE the `= Agency` heading, and remarks that FOLLOW a substantial result are exactly the correct usage the contract endorses. A naive "no remark near a heading" rule would fire constantly on correct documents, and a gate that fires on correct documents gets switched off. The check must key on the specific position -- first body content after a chapter heading, no intervening prose -- and must not penalize pre-heading macro blocks or post-result remarks.
+
+CONSTRAINT 2 -- density thresholds start ADVISORY, NOT BLOCKING. Emit a warning, do not fail the run, pending review of how the thresholds behave on real documents. An unreviewed hard threshold that fires on correct documents is the other way gates get disabled. Placement violations may be treated more strictly than density once the thresholds have been observed; density starts soft.
+
+SCOPE OF WORK.
+A. Create the lint script under `agent-system/extensions/typst/scripts/`.
+B. Wire it into `manifest.json` `provides.scripts` (currently `[]`).
+C. Invoke it from the verification stage of `agents/typst-implementation-agent.md`, alongside -- not replacing -- `typst compile`.
+D. Take thresholds and element definitions from the semantic-element usage standard authored by the prerequisite task, rather than inventing a second, divergent set of norms.
+
+DEPENDENCY. Depends on the semantic-element usage contract task, both semantically (the thresholds and the element inventory come from that contract) and by file footprint (both tasks modify `agents/typst-implementation-agent.md`).
+
+SOURCE STORE. All edits land under `agent-system/extensions/typst/**` at the GLOBAL root `/home/benjamin/.config/nvim`. Never edit `.claude/**`, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.
+
+EXPLICITLY OUT OF SCOPE. Do NOT edit `08-agency.typ` or any other chapter in the Logos/Theory repository. That document is useful only as a TEST FIXTURE for validating that the lint fires on the real defect and stays silent on the file's legitimate pre-heading macro block; it must not be modified.
+
+ACCEPTANCE. The lint fires on the observed defect in `08-agency.typ` (a 25-item remark checklist as first body content after `= Agency`). It stays silent on that same file's ~50-line pre-heading macro-and-comment block, and silent on remarks that follow a substantial result. Density findings are advisory. The script is reachable from the implementation agent's verification stage and declared in the manifest.
+
+---
+
+### 178. Add a semantic element usage contract to the typst extension and enforce it in the agent
+- **Effort**: 3-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Author the missing semantics layer for the typst extension's semantic elements, and wire it into the implementation agent and skill as an actual structural gate.
+
+WHY THIS EXISTS (concrete evidence). A document the system produced -- `typst/manual/chapters/08-agency.typ` in the Logos/Theory repository -- opens, immediately after its `= Agency <sec-agency>` heading and before any chapter prose, with `#remark("Formalization Status")[...]` containing a 25-item numbered tracking checklist (label `<rem-agency-status>`), followed immediately by further `#remark("Decision: ...")` blocks. Nothing flagged it.
+
+THE USER'S NORM (this is the requirement, not a suggestion). Remarks are for SPARING, high-value OFF-TOPIC points, or big-picture reflections on the current development, and they typically FOLLOW some substantial result. A remark is never a chapter opener, and never a long enumerated status/tracking list.
+
+WHAT THE AUDIT FOUND.
+1. `context/project/typst/patterns/theorem-environments.md` is 74 lines. It defines `#let remark = thmbox("rem", "Remark", color: gray)` on line 16 and then documents ONLY mechanics: basic, named, labeled, proof, custom styling, label conventions. Nothing in it -- or anywhere else in the extension -- states what any environment is FOR, how sparingly to reach for it, or where it may appear relative to headings and results. `remark` is not even listed in that file's own Label Conventions table.
+2. The delivery channel is HEALTHY, so this is not a plumbing failure. `index-entries.json` wires essentially every context file to `typst-implementation-agent` via `load_when.agents`, including theorem-environments.md, textbook-standards.md, and chapter-template.md. New guidance written into `context/project/typst/**` will in fact reach the agent.
+3. The extension already knows how to express a sparingness norm, but only in one narrow place: `standards/type-theory-foundations.md` says "Do NOT add DTT remarks to every definition. The goal is strategic placement, not exhaustive annotation," with a matching checklist item. That is exactly the right shape of rule, scoped to DTT annotations only, generalizing to nothing.
+4. The only verification gate is compile-green. In `agents/typst-implementation-agent.md`, Stage 4C is "Compilation must succeed. All specified files must exist"; Stage 5 is `typst compile`; and Critical Requirements MUST NOT items 2-4 are all compile/PDF-centric. `typst compile` exits 0 on rhetorically and structurally misused elements. No structural check exists in the agent or in `skill-typst-implementation`.
+
+THE MOTIVATING FALSIFIED HYPOTHESIS -- build the fix around this, do not rediscover it. Prose guidance alone has ALREADY been tried in this extension and it already failed on this exact document. `templates/chapter-template.md` carries a "Checklist for New Chapters" whose first content item requires an "Opening paragraph explaining chapter purpose." The agent already loads that file via index-entries.json. The observed document violates that item directly -- a 25-item checklist stands exactly where opening prose belongs -- and the defect landed anyway. An unenforced checklist line that no gate reads did not change agent behavior. Therefore this work MUST NOT terminate in one more checklist line: the contract has to be wired into the agent and skill as a structural self-review step with explicit MUST NOT items, or it will fail the same way.
+
+SCOPE OF WORK.
+A. Author a new usage standard at `agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md`. State, per semantic element, what it is FOR, its expected density, and its legal placement relative to headings and results. GENERALIZE beyond `#remark`: cover definition, theorem, lemma, example, proof, remark, and the elements in `patterns/rule-environments.md`. Encode the user's norm for remark verbatim in substance. Say explicitly where an enumerated formalization-status or tracking checklist DOES belong, since that content has to go somewhere -- it is task-management material, or at most an appendix or dedicated status section, never chapter-opening body prose.
+B. Give `patterns/theorem-environments.md` the semantics it lacks, and add `rem:` to its Label Conventions table.
+C. Give `templates/chapter-template.md` a positive example of CORRECT remark placement -- one following a substantial result -- so the template models the norm instead of leaving it unstated.
+D. Wire the new standard into `index-entries.json` with `load_when.agents` including typst-implementation-agent, following the shape of sibling entries.
+E. Add a structural self-review step and explicit MUST NOT items to `agents/typst-implementation-agent.md` (Stage 4C verification and Critical Requirements) and to `skills/skill-typst-implementation/SKILL.md`, so that compile-green stops being the sole gate. At minimum the MUST NOT list should forbid a semantic element standing as the first body content after a chapter heading with no intervening prose, and forbid a long enumerated status/tracking list inside a remark.
+
+SOURCE STORE. All edits land under `agent-system/extensions/typst/**` at the GLOBAL root `/home/benjamin/.config/nvim`. Never edit `.claude/**`, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.
+
+EXPLICITLY OUT OF SCOPE. Do NOT edit `08-agency.typ` or any other chapter in the Logos/Theory repository. Document remediation is the user's, to be done after reloading the improved extension. This task changes the agent system only.
+
+NOTE ON ROUTING. This task produces markdown and JSON, not `.typ` documents. If it is ever re-routed to `typst-implementation-agent`, that agent's "MUST NOT mark completed without successful compilation" requirement has nothing to compile and does not apply.
+
+ACCEPTANCE. A reader of the new standard can answer, for each semantic element, what it is for and where it may appear, without consulting the originating conversation. The remark norm is stated in a form that would have flagged the observed 25-item chapter-opening checklist. The agent and skill contracts name the standard and carry enforceable MUST NOT items rather than a checklist line.
+
+---
 
 ### 177. Add a dependency-tracing recipe to the lean4 extension context
 - **Effort**: 2-3 hours
