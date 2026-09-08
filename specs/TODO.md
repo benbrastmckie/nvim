@@ -48,7 +48,7 @@ next_project_number: 178
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-155 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+155 [RESEARCHING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 
@@ -1172,7 +1172,7 @@ ACCEPTANCE.
 ---
 
 ### 155. Thread an advisory --compare flag through the lean implementation path
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 137, Task 153, Task 154

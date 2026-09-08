@@ -1,7 +1,7 @@
 # Implementation Plan: Fix the two pre-existing verify-deploy gate failures
 
 - **Task**: 151 - Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md
