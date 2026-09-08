@@ -311,22 +311,31 @@ satisfying sub-fixes (a), (b) and (c) at once, turning Phase 2's red cases green
 
 ---
 
-### Phase 4: Extend the guarantees to the cross-topic slice site [NOT STARTED]
+### Phase 4: Extend the guarantees to the cross-topic slice site [COMPLETED]
 
 **Goal**: Give the `${desc:0:40}` cut at `generate-task-order.sh:592` the same word-boundary and
 marker treatment, so a cross-topic annotation cannot re-break what Phase 3 fixed.
 
 **Tasks**:
-- [ ] Introduce a small bash helper (word-boundary back-off plus truncation marker, budget as a
-      parameter) rather than open-coding the logic a second time
-- [ ] Replace the `${desc:0:40}` slice with a call to that helper
-- [ ] Handle the already-truncated input case: a value Phase 3 already ended with a marker must
-      not end up with a doubled marker after the 40-character cut
-- [ ] If the implementer chose the parity approach over stripping in Phase 3, apply the same
+- [x] Introduce a small bash helper (word-boundary back-off plus truncation marker, budget as a
+      parameter) rather than open-coding the logic a second time *(completed:
+      truncate_word_boundary(), placed next to normalize_topic())*
+- [x] Replace the `${desc:0:40}` slice with a call to that helper *(completed)*
+- [x] Handle the already-truncated input case: a value Phase 3 already ended with a marker must
+      not end up with a doubled marker after the 40-character cut *(completed: the helper
+      strips an existing trailing marker before re-cutting, and case 4b's test asserts at most
+      one marker occurrence in the final output)*
+- [x] If the implementer chose the parity approach over stripping in Phase 3, apply the same
       choice here — a parity fix at `:155` alone leaves `:592` able to split a surviving pair
-- [ ] Confirm no third slice site exists: re-grep the file for `[0:` and `:0:` patterns and
-      verify the emit sites at `:593`, `:600` and `:766` consume `task_desc` unmodified
-- [ ] Run the Phase 2 suite; case group 4 must now pass alongside the rest
+      *(not applicable: the strip approach was used at both sites, consistently)*
+- [x] Confirm no third slice site exists: re-grep the file for `[0:` and `:0:` patterns and
+      verify the emit sites (now shifted; re-derived, not `:593`/`:600`/`:766`) consume
+      `task_desc` unmodified *(completed: the only remaining `[0:`/`:0:` matches are the two
+      sanctioned truncation helpers' own internal cuts; all three other `task_desc[...]`
+      consumers read it unmodified)*
+- [x] Run the Phase 2 suite; case group 4 must now pass alongside the rest *(completed: 16/16
+      assertions pass, recorded in
+      specs/157_markdown_safe_todo_summary_truncation/post-fix-test-run.log)*
 
 **Timing**: 0.75 hours
 

@@ -45,6 +45,45 @@ normalize_topic() {
   printf '%s' "$t"
 }
 
+# truncate_word_boundary <text> <budget> -- shared bash-side counterpart to build_graph's
+# wb_truncate jq helper (~line 155): truncates <text> to at most <budget> characters, backing
+# off to the last space at or before (budget - 3) and appending "..." so the TOTAL length
+# (content + marker) never exceeds budget. Reused rather than open-coded at every bash-side
+# slice site, per the same word-boundary/marker guarantee build_graph's jq expression provides.
+#
+# Idempotent against an already-marked input: if <text> already ends with "..." (e.g. it is the
+# already-truncated output of the primary 65-char slice, being cut again to a smaller
+# cross-topic budget), the existing marker is stripped before re-cutting so the result never
+# carries a doubled "......" marker. If the already-marked text is already within the new
+# (smaller) budget, it is returned completely unchanged, marker and all -- no redundant re-cut.
+truncate_word_boundary() {
+  local text="$1" budget="$2"
+  local marker="..."
+  local mlen=${#marker}
+
+  if [[ ${#text} -le $budget ]]; then
+    printf '%s' "$text"
+    return
+  fi
+
+  if [[ "$text" == *"$marker" ]]; then
+    text="${text%"$marker"}"
+    # Re-check: stripping the marker may already bring it within budget.
+    if [[ ${#text} -le $budget ]]; then
+      printf '%s' "$text"
+      return
+    fi
+  fi
+
+  local cut=$(( budget - mlen ))
+  (( cut < 0 )) && cut=0
+  local sliced="${text:0:$cut}"
+  if [[ "$sliced" == *' '* ]]; then
+    sliced="${sliced% *}"
+  fi
+  printf '%s%s' "$sliced" "$marker"
+}
+
 # ============================================================================
 # Parse Arguments
 # ============================================================================
@@ -625,8 +664,12 @@ _print_topic_node() {
   if [[ -n "${_globally_visited[$task_num]+x}" && "$depth" -gt 0 ]]; then
     local task_topic_val="${task_topic[$task_num]:-}"
     if [[ -n "$task_topic_val" && "$(normalize_topic "$task_topic_val")" != "$_current_section_topic" ]]; then
-      # Shorten desc to first 40 chars for cross-topic annotation
-      local short_desc="${desc:0:40}"
+      # Shorten desc to a 40-char budget for the cross-topic annotation, via the same
+      # word-boundary+marker helper used elsewhere (truncate_word_boundary, defined near
+      # normalize_topic above) -- idempotent against $desc already carrying a marker from the
+      # primary 65-char slice, so this never doubles it.
+      local short_desc
+      short_desc="$(truncate_word_boundary "$desc" 40)"
       echo "${prefix}${task_num} [${status_display}] — (${task_topic_val}: ${short_desc}) (see above)"
     else
       echo "${prefix}${task_num} [${status_display}] — ${desc} (see above)"

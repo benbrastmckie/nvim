@@ -1,0 +1,46 @@
+{
+  "phase": 4,
+  "phase_name": "Extend the guarantees to the cross-topic slice site",
+  "started_at": "2026-09-08T01:20:00Z",
+  "last_updated": "2026-09-08T01:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Introduce a bash word-boundary-truncation helper (budget as parameter)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/generate-task-order.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Replace the desc:0:40 slice with a call to the helper",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Handle already-truncated input without doubling the marker",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm no third slice site exists (re-grep, verify pass-through sites)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run Phase 2 suite; case group 4 must now pass alongside the rest",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/generate-task-order.sh",
+        "specs/157_markdown_safe_todo_summary_truncation/post-fix-test-run.log"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

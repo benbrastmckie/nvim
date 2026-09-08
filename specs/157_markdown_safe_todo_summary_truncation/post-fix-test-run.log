@@ -1,0 +1,21 @@
+[INFO] Under test (source-store-first): /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-task-order.sh
+[INFO] Dependency (deploy-first): /home/benjamin/.config/nvim/.claude/scripts/deploy-root-guard.sh
+[INFO] Dependency (deploy-first): /home/benjamin/.config/nvim/.claude/scripts/lib/common.sh
+[PASS] 1a-fixture-adversarial: naive 65-char slice has an odd backtick count (1), confirming the fixture is adversarial
+[PASS] 1a-actual: rendered line has an even backtick count (0) -- markdown-safe: 901 [NOT STARTED] — xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...
+[PASS] 1b-fixture-adversarial: naive 65-char slice has an odd asterisk count (1), confirming the fixture is adversarial
+[PASS] 1b-actual: rendered line has an even asterisk count (0)
+[PASS] 1c-fixture-adversarial: naive 65-char slice contains an unclosed '[' with no matching ']', confirming the fixture is adversarial
+[PASS] 1c-actual: rendered description carries no open bracket
+[PASS] 2a-actual: line derives from .title, not .description: 904 [NOT STARTED] — Slim the fixture generator to a manageable and readable size
+[PASS] 2b-actual: title-less fixture still renders from .description: 905 [NOT STARTED] — A perfectly ordinary description with no title present on...
+[PASS] 2c-actual: line falls back to .project_name when neither .title nor .description exist: 906 [NOT STARTED] — fixture-project-906
+[PASS] 3a-actual: over-budget source truncated at a word boundary within budget, with marker: 907 [NOT STARTED] — alpha bravo charlie delta echo foxtrot golf hotel india...
+[PASS] 3b-actual: under-budget line is untouched and carries no marker: 908 [NOT STARTED] — a short fixture description
+[PASS] 4a-actual: cross-topic short_desc respects the 40-char budget:   └─ 909 [NOT STARTED] — (Alpha: a moderately long cross topic...) (see above)
+[PASS] 4a-actual: cross-topic truncation lands on a word boundary with a marker
+[PASS] 4b-actual: cross-topic short_desc carries at most one truncation marker (1 occurrence(s))
+[PASS] 4b-actual: cross-topic short_desc respects the 40-char budget even though the primary slice already truncated it:   └─ 911 [NOT STARTED] — (Alpha: alpha bravo charlie delta echo...) (see above)
+[PASS] isolation: real specs/TODO.md and specs/state.json are unchanged after the full run
+
+Results: 16 passed, 0 failed
