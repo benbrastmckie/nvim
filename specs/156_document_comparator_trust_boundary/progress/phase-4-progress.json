@@ -1,0 +1,58 @@
+{
+  "phase": 4,
+  "phase_name": "Proof-debt policy update",
+  "started_at": "2026-09-07T00:50:00Z",
+  "last_updated": "2026-09-07T00:58:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add a subsection under Completion Gates covering the current gate mechanisms, their holes, and what Comparator closes",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "State unambiguously that --compare is advisory only and the greps remain the operative gate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "State that hard-gate promotion is a separate, later, evidence-based decision",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Cross-reference comparator-guide.md and comparator-integration.md without restating them",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Verify no task-number references",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Enumerate the actual Final Verification Stage mechanisms rather than the plan's asserted three-greps-plus-build list",
+      "type": "altered",
+      "reason": "Re-reading lean-implementation-agent.md's Final Verification Stage showed five mechanisms, not the plan's asserted list of three greps plus a build: a sorry census, a vacuous-definition grep, an axiom grep, an unsandboxed lake build, AND a plan-compliance spot-check grep. The plan's own Scope Hypothesis instructed enumerating whatever is actually there, so the plan-compliance grep was included as a fifth mechanism (and its hole documented) rather than omitted to match the plan's simpler asserted count.",
+      "annotation": "*(deviation: altered — enumerated five actual Final Verification Stage mechanisms, including the plan-compliance grep, rather than the plan's asserted three-greps-plus-build count)*"
+    }
+  ]
+}

@@ -23,6 +23,48 @@ Both represent unverified mathematical claims that propagate transitively throug
 - Mark the phase `[BLOCKED]` with documentation
 - Document what is blocking progress
 
+### What Comparator Adds (Advisory Today)
+
+The zero-debt gate above is enforced today by `lean-implementation-agent.md`'s Final
+Verification Stage, which runs exactly these checks: a sorry census
+(`lean-sorry-census.sh`), a single-line grep for vacuous definitions (`:= True|Unit|trivial
+|Trivial`), a grep for `^axiom ` declarations, an unsandboxed `lake build`, and a plan-compliance
+spot-check that greps for a declaration named after each plan goal. Each has a specific hole:
+
+- The plan-compliance grep only checks that a declaration NAMED `X` exists — it never checks
+  that `X` states what the plan intended. A weakened statement (an added hypothesis, a
+  specialized quantifier, a restated weaker claim) passes this gate silently.
+- The `^axiom ` grep is a textual match on one source form. It does not see `sorryAx`, axioms
+  reached transitively through imports, or axioms `native_decide` introduces.
+- The vacuous-definition grep is single-line only; a multi-line vacuous definition requires
+  manual review (already noted where the grep is defined).
+- `lake build` elaborates but never replays into the kernel, and runs agent-authored Lean
+  **unsandboxed**. Elaboration executes arbitrary code (`#eval`, `initialize`, `run_cmd`, macros,
+  `native_decide` plugins).
+
+Comparator (`agent-system/extensions/lean/scripts/lean-comparator-run.sh`, invoked via
+`--compare`) closes each of these: it verifies that every declaration used in a named theorem's
+*statement* is identical between a trusted Challenge and the Solution (closing the
+plan-compliance hole), checks the *bodies* of named theorems against a transitive axiom
+whitelist (closing the axiom-grep hole), and replays the Solution environment into the Lean
+kernel inside a sandboxed build (closing both the vacuous-definition blind spot for the checked
+declarations and the unsandboxed-build hole). See
+`context/project/lean4/tools/comparator-guide.md` for what a green Comparator result does and
+does not certify — in particular, it does not certify definition-hole solutions, and its
+guarantee is conditional on assumptions this repository cannot fully verify (e.g. landrun
+sandboxing correctly on the host). See
+`context/project/lean4/domain/comparator-integration.md` for the clean-room runner's design
+record (worktree trust chain, verdict vocabulary, sandbox/guard nesting).
+
+**`--compare` is advisory only today.** A Comparator rejection is recorded and surfaced in the
+implementation summary, but it does not set `verification_passed` false, does not downgrade task
+status to partial, and does not block completion. The sorry census, the three greps
+(plan-compliance, axiom, vacuous-definition), and the unsandboxed `lake build` above therefore
+**remain the operative zero-debt gate** for any task
+marked `[COMPLETED]` — nothing in this section should be read as describing a hard Comparator
+gate that exists today. Promotion of `--compare` to a hard completion gate is a separate, later
+decision to be made on evidence from real runs, not something this policy pre-empts.
+
 ### Soft vs Hard Blockers
 
 **Hard Blocker**:

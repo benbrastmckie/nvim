@@ -300,26 +300,26 @@ capturing its transcript; a state that cannot be produced is a finding to record
 
 ---
 
-### Phase 4: Proof-debt policy update [NOT STARTED]
+### Phase 4: Proof-debt policy update [COMPLETED]
 
 **Goal**: Record in `proof-debt-policy.md` what Comparator adds to the zero-debt story, while
 making unmistakable that the greps remain the operative gate today.
 
 **Tasks**:
-- [ ] Add a subsection under `## Completion Gates` (after
+- [x] Add a subsection under `## Completion Gates` (after
       `### Zero-Debt Completion Requirement (MANDATORY)`) covering: what the current gate is
       (sorry census, `^axiom ` grep, single-line vacuous-definition grep, unsandboxed
       `lake build`); the specific hole each has; what Comparator's statement-identity, transitive
-      axiom, and kernel-replay checks would close.
-- [ ] State in the same subsection, unambiguously, that `--compare` is **advisory only** today:
+      axiom, and kernel-replay checks would close. *(deviation: altered — enumerated five actual Final Verification Stage mechanisms, including the plan-compliance grep, rather than the plan's asserted three-greps-plus-build count)*
+- [x] State in the same subsection, unambiguously, that `--compare` is **advisory only** today:
       a rejection is recorded and surfaced but does not set `verification_passed` false, does not
       downgrade status to partial, and does not block completion — and that the greps therefore
       remain the operative zero-debt gate.
-- [ ] State that promotion to a hard gate is a separate, later, evidence-based decision, in the
+- [x] State that promotion to a hard gate is a separate, later, evidence-based decision, in the
       future/conditional voice.
-- [ ] Cross-reference `tools/comparator-guide.md` (trust model) and
+- [x] Cross-reference `tools/comparator-guide.md` (trust model) and
       `domain/comparator-integration.md` (design record). Do not restate their content.
-- [ ] Verify no task-number references.
+- [x] Verify no task-number references.
 
 **Timing**: 0.5 hours
 
