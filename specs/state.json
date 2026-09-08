@@ -185,9 +185,15 @@
           "path": "specs/142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md",
           "type": "plan",
           "summary": "Six-phase measure-and-lock plan: ceiling config, verify-deploy Gate 20 with normalized finding text, over-ceiling and findings-diff fixtures, a fixture-based per-cycle lead-growth probe, the Context Flatness prose correction, and full-gate validation with a before/after table."
+        },
+        {
+          "path": "specs/142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md",
+          "type": "summary",
+          "summary": "All six plan phases completed: ceiling config, verify-deploy Gate 20 (eager-load regression + two per-file ceilings, severity-toggled), a 15-assertion fixture suite exercising both ceilings and the redeploy-checkpoint findings-diff non-regression, a 6-assertion per-cycle lead-growth probe measuring 871 B/task/cycle, corrected Context Flatness prose across five files, and a full green gate run (verify-deploy.sh 34/34, run-all.sh 75/75) with the before/after table."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Locked the orchestrator's context budget with a new verify-deploy.sh Gate 20 (eager-load regression check plus two per-file ceilings, ORCHESTRATOR_BUDGET_GATE_MODE-toggled) and a fixture-based per-cycle lead-growth probe that converts the '~1 KB per task per cycle' claim into a measured, re-runnable 871 B/task/cycle figure, then corrected every surviving stale '~400/450 tokens per cycle' claim across five docs/skill files to cite it."
     },
     {
       "project_number": 45,

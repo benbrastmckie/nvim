@@ -1,10 +1,83 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md",
+      "summary": "All six plan phases completed: ceiling config, verify-deploy Gate 20 (eager-load regression + two per-file ceilings, severity-toggled), a 15-assertion fixture suite exercising both ceilings and the redeploy-checkpoint findings-diff non-regression, a 6-assertion per-cycle lead-growth probe measuring 871 B/task/cycle, corrected Context Flatness prose across five files, and a full green gate run (verify-deploy.sh 34/34, run-all.sh 75/75) with the before/after table."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Locked the orchestrator's context budget with a new verify-deploy.sh Gate 20 (eager-load regression check plus two per-file ceilings, ORCHESTRATOR_BUDGET_GATE_MODE-toggled) and a fixture-based per-cycle lead-growth probe that converts the '~1 KB per task per cycle' claim into a measured, re-runnable 871 B/task/cycle figure, then corrected every surviving stale '~400/450 tokens per cycle' claim across five docs/skill files to cite it."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md",
+    "specs/142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When building a verify-deploy.sh (or similar) fixture test that copies agent-system/extensions/ into a scratch dir to exercise real deploy-tree gates, use a REAL rsync copy (excluding large vendored dirs like a Python venv) rather than symlinks. Several deploy-time lints use `find ... -type f` / `-type d` without `-L`, which does NOT follow symlinked directories or files -- a symlink-only fixture produces spurious 'no dispatchable agents found' / 'no manifests found' failures unrelated to the thing actually under test. A full real copy of agent-system/extensions/ (minus vendored deps) is typically small (~16 MB for this repo) and fast (a few seconds) once the one large offender is excluded.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy",
+        "fixture",
+        "symlink",
+        "find -type f",
+        "test-isolation"
+      ]
+    },
+    {
+      "content": "orchestrate-cycle-plan.sh's live preflight write path (skill_preflight_update -> update-task-status.sh) leaks an unredirected `echo \"OK: task N status -> X\"` onto cycle-plan.sh's own stdout, ahead of the final JSON line. This does not break the lead in production because the lead is an LLM reading Bash tool output loosely, not performing a literal `jq` parse -- but any literal jq-based consumer of orchestrate-cycle-plan.sh's stdout (including a test fixture) must extract the trailing JSON line specifically (e.g. `grep '^{' | tail -n1`) rather than parsing the raw captured stdout directly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "orchestrate-cycle-plan",
+        "stdout-contamination",
+        "update-task-status",
+        "jq-parsing",
+        "fixture"
+      ]
+    },
+    {
+      "content": "Severity-gate config pattern for verify-deploy.sh-style gates: a small source-store JSON config (ceiling/baseline values + derivation notes) paired with one env-var mode toggle (default warn, promotable to hard in a deliberate follow-up commit -- never a persisted 'N stable deploys' auto-promotion counter) and normalized (value-free) warn()/fail() finding text. This repo now has two independent instances (claudemd-size-budget.json/SCHEMA_CONFORMANCE_GATE_MODE and orchestrator-context-budget.json/ORCHESTRATOR_BUDGET_GATE_MODE); a short context/patterns/ note documenting the shared shape would help a third instance land correctly on the first try.",
+      "category": "PATTERN",
+      "source_artifact": "specs/142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "severity-gate",
+        "verify-deploy",
+        "config-pattern",
+        "env-var-toggle",
+        "warn-fail"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788849084_1040b7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

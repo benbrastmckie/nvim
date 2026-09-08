@@ -1487,6 +1487,7 @@ REFERENCE: specs/PATH.md, "Decisions".
 - **Dependencies**: Task 88
 - **Research**: [142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md]
 - **Plan**: [142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md]
+- **Summary**: [142_reduce_orchestrator_token_consumption/summaries/01_context-budget-gate-lock-summary.md]
 
 **Description**: === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-lock; absorbs the context-budget gate) ===
 SUPERSEDING SCOPE. The sweep described below is now the Stage A chain in specs/PATH.md (slim command, dispatch builder, cycle-plan, cycle-postflight, feature port, engine deletion). This task is the measurement and the lock, and it absorbs the warning-first context-budget gate from the abandoned verify-deploy context-gates task (its broken-@-ref half already holds and needs no work).
