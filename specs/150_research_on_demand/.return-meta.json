@@ -43,29 +43,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["monotonic-max", "clamp", "status-rank", "regression-guard", "status-vocabulary"]
+      "suggested_keywords": [
+        "monotonic-max",
+        "clamp",
+        "status-rank",
+        "regression-guard",
+        "status-vocabulary"
+      ]
     },
     {
       "content": "To fixture-test a 'degraded fallback' code path that only activates when a companion script exits non-zero (e.g. a classifier's own inline fallback table, dormant unless the real classifier script fails), the reliable technique in a sandboxed shell test harness is to overwrite the companion script's copy inside the test's own isolated WORKDIR with a tiny stub that unconditionally exits non-zero (optionally after logging a marker to stderr). This deterministically exercises the fallback branch without needing to actually break the real script, and the stub can be restored afterward (copy the real source back in) if later test groups in the same suite need the genuine classifier. This is the established pattern for testing any 'X, but only when Y degrades' branch where Y is itself a separate, independently-testable script.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["degraded-fallback", "test-fixture", "stub-script", "shell-test-harness", "sandbox"]
+      "suggested_keywords": [
+        "degraded-fallback",
+        "test-fixture",
+        "stub-script",
+        "shell-test-harness",
+        "sandbox"
+      ]
     },
     {
       "content": "check-task-references.sh's deployed copy (.claude/scripts/check-task-references.sh) scans agent-system/extensions/ directly, not merely the deployed .claude/ mirror -- so it is a valid, runnable check for source-store edits even though other deployed scripts (like validate-artifact.sh's own repo-root resolution, or update-task-status.sh's deploy-root-guard) refuse to run FROM the source store. When a source-store-only editing session needs to verify no task-number references were introduced, run the DEPLOYED copy of check-task-references.sh (if present) rather than assuming it requires a fresh deploy first -- it already targets the source tree as one of its scan roots.",
       "category": "INSIGHT",
       "source_artifact": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["check-task-references", "source-store", "deploy-boundary", "verification", "gate"]
+      "suggested_keywords": [
+        "check-task-references",
+        "source-store",
+        "deploy-boundary",
+        "verification",
+        "gate"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788874131_9d9e52",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

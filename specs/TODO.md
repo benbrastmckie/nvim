@@ -28,7 +28,7 @@ next_project_number: 188
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-150 [PLANNED] — Research on demand: let the planner decide whether a research pha
+150 [IMPLEMENTING] — Research on demand: let the planner decide whether a research pha
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
@@ -1452,12 +1452,13 @@ ACCEPTANCE.
 ---
 
 ### 150. Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 88
 - **Research**: [150_research_on_demand/reports/01_research-on-demand-lifecycle.md]
 - **Plan**: [150_research_on_demand/plans/01_research-on-demand-lifecycle.md]
+- **Summary**: [150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md]
 
 **Description**: Research on demand: let the planner decide whether a research phase is needed, and run one only when it asks for it or when --research forces it. Decided 2026-09-02 (specs/PATH.md, Decisions). Stage A.8 of specs/PATH.md. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
