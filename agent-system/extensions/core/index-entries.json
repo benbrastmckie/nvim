@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 695,
+      "line_count": 739,
       "keywords": [
         "format",
         "metadata",
