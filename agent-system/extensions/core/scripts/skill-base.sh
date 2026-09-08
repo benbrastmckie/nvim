@@ -610,7 +610,9 @@ skill_validate_task_artifacts() {
 # Argument 6 (optional): task_dir_override -- the task directory to use for the exit-6
 #          deploy-pending annotation block, instead of the ambient ${TASK_DIR:-}. Defaults to
 #          ${TASK_DIR:-} when absent or empty, so every existing 4-arg/5-arg caller is unchanged.
-# Only updates state when status is a success value (researched/planned/implemented)
+# Only updates state when status is a success value (researched/planned/implemented) or the
+# planner-only needs_research verdict (writes state.json status "researching" plus the
+# planner's research_questions -- see the needs_research case arm below)
 # Calls extension hook: hooks.postflight (after status update, non-blocking)
 #
 # RETURN VALUE: as of the postflight completion-deploy gate (update-task-status.sh's exit 6),
@@ -633,6 +635,22 @@ skill_validate_task_artifacts() {
 # this task's plan documents for scripts/lib/status-vocabulary.sh: a caller exercising this mode
 # must run under a scratchpad harness carrying the source-store copy, or resolution will silently
 # reach the deployed (old) copy that lacks status_vocabulary_would_regress.
+#
+# `needs_research` and the monotonic-max clamp -- DECIDED, not left to chance: the clamp below
+# calls `status_vocabulary_would_regress "$_clamp_current_status" "$status"` using the raw
+# `$status` value this function was called with (e.g. under a forced `--plan` dispatch, a
+# planner-declined task passes literal status "needs_research", never the resolved state.json
+# resting value "researching"). `"needs_research"` is deliberately absent from
+# `STATUS_VOCABULARY_LIFECYCLE_RANK` in scripts/lib/status-vocabulary.sh -- it is not a linear
+# lifecycle-progress value, it is a fork. An unranked target makes `status_vocabulary_would_regress`
+# return 1 (no regression) UNCONDITIONALLY, regardless of the task's current rank. The accepted,
+# intended consequence: the monotonic-max clamp can NEVER skip a `needs_research` status write,
+# even under `clamp_mode=monotonic-max` on a forced `--plan` dispatch where the task is already
+# at `planning` (rank 3) and the write would otherwise look like a regression to `researching`
+# (rank 1). This matches this task's own routing principle -- the classifier only routes on the
+# recorded verdict, never on orchestrator discretion -- so a planner-issued needs_research verdict
+# must always reach state.json, never be silently swallowed by a clamp designed for ordinary
+# forward-progress statuses.
 #
 # Optional 6th argument: `task_dir_override`. Absent or empty (every existing 4-arg and 5-arg
 # call site, byte-for-byte) falls back to the ambient `${TASK_DIR:-}`, preserving today's exact
@@ -714,6 +732,32 @@ skill_postflight_update() {
           fi
         fi
         bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" "${_fsa_args[@]}" || _postflight_rc=$?
+      fi
+      ;;
+    needs_research)
+      if [[ "$_clamp_skip" == "true" ]]; then
+        :
+      else
+        # --research-questions write-back: read research_questions from this task's own
+        # .return-meta.json (planner-produced, see context/formats/return-metadata-file.md's
+        # ### research_questions (optional) section) and forward it so
+        # update-task-status.sh's overwrite-on-write persists it in the same postflight write.
+        # Structurally the _fsa_args sibling above, but OVERWRITE not merge -- see that flag's
+        # own header comment in update-task-status.sh.
+        local _rq_args=()
+        if [[ -n "${_task_dir}" && -f "${_task_dir}/.return-meta.json" ]]; then
+          local _research_questions
+          _research_questions=$(jq -c '.research_questions // [] | if (type == "array") then . else [] end' \
+            "${_task_dir}/.return-meta.json" 2>/dev/null)
+          if [[ -n "$_research_questions" && "$_research_questions" != "[]" && "$_research_questions" != "null" ]]; then
+            _rq_args=(--research-questions="$_research_questions")
+          fi
+        fi
+        # target_status is the literal "needs_research" token, NOT "$operation" -- this is a
+        # planner-only outcome and update-task-status.sh's map_status() resolves
+        # postflight:needs_research to STATE_STATUS="researching" independent of which phase
+        # ($operation, always "plan" on this path) dispatched the planner.
+        bash .claude/scripts/update-task-status.sh postflight "$task_number" needs_research "$session_id" "${phase_check_args[@]}" "${_rq_args[@]}" || _postflight_rc=$?
       fi
       ;;
     *)

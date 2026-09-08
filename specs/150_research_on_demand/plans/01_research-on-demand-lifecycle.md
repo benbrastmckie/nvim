@@ -200,37 +200,37 @@ silently absorb.
 
 ---
 
-### Phase 2: Status-write and question-list write-back plumbing [NOT STARTED]
+### Phase 2: Status-write and question-list write-back plumbing [COMPLETED]
 
 **Goal**: Give the system a sanctioned way to write `researching` from a postflight call and to
 persist the planner's question list durably on the task record.
 
 **Tasks**:
-- [ ] Add `postflight:needs_research) STATE_STATUS="researching"; TODO_STATUS="RESEARCHING"` to
+- [x] Add `postflight:needs_research) STATE_STATUS="researching"; TODO_STATUS="RESEARCHING"` to
       `update-task-status.sh`'s `map_status()`, keeping the token name distinct from the existing
       `preflight:research` producer of the same state value so `git blame` and grep
-      self-document which producer wrote it.
-- [ ] Add a `--research-questions=<json-array>` flag to `update-task-status.sh`, structurally
+      self-document which producer wrote it. *(completed)*
+- [x] Add a `--research-questions=<json-array>` flag to `update-task-status.sh`, structurally
       copying `--file-scope-add`: same argument-parsing shape, same malformed-value-is-a-hard-error
       validation (a non-array or non-string-element value fails loudly, never silently), same
       operation/target-status restriction (valid only with `operation=postflight` and
-      `target_status=needs_research`), and riding along inside the same state-write invocation.
-- [ ] Write the value to a new durable `research_questions` task-record field in `state.json`,
+      `target_status=needs_research`), and riding along inside the same state-write invocation. *(completed: verified via fixture -- malformed value and wrong-combo both exit 1)*
+- [x] Write the value to a new durable `research_questions` task-record field in `state.json`,
       with **overwrite-on-write** semantics (fully replaced each time), not append. Choose the
       JSON-array shape over a joined string so the list survives structural inspection; joining
-      happens at the `--focus` call site in Phase 4.
-- [ ] Extend `skill_postflight_update()`'s status whitelist in `skill-base.sh` to accept
+      happens at the `--focus` call site in Phase 4. *(completed: verified overwrite, not accumulation, across two successive calls; also added research_questions to context/schemas/state-schema.json's additionalProperties: false shape, a necessary correctness addition not named in this task's file list -- see Plan Deviations)*
+- [x] Extend `skill_postflight_update()`'s status whitelist in `skill-base.sh` to accept
       `needs_research` alongside `researched|planned|implemented`, and add the
       `_fsa_args`-shaped block that reads `research_questions` out of the just-returned
-      `.return-meta.json` and forwards it as `--research-questions=<json>`.
-- [ ] Decide and record the `clamp_mode=monotonic-max` interaction: under a forced `--plan`
+      `.return-meta.json` and forwards it as `--research-questions=<json>`. *(completed: smoke-tested by sourcing skill-base.sh against an isolated fixture)*
+- [x] Decide and record the `clamp_mode=monotonic-max` interaction: under a forced `--plan`
       dispatch, `status_vocabulary_would_regress` would skip the `planning` -> `researching`
       write. Record the intended behavior explicitly in the function's comment block -- either an
       exemption for `needs_research` or an accepted, documented limitation. Do not leave it
-      undecided.
-- [ ] Document the new `research_questions` field in
+      undecided. *(completed: needs_research is deliberately absent from STATUS_VOCABULARY_LIFECYCLE_RANK, so the clamp can never skip its write -- confirmed by fixture test)*
+- [x] Document the new `research_questions` field in
       `context/reference/state-management-schema.md` alongside `file_scope`, including its
-      overwrite-on-write semantics and its single consumer.
+      overwrite-on-write semantics and its single consumer. *(completed)*
 
 **Timing**: 1.5 hours
 

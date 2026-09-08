@@ -7,15 +7,15 @@
 #   3. Plan file (optional, via update-plan-status.sh)
 #
 # Usage:
-#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>]
+#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>]
 #
 # Arguments:
 #   operation     - "preflight" or "postflight"
 #   task_number   - Task number (integer)
-#   target_status - "research", "plan", "implement", "pr_ready", "partial", or "blocked"
-#                    (pr_ready is reserved for task_type == "pr" unless --allow-pr-ready is
-#                    passed; partial/blocked are postflight-only task-level termini -- see
-#                    map_status() below for the preflight rejection)
+#   target_status - "research", "plan", "implement", "pr_ready", "needs_research", "partial", or
+#                    "blocked" (pr_ready is reserved for task_type == "pr" unless --allow-pr-ready
+#                    is passed; needs_research/partial/blocked are postflight-only task-level
+#                    termini -- see map_status() below for the preflight rejection)
 #   session_id    - Session identifier string
 #
 # Exit codes:
@@ -67,6 +67,20 @@
 #   (`.file_scope = ((.file_scope // []) + $add | unique)`, scoped to the matching
 #   active_projects[] entry) -- never a second write. An empty array, or an array whose members
 #   are all already present, leaves file_scope byte-for-byte unchanged.
+#
+# Optional flag: --research-questions=<json-array>
+#   Absent by default (byte-for-byte no-op). Structurally a sibling of --file-scope-add above,
+#   with ONE deliberate difference: OVERWRITE-ON-WRITE, not additive union-merge. A planner that
+#   returns `needs_research` a second time (e.g. after a research round that still left a gap)
+#   fully replaces the task's `research_questions` field in specs/state.json rather than
+#   accumulating stale questions from a prior round -- see context/formats/return-metadata-file.md's
+#   `### research_questions (optional)` field spec for the producer/consumer narrative.
+#   VALUE must parse as a JSON array of strings, validated the same way --file-scope-add is (a
+#   malformed value is a hard validation error, exit 1, never a silent no-op).
+#   RESTRICTED to operation==postflight && target_status==needs_research. Any other combination
+#   is a validation error naming the restriction.
+#   The write rides along inside update_state_json()'s existing single state-write.sh invocation,
+#   scoped to the matching active_projects[] entry -- never a second write.
 #
 # Phase-heading grammar: sourced from scripts/lib/phase-heading-patterns.sh, the single anchor
 # for the canonical `### Phase N: {name} [STATUS]` shape, the closed status-marker enum, and
@@ -156,6 +170,7 @@ DRY_RUN=false
 ALLOW_PR_READY=false
 PHASE_CHECK=""
 FILE_SCOPE_ADD=""
+RESEARCH_QUESTIONS=""
 POSITIONAL_ARGS=()
 
 for arg in "$@"; do
@@ -164,6 +179,7 @@ for arg in "$@"; do
     --allow-pr-ready) ALLOW_PR_READY=true ;;
     --phase-check=*) PHASE_CHECK="${arg#--phase-check=}" ;;
     --file-scope-add=*) FILE_SCOPE_ADD="${arg#--file-scope-add=}" ;;
+    --research-questions=*) RESEARCH_QUESTIONS="${arg#--research-questions=}" ;;
     *) POSITIONAL_ARGS+=("$arg") ;;
   esac
 done
@@ -175,9 +191,9 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 
 # --- Validation ---
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
-  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>]" >&2
+  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>]" >&2
   echo "  operation:     preflight | postflight" >&2
-  echo "  target_status: research | plan | implement | pr_ready | partial | blocked (pr_ready requires task_type==pr unless --allow-pr-ready; partial/blocked are postflight-only)" >&2
+  echo "  target_status: research | plan | implement | pr_ready | needs_research | partial | blocked (pr_ready requires task_type==pr unless --allow-pr-ready; needs_research/partial/blocked are postflight-only)" >&2
   exit 1
 fi
 
@@ -186,8 +202,8 @@ if [[ "$operation" != "preflight" && "$operation" != "postflight" ]]; then
   exit 1
 fi
 
-if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "partial" && "$target_status" != "blocked" ]]; then
-  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'partial', or 'blocked', got '$target_status'" >&2
+if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "needs_research" && "$target_status" != "partial" && "$target_status" != "blocked" ]]; then
+  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'needs_research', 'partial', or 'blocked', got '$target_status'" >&2
   exit 1
 fi
 
@@ -220,6 +236,22 @@ if [[ -n "$FILE_SCOPE_ADD" ]]; then
   fi
 fi
 
+# --research-questions validation: same malformed-value-is-a-hard-error shape as --file-scope-add
+# above (a typo must never silently drop the planner's question list).
+if [[ -n "$RESEARCH_QUESTIONS" ]]; then
+  if ! echo "$RESEARCH_QUESTIONS" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+    echo "Error: --research-questions value must be a JSON array of strings, got: $RESEARCH_QUESTIONS" >&2
+    exit 1
+  fi
+  # Restricted to operation==postflight && target_status==needs_research (the planner-postflight
+  # write-back consumer point). Any other combination is a validation error naming the
+  # restriction, never a silent no-op.
+  if [[ "$operation" != "postflight" || "$target_status" != "needs_research" ]]; then
+    echo "Error: --research-questions is only valid with operation=postflight and target_status=needs_research (got operation='$operation', target_status='$target_status')." >&2
+    exit 1
+  fi
+fi
+
 # Only a genuinely non-empty array triggers the merge clause below -- an empty array (or an
 # absent flag) skips the jq file_scope clause entirely rather than running `unique` over an
 # unchanged array, so the empty/absent case is a byte-for-byte no-op (including array element
@@ -227,6 +259,14 @@ fi
 FILE_SCOPE_ADD_LEN=0
 if [[ -n "$FILE_SCOPE_ADD" ]]; then
   FILE_SCOPE_ADD_LEN=$(echo "$FILE_SCOPE_ADD" | jq 'length')
+fi
+
+# Same "only a genuinely non-empty array triggers the write clause" shape as FILE_SCOPE_ADD_LEN
+# above, except the clause below OVERWRITES research_questions rather than union-merging it (see
+# the --research-questions flag's own header comment for why).
+RESEARCH_QUESTIONS_LEN=0
+if [[ -n "$RESEARCH_QUESTIONS" ]]; then
+  RESEARCH_QUESTIONS_LEN=$(echo "$RESEARCH_QUESTIONS" | jq 'length')
 fi
 
 if [[ ! -f "$STATE_FILE" ]]; then
@@ -248,12 +288,22 @@ map_status() {
     postflight:implement) STATE_STATUS="completed";     TODO_STATUS="COMPLETED" ;;
     preflight:pr_ready)  STATE_STATUS="pr_ready";      TODO_STATUS="PR READY" ;;
     postflight:pr_ready) STATE_STATUS="completed";     TODO_STATUS="COMPLETED" ;;
-    # partial/blocked are postflight-only task-level termini (state-management.md's permissive
-    # transition model admits them from [IMPLEMENTING] on timeout/error). There is deliberately
-    # no preflight:partial or preflight:blocked case here -- the catch-all below rejects that
-    # nonsensical combination with exit 1, which is the desired fail-loud behavior.
+    # partial/blocked/needs_research are postflight-only task-level termini (state-management.md's
+    # permissive transition model admits partial/blocked from [IMPLEMENTING] on timeout/error).
+    # There is deliberately no preflight:partial, preflight:blocked, or preflight:needs_research
+    # case here -- the catch-all below rejects that nonsensical combination with exit 1, which is
+    # the desired fail-loud behavior.
     postflight:partial)  STATE_STATUS="partial";       TODO_STATUS="PARTIAL" ;;
     postflight:blocked)  STATE_STATUS="blocked";       TODO_STATUS="BLOCKED" ;;
+    # needs_research is a planner-only outcome: the planner declined to write a plan and is
+    # asking for a research phase. It resolves to the SAME resting state (STATE_STATUS
+    # "researching") that preflight:research produces, deliberately reusing the existing
+    # researching -> research classifier row rather than minting a new state.json status value --
+    # see context/reference/state-management-schema.md's research_questions field doc and
+    # context/formats/return-metadata-file.md's needs_research status note. The token name
+    # ("postflight:needs_research") stays distinct from "preflight:research" so `git blame` and
+    # grep self-document which producer wrote the "researching" state.
+    postflight:needs_research) STATE_STATUS="researching"; TODO_STATUS="RESEARCHING" ;;
     *)
       echo "Error: unknown operation:target_status combination '${op}:${target}'" >&2
       exit 1
@@ -628,6 +678,9 @@ update_state_json() {
     if [[ "$FILE_SCOPE_ADD_LEN" -gt 0 ]]; then
       echo "[dry-run] state.json: file_scope union-merge -> add ${FILE_SCOPE_ADD}"
     fi
+    if [[ "$RESEARCH_QUESTIONS_LEN" -gt 0 ]]; then
+      echo "[dry-run] state.json: research_questions overwrite -> ${RESEARCH_QUESTIONS}"
+    fi
     echo "[dry-run] TODO.md: regenerate from state.json via generate-todo.sh"
     return 0
   fi
@@ -647,6 +700,18 @@ update_state_json() {
         --argjson add "$FILE_SCOPE_ADD" \
         --regen-todo || {
         echo "Warning: state-write.sh failed during no-op file_scope merge (non-fatal)" >&2
+      }
+    elif [[ "$RESEARCH_QUESTIONS_LEN" -gt 0 ]]; then
+      # Mirrors the file_scope no-op branch above, except OVERWRITE (`= $rq`) rather than
+      # union-merge -- a status no-op (e.g. a needs_research postflight re-run against a task
+      # already at 'researching') still fully replaces the question list with this call's value.
+      "$SCRIPT_DIR/state-write.sh" \
+        '(.active_projects[] | select(.project_number == ($num | tonumber)) | .research_questions) = $rq' \
+        --session-id "$session_id" \
+        --arg num "$task_number" \
+        --argjson rq "$RESEARCH_QUESTIONS" \
+        --regen-todo || {
+        echo "Warning: state-write.sh failed during no-op research_questions overwrite (non-fatal)" >&2
       }
     else
       "$SCRIPT_DIR/state-write.sh" '.' --session-id "$session_id" --regen-todo || {
@@ -702,6 +767,19 @@ update_state_json() {
       session_id: $sid
     } | (.active_projects[] | select(.project_number == ($num | tonumber)) | .file_scope) |= ((. // []) + $add | unique)'
     jq_args+=(--argjson add "$FILE_SCOPE_ADD")
+  fi
+
+  # The --research-questions overwrite rides along the same way, mutually exclusive with the
+  # file_scope clause above by the flags' own operation/target_status restrictions (never both
+  # non-zero on the same invocation). OVERWRITE (`= $rq`), not union-merge -- see the flag's own
+  # header comment for why.
+  if [[ "$RESEARCH_QUESTIONS_LEN" -gt 0 ]]; then
+    jq_filter='(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+      status: $status,
+      last_updated: $ts,
+      session_id: $sid
+    } | (.active_projects[] | select(.project_number == ($num | tonumber)) | .research_questions) = $rq'
+    jq_args+=(--argjson rq "$RESEARCH_QUESTIONS")
   fi
 
   if ! "$SCRIPT_DIR/state-write.sh" \

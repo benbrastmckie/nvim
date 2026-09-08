@@ -91,6 +91,7 @@ authoritative source this table glosses).
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
 | `dependencies` | array | No | Array of task numbers this depends on |
 | `file_scope` | array of strings | No | Anticipated repo-relative paths/prefixes this task expects to touch (default: `[]`) |
+| `research_questions` | array of strings | No | Planner-issued focused question list, present only after a `needs_research` verdict; overwrite-on-write, see [Research Questions Field](#research-questions-field) |
 | `artifacts` | array | No | Array of artifact objects |
 | `next_artifact_number` | number | No | Next artifact sequence number (default: 1). Zero occurrences in the current active snapshot -- same lifecycle-timing sparsity as `effort`, 308 occurrences in `specs/archive/state.json` |
 
@@ -271,6 +272,35 @@ work starts). `modified_files`/`files_touched` are retrospective and set during/
 implementation (the actual paths touched, self-reported by implementation agents for targeted
 git staging — see `.claude/context/standards/git-staging-scope.md`). The two fields are
 complementary and are never merged or reconciled against each other.
+
+### Research Questions Field
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|--------------|
+| `research_questions` | array of strings | No | absent | The focused question list a planner issues alongside a `needs_research` verdict (see `context/formats/return-metadata-file.md`'s `### research_questions (optional)` section), naming the facts a research phase must establish before a plan meeting `plan-format.md` can be written |
+
+**Producer**: `scripts/update-task-status.sh`'s `--research-questions=<json-array>` flag, invoked
+at postflight when `operation == postflight && target_status == needs_research` (i.e.
+`skill-base.sh`'s `skill_postflight_update()` `needs_research)` case arm, forwarding the value it
+reads off the planner's own `.return-meta.json`).
+
+**Semantics: OVERWRITE-ON-WRITE, not additive.** This is the one deliberate contrast with
+`file_scope` above (which is additive-only, union-merged, never subtractive): each
+`needs_research` postflight call fully REPLACES `research_questions` with the value it carries,
+because a planner returning `needs_research` a second time (after a research round that still
+left a gap) is issuing a fresh, complete question list, not appending to a stale one. There is no
+merge target and no accumulation across cycles.
+
+**Consumer**: read at research-dispatch build time and joined into a single string, passed as
+`--focus "<joined>"` to `orchestrate-build-dispatch.sh` -- the same already-built, already
+phase-gated `--focus` flag `orchestrate-build-dispatch.sh` uses for the memory-retrieve
+hand-off, requiring no change inside that script.
+
+**Validation**: same shape as `--file-scope-add` -- a malformed value (non-array, or an array
+containing a non-string element) is a hard validation error (exit 1) at `update-task-status.sh`,
+never a silent no-op.
+
+**state.json-only**: no TODO.md rendering, matching `file_scope`'s own convention.
 
 ### Repository Health Fields
 

@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Status-write and question-list write-back plumbing",
+  "started_at": "2026-09-08T00:30:00Z",
+  "last_updated": "2026-09-08T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add postflight:needs_research map_status() arm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 2, "description": "Add --research-questions=<json-array> flag structurally mirroring --file-scope-add", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 3, "description": "Write research_questions to state.json with overwrite-on-write semantics", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Extend skill_postflight_update() whitelist and add needs_research case arm with research_questions forwarding", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 5, "description": "Decide and record monotonic-max clamp interaction for needs_research", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"], "note": "Decision: needs_research is deliberately absent from STATUS_VOCABULARY_LIFECYCLE_RANK, so status_vocabulary_would_regress always returns 'no regression' for it -- the clamp can never skip a needs_research write, by construction. Confirmed by fixture test with current status='planning' (rank 3) and clamp_mode=monotonic-max: write proceeded to 'researching'."},
+    {"id": 6, "description": "Document research_questions field in state-management-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.7",
+      "description": "Add research_questions property to context/schemas/state-schema.json's active_projects entry (additionalProperties: false)",
+      "type": "altered",
+      "reason": "Not named in the plan's Phase 2 task list or Files to modify, but required for correctness: state-schema.json enforces additionalProperties: false on the active_projects entry shape and already lists file_scope explicitly as a sibling documented-optional field. Without this addition, any task carrying research_questions would fail validate-state.sh --deep schema validation. Scope expansion recorded per Phase 1's own precedent (a hit not on the plan's list is recorded, not silently absorbed).",
+      "annotation": "*(deviation: altered — also added research_questions to context/schemas/state-schema.json, required by its additionalProperties: false enforcement, not named in the plan's file list)*"
+    }
+  ],
+  "verification": {
+    "existing_suite": "PASS - test-update-task-status.sh: 29/29 passed against a fixture built from the edited source-store update-task-status.sh (no regressions)",
+    "dry_run_fixture": "PASS - postflight 150 needs_research --dry-run --research-questions='[...]' reports planning -> researching and the research_questions overwrite value",
+    "malformed_value": "PASS - non-array and non-string-element --research-questions values exit 1 with a named error",
+    "wrong_combo": "PASS - --research-questions rejected when target_status != needs_research",
+    "overwrite_semantics": "PASS - two successive real (non-dry-run) postflight calls replace research_questions (Q1,Q2 -> Q3), never accumulate",
+    "skill_postflight_update_smoke": "PASS - sourced skill-base.sh directly against an isolated fixture repo: skill_postflight_update(150, plan, sess_test, needs_research, ...) writes state.json status='researching' and research_questions from the task's .return-meta.json",
+    "clamp_interaction": "PASS - same smoke test repeated with current status='planning' (rank 3) and status_clamp_mode=monotonic-max: write still proceeded to 'researching', confirming the clamp never blocks needs_research"
+  }
+}

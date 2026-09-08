@@ -227,6 +227,11 @@
           "description": "Documented-optional. Anticipated repo-relative paths/prefixes this task expects to touch (prospective, not filesystem-validated).",
           "items": { "type": "string" }
         },
+        "research_questions": {
+          "type": "array",
+          "description": "Documented-optional. Planner-issued focused question list, present only after a needs_research verdict; overwrite-on-write (not additive, unlike file_scope) -- see context/reference/state-management-schema.md's Research Questions Field section.",
+          "items": { "type": "string" }
+        },
         "artifacts": {
           "type": "array",
           "items": { "$ref": "#/definitions/artifactEntry" }
