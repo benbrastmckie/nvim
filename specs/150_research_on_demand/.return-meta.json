@@ -1,13 +1,71 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 2,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
+      "summary": "Six-phase implementation of the planner-first research-on-demand lifecycle: needs_research vocabulary admission, status-write plumbing, postflight arms, the not_started->plan routing flip with --focus wiring, planner-agent contract changes, and full fixture/gate coverage."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Flipped the default /orchestrate lifecycle from research->plan->implement to plan->implement, with the planner itself requesting research on demand via a new needs_research verdict; all 6 plan phases completed with 191 fixture-test passes across three modified test suites plus a clean full gate run."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/architecture/system-overview.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/formats/subagent-return.md",
+    "agent-system/extensions/core/context/patterns/metadata-file-return.md",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-handoff.sh",
+    "agent-system/extensions/core/scripts/validate-return-meta.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new closed-enum status value must be exempt from a rank-based monotonic-max regression clamp (a write that should never be skipped as a 'regression' even though its target state has a lower rank than the task's current state), the simplest and most robust fix is to leave the new value OUT of the ranked lifecycle subset entirely, rather than adding an explicit bypass/exemption branch to the clamp's own logic. An unranked target makes the regression check return 'no regression' unconditionally, by construction -- no special-casing needed, and no risk of the exemption branch drifting out of sync with the clamp's own evolution. Document the omission explicitly as a deliberate decision (not an oversight) in the clamp's own comment block, since 'why isn't X in this table' is exactly the question a future reader will ask.",
+      "category": "PATTERN",
+      "source_artifact": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["monotonic-max", "clamp", "status-rank", "regression-guard", "status-vocabulary"]
+    },
+    {
+      "content": "To fixture-test a 'degraded fallback' code path that only activates when a companion script exits non-zero (e.g. a classifier's own inline fallback table, dormant unless the real classifier script fails), the reliable technique in a sandboxed shell test harness is to overwrite the companion script's copy inside the test's own isolated WORKDIR with a tiny stub that unconditionally exits non-zero (optionally after logging a marker to stderr). This deterministically exercises the fallback branch without needing to actually break the real script, and the stub can be restored afterward (copy the real source back in) if later test groups in the same suite need the genuine classifier. This is the established pattern for testing any 'X, but only when Y degrades' branch where Y is itself a separate, independently-testable script.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["degraded-fallback", "test-fixture", "stub-script", "shell-test-harness", "sandbox"]
+    },
+    {
+      "content": "check-task-references.sh's deployed copy (.claude/scripts/check-task-references.sh) scans agent-system/extensions/ directly, not merely the deployed .claude/ mirror -- so it is a valid, runnable check for source-store edits even though other deployed scripts (like validate-artifact.sh's own repo-root resolution, or update-task-status.sh's deploy-root-guard) refuse to run FROM the source store. When a source-store-only editing session needs to verify no task-number references were introduced, run the DEPLOYED copy of check-task-references.sh (if present) rather than assuming it requires a fresh deploy first -- it already targets the source tree as one of its scan roots.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/150_research_on_demand/summaries/01_research-on-demand-lifecycle-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-task-references", "source-store", "deploy-boundary", "verification", "gate"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788874131_9d9e52",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }
