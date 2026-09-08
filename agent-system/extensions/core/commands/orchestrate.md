@@ -21,7 +21,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 
 ## Constraints
 
-- Multi-task mode uses dependency-aware wave dispatch.
+- The loop uses dependency-aware wave dispatch, uniformly for a batch of one task or many.
 - `--research`/`--plan`/`--implement` (phase-forcing flags): honored uniformly across every
   task_number in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`
   — each task tracks its own remaining-forced-phases position independently, falling through to
@@ -29,8 +29,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 - No confirmation gates between lifecycle phases.
 - Terminates on success, `MAX_CYCLES` exceeded, `MAX_INFRA_FAILURES` exceeded (repeated Agent-tool
   transport/API failures — distinct from work-budget exhaustion), or an unrecoverable blocker.
-- Multi-task mode: a failed task never blocks siblings in its own wave, but DOES block dependents
-  in later waves.
+- A failed task never blocks siblings in its own wave, but DOES block dependents in later waves.
 
 ## Options
 
@@ -52,7 +51,6 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--research` | Force a research round even if the task progressed past it. Composable with `--plan`/`--implement`: canonical lifecycle order (research, plan, implement) regardless of typed order, STOPS after the last named phase, opens a new `MM_` artifact round, never regresses status. Honored per-task in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`/`force_phases_remaining` | false |
 | `--plan` | Force a plan round even if the task progressed past it. Composable on the same terms as `--research` above. Honored per-task in multi-task mode too, on the same terms | false |
 | `--implement` | Force an implement round even if the task progressed past it. Composable on the same terms as `--research` above. Honored per-task in multi-task mode too, on the same terms | false |
-| `ORCHESTRATE_BATCH_OF_ONE` (env var, not a `--flag`) | **EXPERIMENTAL, TEMPORARY.** When set (any non-empty value) with exactly ONE task number given, routes that single task through the multi-task batch engine (`orchestrate-cycle-plan.sh`/`orchestrate-cycle-postflight.sh`) instead of `SKILL.md`'s single-task Stages 1-8. See STAGE 0 below for the exact branch. Will be retired once the successor task deletes Stages 1-8 | unset |
 
 ## Anti-Bypass Constraint
 
@@ -72,29 +70,33 @@ source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
 
-Each parsed flag becomes a delegation-context key, threaded unchanged into both the single-task
-STAGE 2 JSON and the multi-task Skill invocation below. All are **consumer-side-only** — never
-forwarded to `orchestrate-batch-admit.sh`:
+Each parsed flag becomes a delegation-context key, threaded unchanged into the single Skill
+invocation below — there is only one dispatch path now, used identically whether `TASK_NUMBERS`
+names one task or many (see `docs/architecture/orchestrate-state-machine.md`, "The Orchestration
+Loop (Batch-of-One and Multi-Task)"). All are **consumer-side-only** — never forwarded to
+`orchestrate-batch-admit.sh`:
 
 - `allow_self_modifying` (default `false`) — opt-in bypass of the self-modification gate, this
   invocation only.
 - `allow_scope_collision` (default `false`) — opt-in bypass of the CROSS-BATCH
   `file_scope_collision` gate only (never `in_batch`).
 - `continue_budget` (default `false`) — authorization to continue past an exhausted `MAX_CYCLES`
-  budget, read by `skill-orchestrate`'s Stage 2. **Never inferred automatically** (not from
+  budget, read by `orchestrate-cycle-plan.sh`. **Never inferred automatically** (not from
   `session_id`, not from mtime) — without it, an exhausted budget refuses with an honest message.
   See `orchestrator-runtime-files.md`'s budget-continuation-override section.
-- `clean_flag` (default `false`) — suppresses Stage 3.5's automatic memory retrieval.
+- `clean_flag` (default `false`) — suppresses Move 1's automatic memory retrieval
+  (`orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep).
 - `effort_flag` (default `""`) / `model_flag` (default `""`, not `null`) — reasoning-depth
   guidance and model-family selection for every lifecycle dispatch.
 - `force_phases` (default `""`) — the composable `--research`/`--plan`/`--implement` surface (A2).
-  Single-task: read only by `skill-orchestrate`'s Stage 2b. Multi-task: honored per-task —
-  `orchestrate-cycle-plan.sh` seeds each eligible task's own `force_phases_remaining` queue from
-  this value and pops one forced phase per cycle until exhausted, then falls through to ordinary
-  status-derived classification for that task (see that script's header, Section (f)).
+  Honored per-task by `orchestrate-cycle-plan.sh`, which seeds each eligible task's own
+  `force_phases_remaining` queue from this value and pops one forced phase per cycle until
+  exhausted, then falls through to ordinary status-derived classification for that task (see that
+  script's header, Section (f)).
 
-**Dry-run short-circuit** (before the `len(TASK_NUMBERS)` branch): `SESSION_ID` may be unset here
-(minted at CHECKPOINT 1), so `--session` is passed to the report only when non-empty.
+**Dry-run short-circuit** (before the dispatch block below runs): `SESSION_ID` is not yet minted
+at this point (there is no separate gate-in step any more — see below), so `--session` is passed
+to the report only when non-empty.
 
 ```bash
 if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
@@ -108,41 +110,20 @@ fi
 ```
 
 `orchestrate-cycle-plan.sh --dry-run` runs the IDENTICAL read-only decision pass the live
-multi-task cycle uses (the same call to `scripts/orchestrate-batch-admit.sh` and
+cycle uses (the same call to `scripts/orchestrate-batch-admit.sh` and
 `scripts/orchestrate-triage-classify.sh`), so the printed verdicts match what a live run would
 actually dispatch — one rendering of every admission verdict, not a second, independently
 maintained one. It prints the plan JSON on stdout and a compact human table on stderr; neither
 schema is restated here — see that script's own header comment.
 
-**Dry-run prohibition block**: in dry-run mode this command MUST NOT continue to multi-task
-dispatch below, MUST NOT reach CHECKPOINT 1 (GATE IN), MUST NOT invoke the Skill or Agent tools,
-MUST NOT acquire a task lock, and MUST NOT run CHECKPOINT 3 (COMMIT) — mirroring the Anti-Bypass
-Constraint above, the STOP HERE is absolute, not advisory.
+**Dry-run prohibition block**: in dry-run mode this command MUST NOT continue to the dispatch
+block below, MUST NOT invoke the Skill or Agent tools, MUST NOT acquire a task lock, and MUST NOT
+commit anything — mirroring the Anti-Bypass Constraint above, the STOP HERE is absolute, not
+advisory.
 
-If `len(TASK_NUMBERS) == 1` AND `$ORCHESTRATE_BATCH_OF_ONE` is unset: extract
-`task_number=$(echo "$TASK_NUMBERS" | awk '{print $1}')` and fall through to CHECKPOINT 1: GATE IN.
-
-Otherwise (`len(TASK_NUMBERS) > 1`, OR `len(TASK_NUMBERS) == 1` with `$ORCHESTRATE_BATCH_OF_ONE`
-set): continue to the multi-task dispatch block below.
-
-**`ORCHESTRATE_BATCH_OF_ONE` (environment variable, default unset — EXPERIMENTAL, TEMPORARY)**:
-the precondition flag for routing a single task number through the batch engine (task that ported
-single-task's hard-mode counters, loop guard and auxiliary dispatches into
-`orchestrate-cycle-plan.sh`/`orchestrate-cycle-postflight.sh`). When set to any non-empty value
-with exactly one task number given, this command takes the SAME multi-task dispatch path (and
-therefore the same `skill-orchestrate` MT-1..MT-5 stages) the `> 1` branch already uses, rather
-than `SKILL.md`'s single-task Stages 1-8. The multi-task dispatch block below needs NO special
-casing for a batch of one: given `validated_tasks=(N)`, its existing dependency-graph construction
-naturally narrows to `dep_graph_json={"N":[]}` (any of N's real `dependencies[]` are filtered out
-by the SAME intra-batch-membership check that already applies when `len > 1`, since N cannot
-depend on itself), and `waves_json`/`task_numbers_json` naturally reduce to `[[N]]`/`[N]`. This
-flag exists ONLY to allow a live demonstration/test of the batch engine on a single task while
-`SKILL.md`'s single-task Stages 1-8 remain the DEFAULT, unconditional path for `len == 1` — it is
-not a general-purpose feature and will be retired once the successor task deletes Stages 1-8 (see
-`specs/PATH.md`, "One engine, batch of one").
-
-**Multi-task dispatch** (`len(TASK_NUMBERS) > 1`, or `len(TASK_NUMBERS) == 1` with
-`ORCHESTRATE_BATCH_OF_ONE` set):
+**Dispatch** (every invocation, whether `TASK_NUMBERS` names one task or many — there is no
+`len(TASK_NUMBERS)` branch here any more; the single-task engine that this command used to fall
+through to for a solo task number is deleted, and the block below is the only dispatch path):
 
 ```bash
 validated_tasks=(); skipped_tasks=()
@@ -211,8 +192,8 @@ fi
 ```
 
 `waves` is a **diagnostic echo, not a schedule the engine consumes** — eligibility is re-derived
-fresh every cycle from `dependency_graph` (Stage MT-3 step 4.5). Passed as one row of all
-validated tasks:
+fresh every cycle from `dependency_graph` inside `orchestrate-cycle-plan.sh`. Passed as one row of
+all validated tasks:
 
 ```bash
 waves_json=$(jq -n --argjson t "$(printf '%s\n' "${validated_tasks[@]}" | jq -R 'tonumber' | jq -s '.')" '[$t]')
@@ -230,14 +211,13 @@ dispatch, per-task postflight, session-registry annotation, and writes results t
 Tool: Skill
 Parameters:
   skill: "skill-orchestrate"
-  args: "multi_task_mode=true task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} force_phases={FORCE_PHASES_FLAG}"
+  args: "task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} force_phases={FORCE_PHASES_FLAG}"
 ```
 
 The delegation context passed to the skill must include:
 ```json
 {
   "session_id": "{batch_session_id}",
-  "multi_task_mode": true,
   "task_numbers": [42, 43, 44],
   "waves": [[42, 43, 44]],
   "dependency_graph": {"42": [], "43": [42], "44": [42]},
@@ -253,128 +233,17 @@ The delegation context passed to the skill must include:
 }
 ```
 
-The skill emits the consolidated batch output itself (Stage MT-5) — see
+The skill emits the consolidated batch output itself (Move 4) — see
 `orchestrate-batch-results-template.md`.
 
-**After the Skill invocation returns, STOP. Do not continue to CHECKPOINT 1** — multi-task mode
-is fully handled inside this single call.
-
----
-
-### CHECKPOINT 1: GATE IN
-
-```bash
-source .claude/scripts/command-gate-in.sh "$task_number" "orchestrate"
-# Exports: SESSION_ID, TASK_TYPE, TASK_STATUS, PROJECT_NAME, DESCRIPTION, PADDED_NUM
-# Displays: [ORCHESTRATE] Task {N}: {project_name}
-```
-
-**Permissive gate**: unlike `/implement`, no plan file is required — the state machine handles
-all lifecycle phases from wherever the task currently is.
-
-**Only blocks on terminal states** (`completed`, `abandoned`, `expanded`). Every other status
-(not_started, researched, planned, implementing, partial, blocked) is a valid entry point —
-without exception, a `partial` task with no handoff and no blockers (the normal shape left by a
-base-mode dispatch) dispatches implement rather than being treated as a dead end.
-
-**On GATE IN success**: Task validated. **IMMEDIATELY CONTINUE** to STAGE 2.
-
-### STAGE 2: DELEGATE
-
-**EXECUTE NOW**: immediately invoke the Skill tool.
-
-```
-skill: "skill-orchestrate"
-args: "task_number={N} session_id={SESSION_ID} orchestrator_mode=true lit_flag={LIT_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} force_phases={FORCE_PHASES_FLAG}"
-```
-
-The delegation context passed to the skill must include:
-```json
-{
-  "session_id": "{SESSION_ID}",
-  "delegation_depth": 1,
-  "delegation_path": ["orchestrator", "orchestrate", "skill-orchestrate"],
-  "task_context": {
-    "task_number": N,
-    "task_name": "{PROJECT_NAME}",
-    "description": "{DESCRIPTION}",
-    "task_type": "{TASK_TYPE}"
-  },
-  "orchestrator_mode": true,
-  "focus_prompt": "{FOCUS_PROMPT}",
-  "lit_flag": "{LIT_FLAG}",
-  "continue_budget": "{CONTINUE_BUDGET_FLAG}",
-  "clean_flag": "{CLEAN_FLAG}",
-  "effort_flag": "{EFFORT_FLAG}",
-  "model_flag": "{MODEL_FLAG}",
-  "force_phases": "{FORCE_PHASES_FLAG}"
-}
-```
-
-**On DELEGATE success**: Orchestration complete. **IMMEDIATELY CONTINUE** to CHECKPOINT 2.
-
-### CHECKPOINT 2: GATE OUT
-
-```bash
-bash .claude/scripts/command-gate-out.sh "$task_number" "orchestrate" "$SESSION_ID"
-# Reads .return-meta.json; applies defensive status correction if needed
-```
-
-**On GATE OUT success**: IMMEDIATELY CONTINUE to CHECKPOINT 3.
-
-### CHECKPOINT 3: COMMIT
-
-Apply the `implement`-equivalent scope from `.claude/context/standards/git-staging-scope.md`
-(task dir + self-reported `modified_files`) and commit via `.claude/scripts/git-commit-scoped.sh`
-— the single sanctioned implementation of path-scoped, mutex-serialized committing (under-stage,
-never a repo-wide add; injects the canonical ephemeral-runtime-file exclusion set automatically).
-This checkpoint runs every cycle of a still-running loop, well before the loop guard's own
-termination-only cleanup, and its commit mutex serializes against another in-flight task's commit
-sharing the same index — see `orchestrator-runtime-files.md`'s mid-lifecycle-sweep hazard.
-
-The zero-`modified_files` warning below is the canonical, un-suffixed wording from
-`git-staging-scope.md`'s "Fail-Safe Direction" section (single-task site — never the task-number
-suffix reserved for the multi-task per-task site). Do not invent a second wording here.
-
-```bash
-task_dir="specs/${PADDED_NUM}_${PROJECT_NAME}"
-stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
-metadata_file="${task_dir}/.return-meta.json"
-modified_count=0
-while IFS= read -r f; do
-  [ -n "$f" ] && stage_paths+=("$f") && modified_count=$((modified_count + 1))
-done < <(jq -r '.modified_files[]? // empty' "$metadata_file" 2>/dev/null)
-if [ "$modified_count" -eq 0 ]; then
-  echo "[postflight] WARNING: no modified_files reported; source-file changes NOT committed automatically. Review and commit manually." >&2
-fi
-```
-
-**On completion:**
-```bash
-bash .claude/scripts/git-commit-scoped.sh \
-  --message "task {N}: complete orchestration" \
-  --session "{SESSION_ID}" \
-  --honest-index-rows "{N}" \
-  -- "${stage_paths[@]}"
-# Deletion is completion-branch-only: .return-meta.json is already staged/committed above (its
-# modified_files were read into stage_paths above), and orchestrate-cycle-postflight.sh's
-# mtime-freshness-windowed outcome-recovery fallback (used by a still-running loop's next cycle)
-# would lose its source if this ran on the partial branch below -- never add it there.
-rm -f "${metadata_file}"
-```
-
-**On partial:**
-```bash
-bash .claude/scripts/git-commit-scoped.sh \
-  --message "task {N}: orchestration paused (cycles {M}/{MAX})" \
-  --session "{SESSION_ID}" \
-  --honest-index-rows "{N}" \
-  -- "${stage_paths[@]}"
-# No .return-meta.json deletion here -- the paused/partial outcome keeps the file for the next
-# cycle's outcome recovery (see the completion branch's comment above).
-```
-
-Commit failure is non-blocking (log and continue).
+**After the Skill invocation returns, STOP.** Every commit (one per task per phase transition) is
+issued inside `skill-orchestrate`'s own Move 3 per-task postflight
+(`orchestrate-cycle-postflight.sh`) — this command has no separate gate-in/delegate/gate-out/commit
+checkpoint sequence of its own any more. The former single-task engine's own CHECKPOINT 1 (GATE
+IN) / STAGE 2 (DELEGATE) / CHECKPOINT 2 (GATE OUT) / CHECKPOINT 3 (COMMIT) sequence, reachable only
+when a lone task number fell through the pre-rewrite `len(TASK_NUMBERS) == 1` branch, is deleted
+along with the single-task `SKILL.md` engine it delegated to — see
+`docs/architecture/orchestrate-state-machine.md` for the current design.
 
 ## Output
 
@@ -387,12 +256,12 @@ Commit failure is non-blocking (log and continue).
 **System Defects Detected**: rendered only when `metadata.detected_defects` in the task's
 `.return-meta.json` is non-empty — on a **Completion** outcome as readily as a **Partial** one,
 since a detection is an observation about the agent system, never a verdict on the task
-(`/orchestrate --hard` writes the same key from its own Stage 8 metadata merge). Same table shape
+(`/orchestrate --hard` writes the same key from its own postflight metadata merge). Same table shape
 as the batch section, for visual consistency:
 
 | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
 |------|--------------|-------------------------|------------------|--------|
-| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff | handoff mtime predates this dispatch window |
+| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh | orchestrate-cycle-postflight.sh:stale-handoff-gate | handoff mtime predates this dispatch window |
 
 Operator remedy: fix the named source-store path under `agent-system/extensions/**`; the durable
 record is already in `specs/events.jsonl`. No task status was mutated because of these rows.
@@ -401,9 +270,12 @@ record is already in `specs/events.jsonl`. No task status was mutated because of
 
 ## Error Handling
 
-- **GATE IN Failure**: task not found or terminal — error with guidance
-- **DELEGATE Failure**: keep current status, log error; loop guard preserved for resume
-- **GATE OUT Failure**: missing artifacts — warn, continue with what's available
+- **Validation failure**: task not found or terminal — reported as a skipped-task warning; if no
+  validated tasks remain, ABORT with error.
+- **Dispatch failure**: `orchestrate-cycle-plan.sh`/the Skill invocation keeps the task's current
+  status and logs the error; the durable per-task loop guard is preserved for resume.
+- **Postflight failure**: `orchestrate-cycle-postflight.sh` warns and continues with whatever
+  artifacts are available, rather than blocking the batch.
 - **MAX_CYCLES Reached**: report status, provide `/orchestrate {N}` resume instruction
 - **MAX_INFRA_FAILURES Reached**: report a connectivity problem distinct from work-budget
   exhaustion (`cycle_count` unaffected), provide `/orchestrate {N}` resume once connectivity is

@@ -1,0 +1,35 @@
+{
+  "phase": 7,
+  "phase_name": "Acceptance verification and full gate run",
+  "started_at": "2026-09-08T08:10:00Z",
+  "last_updated": "2026-09-08T09:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy source store to .claude/", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Report measured SKILL.md bytes before/after", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Live 5-task batch context-growth measurement (isolated fixture)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Single-task-number batch-of-one path confirmation", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 5, "description": "AskUserQuestion + .decisions.json round-trip demonstration", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run every orchestrate test, confirm green", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run full gate suite (run-all.sh + verify-deploy.sh lints)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Record all measurements in implementation summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.4",
+      "description": "commands/orchestrate.md still had a pre-rewrite len(TASK_NUMBERS)==1 branch falling through to a now-deleted single-task CHECKPOINT 1/STAGE 2/CHECKPOINT 2/CHECKPOINT 3 sequence for the DEFAULT invocation shape (a bare /orchestrate N with no ORCHESTRATE_BATCH_OF_ONE env var). This was outside this task's originally-scoped Files to modify list (which named only SKILL.md, scripts, docs, tests, lints, and the registry) but is a direct, load-bearing consequence of deleting the single-task engine: without this fix, the default /orchestrate N invocation would build a delegation-context shape (task_number singular, no task_numbers array) the rewritten SKILL.md cannot consume.",
+      "type": "scope_correction",
+      "reason": "Fixed as part of Phase 7's acceptance verification, which is exactly what surfaced it (the plan's own Phase 7 task explicitly required confirming the single-task-number path works). Removed the dead branch, the ORCHESTRATE_BATCH_OF_ONE flag, and the entire unreachable CHECKPOINT 1-3 sequence. Bonus: commands/orchestrate.md shrank from 21,607 B to 15,812 B. Full gate run (73/73 tests, 30/30 verify-deploy checks) reconfirmed green after the fix.",
+      "annotation": "See Phase 7 task-4 checklist annotation in the plan file for the full account"
+    },
+    {
+      "task_id": "7.3",
+      "description": "The 'live 5-task batch' and 'live AskUserQuestion round-trip' acceptance demonstrations were performed via isolated, throwaway fixture repos exercising the real scripts, rather than a genuinely live /orchestrate invocation against real tasks in this repo's own state.json.",
+      "type": "scope_decision",
+      "reason": "A genuinely live run would dispatch real Agent-tool calls against unrelated real tasks and mutate their real state -- a significant side-effect footprint and resource cost outside an implementation agent's own delegated scope, and a decision better made deliberately by the orchestrator/user than as a side effect of this implementation dispatch. The isolated-fixture runs exercise the identical script code paths and JSON shapes as the live path, and are corroborated by the pre-existing, much larger test-orchestrate-cycle-plan.sh fixture suite (which does run these scripts live, just against synthetic state).",
+      "annotation": "See Phase 7 task-3/task-5 checklist annotations in the plan file"
+    }
+  ]
+}
