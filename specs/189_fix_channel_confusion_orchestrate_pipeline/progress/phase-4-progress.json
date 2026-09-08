@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Never print an untested negative -- Classes C and D",
+  "started_at": "2026-09-08T01:35:00Z",
+  "last_updated": "2026-09-08T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend cd_findings jq program with C-admitted and D-admitted selectors", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 2, "description": "Render Class C as two sub-blocks: Deferred and Admitted (hazard)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 3, "description": "Replace Class C negative with precise message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 4, "description": "Same for Class D", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 5, "description": "Sweep Classes B and E; record result in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 6, "description": "Confirm Class A and batch-admit.sh untouched", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Create test-orchestrate-predispatch-review.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Wrote apostrophes inside jq single-quoted program comments", "result": "failed", "reason": "bash single-quoted strings cannot contain a literal apostrophe; caused a syntax error. Rewrote comments to avoid apostrophes."}
+  ],
+  "handoff_count": 0
+}

@@ -282,43 +282,43 @@ verbatim; the dead no-session dry-run branch is removed by fixing the script sid
 
 ---
 
-### Phase 4: Never print an untested negative — Classes C and D [NOT STARTED]
+### Phase 4: Never print an untested negative — Classes C and D [COMPLETED]
 
 **Goal**: `orchestrate-predispatch-review.sh` reports admitted-with-hazard verdicts as their own
 rows, and every remaining "0 findings" line states exactly what was filtered.
 
 **Tasks**:
-- [ ] Extend the `cd_findings` jq program with two new selectors, alongside the existing C/D/E
+- [x] Extend the `cd_findings` jq program with two new selectors, alongside the existing C/D/E
       ones, consuming only fields the verdict already carries:
       - `class: "C-admitted"` — `select($v.decision == "admit" and $v.self_modifying == true)`,
         carrying `task_number` and the candidate's declared `file_scope` from the already-slurped
         state (never a re-derived critical-path match; see Non-Goals).
       - `class: "D-admitted"` — `select($v.decision == "admit" and ($v.idle_overlap_advisory != null))`,
         carrying `colliding_task_number`, `colliding_task_status`, `overlapping_path`,
-        `collision_scope` verbatim from the advisory.
-- [ ] Render Class C as two labelled sub-blocks: `Deferred (self-modification)` (today's rows,
+        `collision_scope` verbatim from the advisory. *(completed)*
+- [x] Render Class C as two labelled sub-blocks: `Deferred (self-modification)` (today's rows,
       unchanged) and `Admitted (self-modification hazard)`, the latter styled on
       `context/patterns/orchestrate-batch-results-template.md`'s "Admitted (idle overlap
       advisory)" section — admitted, not deferred, advisory. Each admitted row states the
-      candidate's declared `file_scope` and that the hazard is live.
-- [ ] Replace Class C's negative with one that states exactly what was filtered, e.g.
+      candidate's declared `file_scope` and that the hazard is live. *(completed)*
+- [x] Replace Class C's negative with one that states exactly what was filtered, e.g.
       `0 deferred for self-modification (N admitted carrying self_modifying: true)`, and print
       `0 findings (no candidate carries the self-modification hazard, deferred or admitted)` only
-      when BOTH row sets are empty.
-- [ ] Do the same for Class D: an `Admitted (idle cross-batch overlap)` sub-block plus a precise
-      negative that distinguishes "none deferred" from "none matched".
-- [ ] Sweep Classes B and E for the same conflation and record the result in the script header:
+      when BOTH row sets are empty. *(completed)*
+- [x] Do the same for Class D: an `Admitted (idle cross-batch overlap)` sub-block plus a precise
+      negative that distinguishes "none deferred" from "none matched". *(completed)*
+- [x] Sweep Classes B and E for the same conflation and record the result in the script header:
       Class B derives from state.json fields directly with no defer filter (accurate as written);
       Class E's `session_active` reason exists only on defer verdicts — an admit verdict cannot
       carry it — so its negative is accurate, but restate it as
-      `0 deferred for session contention (this signal exists only on defer verdicts)`.
-- [ ] Do NOT touch the Class A block, and do not change `orchestrate-batch-admit.sh` at all —
-      confirm with `git diff --stat` that neither is in the diff.
-- [ ] Create `scripts/tests/test-orchestrate-predispatch-review.sh` (the script has no suite
+      `0 deferred for session contention (this signal exists only on defer verdicts)`. *(completed)*
+- [x] Do NOT touch the Class A block, and do not change `orchestrate-batch-admit.sh` at all —
+      confirm with `git diff --stat` that neither is in the diff. *(completed)*
+- [x] Create `scripts/tests/test-orchestrate-predispatch-review.sh` (the script has no suite
       today): stub `orchestrate-batch-admit.sh` to emit, in turn, a solo
       `{decision:"admit", self_modifying:true}` verdict, an admit verdict carrying
       `idle_overlap_advisory`, a defer verdict of each class, and an all-clean batch; assert the
-      rendered report for each.
+      rendered report for each. *(completed)*
 
 **Timing**: 1.5 hours
 

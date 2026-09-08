@@ -383,6 +383,19 @@ if [ "$admit_checked" = true ]; then
       | {class: "C", task_number: $c, critical_path: $cp, critical_label: $v.critical_label,
          matched_scope_entry: $matched_entry, coarse: $is_coarse}
     ),
+    ( # Class C-admitted: the hazard IS computed and IS carried on the verdict even when the
+      # candidate is a SOLO self-modifying dispatch (admitted, not deferred -- defer_reason and
+      # critical_path/critical_label exist only on the defer branch, so this never re-derives a
+      # critical-path match; it reports the declared file_scope of the candidate instead, per
+      # the Non-Goals of this phase). Never printing this row was the false negative this phase
+      # fixes: a solo self_modifying:true admit used to render as "0 findings" even though the
+      # hazard was live and carried on the verdict all along.
+      $verdicts[] as $v
+      | select($v.decision == "admit" and $v.self_modifying == true)
+      | ($v.task_number) as $c
+      | ([$all[] | select(.project_number == $c)] | first) as $entry
+      | {class: "C-admitted", task_number: $c, file_scope: ($entry.file_scope // [])}
+    ),
     ( # Class D: missing cross-batch serializing edge, suggested (never written)
       $verdicts[] as $v
       | select($v.decision == "defer" and $v.defer_reason == "file_scope_collision" and $v.collision_scope == "cross_batch")
@@ -393,6 +406,18 @@ if [ "$admit_checked" = true ]; then
          colliding_task_status: $v.colliding_task_status, overlapping_path: $v.overlapping_path,
          suggested_dependent: $dependent, suggested_predecessor: $predecessor,
          corroborated_by: ($v.corroborated_by // [])}
+    ),
+    ( # Class D-admitted: an admitted idle_overlap_advisory carries a real cross-batch overlap
+      # that was NOT deferred (no execution evidence against the idle target) -- admitted, not
+      # deferred, advisory. Fields relayed verbatim from the advisory the verdict already carries;
+      # no new diagnosis, matching the existing convention already used by Class E below.
+      $verdicts[] as $v
+      | select($v.decision == "admit" and ($v.idle_overlap_advisory != null))
+      | {class: "D-admitted", task_number: $v.task_number,
+         colliding_task_number: $v.idle_overlap_advisory.colliding_task_number,
+         colliding_task_status: $v.idle_overlap_advisory.colliding_task_status,
+         overlapping_path: $v.idle_overlap_advisory.overlapping_path,
+         collision_scope: $v.idle_overlap_advisory.collision_scope}
     ),
     ( # Class E (NEW in v4): session-registry contention -- re-presents
       # orchestrate-batch-admit.sh defer_reason == "session_active" verdicts verbatim; no new
@@ -430,6 +455,9 @@ else
 fi
 echo ""
 
+# Class B's negative was swept for the same "0 findings" vs. "0 matched" conflation Classes C/D/E
+# had: Class B derives its findings directly from state.json fields with no defer/admit filter of
+# any kind, so its existing negative is already accurate as written and needed no change.
 echo "-- Class B: Metadata defects (literal null on dependencies/file_scope/title/topic) --"
 class_b_lines=""
 if [ -n "$ab_findings" ]; then
@@ -467,10 +495,36 @@ else
          end)
     ' 2>/dev/null) || true
   fi
-  if [ -z "$class_c_lines" ]; then
-    echo "0 findings (no candidate's file_scope names an orchestrator-critical path)."
+  # Class C-admitted: never print a "0 findings" negative that was never tested against this
+  # row set. A solo self_modifying:true candidate is ADMITTED (see orchestrate-batch-admit.sh's
+  # own non-goal: Class C is a CONSUMER, never a fork, of that predicate) -- the hazard IS
+  # computed and IS carried on the verdict either way, so it gets its own labelled row here,
+  # styled on context/patterns/orchestrate-batch-results-template.md's own
+  # "Admitted (idle overlap advisory)" section: admitted, not deferred, advisory.
+  class_c_admitted_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_c_admitted_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "C-admitted")
+      | "#\(.task_number): file_scope \(.file_scope | tojson) -- ADMITTED carrying self_modifying: true (hazard live, not deferred)"
+    ' 2>/dev/null) || true
+  fi
+  if [ -z "$class_c_lines" ] && [ -z "$class_c_admitted_lines" ]; then
+    echo "0 findings (no candidate carries the self-modification hazard, deferred or admitted)."
   else
-    printf '%s\n' "$class_c_lines"
+    echo "Deferred (self-modification):"
+    if [ -z "$class_c_lines" ]; then
+      c_admitted_count=$(printf '%s\n' "$class_c_admitted_lines" | grep -c . || true)
+      echo "  0 deferred for self-modification (${c_admitted_count} admitted carrying self_modifying: true)."
+    else
+      printf '%s\n' "$class_c_lines" | sed 's/^/  /'
+    fi
+    echo ""
+    echo "Admitted (self-modification hazard):"
+    if [ -z "$class_c_admitted_lines" ]; then
+      echo "  0 admitted carrying self_modifying: true."
+    else
+      printf '%s\n' "$class_c_admitted_lines" | sed 's/^/  /'
+    fi
   fi
 fi
 echo ""
@@ -487,10 +541,33 @@ else
         (if ((.corroborated_by // []) | index("session_registry")) then " [corroborated by a live registered session]" else "" end)
     ' 2>/dev/null) || true
   fi
-  if [ -z "$class_d_lines" ]; then
-    echo "0 findings (no missing cross-batch serializing edges detected)."
+  # Class D-admitted: the identical "never print an untested negative" fix as Class C, for the
+  # idle_overlap_advisory an ADMIT verdict can carry. Fields relayed verbatim from the advisory,
+  # matching Class E's existing no-new-diagnosis convention.
+  class_d_admitted_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_d_admitted_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "D-admitted")
+      | "#\(.task_number): file_scope overlap with IDLE out-of-batch task #\(.colliding_task_number) (status: \(.colliding_task_status)) at \(.overlapping_path) -- ADMITTED (no execution evidence); add a dependencies[] edge if ordering between them matters"
+    ' 2>/dev/null) || true
+  fi
+  if [ -z "$class_d_lines" ] && [ -z "$class_d_admitted_lines" ]; then
+    echo "0 findings (no missing cross-batch serializing edges, deferred or admitted)."
   else
-    printf '%s\n' "$class_d_lines"
+    echo "Deferred (missing serializing edge):"
+    if [ -z "$class_d_lines" ]; then
+      d_admitted_count=$(printf '%s\n' "$class_d_admitted_lines" | grep -c . || true)
+      echo "  0 deferred for cross-batch collision (${d_admitted_count} admitted carrying an idle_overlap_advisory)."
+    else
+      printf '%s\n' "$class_d_lines" | sed 's/^/  /'
+    fi
+    echo ""
+    echo "Admitted (idle cross-batch overlap):"
+    if [ -z "$class_d_admitted_lines" ]; then
+      echo "  0 admitted carrying an idle_overlap_advisory."
+    else
+      printf '%s\n' "$class_d_admitted_lines" | sed 's/^/  /'
+    fi
   fi
 fi
 echo ""
@@ -509,7 +586,12 @@ else
     ' 2>/dev/null) || true
   fi
   if [ -z "$class_e_lines" ]; then
-    echo "0 findings (no candidate's file_scope overlaps a live registered session's covered scope)."
+    # Swept for the same "0 findings" vs. "0 matched" conflation Class C/D had: unlike them,
+    # Class E's session_active reason exists ONLY on the defer branch of the admission predicate
+    # (see orchestrate-batch-admit.sh's own session_contention arm) -- an admit verdict cannot
+    # carry it at all, so there is no "admitted-with-this-hazard" case to under-report here. The
+    # negative below is already accurate; restated to say so explicitly rather than silently.
+    echo "0 deferred for session contention (this signal exists only on defer verdicts; no candidate's file_scope overlaps a live registered session's covered scope)."
   else
     printf '%s\n' "$class_e_lines"
   fi
