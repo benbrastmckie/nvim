@@ -1,5 +1,5 @@
 ---
-next_project_number: 189
+next_project_number: 190
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 189
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187,188 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
@@ -45,6 +45,7 @@ next_project_number: 189
 186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
+189 [NOT STARTED] — Fix four channel-confusion defects in the orchestrate cycle-plan 
 
 ### Extensions
 
@@ -84,6 +85,38 @@ next_project_number: 189
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
+
+### 189. Fix channel confusion orchestrate pipeline
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix four channel-confusion defects in the orchestrate cycle-plan pipeline that misled a live /orchestrate run. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+WHY. A single /orchestrate run hit three separate misleading signals, each independently reproducible and each measured during that run. Three of the four are the same bug class: a channel carrying two meanings. The fourth is a read operation with a write side effect.
+
+MEASURED EVIDENCE (verified 2026-09-08 by direct probe, not inferred):
+(1) STDOUT CONTAMINATION. scripts/update-task-status.sh:875 and :877 echo "OK: task N ..." to STDOUT. scripts/orchestrate-cycle-plan.sh calls it without redirecting, so its plan JSON shares stdout with progress prose. The documented consumer contract in skills/skill-orchestrate/SKILL.md (Move 1: plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh ...) then stop_json=$(echo "$plan_json" | jq -c '.stop')) therefore CANNOT WORK AS WRITTEN -- jq exits 5 on the leading non-JSON lines. Observed contaminating lines: a bare plan-path echo, and "OK: task N state.json already at 'implementing' (no-op); plan/phase updates re-applied".
+(2) BUDGET CHARGED ON A READ. The per-task cycle budget (cycle_counts[t], flushed to ${TASK_DIR}/.orchestrator-loop-guard via orchestrate-loop-guard-init.sh) is incremented during PLAN COMPOSITION, not at dispatch. A re-run caused by defect (1) -- a parse failure that dispatched nothing -- permanently consumed a cycle, taking the affected task from 3/5 to 5/5 and forcing a --continue-budget re-run to finish work that was already done.
+(3) CHECKPOINT COST IS UNBOUNDED AND SILENT. scripts/verify-deploy.sh --findings was timed at >400s WITHOUT COMPLETING, stalling in gate 8 (tests/run-all.sh). The inter-cycle redeploy checkpoint (orchestrate-cycle-plan.sh:583-635) runs a FULL verify-deploy twice (pre- and post-snapshot, deliberately non---skip-slow per the comment at :606) plus deploy-headless.sh between them: 15+ minutes minimum. Both snapshots are captured via command substitution, so they emit NOTHING to any stream for that entire span. verify-deploy.sh's own header (:48) still claims gate 8 is "117.9s of the ~2.8min total" -- stale by more than 3x. Any harness with a command timeout reads this as a wedged process; the observed run was killed at ~135s, mid-pre-snapshot, before the deploy had started.
+(4) A FALSE NEGATIVE MESSAGE. scripts/orchestrate-batch-admit.sh returns, for a solo self-modifying candidate, {"decision":"admit","self_modifying":true} -- the hazard IS computed and IS carried on the verdict. But scripts/orchestrate-predispatch-review.sh's Class C filters on (decision == "defer" and defer_reason == "self_modifying") at :370, so a solo admit renders as "0 findings (no candidate's file_scope names an orchestrator-critical path)". That sentence is FALSE whenever self_modifying is true; in the observed run the candidate's file_scope named three orchestrator-critical paths. It conflates "nothing deferred" with "nothing matched", and suppresses the one pre-dispatch signal that would have predicted the run ending at the deploy gate.
+
+DESIGN (binding shape; the planner refines mechanics, not the shape). Four independent changes:
+(a) STDOUT IS THE JSON CHANNEL, STRUCTURALLY. In orchestrate-cycle-plan.sh, redirect at entry (exec 3>&1 1>&2) and emit the final plan JSON to fd 3. Structural rather than per-callsite, so no future callee can leak into the data channel. Verify the SKILL.md Move 1 snippet then works verbatim, unmodified. Check whether orchestrate-cycle-postflight.sh and orchestrate-batch-admit.sh share the defect and apply the same treatment where they do.
+(b) DO NOT CHARGE FOR READS. Make plan composition idempotent: cache the composed plan JSON in the mt_state_file keyed by dispatch_seq; on re-entry with dispatch_seq unchanged (nothing was actually dispatched since), return the cached plan verbatim WITHOUT incrementing cycle_counts[t] or flushing the loop guard. The dispatch_seq and dispatch_start_ts signals already exist in the mt_state_file. A genuine cycle must still cost exactly one.
+(c) BOUND AND NARRATE THE CHECKPOINT. Pass --skip-slow to BOTH deploy_findings_snapshot calls: the pre/post diff exists to detect findings NEWLY INTRODUCED by the redeploy, and gate 8 runs the shell test suite -- it does not test deploy fidelity, and it is the same suite on both sides of the deploy. Preserve an opt-in escape hatch for the full gate. Emit one stderr line before each snapshot naming the operation and its expected duration, so liveness is visible to a harness and to an operator. Correct verify-deploy.sh's stale header timing claim at :48 with a freshly measured figure.
+(d) NEVER PRINT A NEGATIVE YOU DID NOT TEST. Class C must not report absence when the underlying verdict carries self_modifying: true. Either render admitted-with-hazard as its own row (context/patterns/orchestrate-batch-results-template.md already has this shape in its "### Admitted (idle overlap advisory)" section -- an admitted, not deferred, advisory) or at minimum make the negative message state exactly what was filtered, e.g. "0 deferred for self-modification (1 admitted carrying self_modifying: true)". Sweep sibling classes A/B/D/E for the same conflation of "none deferred" with "none matched" and fix any found.
+
+MUST NOT: change orchestrate-batch-admit.sh's verdict schema or its collision/self-modification predicate (Class C is a CONSUMER of that verdict, per that script's own stated non-goal); make the solo self-modifying candidate DEFER rather than admit (that would mean zero dispatch on every solo run -- the REPORTING is broken, not the admission decision); weaken or skip the redeploy checkpoint itself; hand-author anything under .claude/**.
+
+ACCEPTANCE: SKILL.md's Move 1 snippet, run verbatim, parses the plan JSON with no preamble stripping; a plan composition that dispatches nothing, re-run immediately, leaves cycle_counts[t] and .orchestrator-loop-guard unchanged, while a genuine dispatch still charges exactly one; the redeploy checkpoint's two snapshots complete in bounded time with a freshly measured figure recorded in the header, and emit visible liveness output; a solo candidate carrying self_modifying: true is reported as such by orchestrate-predispatch-review.sh rather than as "0 findings"; fixture tests covering all four; full gate run green.
+
+SEQUENCING: these edits touch orchestrate-cycle-plan.sh and orchestrate-predispatch-review.sh, which the research-on-demand task also rewrote and which are currently UNDEPLOYED (core extension stale). That work must land and deploy first, or the edits collide.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 188. Predispatch review archived dependency false positive
 - **Status**: [NOT STARTED]
