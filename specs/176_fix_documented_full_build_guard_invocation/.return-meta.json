@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/176_fix_documented_full_build_guard_invocation/summaries/01_fix-full-build-guard-invocation-summary.md",
+      "summary": "Corrected 5 empty-vector lake-build-guard.sh full-build invocations across 4 lean-extension source files, proved the fix at runtime with a fake-lake harness (negative control exit 77, positive proof FAKE_LAKE_ARGV: build exit 0), audited the whole source store with two independent grep patterns, recorded read-only consumer-propagation status for 5 lean-registered consumers (3 confirmed stale and carrying the broken string, 2 CANNOTVERIFY with deeper drift), and handed off the guard's own usage-banner/validator contradiction to the guard-terminal-record task without editing lake-build-guard.sh."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed all 5 documented empty-vector lake-build-guard.sh full-build invocations across 4 source-store files in the lean extension, proved the corrected form reaches lake at runtime, audited the whole source store for remaining broken forms (none found), and recorded read-only consumer-propagation status per the orchestrator's source-store-only instruction."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/rules/lean4.md",
+    "agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To prove a guarded build wrapper script (lake-build-guard.sh or similar) actually dispatches to its underlying tool rather than merely parsing arguments, use a fake-binary test seam: point the wrapper's *_BIN env var (e.g. LAKE_BUILD_GUARD_LAKE_BIN) at an executable stub in a scratch dir containing a minimal project marker file (e.g. a bare lakefile.toml), have the stub echo its argv and exit 0, then run both a negative control (the old/broken invocation, asserting the expected failure AND that the stub was never reached) and a positive proof (the corrected invocation, asserting the stub's echoed argv appears on stdout). Pass any 'never replay a cached result' flag the wrapper offers (e.g. --no-share) on the positive-proof run so a cached prior result can't produce a false pass. This is stronger evidence than a parse-only check.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/176_fix_documented_full_build_guard_invocation/summaries/01_fix-full-build-guard-invocation-summary.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["lake-build-guard", "fake-binary-seam", "runtime-proof", "negative-control", "no-share"]
+    },
+    {
+      "content": "When auditing a source store for a broken invocation pattern via grep, a single literal grep pattern (e.g. the exact tool-invocation string) can miss a compressed prose restatement of the same defect (e.g. a table-like summary line such as \"Full project: `--` (no module)\" that never spells out the full command). Run a second grep pattern targeting the prose-summary vocabulary (e.g. \"Full project\", \"no module\", \"unscoped\") to catch sites the literal-invocation grep misses.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/176_fix_documented_full_build_guard_invocation/summaries/01_fix-full-build-guard-invocation-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["grep-audit", "prose-restatement", "source-store-audit", "exhaustive-search"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788894448_36ce34",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
