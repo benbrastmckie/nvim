@@ -312,34 +312,49 @@ runtime verification rather than weakening the suite's anti-recursion invariant.
 
 ---
 
-### Phase 4: Runtime confirmation of both modes [NOT STARTED]
+### Phase 4: Runtime confirmation of both modes [COMPLETED]
 
 **Goal**: Confirm at runtime — not by static reading — that a default run performs no consumer
 walk, that a `--consumer-report` run reproduces today's output byte-for-byte, and that
 exit-code neutrality holds in both modes.
 
 **Tasks**:
-- [ ] Run the default mode against this repo:
+- [x] Run the default mode against this repo:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh 2>&1 | tee <scratch>/default.log`.
       Confirm the log contains NO per-consumer STALE/CANNOTVERIFY rows, NO
       "Known consumer repos now stale" line, NO "Remedy:" line, and NO `CONSUMERS_STALE=` line.
-- [ ] Record the default run's wall-clock time and compare against Phase 1's recorded scan cost,
+      *(completed: RESULT=landed_verify_clean, exit 0; grep for CONSUMERS_STALE|STALE|
+      CANNOTVERIFY|"Known consumer repos" returned 0 matches)*
+- [x] Record the default run's wall-clock time and compare against Phase 1's recorded scan cost,
       so the saved share is a measured number rather than an assertion.
-- [ ] Run the opt-in mode:
+      *(completed: default run 111s total wall clock (includes the full nvim resync + 20-gate
+      verify-deploy.sh, not just the removed scan); Phase 1's isolated scan cost was ~2s for 35
+      rows. The redeploy checkpoint's savings equal that ~2s scan cost every cycle it now skips,
+      confirming the scan was cheap in isolation but non-zero, and it no longer runs by default)*
+- [x] Run the opt-in mode:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh --consumer-report 2>&1 | tee <scratch>/optin.log`.
       Confirm the consumer rows return and that the `[deploy-headless] CONSUMERS_STALE=<n>` line
       is present and byte-identical in form to Phase 1's reference capture (same prefix, same
-      `=`, same count semantics).
-- [ ] Diff the consumer-block portion of `optin.log` against Phase 1's reference capture and
+      `=`, same count semantics). *(completed: RESULT=landed_verify_clean, exit 0,
+      `[deploy-headless] CONSUMERS_STALE=34` present)*
+- [x] Diff the consumer-block portion of `optin.log` against Phase 1's reference capture and
       confirm only the row set (which is live data) differs, never the framing lines.
-- [ ] Confirm exit-code neutrality in both modes: record the exit code of each run and confirm
+      *(completed: framing lines — "Known consumer repos now stale relative to the source
+      store:", "Remedy: run ... IN EACH stale repo ...", and the `CONSUMERS_STALE=<n>` line —
+      are byte-identical in form; row count differs (35 -> 34, live registry drift between the
+      Phase 1 and Phase 4 captures, not a framing change) and per-row content is live data by
+      design)*
+- [x] Confirm exit-code neutrality in both modes: record the exit code of each run and confirm
       the `RESULT=` marker on each run is consistent with that exit code, and that adding
       `--consumer-report` did not change the exit code relative to the default run of the same
       tree. (Both runs are expected to produce the same 0-or-3 verdict; a difference is a defect
       in this change, not an acceptable outcome.)
-- [ ] Confirm the source-store change reached the deployed tree: after the deploy above, check
+      *(completed: both runs exit 0 with RESULT=landed_verify_clean — identical verdict)*
+- [x] Confirm the source-store change reached the deployed tree: after the deploy above, check
       that `.claude/scripts/deploy-headless.sh` contains the `--consumer-report` branch — i.e.
       the edit was made in the source store and survived regeneration.
+      *(completed: `.claude/scripts/deploy-headless.sh` contains the
+      `--consumer-report) CONSUMER_REPORT=true; shift ;;` case branch and all header updates)*
 
 **Timing**: 0.5 hours
 
