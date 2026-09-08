@@ -103,9 +103,13 @@
 #
 # Usage:
 #   orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
-#     [--force-phases "research,plan,implement"] [--clean] [--lit] [--hard] [--fast]
+#     [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
 #     [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
 #     [--dry-run] <task_number> [<task_number> ...]
+#
+# `--compare` is forwarded into `build_args` (as `--compare`, mirroring `--lit`) ONLY for an
+# implement-phase candidate (`$g = "implement"`) — it is meaningless for research/plan dispatches
+# and is never forwarded to them.
 #
 # `--state-file F` is the CANONICAL specs/state.json (or a fixture copy in tests) — the same
 # STATE_FILE every sibling script (orchestrate-batch-admit.sh, orchestrate-triage-classify.sh)
@@ -184,7 +188,7 @@ MAX_DRIFT_INSPECTIONS=1
 usage() {
   cat <<'USAGE'
 Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
-         [--force-phases "research,plan,implement"] [--clean] [--lit] [--hard] [--fast]
+         [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
          [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
          [--dry-run] <task_number> [<task_number> ...]
 USAGE
@@ -197,6 +201,7 @@ invocation_count_override=""
 force_phases_arg=""
 clean_flag="false"
 lit_flag="false"
+compare_flag="false"
 hard_mode="false"
 effort_flag=""
 model_flag=""
@@ -214,6 +219,7 @@ while [ "$#" -gt 0 ]; do
     --force-phases) force_phases_arg="${2:-}"; shift 2 ;;
     --clean) clean_flag="true"; shift ;;
     --lit) lit_flag="true"; shift ;;
+    --compare) compare_flag="true"; shift ;;
     --hard) hard_mode="true"; effort_flag="hard"; shift ;;
     --fast) effort_flag="fast"; shift ;;
     --model) model_flag="${2:-}"; shift 2 ;;
@@ -1474,6 +1480,7 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   build_args=(--session "$dispatch_session" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
   [ "$clean_flag" = "true" ] && build_args+=(--clean)
   [ "$lit_flag" = "true" ] && build_args+=(--lit)
+  [ "$compare_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--compare)
   [ "$hard_mode" = "true" ] && build_args+=(--hard)
   [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
   [ -n "$model_flag" ] && build_args+=(--model "$model_flag")

@@ -31,6 +31,7 @@ Read from delegation context:
 - `session_id`
 - `focus_prompt` (default: "")
 - `lit_flag` (default: "false")
+- `compare_flag` (default: "false")
 
 If `multi_task_mode` is true: skip Stages 1-8 entirely and proceed to Stage MT-1.
 
@@ -41,6 +42,10 @@ If `multi_task_mode` is true: skip Stages 1-8 entirely and proceed to Stage MT-1
 Read from delegation context:
 - `task_number` (from `task_context.task_number`)
 - `session_id`, `focus_prompt`, `lit_flag`
+- `compare_flag` (default: `"false"`) — threaded from the command's `--compare` flag; advisory-
+  only, lean-implementation-scoped mode hint composable with `--hard` and the model flags.
+  Forwarded, unmodified, into every implement-phase dispatch's `build_args` and `context` object
+  below; never forwarded to a research- or plan-phase dispatch.
 - `continue_budget` (default: `false`) → `continue_budget_flag`. Defect B: explicit,
   operator-typed budget-continuation override for an exhausted work-cycle budget, threaded from
   the command's `--continue-budget` flag. Never inferred from `session_id`, mtime, or any
@@ -1451,6 +1456,7 @@ Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (
 build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
 [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
 [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${compare_flag:-false}" = "true" ] && build_args+=(--compare)
 [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
 [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
 [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
@@ -1467,7 +1473,7 @@ Invoke the Agent tool:
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, compare_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -1545,6 +1551,7 @@ Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (
 build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
 [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
 [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${compare_flag:-false}" = "true" ] && build_args+=(--compare)
 [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
 [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
 [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
@@ -1561,7 +1568,7 @@ Invoke the Agent tool:
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", continuation_context: continuation, lit_flag, compare_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq }` (`continuation_context` here is the **normalized** `continuation` object built above — `{ handoff_path, orchestrator_mode: true }` — never a raw read of the handoff's `continuation_context` or `continuation_path` field. This is the secondary-gap fix: it is what lets the successor implement dispatch actually consume a continuation the standard flat-form writer emitted. Do not "simplify" this back to a raw field read.) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -1623,6 +1630,7 @@ Build this dispatch's context file via `scripts/orchestrate-build-dispatch.sh` (
 build_args=(--session "$session_id" --seq "$dispatch_seq" --dispatch-start-ts "$dispatch_start_ts")
 [ "${clean_flag:-false}" = "true" ] && build_args+=(--clean)
 [ "${lit_flag:-false}" = "true" ] && build_args+=(--lit)
+[ "${compare_flag:-false}" = "true" ] && build_args+=(--compare)
 [ "${hard_mode:-false}" = "true" ] && build_args+=(--hard)
 [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
 [ -n "${model_flag:-}" ] && build_args+=(--model "$model_flag")
@@ -1639,7 +1647,7 @@ Invoke the Agent tool:
 | `subagent_type` | `$IMPLEMENT_AGENT` (resolved by task type in Stage 1b) |
 | `model` | `$dispatch_model` — pass as the Agent tool's `model` parameter when non-empty; omit the parameter entirely when empty |
 | `prompt` | "You are dispatched by /orchestrate for task $task_number, phase implement. Read $dispatch_file first and execute it exactly; it names every input, output path and contract." |
-| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
+| `context` | `{ task_number, task_type, session_id, orchestrator_mode: true, plan_path, roadmap_path: "specs/ROADMAP.md", lit_flag, compare_flag, task_dir: TASK_DIR_ABS, handoff_path: HANDOFF_PATH_ABS, dispatch_seq, resume_context: { status: (resume_probe.status), artifact_path: (resume_probe.artifact_path), phases_completed: (resume_probe.phases_completed), phases_total: (resume_probe.phases_total) } }` (same as the continuation branch's `context` object, minus `continuation_context`, plus `resume_context`) |
 
 **After the Agent tool returns**, before Stage 5: judge the tool call's OWN outcome per
 `context/patterns/infra-failure-discrimination.md` and set `dispatch_was_transport_error=true`
@@ -2231,7 +2239,10 @@ Read from delegation context:
   cycle at Stage MT-3 step 4.5 from current task statuses plus `dependency_graph`, never from a
   pre-computed wave schedule. The key is kept required only because `mt_state_file` below still
   carries it; do not reintroduce wave-based dispatch logic on account of its presence.
-- `session_id`, `lit_flag`, `allow_self_modifying` (default: "false") — consumer-side opt-in
+- `session_id`, `lit_flag`, `compare_flag` (default: "false") — forwarded, unmodified, to
+  `orchestrate-cycle-plan.sh`'s own `--compare` flag below, which scopes it to implement-phase
+  candidates internally; never threaded into research- or plan-phase dispatches
+- `allow_self_modifying` (default: "false") — consumer-side opt-in
   bypass of the self-modification admission gate; never passed to `orchestrate-batch-admit.sh`
   itself (see Stage MT-3 step 4.5's `self_modifying` branch below)
 - `allow_scope_collision` (default: "false") — consumer-side opt-in bypass of the CROSS-BATCH
@@ -2512,6 +2523,7 @@ plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   "${force_phases_args[@]}" "${model_args[@]}" \
   $( [ "${clean_flag:-false}" = "true" ] && echo --clean ) \
   $( [ "${lit_flag:-false}" = "true" ] && echo --lit ) \
+  $( [ "${compare_flag:-false}" = "true" ] && echo --compare ) \
   $( [ "${hard_mode:-false}" = "true" ] && echo --hard ) \
   $( [ "${effort_flag:-}" = "fast" ] && echo --fast ) \
   $( [ "${allow_self_modifying:-false}" = "true" ] && echo --allow-self-modifying ) \

@@ -217,30 +217,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Orchestrate Plumbing — `--compare` reaches an implement dispatch [NOT STARTED]
+### Phase 2: Orchestrate Plumbing — `--compare` reaches an implement dispatch [COMPLETED]
 
 **Goal**: `/orchestrate N --compare` (and `--compare --hard`) carries `compare_flag=true` to the
 implement-phase dispatch, and a run without `--compare` produces exactly today's output.
 
 **Tasks**:
-- [ ] Re-read the `--lit` treatment in each of the four files below and mirror it; do not invent a
-      new shape.
-- [ ] `commands/orchestrate.md`: add a `--compare` row to the options table alongside the `--lit`
+- [x] Re-read the `--lit` treatment in each of the four files below and mirror it; do not invent a
+      new shape. *(completed)*
+- [x] `commands/orchestrate.md`: add a `--compare` row to the options table alongside the `--lit`
       row, stating it is advisory-only, lean-implementation-scoped, and composable with `--hard`
-      and the model flags. Update the `--hard` row's composability list to name `--compare`.
-- [ ] `scripts/orchestrate-cycle-plan.sh`: add `compare_flag="false"`, a `--compare)` case in the
+      and the model flags. Update the `--hard` row's composability list to name `--compare`. *(completed)*
+- [x] `scripts/orchestrate-cycle-plan.sh`: add `compare_flag="false"`, a `--compare)` case in the
       argument loop, the usage-line mention in both header and `usage()`, and
-      `[ "$compare_flag" = "true" ] && build_args+=(--compare)` next to the existing `--lit` line.
-- [ ] `scripts/orchestrate-build-dispatch.sh`: add `compare_flag="false"`, a `--compare)` case,
+      `[ "$compare_flag" = "true" ] && build_args+=(--compare)` next to the existing `--lit` line. *(completed)*
+- [x] `scripts/orchestrate-build-dispatch.sh`: add `compare_flag="false"`, a `--compare)` case,
       the two usage-line mentions, and emission of a single `- compare_flag: true` line into the
       dispatch file's `## Identity` section — **emitted only when the flag is true**, so a
-      no-flag dispatch file is byte-identical to today's.
-- [ ] `skills/skill-orchestrate/SKILL.md`: enumerate the implement-phase dispatch sites by grep,
+      no-flag dispatch file is byte-identical to today's. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md`: enumerate the implement-phase dispatch sites by grep,
       then at each add `[ "${compare_flag:-false}" = "true" ] && build_args+=(--compare)` beside
       the existing `--lit` line, and add `compare_flag` to that site's `context` table row.
       Add `compare_flag` (default `"false"`) to the skill's documented input list where
-      `lit_flag` and `clean_flag` are already listed.
-- [ ] Leave every research-phase and plan-phase dispatch site untouched.
+      `lit_flag` and `clean_flag` are already listed. *(completed: 3 implement dispatch sites found via `grep -n 'build_args+=(--lit)'` — 7 total hits, classified 2 research (lines 803/863), 2 plan (989/1123), 3 implement (1453/1547/1625); only the 3 implement sites edited, matching the plan's 4-file assumption. Additionally forwarded --compare in the MT-3 multi-task call site to orchestrate-cycle-plan.sh, which was not caught by the literal grep pattern but is required for --compare to have any effect in multi-task mode)*
+- [x] Leave every research-phase and plan-phase dispatch site untouched. *(completed)*
 
 **Timing**: 1.5 hours
 

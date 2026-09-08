@@ -20,8 +20,13 @@
 #
 # Usage:
 #   orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
-#     [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."]
-#     [--phase-number N] [--dispatch-start-ts TS]
+#     [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
+#     [--territory "..."] [--phase-number N] [--dispatch-start-ts TS]
+#
+# --compare: advisory-only, lean-implementation-scoped mode hint (see COMPARE_FLAG in
+# parse-command-args.sh). Emits a single `- compare_flag: true` line into the written dispatch
+# file's `## Identity` section — emitted ONLY when the flag is true, so a no-flag dispatch file
+# is byte-identical to one built before this flag existed.
 #
 # --phase-number N (implement phase only, hard mode's per-phase dispatch -- Decision Structure H1
 # in the task that ported single-task features into the batch engine): records the SINGLE plan
@@ -55,8 +60,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 usage() {
   cat <<'USAGE'
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
-         [--clean] [--lit] [--hard] [--fast] [--model M] [--focus "..."] [--territory "..."]
-         [--phase-number N] [--dispatch-start-ts TS]
+         [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
+         [--territory "..."] [--phase-number N] [--dispatch-start-ts TS]
 
 <phase> is one of: research | plan | implement
 USAGE
@@ -83,6 +88,7 @@ session_id=""
 dispatch_seq=""
 clean_flag="false"
 lit_flag="false"
+compare_flag="false"
 hard_mode="false"
 effort_flag=""
 model_flag=""
@@ -98,6 +104,7 @@ while [ "$#" -gt 0 ]; do
     --phase-number) phase_number="${2:-}"; shift 2 ;;
     --clean) clean_flag="true"; shift ;;
     --lit) lit_flag="true"; shift ;;
+    --compare) compare_flag="true"; shift ;;
     --hard) hard_mode="true"; effort_flag="hard"; shift ;;
     --fast) effort_flag="fast"; shift ;;
     --model) model_flag="${2:-}"; shift 2 ;;
@@ -302,6 +309,9 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   echo "- dispatch_seq: ${dispatch_seq}"
   if [ -n "$dispatch_start_ts" ]; then
     echo "- dispatch_start_ts: ${dispatch_start_ts}"
+  fi
+  if [ "$compare_flag" = "true" ]; then
+    echo "- compare_flag: true"
   fi
   echo ""
   echo "## Description"

@@ -37,13 +37,14 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based tasks | false |
+| `--compare` | Advisory-only, lean-implementation-scoped: pass compare_flag=true so the implement-phase dispatch runs the Comparator gate against the snapshot Challenge and the implemented Solution. Never blocks completion or downgrades status. Composable with `--hard` and the model flags; meaningless for research/plan dispatches, so it never reaches them | false |
 | `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing | false |
 | `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
 | `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
 | `--continue-budget` | Authorization to continue past an exhausted `MAX_CYCLES` budget. **Never inferred automatically** (not from `session_id`, not from mtime) — without it, refuses with an honest message. See `orchestrator-runtime-files.md`'s budget-continuation-override section | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses | false |
-| `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, model flags, and the phase-forcing flags | false |
+| `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, `--compare`, model flags, and the phase-forcing flags | false |
 | `--haiku` | Use Haiku model (fastest, lowest cost). Applies to research/plan/implement dispatches only — diagnostic dispatches retain their frontmatter model | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
