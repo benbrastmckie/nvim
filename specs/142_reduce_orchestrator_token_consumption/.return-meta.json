@@ -1,25 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md",
-      "summary": "Six-phase measure-and-lock plan: ceiling config, verify-deploy Gate 20 with normalized finding text, over-ceiling and findings-diff fixtures, a fixture-based per-cycle lead-growth probe, the Context Flatness prose correction, and full-gate validation with a before/after table."
-    }
-  ],
-  "dispatch_seq": 5,
-  "next_steps": "Run /implement 142 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1788849084_1040b7_142",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": [[1, 4], [2, 5], [3], [6]]
-  },
-  "memory_candidates": [],
-  "modified_files": [
-    "specs/142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md"
-  ]
+    "session_id": "sess_1788849084_1040b7",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

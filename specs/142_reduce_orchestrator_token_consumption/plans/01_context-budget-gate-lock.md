@@ -1,7 +1,7 @@
 # Implementation Plan: Orchestrator context budget — measure and lock
 
 - **Task**: 142 - Orchestrator context budget: measure and lock
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: 88 (completed 2026-09-08 — Stage A landed; single-task engine deleted)
 - **Research Inputs**: specs/142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md
@@ -110,27 +110,27 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Ceiling config file [NOT STARTED]
+### Phase 1: Ceiling config file [COMPLETED]
 
 **Goal**: Land `agent-system/extensions/core/context/config/orchestrator-context-budget.json`
 holding the two per-file ceilings and the recorded eager-load baseline, in the exact shape of the
 existing `claudemd-size-budget.json`.
 
 **Tasks**:
-- [ ] Re-measure all four figures immediately before writing the config (`wc -c` on the two
+- [x] Re-measure all four figures immediately before writing the config (`wc -c` on the two
       source-store files; `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`);
-      record the values actually observed, not the ones quoted in this plan.
-- [ ] Create `context/config/orchestrator-context-budget.json` with a leading `_comment` naming
+      record the values actually observed, not the ones quoted in this plan. *(completed: SKILL.md 15,830 B; orchestrate.md 15,812 B; eager total 62,985 B / 15,746 tokens — all match plan hypothesis exactly)*
+- [x] Create `context/config/orchestrator-context-budget.json` with a leading `_comment` naming
       the consumer (verify-deploy Gate 20), the derivation of each ceiling, and the re-derivation
-      instruction, mirroring `claudemd-size-budget.json`'s header style.
-- [ ] Entries: `files["skills/skill-orchestrate/SKILL.md"] = {ceiling_bytes: 20000, measured_bytes,
+      instruction, mirroring `claudemd-size-budget.json`'s header style. *(completed)*
+- [x] Entries: `files["skills/skill-orchestrate/SKILL.md"] = {ceiling_bytes: 20000, measured_bytes,
       measured_at, derivation}`; `files["commands/orchestrate.md"] = {ceiling_bytes: 8000,
       measured_bytes, measured_at, derivation}` — record that this one is currently OVER its
-      ceiling and that the ceiling is the PATH.md target, not a headroom-derived value.
-- [ ] `eager_load.baseline_bytes = 63973` (the 2026-09-02 recorded baseline named in the task
+      ceiling and that the ceiling is the PATH.md target, not a headroom-derived value. *(completed)*
+- [x] `eager_load.baseline_bytes = 63973` (the 2026-09-02 recorded baseline named in the task
       description), plus `measured_bytes`, `measured_at`, and a note that the regression check
-      fails ABOVE the baseline.
-- [ ] Validate with `jq empty`.
+      fails ABOVE the baseline. *(completed)*
+- [x] Validate with `jq empty`. *(completed: JSON VALID)*
 
 **Timing**: 0.5 hours
 

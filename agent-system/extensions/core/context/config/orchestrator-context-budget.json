@@ -1,0 +1,23 @@
+{
+  "_comment": "Ceilings and baseline consumed by verify-deploy.sh Gate 20 (orchestrator context budget lock). Two per-file ceilings are fixed PATH.md targets (not headroom-derived from measured_bytes, unlike claudemd-size-budget.json's formula) -- commands/orchestrate.md is intentionally recorded as currently OVER its ceiling; the gate ships warn-tier for per-file ceilings until that gap closes. eager_load.baseline_bytes is a fixed historical record (2026-09-02) copied verbatim from the task description that introduced this gate -- re-measure with 'REPO_ROOT=$(pwd) bash scripts/measure-eager-context.sh --check' and re-derive only baseline_bytes deliberately (it is the regression ceiling, not a rolling target); measured_bytes/measured_at fields are informational snapshots and may be refreshed freely.",
+  "files": {
+    "skills/skill-orchestrate/SKILL.md": {
+      "ceiling_bytes": 20000,
+      "measured_bytes": 15830,
+      "measured_at": "2026-09-07",
+      "derivation": "PATH.md 'Budgets' target ceiling; currently under ceiling (15,830 B measured via wc -c)."
+    },
+    "commands/orchestrate.md": {
+      "ceiling_bytes": 8000,
+      "measured_bytes": 15812,
+      "measured_at": "2026-09-07",
+      "derivation": "PATH.md 'Budgets' target ceiling; currently OVER ceiling by roughly 2x (15,812 B measured via wc -c). Ships warn-tier (see ORCHESTRATOR_BUDGET_GATE_MODE in verify-deploy.sh) until a future trim brings this file at or under 8,000 B -- this gap is a recorded Stage C follow-up, not a defect in the gate."
+    }
+  },
+  "eager_load": {
+    "baseline_bytes": 63973,
+    "measured_bytes": 62985,
+    "measured_at": "2026-09-07",
+    "note": "Regression check fails ABOVE baseline_bytes (via 'REPO_ROOT=$(pwd) bash scripts/measure-eager-context.sh --check', parsing the 'TOTAL: <bytes> B' line). baseline_bytes is the fixed 2026-09-02 recorded baseline named in the task description and must never be silently re-derived from a fresh measurement -- only a deliberate, reviewed change should move it. Current measured_bytes (62,985 B / ~15,746 tokens) is under baseline."
+  }
+}
