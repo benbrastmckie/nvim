@@ -51,7 +51,7 @@ next_project_number: 180
 155 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
-178 [NOT STARTED] — Author the missing semantics layer for the typst extension's sema
+178 [RESEARCHED] — Author the missing semantics layer for the typst extension's sema
   └─ 179 [NOT STARTED] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
@@ -125,10 +125,11 @@ ACCEPTANCE. The lint fires on the observed defect in `08-agency.typ` (a 25-item 
 
 ### 178. Add a semantic element usage contract to the typst extension and enforce it in the agent
 - **Effort**: 3-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md]
 
 **Description**: Author the missing semantics layer for the typst extension's semantic elements, and wire it into the implementation agent and skill as an actual structural gate.
 
