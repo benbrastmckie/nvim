@@ -399,7 +399,7 @@
     {
       "project_number": 88,
       "project_name": "mode_gate_skill_orchestrate_multi_task_section",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -433,9 +433,17 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-02T20:46:49Z",
-      "session_id": "sess_1788304786_edca9f_88",
-      "title": "Delete the single-task engine and rewrite skill-orchestrate as the four-move loop"
+      "last_updated": "2026-09-08T04:19:31Z",
+      "session_id": "sess_1788840700_afed94",
+      "title": "Delete the single-task engine and rewrite skill-orchestrate as the four-move loop",
+      "artifacts": [
+        {
+          "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
+          "type": "report",
+          "summary": "Research on the superseded (engine-deletion) scope for skill-orchestrate/SKILL.md: dependency status, current byte breakdown, existing cycle-plan/build-dispatch/cycle-postflight script coverage, the not-yet-built AskUserQuestion/.decisions.json mechanism, and the test/lint surface coupled to SKILL.md's internal structure."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 89,

@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
+      "summary": "Research on the superseded (engine-deletion) scope for skill-orchestrate/SKILL.md: dependency status, current byte breakdown, existing cycle-plan/build-dispatch/cycle-postflight script coverage, the not-yet-built AskUserQuestion/.decisions.json mechanism, and the test/lint surface coupled to SKILL.md's internal structure."
+    }
+  ],
+  "next_steps": "Run /plan 88 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788840700_afed94",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 9,
+  "memory_candidates": [
+    {
+      "content": "In this repo, a task description block can carry chronologically-stacked '=== ADDENDUM ===' / '=== REVISED ===' / '=== ORIGINAL DESCRIPTION FOLLOWS ===' sections where addenda at the TOP supersede an original description preserved at the BOTTOM for history. Always check for this pattern and state.json's own recorded `title` field (which tracks the current, superseded scope) before planning against the bottom-most text.",
+      "category": "PATTERN",
+      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["task description", "supersession", "addendum", "state.json title", "PATH.md"]
+    },
+    {
+      "content": "lint-postflight-boundary.sh locates a skill's postflight section via a generic heading heuristic (`### Stage [6-9]` / `### Stage 1[0-9]`) and silently SKIPs (not FAILs) when no match is found. Any skill rewrite that abandons numbered 'Stage N' headings for a differently-named structure (e.g. a 'move'-based loop) will cause this lint to stop enforcing the postflight boundary for that file without any visible failure. Check this lint's heuristic whenever renaming a skill's stage headings.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lint-postflight-boundary", "SKILL.md headings", "silent skip", "stage naming", "orchestrate"]
+    },
+    {
+      "content": "specs/PATH.md is a hand-maintained plan-of-record whose Progress/Chain-progress tables can lag real state.json/CHANGE_LOG.md completions by multiple task landings (observed: tasks 143 and 148 both completed and archived while PATH.md's own text still described 143 as 'next, unblocked'). Always cross-check PATH.md's dependency/blocking claims against state.json and CHANGE_LOG.md directly rather than trusting PATH.md's prose as current.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["PATH.md", "staleness", "dependency check", "state.json", "CHANGE_LOG.md"]
+    }
+  ],
+  "dispatch_seq": 1
+}

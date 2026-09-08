@@ -21,7 +21,7 @@ next_project_number: 183
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-88 [NOT STARTED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+88 [RESEARCHED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
   └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
@@ -1635,10 +1635,11 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 88. Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 148
+- **Research**: [088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md]
 
 **Description**: === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retired) ===
 Team rows no longer exist (team mode is deleted by an earlier Stage A task); item (6)'s `--team` notice removal is already done by that deletion. The loop's dry-run path is `orchestrate-cycle-plan.sh --dry-run` (the standalone report is retired by the cycle-plan task). Research on demand (a later task) changes only the phase the planner is dispatched in; this rewrite must not hardcode research-first anywhere -- the loop dispatches whatever phase the cycle plan names.
