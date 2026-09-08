@@ -1,40 +1,28 @@
 {
-  "status": "researched",
+  "status": "planned",
+  "agent_type": "planner-agent",
+  "delegation_path": ["orchestrator", "plan", "planner-agent"],
   "task_number": 178,
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "session_id": "sess_1788831210_6c6dbe_178",
-  "dispatch_seq": 2,
-  "findings_count": 6,
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md",
-      "summary": "Confirms the audit's five findings against live source files and maps scope items A-E to exact edit anchors: new standards/semantic-element-usage.md, rem: row + semantics pointer in patterns/theorem-environments.md, a positive theorem-then-remark example in templates/chapter-template.md, a sibling-shaped index-entries.json entry, and structural self-review MUST NOT items in both agents/typst-implementation-agent.md (Stage 4C, Critical Requirements) and skills/skill-typst-implementation/SKILL.md (covering the Stage 5b self-execution fallback path)."
+      "type": "plan",
+      "path": "specs/178_typst_semantic_element_usage_contract/plans/01_semantic-element-usage-contract.md",
+      "summary": "6-phase plan authoring the typst semantic-element usage standard and wiring it as a structural self-review gate into the implementation agent, skill, context index, mechanics file, and chapter template."
     }
   ],
+  "phase_count": 6,
+  "estimated_hours": 4.5,
+  "dependency_waves": [[1], [2, 3, 4, 5], [6]],
   "memory_candidates": [
     {
-      "content": "In the typst extension, context/project/typst/patterns/*.md files hold mechanics only (how to invoke thmbox environments, rule-block/rule-list); context/project/typst/standards/*.md files hold governance/semantics (what an element is for, density, placement norms). When a pattern file needs a 'why/when' rule, add it to a standards/ file and cross-reference from the pattern file, rather than embedding prose norms directly in patterns/.",
+      "content": "When a documented norm has already failed to change agent behavior once (an unenforced checklist line the agent demonstrably loaded and still violated), the fix is never one more prose line. Route the norm into a verification stage the agent actually executes (a self-review sub-step with a stated output inside the phase-completion gate), plus MUST NOT items, and install it at EVERY authoring path -- including any skill-level self-execution fallback that bypasses the agent's own verification stage. A gate installed only in the agent leaves the fallback path ungated.",
       "category": "PATTERN",
-      "source_artifact": "specs/178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["typst", "extension-architecture", "patterns-vs-standards", "context-organization"]
-    },
-    {
-      "content": "A checklist bullet in a template/standards file that no verification gate ever reads does not change agent behavior, even when the file is correctly wired into index-entries.json load_when.agents. Observed directly: chapter-template.md's 'Opening paragraph explaining chapter purpose' checklist item was violated by a real generated document despite being loaded into the implementation agent's context. Structural norms need an explicit self-review step inside a Stage (e.g. 'before marking verification complete, re-check X against standard Y') to have enforcement teeth, not just a MUST NOT list entry or checklist line.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md",
+      "source_artifact": "specs/178_typst_semantic_element_usage_contract/plans/01_semantic-element-usage-contract.md",
       "confidence": 0.85,
-      "suggested_keywords": ["prose-guidance-failure", "structural-gate", "verification", "agent-contracts", "checklist-enforcement"]
-    },
-    {
-      "content": "A skill's Stage 5b self-execution fallback (per skill-self-execution-fallback.md) can bypass an implementation agent's own Stage-level verification entirely, because in that path the skill's own execution context authors files directly without ever invoking the subagent. Any structural/content gate added to an implementation agent's contract must also be mirrored (or cross-referenced) in the wrapping SKILL.md itself, or the fallback path silently skips the gate.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["skill-self-execution-fallback", "verification-gate", "skill-agent-boundary", "structural-check"]
+      "suggested_keywords": ["enforcement", "self-review", "must-not", "self-execution-fallback", "agent-contract", "falsified-hypothesis"]
     }
   ],
-  "next_steps": "Run /plan 178 to create implementation plan"
+  "next_steps": "Run /implement 178 to execute the plan"
 }
