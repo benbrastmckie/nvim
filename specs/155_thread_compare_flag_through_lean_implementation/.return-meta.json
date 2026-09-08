@@ -31,22 +31,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/155_thread_compare_flag_through_lean_implementation/summaries/01_compare-flag-lean-threading-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["orchestrate-cycle-plan", "multi-task", "flag-threading", "scope-hypothesis", "grep-pattern"]
+      "suggested_keywords": [
+        "orchestrate-cycle-plan",
+        "multi-task",
+        "flag-threading",
+        "scope-hypothesis",
+        "grep-pattern"
+      ]
     },
     {
       "content": "To live-test agent-authored bash logic embedded in a markdown agent/skill file without spawning a real subagent, extract the fenced ```bash block by matching a unique variable name inside it (e.g. via python re.findall on the file content), write it to a temp .sh file, then source it in a subshell with the same environment variables (delegation-context-style vars) the agent would have. This proves the exact shipped logic works against controlled fixtures, going beyond mere code-reading inspection, and is especially valuable when the full real toolchain (e.g. a Lean project + Comparator binaries) is unavailable or too costly to spin up during implementation.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/155_thread_compare_flag_through_lean_implementation/summaries/01_compare-flag-lean-threading-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash-extraction", "live-testing", "agent-markdown", "fixture-testing", "acceptance-demonstration"]
+      "suggested_keywords": [
+        "bash-extraction",
+        "live-testing",
+        "agent-markdown",
+        "fixture-testing",
+        "acceptance-demonstration"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788827855_dfff06",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
