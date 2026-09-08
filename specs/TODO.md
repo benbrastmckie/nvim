@@ -1,5 +1,5 @@
 ---
-next_project_number: 190
+next_project_number: 192
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 190
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,172,177,182,183,184,185,187,188 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -41,6 +41,8 @@ next_project_number: 190
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
+190 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (n
+191 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (n
 
 ### Extensions
 
@@ -78,6 +80,72 @@ next_project_number: 190
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
+
+### 191. Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A plan-mandated `git-snapshot.sh {task_number}` step, run in its DEFAULT mode, reverts uncommitted work that has nothing to do with the task. Recovery depends entirely on the dispatched agent noticing and running `git stash pop`. A less attentive agent would proceed on a silently reverted tree and the user would lose in-flight edits with no error at any layer.
+
+OBSERVED LIVE (2026-09-08, this repository). During an implementation dispatch, the plan mandated `git-snapshot.sh` in default mode. The working tree carried ten task-unrelated uncommitted user files:
+  after/ftplugin/markdown.lua, after/ftplugin/tex.lua, after/ftplugin/typst.lua,
+  docs/MAPPINGS.md, docs/TYPST.md, lua/neotex/plugins/editor/README.md,
+  lua/neotex/plugins/editor/which-key.lua, lua/neotex/util/README.md,
+  lua/neotex/util/process.lua, .memory/memory-index.json
+All ten were stashed away by the snapshot step. The agent noticed and restored them with `git stash pop`, and reported it. Nothing in the script, the plan format, or any gate would have caught it if the agent had not.
+
+THE SAFE MODE ALREADY EXISTS -- THIS IS NOT A REQUEST FOR NEW FUNCTIONALITY. git-snapshot.sh documents the hazard in its own header ("WARNING: default and --branch modes REVERT the working tree", "Despite the name, this script is NOT read-only in its default or --branch modes") and already implements `--no-revert`, which records a real stash entry via `git stash create` + `git stash store` and leaves the working tree exactly as found. The overflow-checkpoint step in general-implementation-agent.md ALREADY calls it correctly with `--no-revert` and explains why. The gap is that PLAN-GENERATED invocations use the bare default form, and nothing forces the safer choice.
+
+DESIGN DIRECTION (the implementer refines mechanics). Prefer a runtime guard in git-snapshot.sh over documentation alone: in default mode, when the dirty tree contains tracked paths OUTSIDE the task's declared file_scope, refuse (or require an explicit override flag) rather than reverting them, naming the offending paths. Documentation-only remedies have already been tried here -- the header warning exists and was not enough. Also audit how planners emit this step so generated plans stop defaulting to the reverting form.
+
+SECONDARY, IN SCOPE: SNAPSHOT STASHES ACCUMULATE. Three git-snapshot stash entries from three separate sessions were present simultaneously (`git-snapshot-1788908157`, `git-snapshot-1787606319`, `git-snapshot-1787004036`), alongside two older WIP stashes. Nothing reaps them and nothing tells an operator which are safe to drop. At minimum give the entries enough identity for that judgment; a reaper is optional and may be split out.
+
+MUST NOT. Do not remove or weaken `--no-revert`. Do not make the snapshot silently non-durable -- the point of the step is a recoverable backup before risky operations. Do not `git stash drop`/`clear` any existing entry as part of this work.
+
+ACCEPTANCE. In a dirty tree carrying tracked modifications outside the task's file_scope, default-mode git-snapshot.sh does not silently revert them: it refuses, or preserves them, naming the paths. A fixture test sets up exactly that tree shape and fails against the current script. Generated plans no longer emit the bare reverting form for a routine pre-work snapshot.
+
+---
+
+### 190. Fix cross-session admission blindness for self-modifying candidates
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. Two SELF-MODIFYING tasks running in SEPARATE concurrent /orchestrate sessions are mutually invisible to every admission gate. Each is admitted solo; neither sees the other; they proceed to edit the same orchestrator-critical file concurrently.
+
+OBSERVED LIVE (2026-09-08, this repository, not hypothetical). Two /orchestrate sessions ran concurrently under the same ancestor pid:
+  sess_1788883218_cb46bc  /orchestrate 180,181,182
+  sess_1788889066_9309df  /orchestrate 189
+Both batches claimed agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh. Three commits landed on that file from the 189 session while the other session was in cycle-6 planning for 182. No gate fired. The collision was caught only by a human reading a task notification. 182 had not yet dispatched, so no clobber occurred -- this was luck, not a gate.
+
+MEASURED EVIDENCE (direct probe, reproducible):
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <A> 182
+    -> {"decision":"admit","self_modifying":true}
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <B> 189
+    -> {"decision":"admit","self_modifying":true}
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <B> 182 189   # SAME batch
+    -> 182 admit; 189 DEFER, defer_reason self_modifying, full critical_path + ordering reason
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <A> 157       # NOT self-modifying
+    -> admit + idle_overlap_advisory naming out-of-batch task 170, collision_scope cross_batch
+
+WHAT THIS ISOLATES. The in-batch tie-breaker works correctly. The cross-batch file_scope scan also works -- it fired for the NON-self-modifying candidate (157) against an out-of-batch task. But for a SELF-MODIFYING candidate dispatched solo, the verdict carries no cross-batch collision result and no session-registry result at all. The self-modification branch appears to admit early and short-circuit the file_scope_collision and session_active passes that would have caught the overlap. Confirm that reading against the script's own documented pass ordering (self-mod, then file_scope_collision, then session_active, the last two reached only when the prior finds no hit) before changing anything.
+
+CONTRIBUTING FACTOR, ALREADY REMEDIED, DO NOT RE-FILE. Task 189 carried no file_scope at all, so its session registered an empty covered scope. That was repaired by hand during the incident and is not the root cause: with all 11 paths populated AND the session registry re-registered to match, the solo verdicts above STILL admit. Absent metadata made it worse; it did not cause it.
+
+MUST NOT. Do not make the solo self-modifying candidate DEFER -- that would mean zero dispatch on every solo run of a self-modifying task, which is the exact regression the pre-existing tie-breaker design avoids. The admission DECISION is defensible; what is missing is that the verdict does not carry, and the caller cannot see, a live cross-session collision. Do not change the collision predicate or the verdict schema's existing fields in ways that break orchestrate-predispatch-review.sh, which is a consumer.
+
+ACCEPTANCE. With two live registered sessions whose covered scopes overlap on at least one path, a solo self-modifying candidate in one of them produces a verdict that names the overlap (defer, or admit carrying an explicit cross-session hazard field that orchestrate-predispatch-review.sh renders). A fixture test reproduces the two-session case above and fails against the current script.
+
+NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid with pid_source ancestor-claude, because two /orchestrate runs inside one Claude Code process share an ancestor. Any self-exclusion keyed on pid rather than session_id would treat a foreign session as self and silently disable cross-session detection for the most common case. Verify which key the exclusion actually uses; if it is pid, that alone may be the whole defect.
+
+---
 
 ### 189. Fix three channel-confusion defects in the orchestrate cycle-plan pipeline
 - **Status**: [COMPLETED]
