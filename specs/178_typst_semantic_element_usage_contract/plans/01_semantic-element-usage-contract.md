@@ -285,7 +285,7 @@ positive pattern is visible where chapters are actually drafted.
 
 ---
 
-### Phase 5: Install the Structural Gate in the Agent and Skill [NOT STARTED]
+### Phase 5: Install the Structural Gate in the Agent and Skill [IN PROGRESS]
 
 **Goal**: Stop compile-green from being the sole verification. This is the phase the task's
 acceptance actually turns on — the falsified hypothesis is that prose guidance alone changes

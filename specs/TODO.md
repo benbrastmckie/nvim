@@ -1,5 +1,5 @@
 ---
-next_project_number: 180
+next_project_number: 183
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 180
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177,178 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175,179 | 29,74,88,139,155,162,172,178 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 165 | 163,164 | file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177,178,180 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175,179,181 | 29,74,88,139,155,162,172,178,180 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -39,6 +39,9 @@ next_project_number: 180
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
   └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
+180 [NOT STARTED] — Move the post-deploy consumer-freshness scan off the blocking pat
+  └─ 181 [NOT STARTED] — Fix three related defects in the /orchestrate inter-cycle redeplo
+    └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
 
 ### Extensions
 
@@ -82,6 +85,143 @@ next_project_number: 180
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
+
+### 182. Add a durable redeploy ledger with content-hash and recency skip to the checkpoint
+- **Effort**: 4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 181
+
+**Description**: Give the /orchestrate inter-cycle redeploy checkpoint a durable run ledger so it stops re-running a full redeploy that just happened.
+
+OBSERVED COST. In session sess_1788827855_dfff06 the checkpoint consumed roughly 10 minutes of wall clock in a single cycle and ended by deferring BOTH tasks in the batch (deferred_deploy_checkpoint: [155,156]) -- leaving one task stranded at [IMPLEMENTING] despite 6/6 plan phases closed and committed, and the other never dispatched at all. There is no durable record of when a redeploy last ran, against which source-store content, or with what verify outcome, so the checkpoint cannot skip a redeploy that just succeeded.
+
+=== CORRECTION TO THE ORIGINAL DIAGNOSIS: deployed_critical_paths IS MIS-SCOPED, NOT DEAD ===
+
+The field was initially suspected of never being written, which would make it a dead field. That is NOT what the code does. Verified:
+  - It IS written, on the two SUCCESS branches of the checkpoint: the verify-clean branch and the pre-existing-findings-proceed branch (branch (c)). Both do .deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique).
+  - It is NEVER written on the DEFER branch. The observed empty [] is therefore fully explained by the run having deferred -- the field did exactly what it was coded to do.
+  - Decisively, it lives in the mt_state_file, whose filename is session-scoped (specs/.orchestrator-multi-state-sess_<id>.json). It resets on every /orchestrate invocation.
+
+CONCLUSION. deployed_critical_paths is a WITHIN-INVOCATION re-deploy suppressor, working as designed for that narrower purpose. It is not, and cannot be, the cross-invocation ledger described here. This task must therefore introduce genuinely NEW durable state rather than attempt to repair that field. Decide during planning whether the existing field is subsumed by the new ledger or retained alongside it for its narrower within-invocation role; do not silently redefine its semantics in place.
+
+=== WHAT TO BUILD ===
+
+Persist a last-deploy record spanning invocations: timestamp, source-store content hash, and verify outcome. Skip the redeploy when the source-store hash is unchanged since the recorded successful deploy, or when the record is recent enough -- i.e. run the redeploy when it is genuinely needed or when it has been a while, not on every qualifying cycle.
+
+The record must capture the verify OUTCOME, whose definition is settled by the prerequisite gate-depth task. That is the primary reason for the dependency ordering: writing a ledger against outcome semantics that the next task redefines would require rewriting it.
+
+=== NAMED ACCEPTANCE CRITERION: THE SELF-MODIFYING-TASK CLASS ===
+
+A task whose own file_scope IS the orchestrator source store necessarily stales the deploy that its own completion gate then checks. This is exactly what happened in the observed session: the batch edited agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh -- the very script running the checkpoint that then blocked it. This class of task hits the checkpoint EVERY SINGLE TIME by construction, so it must be designed for explicitly, not treated as an edge case.
+
+CRITICAL CONSEQUENCE FOR THE DESIGN: a content-hash skip does NOT help this class, because the hash always changes by construction -- the task's own edits are what change it. Only a recency window, or a 'the redeploy that just landed was mine' ledger check that recognizes the last successful deploy already incorporated this batch's changes, addresses it. The content-hash skip and the recency/attribution skip are therefore NOT redundant alternatives; the hash skip covers the ordinary case and the recency/attribution skip covers the self-modifying case. Shipping only the hash skip leaves the observed failure mode fully intact.
+
+This must be a named acceptance criterion with test coverage: a simulated self-modifying task (file_scope overlapping the orchestrator's own scripts) must not incur a redundant full redeploy on every cycle.
+
+=== SCOPE ===
+
+Extend scripts/tests/test-orchestrate-cycle-plan.sh with coverage for: skip on unchanged hash; skip within the recency window; NO skip when the source store genuinely changed outside the window; and the self-modifying-task case above. Update the 'The Inter-Cycle Redeploy Checkpoint' subsection of context/patterns/batch-orchestration-guardrails.md, which currently defers this work explicitly -- it names the deployed_critical_paths idempotence backing store as 'its own task'. That note is closed by this task and must be replaced with the real contract, including the corrected description of the existing field's within-invocation scope.
+
+DO NOT SIMPLY DISABLE THE GATE. Skipping must be justified by evidence in the ledger that the deploy is current. A skip on no evidence is a disabled gate wearing a ledger's clothes.
+
+SOURCE STORE. All edits land under agent-system/extensions/core/** at the GLOBAL root /home/benjamin/.config/nvim. Never edit .claude/**, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.
+
+DEPENDENCY. Depends on the gate-depth task both by file footprint (both modify orchestrate-cycle-plan.sh) and semantically (the ledger stores a verify outcome whose definition that task changes).
+
+---
+
+### 181. Unify redeploy-checkpoint gate depth and make its defer verdict trustworthy and actionable
+- **Effort**: 3-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 180
+
+**Description**: Fix three related defects in the /orchestrate inter-cycle redeploy checkpoint that together produced a contradictory, unactionable deferral of an entire batch.
+
+=== DEFECT A: INCONSISTENT GATE DEPTH PRODUCES CONTRADICTORY VERDICTS ===
+
+OBSERVED. In session sess_1788827855_dfff06, deploy-headless.sh ran verify-deploy.sh WITH --skip-slow and reported PASS (29 checks, 0 failures, RESULT=landed_verify_clean, including an explicit '[SKIP] --skip-slow: shell test suite deferred' line). The checkpoint then immediately ran its OWN verify-deploy.sh WITHOUT --skip-slow, got exit 1 with new findings versus the pre-redeploy baseline, and deferred both tasks. Two verifications of the same tree, minutes apart, returned opposite verdicts purely because they ran at different gate depths.
+
+MECHANICS (verified). Each checkpoint firing runs verify-deploy.sh THREE times:
+  1. orchestrate-cycle-plan.sh pre_findings snapshot -- FULL depth
+  2. deploy-headless.sh's own internal run -- VERIFY_ARGS=(--skip-slow), fast depth
+  3. orchestrate-cycle-plan.sh post_findings snapshot -- FULL depth
+
+IMPORTANT -- THIS IS A DOCUMENTED DECISION, NOT AN OVERSIGHT. The comment block immediately above the post_findings call in orchestrate-cycle-plan.sh explicitly argues for the full-depth choice: it takes the full snapshot 'independently of deploy-headless.sh's own internal --skip-slow verify -- exactly as before this phase -- so the baseline comparison below sees slow-gate findings too, not only the fast subset deploy-headless.sh itself checked.' Do NOT simply delete the full-depth pass. Either preserve that intent under a cheaper mechanism or supersede the argument explicitly and update the comment; a silent reversal will be re-reverted by the next reader.
+
+APPROACHES TO EVALUATE (choose during research/planning, do not pre-commit): verify once at a single depth; have the checkpoint consume deploy-headless.sh's own already-computed result instead of independently re-verifying; or keep two depths but make the depth mismatch explicit in the comparison so a fast-PASS/full-FAIL disagreement is reported as such rather than silently resolved in favor of the deferral.
+
+=== DEFECT B: THE DEFER MESSAGE DOES NOT NAME THE FAILING FINDING ===
+
+OBSERVED. The deferral message reads 'verify-deploy.sh exit N with new findings vs. pre-redeploy baseline; deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers.' It never names WHICH finding was new, so the operator cannot act on it without manually re-running the whole gate.
+
+THIS IS THE CHEAPEST FIX IN THE TASK. The new_findings variable is already computed by deploy_baseline_new_findings immediately above, and is in scope and non-empty on exactly this branch -- the branch is reached only because new_findings is non-empty. The message simply does not print it. Emit the specific new findings (and the recorded defer_ledger detail field) so the operator sees what failed. The defer_ledger entry's detail field should likewise carry the finding identity, not just the generic string 'verify-deploy.sh new findings vs. pre-redeploy baseline'.
+
+=== DEFECT C: A FLAKY, LOAD-SENSITIVE TEST CAN DEFER AN UNRELATED BATCH ===
+
+This is the ACTUAL trigger of the observed deferral, verified in-session.
+
+EVIDENCE.
+  - The failing gate was test-lake-build-guard.sh: 28 passed / 1 failed during the checkpoint run.
+  - Re-run twice immediately afterward on an idle machine: 29 passed / 0 failed, both times. It is FLAKY, not broken.
+  - Git history confirms known load sensitivity: commit 878043472 'tests: isolate lake-build-guard suite from ambient host memory pressure', and a prior task added a 'pressured fixture' to it.
+  - It is UNRELATED to the batch: it was last touched by an unrelated earlier task, and the batch's own modified_files never include it.
+  - CRITICALLY, THE CHECKPOINT SELF-INFLICTED THE LOAD. It ran a full deploy plus the entire shell test suite immediately before the post_findings snapshot that then flagged the failure. The gate created the memory pressure that made its own load-sensitive test fail, and then deferred the batch over that failure.
+
+WHY THIS MATTERS BEYOND ONE TEST. As built, ANY load-sensitive test flaking under checkpoint-induced load can defer an entire batch over a finding attributable to no task in that batch. This is a structural property of the gate, not a property of test-lake-build-guard.sh.
+
+ACCEPTANCE CRITERION. The checkpoint MUST NOT defer a batch on a finding that is flaky or unrelated to the batch's own modified_files.
+
+APPROACHES TO EVALUATE (choose during research/planning, do not pre-commit to one): re-run a candidate new finding before treating it as new; quarantine load-sensitive tests out of the blocking gate; or scope the defer decision to findings attributable to the batch's own modified_files. Note the interaction with Defect A -- reducing gate depth may make the third option easier, and re-running a candidate finding costs less if the gate is not already running three verify passes.
+
+=== PRESERVE ===
+
+Branch (c) of the existing three-branch contract MUST survive: a post-redeploy finding set that is unchanged or shrunk relative to the pre-redeploy baseline proceeds loudly with a recorded verify_deploy_baseline_notices entry. That is what stops a pre-existing, unrelated red gate from deferring the whole batch, and it is the closest existing analogue to the Defect C fix. Branch (a) -- deploy-headless.sh exit 1 or 2 means the deploy did not land, unconditional defer, no baseline consultation -- must also survive unchanged, including its deliberate exclusion of exit 3.
+
+DO NOT SIMPLY DISABLE THE GATE. The checkpoint exists to stop the orchestrator running against a stale deploy of its own scripts. The goal is a verdict that is trustworthy and actionable when it fires, not an absent verdict.
+
+=== SCOPE ===
+
+Update the 'The Inter-Cycle Redeploy Checkpoint' subsection of context/patterns/batch-orchestration-guardrails.md to match whatever contract results, and extend scripts/tests/test-orchestrate-cycle-plan.sh with coverage for the new behavior (at minimum: a new finding that is flaky or unrelated does NOT defer; a genuine new attributable finding still DOES defer; the defer message names the finding).
+
+SOURCE STORE. All edits land under agent-system/extensions/core/** at the GLOBAL root /home/benjamin/.config/nvim. Never edit .claude/**, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.
+
+DEPENDENCY. Depends on the consumer-scan opt-in task both by file footprint (both modify deploy-headless.sh) and because that task removes latency this task's re-run-a-candidate-finding option would otherwise compound.
+
+---
+
+### 180. Make the consumer-freshness scan opt-in in deploy-headless.sh
+- **Effort**: 1 hour
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Move the post-deploy consumer-freshness scan off the blocking path of the /orchestrate inter-cycle redeploy checkpoint by making it opt-in.
+
+OBSERVED COST. In session sess_1788827855_dfff06 (orchestrating tasks 155 and 156), the redeploy checkpoint consumed roughly 10 minutes of wall clock in a single cycle. Part of that cost is a consumer-repo staleness walk over approximately 50 repositories (CONSUMERS_STALE=50), printing per-extension STALE/CANNOTVERIFY rows for each.
+
+WHY THIS IS PURE COST. The scan is report-only by explicit design. deploy-headless.sh's own comment at the scan site states it 'is report-only and can NEVER change this script's exit code', and the script states plainly that it never redeploys into a consumer -- the documented remedy is to run the deploy manually in each stale repo. So on the critical path of a blocking gate this walk produces output that the gate cannot act on and that the orchestrator does not consume.
+
+LOCATION. The scan lives in the post-deploy block of agent-system/extensions/core/scripts/deploy-headless.sh (the '--- Post-deploy stale-consumer report (TIER 3, additive output only)' section), invoking check-consumer-freshness.sh --stale-only. Some flag plumbing may also touch verify-deploy.sh.
+
+SCOPE OF WORK.
+A. Gate the scan behind an explicit opt-in flag (default OFF), following verify-deploy.sh's existing 'always explicit, never derived. Default OFF' flag convention rather than inventing a new one.
+B. Preserve the CONSUMERS_STALE=<n> stderr contract for callers that DO opt in -- deploy-headless.sh's header documents this as the way a caller reads the consumer-staleness signal on its own, so the line must remain byte-compatible when the flag is passed.
+C. Confirm no current caller depends on the scan running unconditionally. If a caller does, pass the new flag there explicitly rather than flipping the default.
+
+ACCEPTANCE. A default deploy-headless.sh run performs no consumer walk and emits no per-consumer STALE/CANNOTVERIFY rows; the same run with the opt-in flag reproduces today's output including the CONSUMERS_STALE=<n> line. The checkpoint's wall-clock cost drops by the scan's share. The scan's exit-code neutrality is unchanged in both modes.
+
+ORDERING. This is the lowest-risk of the three redeploy-checkpoint tasks and lands first so that deploy-headless.sh is settled before the gate-depth work modifies it.
+
+SOURCE STORE. All edits land under agent-system/extensions/core/** at the GLOBAL root /home/benjamin/.config/nvim. Never edit .claude/**, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.
+
+SAFETY CONSTRAINT. Do not disable or weaken any gate that can change the deploy verdict. This task removes reporting from the blocking path; it must not remove verification.
+
+---
 
 ### 179. Add an element placement and density lint to the typst extension
 - **Effort**: 2-3 hours
