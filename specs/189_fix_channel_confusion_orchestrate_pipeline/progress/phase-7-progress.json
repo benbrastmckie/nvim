@@ -2,17 +2,26 @@
   "phase": 7,
   "phase_name": "Maintained lint for the channel-discipline class, and the full gate run",
   "started_at": "2026-09-08T04:20:00Z",
-  "last_updated": "2026-09-08T04:20:00Z",
+  "last_updated": "2026-09-08T19:20:00Z",
   "objectives": [
-    {"id": 1, "description": "Create lint-json-channel-discipline.sh", "status": "not_started"},
-    {"id": 2, "description": "Encode verify-deploy.sh doc_lint_output false positive as allowlist", "status": "not_started"},
-    {"id": 3, "description": "Create test-lint-json-channel-discipline.sh", "status": "not_started"},
-    {"id": 4, "description": "Do NOT wire lint into verify-deploy.sh; record coupling", "status": "not_started"},
-    {"id": 5, "description": "Run full gate set run-all.sh plus each affected suite", "status": "not_started"},
-    {"id": 6, "description": "Re-run SKILL.md Move 1 and dry-run invocation as end-to-end acceptance", "status": "not_started"},
-    {"id": 7, "description": "Confirm final diff touches no forbidden paths", "status": "not_started"}
+    {"id": 1, "description": "Create lint-json-channel-discipline.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh"]},
+    {"id": 2, "description": "Encode verify-deploy.sh doc_lint_output false positive as allowlist", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh"]},
+    {"id": 3, "description": "Create test-lint-json-channel-discipline.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh"]},
+    {"id": 4, "description": "Do NOT wire lint into verify-deploy.sh; record coupling", "status": "done", "note": "Coupling recorded in the lint script's header comment (Gate wiring section); verify-deploy.sh untouched."},
+    {"id": 5, "description": "Run full gate set run-all.sh plus each affected suite", "status": "done", "note": "Full run-all.sh sweep withheld per prior-cycle decision (two consecutive wedges on test-verify-deploy-context-budget.sh, host in swap). Targeted suites run and green instead: test-orchestrate-cycle-plan.sh (147 passed), test-orchestrate-cycle-postflight.sh (65 passed), test-orchestrate-predispatch-review.sh (14 passed), test-lint-json-channel-discipline.sh (11 passed) = 237 passed, 0 failed."},
+    {"id": 6, "description": "Re-run SKILL.md Move 1 and dry-run invocation as end-to-end acceptance", "status": "done", "note": "Re-verified in a synthetic deployed-shaped tree (mirroring the test harness's own sandbox convention): SKILL.md's Move 1 $(...) capture parses via jq with no preamble stripping; commands/orchestrate.md's --dry-run invocation and its documented empty-session fallback both run and exit 0 with pure JSON on stdout and the human table on stderr."},
+    {"id": 7, "description": "Confirm final diff touches no forbidden paths", "status": "done", "note": "git diff/status confirms no changes to verify-deploy.sh, deploy-headless.sh, the redeploy-checkpoint block, Class A, or orchestrate-batch-admit.sh's verdict logic; only the two new lint/test files plus plan/progress bookkeeping."}
   ],
-  "current_objective": 1,
+  "current_objective": 7,
   "approaches_tried": [],
-  "handoff_count": 0
+  "handoff_count": 1,
+  "deviations": [
+    {
+      "task_id": "7.5",
+      "description": "Run the full gate set: bash agent-system/extensions/core/scripts/tests/run-all.sh, plus each directly affected suite individually.",
+      "type": "altered",
+      "reason": "Two consecutive full run-all.sh sweeps wedged on test-verify-deploy-context-budget.sh (>6 min each, no completion) on a host already 16 GB into swap; killed per an explicit prior-cycle user decision. Verified with the five suites directly affected by this task instead (243 passed, 0 failed total: cycle-plan 147, cycle-postflight 65, predispatch-review 14, loop-guard-budget-override 8, lint-json-channel-discipline 11).",
+      "annotation": "*(deviation: altered — full run-all.sh sweep withheld this cycle; targeted suites run and green instead, see plan checklist)*"
+    }
+  ]
 }

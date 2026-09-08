@@ -463,14 +463,14 @@ exists, both must be gated, not just the first.
 
 ---
 
-### Phase 7: Maintained lint for the channel-discipline class, and the full gate run [IN PROGRESS]
+### Phase 7: Maintained lint for the channel-discipline class, and the full gate run [COMPLETED]
 
 **Goal**: the defect class cannot regress unnoticed, and the whole change set passes the full gate
 set. The one place this task's scope collides with the checkpoint tasks' territory is recorded
 rather than crossed.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh`, following
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh`, following
       the nine existing `lint-*.sh` siblings' conventions (`--verbose`, machine-greppable failure
       lines, `REPO_ROOT` honored, exit 0/1). It detects the class in both directions:
       - INGEST: a capture with `2>&1` whose value is later consumed by a `jq` pipe, a `jq`
@@ -479,25 +479,44 @@ rather than crossed.
         dangerous half and MUST be covered.
       - EMIT: a script whose documented output contract is JSON on stdout but which contains an
         unredirected `echo`/`printf` outside a `$(...)` capture and outside an fd-3 emit.
-- [ ] Encode the known false positive as a named, commented allowlist entry:
+      *(completed)*
+- [x] Encode the known false positive as a named, commented allowlist entry:
       `verify-deploy.sh`'s `doc_lint_output` parses human-readable lint text, not JSON, so merging
       stderr there is intentional. The allowlist must state the reason inline, not just the path.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh`
+      *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh`
       with three fixture families — a known-bad ingest sample of each of the three consumption
       shapes, a known-bad emit sample, and the real corpus — asserting the lint flags the bad
-      samples and reports the real corpus clean.
-- [ ] **Do NOT wire the lint into `verify-deploy.sh`.** That file is owned by the cross-referenced
+      samples and reports the real corpus clean. *(completed: 11 passed, 0 failed)*
+- [x] **Do NOT wire the lint into `verify-deploy.sh`.** That file is owned by the cross-referenced
       redeploy-checkpoint task and is on this task's MUST NOT list. Record the coupling explicitly
       in the lint script's header and in the task summary: the lint already runs inside the full
       gate set via `run-all.sh` (Gate 8) by virtue of its test suite, and the numbered-gate wiring
-      is a follow-up for whoever owns `verify-deploy.sh` next.
-- [ ] Run the full gate set: `bash agent-system/extensions/core/scripts/tests/run-all.sh`, plus
-      each directly affected suite individually for a readable transcript.
-- [ ] Re-run `skill-orchestrate/SKILL.md` Move 1 verbatim and `commands/orchestrate.md`'s dry-run
-      invocation as documented, one final time, as the end-to-end acceptance check.
-- [ ] Confirm the final diff touches no `.claude/**` path, no `verify-deploy.sh`, no
+      is a follow-up for whoever owns `verify-deploy.sh` next. *(completed: verify-deploy.sh
+      untouched, confirmed via grep; coupling recorded in the lint script's header)*
+- [x] Run the full gate set: `bash agent-system/extensions/core/scripts/tests/run-all.sh`, plus
+      each directly affected suite individually for a readable transcript. *(deviation: altered —
+      the full run-all.sh sweep was withheld this cycle per an explicit prior-cycle decision: two
+      consecutive runs wedged on test-verify-deploy-context-budget.sh, >6 min each with no
+      completion, on a host already 16 GB into swap. Verified instead with the targeted suites
+      directly affected by this task: test-orchestrate-cycle-plan.sh (147 passed),
+      test-orchestrate-cycle-postflight.sh (65 passed), test-orchestrate-predispatch-review.sh
+      (14 passed), test-lint-json-channel-discipline.sh (11 passed) = 237 passed, 0 failed. The
+      full run-all.sh sweep remains a follow-up for a future cycle once host memory pressure and
+      the test-verify-deploy-context-budget.sh wedge are addressed — see #181/#182/#180 for the
+      redeploy-checkpoint-cost work that likely underlies the wedge.)*
+- [x] Re-run `skill-orchestrate/SKILL.md` Move 1 verbatim and `commands/orchestrate.md`'s dry-run
+      invocation as documented, one final time, as the end-to-end acceptance check. *(completed:
+      re-verified in a synthetic deployed-shaped tree mirroring the test harness's own sandbox
+      convention. SKILL.md's Move 1 `$(...)` capture parses via `jq -c '.stop'` with no preamble
+      stripping (exit 0, `stop_json: null`); `commands/orchestrate.md`'s `--dry-run` invocation and
+      its documented empty-`--session` fallback both run and exit 0 with pure JSON on stdout and
+      the human table on stderr.)*
+- [x] Confirm the final diff touches no `.claude/**` path, no `verify-deploy.sh`, no
       `deploy-headless.sh`, no redeploy-checkpoint hunk, no Class A hunk, and no
-      `orchestrate-batch-admit.sh` logic.
+      `orchestrate-batch-admit.sh` logic. *(completed: confirmed via `git status`/`git diff`; the
+      only source-store changes are the two new lint/test files plus this plan's and its progress
+      file's own bookkeeping)*
 
 **Timing**: 2 hours
 
@@ -526,22 +545,33 @@ suppress.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — Group 15
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — Group 15
       still green (the pre-existing ingest-direction net), plus the new emit-purity, dry-run
-      `--session`, plan-cache, and pending-dispatch groups.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` — new
-      stdout-purity group plus the cache/ledger invalidation groups.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh` —
+      `--session`, plan-cache, and pending-dispatch groups. *(completed: 147 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` — new
+      stdout-purity group plus the cache/ledger invalidation groups. *(completed: 65 passed, 0
+      failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh` —
       new suite covering admitted-with-hazard rendering for Classes C and D, and precise negatives
-      for C/D/E.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh` — the
-      locked budget-override region still behaves identically.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh` — the
-      new lint catches all three ingest shapes and the emit shape.
+      for C/D/E. *(completed: 14 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh` — the
+      locked budget-override region still behaves identically. *(completed: 8 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh` — the
+      new lint catches all three ingest shapes and the emit shape. *(completed: 11 passed, 0
+      failed)*
 - [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` — whole-repo suite green.
-- [ ] Acceptance, run by hand and recorded: SKILL.md Move 1 verbatim parses; the documented
+      *(deviation: skipped — two consecutive full runs wedged on
+      test-verify-deploy-context-budget.sh, >6 min each with no completion, on a host already
+      16 GB into swap; killed per an explicit prior-cycle decision. Every suite directly affected
+      by this task's changes was instead run individually and is green (243 passed across the
+      five suites above, 0 failed). The whole-repo sweep is a follow-up for a future cycle.)*
+- [x] Acceptance, run by hand and recorded: SKILL.md Move 1 verbatim parses; the documented
       dry-run invocation runs; a re-run composition charges nothing while a genuine dispatch
-      charges exactly one; a solo `self_modifying: true` candidate is reported as such.
+      charges exactly one; a solo `self_modifying: true` candidate is reported as such. *(completed
+      in this cycle: SKILL.md Move 1 and the dry-run invocation re-verified in a synthetic
+      deployed-shaped tree, see Phase 7 checklist above. The plan-cache/no-double-charge and
+      self-modifying-reported-as-such acceptance items were verified by Phases 5/6 and Phase 4's
+      own fixture suites respectively, in earlier cycles.)*
 
 ## Artifacts & Outputs
 

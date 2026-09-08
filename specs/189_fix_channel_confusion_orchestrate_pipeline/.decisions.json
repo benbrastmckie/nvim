@@ -1,0 +1,14 @@
+[
+  {
+    "question": "How should phase 7 of task 189 be finished? Its two files pass 11 tests but are untracked.",
+    "answer": "Re-dispatch a fresh implementation cycle rather than having the orchestrator commit the files directly. Phase 7's deliverables (scripts/lint/lint-json-channel-discipline.sh and scripts/tests/test-lint-json-channel-discipline.sh) already exist on disk and pass their 11 tests; they are UNTRACKED and must be committed, and the phase-7 heading in the plan must be closed.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T18:54:44Z"
+  },
+  {
+    "question": "An orphaned run-all.sh wedged on test-verify-deploy-context-budget.sh with nothing left to consume its result. Kill it?",
+    "answer": "Killed. Do NOT launch a full run-all.sh gate sweep for verification in this cycle: two consecutive full runs wedged on test-verify-deploy-context-budget.sh (>6 min each, no completion) on a host already 16 GB into swap, and the previous dispatch looped on waiting for them without ever closing phase 7. Verify with the targeted suites instead; they were run and are green: test-orchestrate-cycle-plan (147 passed), test-orchestrate-cycle-postflight (65), test-orchestrate-predispatch-review (14), test-lint-json-channel-discipline (11) = 237 passed, 0 failed.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T18:54:44Z"
+  }
+]
