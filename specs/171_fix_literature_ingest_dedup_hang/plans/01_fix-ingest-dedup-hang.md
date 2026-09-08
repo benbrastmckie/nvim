@@ -219,40 +219,40 @@ no call site, directive token, or exit code changes. Confirm at implementation t
 
 ---
 
-### Phase 3: Regression suite for the batch path and the preserved contract [NOT STARTED]
+### Phase 3: Regression suite for the batch path and the preserved contract [COMPLETED]
 
 **Goal**: Lock in the 2-argv contract, the batch short-circuit, the tie-break order, the 0.85
 threshold, and the exact WARNING text so a future edit cannot silently reintroduce the defect or
 change the recommendation semantics.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh` following
+- [x] Create `agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh` following
       the house pattern established by `tests/test-literature-build-index.sh`: `set -uo pipefail`,
       `TESTS_DIR`/`SCRIPT_DIR` resolution, `t_log`/`t_pass`/`t_fail` counters, `mktemp -d`
       workdir with a `trap ... EXIT` cleanup, exit 0 on all-pass / 1 on any required failure.
-- [ ] Header comment must state the suite MUST NOT read from or write to `~/Projects/Literature/`
+- [x] Header comment must state the suite MUST NOT read from or write to `~/Projects/Literature/`
       (the real corpus), matching the existing suite's stated invariant, and must name the defect
       it locks in.
-- [ ] Test: 2-argv identical titles -> `1.0`; 2-argv wrong-arity -> `0.0`; 2-argv
+- [x] Test: 2-argv identical titles -> `1.0`; 2-argv wrong-arity -> `0.0`; 2-argv
       punctuation/case-only difference -> `1.0` (pins `normalize()`).
-- [ ] Test: batch exact-normalized match returns score `1.0` and the original (un-normalized)
+- [x] Test: batch exact-normalized match returns score `1.0` and the original (un-normalized)
       title string.
-- [ ] Test: batch tie-break — two stdin lines scoring identically against the candidate; assert
+- [x] Test: batch tie-break — two stdin lines scoring identically against the candidate; assert
       the FIRST is returned (strict `>` semantics, matching the replaced shell loop).
-- [ ] Test: batch with empty stdin, and batch where every line is blank -> `0.0` and empty title,
+- [x] Test: batch with empty stdin, and batch where every line is blank -> `0.0` and empty title,
       exit 0.
-- [ ] Test: end-to-end over a scratch `LITERATURE_DIR` whose `index.json` contains a
+- [x] Test: end-to-end over a scratch `LITERATURE_DIR` whose `index.json` contains a
       near-duplicate title above 0.85 — assert stderr contains the exact literal
       `WARNING: possible duplicate --` and the literal
       `(non-blocking recommendation-only check; proceeding)`.
-- [ ] Test: same scratch harness with only sub-0.85 titles — assert NO `WARNING: possible
+- [x] Test: same scratch harness with only sub-0.85 titles — assert NO `WARNING: possible
       duplicate` line is emitted.
-- [ ] Test: fail-open — scratch `index.json` containing invalid JSON produces no duplicate
+- [x] Test: fail-open — scratch `index.json` containing invalid JSON produces no duplicate
       warning and a zero return.
-- [ ] Register the new file in `agent-system/extensions/literature/manifest.json` under
+- [x] Register the new file in `agent-system/extensions/literature/manifest.json` under
       `provides.scripts` as `tests/test-title-sim-dedup.sh`, alongside the existing
       `tests/test-*.sh` entries.
-- [ ] Make the script executable (`chmod +x`).
+- [x] Make the script executable (`chmod +x`).
 
 **Timing**: 60 minutes
 

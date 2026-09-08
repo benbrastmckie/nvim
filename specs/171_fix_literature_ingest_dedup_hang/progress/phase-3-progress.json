@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "Regression suite for the batch path and the preserved contract",
+  "started_at": "2026-09-08T22:40:40Z",
+  "last_updated": "2026-09-08T22:40:40Z",
+  "objectives": [
+    {"id": 1, "description": "Create tests/test-title-sim-dedup.sh following house pattern with all fixtures and assertions", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh"]},
+    {"id": 2, "description": "Register new test in manifest.json provides.scripts, chmod +x, verify deliberate-break check fails", "status": "done", "files_touched": ["agent-system/extensions/literature/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
