@@ -623,11 +623,14 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe}')" '.verify_deploy_baseline_notices += [$entry]'
         else
           # Branch (b): at least one newly-introduced finding relative to the pre-redeploy
-          # baseline -- defer, do not re-attempt.
+          # baseline -- defer, do not re-attempt. Name the specific finding(s) in both the
+          # stderr warning and the defer_ledger detail, so the operator can act without
+          # re-running the whole gate to discover what was new (Defect B).
           echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline; deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+          printf '%s\n' "$new_findings" | sed 's/^/    /' >&2
           mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
             .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
-          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:"verify-deploy.sh new findings vs. pre-redeploy baseline"}')" '.defer_ledger += [$entry]'
+          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --arg nf "$new_findings" --argjson nfc "$(printf '%s\n' "$new_findings" | grep -c .)" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("verify-deploy.sh new findings vs. pre-redeploy baseline (" + ($nfc|tostring) + "): " + $nf)}')" '.defer_ledger += [$entry]'
         fi
       fi
     fi

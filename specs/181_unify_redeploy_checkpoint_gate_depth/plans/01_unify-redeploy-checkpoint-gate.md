@@ -1,7 +1,7 @@
 # Implementation Plan: Task #181
 
 - **Task**: 181 - Unify the /orchestrate inter-cycle redeploy checkpoint gate depth and verdict trustworthiness
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: consumer-scan opt-in task (shared `deploy-headless.sh` footprint; removes latency this plan's confirmation re-run would otherwise compound)
 - **Research Inputs**: None (no research report; the task description carried verified mechanics and in-session evidence, and the four target files were read directly during planning)
@@ -134,19 +134,19 @@ Phases within the same wave can execute in parallel. Wave 1's two phases touch d
 
 ---
 
-### Phase 1: Name the failing finding in the defer message and ledger (Defect B) [NOT STARTED]
+### Phase 1: Name the failing finding in the defer message and ledger (Defect B) [COMPLETED]
 
 **Goal**: The operator can act on a checkpoint deferral without re-running the whole gate.
 
 **Tasks**:
-- [ ] In `orchestrate-cycle-plan.sh`'s branch (b) (currently line ~627), emit the contents of
-      `new_findings` after the warning line, one finding per line, indented for readability.
-- [ ] Replace the `defer_ledger` entry's generic `detail` string (currently line ~630,
+- [x] In `orchestrate-cycle-plan.sh`'s branch (b) (currently line ~627), emit the contents of
+      `new_findings` after the warning line, one finding per line, indented for readability. *(completed)*
+- [x] Replace the `defer_ledger` entry's generic `detail` string (currently line ~630,
       `"verify-deploy.sh new findings vs. pre-redeploy baseline"`) with one carrying the finding
       identity — pass `new_findings` through `jq --arg` and store both a count and the finding
       lines. Keep the `defer_reason` field value `"deploy_checkpoint"` unchanged (it is matched
-      elsewhere).
-- [ ] Confirm the emitted findings go to stderr, consistent with every other checkpoint message.
+      elsewhere). *(completed)*
+- [x] Confirm the emitted findings go to stderr, consistent with every other checkpoint message. *(completed)*
 
 **Timing**: 0.5 hours
 
