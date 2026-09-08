@@ -35,7 +35,7 @@ next_project_number: 190
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
   └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
-181 [PLANNED] — Fix three related defects in the /orchestrate inter-cycle redeplo
+181 [IMPLEMENTING] — Fix three related defects in the /orchestrate inter-cycle redeplo
   └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
@@ -115,6 +115,75 @@ SEQUENCING: (i) these edits touch orchestrate-cycle-plan.sh and orchestrate-pred
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ---
+
+
+--- ADDENDUM 2026-09-08 (partial fix already landed; scope changed) ---
+
+PART OF THIS TASK IS ALREADY FIXED IN THE SOURCE STORE. Two commits landed on
+agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh while this task was still
+[NOT STARTED]. Read them before planning, and do NOT re-derive what they already did:
+
+  1c44c8a33  orchestrate: keep cycle-plan stdout pure JSON
+  6bca9f194  orchestrate: fix stderr-into-JSON at all four collaborator calls
+
+WHAT THEY FIXED (defect (1), tactically). The "OK: task N ..." contamination named in defect (1)
+is resolved at the call site: skill_preflight_update is now invoked with >&2. Fixed at that call
+site rather than inside update-task-status.sh, because its other call sites have no JSON-purity
+contract and printing to stdout is correct for them.
+
+ITEM (a) IS STILL WORTH DOING ANYWAY. The landed fix is per-call-site and therefore exactly the
+kind of fix item (a) argues against. The structural remedy item (a) specifies -- exec 3>&1 1>&2 at
+entry, plan JSON emitted to fd 3 -- still stands, is strictly stronger, and would make the >&2 at
+the skill_preflight_update call site redundant (remove it when item (a) lands, rather than leaving
+two overlapping mechanisms). Treat the landed commit as a stopgap that unblocked live runs, not as
+item (a) completed.
+
+NEW FINDING THIS TASK DID NOT DESCRIBE: THE SAME CHANNEL CONFUSION IN THE OPPOSITE DIRECTION.
+Defect (1) describes cycle-plan leaking prose INTO its own stdout. The audit behind 6bca9f194
+found the mirror image: cycle-plan CONSUMING its collaborators' stdout with 2>&1, folding their
+stderr diagnostics into payloads it then parses. Four sites, all now fixed via a shared
+run_capture_stdout helper:
+
+  (l) orchestrate-build-dispatch.sh      -> jq .dispatch_file
+  (A) orchestrate-build-aux-dispatch.sh  -> jq .dispatch_file
+  (B) orchestrate-triage-classify.sh     -> per-row NDJSON parse
+  (C) orchestrate-batch-admit.sh         -> per-row NDJSON parse
+
+(B) and (C) are the dangerous pair: the collaborator still exits 0, so the degraded-path warning
+never fires and the while-read loop ingests a garbage row while reporting success. The three
+collaborators carry 31 stderr-writing sites between them (15 in batch-admit alone). This was not
+hypothetical -- the --lit resolver's [lit:auto] rationale triggered it on a live /orchestrate --lit
+run, which dispatched nothing and exited 5 on "jq: parse error".
+
+If item (a)'s fd-3 redirection is implemented, note it does NOT subsume these four: fd-3 governs
+what cycle-plan EMITS, whereas these govern what it INGESTS. Both directions need their own fix.
+
+REGRESSION COVERAGE NOW EXISTS. tests/test-orchestrate-cycle-plan.sh Group 15 stubs all three
+collaborators to write to stderr while returning valid payloads, and asserts stdout still parses.
+Verified to fail against the pre-fix script (4 failures, exit 5, the same jq parse error seen in
+production) and pass after. Suite: 116 passed, 0 failed. Any item (a) rewrite must keep Group 15
+green.
+
+LIVE CORROBORATION FOR DEFECT (2), FROM A REAL RUN. Defect (2) (budget charged on a read) was
+observed again end-to-end on 2026-09-08. A /orchestrate --lit run in the PossibleWorlds repo hit
+defect (1), dispatched nothing, and still consumed a cycle; the task completed at 3/5 cycles for
+2 real dispatches. This is exactly the failure chain defect (2) predicts -- a parse failure that
+dispatches nothing permanently consuming budget -- and it is now reproducible on demand by
+reverting either commit above. Item (b) remains unfixed.
+
+AUDIT RESULT FOR THE REST OF THE SOURCE STORE: CLEAN. A detector for this defect class (capture
+with 2>&1, then consume via jq pipe, jq here-string, or while-read NDJSON) was validated against
+the known-bad pre-fix file -- it catches all four sites -- and then run across every non-test .sh
+in agent-system/extensions/. The only other hit, verify-deploy.sh's doc_lint_output, is a false
+positive: it parses human-readable lint text ("[header]" / "  FAIL:" prefixes), not JSON, so
+merging stderr there is intentional. No further instances outstanding.
+
+SUGGESTED ADDITIONAL SCOPE: MAKE THE DETECTOR A MAINTAINED LINT. The ad-hoc detector above needed
+three iterations to get right -- its first two versions silently missed the NDJSON while-read
+shape, i.e. the more dangerous half. That is a strong argument for lint-json-channel-discipline.sh
+under scripts/lint/, following the nine existing lint-*.sh and wired into verify-deploy.sh like
+its siblings, so this class cannot regress unnoticed. Filed here rather than as a separate task to
+avoid a duplicate; split it out if the planner judges it separable.
 
 ### 188. Predispatch review archived dependency false positive
 - **Status**: [NOT STARTED]
@@ -284,7 +353,7 @@ DEPENDENCY. Depends on the gate-depth task both by file footprint (both modify o
 
 ### 181. Unify redeploy-checkpoint gate depth and make its defer verdict trustworthy and actionable
 - **Effort**: 3-4 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 180
