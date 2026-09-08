@@ -284,6 +284,28 @@
       ]
     },
     {
+      "path": "project/typst/standards/semantic-element-usage.md",
+      "line_count": 281,
+      "load_when": {
+        "agents": [
+          "typst-implementation-agent"
+        ],
+        "task_types": [
+          "typst"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typst",
+      "summary": "What each semantic element (definition, theorem, remark, rule-block, ...) is for, its expected density, and its legal placement relative to headings and results",
+      "keywords": [
+        "typst",
+        "semantics",
+        "usage",
+        "remark",
+        "placement"
+      ]
+    },
+    {
       "path": "project/typst/standards/compilation-standards.md",
       "line_count": 142,
       "load_when": {

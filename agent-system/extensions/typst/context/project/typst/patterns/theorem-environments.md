@@ -16,6 +16,14 @@
 #let remark = thmbox("rem", "Remark", color: gray)
 ```
 
+## Semantics
+
+This file documents mechanics only — how to invoke each environment. What each environment is
+*for*, how sparingly to reach for it, and where it may legally appear relative to headings and
+results are governed by `standards/semantic-element-usage.md`. One rule from that file is
+load-bearing enough to inline here: **a semantic element is never the first body content after a
+heading** — every heading opens with prose, and the environments below come after it.
+
 ## Usage
 
 ### Basic Theorem
@@ -72,3 +80,4 @@ By @thm:completeness, ...
 | `def:` | Definition |
 | `cor:` | Corollary |
 | `ex:` | Example |
+| `rem:` | Remark |

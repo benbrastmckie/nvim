@@ -170,23 +170,23 @@ there but absent from the draft is a defect.
 
 ---
 
-### Phase 2: Wire the Standard into the Context Index [NOT STARTED]
+### Phase 2: Wire the Standard into the Context Index [COMPLETED]
 
 **Goal**: Make the new standard actually reach `typst-implementation-agent` at spawn.
 
 **Tasks**:
-- [ ] Compute the authored file's line count: `wc -l` on the Phase 1 output
-- [ ] Append one entry to `agent-system/extensions/typst/index-entries.json`, adjacent to the
+- [x] Compute the authored file's line count: `wc -l` on the Phase 1 output *(completed: 281 lines)*
+- [x] Append one entry to `agent-system/extensions/typst/index-entries.json`, adjacent to the
       `project/typst/standards/type-theory-foundations.md` entry, copying the sibling shape
       exactly: `path`, `line_count`, `load_when.agents`, `load_when.task_types`, `domain`,
-      `subdomain`, `summary`, `keywords`
-- [ ] Set `load_when.agents` to `["typst-implementation-agent"]` and `load_when.task_types` to
-      `["typst"]`
-- [ ] Set `keywords` to include the terms research found missing from the deployed index:
-      `semantics`, `usage`, `remark`, `placement`, alongside `typst`
-- [ ] Validate the file parses: `python3 -c "import json; json.load(open('index-entries.json'))"`
-- [ ] Add a one-line pointer to `context/project/typst/README.md`'s "Key Files" list naming the
-      new standard, consistent with how sibling standards are listed there
+      `subdomain`, `summary`, `keywords` *(completed)*
+- [x] Set `load_when.agents` to `["typst-implementation-agent"]` and `load_when.task_types` to
+      `["typst"]` *(completed)*
+- [x] Set `keywords` to include the terms research found missing from the deployed index:
+      `semantics`, `usage`, `remark`, `placement`, alongside `typst` *(completed)*
+- [x] Validate the file parses: `python3 -c "import json; json.load(open('index-entries.json'))"` *(completed: 27 entries, prior 26 + 1)*
+- [x] Add a one-line pointer to `context/project/typst/README.md`'s "Key Files" list naming the
+      new standard, consistent with how sibling standards are listed there *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -211,22 +211,22 @@ one.
 
 ---
 
-### Phase 3: Give theorem-environments.md the Semantics It Lacks [NOT STARTED]
+### Phase 3: Give theorem-environments.md the Semantics It Lacks [COMPLETED]
 
 **Goal**: Close the two concrete gaps in the mechanics file without turning it into a second copy
 of the standard.
 
 **Tasks**:
-- [ ] Add a `rem:` row to the Label Conventions table in
+- [x] Add a `rem:` row to the Label Conventions table in
       `context/project/typst/patterns/theorem-environments.md` (the table currently has `thm:`,
-      `lem:`, `def:`, `cor:`, `ex:` and omits `rem:` entirely)
-- [ ] Add a short **Semantics** section near the top of the file (after the `#let` bindings block)
+      `lem:`, `def:`, `cor:`, `ex:` and omits `rem:` entirely) *(completed)*
+- [x] Add a short **Semantics** section near the top of the file (after the `#let` bindings block)
       stating in two or three sentences that this file documents mechanics only, and that what
       each environment is FOR, how sparingly to use it, and where it may appear are governed by
-      `standards/semantic-element-usage.md` — with an explicit path pointer
-- [ ] Inline the single most load-bearing rule at the pointer so the file is not merely a
-      redirect: a semantic element is never the first body content after a heading
-- [ ] Do not otherwise restructure the file
+      `standards/semantic-element-usage.md` — with an explicit path pointer *(completed)*
+- [x] Inline the single most load-bearing rule at the pointer so the file is not merely a
+      redirect: a semantic element is never the first body content after a heading *(completed)*
+- [x] Do not otherwise restructure the file *(completed: only additions, no restructuring; file grew from 74 to 83 lines)*
 
 **Timing**: 0.5 hours
 

@@ -11,6 +11,7 @@ This directory contains context files for Typst document development.
 ## Key Files
 
 - `standards/typst-style-guide.md` - Formatting conventions
+- `standards/semantic-element-usage.md` - What each semantic element is for, expected density, and legal placement
 - `patterns/theorem-environments.md` - thmbox setup and usage
 - `patterns/cross-references.md` - Labels and refs
 - `tools/compilation-guide.md` - Build processes
