@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Stop hand-maintaining line_count -- repair before the gate, always reported",
+  "started_at": "2026-09-08T00:22:00Z",
+  "last_updated": "2026-09-08T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm generate-context-line-counts.sh --check runs cleanly from deploy-headless.sh's own working directory/REPO_ROOT resolution before wiring --write", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Wire guarded, reported --write call before the nvim deploy invocation in deploy-headless.sh; skip under --dry-run; emit events-append row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 3, "description": "Extend Rule R's mismatch/missing-key messages in check-extension-docs.sh with the remedy pointer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Initial line_count_exts/line_count_changed grep pipelines with no || true guard", "result": "failed", "reason": "Under set -euo pipefail (orchestrate-cycle-plan.sh/deploy-headless.sh), a grep with zero matches (the common clean-case: 0 changed) returns exit 1, which aborted the whole script via -e when captured into a plain (non-local-combined) assignment. Fixed by appending || true to both grep-based command substitutions, and separately discovered and fixed the SAME class of bug already latent in lib/deploy-baseline-lib.sh's deploy_findings_snapshot (a clean verify-deploy run produces zero FINDING lines, so its trailing grep also needed || true) -- this second fix benefits Phases 1-3 as well, not just this phase."}
+  ],
+  "handoff_count": 0,
+  "notes": "Confirmed at runtime via a full scratch deploy against a real copy of agent-system/extensions/: (1) bootstrap deploy correctly no-ops the repair (deployed regenerator does not exist yet); (2) a clean second deploy reports '0 entry/entries corrected'; (3) after appending a line to an indexed core context file (leaving its line_count declaration untouched), a third deploy auto-repaired and reported '1 entry/entries corrected from wc -l (extensions: core)', the source index-entries.json's line_count changed 364 -> 365 with no manual edit, and check-extension-docs.sh's Rule R subsequently reported zero findings for that entry. This IS the Phase 5 acceptance demonstration and doubles as Phase 7 acceptance demo 1 evidence."
+}

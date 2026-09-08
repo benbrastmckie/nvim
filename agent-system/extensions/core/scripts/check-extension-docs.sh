@@ -636,14 +636,14 @@ check_line_count_accuracy() {
     fi
 
     if [[ "$has_key" != "true" ]]; then
-      index_truth_report "Rule R: index-entries.json entry '$path' is missing the line_count key"
+      index_truth_report "Rule R: index-entries.json entry '$path' is missing the line_count key -- remedy: bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write (deploy-headless.sh also runs this automatically before every deploy)"
       continue
     fi
 
     actual=$(wc -l < "$full_path")
     actual=${actual// /}
     if [[ "$declared" != "$actual" ]]; then
-      index_truth_report "Rule R: index-entries.json entry '$path' line_count mismatch: declared $declared, actual $actual"
+      index_truth_report "Rule R: index-entries.json entry '$path' line_count mismatch: declared $declared, actual $actual -- remedy: bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write (deploy-headless.sh also runs this automatically before every deploy)"
     fi
   done
 }

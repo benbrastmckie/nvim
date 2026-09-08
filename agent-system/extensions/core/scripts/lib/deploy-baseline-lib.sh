@@ -54,7 +54,12 @@ deploy_findings_snapshot() {
   if [ "$rc" -eq 2 ]; then
     echo "FINDING gate0 [SENTINEL] verify-deploy could not run (exit 2)"
   else
-    printf '%s\n' "$out" | grep '^FINDING ' | sort -u
+    # `|| true`: a clean verify-deploy run (no FINDING lines) makes `grep` return 1 (no match),
+    # which -- under a caller's `set -e -o pipefail` (this function runs in the caller's own
+    # shell, being sourced, not a subshell) -- would otherwise abort the CALLER's script the
+    # moment it captures this function's output via `x=$(deploy_findings_snapshot ...)`. An
+    # empty findings set is a normal, expected outcome here, never an error.
+    printf '%s\n' "$out" | grep '^FINDING ' | sort -u || true
   fi
 }
 

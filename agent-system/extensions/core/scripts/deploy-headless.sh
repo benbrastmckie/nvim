@@ -258,6 +258,58 @@ main() {
     exit 0
   fi
 
+  # --- Pre-deploy line_count auto-repair (runs BEFORE the nvim deploy invocation below, so the
+  # corrected SOURCE agent-system/extensions/*/index-entries.json is what gets copied into
+  # .claude/context/index.json in THIS SAME run -- check-extension-docs.sh's Rule R never sees
+  # drift in the inline verify-deploy.sh call that follows). Stops line_count from being a
+  # hand-maintained, silently-driftable declaration: every deploy repairs it from `wc -l` first.
+  #
+  # Guarded on BOTH agent-system/extensions/ existing (a source-store checkout; a repo that has
+  # only ever received a deployed .claude/ tree -- an ordinary consumer -- has no such directory)
+  # AND the deployed regenerator itself existing (a tree too stale to carry it yet is a silent
+  # no-op, matching check-consumer-freshness.sh's own guard convention a few lines below). This
+  # call runs the DEPLOYED copy ($TARGET/.claude/scripts/...), not the source-store copy: the
+  # regenerator's own deploy-root-guard.sh refuses to run from the source store (its "../.."
+  # root computation is only valid two levels under a deployed scripts/ tree), and for a
+  # self-deploy (TARGET == this repo) the deployed copy resolves REPO_ROOT back to $TARGET,
+  # which correctly contains agent-system/extensions/ as a sibling of .claude/.
+  #
+  # Every repair is reported, never silent -- the validate-artifact.sh --fix / D-A
+  # auto-repair-reporting precedent -- on BOTH the repaired and the clean path.
+  local line_count_regen="$TARGET/.claude/scripts/generate-context-line-counts.sh"
+  if [ -d "$TARGET/agent-system/extensions" ] && [ -f "$line_count_regen" ]; then
+    local line_count_output line_count_rc=0
+    line_count_output="$(bash "$line_count_regen" --write 2>&1)" || line_count_rc=$?
+
+    local line_count_changed
+    line_count_changed=$(printf '%s\n' "$line_count_output" | grep -oE '^Changed: [0-9]+' | grep -oE '[0-9]+' | head -1) || true
+    line_count_changed="${line_count_changed:-0}"
+
+    local line_count_exts
+    line_count_exts=$(printf '%s\n' "$line_count_output" | grep -E ', [1-9][0-9]* changed$' | cut -d: -f1 | jq -R -s -c 'split("\n") | map(select(length > 0))' 2>/dev/null) || true
+    line_count_exts="${line_count_exts:-[]}"
+
+    echo "[deploy-headless] line_count auto-repair: ${line_count_changed} entry/entries corrected from wc -l (extensions: $(echo "$line_count_exts" | jq -r 'join(", ")' 2>/dev/null || echo "$line_count_exts"))."
+
+    if [ "$line_count_rc" -ne 0 ]; then
+      echo "[deploy-headless] WARNING: line_count auto-repair exited ${line_count_rc} -- a source file may be missing (this cannot be auto-repaired):" >&2
+      printf '%s\n' "$line_count_output" | grep -i 'missing source' >&2 || true
+    fi
+
+    local line_count_category="milestone"
+    [ "$line_count_changed" -gt 0 ] && line_count_category="deviation"
+
+    local line_count_events="$TARGET/.claude/scripts/events-append.sh"
+    if [ -f "$line_count_events" ]; then
+      bash "$line_count_events" \
+        --event-type index_line_count_auto_repair --category "$line_count_category" \
+        --session "${SESSION_ID:-sess_$(date +%s)_deploy}" --checkpoint deploy_headless \
+        --message "deploy-headless.sh line_count auto-repair: ${line_count_changed} entry/entries corrected from wc -l" \
+        --detail-json "$(jq -n -c --argjson n "$line_count_changed" --argjson exts "$line_count_exts" '{corrected_count: $n, extensions: $exts}')" \
+        >/dev/null 2>&1 || true
+    fi
+  fi
+
   echo "[deploy-headless] Deploying extension tree into $TARGET/.claude ..."
   echo "[deploy-headless] deploy-lock: $mutex_status"
 

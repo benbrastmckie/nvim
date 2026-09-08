@@ -328,7 +328,7 @@ be re-derived rather than held to.
 
 ---
 
-### Phase 5: Stop hand-maintaining `line_count` — repair before the gate, always reported [NOT STARTED]
+### Phase 5: Stop hand-maintaining `line_count` — repair before the gate, always reported [COMPLETED]
 
 **Goal**: Make declared `line_count` self-correcting at every deploy, so drift can never reach
 Rule R silently and no human ever needs to hand-edit the integer again — while keeping the field
@@ -336,30 +336,30 @@ declared for its four consumers.
 
 **Tasks**:
 
-- [ ] In `deploy-headless.sh`'s `main()`, call `generate-context-line-counts.sh --write` BEFORE
+- [x] In `deploy-headless.sh`'s `main()`, call `generate-context-line-counts.sh --write` BEFORE
       the headless nvim deploy invocation — not after — so the corrected source
       `index-entries.json` is what gets copied into `.claude/context/index.json` in the same run,
       and Rule R never sees drift in the inline verify that follows.
-- [ ] Guard the call on `[ -d "$TARGET/agent-system/extensions" ]`, making it a silent,
+- [x] Guard the call on `[ -d "$TARGET/agent-system/extensions" ]`, making it a silent,
       header-documented no-op in consumer repos that carry no source store, matching the
       `check-consumer-freshness.sh` guard convention already in this script.
-- [ ] Report every repair, never silently: echo the regenerator's per-extension summary lines and
+- [x] Report every repair, never silently: echo the regenerator's per-extension summary lines and
       a total corrected count under a `[deploy-headless]` prefix, on both the repaired and clean
       paths — the D-A precedent's "report the clean case too" rule.
-- [ ] Emit one durable `specs/events.jsonl` row via `events-append.sh` with event type
+- [x] Emit one durable `specs/events.jsonl` row via `events-append.sh` with event type
       `index_line_count_auto_repair`, category `deviation` when any entry was corrected and
       `milestone` when none were, session `${SESSION_ID:-sess_$(date +%s)_deploy}`, and a
       `--detail-json` carrying the corrected count and the affected extension names. If the
       synthesized session id proves unacceptable at implementation time, drop the event row and
       keep the console report.
-- [ ] Skip the repair under `--dry-run` (which returns before verification runs today) so a
+- [x] Skip the repair under `--dry-run` (which returns before verification runs today) so a
       dry run stays non-mutating.
-- [ ] Extend Rule R's three failure messages in `check-extension-docs.sh` to name the remedy
+- [x] Extend Rule R's three failure messages in `check-extension-docs.sh` to name the remedy
       (`generate-context-line-counts.sh --write`) for the mismatch and missing-key cases, so a
       standalone lint run outside a deploy still tells the reader what to do. Leave the
       missing-source-file case as a plain hard failure — it is the one case that genuinely
       cannot be auto-repaired and must keep failing loudly.
-- [ ] Leave `INDEX_TRUTH_GATE_MODE` at `hard`. No staged rollout is needed: the repair runs
+- [x] Leave `INDEX_TRUTH_GATE_MODE` at `hard`. No staged rollout is needed: the repair runs
       before the gate, so the gate has nothing left to trip on.
 
 **Timing**: 1.25 hours
