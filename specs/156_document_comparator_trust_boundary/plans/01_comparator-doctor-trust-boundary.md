@@ -247,32 +247,32 @@ and record any deviation rather than silently keeping the asserted numbers.
 
 ---
 
-### Phase 3: Demonstrate the three doctor states [NOT STARTED]
+### Phase 3: Demonstrate the three doctor states [COMPLETED]
 
 **Goal**: Prove, with real execution against constructed fixtures, that the doctor reports
 correctly in all three acceptance states — most importantly present-but-mismatched.
 
 **Tasks**:
-- [ ] Extract the Phase 2 doctor bash block to a scratch file under the session scratchpad (not
+- [x] Extract the Phase 2 doctor bash block to a scratch file under the session scratchpad (not
       into the repo) so it can be run directly.
-- [ ] **State A (all present, versions matched)**: build a fixture tree with a stub executable at
+- [x] **State A (all present, versions matched)**: build a fixture tree with a stub executable at
       `<fixture>/.lake/build/bin/lean4export` and `<fixture>/lean-toolchain` whose content equals
       the target project's `lean-toolchain`; set `COMPARATOR_LEAN4EXPORT` to the stub (and the
       other three override vars to stubs or real binaries). Run; confirm `matched`.
-- [ ] **State B (a binary missing)**: unset the override var for one binary and ensure it is not
+- [x] **State B (a binary missing)**: unset the override var for one binary and ensure it is not
       on `PATH`; run; confirm the missing-binary report and that no version verdict is claimed
       for an absent `lean4export`.
-- [ ] **State C (present but mismatched)** — the state that matters: same fixture layout as A but
+- [x] **State C (present but mismatched)** — the state that matters: same fixture layout as A but
       with `<fixture>/lean-toolchain` holding a different toolchain string; run; confirm
       `mismatched` and that both toolchain strings are printed.
-- [ ] **State D (walk-up finds nothing)**: point `COMPARATOR_LEAN4EXPORT` at a stub with no
+- [x] **State D (walk-up finds nothing)**: point `COMPARATOR_LEAN4EXPORT` at a stub with no
       `lean-toolchain` within 5 levels; run; confirm `UNKNOWN (cannot verify)` and that the output
       contains no OK/pass/green wording for that line.
-- [ ] Capture the four transcripts verbatim for the implementation summary.
+- [x] Capture the four transcripts verbatim for the implementation summary.
 - [ ] If the inline block cannot be driven this way, apply the recorded contingency: extract the
       version-match helper to `agent-system/extensions/lean/scripts/lean-comparator-doctor.sh`,
       register it in `manifest.json`'s `provides.scripts`, and note the deviation in the summary
-      and in Phase 5's file list.
+      and in Phase 5's file list. *(deviation: skipped — inline block demonstrated cleanly against all four fixture states; contingency not triggered)*
 
 **Timing**: 0.75 hours
 
