@@ -255,31 +255,37 @@ the `verify_rc` assignment.
 
 ---
 
-### Phase 3: Regression cases in `test-deploy-verify-wiring.sh` [NOT STARTED]
+### Phase 3: Regression cases in `test-deploy-verify-wiring.sh` [COMPLETED]
 
 **Goal**: Lock the new default-OFF/opt-in contract into the existing fixture-driven suite so a
 future edit cannot silently restore the unconditional walk or break the marker.
 
 **Tasks**:
-- [ ] Read `test-deploy-verify-wiring.sh`'s header, especially the ANTI-RECURSION INVARIANT: the
+- [x] Read `test-deploy-verify-wiring.sh`'s header, especially the ANTI-RECURSION INVARIANT: the
       fixture target is a throwaway consumer directory with no `agent-system/extensions` tree.
-      Do not point any new case at this repo's root.
-- [ ] Add a case asserting `deploy-headless.sh --help` output contains `--consumer-report`.
-- [ ] Add a case asserting an invocation with an unknown flag still reports the usage string and
-      that the usage string now lists `--consumer-report`.
-- [ ] Add static source assertions, in the style of the suite's existing Case 5: the source
+      Do not point any new case at this repo's root. *(completed: all new cases target the
+      existing $FIXTURE, none point at the repo root)*
+- [x] Add a case asserting `deploy-headless.sh --help` output contains `--consumer-report`.
+      *(completed: Case 6)*
+- [x] Add a case asserting an invocation with an unknown flag still reports the usage string and
+      that the usage string now lists `--consumer-report`. *(completed: Case 7)*
+- [x] Add static source assertions, in the style of the suite's existing Case 5: the source
       contains a `--consumer-report` case branch; the source initializes the flag to `false`
       (default OFF); the `CONSUMERS_STALE=` emission is inside a block guarded by the flag
-      variable.
-- [ ] Add a case asserting `--consumer-report --dry-run` still prints `DRY RUN` and exits 0
+      variable. *(completed: Case 8, four assertions)*
+- [x] Add a case asserting `--consumer-report --dry-run` still prints `DRY RUN` and exits 0
       without printing the verification announcement or any `CONSUMERS_STALE=` line — the flag
       must not resurrect work on the dry-run path, which short-circuits before the block.
-- [ ] Update the suite's header comment to say it also covers the `--consumer-report` opt-in
-      contract.
-- [ ] Run the suite: `bash agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh`
-      and confirm all cases PASS.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh` to confirm
+      *(completed: Case 9)*
+- [x] Update the suite's header comment to say it also covers the `--consumer-report` opt-in
+      contract. *(completed)*
+- [x] Run the suite: `bash agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh`
+      and confirm all cases PASS. *(completed: 20 passed, 0 failed — required a redeploy first
+      since find_script() prefers the deployed .claude/ copy, which had not yet picked up the
+      source-store edit; ran the sanctioned default-mode deploy, not --wipe)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh` to confirm
       `check-consumer-freshness.sh` itself is unaffected (it should be — no edits there).
+      *(completed: 14 passed, 0 failed)*
 
 **Timing**: 0.5 hours
 

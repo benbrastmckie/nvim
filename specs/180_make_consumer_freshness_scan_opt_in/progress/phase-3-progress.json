@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Regression cases in test-deploy-verify-wiring.sh",
+  "started_at": "2026-09-08T00:25:00Z",
+  "last_updated": "2026-09-08T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read ANTI-RECURSION INVARIANT before adding cases", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Case 6: --help contains --consumer-report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh"]},
+    {"id": 3, "description": "Add Case 7: unknown-flag usage string lists --consumer-report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh"]},
+    {"id": 4, "description": "Add Case 8: static source assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh"]},
+    {"id": 5, "description": "Add Case 9: --consumer-report --dry-run does not resurrect work", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh"]},
+    {"id": 6, "description": "Update suite header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh"]},
+    {"id": 7, "description": "Run test-deploy-verify-wiring.sh, confirm all PASS", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run test-consumer-freshness.sh, confirm unaffected", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Ran new test cases against .claude/ deployed copy before redeploying source-store change", "result": "failed", "reason": "find_script() in test-deploy-verify-wiring.sh prefers the deployed .claude/scripts/ copy over the source store; 7 of 20 cases failed until a default-mode (non-wipe) deploy synced the source-store edit into .claude/"}
+  ],
+  "handoff_count": 0,
+  "notes": "Required an intermediate default-mode deploy-headless.sh run (sanctioned, non-destructive) to sync the source-store edit into .claude/ before the test suite (which resolves scripts via the deployed tree first) could see the new flag. This same deploy also serves as Phase 4's first runtime confirmation step. Final results: test-deploy-verify-wiring.sh 20/20 PASS, test-consumer-freshness.sh 14/14 PASS."
+}

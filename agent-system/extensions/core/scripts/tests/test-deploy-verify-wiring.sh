@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # test-deploy-verify-wiring.sh - Fixture-driven regression suite for the deploy-headless.sh ->
-# verify-deploy.sh inline wiring: the --skip-slow flag (verify-deploy.sh) and the
-# exit-3-on-verification-failure / no-verification-under---dry-run contract (deploy-headless.sh).
+# verify-deploy.sh inline wiring: the --skip-slow flag (verify-deploy.sh), the
+# exit-3-on-verification-failure / no-verification-under---dry-run contract (deploy-headless.sh),
+# and the --consumer-report default-OFF/opt-in contract that gates deploy-headless.sh's
+# post-deploy consumer-freshness walk (Cases 6-9).
 #
 # Structural model: test-deploy-freshness.sh (pass()/fail()/info() helpers, PASSED/FAILED integer
 # counters, trap-based scratch WORKDIR, source-store-or-deployed CHECKER-candidate resolution).
@@ -168,6 +170,85 @@ if grep -qE '^#[[:space:]]*3[[:space:]]' "$DEPLOY_HEADLESS"; then
   pass "deploy-headless.sh header documents exit code 3"
 else
   fail "deploy-headless.sh header no longer documents exit code 3"
+fi
+
+# =====================================================================
+# Case 6: deploy-headless.sh --help documents the --consumer-report opt-in flag.
+# =====================================================================
+OUT_HELP="$(bash "$DEPLOY_HEADLESS" --help 2>&1)"
+if [[ "$OUT_HELP" == *"--consumer-report"* ]]; then
+  pass "deploy-headless.sh --help output contains --consumer-report"
+else
+  fail "deploy-headless.sh --help output missing --consumer-report: <<<$OUT_HELP>>>"
+fi
+
+# =====================================================================
+# Case 7: an unknown flag still reports the usage string, and that usage string now lists
+# --consumer-report.
+# =====================================================================
+OUT_BOGUS_DH="$(bash "$DEPLOY_HEADLESS" --bogus "$FIXTURE" 2>&1)"
+if [[ "$OUT_BOGUS_DH" == *"Usage: deploy-headless.sh"* ]]; then
+  pass "deploy-headless.sh unknown flag still prints the Usage: line"
+else
+  fail "deploy-headless.sh unknown flag missing the Usage: line: <<<$OUT_BOGUS_DH>>>"
+fi
+if [[ "$OUT_BOGUS_DH" == *"--consumer-report"* ]]; then
+  pass "deploy-headless.sh unknown-flag usage string lists --consumer-report"
+else
+  fail "deploy-headless.sh unknown-flag usage string missing --consumer-report: <<<$OUT_BOGUS_DH>>>"
+fi
+
+# =====================================================================
+# Case 8: static source assertions for the --consumer-report default-OFF/opt-in contract --
+# guards against the gating being silently dropped or defaulted-on by a future edit.
+# =====================================================================
+if grep -q -- '--consumer-report) CONSUMER_REPORT=true' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh source contains the --consumer-report case branch"
+else
+  fail "deploy-headless.sh source no longer contains the --consumer-report case branch"
+fi
+if grep -q 'local CONSUMER_REPORT=false' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh source initializes CONSUMER_REPORT to false (default OFF)"
+else
+  fail "deploy-headless.sh source no longer initializes CONSUMER_REPORT to false"
+fi
+if grep -qE 'if \[ "\$CONSUMER_REPORT" = "true" \] && \[ -f "\$consumer_checker" \]; then' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh source guards the consumer block on CONSUMER_REPORT"
+else
+  fail "deploy-headless.sh source no longer guards the consumer block on CONSUMER_REPORT"
+fi
+if grep -qE 'echo "\[deploy-headless\] CONSUMERS_STALE=' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh source still emits the CONSUMERS_STALE= marker"
+else
+  fail "deploy-headless.sh source no longer emits the CONSUMERS_STALE= marker"
+fi
+
+# =====================================================================
+# Case 9: --consumer-report --dry-run does not resurrect work on the dry-run path (which
+# short-circuits before the post-deploy block) -- still prints DRY RUN, exits 0, and prints
+# neither the verification announcement nor any CONSUMERS_STALE= line.
+# =====================================================================
+OUT_DRY_RUN_CR="$(bash "$DEPLOY_HEADLESS" --consumer-report --dry-run "$FIXTURE" 2>&1)"
+RC_DRY_RUN_CR=$?
+if [[ "$OUT_DRY_RUN_CR" == *"DRY RUN"* ]]; then
+  pass "deploy-headless.sh --consumer-report --dry-run output contains DRY RUN"
+else
+  fail "deploy-headless.sh --consumer-report --dry-run output missing DRY RUN: <<<$OUT_DRY_RUN_CR>>>"
+fi
+if [[ "$OUT_DRY_RUN_CR" != *"Verifying deploy"* ]]; then
+  pass "deploy-headless.sh --consumer-report --dry-run does not print the verification announcement"
+else
+  fail "deploy-headless.sh --consumer-report --dry-run unexpectedly printed the verification announcement: <<<$OUT_DRY_RUN_CR>>>"
+fi
+if [[ "$OUT_DRY_RUN_CR" != *"CONSUMERS_STALE"* ]]; then
+  pass "deploy-headless.sh --consumer-report --dry-run prints no CONSUMERS_STALE= line"
+else
+  fail "deploy-headless.sh --consumer-report --dry-run unexpectedly printed a CONSUMERS_STALE= line: <<<$OUT_DRY_RUN_CR>>>"
+fi
+if [[ "$RC_DRY_RUN_CR" -eq 0 ]]; then
+  pass "deploy-headless.sh --consumer-report --dry-run exits 0"
+else
+  fail "deploy-headless.sh --consumer-report --dry-run exited $RC_DRY_RUN_CR, expected 0"
 fi
 
 echo ""
