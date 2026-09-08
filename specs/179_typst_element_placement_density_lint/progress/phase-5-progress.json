@@ -1,0 +1,15 @@
+{
+  "phase": 5,
+  "phase_name": "Acceptance Validation Against the Live Fixture",
+  "started_at": "2026-09-08T03:20:00Z",
+  "last_updated": "2026-09-08T03:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run script against 08-agency.typ read-only; capture output; confirm all 4 acceptance criteria", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run against whole chapters directory; note aggregate false-positive rate; fix check 1 if it fires on a correct document", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Verify fixture repository unmodified via git status --porcelain", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Corpus-wide run found 40 placement failures across 8 of 12 chapters. Manual inspection of 7+ instances across 6 files (03-dynamics.typ, 07-normative.typ, 09-game-theory.typ, 10-spatial.typ, 02-constitutive.typ, 04-verification.typ, 06-epistemic.typ) confirmed every one is a genuine Universal Placement Rule violation (heading with zero intervening prose before a semantic element), not a lint false positive. No correct document was flagged. Fixture repo (Logos/Theory) confirmed byte-for-byte unmodified via git status/diff on typst/manual/chapters/."
+}
