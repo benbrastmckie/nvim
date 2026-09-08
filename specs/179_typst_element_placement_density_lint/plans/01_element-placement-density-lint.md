@@ -188,29 +188,29 @@ standard wins — do not carry this plan's list forward unverified.
 
 ---
 
-### Phase 2: Check 2 — Enumerated Items Inside a Remark (Advisory) [NOT STARTED]
+### Phase 2: Check 2 — Enumerated Items Inside a Remark (Advisory) [COMPLETED]
 
 **Goal**: The script warns — without affecting its exit code — when a `#remark` block's body
 contains more enumerated items than the threshold.
 
 **Tasks**:
-- [ ] Implement bracket-depth matching over a `#remark` block to find its true extent: from the
+- [x] Implement bracket-depth matching over a `#remark` block to find its true extent: from the
       opening `[` of the remark body, track `[`/`]` depth across lines until depth returns to
-      zero.
-- [ ] Before depth counting on each line, strip `//` comment tails and quoted-string contents so
-      brackets inside them do not corrupt the depth.
-- [ ] Within the matched span, count Typst-native enumeration markers at line start (after
+      zero. *(completed)*
+- [x] Before depth counting on each line, strip `//` comment tails and quoted-string contents so
+      brackets inside them do not corrupt the depth. *(completed)*
+- [x] Within the matched span, count Typst-native enumeration markers at line start (after
       leading whitespace): `+ `, `- `, and `N. `. Do NOT key on the document-local `#items[`
       wrapper macro, which is defined in the Logos/Theory template rather than in this
-      extension and will not exist in other content repos.
-- [ ] Threshold: warn when the count exceeds 3. Record in the script header that this number has
+      extension and will not exist in other content repos. *(completed)*
+- [x] Threshold: warn when the count exceeds 3. Record in the script header that this number has
       no anchor in `semantic-element-usage.md` (which is qualitative — "sparing", "never a long
-      enumerated status or tracking list") and is therefore an initial, unreviewed value.
-- [ ] Emit as `WARN`, incrementing a warning counter only. Never contributes to a nonzero exit.
-- [ ] Warning text names the remark's opening line, the item count, and the correct home for
-      tracking content.
-- [ ] Document the known limitation (no full Typst parse; brackets inside math `$...$` may still
-      confuse depth) in the header comment.
+      enumerated status or tracking list") and is therefore an initial, unreviewed value. *(completed)*
+- [x] Emit as `WARN`, incrementing a warning counter only. Never contributes to a nonzero exit. *(completed)*
+- [x] Warning text names the remark's opening line, the item count, and the correct home for
+      tracking content. *(completed)*
+- [x] Document the known limitation (no full Typst parse; brackets inside math `$...$` may still
+      confuse depth) in the header comment. *(completed)*
 
 **Timing**: 1 hour
 

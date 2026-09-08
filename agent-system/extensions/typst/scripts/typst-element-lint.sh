@@ -296,7 +296,7 @@ for f in "${TYP_FILES[@]}"; do
       WARN)
         if [[ "$check" == "items" ]]; then
           # f1=start_line f2=end_line f3=item_count
-          echo -e "${YELLOW}[WARN]${NC} ${rfile}:${f1}: remark spans lines ${f1}-${f2} with ${f3} enumerated items (advisory, threshold ${ITEM_THRESHOLD})"
+          echo -e "${YELLOW}[WARN]${NC} ${rfile}:${f1}: remark spans lines ${f1}-${f2} with ${f3} enumerated items (advisory, threshold ${ITEM_THRESHOLD}). A remark is never a long enumerated status or tracking list -- if this is tracking content, it belongs in specs/**, an appendix, or a dedicated status section (see standards/semantic-element-usage.md's \"Where Tracking Content Belongs\")."
           TOTAL_WARNINGS=$((TOTAL_WARNINGS + 1))
           file_warnings=$((file_warnings + 1))
         elif [[ "$check" == "density" ]]; then

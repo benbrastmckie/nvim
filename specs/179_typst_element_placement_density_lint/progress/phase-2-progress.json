@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Check 2 -- Enumerated Items Inside a Remark (Advisory)",
+  "started_at": "2026-09-08T02:25:00Z",
+  "last_updated": "2026-09-08T02:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Bracket-depth matching over #remark block to find true extent (already implemented as part of Phase 1's single-pass AWK program)", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 2, "description": "Verify comment/quote stripping before depth counting; verify enumeration-marker counting excludes #items[ wrapper macro", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 3, "description": "Verify threshold=3, WARN-only (never affects exit code), warning text names line/count/correct-home", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 4, "description": "Verification: live fixture 25 items/lines 57-88; exit-code-unaffected on long-remark-only file; nested #items[...] resolves to outer close", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
