@@ -217,8 +217,14 @@
           "path": "specs/171_fix_literature_ingest_dedup_hang/plans/01_fix-ingest-dedup-hang.md",
           "type": "plan",
           "summary": "4-phase plan collapsing check_duplicate_title()'s O(n) per-title subprocess loop into one bounded, fail-open python3 batch invocation, with a regression suite and doc updates."
+        },
+        {
+          "path": "specs/171_fix_literature_ingest_dedup_hang/summaries/01_fix-ingest-dedup-hang-summary.md",
+          "type": "summary",
+          "summary": "Collapsed check_duplicate_title()'s O(n) per-title python3 subprocess loop into one bounded, fail-open batch invocation; added a regression suite and doc updates. Measured full-index check dropped from 9-10 minutes to ~0.7s."
         }
-      ]
+      ],
+      "completion_summary": "Rewrote check_duplicate_title() in literature-ingest-online.sh to use a single hard-timed (10s), fail-open .zotero-title-sim.py --batch invocation instead of one python3 subprocess per index.json title, added the --batch mode itself, wrote an 11-assertion regression suite (test-title-sim-dedup.sh, registered in manifest.json), and documented the contract. Measured full-index dedup check time on the real 11,793-entry index dropped from an observed 9-10 minutes (or 540s timeout) to ~0.7 seconds, with the WARNING text and 0.85 threshold preserved byte-for-byte and the 2-argv contract used by zotero-resolve-pdf.sh unchanged."
     },
     {
       "project_number": 168,
