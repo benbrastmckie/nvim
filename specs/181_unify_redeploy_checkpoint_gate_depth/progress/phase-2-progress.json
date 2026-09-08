@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Add the confirmation and attribution filters to the shared baseline library",
+  "started_at": "2026-09-08T00:00:00Z",
+  "last_updated": "2026-09-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add deploy_baseline_confirm_new_findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]},
+    {"id": 2, "description": "Add deploy_baseline_unattributable_findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]},
+    {"id": 3, "description": "Extend header comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"]},
+    {"id": 4, "description": "Preserve invariants (never abort, sort -u, safe under set -e -o pipefail)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

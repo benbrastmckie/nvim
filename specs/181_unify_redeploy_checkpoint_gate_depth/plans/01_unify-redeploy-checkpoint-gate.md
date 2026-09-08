@@ -165,28 +165,28 @@ Phases within the same wave can execute in parallel. Wave 1's two phases touch d
 
 ---
 
-### Phase 2: Add the confirmation and attribution filters to the shared baseline library [NOT STARTED]
+### Phase 2: Add the confirmation and attribution filters to the shared baseline library [COMPLETED]
 
 **Goal**: The two new set operations exist, are documented, and are correct in isolation.
 
 **Tasks**:
-- [ ] Add `deploy_baseline_confirm_new_findings <candidate_new> <confirm_snapshot>` to
+- [x] Add `deploy_baseline_confirm_new_findings <candidate_new> <confirm_snapshot>` to
       `lib/deploy-baseline-lib.sh`: prints the intersection (`comm -12`) of the candidate new
       findings and a freshly-taken confirmation snapshot. Findings absent from the confirmation
-      run are the flaky ones and are excluded.
-- [ ] Add `deploy_baseline_unattributable_findings <findings> <modified_files_json>`: prints
+      run are the flaky ones and are excluded. *(completed)*
+- [x] Add `deploy_baseline_unattributable_findings <findings> <modified_files_json>`: prints
       those findings that positively name an identifier (a `/`-bearing path token or a
       `.sh`/`.md`/`.lua`/`.json` basename) where NO such identifier matches any entry in
       `modified_files` (basename match, so a full path in the finding matches a repo-relative
       path in `modified_files`). A finding bearing no identifier at all is NOT printed — it is
-      not shown unrelated, so it stays blocking.
-- [ ] Extend the library's header comment block: state that these two functions are additive,
+      not shown unrelated, so it stays blocking. *(completed)*
+- [x] Extend the library's header comment block: state that these two functions are additive,
       checkpoint-only, and why `command-gate-out.sh`'s `rc==6` handler deliberately does not use
-      them (single-task gate, operator present).
-- [ ] Preserve the file's existing invariants: never abort, never propagate an invoked script's
+      them (single-task gate, operator present). *(completed)*
+- [x] Preserve the file's existing invariants: never abort, never propagate an invoked script's
       exit code, `sort -u` inputs, safe to source under a caller's `set -e -o pipefail`. The
       `|| true` discipline around `grep`/`comm` in the existing functions is the pattern to
-      follow — a no-match `grep` must not abort the sourcing caller.
+      follow — a no-match `grep` must not abort the sourcing caller. *(completed)*
 
 **Timing**: 1.5 hours
 

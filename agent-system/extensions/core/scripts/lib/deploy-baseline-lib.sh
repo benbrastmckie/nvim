@@ -24,7 +24,7 @@
 # entirely) -- and had drifted apart. Both now source this file instead of carrying their own
 # copy, so they cannot drift apart again.
 #
-# Exports TWO functions:
+# Exports FOUR functions:
 #
 #   deploy_findings_snapshot <verify_deploy_path> [extra verify-deploy.sh args...]
 #     Runs `<verify_deploy_path> --findings --quiet [extra args]`. If that invocation exits 2
@@ -41,8 +41,50 @@
 #     <pre_findings> -- i.e. exactly the newly-introduced findings. Prints nothing when the two
 #     sets are identical or when <post_findings> is a subset of <pre_findings>.
 #
-# Neither function ever exits non-zero or raises on a normal (findings-bearing or empty) run;
-# both `sort -u` their inputs/outputs so caller-side ordering never matters for the comparison.
+#   deploy_baseline_confirm_new_findings <candidate_new> <confirm_snapshot>
+#     Usage: deploy_baseline_confirm_new_findings "$new_findings" "$confirm_findings" (the second
+#     argument is a FRESH deploy_findings_snapshot re-run taken after <candidate_new> was first
+#     computed). Prints the `comm -12` intersection -- lines present in BOTH sets -- i.e. exactly
+#     the candidate-new findings that REPRODUCED on the confirmation run. A candidate finding
+#     absent from <confirm_snapshot> did not reproduce and is dropped: it was flaky (see
+#     load-sensitive-test note below), never a real regression. This is a pure CONFIRMATION
+#     step -- it never introduces a finding <candidate_new> did not already contain, so it can
+#     only shrink the candidate set, never grow it.
+#
+#   deploy_baseline_unattributable_findings <findings> <modified_files_json>
+#     Usage: deploy_baseline_unattributable_findings "$findings" "$modified_files_json" (the
+#     second argument is a JSON array of repo-relative path strings, typically
+#     `cycle_modified_files`). Prints the subset of <findings> that POSITIVELY names a concrete
+#     identifier -- a token containing `/` or a token ending in `.sh`/`.md`/`.lua`/`.json` -- for
+#     which NO identifier in the line matches (by basename) any entry in <modified_files_json>.
+#     Deliberately FAIL-SAFE TOWARD ATTRIBUTABLE (i.e. toward still blocking/deferring): a finding
+#     line that names NO identifier at all is NEVER printed by this function -- absence of an
+#     identifier can never be used to prove a finding unrelated, only a positively-non-matching
+#     identifier can. This is what stops the filter from degrading into a blanket disable: a
+#     finding this function cannot positively clear stays in the blocking set.
+#
+# Callers combine these as a two-stage filter on a candidate new-finding set: confirm first
+# (drops flaky), then subtract this function's unattributable output from what confirmed (drops
+# unrelated). Both filters are ADDITIVE and used ONLY by the multi-task inter-cycle checkpoint
+# (orchestrate-cycle-plan.sh) -- command-gate-out.sh's rc==6 handler deliberately does NOT apply
+# either filter: it gates a single task's own completion, with the operator present to judge a
+# flake or an unrelated red gate by hand, so no confirmation re-run or attribution narrowing is
+# warranted there. The checkpoint gates an entire batch with no operator present, which is what
+# makes an automatic confirmation/attribution pipeline necessary rather than optional. This
+# asymmetry is intentional -- see the "Scope of the new lib functions" note in the originating
+# plan and the matching comment at each call site.
+#
+# Load-sensitivity motivation (why deploy_baseline_confirm_new_findings exists at all): the
+# checkpoint that consumes these functions runs a full deploy plus the entire shell test suite
+# immediately before taking its post-redeploy findings snapshot. That is itself enough ambient
+# load to flake a load-sensitive test in that same suite (observed: test-lake-build-guard.sh,
+# known load-sensitive per its own "pressured fixture" and the isolation commit in its history).
+# A gate that just self-inflicted memory pressure cannot trust a single post-load snapshot to
+# tell flaky from real; re-running once on a now-idle machine can.
+#
+# None of the four functions ever exits non-zero or raises on a normal (findings-bearing or
+# empty) run; all `sort -u` their findings-text inputs/outputs so caller-side ordering never
+# matters for any comparison.
 
 # ─── deploy_findings_snapshot <verify_deploy_path> [extra args...] ─────────────────────────────
 deploy_findings_snapshot() {
@@ -70,4 +112,54 @@ deploy_baseline_new_findings() {
   comm -13 \
     <(printf '%s\n' "$pre" | sort -u) \
     <(printf '%s\n' "$post" | sort -u)
+}
+
+# ─── deploy_baseline_confirm_new_findings <candidate_new> <confirm_snapshot> ───────────────────
+deploy_baseline_confirm_new_findings() {
+  local candidate_new="$1"
+  local confirm_snapshot="$2"
+  # `comm -12`: lines common to both -- the candidate findings that reproduced on the
+  # confirmation snapshot. A candidate absent from confirm_snapshot (flaky) is silently excluded
+  # from the intersection; comm's own "not blank" behavior on an all-empty candidate_new input
+  # (a caller error, since this is only ever called with a non-empty candidate) is not specially
+  # guarded here -- see the header note that callers gate this call on non-empty candidate_new.
+  comm -12 \
+    <(printf '%s\n' "$candidate_new" | sort -u) \
+    <(printf '%s\n' "$confirm_snapshot" | sort -u)
+}
+
+# ─── deploy_baseline_unattributable_findings <findings> <modified_files_json> ──────────────────
+deploy_baseline_unattributable_findings() {
+  local findings="$1"
+  local modified_files_json="$2"
+  local mod_basenames
+  # `2>/dev/null || true`: a malformed/empty modified_files_json must never abort the caller --
+  # it degrades to "no modified files", under which every identifier-bearing finding is reported
+  # unattributable (the fail-safe-toward-blocking direction still holds: an identifier-free
+  # finding is STILL never reported, regardless of modified_files_json's shape).
+  mod_basenames="$(printf '%s' "$modified_files_json" | jq -r '(. // [])[]?' 2>/dev/null | xargs -r -n1 basename 2>/dev/null)" || true
+
+  local line word token has_ident matched_local
+  printf '%s\n' "$findings" | while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    has_ident=0
+    matched_local=0
+    for word in $line; do
+      # Strip common surrounding punctuation (parens, brackets, colons, commas, trailing
+      # periods) so a token embedded in prose (e.g. "(test-lake-build-guard.sh)," or
+      # "gate8:") still matches its bare path/basename form.
+      token="$(printf '%s' "$word" | sed -e 's/^[][(),:;]*//' -e 's/[][(),:;]*$//' -e 's/\.$//')"
+      case "$token" in
+        */*|*.sh|*.md|*.lua|*.json)
+          has_ident=1
+          if [ -n "$mod_basenames" ] && printf '%s\n' "$mod_basenames" | grep -qxF "$(basename "$token")"; then
+            matched_local=1
+          fi
+          ;;
+      esac
+    done
+    if [ "$has_ident" -eq 1 ] && [ "$matched_local" -eq 0 ]; then
+      printf '%s\n' "$line"
+    fi
+  done
 }
