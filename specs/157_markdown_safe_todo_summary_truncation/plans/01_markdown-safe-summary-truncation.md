@@ -1,7 +1,7 @@
 # Implementation Plan: Markdown-safe "Grouped by Topic" truncation
 
 - **Task**: 157 - Markdown-safe TODO summary truncation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: None (task description carries a verified root cause, evidence, and acceptance bar)
@@ -140,22 +140,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Capture the pre-fix baseline [NOT STARTED]
+### Phase 1: Capture the pre-fix baseline [COMPLETED]
 
 **Goal**: Freeze the current rendering of the "Grouped by Topic" section to a committed file so
 the Phase 5 before/after comparison is mechanical, and re-measure the title-coverage numbers the
 description asserted.
 
 **Tasks**:
-- [ ] Extract the current "Grouped by Topic" section from `specs/TODO.md` verbatim into
-      `specs/157_markdown_safe_todo_summary_truncation/baseline-grouped-by-topic.txt`
-- [ ] Run a backtick-parity census over every line of that section and record which lines have
+- [x] Extract the current "Grouped by Topic" section from `specs/TODO.md` verbatim into
+      `specs/157_markdown_safe_todo_summary_truncation/baseline-grouped-by-topic.txt` *(completed)*
+- [x] Run a backtick-parity census over every line of that section and record which lines have
       an odd count; confirm the witness line is among them and note its exact current text
-- [ ] Re-measure against the live `specs/state.json`: count of active non-terminal tasks, count
+      *(completed: exactly one odd line, task 44, 1 backtick)*
+- [x] Re-measure against the live `specs/state.json`: count of active non-terminal tasks, count
       with a non-empty `.title`, and the list of task numbers without one
-- [ ] Record the maximum `.title` length and whether any title contains a backtick, since these
+      *(completed: live numbers are 38 active / 26 titled / 12 title-less, both the description's
+      29/23/6 and the planning-time 41/14 have drifted further)*
+- [x] Record the maximum `.title` length and whether any title contains a backtick, since these
       determine whether sub-fixes (b) and (c) are exercised by live data at all
-- [ ] Append the measurements as a short header comment inside the baseline file
+      *(completed: max title length 114 chars; 0 of 26 titles contain a backtick)*
+- [x] Append the measurements as a short header comment inside the baseline file *(completed)*
 
 **Timing**: 0.5 hours
 

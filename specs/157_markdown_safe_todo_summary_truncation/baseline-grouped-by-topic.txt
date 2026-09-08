@@ -1,0 +1,78 @@
+# Baseline: pre-fix 'Grouped by Topic' section snapshot, captured 2026-09-08.
+# Source: specs/TODO.md lines 18-78 (verbatim), before the markdown-safe truncation fix.
+#
+# Backtick-parity census (reproduce: awk '{n=gsub(/`/,"`"); if (n%2!=0) print NR": "n" backticks -- "$0}' <this-file-body>):
+#   Exactly one line has an odd backtick count: line 5 of the body below (task 44), 1 backtick, unclosed.
+#   All other lines are balanced (0 or an even count).
+#
+# Live state.json measurements (re-derived at implementation time; description's 29/23/6
+# and planning-time's 41/14 have both drifted -- these are the current numbers):
+#   Active non-terminal tasks: 38
+#   With a non-empty .title: 26
+#   Without a .title (12): 29, 30, 45, 51, 89, 127, 168, 183, 184, 185, 187, 188
+#   Maximum .title length: 114 characters (exceeds the 65-char budget -- sub-fix (c) is load-bearing)
+#   Any .title containing a backtick: none (0 of 26) -- this is why the witness line below
+#   demonstrates sub-fix (a) only, not sub-fix (b); see the adversarial fixture in the test suite.
+#
+# ---- verbatim section body follows ----
+**Grouped by Topic** (indented = depends on parent):
+
+### Core Agent System
+
+44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
+51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
+89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
+127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
+136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
+139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
+  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
+  └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
+157 [IMPLEMENTING] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
+166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
+170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
+172 [NOT STARTED] — Close the taught-pattern gap that produced 22 unreapable poll loo
+  └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
+  └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
+  └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
+182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
+183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
+184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
+185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
+187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
+188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
+
+### Extensions
+
+29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
+  └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
+43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
+74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
+  └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
+  └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
+167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
+
+### Literature
+
+39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
+
+### Neovim
+
+45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
+
+### Opencode
+
+22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
+168 [NOT STARTED] — Correct the disproven project-scoped MCP claim in the OpenCode do
+
+### File Scope Lifecycle
+
+162 [NOT STARTED] — Populate `file_scope` at PLAN time by formalizing an existing, un
+  └─ 164 [NOT STARTED] — One-shot backfill of `file_scope` for existing tasks that lack a 
+    └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan
+163 [NOT STARTED] — Make an ABSENT or EMPTY `file_scope` visible. Today it is invisib
+  └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
+
+### Lean Extension
+
+177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h

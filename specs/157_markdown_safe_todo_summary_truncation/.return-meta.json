@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/157_markdown_safe_todo_summary_truncation/plans/01_markdown-safe-summary-truncation.md",
-      "summary": "Six-phase plan making the TODO.md 'Grouped by Topic' summary lines markdown-safe, title-aware, and word-boundary truncated at both slice sites in generate-task-order.sh, with a new regression suite and an .opencode render-side parity port."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1788894448_36ce34_157",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.75,
-    "dependency_waves": [[1, 2], [3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo, a shell test for a core script that sources deploy-root-guard.sh cannot execute the source-store copy in place -- the guard aborts anything not under */.claude or */.opencode. The working harness (established by test-errors-append.sh) is to mktemp -d a scratch project root, create <scratch>/.claude/scripts/, and copy in the tool plus deploy-root-guard.sh and lib/common.sh, so the guard's case matches and PROJECT_ROOT resolves to the scratch. Orthogonally, tool resolution order decides WHICH copy is under test: deploy-tree-first (the common convention) silently tests the stale deployed script and only goes green after a deploy, so a suite written alongside a source-store fix must resolve source-store-first -- the deliberate inversion documented in test-postflight-deploy-gate.sh. Unchanged dependencies keep the deploy-first order.",
-      "category": "PATTERN",
-      "source_artifact": "specs/157_markdown_safe_todo_summary_truncation/plans/01_markdown-safe-summary-truncation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "shell-test-harness", "source-store", "tool-resolution-order", "scratch-repo", "scripts-tests"]
-    }
-  ],
-  "next_steps": "Run /implement 157 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1788894448_36ce34",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }
