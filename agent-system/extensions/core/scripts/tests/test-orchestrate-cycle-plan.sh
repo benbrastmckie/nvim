@@ -1722,6 +1722,51 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 17: --session optionality is dry-run-only. Reconciles commands/orchestrate.md's dry-run
+# short-circuit (now a single unconditional invocation) with the script's own flag validation:
+# --dry-run with no --session synthesizes an internal, never-persisted identity and still emits
+# parseable plan JSON; live mode with no --session is unchanged (still exits 2).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 17: --session is optional under --dry-run, still required in live mode"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1701, "project_name": "g17_no_session", "task_type": "general", "status": "not_started", "description": "--session optionality under --dry-run", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --dry-run -- 1701
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 17: --dry-run with no --session exits 0"
+else
+  fail "Group 17: --dry-run with no --session exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  pass "Group 17: --dry-run with no --session still prints parseable plan JSON on stdout"
+else
+  fail "Group 17: --dry-run with no --session did not print parseable JSON: '$LAST_STDOUT'"
+fi
+
+run_sut -- 1701
+
+if [ "$LAST_EXIT" -eq 2 ]; then
+  pass "Group 17: live mode with no --session still exits 2"
+else
+  fail "Group 17: live mode with no --session exited $LAST_EXIT (expected 2); stderr: '$LAST_STDERR'"
+fi
+
+if echo "$LAST_STDERR" | grep -qF -- "--session is required"; then
+  pass "Group 17: live mode's no-session error message is preserved"
+else
+  fail "Group 17: expected a '--session is required' message on stderr; got: '$LAST_STDERR'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

@@ -95,16 +95,15 @@ Loop (Batch-of-One and Multi-Task)"). All are **consumer-side-only** — never f
   script's header, Section (f)).
 
 **Dry-run short-circuit** (before the dispatch block below runs): `SESSION_ID` is not yet minted
-at this point (there is no separate gate-in step any more — see below), so `--session` is passed
-to the report only when non-empty.
+at this point (there is no separate gate-in step any more — see below). This is not a problem:
+`orchestrate-cycle-plan.sh` does not require a minted session for its `--dry-run` report — pass
+`--session "$SESSION_ID"` when one exists, otherwise omit it (an empty `--session ""` argument
+and a fully omitted `--session` are equivalent to the script; both leave it to synthesize an
+internal, never-persisted identity under `--dry-run`).
 
 ```bash
 if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
-  if [ -n "${SESSION_ID:-}" ]; then
-    bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --session "$SESSION_ID" --state-file specs/state.json $TASK_NUMBERS
-  else
-    bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json $TASK_NUMBERS
-  fi
+  bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --session "${SESSION_ID:-}" --state-file specs/state.json $TASK_NUMBERS
   # STOP HERE.
 fi
 ```

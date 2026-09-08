@@ -120,6 +120,10 @@
 #     [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
 #     [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
 #     [--dry-run] <task_number> [<task_number> ...]
+#   --state-file is always required. --session is required EXCEPT under --dry-run, where it is
+#   optional: an internal, never-persisted identity is synthesized when omitted (mt_save() is
+#   unconditionally a no-op under --dry-run, so the synthesized session_id's derived
+#   mt_state_file path is never created).
 #
 # `--compare` is forwarded into `build_args` (as `--compare`, mirroring `--lit`) ONLY for an
 # implement-phase candidate (`$g = "implement"`) — it is meaningless for research/plan dispatches
@@ -243,6 +247,9 @@ Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-coun
          [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
          [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
          [--dry-run] <task_number> [<task_number> ...]
+
+--state-file is always required. --session is required EXCEPT under --dry-run, where an
+internal, never-persisted identity is synthesized when omitted.
 USAGE
 }
 
@@ -296,10 +303,26 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ -z "$session_id" ] || [ -z "$state_file_arg" ]; then
-  echo "ERROR: orchestrate-cycle-plan.sh: --session and --state-file are required." >&2
+if [ -z "$state_file_arg" ]; then
+  echo "ERROR: orchestrate-cycle-plan.sh: --state-file is required." >&2
   usage >&2
   exit 2
+fi
+
+# --session is required in live mode (every downstream side effect -- the lock layer, the
+# session registry, dispatch bookkeeping -- is keyed on it), but is OPTIONAL under --dry-run:
+# mt_save() above is unconditionally a no-op when dry_run=true, so the mt_state_file path this
+# session_id derives (below) is never created regardless of its value. When --dry-run is given
+# with no --session, synthesize an internal, never-persisted identity so every downstream
+# session_id-keyed read still has a well-formed (if synthetic) value to work with.
+if [ -z "$session_id" ]; then
+  if [ "$dry_run" = "true" ]; then
+    session_id="dryrun-$$-$(date +%s)"
+  else
+    echo "ERROR: orchestrate-cycle-plan.sh: --session is required (except under --dry-run)." >&2
+    usage >&2
+    exit 2
+  fi
 fi
 
 if [ "${#task_args[@]}" -eq 0 ]; then

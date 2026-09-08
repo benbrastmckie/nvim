@@ -238,28 +238,28 @@ a genuine diagnostic `echo … >&2` (which stays) before removing anything.
 
 ---
 
-### Phase 3: Reconcile the documented consumer contracts [NOT STARTED]
+### Phase 3: Reconcile the documented consumer contracts [COMPLETED]
 
 **Goal**: both documented invocations become true. The SKILL.md Move 1 snippet is verified
 verbatim; the dead no-session dry-run branch is removed by fixing the script side.
 
 **Tasks**:
-- [ ] Run `skills/skill-orchestrate/SKILL.md` Move 1's snippet (`:63-76`) verbatim, unmodified,
+- [x] Run `skills/skill-orchestrate/SKILL.md` Move 1's snippet (`:63-76`) verbatim, unmodified,
       against a real task number, and confirm `jq -c '.stop'` succeeds with no preamble stripping.
-      Record the transcript in the phase's commit message. Change the snippet only if it fails.
-- [ ] Make `--session` optional in `orchestrate-cycle-plan.sh` **only under `--dry-run`**: move the
+      Record the transcript in the phase's commit message. Change the snippet only if it fails. *(completed)*
+- [x] Make `--session` optional in `orchestrate-cycle-plan.sh` **only under `--dry-run`**: move the
       `:268` guard so the `--session` half is enforced when `dry_run != true`, and synthesize an
       internal, never-written identity (e.g. `dryrun-$$-$(date +%s)`) otherwise. Note in the code
       comment why this is safe: `mt_save` is already a no-op under `--dry-run`, so the derived
-      `mt_state_file` path is never created. `--state-file` stays unconditionally required.
-- [ ] Update `usage()` and the script header's flag documentation to state that `--session` is
-      required except under `--dry-run`.
-- [ ] Collapse `commands/orchestrate.md`'s two-branch dry-run block (`:101-110`) into one
+      `mt_state_file` path is never created. `--state-file` stays unconditionally required. *(completed)*
+- [x] Update `usage()` and the script header's flag documentation to state that `--session` is
+      required except under `--dry-run`. *(completed)*
+- [x] Collapse `commands/orchestrate.md`'s two-branch dry-run block (`:101-110`) into one
       unconditional invocation, and replace the "`--session` is passed to the report only when
       non-empty" sentence with the true statement (the report does not require a minted session;
-      pass `--session "$SESSION_ID"` when one exists, otherwise omit it).
-- [ ] Add a test group asserting: `--dry-run` with no `--session` exits 0 and prints parseable
-      plan JSON on stdout; live mode with no `--session` still exits 2 with the existing message.
+      pass `--session "$SESSION_ID"` when one exists, otherwise omit it). *(completed)*
+- [x] Add a test group asserting: `--dry-run` with no `--session` exits 0 and prints parseable
+      plan JSON on stdout; live mode with no `--session` still exits 2 with the existing message. *(completed)*
 
 **Timing**: 0.5 hours
 
