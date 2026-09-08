@@ -259,6 +259,50 @@ Contains fields needed for task completion processing. Skills extract this data 
   `orchestrate-recover-outcome.sh`, regardless of whether a handoff is present for that dispatch.
   See `docs/architecture/handoff-schema.md`'s "Outcome Channels" section for the full rationale.
 
+### comparator (optional)
+
+**Type**: object
+**Include if**: the task is a lean4 implementation dispatch AND `--compare` was passed
+(`compare_flag == true`). Omitted entirely when `--compare` was not requested — there is no
+`"ran": false` "not requested" record; `"ran": false` is reserved for a request that reached
+preflight and stopped there without invoking the runner.
+
+Carries the result of the advisory Comparator gate run by `lean-implementation-agent.md` /
+`lean-implementation-hard-agent.md`'s Final Verification Stage against the snapshot Challenge
+and the implemented Solution, scoped to the plan's named theorems. This block is lean-only and
+does not alter the pre-existing `verification` block's keys (`verification_passed`,
+`sorry_count`, `vacuous_count`, `axiom_count`, `build_passed`).
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `ran` | boolean | Yes | Whether the Comparator runner was actually invoked. `false` means a preflight check stopped the gate before invocation. |
+| `verdict` | string | Yes | The verdict value. Any value other than `verified` MUST be surfaced loudly by postflight. |
+| `verdict_source` | string | Yes | `runner` or `preflight` — which vocabulary `verdict` is drawn from (see table below). |
+| `reason_detail` | string | No | Human-readable detail explaining a non-`verified` verdict. |
+| `underlying_verdict` | string | No | Present only when `verdict` is `definition_hole_needs_human`; carries the runner's underlying classification. |
+| `theorem_names` | array of strings | Yes | The theorem names checked, read from the Challenge manifest. |
+| `permitted_axioms` | array of strings | Yes | The axiom whitelist passed to the runner. |
+| `solution_module` | string | No | The derived Solution module path (absent when preflight stopped before derivation). |
+| `challenge_commit` | string | No | The Challenge commit recorded in the manifest. |
+| `solution_commit` | string | No | The post-implementation `HEAD` commit checked against the Challenge. |
+| `runtime_seconds` | number | Yes | Wall-clock elapsed seconds for the Comparator invocation (0 when `ran` is `false`). |
+
+**Verdict vocabularies**:
+
+| Source | Verdicts |
+|--------|----------|
+| `runner` (from `lean-comparator-run.sh`, unchanged, closed) | `verified`, `statement_mismatch`, `axiom_violation`, `kernel_rejected`, `definition_hole_needs_human`, `comparator_unavailable`, `timeout`, `config_error`, `unclassified_failure` |
+| `preflight` (agent-side, run before the runner is invoked) | `challenge_missing`, `challenge_drift`, `solution_module_unresolved`, `solution_module_ambiguous` |
+
+**Notes**:
+- The gate is **advisory only**: a `comparator` block, whatever its `verdict`, MUST NOT cause
+  `verification_passed` to be set `false`, MUST NOT downgrade `status` to `partial`, and MUST NOT
+  block completion. This is a binding constraint restated here so a reader of this schema alone,
+  without the design record, still gets it.
+- A run where `--compare` was not passed records no `comparator` block at all — see the
+  **Include if** line above.
+- This section documents a lean-only block. It does not alter the `verification` block's keys.
+
 ### memory_candidates (optional)
 
 **Type**: array of objects (0-3 items)

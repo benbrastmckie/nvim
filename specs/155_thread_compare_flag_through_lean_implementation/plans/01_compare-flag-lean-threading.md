@@ -277,37 +277,37 @@ than silently widening or narrowing the edit.
 
 ---
 
-### Phase 3: Metadata Schema — document the `comparator` block [NOT STARTED]
+### Phase 3: Metadata Schema — document the `comparator` block [COMPLETED]
 
 **Goal**: The `comparator` block is a documented part of `return-metadata-file.md`'s schema, with
 its verdict vocabulary and its advisory contract stated inline, before any writer or reader of it
 is implemented.
 
 **Tasks**:
-- [ ] Add a `### comparator (optional)` section to
+- [x] Add a `### comparator (optional)` section to
       `core/context/formats/return-metadata-file.md`, structurally modeled on the existing
-      `### completion_data (optional)` section (Type / Include if / field table / Notes).
-- [ ] Field table: `ran` (bool, yes), `verdict` (string, yes), `verdict_source` (string, yes —
+      `### completion_data (optional)` section (Type / Include if / field table / Notes). *(completed)*
+- [x] Field table: `ran` (bool, yes), `verdict` (string, yes), `verdict_source` (string, yes —
       `runner` or `preflight`), `reason_detail` (string, no), `underlying_verdict` (string, no —
       present only for `definition_hole_needs_human`), `theorem_names` (array of strings, yes),
       `permitted_axioms` (array of strings, yes), `solution_module` (string, no),
       `challenge_commit` (string, no), `solution_commit` (string, no), `runtime_seconds`
-      (number, yes).
-- [ ] Document both verdict vocabularies as a table, exactly as reproduced in this plan's Q3
+      (number, yes). *(completed)*
+- [x] Document both verdict vocabularies as a table, exactly as reproduced in this plan's Q3
       resolution — the nine `runner` values carried through unchanged from
-      `lean-comparator-run.sh`, and the four new `preflight` values.
-- [ ] State the advisory contract inline in the Notes list, verbatim in force: a `comparator`
+      `lean-comparator-run.sh`, and the four new `preflight` values. *(completed)*
+- [x] State the advisory contract inline in the Notes list, verbatim in force: a `comparator`
       block MUST NOT cause `verification_passed` to be set false, MUST NOT downgrade status to
       `partial`, and MUST NOT block completion — so a reader of the schema doc alone, without the
-      design record, still gets the binding constraint.
-- [ ] State that the block is omitted entirely when `--compare` was not passed (there is no
+      design record, still gets the binding constraint. *(completed)*
+- [x] State that the block is omitted entirely when `--compare` was not passed (there is no
       `"ran": false` "not requested" record), and that `"ran": false` is reserved for a request
-      that reached preflight and stopped there.
-- [ ] Note that this section documents a lean-only block and does not alter the `verification`
-      block's keys.
-- [ ] Do not add `comparator` to the generic top-level `## Schema` JSON example — that block
+      that reached preflight and stopped there. *(completed)*
+- [x] Note that this section documents a lean-only block and does not alter the `verification`
+      block's keys. *(completed)*
+- [x] Do not add `comparator` to the generic top-level `## Schema` JSON example — that block
       already omits `completion_data` and `verification`, and is not exhaustive; adding a
-      lean-only field there would misrepresent it as universal.
+      lean-only field there would misrepresent it as universal. *(completed)*
 
 **Timing**: 1 hour
 
