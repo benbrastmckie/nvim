@@ -1,7 +1,7 @@
 # Implementation Plan: Task #156
 
 - **Task**: 156 - Surface a Comparator doctor mode and document what a green result does and does not certify
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: 155 (completed — `lean-comparator-run.sh`, advisory `--compare` gate, `comparator-integration.md`)
 - **Research Inputs**: specs/156_document_comparator_trust_boundary/reports/01_comparator-doctor-trust-boundary.md
@@ -112,7 +112,7 @@ Phases within the same wave can execute in parallel. Phase 5 is deliberately las
 
 ---
 
-### Phase 1: Trust-model document (comparator-guide.md) [NOT STARTED]
+### Phase 1: Trust-model document (comparator-guide.md) [COMPLETED]
 
 **Goal**: Write the operator-facing document that states plainly what a green Comparator result
 does and does not certify, and link it from the lean4 context index. This is the important half

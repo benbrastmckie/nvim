@@ -16,6 +16,7 @@ This directory contains context files for Lean 4 theorem prover development.
 - `domain/mathlib-overview.md` - Mathlib library organization
 - `standards/lean4-style-guide.md` - Coding style conventions
 - `domain/hard-mode.md` - `--hard` routing, hard-mode agents, and behavioral contracts
+- `tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
 
 ## For Research
 
