@@ -34,6 +34,16 @@ Fixed directly in the source store (archive-aware `lookup_project`; dangling edg
 now dispatch. Standing rule 3 earned its keep again: the paper status was wrong and only execution
 caught it.*
 
+*Fifth pass, 2026-09-08: **Stage A is complete.** 142 and 150 landed, closing the thin-lead chain
+at 10/10. The engine went 189,000 B → 15,459 B across the arc; the default lifecycle is now
+planner-first with research on demand. Two process facts earned by this pass, both recorded below:
+a self-modifying task is not finished until `.claude/` is resynced (150's completion was gated on
+exactly that, correctly), and the pre-dispatch review's Class C reports "0 findings" for a solo
+self-modifying candidate whose verdict says `self_modifying: true` — a false negative now filed.
+Batch 3 proposed. Stages B-E were **not** re-surveyed this pass; the 26 tasks filed since
+2026-09-03 are listed under "Filed since the last survey" rather than folded into stage rows,
+so the gap is visible instead of implied away.*
+
 **Goal (two halves, in priority order)**
 
 1. `/orchestrate` is the only lifecycle entry point, driven by flags. **Done** in shape:
@@ -236,16 +246,23 @@ designated-candidate slot: they serialize one per cycle whether batched or not. 
 | A.4 | **143** `orchestrate-cycle-postflight.sh` | **completed 2026-09-07** | 143's two gates are the seed; the script also absorbs recovery (now seq-checked), corroboration, writer-contract-aware recording, `user_decision` relay, status clamp, artifact link + round advance, excursion advisory, scoped commit, MT-state update, lock release | remainder of MT-4 + MT-5 (56 KB) left the engine; 53, 138, 100 closed |
 | A.5 | **148** port single-task-only features into the one engine | **completed 2026-09-07** | Hard-mode counters into `orchestrate-churn.sh` (kept in full by decision); one loop-guard counter; drift/blocker dispatches as next-cycle rows; a single task number routed through the batch path behind a flag. Team item withdrawn | prerequisite for A.6, landed |
 | A.6 | **88** delete the single-task engine; rewrite `SKILL.md` as the four-move loop | **completed 2026-09-08 (this pass)** | Stages 0-8 deleted (189,000 B → 59,439 B); MT-1..5 rewritten as the four-move loop (Move 1-4, 15,459 B final); narration moved to `docs/architecture/orchestrate-state-machine.md` and `handoff-schema.md`; both `## MUST NOT` sections combined to 1,369 B; the batched `AskUserQuestion` -> `.decisions.json` -> next-dispatch-file relay built end to end; every coupled test/lint retargeted or retired with recorded deviations. The original mode-gating premise (single-task is the hot path) is inverted by the default use and was dropped | **~70k tokens/invocation** |
-| A.7 | **142** orchestrator context budget: measure and lock | revised (narrowed) | Baseline captured (numbers above), re-measured after each landing; per-file ceilings for the two orchestrator files and an eager-load ceiling wired into verify-deploy (absorbs 42); a 3-task batch's per-cycle growth measured and recorded | prevents regrowth |
-| A.8 | **150** research on demand | created | Planner dispatched first on a fresh task; it plans if the description and codebase suffice, else returns `needs_research` with a question list that becomes the research focus; `--research` forces research first. Lands after 88 so it is built once, in the thin engine | one full dispatch per specification-shaped task, which is most of them |
+| A.7 | **142** orchestrator context budget: measure and lock | **completed 2026-09-08** | Baseline captured (numbers above), re-measured after each landing; per-file ceilings for the two orchestrator files and an eager-load ceiling wired into verify-deploy (absorbs 42); a 3-task batch's per-cycle growth measured and recorded | prevents regrowth |
+| A.8 | **150** research on demand | **completed 2026-09-08** | Planner dispatched first on a fresh task; it plans if the description and codebase suffice, else returns `needs_research` with a question list that becomes the research focus; `--research` forces research first. Built once, in the thin engine, exactly as filed. Vocabulary admitted at every upstream gate (`orchestrate-recover-outcome.sh`, `validate-return-meta.sh`, `validate-handoff.sh`), not only at the consumer switch; `state-schema.json` also needed the new `research_questions` property (recorded deviation — its `additionalProperties: false` enforced it). 191 fixture assertions green across the three retargeted suites | one full dispatch per specification-shaped task, which is most of them |
 
 **Dependency chain, applied in `state.json`**: 149←[125]; 145←[149]; 146←[145]; 147←[146];
 143←[147]; 148←[143]; 88←[148]; 142←[88]; 150←[88]. 88's former edges [87, 127] are dropped;
 127 no longer gates it. 142 and 150 can run in the same cycle (disjoint scopes).
 
-**Chain progress, 2026-09-08** (supersedes the 2026-09-03 snapshot above, which is stale): 125 →
-149 → 145 → 146 → 147 → 143 → 148 → 88 are ALL done, in that order, exactly as filed. Only 142 and
-150 remain behind 88.
+**Chain progress, 2026-09-08 — STAGE A IS COMPLETE** (supersedes the 2026-09-03 snapshot above,
+which is stale): 125 → 149 → 145 → 146 → 147 → 143 → 148 → 88 → 142 → 150 are ALL done, in that
+order, exactly as filed. Nothing remains in Stage A.
+
+150's completion was delayed by one cycle, for a reason worth recording: it rewrote
+orchestrator-critical paths in the source store, so the postflight deploy gate correctly refused
+the `[IMPLEMENTING] → [COMPLETED]` write until `.claude/` was resynced. The implementation was
+already committed and green at that point; a `<leader>al` → `[Reload All]` and a re-run cleared it,
+and the entry reconcile — not a fresh dispatch — performed the transition. **Expect this for every
+self-modifying task: the deploy is part of the task, not an afterthought.**
 
 **Why A.2 before A.3.** The dispatch-file builder is independent of the loop rewrite and lands
 the per-cycle saving on the engine *as it exists today*. If Stage A stalls after A.2, multi-task
@@ -356,16 +373,33 @@ All six archived. The report's stale "runs solo only" wording is moot now (147 r
 report entirely; `--dry-run` reads live off `orchestrate-cycle-plan.sh`).
 
 **Batch 2 — Stage A as one chain.** `/orchestrate 149, 145, 146, 147, 143, 148, 88, 142, 150` —
-**first four done** (149, 145, 146, 147), **2026-09-03**. Remaining:
+**done, 2026-09-08.** All nine landed in the filed order. The total-order-by-design constraint
+held throughout: each member touched `SKILL.md` or another critical path, so each took the
+designated-candidate slot and serialized one per cycle whether batched or not.
+
+**Batch 3 — the next one to run.** Stage A is closed, so the serialization constraint that
+shaped Batches 1-2 is gone for everything except the orchestrator-critical cluster below. Two
+candidate groupings, in priority order:
 
 ```
-/orchestrate 143, 148, 88, 142, 150
+# 3a. Make /orchestrate cheap and honest to operate (all touch orchestrate-cycle-plan.sh
+#     or deploy-headless.sh -- serialize within this group, one per cycle)
+/orchestrate 180, 181, 182     # redeploy-checkpoint cost + gate-depth + durable ledger
+/orchestrate 189               # stdout/JSON channel, budget-charged-on-read, Class C false negative
+/orchestrate 188               # Class A archived-dependency false positive
+
+# 3b. Free-running, batchable alongside any one member of 3a
+/orchestrate 44, 89            # Stage C context budgets, both unblocked
 ```
 
-Still total order by design (each touches `SKILL.md` or another critical path) until the last
-two, which can share a cycle; five cycles minimum from here. Pair each cycle with one free Stage
-B/D task if wanted (139 → 140, 91 → 136, 51, 13, 129, 137, 134) — the ones already batchable in
-Stage B/D that are done (144, 20, 72, 113, 27) are out of the pool now.
+**Why 3a first.** Every one of these is a defect in the machinery you use to run everything else,
+and all were found by execution rather than review — 180/181/182 from a single session that burnt
+~10 minutes on a checkpoint and then deferred the whole batch; 188/189 from the session that
+closed Stage A. Their cost is paid on every future invocation in every consuming repo until fixed.
+
+**Still standing**: **do not** run 76 alongside anything in 3a (it touches `skill-base.sh`).
+**New**: 181/182 and 189 all edit `orchestrate-cycle-plan.sh` in disjoint regions — serialize
+them, either direction, rather than batching them together.
 
 **Lifted 2026-09-03**: the "don't run 44 alongside `core/context/`" constraint — 144 narrowed
 44's `file_scope` (one of 9 flagged projects it fixed) before archiving. The "don't run 14
@@ -498,20 +532,47 @@ planner's questions as its focus.
 
 ## Progress
 
-*As of 2026-09-08 (refreshed by 88's own implementation — see "Chain progress" below; prior
-snapshot was 2026-09-03).*
+*As of 2026-09-08, second refresh (Stage A closed by 142 and 150 landing; prior snapshot earlier
+the same day read "8/9 done" and is superseded).*
 
 | Stage | Tasks | State |
 |---|---|---|
 | Consolidation (116 → 117-127, 135) | 117-126, 128, 130-131, 133, 135 ☑ · **127 ☐** | shape done; one deletion left |
-| A — thin lead | 125 ☑ → 149 ☑ → 145 ☑ → 146 ☑ → 147 ☑ → 143 ☑ → 148 ☑ → **88 ☑ (this pass)** → [142 ☐, 150 ☐] | **8/9 done**; single-task engine deleted, `SKILL.md` rewritten as the four-move loop (measured 189,000 B → 15,459 B); only 142/150 remain in Stage A |
+| A — thin lead | 125 ☑ → 149 ☑ → 145 ☑ → 146 ☑ → 147 ☑ → 143 ☑ → 148 ☑ → 88 ☑ → 142 ☑ → **150 ☑** | **COMPLETE (10/10)**; single-task engine deleted, `SKILL.md` rewritten as the four-move loop (measured 189,000 B → 15,459 B), context budget locked, research-on-demand live |
 | B — wide-batch correctness | 144 ☑, 20 ☑, 72 ☑, 139→140 ☐, 14 ☐, 51 ☐, 91→136 ☐, 13 ☐, 129 ☐ (141 absorbed) | 3/9 done; rest batchable |
 | C — other budgets | 44 ☐, 89 ☐ (42 absorbed) | ☐ low; 44 unblocked by 144's narrowing |
 | D — extensions/repo | 113 ☑, 27 ☑, 74→75/76 ☐, 137 ☐, 134 ☐, 29→30 ☐, 43 ☐, 39 ☐, 45 ☐, 22 ☐ | 2/10 done; independent |
 | E — optional | Workflow spike, lazy-reference diet | after A |
 
-**Critical path now**: Stage A's engine-deletion arc (143 → 148 → 88) is complete: the single-task
-engine is deleted outright, `skill-orchestrate/SKILL.md` is the four-move loop (plan -> dispatch ->
-postflight -> branch) at 15,459 B (target was `<= 20,000 B`), and the batched `AskUserQuestion` ->
-`.decisions.json` -> next-dispatch-file relay is built end to end. Only 142 and 150 remain to close
-Stage A entirely.
+**Critical path now**: there isn't one — Stage A is closed. The single-task engine is deleted
+outright, `skill-orchestrate/SKILL.md` is the four-move loop (plan -> dispatch -> postflight ->
+branch) at 15,459 B (target was `<= 20,000 B`), the batched `AskUserQuestion` -> `.decisions.json`
+-> next-dispatch-file relay is built end to end, the context budget is measured and gated, and the
+default lifecycle is planner-first with research on demand. Both halves of the Goal at the top of
+this file are now met in shape; the second one ("token-cheap by construction") is met in
+measurement too.
+
+**What replaces it**: no remaining task is a *gate* on any other outside the orchestrator-critical
+cluster, so sequencing is now a priority question rather than a dependency question. See Batch 3
+under "Recommended batches" — the operational-defect group (180, 181, 182, 189, 188) is the
+recommended next front, because it is the machinery every other task runs on.
+
+**One caveat on this table**: Stages B-E were surveyed 2026-09-02 and have not been re-surveyed
+since. Twenty-six open tasks filed after that date appear nowhere in them — see "Filed since the
+last survey" below. The stage rows above are accurate for what they cover and silent about the
+rest; do not read "3/9 done" as "6 tasks left in B".
+
+### Filed since the last survey (2026-09-03 onward, unplaced in any stage)
+
+Recorded here so the roadmap stops implying these do not exist. Grouped by theme, not yet
+prioritized into stages — a re-survey pass should place them properly.
+
+| Cluster | Tasks | Note |
+|---|---|---|
+| Redeploy checkpoint | 180, 181, 182 | Measured ~10 min per firing; deferred a whole batch once. Batch 3a |
+| Pre-dispatch review correctness | 188, 189 | Class A false positives; Class C false negatives + stdout/budget defects. Batch 3a |
+| `file_scope` lifecycle | 162, 163, 164, 165 | Coherent four-task arc, own topic; harvest → surface → backfill → admission posture |
+| Build-waiter hygiene | 172, 173, 174, 175 | Bounded-wait idiom, terminal records, reaper pass, contract enforcement |
+| Lean extension | 176, 177, 184 | Extension-side, independent |
+| Artifact/doc drift | 157, 166, 185, 186, 187 | TODO.md summary lines, report headings, stage→move vocabulary, doc paths, commit attribution |
+| Misc | 167, 168, 170, 171, 183 | latex rule, opencode claim, test isolation, literature hang, loop-guard disposition |
