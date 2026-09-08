@@ -1,7 +1,7 @@
 # Implementation Plan: Task #176
 
 - **Task**: 176 - Fix the documented `lake-build-guard.sh` full-build invocation across the lean extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research phase; the dispatch description is a confirmed specification -- defect, root cause, site list, and acceptance bar were all supplied and independently re-verified during planning)

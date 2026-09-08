@@ -11,7 +11,7 @@ next_project_number: 190
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,182,183,184,185,186,187,188 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,177,182,183,184,185,186,187,188 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -77,7 +77,6 @@ next_project_number: 190
 
 ### Lean Extension
 
-176 [IMPLEMENTING] — Fix the documented `lake-build-guard.sh` full-build invocation ac
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
@@ -565,11 +564,12 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 
 ### 176. Fix the documented lake-build-guard full-build invocation across the lean extension
 - **Effort**: 1-2 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Plan**: [176_fix_documented_full_build_guard_invocation/plans/01_fix-full-build-guard-invocation.md]
+- **Summary**: [176_fix_documented_full_build_guard_invocation/summaries/01_fix-full-build-guard-invocation-summary.md]
 
 **Description**: Fix the documented `lake-build-guard.sh` full-build invocation across the lean extension: four caller sites document a form that exits 77 without ever launching a build.
 
