@@ -1,0 +1,27 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/156_document_comparator_trust_boundary/reports/01_comparator-doctor-trust-boundary.md",
+      "summary": "Research on the Comparator doctor mode (binary presence + C3 version-match check) and the trust-model document, including a live-tested finding that binary introspection cannot detect the Lean toolchain a binary was built against and a directory walk-up alternative that can."
+    }
+  ],
+  "next_steps": "Run /plan 156 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788832204_b452d0_156",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a doctor/health-check needs to verify which Lean toolchain a compiled Lean CLI binary (e.g. lean4export) was built against, do not rely on --version/--help (upstream tools like lean4export have none) or on `ldd`/dynamic-link introspection (nix-packaged Lean binaries statically link the runtime and carry no elan-toolchain path — confirmed empirically against a real nix-store `comparator` binary). Instead, `readlink -f` the resolved binary and walk up a bounded number of parent directories looking for a sibling `lean-toolchain` file (the artifact of the realistic `git clone` + `lake build` install route for a niche, non-nixpkgs-packaged tool), and diff its content against the target project's own `lean-toolchain`. Report an explicit 'unknown/cannot verify' state when no such file is found — never treat that as a pass.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/156_document_comparator_trust_boundary/reports/01_comparator-doctor-trust-boundary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lean4export", "comparator", "lean-toolchain", "version-match", "doctor-mode", "elan"]
+    }
+  ],
+  "dispatch_seq": 1
+}

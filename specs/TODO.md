@@ -51,9 +51,9 @@ next_project_number: 183
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-156 [RESEARCHING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+156 [RESEARCHED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
-179 [PLANNED] — Add a mechanical element-placement and density lint to the typst 
+179 [IMPLEMENTING] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
 
@@ -223,7 +223,7 @@ SAFETY CONSTRAINT. Do not disable or weaken any gate that can change the deploy 
 
 ### 179. Add an element placement and density lint to the typst extension
 - **Effort**: 2-3 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 178
@@ -1091,10 +1091,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 156. Surface a Comparator doctor mode and document what a green result does and does not certify
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 155
+- **Research**: [156_document_comparator_trust_boundary/reports/01_comparator-doctor-trust-boundary.md]
 
 **Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
