@@ -28,7 +28,7 @@ next_project_number: 190
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
+157 [PLANNING] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
 172 [NOT STARTED] — Close the taught-pattern gap that produced 22 unreapable poll loo
@@ -39,7 +39,7 @@ next_project_number: 190
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
-186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
+186 [PLANNING] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
 
@@ -56,7 +56,7 @@ next_project_number: 190
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-171 [NOT STARTED] — Fix the literature online-ingest hang caused by an O(n) per-title
+171 [PLANNED] — Fix the literature online-ingest hang caused by an O(n) per-title
 
 ### Neovim
 
@@ -77,7 +77,7 @@ next_project_number: 190
 
 ### Lean Extension
 
-176 [NOT STARTED] — Fix the documented `lake-build-guard.sh` full-build invocation ac
+176 [PLANNING] — Fix the documented `lake-build-guard.sh` full-build invocation ac
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
@@ -215,7 +215,7 @@ ACCEPTANCE: a recorded decision with rationale; whichever option is chosen is re
 ---
 
 ### 186. Fix deploy headless path in regeneration doc
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -564,7 +564,7 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 
 ### 176. Fix the documented lake-build-guard full-build invocation across the lean extension
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -636,10 +636,11 @@ ACCEPTANCE. Every `lake-build-guard.sh build` invocation in the source store eit
 ---
 
 ### 171. Fix literature ingest dedup hang
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
+- **Plan**: [171_fix_literature_ingest_dedup_hang/plans/01_fix-ingest-dedup-hang.md]
 
 **Description**: Fix the literature online-ingest hang caused by an O(n) per-title subprocess loop. check_duplicate_title() in agent-system/extensions/literature/scripts/literature-ingest-online.sh iterates every title in the global Literature index and spawns a separate python3 process per title to run .zotero-title-sim.py (11845 titles as of 2026-09-07), so any in_zotero_no_pdf or open_access ingest stalls for roughly 9-10 minutes before emitting any directive token. Observed: an in_zotero_no_pdf record (Zotero citation_key xu2001facing, item key Z8QNQKNL) logged "Resolved doc_id=... (tier=matched-no-pdf)" to stderr and then produced no stdout directive token at all until killed by a 540s timeout (rc=124), so the caller cannot distinguish a hang from a slow success. The Unpaywall lookup already carries curl --max-time 10 and the download path --max-time 30, so this is not network-bound; the stall is the subprocess-per-title loop. Fix direction: collapse the similarity pass into a single python3 invocation (pass the candidate title and the whole title list once, or precompute a normalized-title map), and short-circuit on exact or normalized-equality before any similarity scoring. Because the check is documented as non-blocking and recommendation-only, it must also fail fast and never gate ingestion. Preserve the existing WARNING output contract and the 0.85 similarity threshold. Note for scope: the sibling literature defect found in the same session (literature-briefing.sh exiting 141/SIGPIPE from piping a multi-line jq object into head -1 under set -euo pipefail) is ALREADY FIXED in this source store, which now uses jq -c first(...); no work is needed for it here, only redeployment of stale consumer repos
 
@@ -1210,7 +1211,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 157. Fix TODO.md summary lines: prefer .title, and stop the blind slice from splitting inline-code spans
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
