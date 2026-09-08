@@ -1,10 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/181_unify_redeploy_checkpoint_gate_depth/summaries/01_unify-redeploy-checkpoint-gate-summary.md",
+      "summary": "All five plan phases completed: finding-naming defer messages, confirmation/attribution filters in the shared baseline library, checkpoint wiring with depth-disagreement reporting, extended test coverage (Group 11 cases d-k), and updated contract documentation with the D6 follow-up split out."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the /orchestrate inter-cycle redeploy checkpoint's three defects: defer messages and defer_ledger entries now name the specific blocking finding; a new confirmation+attribution filter pipeline in lib/deploy-baseline-lib.sh prevents a flaky or unrelated finding from deferring a batch while still deferring on genuine attributable regressions; and a fast-PASS/full-FAIL depth disagreement against deploy-headless.sh's own --skip-slow verify is now reported explicitly. Extended test-orchestrate-cycle-plan.sh with 8 new Group 11 cases and updated batch-orchestration-guardrails.md's authoritative contract, splitting out the D6 trigger-predicate-widening follow-up as owed, separate work."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A verification gate that runs heavy work (a full deploy plus an entire test suite) immediately before taking the measurement it judges can self-inflict the very failure it then blames on the batch. The fix pattern is a two-stage additive filter applied to any candidate 'new finding' before it is allowed to block: (1) a CONFIRMATION filter -- re-run the check once more on a now-settled system and keep only findings that reproduce (a real regression reproduces; a load-induced flake does not, so this can only shrink the candidate set, never weaken the gate); (2) an ATTRIBUTION filter -- drop confirmed findings that positively name an identifier absent from the batch's own changed-files set, but MUST stay fail-safe toward blocking: a finding naming no identifier at all can never be proven unrelated and must still block, or the filter degrades into a blanket disable. Implemented in agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh (deploy_baseline_confirm_new_findings, deploy_baseline_unattributable_findings).",
+      "category": "PATTERN",
+      "source_artifact": "specs/181_unify_redeploy_checkpoint_gate_depth/summaries/01_unify-redeploy-checkpoint-gate-summary.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["verification-gate", "flaky-test", "confirmation-filter", "attribution-filter", "fail-safe", "self-inflicted-load"]
+    },
+    {
+      "content": "An unquoted bash heredoc delimiter (<<EOF instead of <<'EOF') lets backticks inside the heredoc body be interpreted as command substitution at write time, silently deleting or corrupting any backtick-quoted code identifiers/paths in the written file's content when those commands fail or produce unexpected output. Always use a quoted delimiter (<<'EOF') for heredocs whose body contains backtick-quoted markdown (code spans like `some/path.sh`) unless intentional interpolation is required -- verify by grepping the written file for the expected literal text immediately after writing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/181_unify_redeploy_checkpoint_gate_depth/summaries/01_unify-redeploy-checkpoint-gate-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["heredoc", "bash", "backtick-substitution", "quoted-delimiter", "markdown-corruption"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788883218_cb46bc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
