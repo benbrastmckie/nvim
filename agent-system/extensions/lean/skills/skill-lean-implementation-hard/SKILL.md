@@ -175,6 +175,7 @@ Prepare delegation context for the subagent with per-phase dispatch parameters:
   "delegation_path": ["orchestrator", "implement", "skill-lean-implementation-hard"],
   "timeout": 7200,
   "effort_flag": "hard",
+  "compare_flag": {true|false},
   "task_context": {
     "task_number": N,
     "task_name": "{project_name}",
@@ -197,6 +198,12 @@ Prepare delegation context for the subagent with per-phase dispatch parameters:
 same pass-through treatment already given to `territory` and `handoff_path`. Never invent,
 increment, or recompute a value at this layer; only the orchestrator mints one. If absent, omit
 the field. See `context/patterns/dispatch-report-not-termination.md`.
+
+**Forward `compare_flag` unchanged, and never let it replace `effort_flag`.** `compare_flag` is
+forwarded from this skill's own delegation context unchanged and defaults to `false` when
+absent, composing with `"effort_flag": "hard"` above rather than competing with it — both fields
+are present together whenever `--compare --hard` was passed. It gates the subagent's advisory
+Comparator step (see Stage 5 below).
 
 ---
 
@@ -228,6 +235,8 @@ The subagent will:
 - Write the orchestrator handoff (with sorry_inventory) to the ABSOLUTE path given as
   `handoff_path` in the delegation context — never a bare `.orchestrator-handoff.json` filename
 - Create implementation summary
+- Run the advisory Comparator gate against the snapshot Challenge and the implemented Solution
+  when `compare_flag` is `true` (no-op, no cost, when absent or `false`)
 - Write metadata to `specs/{N}_{SLUG}/.return-meta.json`
 - Return a brief text summary (NOT JSON)
 
@@ -317,6 +326,45 @@ else
     echo "  Agent should have written this file. Check agent output."
 fi
 ```
+
+---
+
+### Stage 6c: Comparator Verdict Surface (Read from Metadata)
+
+Read the agent-recorded `comparator` block, if any, from metadata and surface it. The
+Comparator invocation itself was performed by the agent in its Final Verification Stage — this
+stage reads that recorded result and MUST NOT re-run it, per
+`context/standards/postflight-tool-restrictions.md`, exactly as Stage 6a above reads
+`compliance_check` rather than re-running its grep.
+
+**Placement note**: named `Stage 6c` (not inserted literally between the pre-existing Stage 6a
+and Stage 6b) to avoid renumbering every downstream stage in this file; it occupies the same
+structural slot — immediately after the plan-compliance read, before task-status update — that
+`Stage 6c` occupies in the base `skill-lean-implementation/SKILL.md`.
+
+```bash
+comparator_ran=$(jq -r '.comparator.ran // false' "$metadata_file" 2>/dev/null)
+comparator_verdict=$(jq -r '.comparator.verdict // ""' "$metadata_file" 2>/dev/null)
+comparator_verdict_source=$(jq -r '.comparator.verdict_source // ""' "$metadata_file" 2>/dev/null)
+comparator_reason_detail=$(jq -r '.comparator.reason_detail // ""' "$metadata_file" 2>/dev/null)
+
+if [ "$comparator_ran" = "false" ] && [ -z "$comparator_verdict" ]; then
+    echo "Stage 6c: INFO — no comparator block recorded (--compare not requested, or agent preflight stopped before invocation); proceeding"
+elif [ "$comparator_verdict" = "verified" ]; then
+    echo "Stage 6c: Comparator PASS — verdict=verified"
+else
+    echo "Stage 6c: *** COMPARATOR ADVISORY FINDING ***"
+    echo "  verdict: ${comparator_verdict} (verdict_source: ${comparator_verdict_source})"
+    echo "  reason_detail: ${comparator_reason_detail}"
+    echo "  This is ADVISORY ONLY — completion is proceeding regardless. See the implementation"
+    echo "  summary's Comparator section for full detail."
+fi
+```
+
+**Asymmetry note (deliberate, not an omission)**: unlike Stage 6a's `compliance_check == "failed"`
+branch above, which sets `status="partial"`, this stage MUST NOT assign `status` on any
+`comparator` verdict, however severe. The gate is advisory-only by binding design decision — see
+`### comparator (optional)` in `return-metadata-file.md`.
 
 ---
 
@@ -414,6 +462,11 @@ Hard-mode Lean implementation completed for task {N}:
 - Changes committed
 ```
 
+If a `comparator` block was recorded and its `verdict` is not `verified`, add a bullet naming the
+verdict and its `verdict_source` (e.g. `- Comparator advisory finding: statement_mismatch
+(verdict_source: runner) — see summary for detail`). Add no more than a single short line for the
+`verified` or absent cases beyond what the example above already shows.
+
 ---
 
 ## Error Handling
@@ -452,6 +505,10 @@ After the agent returns, this skill MUST NOT:
 5. **Write summary/reports** - Artifact creation is agent work
 6. **Re-run sorry inventory scan** - Agent populates sorry_inventory
 7. **Resolve sorry entries** - That is agent implementation work
+8. **Re-run the Comparator** - The advisory gate is agent work; this skill only reads the
+   recorded `comparator` block (Stage 6c)
+9. **Downgrade status on a Comparator verdict** - The gate is advisory-only by binding design
+   decision; see Stage 6c's asymmetry note
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed

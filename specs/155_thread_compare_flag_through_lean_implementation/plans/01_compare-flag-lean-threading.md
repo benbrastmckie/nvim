@@ -407,24 +407,24 @@ the `comparator` block without ever changing their own status logic.
 
 ---
 
-### Phase 5: Skill Threading and Postflight Surface [NOT STARTED]
+### Phase 5: Skill Threading and Postflight Surface [COMPLETED]
 
 **Goal**: Both Lean implementation skills forward `compare_flag` into the agent's delegation
 context, and both read back the agent-recorded `comparator` block and surface a non-`verified`
 verdict loudly — without re-running anything and without downgrading status.
 
 **Tasks**:
-- [ ] `skills/skill-lean-implementation/SKILL.md` Stage 3: add
+- [x] `skills/skill-lean-implementation/SKILL.md` Stage 3: add
       `"compare_flag": {true|false}` to the delegation-context JSON block, with a short note that
       it is forwarded from this skill's own delegation context unchanged and defaults to `false`
       when absent — modeled on the hard skill's existing "forward `dispatch_seq` unchanged, never
-      invent" wording.
-- [ ] `skills/skill-lean-implementation-hard/SKILL.md` Stage 4: the same addition to its
+      invent" wording. *(completed)*
+- [x] `skills/skill-lean-implementation-hard/SKILL.md` Stage 4: the same addition to its
       delegation-context JSON block, beside the existing `"effort_flag": "hard"` (which it does
-      not replace — `--compare` composes with `--hard`).
-- [ ] Both skills' Stage 4/Stage 5 "The subagent will:" bullet lists: add a bullet noting the
-      subagent runs the advisory Comparator gate when `compare_flag` is true.
-- [ ] Add `### Stage 6c: Comparator Verdict Surface (Read from Metadata)` to the base skill,
+      not replace — `--compare` composes with `--hard`). *(completed)*
+- [x] Both skills' Stage 4/Stage 5 "The subagent will:" bullet lists: add a bullet noting the
+      subagent runs the advisory Comparator gate when `compare_flag` is true. *(completed)*
+- [x] Add `### Stage 6c: Comparator Verdict Surface (Read from Metadata)` to the base skill,
       immediately after Stage 6b, and the analogous stage to the hard skill immediately after its
       Stage 6a. Both read the block with `jq` from the already-written `.return-meta.json`
       (`.comparator.ran`, `.comparator.verdict`, `.comparator.verdict_source`,
@@ -433,18 +433,18 @@ verdict loudly — without re-running anything and without downgrading status.
       - `verified` -> a one-line PASS.
       - any other verdict -> a loud, multi-line block naming the verdict, its
         `verdict_source`, the `reason_detail`, and the fact that this is ADVISORY and completion
-        is proceeding regardless.
-- [ ] Each new stage carries the same architecture note Stage 6b carries: the skill READS the
+        is proceeding regardless. *(completed: the hard skill's Stage 6c is placed immediately after the pre-existing Stage 6b, not literally between 6a/6b, to avoid renumbering downstream Stages 7-10; documented inline as a placement note)*
+- [x] Each new stage carries the same architecture note Stage 6b carries: the skill READS the
       agent-recorded result and MUST NOT re-run the check, per
-      `context/standards/postflight-tool-restrictions.md`.
-- [ ] Each new stage MUST NOT assign `status="partial"` — unlike Stage 6b's
+      `context/standards/postflight-tool-restrictions.md`. *(completed)*
+- [x] Each new stage MUST NOT assign `status="partial"` — unlike Stage 6b's
       `compliance_check == "failed"` branch, which does. Call this asymmetry out explicitly in a
-      one-line comment so it does not read as an omission a later editor should "fix".
-- [ ] Both skills' final "Return Brief Summary" stage: add a conditional bullet that names a
+      one-line comment so it does not read as an omission a later editor should "fix". *(completed)*
+- [x] Both skills' final "Return Brief Summary" stage: add a conditional bullet that names a
       non-`verified` verdict in the returned summary. Do not add a bullet for the `verified` or
-      absent cases beyond a single short line.
-- [ ] Both skills' `## MUST NOT (Postflight Boundary)` list: add "MUST NOT re-run the Comparator"
-      and "MUST NOT downgrade status on a Comparator verdict".
+      absent cases beyond a single short line. *(completed)*
+- [x] Both skills' `## MUST NOT (Postflight Boundary)` list: add "MUST NOT re-run the Comparator"
+      and "MUST NOT downgrade status on a Comparator verdict". *(completed)*
 
 **Timing**: 1.5 hours
 
