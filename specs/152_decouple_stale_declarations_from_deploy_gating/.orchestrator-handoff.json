@@ -1,0 +1,23 @@
+{
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 1,
+  "summary": "Decoupled line_count drift (now auto-repaired at deploy time, reported never silent) and pre-existing unrelated red gates (via a shared deploy_findings_snapshot/deploy_baseline_new_findings library both command-gate-out.sh and orchestrate-cycle-plan.sh's redeploy checkpoint source) from batch-blocking; deploy-headless.sh now emits RESULT=/CONSUMERS_STALE= markers so its three confounded exit-3 causes are distinguishable. All 7 plan phases complete; full test suite (73/73) and full verify-deploy.sh gate set (30/30) pass against a redeployed .claude/ tree.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md",
+      "summary": "Implementation summary covering both axes (line_count auto-repair, checkpoint three-branch contract), the RESULT=/CONSUMERS_STALE= marker vocabulary, and all four acceptance demonstrations."
+    },
+    {
+      "type": "plan",
+      "path": "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
+      "summary": "7-phase plan, all phases [COMPLETED]."
+    }
+  ],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "observation": "During this dispatch, specs/151_fix_pre_existing_verify_deploy_failures/plans/01_verify-deploy-gate-remediation.md was observed to flip from [IMPLEMENTING] to [COMPLETED] mid-session -- a foreign, uncommitted modification not made by this agent (task 151 is the sibling task named in this task's own dispatch as owning the two live line_count instances, not the class this task addresses). Left untouched and unstaged; flagged here per dispatch-report-not-termination observation duty."
+}

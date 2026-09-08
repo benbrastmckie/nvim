@@ -1,7 +1,7 @@
 # Implementation Plan: Decouple stale declarations from deploy gating
 
 - **Task**: 152 - Decouple stale declarations from deploy gating
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None (a sibling task fixes the two live `line_count` gate failures; this task
   addresses the defect class)
@@ -443,7 +443,7 @@ misled the way `regeneration-is-manual-only.md` predicted.
 
 ---
 
-### Phase 7: Tests and the four acceptance demonstrations [IN PROGRESS]
+### Phase 7: Tests and the four acceptance demonstrations [COMPLETED]
 
 **Goal**: Prove the tolerance is narrow rather than assume it, with a harness that drives all
 three checkpoint branches and demonstrates each of the dispatch's four acceptance criteria.
@@ -461,18 +461,18 @@ three checkpoint branches and demonstrates each of the dispatch's four acceptanc
       updated, batch NOT deferred; exit 3 with an added finding → deferred, no baseline notice.
 - [x] Register both test files in `manifest.json` `provides.scripts` (the second is already
       registered; confirm rather than assume).
-- [ ] Acceptance demonstration 1 (`line_count` drift cannot occur silently): edit an indexed
+- [x] Acceptance demonstration 1 (`line_count` drift cannot occur silently): edit an indexed
       file, deploy, show the gate green with no manual declaration edit — capture the console
       report and the resulting `git diff`.
-- [ ] Acceptance demonstration 2 (pre-existing red gate no longer defers a batch): introduce a
+- [x] Acceptance demonstration 2 (pre-existing red gate no longer defers a batch): introduce a
       deliberate pre-existing failure, run the checkpoint, show branch (c) fires and the batch
       proceeds with a recorded `verify_deploy_baseline_notices` entry.
-- [ ] Acceptance demonstration 3 (a NEW failure still stops the batch): introduce a failure
+- [x] Acceptance demonstration 3 (a NEW failure still stops the batch): introduce a failure
       between the pre and post snapshots, show branch (b) defers.
-- [ ] Acceptance demonstration 4 (the three exit-3 causes are distinguishable): show the
+- [x] Acceptance demonstration 4 (the three exit-3 causes are distinguishable): show the
       `RESULT=` marker differing across the three outcomes, and the `CONSUMERS_STALE=` marker
       present with a stale consumer registered and an unchanged exit code.
-- [ ] Run `scripts/tests/run-all.sh` and the full `verify-deploy.sh` gate set.
+- [x] Run `scripts/tests/run-all.sh` and the full `verify-deploy.sh` gate set.
 
 **Timing**: 1.5 hours
 
@@ -503,18 +503,29 @@ branch cases move into a new dedicated test file rather than being dropped.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on every modified shell script.
-- [ ] `scripts/tests/test-deploy-baseline-lib.sh` passes (new).
-- [ ] `scripts/tests/test-orchestrate-cycle-plan.sh` passes with the three new branch cases.
-- [ ] `scripts/tests/test-gate-out-repair-reporting.sh` still passes after the Phase 3
-      substitution.
-- [ ] `scripts/tests/run-all.sh` passes.
-- [ ] `bash .claude/scripts/verify-deploy.sh` (full gate set) passes.
-- [ ] Acceptance 1: an edited indexed file deploys green with no hand-edited `line_count`.
-- [ ] Acceptance 2: a pre-existing unrelated red gate lets the batch proceed with a recorded
-      `verify_deploy_baseline_notices` entry.
-- [ ] Acceptance 3: a newly-introduced failure still defers the batch.
-- [ ] Acceptance 4: the three `deploy-headless.sh` outcomes are distinguishable by marker.
+- [x] `bash -n` clean on every modified shell script.
+- [x] `scripts/tests/test-deploy-baseline-lib.sh` passes (new). *(completed: 7/7)*
+- [x] `scripts/tests/test-orchestrate-cycle-plan.sh` passes with the three new branch cases.
+      *(completed: 85/85, including the 8 new Group 11 cases)*
+- [x] `scripts/tests/test-gate-out-repair-reporting.sh` still passes after the Phase 3
+      substitution. *(completed: 19/19, run against the redeployed tree)*
+- [x] `scripts/tests/run-all.sh` passes. *(completed: 73/73 suites, after fixing two regressions
+      this task's own edits introduced: an inline `sess_$(date` session-id generator in
+      `deploy-headless.sh` tripping `test-common-lib.sh`'s single-source assertion, and
+      `test-loop-guard-budget-override.sh`'s independent TARGET-2 fixture missing
+      `lib/deploy-baseline-lib.sh` in its own collaborator-copy list)*
+- [x] `bash .claude/scripts/verify-deploy.sh` (full gate set) passes. *(completed: 30 checks, 0
+      failures, run against the redeployed tree — the earlier `validate-state.sh --deep` FAIL
+      seen on the first self-deploy was transient/unrelated to this task's changes and was gone
+      on the next run)*
+- [x] Acceptance 1: an edited indexed file deploys green with no hand-edited `line_count`.
+      *(completed: see Phase 5 progress notes and the summary's Acceptance Demonstrations section)*
+- [x] Acceptance 2: a pre-existing unrelated red gate lets the batch proceed with a recorded
+      `verify_deploy_baseline_notices` entry. *(completed: Group 11 case (c))*
+- [x] Acceptance 3: a newly-introduced failure still defers the batch. *(completed: Group 11 case (b))*
+- [x] Acceptance 4: the three `deploy-headless.sh` outcomes are distinguishable by marker.
+      *(completed: RESULT=not_landed / landed_verify_clean / landed_verify_red demonstrated, plus
+      CONSUMERS_STALE=44 co-occurring with RESULT=landed_verify_clean proving independence)*
 
 ## Artifacts & Outputs
 

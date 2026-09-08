@@ -1,7 +1,64 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 1,
   "agent_type": "general-implementation-agent",
   "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "session_id": "sess_1788824504_ea0ae3",
-  "dispatch_seq": 1
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md",
+      "summary": "Both axes complete: line_count auto-repair wired pre-deploy into deploy-headless.sh (reported, never silent), and the inter-cycle redeploy checkpoint rewired onto the (a)/(b)/(c) baseline contract via scripts/lib/deploy-baseline-lib.sh, sourced by both orchestrate-cycle-plan.sh and command-gate-out.sh; RESULT=/CONSUMERS_STALE= markers added to deploy-headless.sh. All 4 acceptance demonstrations captured, all 7 plan phases [COMPLETED]."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Decoupled line_count drift (auto-repaired at deploy time, reported never silent) and pre-existing unrelated red gates from batch-blocking, via a new shared scripts/lib/deploy-baseline-lib.sh both command-gate-out.sh and orchestrate-cycle-plan.sh's redeploy checkpoint now source; deploy-headless.sh gained RESULT=/CONSUMERS_STALE= markers so its three confounded exit-3 causes are distinguishable."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
+    "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "orchestrate-cycle-plan.sh and command-gate-out.sh both source lib/*.sh files by relative path off their OWN deployed location, but multiple standalone test fixtures each maintain their OWN independent copy of the 'which collaborator .sh files get copied into the sandbox' list (test-orchestrate-cycle-plan.sh, test-loop-guard-budget-override.sh's separate TARGET-2 block, test-gate-out-repair-reporting.sh). Adding a new `source lib/X.sh` line to a script therefore requires greeping ALL test files that sandbox-copy that script's collaborators, not just the one test file most obviously 'for' it -- running only the directly-relevant suite after such a change will pass while a sibling fixture silently breaks, discovered only by the full run-all.sh suite.",
+      "category": "PATTERN",
+      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test fixture", "collaborator copy list", "source lib", "run-all.sh", "sandbox"]
+    },
+    {
+      "content": "A script that deliberately never sources lib/common.sh (e.g. deploy-headless.sh, for self-overwrite-hazard reasons -- it is about to overwrite the very file it would source) cannot use the codebase's single-source session-id generator, and an inline sess_$(date +%s)_x fallback trips test-common-lib.sh's single-source assertion lint. The sanctioned fix per this codebase's own risk-table precedent is not to synthesize an id: drop the durable events.jsonl row for that specific event, keep the unconditional console report as the durable record instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["session-id", "single-source assertion", "deploy-headless.sh", "events-append", "self-overwrite hazard"]
+    },
+    {
+      "content": "Under `set -e -o pipefail`, a shell function whose last statement is a pipeline ending in `grep pattern | sort -u` (or similar) will make the FUNCTION's own return status reflect a grep-found-nothing 1, even when that is a normal, expected outcome (e.g. a clean verify run producing zero FINDING lines). Any caller that captures the function's output via `x=$(fn ...)` under its own set -e will then abort the whole calling script on the ordinary empty-result case. Fix at the function's own last line with `| sort -u || true`, not at each call site.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["set -e", "pipefail", "grep exit 1", "shell function", "command substitution abort"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788824504_ea0ae3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

@@ -2,16 +2,18 @@
   "phase": 7,
   "phase_name": "Tests and the four acceptance demonstrations",
   "started_at": "2026-09-08T01:16:00Z",
-  "last_updated": "2026-09-08T01:45:00Z",
+  "last_updated": "2026-09-08T02:05:00Z",
   "objectives": [
     {"id": 1, "description": "Create scripts/tests/test-deploy-baseline-lib.sh unit coverage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"]},
     {"id": 2, "description": "Extend test-orchestrate-cycle-plan.sh with stubbed deploy-headless.sh driving all three checkpoint branches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
     {"id": 3, "description": "Register both test files in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
-    {"id": 4, "description": "Redeploy .claude/ from source store, then run scripts/tests/run-all.sh and full verify-deploy.sh", "status": "in_progress", "files_touched": []},
-    {"id": 5, "description": "Capture the four acceptance demonstrations", "status": "in_progress", "files_touched": []}
+    {"id": 4, "description": "Redeploy .claude/ from source store, then run scripts/tests/run-all.sh and full verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh", "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Capture the four acceptance demonstrations", "status": "done", "files_touched": []}
   ],
-  "current_objective": 4,
-  "approaches_tried": [],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Inline sess_$(date +%s)_deploy generator in deploy-headless.sh's events-append call (Phase 5)", "result": "failed", "reason": "Tripped test-common-lib.sh's single-source session-id-generation assertion (deploy-headless.sh deliberately never sources lib/common.sh, for the same self-overwrite reason it never sources task-lock.sh). Fixed per the plan's own risk-table contingency: dropped the durable events.jsonl row for this specific auto-repair event, kept the console report (which is unconditional and was never in question)."}
+  ],
   "handoff_count": 0,
-  "notes": "test-deploy-baseline-lib.sh: 7/7 pass (unit coverage of both exported functions, including the set -e -o pipefail abort regression this task's own implementation work uncovered and fixed). test-orchestrate-cycle-plan.sh: 85/85 pass including 8 new Group 11 cases covering all three checkpoint branches with a call-counting stubbed verify-deploy.sh and a stubbed deploy-headless.sh -- this Group 11 run doubles as acceptance demonstrations 2 (pre-existing red gate does not defer) and 3 (a new failure still defers)."
+  "notes": "Two regressions surfaced only by running the FULL test suite (run-all.sh), not by the individual suites touched directly in earlier phases: (1) the inline session-id generator above, and (2) test-loop-guard-budget-override.sh's OWN independent TARGET-2 fixture (a second, separate collaborator-file copy list from test-orchestrate-cycle-plan.sh's) was missing lib/deploy-baseline-lib.sh after Phase 2 added the source line to orchestrate-cycle-plan.sh. Both fixed; run-all.sh now 73/73, full verify-deploy.sh 30/30. Self-deployed .claude/ twice: first deploy surfaced both regressions (and a transient, unrelated specs/state.json validate-state.sh --deep FAIL that was gone by the second deploy); second deploy after the fixes was fully green (RESULT=landed_verify_clean, CONSUMERS_STALE=44, line_count auto-repair: 0 corrected). All four acceptance demonstrations captured; see the phase-5 progress notes for demo 1 and this file's approaches_tried/notes plus Group 11 test output for demos 2-4."
 }
