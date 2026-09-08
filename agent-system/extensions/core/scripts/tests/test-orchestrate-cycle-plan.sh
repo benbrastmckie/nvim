@@ -1183,6 +1183,84 @@ fi
 rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 12: --compare forwarding -- an implement-phase candidate's build-dispatch argv gains
+# --compare; a plan-phase candidate's does not. The gate is scoped by THIS script (`$g = the
+# candidate's dispatched phase`), not by orchestrate-build-dispatch.sh itself (which is
+# phase-agnostic and is exercised separately in its own test suite).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 12: --compare forwarding (implement-phase only, never research/plan)"
+
+G12_ARGV_LOG="$WORKDIR/g12-build-dispatch-argv.log"
+: > "$G12_ARGV_LOG"
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$G12_ARGV_LOG"
+proj_num="\$1"; phase="\$2"
+jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1201, "project_name": "g12_plan_candidate", "task_type": "general", "status": "researched", "description": "plan-phase candidate -- --compare must never reach this dispatch", "dependencies": [], "file_scope": []},
+    {"project_number": 1202, "project_name": "g12_implement_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase candidate -- --compare must reach this dispatch", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g12_sess --compare -- 1201 1202
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 12: SUT exits 0"
+else
+  fail "Group 12: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+g12_plan_argv=$(grep '^1201 plan' "$G12_ARGV_LOG" || true)
+g12_implement_argv=$(grep '^1202 implement' "$G12_ARGV_LOG" || true)
+
+if echo "$g12_implement_argv" | grep -q -- "--compare"; then
+  pass "Group 12: --compare forwarded into build_args for the implement-phase candidate"
+else
+  fail "Group 12: --compare missing from implement-phase build_args (argv: '$g12_implement_argv')"
+fi
+
+if echo "$g12_plan_argv" | grep -q -- "--compare"; then
+  fail "Group 12: --compare unexpectedly forwarded into build_args for the plan-phase candidate (argv: '$g12_plan_argv')"
+else
+  pass "Group 12: --compare NOT forwarded into build_args for the plan-phase candidate"
+fi
+
+# ── --compare --hard together: both flags reach the implement dispatch (composition, never
+# competing) ──────────────────────────────────────────────────────────────────────────────────
+: > "$G12_ARGV_LOG"
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1203, "project_name": "g12_hard_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase candidate exercising --compare --hard composition", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g12b_sess --compare --hard -- 1203
+
+g12_hard_argv=$(grep '^1203 implement' "$G12_ARGV_LOG" || true)
+if echo "$g12_hard_argv" | grep -q -- "--compare" && echo "$g12_hard_argv" | grep -q -- "--hard"; then
+  pass "Group 12: --compare --hard together both reach the implement dispatch (composition, not competition)"
+else
+  fail "Group 12: expected both --compare and --hard in implement build_args, got: '$g12_hard_argv'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

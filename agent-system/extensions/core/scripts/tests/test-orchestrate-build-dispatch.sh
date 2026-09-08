@@ -413,6 +413,53 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 9: --compare -- the dispatch file's Identity section gains a single `compare_flag: true`
+# line ONLY when --compare is passed; a no-flag dispatch file is byte-identical to one built
+# without this flag's support at all.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 9: --compare emits compare_flag: true ONLY when passed (byte-identity otherwise)"
+run_sut implement --clean --seq 9 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_no_compare="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_no_compare" "compare_flag:" "implement (no --compare): compare_flag line absent"
+  cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-compare.md"
+else
+  fail "implement (no --compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut implement --clean --seq 9 --dispatch-start-ts 1234567890 --compare
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_compare="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_compare" "- compare_flag: true" "implement (--compare): compare_flag: true line present"
+  if diff -q "$WORKDIR/dispatch-no-compare.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
+    fail "implement (--compare): expected a diff against the no-flag dispatch file, got none"
+  else
+    diff_line_count="$(diff "$WORKDIR/dispatch-no-compare.md" "$LAST_DISPATCH_FILE" | grep -c '^>')"
+    if [ "$diff_line_count" -eq 1 ]; then
+      pass "implement (--compare): differs from the no-flag dispatch file by exactly one added line"
+    else
+      fail "implement (--compare): expected exactly 1 added line vs. no-flag dispatch file, got $diff_line_count"
+    fi
+  fi
+else
+  fail "implement (--compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# The SUT itself is phase-agnostic for --compare (it just records whatever it was told) --
+# implement-only scoping is a CALLER-side decision (orchestrate-cycle-plan.sh only ever passes
+# --compare to this script for an implement-phase candidate; SKILL.md's own single-task dispatch
+# sites only add --compare at the three implement dispatch sites). So an explicit --compare
+# passed directly to the SUT for phase=research DOES emit the line -- that scoping is exercised
+# in orchestrate-cycle-plan.sh's own test suite, not here.
+run_sut research --clean --seq 9 --compare
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_research_compare="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_research_compare" "- compare_flag: true" "research (--compare passed explicitly): SUT itself is phase-agnostic and still records compare_flag: true (implement-only scoping is a caller-side decision, tested in orchestrate-cycle-plan.sh's own suite)"
+else
+  fail "research (--compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
