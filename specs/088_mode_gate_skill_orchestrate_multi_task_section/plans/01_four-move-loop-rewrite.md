@@ -314,47 +314,55 @@ the recorded line numbers.
 
 ---
 
-### Phase 4: Rewrite the remainder as the four-move loop [NOT STARTED]
+### Phase 4: Rewrite the remainder as the four-move loop [COMPLETED]
 
 **Goal**: Turn what is left of `SKILL.md` into the four-move loop and nothing else, at
 `<= 20,000 B`, including the batched `AskUserQuestion` relay that writes `.decisions.json`.
 
 **Tasks**:
 
-- [ ] Rewrite `## Context References` to cite only `orchestrate-cycle-plan.sh`,
+- [x] Rewrite `## Context References` to cite only `orchestrate-cycle-plan.sh`,
       `orchestrate-build-dispatch.sh`, `orchestrate-cycle-postflight.sh`, and
       `docs/architecture/orchestrate-state-machine.md`. The task description's mention of a
       fan-out script is stale — team mode and `orchestrate-team-fanout.sh` no longer exist — so
-      no fan-out reference is added.
-- [ ] Write the loop as four moves: (1) one call to `orchestrate-cycle-plan.sh` returning the
+      no fan-out reference is added. *(completed)*
+- [x] Write the loop as four moves: (1) one call to `orchestrate-cycle-plan.sh` returning the
       cycle JSON; (2) one pointer-prompt `Agent` call per `dispatch[]` row, all rows issued in
       ONE message; (3) one `orchestrate-cycle-postflight.sh` call per returned task; (4) branch —
-      continue, relay, or stop.
-- [ ] Preserve the existing pointer-prompt and `context` shapes verbatim from the current MT-4
+      continue, relay, or stop. *(completed: "## The Four-Move Loop" section)*
+- [x] Preserve the existing pointer-prompt and `context` shapes verbatim from the current MT-4
       dispatch composition; this is a transport-preserving move, not a redesign of what a
-      dispatched agent receives.
-- [ ] Keep the `aux_dispatch[]` rows and the MUST NOT that an aux row never reaches
+      dispatched agent receives. *(completed: Move 2's prompt/context field mappings are the
+      same text, condensed to a comment rather than restated as prose)*
+- [x] Keep the `aux_dispatch[]` rows and the MUST NOT that an aux row never reaches
       `orchestrate-cycle-postflight.sh`, and keep the hard-mode burnout gate call to
-      `orchestrate-churn.sh --burnout-signal`, both as short list items.
-- [ ] Implement the ask relay: accumulate every `ask_user` verdict returned by postflight during
+      `orchestrate-churn.sh --burnout-signal`, both as short list items. *(completed)*
+- [x] Implement the ask relay: accumulate every `ask_user` verdict returned by postflight during
       the cycle; after every other task's postflight has run, call `AskUserQuestion` once per
       accumulated question; write each answer to `specs/{NNN}_{slug}/.decisions.json` in the
       Phase 2 schema. A non-blocking decision proceeds on the agent's recommendation and is
-      surfaced in the consolidated output rather than asked.
-- [ ] Add `AskUserQuestion` to the skill's `allowed-tools` frontmatter (currently
+      surfaced in the consolidated output rather than asked. *(completed: Move 3 accumulates into
+      `mt_state_file.pending_ask_user[]`; Move 4's "Batched AskUserQuestion relay" consumes it)*
+- [x] Add `AskUserQuestion` to the skill's `allowed-tools` frontmatter (currently
       `Agent, Bash, Read, Edit`) and check whether `commands/orchestrate.md`'s own
-      `allowed-tools` needs the same addition for the relay to be reachable.
-- [ ] Do NOT conflate this with the unrelated `detected_defects` mechanism, which is
-      accumulate-then-render by design and must never call `AskUserQuestion`.
-- [ ] Make the stop branch print the consolidated output (pointing at
-      `context/patterns/orchestrate-batch-results-template.md`) and exit.
-- [ ] Reduce both `## MUST NOT` sections to a combined list of at most ~1,500 B, pointing at the
-      Phase 1 doc homes for the reasoning.
-- [ ] Retire the residual phase-forcing "accepted-and-ignored" comment and confirm by grep that
-      no `--team` / `team_size` / fan-out residue remains.
-- [ ] Confirm nothing in the rewritten file hardcodes research-first: the loop dispatches
-      whatever phase the cycle plan names.
-- [ ] Measure `wc -c` and confirm `<= 20,000`.
+      `allowed-tools` needs the same addition for the relay to be reachable. *(completed: both
+      frontmatters updated)*
+- [x] Do NOT conflate this with the unrelated `detected_defects` mechanism, which is
+      accumulate-then-render by design and must never call `AskUserQuestion`. *(completed: stated
+      explicitly in Move 4's relay paragraph and in the trimmed MUST NOT list)*
+- [x] Make the stop branch print the consolidated output (pointing at
+      `context/patterns/orchestrate-batch-results-template.md`) and exit. *(completed)*
+- [x] Reduce both `## MUST NOT` sections to a combined list of at most ~1,500 B, pointing at the
+      Phase 1 doc homes for the reasoning. *(completed: merged into one "## MUST NOT" section,
+      measured 1,164 B)*
+- [x] Retire the residual phase-forcing "accepted-and-ignored" comment and confirm by grep that
+      no `--team` / `team_size` / fan-out residue remains. *(completed: grep for
+      team|fan-out|fanout across the rewritten file returns nothing — already fully gone before
+      this phase, confirmed again after the rewrite)*
+- [x] Confirm nothing in the rewritten file hardcodes research-first: the loop dispatches
+      whatever phase the cycle plan names. *(completed: grep for research-first phrasing returns
+      nothing; Move 1/2 dispatch whatever `phase` each `dispatch[]` row names)*
+- [x] Measure `wc -c` and confirm `<= 20,000`. *(completed: 15,459 B)*
 
 **Timing**: 2 hours
 

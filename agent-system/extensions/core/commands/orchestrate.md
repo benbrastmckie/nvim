@@ -1,6 +1,6 @@
 ---
 description: Execute a task autonomously through its full lifecycle (research -> plan -> implement -> complete) without user confirmation between phases
-allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read
+allowed-tools: Skill, Agent, Bash(jq:*), Bash(git:*), Read, AskUserQuestion
 argument-hint: TASK_NUMBERS [PROMPT] [--haiku|--sonnet|--opus|--fable] [--research] [--plan] [--implement]
 model: opus
 ---

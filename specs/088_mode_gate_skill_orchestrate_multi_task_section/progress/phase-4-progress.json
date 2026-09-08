@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Rewrite the remainder as the four-move loop",
+  "started_at": "2026-09-08T05:25:00Z",
+  "last_updated": "2026-09-08T05:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Context References to cite only the three scripts + state-machine doc", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Write the four-move loop", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Preserve pointer-prompt/context shapes verbatim", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Keep aux_dispatch[] and burnout gate as short items", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Implement AskUserQuestion + .decisions.json ask relay", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "Add AskUserQuestion to allowed-tools frontmatter (skill + command)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 7, "description": "Do not conflate with detected_defects", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Stop branch prints consolidated output and exits", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Reduce MUST NOT sections to <=~1500B combined", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Retire residual team/phase-forcing notice", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Confirm no research-first hardcoding", "status": "done", "files_touched": []},
+    {"id": 12, "description": "Measure wc -c <= 20000", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
