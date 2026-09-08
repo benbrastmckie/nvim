@@ -11,7 +11,7 @@ next_project_number: 188
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,142,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
@@ -28,7 +28,6 @@ next_project_number: 188
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-142 [IMPLEMENTING] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
 150 [PLANNED] — Research on demand: let the planner decide whether a research pha
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
@@ -1481,7 +1480,7 @@ REFERENCE: specs/PATH.md, "Decisions".
 ---
 
 ### 142. Orchestrator context budget: measure and lock
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 88
