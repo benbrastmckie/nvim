@@ -39,7 +39,7 @@ next_project_number: 190
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
-186 [PLANNING] — Fix the wrong deploy-headless.sh invocation path documented in re
+186 [PLANNED] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
 
@@ -215,10 +215,11 @@ ACCEPTANCE: a recorded decision with rationale; whichever option is chosen is re
 ---
 
 ### 186. Fix deploy headless path in regeneration doc
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Plan**: [186_fix_deploy_headless_path_in_regeneration_doc/plans/01_fix-deploy-headless-invocation-path.md]
 
 **Description**: Fix the wrong deploy-headless.sh invocation path documented in regeneration-is-manual-only.md.
 
