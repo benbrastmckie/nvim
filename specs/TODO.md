@@ -53,7 +53,7 @@ next_project_number: 183
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
 156 [RESEARCHING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
-179 [RESEARCHED] — Add a mechanical element-placement and density lint to the typst 
+179 [PLANNED] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
 
@@ -223,11 +223,12 @@ SAFETY CONSTRAINT. Do not disable or weaken any gate that can change the deploy 
 
 ### 179. Add an element placement and density lint to the typst extension
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 178
 - **Research**: [179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md]
+- **Plan**: [179_typst_element_placement_density_lint/plans/01_element-placement-density-lint.md]
 
 **Description**: Add a mechanical element-placement and density lint to the typst extension, and wire it into the implementation agent's verification stage.
 
