@@ -51,7 +51,7 @@ next_project_number: 183
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-156 [PLANNED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+156 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 179 [IMPLEMENTING] — Add a mechanical element-placement and density lint to the typst 
 
@@ -1091,7 +1091,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 156. Surface a Comparator doctor mode and document what a green result does and does not certify
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 155

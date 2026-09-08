@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Check 3 -- Remark Density (Advisory) and Exit-Code Semantics",
+  "started_at": "2026-09-08T02:40:00Z",
+  "last_updated": "2026-09-08T02:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Per-file remark vs theorem-family counts (already implemented in Phase 1's single-pass AWK program)", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 2, "description": "Warn when remarks strictly exceed theorem-family count, citing standard's wording; guard degenerate case with absolute floor", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 3, "description": "Consolidate exit-code logic: exit 1 iff check-1 failures>0; exit 0 otherwise; exit 2 usage/env error; separate failure/warning summary counts", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 4, "description": "Verification: live fixture (fail+warn+silent-density, exit 1); 5remarks/1theorem warns exit0; 2remarks/0theorems silent; --verbose prints counts on clean file exit0", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

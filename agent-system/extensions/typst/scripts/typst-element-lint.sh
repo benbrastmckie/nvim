@@ -301,7 +301,7 @@ for f in "${TYP_FILES[@]}"; do
           file_warnings=$((file_warnings + 1))
         elif [[ "$check" == "density" ]]; then
           # f1=remark_count f2=family_count
-          echo -e "${YELLOW}[WARN]${NC} ${rfile}: ${f1} #remark occurrences vs ${f2} theorem-family elements (advisory density signal)"
+          echo -e "${YELLOW}[WARN]${NC} ${rfile}: ${f1} #remark occurrences vs ${f2} theorem-family elements -- \"if a chapter has more remarks than theorems, that is a signal the remarks are doing work that belongs elsewhere\" (standards/semantic-element-usage.md, Remark: Expected density). Advisory only."
           TOTAL_WARNINGS=$((TOTAL_WARNINGS + 1))
           file_warnings=$((file_warnings + 1))
         fi

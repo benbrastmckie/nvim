@@ -238,28 +238,28 @@ direct count of `+`-marker lines in that range before treating 25 / line 88 as s
 
 ---
 
-### Phase 3: Check 3 — Remark Density (Advisory) and Exit-Code Semantics [NOT STARTED]
+### Phase 3: Check 3 — Remark Density (Advisory) and Exit-Code Semantics [COMPLETED]
 
 **Goal**: Per-file density warning grounded in the standard's own stated ratio, plus a final,
 explicitly tested exit-code contract that keeps advisory findings non-blocking.
 
 **Tasks**:
-- [ ] Count per file: `#remark` occurrences vs. the theorem-family total
+- [x] Count per file: `#remark` occurrences vs. the theorem-family total
       (`#definition` + `#theorem` + `#lemma` + `#corollary` + `#example`), using the same
-      `#{element}\s*[\(\[]` matching as check 1.
-- [ ] Warn when remarks strictly exceed the theorem-family count, citing the standard's own
+      `#{element}\s*[\(\[]` matching as check 1. *(completed)*
+- [x] Warn when remarks strictly exceed the theorem-family count, citing the standard's own
       wording ("if a chapter has more remarks than theorems, that is a signal the remarks are
-      doing work that belongs elsewhere") rather than an invented metric.
-- [ ] Guard the degenerate case: a file with zero theorem-family elements and a small number of
+      doing work that belongs elsewhere") rather than an invented metric. *(completed)*
+- [x] Guard the degenerate case: a file with zero theorem-family elements and a small number of
       remarks should not warn merely because `n > 0` — require at least a small absolute floor
-      (e.g. 3 remarks) before the ratio is meaningful, and document the floor in the header.
-- [ ] Consolidate exit-code logic in one place: exit 1 if and only if the check-1 failure count
+      (e.g. 3 remarks) before the ratio is meaningful, and document the floor in the header. *(completed)*
+- [x] Consolidate exit-code logic in one place: exit 1 if and only if the check-1 failure count
       is greater than zero; exit 0 otherwise regardless of warning count; exit 2 for
-      usage/environment errors.
-- [ ] Summary line reports failures and warnings separately so an advisory finding is visibly
-      distinct from a blocking one.
-- [ ] `--verbose` prints per-file counts even when nothing is flagged, so the thresholds can be
-      reviewed against real corpora later (this is the data the eventual promotion review needs).
+      usage/environment errors. *(completed)*
+- [x] Summary line reports failures and warnings separately so an advisory finding is visibly
+      distinct from a blocking one. *(completed)*
+- [x] `--verbose` prints per-file counts even when nothing is flagged, so the thresholds can be
+      reviewed against real corpora later (this is the data the eventual promotion review needs). *(completed)*
 
 **Timing**: 0.75 hours
 
