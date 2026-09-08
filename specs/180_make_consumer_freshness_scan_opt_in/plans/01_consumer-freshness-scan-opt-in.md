@@ -175,47 +175,55 @@ Confirm by re-running the greps above and reading each call site; if a fourth ca
 
 ---
 
-### Phase 2: Gate the scan behind `--consumer-report` in `deploy-headless.sh` [NOT STARTED]
+### Phase 2: Gate the scan behind `--consumer-report` in `deploy-headless.sh` [COMPLETED]
 
 **Goal**: Add the explicit, default-OFF flag and wrap the post-deploy consumer block in it,
 changing nothing about the block's internals, its stream, or its exit-code neutrality.
 
 **Tasks**:
-- [ ] Re-read `deploy-headless.sh`'s SELF-OVERWRITE HAZARD header note before editing. All new
+- [x] Re-read `deploy-headless.sh`'s SELF-OVERWRITE HAZARD header note before editing. All new
       logic goes inside the existing `main()` body; nothing moves to top level.
-- [ ] Declare `local CONSUMER_REPORT=false` alongside the existing `DRY_RUN`/`WIPE`/`TARGET`/
-      `MINIMAL_INIT_DIR` locals at the top of `main()`.
-- [ ] Add `--consumer-report) CONSUMER_REPORT=true; shift ;;` to the `while [ $# -gt 0 ]` case
+      *(completed: all edits confined inside main())*
+- [x] Declare `local CONSUMER_REPORT=false` alongside the existing `DRY_RUN`/`WIPE`/`TARGET`/
+      `MINIMAL_INIT_DIR` locals at the top of `main()`. *(completed)*
+- [x] Add `--consumer-report) CONSUMER_REPORT=true; shift ;;` to the `while [ $# -gt 0 ]` case
       block, placed with the other boolean flags (`--dry-run`, `--wipe`) and BEFORE the `-*`
-      unknown-flag catch-all.
-- [ ] Update the inline usage string in the `-*` unknown-flag branch to include
-      `[--consumer-report]`.
-- [ ] Wrap the post-deploy consumer block's existing guard as
+      unknown-flag catch-all. *(completed)*
+- [x] Update the inline usage string in the `-*` unknown-flag branch to include
+      `[--consumer-report]`. *(completed)*
+- [x] Wrap the post-deploy consumer block's existing guard as
       `if [ "$CONSUMER_REPORT" = "true" ] && [ -f "$consumer_checker" ]; then` (or an equivalent
       outer `if`), so that with the flag OFF the block is skipped in its entirety — no walk, no
       per-consumer rows, and no `CONSUMERS_STALE=` line. Do NOT alter any statement inside the
       block: the `|| true`, the `grep -c .` count, the blank `echo ""`, the three human-readable
       lines, and the `[deploy-headless] CONSUMERS_STALE=${consumer_stale_count}` line stay
       byte-identical, on the same stream (stdout) they use today.
-- [ ] Confirm `verify_rc` is still assigned strictly before this block and never reassigned
+      *(completed: guard updated exactly as specified; internal statements untouched, only the
+      leading block comment was updated for accuracy)*
+- [x] Confirm `verify_rc` is still assigned strictly before this block and never reassigned
       inside or after it, and that the final `exit "$verify_rc"` path via
-      `_dh_result_and_exit` is untouched.
-- [ ] Update the header: add `--consumer-report` to the "Two modes"/flag documentation block and
+      `_dh_result_and_exit` is untouched. *(completed: confirmed via grep -n verify_rc; last
+      assignment at line 412, block starts at 415, exit path unchanged)*
+- [x] Update the header: add `--consumer-report` to the "Two modes"/flag documentation block and
       to the `# Usage:` lines, following `verify-deploy.sh:32`'s "always explicit, never derived.
-      Default OFF: absent this flag, behavior is byte-for-byte unchanged" phrasing.
-- [ ] Update the header's `Machine-readable marker vocabulary` block: `CONSUMERS_STALE=<n>` is no
+      Default OFF: absent this flag, behavior is byte-for-byte unchanged" phrasing. *(completed)*
+- [x] Update the header's `Machine-readable marker vocabulary` block: `CONSUMERS_STALE=<n>` is no
       longer "always printed by a non-dry-run, non-`--help` invocation" — it is now printed only
       under `--consumer-report` (and, as before, only when the deployed checker exists). Correct
-      that sentence rather than leaving it stale.
-- [ ] Update the header's THREE CONFOUNDS paragraph so its description of the third confound
-      states the scan is opt-in, while keeping its exit-code-neutrality claim intact.
-- [ ] Recalculate the `-h|--help` line range: the branch currently runs
+      that sentence rather than leaving it stale. *(completed)*
+- [x] Update the header's THREE CONFOUNDS paragraph so its description of the third confound
+      states the scan is opt-in, while keeping its exit-code-neutrality claim intact. *(completed)*
+- [x] Recalculate the `-h|--help` line range: the branch currently runs
       `sed -n '2,91p' "$0"`, and line 91 is the blank comment line closing the `# Exit codes:`
       block. After the header grows, find the new line number of that same boundary and update
       the `sed` range to match. Do not guess — read the file and count.
-- [ ] `bash -n agent-system/extensions/core/scripts/deploy-headless.sh` (syntax clean).
-- [ ] If Phase 1 identified a genuine dependent caller, add `--consumer-report` to that one call
-      site explicitly, with a one-line comment saying why.
+      *(completed: boundary moved from line 91 to line 101 after the 10 added header lines;
+      range updated to `2,101p` and verified against actual `--help` output)*
+- [x] `bash -n agent-system/extensions/core/scripts/deploy-headless.sh` (syntax clean).
+      *(completed: SYNTAX OK)*
+- [x] If Phase 1 identified a genuine dependent caller, add `--consumer-report` to that one call
+      site explicitly, with a one-line comment saying why. *(completed: N/A — Phase 1 found no
+      genuine dependent caller, so no call site was changed)*
 
 **Timing**: 1 hour
 

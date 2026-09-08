@@ -36,6 +36,14 @@
 #                        snapshot as the merge base before re-applying settings fragments ->
 #                        clear the snapshot staging directory. Refuses (exits 2, .claude left
 #                        untouched) if the pre-wipe snapshot itself fails.
+#   --consumer-report    Opt-in additive report: after verification, walk the known-consumer
+#                        registry via check-consumer-freshness.sh --stale-only and print any
+#                        STALE/CANNOTVERIFY rows plus a CONSUMERS_STALE=<n> marker (see below).
+#                        Always explicit, never derived. Default OFF: absent this flag, the
+#                        post-deploy consumer walk does not run at all -- no rows, no marker,
+#                        and the redeploy checkpoint pays none of its wall-clock cost. This is a
+#                        report step only; it was never part of verification and passing or
+#                        failing this flag never changes verify_rc or the exit code.
 #
 # Bootstrap safety (why the default mode is NOT a bare `manager.resync_all` call): the
 # now-retired `load_all_globally` engine never wrote to a project's extension state file
@@ -77,6 +85,8 @@
 #   deploy-headless.sh --wipe [TARGET_REPO]  # full destructive wipe+regenerate (see above)
 #   deploy-headless.sh --dry-run [...]       # report what would run; deploy nothing
 #   deploy-headless.sh --minimal-init DIR [TARGET_REPO]  # skip the lazy.nvim/init.lua bootstrap
+#   deploy-headless.sh --consumer-report [...]           # additionally run the post-deploy
+#                                                         # consumer-freshness walk (default OFF)
 #
 # Exit codes:
 #   0  deploy completed (artifact count reported) and verification (fast gates) passed
@@ -90,29 +100,37 @@
 #      fast-vs-full gate split and the current orchestrator-consumer interaction with this code.
 #      Not emitted under --dry-run, which returns 0 before verification ever runs.
 #
-# Machine-readable marker vocabulary (the caller-facing contract, stdout, one line each, always
-# printed by a non-dry-run, non---help invocation):
-#   [deploy-headless] RESULT=not_landed            -- exit 1 or 2.
-#   [deploy-headless] RESULT=landed_verify_clean   -- exit 0.
-#   [deploy-headless] RESULT=landed_verify_red     -- exit 3.
+# Machine-readable marker vocabulary (the caller-facing contract, stdout, one line each):
+#   [deploy-headless] RESULT=not_landed            -- exit 1 or 2. Always printed by a
+#                                                     non-dry-run, non---help invocation.
+#   [deploy-headless] RESULT=landed_verify_clean   -- exit 0. Always printed by a
+#                                                     non-dry-run, non---help invocation.
+#   [deploy-headless] RESULT=landed_verify_red     -- exit 3. Always printed by a
+#                                                     non-dry-run, non---help invocation.
 #   [deploy-headless] CONSUMERS_STALE=<n>          -- count of stale/cannot-verify consumer rows
 #                                                     from the post-deploy consumer-freshness
-#                                                     report (0 if none, or if that report never
-#                                                     ran -- e.g. a too-stale deployed tree).
-#                                                     Report-only; NEVER folded into RESULT= or
-#                                                     the exit code -- see the confound paragraph
-#                                                     below.
+#                                                     report. Opt-in only: printed ONLY when
+#                                                     --consumer-report is passed (and, as
+#                                                     before, only when the deployed checker
+#                                                     exists -- 0 if none stale, or if that
+#                                                     report never ran, e.g. a too-stale deployed
+#                                                     tree). Absent --consumer-report this line
+#                                                     is never printed at all. Report-only; NEVER
+#                                                     folded into RESULT= or the exit code -- see
+#                                                     the confound paragraph below.
 #
 # THREE CONFOUNDS THAT ARE NOT THE SAME THING, made distinguishable below (this script's own
 # RESULT= marker) and NEVER conflated in the exit code: "the deploy did not land" (1/2),
 # "the deploy landed but a gate is red -- possibly pre-existing, this script does not know"
 # (3), and "one or more OTHER, already-known consumer repos are behind the source store". The
-# third is REPORT-ONLY and structurally CANNOT influence the exit code above: the post-deploy
-# consumer-freshness check (via check-consumer-freshness.sh --stale-only) runs strictly after
-# $verify_rc is already fixed, and its own result is unconditionally discarded with `|| true` --
-# confirmed at runtime, not merely by reading the code (see the inline comment at that block).
-# A caller that wants the consumer-staleness signal on its own reads the CONSUMERS_STALE=<n>
-# marker below; it is never folded into 0/1/2/3.
+# third is REPORT-ONLY, opt-in via --consumer-report (default OFF -- the walk does not run at
+# all absent that flag), and structurally CANNOT influence the exit code above: when it does
+# run, the post-deploy consumer-freshness check (via check-consumer-freshness.sh --stale-only)
+# runs strictly after $verify_rc is already fixed, and its own result is unconditionally
+# discarded with `|| true` -- confirmed at runtime, not merely by reading the code (see the
+# inline comment at that block). A caller that wants the consumer-staleness signal on its own
+# passes --consumer-report and reads the CONSUMERS_STALE=<n> marker; it is never folded into
+# 0/1/2/3.
 set -euo pipefail
 
 EXT_CONFIG_MODULE="neotex.plugins.ai.shared.extensions.config"
@@ -129,6 +147,7 @@ main() {
   local WIPE=false
   local TARGET=""
   local MINIMAL_INIT_DIR=""
+  local CONSUMER_REPORT=false
 
   # _dh_result_and_exit <RESULT_token> <exit_code> - the single machine-readable outcome marker
   # this script emits before every exit path that follows a real deploy ATTEMPT (i.e. every
@@ -155,6 +174,7 @@ main() {
     case "$1" in
       --dry-run) DRY_RUN=true; shift ;;
       --wipe) WIPE=true; shift ;;
+      --consumer-report) CONSUMER_REPORT=true; shift ;;
       --minimal-init)
         if [ $# -lt 2 ] || [ -z "$2" ]; then
           echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
@@ -163,12 +183,12 @@ main() {
         MINIMAL_INIT_DIR="$2"; shift 2
         ;;
       -h|--help)
-        sed -n '2,91p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,101p' "$0" | sed 's/^# \{0,1\}//'
         exit 0
         ;;
       -*)
         echo "ERROR: unknown flag: $1" >&2
-        echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [--minimal-init DIR] [TARGET_REPO]" >&2
+        echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [--minimal-init DIR] [--consumer-report] [TARGET_REPO]" >&2
         _dh_result_and_exit not_landed 1
         ;;
       *)
@@ -396,10 +416,14 @@ main() {
   # This block reports only and MUST NOT deploy into, write to, or otherwise mutate any named
   # consumer repo -- see context/patterns/regeneration-is-manual-only.md's pull-only design,
   # which this call preserves intact (every consumer interaction below is a read of that
-  # consumer's OWN .claude-extensions.json via check-consumer-freshness.sh). Fully guarded: only
-  # runs when the deployed checker exists (a tree too stale to carry it yet is a silent no-op,
-  # matching check-deploy-freshness.sh's own guard convention), and its own exit code can never
-  # propagate into this script's exit code -- `|| true` below.
+  # consumer's OWN .claude-extensions.json via check-consumer-freshness.sh). Opt-in and fully
+  # guarded: only runs when --consumer-report was passed AND the deployed checker exists (a tree
+  # too stale to carry it yet is a silent no-op, matching check-deploy-freshness.sh's own guard
+  # convention), and its own exit code can never propagate into this script's exit code --
+  # `|| true` below. Default OFF: absent --consumer-report, this entire block -- the ~50-repo
+  # walk, its wall-clock cost, and the CONSUMERS_STALE= line -- is skipped outright; it was pure
+  # cost on the blocking `/orchestrate` inter-cycle redeploy checkpoint path, which reads only
+  # this script's exit code and RESULT= marker, never CONSUMERS_STALE=.
   #
   # CONFIRMED AT RUNTIME (not merely by static reading) that this block can never influence
   # $verify_rc or this script's exit code: $verify_rc is set above, BEFORE this block runs, and
@@ -410,7 +434,7 @@ main() {
   # is report-only and can NEVER change this script's exit code; CONSUMERS_STALE= below is the
   # machine-readable form of that same report, never a second vote on the exit code.
   local consumer_checker="$TARGET/.claude/scripts/check-consumer-freshness.sh"
-  if [ -f "$consumer_checker" ]; then
+  if [ "$CONSUMER_REPORT" = "true" ] && [ -f "$consumer_checker" ]; then
     local consumer_report
     consumer_report="$(bash "$consumer_checker" --stale-only 2>&1)" || true
     local consumer_stale_count=0

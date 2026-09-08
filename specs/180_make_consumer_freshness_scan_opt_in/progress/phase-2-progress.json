@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Gate the scan behind --consumer-report in deploy-headless.sh",
+  "started_at": "2026-09-08T00:10:00Z",
+  "last_updated": "2026-09-08T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read SELF-OVERWRITE HAZARD note; confirm edits confined to main()", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Declare local CONSUMER_REPORT=false", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 3, "description": "Add --consumer-report case branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 4, "description": "Update unknown-flag usage string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 5, "description": "Wrap post-deploy consumer block in flag guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 6, "description": "Confirm verify_rc untouched by the block", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Update header Two modes/Usage documentation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 8, "description": "Update Machine-readable marker vocabulary block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 9, "description": "Update THREE CONFOUNDS paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 10, "description": "Recalculate --help sed line range", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]},
+    {"id": 11, "description": "bash -n syntax check", "status": "done", "files_touched": []},
+    {"id": 12, "description": "Pass flag at dependent caller if found (none found)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "--help range moved from 2,91p to 2,101p (10 lines added above the exit-codes boundary: 7 in the Two modes block, 3 in Usage). git diff --stat confirms exactly one file changed in agent-system/ (deploy-headless.sh); no hunk touches VERIFY_ARGS, verify_rc=, or the terminal _dh_result_and_exit landed_* branches. --help output and unknown-flag usage string verified by direct run."
+}
