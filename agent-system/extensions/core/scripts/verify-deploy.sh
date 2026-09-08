@@ -136,6 +136,16 @@ if [ -n "$MINIMAL_INIT_DIR" ] && [ ! -d "$MINIMAL_INIT_DIR" ]; then
   exit 2
 fi
 
+# ORCHESTRATOR_BUDGET_GATE_MODE controls severity for gate20's two per-file ceiling sub-check
+# (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md against
+# context/config/orchestrator-context-budget.json). Mirrors the SCHEMA_CONFORMANCE_GATE_MODE /
+# STRICT_CORE_DEPLOY precedent (check-extension-docs.sh): one env-var default a maintainer flips
+# in a follow-up commit, not a persisted auto-promotion counter. Defaults to "warn" because
+# commands/orchestrate.md is currently ~2x over its configured ceiling -- promote to "hard" only
+# once that file is at or under its ceiling. Does NOT gate the eager-load regression check or the
+# volatile-file check, both of which have their own fixed severity (see gate20 below).
+ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"
+
 FAILURES=0
 CHECKS=0
 CURRENT_GATE="gate0"
@@ -863,6 +873,119 @@ else
       done < <(printf '%s\n' "$branch_gated_lint_output" | grep -F '[VIOLATION]')
     fi
   fi
+fi
+
+say ""
+
+# Gate 20: orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
+#
+# Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
+# 17, 18, 19): only the source store (agent-system/extensions/core/**) is measured, regardless of
+# which copy (source store or deployed .claude/) invoked this script -- matching
+# measure-eager-context.sh's own "predict from source store, never read the deploy tree" policy.
+#
+# Three independent sub-checks, each with its own severity (see the ORCHESTRATOR_BUDGET_GATE_MODE
+# comment above for the rationale):
+#   A. volatile-file hits (measure-eager-context.sh --check's own exit code) -- unconditional
+#      fail(), regardless of ORCHESTRATOR_BUDGET_GATE_MODE.
+#   B. eager-load regression (live TOTAL vs. eager_load.baseline_bytes) -- fail() always; the
+#      current measured value is comfortably under baseline, so this ships at fail() tier from
+#      day one (research Decision 3).
+#   C. per-file ceilings (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md vs. their
+#      configured ceiling_bytes) -- warn() in "warn" mode (the default), fail() in "hard" mode.
+#
+# NORMALIZED FINDING TEXT (hard constraint): every warn()/fail() call below passes a value-free
+# 3rd argument -- no byte counts, no timestamps. This is load-bearing: the inter-cycle redeploy
+# checkpoint (skill-orchestrate Stage MT-3 step 7) diffs --findings output across redeploys via
+# deploy_findings_snapshot/deploy_baseline_new_findings, and a finding whose text embeds a live
+# byte count would register as a "new finding" on every single redeploy even when nothing
+# meaningfully changed -- spuriously tripping defer_reason:"deploy_checkpoint" for every
+# remaining task in a batch. Live numbers are printed unconditionally via say() below instead, so
+# drift direction stays visible without polluting --findings output.
+say "20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)"
+CURRENT_GATE="gate20"
+BUDGET_CONFIG="$TARGET/agent-system/extensions/core/context/config/orchestrator-context-budget.json"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- orchestrator context budget lock does not apply"
+elif [ ! -f "$BUDGET_CONFIG" ]; then
+  fail "orchestrator-context-budget.json not found in source store" \
+       "expected at agent-system/extensions/core/context/config/orchestrator-context-budget.json"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/measure-eager-context.sh" ]; then
+  fail "measure-eager-context.sh not found in source store"
+elif ! command -v jq >/dev/null 2>&1; then
+  fail "jq unavailable; cannot read orchestrator-context-budget.json"
+else
+  eager_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/measure-eager-context.sh" --check 2>&1)
+  eager_status=$?
+
+  # Sub-check A: volatile-file hits -- unconditional fail(), independent of gate mode.
+  if [ "$eager_status" -ne 0 ]; then
+    fail "measure-eager-context.sh --check reported volatile-file hit(s)" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/measure-eager-context.sh --check" \
+         "orchestrator context budget: volatile-file hit in the eager-load set"
+  else
+    pass "measure-eager-context.sh --check: no volatile-file hits"
+  fi
+
+  eager_total=$(printf '%s\n' "$eager_output" | grep -oE '^TOTAL: [0-9]+ B' | grep -oE '[0-9]+')
+  baseline_bytes=$(jq -r '.eager_load.baseline_bytes' "$BUDGET_CONFIG" 2>/dev/null)
+
+  # Sub-check B: eager-load regression -- fail() always (current value is under baseline).
+  if [ -z "$eager_total" ]; then
+    fail "could not parse TOTAL line from measure-eager-context.sh --check output" \
+         "" "orchestrator context budget: eager-load total unparseable"
+  elif [ -z "$baseline_bytes" ] || [ "$baseline_bytes" = "null" ]; then
+    fail "orchestrator-context-budget.json missing eager_load.baseline_bytes" \
+         "" "orchestrator context budget: config missing eager_load.baseline_bytes"
+  elif [ "$eager_total" -gt "$baseline_bytes" ]; then
+    fail "eager-load total ($eager_total B) exceeds recorded baseline ($baseline_bytes B)" \
+         "re-derive only if the growth is deliberate and reviewed" \
+         "orchestrator context budget: eager-load total over baseline"
+  else
+    pass "eager-load total ($eager_total B) within baseline ($baseline_bytes B)"
+  fi
+
+  # Sub-check C: per-file ceilings -- severity from ORCHESTRATOR_BUDGET_GATE_MODE.
+  budget_files=$(jq -r '.files | keys[]' "$BUDGET_CONFIG" 2>/dev/null)
+  while IFS= read -r rel_path; do
+    [ -n "$rel_path" ] || continue
+    ceiling=$(jq -r --arg p "$rel_path" '.files[$p].ceiling_bytes' "$BUDGET_CONFIG" 2>/dev/null)
+    file_path="$TARGET/agent-system/extensions/core/$rel_path"
+    if [ ! -f "$file_path" ]; then
+      fail "$rel_path not found in source store" "" "orchestrator context budget: $rel_path missing"
+      continue
+    fi
+    actual_bytes=$(wc -c < "$file_path" | tr -d ' ')
+    if [ "$actual_bytes" -gt "$ceiling" ]; then
+      if [ "$ORCHESTRATOR_BUDGET_GATE_MODE" = "hard" ]; then
+        fail "$rel_path ($actual_bytes B) exceeds its configured ceiling ($ceiling B)" \
+             "ORCHESTRATOR_BUDGET_GATE_MODE=hard" \
+             "orchestrator context budget: $rel_path over ceiling"
+      else
+        warn "$rel_path ($actual_bytes B) exceeds its configured ceiling ($ceiling B)" \
+             "ORCHESTRATOR_BUDGET_GATE_MODE=warn (default) -- promote to hard once trimmed" \
+             "orchestrator context budget: $rel_path over ceiling"
+      fi
+    else
+      pass "$rel_path ($actual_bytes B) within ceiling ($ceiling B)"
+    fi
+  done <<< "$budget_files"
+
+  # Live figures printed unconditionally so drift direction is visible without a byte count ever
+  # entering --findings output (see the NORMALIZED FINDING TEXT comment above).
+  say ""
+  say "  orchestrator context budget (live):"
+  say "    eager load: ${eager_total:-?} B / baseline ${baseline_bytes:-?} B (mode: $ORCHESTRATOR_BUDGET_GATE_MODE for per-file ceilings)"
+  while IFS= read -r rel_path; do
+    [ -n "$rel_path" ] || continue
+    ceiling=$(jq -r --arg p "$rel_path" '.files[$p].ceiling_bytes' "$BUDGET_CONFIG" 2>/dev/null)
+    file_path="$TARGET/agent-system/extensions/core/$rel_path"
+    if [ -f "$file_path" ]; then
+      actual_bytes=$(wc -c < "$file_path" | tr -d ' ')
+      if [ "$actual_bytes" -gt "$ceiling" ]; then marker="OVER"; else marker="under"; fi
+      say "    $rel_path: $actual_bytes B / ceiling $ceiling B ($marker)"
+    fi
+  done <<< "$budget_files"
 fi
 
 say ""
