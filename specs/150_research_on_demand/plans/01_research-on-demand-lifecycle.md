@@ -383,42 +383,42 @@ expansion to record.
 
 ---
 
-### Phase 5: Planner contract, extension sweep, and status prose [NOT STARTED]
+### Phase 5: Planner contract, extension sweep, and status prose [COMPLETED]
 
 **Goal**: Give the planner an explicit assessment step with a narrow bar for requesting research,
 and bring the status documentation in line with the two-phase default.
 
 **Tasks**:
-- [ ] Add an opening assessment stage to `agents/planner-agent.md`, ahead of the existing plan
+- [x] Add an opening assessment stage to `agents/planner-agent.md`, ahead of the existing plan
       construction stages: assess whether the task description plus what the agent can read in
       the codebase suffices to write a plan meeting plan-format.md. If yes, plan as today. If no,
       write no plan at all and return `status: needs_research` with a focused
       `research_questions` array. Explicitly forbid partial planning on the `needs_research`
-      path -- it is one outcome or the other.
-- [ ] State the bar for asking, narrowly: research is requested only when the plan would
+      path -- it is one outcome or the other. *(completed: new Stage 1.5)*
+- [x] State the bar for asking, narrowly: research is requested only when the plan would
       otherwise rest on guesses about facts an agent can establish -- external APIs, unfamiliar
       code paths, literature. Add negative examples: a description that already carries the
       defect, the evidence, the work list and the acceptance bar is a specification and needs no
-      research; unfamiliarity that a targeted grep would resolve is not grounds to ask.
-- [ ] Document the `needs_research` return shape in the agent's terminal-metadata example:
-      `status: "needs_research"`, empty `artifacts` array, populated `research_questions`.
-- [ ] Note in the agent contract that `needs_research` is distinct from `user_decision` -- one is
-      a question for an agent to answer, the other a judgment only the user can make.
-- [ ] Run the extension planner sweep required by DESIGN (d):
+      research; unfamiliarity that a targeted grep would resolve is not grounds to ask. *(completed)*
+- [x] Document the `needs_research` return shape in the agent's terminal-metadata example:
+      `status: "needs_research"`, empty `artifacts` array, populated `research_questions`. *(completed: new Stage 6c)*
+- [x] Note in the agent contract that `needs_research` is distinct from `user_decision` -- one is
+      a question for an agent to answer, the other a judgment only the user can make. *(completed: covered in Stage 1.5's negative examples, Stage 6c, and a MUST NOT bullet)*
+- [x] Run the extension planner sweep required by DESIGN (d):
       `grep -rln 'planner' agent-system/extensions/*/agents/` and any manifest
       `routing_agents`/`routing_agents_hard` plan entries. The expected result is zero
       extension-declared planner agents -- `resolve_agent()` hardcodes `planner-agent` for
       `op == "plan"` regardless of task type. **Record "checked, none found" with the command and
       its empty output in the phase notes**; do not silently omit the step, and do not invent a
-      target.
-- [ ] Update `context/standards/status-markers.md` to describe the two-phase default with
+      target. *(completed: grep found deck-planner-agent.md/slide-planner-agent.md, but a manifest scan of every extension's routing_agents/routing_agents_hard for a "plan" op key found none naming them, and resolve_agent() itself hardcodes planner-agent for op=="plan" before ever consulting task_type -- confirmed unreachable, see progress notes)*
+- [x] Update `context/standards/status-markers.md` to describe the two-phase default with
       research on demand, and note `[RESEARCHING]`'s second producer (a planner that declined to
       plan) alongside the existing `preflight:research` producer. Cross-reference
       `orchestrate-state-machine.md` for the routing detail rather than duplicating the state
-      table.
-- [ ] Confirm the research-agent contract needs no change beyond acknowledging that its dispatch
+      table. *(completed)*
+- [x] Confirm the research-agent contract needs no change beyond acknowledging that its dispatch
       file may now carry a `User focus:` question list. Make that acknowledgement explicit if the
-      contract enumerates the dispatch file's sections.
+      contract enumerates the dispatch file's sections. *(completed: doesn't enumerate sections, but the existing focus_prompt delegation field got an explicit acknowledgement of its new source)*
 
 **Timing**: 1.5 hours
 

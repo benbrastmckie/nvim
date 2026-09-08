@@ -41,6 +41,59 @@ Extract standard delegation fields (see `return-metadata-file.md` for schema). A
 - `prior_plan_path` - Path to prior plan (if exists, reference only)
 - Plan path: `{NN}_{slug}.md` (using `artifact_number` for `{NN}`)
 
+### Stage 1.5: Opening Assessment — Research on Demand (Stage A.8)
+
+**Mandatory, before any plan construction.** The default `/orchestrate` lifecycle is
+`plan → implement`, not `research → plan → implement`: most dispatched tasks reach this agent
+with NO `research_path` at all. This stage decides whether that is a problem.
+
+**Skip this stage entirely (proceed directly to Stage 2) when `research_path` is provided.** A
+report already exists for this round — either because `--research` forced it, or because a
+prior `needs_research` verdict from THIS agent already routed the task through a research phase.
+A task that already has a report is never asked again: plan with whatever this round's research
+produced, even if imperfect, rather than requesting a second round. See
+`docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork" section for the
+full routing narrative this stage feeds.
+
+**When no `research_path` is provided** (the ordinary entry point for a fresh, `not_started`
+task): assess whether the task description, plus what you can read directly in the codebase
+within this dispatch's own tool budget (`Read`, `Grep`, `Glob` — no web search, no deep
+exploration budget beyond what a normal planning pass already uses), suffices to write a plan
+meeting every `plan-format.md` requirement: a phased breakdown with concrete file targets, and
+verification criteria that do not rest on guesswork.
+
+**The bar for requesting research is narrow — it is not a default:**
+
+Request research ONLY when the plan would otherwise rest on guesses about facts an agent can
+establish through targeted investigation that this dispatch's own budget cannot cover — an
+external API's actual behavior or availability, a genuinely unfamiliar code path whose shape and
+constraints a literature search or deep exploration would resolve but a quick grep would not.
+
+**Negative examples — do NOT request research for these:**
+- A task description that already carries the defect, the measured evidence, the work list, and
+  the acceptance bar. That is a specification, not a research question — plan directly from it.
+- Unfamiliarity with a codebase area that a targeted `grep`/`Read` would resolve within this same
+  dispatch. "I haven't looked yet" is not "I cannot determine this."
+- A preference between two known-workable implementation approaches. Pick one, document the
+  choice and its rationale in the plan (Risks & Mitigations or a Decisions note) — that is an
+  ordinary planning judgment call, not a research question.
+- A gap only the user's own preference or authorization can resolve. That is `user_decision`
+  territory (see `context/standards/user-decision-contract.md`), never `needs_research` —
+  `needs_research` is a question for an AGENT to go answer through investigation;
+  `user_decision` is a question only the user's judgment can answer. Never conflate the two, and
+  never use `needs_research` as a substitute for asking the user.
+
+**If sufficient**: proceed to plan construction via the stages below, exactly as before.
+
+**If insufficient**: write **NO plan file at all** — never a partial or best-effort plan
+alongside a `needs_research` verdict; it is one outcome or the other, not both. Skip directly to
+Stage 6b's `needs_research` return shape (below) instead of Stages 2–6a. Set
+`.return-meta.json`'s `status` to `"needs_research"` (never `"planned"`), with an EMPTY
+`artifacts` array (correct and expected — no plan was written) and a non-empty
+`research_questions` array (a JSON array of strings) naming the specific, focused questions a
+research phase must answer. See `context/formats/return-metadata-file.md`'s
+`### research_questions (optional)` section for the field's full producer/consumer contract.
+
 ### Stage 2: Load Research Report (if exists)
 
 If `research_path` is provided:
@@ -363,6 +416,45 @@ array silently breaks the orchestrator's `.artifacts[0].path` read. Copy this ex
 Field` section. Omit it only when this dispatch's context carries no `dispatch_seq` at all (a
 call path that predates the contract).
 
+#### 6c. `needs_research` Return Shape (Stage 1.5 Only)
+
+When Stage 1.5 determined the description plus codebase reads do not suffice, write
+`specs/{NNN}_{SLUG}/.return-meta.json` with this shape instead of 6b's — Stages 6a/6b do not run
+at all on this path (no plan file exists to verify):
+
+```json
+{
+  "status": "needs_research",
+  "artifacts": [],
+  "research_questions": [
+    "Does the vendor's REST API expose a streaming endpoint, or only polling?",
+    "What retry/backoff behavior does the existing client library in lib/foo.py implement?"
+  ],
+  "metadata": {
+    "session_id": "sess_...",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": <echoed verbatim, same rule as 6b above>
+}
+```
+
+`artifacts` is deliberately empty — this is correct and expected, not an error, per
+`return-metadata-file.md`'s `needs_research` status note. `research_questions` MUST be non-empty:
+a `needs_research` verdict with no questions gives the next research dispatch nothing to focus
+on. Do not include `next_steps`, `phase_count`, `estimated_hours`, or `dependency_waves` — those
+are 6b's plan-specific fields and have no meaning here.
+
+**`needs_research` vs. `user_decision` — never conflate the two** (see Stage 1.5's negative
+examples above for the full distinction): `needs_research` is a question this agent is asking
+another AGENT (a research dispatch) to go answer through investigation. `user_decision` (see
+`context/standards/user-decision-contract.md`) is a question only the USER's own judgment,
+preference, or authorization can resolve — a genuinely different field, set only when Stage 6b's
+ordinary planning path applies and a specific decision point needs the user's input alongside an
+otherwise-normal plan. The two are never set together: a `needs_research` return carries no plan
+and no `user_decision` payload.
+
 ### Stage 7: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: phase count, effort estimate, scope covered, plan path, metadata status.
@@ -371,7 +463,10 @@ Return 3-6 bullet points summarizing: phase count, effort estimate, scope covere
 
 See `rules/error-handling.md` for general error patterns. Agent-specific behavior:
 - **Invalid task**: Write `failed` status to metadata file
-- **Missing research**: Log warning, proceed with task description only, note in plan
+- **No `research_path` provided**: this is the ordinary research-on-demand entry point (Stage
+  A.8), not a defect. Run Stage 1.5's assessment: proceed to plan directly if the description and
+  codebase reads suffice; otherwise return `needs_research` per Stage 6c. Never silently "proceed
+  with task description only" without running the assessment first.
 - **Timeout**: Save partial plan, write partial status with resume info
 - **File operation failure**: Write `failed` status with error description
 
@@ -385,6 +480,8 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 5. Follow plan-format.md structure exactly
 6. Apply task-breakdown.md guidelines for >60 min tasks
 7. Verify Status field exists in plan before writing success metadata (Stage 6a)
+8. Run Stage 1.5's opening assessment before any plan construction whenever no `research_path`
+   is provided; never skip straight to planning on the assumption that research was unnecessary
 
 **MUST NOT**:
 1. Return JSON to console
@@ -395,3 +492,9 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 5. Assume your return ends the workflow (skill continues with postflight)
 6. Skip Stage 0 early metadata creation
 7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+8. Write a partial or best-effort plan alongside a `needs_research` verdict -- it is one outcome
+   or the other, never both (Stage 1.5)
+9. Request research as a default or a hedge against unfamiliarity that a targeted grep/read
+   within this dispatch would resolve -- the bar in Stage 1.5 is narrow, not routine
+10. Use `needs_research` as a substitute for `user_decision`, or vice versa -- they answer to
+    different resolvers (an agent's investigation vs. the user's own judgment), see Stage 6c

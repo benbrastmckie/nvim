@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Planner contract, extension sweep, and status prose",
+  "started_at": "2026-09-08T03:10:00Z",
+  "last_updated": "2026-09-08T03:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add opening assessment stage to planner-agent.md ahead of plan construction, forbidding partial planning", "status": "done", "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"], "note": "Added as new Stage 1.5, gated to skip entirely when research_path is already provided (a report already exists for this round)"},
+    {"id": 2, "description": "State narrow bar for asking with negative examples", "status": "done", "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"]},
+    {"id": 3, "description": "Document needs_research return shape in terminal-metadata example", "status": "done", "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"], "note": "Added as new Stage 6c"},
+    {"id": 4, "description": "Note needs_research distinct from user_decision in agent contract", "status": "done", "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"], "note": "Covered in both Stage 1.5's negative examples and Stage 6c's dedicated distinction paragraph, plus a MUST NOT bullet"},
+    {"id": 5, "description": "Run extension planner sweep required by DESIGN (d)", "status": "done", "note": "Ran: grep -rln 'planner' agent-system/extensions/*/agents/ (found founder/deck-planner-agent.md, present/slide-planner-agent.md, plus lean/founder files mentioning 'planner' in prose) and a Python check of routing_agents/routing_agents_hard across all extension manifests for a 'plan' op key naming those agents (empty output -- none found). Also confirmed directly in code: resolve_agent() in orchestrate-cycle-plan.sh hardcodes 'planner-agent' for op==\"plan\" unconditionally, before ever consulting task_type or command-route-agent.sh, so deck-planner-agent.md/slide-planner-agent.md are structurally unreachable via this routing path regardless of manifest content. CHECKED, NONE FOUND -- confirmed by both manifest grep and code reading, not merely assumed."},
+    {"id": 6, "description": "Update status-markers.md: two-phase default with research on demand, RESEARCHING's second producer, cross-reference orchestrate-state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]},
+    {"id": 7, "description": "Confirm research-agent contract needs no change beyond User focus acknowledgement", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"], "note": "general-research-agent.md does not enumerate the dispatch file's sections (the plan's stated condition for requiring a change), but it DOES already document the focus_prompt delegation field (rendered as 'User focus:' in the dispatch file) -- added an acknowledgement there that this field's source may now be a planner's forwarded research_questions, not only a human-supplied --lit/focus string. No new field, no new code path."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "lint_agent_contracts": "PASS - 101 passed, 0 warnings, 0 failed, including planner-agent.md (no-task-references bullet, object-shaped artifacts template) and general-research-agent.md",
+    "extension_sweep": "CONFIRMED via grep + direct code reading of resolve_agent() -- zero extension planner agents reachable through the op==\"plan\" routing path",
+    "task_reference_check": "grep for literal 'task 150'/'task #150' patterns across all three edited files -- no hits (check-task-references.sh itself requires a deployed .claude/scripts/ tree and could not run directly from the source store, so this is the manual equivalent)"
+  }
+}
