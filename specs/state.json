@@ -201,12 +201,12 @@
     {
       "project_number": 171,
       "project_name": "fix_literature_ingest_dedup_hang",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Fix the literature online-ingest hang caused by an O(n) per-title subprocess loop. check_duplicate_title() in agent-system/extensions/literature/scripts/literature-ingest-online.sh iterates every title in the global Literature index and spawns a separate python3 process per title to run .zotero-title-sim.py (11845 titles as of 2026-09-07), so any in_zotero_no_pdf or open_access ingest stalls for roughly 9-10 minutes before emitting any directive token. Observed: an in_zotero_no_pdf record (Zotero citation_key xu2001facing, item key Z8QNQKNL) logged \"Resolved doc_id=... (tier=matched-no-pdf)\" to stderr and then produced no stdout directive token at all until killed by a 540s timeout (rc=124), so the caller cannot distinguish a hang from a slow success. The Unpaywall lookup already carries curl --max-time 10 and the download path --max-time 30, so this is not network-bound; the stall is the subprocess-per-title loop. Fix direction: collapse the similarity pass into a single python3 invocation (pass the candidate title and the whole title list once, or precompute a normalized-title map), and short-circuit on exact or normalized-equality before any similarity scoring. Because the check is documented as non-blocking and recommendation-only, it must also fail fast and never gate ingestion. Preserve the existing WARNING output contract and the 0.85 similarity threshold. Note for scope: the sibling literature defect found in the same session (literature-briefing.sh exiting 141/SIGPIPE from piping a multi-line jq object into head -1 under set -euo pipefail) is ALREADY FIXED in this source store, which now uses jq -c first(...); no work is needed for it here, only redeployment of stale consumer repos",
       "topic": "literature",
       "created": "2026-09-07T23:10:59Z",
-      "last_updated": "2026-09-08T22:35:00Z",
+      "last_updated": "2026-09-08T22:45:55Z",
       "file_scope": [
         "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
         "agent-system/extensions/literature/scripts/.zotero-title-sim.py"

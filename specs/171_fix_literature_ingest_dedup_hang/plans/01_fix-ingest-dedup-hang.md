@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature online-ingest dedup hang
 
 - **Task**: 171 - Fix the literature online-ingest hang caused by an O(n) per-title subprocess loop
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: None (planned directly from the task specification plus first-hand reads of the target scripts; see Overview)
