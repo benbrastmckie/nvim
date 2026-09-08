@@ -1,7 +1,7 @@
 # Implementation Plan: Task #155
 
 - **Task**: 155 - Thread an advisory `--compare` flag through the lean implementation path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: `lean-comparator-run.sh` (exists, tested), `lean-challenge-snapshot.sh` (exists, tested); dependency-ordered behind the in-flight lean artifact-skeletons work that edits `agents/lean-implementation-agent.md` and `agents/lean-research-agent.md`
 - **Research Inputs**: specs/155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md

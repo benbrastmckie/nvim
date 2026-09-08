@@ -1,5 +1,5 @@
 ---
-next_project_number: 188
+next_project_number: 189
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 188
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187,188 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
@@ -44,6 +44,7 @@ next_project_number: 188
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
 186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
+188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
 
 ### Extensions
 
@@ -83,6 +84,16 @@ next_project_number: 188
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
+
+### 188. Predispatch review archived dependency false positive
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix orchestrate-predispatch-review.sh Class A false positive: archived completed dependencies reported as nonexistent. MEASURED STATE (observed live in the BimodalLogic repository): the Class A dependency-edge classifier resolves a task dependencies[] against specs/state.json active_projects[] ONLY. A dependency that was completed and then archived by /todo is moved out of active_projects[] into specs/archive/{NNN}_{slug}/, so the classifier reports it as `nonexistent` -- the loudest verdict it has -- when the dependency is in fact SATISFIED. Measured there: 37 unique dependency numbers flagged nonexistent across roughly 30 tasks; ALL 37 resolve to a directory under specs/archive/, and ZERO are genuinely absent. The advisory is therefore ~100 percent false-positive noise on a mature repository, which trains an operator to ignore Class A entirely and would mask a real dangling edge when one finally appears. WORK: teach the Class A classifier a third verdict distinguishing (a) satisfied-and-archived -- resolvable under specs/archive/ -- from (b) genuinely nonexistent -- resolvable nowhere. Report (a) at informational volume or not at all; reserve the loud `nonexistent` wording for (b). Confirm the archive lookup matches the directory naming /todo actually writes (zero-padded {NNN}_{slug}), and decide whether a completed-but-not-yet-archived dependency warrants its own verdict. Check whether scripts/orchestrate-batch-admit.sh and scripts/orchestrate-triage-classify.sh share the same active_projects-only assumption and need the same correction -- the eligibility path narrows out-of-batch edges separately, so a false `nonexistent` there could have different consequences than in the advisory. EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh (this repository is the source store; consuming repositories only carry a gitignored deployed copy under .claude/, so a fix authored there is wiped by the next regeneration). ACCEPTANCE: running the review against a state file whose dependencies point at archived tasks reports zero `nonexistent` findings and classifies those edges as satisfied; a synthetic dependency on a number present in neither active_projects[] nor specs/archive/ still reports loudly as `nonexistent`; the deployed copy in a consuming repo reproduces both outcomes after redeploy.
+
+---
 
 ### 187. Unify commit attribution convention
 - **Status**: [NOT STARTED]
