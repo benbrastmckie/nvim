@@ -1,7 +1,7 @@
 # Implementation Plan: Task #88
 
 - **Task**: 88 - Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 12 hours
 - **Dependencies**: 148 (completed and archived; task is unblocked)
 - **Research Inputs**: specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md

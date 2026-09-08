@@ -1,5 +1,5 @@
 {
-  "status": "partial",
+  "status": "implemented",
   "dispatch_seq": 3,
   "artifacts": [
     {
@@ -88,10 +88,8 @@
     ],
     "phases_completed": 7,
     "phases_total": 7,
-    "cycles_used": 3,
-    "final_state": "implementing",
+    "cycles_used": 4,
+    "final_state": "completed",
     "detected_defects": []
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }

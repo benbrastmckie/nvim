@@ -11,8 +11,8 @@ next_project_number: 183
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,157,162,163,166,167,168,170,171,172,176,177,180 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,164,173,174,175,181 | 29,74,88,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,142,150,157,162,163,166,167,168,170,171,172,176,177,180 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -21,17 +21,15 @@ next_project_number: 183
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-88 [IMPLEMENTING] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
-  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-  └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-  └─ 150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
+129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
 136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
-  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
+  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
+142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
@@ -1635,7 +1633,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 88. Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 148
