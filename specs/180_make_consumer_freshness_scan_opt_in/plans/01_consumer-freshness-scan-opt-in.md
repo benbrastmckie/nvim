@@ -1,7 +1,7 @@
 # Implementation Plan: Task #180
 
 - **Task**: 180 - Make the post-deploy consumer-freshness scan opt-in
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report; see "Research Integration" below)

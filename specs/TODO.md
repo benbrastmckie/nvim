@@ -11,9 +11,9 @@ next_project_number: 190
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,181,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175,182 | 29,74,139,162,172,181 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -35,9 +35,8 @@ next_project_number: 190
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
   └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
-180 [IMPLEMENTING] — Move the post-deploy consumer-freshness scan off the blocking pat
-  └─ 181 [NOT STARTED] — Fix three related defects in the /orchestrate inter-cycle redeplo
-    └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
+181 [NOT STARTED] — Fix three related defects in the /orchestrate inter-cycle redeplo
+  └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
@@ -350,7 +349,7 @@ Widening that predicate (and its deployed_critical_paths idempotence backing sto
 
 ### 180. Make the consumer-freshness scan opt-in in deploy-headless.sh
 - **Effort**: 1 hour
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
