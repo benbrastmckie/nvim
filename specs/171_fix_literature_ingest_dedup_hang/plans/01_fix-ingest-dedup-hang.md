@@ -158,32 +158,32 @@ to the Phase 1 verification set rather than proceeding on this plan's count.
 
 ---
 
-### Phase 2: Rewrite `check_duplicate_title()` as a single bounded invocation [NOT STARTED]
+### Phase 2: Rewrite `check_duplicate_title()` as a single bounded invocation [COMPLETED]
 
 **Goal**: Replace the O(n)-subprocess loop with one `python3 --batch` call under a hard
 wall-clock bound, preserving the WARNING output and the 0.85 threshold and never gating ingest.
 
 **Tasks**:
-- [ ] Replace the `while IFS= read -r existing_title ... done < <(jq ...)` loop body in
+- [x] Replace the `while IFS= read -r existing_title ... done < <(jq ...)` loop body in
       `check_duplicate_title()` with a single pipeline: `jq -r '.entries[]?.title // empty'` piped
       into `python3 "$SCRIPT_DIR/.zotero-title-sim.py" --batch "$title"`.
-- [ ] Wrap the invocation in `timeout` with a small explicit bound (10s) so the check can never
+- [x] Wrap the invocation in `timeout` with a small explicit bound (10s) so the check can never
       dominate ingest wall-clock, and guard the whole thing so failure cannot abort the script
       under `set -euo pipefail` (`|| true` on the assignment, then branch on emptiness).
-- [ ] Treat every non-success outcome as "no duplicate found" and `return 0`: non-zero exit,
+- [x] Treat every non-success outcome as "no duplicate found" and `return 0`: non-zero exit,
       timeout (rc 124), empty output, or an output line that does not parse into
       `<float>\t<title>`. Log a single explanatory line for the timeout/failure case so the
       fail-open is visible rather than silent, phrased so it cannot be mistaken for a duplicate
       warning.
-- [ ] Parse the single output line into `best_sim` and `best_title` with parameter expansion on
+- [x] Parse the single output line into `best_sim` and `best_title` with parameter expansion on
       the tab (no extra subprocesses).
-- [ ] Keep the threshold gate byte-for-byte:
+- [x] Keep the threshold gate byte-for-byte:
       `if [ -n "$best_title" ] && awk -v s="$best_sim" 'BEGIN{exit !(s>=0.85)}'; then`.
-- [ ] Keep the WARNING `log` line byte-for-byte, including the
+- [x] Keep the WARNING `log` line byte-for-byte, including the
       `(non-blocking recommendation-only check; proceeding)` suffix.
-- [ ] Keep the early `[ -f "$idx" ] || return 0` guard and the function's `return 0`-always
+- [x] Keep the early `[ -f "$idx" ] || return 0` guard and the function's `return 0`-always
       contract; do not change either call site (`:721`, `:835`).
-- [ ] Update the helper's own comment block (`:292-295`) to say the check is a single bounded
+- [x] Update the helper's own comment block (`:292-295`) to say the check is a single bounded
       invocation with normalized-equality short-circuit and fail-open semantics, replacing the
       stale "using the existing .zotero-title-sim.py helper (zotero-resolve-pdf.sh pattern)"
       framing.

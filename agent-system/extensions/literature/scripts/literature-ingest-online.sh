@@ -290,26 +290,29 @@ download_and_verify() {
 
 # ---------------------------------------------------------------------------
 # Helper: optional, non-blocking pre-create duplicate-title check against the global
-# index.json, using the existing .zotero-title-sim.py helper (zotero-resolve-pdf.sh pattern).
-# Recommendation-only per the plan -- logs a warning, never blocks.
+# index.json. A single bounded .zotero-title-sim.py --batch invocation scores $title against
+# every index.json title in one process (short-circuiting on normalized-equality matches),
+# replacing the former one-subprocess-per-title loop. Hard-timed at 10s and fail-open: any
+# timeout, non-zero exit, or unparseable output is treated as "no duplicate found" and this
+# function always returns 0. Recommendation-only per the plan -- logs a warning, never blocks.
 # ---------------------------------------------------------------------------
 check_duplicate_title() {
   local title="$1"
   local idx="$LITERATURE_DIR/index.json"
   [ -f "$idx" ] || return 0
-  local best_sim="0.0" best_title=""
-  while IFS= read -r existing_title; do
-    [ -z "$existing_title" ] && continue
-    local sim
-    sim="$(python3 "$SCRIPT_DIR/.zotero-title-sim.py" "$title" "$existing_title" 2>/dev/null || echo "0.0")"
-    if awk -v s="$sim" -v b="$best_sim" 'BEGIN{exit !(s>b)}'; then
-      best_sim="$sim"
-      best_title="$existing_title"
-    fi
-  done < <(jq -r '.entries[]?.title // empty' "$idx" 2>/dev/null)
+  local result
+  result="$(jq -r '.entries[]?.title // empty' "$idx" 2>/dev/null | timeout 10 python3 "$SCRIPT_DIR/.zotero-title-sim.py" --batch "$title" 2>/dev/null)" || true
+  if [ -z "$result" ] || [[ "$result" != *$'\t'* ]]; then
+    log "duplicate-title check skipped (timed out, failed, or produced no output; non-blocking, proceeding)"
+    return 0
+  fi
+  local best_sim="${result%%$'\t'*}"
+  local best_title="${result#*$'\t'}"
+  [[ "$best_sim" =~ ^[0-9]+(\.[0-9]+)?$ ]] || return 0
   if [ -n "$best_title" ] && awk -v s="$best_sim" 'BEGIN{exit !(s>=0.85)}'; then
     log "WARNING: possible duplicate -- existing index.json entry \"$best_title\" has title similarity $best_sim to \"$title\" (non-blocking recommendation-only check; proceeding)"
   fi
+  return 0
 }
 
 # ---------------------------------------------------------------------------
