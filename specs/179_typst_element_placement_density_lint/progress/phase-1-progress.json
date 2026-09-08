@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Script Scaffold and Check 1 (Placement, Blocking)",
+  "started_at": "2026-09-08T02:00:00Z",
+  "last_updated": "2026-09-08T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create script scaffold: shebang, Class B strict mode, header comment, CLI parsing, colored PASS/FAIL/WARN output shape", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 2, "description": "Element inventory array constant sourced from semantic-element-usage.md", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 3, "description": "Implement check 1 (placement) as awk/bash line scan with skip list", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]},
+    {"id": 4, "description": "bash -n / shellcheck clean; manual smoke run against 08-agency.typ confirming FAIL at line 57", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/typst-element-lint.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

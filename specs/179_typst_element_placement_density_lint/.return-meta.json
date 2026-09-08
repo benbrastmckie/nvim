@@ -1,28 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1788831210_6c6dbe_179",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1788831210_6c6dbe",
   "task_number": 179,
-  "dispatch_seq": 6,
-  "phase_count": 6,
-  "estimated_hours": 4.5,
-  "dependency_waves": [[1], [2], [3], [4, 5], [6]],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/179_typst_element_placement_density_lint/plans/01_element-placement-density-lint.md",
-      "summary": "Six-phase plan (4.5h) building typst-element-lint.sh with a blocking placement check plus two advisory checks, a self-contained test suite, read-only acceptance validation against 08-agency.typ, and manifest/agent/EXTENSION.md wiring."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a mechanical gate is added to backstop prose guidance that was already being ignored, the gate's own adoption risk becomes the dominant design constraint: a check that fires on correct documents gets switched off, which is strictly worse than no check. Two structural moves keep this from happening, and both belong in the plan rather than being rediscovered at implementation time. First, make the check position-specific by construction rather than by exemption -- e.g. scanning only AFTER a heading match means a legitimate pre-heading macro/comment block is out of scope structurally, with no special case to maintain or get wrong. Second, split severity: the one check with an unambiguous textual anchor blocks (nonzero exit), while any check whose threshold is a judgment call emits a warning that never affects the exit code, with the promotion-to-blocking precondition (a documented review pass against a real corpus) recorded in the script's own header comment, not only in the plan.",
-      "category": "PATTERN",
-      "source_artifact": "specs/179_typst_element_placement_density_lint/plans/01_element-placement-density-lint.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["lint design", "advisory threshold", "gate adoption", "false positive", "severity split", "prose backstop"]
-    }
-  ],
-  "next_steps": "Run /implement 179 to execute the plan"
+  "dispatch_seq": 7
 }

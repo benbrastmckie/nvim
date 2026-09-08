@@ -1,7 +1,7 @@
 # Implementation Plan: Task #179
 
 - **Task**: 179 - Add a mechanical element-placement and density lint to the typst extension
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 178 (semantic-element usage contract) — already merged; its
   `standards/semantic-element-usage.md` is the sole source of element inventory and norms
@@ -121,43 +121,43 @@ Phases within the same wave can execute in parallel. Phases 1-3 are strictly seq
 all three modify the same script file; Phases 4 (writes `scripts/tests/`) and 5 (read-only run
 against an external fixture) are file-disjoint and may run together.
 
-### Phase 1: Script Scaffold and Check 1 (Placement, Blocking) [NOT STARTED]
+### Phase 1: Script Scaffold and Check 1 (Placement, Blocking) [COMPLETED]
 
 **Goal**: A runnable `typst-element-lint.sh` that correctly reports the placement violation —
 a semantic element standing as the first body content after a heading with no intervening
 prose — and exits nonzero when one is found.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/typst/scripts/typst-element-lint.sh`.
-- [ ] Class B strict mode: `set -uo pipefail`, no `-e` (the script must keep scanning after the
-      first finding and report a full summary).
-- [ ] Header comment block documenting: purpose, the three checks, the severity split, exit
+- [x] Create `agent-system/extensions/typst/scripts/typst-element-lint.sh`. *(completed)*
+- [x] Class B strict mode: `set -uo pipefail`, no `-e` (the script must keep scanning after the
+      first finding and report a full summary). *(completed)*
+- [x] Header comment block documenting: purpose, the three checks, the severity split, exit
       codes (`0` = pass, warnings allowed; `1` = placement failures; `2` = usage/environment
       error), and an explicit note that checks 2 and 3 are ADVISORY-ONLY and that promoting
-      either to blocking requires a documented review pass against real chapters first.
-- [ ] CLI: `typst-element-lint.sh [--verbose] [--help] PATH...` where each PATH is a `.typ`
+      either to blocking requires a documented review pass against real chapters first. *(completed)*
+- [x] CLI: `typst-element-lint.sh [--verbose] [--help] PATH...` where each PATH is a `.typ`
       file or a directory scanned recursively for `*.typ`. No PATH, or a nonexistent PATH,
-      exits 2 with usage guidance.
-- [ ] Colored/plain `PASS` / `FAIL` / `WARN` output per file, plus a trailing summary line with
+      exits 2 with usage guidance. *(completed)*
+- [x] Colored/plain `PASS` / `FAIL` / `WARN` output per file, plus a trailing summary line with
       counts, following `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`'s
-      shape.
-- [ ] Element inventory as a single array constant, sourced from
+      shape. *(completed)*
+- [x] Element inventory as a single array constant, sourced from
       `context/project/typst/standards/semantic-element-usage.md`: `definition`, `theorem`,
       `lemma`, `corollary`, `example`, `proof`, `remark`, `rule-block`, `rule-list`. Match as
-      `#{element}` followed by optional whitespace then `(` or `[`.
-- [ ] Implement check 1 as an awk line-scan: on matching `^=+ ` (covering `=`, `==`, `===`
+      `#{element}` followed by optional whitespace then `(` or `[`. *(completed)*
+- [x] Implement check 1 as an awk line-scan: on matching `^=+ ` (covering `=`, `==`, `===`
       uniformly per the standard's Universal Placement Rule), advance to the next content line,
       skipping blank lines, `//` comment lines, `#import`/`#let`/`#set`/`#show` declaration
       lines, and bare `<label>` lines. If that content line opens a semantic element, report a
-      FAIL naming file, line number, heading text, and element.
-- [ ] Violation message points the author at the correct home for the content per the
+      FAIL naming file, line number, heading text, and element. *(completed)*
+- [x] Violation message points the author at the correct home for the content per the
       standard's "Where Tracking Content Belongs" section (`specs/**`, an appendix, or a
-      dedicated status section) rather than only saying the placement is wrong.
-- [ ] Never scan before the first heading match — the pre-heading region is out of scope by
-      construction.
-- [ ] `bash -n` clean; `shellcheck` clean if available on PATH.
-- [ ] Manual smoke run against `~/Projects/Logos/Theory/typst/manual/chapters/08-agency.typ`
-      (read-only) confirming a FAIL is reported at line 57.
+      dedicated status section) rather than only saying the placement is wrong. *(completed)*
+- [x] Never scan before the first heading match — the pre-heading region is out of scope by
+      construction. *(completed)*
+- [x] `bash -n` clean; `shellcheck` clean if available on PATH. *(completed: shellcheck not installed on this system, so only bash -n was run)*
+- [x] Manual smoke run against `~/Projects/Logos/Theory/typst/manual/chapters/08-agency.typ`
+      (read-only) confirming a FAIL is reported at line 57. *(completed)*
 
 **Timing**: 1.25 hours
 
