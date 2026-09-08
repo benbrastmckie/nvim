@@ -1,36 +1,25 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md",
-      "summary": "Measured current SKILL.md/orchestrate.md/eager-load byte counts against Stage A targets, found a reusable ceiling-config+severity-gate precedent (claudemd-size-budget.json), identified a load-bearing hazard where warn-tier findings would spuriously trip the inter-cycle redeploy checkpoint's new-findings diff, derived a schema-accurate per-cycle growth estimate (~850-1010 B/task), and located the stale Context Flatness prose to correct."
+      "type": "plan",
+      "path": "specs/142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md",
+      "summary": "Six-phase measure-and-lock plan: ceiling config, verify-deploy Gate 20 with normalized finding text, over-ceiling and findings-diff fixtures, a fixture-based per-cycle lead-growth probe, the Context Flatness prose correction, and full-gate validation with a before/after table."
     }
   ],
-  "next_steps": "Run /plan 142 to create implementation plan",
+  "dispatch_seq": 5,
+  "next_steps": "Run /implement 142 to execute the plan",
   "metadata": {
     "session_id": "sess_1788849084_1040b7_142",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6,
+    "dependency_waves": [[1, 4], [2, 5], [3], [6]]
   },
-  "memory_candidates": [
-    {
-      "content": "verify-deploy.sh's inter-cycle redeploy checkpoint (orchestrate-cycle-plan.sh) diffs the SET of `^FINDING ` lines from `verify-deploy.sh --findings` before/after a redeploy (deploy-baseline-lib.sh), not the exit code. warn() and fail() both emit indistinguishable FINDING lines, so any warn-tier gate whose default finding text embeds a value that changes run-to-run (a byte count, a timestamp) will register as a spurious 'new finding' on nearly every redeploy and wrongly trip defer_reason:deploy_checkpoint. Any new gate must pass a normalized, value-free 3rd argument to warn()/fail() (the pattern fail()'s own header comment already documents) and print the live number only to stderr outside the finding text.",
-      "category": "PATTERN",
-      "source_artifact": "specs/142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["verify-deploy", "redeploy-checkpoint", "findings-diff", "warn-fail", "gate-design"]
-    },
-    {
-      "content": "context/config/claudemd-size-budget.json + check_claudemd_size_budget() in check-extension-docs.sh + SCHEMA_CONFORMANCE_GATE_MODE env-var default is this repo's reusable pattern for 'small ceiling config in source store, severity toggled by an env-var default a human flips (not auto-promoted by a persisted counter)'. Reuse this shape directly for any new byte-ceiling gate rather than inventing a new config format or building N-consecutive-deploys auto-promotion machinery.",
-      "category": "PATTERN",
-      "source_artifact": "specs/142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["ceiling-config", "gate-mode", "severity-toggle", "verify-deploy", "budget-gate"]
-    }
-  ],
+  "memory_candidates": [],
   "modified_files": [
-    "specs/142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md"
+    "specs/142_reduce_orchestrator_token_consumption/plans/01_context-budget-gate-lock.md"
   ]
 }
