@@ -29,11 +29,23 @@ both direct `manager` callers now, with no confirm-stubbing indirection involved
 
 ```bash
 # Default: bootstrap-safe, non-destructive force-resync of every active extension
-bash scripts/deploy-headless.sh [TARGET_REPO]
+bash .claude/scripts/deploy-headless.sh [TARGET_REPO]
 
 # Full destructive wipe + rebuild (snapshot -> rm -rf .claude -> regenerate -> restore)
-bash scripts/deploy-headless.sh --wipe [TARGET_REPO]
+bash .claude/scripts/deploy-headless.sh --wipe [TARGET_REPO]
 ```
+
+**Two-root convention.** `deploy-headless.sh` is *invoked* from a consuming repo root as
+`.claude/scripts/deploy-headless.sh` -- the deployed copy, as shown above -- and is *referred to*
+elsewhere in this document and throughout the source store by its extension-relative identifier,
+`scripts/deploy-headless.sh`. A bare `scripts/deploy-headless.sh` is never a runnable path from a
+repo root: it fails with **exit 127**, writing its diagnostic (`No such file or directory`) to
+**stderr only** and nothing to stdout, so a caller that captures stdout alone, or checks exit
+status loosely, sees what looks like a silent no-op rather than a failure. The one legitimate
+exception is invoking from this repo's own root before any `.claude/` tree exists (the CI
+bootstrap case): there, the source-store-relative form
+`bash agent-system/extensions/core/scripts/deploy-headless.sh` is correct, as used by
+`.github/workflows/check-extension-docs.yml`.
 
 This was verified against a from-scratch scratch git repository: a fresh (no prior `.claude/`)
 default-mode deploy correctly reconstructs the full tree, including subdirectory-declared

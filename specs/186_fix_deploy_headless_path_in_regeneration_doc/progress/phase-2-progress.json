@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Correct the Canonical Doc",
+  "started_at": "2026-09-08T23:10:00Z",
+  "last_updated": "2026-09-08T23:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fix the two fence lines (32, 35) to the .claude/scripts/ invocation form", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "Add convention paragraph disambiguating invocation vs reference forms", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 3, "description": "Record the exit-127 / stderr-only failure mode accurately in the paragraph", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 4, "description": "Note the source-store-relative CI-bootstrap exception invocation", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 5, "description": "Leave the 8 backticked reference-class occurrences unchanged; do not edit .claude/ deployed copy", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Verified: grep for the wrong form returns 0 hits in the file; CORRECTION block and both Automated Exception subsections byte-unchanged; git diff shows exactly one hunk touching the two fence lines plus one inserted paragraph."
+}

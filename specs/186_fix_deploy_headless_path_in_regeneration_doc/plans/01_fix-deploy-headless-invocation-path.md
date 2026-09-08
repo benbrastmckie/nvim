@@ -221,37 +221,40 @@ set, not the tabulated one, if they diverge, and record the divergence in the su
 
 ---
 
-### Phase 2: Correct the Canonical Doc [NOT STARTED]
+### Phase 2: Correct the Canonical Doc [COMPLETED]
 
 **Goal**: Make `regeneration-is-manual-only.md`'s two code fences runnable verbatim from a
 consuming repo root, warn about the exit-127 failure mode, and remove the ambiguity that let the
 reference-class occurrences in this file be misread as invocations.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, change
+- [x] In `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, change
       the two fence lines (32 and 35) from `bash scripts/deploy-headless.sh ...` to
       `bash .claude/scripts/deploy-headless.sh ...`, preserving the `[TARGET_REPO]` placeholder
-      and the `--wipe` flag exactly.
-- [ ] Immediately after the fence block, add a short paragraph stating the two-root convention
+      and the `--wipe` flag exactly. *(completed)*
+- [x] Immediately after the fence block, add a short paragraph stating the two-root convention
       explicitly: the script is *invoked* from a consuming repo root as
       `.claude/scripts/deploy-headless.sh`; it is *referred to* elsewhere in this document and in
       the source store by its extension-relative identifier `scripts/deploy-headless.sh`; and a
-      bare `scripts/deploy-headless.sh` is never a runnable path from a repo root.
-- [ ] In that same paragraph, record the failure mode accurately: an invocation using the wrong
+      bare `scripts/deploy-headless.sh` is never a runnable path from a repo root. *(completed:
+      "Two-root convention." paragraph)*
+- [x] In that same paragraph, record the failure mode accurately: an invocation using the wrong
       path fails with **exit 127**, writing its diagnostic to stderr and **nothing to stdout** --
       so any caller that captures stdout only, or reads exit status loosely, sees what looks like
-      a silent no-op rather than a failure.
-- [ ] Note the one legitimate alternative invocation for completeness: from this repo's root
+      a silent no-op rather than a failure. *(completed)*
+- [x] Note the one legitimate alternative invocation for completeness: from this repo's root
       before any `.claude/` tree exists (CI bootstrap), the source-store path
       `bash agent-system/extensions/core/scripts/deploy-headless.sh` is the correct form -- as
-      used by `.github/workflows/check-extension-docs.yml`.
-- [ ] Leave the eight backticked reference-class occurrences (lines 19, 23, 48, 60, 67, 95, 150,
-      488) unchanged; the new convention paragraph is what disambiguates them.
-- [ ] Follow this document's own established correction-as-addition pattern (see its
+      used by `.github/workflows/check-extension-docs.yml`. *(completed)*
+- [x] Leave the eight backticked reference-class occurrences (lines 19, 23, 48, 60, 67, 95, 150,
+      488) unchanged; the new convention paragraph is what disambiguates them. *(completed:
+      confirmed unchanged via diff read-through)*
+- [x] Follow this document's own established correction-as-addition pattern (see its
       `**CORRECTION.**` block and its `## Automated Exception` subsection): add the convention as
-      a labeled, additive paragraph rather than silently rewriting surrounding prose.
-- [ ] Do NOT edit `.claude/context/patterns/regeneration-is-manual-only.md`. Phase 5's deploy
-      regenerates it.
+      a labeled, additive paragraph rather than silently rewriting surrounding prose. *(completed:
+      "Two-root convention." labeled paragraph, additive)*
+- [x] Do NOT edit `.claude/context/patterns/regeneration-is-manual-only.md`. Phase 5's deploy
+      regenerates it. *(completed: not touched)*
 
 **Timing**: 0.75 hours
 
