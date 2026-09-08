@@ -896,3 +896,19 @@ The two files are never confused because:
 1. They are in different locations (`.orchestrator-handoff.json` vs. `handoffs/*.md`)
 2. They use different formats (JSON vs. Markdown)
 3. They are read by different components (skill-orchestrate vs. successor agent)
+
+---
+
+## Postflight Boundary
+
+This is distinct from, and additive to, the Context Flatness Constraint (`docs/architecture/orchestrate-cycle-postflight.md` and `skill-orchestrate/SKILL.md`'s own `## MUST NOT` section): that constraint bounds what the lead reads between dispatches; this section bounds what the lead *does*. After each stage dispatch (research/plan/implement) returns, the lead MUST NOT:
+
+1. **Edit source files** — all research, planning, and implementation work is done by the dispatched skill/agent, never by the orchestrator's own loop.
+2. **Run build/test commands** — verification is done by the dispatched skill/agent.
+3. **Use MCP/WebSearch/domain tools** — domain tools are for the dispatched skill/agent's use only.
+4. **Analyze or grep source** — analysis is dispatched-skill work.
+5. **Write reports/plans/summaries** — artifact creation is dispatched-skill work.
+
+The per-dispatch postflight phase is limited to: reading the dispatch's `.orchestrator-handoff.json` (or the bounded return-meta/phase-marker recovery exceptions the Context Flatness doc names), driving the state-machine transition to the next stage, and cleanup of temp/marker files. `orchestrate-cycle-postflight.sh` is the sole implementation of this boundary for every task in a batch (including a batch of one) — there is no second, inline copy of this logic in `skill-orchestrate/SKILL.md` to keep in sync. `lint-postflight-boundary.sh` enforces that `skill-orchestrate/SKILL.md` carries a heading its heuristic can locate as this boundary's home; see that script's own header for the current heading pattern it matches.
+
+Reference: `context/standards/postflight-tool-restrictions.md`.

@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Absorb narration into the architecture docs",
+  "started_at": "2026-09-08T04:26:00Z",
+  "last_updated": "2026-09-08T04:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record before byte counts", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Restructure state-machine.md: MT becomes the design", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 3, "description": "Move MT-1 mt_state_file field-list doc to state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 4, "description": "Move MT-5 rendering narrative to state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "Move MUST NOT branch enumerations to state-machine.md and handoff-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 6, "description": "Verify no content dropped", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

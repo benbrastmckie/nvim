@@ -8,9 +8,13 @@
 
 ## Overview
 
-The `/orchestrate` command runs a fire-and-forget autonomous loop that drives a task through its
-full lifecycle (research → plan → implement → complete) without user confirmation between phases.
-The state machine is implemented inside `skill-orchestrate` (Pattern C: Orchestrator/Routing skill).
+The `/orchestrate` command runs a fire-and-forget autonomous loop that drives one or more tasks
+through their full lifecycle (research → plan → implement → complete) without user confirmation
+between phases. The state machine is implemented inside `skill-orchestrate` (Pattern C:
+Orchestrator/Routing skill) as a single four-move loop — see "The Orchestration Loop
+(Batch-of-One and Multi-Task)" below — driven by `orchestrate-cycle-plan.sh`,
+`orchestrate-build-dispatch.sh`, and `orchestrate-cycle-postflight.sh`. A batch of one task is not
+a special case: it is the same loop with `task_numbers` of length one.
 
 ---
 
@@ -327,9 +331,22 @@ EXIT: Task {N} completed successfully.
 
 ---
 
-## MT Mode: Multi-Task Orchestration
+## The Orchestration Loop (Batch-of-One and Multi-Task)
 
-MT mode drives multiple tasks through their full lifecycle (research -> plan -> implement -> completed) using a lifecycle-cycling loop with dependency-aware gating and parallel dispatch.
+**This is the sole design.** There is one engine, not two: a single-task-number invocation is
+simply a batch of size one through the same lifecycle-cycling loop, dependency-aware gating, and
+parallel-dispatch machinery described below. The former single-task state machine (Stages 0-8,
+one dedicated stage per lifecycle state) has been deleted outright — it predated the extraction
+of `orchestrate-cycle-plan.sh`/`orchestrate-build-dispatch.sh`/`orchestrate-cycle-postflight.sh`
+and duplicated logic those three scripts now own for every batch size uniformly. The historical
+single-task Complete State Table and transition diagram above remain accurate as a description of
+per-task state transitions — every task in a batch still moves through exactly those states — but
+the dispatch/postflight mechanics that drive those transitions are the four-move loop below, run
+once per cycle across however many tasks the batch contains (one or many), never a parallel or
+alternate code path keyed on batch size.
+
+The loop drives every task in the batch through its full lifecycle (research -> plan -> implement
+-> completed) using a lifecycle-cycling loop with dependency-aware gating and parallel dispatch.
 
 ### Lifecycle-Cycling Loop (Stage MT-3)
 
@@ -579,3 +596,39 @@ All-terminal: YES -- break
 
 EXIT: All 2 tasks completed. Cycles used: 3/10.
 ```
+
+---
+
+## Loop-Owned Runtime State: `mt_state_file` Field Reference
+
+**This is now the only engine's runtime state file** — `specs/.orchestrator-multi-state-${session_id}.json`, initialized once per invocation (including a single-task-number invocation, which is simply a batch of one). The field list below is the authoritative reference; `skill-orchestrate/SKILL.md` itself carries only the initialization call, not this narrative.
+
+Core identity and counters: `session_id`, `task_numbers`, `waves` (diagnostic echo, recorded not consumed — eligibility is re-derived fresh every cycle from current task statuses plus `dependency_graph`, never from a pre-computed wave schedule), `max_cycles` (`min(task_count * 5, 25)`), `cycle_count: 0`, `failed_tasks: []`, `completed_tasks: []`, `current_statuses: {}`, `task_dirs: {}`, `research_agents: {}`, `implement_agents: {}`, `descriptions: {}` (map task_num -> task description, written once per task and read by dispatch composition for both prompt interpolation and Dispatch Prep's hard-required `description` precondition), `infra_failures: {}` (map task_num -> count, default 0, flat `MAX_INFRA_FAILURES=3` per task — not scaled by `task_count`), `dispatch_start_ts: {}` (map task_num -> unix seconds, written at dispatch time), `dispatch_seq_counter: 0` (batch-scoped monotonic counter, never repeats a value across the whole batch), `dispatch_seq: {}` (map task_num -> the `dispatch_seq` minted for that task's most recent dispatch).
+
+`deferred_self_modifying: []` — an APPEND-ONLY OBSERVATION LOG (persists across every cycle of this same `mt_state_file`, never reset mid-invocation) of task numbers the self-modification gate has deferred at least once this invocation. It is NOT an eligibility-exclusion set: a task appearing in this log is not thereby excluded from a later cycle's `eligible_tasks`. The defer is re-evaluated fresh every cycle from `eligible_tasks` and the candidate's own `file_scope`, using the same convergence mechanism `file_scope_collision` uses, and clears on its own once the co-dispatched sibling that caused it leaves `eligible_tasks`. A second, independent, per-cycle exit condition also bounds this: the designated-candidate tie-breaker inside `orchestrate-batch-admit.sh` admits exactly one self-modifying candidate (the lowest task number) on every cycle, so N self-modifying candidates converge to full dispatch in at most N cycles by construction.
+
+**In-flight session registry** (adjacent to, not part of, `mt_state_file`): the batch registers under its bare `session_id`, with the full `task_numbers` set as the CSV, via `task-lock.sh session-register`. Best-effort and non-blocking — a registration failure never affects any admission, dispatch, or eligibility decision.
+
+Two invocation-scoped fields backing the inter-cycle redeploy checkpoint (full contract in `context/patterns/batch-orchestration-guardrails.md`'s "The Inter-Cycle Redeploy Checkpoint" subsection): `deferred_deploy_checkpoint: []` (task numbers excluded for the remainder of the invocation because a checkpoint gate — `deploy-headless.sh` or `verify-deploy.sh` — failed; a distinct set from `deferred_self_modifying`, since the two causes have different operator remedies) and `deployed_critical_paths: []` (critical paths already redeployed this invocation, backing the idempotence guard so the checkpoint does not re-fire on the same path every cycle). Alongside them: `consecutive_no_dispatch_cycles: 0` (increments on any cycle where `eligible_tasks` was non-empty but the self-modification gate deferred every member of it; resets to 0 on any cycle where at least one task dispatches — bounds the narrow non-convergence mode a removed permanent exclusion set no longer prevents by construction), and `verify_deploy_baseline_notices: []` (an append-only observation log of every checkpoint firing that proceeded past a pre-existing `verify-deploy.sh` failure; entries shaped `{"cycle": <int>, "gate": "verify-deploy.sh", "pre_findings": <int>, "post_findings": <int>, "new_findings": 0, "post_exit": <int>}`; never read by any eligibility check, all-terminal check, circuit breaker, convergence guard, or admission branch — written for reporting only, read and rendered at the batch-postflight move; never merged into `defer_ledger`).
+
+Two more fields back the **forward-progress invariant** (full contract in `context/patterns/batch-orchestration-guardrails.md`'s "The Forward-Progress Invariant" subsection): `defer_ledger: []` (an append-only observation log of every per-cycle defer/exclusion event, entries shaped `{"task": <int>, "defer_reason": <string>, "collision_scope": <string|null>, "cycle": <int>, "detail": <string>}`; never read by any eligibility/admission decision, not a fifth admission gate, additive to `deferred_self_modifying` and `deferred_deploy_checkpoint` rather than a replacement) and `detected_defects: []` (an append-only observation log of every system-defect detection that fired during the run; the single canonical definition of the field's contract across the whole engine, since there is only one engine file). `detected_defects` entries are shaped `{"task": <int>, "defect_class": <string>, "attributed_source_path": <string>, "detecting_site": <string>, "cycle": <int>, "detail": <string>, "record_result": <string|null>}`, and `task` is always populated. The append fires whenever the caller's own detection fires and is never gated on `system-defect-record.sh`'s exit code or a suppression value — the recorder's dedup key is cross-run, while this log answers "what fired during THIS run." Each append emits `[orchestrate] [system-defect:auto] queued for postflight summary — defect_class=<CLASS> attributed_path=<PATH> detecting_site=<SITE>` immediately, so a detection is never a silent no-op. **Absolute constraint**: no site in this mechanism may call `AskUserQuestion` — `orchestrator_mode` means no human is watching mid-run, so accumulate-then-render is the deterministic default (this is a distinct, unrelated mechanism from the `user_decision`/`AskUserQuestion` relay the loop's branch move performs; do not conflate the two). `detected_defects` is additive to `defer_ledger` and to `verify_deploy_baseline_notices`, never merged into either — three separate logs, three separate operator remedies. It is never consulted by `exit_status` branch selection: a batch that succeeded and also observed a defect is still a successful batch.
+
+`forward_progress_violated: false` — initialized false, computed and written once at the batch-postflight move from `dispatch_start_ts`; never read by any loop condition. `idle_overlap_ledger: []` — an append-only observation log of every admitted verdict a cycle carries with a non-empty `idle_overlap_advisory`, entries shaped `{"task": <int>, "colliding_task_number": <int>, "colliding_task_status": <string>, "overlapping_path": <string>, "cycle": <int>}`; follows `defer_ledger`'s exact MUST NOT — never read by any eligibility/admission decision, and never merged into `defer_ledger` since the candidates it names were admitted, not deferred.
+
+## Consolidated Output and Exit-Status Resolution
+
+After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or the cycle cap reached), the loop's own postflight/branch move:
+
+1. Reads `completed_tasks`, `failed_tasks`, `deferred_self_modifying`, `deferred_deploy_checkpoint`, `dispatch_start_ts`, `defer_ledger`, `idle_overlap_ledger`, `verify_deploy_baseline_notices`, `detected_defects`, `current_statuses`, and `cycles_used` from `mt_state_file`.
+2. Computes the forward-progress invariant: `forward_progress_violated = true` when `task_numbers` is non-empty and `dispatch_start_ts` is an empty object at loop exit; otherwise `false`. This is cause-agnostic — true regardless of which `defer_reason` produced the zero-dispatch outcome.
+3. Determines `exit_status` (the skill-status vocabulary normatively defined in `context/formats/return-metadata-file.md`, distinct from the `tasks_completed` array's `state.json` vocabulary):
+   - `forward_progress_violated == true` -> `"partial"`, taking precedence over the `"implemented"` branch below. Without this precedence a batch that dispatched nothing because every candidate hit `file_scope_collision` would satisfy the `"implemented"` branch with an empty `completed_tasks` array — a batch that did nothing reporting success. This is a status-legibility correction only: no verdict, task status, or `state.json` write is affected.
+   - `failed_count == 0` AND every task in `deferred_self_modifying` reached a terminal state by loop exit AND `deferred_deploy_checkpoint` is empty -> `"implemented"`. A task that was deferred at least once but went on to dispatch and complete before loop exit is a success, not a partial — the observation log records history, not an outstanding obligation.
+   - `failed_count > 0` OR any task in `deferred_self_modifying` is still non-terminal at loop exit OR `deferred_deploy_checkpoint` is non-empty -> `"partial"`. A non-empty `deferred_deploy_checkpoint` alone still yields `"partial"` — that set retains its permanent-exclusion semantics.
+   - `verify_deploy_baseline_notices` and `detected_defects` are NEVER consulted by this branch selection — both are pure observation logs with no bearing on `exit_status`. A batch that ran to completion past a pre-existing `verify-deploy.sh` failure, or that also observed a system-defect detection, is still `"implemented"`.
+4. Reports `deferred_self_modifying` tasks as **deferred at least one cycle by the self-modification gate** — an observation, not an outstanding-work category — with each task's final status at loop exit. Reports `deferred_deploy_checkpoint` tasks as a distinct **deferred-by-redeploy-checkpoint** category (different operator remedy: resolve the deploy/verify failure, redeploy manually, then re-run on the remaining task numbers). Reports `verify_deploy_baseline_notices` and `detected_defects`, when non-empty, each as their own distinct category — never folded together, never omitted merely because the batch otherwise succeeded — and `idle_overlap_ledger`, when non-empty, as a distinct **admitted (idle overlap advisory)** category, since its entries are admits, not exclusions. When `forward_progress_violated` is true, the summary additionally leads with a zero-dispatch banner enumerating every `defer_ledger` entry with its `defer_reason`, and a re-run sequence ordering the deferred/excluded task numbers predecessor-first from `dependency_graph`.
+5. **Emits the consolidated output**: read `context/patterns/orchestrate-batch-results-template.md` and render the batch results using that template exactly — its per-section rendering conditions are contract, not commentary. This is the template's sole caller.
+6. Writes `specs/.return-meta-multi-${session_id}.json` with `status` (the closed `"implemented"`/`"partial"`/`"failed"` vocabulary) at top level, and `tasks_completed`, `tasks_failed`, `tasks_deferred_self_modifying`, `tasks_deferred_deploy_checkpoint`, `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`, `verify_deploy_baseline_notices`, `cycles_used`, and `multi_task_mode: true` inside `metadata`.
+7. Runs the non-blocking residue check (`### Commit Granularity` above) — warns only, never commits.
+8. Releases the batch's in-flight session registry entry (`task-lock.sh session-release`), unconditionally regardless of `exit_status`, best-effort and non-blocking.
+9. For every task in `completed_tasks` only (never `failed_tasks`, never a still-non-terminal task — mirroring the asymmetry that per-dispatch context persists across a partial/timeout exit and is swept only at genuine full completion), removes that task's accumulated `.dispatch/` directory. Best-effort and non-blocking.

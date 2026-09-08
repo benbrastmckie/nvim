@@ -1,7 +1,7 @@
 # Implementation Plan: Task #88
 
 - **Task**: 88 - Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: 148 (completed and archived; task is unblocked)
 - **Research Inputs**: specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md
@@ -134,7 +134,7 @@ sets (docs only / one script plus its test / `SKILL.md` only).
 
 ---
 
-### Phase 1: Absorb narration into the architecture docs [NOT STARTED]
+### Phase 1: Absorb narration into the architecture docs [COMPLETED]
 
 **Goal**: Give every piece of narration that must survive the rewrite a home in
 `docs/architecture/` before any of it is deleted from `SKILL.md`, so the later trim is pure
@@ -142,27 +142,40 @@ removal rather than a judgment call under time pressure.
 
 **Tasks**:
 
-- [ ] Record the measured "before" byte count of
+- [x] Record the measured "before" byte count of
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` (expected 189,000 B) and
       of `docs/architecture/orchestrate-state-machine.md` (expected 35,268 B) into the
-      implementation progress record — this is acceptance evidence, not a nicety.
-- [ ] Restructure `docs/architecture/orchestrate-state-machine.md` so the `## MT Mode:
+      implementation progress record — this is acceptance evidence, not a nicety. *(completed:
+      confirmed SKILL.md=189,000 B, state-machine.md=35,268 B, handoff-schema.md=53,767 B before
+      any edits — see progress/phase-1-progress.json)*
+- [x] Restructure `docs/architecture/orchestrate-state-machine.md` so the `## MT Mode:
       Multi-Task Orchestration` content becomes simply *the* design (one engine, batch of one),
       and any single-task narration worth keeping is folded in as historical background rather
-      than a parallel live path.
-- [ ] Move Stage MT-1's `mt_state_file` field-list documentation (the in-flight session
+      than a parallel live path. *(completed: renamed to "## The Orchestration Loop
+      (Batch-of-One and Multi-Task)" with an explicit sole-design statement; Overview updated to
+      match)*
+- [x] Move Stage MT-1's `mt_state_file` field-list documentation (the in-flight session
       registry, the upstream-review cross-reference, and the historical hard-mode note) out of
-      the skill's future scope and into the state-machine doc.
-- [ ] Move Stage MT-5's consolidated-output rendering narrative into the state-machine doc,
+      the skill's future scope and into the state-machine doc. *(completed: new "## Loop-Owned
+      Runtime State: mt_state_file Field Reference" section)*
+- [x] Move Stage MT-5's consolidated-output rendering narrative into the state-machine doc,
       pointing at the already-existing
       `context/patterns/orchestrate-batch-results-template.md` for the template itself rather
-      than restating it.
-- [ ] Move the branch enumerations and incident history currently carried by the two
+      than restating it. *(completed: new "## Consolidated Output and Exit-Status Resolution"
+      section)*
+- [x] Move the branch enumerations and incident history currently carried by the two
       `## MUST NOT` sections (Context Flatness Constraint, Postflight Boundary) into the
       state-machine doc and `docs/architecture/handoff-schema.md` as appropriate, leaving behind
-      only the imperative list items the later phase will keep.
-- [ ] Verify no content was dropped: for each relocated block, confirm the destination carries
-      the same claims (spot-check by heading and by distinctive phrase).
+      only the imperative list items the later phase will keep. *(completed: Context Flatness
+      Constraint's branch-by-branch narrative already lived in
+      docs/architecture/orchestrate-cycle-postflight.md pre-existing; added a new "## Postflight
+      Boundary" section to handoff-schema.md carrying the Postflight Boundary MUST NOT's full
+      enumeration)*
+- [x] Verify no content was dropped: for each relocated block, confirm the destination carries
+      the same claims (spot-check by heading and by distinctive phrase). *(completed: grep
+      spot-checks for consecutive_no_dispatch_cycles, forward_progress_violated, and "Postflight
+      Boundary" all confirmed present in their new doc homes; headings render sequentially in
+      both docs)*
 
 **Timing**: 1.5 hours
 

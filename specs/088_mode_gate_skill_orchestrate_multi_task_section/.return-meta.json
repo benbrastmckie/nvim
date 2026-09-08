@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md",
-      "summary": "7-phase, 12-hour plan to delete the single-task engine, rewrite skill-orchestrate/SKILL.md as the four-move loop at <=20,000 B, build the batched AskUserQuestion/.decisions.json path, and retarget the coupled test/lint surface."
-    }
-  ],
-  "next_steps": "Run /implement 88 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
     "session_id": "sess_1788840700_afed94",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 12,
-    "dependency_waves": [[1, 2, 3], [4], [5, 6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a skill rewrite deletes prose that tests scrape, sequence the work as: (1) relocate surviving narration into docs FIRST as an additive, disjoint phase, (2) delete the dead region bottom-up in one atomic-batch commit so earlier line numbers never drift, (3) rewrite, (4) retarget tests LAST. Ship any new script-side READER before the lead-side WRITER that feeds it, so the writer has an already-tested target and the schema is fixed once. This ordering keeps every wave-1 phase file-disjoint and makes each phase independently revertible.",
-      "category": "PATTERN",
-      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["skill rewrite", "phase sequencing", "bottom-up deletion", "reader before writer", "docs absorption"]
-    }
-  ],
-  "dispatch_seq": 2
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
