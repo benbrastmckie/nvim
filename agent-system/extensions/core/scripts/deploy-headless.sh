@@ -90,6 +90,19 @@
 #      fast-vs-full gate split and the current orchestrator-consumer interaction with this code.
 #      Not emitted under --dry-run, which returns 0 before verification ever runs.
 #
+# Machine-readable marker vocabulary (the caller-facing contract, stdout, one line each, always
+# printed by a non-dry-run, non---help invocation):
+#   [deploy-headless] RESULT=not_landed            -- exit 1 or 2.
+#   [deploy-headless] RESULT=landed_verify_clean   -- exit 0.
+#   [deploy-headless] RESULT=landed_verify_red     -- exit 3.
+#   [deploy-headless] CONSUMERS_STALE=<n>          -- count of stale/cannot-verify consumer rows
+#                                                     from the post-deploy consumer-freshness
+#                                                     report (0 if none, or if that report never
+#                                                     ran -- e.g. a too-stale deployed tree).
+#                                                     Report-only; NEVER folded into RESULT= or
+#                                                     the exit code -- see the confound paragraph
+#                                                     below.
+#
 # THREE CONFOUNDS THAT ARE NOT THE SAME THING, made distinguishable below (this script's own
 # RESULT= marker) and NEVER conflated in the exit code: "the deploy did not land" (1/2),
 # "the deploy landed but a gate is red -- possibly pre-existing, this script does not know"

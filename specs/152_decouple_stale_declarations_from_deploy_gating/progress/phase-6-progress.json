@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Update the contract documentation to match the code",
+  "started_at": "2026-09-08T00:56:00Z",
+  "last_updated": "2026-09-08T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "batch-orchestration-guardrails.md: scope branch (a) to exit 1/2, note exit 3 routes to baseline, note shared lib", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "regeneration-is-manual-only.md: mark exit-3 follow-up DONE, correct edit-target pointer, document line_count derived-at-deploy-time", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 3, "description": "orchestrate-state-machine.md: update redeploy-checkpoint description if mt_state_file keys changed (they did not)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "deploy-headless.sh header: add RESULT=/CONSUMERS_STALE= marker vocabulary as caller-facing contract", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deploy-headless.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "docs/architecture/orchestrate-state-machine.md confirmed NOT to need an update -- Phase 2's mt_state_file key set (deployed_critical_paths, verify_deploy_baseline_notices, deferred_deploy_checkpoint, defer_ledger) is unchanged from before this task, verified by grepping the checkpoint's own mt_set calls."
+}

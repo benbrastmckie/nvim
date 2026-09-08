@@ -182,18 +182,23 @@ drops the inline cost to roughly 50-70s. The full gate set, including gate 8, re
 demand by running `verify-deploy.sh` with no flag -- `deploy-headless.sh`'s exit-3 failure message
 names that exact command.
 
-**The Stage MT-3 step 7 collision.** `skill-orchestrate/SKILL.md`'s deploy-failure branch is
-written as "Non-zero exit (1 or 2) -> defer unconditionally ... with NO baseline consultation
-whatsoever". Exit 3 sits outside that parenthetical enumeration but inside the leading "Non-zero
-exit" phrase, so the step's behavior on exit 3 is currently ambiguous, and the most likely reading
-routes it through the unconditional-defer branch -- bypassing the pre/post `--findings` baseline
+**The Stage MT-3 step 7 collision -- DONE.** `skill-orchestrate/SKILL.md`'s deploy-failure branch
+was written as "Non-zero exit (1 or 2) -> defer unconditionally ... with NO baseline consultation
+whatsoever". Exit 3 sat outside that parenthetical enumeration but inside the leading "Non-zero
+exit" phrase, so the step's behavior on exit 3 was ambiguous, and the most likely reading routed
+it through the unconditional-defer branch -- bypassing the pre/post `--findings` baseline
 comparison the checkpoint's other branches exist to consult. The consequence: a pre-existing
 failure that baseline comparison is designed to tolerate would instead defer every remaining task,
 every cycle. A distinct exit code was chosen specifically so a follow-up task can route exit 3
 through the existing baseline-comparison branches with a small, targeted edit rather than a
-redesign; that follow-up is not done by this correction. It would touch
-`skills/skill-orchestrate/SKILL.md` and `context/patterns/batch-orchestration-guardrails.md`,
-neither of which this correction modifies.
+redesign -- **that follow-up has now landed**: `scripts/orchestrate-cycle-plan.sh`'s inter-cycle
+redeploy checkpoint (the live implementation `skill-orchestrate/SKILL.md`'s Stage MT-3 step 7
+delegates to -- the prose has since collapsed into a single delegated call, so the live edit
+target was `scripts/orchestrate-cycle-plan.sh`, not `skills/skill-orchestrate/SKILL.md` itself)
+now captures `deploy-headless.sh`'s exit code explicitly, excludes ONLY exit 1/2 from the
+baseline comparison, and falls through to it for exit 0 and exit 3 alike -- matching
+`context/patterns/batch-orchestration-guardrails.md`'s "### The Inter-Cycle Redeploy Checkpoint"
+subsection, which is the authoritative statement of the contract this paragraph only summarizes.
 
 **The live consequence, disclosed rather than discovered in production.** As of this correction,
 doc-lint (gate 3, a *fast* gate -- `--skip-slow` does not hide it) reports pre-existing issues in
@@ -211,7 +216,45 @@ additionally calls `scripts/check-consumer-freshness.sh --stale-only`, fully gua
 the deployed checker exists; its own exit code can never propagate into `deploy-headless.sh`'s
 own exit code). This is purely additive output — see the "Tier 3" subsection under
 `## Detecting When You're Stale` below for the full design — and does NOT change the 0/1/2/3
-exit-code contract documented above in any way.
+exit-code contract documented above in any way. Confirmed at RUNTIME (not merely by static
+reading) that this guard holds, via a traced scratch-target deploy against this repo's own real,
+populated consumer registry.
+
+**The `RESULT=`/`CONSUMERS_STALE=` marker vocabulary — the caller-facing contract for three
+outcomes that are NOT the same thing.** `deploy-headless.sh` emits exactly one
+`[deploy-headless] RESULT=<token>` line before its final exit, so a caller can read the outcome
+without parsing prose or re-deriving it from the exit code alone:
+- `RESULT=not_landed` — exit 1 or 2: the deploy did not land at all.
+- `RESULT=landed_verify_clean` — exit 0: the deploy landed and `verify-deploy.sh` is clean.
+- `RESULT=landed_verify_red` — exit 3: the deploy landed but `verify-deploy.sh` reported one or
+  more findings. `deploy-headless.sh` itself does not distinguish a pre-existing finding from a
+  newly-introduced one at this layer — that distinction is exactly what
+  `context/patterns/batch-orchestration-guardrails.md`'s "### The Inter-Cycle Redeploy Checkpoint"
+  baseline comparison (and `command-gate-out.sh`'s identical rc==6 handler) exist to make, one
+  layer up.
+
+Separately, `[deploy-headless] CONSUMERS_STALE=<n>` reports the count of stale/cannot-verify rows
+from the consumer-freshness check above — the third confound named in this task's own dispatch
+(deploy did not land / deploy landed with a red gate / OTHER, already-known consumer repos are
+behind). This marker is report-only, by construction can never influence `RESULT=` or the exit
+code (see the confirmed-at-runtime guard immediately above), and exists purely so a caller does
+not have to count non-empty report lines by hand.
+
+**`line_count` is now derived at deploy time, never hand-edited.** Before the nvim deploy
+invocation, `deploy-headless.sh` runs the deployed `generate-context-line-counts.sh --write`
+against `$TARGET`, guarded on `$TARGET/agent-system/extensions` existing (an ordinary consumer
+repo, with no source-store checkout, silently no-ops here) and on the deployed regenerator itself
+existing (a bootstrap-first-ever deploy silently no-ops too, matching
+`check-consumer-freshness.sh`'s own guard convention). Every repair is reported, never silent —
+the `validate-artifact.sh --fix` / D-A auto-repair-reporting precedent — on both the repaired and
+the clean path, and a durable `index_line_count_auto_repair` row is appended to
+`specs/events.jsonl` via `events-append.sh`. The declared `line_count` field itself is NOT
+removed: `validate-context-budgets.sh`, `validate-index.sh`, `validate-context-index.sh`, and
+`install-extension.sh` all read it for token-budget math, so it remains a real, consumed field —
+only its maintenance burden moves from a human's editor to this pre-deploy repair step.
+`check-extension-docs.sh`'s Rule R (the drift tripwire) is unchanged in behavior; its mismatch and
+missing-key failure messages now additionally name the remedy command for a reader running the
+lint standalone, outside a deploy.
 
 ## What This Means for Automation
 
@@ -467,3 +510,10 @@ repo root, masking the invocation-context error this guard exists to surface.
 - `scripts/tests/test-consumer-freshness.sh` -- fixture suite pinning Tier 3's report
   classification, exit codes, `--stale-only`/`--discover` behavior, and the no-write invariant
   against consumer repos
+- `scripts/lib/deploy-baseline-lib.sh` -- the shared `deploy_findings_snapshot` /
+  `deploy_baseline_new_findings` algorithm both `command-gate-out.sh` and
+  `orchestrate-cycle-plan.sh`'s inter-cycle redeploy checkpoint source, so the two cannot
+  re-diverge
+- `scripts/generate-context-line-counts.sh` -- the `wc -l` regenerator `deploy-headless.sh` now
+  runs (guarded, `--write`) before every deploy, backing the `line_count` auto-repair paragraph
+  above

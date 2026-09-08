@@ -393,32 +393,32 @@ falsify this and require an explicit `REPO_ROOT=` in the call.
 
 ---
 
-### Phase 6: Update the contract documentation to match the code [NOT STARTED]
+### Phase 6: Update the contract documentation to match the code [COMPLETED]
 
 **Goal**: Close the doc/code divergences this task creates or resolves, so the next reader is not
 misled the way `regeneration-is-manual-only.md` predicted.
 
 **Tasks**:
 
-- [ ] `context/patterns/batch-orchestration-guardrails.md`, "### The Inter-Cycle Redeploy
+- [x] `context/patterns/batch-orchestration-guardrails.md`, "### The Inter-Cycle Redeploy
       Checkpoint" → "Failure contract": scope branch (a) explicitly to "`deploy-headless.sh`
       exit 1 or 2 (the deploy did not land)", matching `command-gate-out.sh`'s own comment, and
       state that exit 3 routes to the baseline comparison.
-- [ ] Same subsection: note that both consumers now source `scripts/lib/deploy-baseline-lib.sh`,
+- [x] Same subsection: note that both consumers now source `scripts/lib/deploy-baseline-lib.sh`,
       and that the exit-2 resolution rule is implemented there rather than separately at each
       site.
-- [ ] `context/patterns/regeneration-is-manual-only.md`, "### deploy-headless.sh's Inline
+- [x] `context/patterns/regeneration-is-manual-only.md`, "### deploy-headless.sh's Inline
       Verification and Exit Code 3": mark the follow-up it explicitly foresaw ("a distinct exit
       code was chosen specifically so a follow-up task can route exit 3 through the existing
       baseline-comparison branches") as DONE, and correct its "would touch
       `skills/skill-orchestrate/SKILL.md`" pointer — the prose has since collapsed into a single
       delegated call, so the live edit target is `scripts/orchestrate-cycle-plan.sh`.
-- [ ] Same file: document that `line_count` is now derived at deploy time and must not be
+- [x] Same file: document that `line_count` is now derived at deploy time and must not be
       hand-edited, and that the repair is reported, never silent.
-- [ ] `docs/architecture/orchestrate-state-machine.md`: update the redeploy-checkpoint
+- [x] `docs/architecture/orchestrate-state-machine.md`: update the redeploy-checkpoint
       description if and only if Phase 2's Scope Hypothesis turned up a changed `mt_state_file`
-      key set.
-- [ ] Add the `RESULT=` / `CONSUMERS_STALE=` marker vocabulary from Phase 4 to
+      key set. *(completed: confirmed the mt_state_file key set is unchanged -- deployed_critical_paths, verify_deploy_baseline_notices, deferred_deploy_checkpoint, defer_ledger, exactly as before Phase 2; no doc update needed, condition correctly evaluated false)*
+- [x] Add the `RESULT=` / `CONSUMERS_STALE=` marker vocabulary from Phase 4 to
       `deploy-headless.sh`'s header as the caller-facing contract.
 
 **Timing**: 0.75 hours

@@ -452,10 +452,19 @@ Direction 3 without first re-deriving this cycle-synchronicity argument.
 
 **Failure contract**: the two gates are asymmetric and are evaluated in three branches.
 
-- **(a) `deploy-headless.sh` failure** — defer all remaining not-yet-dispatched tasks for the rest
-  of the invocation, unconditionally, with NO baseline consultation whatsoever. A redeploy that
-  did not complete has no meaningful "pre-existing" interpretation; this branch is unchanged from
-  before the baseline mechanism existed.
+- **(a) `deploy-headless.sh` exit 1 or 2 (the deploy did not land)** — defer all remaining
+  not-yet-dispatched tasks for the rest of the invocation, unconditionally, with NO baseline
+  consultation whatsoever. A redeploy that did not complete has no meaningful "pre-existing"
+  interpretation; this branch is unchanged from before the baseline mechanism existed. **Exit 3 is
+  deliberately EXCLUDED from this branch**: it means the deploy LANDED but the inline
+  `verify-deploy.sh --skip-slow` check reported one or more findings, which routes to the
+  baseline-relative comparison in (b)/(c) below, never here. Both consumers of this contract
+  (`scripts/command-gate-out.sh`'s `rc==6` handler and `scripts/orchestrate-cycle-plan.sh`'s
+  inter-cycle redeploy checkpoint) now source ONE shared implementation of the (b)/(c) baseline
+  comparison, `scripts/lib/deploy-baseline-lib.sh` (`deploy_findings_snapshot`,
+  `deploy_baseline_new_findings`), so they cannot re-diverge the way `orchestrate-cycle-plan.sh`
+  previously did — it long implemented only two of these three branches, collapsing exit 3 into
+  branch (a) rather than reaching (b)/(c) at all, until this defect class was closed.
 - **(b) `verify-deploy.sh` failure with at least one newly-introduced finding** relative to the
   pre-redeploy baseline (see **Baseline mechanism** below) —
   defer all remaining not-yet-dispatched tasks for the rest of the invocation, unchanged in spirit
@@ -492,7 +501,9 @@ the scenario branch (b) above exists to still catch.
 
 **Exit-2 resolution**: `verify-deploy.sh` exit 2 ("cannot run") is folded into the same findings
 vocabulary as one synthesized `FINDING gate0 ...` sentinel line, rather than special-cased, so the
-comparison stays a single uniform set difference with no separate branch of its own. Two
+comparison stays a single uniform set difference with no separate branch of its own. This folding
+is implemented once, in `scripts/lib/deploy-baseline-lib.sh`'s `deploy_findings_snapshot`, and
+both consumers of this contract source it rather than each carrying their own copy. Two
 consequences:
 - Pre-redeploy exit 2 and post-redeploy exit 2 with the same reason → the sentinel is present in
   both captured sets → empty difference → **branch (c)**: proceed, reported loudly as "could not
