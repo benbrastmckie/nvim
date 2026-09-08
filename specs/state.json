@@ -657,7 +657,7 @@
       "project_number": 150,
       "project_name": "research_on_demand",
       "title": "Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "Research on demand: let the planner decide whether a research phase is needed, and run one only when it asks for it or when --research forces it. Decided 2026-09-02 (specs/PATH.md, Decisions). Stage A.8 of specs/PATH.md. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nWHY. Every task runs research -> plan -> implement today, yet most filings in this system are already specifications: they carry the defect, the measured evidence, the work list and the acceptance bar. A research dispatch on such a task re-derives what the description states and costs a full agent run plus a cycle. The decision whether research is needed belongs to an agent, not to the orchestrator and not to a keyword heuristic.\n\nDESIGN (binding; the planner of this task refines mechanics, not the shape).\n(a) Default lifecycle becomes plan -> implement. A task at [NOT STARTED] with no report is dispatched to the PLANNER first. The planner's contract gains an opening step: assess whether the description plus what it can read in the codebase suffices to write a plan that meets plan-format.md. If yes, plan as today; status advances to [PLANNED] (the [RESEARCHED] state is simply not visited). If no, it writes no plan and returns verdict `needs_research` in its return metadata with a focused list of the questions research must answer; it does not attempt partial planning.\n(b) orchestrate-cycle-plan.sh / orchestrate-triage-classify.sh: a `needs_research` verdict recorded by the postflight script routes the task to the research phase on the next cycle, with the planner's questions carried into the dispatch file as the research focus; after research, the task returns to plan as today. `--research` (the phase-forcing flag) forces the research phase first exactly as it does now and bypasses the planner's assessment. A task that already has a report is never asked again.\n(c) orchestrate-cycle-postflight.sh: relay `needs_research` as a verdict (no status regression; the task stays [NOT STARTED] or [RESEARCHING]-equivalent by the existing vocabulary -- decide and record which); record nothing as a defect.\n(d) Contracts and docs: planner-agent.md (and extension planner agents, swept with negatives) gain the assessment step and the bar for asking -- research is requested only when the plan would otherwise rest on guesses about facts an agent can establish (external APIs, unfamiliar code paths, literature), never as a default; the research-agent contract is unchanged except that the dispatch file may now carry the planner's question list; status-markers.md and the state-machine doc describe the two-phase default with research on demand; the return-metadata format gains the verdict field.\n(e) Memory retrieval and --lit still run at every dispatch through the dispatch builder, so a planner dispatched first receives the same context a research dispatch would.\n\nMUST NOT: skip research when `--research` is passed; let the orchestrator decide (the classifier only routes on the recorded verdict); weaken plan-format.md's requirements to make planning-without-research easier.\n\nACCEPTANCE: a specification-shaped task goes [NOT STARTED] -> [PLANNED] -> [COMPLETED] in two dispatches with a plan that passes validate-artifact.sh; a task whose planner returns `needs_research` is shown routing to research with the question list in its dispatch file and then back to plan; `--research` on a fresh task runs research first; fixture tests for both routes; full gate run green.\n\nDELIVERABLE RULE: no task-number references in deliverables outside specs/**.\nREFERENCE: specs/PATH.md, \"Decisions\".",
@@ -681,12 +681,17 @@
           "path": "specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md",
           "type": "report",
           "summary": "Maps every DESIGN clause to concrete file/line targets across the 10 file_scope files; finds the --focus flag on orchestrate-build-dispatch.sh is already built but has zero callers, and that an unhandled needs_research dispatch_status would fall into the postflight catch-all and halt the whole /orchestrate run with a recorded OFF_SCHEMA_STATUS defect unless a dedicated case arm is added first."
+        },
+        {
+          "path": "specs/150_research_on_demand/plans/01_research-on-demand-lifecycle.md",
+          "type": "plan",
+          "summary": "Six-phase, 9-hour plan for the planner-first lifecycle with research on demand: vocabulary admission, status-write plumbing, postflight arms, routing flip with --focus wiring, planner contract, and fixture tests."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-09-02T20:46:49Z",
-      "last_updated": "2026-09-08T06:39:09Z",
-      "session_id": "sess_1788849084_1040b7_150"
+      "last_updated": "2026-09-08T06:44:30Z",
+      "session_id": "sess_1788849084_1040b7"
     },
     {
       "project_number": 155,
