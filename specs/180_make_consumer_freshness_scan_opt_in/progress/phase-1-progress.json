@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Caller audit and cost baseline",
+  "started_at": "2026-09-08T00:00:00Z",
+  "last_updated": "2026-09-08T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run caller audit for CONSUMERS_STALE / check-consumer-freshness across repo excluding .claude/** and specs/**", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Inspect the three known automated deploy-headless.sh call sites (orchestrate-cycle-plan.sh, command-gate-out.sh, check-extension-docs.yml)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record any genuine consumer found (none found)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Capture byte-exact reference of today's consumer-block output", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Time the invocation and record wall-clock cost and row count", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Audit confirmed: zero programmatic consumers of CONSUMERS_STALE= outside deploy-headless.sh itself. Three automated callers (orchestrate-cycle-plan.sh:588, command-gate-out.sh:176, check-extension-docs.yml:69) all only check exit code / RESULT vocabulary, none greps for STALE/CONSUMERS_STALE. Reference capture: 35 rows (via check-consumer-freshness.sh --stale-only directly), ~2s wall clock, exit 0. Saved to scratchpad phase1_reference_capture.log (not committed; scratch evidence)."
+}

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/180_make_consumer_freshness_scan_opt_in/plans/01_consumer-freshness-scan-opt-in.md",
-      "summary": "5-phase plan gating deploy-headless.sh's post-deploy consumer-freshness scan behind a default-OFF --consumer-report flag, preserving byte-compatible CONSUMERS_STALE= output and exit-code neutrality."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 2,
   "metadata": {
-    "session_id": "sess_1788883218_cb46bc_180",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 2.5,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's core scripts, `-h|--help` is implemented as a fixed line-range extraction of the file's own comment header (e.g. deploy-headless.sh: `sed -n '2,91p' \"$0\"`; verify-deploy.sh: `2,68p`; validate-state.sh: `2,107p`; check-consumer-freshness.sh: `2,40p`). Any edit that ADDS lines to such a script's header silently breaks its --help output -- the range then truncates mid-block or leaks post-header code lines -- with no test or gate catching it. Whenever a task adds flag documentation or header prose to one of these scripts, recalculating the sed range must be an explicit, numbered sub-step of the same phase, and a --help assertion belongs in the matching tests/ suite. Grep pattern to find all affected scripts: `grep -rn \"sed -n '2,\" agent-system/extensions/core/scripts/*.sh`.",
-      "category": "PATTERN",
-      "source_artifact": "specs/180_make_consumer_freshness_scan_opt_in/plans/01_consumer-freshness-scan-opt-in.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["help-text", "sed-line-range", "script-header", "deploy-headless", "flag-addition", "silent-breakage"]
-    }
-  ],
-  "next_steps": "Run /implement 180 to execute the plan",
-  "dispatch_seq": 1
+    "session_id": "sess_1788883218_cb46bc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

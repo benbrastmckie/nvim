@@ -1,7 +1,7 @@
 # Implementation Plan: Task #180
 
 - **Task**: 180 - Make the post-deploy consumer-freshness scan opt-in
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report; see "Research Integration" below)
@@ -121,26 +121,34 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Caller audit and cost baseline [NOT STARTED]
+### Phase 1: Caller audit and cost baseline [COMPLETED]
 
 **Goal**: Confirm, before any edit, that no caller depends on the scan running unconditionally,
 and capture the two baselines (output bytes, wall-clock cost) that later phases verify against.
 
 **Tasks**:
-- [ ] Re-run the caller audit: grep for `CONSUMERS_STALE` and `check-consumer-freshness` across
+- [x] Re-run the caller audit: grep for `CONSUMERS_STALE` and `check-consumer-freshness` across
       the repository excluding `.claude/**` and `specs/**`. Record every hit and classify each as
       (a) the scan site itself, (b) prose/documentation, or (c) a genuine programmatic consumer.
-- [ ] Inspect each of the three known automated `deploy-headless.sh` call sites and record what
+      *(completed: only hits outside .claude/**+specs/** are deploy-headless.sh itself (a),
+      check-consumer-freshness.sh + its test file (a, the scanner), and three prose docs
+      (regeneration-is-manual-only.md, utility-scripts-inventory.md, ci-deploy-tree-bootstrap.md)
+      (b). Zero (c) hits.)*
+- [x] Inspect each of the three known automated `deploy-headless.sh` call sites and record what
       each actually parses from the output: `scripts/orchestrate-cycle-plan.sh` (~line 588),
       `scripts/command-gate-out.sh` (~line 176), and `.github/workflows/check-extension-docs.yml`
-      (~line 69).
-- [ ] If any call site IS a genuine consumer, record it here and note that Phase 2 must pass
+      (~line 69). *(completed: all three read only the exit code / RESULT-FINDING vocabulary;
+      none greps for STALE or CONSUMERS_STALE)*
+- [x] If any call site IS a genuine consumer, record it here and note that Phase 2 must pass
       `--consumer-report` at that site rather than change the default.
-- [ ] Capture a byte-exact reference of today's consumer-block output by running
+      *(completed: no genuine consumer found; Scope Hypothesis confirmed, default may change)*
+- [x] Capture a byte-exact reference of today's consumer-block output by running
       `bash agent-system/extensions/core/scripts/check-consumer-freshness.sh --stale-only`
       and saving stdout+stderr to a scratch file outside the repo.
-- [ ] Time that same invocation (`time`, or wrap in `date +%s`) and record the wall-clock cost
+      *(completed: saved to scratchpad phase1_reference_capture.log)*
+- [x] Time that same invocation (`time`, or wrap in `date +%s`) and record the wall-clock cost
       and the row count, so "the checkpoint's cost drops by the scan's share" has a number.
+      *(completed: 35 rows, ~2s wall clock, exit 0)*
 
 **Timing**: 0.5 hours
 
