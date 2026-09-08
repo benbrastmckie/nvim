@@ -2752,7 +2752,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Context-protective lead pattern: orchestrators route and delegate, never read full artifacts",
-      "line_count": 265,
+      "line_count": 271,
       "keywords": [
         "context-budget",
         "lead-agent",

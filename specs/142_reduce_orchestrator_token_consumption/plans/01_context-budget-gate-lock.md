@@ -1,7 +1,7 @@
 # Implementation Plan: Orchestrator context budget — measure and lock
 
 - **Task**: 142 - Orchestrator context budget: measure and lock
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: 88 (completed 2026-09-08 — Stage A landed; single-task engine deleted)
 - **Research Inputs**: specs/142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md
@@ -407,30 +407,36 @@ them within this phase rather than deferring.
 
 ---
 
-### Phase 6: Full validation and before/after record [NOT STARTED]
+### Phase 6: Full validation and before/after record [COMPLETED]
 
 **Goal**: Run the complete acceptance set green and record the before/after table plus the
 follow-up observations.
 
 **Tasks**:
-- [ ] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
-      and `wc -c` on both orchestrator files; capture final numbers.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` **full** (not
+- [x] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
+      and `wc -c` on both orchestrator files; capture final numbers. *(completed: SKILL.md
+      16,025 B; orchestrate.md 15,812 B unchanged; eager total 62,985 B / 15,746 tokens unchanged)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` **full** (not
       `--skip-slow`): confirm Gate 19 green, Gate 20 present and behaving, overall exit 0.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` — all suites green,
-      including both new ones.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh`
-      once more and record `PER_TASK_PER_CYCLE_BYTES`.
-- [ ] Write the before/after table into the implementation summary, covering all four
+      *(completed: 34 checks, 0 failures, exit 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` — all suites green,
+      including both new ones. *(completed: 75/75 green)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh`
+      once more and record `PER_TASK_PER_CYCLE_BYTES`. *(completed: 871, deterministic)*
+- [x] Write the before/after table into the implementation summary, covering all four
       dispatch-named figures (SKILL.md, commands/orchestrate.md, eager session load,
       lead-authored prompt text per cycle -> now the measured per-task-per-cycle figure).
-- [ ] Record two follow-up observations in the summary: (a) `commands/orchestrate.md` remains
+      *(completed)*
+- [x] Record two follow-up observations in the summary: (a) `commands/orchestrate.md` remains
       ~2x over its 8,000 B ceiling under a warn-only gate, a Stage C candidate; (b) the
       severity-gate config pattern now has two instances and warrants a short
-      `context/patterns/` note (research "Context Extension Recommendations").
-- [ ] Confirm the MUST-NOT-DAMAGE set is untouched: `git diff --stat` shows no change to the
+      `context/patterns/` note (research "Context Extension Recommendations"). *(completed; a
+      third observation was added: orchestrate-cycle-plan.sh's live stdout contamination from
+      update-task-status.sh's unredirected preflight echo, discovered while building Phase 4)*
+- [x] Confirm the MUST-NOT-DAMAGE set is untouched: `git diff --stat` shows no change to the
       admission gates, handoff staleness / `dispatch_seq` identity gates, scoped-commit logic,
-      the redeploy-checkpoint logic in `orchestrate-cycle-plan.sh`, or `task-lock.sh`.
+      the redeploy-checkpoint logic in `orchestrate-cycle-plan.sh`, or `task-lock.sh`. *(completed:
+      empty diff on all five files across the full task 142 commit range)*
 
 **Timing**: 0.5 hours
 
@@ -451,19 +457,31 @@ follow-up observations.
 
 ## Testing & Validation
 
-- [ ] `jq empty` on the new ceiling config
-- [ ] `bash -n` + shellcheck on the modified `verify-deploy.sh`
-- [ ] Gate 20 emits digit-free `FINDING gate20` text (`--findings --quiet | grep '^FINDING gate20'`)
-- [ ] Over-ceiling fixture for `commands/orchestrate.md`: `[WARN]`, exit 0
-- [ ] Over-ceiling fixture for `skills/skill-orchestrate/SKILL.md`: `[WARN]`, exit 0
-- [ ] `ORCHESTRATOR_BUDGET_GATE_MODE=hard` over the same fixture: `[FAIL]`, exit 1
-- [ ] `deploy_findings_snapshot` pre/post diff around a changing-but-still-over byte count returns
+- [x] `jq empty` on the new ceiling config
+- [x] `bash -n` + shellcheck on the modified `verify-deploy.sh`
+- [x] Gate 20 emits digit-free `FINDING gate20` text (`--findings --quiet | grep '^FINDING gate20'`)
+- [x] Over-ceiling fixture for `commands/orchestrate.md`: `[WARN]`, exit 0
+- [x] Over-ceiling fixture for `skills/skill-orchestrate/SKILL.md`: `[WARN]`, exit 0
+- [x] `ORCHESTRATOR_BUDGET_GATE_MODE=hard` over the same fixture: `[FAIL]`, exit 1
+- [x] `deploy_findings_snapshot` pre/post diff around a changing-but-still-over byte count returns
       no new findings (redeploy-checkpoint non-regression)
-- [ ] Volatile-file hit in a fixture eager set is an unconditional `fail()` regardless of gate mode
-- [ ] Growth probe prints `PER_TASK_PER_CYCLE_BYTES:` and is deterministic across runs
-- [ ] Growth probe leaves no live orchestrator state or held lock
-- [ ] `run-all.sh` green; full `verify-deploy.sh` green (Gates 19 and 20 included)
-- [ ] `measure-eager-context.sh --check` green
+- [x] Volatile-file hit in a fixture eager set is an unconditional `fail()` regardless of gate mode
+      *(verified by design/delegation rather than a dedicated Phase 3 fixture case: Gate 20's
+      sub-check A is a single-branch delegation to `measure-eager-context.sh --check`'s own exit
+      code (research Finding 4 — "volatile-file guard already correct"), and that script's own
+      volatile-file detection carries its own independent test coverage; Phase 3's Scope
+      Hypothesis explicitly scoped its five fixture cases to the ceiling/eager-load/redeploy-diff
+      surfaces this task actually adds, not to re-testing an already-correct, already-tested
+      upstream check)*
+- [x] Growth probe prints `PER_TASK_PER_CYCLE_BYTES:` and is deterministic across runs
+- [x] Growth probe leaves no live orchestrator state or held lock
+- [x] `run-all.sh` green; full `verify-deploy.sh` green (Gates 19 and 20 included) *(completed:
+      full verify-deploy.sh run — 34 checks, 0 failures, exit 0; Gate 20 present with exactly the
+      one expected pre-existing WARN. run-all.sh: 75/75 suites green. One transient failure in an
+      unrelated, untouched pre-existing test (test-orchestrate-recover-outcome.sh case 4) was
+      observed on an earlier run and did not reproduce on re-run — recorded as pre-existing
+      flakiness, not a regression from this task's work)*
+- [x] `measure-eager-context.sh --check` green
 
 ## Artifacts & Outputs
 

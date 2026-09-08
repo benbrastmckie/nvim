@@ -28,7 +28,7 @@ next_project_number: 188
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-142 [PLANNED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+142 [IMPLEMENTING] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
 150 [PLANNED] — Research on demand: let the planner decide whether a research pha
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
@@ -1481,7 +1481,7 @@ REFERENCE: specs/PATH.md, "Decisions".
 ---
 
 ### 142. Orchestrator context budget: measure and lock
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 88

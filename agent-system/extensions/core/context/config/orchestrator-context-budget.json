@@ -3,9 +3,9 @@
   "files": {
     "skills/skill-orchestrate/SKILL.md": {
       "ceiling_bytes": 20000,
-      "measured_bytes": 15830,
-      "measured_at": "2026-09-07",
-      "derivation": "PATH.md 'Budgets' target ceiling; currently under ceiling (15,830 B measured via wc -c)."
+      "measured_bytes": 16025,
+      "measured_at": "2026-09-08",
+      "derivation": "PATH.md 'Budgets' target ceiling; currently under ceiling (16,025 B measured via wc -c)."
     },
     "commands/orchestrate.md": {
       "ceiling_bytes": 8000,
