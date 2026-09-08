@@ -59,6 +59,14 @@ Use Agent tool with subagent_type: "typst-implementation-agent".
 Follow `@.claude/context/patterns/skill-self-execution-fallback.md` in full. This skill's success
 status value for that block's write obligation is `"implemented"`.
 
+**Self-review before writing metadata**: if this fallback path authors or modifies any `.typ`
+content directly (rather than wholesale re-delegating to another skill/agent), it bypasses
+`typst-implementation-agent`'s own Stage 4C entirely -- so before writing `.return-meta.json`
+with `status: "implemented"`, re-read every `.typ` section this inline path touched, by path,
+against `context/project/typst/standards/semantic-element-usage.md` and answer that standard's
+Self-Review Questions verbatim (see the **MUST NOT (Document Structure)** section below for the
+enforceable items this check protects). `typst compile` succeeding does NOT satisfy this check.
+
 ## Postflight (ALWAYS EXECUTE)
 
 The following stages MUST execute after work is complete, whether the work was done by a
@@ -82,6 +90,26 @@ Keep status as "implementing", report error.
 
 ### Git Commit Failure
 Non-blocking: Log failure but continue.
+
+## MUST NOT (Document Structure)
+
+This list is distinct from the postflight-boundary list below -- it is a content gate, not a
+division-of-labor rule, and it applies specifically to the Stage 5b self-execution fallback path
+(the one path in this skill that can author `.typ` content without ever passing through
+`typst-implementation-agent`'s own Stage 4C verification). See
+`agents/typst-implementation-agent.md`'s Critical Requirements MUST NOT items 7-8 for the
+identical prohibitions enforced on the agent's own authoring path; the two lists are kept in
+correspondence deliberately so neither path is left ungated.
+
+Whenever Stage 5b authors or modifies `.typ` content directly, this skill MUST NOT:
+
+1. Leave a semantic element (`#definition`, `#theorem`, `#lemma`, `#corollary`, `#example`,
+   `#proof`, `#remark`, `#rule-block`, `#rule-list`) standing as the first body content after a
+   chapter or section heading with no intervening prose -- see
+   `context/project/typst/standards/semantic-element-usage.md`'s Universal Placement Rule.
+2. Place a long enumerated status/tracking checklist inside a `#remark` (or any other semantic
+   element) -- that content belongs in a `specs/**` task artifact, an appendix, or a dedicated
+   status section, per `standards/semantic-element-usage.md`'s "Where Tracking Content Belongs".
 
 ## MUST NOT (Postflight Boundary)
 

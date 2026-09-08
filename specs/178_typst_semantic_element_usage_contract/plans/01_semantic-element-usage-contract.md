@@ -285,38 +285,39 @@ positive pattern is visible where chapters are actually drafted.
 
 ---
 
-### Phase 5: Install the Structural Gate in the Agent and Skill [IN PROGRESS]
+### Phase 5: Install the Structural Gate in the Agent and Skill [COMPLETED]
 
 **Goal**: Stop compile-green from being the sole verification. This is the phase the task's
 acceptance actually turns on — the falsified hypothesis is that prose guidance alone changes
 behavior, so this phase must produce an executed step, not another checklist line.
 
 **Tasks**:
-- [ ] In `agents/typst-implementation-agent.md`, extend Stage 4 step **C. Verify Phase
+- [x] In `agents/typst-implementation-agent.md`, extend Stage 4 step **C. Verify Phase
       Completion** (currently only "Compilation must succeed / All specified files must exist")
       with an explicit **Structural self-review** sub-step: before marking the phase verified,
       re-read each `.typ` section authored or modified in this phase against
       `standards/semantic-element-usage.md` and answer that standard's self-review questions,
-      naming the file by path
-- [ ] Word the sub-step as an action with a stated output (confirm each question, name any
-      violation found and the fix applied), not as a passive reminder
-- [ ] Add to the agent's **Critical Requirements** MUST NOT list at minimum: (a) MUST NOT leave a
+      naming the file by path *(completed)*
+- [x] Word the sub-step as an action with a stated output (confirm each question, name any
+      violation found and the fix applied), not as a passive reminder *(completed)*
+- [x] Add to the agent's **Critical Requirements** MUST NOT list at minimum: (a) MUST NOT leave a
       semantic element standing as the first body content after a chapter or section heading with
       no intervening prose; (b) MUST NOT place a long enumerated status/tracking checklist inside
       a `#remark` (or any semantic element) — that content belongs in task artifacts, an appendix,
-      or a dedicated status section
-- [ ] Add to the agent's MUST DO list: perform the Stage 4C structural self-review before marking
-      any phase complete
-- [ ] In `skills/skill-typst-implementation/SKILL.md`, add a new labeled subsection —
+      or a dedicated status section *(completed: items 7-8)*
+- [x] Add to the agent's MUST DO list: perform the Stage 4C structural self-review before marking
+      any phase complete *(completed: item 6)*
+- [x] In `skills/skill-typst-implementation/SKILL.md`, add a new labeled subsection —
       **MUST NOT (Document Structure)**, separate from the existing "MUST NOT (Postflight
       Boundary)" list so the content-gate and division-of-labor concerns are not conflated —
       carrying the same two enforceable items, scoped to the Stage 5b self-execution fallback path
       where the skill authors `.typ` files inline and never passes through the agent's Stage 4C
-- [ ] Have the skill's subsection cross-reference the agent's Critical Requirements section by
+      *(completed)*
+- [x] Have the skill's subsection cross-reference the agent's Critical Requirements section by
       name to limit future drift, while still stating its own enforceable items rather than being
-      a bare pointer
-- [ ] Add a corresponding self-review step to the skill's Stage 5b fallback description so the
-      inline path executes the check, not merely declares it
+      a bare pointer *(completed)*
+- [x] Add a corresponding self-review step to the skill's Stage 5b fallback description so the
+      inline path executes the check, not merely declares it *(completed)*
 
 **Timing**: 1 hour
 

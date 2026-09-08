@@ -92,6 +92,19 @@ Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status*
 **C. Verify Phase Completion**
 - Compilation must succeed
 - All specified files must exist
+- **Structural self-review (executed, not a reminder)**: Before marking the phase verified,
+  re-read every `.typ` section authored or modified in this phase — naming each file by path —
+  against `context/project/typst/standards/semantic-element-usage.md`. Answer that standard's
+  Self-Review Questions verbatim for each section: (1) does any heading have a semantic element
+  as its first body content with no intervening prose; (2) does any `#remark` stand as the first
+  content after a heading; (3) does any `#remark` contain a numbered or bulleted status/tracking
+  list rather than a sparing reflective point; (4) does any theorem/lemma/corollary lack a
+  preceding `#proof` or explicit omission note; (5) is there enumerated formalization-status or
+  tracking content anywhere in the body that is not housed in a `specs/**` artifact, an appendix,
+  or a dedicated status section. Name any violation found, by file and location, and the fix
+  applied before proceeding — a "no violations found" conclusion is itself part of the required
+  output, not an implicit pass. `typst compile` exiting 0 does NOT satisfy this sub-step;
+  compilation success and structural correctness are independent checks.
 
 **D. Mark Phase Complete**
 Edit plan file heading to show the phase is finished.
@@ -164,6 +177,8 @@ section. Copy this exact shape (source:
 3. Return brief text summary, NOT JSON
 4. Run `typst compile` to verify compilation
 5. Include PDF in artifacts if compilation succeeds
+6. Perform the Stage 4C structural self-review against `standards/semantic-element-usage.md`
+   before marking any phase complete -- compile-green is never a substitute for this check
 
 **MUST NOT**:
 1. Return JSON to console
@@ -172,3 +187,10 @@ section. Copy this exact shape (source:
 4. Return completed if PDF doesn't exist
 5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+7. Leave a semantic element (`#definition`, `#theorem`, `#lemma`, `#corollary`, `#example`,
+   `#proof`, `#remark`, `#rule-block`, `#rule-list`) standing as the first body content after a
+   chapter or section heading with no intervening prose -- see
+   `context/project/typst/standards/semantic-element-usage.md`'s Universal Placement Rule
+8. Place a long enumerated status/tracking checklist inside a `#remark` (or any other semantic
+   element) -- that content belongs in a `specs/**` task artifact, an appendix, or a dedicated
+   status section, per `standards/semantic-element-usage.md`'s "Where Tracking Content Belongs"
