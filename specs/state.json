@@ -81,8 +81,14 @@
           "path": "specs/186_fix_deploy_headless_path_in_regeneration_doc/plans/01_fix-deploy-headless-invocation-path.md",
           "type": "plan",
           "summary": "5-phase plan correcting the 12 wrong `bash scripts/deploy-headless.sh` invocation sites across 6 source-store files, adding an exit-127 warning and a regression guard, while preserving ~16 correct-in-context reference occurrences."
+        },
+        {
+          "path": "specs/186_fix_deploy_headless_path_in_regeneration_doc/summaries/01_fix-deploy-headless-invocation-path-summary.md",
+          "type": "summary",
+          "summary": "Corrected 12 wrong `bash scripts/deploy-headless.sh` invocation sites across 6 source-store files (the canonical regeneration doc plus 5 core scripts), added a mechanical regression guard, deployed clean, and confirmed zero regressions against a green 34-check baseline."
         }
-      ]
+      ],
+      "completion_summary": "Corrected the wrong deploy-headless.sh invocation path in regeneration-is-manual-only.md and 5 core scripts (12 defect sites, all under agent-system/extensions/core/), added a regression guard to check-extension-docs.sh, and deployed the fix clean (RESULT=landed_verify_clean, exit 0) with zero gate regressions."
     },
     {
       "project_number": 185,

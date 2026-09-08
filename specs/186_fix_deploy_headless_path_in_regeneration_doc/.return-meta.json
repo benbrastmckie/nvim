@@ -25,15 +25,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/186_fix_deploy_headless_path_in_regeneration_doc/summaries/01_fix-deploy-headless-invocation-path-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["regression-guard", "self-match", "grep-anchor", "check-extension-docs", "false-positive"]
+      "suggested_keywords": [
+        "regression-guard",
+        "self-match",
+        "grep-anchor",
+        "check-extension-docs",
+        "false-positive"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788894448_36ce34",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

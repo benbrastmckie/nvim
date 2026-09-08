@@ -218,6 +218,7 @@ ACCEPTANCE: a recorded decision with rationale; whichever option is chosen is re
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Plan**: [186_fix_deploy_headless_path_in_regeneration_doc/plans/01_fix-deploy-headless-invocation-path.md]
+- **Summary**: [186_fix_deploy_headless_path_in_regeneration_doc/summaries/01_fix-deploy-headless-invocation-path-summary.md]
 
 **Description**: Fix the wrong deploy-headless.sh invocation path documented in regeneration-is-manual-only.md.
 
