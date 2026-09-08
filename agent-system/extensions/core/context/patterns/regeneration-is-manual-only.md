@@ -210,15 +210,18 @@ whole point of wiring verification in -- not a regression introduced here. The s
 response, until the pre-existing failures are fixed, is to inspect the named failure and fix it;
 reverting the inline call is not the sanctioned response merely because it now reports truthfully.
 
-**Additive: a post-deploy consumer-freshness report.** After the verify-deploy call above (on
-BOTH the exit-0 and exit-3 branches — both mean the tree WAS modified), `deploy-headless.sh`
-additionally calls `scripts/check-consumer-freshness.sh --stale-only`, fully guarded (only when
-the deployed checker exists; its own exit code can never propagate into `deploy-headless.sh`'s
-own exit code). This is purely additive output — see the "Tier 3" subsection under
-`## Detecting When You're Stale` below for the full design — and does NOT change the 0/1/2/3
-exit-code contract documented above in any way. Confirmed at RUNTIME (not merely by static
-reading) that this guard holds, via a traced scratch-target deploy against this repo's own real,
-populated consumer registry.
+**Additive and opt-in: a post-deploy consumer-freshness report.** After the verify-deploy call
+above (on BOTH the exit-0 and exit-3 branches — both mean the tree WAS modified),
+`deploy-headless.sh` additionally calls `scripts/check-consumer-freshness.sh --stale-only`, but
+ONLY when `--consumer-report` is passed explicitly — default OFF. When run, it is fully guarded
+(only when the deployed checker exists; its own exit code can never propagate into
+`deploy-headless.sh`'s own exit code). This is purely additive output — see the "Tier 3"
+subsection under `## Detecting When You're Stale` below for the full design — and does NOT
+change the 0/1/2/3 exit-code contract documented above in any way. Confirmed at RUNTIME (not
+merely by static reading) that this guard holds, via a traced scratch-target deploy against this
+repo's own real, populated consumer registry. The walk was moved off the blocking `/orchestrate`
+inter-cycle redeploy checkpoint path because it is report-only and no caller reads its output —
+absent `--consumer-report` the checkpoint pays none of the walk's wall-clock cost.
 
 **The `RESULT=`/`CONSUMERS_STALE=` marker vocabulary — the caller-facing contract for three
 outcomes that are NOT the same thing.** `deploy-headless.sh` emits exactly one
@@ -234,10 +237,12 @@ without parsing prose or re-deriving it from the exit code alone:
   layer up.
 
 Separately, `[deploy-headless] CONSUMERS_STALE=<n>` reports the count of stale/cannot-verify rows
-from the consumer-freshness check above — the third confound named in this task's own dispatch
-(deploy did not land / deploy landed with a red gate / OTHER, already-known consumer repos are
-behind). This marker is report-only, by construction can never influence `RESULT=` or the exit
-code (see the confirmed-at-runtime guard immediately above), and exists purely so a caller does
+from the consumer-freshness check above — the third confound (deploy did not land / deploy
+landed with a red gate / OTHER, already-known consumer repos are behind). This marker is
+opt-in: it is emitted ONLY when `--consumer-report` is passed (and, as before, only when the
+deployed checker exists) — absent that flag, the line is never printed at all. When emitted, it
+is report-only, by construction can never influence `RESULT=` or the exit code (see the
+confirmed-at-runtime guard immediately above), and exists purely so a caller that opts in does
 not have to count non-empty report lines by hand.
 
 **`line_count` is now derived at deploy time, never hand-edited.** Before the nvim deploy
@@ -372,11 +377,15 @@ routinely -- manual/occasional only, and never called from `deploy-headless.sh`.
 
 **The post-deploy hook.** `deploy-headless.sh`'s trailing verification block (see
 `### deploy-headless.sh's Inline Verification and Exit Code 3` above) additionally calls
-`check-consumer-freshness.sh --stale-only` after every non-dry-run deploy, on both the exit-0 and
-exit-3 branches, fully guarded so its own outcome can never affect `deploy-headless.sh`'s exit
-code. A deploy in this repo therefore ends by naming which known consumers are now stale relative
-to what was just deployed -- entirely additive output, changing nothing about the 0/1/2/3
-contract.
+`check-consumer-freshness.sh --stale-only`, but ONLY when `--consumer-report` is passed
+explicitly (default OFF) -- on both the exit-0 and exit-3 branches when it does run, fully
+guarded so its own outcome can never affect `deploy-headless.sh`'s exit code. A deploy in this
+repo with `--consumer-report` ends by naming which known consumers are now stale relative to
+what was just deployed -- entirely additive output, changing nothing about the 0/1/2/3 contract.
+Absent that flag (the default), the walk does not run at all, which is deliberate: it is
+report-only and no automated caller reads its output, so it was moved off the blocking
+`/orchestrate` inter-cycle redeploy checkpoint path to remove its wall-clock cost from that
+critical path.
 
 **The tier-1 consecutive-ignore escalation.** A per-repo tier-1 WARN nobody acts on is not
 functioning as a warning. `check-deploy-freshness.sh` now tracks a consecutive-invocation streak

@@ -384,33 +384,44 @@ uncommitted `.claude/` state worth preserving (it is gitignored and regenerable 
 
 ---
 
-### Phase 5: Documentation updates [NOT STARTED]
+### Phase 5: Documentation updates [COMPLETED]
 
 **Goal**: Update every prose site that currently asserts the scan runs unconditionally after
 every deploy, so no future reader is misled about the new default.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, the
+- [x] `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, the
       "**Additive: a post-deploy consumer-freshness report.**" paragraph (~line 213): state that
       the call is now gated behind `deploy-headless.sh --consumer-report`, default OFF, and that
       it was moved off the blocking checkpoint path because it is report-only. Keep the
-      exit-code-neutrality claim and the runtime-confirmation note intact.
-- [ ] Same file, the "**The `RESULT=`/`CONSUMERS_STALE=` marker vocabulary**" section (~line 236):
+      exit-code-neutrality claim and the runtime-confirmation note intact. *(completed)*
+- [x] Same file, the "**The `RESULT=`/`CONSUMERS_STALE=` marker vocabulary**" section (~line 236):
       correct the `CONSUMERS_STALE=<n>` description to say it is emitted only under
-      `--consumer-report`.
-- [ ] Same file, the "**The post-deploy hook.**" paragraph (~line 373) under the Tier 3
+      `--consumer-report`. *(completed)*
+- [x] Same file, the "**The post-deploy hook.**" paragraph (~line 373) under the Tier 3
       subsection: replace "after every non-dry-run deploy" with the opt-in condition.
-- [ ] `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` (~line 23):
+      *(completed)*
+- [x] `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` (~line 23):
       update the `check-consumer-freshness.sh` entry, which currently says it is "guarded
       (`--stale-only || true`) from `deploy-headless.sh`'s trailing block after every deploy".
-- [ ] `agent-system/extensions/core/context/patterns/ci-deploy-tree-bootstrap.md` (~line 71):
+      *(completed)*
+- [x] `agent-system/extensions/core/context/patterns/ci-deploy-tree-bootstrap.md` (~line 71):
       re-read the `check-consumer-freshness.sh` bullet; it already describes the script as "an
       opt-in whole-fleet audit", so update only if it now understates the deploy-side gating.
-- [ ] Grep the source store once more for any remaining prose asserting the scan is
-      unconditional, and fix or explicitly leave-as-correct each hit.
-- [ ] Confirm no task-number references were introduced into any file outside `specs/**`
+      *(completed: re-read; the bullet describes the script's own explicit-invocation contract,
+      never mentions deploy-headless.sh's unconditional call, so it does not understate the new
+      gating — left unchanged, consciously judged still-accurate)*
+- [x] Grep the source store once more for any remaining prose asserting the scan is
+      unconditional, and fix or explicitly leave-as-correct each hit. *(completed: grepped for
+      "after every deploy"/"after every non-dry-run deploy"/"unconditionally"/"always printed"
+      near consumer/CONSUMERS_STALE hits and for check-consumer-freshness/CONSUMERS_STALE across
+      agent-system/extensions/; every remaining hit is either the code itself, a test file, an
+      already-updated doc, or an unrelated context — manifest.json's file listing and
+      known-consumer-repos.json's `_comment` — neither of which claims unconditional execution)*
+- [x] Confirm no task-number references were introduced into any file outside `specs/**`
       (see `rules/no-task-references-in-deliverables.md`) — cite the flag name and file names,
-      never a task number.
+      never a task number. *(completed: grep for task-number patterns in the two edited doc
+      files returned none)*
 
 **Timing**: 0.5 hours
 

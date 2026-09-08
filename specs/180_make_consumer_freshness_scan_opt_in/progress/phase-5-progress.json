@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Documentation updates",
+  "started_at": "2026-09-08T01:00:00Z",
+  "last_updated": "2026-09-08T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update regeneration-is-manual-only.md Additive paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "Update regeneration-is-manual-only.md marker vocabulary section", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 3, "description": "Update regeneration-is-manual-only.md post-deploy hook paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 4, "description": "Update utility-scripts-inventory.md check-consumer-freshness.sh entry", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 5, "description": "Re-read ci-deploy-tree-bootstrap.md bullet; update only if understating", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Final grep for remaining unconditional prose claims", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm no task-number references introduced", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "ci-deploy-tree-bootstrap.md's check-consumer-freshness.sh bullet describes the script's own explicit-invocation contract and never mentioned deploy-headless.sh's call at all, so it did not understate the new gating -- left unchanged, consciously judged still-accurate per the plan's own conditional instruction. Final repo-wide grep for check-consumer-freshness/CONSUMERS_STALE across agent-system/extensions/ found no remaining unconditional claims outside the code itself, test files, and the two already-updated docs."
+}
