@@ -185,45 +185,56 @@ planning time; re-derive it rather than assuming.
 
 ---
 
-### Phase 2: Write the failing regression suite [NOT STARTED]
+### Phase 2: Write the failing regression suite [COMPLETED]
 
 **Goal**: Create `scripts/tests/test-generate-task-order.sh` asserting all four guarantees, and
 demonstrate that it FAILS against the pre-fix script. Written before the fix so it cannot be
 retrofitted to whatever the fix happens to produce.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-generate-task-order.sh` following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-generate-task-order.sh` following
       the directory's conventions: `set -uo pipefail`, `pass()`/`fail()`/`info()` helpers,
       integer `PASSED`/`FAILED` counters, `mktemp -d` workdir with a `trap ... EXIT` cleanup,
-      exit 0 all-pass / 1 any-fail / 2 environment error
-- [ ] Build the scratch-repo harness modeled on `test-errors-append.sh`: create
+      exit 0 all-pass / 1 any-fail / 2 environment error *(completed)*
+- [x] Build the scratch-repo harness modeled on `test-errors-append.sh`: create
       `<scratch>/.claude/scripts/` and copy in `generate-task-order.sh`, `deploy-root-guard.sh`,
       and `lib/common.sh`, so the guard's `*/.claude` case matches and `PROJECT_ROOT` resolves
-      to the scratch root
-- [ ] Resolve `generate-task-order.sh` **source-store-first** with a deployed-tree fallback —
+      to the scratch root *(completed)*
+- [x] Resolve `generate-task-order.sh` **source-store-first** with a deployed-tree fallback —
       the deliberate inversion documented in `test-postflight-deploy-gate.sh` — so the suite
       goes green on the source edit rather than waiting for a deploy. Resolve the two unchanged
-      dependencies deploy-first, as every other suite does
-- [ ] Drive the script through `--update-todo <scratch-todo> <scratch-state>` against synthetic
+      dependencies deploy-first, as every other suite does *(completed)*
+- [x] Drive the script through `--update-todo <scratch-todo> <scratch-state>` against synthetic
       fixture `state.json` files; never read the live `specs/state.json` or `specs/TODO.md`
-- [ ] Case group 1 (markdown safety): a fixture description placing a backtick **exactly at the
+      *(completed: an end-of-run sha256 checksum guard on the real specs/TODO.md and
+      specs/state.json confirms isolation)*
+- [x] Case group 1 (markdown safety): a fixture description placing a backtick **exactly at the
       cut boundary** so the pre-fix slice orphans it, asserting an even backtick count on the
       emitted line. Add a companion case for an unbalanced `*` and one for an unclosed `[`
-- [ ] Case group 2 (title preference): one fixture task with both `.title` and `.description`,
+      *(completed)*
+- [x] Case group 2 (title preference): one fixture task with both `.title` and `.description`,
       asserting the emitted line derives from the title; one with `.description` only,
       asserting it still renders and is not degraded; one with neither, asserting the
-      `.project_name` fallback still applies
-- [ ] Case group 3 (budget and word boundary): a fixture whose source string exceeds the budget,
+      `.project_name` fallback still applies *(completed)*
+- [x] Case group 3 (budget and word boundary): a fixture whose source string exceeds the budget,
       asserting the line does not exceed it, ends at a word boundary, and carries the truncation
       marker; plus a short fixture asserting an untruncated line carries **no** marker
-- [ ] Case group 4 (second slice site): a fixture producing a genuine cross-topic
+      *(completed)*
+- [x] Case group 4 (second slice site): a fixture producing a genuine cross-topic
       "(see above)" annotation — two topics with a cross-topic dependency edge — asserting the
-      same balance, boundary, and marker guarantees on that shorter form
-- [ ] Add an anti-vacuity guard per `context/standards/shell-script-testing.md`: for the
+      same balance, boundary, and marker guarantees on that shorter form *(completed: two
+      fixtures, one where the primary slice is under budget and the 40-char cut alone
+      truncates, one where the primary slice is already truncated+marked and the second cut
+      must not double the marker)*
+- [x] Add an anti-vacuity guard per `context/standards/shell-script-testing.md`: for the
       adversarial cases, assert both the naive/wrong result and the correct one on the same
       fixture, so a fixture both approaches would get right never counts as coverage
-- [ ] Run the suite against the unmodified script and record the failures; at minimum case
-      groups 1, 2 and 3 must fail
+      *(completed: case group 1's three fixtures each assert the naive 65-char slice IS
+      unbalanced before asserting the actual rendered line is balanced)*
+- [x] Run the suite against the unmodified script and record the failures; at minimum case
+      groups 1, 2 and 3 must fail *(completed: 6 of 16 assertions failed pre-fix, spanning case
+      groups 1 (1a/1b/1c), 2 (2a), 3 (3a), and 4 (4a's marker assertion) -- recorded verbatim in
+      specs/157_markdown_safe_todo_summary_truncation/pre-fix-test-run.log)*
 
 **Timing**: 1.5 hours
 

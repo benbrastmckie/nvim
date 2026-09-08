@@ -1,0 +1,52 @@
+{
+  "phase": 2,
+  "phase_name": "Write the failing regression suite",
+  "started_at": "2026-09-08T00:20:00Z",
+  "last_updated": "2026-09-08T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-generate-task-order.sh scaffolding, harness, resolution order",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Case group 1: markdown safety (backtick/asterisk/bracket at cut boundary)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Case group 2: title preference",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Case group 3: budget and word boundary",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Case group 4: second slice site (cross-topic see-above)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Anti-vacuity guards; run against pre-fix script and record failures",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+        "specs/157_markdown_safe_todo_summary_truncation/pre-fix-test-run.log"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,0 +1,21 @@
+[INFO] Under test (source-store-first): /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-task-order.sh
+[INFO] Dependency (deploy-first): /home/benjamin/.config/nvim/.claude/scripts/deploy-root-guard.sh
+[INFO] Dependency (deploy-first): /home/benjamin/.config/nvim/.claude/scripts/lib/common.sh
+[PASS] 1a-fixture-adversarial: naive 65-char slice has an odd backtick count (1), confirming the fixture is adversarial
+[FAIL] 1a-actual: rendered line has an ODD backtick count (1) -- unsafe: 901 [NOT STARTED] — xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+[PASS] 1b-fixture-adversarial: naive 65-char slice has an odd asterisk count (1), confirming the fixture is adversarial
+[FAIL] 1b-actual: rendered line has an ODD asterisk count (1) -- unsafe: 902 [NOT STARTED] — xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*
+[PASS] 1c-fixture-adversarial: naive 65-char slice contains an unclosed '[' with no matching ']', confirming the fixture is adversarial
+[FAIL] 1c-actual: rendered line still carries an open bracket -- unsafe: 903 [NOT STARTED] — xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx[
+[FAIL] 2a-actual: line did not prefer .title over .description: 904 [NOT STARTED] — A deliberately unrelated and much longer description that would o
+[PASS] 2b-actual: title-less fixture still renders from .description: 905 [NOT STARTED] — A perfectly ordinary description with no title present on this fi
+[PASS] 2c-actual: line falls back to .project_name when neither .title nor .description exist: 906 [NOT STARTED] — fixture-project-906
+[FAIL] 3a-actual: over-budget source was not marked as truncated: 907 [NOT STARTED] — alpha bravo charlie delta echo foxtrot golf hotel india juliett k
+[PASS] 3b-actual: under-budget line is untouched and carries no marker: 908 [NOT STARTED] — a short fixture description
+[PASS] 4a-actual: cross-topic short_desc respects the 40-char budget:   └─ 909 [NOT STARTED] — (Alpha: a moderately long cross topic descriptio) (see above)
+[FAIL] 4a-actual: expected the primary description to be truncated by the 40-char secondary cut, but no marker present:   └─ 909 [NOT STARTED] — (Alpha: a moderately long cross topic descriptio) (see above)
+[PASS] 4b-actual: cross-topic short_desc carries at most one truncation marker (0 occurrence(s))
+[PASS] 4b-actual: cross-topic short_desc respects the 40-char budget even though the primary slice already truncated it:   └─ 911 [NOT STARTED] — (Alpha: alpha bravo charlie delta echo foxtrot g) (see above)
+[PASS] isolation: real specs/TODO.md and specs/state.json are unchanged after the full run
+
+Results: 10 passed, 6 failed
