@@ -1626,6 +1626,102 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 16: entry-point fd-3 emit discipline (the structural remedy, distinct from Group 15's
+# ingest-direction net). skill_preflight_update's underlying `update-task-status.sh preflight`
+# call is invoked directly -- NOT through run_capture_stdout, since its own stdout was never a
+# JSON/NDJSON payload this script parses -- and after this phase's `exec 3>&1 1>&2` entry-point
+# redirect it carries no per-call-site `>&2` guard of its own any more (the prior stopgap was
+# removed as redundant). Before that redirect existed, this exact call site was a real source of
+# stdout contamination this phase fixes structurally. This stub reproduces that contamination --
+# with NO `>&2` of its own, exactly like the pre-fix real script -- and asserts the entry-point
+# redirect alone still keeps the emitted plan JSON pure.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 16: entry-point fd-3 redirect keeps plan JSON pure against an uncaptured, chatty collaborator"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+#!/usr/bin/env bash
+proj_num="$1"; phase="$2"
+jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh" <<'EOF'
+#!/usr/bin/env bash
+for a in "$@"; do
+  case "$a" in
+    mt) continue ;;
+    *) jq -n -c --argjson t "$a" '{task_number: $t, group: "plan", reason: "fixture"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
+#!/usr/bin/env bash
+for a in "$@"; do
+  case "$a" in
+    --*) prev="$a"; continue ;;
+    *) if [ "${prev:-}" = "--invocation-count" ] || [ "${prev:-}" = "--session-id" ] || [ "${prev:-}" = "--phase-map" ]; then prev=""; continue; fi
+       jq -n -c --argjson t "$a" '{task_number: $t, decision: "admit", reason: "fixture"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+# Reproduces the historical stdout contamination this phase fixes structurally: deliberately no
+# `>&2` guard here, matching the real script's own confirmation echo before the fix landed (and
+# before the per-call-site `>&2` stopgap that has since been removed as redundant).
+echo "OK: candidate #$2 state.json already at '$3' (no-op); plan/phase updates re-applied"
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1601, "project_name": "g16_chatty_preflight", "task_type": "general", "status": "not_started", "description": "uncaptured collaborator writes chatty prose to stdout; entry-point redirect must still keep plan JSON pure", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g16_sess -- 1601
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 16: SUT exits 0 despite the chatty, uncaptured collaborator"
+else
+  fail "Group 16: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  pass "Group 16: stdout parses as a single JSON object"
+else
+  fail "Group 16: stdout is not parseable JSON -- '$LAST_STDOUT'"
+fi
+
+g16_lines=$(printf '%s\n' "$LAST_STDOUT" | grep -c . || true)
+if [ "$g16_lines" -eq 1 ]; then
+  pass "Group 16: stdout is exactly one line (no prose preamble)"
+else
+  fail "Group 16: expected exactly 1 stdout line, got $g16_lines: '$LAST_STDOUT'"
+fi
+
+g16_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
+if [ "$g16_dispatch_file" = "/fake/1601-plan.md" ]; then
+  pass "Group 16: .dispatch[0] intact and correctly parsed"
+else
+  fail "Group 16: expected /fake/1601-plan.md, got '$g16_dispatch_file'"
+fi
+
+if echo "$LAST_STDERR" | grep -qF "OK: candidate #1601 state.json already at 'plan'"; then
+  pass "Group 16: the chatty collaborator's prose landed on stderr, not the data channel"
+else
+  fail "Group 16: expected the collaborator's prose on stderr; got: '$LAST_STDERR'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

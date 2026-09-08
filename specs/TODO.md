@@ -42,7 +42,7 @@ next_project_number: 190
 186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
-189 [PLANNED] — Fix three channel-confusion defects in the orchestrate cycle-plan
+189 [IMPLEMENTING] — Fix three channel-confusion defects in the orchestrate cycle-plan
 
 ### Extensions
 
@@ -84,7 +84,7 @@ next_project_number: 190
 ## Tasks
 
 ### 189. Fix three channel-confusion defects in the orchestrate cycle-plan pipeline
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 150

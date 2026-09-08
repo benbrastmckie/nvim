@@ -64,16 +64,30 @@
 #   - SUFFIXED `${session_id}_${task_num}`: skill_preflight_update's session_id argument, and the
 #     RESEARCH/PLAN dispatches' --session/context.session_id.
 #
+# Output contract (emit direction — STRUCTURAL, not per-call-site): immediately after sourcing
+# common.sh, this script runs `exec 3>&1 1>&2`, dup'ing the process's original stdout to fd 3 and
+# repointing fd 1 (plain, unredirected stdout) at the original stderr for the rest of the
+# process's life. The single-line plan JSON is the ONLY thing ever written to fd 3 (in
+# emit_and_exit(), both dry-run and live), and every other write in this file — diagnostics,
+# the --dry-run human table, any collaborator's uncaptured output — lands on fd 1/2, i.e.
+# stderr, by construction. This means no per-call-site `>&2` bookkeeping is needed anywhere else
+# in the file: a future addition that forgets to redirect still cannot reach the data channel.
+# (Prior to this, individual call sites — e.g. skill_preflight_update — carried their own `>&2`;
+# that per-site stopgap is now redundant and has been removed in favor of this entry-point
+# redirect.) This governs only what the script EMITS; `run_capture_stdout` above governs what it
+# INGESTS from its own collaborators and is a separate, complementary mechanism.
+#
 # --dry-run design (absorbs the retired orchestrate-dry-run-report.sh — see that script's own
 # retirement in this task): runs the IDENTICAL read-only decision pass (admission, classification,
 # forced phases, a read-only lock PROBE via `task-lock.sh check` — never `acquire`) and prints the
 # SAME plan JSON the live path would emit, with dispatch_file/model forced to null on every
-# dispatch row (nothing was actually built), on stdout — plus a compact human table on STDERR,
+# dispatch row (nothing was actually built), on fd 3 — plus a compact human table on STDERR,
 # rendered by reading back that SAME already-printed JSON object and nothing else (no second
-# computation, no independent formatting of any decision). stdout stays pure, single-line JSON in
+# computation, no independent formatting of any decision). fd 3 stays pure, single-line JSON in
 # BOTH modes, so a machine caller never needs to distinguish dry-run from live output shape; the
 # table exists purely for a human running `/orchestrate --dry-run` at a terminal, where stderr
-# renders inline with stdout. Table sections, in order: `-- Dispatch --` (task, phase, agent),
+# renders inline with stdout (fd 1, which after the entry-point redirect IS stderr). Table
+# sections, in order: `-- Dispatch --` (task, phase, agent),
 # `-- Deferred --` (task, reason), `-- Blocked --` (task, reason), `-- Stop --` (reason: message,
 # or a none-line). Mutates nothing: no mt_state_file write, no directory creation, no lock
 # acquire, no dispatch_seq mint, no preflight status write, no orchestrate-build-dispatch.sh call,
@@ -142,7 +156,10 @@
 # every `/orchestrate` invocation, matching single-task's own "reset each invocation" caps) are
 # live-only side effects.
 #
-# Output: a single line of compact JSON on stdout:
+# Output: a single line of compact JSON on the process's ORIGINAL stdout — fd 3 from this
+# script's own perspective after its entry-point `exec 3>&1 1>&2`; a caller invoking this script
+# normally (without itself touching fd 3) observes it as plain stdout, unchanged from the
+# caller's point of view:
 #   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force}],
 #    aux_dispatch: [{task, kind, agent, model, dispatch_file, orchestrator_mode: false}],
 #    deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}
@@ -167,6 +184,20 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+
+# ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
+# fd 3 is THE data channel for the rest of this script's life: it is dup'd from the original
+# stdout once, here, at entry, and every subsequent stdout write (fd 1) — ours or any callee we
+# invoke without an explicit capture — lands on the original stderr instead. This replaces the
+# earlier per-call-site `>&2` stopgap (see the removed redirect on the skill_preflight_update
+# call below) with a structural guarantee: no future addition anywhere in this file, and no
+# uncaptured callee output, can leak into the plan-JSON payload, because there is no longer a
+# plain stdout for it to leak into. The sole intentional write to fd 3 is the plan-JSON emit in
+# emit_and_exit(). Command substitution ($(...)) is unaffected — it privately rebinds fd 1 inside
+# its own subshell, so every existing `x=$(...)` capture in this script keeps working exactly as
+# before this redirect. Note this governs only what this script EMITS; run_capture_stdout below
+# governs what it INGESTS from its own collaborators, and is a separate, complementary mechanism.
+exec 3>&1 1>&2
 
 # ── Stream-discipline helper ────────────────────────────────────────────────────────────────────
 # Every orchestrate-* helper this script shells out to contracts stdout for its JSON/NDJSON payload
@@ -518,7 +549,7 @@ emit_and_exit() {
     --argjson aux_dispatch "$aux_dispatch_json" \
     --argjson deferred "$deferred_json" --argjson blocked "$blocked_json" --argjson stop "$stop_json" \
     '{cycle: $cycle, dispatch: $dispatch, aux_dispatch: $aux_dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}')
-  printf '%s\n' "$plan_json"
+  printf '%s\n' "$plan_json" >&3
   # --dry-run human table (STDERR only — stdout stays pure, single-line JSON in both modes, per
   # this script's own Output contract). Rendered by reading back plan_json ALONE: no second
   # computation, no independent formatting of any decision (Phase 6's mandate) — every line below
@@ -1588,9 +1619,10 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   dispatch_session="${session_id}_${t}"
   [ "$g" = "implement" ] && dispatch_session="$session_id"
 
-  # (j) Preflight status write. update-task-status.sh confirms on stdout, which this script
-  # reserves for the plan JSON alone -- route the helper's chatter to the diagnostic stream.
-  skill_preflight_update "$t" "$g" "$dispatch_session" >&2
+  # (j) Preflight status write. update-task-status.sh confirms on stdout; the entry-point
+  # `exec 3>&1 1>&2` redirect above already routes fd 1 (this call's stdout) to the diagnostic
+  # stream structurally, so no per-call-site `>&2` is needed here any more.
+  skill_preflight_update "$t" "$g" "$dispatch_session"
 
   # (l) orchestrate-build-dispatch.sh — Stage 3.5 Dispatch Prep's sole implementation.
   build_args=(--session "$dispatch_session" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")

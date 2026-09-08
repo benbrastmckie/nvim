@@ -1,7 +1,7 @@
 # Implementation Plan: Fix three channel-confusion defects in the orchestrate cycle-plan pipeline
 
 - **Task**: 189 - Fix three channel-confusion defects in the orchestrate cycle-plan pipeline
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 150 (research-on-demand rewrite of orchestrate-cycle-plan.sh /
   orchestrate-predispatch-review.sh; must be landed and deployed first)
@@ -132,34 +132,34 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Structural fd-3 JSON channel in orchestrate-cycle-plan.sh [NOT STARTED]
+### Phase 1: Structural fd-3 JSON channel in orchestrate-cycle-plan.sh [COMPLETED]
 
 **Goal**: stdout becomes the JSON channel structurally, not per call site. No future callee can
 contaminate the plan JSON.
 
 **Tasks**:
-- [ ] Re-read the two landed commits (`git show 1c44c8a33`, `git show 6bca9f194`) so nothing they
-      already fixed is re-derived or undone.
-- [ ] Audit every stdout write in `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`:
+- [x] Re-read the two landed commits (`git show 1c44c8a33`, `git show 6bca9f194`) so nothing they
+      already fixed is re-derived or undone. *(completed)*
+- [x] Audit every stdout write in `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`:
       list each `echo`/`printf`/heredoc that is neither `>&2`-redirected nor inside a `$(...)`
-      capture, and confirm the emit at `:521` is the only intentional one.
-- [ ] Immediately after `set -euo pipefail` and the `SCRIPT_DIR`/`common.sh` prologue, add
+      capture, and confirm the emit at `:521` is the only intentional one. *(completed)*
+- [x] Immediately after `set -euo pipefail` and the `SCRIPT_DIR`/`common.sh` prologue, add
       `exec 3>&1 1>&2` with a comment stating the contract: fd 3 is the data channel, fd 1/2 are
-      both diagnostics, and no per-call-site redirection is needed any more.
-- [ ] Change the plan-JSON emit in `emit_and_exit()` (`:521`) to `printf '%s\n' "$plan_json" >&3`.
-- [ ] Remove the now-redundant `>&2` on the `skill_preflight_update` call (`:1593`) and update its
+      both diagnostics, and no per-call-site redirection is needed any more. *(completed)*
+- [x] Change the plan-JSON emit in `emit_and_exit()` (`:521`) to `printf '%s\n' "$plan_json" >&3`. *(completed)*
+- [x] Remove the now-redundant `>&2` on the `skill_preflight_update` call (`:1593`) and update its
       preceding comment to point at the entry-point redirect instead of the call site. Leave
       `run_capture_stdout` and all four of its call sites untouched — they govern the opposite
-      (ingest) direction.
-- [ ] Update the script's header Output-contract comment to state the fd-3 discipline.
-- [ ] Do NOT touch the redeploy-checkpoint block (~`:578-760`). Confirm by diff that it is
-      unmodified; every write in it is already `>&2` and needs no change.
-- [ ] Add Group 16 to `scripts/tests/test-orchestrate-cycle-plan.sh`: a collaborator stub and a
+      (ingest) direction. *(completed)*
+- [x] Update the script's header Output-contract comment to state the fd-3 discipline. *(completed)*
+- [x] Do NOT touch the redeploy-checkpoint block (~`:578-760`). Confirm by diff that it is
+      unmodified; every write in it is already `>&2` and needs no change. *(completed)*
+- [x] Add Group 16 to `scripts/tests/test-orchestrate-cycle-plan.sh`: a collaborator stub and a
       stubbed `skill_preflight_update` that both write chatty prose to **stdout** (not stderr);
       assert the SUT's stdout still parses as a single JSON object, that `.dispatch[0]` is intact,
-      and that the prose appears on stderr.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` and
-      confirm Groups 1-15 stay green alongside the new Group 16.
+      and that the prose appears on stderr. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` and
+      confirm Groups 1-15 stay green alongside the new Group 16. *(completed)*
 
 **Timing**: 1.5 hours
 
