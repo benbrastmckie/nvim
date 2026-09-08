@@ -1,0 +1,30 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/181_unify_redeploy_checkpoint_gate_depth/plans/01_unify-redeploy-checkpoint-gate.md",
+      "summary": "Five-phase plan unifying the /orchestrate inter-cycle redeploy checkpoint: confirmation + attribution filters so flaky or unrelated findings cannot defer a batch, explicit fast/full depth-disagreement reporting, and finding-naming defer messages."
+    }
+  ],
+  "next_steps": "Run /implement 181 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1788883218_cb46bc_181",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6,
+    "dependency_waves": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "A verification gate can self-inflict the failure it reports. The /orchestrate inter-cycle redeploy checkpoint ran a full deploy plus the entire shell test suite immediately before taking the findings snapshot it then judged, creating the memory pressure that made a load-sensitive test in that same suite flake -- and deferred an entire task batch over a finding attributable to no task in the batch. The structural lesson: whenever a gate performs heavy work immediately before a measurement, treat any load-sensitive signal in that measurement as unreliable by construction. Two composable filters fix this class without weakening the gate: (1) a confirmation filter -- re-run a candidate blocking finding once and drop it if it does not reproduce, which cannot weaken the gate because a real breakage reproduces; (2) an attribution filter -- drop findings positively shown unrelated to the batch's own modified files. Filter (2) must be fail-safe toward blocking: only findings that POSITIVELY name an identifier absent from the change set are dropped, so a finding naming nothing still blocks. Without that direction the filter degrades into a blanket disable.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/181_unify_redeploy_checkpoint_gate_depth/plans/01_unify-redeploy-checkpoint-gate.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["verification-gate", "flaky-test", "self-inflicted-load", "fail-safe-filter", "batch-deferral", "redeploy-checkpoint"]
+    }
+  ],
+  "dispatch_seq": 4
+}

@@ -35,7 +35,7 @@ next_project_number: 190
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
   └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
-181 [NOT STARTED] — Fix three related defects in the /orchestrate inter-cycle redeplo
+181 [PLANNED] — Fix three related defects in the /orchestrate inter-cycle redeplo
   └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
@@ -284,10 +284,11 @@ DEPENDENCY. Depends on the gate-depth task both by file footprint (both modify o
 
 ### 181. Unify redeploy-checkpoint gate depth and make its defer verdict trustworthy and actionable
 - **Effort**: 3-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 180
+- **Plan**: [181_unify_redeploy_checkpoint_gate_depth/plans/01_unify-redeploy-checkpoint-gate.md]
 
 **Description**: Fix three related defects in the /orchestrate inter-cycle redeploy checkpoint that together produced a contradictory, unactionable deferral of an entire batch.
 
