@@ -1,7 +1,7 @@
 # Implementation Plan: Task #181
 
 - **Task**: 181 - Unify the /orchestrate inter-cycle redeploy checkpoint gate depth and verdict trustworthiness
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: consumer-scan opt-in task (shared `deploy-headless.sh` footprint; removes latency this plan's confirmation re-run would otherwise compound)
 - **Research Inputs**: None (no research report; the task description carried verified mechanics and in-session evidence, and the four target files were read directly during planning)

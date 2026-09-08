@@ -11,8 +11,8 @@ next_project_number: 190
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,181,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175,182 | 29,74,139,162,172,181 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,171,172,176,177,182,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -35,8 +35,7 @@ next_project_number: 190
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
   └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
-181 [IMPLEMENTING] — Fix three related defects in the /orchestrate inter-cycle redeplo
-  └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
+182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
@@ -114,9 +113,6 @@ SEQUENCING: (i) these edits touch orchestrate-cycle-plan.sh and orchestrate-pred
 
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
----
-
-
 --- ADDENDUM 2026-09-08 (partial fix already landed; scope changed) ---
 
 PART OF THIS TASK IS ALREADY FIXED IN THE SOURCE STORE. Two commits landed on
@@ -184,6 +180,8 @@ shape, i.e. the more dangerous half. That is a strong argument for lint-json-cha
 under scripts/lint/, following the nine existing lint-*.sh and wired into verify-deploy.sh like
 its siblings, so this class cannot regress unnoticed. Filed here rather than as a separate task to
 avoid a duplicate; split it out if the planner judges it separable.
+
+---
 
 ### 188. Predispatch review archived dependency false positive
 - **Status**: [NOT STARTED]
@@ -353,11 +351,12 @@ DEPENDENCY. Depends on the gate-depth task both by file footprint (both modify o
 
 ### 181. Unify redeploy-checkpoint gate depth and make its defer verdict trustworthy and actionable
 - **Effort**: 3-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 180
 - **Plan**: [181_unify_redeploy_checkpoint_gate_depth/plans/01_unify-redeploy-checkpoint-gate.md]
+- **Summary**: [181_unify_redeploy_checkpoint_gate_depth/summaries/01_unify-redeploy-checkpoint-gate-summary.md]
 
 **Description**: Fix three related defects in the /orchestrate inter-cycle redeploy checkpoint that together produced a contradictory, unactionable deferral of an entire batch.
 
