@@ -1,7 +1,7 @@
 # Implementation Plan: Fix literature online-ingest dedup hang
 
 - **Task**: 171 - Fix the literature online-ingest hang caused by an O(n) per-title subprocess loop
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: None (planned directly from the task specification plus first-hand reads of the target scripts; see Overview)
@@ -99,31 +99,31 @@ No `roadmap_path` was provided in this dispatch and no roadmap phases are requir
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add additive batch mode to `.zotero-title-sim.py` [NOT STARTED]
+### Phase 1: Add additive batch mode to `.zotero-title-sim.py` [COMPLETED]
 
 **Goal**: Give the similarity helper a single-invocation batch mode that scores one candidate
 title against an arbitrary list of existing titles, short-circuiting on normalized equality,
 without disturbing the existing 2-argv contract.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/literature/scripts/.zotero-title-sim.py` in full and confirm
+- [x] Read `agent-system/extensions/literature/scripts/.zotero-title-sim.py` in full and confirm
       the current `normalize()` / `main()` shape before editing.
-- [ ] Add a `--batch <candidate-title>` mode: existing titles are read from **stdin**, one per
+- [x] Add a `--batch <candidate-title>` mode: existing titles are read from **stdin**, one per
       line, so no argv length limit is hit for an 11k-entry index.
-- [ ] In batch mode, normalize the candidate once, then iterate stdin lines; skip blank lines
+- [x] In batch mode, normalize the candidate once, then iterate stdin lines; skip blank lines
       and lines whose normalized form is empty.
-- [ ] Short-circuit: if a line's normalized form equals the candidate's normalized form, emit
+- [x] Short-circuit: if a line's normalized form equals the candidate's normalized form, emit
       that line as the best match with score `1.0` and stop reading immediately (no
       `SequenceMatcher` call for it or any later line).
-- [ ] Otherwise score with the same `SequenceMatcher(None, a, b).ratio()` rounded to 4 places,
+- [x] Otherwise score with the same `SequenceMatcher(None, a, b).ratio()` rounded to 4 places,
       keeping the first strict maximum (strict `>`, so index order breaks ties the same way the
       old shell loop did).
-- [ ] Emit exactly one output line on stdout: `<score>\t<original-existing-title>`. When stdin
+- [x] Emit exactly one output line on stdout: `<score>\t<original-existing-title>`. When stdin
       yields no usable title, emit `0.0\t` (score, tab, empty title) and exit 0.
-- [ ] Leave `normalize()` untouched and leave the 2-argv branch's behavior and output format
+- [x] Leave `normalize()` untouched and leave the 2-argv branch's behavior and output format
       exactly as they are (including the `len(sys.argv) != 3 -> print("0.0")` fallback for the
       non-batch path).
-- [ ] Update the module docstring: it currently claims the helper is "invoked by the resolver
+- [x] Update the module docstring: it currently claims the helper is "invoked by the resolver
       script only", which is already false (`literature-ingest-online.sh` calls it too). Name
       both consumers and both modes.
 

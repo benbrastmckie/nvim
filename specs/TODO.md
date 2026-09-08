@@ -28,7 +28,7 @@ next_project_number: 190
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-157 [PLANNED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
+157 [IMPLEMENTING] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
 172 [NOT STARTED] — Close the taught-pattern gap that produced 22 unreapable poll loo
@@ -39,7 +39,7 @@ next_project_number: 190
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
-186 [PLANNED] — Fix the wrong deploy-headless.sh invocation path documented in re
+186 [IMPLEMENTING] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
 
@@ -56,7 +56,7 @@ next_project_number: 190
 ### Literature
 
 39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
-171 [PLANNED] — Fix the literature online-ingest hang caused by an O(n) per-title
+171 [IMPLEMENTING] — Fix the literature online-ingest hang caused by an O(n) per-title
 
 ### Neovim
 
@@ -77,7 +77,7 @@ next_project_number: 190
 
 ### Lean Extension
 
-176 [PLANNED] — Fix the documented `lake-build-guard.sh` full-build invocation ac
+176 [IMPLEMENTING] — Fix the documented `lake-build-guard.sh` full-build invocation ac
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
@@ -215,7 +215,7 @@ ACCEPTANCE: a recorded decision with rationale; whichever option is chosen is re
 ---
 
 ### 186. Fix deploy headless path in regeneration doc
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -565,7 +565,7 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 
 ### 176. Fix the documented lake-build-guard full-build invocation across the lean extension
 - **Effort**: 1-2 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -638,7 +638,7 @@ ACCEPTANCE. Every `lake-build-guard.sh build` invocation in the source store eit
 ---
 
 ### 171. Fix literature ingest dedup hang
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1213,7 +1213,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 157. Fix TODO.md summary lines: prefer .title, and stop the blind slice from splitting inline-code spans
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

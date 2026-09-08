@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Add additive batch mode to .zotero-title-sim.py",
+  "started_at": "2026-09-08T22:36:30Z",
+  "last_updated": "2026-09-08T22:36:30Z",
+  "objectives": [
+    {"id": 1, "description": "Read .zotero-title-sim.py and confirm current shape", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add --batch mode with stdin-fed existing titles, short-circuit, tie-break, output format, docstring update", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/.zotero-title-sim.py"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
