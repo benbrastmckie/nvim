@@ -286,30 +286,20 @@ report the observed numbers rather than the plan's.
 
 ---
 
-### Phase 4: Test Suite and Synthetic Fixtures [NOT STARTED]
+### Phase 4: Test Suite and Synthetic Fixtures [COMPLETED]
 
 **Goal**: A self-contained test suite proving each check's fire and silence cases without
 depending on the external Logos/Theory repository.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh` per
-      `shell-script-testing.md`'s narrow-single-script rule.
-- [ ] Fixtures created in a temp dir by the test itself (no committed `.typ` fixture files
-      unless the implementer finds inline heredocs unwieldy):
-      (a) heading followed by prose then a remark — silent;
-      (b) heading followed immediately by `#remark(` — check 1 fires;
-      (c) heading followed immediately by `#theorem[` — check 1 fires (element inventory is not
-      remark-only);
-      (d) pre-heading `#import`/`#let`/comment block with a compliant body — silent;
-      (e) heading, then `#let` declarations, then a semantic element — check 1 fires
-      (declarations are skipped, not counted as prose);
-      (f) remark with a nested `#items[...]` and 5 markers — check 2 warns, correct extent;
-      (g) remark with 2 markers — check 2 silent;
-      (h) 5 remarks / 1 theorem — check 3 warns; 2 remarks / 0 theorems — silent;
-      (i) `#remark[` bare-bracket call form — recognized.
-- [ ] Assert exit codes explicitly, including that a warnings-only run exits 0.
-- [ ] Test script follows the same Class B strict mode and reports a PASSED/FAILED summary.
-- [ ] Run the suite; all cases green.
+- [x] Create `agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh` per
+      `shell-script-testing.md`'s narrow-single-script rule. *(completed)*
+- [x] Fixtures created in a temp dir by the test itself (inline heredocs, cases a-i plus a
+      warnings-only case and CLI/directory-scan cases) — all nine required cases (a)-(i)
+      implemented, matching the plan's naming. *(completed)*
+- [x] Assert exit codes explicitly, including that a warnings-only run exits 0. *(completed)*
+- [x] Test script follows the same Class B strict mode and reports a PASSED/FAILED summary. *(completed)*
+- [x] Run the suite; all cases green (37 assertions passed, 0 failed). *(completed)*
 
 **Timing**: 1 hour
 
