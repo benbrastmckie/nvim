@@ -1,0 +1,63 @@
+{
+  "phase": 5,
+  "phase_name": "Extension surface and doc-lint",
+  "started_at": "2026-09-07T01:00:00Z",
+  "last_updated": "2026-09-07T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add index-entries.json entry for comparator-guide.md following comparator-integration.md's model",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Run generate-context-line-counts.sh --write to populate line_count",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update EXTENSION.md commands table and context pointers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Update README.md /lean command row and section",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/README.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Confirm manifest.json needs no new provides entry (comparator-guide.md covered by existing project/lean4 context directory entry)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run check-extension-docs.sh and drive to zero findings for lean",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Final task-number-reference sweep across all changed files",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "generate-context-line-counts.sh --write is a global script and also corrected three pre-existing, unrelated line_count drifts in the typst extension's index-entries.json (declared vs actual mismatch that predates this task). That file was left uncommitted/unstaged under this task's scope since it is outside agent-system/extensions/lean/**; check-extension-docs.sh confirms `lean PASS` and overall `PASS: all extensions OK` regardless."
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #156
 
 - **Task**: 156 - Surface a Comparator doctor mode and document what a green result does and does not certify
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: 155 (completed — `lean-comparator-run.sh`, advisory `--compare` gate, `comparator-integration.md`)
 - **Research Inputs**: specs/156_document_comparator_trust_boundary/reports/01_comparator-doctor-trust-boundary.md
@@ -349,32 +349,32 @@ there rather than the asserted list.
 
 ---
 
-### Phase 5: Extension surface and doc-lint [NOT STARTED]
+### Phase 5: Extension surface and doc-lint [COMPLETED]
 
 **Goal**: Register the new context file and the new command mode across the extension's declared
 surface so a fresh deploy passes `check-extension-docs.sh`.
 
 **Tasks**:
-- [ ] `index-entries.json`: add an entry for `project/lean4/tools/comparator-guide.md` following
+- [x] `index-entries.json`: add an entry for `project/lean4/tools/comparator-guide.md` following
       the `comparator-integration.md` entry as the model — `domain: "project"`,
       `subdomain: "lean"`, a one-line `summary`, `keywords`, and
       `load_when: {agents: ["lean-implementation-agent", "lean-research-agent"], task_types:
       ["lean4"]}`. Include no `description` or `tags` keys (Rule T).
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
       populate `line_count` — do not hand-type it (Rule R).
-- [ ] `EXTENSION.md`: add the `doctor` mode to the `### Commands` table's `/lean` row (or add a
+- [x] `EXTENSION.md`: add the `doctor` mode to the `### Commands` table's `/lean` row (or add a
       modes note), and add `.claude/context/project/lean4/tools/comparator-guide.md` to
       `### Context Pointers`.
-- [ ] `README.md`: update the `/lean` command row and the `### /lean` section to name the
+- [x] `README.md`: update the `/lean` command row and the `### /lean` section to name the
       `doctor` mode; add the guide to the file-tree/context listing if that listing enumerates
       context files.
-- [ ] `manifest.json`: confirm whether any `provides` array needs a new entry. Under the base
+- [x] `manifest.json`: confirm whether any `provides` array needs a new entry. Under the base
       design no new file is added to `commands`/`skills`/`scripts` (the guide is covered by the
       existing `"context": ["project/lean4", "contracts"]` directory entry); under the Phase 3
       contingency, add the doctor script to `provides.scripts`.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and drive it to
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and drive it to
       zero findings for the lean extension.
-- [ ] Final sweep: `grep -nE '\btasks? [0-9]+\b|\(task [0-9]+\)'` across all files changed by this
+- [x] Final sweep: `grep -nE '\btasks? [0-9]+\b|\(task [0-9]+\)'` across all files changed by this
       task; expect no matches.
 
 **Timing**: 0.75 hours
@@ -411,17 +411,17 @@ the hypothesis and the manifest must then be updated.
 
 ## Testing & Validation
 
-- [ ] Doctor State A (all present, matched) demonstrated with a transcript.
-- [ ] Doctor State B (binary missing) demonstrated with a transcript.
-- [ ] Doctor State C (present but `lean4export` mismatched) demonstrated with a transcript — the
+- [x] Doctor State A (all present, matched) demonstrated with a transcript.
+- [x] Doctor State B (binary missing) demonstrated with a transcript.
+- [x] Doctor State C (present but `lean4export` mismatched) demonstrated with a transcript — the
       acceptance criterion that must not be assumed.
-- [ ] Doctor State D (`UNKNOWN (cannot verify)`) demonstrated, with no pass-flavored wording.
-- [ ] `comparator-guide.md` has an explicit "what this does NOT certify" section naming the
+- [x] Doctor State D (`UNKNOWN (cannot verify)`) demonstrated, with no pass-flavored wording.
+- [x] `comparator-guide.md` has an explicit "what this does NOT certify" section naming the
       definition-hole caveat and the previously-compiled-Solution assumption.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` — zero findings.
-- [ ] `bash -n` clean over the extracted doctor bash block.
-- [ ] No task-number references in any changed file (all live outside `specs/`).
-- [ ] `git status --short` shows changes only under `agent-system/extensions/lean/**` and
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` — zero findings.
+- [x] `bash -n` clean over the extracted doctor bash block.
+- [x] No task-number references in any changed file (all live outside `specs/`).
+- [x] `git status --short` shows changes only under `agent-system/extensions/lean/**` and
       `specs/156_*/**` — nothing under `.claude/**`.
 
 ## Artifacts & Outputs

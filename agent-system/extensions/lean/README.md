@@ -7,7 +7,7 @@ Lean 4 theorem prover support with MCP integration for proof assistance. Provide
 | Command | Purpose |
 |---------|---------|
 | `/lake` | Lake build management and error handling |
-| `/lean` | Lean-specific proof assistance (research, implementation) |
+| `/lean` | Lean-specific proof assistance (research, implementation, version management, Comparator doctor) |
 
 The extension routes `lean4` task types through dedicated research and implementation agents that have access to the `lean-lsp` MCP server and enforce Lean 4 coding conventions.
 
@@ -68,16 +68,18 @@ Lake build management and error handling.
 
 ### /lean
 
-Lean proof assistance via research and implementation flows.
+Lean proof assistance via research and implementation flows, plus direct-execution version and
+environment management (`check`, `upgrade`, `rollback`, `doctor`).
 
 **Syntax**:
 ```bash
 /research <task>           # Research Lean/Mathlib topic (routes to lean-research-agent)
 /plan <task>               # Plan Lean implementation
 /implement <task>          # Execute Lean implementation
+/lean doctor               # Probe the Comparator environment (binaries + C3 version match)
 ```
 
-**Delegation**: The standard `/research`, `/plan`, `/implement` commands route to lean-specific skills and agents when the task has `task_type: "lean4"`.
+**Delegation**: The standard `/research`, `/plan`, `/implement` commands route to lean-specific skills and agents when the task has `task_type: "lean4"`. `/lean [check|upgrade|rollback|doctor]` executes directly via `skill-lean-version` (no agent dispatch). See `context/project/lean4/tools/comparator-guide.md` for what a green Comparator result does and does not certify.
 
 ## Architecture
 

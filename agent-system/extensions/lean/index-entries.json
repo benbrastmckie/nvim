@@ -145,7 +145,7 @@
     },
     {
       "path": "project/lean4/standards/proof-debt-policy.md",
-      "line_count": 134,
+      "line_count": 176,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
@@ -468,7 +468,7 @@
     },
     {
       "path": "project/lean4/README.md",
-      "line_count": 26,
+      "line_count": 27,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -684,6 +684,29 @@
         "verdict",
         "sandbox",
         "axiom-violation"
+      ]
+    },
+    {
+      "path": "project/lean4/tools/comparator-guide.md",
+      "line_count": 110,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent",
+          "lean-research-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Comparator trust model: what a green result certifies and does not certify, the six upstream assumptions, TCB, and version-coupling (C3)",
+      "keywords": [
+        "comparator",
+        "trust-model",
+        "certification",
+        "assumptions",
+        "definition-hole"
       ]
     },
     {

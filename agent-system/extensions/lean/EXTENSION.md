@@ -25,6 +25,7 @@ Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP too
 |---------|-------|-------------|
 | `/lake` | `/lake` | Build management and error handling |
 | `/lean` | `/lean` | Lean-specific proof assistance |
+| `/lean` | `/lean doctor` | Probe the Comparator environment: binary presence + C3 `lean4export` version match |
 
 ### Context Pointers
 
@@ -33,3 +34,4 @@ Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP too
 - `.claude/context/project/lean4/tools/mcp-tools-guide.md` - Lean MCP server tool reference
 - `.claude/context/project/lean4/tools/blocked-mcp-tools.md` - Blocked tools and alternatives
 - `.claude/context/project/lean4/patterns/mcp-fallback-table.md` - MCP tool fallback strategies
+- `.claude/context/project/lean4/tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
