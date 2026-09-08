@@ -985,6 +985,18 @@ fi
 # steps below are therefore scoped to the multi-task engine (loop_guard_file empty) only.
 if [ -z "$loop_guard_file" ]; then
   if is_live; then
+    # Item (b) — plan-cache invalidation, FIRST state write in this branch: any postflight at
+    # all (this call itself, right now) is proof the plan orchestrate-cycle-plan.sh most
+    # recently composed for this session WAS consumed -- a dispatch happened, and this is that
+    # dispatch's own postflight. Clearing plan_cache here (deliberately unconditional on
+    # dispatch_status/verdict -- success, failure, defer, off-schema, all count as "consumed")
+    # means the NEXT orchestrate-cycle-plan.sh call for this session can never mistake a real,
+    # already-consumed dispatch for an unconsumed one to replay. `del()` on an already-absent
+    # key (a pre-plan_cache-schema multi-state file, or a second postflight in the same cycle)
+    # is a safe no-op, so no existence guard is needed.
+    jq 'del(.plan_cache)' \
+      "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
+
     fresh_status=$(jq -r --argjson num "$task_number" \
       '.active_projects[] | select(.project_number == $num) | .status // ""' "$STATE_FILE" 2>/dev/null)
     jq --arg t "$task_number" --arg fs "${fresh_status:-}" \

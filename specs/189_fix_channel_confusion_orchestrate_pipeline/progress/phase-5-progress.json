@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Do not charge for a read -- in-session plan cache",
+  "started_at": "2026-09-08T02:20:00Z",
+  "last_updated": "2026-09-08T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add plan_cache field to mt_state_file initializer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Write plan_cache in emit_and_exit only when a dispatch row was built", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "On entry, check for a plan_cache match and replay without charging", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add cache invalidation to orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Add --no-plan-cache escape hatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Add test group: replay identical, then charge after postflight", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Left the pre-existing stop-after-last-named Group 4/5 test unmodified with the new plan cache active", "result": "failed", "reason": "the group calls the SUT twice with the same session and no simulated postflight; the new cache correctly replayed run 1's plan on run 2, breaking the fall-through assertion. Fixed by adding --no-plan-cache to that group's two run_sut calls, since the group's own domain is unrelated to plan-cache behavior."}
+  ],
+  "handoff_count": 0
+}

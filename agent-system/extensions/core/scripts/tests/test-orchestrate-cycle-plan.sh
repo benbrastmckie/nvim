@@ -354,7 +354,12 @@ write_state <<'EOF'
 EOF
 reset_lock_dirs
 : > "$ARGV_LOG"
-run_sut --session g5_fallthrough_sess --force-phases "research" -- 501
+# --no-plan-cache on both calls below: this group's own domain is force_phases_remaining
+# fall-through across two LIVE cycles of the SAME session with no simulated postflight/consumption
+# in between (see the plan-cache-aware comment ahead of the cycle-2 call). Left plan-cache-enabled,
+# cycle 2 would legitimately replay cycle 1's still-unconsumed cached plan (same forced-research
+# row) rather than recompute -- correct behavior for the plan cache, but not what THIS group tests.
+run_sut --session g5_fallthrough_sess --no-plan-cache --force-phases "research" -- 501
 cycle1_phase=$(jqf '.dispatch | map(select(.task == 501)) | .[0].phase')
 if [ "$cycle1_phase" = "research" ]; then
   pass "stop-after-last-named: cycle 1 forces the named phase (research) despite status implementing"
@@ -372,7 +377,7 @@ fi
 # (status is still "implementing" in state.json -- unaffected by dispatch -- which routes to
 # implement), never re-force research. No --force-phases is passed this time, proving the
 # fall-through is driven by the persisted (now-empty) queue, not by the flag's absence alone.
-run_sut --session g5_fallthrough_sess -- 501
+run_sut --session g5_fallthrough_sess --no-plan-cache -- 501
 cycle2_phase=$(jqf '.dispatch | map(select(.task == 501)) | .[0].phase')
 if [ "$cycle2_phase" = "implement" ]; then
   pass "stop-after-last-named: cycle 2 falls through to status-derived classification (implement) once the forced queue is exhausted"
@@ -1764,6 +1769,126 @@ if echo "$LAST_STDERR" | grep -qF -- "--session is required"; then
   pass "Group 17: live mode's no-session error message is preserved"
 else
   fail "Group 17: expected a '--session is required' message on stderr; got: '$LAST_STDERR'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 18: in-session plan cache -- a composition that dispatched, re-run with nothing consumed
+# since, replays verbatim and charges nothing; once the cache is invalidated (simulating a real
+# postflight), the next run recomputes and charges normally.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 18: in-session plan cache replay charges nothing; post-invalidation recompute charges normally"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+#!/usr/bin/env bash
+proj_num="$1"; phase="$2"
+jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1801, "project_name": "g18_plan_cache", "task_type": "general", "status": "not_started", "description": "in-session plan cache replay/invalidation", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+g18_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g18_sess.json"
+rm -f "$g18_mt_state"
+
+run_sut --session g18_sess -- 1801
+g18_run1_stdout="$LAST_STDOUT"
+g18_run1_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$g18_run1_dispatch_file" = "/fake/1801-plan.md" ]; then
+  pass "Group 18: run 1 genuinely composes and dispatches"
+else
+  fail "Group 18: run 1 did not compose/dispatch as expected: $LAST_STDOUT"
+fi
+
+g18_cycle_counts_after_1=$(jq -r --arg t "1801" '.cycle_counts[$t] // 0' "$g18_mt_state" 2>/dev/null)
+g18_dsc_after_1=$(jq -r '.dispatch_seq_counter // 0' "$g18_mt_state" 2>/dev/null)
+if jq -e '.plan_cache != null and .plan_cache.dispatch_seq_counter == .dispatch_seq_counter' "$g18_mt_state" >/dev/null 2>&1; then
+  pass "Group 18: run 1's composition wrote plan_cache keyed at the resulting dispatch_seq_counter"
+else
+  fail "Group 18: expected plan_cache written and keyed at the current dispatch_seq_counter after run 1"
+fi
+
+run_sut --session g18_sess -- 1801
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$LAST_STDOUT" = "$g18_run1_stdout" ]; then
+  pass "Group 18: run 2 (nothing consumed since run 1) replays byte-identical stdout"
+else
+  fail "Group 18: run 2 stdout differs from run 1 (expected a verbatim replay). run1: '$g18_run1_stdout' run2: '$LAST_STDOUT'"
+fi
+if echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
+  pass "Group 18: run 2 logs the PLAN CACHE REPLAY notice on stderr"
+else
+  fail "Group 18: expected a PLAN CACHE REPLAY notice on stderr; got: '$LAST_STDERR'"
+fi
+g18_cycle_counts_after_2=$(jq -r --arg t "1801" '.cycle_counts[$t] // 0' "$g18_mt_state" 2>/dev/null)
+if [ "$g18_cycle_counts_after_2" = "$g18_cycle_counts_after_1" ]; then
+  pass "Group 18: run 2 leaves cycle_counts[1801] unchanged (no cycle charged for the replay)"
+else
+  fail "Group 18: expected cycle_counts unchanged after replay; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_2"
+fi
+g18_guard_file="$WORKDIR/specs/1801_g18_plan_cache/.orchestrator-loop-guard"
+g18_guard_cycle_count=$(jq -r '.cycle_count // 0' "$g18_guard_file" 2>/dev/null)
+if [ "$g18_guard_cycle_count" = "$g18_cycle_counts_after_1" ]; then
+  pass "Group 18: the durable loop-guard file's cycle_count matches the unchanged in-memory value (no extra flush)"
+else
+  fail "Group 18: durable loop-guard cycle_count ($g18_guard_cycle_count) diverged from the unchanged in-memory value ($g18_cycle_counts_after_1)"
+fi
+
+# Simulate a postflight: clear plan_cache directly (mirrors orchestrate-cycle-postflight.sh's own
+# unconditional `del(.plan_cache)` on any outcome), proving the plan WAS consumed.
+jq 'del(.plan_cache)' "$g18_mt_state" > "${g18_mt_state}.tmp" && mv "${g18_mt_state}.tmp" "$g18_mt_state"
+
+run_sut --session g18_sess -- 1801
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 18: run 3 (post-invalidation) exits 0"
+else
+  fail "Group 18: run 3 exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
+  fail "Group 18: run 3 unexpectedly replayed from cache after invalidation"
+else
+  pass "Group 18: run 3 does not replay (cache was invalidated)"
+fi
+g18_cycle_counts_after_3=$(jq -r --arg t "1801" '.cycle_counts[$t] // 0' "$g18_mt_state" 2>/dev/null)
+if [ "$g18_cycle_counts_after_3" -eq "$((g18_cycle_counts_after_1 + 1))" ]; then
+  pass "Group 18: run 3 charges exactly one additional cycle after cache invalidation"
+else
+  fail "Group 18: expected cycle_counts[1801] to advance by exactly 1 after invalidation; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_3"
+fi
+
+# A composition that dispatches nothing must never write plan_cache at all.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1802, "project_name": "g18_no_dispatch", "task_type": "general", "status": "completed", "description": "terminal candidate; a no-dispatch composition must never cache", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+g18b_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g18b_sess.json"
+rm -f "$g18b_mt_state"
+run_sut --session g18b_sess -- 1802
+if [ "$(jqf '.dispatch | length')" = "0" ]; then
+  pass "Group 18: the no-dispatch fixture composition dispatches nothing (precondition for the next check)"
+else
+  fail "Group 18: expected 0 dispatched for the terminal-status fixture; got: $LAST_STDOUT"
+fi
+if [ ! -f "$g18b_mt_state" ] || jq -e '.plan_cache == null' "$g18b_mt_state" >/dev/null 2>&1; then
+  pass "Group 18: a no-dispatch composition writes no plan_cache"
+else
+  fail "Group 18: a no-dispatch composition unexpectedly wrote plan_cache: $(cat "$g18b_mt_state" 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

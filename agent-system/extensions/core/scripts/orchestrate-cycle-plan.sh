@@ -37,6 +37,12 @@
 #   read and cleared here), blocker_escalation_count and drift_inspection_count (maps
 #   task_number(string) -> int, the per-task per-invocation caps MAX_BLOCKER_ESCALATIONS/
 #   MAX_DRIFT_INSPECTIONS below).
+# PLUS ONE MORE new field (the in-session plan cache — "do not charge for a read"): plan_cache,
+#   shaped `{dispatch_seq_counter: int, plan: <plan object>}` or `null`. Written here ONLY when a
+#   composition actually built >=1 dispatch row (i.e. actually charged); read at entry, before
+#   any composition side effect, to detect and replay an unconsumed prior composition without
+#   re-charging. Cleared unconditionally by orchestrate-cycle-postflight.sh on any postflight
+#   outcome (reaching postflight at all is proof the cached plan was consumed).
 # Stage MT-5 (multi-task postflight/report, untouched by this task) still reads every one of the
 # pre-existing fields above; this script never renames or drops one.
 #
@@ -246,10 +252,13 @@ usage() {
 Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
          [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
          [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
-         [--dry-run] <task_number> [<task_number> ...]
+         [--dry-run] [--no-plan-cache] <task_number> [<task_number> ...]
 
 --state-file is always required. --session is required EXCEPT under --dry-run, where an
-internal, never-persisted identity is synthesized when omitted.
+internal, never-persisted identity is synthesized when omitted. --no-plan-cache disables the
+in-session plan-cache replay (both the read and the write) for this invocation; every
+composition re-evaluates fresh and charges normally. Intended for debugging and for this
+script's own test suite's non-cache groups -- not needed in ordinary /orchestrate use.
 USAGE
 }
 
@@ -268,6 +277,7 @@ allow_self_modifying="false"
 allow_scope_collision="false"
 continue_budget="false"
 dry_run="false"
+no_plan_cache="false"
 task_args=()
 
 while [ "$#" -gt 0 ]; do
@@ -286,6 +296,7 @@ while [ "$#" -gt 0 ]; do
     --allow-scope-collision) allow_scope_collision="true"; shift ;;
     --continue-budget) continue_budget="true"; shift ;;
     --dry-run) dry_run="true"; shift ;;
+    --no-plan-cache) no_plan_cache="true"; shift ;;
     --team|--team-size|--team=*|--team-size=*)
       echo "ERROR: orchestrate-cycle-plan.sh: --team/--team-size are withdrawn — team mode is deleted." >&2
       exit 2
@@ -494,7 +505,36 @@ mt_json=$(jq -c \
   | .aux_pending //= {}
   | .blocker_escalation_count //= {}
   | .drift_inspection_count //= {}
+  | .plan_cache //= null
   ' <<<"$mt_json")
+
+# ─── Item (b): in-session plan cache — replay check (must run before ANY composition side ────
+# effect: the seed/eligibility pass, the first mt_save below, any budget increment, any loop-guard
+# flush). `plan_cache` is `{dispatch_seq_counter: int, plan: <plan object>}` or `null`, written by
+# emit_and_exit() below ONLY when a composition actually built >=1 dispatch row (i.e. actually
+# charged). If the CURRENT `dispatch_seq_counter` (read fresh from mt_json, before this
+# composition touches anything) still equals the value the cache was written at, then NOTHING has
+# been dispatched since that composition — no postflight ever ran to consume it and advance the
+# counter (orchestrate-cycle-postflight.sh clears plan_cache unconditionally on any postflight
+# outcome, so a run that reached postflight can never replay a stale plan). Replay the cached plan
+# verbatim to fd 3 and exit 0 without composing, without touching cycle_counts, and without
+# flushing the durable loop-guard file — this invocation costs nothing. A genuine cycle (one where
+# something WAS consumed since) always falls through to the real composition below and charges
+# exactly one, as before. Skipped entirely under --dry-run (mt_json is always freshly "{}" there,
+# by construction above) and under the --no-plan-cache escape hatch.
+if [ "$dry_run" != "true" ] && [ "$no_plan_cache" != "true" ]; then
+  plan_cache_present=$(echo "$mt_json" | jq -r '.plan_cache != null')
+  if [ "$plan_cache_present" = "true" ]; then
+    plan_cache_seq=$(echo "$mt_json" | jq -r '.plan_cache.dispatch_seq_counter')
+    current_seq=$(echo "$mt_json" | jq -r '.dispatch_seq_counter // 0')
+    if [ "$plan_cache_seq" = "$current_seq" ]; then
+      cached_plan=$(echo "$mt_json" | jq -c '.plan_cache.plan')
+      echo "[orchestrate] PLAN CACHE REPLAY: dispatch_seq_counter=${current_seq} unchanged since the last composition that built it -- nothing was dispatched (no postflight ran to consume it and advance the counter), so this composition is replayed verbatim from cache. No cycle is charged and the durable loop-guard file is not flushed." >&2
+      printf '%s\n' "$cached_plan" >&3
+      exit 0
+    fi
+  fi
+fi
 
 mt_save() {
   [ "$dry_run" = "true" ] && return 0
@@ -572,6 +612,21 @@ emit_and_exit() {
     --argjson aux_dispatch "$aux_dispatch_json" \
     --argjson deferred "$deferred_json" --argjson blocked "$blocked_json" --argjson stop "$stop_json" \
     '{cycle: $cycle, dispatch: $dispatch, aux_dispatch: $aux_dispatch, deferred: $deferred, blocked: $blocked, stop: $stop}')
+
+  # Item (b): write plan_cache ONLY when this composition actually built >=1 dispatch row (i.e.
+  # actually charged the per-task budget) -- a no-dispatch composition already charges nothing
+  # and MUST stay uncached, so it always re-evaluates fresh next time (state may have changed
+  # even though nothing was dispatched). Keyed by dispatch_seq_counter's value AFTER this
+  # composition (every row-charging site above already minted/advanced it), so a subsequent
+  # invocation's pre-composition read of the SAME still-unchanged value is proof nothing was
+  # dispatched since -- see the replay check near the top of this script for the read side.
+  if [ "$dry_run" != "true" ] && [ "$no_plan_cache" != "true" ] && \
+     { [ "${#out_dispatch_rows[@]}" -gt 0 ] || [ "${#out_aux_dispatch_rows[@]}" -gt 0 ]; }; then
+    mt_set --argjson plan "$plan_json" \
+      '.plan_cache = {dispatch_seq_counter: (.dispatch_seq_counter // 0), plan: $plan}'
+    mt_save
+  fi
+
   printf '%s\n' "$plan_json" >&3
   # --dry-run human table (STDERR only — stdout stays pure, single-line JSON in both modes, per
   # this script's own Output contract). Rendered by reading back plan_json ALONE: no second

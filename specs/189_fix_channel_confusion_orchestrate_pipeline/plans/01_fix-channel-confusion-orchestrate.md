@@ -347,36 +347,36 @@ and classifying each against the verdict field it actually filters on.
 
 ---
 
-### Phase 5: Do not charge for a read — in-session plan cache [NOT STARTED]
+### Phase 5: Do not charge for a read — in-session plan cache [COMPLETED]
 
 **Goal**: within one `/orchestrate` invocation, a re-entry that follows a composition nothing
 consumed replays the cached plan verbatim and charges no cycle.
 
 **Tasks**:
-- [ ] Add a `plan_cache` field to the `mt_state_file` initializer's `//=` list
+- [x] Add a `plan_cache` field to the `mt_state_file` initializer's `//=` list
       (`orchestrate-cycle-plan.sh` ~`:410-441`), shaped
       `{dispatch_seq_counter: int, plan: <plan object>}` or absent, and document it in the header's
-      field list alongside the existing entries.
-- [ ] In `emit_and_exit()`, write `plan_cache` **only when** the composition actually built ≥1
+      field list alongside the existing entries. *(completed)*
+- [x] In `emit_and_exit()`, write `plan_cache` **only when** the composition actually built ≥1
       row in `out_dispatch_rows`/`out_aux_dispatch_rows` — i.e. only when budget was actually
       charged. A no-dispatch composition charges nothing and must stay uncached so it always
-      re-evaluates fresh.
-- [ ] On entry, immediately after the `mt_state_file` is loaded and before the seed/eligibility
+      re-evaluates fresh. *(completed)*
+- [x] On entry, immediately after the `mt_state_file` is loaded and before the seed/eligibility
       pass, check for a `plan_cache` whose `dispatch_seq_counter` equals the current
       `.dispatch_seq_counter`. On a match: emit `plan_cache.plan` verbatim to fd 3, log a named
       `[orchestrate] PLAN CACHE REPLAY: …` line to stderr explaining that nothing was dispatched
       since the last composition so no cycle is charged, and exit 0 without running any
-      composition, any budget increment, or any loop-guard flush.
-- [ ] Add cache invalidation to `orchestrate-cycle-postflight.sh`: in the multi-task branch (the
+      composition, any budget increment, or any loop-guard flush. *(completed)*
+- [x] Add cache invalidation to `orchestrate-cycle-postflight.sh`: in the multi-task branch (the
       one already resolving the derived multi-state file), delete `plan_cache` as its first state
-      write. Any postflight at all is proof the plan was consumed.
-- [ ] Add an explicit `--no-plan-cache` escape hatch to `orchestrate-cycle-plan.sh` (skip both the
-      read and the write) for debugging and for the test suite's own non-cache groups.
-- [ ] Add a test group: run the SUT twice against an unchanged fixture state; assert run 2's
+      write. Any postflight at all is proof the plan was consumed. *(completed)*
+- [x] Add an explicit `--no-plan-cache` escape hatch to `orchestrate-cycle-plan.sh` (skip both the
+      read and the write) for debugging and for the test suite's own non-cache groups. *(completed)*
+- [x] Add a test group: run the SUT twice against an unchanged fixture state; assert run 2's
       stdout is byte-identical to run 1's, that `cycle_counts` and the fixture's
       `.orchestrator-loop-guard` `cycle_count` are unchanged after run 2, and that the replay
       notice appears on stderr. Then simulate a postflight (delete `plan_cache`), run a third
-      time, and assert the cycle IS charged.
+      time, and assert the cycle IS charged. *(completed)*
 
 **Timing**: 1.5 hours
 
