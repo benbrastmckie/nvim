@@ -66,12 +66,12 @@
     {
       "project_number": 186,
       "project_name": "fix_deploy_headless_path_in_regeneration_doc",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Fix the wrong deploy-headless.sh invocation path documented in regeneration-is-manual-only.md.\n\nOBSERVED (live, cost a full orchestration cycle). A /orchestrate run was refused at postflight by the completion-deploy gate, whose remedy text correctly names \"bash .claude/scripts/deploy-headless.sh\". The operator instead copied the invocation form documented in context/patterns/regeneration-is-manual-only.md -- \"bash scripts/deploy-headless.sh\" -- which does not exist at that path. The command failed with exit 127 and NO output, so it looked like a silent no-op rather than a failure. The task stayed blocked until the correct path was used, at which point the deploy landed clean on the first attempt.\n\nWHY THIS FILE MATTERS DISPROPORTIONATELY. regeneration-is-manual-only.md is the file the deploy gate's own remedy text points operators and agents at. It is the canonical reference read precisely when someone is already blocked, so a wrong invocation there is maximally expensive.\n\nTHE DEFECT. Four sites carry the bare, non-existent path -- lines 32 and 35 of context/patterns/regeneration-is-manual-only.md in BOTH the deployed tree and its source store copy under agent-system/extensions/core/. A repo-wide survey found 26 references using the \"scripts/deploy-headless.sh\" form and 4 using \"bash agent-system/extensions/core/scripts/deploy-headless.sh\"; determine which of these are genuinely wrong versus correct-in-their-own-context (a source-store-relative path may be correct where the reader is operating in the source store) rather than mass-rewriting on the string alone.\n\nSCOPE. Correct the invocation form in the source store under agent-system/extensions/** only -- never the deployed .claude/ tree, which is regenerated (see rules/source-store-deploy-boundary.md). Consider whether the surrounding text should also warn that a wrong path fails silently with exit 127.\n\nACCEPTANCE: every documented invocation of deploy-headless.sh names a path that resolves from the working directory its surrounding text assumes; the two code fences in regeneration-is-manual-only.md are runnable as written from a consuming repo root; deploy and the full gate run stay green.",
       "topic": "core-agent-system",
       "created": "2026-09-08T06:28:44Z",
-      "last_updated": "2026-09-08T22:35:03Z",
+      "last_updated": "2026-09-08T23:32:02Z",
       "file_scope": [
         "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"
       ],
