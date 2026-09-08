@@ -1346,6 +1346,50 @@ check_broken_deployed_symlinks() {
   done
 }
 
+# Regression guard for the deploy-headless\.sh wrong-invocation-path defect fixed in
+# context/patterns/regeneration-is-manual-only.md ("Two-root convention" paragraph): a bare
+# `scripts/deploy-headless\.sh` resolves from neither a consuming repo root nor this repo root, so
+# invoking it that way (bash-prefixed, bare path, no `.claude/` or source-store prefix) fails with
+# exit 127, writing its diagnostic to stderr only and nothing to stdout -- silent-looking to any
+# caller that captures stdout alone. The correct forms are
+# `bash .claude/scripts/deploy-headless\.sh` (consuming repo root) and
+# `bash agent-system/extensions/core/scripts/deploy-headless\.sh` (source-store-relative, the CI
+# bootstrap case before any .claude/ tree exists).
+#
+# NOTE: this comment spells the target path with an escaped dot (`deploy-headless\.sh`, matching
+# the grep pattern below) deliberately -- an unescaped literal rendering here would make this
+# check's own self-scan of agent-system/ flag this very comment as a defect site.
+#
+# ANCHOR CONSTRAINT (do not "improve" this pattern without re-reading this comment): match ONLY
+# the `bash `-prefixed literal bare form. A bare `scripts/deploy-headless\.sh` (without the
+# `bash ` prefix) is NOT a defect -- it is the correct extension-root-relative identifier form
+# used throughout this source store's docs, comments, and tables (e.g. alongside sibling
+# `scripts/*.sh` entries in migration lists). Widening this pattern to match the bare path will
+# generate false positives against every one of those correct reference-class sites; see the site
+# inventory in
+# specs/186_fix_deploy_headless_path_in_regeneration_doc/plans/01_fix-deploy-headless-invocation-path.md
+# for the full defect-vs-reference discrimination this check enforces mechanically.
+#
+# Severity: fail() rather than advisory(). Unlike the core-deploy-drift advisories elsewhere in
+# this file (which depend on a caller's local, possibly-stale deploy state and must not spuriously
+# fire for a concurrent sibling session), this is a deterministic string match against files under
+# version control -- it needs no regeneration to satisfy and cannot spuriously fire.
+check_deploy_headless_invocation_regression() {
+  # Guard: skip cleanly and silently when the source store is absent -- a consuming repo carrying
+  # only a deployed .claude/ tree, with no agent-system/ source store to scan, is unaffected.
+  [[ -d "$EXT_DIR" ]] || return 0
+
+  local hits
+  hits=$(grep -rn 'bash scripts/deploy-headless\.sh' "$REPO_ROOT/agent-system" 2>/dev/null || true)
+  [[ -z "$hits" ]] && return 0
+
+  local line
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    fail "wrong deploy-headless.sh invocation form (bare 'scripts/deploy-headless.sh' resolves from no working directory and fails exit 127): $line"
+  done <<< "$hits"
+}
+
 echo "Checking .claude/extensions/ documentation..."
 echo
 
@@ -1422,6 +1466,7 @@ check_context_orphans
 check_deployed_index_orphans
 check_flat_category_orphans "scripts" "Rule M"
 check_broken_deployed_symlinks
+check_deploy_headless_invocation_regression
 if [[ "${EXTENSION_STATUS[project-wide]}" == "PASS" ]]; then
   info "OK"
 fi

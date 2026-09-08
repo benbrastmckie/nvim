@@ -346,35 +346,44 @@ re-run the Phase 1 defect census after editing to confirm the count reached zero
 
 ---
 
-### Phase 4: Add the Regression Guard [NOT STARTED]
+### Phase 4: Add the Regression Guard [COMPLETED]
 
 **Goal**: Make the defect class mechanically unable to reappear, so a future edit reintroducing
 `bash scripts/deploy-headless.sh` is caught by the gate rather than by an operator who is already
 blocked.
 
 **Tasks**:
-- [ ] Add a check to `agent-system/extensions/core/scripts/check-extension-docs.sh` that scans
+- [x] Add a check to `agent-system/extensions/core/scripts/check-extension-docs.sh` that scans
       the source store for the literal invocation form `bash scripts/deploy-headless.sh` and
-      reports every hit with file and line number.
-- [ ] Anchor the pattern on the `bash `-prefixed form ONLY. A bare-path pattern would fire on the
+      reports every hit with file and line number. *(completed:
+      `check_deploy_headless_invocation_regression()`)*
+- [x] Anchor the pattern on the `bash `-prefixed form ONLY. A bare-path pattern would fire on the
       ~16 correct reference-class sites and is wrong. State this constraint in a comment above
       the check so a future maintainer does not "improve" it into a false-positive generator.
-- [ ] Guard the check on the source store being present (`agent-system/extensions/` exists); skip
+      *(completed: "ANCHOR CONSTRAINT" comment block)*
+- [x] Guard the check on the source store being present (`agent-system/extensions/` exists); skip
       cleanly and silently when it is absent, so consuming repos with only a `.claude/` tree are
-      unaffected.
-- [ ] Decide and document the severity lane. Prefer `fail()` over `advisory()`: unlike the
+      unaffected. *(completed: `[[ -d "$EXT_DIR" ]] || return 0`)*
+- [x] Decide and document the severity lane. Prefer `fail()` over `advisory()`: unlike the
       deploy-drift advisories this file already carries, this check is a deterministic string
       match on files under version control, needs no regeneration to satisfy, and cannot
-      spuriously fire in a sibling session. Record the reasoning in the comment.
-- [ ] Confirm the check is wired into the script's normal execution path (called from the same
-      place the sibling checks are), not merely defined.
-- [ ] Verify the guard fires: temporarily reintroduce the wrong form in a scratch copy or via a
-      transient edit, confirm a non-zero exit and a useful message, then revert.
-- [ ] Verify the guard is clean on the fixed tree: zero findings.
-- [ ] Verify no false positives: confirm the guard is silent on
+      spuriously fire in a sibling session. Record the reasoning in the comment. *(completed:
+      "Severity: fail() rather than advisory()" comment)*
+- [x] Confirm the check is wired into the script's normal execution path (called from the same
+      place the sibling checks are), not merely defined. *(completed: called from the
+      project-wide checks section alongside check_broken_deployed_symlinks)*
+- [x] Verify the guard fires: temporarily reintroduce the wrong form in a scratch copy or via a
+      transient edit, confirm a non-zero exit and a useful message, then revert. *(completed: a
+      transient test line in deploy-root-guard.sh produced a FAIL with file:line and non-zero
+      exit; reverted to zero diff. Also caught and fixed a self-inflicted false positive where the
+      guard's own explanatory comment literally contained the defect string -- see the
+      approaches_tried entry in the phase-4 progress file)*
+- [x] Verify the guard is clean on the fixed tree: zero findings. *(completed)*
+- [x] Verify no false positives: confirm the guard is silent on
       `context/standards/shell-strict-mode.md`, `context/patterns/ci-deploy-tree-bootstrap.md`,
       `context/patterns/batch-orchestration-guardrails.md`, and `scripts/verify-deploy.sh`.
-- [ ] `bash -n` the modified script.
+      *(completed: all four silent)*
+- [x] `bash -n` the modified script. *(completed)*
 
 **Timing**: 0.75 hours
 

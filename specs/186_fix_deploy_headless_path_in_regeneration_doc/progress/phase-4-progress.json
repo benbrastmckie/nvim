@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Add the Regression Guard",
+  "started_at": "2026-09-08T23:32:00Z",
+  "last_updated": "2026-09-08T23:48:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add check_deploy_headless_invocation_regression() scanning agent-system/ for the bash-prefixed defect form", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 2, "description": "Anchor pattern on bash-prefixed form only, with a do-not-widen comment", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 3, "description": "Guard the check on EXT_DIR (source store) presence", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 4, "description": "Choose fail() severity lane with documented rationale", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "Wire the check into the project-wide checks call sequence", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 6, "description": "Verify the guard fires on a deliberately reintroduced occurrence, then revert", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Verify the guard is clean on the fixed tree", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Verify no false positives against the four named reference-class files", "status": "done", "files_touched": []},
+    {"id": 9, "description": "bash -n the modified script", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "First draft of the guard's explanatory comment spelled the defect string literally (bash scripts/deploy-headless.sh, unescaped)", "result": "failed", "reason": "The comment itself became a self-inflicted false positive: the guard's own grep matched its own explanatory prose. Reworded every prose occurrence to the escaped-dot form (deploy-headless\\.sh) matching the grep pattern's own literal characters, which does not self-match; confirmed via grep -c on the file returning 0"}
+  ],
+  "handoff_count": 0,
+  "notes": "Guard verified end-to-end: (1) clean on the fixed tree -- 0 findings; (2) fires with a useful FAIL message and non-zero exit when a transient test line is appended to deploy-root-guard.sh, then correctly reverts to zero diff; (3) silent on all four named reference-class files (shell-strict-mode.md, ci-deploy-tree-bootstrap.md, batch-orchestration-guardrails.md, verify-deploy.sh). check-extension-docs.sh's overall exit remains 1 due to pre-existing, expected 'deployed script content drift' and 'Rule R line_count mismatch' FAILs caused by the source-store edits not yet being deployed -- both are resolved automatically by Phase 5's deploy step (the line-count FAIL message says so explicitly) and are outside this regression check's own 0-findings verdict."
+}
