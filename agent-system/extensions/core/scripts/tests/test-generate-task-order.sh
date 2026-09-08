@@ -318,10 +318,14 @@ fi
   if [[ -z "$line" ]]; then
     fail "1c-actual: no rendered line found for fixture 903"
   else
-    if printf '%s' "$line" | grep -q '\['; then
-      fail "1c-actual: rendered line still carries an open bracket -- unsafe: $line"
+    # Isolate the description field: the whole line legitimately contains "[NOT STARTED]",
+    # so the bracket check must exclude the leading "<num> [STATUS] — " prefix.
+    rendered_desc="${line#*] }"
+    rendered_desc="${rendered_desc#$'\xe2\x80\x94 '}"
+    if printf '%s' "$rendered_desc" | grep -q '\['; then
+      fail "1c-actual: rendered description still carries an open bracket -- unsafe: $line"
     else
-      pass "1c-actual: rendered line carries no open bracket"
+      pass "1c-actual: rendered description carries no open bracket"
     fi
   fi
 }

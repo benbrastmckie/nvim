@@ -147,22 +147,59 @@ build_graph() {
   raw_data=$(get_active_tasks)
 
   # Preload all task descriptions in one jq call using @base64 encoding to avoid newline issues
+  #
+  # Source-string selection and slicing, in order (each guards against a specific corruption
+  # class -- do not "simplify" any step away):
+  #   1. (.title // .description // .project_name) -- a purpose-written .title is preferred
+  #      over the top of a long prose .description; .description remains the fallback for
+  #      title-less tasks, and .project_name is the last resort when both are absent.
+  #   2. ltrimstr(" ") -- drops one accidental leading space, unchanged from prior behavior.
+  #   3. gsub("`";""), gsub("\\*";""), gsub("_";""), gsub("\\[";"") -- strip inline-markup
+  #      hazard characters (code span, emphasis, open link/reference bracket) BEFORE slicing,
+  #      so a blind character cut can never orphan an opening delimiter mid-span. Stripping
+  #      rather than balancing (e.g. appending a closing backtick when the count is odd) is
+  #      deliberate: balancing would fabricate a span around a truncated fragment, rendering a
+  #      cut-off path as though it named a real one.
+  #   4. gsub("\n";" ") -- normalizes embedded newlines to spaces INSIDE jq, before the record
+  #      ever reaches the `while read` loop below. A newline in raw jq output splits one
+  #      record across two lines, so a post-hoc bash substitution on the already-split string
+  #      cannot work; normalizing here is the only point that can.
+  #   5. wb_truncate(65) -- truncates only when over budget, backing off to the last space at
+  #      or before (budget - 3) and appending "..." so a truncated line signals its own
+  #      elision instead of reading as corrupted text. The 3-character reservation keeps the
+  #      TOTAL rendered length (content + marker) within the stated budget.
   local desc_data
-  desc_data=$(jq -r '.active_projects[] |
+  desc_data=$(jq -r '
+    def wb_truncate(budget):
+      if (length > budget) then
+        (.[0:(budget - 3)] | sub(" [^ ]*$"; "")) + "..."
+      else
+        .
+      end;
+    .active_projects[] |
     select(.status == "completed" | not) |
     select(.status == "abandoned" | not) |
     select(.status == "expanded" | not) |
-    "\(.project_number)|\((.description // .project_name) | ltrimstr(" ") | .[0:65])"
+    "\(.project_number)|\(
+      (.title // .description // .project_name)
+      | ltrimstr(" ")
+      | gsub("`"; "")
+      | gsub("\\*"; "")
+      | gsub("_"; "")
+      | gsub("\\["; "")
+      | gsub("\n"; " ")
+      | wb_truncate(65)
+    )"
   ' "$STATE_FILE" 2>/dev/null)
 
   # Load descriptions into task_desc map
-  # Read line by line; description may not contain | (we split on first | only)
+  # Read line by line; description may not contain | (we split on first | only). Newlines were
+  # already normalized to spaces inside the jq program above, so no post-hoc bash substitution
+  # is needed here (a bash substitution on already-split lines cannot repair a split record).
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     local tn="${line%%|*}"
     local desc="${line#*|}"
-    # Replace any embedded newlines in desc with space
-    desc="${desc//$'\n'/ }"
     [[ -n "$tn" ]] && task_desc["$tn"]="$desc"
   done <<< "$desc_data"
 

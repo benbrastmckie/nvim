@@ -261,26 +261,36 @@ the scratch `.claude/scripts/` tree needs it too.
 
 ---
 
-### Phase 3: Make the primary slice site markdown-safe and title-aware [NOT STARTED]
+### Phase 3: Make the primary slice site markdown-safe and title-aware [COMPLETED]
 
 **Goal**: Replace the blind `.[0:65]` slice at `generate-task-order.sh:155` with an expression
 satisfying sub-fixes (a), (b) and (c) at once, turning Phase 2's red cases green.
 
 **Tasks**:
-- [ ] Change the source expression to prefer `.title`, falling back to `.description` then
-      `.project_name`
-- [ ] Strip inline markup characters before slicing (backtick at minimum; extend to `*`, `_`
-      and `[` per the recorded decision)
-- [ ] Normalize embedded newlines to spaces **inside jq**, replacing the current post-hoc bash
+- [x] Change the source expression to prefer `.title`, falling back to `.description` then
+      `.project_name` *(completed)*
+- [x] Strip inline markup characters before slicing (backtick at minimum; extend to `*`, `_`
+      and `[` per the recorded decision) *(completed: chose the strip approach, per the plan's
+      recorded default)*
+- [x] Normalize embedded newlines to spaces **inside jq**, replacing the current post-hoc bash
       `${desc//$'\n'/ }` which cannot work: a newline in the jq raw output splits the record
-      across two lines before the `while read` loop ever sees it
-- [ ] Truncate only when over budget, backing off to the last space at or before the budget and
+      across two lines before the `while read` loop ever sees it *(completed: the bash
+      substitution line was removed entirely, not left as dead code)*
+- [x] Truncate only when over budget, backing off to the last space at or before the budget and
       appending a truncation marker; leave under-budget values untouched and unmarked
-- [ ] Confirm the final jq program contains no `!=` (CLAUDE.md "jq Command Safety"); if a
-      negation is needed, use `select(... | not)` or an `if/then/else`
-- [ ] Add a brief comment above the expression naming what each transform guards against, so a
-      future reader does not "simplify" the strip or the boundary back-off away
-- [ ] Run the Phase 2 suite; case groups 1, 2 and 3 must now pass
+      *(completed: the 3-char marker is reserved WITHIN the 65-char budget, i.e. the cut point
+      is budget-3, so total rendered length never exceeds the budget)*
+- [x] Confirm the final jq program contains no `!=` (CLAUDE.md "jq Command Safety"); if a
+      negation is needed, use `select(... | not)` or an `if/then/else` *(completed: grep -n '!='
+      over the changed block returns nothing; the wb_truncate helper uses if/then/else)*
+- [x] Add a brief comment above the expression naming what each transform guards against, so a
+      future reader does not "simplify" the strip or the boundary back-off away *(completed)*
+- [x] Run the Phase 2 suite; case groups 1, 2 and 3 must now pass *(completed: 15 of 16
+      assertions pass; the one remaining failure is case group 4's 4a marker assertion, which
+      is Phase 4's job as anticipated. A test-harness bug in case 1c -- checking the WHOLE
+      rendered line for a stray '[' when the line always legitimately contains
+      "[NOT STARTED]" -- was also found and fixed here, isolating the description field before
+      the bracket check)*
 
 **Timing**: 1.25 hours
 
