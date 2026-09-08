@@ -11,7 +11,7 @@ next_project_number: 183
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,156,157,162,163,166,167,168,170,171,172,176,177,180 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,157,162,163,166,167,168,170,171,172,176,177,180 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,164,173,174,175,181 | 29,74,88,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
@@ -51,7 +51,6 @@ next_project_number: 183
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-156 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 
 ### Literature
@@ -1091,12 +1090,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 156. Surface a Comparator doctor mode and document what a green result does and does not certify
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 155
 - **Research**: [156_document_comparator_trust_boundary/reports/01_comparator-doctor-trust-boundary.md]
 - **Plan**: [156_document_comparator_trust_boundary/plans/01_comparator-doctor-trust-boundary.md]
+- **Summary**: [156_document_comparator_trust_boundary/summaries/01_comparator-doctor-trust-boundary-summary.md]
 
 **Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
