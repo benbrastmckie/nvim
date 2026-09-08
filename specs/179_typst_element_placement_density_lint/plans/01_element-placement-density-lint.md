@@ -1,7 +1,7 @@
 # Implementation Plan: Task #179
 
 - **Task**: 179 - Add a mechanical element-placement and density lint to the typst extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 178 (semantic-element usage contract) — already merged; its
   `standards/semantic-element-usage.md` is the sole source of element inventory and norms

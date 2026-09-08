@@ -11,7 +11,7 @@ next_project_number: 183
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,156,157,162,163,166,167,168,170,171,172,176,177,179,180 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,156,157,162,163,166,167,168,170,171,172,176,177,180 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,129,140,142,150,164,173,174,175,181 | 29,74,88,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
@@ -53,7 +53,6 @@ next_project_number: 183
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
 156 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
-179 [IMPLEMENTING] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
 
@@ -223,12 +222,13 @@ SAFETY CONSTRAINT. Do not disable or weaken any gate that can change the deploy 
 
 ### 179. Add an element placement and density lint to the typst extension
 - **Effort**: 2-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 178
 - **Research**: [179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md]
 - **Plan**: [179_typst_element_placement_density_lint/plans/01_element-placement-density-lint.md]
+- **Summary**: [179_typst_element_placement_density_lint/summaries/01_element-placement-density-lint-summary.md]
 
 **Description**: Add a mechanical element-placement and density lint to the typst extension, and wire it into the implementation agent's verification stage.
 
