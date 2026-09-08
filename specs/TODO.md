@@ -28,7 +28,7 @@ next_project_number: 190
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-157 [PLANNING] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
+157 [PLANNED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
 172 [NOT STARTED] — Close the taught-pattern gap that produced 22 unreapable poll loo
@@ -1212,10 +1212,11 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 157. Fix TODO.md summary lines: prefer .title, and stop the blind slice from splitting inline-code spans
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Plan**: [157_markdown_safe_todo_summary_truncation/plans/01_markdown-safe-summary-truncation.md]
 
 **Description**: The "Grouped by Topic" summary lines in TODO.md are cut with a blind character slice
 that can land inside an inline-code span, leaving an unclosed backtick that corrupts markdown
