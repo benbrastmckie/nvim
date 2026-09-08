@@ -1051,7 +1051,7 @@
     {
       "project_number": 176,
       "project_name": "fix_documented_full_build_guard_invocation",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Fix the documented lake-build-guard full-build invocation across the lean extension",
       "topic": "lean-extension",
@@ -1064,11 +1064,17 @@
         "agent-system/extensions/lean/rules/lean4.md",
         "agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/176_fix_documented_full_build_guard_invocation/plans/01_fix-full-build-guard-invocation.md",
+          "type": "plan",
+          "summary": "4-phase plan correcting five empty-vector lake-build-guard.sh full-build invocations across four lean-extension source files, with a fake-lake runtime proof, exhaustive source-store audit, consumer-propagation record, and a usage-banner handoff."
+        }
+      ],
       "description": "Fix the documented `lake-build-guard.sh` full-build invocation across the lean extension: four caller sites document a form that exits 77 without ever launching a build.\n\nOBSERVED, not theorized. During a `/orchestrate` run in ~/Projects/BimodalLogic, a `lean-implementation-agent` dispatch followed its own agent definition's documented build command and got exit 77 (`build mode requires a lake subcommand (e.g. 'build', 'test'); none was given`). The agent recovered by guessing the correct form, but the dispatch stalled mid-phase first and the orchestrator had to re-dispatch. Every affected site is a FULL-repository build -- the final verification gate -- which is exactly the invocation an agent reaches for at phase end.\n\nROOT CAUSE, confirmed in the guard's own source. `validate_build_subcommand()` (agent-system/extensions/core/scripts/lake-build-guard.sh, immediately above `main()`) rejects an EMPTY lake-argument vector with exit 77 before any dispatch. In build mode the lake subcommand must follow the `--`. `bash lake-build-guard.sh build --timeout 1800 -- 2>&1` passes an empty vector (the `2>&1` is shell redirection, not an argument), so it can never run. The correct full-build form is `bash lake-build-guard.sh build --timeout 1800 -- build`.\n\nTHE FOUR CALLER SITES (all in the source store; `.claude/**` is a regenerated deploy artifact and must not be hand-edited -- see rules/source-store-deploy-boundary.md):\n1. `agent-system/extensions/lean/agents/lean-implementation-agent.md:253` -- `build --timeout 1800 -- 2>&1`\n2. `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md:392` -- same shape\n3. `agent-system/extensions/lean/rules/lean4.md:51` -- \"Final verification only: `... --timeout 1800 --`\"\n4. `agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md:81` -- `build --timeout 1800 2>&1`, no `--` at all, same empty vector\n\nNote that the per-module forms at lean4.md:48/71, long-builds.md:75, lean-implementation-hard-agent.md:237 and skill-lake-repair/SKILL.md:79 are all CORRECT (`-- Module.Name` / `-- <lake args>`) -- only the full-build variants lost their subcommand. Verify each site rather than assuming this list is exhaustive; grep the whole source store for `lake-build-guard.sh build` and check every hit's argument vector.\n\nA SECOND, SEPARATE DISCREPANCY -- surface it, do not fix it here. The guard's own usage banner (lake-build-guard.sh header, and `print_help`) documents the trailing lake arguments as OPTIONAL: `[--] [LAKE ARGS...]`. That contradicts `validate_build_subcommand()`, which requires a non-empty vector. The banner is plausibly what taught the broken form in the first place. That fix belongs in lake-build-guard.sh, which is another task's `file_scope` (the guard-terminal-record task) -- do NOT edit the guard here; the two would collide on the same file. Record the discrepancy in this task's summary and name it for that task to pick up, or for its own follow-up.\n\nSCOPE. Correct the four (or more, if the grep finds them) caller sites to the working form. Keep each site's surrounding prose intent intact -- these are \"final verification\" instructions, so the replacement must remain a full-repository build, not silently become a per-module one. Do not modify lake-build-guard.sh or its tests.\n\nACCEPTANCE. Every `lake-build-guard.sh build` invocation in the source store either names a lake subcommand after `--` or is explicitly documented as a deliberate usage-error example. The corrected full-build form is verified to actually run -- not merely to parse -- at least once. Deploy the affected extension and confirm the regenerated `.claude/**` copies carry the fix.",
       "created": "2026-09-08T00:27:28Z",
-      "last_updated": "2026-09-08T19:07:52Z",
-      "session_id": "sess_1788894448_36ce34_176"
+      "last_updated": "2026-09-08T22:34:35Z",
+      "session_id": "sess_1788894448_36ce34"
     },
     {
       "project_number": 177,

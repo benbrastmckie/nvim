@@ -77,7 +77,7 @@ next_project_number: 190
 
 ### Lean Extension
 
-176 [PLANNING] — Fix the documented `lake-build-guard.sh` full-build invocation ac
+176 [PLANNED] — Fix the documented `lake-build-guard.sh` full-build invocation ac
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
@@ -565,10 +565,11 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 
 ### 176. Fix the documented lake-build-guard full-build invocation across the lean extension
 - **Effort**: 1-2 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
+- **Plan**: [176_fix_documented_full_build_guard_invocation/plans/01_fix-full-build-guard-invocation.md]
 
 **Description**: Fix the documented `lake-build-guard.sh` full-build invocation across the lean extension: four caller sites document a form that exits 77 without ever launching a build.
 
