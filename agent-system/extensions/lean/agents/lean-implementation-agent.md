@@ -296,6 +296,133 @@ This verification happens at the END of implementation, after all phases are com
    ```
    Record: `compliance_check` ("passed", "failed", or "skipped"). If "failed", set `status: "partial"`.
 
+6. **Comparator gate (advisory, opt-in — read `compare_flag` from the delegation context)**:
+
+   **The gate condition is this step's literal first line**: if `compare_flag` is not `true`, do
+   nothing — no invocation, no `comparator` block, no runtime cost — and skip the rest of this
+   step entirely. This step exists to run leanprover/comparator (a kernel-backed judge, not a
+   grep heuristic) against the snapshot Challenge and the implemented Solution, scoped to the
+   plan's named theorems, when — and only when — the caller opted in.
+
+   ```bash
+   if [ "${compare_flag:-false}" = "true" ]; then
+     comparator_ran=true
+     comparator_verdict_source=""
+     comparator_verdict=""
+     comparator_reason_detail=""
+     comparator_underlying_verdict=""
+     comparator_theorem_names_json="[]"
+     comparator_solution_module=""
+     comparator_challenge_commit=""
+     comparator_solution_commit=""
+     comparator_runtime_seconds=0
+
+     manifest_path="specs/${padded_num}_${project_name}/challenge/manifest.json"
+     if [ ! -f "$manifest_path" ]; then
+       # Preflight 1: Challenge manifest absent -- nobody ran the prerequisite at plan time.
+       comparator_ran=false
+       comparator_verdict_source="preflight"
+       comparator_verdict="challenge_missing"
+       comparator_reason_detail="No Challenge manifest at ${manifest_path}. Run lean-challenge-snapshot.sh to create the snapshot Challenge before using --compare."
+     else
+       # Preflight 2: read every input from the manifest -- never re-derive theorem_names from
+       # the plan's Goals bullets, since the snapshot already cross-validated the two sets.
+       comparator_project_root=$(jq -r '.project_root' "$manifest_path")
+       comparator_challenge_module=$(jq -r '.challenge_module' "$manifest_path")
+       comparator_challenge_path=$(jq -r '.challenge_path' "$manifest_path")
+       comparator_theorem_names_json=$(jq -c '.theorem_names' "$manifest_path")
+       comparator_theorem_names_csv=$(jq -r '.theorem_names | join(",")' "$manifest_path")
+       comparator_manifest_sha256=$(jq -r '.content_sha256' "$manifest_path")
+       comparator_challenge_commit=$(jq -r '.commit' "$manifest_path")
+
+       # Preflight 3: cross-check the Challenge content at the SOLUTION commit against the
+       # manifest's pinned content_sha256 -- the runner checks out ONE commit for both modules,
+       # so this catches Challenge/Solution commit divergence before trusting that run.
+       comparator_solution_commit=$(git -C "$comparator_project_root" rev-parse HEAD)
+       comparator_actual_sha256=$(git -C "$comparator_project_root" show "${comparator_solution_commit}:${comparator_challenge_path}" 2>/dev/null | sha256sum | cut -d' ' -f1)
+       if [ "$comparator_actual_sha256" != "$comparator_manifest_sha256" ]; then
+         comparator_ran=false
+         comparator_verdict_source="preflight"
+         comparator_verdict="challenge_drift"
+         comparator_reason_detail="Challenge content at solution commit ${comparator_solution_commit} (sha256 ${comparator_actual_sha256}) does not match the manifest's pinned content_sha256 (${comparator_manifest_sha256})."
+       else
+         # Preflight 4: derive solution_module -- reuse the Stage-5 compliance grep -rl discovery,
+         # never synthesize an aggregator module (Q2). Exactly one distinct file -> resolved;
+         # zero -> solution_module_unresolved; two or more -> solution_module_ambiguous.
+         comparator_candidate_files=""
+         for name in $(echo "$comparator_theorem_names_json" | jq -r '.[]'); do
+           matches=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" Theories/ 2>/dev/null || true)
+           comparator_candidate_files="${comparator_candidate_files}
+${matches}"
+         done
+         comparator_candidate_files=$(echo "$comparator_candidate_files" | sed '/^$/d' | sort -u)
+         comparator_candidate_count=$(echo "$comparator_candidate_files" | grep -c . || true)
+
+         if [ "$comparator_candidate_count" -eq 0 ]; then
+           comparator_ran=false
+           comparator_verdict_source="preflight"
+           comparator_verdict="solution_module_unresolved"
+           comparator_reason_detail="No file under Theories/ declares any of the manifest's theorem_names: $(echo "$comparator_theorem_names_json" | jq -r 'join(", ")')."
+         elif [ "$comparator_candidate_count" -gt 1 ]; then
+           comparator_ran=false
+           comparator_verdict_source="preflight"
+           comparator_verdict="solution_module_ambiguous"
+           comparator_reason_detail="Multiple files declare the manifest's theorem_names: $(echo "$comparator_candidate_files" | tr '\n' ',' | sed 's/,$//')"
+         else
+           # Exactly one file -- derive solution_module as the exact inverse of
+           # lean-challenge-snapshot.sh's CHALLENGE_REL_PATH convention: strip `.lean`, replace
+           # `/` with `.`. The candidate path is already project-root-relative (the grep above
+           # runs with cwd = project root, mirroring Stage 5's own assumption).
+           comparator_solution_file="$comparator_candidate_files"
+           comparator_solution_module=$(echo "$comparator_solution_file" | sed -E 's/\.lean$//; s#/#.#g')
+
+           comparator_run_start=$(date +%s)
+           comparator_json=$(bash .claude/scripts/lean-comparator-run.sh \
+             --project-root "$comparator_project_root" \
+             --challenge-module "$comparator_challenge_module" \
+             --solution-module "$comparator_solution_module" \
+             --theorems "$comparator_theorem_names_csv" \
+             --permitted-axioms "propext,Quot.sound,Classical.choice" \
+             --commit "$comparator_solution_commit" \
+             --json)
+           comparator_run_end=$(date +%s)
+           comparator_runtime_seconds=$((comparator_run_end - comparator_run_start))
+
+           # Do NOT pass --definitions here: a non-empty list downgrades an otherwise-`verified`
+           # result to `definition_hole_needs_human`, which is not what this gate is asking.
+           comparator_verdict_source="runner"
+           comparator_verdict=$(echo "$comparator_json" | jq -r '.verdict')
+           comparator_reason_detail=$(echo "$comparator_json" | jq -r '.reason_detail // empty')
+           comparator_underlying_verdict=$(echo "$comparator_json" | jq -r '.underlying_verdict // empty')
+         fi
+       fi
+     fi
+   fi
+   ```
+
+   **ADVISORY MUST NOTs — binding on every branch above, and on every reader of the recorded
+   result**: a `comparator` block, whatever its `verdict`, MUST NOT set
+   `verification.verification_passed: false`, MUST NOT set `status: "partial"`, MUST NOT set
+   `requires_user_review`, and MUST NOT be added to this file's own "On Verification Failure"
+   enumeration below. This wording is placed here, in the step's own text, precisely so a later
+   editor does not fold this step into that enumeration.
+
+   Record the outcome in a `comparator` block in `.return-meta.json` (see
+   `@.claude/context/formats/return-metadata-file.md`'s `### comparator (optional)` section for
+   the full field table): `ran`, `verdict`, `verdict_source`, `reason_detail` (if any),
+   `underlying_verdict` (only for `definition_hole_needs_human`), `theorem_names` (from the
+   manifest), `permitted_axioms` (the literal list passed above), `solution_module` (if
+   resolved), `challenge_commit`, `solution_commit`, and `runtime_seconds`. Omit the `comparator`
+   block entirely when `compare_flag` was not `true` — there is no `"ran": false` "not requested"
+   record.
+
+   Name any non-`verified` verdict prominently — a dedicated section, not a buried line — in
+   both the implementation summary artifact and the returned brief text summary. Record concrete
+   promotion-to-hard-gate criteria (N consecutive `verified` runs across M distinct target
+   projects with zero `comparator_unavailable`/preflight-sourced verdicts, plus a measured p95
+   runtime under an agreed budget) in the implementation summary, so a later decision to promote
+   this gate from advisory to blocking has evidence rather than vibes.
+
 ### Recording Verification Results
 
 The verification results MUST be included in the final metadata. In addition, per

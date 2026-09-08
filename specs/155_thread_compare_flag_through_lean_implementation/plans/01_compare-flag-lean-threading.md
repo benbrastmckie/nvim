@@ -328,23 +328,23 @@ is implemented.
 
 ---
 
-### Phase 4: Agent Gate — Comparator step in both Final Verification Stages [NOT STARTED]
+### Phase 4: Agent Gate — Comparator step in both Final Verification Stages [COMPLETED]
 
 **Goal**: Both Lean implementation agents run the Comparator against the snapshot Challenge and
 the implemented Solution when — and only when — `compare_flag == true`, and record the result in
 the `comparator` block without ever changing their own status logic.
 
 **Tasks**:
-- [ ] **Re-read both agent files fresh** before editing (the lean artifact-skeletons task edits
+- [x] **Re-read both agent files fresh** before editing (the lean artifact-skeletons task edits
       `lean-implementation-agent.md` concurrently; any line number in this plan is stale by
-      assumption).
-- [ ] In `agents/lean-implementation-agent.md`, append a numbered step 6 to the Final Verification
-      Stage checklist, after "Plan compliance spot-check".
-- [ ] In `agents/lean-implementation-hard-agent.md`, append the structurally identical step 6 to
-      its Stage 6 checklist.
-- [ ] The step's literal first line is the gate: if `compare_flag` is not `true`, do nothing —
-      no invocation, no `comparator` block, no runtime cost — and skip the rest of the step.
-- [ ] Preflight, in order, each producing a `verdict_source: "preflight"` verdict on failure and
+      assumption). *(completed)*
+- [x] In `agents/lean-implementation-agent.md`, append a numbered step 6 to the Final Verification
+      Stage checklist, after "Plan compliance spot-check". *(completed)*
+- [x] In `agents/lean-implementation-hard-agent.md`, append the structurally identical step 6 to
+      its Stage 6 checklist. *(completed)*
+- [x] The step's literal first line is the gate: if `compare_flag` is not `true`, do nothing —
+      no invocation, no `comparator` block, no runtime cost — and skip the rest of the step. *(completed)*
+- [x] Preflight, in order, each producing a `verdict_source: "preflight"` verdict on failure and
       stopping without invoking the runner:
       1. Locate `specs/{padded_num}_${project_name}/challenge/manifest.json`. Absent ->
          `challenge_missing`, with `reason_detail` naming
@@ -358,28 +358,28 @@ the `comparator` block without ever changing their own status logic.
          sha256sum` against the manifest's `content_sha256`. Mismatch -> `challenge_drift`.
       4. Derive `solution_module` per this plan's Q2 rule, reusing the Stage-5 compliance
          `grep -rl` discovery. Zero matches -> `solution_module_unresolved`; two or more distinct
-         files -> `solution_module_ambiguous` with the candidate list in `reason_detail`.
-- [ ] Invoke `bash .claude/scripts/lean-comparator-run.sh --json` with `--project-root`,
+         files -> `solution_module_ambiguous` with the candidate list in `reason_detail`. *(completed)*
+- [x] Invoke `bash .claude/scripts/lean-comparator-run.sh --json` with `--project-root`,
       `--challenge-module`, `--solution-module`, `--theorems` (the manifest list, comma-joined),
       `--permitted-axioms propext,Quot.sound,Classical.choice`, and
       `--commit "$solution_commit"`. Do not pass `--definitions` (a non-empty list downgrades an
       otherwise-`verified` result to `definition_hole_needs_human`, which is not what this gate
-      is asking).
-- [ ] Capture wall-clock elapsed seconds around the invocation as `runtime_seconds`.
-- [ ] Map the runner's `--json` output into the `comparator` block: `verdict`, `reason_detail`,
+      is asking). *(completed)*
+- [x] Capture wall-clock elapsed seconds around the invocation as `runtime_seconds`. *(completed)*
+- [x] Map the runner's `--json` output into the `comparator` block: `verdict`, `reason_detail`,
       `underlying_verdict` carried through unchanged, with `verdict_source: "runner"`, plus
       `ran: true`, `theorem_names`, `permitted_axioms`, `solution_module`, `challenge_commit`
-      (the manifest's `commit`), `solution_commit`, and `runtime_seconds`.
-- [ ] State explicitly, inside the new step's own text: a non-`verified` verdict MUST NOT set
+      (the manifest's `commit`), `solution_commit`, and `runtime_seconds`. *(completed)*
+- [x] State explicitly, inside the new step's own text: a non-`verified` verdict MUST NOT set
       `status: "partial"`, MUST NOT set `verification_passed` false, MUST NOT set
       `requires_user_review`, and MUST NOT be added to the file's existing "On verification
       failure" enumeration. This wording exists precisely so a later editor does not fold the new
-      step into that list.
-- [ ] Require the agent to name any non-`verified` verdict prominently in its implementation
+      step into that list. *(completed)*
+- [x] Require the agent to name any non-`verified` verdict prominently in its implementation
       summary artifact (a dedicated section, not a buried line) and in its returned brief text
-      summary.
-- [ ] Require the summary to record concrete promotion-to-hard-gate criteria (see Phase 6's
-      wording requirement).
+      summary. *(completed)*
+- [x] Require the summary to record concrete promotion-to-hard-gate criteria (see Phase 6's
+      wording requirement). *(completed)*
 
 **Timing**: 2 hours
 
