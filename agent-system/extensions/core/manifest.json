@@ -173,6 +173,7 @@
       "tests/test-git-commit-scoped.sh",
       "tests/test-guard-destructive-git.sh",
       "tests/test-deploy-freshness.sh",
+      "tests/test-deploy-baseline-lib.sh",
       "tests/test-consumer-freshness.sh",
       "tests/test-deploy-orphans.sh",
       "tests/test-postflight-deploy-gate.sh",

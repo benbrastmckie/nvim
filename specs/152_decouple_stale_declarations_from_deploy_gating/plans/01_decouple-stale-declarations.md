@@ -443,23 +443,23 @@ misled the way `regeneration-is-manual-only.md` predicted.
 
 ---
 
-### Phase 7: Tests and the four acceptance demonstrations [NOT STARTED]
+### Phase 7: Tests and the four acceptance demonstrations [IN PROGRESS]
 
 **Goal**: Prove the tolerance is narrow rather than assume it, with a harness that drives all
 three checkpoint branches and demonstrates each of the dispatch's four acceptance criteria.
 
 **Tasks**:
 
-- [ ] Create `scripts/tests/test-deploy-baseline-lib.sh`: unit coverage of
+- [x] Create `scripts/tests/test-deploy-baseline-lib.sh`: unit coverage of
       `deploy_findings_snapshot` (exit 0 → findings; exit 1 → findings; exit 2 → the single
       sentinel line) and `deploy_baseline_new_findings` (identical sets → empty; superset →
       exactly the added lines; the documented pre-exit-0/post-exit-2 case → non-empty).
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` with a stubbed `deploy-headless.sh`
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` with a stubbed `deploy-headless.sh`
       driving the checkpoint through all three branches, asserting on `mt_state_file`:
       exit 1 → `deferred_deploy_checkpoint` populated, no baseline notice; exit 3 with an
       unchanged finding set → `verify_deploy_baseline_notices` appended, `deployed_critical_paths`
       updated, batch NOT deferred; exit 3 with an added finding → deferred, no baseline notice.
-- [ ] Register both test files in `manifest.json` `provides.scripts` (the second is already
+- [x] Register both test files in `manifest.json` `provides.scripts` (the second is already
       registered; confirm rather than assume).
 - [ ] Acceptance demonstration 1 (`line_count` drift cannot occur silently): edit an indexed
       file, deploy, show the gate green with no manual declaration edit — capture the console

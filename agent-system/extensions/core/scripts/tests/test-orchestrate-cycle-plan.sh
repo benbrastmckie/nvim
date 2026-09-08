@@ -1046,6 +1046,143 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 11: Inter-cycle redeploy checkpoint -- the three-branch (a)/(b)/(c) contract, driven with
+# a stubbed deploy-headless.sh and a call-counting stubbed verify-deploy.sh (first invocation is
+# the PRE snapshot, second is the POST snapshot -- matching the checkpoint's own call order:
+# pre_findings, then deploy-headless.sh, then post_findings). SCRIPT_DIR interposition confirmed
+# reachable: the checkpoint invokes `bash "$SCRIPT_DIR/deploy-headless.sh"` and
+# `deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh"`, and $SCRIPT_DIR resolves to this
+# fixture's own $WORKDIR/.claude/scripts (the SUT's own BASH_SOURCE-derived directory) -- so a
+# same-named stub dropped there is picked up with no further interposition machinery needed.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 11: inter-cycle redeploy checkpoint (three-branch contract)"
+
+G11_CALL_MARKER="$WORKDIR/.claude/scripts/.g11_verify_call_count"
+
+# write_g11_verify_stub <pre_findings_line_or_empty> <post_findings_line_or_empty> <exit_code>
+# Call-counting: 1st invocation prints only the PRE line (if any) and exits with the given code;
+# every subsequent invocation prints PRE+POST lines (if any) and exits with the given code. This
+# mirrors "the post snapshot is a superset when a NEW finding appeared" (branch b) vs. "the post
+# snapshot is identical to pre" (branch c) using literal line content, not just exit codes.
+write_g11_verify_stub() {
+  local pre="$1" post="$2" rc="$3"
+  cat > "$WORKDIR/.claude/scripts/verify-deploy.sh" <<EOF
+#!/usr/bin/env bash
+marker="$G11_CALL_MARKER"
+count=0
+[ -f "\$marker" ] && count=\$(cat "\$marker")
+count=\$((count + 1))
+echo "\$count" > "\$marker"
+if [ -n "$pre" ]; then echo "$pre"; fi
+if [ "\$count" -gt 1 ] && [ -n "$post" ]; then echo "$post"; fi
+exit $rc
+EOF
+  chmod +x "$WORKDIR/.claude/scripts/verify-deploy.sh"
+}
+
+write_g11_deploy_headless_stub() {
+  local rc="$1"
+  cat > "$WORKDIR/.claude/scripts/deploy-headless.sh" <<EOF
+#!/usr/bin/env bash
+echo "[deploy-headless] (stub) simulated run, exit $rc" >&2
+exit $rc
+EOF
+  chmod +x "$WORKDIR/.claude/scripts/deploy-headless.sh"
+}
+
+g11_seed_state_and_mt() {
+  # A single terminal (abandoned) task -- mirrors Group 1's fixture shape -- so the SUT reaches
+  # the checkpoint (which runs before any candidate-eligibility work) and then cleanly stops with
+  # no dispatch, needing no orchestrate-build-dispatch.sh/update-task-status.sh stubbing.
+  write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9101, "project_name": "g11_terminal", "task_type": "general", "status": "abandoned", "description": "terminal fixture task, unrelated to the checkpoint under test", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+  reset_lock_dirs
+  rm -f "$G11_CALL_MARKER"
+  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${1}.json"
+  rm -f "$mt_file"
+  jq -n --argjson tn "[9101]" '{
+    task_numbers: $tn,
+    cycle_modified_files: [".claude/scripts/orchestrate-cycle-plan.sh"]
+  }' > "$mt_file"
+}
+
+# ── Case (a): deploy-headless.sh exit 1 -- unconditional defer, NO baseline consultation. The
+# stubbed verify-deploy.sh below would report a NEW finding on its 2nd call if reached; case (a)
+# must never reach that 2nd call at all, which the call-count assertion below also pins. ─────────
+g11_seed_state_and_mt "g11_a"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
+write_g11_deploy_headless_stub 1
+run_sut --session g11_a -- 9101
+mt_a="$WORKDIR/specs/.orchestrator-multi-state-g11_a.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_a" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (a): deploy-headless.sh exit 1 defers the batch (deferred_deploy_checkpoint contains the task)"
+else
+  fail "checkpoint (a): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_a" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices | length' "$mt_a" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (a): no baseline notice recorded (branch (a) never consults the baseline)"
+else
+  fail "checkpoint (a): unexpected verify_deploy_baseline_notices entry recorded"
+fi
+if [ -f "$G11_CALL_MARKER" ] && [ "$(cat "$G11_CALL_MARKER")" = "1" ]; then
+  pass "checkpoint (a): verify-deploy.sh called exactly once (pre-snapshot only; post-snapshot never taken)"
+else
+  fail "checkpoint (a): expected exactly one verify-deploy.sh call, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
+fi
+
+# ── Case (b): deploy-headless.sh exit 3 (landed, gate red) WITH a genuinely new finding relative
+# to the pre-redeploy baseline -- defer, same as (a)'s outcome, but reached via the baseline
+# comparison this time (this is what the plan calls "the tolerance proven narrow"). ─────────────
+g11_seed_state_and_mt "g11_b"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_b -- 9101
+mt_b="$WORKDIR/specs/.orchestrator-multi-state-g11_b.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_b" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (b): a NEW finding on exit 3 still defers the batch"
+else
+  fail "checkpoint (b): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_b" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices | length' "$mt_b" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (b): no baseline notice recorded (a genuinely new failure is not a tolerated pre-existing one)"
+else
+  fail "checkpoint (b): unexpected verify_deploy_baseline_notices entry recorded"
+fi
+
+# ── Case (c): deploy-headless.sh exit 3 (landed, gate red) with EVERY post-redeploy finding
+# already present pre-redeploy -- proceed, record a verify_deploy_baseline_notices entry, do NOT
+# defer. This is the exact branch that was UNREACHABLE before this task (the whole point of the
+# fix): a pre-existing, unrelated red gate must not defer the batch. ────────────────────────────
+g11_seed_state_and_mt "g11_c"
+write_g11_verify_stub "FINDING gate1 pre-existing" "" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_c -- 9101
+mt_c="$WORKDIR/specs/.orchestrator-multi-state-g11_c.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_c" 2>/dev/null)" = "false" ] || \
+   [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_c" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (c): a pre-existing-only finding set on exit 3 does NOT defer the batch"
+else
+  fail "checkpoint (c): batch was unexpectedly deferred (mt_state: $(cat "$mt_c" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices | length' "$mt_c" 2>/dev/null)" -ge "1" ]; then
+  pass "checkpoint (c): a verify_deploy_baseline_notices entry was recorded"
+else
+  fail "checkpoint (c): expected a verify_deploy_baseline_notices entry, found none (mt_state: $(cat "$mt_c" 2>/dev/null))"
+fi
+if [ "$(jq -r '.deployed_critical_paths | index(".claude/scripts/orchestrate-cycle-plan.sh") != null' "$mt_c" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (c): deployed_critical_paths records the matched critical path"
+else
+  fail "checkpoint (c): deployed_critical_paths does not record the matched path (mt_state: $(cat "$mt_c" 2>/dev/null))"
+fi
+
+rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

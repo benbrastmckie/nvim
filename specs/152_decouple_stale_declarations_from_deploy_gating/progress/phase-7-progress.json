@@ -1,0 +1,17 @@
+{
+  "phase": 7,
+  "phase_name": "Tests and the four acceptance demonstrations",
+  "started_at": "2026-09-08T01:16:00Z",
+  "last_updated": "2026-09-08T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/tests/test-deploy-baseline-lib.sh unit coverage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"]},
+    {"id": 2, "description": "Extend test-orchestrate-cycle-plan.sh with stubbed deploy-headless.sh driving all three checkpoint branches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Register both test files in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Redeploy .claude/ from source store, then run scripts/tests/run-all.sh and full verify-deploy.sh", "status": "in_progress", "files_touched": []},
+    {"id": 5, "description": "Capture the four acceptance demonstrations", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "test-deploy-baseline-lib.sh: 7/7 pass (unit coverage of both exported functions, including the set -e -o pipefail abort regression this task's own implementation work uncovered and fixed). test-orchestrate-cycle-plan.sh: 85/85 pass including 8 new Group 11 cases covering all three checkpoint branches with a call-counting stubbed verify-deploy.sh and a stubbed deploy-headless.sh -- this Group 11 run doubles as acceptance demonstrations 2 (pre-existing red gate does not defer) and 3 (a new failure still defers)."
+}
