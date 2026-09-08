@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md",
+      "summary": "Maps every DESIGN clause to concrete file/line targets across the 10 file_scope files; finds the --focus flag on orchestrate-build-dispatch.sh is already built but has zero callers, and that an unhandled needs_research dispatch_status would fall into the postflight catch-all and halt the whole /orchestrate run with a recorded OFF_SCHEMA_STATUS defect unless a dedicated case arm is added first."
+    }
+  ],
+  "next_steps": "Run /plan 150 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788849084_1040b7_150",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system's four-move /orchestrate engine, orchestrate-build-dispatch.sh already parses a --focus \"<text>\" flag that (a) renders as 'User focus: ...' in the dispatch file right after the Description, and (b) threads into memory-retrieve.sh's third arg only when phase==research. As of task 150's research pass, no caller anywhere in agent-system/extensions/ passes --focus -- it is finished, tested plumbing waiting for a producer. Before building a new mechanism to inject a focused question/topic list into a research dispatch, check whether wiring a caller to pass --focus is sufficient.",
+      "category": "PATTERN",
+      "source_artifact": "specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-build-dispatch", "--focus", "research dispatch", "dispatch file", "orchestrate engine"]
+    },
+    {
+      "content": "orchestrate-cycle-postflight.sh's status-transition switch (case \"$dispatch_status\" in researched|planned|implemented|partial|failed|blocked|*) treats any unrecognized dispatch_status value as off-schema: it sets offschema_dispatch_status=true, verdict=failed, halt=true, and records an OFF_SCHEMA_STATUS system defect via system-defect-record.sh -- halt=true aborts the ENTIRE /orchestrate invocation, not just the one task. Any future work that adds a new .return-meta.json status/dispatch_status value (extending return-metadata-file.md's status enum) MUST add a dedicated case arm to this switch (and to the paired verdict-resolution switch a few dozen lines below) BEFORE the catch-all, or the new status will silently halt every orchestrate run that produces it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "dispatch_status", "off-schema", "OFF_SCHEMA_STATUS", "verdict", "halt"]
+    },
+    {
+      "content": "update-task-status.sh's --file-scope-add flag (restricted to operation=postflight && target_status=research) and skill-base.sh's skill_postflight_update()'s _fsa_args pattern together form a reusable template for 'carry a field discovered during one agent's work into a durable state.json write-back at postflight time': read a specific key off the just-completed agent's own .return-meta.json (here: proposed_file_scope), forward it as a new CLI flag to update-task-status.sh, and additively merge it into a state.json task-record field. Any new cross-phase write-back (e.g. task 150's planner-question-list carry-forward) should copy this exact shape rather than inventing a new persistence channel -- and should NOT use orchestrate-cycle-plan.sh's mt_state_file for this, since that file is explicitly minted fresh per /orchestrate invocation (keyed by session_id) and does not survive across separate invocations.",
+      "category": "PATTERN",
+      "source_artifact": "specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["file-scope-add", "skill_postflight_update", "write-back", "state.json", "mt_state_file", "durable state"]
+    }
+  ],
+  "dispatch_seq": 4
+}
