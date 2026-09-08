@@ -22,8 +22,8 @@ a special case: it is the same loop with `task_numbers` of length one.
 
 | State | Detected By | Action | Success Next | Failure Next |
 |-------|-------------|--------|--------------|--------------|
-| `not_started` | `state.json status = "not_started"` | `dispatch(research, task_n)` | `researched` | increment cycle, loop |
-| `researching` | `status = "researching"` | `dispatch(research, task_n)` — CONVERGED with `not_started` (was: wait/re-check, exit with warning; see "Convergence: `researching`/`planning` No Longer Exit" below) | `researched` | increment cycle, loop |
+| `not_started` | `state.json status = "not_started"` | `dispatch(plan, task_n)` — research on demand (Stage A.8): the default lifecycle is plan → implement; the planner itself requests a research phase via a `needs_research` verdict when the description does not suffice (see the `needs_research` fork footnote below) | `planned` | increment cycle, loop |
+| `researching` | `status = "researching"` | `dispatch(research, task_n)` — no longer converged with `not_started` (that row now routes to `plan`, per the research-on-demand flip). `researching` has TWO producers: `preflight:research` (an ordinary in-flight research dispatch) and a planner's `needs_research` verdict (`postflight:needs_research`, see the `needs_research` fork footnote below) — the same resting state, reused rather than minting a new one. Also still reachable from a dead prior session's stale lock (see "Convergence: `researching`/`planning` No Longer Exit" below) | `researched` | increment cycle, loop |
 | `researched` | `status = "researched"` | `dispatch(plan, task_n)` | `planned` | increment cycle, loop |
 | `planning` | `status = "planning"` | `dispatch(plan, task_n)` — CONVERGED with `researched` (was: wait/re-check, exit with warning; see "Convergence: `researching`/`planning` No Longer Exit" below) | `planned` | increment cycle, loop |
 | `planned` | `status = "planned"` | `dispatch(implement, task_n, orchestrator_mode=true)` | `implemented` | check blockers |
@@ -71,6 +71,36 @@ resume context from the prior dispatch's `.return-meta.json`; the `partial` (no 
 limit) row above is reached through the same generic end-of-cycle check that governs every other
 non-terminating row, not through a dedicated early exit.
 
+### The `needs_research` Fork (Research on Demand, Stage A.8)
+
+The default lifecycle is `plan → implement`, not `research → plan → implement`: a fresh
+(`not_started`) task dispatches straight to the PLANNER. The planner opens with an assessment
+step (`agents/planner-agent.md`) — if the task description plus what it can read in the codebase
+suffices to write a plan meeting `plan-format.md`, it plans normally (`planned`, converging with
+the ordinary `researched → dispatch(plan) → planned` row above). If not, it writes NO plan and
+returns `status: needs_research` in its `.return-meta.json`, carrying a focused
+`research_questions` array naming what a research phase must establish.
+
+`orchestrate-cycle-postflight.sh` resolves a `needs_research` outcome to its OWN verdict
+(`verdict=needs_research`, `halt=false` — never the off-schema catch-all) and writes state.json
+status `researching` — the SAME resting state `preflight:research` already produces, reusing the
+existing `researching → dispatch(research)` classifier row rather than minting a new one — plus
+the `research_questions` array (see `context/reference/state-management-schema.md`'s Research
+Questions Field). The NEXT cycle's classifier therefore routes the task to `research` exactly as
+it would for an ordinary `not_started`-turned-`researching` task; `orchestrate-cycle-plan.sh`
+reads the persisted `research_questions`, joins them into a single string, and passes it as
+`--focus` to `orchestrate-build-dispatch.sh` (an already-built, already phase-gated flag — no
+change needed inside that script), so the research agent's dispatch file carries a `User focus:`
+block naming exactly what to answer. Once research completes (`researched`), the task proceeds
+to `plan` as normal — this time with a report on disk, so the planner's assessment step should
+now find the description sufficient.
+
+`--research` (the phase-forcing flag) is unrelated to and unaffected by this fork: it forces the
+research phase first on a fresh task through the existing `force_phases_remaining` queue,
+independent of the classifier default, and bypasses the planner's assessment entirely. A task
+that already has a report is never asked again (the planner's assessment step only fires when no
+report exists for the current round).
+
 ---
 
 ## State Transition Diagram (ASCII)
@@ -87,12 +117,21 @@ non-terminating row, not through a dedicated early exit.
          not_started           researched             planned /
               │                     │               implementing /
               ▼                     ▼                  partial
-         dispatch                dispatch                 │
-         research                  plan                   ▼
-              │                     │              dispatch implement
-              │                     │              (orchestrator_mode)
-              └─────────►─────────-─┘                     │
-                                                           │
+              └─────────►dispatch plan◄──────┘             │
+                              │                             ▼
+                    ┌─────────┴─────────┐            dispatch implement
+                    │                   │            (orchestrator_mode)
+              needs_research         planned                │
+                    │                   │                   │
+                    ▼                   │                   │
+             dispatch research          │                   │
+                    │                   │                   │
+                    ▼                   │                   │
+               researched               │                   │
+                    │                   │                   │
+                    └───►(loops back to dispatch plan,        │
+                          research on demand, Stage A.8)      │
+                                                               │
                                         ┌──────────────────┼──────────────────┐
                                         │                  │                  │
                                     success            partial+           partial+
@@ -118,6 +157,12 @@ non-terminating row, not through a dedicated early exit.
                                                            loop back         EXIT
                                                           to dispatch      (partial)
 ```
+
+The `not_started`/`researched` fork at the top merges into a single `dispatch plan` node
+(research on demand, Stage A.8): `not_started` now goes straight to `plan`, and the planner
+itself forks back out to `dispatch research` only on a `needs_research` verdict, looping back to
+`dispatch plan` once research completes. See "The `needs_research` Fork" above for the full
+narrative.
 
 ---
 
@@ -251,18 +296,50 @@ and the Move 3 `orchestrate-cycle-postflight.sh` compact JSON per task (~174 B).
 
 ## Example Flows
 
-### Normal Flow (3 phases, no blockers)
+### Normal Flow (specification-shaped task, no research needed)
+
+Research on demand (Stage A.8): a task whose description already carries the defect, the
+evidence, the work list, and the acceptance bar needs no research phase at all.
 
 ```
-Cycle 1: status=not_started → dispatch research
-         handoff: {status: "researched", summary: "Found 3 approaches..."}
-         state.json: status → researched
-
-Cycle 2: status=researched → dispatch plan
+Cycle 1: status=not_started → dispatch plan
+         planner's opening assessment: description + codebase reads suffice
          handoff: {status: "planned", summary: "4-phase plan created..."}
          state.json: status → planned
 
-Cycle 3: status=planned → dispatch implement (orchestrator_mode=true)
+Cycle 2: status=planned → dispatch implement (orchestrator_mode=true)
+         handoff: {status: "implemented", summary: "All 4 phases complete..."}
+         state.json: status → completed
+
+EXIT: Task {N} completed successfully.
+```
+
+### Research-on-Demand Flow (planner requests research)
+
+A task whose plan would otherwise rest on guesses about facts an agent can establish (an
+external API, an unfamiliar code path, literature) routes to research — but only because the
+PLANNER asked, not because the orchestrator or a keyword heuristic decided.
+
+```
+Cycle 1: status=not_started → dispatch plan
+         planner's opening assessment: description + codebase reads do NOT suffice
+         .return-meta.json: {status: "needs_research", artifacts: [],
+                              research_questions: ["Does library X expose a streaming API?", ...]}
+         postflight: verdict=needs_research, halt=false
+         state.json: status → researching, research_questions persisted
+
+Cycle 2: status=researching → dispatch research
+         dispatch file carries "User focus: Does library X expose a streaming API?; ..."
+         (research_questions joined via --focus, see "The needs_research Fork" above)
+         handoff: {status: "researched", summary: "Confirmed X's streaming API..."}
+         state.json: status → researched
+
+Cycle 3: status=researched → dispatch plan
+         planner's opening assessment now succeeds (report on disk)
+         handoff: {status: "planned", summary: "4-phase plan created..."}
+         state.json: status → planned
+
+Cycle 4: status=planned → dispatch implement (orchestrator_mode=true)
          handoff: {status: "implemented", summary: "All 4 phases complete..."}
          state.json: status → completed
 

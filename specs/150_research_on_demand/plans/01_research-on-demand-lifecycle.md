@@ -312,42 +312,42 @@ writes `researching` and persists the question list -- never touching the off-sc
 
 ---
 
-### Phase 4: Flip the default route and wire the question list into the research dispatch [NOT STARTED]
+### Phase 4: Flip the default route and wire the question list into the research dispatch [COMPLETED]
 
 **Goal**: Make `plan` the default first dispatch for a fresh task everywhere it is decided, and
 carry the planner's questions into the follow-up research dispatch file.
 
 **Tasks**:
-- [ ] Flip `orchestrate-triage-classify.sh`'s live jq classifier: `not_started` routes to `plan`,
-      with its `reason` string updated to say so.
-- [ ] Flip the same `not_started` row in the `blocked`-discharge re-routing table, which reuses
-      the identical status ladder against `previous_status`.
-- [ ] Flip the degraded-classifier fallback table in `orchestrate-cycle-plan.sh`: `not_started`
+- [x] Flip `orchestrate-triage-classify.sh`'s live jq classifier: `not_started` routes to `plan`,
+      with its `reason` string updated to say so. *(completed)*
+- [x] Flip the same `not_started` row in the `blocked`-discharge re-routing table, which reuses
+      the identical status ladder against `previous_status`. *(completed)*
+- [x] Flip the degraded-classifier fallback table in `orchestrate-cycle-plan.sh`: `not_started`
       moves out of the `research` arm into the `plan` arm. Leave `researching` in the `research`
       arm -- that row is now load-bearing for the `needs_research` return path. Note that
-      splitting the previously-combined `not_started|researching)` case is the point of this edit.
-- [ ] Update the header comment table in `orchestrate-triage-classify.sh` documenting the
+      splitting the previously-combined `not_started|researching)` case is the point of this edit. *(completed)*
+- [x] Update the header comment table in `orchestrate-triage-classify.sh` documenting the
       `not_started` row, and extend the file header's "one code path" discipline note to name the
       degraded fallback table in `orchestrate-cycle-plan.sh` as a fourth site that must move in
       lockstep -- the header does not currently mention it, which is exactly how the drift risk
-      arises.
-- [ ] Update `docs/architecture/orchestrate-state-machine.md`'s Complete State Table: the
+      arises. *(completed)*
+- [x] Update `docs/architecture/orchestrate-state-machine.md`'s Complete State Table: the
       `not_started` row becomes `dispatch(plan, task_n)`, the `researching` row keeps
       `dispatch(research, task_n)` with a note naming its second producer, and a footnote
-      describes the `needs_research` fork.
-- [ ] Update the ASCII State Transition Diagram in the same doc: the left branch becomes
+      describes the `needs_research` fork. *(completed: also added a dedicated "The needs_research Fork" subsection and a matching worked-example flow)*
+- [x] Update the ASCII State Transition Diagram in the same doc: the left branch becomes
       `dispatch plan`, with a new branch drawing the `needs_research` fork from plan back to
-      research and onward to plan again.
-- [ ] In `orchestrate-cycle-plan.sh`'s per-task dispatch loop, when and only when building a
+      research and onward to plan again. *(completed)*
+- [x] In `orchestrate-cycle-plan.sh`'s per-task dispatch loop, when and only when building a
       `research`-phase dispatch, read the task's `research_questions` array from `state.json`,
       join it into a single string, and pass it as `--focus "<joined>"` to
       `orchestrate-build-dispatch.sh`. No change inside `orchestrate-build-dispatch.sh` is needed:
       `--focus` is already parsed, already rendered into the dispatch body, and already
-      phase-gated to `research` for the memory-retrieve hand-off.
-- [ ] Verify `--research` still forces research first through the existing
+      phase-gated to `research` for the memory-retrieve hand-off. *(completed: verified end-to-end via fixture -- the joined questions reach orchestrate-build-dispatch.sh's argv as --focus, and a task with no research_questions passes no flag)*
+- [x] Verify `--research` still forces research first through the existing
       `force_phases_remaining` queue, independent of the classifier default and of any
       `needs_research` machinery. This is a verification step, not a code change; record the
-      evidence.
+      evidence. *(completed: confirmed by code reading -- effective_group[$t] is set from force_phases_remaining when non-empty, unconditionally overriding triage_group[$t])*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Flip the default route and wire the question list into the research dispatch",
+  "started_at": "2026-09-08T02:10:00Z",
+  "last_updated": "2026-09-08T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Flip live jq classifier: not_started routes to plan", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 2, "description": "Flip blocked-discharge re-routing table's not_started row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 3, "description": "Flip degraded-classifier fallback table in orchestrate-cycle-plan.sh, split not_started|researching)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Update header comment table and one-code-path discipline note (4th site)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 5, "description": "Update orchestrate-state-machine.md's Complete State Table (not_started row, researching row, needs_research footnote)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 6, "description": "Update ASCII State Transition Diagram (left branch, needs_research fork)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"], "note": "Also added a new needs_research fork worked-example flow and updated the existing 'Normal Flow' example to the new plan-first default, plus a caption note after the diagram for extra clarity given ASCII alignment limits."},
+    {"id": 7, "description": "Wire research_questions into --focus at the research-dispatch build call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Verify --research still forces research first (verification only, no code change)", "status": "done", "note": "Confirmed by code reading: effective_group[$t] is set from force_phases_remaining when non-empty, completely overriding triage_group[$t] (the classifier's own output) -- independent of the not_started->plan flip. --research is unaffected."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "scope_sweep": "grep -rn 'not_started' agent-system/extensions/core/scripts/ agent-system/extensions/core/docs/ reconciled against the plan's Phase 4 file list. All routing-relevant hits accounted for (the 3 script sites + state-machine.md). Non-routing hits (status-vocabulary.sh's enum, generate-todo.sh/generate-task-order.sh's TODO.md rendering, reconcile-task-status.sh's crash-recovery promotion logic, orchestrate-batch-admit.sh's IDLE-status classification, test fixtures, and historical example docs like research-flow-example.md which traces the --research-forced path specifically, itself unaffected by the default flip) left unchanged -- none make a stale ROUTING claim about the not_started default this phase changes.",
+  "verification": {
+    "existing_suite_cycle_plan": "PASS - test-orchestrate-cycle-plan.sh: 89/89 passed against the edited source-store orchestrate-cycle-plan.sh/orchestrate-triage-classify.sh -- no fixture in this suite depended on the old not_started->research default, so no regression",
+    "existing_suite_triage_classify": "EXPECTED FAIL (pre-existing test asserts old default) - test-orchestrate-triage-classify.sh's sandbox probe hardcodes not_started->research and aborts on mismatch by design ('escalate rather than route around the friction'); output confirms group=plan is now returned correctly. This test's own fixtures are Phase 6's explicit task ('add fixtures asserting not_started routes to plan... and researching still routes to research'), not fixed here.",
+    "fixture_focus_wiring": "PASS - standalone fixture (test-orchestrate-cycle-plan.sh's own stubbed-build-dispatch harness pattern, reused) dispatched three tasks through the real orchestrate-cycle-plan.sh end to end: (1) a 'researching' task with research_questions produced argv containing '--focus <joined questions>'; (2) a 'researching' task with no research_questions produced no --focus flag; (3) a 'not_started' task routed to phase=plan, agent=planner-agent, confirming the default flip end-to-end through admission and dispatch"
+  }
+}

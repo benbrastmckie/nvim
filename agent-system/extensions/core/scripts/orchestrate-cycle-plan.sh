@@ -1062,7 +1062,14 @@ if [ "$triage_exit" -ne 0 ]; then
   for t in "${eligible_tasks[@]}"; do
     st="${current_statuses[$t]}"
     case "$st" in
-      not_started|researching) triage_group[$t]="research" ;;
+      # not_started now routes to plan (research on demand -- Stage A.8): the planner assesses
+      # whether the description suffices and requests research itself via needs_research if not.
+      # researching stays in the research arm -- that row is load-bearing for the needs_research
+      # return path (a task a planner sent back for research must re-enter research, not plan).
+      # Splitting the previously-combined `not_started|researching)` case is the point of this
+      # edit; researched/planning are unaffected and still route to plan.
+      not_started) triage_group[$t]="plan" ;;
+      researching) triage_group[$t]="research" ;;
       researched|planning) triage_group[$t]="plan" ;;
       planned|implementing|partial) triage_group[$t]="implement" ;;
       blocked) triage_group[$t]="needs_human" ;;
@@ -1489,6 +1496,23 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # that fell through to ordinary status-derived dispatch (no open heading found, not inconclusive).
   if [ -n "${h1_next_phase[$t]:-}" ]; then
     build_args+=(--phase-number "${h1_next_phase[$t]}" --territory "${h1_territory[$t]}")
+  fi
+  # research_questions --focus wiring (Stage A.8, research on demand): only when building a
+  # research-phase dispatch. Read the task's own research_questions (written by a planner's
+  # needs_research verdict, see context/reference/state-management-schema.md's Research
+  # Questions Field section), join into a single string, and pass as --focus so
+  # orchestrate-build-dispatch.sh's already-built, already phase-gated --focus flag renders it
+  # into the dispatch file's "User focus:" block. No code change inside that script is needed. A
+  # task with no research_questions (an ordinary not_started->research dispatch, or one forced by
+  # --research) passes no --focus flag at all -- byte-for-byte no-op, same empty-value-skips-flag
+  # convention --file-scope-add and --research-questions already use.
+  if [ "$g" = "research" ]; then
+    task_research_questions=$(jq -r --argjson num "$t" \
+      '.active_projects[] | select(.project_number == $num) | .research_questions // [] | if (type == "array") then . else [] end | join("; ")' \
+      "$STATE_FILE" 2>/dev/null) || task_research_questions=""
+    if [ -n "$task_research_questions" ]; then
+      build_args+=(--focus "$task_research_questions")
+    fi
   fi
   if dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}" 2>&1); then
     build_exit=0

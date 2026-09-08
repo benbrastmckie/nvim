@@ -48,14 +48,16 @@
 #   2. else blockers is non-empty                                  -> `needs_human`
 #   3. else (neither)                                               -> `implement` (both engines)
 #
-# Engine tables (verbatim transcription; this table, Stage 4's single-task state handlers, and
-# Stage MT-4's "Phase grouping" table in skills/skill-orchestrate/SKILL.md MUST be changed
-# together, never independently — this script is the executable source of truth those sections
-# point back to):
+# Engine tables (verbatim transcription; this table, Stage 4's single-task state handlers,
+# Stage MT-4's "Phase grouping" table in skills/skill-orchestrate/SKILL.md, AND the degraded
+# fallback classifier table inside orchestrate-cycle-plan.sh (used only when THIS script exits
+# non-zero) MUST be changed together, never independently — this script is the executable source
+# of truth those sections point back to. Four sites, not three: the degraded fallback is easy to
+# forget precisely because it is normally dormant.):
 #
 #   | status                                  | mt group    | single group  |
 #   |------------------------------------------|-------------|---------------|
-#   | not_started                               | research    | research      |
+#   | not_started                               | plan        | plan          |
 #   | researched                                 | plan        | plan          |
 #   | planned, implementing                      | implement   | implement     |
 #   | partial + continuation                     | implement   | implement     |
@@ -320,9 +322,9 @@ if verdicts=$(jq -n -c \
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
      reason:("task #" + ($c|tostring) + " is terminal (" + $status + ")")}
   elif $status == "not_started" then
-    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"research",
+    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"plan",
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
-     reason:("task #" + ($c|tostring) + " is not_started; routes to research")}
+     reason:("task #" + ($c|tostring) + " is not_started; routes to plan (research on demand -- the planner requests research via needs_research if the description does not suffice)")}
   elif $status == "researched" then
     {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"plan",
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
@@ -398,7 +400,7 @@ if verdicts=$(jq -n -c \
        reason:("task #" + ($c|tostring) + " is blocked with satisfied dependencies but no previous_status; cannot determine discharge phase, needs human")}
     else
       ($prev) as $p |
-      (if $p == "not_started" then "research"
+      (if $p == "not_started" then "plan"
        elif $p == "researched" then "plan"
        elif ($p == "planned" or $p == "implementing") then "implement"
        elif $p == "researching" then "research"
