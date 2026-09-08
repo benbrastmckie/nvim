@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1788831210_6c6dbe_179",
+  "task_number": 179,
+  "dispatch_seq": 5,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md",
+      "summary": "Confirms task-178 standard as the sole threshold/element source, catalogs sibling-extension script/manifest/wiring conventions, and pins the real 08-agency.typ defect (lines 55-109, 25-item list, 3 chained remarks) plus a density calibration data point (23 remarks vs 39 results)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/*, script infrastructure follows a consistent shape across lean/nix/literature/core: scripts live flat in scripts/ (source store), are declared as relative-path strings in manifest.json's provides.scripts array (test files listed as sibling entries, e.g. \"tests/test-foo.sh\"), and are invoked from agent .md files via the DEPLOYED path `bash .claude/scripts/{name}.sh {args}` (never the source-store path) inside a numbered 'Final Verification Stage' or per-phase verification step that records a named result field.",
+      "category": "PATTERN",
+      "source_artifact": "specs/179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "agent wiring", "verification stage", "source-store"]
+    },
+    {
+      "content": "Two core context/standards files govern any new shell script in agent-system/extensions/**: shell-script-testing.md (narrow single-script suites go at scripts/tests/test-{script}.sh; broad pipeline suites stay flat in scripts/) and shell-strict-mode.md (a script that accumulates PASSED/FAILED counters across independent checks and reports a full summary at the end is Class B -- `set -uo pipefail`, no `-e` -- by design, since `-e` would silently truncate the report at the first non-matching check).",
+      "category": "PATTERN",
+      "source_artifact": "specs/179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-strict-mode", "shell-script-testing", "lint script", "class B", "set -uo pipefail"]
+    },
+    {
+      "content": "When a prose 'usage standard' contract states a qualitative norm (e.g. 'sparing', 'Low density') with no numeric threshold, check whether the standard also states any comparable countable heuristic elsewhere in its own text (e.g. 'more remarks than theorems is a signal') before inventing an unrelated numeric metric for a mechanical lint built on top of it -- reusing the standard's own stated ratio satisfies a 'derive thresholds from the standard, don't invent a divergent set' constraint more literally than a fresh raw-count threshold would.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["threshold derivation", "lint design", "prose-to-mechanical gate", "density heuristic"]
+    }
+  ],
+  "next_steps": "Run /plan 179 to create implementation plan"
+}

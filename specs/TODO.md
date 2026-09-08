@@ -11,8 +11,8 @@ next_project_number: 183
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177,179,180 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175,181 | 29,74,88,139,155,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,156,157,162,163,166,167,168,170,171,172,176,177,179,180 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,164,173,174,175,181 | 29,74,88,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -51,10 +51,9 @@ next_project_number: 183
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-155 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
-  └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+156 [RESEARCHING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
-179 [NOT STARTED] — Add a mechanical element-placement and density lint to the typst 
+179 [RESEARCHED] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
 
@@ -224,10 +223,11 @@ SAFETY CONSTRAINT. Do not disable or weaken any gate that can change the deploy 
 
 ### 179. Add an element placement and density lint to the typst extension
 - **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 178
+- **Research**: [179_typst_element_placement_density_lint/reports/01_element-placement-density-lint.md]
 
 **Description**: Add a mechanical element-placement and density lint to the typst extension, and wire it into the implementation agent's verification stage.
 
@@ -1090,7 +1090,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 156. Surface a Comparator doctor mode and document what a green result does and does not certify
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 155
@@ -1207,7 +1207,7 @@ ACCEPTANCE.
 ---
 
 ### 155. Thread an advisory --compare flag through the lean implementation path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 137, Task 153, Task 154
