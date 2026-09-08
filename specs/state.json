@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 176,
+  "next_project_number": 178,
   "active_projects": [
     {
       "project_number": 172,
@@ -1127,6 +1127,45 @@
         "agent-system/extensions/core/context/standards/shell-script-testing.md",
         "agent-system/extensions/core/scripts/task-lock.sh"
       ]
+    },
+    {
+      "project_number": 176,
+      "project_name": "fix_documented_full_build_guard_invocation",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Fix the documented lake-build-guard full-build invocation across the lean extension",
+      "topic": "lean-extension",
+      "priority": "high",
+      "effort": "1-2 hours",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+        "agent-system/extensions/lean/rules/lean4.md",
+        "agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"
+      ],
+      "artifacts": [],
+      "description": "Fix the documented `lake-build-guard.sh` full-build invocation across the lean extension: four caller sites document a form that exits 77 without ever launching a build.\n\nOBSERVED, not theorized. During a `/orchestrate` run in ~/Projects/BimodalLogic, a `lean-implementation-agent` dispatch followed its own agent definition's documented build command and got exit 77 (`build mode requires a lake subcommand (e.g. 'build', 'test'); none was given`). The agent recovered by guessing the correct form, but the dispatch stalled mid-phase first and the orchestrator had to re-dispatch. Every affected site is a FULL-repository build -- the final verification gate -- which is exactly the invocation an agent reaches for at phase end.\n\nROOT CAUSE, confirmed in the guard's own source. `validate_build_subcommand()` (agent-system/extensions/core/scripts/lake-build-guard.sh, immediately above `main()`) rejects an EMPTY lake-argument vector with exit 77 before any dispatch. In build mode the lake subcommand must follow the `--`. `bash lake-build-guard.sh build --timeout 1800 -- 2>&1` passes an empty vector (the `2>&1` is shell redirection, not an argument), so it can never run. The correct full-build form is `bash lake-build-guard.sh build --timeout 1800 -- build`.\n\nTHE FOUR CALLER SITES (all in the source store; `.claude/**` is a regenerated deploy artifact and must not be hand-edited -- see rules/source-store-deploy-boundary.md):\n1. `agent-system/extensions/lean/agents/lean-implementation-agent.md:253` -- `build --timeout 1800 -- 2>&1`\n2. `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md:392` -- same shape\n3. `agent-system/extensions/lean/rules/lean4.md:51` -- \"Final verification only: `... --timeout 1800 --`\"\n4. `agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md:81` -- `build --timeout 1800 2>&1`, no `--` at all, same empty vector\n\nNote that the per-module forms at lean4.md:48/71, long-builds.md:75, lean-implementation-hard-agent.md:237 and skill-lake-repair/SKILL.md:79 are all CORRECT (`-- Module.Name` / `-- <lake args>`) -- only the full-build variants lost their subcommand. Verify each site rather than assuming this list is exhaustive; grep the whole source store for `lake-build-guard.sh build` and check every hit's argument vector.\n\nA SECOND, SEPARATE DISCREPANCY -- surface it, do not fix it here. The guard's own usage banner (lake-build-guard.sh header, and `print_help`) documents the trailing lake arguments as OPTIONAL: `[--] [LAKE ARGS...]`. That contradicts `validate_build_subcommand()`, which requires a non-empty vector. The banner is plausibly what taught the broken form in the first place. That fix belongs in lake-build-guard.sh, which is another task's `file_scope` (the guard-terminal-record task) -- do NOT edit the guard here; the two would collide on the same file. Record the discrepancy in this task's summary and name it for that task to pick up, or for its own follow-up.\n\nSCOPE. Correct the four (or more, if the grep finds them) caller sites to the working form. Keep each site's surrounding prose intent intact -- these are \"final verification\" instructions, so the replacement must remain a full-repository build, not silently become a per-module one. Do not modify lake-build-guard.sh or its tests.\n\nACCEPTANCE. Every `lake-build-guard.sh build` invocation in the source store either names a lake subcommand after `--` or is explicitly documented as a deliberate usage-error example. The corrected full-build form is verified to actually run -- not merely to parse -- at least once. Deploy the affected extension and confirm the regenerated `.claude/**` copies carry the fix.",
+      "created": "2026-09-08T00:27:28Z",
+      "last_updated": "2026-09-08T00:27:28Z"
+    },
+    {
+      "project_number": 177,
+      "project_name": "lean4_dependency_tracing_recipe",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Add a dependency-tracing recipe to the lean4 extension context",
+      "topic": "lean-extension",
+      "priority": "low",
+      "effort": "2-3 hours",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md"
+      ],
+      "artifacts": [],
+      "description": "Add a dependency-tracing recipe to the lean4 extension context: how to mechanically answer \"does X depend on Y?\" in a Lean 4 environment, and why `#print axioms` cannot answer it.\n\nWHY THIS EXISTS. A trace task in ~/Projects/BimodalLogic had to answer whether a decision procedure depended on a set of theorems whose hypotheses had been refuted. The task's own description demanded a MECHANICAL trace (\"a prose argument that it probably doesn't is not the deliverable\"), and no recipe existed -- the probes were invented from scratch. They worked, are re-runnable, and generalize. The finished probes and their verbatim output live at `~/Projects/BimodalLogic/specs/549_trace_decide_dependency_on_vacuous_run_theorems/probes/` (`DepTrace.lean`, `DepTrace2.lean`, `RevDep.lean`, `Widen.lean`, `Ax.lean`, `Exists.lean`, plus `probe-evidence.md`). Harvest them from there; do not re-derive.\n\nTHE LOAD-BEARING CAVEAT, and the reason this is worth writing down at all. `#print axioms` is NOT a dependency tracer. In the observed case the decision procedure, its soundness theorem, AND the vacuous theorem under suspicion all reported the same `[propext, Classical.choice, Quot.sound]`. An axiom check answers \"is this sound?\", never \"what does this rest on?\" -- yet it is the first probe most people reach for, and it would have returned a confidently useless answer. State this explicitly and early in the recipe.\n\nFOUR PROBE SHAPES TO DOCUMENT AS REUSABLE TEMPLATES:\n1. Forward transitive closure over the environment -- `Expr.getUsedConstants` over both type and value, iterated to a fixed point from a named entry point, then intersected with a suspect set. This is the primary tool.\n2. The module-index variant -- resolve which module each reached constant came from, and count the hits attributable to a target module. Answers \"how much of module M does X touch?\" in one number.\n3. Whole-environment reverse-dependency scan -- iterate every declaration in the environment and report those whose closure contains a suspect. Answers \"what would break if I deleted this?\", which is the question a retirement decision actually needs.\n4. Import-closure check -- whether the target's module is even reachable via transitive imports. Distinguishes \"unused\" from \"unavailable\", a meaningfully stronger result.\n\nALSO WORTH RECORDING: run probes with `lake env lean` against existing oleans rather than a full `lake build` -- the observed trace needed no rebuild at all. And note the failure mode that bit the source task: line numbers cited in a research report go stale quickly in a large file, so probes should resolve declarations by name.\n\nSCOPE. Create `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md` in the SOURCE STORE (never `.claude/**`, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md). Wire it into the lean4 context index the way sibling pattern files are wired; follow the existing single-statement-plus-pointer convention rather than restating the model at the pointer site.\n\nPRIORITY: low, and genuinely optional. This is a recipe harvested from one successful use, not a defect fix -- nothing is broken without it. Its value is that the next such trace does not start from zero, and that the `#print axioms` trap is documented before someone falls into it.\n\nACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt without access to the originating repository. The `#print axioms` caveat is stated explicitly, with the concrete observation that three declarations at different dependency depths all reported identical axioms.",
+      "created": "2026-09-08T00:27:52Z",
+      "last_updated": "2026-09-08T00:27:52Z"
     }
   ],
   "completed_projects": [],
