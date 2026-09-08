@@ -42,29 +42,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-tree-first", "redeploy", "lint testing", "source-store", "stale deploy"]
+      "suggested_keywords": [
+        "deploy-tree-first",
+        "redeploy",
+        "lint testing",
+        "source-store",
+        "stale deploy"
+      ]
     },
     {
       "content": "When deleting an engine/mode branch that a caller command file also conditionally routes around (e.g. a command file with its own len==1 vs len>1 fork calling into a skill that itself used to have two engines), always audit the CALLER's own branching logic too, not just the callee -- deleting only the callee's dual-engine structure can leave the caller still building a delegation-context shape for a code path that no longer exists on the other end. This class of defect is easy to miss because the callee's own tests all pass (they test the callee directly with the correct new shape), while the caller's stale branch is silent until a real end-to-end invocation.",
       "category": "PATTERN",
       "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["dual-engine deletion", "caller-callee coupling", "delegation context shape", "acceptance verification", "dead fallthrough branch"]
+      "suggested_keywords": [
+        "dual-engine deletion",
+        "caller-callee coupling",
+        "delegation context shape",
+        "acceptance verification",
+        "dead fallthrough branch"
+      ]
     },
     {
       "content": "When a rewrite deletes a document's own internal heading-numbering scheme (e.g. 'Stage N' headings collapsed into new 'Move N' names), a generic content-location heuristic elsewhere in the codebase that greps for the OLD heading pattern (e.g. a lint's `^### Stage [6-9]` regex used to locate a postflight section) can fail open -- silently skipping its own check rather than failing loud. Search for and update any such pattern-matching heuristic as part of the rewrite, and add a regression test asserting the target file is not silently skipped.",
       "category": "INSIGHT",
       "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["fail-open lint", "heading rename", "regression test", "silent skip", "postflight boundary"]
+      "suggested_keywords": [
+        "fail-open lint",
+        "heading rename",
+        "regression test",
+        "silent skip",
+        "postflight boundary"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788840700_afed94",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

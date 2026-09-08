@@ -446,9 +446,15 @@
           "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md",
           "type": "plan",
           "summary": "7-phase, 12-hour plan to delete the single-task engine, rewrite skill-orchestrate/SKILL.md as the four-move loop at <=20,000 B, build the batched AskUserQuestion/.decisions.json path, and retarget the coupled test/lint surface."
+        },
+        {
+          "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md",
+          "type": "summary",
+          "summary": "Deleted the single-task /orchestrate engine, rewrote skill-orchestrate/SKILL.md as the four-move loop (189,000 B -> 15,666 B), built the AskUserQuestion/.decisions.json relay, retargeted every coupled test/lint, refreshed the registry and PATH.md, and fixed a real dead-fallthrough defect in commands/orchestrate.md discovered during acceptance verification."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Deleted the single-task engine and rewrote skill-orchestrate/SKILL.md as the four-move loop (plan -> dispatch -> postflight -> branch), one engine for every batch size. Built the batched AskUserQuestion -> .decisions.json -> next-dispatch-file relay end to end, retargeted or retired every coupled test and lint, refreshed the critical-paths registry and specs/PATH.md, and fixed a genuine defect in commands/orchestrate.md (a dead pre-rewrite single-task fallthrough branch) surfaced during acceptance verification. SKILL.md measured 189,000 B -> 15,666 B against the <= 20,000 B target; full gate run green (73/73 tests, 30/30 verify-deploy checks)."
     },
     {
       "project_number": 89,

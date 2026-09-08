@@ -1641,6 +1641,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 - **Dependencies**: Task 148
 - **Research**: [088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md]
 - **Plan**: [088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md]
+- **Summary**: [088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md]
 
 **Description**: === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retired) ===
 Team rows no longer exist (team mode is deleted by an earlier Stage A task); item (6)'s `--team` notice removal is already done by that deletion. The loop's dry-run path is `orchestrate-cycle-plan.sh --dry-run` (the standalone report is retired by the cycle-plan task). Research on demand (a later task) changes only the phase the planner is dispatched in; this rewrite must not hardcode research-first anywhere -- the loop dispatches whatever phase the cycle plan names.
