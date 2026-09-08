@@ -1,6 +1,323 @@
 {
   "completed_projects": [
     {
+      "project_number": 137,
+      "project_name": "lean_agent_artifact_skeletons",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "title": "Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/lean/agents/lean-research-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md"
+      ],
+      "created": "2026-09-01T16:36:18Z",
+      "last_updated": "2026-09-07T21:00:21Z",
+      "session_id": "sess_1788809689_86fcdd",
+      "description": "The lean extension's research and implementation agents have no artifact skeletons, so the artifacts they author fail validate-artifact.sh on required sections that their general-* counterparts get right by construction. Observed on a real completed task, not inferred.\n\nOBSERVED FAILURES (BimodalLogic task 507, gate-out validation output, 2026-09-01):\n  summaries/01_frame-level-validity-indexing-summary.md -> [FAIL] 6 error(s)\n      Missing required section: ## Overview, ## What Changed, ## Decisions, ## Impacts, ## Follow-ups, ## References\n      (4 metadata fields -- Started, Completed, Artifacts, Standards -- were auto-repaired to \"TBD\" placeholders)\n  reports/01_frameclass-indexed-validity.md -> [FAIL] 13 error(s), 1 warning\n      [WARN] Cannot auto-fix: no existing metadata lines found to anchor insertion\nThe report case is the worse of the two: with zero conforming metadata lines present, validate-artifact.sh's --fix path has no anchor to insert against and gives up entirely. The artifact is left non-conforming with no repair path.\n\nROOT CAUSE -- MISSING TEMPLATES, NOT MISBEHAVING AGENTS.\nextensions/core/agents/general-implementation-agent.md carries a full inline summary skeleton (around :468-482): the metadata block, the bracketed Status vocabulary spelled out (\"Use `**Status**: [COMPLETED]` when every plan phase is done, `**Status**: [IN PROGRESS]` on a partial run, `**Status**: [BLOCKED]` when blocked, matching summary-format.md's declared vocabulary\"), and the required sections. An agent handed that template produces a conforming artifact without needing to consult the format spec.\nThe lean agents carry no such thing:\n  extensions/lean/agents/lean-implementation-agent.md  -- grep for summary-format / ## What Changed / ## Decisions / ## Impacts / ## Follow-ups / ## References returns ZERO hits (its own `## Overview` at :9 is the agent file's own document heading, not a template)\n  extensions/lean/agents/lean-research-agent.md        -- grep for report-format / ## Findings / ## Executive Summary / `**Task**:` returns ZERO hits\nThe agents are behaving reasonably given what they were handed. The defect is the missing contract.\n\nAUTHORITATIVE REQUIREMENTS (from extensions/core/scripts/validate-artifact.sh, lines 19-44 -- transcribe from the script, do not retype from this description):\n  REPORT_METADATA   = Task, Started, Completed, Effort, Dependencies, Sources/Inputs, Artifacts, Standards\n  REPORT_SECTIONS   = Executive Summary, Context & Scope, Findings, Decisions, Recommendations\n  SUMMARY_METADATA  = Task, Status, Started, Completed, Artifacts, Standards\n  SUMMARY_SECTIONS  = Overview, What Changed, Decisions, Impacts, Follow-ups, References\n  SUMMARY_SECTIONS_OPTIONAL = Plan Deviations\n  Note the script's own comment: SUMMARY_SECTIONS is a required MINIMUM, not an exhaustive whitelist.\nThe prose specs are extensions/core/context/formats/summary-format.md (its Example Skeleton section) and the report-format equivalent.\n\nWORK.\n(a) Add an inline summary skeleton to extensions/lean/agents/lean-implementation-agent.md, modelled on general-implementation-agent.md's, including the explicit bracketed-Status vocabulary sentence -- that sentence is why the general agent's summaries carry a well-formed Status line, and its absence is directly implicated in the sibling defect this task's peer covers.\n(b) Add an inline report skeleton to extensions/lean/agents/lean-research-agent.md covering REPORT_METADATA and REPORT_SECTIONS.\n(c) SWEEP the other extensions' agents for the same gap rather than assuming lean is the only one. Known candidates to CHECK (not assume defective): extensions/lean/agents/lean-implementation-hard-agent.md, lean-research-hard-agent.md, and the formal extension's research agents. Report what was checked and what was found, including negatives.\n(d) Where a skeleton already exists but is incomplete, prefer amending it over replacing it.\n\nEXPLICIT NON-GOAL. Do not weaken validate-artifact.sh's required-section lists to make existing non-conforming artifacts pass. The artifacts are wrong, not the validator. Task 136 is separately TIGHTENING that validator; a loosening here would fight it directly.\n\nACCEPTANCE.\n  - A lean-language task run end to end produces a summary and a report that both pass validate-artifact.sh with zero errors and zero auto-repairs -- demonstrated on a real dispatch, not on a hand-written fixture.\n  - The sweep in (c) is reported with explicit negatives (\"checked X, already conforming\") so a later reader knows the search happened.\n  - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/lean/).\n\nRELATED, NOT DUPLICATE. Task 13 (instrument_gate_out_auto_repair_reporting) covers REPORTING of auto-repair counts through command-gate-out.sh and skill-base.sh, and flags the silent-in-place-mutation hazard. It does not add any missing agent template. This task removes the need for those repairs at the source; 13 makes the repairs visible when they still happen. Both are worth having.\n\nPROVENANCE. Surfaced 2026-09-01 by gate-out validation during an /orchestrate 507 run in the BimodalLogic repo. The validation warnings are non-blocking, which is why this had gone unnoticed: the task completed successfully with two non-conforming artifacts on disk.",
+      "artifacts": [
+        {
+          "path": "specs/137_lean_agent_artifact_skeletons/reports/01_lean-agent-artifact-skeletons.md",
+          "type": "report",
+          "summary": "research report"
+        },
+        {
+          "path": "specs/137_lean_agent_artifact_skeletons/plans/01_lean-agent-artifact-skeletons.md",
+          "type": "plan",
+          "summary": "implementation plan"
+        },
+        {
+          "path": "specs/137_lean_agent_artifact_skeletons/summaries/01_lean-agent-artifact-skeletons-summary.md",
+          "type": "summary",
+          "summary": "implementation summary (6/7 phases; phase 7 blocked)"
+        }
+      ],
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 151,
+      "project_name": "fix_pre_existing_verify_deploy_failures",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "title": "Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+        "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ],
+      "created": "2026-09-03T19:59:13Z",
+      "last_updated": "2026-09-07T23:42:06Z",
+      "session_id": "sess_1788824504_ea0ae3",
+      "description": "Two verify-deploy.sh gate failures are live in this repo today, both PRE-EXISTING and unrelated to whatever task happens to be running when they surface. They were observed blocking an unrelated multi-task /orchestrate batch: verify-deploy.sh reported \"FAIL -- 3 of 29 check(s) failed\", deploy-headless.sh therefore exited 3, and the orchestrator's inter-cycle redeploy checkpoint deferred EVERY task in the batch. One of the three (doc-lint, stale index-entries.json line_count declarations) was fixed at that time; these two remain.\n\nFAILURE 1 -- STATE-WRITER BOUNDARY LINT (gate 12).\nscripts/lint/lint-state-writer-boundary.sh reports \"Found 4 hand-rolled state.json write(s)\", all four in ONE file:\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:261\n    jq '.active_projects[0].status = \"planned\"' specs/state.json > specs/state.json.tmp && mv specs/state.json.tmp specs/state.json\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:307\n    jq '.active_projects[0].next_artifact_number = 2' \"$WORKDIR/specs/state.json\" > \"$WORKDIR/specs/state.json.tmp\" && mv ...\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:317  (same shape as :307, .status = \"planned\")\n  agent-system/extensions/core/scripts/tests/test-force-phases.sh:327  (same shape as :307, .status = \"planned\")\nLast commit touching that file is an earlier, unrelated task's phase-7 work; the file appears in NO recent task's modified_files. These are test-fixture writes against a scratch $WORKDIR, not production state mutations -- which is precisely the judgment call this task must make explicitly rather than reflexively rewriting them.\n\nDECIDE, do not assume: is the correct remedy (a) route these through state-write.sh like production callers, (b) add a scoped allowlist entry for test-fixture writes against a scratch WORKDIR (the lint already has a file-level allowlist mechanism, used by task.md, todo.md, validation.md, jq-escaping-workarounds.md, vault-operation.sh and the lint's own header), or (c) narrow the lint's own detection so a non-specs/ scratch path is not matched? Note that :261 writes the REAL specs/state.json path, while :307/:317/:327 write \"$WORKDIR/specs/state.json\" -- these two shapes may not deserve the same answer. State the choice and its reasoning; do not silently weaken a boundary lint that exists to protect the single-writer invariant.\n\nFAILURE 2 -- WHOLE-TREE ORPHAN DETECTION (gate 13).\nverify-deploy.sh reports \"whole-tree orphan detection reported 1 finding(s)\" (find_orphans: deployed-but-undeclared files, ghost index rows). The specific finding was NOT captured at observation time -- the detail run exceeds a 120s timeout because the gate suite runs the full shell test suite. RESEARCH MUST establish what the single finding actually is before planning a fix; do not assume it is the same class as FAILURE 1. Remedy pointer named by the gate output itself: context/patterns/deploy-orphan-detection.md. Re-run detail with: bash agent-system/extensions/core/scripts/verify-deploy.sh (without --quiet), allowing several minutes.\n\nCONSTRAINTS.\n  - All edits target agent-system/extensions/**, never .claude/** (deploy artifact).\n  - Do not weaken a gate merely to make it pass. If a finding is a genuine false positive, fix the DETECTION and say so; if it is a real violation, fix the violation.\n  - Redeploy and confirm verify-deploy.sh reports 0 failures afterwards.\n\nACCEPTANCE.\n  - lint-state-writer-boundary.sh --verbose reports 0 violations, with the chosen remedy and its reasoning recorded in the summary.\n  - Whole-tree orphan detection reports 0 findings, with the finding's actual identity documented (not merely made to disappear).\n  - bash verify-deploy.sh completes with all gates passing.\n  - A regression note explains why each fix will not silently re-break.\n\nRELATED, not a dependency: the sibling task on line_count/gate-coupling brittleness addresses the CLASS of problem (why an unrelated pre-existing lint failure can gate every task's completion). This task fixes the two live instances; that one changes the coupling. Either can land first.",
+      "artifacts": [
+        {
+          "path": "specs/151_fix_pre_existing_verify_deploy_failures/reports/01_verify-deploy-gate-failures.md",
+          "type": "report",
+          "summary": "Confirms both named gate failures (state-writer boundary, whole-tree orphan) currently pass with 0 findings, documents the state-writer remedy already applied and its reasoning, explains the orphan finding's likely transient/concurrent-batch cause, and flags an unrelated out-of-scope doc-lint line_count drift observed live."
+        },
+        {
+          "path": "specs/151_fix_pre_existing_verify_deploy_failures/plans/01_verify-deploy-gate-remediation.md",
+          "type": "plan",
+          "summary": "5-phase plan confirming the already-landed gate-12 state-writer remedy, recording gate-13's non-reproducible finding honestly, fixing the false 'non-quiet shows detail' hint in gates 13 and 5, and reconciling the full verify-deploy run with an explicit decision rule for the residual out-of-scope gate-3 line_count drift."
+        },
+        {
+          "path": "specs/151_fix_pre_existing_verify_deploy_failures/summaries/01_verify-deploy-gate-remediation-summary.md",
+          "type": "summary",
+          "summary": "Confirms the already-landed gate-12 state-writer boundary remedy (option (a), uniform across all four sites) from live re-runs; documents gate-13's non-reproducible original finding honestly, including a correction to the dispatch's own literature-pyenv classification hypothesis; fixes the false 're-run without --quiet for detail' hint in gates 13 and 5 with an additive fail-time detail print, verified end-to-end with a planted orphan probe; and reconciles the full verify-deploy run by correcting two stale index-entries.json line_count declarations (the plan-hypothesized lean one plus a second in core caused by this task's own doc edit)."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed both pre-existing verify-deploy gate failures: confirmed and recorded the already-applied gate-12 state-writer boundary remedy, and closed gate-13's diagnosability gap by making gates 13 and 5 print per-finding detail unconditionally on failure in verify-deploy.sh. Corrected two stale line_count declarations blocking the full gate run. bash .claude/scripts/verify-deploy.sh now reports PASS -- 29 check(s), 0 failure(s), and deploy-headless.sh exits 0.",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 152,
+      "project_name": "decouple_stale_declarations_from_deploy_gating",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "title": "Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh",
+        "agent-system/extensions/core/scripts/deploy-headless.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "created": "2026-09-03T19:59:13Z",
+      "last_updated": "2026-09-08T00:37:59Z",
+      "session_id": "sess_1788824504_ea0ae3",
+      "description": "An unrelated multi-task /orchestrate batch was fully blocked by three stale line_count integers. This entry addresses the CLASS of defect, not the instances (a sibling task fixes the two live remaining gate failures).\n\nWHAT HAPPENED, verified.\nindex-entries.json declares a line_count per context entry, hand-maintained, and check-extension-docs.sh Rule R fails when a declaration drifts from the file's actual line count. Three entries had drifted:\n  core/index-entries.json  patterns/postflight-control.md   declared 318, actual 405\n  core/index-entries.json  schemas/state-schema.json        declared 267, actual 271\n  literature/index-entries.json  project/literature/patterns/zotero-item-creation.md  declared 208, actual 234\nIn every case the FILE was unchanged (byte-identical across many commits) and only the DECLARATION was stale; the last commits touching those files belonged to unrelated earlier tasks. The failing declarations had nothing to do with the work in flight.\n\nTHE COUPLING THAT TURNED THREE INTEGERS INTO A FULL BATCH STALL.\n  1. check-extension-docs.sh Rule R fails on the drift.\n  2. verify-deploy.sh gate 3 (doc-lint) therefore fails.\n  3. deploy-headless.sh runs verify-deploy.sh after deploying and exits non-zero on ANY gate failure.\n  4. skill-orchestrate's inter-cycle redeploy checkpoint (scripts/orchestrate-cycle-plan.sh, the `if bash deploy-headless.sh; then ... else` branch) treats a non-zero deploy-headless exit as a deploy FAILURE and moves EVERY remaining task into deferred_deploy_checkpoint, stopping the batch.\nNote the asymmetry that makes this worse than it needs to be: that checkpoint ALREADY has a pre-existing-baseline branch (compare pre- and post-redeploy findings; proceed when 0 are newly introduced, recording a verify_deploy_baseline_notices entry). But that branch lives INSIDE the deploy-succeeded arm, so it is unreachable whenever deploy-headless.sh itself exits non-zero -- which is exactly what a pre-existing verify failure causes. The tolerance mechanism that was built for this situation cannot fire in this situation.\nIndependently confirmed: the completion-deploy gate (update-task-status.sh exit 6) checks only per-task deploy FRESHNESS, not whole-repo verify health -- after a successful resync it passed and both blocked tasks completed, even with two unrelated gates still failing. So the batch-level stall was strictly harsher than the per-task gate required.\n\nWORK -- two independent axes; both are in scope, and each should be justified separately.\n\n(a) STOP HAND-MAINTAINING line_count. A declared integer that must be manually kept in sync with a file's length is a drift generator: it carries no information a reader needs that `wc -l` cannot produce on demand, and every edit to any indexed file is a chance to forget it. Evaluate, and pick with stated reasoning: (i) derive line_count at deploy/index-generation time instead of declaring it, (ii) keep the declaration but auto-repair it (the codebase already has a --fix idiom in validate-artifact.sh; note that the auto-repair-reporting task decided in-place repair must be REPORTED, never silent -- honor that precedent), or (iii) drop line_count entirely if nothing consumes it for more than display. DETERMINE WHAT ACTUALLY READS line_count before choosing (iii); do not assume it is unused.\n\n(b) DECOUPLE unrelated gate health from task completion and batch progress. A pre-existing failure in a gate that has nothing to do with the changed files should not deny an unrelated task its completion transition, nor defer an entire batch. Evaluate, with reasoning: extending the checkpoint's existing pre-existing-baseline tolerance to cover a non-zero deploy-headless exit (so the baseline comparison decides, rather than being skipped); and/or having deploy-headless.sh distinguish \"the deploy itself failed\" from \"the deploy succeeded but a pre-existing, unrelated gate is red\", which are today the same exit code. A THIRD, ALREADY-OBSERVED confound belongs in this analysis: deploy-headless.sh also exits 3 merely because OTHER consumer repos are stale, a condition it explicitly refuses to act on (\"this script never redeploys into a consumer\") and which says nothing about this repo's deploy health.\n\nCONSTRAINTS.\n  - All edits target agent-system/extensions/**, never .claude/**.\n  - Do NOT make gates non-blocking wholesale. The goal is that a failure blocks what it is actually evidence about, not everything. A genuinely broken deploy must still stop the batch.\n  - scripts/orchestrate-cycle-plan.sh and update-task-status.sh are orchestrator-critical paths; expect the self-modification ordering gate to apply.\n\nACCEPTANCE.\n  - A line_count drift can no longer occur silently, by whichever mechanism (a) selects; demonstrated by editing an indexed file and showing the gate stays green without a manual declaration edit.\n  - A pre-existing, unrelated red gate no longer defers an entire /orchestrate batch; demonstrated against a deliberately-introduced pre-existing failure, showing the baseline branch fires and the batch proceeds with a recorded notice.\n  - A genuinely NEW failure introduced by the batch's own changes still stops it; demonstrated, so the tolerance is proven narrow rather than assumed narrow.\n  - The three confounded exit-3 causes (deploy failed / pre-existing red gate / stale consumer repos) are distinguishable by a caller.",
+      "artifacts": [
+        {
+          "path": "specs/152_decouple_stale_declarations_from_deploy_gating/reports/01_decouple-stale-declarations.md",
+          "type": "report",
+          "summary": "Confirms line_count is consumed by budget-calculation scripts (rules out dropping it); recommends a report-and-repair auto-fix using the existing generate-context-line-counts.sh --write, following the validate-artifact.sh --fix precedent. Confirms the batch-stall root cause in orchestrate-cycle-plan.sh's redeploy checkpoint (baseline-tolerance branch unreachable on deploy-headless.sh exit 3) and identifies command-gate-out.sh's existing rc==6 handler as a working precedent implementing the exact (a)/(b)/(c) split needed, ready to port. Flags that the third 'stale consumer repos' confound does not reproduce from static reading of current deploy-headless.sh (guarded with || true) and recommends a runtime check before the plan designs a fix for it."
+        },
+        {
+          "path": "specs/152_decouple_stale_declarations_from_deploy_gating/plans/01_decouple-stale-declarations.md",
+          "type": "plan",
+          "summary": "7-phase plan covering both axes: line_count auto-repair wired pre-deploy into deploy-headless.sh (reported, never silent), and the inter-cycle redeploy checkpoint rewired onto the (a)/(b)/(c) baseline contract via a new shared scripts/lib/deploy-baseline-lib.sh sourced by both call sites."
+        },
+        {
+          "path": "specs/152_decouple_stale_declarations_from_deploy_gating/summaries/01_decouple-stale-declarations-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering both axes (line_count auto-repair, checkpoint three-branch contract), the RESULT=/CONSUMERS_STALE= marker vocabulary, and all four acceptance demonstrations."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Decoupled line_count drift (auto-repaired at deploy time, reported never silent) and pre-existing unrelated red gates from batch-blocking, via a new shared scripts/lib/deploy-baseline-lib.sh both command-gate-out.sh and orchestrate-cycle-plan.sh's redeploy checkpoint now source; deploy-headless.sh gained RESULT=/CONSUMERS_STALE= markers so its three confounded exit-3 causes are distinguishable.",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 158,
+      "project_name": "vmswap_aware_refresh_memory_accounting",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless",
+      "description": "Make refresh memory accounting VmSwap-aware so zram-compressed idle bloat stops reading as harmless.\n\nPROBLEM: the snapshot field list in claude-refresh.sh is `pid,ppid,uid,tty,etimes,rss,comm,cgroup:200,args` -- RSS only. Live diagnosis found Lean workers at ~2 MB RSS holding ~1.2 GB VmSwap each, because the kernel had compressed untouched pages into zram (zramctl showed 9.1 GB data in 2.3 GB of RAM). Any threshold or report built on RSS alone classifies these as harmless. This is a cross-cutting concern: it changes how every other refresh pass reports memory, which is why it is sequenced first.\n\nWORK: add a swap-reading helper alongside format_memory() that reads VmSwap from /proc/PID/status, and thread combined RSS+swap through all existing reporting output.\n\nINVARIANT RULING REQUIRED: the script header (lines 12-17) documents that a single atomic `ps -eo` snapshot is taken once per invocation and that no candidate PID is ever re-queried live, which is the basis of its race-freedom argument. A per-candidate /proc read is the first thing to touch that invariant. Decide and RECORD IN THE HEADER COMMENT whether this breaches it; the defensible position is that it does not, because it is a reporting-only read that never gates a termination decision -- but it must be argued in the header, not silently assumed. Handle missing VmSwap (no swap configured, or the process exited between snapshot and read) without failing the run.\n\nFILES: agent-system/extensions/core/scripts/claude-refresh.sh (snapshot fields, format_memory, new helper, header invariant comment); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh (new cases).\n\nACCEPTANCE: --dry-run output shows RSS and swap for every listed process; a process with zero or absent VmSwap renders cleanly rather than erroring; a synthetic fixture with a known VmSwap value formats correctly; existing matcher tests still pass unchanged; `bash -n` clean; the header comment states the snapshot-invariant ruling.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "created": "2026-09-07T00:00:00Z",
+      "last_updated": "2026-09-07T19:45:21Z",
+      "session_id": "sess_1788808797_82397b",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/158_vmswap_aware_refresh_memory_accounting/reports/01_vmswap_aware_memory_accounting.md",
+          "type": "report",
+          "summary": "Research on making claude-refresh.sh's memory accounting VmSwap-aware: a PROC_ROOT-overridable get_vmswap_kb() helper beside format_memory(), threading combined RSS+swap through all accumulators/display, an invariant ruling that a post-classification /proc read does not breach the snapshot race-freedom argument, and new matcher test cases."
+        },
+        {
+          "path": "specs/158_vmswap_aware_refresh_memory_accounting/plans/01_vmswap-aware-memory-accounting.md",
+          "type": "plan",
+          "summary": "4-phase plan adding a PROC_ROOT-seamed get_vmswap_kb() helper, swap-inclusive accumulators, a separate Swap display column, the header snapshot-invariant ruling, and fixture-driven matcher cases."
+        },
+        {
+          "path": "specs/158_vmswap_aware_refresh_memory_accounting/summaries/01_vmswap-aware-memory-accounting-summary.md",
+          "type": "summary",
+          "summary": "Verification pass confirming all four plan phases genuinely hold in the working tree: header invariant ruling present, PROC_ROOT seam and get_vmswap_kb() helper defined, combined RSS+swap threaded through all accumulators and the orphan table's Swap column, and 18/18 matcher tests passing. No re-implementation was needed; a prior dispatch had already landed and committed the work, and .claude/ deploy staleness (the sole reason the prior postflight was refused) has since been resolved."
+        }
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
+        "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Verified (not re-implemented) that claude-refresh.sh's VmSwap-aware memory accounting is complete and correct: all four plan phases hold in the current working tree, the deployed .claude/ tree matches the source store byte-for-byte, bash -n is clean on both files, and the full matcher suite passes 18/18 including the 6 new VmSwap fixture cases.",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 159,
+      "project_name": "orphaned_lean_lsp_reclamation_pass",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Add an independently-gated reclamation pass for orphaned Lean LSP process trees",
+      "description": "Add an independently-gated reclamation pass for orphaned Lean LSP process trees.\n\nPROBLEM: lean-lsp-mcp spawns `lake serve` -> `lean --server` -> one `lean --worker` per file opened, and source grep shows teardown ONLY at shutdown (lean_lsp_mcp/client_utils.py:196 `_close_client`). There is no idle timeout and no LRU eviction, so workers live as long as the Claude session does. Observed: a tree idle 13h holding 2.06 GiB of swap. Reclaimed live during diagnosis via SIGTERM children-first with zero loss -- lean-lsp-mcp respawns a fresh tree on the next tool call.\n\nWORK: implement this as a NEW, SEPARATELY-GATED detection pass with its own predicate. Detection keys: comm in (`lake serve`, `lean --server`, `lean --worker`), 0% CPU, and idle beyond a configurable threshold. Reuse the existing is_system_slice_cgroup and is_owned_by_current_uid exclusions as defense in depth. Report memory using the VmSwap-aware accounting from the prerequisite task.\n\nHARD SAFETY CONSTRAINT -- MUST NOT BE VIOLATED: the claude-refresh.sh header documents is_claude_executable_comm as a deliberate narrow executable allow-list that trades recall for safety, stating verbatim \"Do not widen `is_claude_executable_comm` to match on a bare argv substring -- that is exactly the defect this rewrite removes.\" DO NOT loosen or widen that matcher. The new Lean predicate is separate and independently gated. Preserve the existing --dry-run/--force contract and the AskUserQuestion confirmation flow; the new pass must be dry-run-clean.\n\nTERMINATION ORDER: strictly workers -> server -> `lake serve`. Killing the parent first orphans workers into PID 1.\n\nFILES: agent-system/extensions/core/scripts/claude-refresh.sh (new predicate + pass + termination ordering); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh; agent-system/extensions/core/skills/skill-refresh/SKILL.md (pass description, AskUserQuestion option); agent-system/extensions/core/commands/refresh.md.\n\nACCEPTANCE: the new predicate has its own test block asserting it matches the three Lean comms and rejects the existing Claude comms, and vice versa -- no cross-contamination between the two matchers; --dry-run lists a Lean tree without terminating anything; --force on a fixture tree terminates in the documented order, verified by an ORDERING assertion, not merely final state; the existing --dry-run/--force contract and confirmation flow are unchanged; is_claude_executable_comm is byte-identical to its pre-task form.\n\nTHRESHOLD RISK: the 13h idle observation is a single data point. A threshold set too low will reclaim a tree the user is about to reuse -- recoverable, since the MCP respawns, but it costs a rebuild. Default conservatively and make the threshold configurable.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "created": "2026-09-07T00:00:00Z",
+      "last_updated": "2026-09-07T20:18:41Z",
+      "session_id": "sess_1788808797_82397b",
+      "dependencies": [
+        158
+      ],
+      "artifacts": [
+        {
+          "path": "specs/159_orphaned_lean_lsp_reclamation_pass/reports/01_lean-lsp-reclamation-pass.md",
+          "type": "report",
+          "summary": "Research on adding an independently-gated orphaned Lean LSP process-tree reclamation pass to claude-refresh.sh, grounded in live process inspection and leanclient/lean_lsp_mcp source."
+        },
+        {
+          "path": "specs/159_orphaned_lean_lsp_reclamation_pass/plans/01_lean-lsp-reclamation-pass.md",
+          "type": "plan",
+          "summary": "6-phase plan (~6.5h) adding an independently-gated orphaned Lean LSP process-tree reclamation pass to claude-refresh.sh, with cross-contamination and termination-ordering test assertions."
+        },
+        {
+          "path": "specs/159_orphaned_lean_lsp_reclamation_pass/summaries/01_lean-lsp-reclamation-pass-summary.md",
+          "type": "summary",
+          "summary": "All 6 plan phases completed: Lean LSP process-tree reclamation pass added to claude-refresh.sh as a separately-gated pass; test suite grew from 17 to 49 passing assertions; is_claude_executable_comm byte-identical to pre-task form; docs updated."
+        }
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
+        "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+        "agent-system/extensions/core/commands/refresh.md"
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented an independently-gated reclamation pass for orphaned Lean LSP process trees (lake serve -> lean --server -> lean --worker) in claude-refresh.sh, with its own predicates, snapshot, tree-wide idle gate, and strict workers->server->root termination order, plus cross-contamination and ordering test coverage and updated skill/command documentation.",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 160,
+      "project_name": "report_only_mcp_and_zombie_passes",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Add report-only refresh passes for unused MCP fan-out and unreaped child processes",
+      "description": "Add report-only refresh passes for unused MCP fan-out and unreaped child processes.\n\nTwo non-destructive diagnostic passes, independently gated; neither ever terminates anything.\n\n(a) UNUSED PER-SESSION MCP FAN-OUT: ~/.claude.json defines lean-lsp and playwright at USER scope, so every session inherits both unconditionally -- 5 sessions x 3 procs = 15 procs / 346 MB. playwright-mcp was running in all 5 sessions having spawned ZERO browsers (no chromium/headless_shell present anywhere on the system). Detect user-scope servers running with no evidence of use, report them, and advise per-project scoping where a server is genuinely repo-local.\n\nSCOPING TRADE-OFF -- STATE IT ACCURATELY (this corrects a false premise this task previously carried): there is NO categorical barrier preventing dispatched subagents from reaching project-scoped .mcp.json servers. That claim is disproven -- demonstrated directly, twice, including via the general-research-agent class this system actually dispatches, with permission pre-granted so permission was not a confound. See context/patterns/mcp-server-ownership.md, sections \"The session-start snapshot trap\" and preceding. The real, honest cost of project scope is WORKSPACE TRUST: an untrusted workspace requires a one-time interactive approval before a project-scoped server is used, and a cloned repository cannot pre-authorize its own servers from inside the repo. That is a one-time setup cost, not a per-call or per-session obstacle, and it is not a reason to avoid project scope for repo-local servers. The advisory output MUST cite the trust cost, and MUST NOT reproduce the subagent-barrier claim.\n\nRELATED CORRECTION IN SCOPE: docs/docs-README.md line 78 still asserts \"Custom subagents cannot access project-scoped MCP servers (.mcp.json). For subagent access, configure servers in user scope\" -- the same disproven claim, and the source from which it propagated. Correct it to state the trust cost instead, and point to context/patterns/mcp-server-ownership.md as the authority. Leaving a known-false claim in the docs while this task reports on MCP scoping would be incoherent.\n\nTESTING NOTE (avoids reproducing the original false negative): a session's tool registry is a snapshot taken at startup, so an already-running session cannot see a server added to .mcp.json after it started -- this affects the MAIN session identically and is not subagent-specific. Any re-verification of registration or reachability MUST use a fresh session (or claude -p), never an already-running one.\n\n(b) UNREAPED CHILDREN / ZOMBIES: lean-lsp-mcp never wait()s its lake child, leaving `lake <defunct>`; speech-dispatcher has leaked 7 sd_* zombies over 6 days. Cosmetic -- PID slots only -- but should be reported, never silently ignored.\n\nBoth passes report memory using the VmSwap-aware accounting from the earlier task in this chain.\n\nCROSS-REFERENCE, NO DEPENDENCY: tasks #29 (generate_mcp_json_from_extension_manifests) and #30 (register_obsidian_memory_mcp_server) both concern GENERATING .mcp.json from extension manifests -- #29 the deploy-engine mechanism, #30 registering obsidian-memory through it. This task only REPORTS unused user-scope fan-out and touches no manifest or deploy-engine code, so there is no file overlap and deliberately no dependency edge; blocking a report-only change behind a deploy-engine rewrite would be wrong. The relationship runs the useful direction: the empirical finding here -- that user-scope servers fan out unconditionally into every session at real memory cost -- is direct evidence for the premise behind that other work.\n\nSEQUENCING NOTE: this task's dependency on the Lean reclamation task is FILE-OVERLAP SERIALIZATION, not a logical prerequisite. Both edit claude-refresh.sh. The user explicitly chose to keep all passes in claude-refresh.sh rather than extracting them into a separate sourced file, so the serialization stands.\n\nFILES: agent-system/extensions/core/scripts/claude-refresh.sh (two passes + predicates); agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh; agent-system/extensions/core/skills/skill-refresh/SKILL.md; agent-system/extensions/core/commands/refresh.md; agent-system/extensions/core/docs/docs-README.md (line 78 correction only).\n\nACCEPTANCE: both passes produce identical output under --dry-run and --force, proving non-destructiveness; zombie detection distinguishes `Z` state from live processes; the MCP pass reports server name, session count, and aggregate memory via the VmSwap-aware accounting; the scoping advisory cites the workspace-trust cost and contains no subagent-barrier claim -- grep the emitted advisory text to confirm the phrase does not reappear; docs-README.md line 78 no longer asserts a subagent barrier; no code path in either pass reaches a signal call -- verify by grep, not by inspection.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "created": "2026-09-07T00:00:00Z",
+      "last_updated": "2026-09-07T20:49:41Z",
+      "session_id": "sess_1788808797_82397b",
+      "dependencies": [
+        159
+      ],
+      "artifacts": [
+        {
+          "path": "specs/160_report_only_mcp_and_zombie_passes/reports/01_mcp-fanout-and-zombie-passes.md",
+          "type": "report",
+          "summary": "Confirms the disproven subagent-barrier claim already corrected in mcp-server-ownership.md, pinpoints docs-README.md line 78 as the sole in-scope stale claim, reproduces live MCP fan-out (6 sessions x 3 procs, ~976MB VmSwap-aware) and both zombie classes (7 sd_* + 1 lake <defunct>) with real PIDs, and recommends extending claude-refresh.sh with two new report-only pass functions following the task-159 two-pass precedent."
+        },
+        {
+          "path": "specs/160_report_only_mcp_and_zombie_passes/plans/01_mcp-fanout-and-zombie-passes.md",
+          "type": "plan",
+          "summary": "6-phase, 5-hour plan adding two report-only claude-refresh.sh passes (MCP fan-out, unreaped children) plus the docs-README.md MCP-scoping correction."
+        },
+        {
+          "path": "specs/160_report_only_mcp_and_zombie_passes/summaries/01_mcp-fanout-and-zombie-passes-summary.md",
+          "type": "summary",
+          "summary": "Added report-only zombie and MCP fan-out passes to claude-refresh.sh, corrected the disproven subagent MCP-scoping claim in docs-README.md, and extended the test suite with 22 new assertions (76 total, 0 failures)."
+        }
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
+        "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+        "agent-system/extensions/core/commands/refresh.md"
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Added two report-only diagnostic passes (unreaped-child/zombie reporting and MCP server fan-out with a conditional workspace-trust scoping advisory) to claude-refresh.sh, corrected the disproven subagent-cannot-reach-project-scope claim in docs-README.md, documented both passes in SKILL.md/refresh.md, and verified all six acceptance criteria mechanically via grep/diff against both the live system and a synthetic test fixture (76 assertions, 0 failures).",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 161,
+      "project_name": "unattended_refresh_policy_and_surfaces",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Settle the unattended-refresh policy and update the systemd, skill, and command surfaces",
+      "description": "Settle the unattended-refresh policy and update the systemd, skill, and command surfaces.\n\nPOLICY IS ALREADY LARGELY SETTLED -- CONFIRM, DO NOT RE-LITIGATE: claude-refresh.service already runs --dry-run, and its comment block states verbatim that \"this unattended, hourly, no-confirmation cadence is intentionally non-destructive -- it reports/logs found orphans rather than terminating them. A matcher bug must never again be amplifiable into unattended hourly kills, regardless of how correct the matcher looks at review time.\" So the open question is narrow: confirm that the new passes added by the earlier tasks in this chain require NO unit change -- expected, since the timer never terminates anything -- and record that reasoning in the unit comment so a future reader does not re-open it.\n\nDEPLOY-PATH DECISION: ExecStart points at %h/.config/nvim/.claude/scripts/claude-refresh.sh, inside the gitignored, regenerated deploy tree. That is arguably correct for a unit installed on a machine, but it means the unit silently breaks whenever the deploy tree is absent. Decide explicitly whether to keep it as-is, add a ConditionPathExists, or document the dependency -- and record the choice.\n\nSURFACES: finish by making skill-refresh/SKILL.md and commands/refresh.md describe the full pass inventory coherently -- orphaned Claude processes, ~/.claude/ cleanup, orphaned postflight markers, stale task .lock dirs, Lean LSP reclamation, MCP fan-out reporting, zombie reporting -- each with its gate and whether it is destructive, rather than as four bolted-on additions to a document written for the original four.\n\nFILES: agent-system/extensions/core/systemd/claude-refresh.service; agent-system/extensions/core/systemd/claude-refresh.timer; agent-system/extensions/core/skills/skill-refresh/SKILL.md; agent-system/extensions/core/commands/refresh.md; possibly agent-system/extensions/core/scripts/claude-refresh.sh for --help text only.\n\nACCEPTANCE: `systemd-analyze verify` passes on both units; the service comment states the ruling on new destructive passes and the deploy-path dependency; SKILL.md documents every pass with its gate and destructiveness; `/refresh --dry-run` help text matches the documented inventory; the doc-lint script check-extension-docs.sh exits zero.\n\nTOOLING-AVAILABILITY RISK: this task's acceptance depends on `systemd-analyze verify` and check-extension-docs.sh both being available in the implementing agent's environment. If either is absent, REPORT THE GATE AS UNRUN rather than assumed-green. A truthful \"could not verify\" is the correct outcome; silently treating an unavailable check as passing is not.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored (.gitignore line 6: `/.claude/`), disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "created": "2026-09-07T00:00:00Z",
+      "last_updated": "2026-09-07T21:16:54Z",
+      "session_id": "sess_1788808797_82397b",
+      "dependencies": [
+        160
+      ],
+      "artifacts": [
+        {
+          "path": "specs/161_unattended_refresh_policy_and_surfaces/reports/01_unattended-refresh-policy.md",
+          "type": "report",
+          "summary": "Confirms both systemd units already verify clean and check-extension-docs.sh's core row already passes; verifies at the code level that all four claude-refresh.sh passes run unconditionally through the timer's single --dry-run ExecStart; recommends adding ConditionPathExists to the service unit for the deploy-path gap; and recommends a single small pass-inventory table (name/gate/destructive) added to SKILL.md and refresh.md rather than a rewrite of the existing step-by-step content."
+        },
+        {
+          "path": "specs/161_unattended_refresh_policy_and_surfaces/plans/01_unattended-refresh-policy.md",
+          "type": "plan",
+          "summary": "Five-phase plan settling the unattended-refresh policy rulings in claude-refresh.service and rebuilding the SKILL.md/refresh.md pass inventory; 3 hours across 3 dependency waves."
+        },
+        {
+          "path": "specs/161_unattended_refresh_policy_and_surfaces/summaries/01_unattended-refresh-policy-summary.md",
+          "type": "summary",
+          "summary": "Recorded both rulings in claude-refresh.service (new-passes ruling + ConditionPathExists deploy-path ruling), rebuilt a ten-item canonical pass inventory in SKILL.md and refresh.md, and confirmed every acceptance gate green."
+        }
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/systemd/claude-refresh.service",
+        "agent-system/extensions/core/systemd/claude-refresh.timer",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+        "agent-system/extensions/core/commands/refresh.md",
+        "agent-system/extensions/core/scripts/claude-refresh.sh"
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Settled the unattended-refresh policy by recording both rulings in claude-refresh.service's comment block and implementing ConditionPathExists, then rebuilt skill-refresh/SKILL.md and commands/refresh.md around a from-source-derived ten-pass canonical inventory (correcting both the task description's seven and the research report's nine). All five acceptance gates ran green: both systemd units verify, check-extension-docs.sh reports core PASS, --help matches the documented inventory, and no task-number or .claude/** hand-edit was introduced.",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
+      "project_number": 169,
+      "project_name": "lake_guard_pressure_detection_case",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Add a positive-direction memory-pressure detection case to test-lake-build-guard.sh",
+      "description": "Add a positive-direction case to `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` asserting that memory pressure IS detected, closing the regression-masking gap opened by the suite-wide clean-fixture default.\n\n=== WHY THIS EXISTS (the immediate fix created this gap) ===\n\nCommit `878043472` isolated the suite from ambient host state by exporting\n`LAKE_BUILD_GUARD_PSI_PATH` and `LAKE_BUILD_GUARD_MEMINFO_PATH` suite-wide to clean fixture\nfiles written into the suite's own mktemp workdir, using the script-under-test's own documented\nenv seams. That fix is correct and is ALREADY LANDED -- do not redo it, do not revert it.\n\nThe gap it introduces: with a clean fixture as the suite-wide default and NO case driving the\npressured direction, a regression that disabled pressure detection entirely would leave all\n27 cases green. The suite would assert only that the guard does not fire, never that it can.\n\nThe already-landed commit anticipates this. `test-lake-build-guard.sh` around line 84 carries an\nexplicit in-file note that the positive direction must override the two variables LOCALLY with a\npressured fixture rather than mutating the suite-wide clean default. Case 11 already demonstrates\nthe local-override idiom for the degradation direction (it sets\n`LAKE_BUILD_GUARD_PSI_PATH=\"$WORKDIR/does-not-exist-psi\"` on the single invocation). Follow that\nsame shape.\n\n=== WHAT TO ADD ===\n\nA new case that:\n  1. Writes a PRESSURED meminfo fixture (and, if the guard's PSI path participates in the\n     assertion, a pressured PSI fixture) into the suite's existing mktemp workdir, alongside\n     the existing `PSI_FIXTURE_CLEAN` / `MEMINFO_FIXTURE_CLEAN` files.\n  2. Overrides `LAKE_BUILD_GUARD_MEMINFO_PATH` (and `LAKE_BUILD_GUARD_PSI_PATH` as needed) on\n     that single guard invocation ONLY -- never by reassigning the suite-wide exports set near\n     the top of the file.\n  3. Asserts the guard's preflight exits non-zero with the documented pressure return code and\n     that its output names the reason(s) the fixture encodes.\n\nThe verification already performed against the immediate fix is the reference behavior to\nreproduce here: a deliberately pressured fixture yields preflight rc=11 reporting BOTH the\nMemAvailable reason and the swap-in-use reason. Confirm those exact values against\n`lake-build-guard.sh` itself rather than hardcoding them from this description -- the return\ncode and reason strings must be read from the script under test.\n\n=== CONSTRAINTS ===\n\n- Edits target `agent-system/extensions/core/**` ONLY. Never hand-author anything under\n  `.claude/**`; that tree is a disposable deploy artifact regenerated from source\n  (see `.claude/rules/source-store-deploy-boundary.md`).\n- NEVER weaken, raise, or bypass `SWAP_USED_RATIO_THRESHOLD` or any other guard threshold to\n  make a case pass. This task adds an assertion; it does not touch `lake-build-guard.sh`'s logic\n  or its constants.\n- Derive the pressured fixture values from the guard's own thresholds, so the case stays correct\n  if a threshold is later retuned deliberately.\n\n=== ACCEPTANCE ===\n\n- The full suite passes (previously 27/27; expect 28/28 or more after this addition).\n- The new case is non-vacuous: temporarily neutering pressure detection in `lake-build-guard.sh`\n  makes the new case -- and only the new case -- fail. Demonstrate this during implementation and\n  record the demonstration in the summary; do not commit the neutered guard.\n- The suite still passes on a host that is actively swapping above the guard's own threshold,\n  which is the ambient condition that produced the original defect.\n",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "created": "2026-09-07T00:00:00Z",
+      "last_updated": "2026-09-07T23:35:43Z",
+      "session_id": "sess_1788822258_a6100e",
+      "dependencies": [],
+      "artifacts": [
+        {
+          "path": "specs/169_lake_guard_pressure_detection_case/reports/01_pressure-detection-case.md",
+          "type": "report",
+          "summary": "Maps the exact rc/reason-string contract, the case-11 local-override idiom, threshold-derivation math, and the Mutation A-E non-vacuousness mechanism to extend with a new Mutation F for the positive-direction pressure-detection case."
+        },
+        {
+          "path": "specs/169_lake_guard_pressure_detection_case/plans/01_pressure-detection-case.md",
+          "type": "plan",
+          "summary": "5-phase plan adding a positive-direction memory-pressure case, a non-vacuousness mutation check, and an ambient-pressure robustness check to test-lake-build-guard.sh."
+        },
+        {
+          "path": "specs/169_lake_guard_pressure_detection_case/summaries/01_pressure-detection-case-summary.md",
+          "type": "summary",
+          "summary": "Added case 22 (positive-direction memory-pressure detection) and Mutation F to test-lake-build-guard.sh, demonstrated non-vacuousness and ambient-pressure robustness; suite passes 29/29."
+        }
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Added a positive-direction memory-pressure case (case 22) and a corresponding non-vacuousness mutation (Mutation F) to test-lake-build-guard.sh, closing the regression-masking gap where the suite-wide clean-fixture default left no case asserting pressure detection actually fires. Demonstrated via an out-of-band neutered-guard run that case 22 -- and only case 22 -- fails when check_memory_pressure() is disabled, and confirmed the suite still passes under an ambient pressured environment. Full suite: 29/29 passed, up from the 27/27 baseline; lake-build-guard.sh is untouched.",
+      "archived_at": "2026-09-08T00:40:31Z"
+    },
+    {
       "project_number": 143,
       "project_name": "mt_handoff_staleness_and_dispatch_seq_gates",
       "status": "completed",
