@@ -11,8 +11,8 @@ next_project_number: 190
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187,188,189 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187,188 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175,181,189 | 29,74,139,150,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,6 +29,7 @@ next_project_number: 190
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
 150 [IMPLEMENTING] — Research on demand: let the planner decide whether a research pha
+  └─ 189 [NOT STARTED] — Fix four channel-confusion defects in the orchestrate cycle-plan 
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
@@ -45,7 +46,6 @@ next_project_number: 190
 186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
-189 [NOT STARTED] — Fix four channel-confusion defects in the orchestrate cycle-plan 
 
 ### Extensions
 
@@ -90,7 +90,7 @@ next_project_number: 190
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 150
 
 **Description**: Fix four channel-confusion defects in the orchestrate cycle-plan pipeline that misled a live /orchestrate run. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
