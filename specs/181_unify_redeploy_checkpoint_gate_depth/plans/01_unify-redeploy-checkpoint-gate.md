@@ -314,35 +314,37 @@ the suite, and add or drop cases as the wiring actually requires rather than for
 
 ---
 
-### Phase 5: Update the authoritative contract doc and split out the trigger-predicate widening [NOT STARTED]
+### Phase 5: Update the authoritative contract doc and split out the trigger-predicate widening [COMPLETED]
 
 **Goal**: The single authoritative statement of the checkpoint contract matches the code, and
 the 2026-09-08 scope note is resolved by an explicit, recorded split rather than silence.
 
 **Tasks**:
-- [ ] Update `### The Inter-Cycle Redeploy Checkpoint`'s **Failure contract** to document the
+- [x] Update `### The Inter-Cycle Redeploy Checkpoint`'s **Failure contract** to document the
       confirmation and attribution filters as the path from a raw new-finding set to the
       blocking set, presented as an extension of branch (c)'s existing "unrelated red gate must
-      not defer the batch" philosophy from temporally pre-existing to causally unattributable.
-- [ ] Add an explicit **Gate depth** statement: the checkpoint's pre/post pair runs at full
+      not defer the batch" philosophy from temporally pre-existing to causally unattributable. *(completed)*
+- [x] Add an explicit **Gate depth** statement: the checkpoint's pre/post pair runs at full
       depth and MUST stay symmetric; `deploy-headless.sh`'s internal run is `--skip-slow` (gate 8
-      only); a fast-PASS/full-FAIL disagreement is reported as a depth disagreement.
-- [ ] State that the defer message and `defer_ledger` detail name the specific blocking
-      findings.
-- [ ] Record the fail-safe direction of the attribution filter (identifier-free findings still
-      defer) so a later pass does not "simplify" it into a blanket filter.
-- [ ] Sharpen the existing follow-up note (currently ~line 636) on widening Stage MT-3 step 7's
+      only); a fast-PASS/full-FAIL disagreement is reported as a depth disagreement. *(completed)*
+- [x] State that the defer message and `defer_ledger` detail name the specific blocking
+      findings. *(completed)*
+- [x] Record the fail-safe direction of the attribution filter (identifier-free findings still
+      defer) so a later pass does not "simplify" it into a blanket filter. *(completed)*
+- [x] Sharpen the existing follow-up note (currently ~line 636) on widening Stage MT-3 step 7's
       predicate: state that it was explicitly considered during this task and **split out**
       because this task changed the checkpoint's *verdict* logic while that change targets its
       *trigger* predicate and the `deployed_critical_paths` idempotence backing store — disjoint
-      mechanisms with no shared edit. Keep it named as owed follow-up work.
-- [ ] Surface the split-out item in the implementation summary so the operator can create the
-      follow-up task; do not create it silently as a side effect of this task.
-- [ ] Check the cross-referencing files named in the subsection header
+      mechanisms with no shared edit. Keep it named as owed follow-up work. *(completed)*
+- [x] Surface the split-out item in the implementation summary so the operator can create the
+      follow-up task; do not create it silently as a side effect of this task. *(completed)*
+- [x] Check the cross-referencing files named in the subsection header
       (`regeneration-is-manual-only.md`, `skill-orchestrate/SKILL.md`,
       `docs/architecture/orchestrate-state-machine.md`, `deploy-headless.sh`,
       `verify-deploy.sh`) still only cross-reference by path and need no edit; correct any that
-      restate the now-changed contract.
+      restate the now-changed contract. *(completed: orchestrate-state-machine.md's
+      verify_deploy_baseline_notices/defer_ledger shape restatements updated; the other four
+      cross-referenced by path only, no edit needed)*
 
 **Timing**: 1 hour
 

@@ -465,21 +465,88 @@ Direction 3 without first re-deriving this cycle-synchronicity argument.
   `deploy_baseline_new_findings`), so they cannot re-diverge the way `orchestrate-cycle-plan.sh`
   previously did — it long implemented only two of these three branches, collapsing exit 3 into
   branch (a) rather than reaching (b)/(c) at all, until this defect class was closed.
-- **(b) `verify-deploy.sh` failure with at least one newly-introduced finding** relative to the
-  pre-redeploy baseline (see **Baseline mechanism** below) —
-  defer all remaining not-yet-dispatched tasks for the rest of the invocation, unchanged in spirit
-  from the pre-baseline contract, now evaluated at finding-level rather than exit-code-level
-  granularity.
+- **(b) `verify-deploy.sh` failure with at least one CONFIRMED, ATTRIBUTABLE newly-introduced
+  finding** relative to the pre-redeploy baseline (see **Baseline mechanism** and
+  **Confirmation and attribution filters** below) — defer all remaining not-yet-dispatched tasks
+  for the rest of the invocation, unchanged in spirit from the pre-baseline contract, now
+  evaluated at finding-level rather than exit-code-level granularity, and now requiring that a
+  candidate new finding survive BOTH filters before it may defer anything. The defer message
+  (stderr) and the `mt_state_file.defer_ledger` entry's `detail` field both name the specific
+  blocking finding(s) verbatim — an operator reading either no longer has to re-run the whole
+  gate by hand to discover what was new.
 - **(c) `verify-deploy.sh` failure whose findings are ALL already present in the pre-redeploy
-  baseline** — proceed to the next cycle, reported just as loudly as an outright failure. This is
-  the third operator-visible state: "we checked, it's broken, it was ALREADY broken before this
-  redeploy, and we proceeded deliberately." It is announced via a banner, a machine marker, and a
-  durable `mt_state_file.verify_deploy_baseline_notices` record (see
-  `skills/skill-orchestrate/SKILL.md`'s Stage MT-3 step 7 and Stage MT-5 for the mechanism, and
+  baseline, OR whose every candidate new finding was shown flaky or unrelated to this batch's own
+  modified files** — proceed to the next cycle, reported just as loudly as an outright failure.
+  This is the third operator-visible state: "we checked, it's broken, it was ALREADY broken
+  before this redeploy (or the apparent new breakage isn't real/isn't ours), and we proceeded
+  deliberately." It is announced via a banner, a machine marker, and a durable
+  `mt_state_file.verify_deploy_baseline_notices` record (see `skills/skill-orchestrate/SKILL.md`'s
+  Stage MT-3 step 7 and Stage MT-5 for the mechanism, and
   `context/patterns/orchestrate-batch-results-template.md` for the rendering, emitted by
-  Stage MT-5). A baseline must
-  never become a mechanism for quietly swallowing failures — branch (c) exists to make a
-  pre-existing failure MORE visible, never less.
+  Stage MT-5). A baseline must never become a mechanism for quietly swallowing failures — branch
+  (c) exists to make a pre-existing or unattributable failure MORE visible, never less. The
+  notice's own `filtered` field distinguishes the two ways this branch can be reached: `false` for
+  the original, temporally-pre-existing case (no candidate new finding at all), `true` for the
+  filtered sub-case (a candidate new finding existed but was confirmed flaky or shown unrelated) —
+  the notice also then carries `flaky_count`/`flaky_findings` and/or
+  `unrelated_count`/`unrelated_findings` so the filtered-out findings remain visible, never
+  silently discarded.
+
+**Confirmation and attribution filters (Defect C — the batch-deferral-attribution fix)**: a
+candidate new finding (present post-redeploy, absent pre-redeploy) is passed through two
+ADDITIVE filters, in order, before it is allowed to reach branch (b) at all. This extends branch
+(c)'s existing "a pre-existing, unrelated red gate must not defer the whole batch" philosophy
+from *temporally* pre-existing (identical in both snapshots) to *causally* unattributable (a
+candidate new finding this batch still did not cause):
+
+1. **Confirmation** (`deploy_baseline_confirm_new_findings` in `scripts/lib/deploy-baseline-lib.sh`)
+   — take ONE additional `verify-deploy.sh --findings` snapshot, at the same full depth as the
+   pre/post pair, and keep only candidate findings that REPRODUCE on this re-run. A candidate
+   that does not reproduce is dropped as flaky. This directly targets the checkpoint's own
+   self-inflicted-load hazard: the checkpoint runs a full deploy plus the entire shell test suite
+   immediately before taking its post-redeploy snapshot, which is itself enough ambient load to
+   flake a load-sensitive test in that same suite (observed: `test-lake-build-guard.sh`, known
+   load-sensitive per its own "pressured fixture" and prior isolation commit). A real breakage
+   reproduces on a now-settled re-run; a load-induced flake does not. This filter can only
+   SHRINK the candidate set, never grow it, so it cannot weaken the gate against genuine
+   regressions.
+2. **Attribution** (`deploy_baseline_unattributable_findings` in the same library) — of the
+   confirmed findings, drop any that POSITIVELY name an identifier (a `/`-bearing path token, or
+   a `.sh`/`.md`/`.lua`/`.json` basename) absent (by basename match) from this batch's own
+   `cycle_modified_files` — i.e. a red gate this batch's dispatched work could not plausibly have
+   caused. **Fail-safe direction, load-bearing**: a finding naming NO identifier at all is NEVER
+   dropped by this filter and stays blocking. Only a POSITIVE non-match (an identifier is named
+   and it matches nothing in `cycle_modified_files`) can clear a finding as unrelated; the
+   absence of an identifier can never be used as proof of unrelatedness. This is what stops the
+   filter from degrading into a blanket disable of Gate 8 (or any other gate) — a finding the
+   filter cannot positively clear stays in the blocking set.
+
+Only findings surviving BOTH filters ("blocking") reach branch (b). Both filters are used ONLY by
+this checkpoint (`scripts/orchestrate-cycle-plan.sh`) — `scripts/command-gate-out.sh`'s `rc==6`
+handler deliberately does NOT apply either one: it gates a single task's own completion, with the
+operator present to judge a flake or an unrelated red gate by hand, so an automatic
+confirmation/attribution pipeline is unnecessary there. The checkpoint gates an entire batch with
+no operator present, which is what makes the automatic pipeline necessary rather than optional.
+This asymmetry is intentional and is commented at both call sites; see
+`scripts/lib/deploy-baseline-lib.sh`'s own header for the canonical statement.
+
+**Gate depth (Defect A — the fast/full depth disagreement, made explicit rather than silently
+resolved)**: the checkpoint's own pre/post snapshot pair runs `verify-deploy.sh` at FULL depth
+(no `--skip-slow`) on BOTH sides, and MUST stay symmetric — an asymmetric pair would make every
+Gate 8 (shell test suite) finding look "new" simply because the pre-redeploy side never looked
+for it, which is a strictly worse bug than any depth mismatch against `deploy-headless.sh`'s own
+internal verify. `deploy-headless.sh` itself runs `verify-deploy.sh --skip-slow` internally (its
+`deploy_exit -eq 0` == `landed_verify_clean` therefore only ever certifies the FAST subset —
+every gate except Gate 8). This asymmetry between the checkpoint's full-depth comparison and
+`deploy-headless.sh`'s own fast verify is DELIBERATE, not an oversight — the checkpoint takes its
+own independent full-depth snapshots specifically so the baseline comparison sees slow-gate
+(Gate 8) findings too, not only the fast subset `deploy-headless.sh` itself already checked. What
+changed is that the disagreement is no longer silently resolved in either direction: when
+`deploy_exit -eq 0` (deploy-headless.sh's own fast verify passed) yet the full-depth comparison
+still finds a blocking finding, the checkpoint emits an explicit stderr "DEPTH NOTE" line and sets
+`depth_disagreement: true` on the `defer_ledger` entry, stating plainly that the two verdicts
+disagree by DEPTH, not by contradiction — the finding lives in the slow gate `--skip-slow`
+deferred, and both verdicts are simultaneously correct at their own depth.
 
 In all three branches: never abort, never silently continue. This is governed by the
 `## Defer-Not-Fail: The Standing Default` section above. Abort is rejected because it discards
@@ -637,6 +704,14 @@ Inter-Cycle Redeploy Checkpoint mechanism documented earlier in this file. A ref
 `agent-system/extensions/**` predicate is the proper fix and is named here as explicit follow-up
 work, not attempted by this mechanism — it would change the meaning of a heavily cross-referenced
 mechanism and its `deployed_critical_paths` idempotence backing store, which is its own task.
+**Explicitly re-considered and re-confirmed split-out** while this same subsection's own
+confirmation/attribution filters and Gate depth statement were added above: that work changed the
+checkpoint's *verdict* logic (which candidate new findings may defer a batch, and how the
+fast/full depth disagreement is reported) — a disjoint mechanism from THIS residual, which is
+about the checkpoint's *trigger* predicate (which cycles fire the checkpoint at all) and the
+`deployed_critical_paths` idempotence backing store that predicate depends on. No edit shared
+between the two, so widening the trigger predicate remains owed, separate follow-up work rather
+than something the verdict-logic task could naturally absorb.
 
 **Commit-granularity residual**: like the Inter-Cycle Redeploy Checkpoint's own freshness signal,
 this backstop's freshness comparison is commit-granular, not per-file — an uncommitted

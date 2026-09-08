@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Update the authoritative contract doc and split out the trigger-predicate widening",
+  "started_at": "2026-09-08T00:00:00Z",
+  "last_updated": "2026-09-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update Failure contract with confirmation/attribution filters", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "Add Gate depth statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "State defer message/ledger names findings", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "Record fail-safe direction of attribution filter", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 5, "description": "Sharpen follow-up note on Stage MT-3 step 7 predicate split-out", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 6, "description": "Surface split-out item in implementation summary", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Check cross-referencing files; correct restatements", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
