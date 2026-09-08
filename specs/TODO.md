@@ -1,5 +1,5 @@
 ---
-next_project_number: 192
+next_project_number: 194
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 192
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -19,67 +19,136 @@ next_project_number: 192
 
 ### Core Agent System
 
-44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
-51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining larg
-127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the present-r
-129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
-136 [NOT STARTED] — PRODUCER-SIDE root cause of the malformed plan-level Status line 
-139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
-  └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
-  └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-157 [IMPLEMENTING] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
-166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
-170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
-172 [NOT STARTED] — Close the taught-pattern gap that produced 22 unreapable poll loo
-  └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
-  └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
-  └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
-182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
-183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
-184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
-185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
-187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
-188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive: arc
-190 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (n
-191 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (n
+44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
+51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
+89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
+127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
+129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
+136 [NOT STARTED] — Stop implementation agents hand-writing the plan-level Status...
+139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
+  └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
+  └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
+157 [IMPLEMENTING] — Fix TODO.md summary lines: prefer .title, and stop the blind...
+166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
+170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
+172 [NOT STARTED] — Define a canonical bounded-wait idiom for detached builds
+  └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
+  └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
+  └─ 175 [NOT STARTED] — Enforce waiter teardown in the agent contracts that spawn...
+182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
+183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
+184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
+185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
+188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
+190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
+191 [NOT STARTED] — Stop plan-mandated git-snapshot from reverting task-unrelated...
+192 [NOT STARTED] — Close the directory-pathspec hole in guard-destructive-git.sh...
+193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
 
 ### Extensions
 
-29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-  └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-43 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core
-74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
-  └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
-  └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
+29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced...
+  └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced...
+43 [NOT STARTED] — Decide and implement how email safety context actually...
+74 [NOT STARTED] — Add shared LaTeX build-conflict guard script (detect...
+  └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
+  └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
+167 [NOT STARTED] — Make vimtex continuous-build safety always-in-effect via the...
 
 ### Literature
 
-39 [PLANNED] — Upgrade the literature extension's Zotero integration beyond bare
+39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
 
 ### Neovim
 
-45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carr
+45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task...
 
 ### Opencode
 
-22 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: .opencode declared FR
-168 [NOT STARTED] — Correct the disproven project-scoped MCP claim in the OpenCode do
+22 [RESEARCHING] — Freeze .opencode: silence fragment validation spam and record...
+168 [NOT STARTED] — Correct the disproven project-scoped MCP claim in the...
 
 ### File Scope Lifecycle
 
-162 [NOT STARTED] — Populate `file_scope` at PLAN time by formalizing an existing, un
-  └─ 164 [NOT STARTED] — One-shot backfill of `file_scope` for existing tasks that lack a 
-    └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan
-163 [NOT STARTED] — Make an ABSENT or EMPTY `file_scope` visible. Today it is invisib
-  └─ 165 [NOT STARTED] — Settle whether an ABSENT `file_scope` should be admission-relevan (see above)
+162 [NOT STARTED] — Formalize the existing Files to modify convention in...
+  └─ 164 [NOT STARTED] — Backfill filescope for existing tasks and decide the...
+    └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent...
+163 [NOT STARTED] — Surface missing and empty filescope in validate-state.sh and...
+  └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent... (see above)
 
 ### Lean Extension
 
-177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
+177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 
 ## Tasks
+
+### 193. Carry concurrent-sibling territory in base-mode dispatch briefs, the only channel that reaches a running dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. In BASE-MODE multi-task /orchestrate, a dispatched agent is never told that concurrent sibling dispatches exist, which files they own, or how it must sequence against them -- and the orchestrator cannot tell it later, because messages sent to a running dispatch do not arrive until after it finishes. The dispatch brief is therefore the ONLY channel that reaches a concurrent agent, and it currently carries no territory information at all.
+
+THE MECHANISM ALREADY EXISTS AND IS WIRED FOR HARD MODE ONLY -- THIS IS NOT NEW FUNCTIONALITY. orchestrate-build-dispatch.sh already accepts `--territory` and emits a "## Territory" section into the brief (lines 392-399), and already pulls in context/contracts/territory.md as a core contract when it is set (line 263). The contract file exists. But orchestrate-cycle-plan.sh populates it at exactly one call site (line 1735) from `h1_territory`, and that whole block is gated on hard mode: line 1555 `if [ "$hard_mode" = "true" ]`, line 1561 `[ "$hard_mode" != "true" ] && continue`. The script's own comment at lines 1731-1733 states it outright: "only ever set for a hard-mode implement candidate ... absent from every base-mode call." So the default concurrent path -- plain `/orchestrate A,B,C` -- dispatches siblings onto one shared working tree with each one structurally unaware of the others.
+
+OBSERVED LIVE (2026-09-08, ~/Projects/BimodalLogic, `/orchestrate 562,542,193`, base mode). Two lean4 implementation dispatches ran concurrently on one tree with no territory in either brief. Consequences, all traceable to that single gap:
+  - A tree-wide rename dispatch and a two-file proof-tactic sweep collided on FormalSystem/Metalogic/Soundness.lean. Commits absorbed each other's uncommitted work in both directions (ea1a561c9, 357212808).
+  - One dispatch ran git-snapshot.sh in its reverting default mode and reverted the other's in-flight edits plus unrelated user files.
+  - One dispatch reported the other for a file_scope breach that had not happened; the three files it cited were its own rename, identifiable by `git log -1`. It had no way to know a sibling existed, let alone what that sibling owned.
+  - Full-package builds from one dispatch elaborated the other's uncommitted broken edits, so build results were unattributable in both directions, and one dispatch's build held the guard lock while the other's queued behind it.
+The orchestrator detected every one of these and sent corrective messages mid-flight. ALL FIVE were delivered to the dispatch in a single batch AFTER it had completed all twelve of its phases and committed. The agent confirmed it never saw any of them during execution. Corrections that arrive after completion are not corrections.
+
+THE TWO HALVES, BOTH IN SCOPE.
+(1) POPULATE TERRITORY IN BASE MODE. Decide what a base-mode territory payload should contain and emit it. At minimum the concurrently-dispatched sibling task numbers and their declared file_scope; consider also the sequencing rationale when one sibling's work is non-idempotent over another's. Note the h1 payload's shape at orchestrate-cycle-plan.sh:1615 as prior art, but do not assume the hard-mode payload is the right base-mode payload -- hard mode's H7 territory is about parallel phase ownership within one task, which is a different fact from cross-task concurrency within one batch.
+(2) THE UNDECLARED-SCOPE CASE. A task with `file_scope: null` contributes nothing to any territory payload and is invisible to the overlap gate -- in the observed batch, the tree-wide rename declared no scope, so the gate deferred a third task four times over one directory while the 97-file rename overlapped with nothing. Coordinate with the already-filed work on absent-file_scope admission posture rather than re-deciding it here; this task consumes whatever that one rules, and should say so.
+
+CONSIDER, DO NOT PRE-COMMIT. Whether the delivery limitation itself is fixable (can a dispatched agent drain its mailbox at tool-round boundaries during a long Bash call?) is worth a bounded look, but must NOT be this task's dependency. Even with working mid-flight delivery, constraints known at dispatch time belong in the brief; a message is a worse channel for a fact that was already knowable.
+
+MUST NOT. Do not make base-mode territory a hard-mode-only feature by another name -- the observed harm is entirely in the base-mode path. Do not serialize all multi-task dispatch as the fix; concurrency is the design and the remedy is informing the agents, not abandoning it. Do not duplicate the absent-file_scope ruling.
+
+ACCEPTANCE. A base-mode multi-task dispatch brief names its concurrent siblings and their declared file territory, and the territory.md contract is pulled in as it already is for hard mode. A fixture reproduces the observed batch shape -- two concurrent implement dispatches, one with a declared narrow scope and one with none -- and demonstrates the brief now carries what the agents lacked. The behaviour change is documented in the header contracts of both orchestrate-cycle-plan.sh and orchestrate-build-dispatch.sh. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 192. Close the directory-pathspec hole in guard-destructive-git.sh over-staging predicate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. guard-destructive-git.sh's over-staging predicate blocks `git add -A`, `git add --all` and a bare `.` pathspec, but NOT a directory pathspec. `git add -- some/dir/` and `git add some/dir/` stage every modified file under that directory and pass the guard untouched, producing the identical harm the blocked forms exist to prevent: on a shared working tree, one dispatch's commit silently absorbs a concurrent dispatch's uncommitted work.
+
+THE GUARD IS WORKING; THE ENUMERATION IS INCOMPLETE. This is not a request to distrust the hook. Its header (lines 28-35) enumerates exactly three over-staging forms -- `git add -A`/`--all`, `git add .`, and `git commit -a`/`-am`/`--all` -- and the implementation at lines 120-135 matches precisely those. A directory pathspec was simply never in the list. Note the header's own strong stance that over-staging has NO exemption mechanism and that a fresh snapshot marker must NEVER exempt these forms; a directory pathspec should join that same no-exemption class.
+
+OBSERVED LIVE (2026-09-08, ~/Projects/BimodalLogic, two concurrent implementation dispatches on one working tree). An agent attempted `git add -A`, WAS CORRECTLY BLOCKED by this hook, and then used `git add -- FormalSystem/`, which passed. The resulting commit ea1a561c9 changed 30 lines of FormalSystem/Metalogic/Soundness.lean, of which only 1 belonged to the committing task; the other 16 added lines were a concurrent task's verified-but-uncommitted proof-tactic conversions. The absorption ran in BOTH directions in the same session: commit 357212808, authored under the other task, likewise carries 4 lines of the first task's rename of that same file. Neither commit is wrong in content; both are mis-attributed, per-task revert is no longer possible, and the history is misleading about who changed what. History was deliberately NOT rewritten (two dispatches were live; see the concurrent-writer history-rewrite work already filed).
+
+THE BLOCK-THEN-WALK-AROUND SEQUENCE IS THE POINT. The agent did not evade a rule it disagreed with -- it received a refusal naming `-A` specifically, and reached for the nearest form the message did not name. A refusal that enumerates forms teaches the enumeration. This is evidence for widening the predicate rather than for adding more contract prose.
+
+WORK.
+(a) Extend the over-staging predicate in hooks/guard-destructive-git.sh to reject a `git add` pathspec that resolves to a directory, and consider the more general rule: any bare pathspec expanding to more than one modified file. Decide and justify which of the two rules to implement -- the general form also catches globs (`git add src/*.lean`) but needs care not to reject a legitimate multi-file explicit list, which IS the sanctioned form.
+(b) Reuse the file's existing COMMAND_SCAN argv-anchoring machinery (quoted-span and comment stripping) so a path appearing inside a commit message cannot trigger a false positive.
+(c) Emit the same "stage explicit task-scoped paths instead" guidance the `-A` branch already gives, and name the offending pathspec.
+(d) Update the header's over-staging enumeration (lines 28-35), which would otherwise misdescribe the file.
+(e) Update context/standards/git-staging-scope.md and rules/git-workflow.md's "enforced by" framing so rules and implementation stay in agreement.
+(f) Add fixture cases to scripts/tests/test-guard-destructive-git.sh: `git add -- dir/` and `git add dir/` are refused; `git add -- a.lean b.lean` (explicit multi-file list) is permitted; a commit message containing a directory-looking string does not trigger; git-commit-scoped.sh remains unblocked.
+
+MUST NOT. Do not block the sanctioned form -- an explicit list of named file paths is exactly what the guard's own refusal message tells agents to use, and rejecting it would leave agents with no compliant way to commit. Do not add an exemption mechanism for over-staging. Do not attempt retroactive repair of ea1a561c9 or 357212808.
+
+RELATIONSHIP TO THE HISTORY-REWRITE PREDICATE WORK (no hard dependency). Another filed task adds a concurrency-gated predicate to this same hook for `--amend`/`reset`. That one is a genuinely new hazard class requiring independence from the clean-tree exemption; THIS one is a completeness fix to the hook's original over-staging class and needs no concurrency signal -- a directory stage is over-broad whether or not a concurrent writer exists. They are separable, but both edit hooks/guard-destructive-git.sh, so the file-footprint admission gate will serialize them regardless; whichever lands second should reconcile the header.
+
+ACCEPTANCE. `git add -- <dir>/` and `git add <dir>/` are refused with a message naming the pathspec and pointing at the explicit-paths guidance; an explicit multi-file list remains permitted; the header enumeration and git-staging-scope.md match the implementation; fixture tests cover all four cases above and fail against the current script; shellcheck clean per context/standards/shell-strict-mode.md. Redeploy and confirm the hook fires from the deployed copy.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 191. Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work
 - **Status**: [NOT STARTED]
