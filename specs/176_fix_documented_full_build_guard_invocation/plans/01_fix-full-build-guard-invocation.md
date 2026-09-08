@@ -115,7 +115,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Correct the full-build caller sites [IN PROGRESS]
+### Phase 1: Correct the full-build caller sites [COMPLETED]
 
 **Goal**: Every empty-vector `lake-build-guard.sh build` invocation in the source store names
 `build` as its lake subcommand, with surrounding prose intent preserved.
@@ -171,29 +171,37 @@ number 5.
 
 ---
 
-### Phase 2: Prove the corrected form runs, and audit the whole source store [NOT STARTED]
+### Phase 2: Prove the corrected form runs, and audit the whole source store [IN PROGRESS]
 
 **Goal**: The corrected invocation is demonstrated to reach `lake` (not merely to parse), and no
 broken variant remains anywhere in the source store.
 
 **Tasks**:
-- [ ] Build the runtime harness in the scratchpad: a directory containing a bare `lakefile.toml`
-      and an executable `fakelake` stub that echoes `FAKE_LAKE_ARGV: $*` and exits 0
-- [ ] Negative control: run the OLD form
+- [x] Build the runtime harness in the scratchpad: a directory containing a bare `lakefile.toml`
+      and an executable `fakelake` stub that echoes `FAKE_LAKE_ARGV: $*` and exits 0 *(completed)*
+- [x] Negative control: run the OLD form
       (`LAKE_BUILD_GUARD_LAKE_BIN=$PWD/fakelake bash <guard> build --timeout 1800 --`) and assert
       exit 77 with the `requires a lake subcommand` message, and that the stub was never reached
-- [ ] Positive proof: run the NEW form
+      *(completed: exit 77, "build mode requires a lake subcommand ... none was given", no
+      FAKE_LAKE_ARGV in output)*
+- [x] Positive proof: run the NEW form
       (`... bash <guard> build --timeout 1800 --no-share -- build`) and assert `FAKE_LAKE_ARGV: build`
       appears on stdout with exit 0 -- the stub being reached IS the "actually runs" evidence.
       Pass `--no-share` so a cached prior result cannot produce a false REPLAY pass
-- [ ] Exhaustive audit pattern A: `grep -rn "lake-build-guard.sh build" agent-system/` -- classify
+      *(completed: stdout was exactly `FAKE_LAKE_ARGV: build`, exit 0)*
+- [x] Exhaustive audit pattern A: `grep -rn "lake-build-guard.sh build" agent-system/` -- classify
       every hit as correct, corrected-by-Phase-1, or a deliberate usage-error example
-- [ ] Exhaustive audit pattern B: `grep -rn -- "--timeout 1800" agent-system/` -- catches any
+      *(completed: 16 hits, all classified -- scoped forms, the 4 corrected full-build forms,
+      placeholder/env forms, and guard header/comment mentions; zero unexplained empty vectors)*
+- [x] Exhaustive audit pattern B: `grep -rn -- "--timeout 1800" agent-system/` -- catches any
       invocation whose script name is line-wrapped away from the `build` token
-- [ ] Assert the guard and its tests are untouched:
+      *(completed: 9 hits, all already covered by pattern A or prose mentioning the flag value;
+      no new empty-vector site found)*
+- [x] Assert the guard and its tests are untouched:
       `git diff --name-only` contains no `agent-system/extensions/core/scripts/lake-build-guard.sh`
-      and no `.../tests/test-lake-build-guard.sh`
-- [ ] Assert nothing under `.claude/**` was hand-edited: `git status --short` shows no such path
+      and no `.../tests/test-lake-build-guard.sh` *(completed: empty diff for both paths)*
+- [x] Assert nothing under `.claude/**` was hand-edited: `git status --short` shows no such path
+      *(completed: confirmed)*
 
 **Timing**: 0.5 hours
 
