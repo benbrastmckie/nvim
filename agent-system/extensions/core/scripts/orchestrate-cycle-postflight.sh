@@ -689,7 +689,7 @@ if [ "$have_outcome" = "true" ]; then
         *)       inferred_phase="unknown" ;;
       esac
       offschema_display="${dispatch_status:-<empty>}"
-      echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
+      echo "[OFF-SCHEMA DISPATCH STATUS - '${offschema_display}' is not in the handoff status vocabulary (researched|planned|implemented|needs_research|partial|failed|blocked); the dispatch may have SUCCEEDED but its outcome cannot be trusted or applied]" >&2
       echo "${notice_prefix} ERROR: task ${task_number} outcome carries an off-schema dispatch_status. Inferred phase (from artifacts[0].type, naming only — not a success signal): ${inferred_phase}. Remedy: inspect the handoff/.return-meta.json by hand, then re-run /orchestrate ${task_number}${command_suffix}." >&2
       if is_live; then
         record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \

@@ -151,7 +151,7 @@ In all cases, delegation happens via the **Agent tool** (not the Skill tool). Se
 **Return format**:
 ```json
 {
-  "status": "researched|planned|implemented|partial|failed|blocked",
+  "status": "researched|planned|implemented|needs_research|partial|failed|blocked",
   "summary": "Brief 2-5 sentence summary (<100 tokens)",
   "artifacts": [{...}],
   "metadata": {

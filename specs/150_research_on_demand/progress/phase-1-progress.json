@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Admit needs_research to the status vocabulary and its upstream gates",
+  "started_at": "2026-09-08T00:00:00Z",
+  "last_updated": "2026-09-08T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append needs_research to status enum in return-metadata-file.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 2, "description": "Add needs_research arm to orchestrate-recover-outcome.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]},
+    {"id": 3, "description": "Add needs_research to validate-return-meta.sh valid_statuses", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-return-meta.sh"]},
+    {"id": 4, "description": "Add needs_research to validate-handoff.sh valid_statuses", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-handoff.sh"]},
+    {"id": 5, "description": "Check reconcile-task-status.sh on-enum set, record finding", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"], "note": "Recorded finding as an inline comment: needs_research deliberately excluded from the on-enum refusal set because planner-agent (its sole producer) never writes .orchestrator-handoff.json per docs/architecture/handoff-schema.md's Handoff Writers table -- this path is confirmed unreachable, not merely assumed."},
+    {"id": 6, "description": "Update doc mirrors of six-value vocabulary string", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/metadata-file-return.md", "agent-system/extensions/core/context/architecture/system-overview.md", "agent-system/extensions/core/context/patterns/system-defect-discrimination.md", "agent-system/extensions/core/context/formats/subagent-return.md"]},
+    {"id": 7, "description": "Update off-schema operator messages in postflight scripts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh"], "note": "orchestrate-stage5-postflight.sh confirmed NOT invoked by skill-orchestrate/SKILL.md (grep found no call site there, only test-force-phases.sh unit-testing it directly and doc mentions) -- updated its vocabulary string anyway for consistency with the doc/test that still exercise it, but it is not a live orchestrate path."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "scope_sweep": "grep -rn 'researched|planned|implemented' agent-system/extensions/ reconciled against the plan's Phase 1 file list -- all hits accounted for (Phase 2 territory: skill-base.sh:698, test-skill-base-lifecycle.sh:434 comment; deliberately-unchanged: reconcile-task-status.sh on-enum set, test-reconcile-handoff-status.sh SIX_LEGAL_VALUES fixture constant, system-defect-discrimination.md's historical incident quote at line 26). No unlisted scope expansion found.",
+  "verification": {
+    "fixture_validate_return_meta": "PASS - status=needs_research with empty artifacts and research_questions passes validate-return-meta.sh (exit 0)",
+    "fixture_recover_outcome": "PASS - orchestrate-recover-outcome.sh on that fixture yields recovered=true, status=needs_research, evidence_suspect=false, evidence_reason=NONE"
+  }
+}

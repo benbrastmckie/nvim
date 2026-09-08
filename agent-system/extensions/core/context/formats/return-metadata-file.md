@@ -20,7 +20,7 @@ Example: `specs/1_setup_lsp_config/.return-meta.json`
 
 ```json
 {
-  "status": "researched|planned|implemented|partial|failed|blocked",
+  "status": "researched|planned|implemented|needs_research|partial|failed|blocked",
   "artifacts": [
     {
       "type": "report|plan|summary|implementation|handoff",
@@ -92,11 +92,20 @@ restating the enumeration independently). Any writer of one of those three files
 | `researched` | Research completed successfully |
 | `planned` | Plan created successfully |
 | `implemented` | Implementation completed successfully |
+| `needs_research` | Planner-only outcome: the planner declined to write a plan and is asking for a research phase (see below) |
 | `partial` | Partially completed, can resume |
 | `failed` | Failed, cannot resume without fix |
 | `blocked` | Blocked by external dependency |
 
 **Note**: Never use `"completed"` - it triggers Claude stop behavior.
+
+**`needs_research`**: written only by `planner-agent` (and, in principle, an extension planner
+agent) when the task description plus what the agent can read in the codebase does not suffice to
+write a plan meeting `plan-format.md`. It carries an empty `artifacts` array by design — no plan
+is written on this path — and requires a populated `research_questions` array (a JSON array of
+strings; see `context/reference/state-management-schema.md`) naming the focused questions a
+research phase must answer. This is distinct from a normal `planned`/`researched` outcome and from
+`user_decision` (a question only the user's judgment can answer, not an agent's).
 
 **Early Metadata Pattern**: Agents should write metadata with `status: "in_progress"` at the START
 of execution (Stage 0), then update to the final status on completion. This ensures metadata exists
@@ -472,6 +481,28 @@ producer/consumer narrative.
 survive any later writer's read-modify-write update to this file untouched.
 
 **Path form**: entries are repo-relative paths, matching `modified_files`'s path convention.
+
+### research_questions (optional)
+
+**Type**: optional `string[]` at the **top level** of `.return-meta.json` — a sibling of
+`proposed_file_scope` and `modified_files`.
+
+**Include if**: `status` is `needs_research`. Required and non-empty on that path; absent
+otherwise.
+
+`planner-agent` (and, in principle, an extension planner agent) populates this field with a
+focused list of the questions a research phase must answer before a plan meeting
+`plan-format.md` can be written. It is producer-owned by the planner, consistent with the
+"Multiple Sequential Writers" section above.
+
+**Consumer**: `agent-system/extensions/core/scripts/skill-base.sh`'s `skill_postflight_update()`
+reads this field off the planner's `.return-meta.json` and forwards it as
+`agent-system/extensions/core/scripts/update-task-status.sh --research-questions=<json-array>`,
+which persists it to the task's `research_questions` field in `state.json` with
+overwrite-on-write (not append) semantics — see
+`context/reference/state-management-schema.md`. It is later read back at research-dispatch
+build time and joined into a single string passed as `--focus` to
+`orchestrate-build-dispatch.sh`.
 
 ### user_decision (optional)
 

@@ -30,7 +30,7 @@ All subagents MUST return this JSON structure:
 
 ```json
 {
-  "status": "researched|planned|implemented|synced|linked|committed|tasks_created|partial|failed|blocked",
+  "status": "researched|planned|implemented|needs_research|synced|linked|committed|tasks_created|partial|failed|blocked",
   "summary": "Brief 2-5 sentence summary (<100 tokens)",
   "artifacts": [
     {
@@ -139,7 +139,7 @@ All subagents MUST return this JSON structure:
 
 1. **JSON Validity**: Return must be valid JSON
 2. **Required Fields**: status, summary, artifacts, metadata must be present
-3. **Status Enum**: status must be a contextual success value (researched, planned, implemented, synced, linked, committed, tasks_created) or partial, failed, blocked
+3. **Status Enum**: status must be a contextual success value (researched, planned, implemented, needs_research, synced, linked, committed, tasks_created) or partial, failed, blocked
 4. **Session ID Match**: metadata.session_id must match expected session_id
 5. **Summary Length**: summary must be <100 tokens
 6. **Artifacts Exist**: If status is a success value (not partial/failed/blocked), all artifact paths must exist on disk

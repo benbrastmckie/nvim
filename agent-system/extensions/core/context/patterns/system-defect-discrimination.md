@@ -80,7 +80,7 @@ decision, not silently done by a detection site):
 
 | Instance | Where it is already computed |
 |----------|-------------------------------|
-| `OFF_SCHEMA_STATUS` — a status value outside the six-value normative enum (`researched\|planned\|implemented\|partial\|failed\|blocked`; `in_progress` is a valid non-terminal marker, not a violation) | Tier C branches, see registry below |
+| `OFF_SCHEMA_STATUS` — a status value outside the seven-value normative enum (`researched\|planned\|implemented\|needs_research\|partial\|failed\|blocked`; `in_progress` is a valid non-terminal marker, not a violation) | Tier C branches, see registry below |
 | `ARTIFACTS_SHAPE_MISMATCH` — an artifacts array that is non-empty but yields no `.path` | `scripts/orchestrate-recover-outcome.sh:205` |
 | `HANDOFF_MISLOCATED` — a handoff written outside its task directory | the stray-handoff sweep, see registry below |
 | `META_MISSING_AFTER_NARRATION` — a `.return-meta.json` missing or unparseable after a dispatch that produced subagent-authored narration (i.e., not the infra-failure case — see [infra-failure-discrimination.md](infra-failure-discrimination.md) for that adjacent, already-solved discrimination) | the completion-claim gate, see registry below |

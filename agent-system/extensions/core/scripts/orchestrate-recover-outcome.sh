@@ -264,6 +264,18 @@ case "$status" in
       "$evidence_suspect" "$evidence_reason"
     exit 0
     ;;
+  needs_research)
+    # needs_research is a planner-only outcome carrying an empty artifacts array by design (no
+    # plan is written on this path). It deliberately does NOT share the
+    # researched|planned|implemented arm's artifacts-evidence-mismatch logic above: an empty
+    # artifacts array is the correct and expected shape here, not evidence of a writer bug, so
+    # this arm short-circuits directly to recovered=true, evidence_suspect=false without
+    # evaluating ARTIFACTS_SHAPE_MISMATCH or PHASES_ZERO_ON_SUCCESS.
+    emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
+      "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items" \
+      false "NONE"
+    exit 0
+    ;;
   in_progress)
     emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
     exit 1

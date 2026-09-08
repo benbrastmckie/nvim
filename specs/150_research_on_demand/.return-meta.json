@@ -1,61 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/150_research_on_demand/plans/01_research-on-demand-lifecycle.md",
-      "summary": "Six-phase, 9-hour plan for the planner-first lifecycle with research on demand: vocabulary admission, status-write plumbing, postflight arms, routing flip with --focus wiring, planner contract, and fixture tests."
-    }
-  ],
-  "next_steps": "Run /implement 150 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 2,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1788849084_1040b7_150",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ],
-    "dispatch_seq": 6,
-    "phase_count": 6,
-    "estimated_hours": 9,
-    "dependency_waves": [
-      [
-        1,
-        2
-      ],
-      [
-        3,
-        5
-      ],
-      [
-        4
-      ],
-      [
-        6
-      ]
-    ]
-  },
-  "dispatch_seq": 6,
-  "summary": "Six-phase plan flipping the default lifecycle to plan-first with a planner-issued needs_research verdict routing back to research, grounded on the research report plus three additional gate sites found at plan time.",
-  "memory_candidates": [
-    {
-      "content": "Extending a closed status/verdict enum in the orchestrate pipeline requires clearing every gate UPSTREAM of the consumer switch, not just adding the consumer arm. Base-mode research/plan/implement dispatches write no handoff, so orchestrate-cycle-postflight.sh recovers dispatch_status from .return-meta.json via orchestrate-recover-outcome.sh, whose `case \"$status\"` accepts only researched|planned|implemented and sends everything else to an exit-1 STATUS_NOT_SUCCESS arm. validate-return-meta.sh independently holds a closed valid_statuses array. A new status value that is only added to the postflight switch never arrives there: recovery fails first, dispatch_status stays empty, and the empty value hits the off-schema catch-all that sets halt=true and records an OFF_SCHEMA_STATUS defect. Before adding any new status or verdict value, enumerate the pipeline gates with `grep -rn 'researched|planned|implemented' agent-system/extensions/` and admit the value at every one, upstream-first.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/150_research_on_demand/plans/01_research-on-demand-lifecycle.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "status-enum",
-        "orchestrate-recover-outcome",
-        "off-schema",
-        "dispatch-status",
-        "vocabulary-extension",
-        "postflight"
-      ]
-    }
-  ],
-  "modified_files": [
-    "specs/150_research_on_demand/plans/01_research-on-demand-lifecycle.md"
-  ]
+    "session_id": "sess_1788874131_9d9e52",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

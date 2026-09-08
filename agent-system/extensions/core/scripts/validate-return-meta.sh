@@ -172,7 +172,7 @@ status=$(jq -r '.status // ""' "$META_FILE")
 
 # ─── Check 2: status value validation ───────────────────────────────────────────────────────────
 # Normative vocabulary per context/formats/return-metadata-file.md's status table.
-valid_statuses=("in_progress" "researched" "planned" "implemented" "partial" "failed" "blocked")
+valid_statuses=("in_progress" "researched" "planned" "implemented" "needs_research" "partial" "failed" "blocked")
 status_valid=false
 for valid in "${valid_statuses[@]}"; do
   if [[ "$status" == "$valid" ]]; then

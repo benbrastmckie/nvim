@@ -33,7 +33,7 @@ Example: `specs/259_prove_completeness/.return-meta.json`
 
 ```json
 {
-  "status": "researched|planned|implemented|partial|failed|blocked",
+  "status": "researched|planned|implemented|needs_research|partial|failed|blocked",
   "artifacts": [
     {
       "type": "report|plan|summary|implementation",

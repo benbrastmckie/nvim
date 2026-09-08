@@ -256,7 +256,7 @@ fi
 
 # --- Check 4: Status value validation ---
 status=$(jq -r ".status // \"\"" "$HANDOFF_FILE" 2>/dev/null)
-valid_statuses=("researched" "planned" "implemented" "partial" "failed" "blocked")
+valid_statuses=("researched" "planned" "implemented" "needs_research" "partial" "failed" "blocked")
 status_valid=false
 for valid in "${valid_statuses[@]}"; do
   if [[ "$status" == "$valid" ]]; then

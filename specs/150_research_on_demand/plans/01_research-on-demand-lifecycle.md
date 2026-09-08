@@ -1,7 +1,7 @@
 # Implementation Plan: Task #150
 
 - **Task**: 150 - Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: Task 88 (completed - four-move engine is the only engine)
 - **Research Inputs**: specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md
@@ -126,37 +126,37 @@ task is its Stage A.8, landing after Task 88.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Admit `needs_research` to the status vocabulary and its upstream gates [NOT STARTED]
+### Phase 1: Admit `needs_research` to the status vocabulary and its upstream gates [COMPLETED]
 
 **Goal**: Make `needs_research` a legal `.return-meta.json` status that survives recovery and
 validation intact, so it can reach the postflight status switch at all.
 
 **Tasks**:
-- [ ] Append `|needs_research` to the status enum line in
+- [x] Append `|needs_research` to the status enum line in
       `context/formats/return-metadata-file.md`, and add a short field note stating that
       `needs_research` is a planner-only outcome, carries an empty `artifacts` array by design
-      (no plan is written), and requires the question-list field described in Phase 2.
-- [ ] Add a `needs_research` arm to `orchestrate-recover-outcome.sh`'s `case "$status"`, placed
+      (no plan is written), and requires the question-list field described in Phase 2. *(completed: also added a dedicated `research_questions (optional)` field-spec section)*
+- [x] Add a `needs_research` arm to `orchestrate-recover-outcome.sh`'s `case "$status"`, placed
       alongside `researched|planned|implemented` but NOT sharing their artifacts-evidence logic:
       an empty artifacts array is the correct and expected shape here, so the arm must emit
       `recovered=true` with `evidence_suspect=false` and must not raise
-      `ARTIFACTS_SHAPE_MISMATCH` on the empty array.
-- [ ] Add `"needs_research"` to `validate-return-meta.sh`'s `valid_statuses` array. Confirm the
-      artifacts non-empty rule leaves it in the permissive `*)` arm so an empty array validates.
-- [ ] Add `"needs_research"` to `validate-handoff.sh`'s `valid_statuses` array for vocabulary
-      symmetry, so a hard-mode path that does write a handoff is not blocked by a stale enum.
-- [ ] Check `reconcile-task-status.sh`'s on-enum refusal set and its off-schema warning string:
+      `ARTIFACTS_SHAPE_MISMATCH` on the empty array. *(completed)*
+- [x] Add `"needs_research"` to `validate-return-meta.sh`'s `valid_statuses` array. Confirm the
+      artifacts non-empty rule leaves it in the permissive `*)` arm so an empty array validates. *(completed: confirmed by fixture run, see Verification)*
+- [x] Add `"needs_research"` to `validate-handoff.sh`'s `valid_statuses` array for vocabulary
+      symmetry, so a hard-mode path that does write a handoff is not blocked by a stale enum. *(completed)*
+- [x] Check `reconcile-task-status.sh`'s on-enum refusal set and its off-schema warning string:
       decide and record whether `needs_research` joins the on-enum list. Expected finding is that
       this path is unreachable for base-mode planning (no handoff is written); record that
-      conclusion in the phase notes rather than changing behavior on speculation.
-- [ ] Update the doc mirrors of the six-value vocabulary string found by grep:
+      conclusion in the phase notes rather than changing behavior on speculation. *(completed: confirmed via docs/architecture/handoff-schema.md's Handoff Writers table that planner-agent never writes a handoff -- recorded as an inline comment in reconcile-task-status.sh; on-enum set left unchanged)*
+- [x] Update the doc mirrors of the six-value vocabulary string found by grep:
       `context/patterns/metadata-file-return.md`, `context/architecture/system-overview.md`,
       `context/patterns/system-defect-discrimination.md`, and `context/formats/subagent-return.md`
-      (whose list already carries extra values and needs the new one inserted consistently).
-- [ ] Update the two off-schema operator messages that quote the vocabulary inline
+      (whose list already carries extra values and needs the new one inserted consistently). *(completed)*
+- [x] Update the two off-schema operator messages that quote the vocabulary inline
       (`orchestrate-cycle-postflight.sh` and `orchestrate-stage5-postflight.sh`) so the message a
       user sees names the full current enum. Confirm at implementation time whether
-      `orchestrate-stage5-postflight.sh` is still a live path before editing it.
+      `orchestrate-stage5-postflight.sh` is still a live path before editing it. *(completed: confirmed orchestrate-stage5-postflight.sh has no call site in skill-orchestrate/SKILL.md -- not a live orchestrate path, only unit-tested directly by test-force-phases.sh -- updated its message anyway for consistency)*
 
 **Timing**: 1.5 hours
 
