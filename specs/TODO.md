@@ -1,5 +1,5 @@
 ---
-next_project_number: 183
+next_project_number: 188
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 183
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,142,150,157,162,163,166,167,168,170,171,172,176,177,180 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,142,150,157,162,163,166,167,168,170,171,172,176,177,180,183,184,185,186,187 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175,181 | 29,74,139,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
@@ -40,6 +40,11 @@ next_project_number: 183
 180 [NOT STARTED] — Move the post-deploy consumer-freshness scan off the blocking pat
   └─ 181 [NOT STARTED] — Fix three related defects in the /orchestrate inter-cycle redeplo
     └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
+183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
+184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan completio
+185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N" cita
+186 [NOT STARTED] — Fix the wrong deploy-headless.sh invocation path documented in re
+187 [NOT STARTED] — Decide and enforce one commit-attribution convention across scrip
 
 ### Extensions
 
@@ -79,6 +84,116 @@ next_project_number: 183
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context: h
 
 ## Tasks
+
+### 187. Unify commit attribution convention
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Decide and enforce one commit-attribution convention across scripted and hand-written agent commits.
+
+OBSERVED. Across the 16 commits of a single completed task, exactly one commit carried the session-attribution trailer and 15 did not. The one that carried it (2d09265cc) was hand-written by an implementation agent using git directly; the other 15 were produced by scripts/git-commit-scoped.sh, which composes its own commit message from --message plus a Session: line and never picks up harness-supplied attribution guidance. The result is a single task whose history is inconsistent for no principled reason.
+
+NOT A SECURITY ISSUE. During the same run a subagent flagged the attribution guidance as a suspected prompt injection. That was investigated and NOT substantiated: no file in the repository contains the trailer strings or the notice's phrasing, and the guidance arrived alongside a genuine /remote-control invocation that also enabled session-linked tooling. The finding here is consistency, not compromise. Record this explicitly so the earlier false positive is not rediscovered and re-escalated.
+
+THE REAL QUESTION. git-commit-scoped.sh is the single sanctioned committing implementation, and agent contracts direct agents to it -- but agents still sometimes commit with raw git (as 2d09265cc did), and only those commits pick up ambient attribution. Decide which of these is intended: (a) git-commit-scoped.sh should accept and emit session attribution so scripted commits match hand-written ones; (b) attribution belongs only on interactive commits and agent commits should carry none; (c) the divergence is acceptable and should be documented rather than fixed. Do not pre-commit to an option.
+
+CONSIDER ALSO. Whether the raw-git commit is itself the defect worth addressing -- rules/git-workflow.md and the scoped-commit boundary lint already push all task committing through git-commit-scoped.sh, so a hand-written agent commit may indicate a gap in that enforcement independent of attribution.
+
+ACCEPTANCE: a recorded decision with rationale; whichever option is chosen is reflected in git-commit-scoped.sh, the git-workflow rule, or both; a task run end to end afterwards produces commits with a single consistent attribution shape.
+
+---
+
+### 186. Fix deploy headless path in regeneration doc
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix the wrong deploy-headless.sh invocation path documented in regeneration-is-manual-only.md.
+
+OBSERVED (live, cost a full orchestration cycle). A /orchestrate run was refused at postflight by the completion-deploy gate, whose remedy text correctly names "bash .claude/scripts/deploy-headless.sh". The operator instead copied the invocation form documented in context/patterns/regeneration-is-manual-only.md -- "bash scripts/deploy-headless.sh" -- which does not exist at that path. The command failed with exit 127 and NO output, so it looked like a silent no-op rather than a failure. The task stayed blocked until the correct path was used, at which point the deploy landed clean on the first attempt.
+
+WHY THIS FILE MATTERS DISPROPORTIONATELY. regeneration-is-manual-only.md is the file the deploy gate's own remedy text points operators and agents at. It is the canonical reference read precisely when someone is already blocked, so a wrong invocation there is maximally expensive.
+
+THE DEFECT. Four sites carry the bare, non-existent path -- lines 32 and 35 of context/patterns/regeneration-is-manual-only.md in BOTH the deployed tree and its source store copy under agent-system/extensions/core/. A repo-wide survey found 26 references using the "scripts/deploy-headless.sh" form and 4 using "bash agent-system/extensions/core/scripts/deploy-headless.sh"; determine which of these are genuinely wrong versus correct-in-their-own-context (a source-store-relative path may be correct where the reader is operating in the source store) rather than mass-rewriting on the string alone.
+
+SCOPE. Correct the invocation form in the source store under agent-system/extensions/** only -- never the deployed .claude/ tree, which is regenerated (see rules/source-store-deploy-boundary.md). Consider whether the surrounding text should also warn that a wrong path fails silently with exit 127.
+
+ACCEPTANCE: every documented invocation of deploy-headless.sh names a path that resolves from the working directory its surrounding text assumes; the two code fences in regeneration-is-manual-only.md are runnable as written from a consuming repo root; deploy and the full gate run stay green.
+
+---
+
+### 185. Retarget stage citations to move vocabulary
+- **Status**: [NOT STARTED]
+- **Task Type**: markdown
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Retarget the remaining historical "Stage N" and "Stage MT-N" citations to the four-move loop vocabulary.
+
+CONTEXT. skill-orchestrate/SKILL.md was rewritten from a two-engine, Stage-numbered state machine (single-task Stages 0-8; multi-task Stages MT-1 through MT-5) into a single four-move loop whose sections are named Move 1 through Move 4. Roughly 120 citations of the old vocabulary remain across 9 context/ and docs/ files. They now point at section names that no longer exist in the file they cite.
+
+KNOWN SITES (from the rewrite's own survey; re-verify by grep rather than trusting this list):
+  context/patterns/batch-orchestration-guardrails.md  -- 34 occurrences, the largest single concentration
+  docs/architecture/handoff-schema.md
+  docs/architecture/orchestrate-cycle-postflight.md
+  docs/architecture/batch-admit-schema.md
+  context/patterns/orchestrate-batch-results-template.md
+  plus four further context/ and docs/ files
+
+WHY IT WAS DEFERRED. The rewrite judged a ~120-citation mechanical sweep disproportionate to its core scope and recorded it as a follow-up rather than attempting it inline.
+
+SCOPE AND CARE. This is a mechanical retarget, not a rewrite of the surrounding prose. Two hazards to respect: (1) some citations are historical-by-intent -- they describe what a now-deleted engine did, in a decision record or incident narrative, and must keep naming the old stage rather than being rewritten to a Move that never had that behavior; distinguish "cites a live section" from "narrates history" before editing. (2) Edit the source store under agent-system/extensions/** and never the deployed .claude/ tree (see rules/source-store-deploy-boundary.md).
+
+ACCEPTANCE: every citation that refers to a LIVE section names the correct Move; every historical citation is either left intact or explicitly marked as historical; a grep for "Stage MT-" and for single-task "Stage [0-8]" returns only intentional historical references; deploy and the full gate run stay green.
+
+---
+
+### 184. Decide lean skeleton plan completion routing
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Decide the disposition of the Lean/formal skeleton-plan completion routing lost with the single-task engine.
+
+CONTEXT. The deleted single-task /orchestrate engine carried a skeleton-exhaustion completion branch: when no incomplete phase heading remained AND the last handoff declared skeleton=true, it derived a follow-up task list from the handoff's sorry_inventory[].follow_up_task entries, routed the task to completion via update-task-status.sh postflight with the pr_ready target and --allow-pr-ready, and reported the pending follow-ups. The surviving batch engine has no equivalent branch.
+
+WHY THIS ONE NEEDS A DECISION AND HAS NOT HAD ONE. The rewrite recorded TWO capability losses. The loop-guard staleness detector got an explicit recommended follow-up. This one was recorded as a permanent loss with NO follow-up named at all -- it is the only deviation in that summary left without a next step. Lean and formal work is live in this repository, so silent acceptance should be a deliberate choice rather than an oversight.
+
+SCOPE. Determine whether strategic-sorry skeleton plans can still reach a correct terminal status under the batch engine, and if not, what should happen. Evaluate at least: (a) port the skeleton-exhaustion branch into orchestrate-cycle-plan.sh or orchestrate-cycle-postflight.sh; (b) require skeleton plans to close through a different, already-supported path; (c) accept the loss explicitly and document how a skeleton plan is expected to terminate now. Do not pre-commit to an option.
+
+EVIDENCE. The assertions covering this mechanism (.skeleton / last_skeleton and .sorry_inventory / follow_up_tasks) were removed from scripts/tests/test-handoff-reader-parity.sh. Recorded under "Plan Deviations" in specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md. Related policy: the strategic-sorry skeleton allowance in context/contracts/recovery.md.
+
+ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a working path to terminal status for skeleton plans with test coverage, or documentation naming the expected terminus.
+
+---
+
+### 183. Decide loop guard staleness detector disposition
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Decide whether to port the hard-mode loop-guard operational-staleness detector into orchestrate-cycle-plan.sh, or record its removal as accepted.
+
+CONTEXT. The single-task /orchestrate engine (skill-orchestrate/SKILL.md Stages 0-8) was deleted when SKILL.md was rewritten as the four-move loop. That engine carried a 3-signal operational-staleness detector for .orchestrator-loop-guard, gated on hard mode only. It has NO equivalent in the surviving batch engine (orchestrate-cycle-plan.sh), so /orchestrate --hard no longer detects a stale-but-syntactically-valid loop guard at all.
+
+WHAT WAS LOST (the detector's own contract, for reference when deciding):
+  Signal 1 -- schema/version drift: guard .max_cycles differs from the live MAX_CYCLES.
+  Signal 2 -- plan-lineage drift: guard .plan_version differs from the newest plans/*.md basename. Skipped when either side is empty or "none" (an absent plans/ directory is never itself evidence of staleness).
+  Signal 3 -- mtime-age backstop: guard older than ORCHESTRATOR_LOOP_GUARD_STALE_DAYS (default 7). An unreadable mtime (stat returns 0) is treated as NOT stale.
+  Any one signal tripping was sufficient. On trip: archive the guard aside to .stale-loop-guard-<ts>.json (never delete), co-archive .orchestrator-churn-state.json under the same timestamp if present, then fall through to fresh init at cycle 0.
+
+THIS IS A DECISION TASK, NOT A PORT TASK. The prior engine's own comments recorded that whether BASE mode should gain the detector unconditionally was already an open, undecided question. Deleting the hard-mode copy did not settle that question -- it removed the only implementation. Evaluate at least: (a) port into orchestrate-cycle-plan.sh for all effort modes; (b) port hard-mode-only, preserving the old asymmetry; (c) accept the loss and sweep the retired test's remaining references. Do not pre-commit to an option.
+
+EVIDENCE. The retired test scripts/tests/test-loop-guard-staleness.sh was removed from git tracking in commit 2d09265cc. The capability loss is recorded under "Plan Deviations" and "Follow-ups" in specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md.
+
+ACCEPTANCE: a recorded decision with rationale; if ported, the detector works under the batch engine and has test coverage; if accepted as lost, the removal is documented where a future reader will find it rather than surviving only as summary prose.
+
+---
 
 ### 182. Add a durable redeploy ledger with content-hash and recency skip to the checkpoint
 - **Effort**: 4 hours
@@ -184,6 +299,10 @@ Update the 'The Inter-Cycle Redeploy Checkpoint' subsection of context/patterns/
 SOURCE STORE. All edits land under agent-system/extensions/core/** at the GLOBAL root /home/benjamin/.config/nvim. Never edit .claude/**, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.
 
 DEPENDENCY. Depends on the consumer-scan opt-in task both by file footprint (both modify deploy-headless.sh) and because that task removes latency this task's re-run-a-candidate-finding option would otherwise compound.
+
+=== SCOPE NOTE ADDED 2026-09-08 (residual observed live) ===
+A completed task was refused at postflight by the completion-deploy gate and could NOT self-correct within the invocation: /orchestrate has no serialized redeploy trigger of its own. The two sanctioned automated deploy call sites (command-gate-out.sh rc==6, and commands/implement.md Step 4) do not cover the /orchestrate path, and Stage MT-3 step 7 keys off orchestrator-critical-paths.json rather than a broader agent-system/extensions/** predicate -- so a task whose own commits touched the source store outside a declared critical path defers rather than converging. The operator had to deploy by hand and re-attempt the transition.
+Widening that predicate (and its deployed_critical_paths idempotence backing store) is named as explicit follow-up work in context/patterns/batch-orchestration-guardrails.md and is in scope for THIS task if the chosen approach makes it natural; if not, split it out rather than dropping it silently.
 
 ---
 
