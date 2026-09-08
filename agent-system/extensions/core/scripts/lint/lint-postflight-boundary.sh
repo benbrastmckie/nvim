@@ -95,6 +95,12 @@ check_postflight_violations() {
     postflight_section=$(awk '
         /^### Stage [6-9]|^### Stage 1[0-9]/ { in_postflight=1 }
         /Stage [5-9]: .*(Parse.*Return|Update.*Status \(Postflight\)|Postflight Status)/ { in_postflight=1 }
+        # skill-orchestrate SKILL.md four-move loop (see
+        # docs/architecture/orchestrate-state-machine.md) abandoned "### Stage N" numbering
+        # entirely; its own postflight body lives under "### Move 3: Postflight". Recognized here
+        # by heading text containing "Postflight" rather than a numbered Stage/Move token, so a
+        # future rename of the numbering scheme does not silently reopen this same fail-open gap.
+        /^#{2,4} .*Postflight/ { in_postflight=1 }
         # Stop at Return Format or Error Handling sections
         /^## Return Format|^## Error Handling|^## MUST NOT/ && in_postflight { in_postflight=0 }
         in_postflight { print }

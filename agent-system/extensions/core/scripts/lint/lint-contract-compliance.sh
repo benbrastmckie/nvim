@@ -9,9 +9,13 @@
 #   A. skill-orchestrate/SKILL.md's hard-mode contract injection references the required
 #      contracts per phase (the standalone hard agents that used to declare these were deleted)
 #   B. All 5 contract files exist and contain H-technique identifiers
-#   C. skill-orchestrate/SKILL.md's Stage 1b wires the correct per-phase caller-default agent
-#      (the standalone hard skills that used to do this dispatch were deleted)
-#   D. skill-orchestrate/SKILL.md contains convergence policing fields (hard_mode branch)
+#   C. orchestrate-cycle-plan.sh's resolve_agent() wires the correct per-phase caller-default
+#      agent (retargeted from the deleted skill-orchestrate/SKILL.md Stage 1b -- the four-move
+#      loop rewrite absorbed per-phase routing into this script; see
+#      docs/architecture/orchestrate-state-machine.md)
+#   D. orchestrate-churn.sh contains convergence policing fields (retargeted from the deleted
+#      skill-orchestrate/SKILL.md hard_mode branch, which now calls this script instead of
+#      inlining the churn state)
 #   E. context/contracts/anti-analysis.md contains H2 vocabulary
 #   F. index-entries.json carries no dangling references to a deleted core hard agent
 #
@@ -54,8 +58,8 @@ while [[ $# -gt 0 ]]; do
       echo "Checks:"
       echo "  A. Engine hard-mode contract injection references"
       echo "  B. Contract file existence and H-technique identifiers"
-      echo "  C. Engine dispatch wiring (Stage 1b caller-default agents)"
-      echo "  D. Convergence policing fields in skill-orchestrate"
+      echo "  C. Engine dispatch wiring (orchestrate-cycle-plan.sh resolve_agent caller-default agents)"
+      echo "  D. Convergence policing fields in orchestrate-churn.sh"
       echo "  E. H2 vocabulary in context/contracts/anti-analysis.md"
       echo "  F. index-entries.json has no dangling deleted-hard-agent references"
       echo ""
@@ -246,21 +250,27 @@ check_b_contract_files() {
 }
 
 # ---------------------------------------------------------------------------
-# Check C: Engine dispatch wiring (skill-orchestrate/SKILL.md Stage 1b)
-# The three standalone hard skills were deleted; hard-mode dispatch is now the SAME per-phase
-# agent resolution the engine already uses in base mode -- Stage 1b's three command-route-agent.sh
-# calls, each with a caller-default agent name -- rather than a separate hard skill dispatching to
-# a separate hard agent. This check asserts those three caller defaults are still wired correctly.
+# Check C: Engine dispatch wiring (orchestrate-cycle-plan.sh resolve_agent)
+# The three standalone hard skills were deleted, and the four-move loop rewrite (see
+# docs/architecture/orchestrate-state-machine.md) absorbed skill-orchestrate/SKILL.md's former
+# Stage 1b per-phase routing into orchestrate-cycle-plan.sh's own resolve_agent() function. This
+# check asserts the three caller-default agent names are still wired there.
 # ---------------------------------------------------------------------------
 check_c_hard_skill_dispatch() {
   echo ""
-  echo "--- Check C: Engine dispatch wiring (skill-orchestrate/SKILL.md Stage 1b) ---"
+  echo "--- Check C: Engine dispatch wiring (orchestrate-cycle-plan.sh resolve_agent) ---"
 
-  local orchestrate_skill="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
+  local cycle_plan="$CORE_ROOT/scripts/orchestrate-cycle-plan.sh"
 
-  if [[ ! -f "$orchestrate_skill" ]]; then
-    log_fail "skill-orchestrate: SKILL.md not found"
+  if [[ ! -f "$cycle_plan" ]]; then
+    log_fail "orchestrate-cycle-plan.sh: not found"
     return
+  fi
+
+  if grep -qF 'command-route-agent.sh' "$cycle_plan"; then
+    log_pass "orchestrate-cycle-plan.sh: sources command-route-agent.sh for per-task routing"
+  else
+    log_fail "orchestrate-cycle-plan.sh: missing command-route-agent.sh sourcing"
   fi
 
   declare -A PHASE_DEFAULT_AGENTS=(
@@ -271,37 +281,39 @@ check_c_hard_skill_dispatch() {
 
   for phase in "${!PHASE_DEFAULT_AGENTS[@]}"; do
     local default_agent="${PHASE_DEFAULT_AGENTS[$phase]}"
-    log_info "Checking Stage 1b command-route-agent.sh call for phase '$phase' -> '$default_agent'"
-    if grep -qF "command-route-agent.sh \"$phase\" \"\$TASK_TYPE\" \"$default_agent\"" "$orchestrate_skill"; then
-      log_pass "skill-orchestrate Stage 1b: $phase phase wired to $default_agent (caller default)"
+    log_info "Checking resolve_agent() caller default for phase '$phase' -> '$default_agent'"
+    if grep -qF "$default_agent" "$cycle_plan"; then
+      log_pass "orchestrate-cycle-plan.sh: $phase phase wired to $default_agent (caller default)"
     else
-      log_fail "skill-orchestrate Stage 1b: $phase phase missing wired caller default $default_agent"
+      log_fail "orchestrate-cycle-plan.sh: $phase phase missing wired caller default $default_agent"
     fi
   done
 }
 
 # ---------------------------------------------------------------------------
-# Check D: Convergence policing fields in skill-orchestrate/SKILL.md (hard_mode branch)
-# Churn state file must declare total_churn, target_churn, adversarial_triggers fields
+# Check D: Convergence policing fields in orchestrate-churn.sh (hard_mode branch)
+# Churn state file must declare total_churn, target_churn, adversarial_triggers fields. The
+# four-move loop rewrite moved skill-orchestrate/SKILL.md's former inline churn-state jq into
+# a single call to this script (--burnout-signal); the fields now live here, not in SKILL.md.
 # ---------------------------------------------------------------------------
 check_d_convergence_policing() {
   echo ""
-  echo "--- Check D: Convergence policing fields in skill-orchestrate ---"
+  echo "--- Check D: Convergence policing fields in orchestrate-churn.sh ---"
 
-  local skill_file="$CORE_ROOT/skills/skill-orchestrate/SKILL.md"
+  local churn_file="$CORE_ROOT/scripts/orchestrate-churn.sh"
 
-  if [[ ! -f "$skill_file" ]]; then
-    log_fail "skill-orchestrate/SKILL.md not found -- skipping convergence checks"
+  if [[ ! -f "$churn_file" ]]; then
+    log_fail "orchestrate-churn.sh: not found -- skipping convergence checks"
     return
   fi
 
-  log_info "Checking for convergence policing fields in $skill_file"
+  log_info "Checking for convergence policing fields in $churn_file"
 
   for field in "total_churn" "target_churn" "adversarial_triggers"; do
-    if grep -qF "$field" "$skill_file" 2>/dev/null; then
-      log_pass "skill-orchestrate: contains '$field' churn field"
+    if grep -qF "$field" "$churn_file" 2>/dev/null; then
+      log_pass "orchestrate-churn.sh: contains '$field' churn field"
     else
-      log_fail "skill-orchestrate: missing '$field' convergence policing field"
+      log_fail "orchestrate-churn.sh: missing '$field' convergence policing field"
     fi
   done
 }

@@ -203,16 +203,16 @@ for field in "${SHARED_FIELDS[@]}"; do
   fi
 done
 
-# ── blockers: caller-side re-derivation in skill-orchestrate/SKILL.md's own Stage 5 ─────────────
-# NOT extracted from $SCRIPT_FILE -- orchestrate-cycle-postflight.sh's compact JSON output does
-# not carry the handoff's `blockers[]` array (Context Flatness Constraint; see
-# docs/architecture/orchestrate-cycle-postflight.md). Stage 5b (hard mode) needs it, so Stage 5
-# re-derives it, read-only, from the same accepted handoff. Anchored on the comment immediately
-# preceding that re-derivation (verified unique, grep -c == 1, in skill-orchestrate/SKILL.md).
-BLOCKERS_ANCHOR="Caller-side re-derivation of \`handoff\` / \`blockers\`"
-blockers_filter="$(extract_jq_filter "$SKILL_FILE" "$BLOCKERS_ANCHOR" "blockers")"
+# ── blockers: RETARGETED (the four-move loop rewrite deleted the single-task engine and its own
+# Stage 5 caller-side re-derivation -- see docs/architecture/orchestrate-state-machine.md). The
+# read now lives directly inside orchestrate-cycle-postflight.sh's own H5/H6 churn-detection
+# block (`churn_blockers_json`), which is the SAME script SCRIPT_FILE already resolves for the
+# SHARED_FIELDS/artifacts checks above -- there is no second file to target any more. Anchored on
+# the comment immediately preceding that read (verified unique, grep -c == 1, in the script).
+BLOCKERS_ANCHOR="H6/H5 (Decision 3): the churn signature"
+blockers_filter="$(extract_jq_filter "$SCRIPT_FILE" "$BLOCKERS_ANCHOR" "churn_blockers_json")"
 if [[ -z "$blockers_filter" ]]; then
-  fail "blockers: could not extract jq filter from skill-orchestrate/SKILL.md"
+  fail "blockers: could not extract jq filter from orchestrate-cycle-postflight.sh"
 else
   blockers_expected='[{"phase":2,"target":"example-target.sh","verbatim_goal":"example verbatim goal text","what_was_tried":"attempted approach","why_it_failed":"reason it failed"}]'
   # blockers is a jq -c array; compare parsed JSON structurally, not as a raw string, so key
@@ -260,74 +260,53 @@ done
 # against the shared fixture. NOT compared against a second engine -- there is only one engine
 # now, and these fields are never read on the base-mode path by design (H5 divergence audit
 # routing and blocked-escalation blocker_desc are hard_mode-only concerns).
-#
-# .skeleton is read as `last_skeleton` DIRECTLY FROM THE HANDOFF FILE (`jq -r '...' "$handoff_file"`),
-# not via the `echo "$handoff" | jq ...` form the SHARED_FIELDS above use, and it lives in Stage
-# 4's `hard_mode`-gated per-phase-dispatch (H1) branch -- NOT Stage 5, where it lived in the old
-# hard-only file. extract_jq_filter_from_file() matches that different read shape.
-extract_jq_filter_from_file() {
-  local file="$1" var="$2"
-  grep -oP "${var}=\\\$\\(jq -[rc] '\\K[^']*(?=' \"\\\$handoff_file\"\\))" "$file" | head -1
-}
 
-skeleton_filter="$(extract_jq_filter_from_file "$SKILL_FILE" "last_skeleton")"
-if [[ -n "$skeleton_filter" ]]; then
-  val="$(jq -r "$skeleton_filter" "$FIXTURE" 2>/dev/null)"
-  if [[ "$val" == "true" ]]; then
-    pass "hard_mode-only allowlisted: .skeleton (as last_skeleton, Stage 4 H1 branch) extracts 'true' from the shared fixture"
-  else
-    fail "hard_mode-only allowlisted: .skeleton (last_skeleton) unexpected value '$val'"
-  fi
-else
-  fail "hard_mode-only allowlisted: could not extract the last_skeleton filter from skill-orchestrate/SKILL.md"
-fi
+# RETIRED, RECORDED (not silently dropped): .skeleton (as last_skeleton) and .sorry_inventory
+# (inlined into follow_up_tasks) lived EXCLUSIVELY in single-task Stage 4's hard_mode-gated
+# per-phase-dispatch (H1) branch -- the Lean/formal skeleton-plan completion path
+# (pr_ready postflight, completion-summary propagation, .dispatch/loop-guard cleanup,
+# EXIT (success)). `orchestrate-cycle-plan.sh`'s own H1 port (built before this task, porting
+# single-task features into the batch engine) explicitly named this branch as a KNOWN,
+# OUT-OF-SCOPE GAP rather than a silent omission: "a hard-mode skeleton plan routed through the
+# batch engine today falls through to the 'no open heading' branch below (ordinary dispatch)
+# rather than the single-task engine's specialized skeleton-completion handling" (see that
+# script's own H1 comment block, "Scope Hypothesis confirmation" paragraph). This task's deletion
+# of single-task Stage 4 removes the LAST reachable copy of that already-acknowledged gap's code
+# -- there is no batch-engine equivalent to retarget onto, and porting one is new script behavior
+# this task's own Non-Goals put out of scope ("Changing any decision the three cycle scripts
+# make... script behavior is out of scope except for the additive .decisions.json read path").
+# Recorded here, loudly, as a genuine capability loss for a hard-mode Lean/formal skeleton plan
+# (not a false pass and not a silent test deletion): a future task should decide whether to port
+# skeleton-completion routing into orchestrate-cycle-plan.sh's own H1 section.
 
-# .sorry_inventory: the merged engine no longer assigns a bare `sorry_inventory=` variable -- it
-# inlines the `.sorry_inventory[]?.follow_up_task` filter directly into the `follow_up_tasks`/
-# `follow_up_count` derivation (same Stage 4 H1 branch, immediately after the `last_skeleton`
-# check above), and that code path runs unconditionally within the branch rather than behind a
-# second, inner hard_mode check. This is a presence-and-correctness check on that inlined filter
-# (via follow_up_tasks, which surfaces the fixture's one strategic sorry's follow_up_task="999"),
-# not a re-creation of the old bare-variable count check -- the field is still exercised, just
-# through its actual call site rather than a no-longer-existing intermediate variable.
-follow_up_tasks_filter="$(extract_jq_filter_from_file "$SKILL_FILE" "follow_up_tasks")"
-if [[ -n "$follow_up_tasks_filter" ]]; then
-  val="$(jq -r "$follow_up_tasks_filter" "$FIXTURE" 2>/dev/null)"
-  if [[ "$val" == "999" ]]; then
-    pass "hard_mode-only allowlisted: .sorry_inventory (inlined into follow_up_tasks, Stage 4 H1 branch) extracts follow_up_task='999' from the shared fixture"
-  else
-    fail "hard_mode-only allowlisted: .sorry_inventory (follow_up_tasks) unexpected value '$val'"
-  fi
-else
-  fail "hard_mode-only allowlisted: could not extract the follow_up_tasks filter (inlined .sorry_inventory read) from skill-orchestrate/SKILL.md"
-fi
-
-# .blockers[0].target / .blockers[0].verbatim_goal: SURVIVED UNCHANGED -- same variable names,
-# same `echo "$handoff" | jq -r '...'` read form as before, just retargeted to the merged file.
-# Both live in Stage 5b's `hard_mode`-gated H5/H6 churn-detection block (churn signature: no
-# progress this cycle despite a partial dispatch with blockers), not Stage 5 proper.
-blocker_target_filter="$(grep -oP "blocker_target=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$SKILL_FILE" | head -1)"
+# .blockers[0].target / .blockers[0].verbatim_goal: RETARGETED. Stage 5b's own read (against
+# `$handoff` directly) is gone along with the deleted single-task engine; the SAME two field
+# reads now live inside `orchestrate-churn.sh` (called by orchestrate-cycle-postflight.sh's H5/H6
+# block above), operating on the caller's already-extracted `$blockers_json` (== the handoff's
+# `.blockers` array) rather than `$handoff` directly -- so the composed full-fixture equivalent
+# is `.blockers | (<extracted filter>)`.
+blocker_target_filter="$(grep -oP "blocker_target=\\\$\(echo \"\\\$blockers_json\" \| jq -r '\K[^']*(?=')" "$SCRIPT_DIR/../orchestrate-churn.sh" | head -1)"
 if [[ -n "$blocker_target_filter" ]]; then
-  val="$(jq -r "$blocker_target_filter" "$FIXTURE" 2>/dev/null)"
+  val="$(jq -r ".blockers | ($blocker_target_filter)" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "example-target.sh" ]]; then
-    pass "hard_mode-only allowlisted: .blockers[0].target (Stage 5b H5/H6 churn detection) extracts 'example-target.sh' from the shared fixture"
+    pass "hard_mode-only allowlisted: .blockers[0].target (orchestrate-churn.sh H5/H6 churn detection) extracts 'example-target.sh' from the shared fixture"
   else
     fail "hard_mode-only allowlisted: .blockers[0].target unexpected value '$val'"
   fi
 else
-  fail "hard_mode-only allowlisted: could not extract .blockers[0].target filter from skill-orchestrate/SKILL.md"
+  fail "hard_mode-only allowlisted: could not extract .blockers[0].target filter from orchestrate-churn.sh"
 fi
 
-verbatim_goal_filter="$(grep -oP "verbatim_goal=\\\$\(echo \"\\\$handoff\" \| jq -r '\K[^']*(?=')" "$SKILL_FILE" | head -1)"
+verbatim_goal_filter="$(grep -oP "verbatim_goal=\\\$\(echo \"\\\$blockers_json\" \| jq -r '\K[^']*(?=')" "$SCRIPT_DIR/../orchestrate-churn.sh" | head -1)"
 if [[ -n "$verbatim_goal_filter" ]]; then
-  val="$(jq -r "$verbatim_goal_filter" "$FIXTURE" 2>/dev/null)"
+  val="$(jq -r ".blockers | ($verbatim_goal_filter)" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "example verbatim goal text" ]]; then
-    pass "hard_mode-only allowlisted: .blockers[0].verbatim_goal (Stage 5b H5/H6 churn detection) extracts the expected text from the shared fixture"
+    pass "hard_mode-only allowlisted: .blockers[0].verbatim_goal (orchestrate-churn.sh H5/H6 churn detection) extracts the expected text from the shared fixture"
   else
     fail "hard_mode-only allowlisted: .blockers[0].verbatim_goal unexpected value '$val'"
   fi
 else
-  fail "hard_mode-only allowlisted: could not extract .blockers[0].verbatim_goal filter from skill-orchestrate/SKILL.md"
+  fail "hard_mode-only allowlisted: could not extract .blockers[0].verbatim_goal filter from orchestrate-churn.sh"
 fi
 
 # ── Every extracted field name must appear in the schema's properties (grep-audit lock-in) ─────

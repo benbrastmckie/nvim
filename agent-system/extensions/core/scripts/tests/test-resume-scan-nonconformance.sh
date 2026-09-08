@@ -1,29 +1,41 @@
 #!/usr/bin/env bash
 # test-resume-scan-nonconformance.sh - Fixture-driven regression suite for the resume-scan
-# conformance gate wired into the hard-mode per-phase dispatch sites (skill-orchestrate's
-# hard_mode-gated per-phase-dispatch (H1) branch, skill-lean-implementation-hard). Exercises the
+# conformance gate wired into the remaining hard-mode per-phase dispatch sites
+# (skill-lean-implementation-hard's Site C; core's Site D structural check). Exercises the
 # ordering contract directly: PHASE_HEADING_ERE-filtered scans MUST run
 # has_nonconforming_phase_headings over the whole plan file first, or a non-conforming heading is
 # silently invisible to the scan rather than merely unmatched by it -- see
 # scripts/lib/phase-heading-patterns.sh's "Ordering contract for filtered scans" header note and
 # context/formats/plan-format.md's "Canonical phase-heading shape" subsection.
 #
-# Former Site B (the standalone core implementer-hard skill file) is REMOVED, not retargeted:
-# that file is deleted outright, and skill-orchestrate's own H1 hard branch (Site A) already
-# carries the resume-scan gate the deleted skill used to duplicate -- there is no second,
-# distinct gate site inside skill-orchestrate/SKILL.md to retarget Site B onto. Site A alone now
-# covers what Sites A and B together used to cover in core.
+# Former Site B (the standalone core implementer-hard skill file) is REMOVED, not retargeted: that
+# file is deleted outright.
+#
+# Former Site A (skill-orchestrate/SKILL.md's single-task hard_mode-gated per-phase-dispatch (H1)
+# branch) is likewise REMOVED, not retargeted here: the four-move loop rewrite (see
+# docs/architecture/orchestrate-state-machine.md) deleted the single-task engine entirely, and
+# H1's actual mechanism (the conformance gate, the heading-scan next_phase selection, the
+# marker/handoff crosscheck, the disputed-heading downgrade) already lives as real, executable
+# bash inside `scripts/orchestrate-cycle-plan.sh` -- ported there, with full equivalent coverage
+# (non-conforming heading -> blocked; marker/handoff mismatch -> blocked + downgrade; successful
+# phase selection; no-open-heading fallthrough; --dry-run parity), by
+# `scripts/tests/test-orchestrate-cycle-plan.sh`'s own "Group 9: H1 hard-mode per-phase dispatch".
+# Retargeting this suite's sentinel-extraction harness onto that script (a very different shape --
+# multiple tasks via associative arrays, not a single result variable per plan file) would
+# duplicate coverage that already exists there in a more thorough form; per this task's own
+# guidance, the duplicate is deleted rather than retargeted. Site C is unaffected: its own file
+# was never touched by that rewrite.
 #
 # Structural model: scripts/tests/test-phase-heading-patterns.sh (pass()/fail()/info() helpers,
 # PASSED/FAILED integer counters, exit 0 all-pass / 1 any-fail / 2 environment error,
 # deploy-tree-first then source-store-fallback library resolution).
 #
-# HONEST SCOPE LIMIT: the enclosing markdown fences in the two SKILL.md files below contain
-# `Agent tool:` / `EXIT (...)` pseudo-syntax and are NOT valid bash -- this is pre-existing and
+# HONEST SCOPE LIMIT: the enclosing markdown fence in Site C's SKILL.md below contains
+# `Agent tool:` / `EXIT (...)` pseudo-syntax and is NOT valid bash -- this is pre-existing and
 # expected, not a defect this suite works around. This suite extracts and executes only the
-# sentinel-delimited `resume-scan-conformance-gate:begin`/`:end` regions (pure, executable bash),
-# plus structural (grep-based) assertions on the posture branches that immediately follow each
-# region, which contain pseudo-syntax and cannot themselves be executed. Site D
+# sentinel-delimited `resume-scan-conformance-gate:begin`/`:end` region (pure, executable bash),
+# plus a structural (grep-based) assertion on the posture branch that immediately follows it,
+# which contains pseudo-syntax and cannot itself be executed. Site D
 # (update-task-status.sh) is covered by `bash -n` and structural grep only in this suite, not by
 # execution -- it is a real standalone script; see Phase 4 of the implementation plan this suite
 # originally verified. The preflight phase auto-advance convenience Site D used to guard (the
@@ -69,11 +81,10 @@ if [[ -z "$LIB" ]]; then
   exit 2
 fi
 
-SITE_A_FILE="$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 SITE_C_FILE="$REPO_ROOT/agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
 SITE_D_FILE="$REPO_ROOT/agent-system/extensions/core/scripts/update-task-status.sh"
 
-for f in "$SITE_A_FILE" "$SITE_C_FILE" "$SITE_D_FILE"; do
+for f in "$SITE_C_FILE" "$SITE_D_FILE"; do
   if [[ ! -f "$f" ]]; then
     echo "ERROR: required file not found: $f" >&2
     exit 2
@@ -113,21 +124,20 @@ extract_region() {
   ' "$file"
 }
 
-# Note on the library sourcing line: at both remaining sites, `. .claude/scripts/lib/phase-heading-
+# Note on the library sourcing line: at Site C, `. .claude/scripts/lib/phase-heading-
 # patterns.sh` sits immediately BEFORE the `resume-scan-conformance-gate:begin` marker (per the
 # canonical snippet -- see Phase 1 of the implementation plan), so it is deliberately NOT part of
 # the extracted region. Rather than textually rewriting an in-region sourcing line that does not
-# exist, the harness sources $LIB directly in run_region() below before eval'ing each extracted
+# exist, the harness sources $LIB directly in run_region() below before eval'ing the extracted
 # region -- behaviorally identical (the region's own logic never re-sources the library), and
 # correct regardless of deploy-tree vs. source-store checkout since $LIB was already resolved
 # above.
-region_a="$(extract_region "$SITE_A_FILE" "Site A (skill-orchestrate)")" || exit 2
 region_c="$(extract_region "$SITE_C_FILE" "Site C (skill-lean-implementation-hard)")" || exit 2
 
 # =====================================================================
-# bash -n: every extracted region must be independently syntax-clean.
+# bash -n: the extracted region must be independently syntax-clean.
 # =====================================================================
-for pair in "A:$region_a" "C:$region_c"; do
+for pair in "C:$region_c"; do
   site="${pair%%:*}"
   region="${pair#*:}"
   script_file="$WORKDIR/syntax-${site}.sh"
@@ -192,12 +202,12 @@ EOF
 fixture_a_4c_line="$(grep -n '^### Phase 4C:' "$fixture_a" | head -1 | cut -d: -f1)"
 info "Fixture A: '### Phase 4C' heading is at line ${fixture_a_4c_line}"
 
-declare -A SITE_REGION=( [A]="$region_a" [C]="$region_c" )
-declare -A SITE_BINDVAR=( [A]="plan_path" [C]="plan_file" )
-declare -A SITE_RESULTVAR=( [A]="next_phase" [C]="phase_number" )
-declare -A SITE_LABEL=( [A]="Site A (skill-orchestrate)" [C]="Site C (skill-lean-implementation-hard)" )
+declare -A SITE_REGION=( [C]="$region_c" )
+declare -A SITE_BINDVAR=( [C]="plan_file" )
+declare -A SITE_RESULTVAR=( [C]="phase_number" )
+declare -A SITE_LABEL=( [C]="Site C (skill-lean-implementation-hard)" )
 
-for site in A C; do
+for site in C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
   result_var="${SITE_RESULTVAR[$site]}"
@@ -260,7 +270,7 @@ Body text for phase 2.
 Body text for phase 3.
 EOF
 
-for site in A C; do
+for site in C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
   result_var="${SITE_RESULTVAR[$site]}"
@@ -311,7 +321,7 @@ Body text for phase 3.1.
 Body text for phase 4.
 EOF
 
-for site in A C; do
+for site in C; do
   region="${SITE_REGION[$site]}"
   bind_var="${SITE_BINDVAR[$site]}"
   result_var="${SITE_RESULTVAR[$site]}"
@@ -332,52 +342,8 @@ done
 # Structural assertions on the posture branches (pseudo-syntax; not executable).
 # =====================================================================
 
-# Site A: EXIT (partial branch guarded by phase_scan_inconclusive, is the FIRST branch --
-# precedes both the next_phase test and the last_skeleton test.
-#
-# Uniqueness guard: skill-orchestrate/SKILL.md is a large, actively-edited merged file (unlike
-# the small, single-purpose standalone hard-mode skill file this site formerly targeted), so a
-# second occurrence of an anchor could silently appear and mis-anchor `head -1` onto the wrong
-# line rather than failing. site_a_anchor_line() asserts the grep match count is exactly one
-# before taking the line number, calling fail() by anchor name and observed count otherwise. The
-# result is assigned via a nameref out-parameter, NOT a `$(...)` command substitution -- a
-# substitution runs the function in a subshell, and this function's own fail()/pass() calls (via
-# the shared PASSED/FAILED counters) must be visible to the parent shell, not lost when the
-# subshell exits.
-site_a_anchor_line() {
-  local pattern="$1" anchor_name="$2"
-  local -n out_var="$3"
-  local matches count
-  matches="$(grep -n "$pattern" "$SITE_A_FILE")"
-  count=$(printf '%s\n' "$matches" | grep -c . || true)
-  if [[ "$count" -ne 1 ]]; then
-    fail "Site A: anchor '${anchor_name}' expected exactly 1 match in $(basename "$SITE_A_FILE"), found ${count}"
-    out_var=""
-    return
-  fi
-  out_var="$(printf '%s\n' "$matches" | cut -d: -f1)"
-}
-site_a_anchor_line 'phase_scan_inconclusive" = "true"' 'phase_scan_inconclusive guard' site_a_guard_line
-site_a_anchor_line 'elif \[ -n "\$next_phase" \]' 'next_phase elif' site_a_nextphase_line
-site_a_anchor_line 'elif \[ "\$last_skeleton" = "true" \]' 'last_skeleton elif' site_a_skeleton_line
-if [[ -n "$site_a_guard_line" && -n "$site_a_nextphase_line" && -n "$site_a_skeleton_line" \
-      && "$site_a_guard_line" -lt "$site_a_nextphase_line" \
-      && "$site_a_nextphase_line" -lt "$site_a_skeleton_line" ]]; then
-  pass "Site A: branch order is phase_scan_inconclusive (${site_a_guard_line}) < next_phase (${site_a_nextphase_line}) < last_skeleton (${site_a_skeleton_line})"
-else
-  fail "Site A: branch order assertion failed (guard=${site_a_guard_line:-MISSING}, next_phase=${site_a_nextphase_line:-MISSING}, last_skeleton=${site_a_skeleton_line:-MISSING})"
-fi
-site_a_branch_body="$(sed -n "${site_a_guard_line},$((site_a_nextphase_line - 1))p" "$SITE_A_FILE")"
-if grep -q 'EXIT (partial' <<< "$site_a_branch_body"; then
-  pass "Site A: posture branch body contains 'EXIT (partial'"
-else
-  fail "Site A: posture branch body does not contain 'EXIT (partial'"
-fi
-if grep -qE 'exit 1|loop_guard_file|update-task-status\.sh' <<< "$site_a_branch_body"; then
-  fail "Site A: posture branch body unexpectedly contains 'exit 1', 'loop_guard_file', or 'update-task-status.sh'"
-else
-  pass "Site A: posture branch body contains neither 'exit 1' nor 'loop_guard_file' nor 'update-task-status.sh'"
-fi
+# Site A's structural posture-branch assertions were removed along with Site A itself (see the
+# header comment) -- equivalent coverage lives in test-orchestrate-cycle-plan.sh's Group 9.
 
 # Site C: return error guarded by the sentinel.
 site_c_guard_line=$(grep -n 'phase_scan_inconclusive" = "true"' "$SITE_C_FILE" | head -1 | cut -d: -f1)

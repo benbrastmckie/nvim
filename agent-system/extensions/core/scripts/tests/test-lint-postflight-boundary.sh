@@ -191,6 +191,49 @@ fi
 rm -f /tmp/lint-ctrl-out.$$
 
 # =====================================================================
+# Case 4 (real target, fail-open regression guard): skill-orchestrate/SKILL.md -- the four-move
+# loop rewrite (see docs/architecture/orchestrate-state-machine.md) abandoned the deleted
+# single-task engine's "### Stage N" numbering entirely, which is exactly the shape
+# check_postflight_violations()'s ^### Stage [6-9]|^### Stage 1[0-9] heading heuristic used to
+# locate a postflight section by. Without a heading that heuristic can still match, the
+# section-content scan silently SKIPs (verbose-only, exit 0, no violations found) even though
+# has_postflight_boundary_section()'s separate, loud presence check still runs -- this case
+# proves BOTH halves fire correctly against the real, live file rather than being fooled by the
+# rewrite's new heading shape.
+# =====================================================================
+info "=== real target: skill-orchestrate/SKILL.md is not silently SKIPped ==="
+
+ORCH_SKILL_CANDIDATES=(
+  "$REPO_ROOT/.claude/skills/skill-orchestrate/SKILL.md"
+  "$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+)
+ORCH_SKILL=""
+for candidate in "${ORCH_SKILL_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    ORCH_SKILL="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$ORCH_SKILL" ]]; then
+  fail "skill-orchestrate/SKILL.md not found at any candidate path -- cannot run the real-target case"
+else
+  real_out="$(bash "$LINT_SCRIPT" --verbose "$ORCH_SKILL" 2>&1)"
+  real_exit=$?
+  if [[ "$real_exit" -eq 0 ]]; then
+    pass "lint exits 0 for the real skill-orchestrate/SKILL.md"
+  else
+    fail "lint exited non-zero for the real skill-orchestrate/SKILL.md:
+$real_out"
+  fi
+  if echo "$real_out" | grep -q '\[SKIP\] No postflight section found'; then
+    fail "skill-orchestrate/SKILL.md is silently SKIPped (No postflight section found) -- the fail-open gap has regressed"
+  else
+    pass "skill-orchestrate/SKILL.md is not reported as SKIPped"
+  fi
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

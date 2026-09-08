@@ -1,0 +1,44 @@
+{
+  "phase": 5,
+  "phase_name": "Retarget the tests and lints coupled to SKILL.md structure",
+  "started_at": "2026-09-08T06:00:00Z",
+  "last_updated": "2026-09-08T07:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run enumeration sweep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "test-loop-guard-budget-override.sh: delete Target 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh", "agent-system/extensions/core/scripts/test-session-runtime-files.sh"]},
+    {"id": 3, "description": "test-routing-resolution.sh: retarget Assert 3", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]},
+    {"id": 4, "description": "test-loop-guard-staleness.sh / test-handoff-dispatch-identity.sh", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "test-handoff-reader-parity.sh: retarget jq filters", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh"]},
+    {"id": 6, "description": "test-resume-scan-nonconformance.sh: verify Site A/B design", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"]},
+    {"id": 7, "description": "lint-contract-compliance.sh: retarget Check C/D", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh"]},
+    {"id": 8, "description": "lint-postflight-boundary.sh: fix fail-open gap", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh", "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh"]},
+    {"id": 9, "description": "Check remaining lints/tests named in file_scope", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Run full test suite, confirm green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.x",
+      "description": "test-loop-guard-staleness.sh (hard-mode operational-staleness detector: max_cycles drift / plan_version drift / mtime-age backstop) tested a mechanism that lived exclusively in the deleted single-task Stage 2 and was never ported to the batch engine (task 148 explicitly scoped porting it as an out-of-scope, undecided question). Deleting Stage 2 removes the last reachable code path; there is nothing to retarget onto without new script authoring, which this task's Non-Goals put out of scope.",
+      "type": "capability_loss",
+      "reason": "Genuine, pre-existing gap made permanent by this task's deletion, not introduced by this task. Test file deleted (and its manifest.json entry removed) rather than left broken; documented here and in the summary Follow-ups for a future task to decide whether to port the detector to orchestrate-cycle-plan.sh.",
+      "annotation": "N/A - recorded in progress file and implementation summary, not a plan checklist item"
+    },
+    {
+      "task_id": "5.x",
+      "description": "test-handoff-reader-parity.sh's .skeleton (last_skeleton)/.sorry_inventory (follow_up_tasks) hard-mode Lean/formal skeleton-plan-completion assertions tested a mechanism that lived exclusively in the deleted single-task Stage 4 H1 branch. orchestrate-cycle-plan.sh's own H1 port (built before this task) explicitly recorded this branch as a known, out-of-scope gap when it ported H1 to the batch engine. This task's deletion of Stage 4 removes the last reachable copy.",
+      "type": "capability_loss",
+      "reason": "Same class of pre-existing, already-documented gap as the loop-guard-staleness case above, now made permanent by deletion rather than newly introduced. Assertions retired with a loud, recorded comment rather than silently deleted or left broken.",
+      "annotation": "N/A - recorded in progress file and implementation summary, not a plan checklist item"
+    },
+    {
+      "task_id": "5.1",
+      "description": "The enumeration sweep scoped to scripts/tests and scripts/lint (per the plan's own literal grep command) missed two real couplings: agent-system/extensions/core/scripts/test-session-runtime-files.sh (a flat, non-tests/non-lint script) and agent-system/extensions/literature/scripts/test-lit-pipeline.sh's Section D (a cross-extension check that skill-orchestrate/SKILL.md still references context/patterns/lit-stage4a-flow.md).",
+      "type": "scope_correction",
+      "reason": "Both found via run-all.sh's full-suite run and fixed: test-session-runtime-files.sh's Case 2/Case 3 retargeted onto orchestrate-cycle-plan.sh/orchestrate-churn.sh; SKILL.md's Move 1 setup paragraph restored a lit-stage4a-flow.md cross-reference. Recorded here since the plan's own enumeration command would not have found either.",
+      "annotation": "N/A - recorded in progress file and implementation summary"
+    }
+  ]
+}

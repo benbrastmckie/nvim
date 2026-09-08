@@ -62,12 +62,15 @@ if [ ! -f "$SCRIPT_DIR/reap-session-runtime-files.sh" ] || [ ! -f "$SCRIPT_DIR/l
 fi
 ORCHESTRATE_MD="$ROOT_DIR/commands/orchestrate.md"
 LOOP_GUARD_SKILL="$ROOT_DIR/skills/skill-orchestrate/SKILL.md"
-# The hard-mode churn-state write this suite exercises now lives in skill-orchestrate/SKILL.md
-# itself (the standalone hard-mode engine that used to own it was deleted), so CHURN_SKILL and
-# LOOP_GUARD_SKILL are the same file today. Kept as a separate variable (rather than collapsed
-# into LOOP_GUARD_SKILL at every call site below) so a future re-split remains a one-line change.
-CHURN_SKILL="$LOOP_GUARD_SKILL"
-for f in "$ORCHESTRATE_MD" "$LOOP_GUARD_SKILL" "$CHURN_SKILL"; do
+# Retargeted by the four-move loop rewrite (see docs/architecture/orchestrate-state-machine.md):
+# both the mt_state_file initialization prose and the loop-guard/churn-state session_id
+# mismatch-tolerance logic this suite grep-asserts against have moved out of
+# skill-orchestrate/SKILL.md entirely -- mt_state_file's own per-session naming (Case 2) and the
+# per-task guard seeding (Case 3) now live in orchestrate-cycle-plan.sh, and the churn-state
+# mismatch log (Case 3) lives in orchestrate-churn.sh.
+CYCLE_PLAN_SCRIPT="$SCRIPT_DIR/orchestrate-cycle-plan.sh"
+CHURN_SKILL="$SCRIPT_DIR/orchestrate-churn.sh"
+for f in "$ORCHESTRATE_MD" "$LOOP_GUARD_SKILL" "$CYCLE_PLAN_SCRIPT" "$CHURN_SKILL"; do
   if [ ! -f "$f" ]; then
     echo "ERROR: expected instruction file not found: $f" >&2
     exit 1
@@ -131,16 +134,19 @@ fi
 # =====================================================================
 # Historical context: commands/orchestrate.md used to re-read mt_state_file AFTER
 # skill-orchestrate returned, and hard-failed on a session_id mismatch against its own
-# batch_session_id. That external re-read is gone: batch-output ownership moved to
-# skill-orchestrate/SKILL.md Stage MT-5, which runs INSIDE the same invocation that creates
-# mt_state_file, using the session_id it just registered — commands/orchestrate.md no longer
-# reads the file at all post-dispatch. The foreign-session scenario this check used to guard
-# against is now structurally impossible rather than defended against at read time, PROVIDED
-# Stage MT-1 always initializes mt_state_file fresh, unconditionally, every invocation (no
-# resume-on-exists branch that could pick up a stale file from a different session). This case
-# verifies both halves: the abstract mismatch-detection algorithm still behaves correctly (kept
-# as a regression-documenting transcription of the retired check's semantics), and the
-# structural guarantee that makes the external check unnecessary is still true in SKILL.md.
+# batch_session_id. That external re-read is gone: batch-output ownership moved to the loop's
+# own branch move (Move 4, retargeted from the deleted Stage MT-5 by the four-move loop
+# rewrite -- see docs/architecture/orchestrate-state-machine.md), which runs INSIDE the same
+# invocation that creates mt_state_file, using the session_id it just registered —
+# commands/orchestrate.md no longer reads the file at all post-dispatch. The foreign-session
+# scenario this check used to guard against is now structurally impossible rather than defended
+# against at read time, PROVIDED mt_state_file's own filename is derived from `session_id`
+# (`.orchestrator-multi-state-${session_id}.json`, in orchestrate-cycle-plan.sh) every
+# invocation -- two different sessions never share a state file at all, let alone a mismatched
+# one. This case verifies both halves: the abstract mismatch-detection algorithm still behaves
+# correctly (kept as a regression-documenting transcription of the retired check's semantics),
+# and the structural guarantee that makes the external check unnecessary is still true in
+# orchestrate-cycle-plan.sh.
 FOREIGN_FILE="$TMPROOT/specs/.orchestrator-multi-state-${SID_A}.json"
 jq -n --arg sid "$SID_B" '{"session_id": $sid, "cycle_count": 99, "completed_tasks": [999]}' > "$FOREIGN_FILE"
 
@@ -157,13 +163,14 @@ fi
 case2_ok=true
 [ "$mt_state_file_valid" = "false" ] || { case2_ok=false; info "transcribed check incorrectly accepted a foreign session_id (file has '$SID_B', invocation is '$SID_A')"; }
 
-# Companion grep assertions: the structural guarantee lives in SKILL.md now, not orchestrate.md.
-grep -q 'Initialize `mt_state_file' "$LOOP_GUARD_SKILL" || { case2_ok=false; info "SKILL.md Stage MT-1 no longer documents unconditional mt_state_file initialization"; }
-grep -qE 'with fields: .session_id' "$LOOP_GUARD_SKILL" || { case2_ok=false; info "SKILL.md Stage MT-1 no longer initializes mt_state_file's session_id field from the invocation"; }
+# Companion grep assertions: the structural guarantee lives in orchestrate-cycle-plan.sh now,
+# not orchestrate.md and not skill-orchestrate/SKILL.md (which no longer initializes
+# mt_state_file inline at all -- that logic is entirely inside the script).
+grep -qE '\.orchestrator-multi-state-\$\{?session_id\}?\.json' "$CYCLE_PLAN_SCRIPT" || { case2_ok=false; info "orchestrate-cycle-plan.sh no longer names mt_state_file from session_id"; }
 grep -q 'file_session_id' "$ORCHESTRATE_MD" && { case2_ok=false; info "orchestrate.md unexpectedly still reads file_session_id -- has post-dispatch re-read logic been reintroduced?"; }
 
 if [ "$case2_ok" = true ]; then
-  pass "2: foreign-session content is rejected by the transcribed check, and mt_state_file is always freshly initialized in SKILL.md (making the scenario structurally unreachable)"
+  pass "2: foreign-session content is rejected by the transcribed check, and mt_state_file's filename is always derived from session_id in orchestrate-cycle-plan.sh (making the scenario structurally unreachable)"
 else
   fail "2: foreign-session-detection case failed (see INFO lines above)"
 fi
@@ -183,15 +190,25 @@ extract_block() {
 
 case3_ok=true
 
-loop_guard_block=$(extract_block "$LOOP_GUARD_SKILL" 'guard_session_id.*!=.*session_id' 3)
+# Loop-guard half (retargeted): the single-task engine's guard_session_id vs. session_id
+# compare-then-tolerate check is gone along with the engine that ran it. Its replacement in
+# orchestrate-cycle-plan.sh's per-task cumulative budget (Decision 1) is stronger, not weaker:
+# the durable per-task .orchestrator-loop-guard's cycle_count is seeded via
+# orchestrate-loop-guard-init.sh --seed with NO session_id comparison at all (see that call
+# site's own "READ-ONLY... idempotent... safe" comment) -- there is no session-keyed gate left to
+# hard-fail on, so legitimate conversational-turn resume across sessions is unconditionally
+# tolerated by construction rather than defended against at compare time.
+loop_guard_block=$(extract_block "$CYCLE_PLAN_SCRIPT" 'Seed per-task cycle_counts from the durable' 12)
 if [ -z "$loop_guard_block" ]; then
   case3_ok=false
-  info "could not locate guard_session_id mismatch comparison in $LOOP_GUARD_SKILL"
+  info "could not locate the per-task cycle_counts seed block in $CYCLE_PLAN_SCRIPT"
 elif echo "$loop_guard_block" | grep -qiE 'hard-fail|abort|\bexit\b|\breturn 1\b'; then
   case3_ok=false
-  info "loop-guard mismatch block contains a hard-fail/abort/exit construct: $loop_guard_block"
+  info "per-task cycle_counts seed block contains a hard-fail/abort/exit construct: $loop_guard_block"
+elif echo "$loop_guard_block" | grep -qE 'session_id.{0,20}(!=|==)|(!=|==).{0,20}session_id'; then
+  case3_ok=false
+  info "per-task cycle_counts seed block unexpectedly compares session_id -- has a mismatch gate been reintroduced without a resume-tolerance review?"
 fi
-echo "$loop_guard_block" | grep -q 'INFO:' || { case3_ok=false; info "loop-guard mismatch block does not log an INFO line"; }
 
 churn_block=$(extract_block "$CHURN_SKILL" 'churn_session_id.*!=.*session_id' 3)
 if [ -z "$churn_block" ]; then
@@ -204,7 +221,7 @@ fi
 echo "$churn_block" | grep -q 'INFO:' || { case3_ok=false; info "churn-state mismatch block does not log an INFO line"; }
 
 if [ "$case3_ok" = true ]; then
-  pass "3: loop-guard and churn-state session_id mismatch handling is a log line, never a gate"
+  pass "3: loop-guard resume has no session-keyed gate at all (unconditional tolerance by construction), and churn-state session_id mismatch handling remains a log line, never a gate"
 else
   fail "3: resume-tolerance case failed (see INFO lines above)"
 fi

@@ -26,7 +26,9 @@ diagram, and design rationale: `docs/architecture/orchestrate-state-machine.md`.
 ## The Four-Move Loop
 
 **Setup (once per invocation, before the loop begins)** — from delegation context:
-`task_numbers`, `dependency_graph`, `session_id`, `lit_flag`, `compare_flag`,
+`task_numbers`, `dependency_graph`, `session_id`, `lit_flag` (Move 1's `--lit` passthrough runs
+`context/patterns/lit-stage4a-flow.md`'s resolver directives inside `orchestrate-build-dispatch.sh`
+for every per-task dispatch), `compare_flag`,
 `allow_self_modifying`, `allow_scope_collision`, `clean_flag`, `effort_flag`, `model_flag`,
 `hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`, `continue_budget`. Register the
 batch's in-flight session (best-effort, non-blocking):
@@ -99,7 +101,7 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/$(jq -r --arg t "$t" '.task_dirs[$t]' "$mt_state_file")"
   dispatch_seq=$(jq -r --arg t "$t" '.dispatch_seq[$t]' "$mt_state_file")
   ctx_sid="$session_id"; [ "$phase" != "implement" ] && ctx_sid="${session_id}_${t}"
-  # Agent tool: subagent_type=agent (model param if non-empty). Prompt: "You are dispatched by
+  # Agent tool: subagent_type: agent (model param if non-empty). Prompt: "You are dispatched by
   # /orchestrate for task $t, phase $phase. Read $dispatch_file first and execute it exactly; it
   # names every input, output path and contract." Context: { task_number: t,
   # orchestrator_mode: true, session_id: ctx_sid, task_dir: task_dir_abs,
@@ -109,7 +111,7 @@ echo "$plan_json" | jq -c '.aux_dispatch[]' | while IFS= read -r row; do
   t=$(jq -r .task <<<"$row"); kind=$(jq -r .kind <<<"$row"); agent=$(jq -r .agent <<<"$row")
   dispatch_file=$(jq -r .dispatch_file <<<"$row")
   task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/$(jq -r --arg t "$t" '.task_dirs[$t]' "$mt_state_file")"
-  # Agent tool: subagent_type=agent. Prompt: "You are dispatched by /orchestrate for task $t
+  # Agent tool: subagent_type: agent. Prompt: "You are dispatched by /orchestrate for task $t
   # (auxiliary: $kind). Read $dispatch_file first and execute it exactly." Context: { task_number:
   # t, orchestrator_mode: false, session_id: session_id, task_dir: task_dir_abs } — NO
   # handoff_path key at all: an aux dispatch never writes .orchestrator-handoff.json.
@@ -222,23 +224,27 @@ before this rewrite and is documented in `context/formats/return-metadata-file.m
 
 ---
 
-## MUST NOT
+## MUST NOT (Context Flatness Constraint)
 
-**Context Flatness** (full accounting: `docs/architecture/orchestrate-cycle-postflight.md`): never
-read `reports/*.md`, `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` content during the loop —
+Full accounting: `docs/architecture/orchestrate-cycle-postflight.md`. Never read `reports/*.md`,
+`plans/*.md`, `summaries/*.md`, or `handoffs/*.md` content during the loop —
 `orchestrate-cycle-postflight.sh` performs every sanctioned read (the handoff, gated by mtime and
 `dispatch_seq`; the bounded `.return-meta.json`/phase-marker recovery fallbacks). Context grows by
 ~450 tokens per cycle per task, regardless of artifact complexity.
 
-**Postflight Boundary** (full accounting: `docs/architecture/handoff-schema.md`'s "Postflight
-Boundary" section): after a dispatch returns, never edit source, run build/test, use MCP/domain
-tools, analyze/grep source, or write reports/plans/summaries — that is dispatched-agent work. This
+## MUST NOT (Postflight Boundary)
+
+Full accounting: `docs/architecture/handoff-schema.md`'s "Postflight Boundary" section. This
+section is additive to the Context Flatness Constraint above. After a dispatch returns (Move 3),
+this skill MUST NOT: edit source files, run build/test commands, use MCP/WebSearch/domain tools,
+analyze or grep source, or write reports/plans/summaries — that is dispatched-agent work. This
 skill only reads the handoff, drives the state transition, and cleans up temp/marker files.
 Reference: `context/standards/postflight-tool-restrictions.md`.
 
 Also: never hardcode a phase order (the loop dispatches whatever phase `orchestrate-cycle-plan.sh`
-names); never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only); never
-let an `aux_dispatch[]` row reach Move 3.
+names); never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only, per
+`orchestrate-state-machine.md`'s `mt_state_file` field reference); never let an `aux_dispatch[]`
+row reach Move 3.
 
 ## Skill-to-Agent Mapping
 

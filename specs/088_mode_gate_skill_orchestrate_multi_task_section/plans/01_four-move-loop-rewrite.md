@@ -394,7 +394,7 @@ Phase 1 doc homes or replace it with a pointer, then re-measure.
 
 ---
 
-### Phase 5: Retarget the tests and lints coupled to SKILL.md structure [NOT STARTED]
+### Phase 5: Retarget the tests and lints coupled to SKILL.md structure [COMPLETED]
 
 **Goal**: Make every suite that asserts on `SKILL.md`'s internal structure either test the
 script that now owns the behavior, or stop asserting on a structure that no longer exists —
@@ -402,40 +402,73 @@ without silently losing coverage.
 
 **Tasks**:
 
-- [ ] Re-run the enumeration sweep (`grep -rln 'skill-orchestrate/SKILL.md' scripts/tests
+- [x] Re-run the enumeration sweep (`grep -rln 'skill-orchestrate/SKILL.md' scripts/tests
       scripts/lint`) and reconcile it against the list below before editing; the sweep, not this
-      list, is authoritative at implementation time.
-- [ ] `test-loop-guard-budget-override.sh`: delete or repoint Target 1, whose stated premise
+      list, is authoritative at implementation time. *(completed: sweep confirmed the 8-file
+      list below AND surfaced two files outside scripts/tests|lint the original list missed --
+      scripts/test-session-runtime-files.sh (flat, coupled) and
+      literature/scripts/test-lit-pipeline.sh's Section D (a cross-extension `--lit` wiring
+      check) -- both fixed; see the deviations recorded below and in progress/phase-5-progress.json)*
+- [x] `test-loop-guard-budget-override.sh`: delete or repoint Target 1, whose stated premise
       ("the single-task engine stays live and stays the default path") this task invalidates.
       Target 2 already exercises `orchestrate-cycle-plan.sh` directly and is unaffected.
-- [ ] `test-routing-resolution.sh`: retarget the ">= 3 `command-route-agent.sh` invocations in
+      *(completed: Target 1's sentinel-extraction body deleted along with its now-defunct
+      SKILL_FILE dependency; the Stage 7 MAX_CYCLES message assertion retargeted onto
+      orchestrate-cycle-plan.sh; Target 2 unaffected, now 7/7 green)*
+- [x] `test-routing-resolution.sh`: retarget the ">= 3 `command-route-agent.sh` invocations in
       SKILL.md" assertion onto wherever routing now resolves, and re-check the "no case-table or
-      sed-derivation pattern" assertion against the thin file.
-- [ ] `test-loop-guard-staleness.sh` and `test-handoff-dispatch-identity.sh`: their line-anchored
+      sed-derivation pattern" assertion against the thin file. *(completed: Assert 3 retargeted
+      onto orchestrate-cycle-plan.sh's resolve_agent() caller-defaults and SKILL.md's single
+      Move 2 dispatch site; 15/15 green)*
+- [x] `test-loop-guard-staleness.sh` and `test-handoff-dispatch-identity.sh`: their line-anchored
       `awk` sentinel-region extraction targets deleted Stages. For each, first confirm whether
       `test-orchestrate-cycle-plan.sh` / `test-orchestrate-cycle-postflight.sh` already cover the
       behavior; delete the duplicate scraping assertion where they do, retarget onto the script
-      where they do not.
-- [ ] `test-handoff-reader-parity.sh`: its `grep -c == 1` uniqueness checks extract specific `jq`
+      where they do not. *(completed with a recorded deviation: test-handoff-dispatch-identity.sh
+      was unaffected (8/8 green, no SKILL.md coupling to the deleted Stages).
+      test-loop-guard-staleness.sh's target -- the hard-mode operational-staleness detector -- had
+      NO batch-engine equivalent to retarget onto (task 148 explicitly scoped porting it as an
+      out-of-scope, undecided question when it built orchestrate-cycle-plan.sh); the test and its
+      manifest.json entry were deleted rather than left broken, and the capability loss is
+      recorded in progress/phase-5-progress.json and this summary's Follow-ups, not silently
+      dropped)*
+- [x] `test-handoff-reader-parity.sh`: its `grep -c == 1` uniqueness checks extract specific `jq`
       filters from SKILL.md prose. Retarget onto `orchestrate-cycle-postflight.sh`, which owns
-      handoff reading.
-- [ ] `test-resume-scan-nonconformance.sh`: verify its Site A / Site B design still makes sense
-      with Stages 0-8 gone.
-- [ ] `lint-contract-compliance.sh`: retarget Check C (keyed off "SKILL.md Stage 1b") and
+      handoff reading. *(completed with a recorded deviation: `blockers` retargeted onto
+      orchestrate-cycle-postflight.sh; `.blockers[0].target`/`.verbatim_goal` retargeted onto
+      orchestrate-churn.sh (composed against the fixture's `.blockers` array); `.skeleton`
+      (last_skeleton) and `.sorry_inventory` (follow_up_tasks) -- the hard-mode Lean/formal
+      skeleton-plan completion path -- had no batch-engine equivalent (same already-documented
+      148 gap as the staleness detector above) and were retired with a loud recorded comment
+      rather than silently deleted; 13/13 green)*
+- [x] `test-resume-scan-nonconformance.sh`: verify its Site A / Site B design still makes sense
+      with Stages 0-8 gone. *(completed: Site A (skill-orchestrate) removed -- its H1 mechanism
+      is fully covered, more thoroughly, by test-orchestrate-cycle-plan.sh's own Group 9; Site
+      C/D unaffected; 14/14 green)*
+- [x] `lint-contract-compliance.sh`: retarget Check C (keyed off "SKILL.md Stage 1b") and
       Check D (keyed off a hard-mode branch's convergence-policing fields) onto the loop's
-      per-row dispatch and the surviving hard-mode fields.
-- [ ] `lint-postflight-boundary.sh`: close the fail-open gap — either keep a heading its
+      per-row dispatch and the surviving hard-mode fields. *(completed: Check C retargeted onto
+      orchestrate-cycle-plan.sh's resolve_agent(); Check D retargeted onto orchestrate-churn.sh;
+      22/22 green)*
+- [x] `lint-postflight-boundary.sh`: close the fail-open gap — either keep a heading its
       `^### Stage [6-9]|^### Stage 1[0-9]` regex matches, or extend the heuristic to recognize
       the loop's heading shape. Add an assertion that this file is not reported as SKIPped.
-- [ ] Check the remaining lints named in this task's `file_scope`
+      *(completed: extended check_postflight_violations()'s awk heuristic to also match any
+      `##`-`####` heading containing "Postflight" (covers "### Move 3: Postflight"); added Case 4
+      to test-lint-postflight-boundary.sh asserting the real skill-orchestrate/SKILL.md exits 0
+      and is not reported as SKIPped; 6/6 green)*
+- [x] Check the remaining lints named in this task's `file_scope`
       (`lint-branch-gated-sections.sh`, `lint-lifecycle-status-var.sh`,
       `lint-scoped-commit-boundary.sh`, `lint-state-writer-boundary.sh`,
       `lint-task-lookup-adoption.sh`) and the remaining tests
       (`test-corroborate-phase-counts.sh`, `test-deploy-propagation.sh`,
       `test-double-loading-check.sh`, `test-lint-branch-gated-sections.sh`,
       `test-lint-task-lookup-adoption.sh`, `test-skill-base-lifecycle.sh`) for structural
-      assumptions the rewrite breaks.
-- [ ] Run the full test suite in `scripts/tests/` and confirm green.
+      assumptions the rewrite breaks. *(completed: all 5 lints and 6 tests run individually,
+      all green, no structural assumptions broken)*
+- [x] Run the full test suite in `scripts/tests/` and confirm green. *(completed: run-all.sh
+      73/73 passed, confirmed again after the lint-postflight-boundary.sh awk-heuristic fix and
+      its new test-lint-postflight-boundary.sh Case 4; deploy-headless.sh RESULT=landed_verify_clean)*
 
 **Timing**: 2 hours
 
