@@ -313,7 +313,7 @@ check_settings_hook_registration_completeness() {
   jq empty "$source_settings" 2>/dev/null || return 0
 
   if [[ ! -f "$deployed_settings" ]]; then
-    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
+    advisory "deployed .claude/settings.json is missing entirely -- no hook registrations are live (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
     return 0
   fi
   jq empty "$deployed_settings" 2>/dev/null || return 0
@@ -328,7 +328,7 @@ check_settings_hook_registration_completeness() {
 
     for s in $src_scripts; do
       if ! grep -qxF "$s" <<< "$dep_scripts"; then
-        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
+        advisory "settings.json hook registration missing for event '$ev': $s (source declares it, deployed .claude/settings.json does not -- regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
       fi
     done
 
@@ -443,14 +443,14 @@ check_core_deploy_advisory() {
   scripts=$(jq -r '.provides.scripts[]? // empty' "$manifest" 2>/dev/null)
   for s in $scripts; do
     deployed="$REPO_ROOT/.claude/scripts/$s"
-    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
+    [[ -f "$deployed" ]] || advisory "core script never deployed: scripts/$s (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
   done
 
   local hooks h
   hooks=$(jq -r '.provides.hooks[]? // empty' "$manifest" 2>/dev/null)
   for h in $hooks; do
     deployed="$REPO_ROOT/.claude/hooks/$h"
-    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Reload All', or bash scripts/deploy-headless.sh)"
+    [[ -f "$deployed" ]] || advisory "core hook never deployed: hooks/$h (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
   done
 
   check_settings_hook_registration_completeness "$ext_path"

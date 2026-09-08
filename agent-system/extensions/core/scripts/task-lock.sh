@@ -211,14 +211,14 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # (the retired glob+allow-list sync engine's top-path-segment allow-list bug) is fixed: the deploy
 # tree is now driven by a single manifest-driven engine that addresses every declared entry by its
 # manifest path. Remedy: regenerate via the picker's `[Reload All]`/`[Regenerate]` entries or
-# `bash scripts/deploy-headless.sh` so the file reaches .claude/scripts/lib/.
+# `bash .claude/scripts/deploy-headless.sh` so the file reaches .claude/scripts/lib/.
 FILE_SCOPE_OVERLAP_LIB_LOADED="false"
 ensure_file_scope_overlap_lib() {
   [ "$FILE_SCOPE_OVERLAP_LIB_LOADED" = "true" ] && return 0 || true
   if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
     echo "ERROR: task-lock.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
     echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
-    echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash scripts/deploy-headless.sh." >&2
+    echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh." >&2
     echo "  Failing CLOSED: no fallback overlap check will run; task locking is blocked." >&2
     return 2
   fi

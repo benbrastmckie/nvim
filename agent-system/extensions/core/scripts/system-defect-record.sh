@@ -49,7 +49,7 @@
 #
 # NOT RUNNABLE FROM THE SOURCE STORE: deploy-root-guard.sh (sourced below, and again transitively
 # inside events-append.sh) fails loudly when invoked from agent-system/extensions/core/scripts/.
-# Deploy first (bash scripts/deploy-headless.sh, or the picker's [Reload All]/[Regenerate]), then
+# Deploy first (bash .claude/scripts/deploy-headless.sh, or the picker's [Reload All]/[Regenerate]), then
 # exercise the deployed .claude/scripts/system-defect-record.sh copy.
 #
 # D5 session-id fallback: events-append.sh requires --session. When --session is omitted, this

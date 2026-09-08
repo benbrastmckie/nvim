@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Correct the Operator-Facing Remedy Strings in Core Scripts",
+  "started_at": "2026-09-08T23:20:00Z",
+  "last_updated": "2026-09-08T23:28:00Z",
+  "objectives": [
+    {"id": 1, "description": "check-extension-docs.sh lines 316, 331, 446, 453 advisory strings corrected", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 2, "description": "task-lock.sh line 221 echo remedy and line 214 comment corrected", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "orchestrate-batch-admit.sh line 353 echo remedy and line 349 comment corrected", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "deploy-root-guard.sh line 27 echo remedy corrected", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]},
+    {"id": 5, "description": "system-defect-record.sh line 52 comment corrected", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]},
+    {"id": 6, "description": "Judged call on check-extension-docs.sh line 421", "status": "done", "files_touched": []},
+    {"id": 7, "description": "bash -n on all five modified scripts", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Line 421 judged call: 'headlessly via scripts/deploy-headless.sh' is Reference class -- no 'bash ' prefix, not a runnable fence, not operator-facing run-this text; it names the mechanism in parallel with 'interactively via <leader>al' in the same sentence. Left unchanged. Verified: grep -rn 'bash scripts/deploy-headless\\.sh' agent-system/extensions/core/scripts/ returns 0; scripts/$s identifiers at check-extension-docs.sh:201,202,245,246,258,446 untouched; bash -n passes on all five files; reference-class files (shell-strict-mode.md, ci-deploy-tree-bootstrap.md, batch-orchestration-guardrails.md, verify-deploy.sh) show zero diff."
+}

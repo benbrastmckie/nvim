@@ -24,7 +24,7 @@ case "${__guard_dir%/*}" in
     echo "       .opencode/scripts/), not '${__guard_dir}'." >&2
     echo "       This looks like the agent-system source store, where '../..' resolves to a" >&2
     echo "       bogus repo root. Deploy first via <leader>al ('Reload All' / 'Regenerate') or" >&2
-    echo "       'bash scripts/deploy-headless.sh', then run the deployed copy." >&2
+    echo "       'bash .claude/scripts/deploy-headless.sh', then run the deployed copy." >&2
     exit 1
     ;;
 esac

@@ -281,35 +281,38 @@ reference-class occurrences in this file be misread as invocations.
 
 ---
 
-### Phase 3: Correct the Operator-Facing Remedy Strings in Core Scripts [NOT STARTED]
+### Phase 3: Correct the Operator-Facing Remedy Strings in Core Scripts [COMPLETED]
 
 **Goal**: Correct all ten invocation occurrences across the five core scripts -- seven of them
 strings printed to a blocked operator at runtime -- without disturbing the correct identifier
 paths that sit on the same lines.
 
 **Tasks**:
-- [ ] `scripts/check-extension-docs.sh` lines 316, 331, 446, 453: change
+- [x] `scripts/check-extension-docs.sh` lines 316, 331, 446, 453: change
       `bash scripts/deploy-headless.sh` to `bash .claude/scripts/deploy-headless.sh` inside the
       four `advisory()` strings. **On lines 446 and 453 do not touch the `scripts/$s` /
       `hooks/$h` identifier earlier in the same string** -- that is a manifest-relative path and
       is correct. This file already uses the correct form at line 1446; the edits make it
-      self-consistent.
-- [ ] `scripts/task-lock.sh` line 221 (runtime `echo` remedy) and line 214 (comment): same
-      substitution.
-- [ ] `scripts/orchestrate-batch-admit.sh` line 353 (runtime `echo` remedy) and line 349
-      (comment): same substitution.
-- [ ] `scripts/deploy-root-guard.sh` line 27 (runtime `echo` remedy): same substitution, keeping
-      the surrounding single quotes in the message intact.
-- [ ] `scripts/system-defect-record.sh` line 52 (comment): same substitution.
-- [ ] Leave `scripts/verify-deploy.sh` lines 18 and 52 alone -- reference class, confirmed during
-      planning.
-- [ ] Re-read `scripts/check-extension-docs.sh` line 421 and make an explicit judged call: it
+      self-consistent. *(completed)*
+- [x] `scripts/task-lock.sh` line 221 (runtime `echo` remedy) and line 214 (comment): same
+      substitution. *(completed)*
+- [x] `scripts/orchestrate-batch-admit.sh` line 353 (runtime `echo` remedy) and line 349
+      (comment): same substitution. *(completed)*
+- [x] `scripts/deploy-root-guard.sh` line 27 (runtime `echo` remedy): same substitution, keeping
+      the surrounding single quotes in the message intact. *(completed)*
+- [x] `scripts/system-defect-record.sh` line 52 (comment): same substitution. *(completed)*
+- [x] Leave `scripts/verify-deploy.sh` lines 18 and 52 alone -- reference class, confirmed during
+      planning. *(completed: confirmed zero diff)*
+- [x] Re-read `scripts/check-extension-docs.sh` line 421 and make an explicit judged call: it
       reads "headlessly via scripts/deploy-headless.sh" inside a GUARDRAIL comment. If read as
       guidance to run the script, correct it to `.claude/scripts/deploy-headless.sh`; if read as
       an identifier reference, leave it. Record the call and its reasoning either way -- do not
-      leave it unaddressed.
-- [ ] Run `bash -n` on each of the five modified scripts.
-- [ ] Do NOT edit the corresponding files under `.claude/scripts/`.
+      leave it unaddressed. *(completed: judged Reference class -- no "bash " prefix, not a
+      runnable fence, names the headless mechanism in parallel with "interactively via
+      <leader>al" in the same sentence rather than instructing a reader to run it verbatim; left
+      unchanged)*
+- [x] Run `bash -n` on each of the five modified scripts. *(completed: all five pass)*
+- [x] Do NOT edit the corresponding files under `.claude/scripts/`. *(completed: not touched)*
 
 **Timing**: 0.75 hours
 

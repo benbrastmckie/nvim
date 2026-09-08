@@ -346,11 +346,11 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 # retired glob+allow-list sync engine's top-path-segment allow-list bug) is fixed: the deploy tree
 # is now driven by a single manifest-driven engine that addresses every declared entry by its
 # manifest path. Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries or
-# bash scripts/deploy-headless.sh so the file reaches .claude/scripts/lib/.
+# bash .claude/scripts/deploy-headless.sh so the file reaches .claude/scripts/lib/.
 if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-batch-admit.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
   echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
-  echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash scripts/deploy-headless.sh." >&2
+  echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh." >&2
   echo "  Failing CLOSED: no fallback overlap check will run; batch admission is blocked." >&2
   exit 2
 fi
