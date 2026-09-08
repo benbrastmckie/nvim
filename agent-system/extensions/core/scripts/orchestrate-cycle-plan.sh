@@ -1567,8 +1567,9 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   dispatch_session="${session_id}_${t}"
   [ "$g" = "implement" ] && dispatch_session="$session_id"
 
-  # (j) Preflight status write.
-  skill_preflight_update "$t" "$g" "$dispatch_session"
+  # (j) Preflight status write. update-task-status.sh confirms on stdout, which this script
+  # reserves for the plan JSON alone -- route the helper's chatter to the diagnostic stream.
+  skill_preflight_update "$t" "$g" "$dispatch_session" >&2
 
   # (l) orchestrate-build-dispatch.sh — Stage 3.5 Dispatch Prep's sole implementation.
   build_args=(--session "$dispatch_session" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")
@@ -1601,13 +1602,19 @@ for t in "${probed_dispatch_post_h1[@]}"; do
       build_args+=(--focus "$task_research_questions")
     fi
   fi
-  if dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}" 2>&1); then
+  # Keep the two streams apart: orchestrate-build-dispatch.sh writes advisory diagnostics
+  # (notably the --lit resolver's [lit:auto] rationale) to stderr, and merging them into stdout
+  # here would prepend non-JSON text to the payload jq parses just below.
+  build_diag_file=$(mktemp "${TMPDIR:-/tmp}/orchestrate-build-dispatch.XXXXXX")
+  if dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}" 2>"$build_diag_file"); then
     build_exit=0
   else
     build_exit=$?
   fi
+  build_diag=$(cat "$build_diag_file" 2>/dev/null); rm -f "$build_diag_file"
+  [ -n "$build_diag" ] && printf '%s\n' "$build_diag" >&2
   if [ "$build_exit" -ne 0 ]; then
-    echo "[orchestrate] WARNING: orchestrate-build-dispatch.sh failed for task #$t (exit $build_exit): $dispatch_json" >&2
+    echo "[orchestrate] WARNING: orchestrate-build-dispatch.sh failed for task #$t (exit $build_exit): ${build_diag:-$dispatch_json}" >&2
     out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "orchestrate-build-dispatch.sh failed; deferring to a later cycle"}')")
     continue
   fi
