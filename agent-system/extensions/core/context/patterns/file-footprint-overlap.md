@@ -105,7 +105,7 @@ both source or splice the same file.
   lock-acquisition-level caller leaves open for a non-terminal, unlocked, out-of-batch task (it
   only sees currently-held locks). Splices `FILE_SCOPE_OVERLAP_JQ_DEFS` directly into its
   `jq -n --slurpfile` program — the SAME shared defs `scopes_overlap()` wraps above, not an
-  independent copy. Consumer: `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle
+  independent copy. Consumer: `scripts/orchestrate-cycle-plan.sh` step 4.5 (per-cycle
   eligibility gate). See
   `docs/architecture/batch-admit-schema.md` for the verdict schema this caller emits. **As of
   `orchestrate-batch-admit-v5`**: the comparison SET this caller scans against is unchanged (still

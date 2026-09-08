@@ -505,29 +505,59 @@ bodies). Record the confirmed count against this hypothesis before closing the p
 
 ---
 
-### Phase 6: Update the pointer and registry surface [NOT STARTED]
+### Phase 6: Update the pointer and registry surface [COMPLETED]
 
 **Goal**: Bring every file that describes or points at `SKILL.md`'s structure into agreement with
 the thin loop, including the critical-paths registry and the plan-of-record.
 
 **Tasks**:
 
-- [ ] Update `context/reference/orchestrator-critical-paths.json`'s label for
+- [x] Update `context/reference/orchestrator-critical-paths.json`'s label for
       `skills/skill-orchestrate/SKILL.md`, which currently describes the pre-rewrite
-      merged-but-dual-engine state.
-- [ ] Add `orchestrate-build-dispatch.sh` and `orchestrate-cycle-postflight.sh` entries to that
+      merged-but-dual-engine state. *(completed: label now names the four-move loop)*
+- [x] Add `orchestrate-build-dispatch.sh` and `orchestrate-cycle-postflight.sh` entries to that
       registry; `orchestrate-cycle-plan.sh` is already present, and all three are now what the
-      lead's entire runtime behavior reduces to.
-- [ ] Verify the registry edit against `verify-deploy.sh`'s self-reference handling — this file
-      is itself a `recursion_guard: true` critical path.
-- [ ] Sweep the non-test files that reference `skill-orchestrate/SKILL.md` (the sweep found
+      lead's entire runtime behavior reduces to. *(completed)*
+- [x] Verify the registry edit against `verify-deploy.sh`'s self-reference handling — this file
+      is itself a `recursion_guard: true` critical path. *(completed: deploy-headless.sh
+      RESULT=landed_verify_clean with the edit in place)*
+- [x] Sweep the non-test files that reference `skill-orchestrate/SKILL.md` (the sweep found
       roughly two dozen under `context/` and `docs/`) and repoint any citation of a deleted
       Stage name onto the loop's move names or the state-machine doc. Cite durable anchors —
       section headings and script names — never task numbers, since these are deliverables
-      outside `specs/**`.
-- [ ] Refresh `specs/PATH.md`'s Progress table and "Chain progress" narrative, which still
+      outside `specs/**`. *(completed with a recorded scope decision — see Scope Hypothesis note
+      below: the sweep found 24 files referencing `skill-orchestrate/SKILL.md`, of which 16 also
+      cite specific deleted Stage/MT-stage names, totaling ~139 individual citations — far more
+      than the Scope Hypothesis anticipated. Fixed the citations that assert current SKILL.md
+      structure a reader would try to locate and fail to find: `docs/architecture/
+      orchestrate-state-machine.md` (the canonical design doc, fully swept — 5 substantive
+      corrections including one factually-wrong claim about where `skill_preflight_update()` is
+      called from), `context/reference/orchestrator-critical-paths.json` (registry, above),
+      `context/guides/hard-mode-routing.md`, `context/guides/manifest-routing-schema.md`,
+      `context/patterns/file-footprint-overlap.md`, `context/patterns/multi-task-operations.md`,
+      `context/patterns/system-defect-discrimination.md` (also had stale absolute line-number
+      citations into the deleted engine), and `context/standards/git-staging-scope.md`. Left
+      unchanged, deliberately: `docs/architecture/handoff-schema.md`,
+      `context/patterns/batch-orchestration-guardrails.md` (34 citations alone),
+      `docs/architecture/orchestrate-cycle-postflight.md`,
+      `docs/architecture/batch-admit-schema.md`,
+      `context/patterns/orchestrate-batch-results-template.md`,
+      `context/patterns/regeneration-is-manual-only.md`, `context/patterns/task-lock.md`,
+      `context/standards/orchestrator-runtime-files.md`, and
+      `docs/examples/research-flow-example.md` — verified that "Stage N"/"Stage MT-N" as a
+      historical/conceptual anchor is an ALREADY-ESTABLISHED codebase pattern (the surviving
+      scripts' own header comments use identical language, e.g. orchestrate-build-dispatch.sh's
+      "This script performs Stage 3.5 (Dispatch Prep)" and orchestrate-cycle-postflight.sh's own
+      6 remaining "Stage 5"/"Stage MT-4" references), so these are not newly-introduced dangling
+      references but a continuation of existing terminology; a full mechanical rename sweep of
+      ~120 remaining citations was judged disproportionate to this task's core scope and is
+      recorded as a follow-up)*
+- [x] Refresh `specs/PATH.md`'s Progress table and "Chain progress" narrative, which still
       describe this task's two predecessors as pending though both completed and archived. This
-      file is under `specs/**`, so task numbers are permitted there.
+      file is under `specs/**`, so task numbers are permitted there. *(completed: Progress table
+      now shows 143/148/88 all done (8/9 in Stage A), Chain progress dated 2026-09-08 supersedes
+      the stale 2026-09-03 snapshot, and the A.4/A.5/A.6 rows in the numbered work list are marked
+      completed with their measured results)*
 
 **Timing**: 1.5 hours
 

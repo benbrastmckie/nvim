@@ -42,30 +42,28 @@ Each `dispatch(...)` call in the table above now performs the preflight status t
 `researching`/`planning`/`implementing`) immediately before invoking the Agent tool, so these
 in-flight states are entered during the work window rather than only after the dispatch returns.
 This is implemented via `skill_preflight_update()` (see `.claude/scripts/skill-base.sh`), called
-from each single-task and multi-task state handler in `skill-orchestrate/SKILL.md`'s "Stage 4:
-State Handlers" and "Stage MT-4: Phase-Aware Dispatch and Per-Task Postflight" sections — covering
-both effort modes, since the formerly-separate hard-mode engine's equivalent handlers were merged
-in and the standalone file deleted — immediately before each handler's corresponding Agent
-dispatch, mirroring the `skill_postflight_update()` call these same handlers already make after
-the dispatch returns.
+from `orchestrate-cycle-plan.sh`'s own per-task live-dispatch loop — covering both effort modes
+and every batch size uniformly, since the four-move loop rewrite deleted the single-task engine's
+former "Stage 4: State Handlers" section entirely and consolidated per-task dispatch preflight
+into this one script call site — immediately before that task's corresponding Agent dispatch
+(composed in `skill-orchestrate/SKILL.md`'s Move 2), mirroring the `skill_postflight_update()`
+call `orchestrate-cycle-postflight.sh` makes (Move 3) after the dispatch returns.
 
 ### Convergence: `researching`/`planning` No Longer Exit
 
-The single-task engine's `researching` and `planning` state handlers used to exit the whole
-invocation with a warning ("another session is actively researching/planning — wait and re-run"),
-under the premise that a live sibling session owned the in-flight work. That premise is provably
-false whenever these handlers are reachable at all: `scripts/command-gate-in.sh`'s
-`task-lock.sh acquire-retry` already `return 1`s and aborts the ENTIRE single-task `/orchestrate`
-invocation, before Stage 1 is ever entered, whenever a FRESH foreign lock refuses after its
-bounded retry budget. By the time a `researching` or `planning` handler runs, this session
-already holds the lock — either no other session held it (this session's own acquire succeeded
-outright), or a prior session's lock was stale and reclaimed. A task sitting in `researching` or
-`planning` under a dead prior session's stale lock is a STRANDED task, not a genuinely in-flight
-one, so the correct action is to re-dispatch (research or plan, respectively) rather than exit —
-exactly the recovery this convergence provides. See `skills/skill-orchestrate/SKILL.md`'s
-`#### State: researching` and `#### State: planning` handlers for the converged dispatch logic —
-each handler's hard-mode branch, forked internally on `$hard_mode`, covers what a separate
-mirrored file used to.
+The single-task engine's `researching` and `planning` state handlers (deleted along with the rest
+of that engine by the four-move loop rewrite) used to exit the whole invocation with a warning
+("another session is actively researching/planning — wait and re-run"), under the premise that a
+live sibling session owned the in-flight work. That premise was already provably false whenever
+those handlers were reachable at all, and the one surviving engine's design (see "Dependency
+Gating Model" below) never re-introduces it: a task's own status among
+`{researching, planning, ...}` never by itself removes it from eligibility, and
+`orchestrate-cycle-plan.sh`'s per-task `task-lock.sh acquire` reclaims a stale lock (left behind
+by a dead prior session) with a warning rather than refusing — a task stranded in `researching` or
+`planning` is re-classified and re-dispatched (research or plan, respectively) exactly like any
+other non-terminal status, never treated as a reason to exit. A task genuinely in flight under a
+FRESH foreign lock is still never concurrently dispatched: the acquire refuses (exit 1) and the
+task is deferred to a later cycle, never excluded and never added to `failed_tasks`.
 
 The `partial` no-handoff/no-blockers sub-state (a normal shape for a base-mode dispatch, which
 never writes a handoff) now dispatches `implement` on every cycle where budget remains, sourcing
@@ -202,7 +200,7 @@ Step 4: REVISE PLAN
 
 Step 5: RE-DISPATCH IMPLEMENT
   Invoke Agent tool:
-    subagent_type: $IMPLEMENT_AGENT  (resolved by task_type in Stage 1b)
+    subagent_type: $IMPLEMENT_AGENT  (resolved by task_type inside orchestrate-cycle-plan.sh's resolve_agent())
     prompt: "Implement task $N following the revised plan."
     context: { task_number, session_id, orchestrator_mode: true, plan_path }
   Fresh implementation with revised plan
@@ -285,16 +283,17 @@ EXIT: Task {N} completed successfully.
 
 ### Completion-Claim Refusal Flow
 
-A `status: "implemented"` handoff does not unconditionally flip the task to `completed`. Stage 5
-(and Stage MT-4, and hard-mode Stage 5) call `skill_gate_completion_claim` before the postflight
+A `status: "implemented"` handoff does not unconditionally flip the task to `completed`.
+`orchestrate-cycle-postflight.sh` — the single shared per-task postflight body for every batch
+size and effort mode (Move 3) — calls `skill_gate_completion_claim` before the postflight
 transition. On a Case 1 (phase accounting present but incomplete) or Case 3 (phase accounting
 absent and `plan_markers_verified` not `true`) refusal:
 
 - No status transition happens this cycle — the task stays `implementing`.
 - `cycle_count` still increments (the only exemption is a corroborated infra failure).
 - The gate has already logged which case fired to stderr.
-- The next cycle re-enters Stage 3a with `implementing` and re-dispatches implement against the
-  same plan, which resumes at the first non-completed phase.
+- The next cycle's Move 1 re-classifies the task from its still-`implementing` status and
+  re-dispatches implement against the same plan, which resumes at the first non-completed phase.
 - The existing `MAX_CYCLES` (base) / `MAX_CYCLES_MT` (multi-task) caps bound the retry — a
   persistently misreporting agent exits via the cap, not an infinite loop. See
   `handoff-schema.md`'s `plan_markers_verified` section for the full three-case gate contract and
@@ -348,22 +347,23 @@ alternate code path keyed on batch size.
 The loop drives every task in the batch through its full lifecycle (research -> plan -> implement
 -> completed) using a lifecycle-cycling loop with dependency-aware gating and parallel dispatch.
 
-### Lifecycle-Cycling Loop (Stage MT-3)
+### Lifecycle-Cycling Loop (the Four-Move Loop's Move 1 and Move 3)
 
-**Relocated (task building `scripts/orchestrate-cycle-plan.sh`)**: steps 1-5 below, plus the
-`cycle_count++`/`MAX_CYCLES_MT` accounting and the inter-cycle redeploy checkpoint formerly
-described as step 8, are no longer inline SKILL.md prose/jq — they are one call to
-`scripts/orchestrate-cycle-plan.sh`, made once per cycle by the lead (Stage MT-3's own SKILL.md
-text is now that one call plus a loop of at most ten lines composing the batched Agent-tool
-message from the script's `dispatch[]` rows). This diagram states the CONCEPTUAL loop shape,
-unchanged in behavior; the EXECUTABLE source of truth for steps 1-5/8 is that script's own header
-comment (mt_state_file field list, the bare-vs-suffixed `session_id` invariant, the `--dry-run`
-design, and the re-sited budget-guard/redeploy-checkpoint timing note — the script runs strictly
-BEFORE its own cycle's Agent dispatches, so its budget guard sits at the TOP of each invocation
-and its redeploy checkpoint consumes the PRIOR cycle's `cycle_modified_files` rather than the
-current one). Steps 6-7 (read handoffs, per-task postflight) remain SKILL.md's own job, starting
-at Stage MT-4's `**After all Agent tool calls complete**` marker — untouched by that task, and the
-separate concern of a not-yet-built postflight composer (see that task's own scope).
+Steps 1-5 below, plus the `cycle_count++`/`MAX_CYCLES_MT` accounting and the inter-cycle redeploy
+checkpoint (formerly described as step 8), are not inline `SKILL.md` prose/jq — they are ONE call
+to `scripts/orchestrate-cycle-plan.sh`, made once per cycle by the lead (`SKILL.md`'s own text for
+this move is that one call plus a loop of at most ten lines composing the batched Agent-tool
+message from the script's `dispatch[]` rows — see `SKILL.md`'s "Move 1: Plan the cycle" and
+"Move 2: Dispatch" sections). This diagram states the CONCEPTUAL loop shape, unchanged in
+behavior since before the single-task engine's deletion; the EXECUTABLE source of truth for steps
+1-5/8 is that script's own header comment (`mt_state_file` field list, the bare-vs-suffixed
+`session_id` invariant, the `--dry-run` design, and the re-sited budget-guard/redeploy-checkpoint
+timing note — the script runs strictly BEFORE its own cycle's Agent dispatches, so its budget
+guard sits at the TOP of each invocation and its redeploy checkpoint consumes the PRIOR cycle's
+`cycle_modified_files` rather than the current one). Steps 6-7 (read handoffs, per-task
+postflight) are `SKILL.md`'s "Move 3: Postflight" section, which delegates the entire per-task
+postflight body to `orchestrate-cycle-postflight.sh` (one call per dispatched task, after every
+Move 2 Agent call has returned).
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -414,7 +414,7 @@ separate concern of a not-yet-built postflight composer (see that task's own sco
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 6. Read handoffs for every dispatched   │     │
 │  │    task (after ALL Agents complete)     │     │
-│  │    [SKILL.md Stage MT-4, unchanged]     │     │
+│  │    [SKILL.md Move 2/Move 3]     │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
@@ -422,7 +422,7 @@ separate concern of a not-yet-built postflight composer (see that task's own sco
 │  │    skill_postflight_update + artifact   │     │
 │  │    linking + per-task scoped commit +   │     │
 │  │    multi-state update                   │     │
-│  │    [SKILL.md Stage MT-4, unchanged]     │     │
+│  │    [SKILL.md Move 2/Move 3]     │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │                            │
 │  ┌──────────────────▼──────────────────────┐     │
@@ -453,13 +453,14 @@ mutual exclusion between `divergence-audit` and `drift-inspection` — lives in 
 plan (Decision 2) and in `orchestrate-cycle-plan.sh`'s header comment; it is not restated here.
 
 Dispatch composition mirrors step 5's own `dispatch[]` loop exactly, as a second adjacent loop in
-`SKILL.md` Stage MT-4 over `aux_dispatch[]` instead: same single-message batching rule, but
-`orchestrator_mode: false` and no `handoff_path`. An aux row NEVER reaches step 7's per-task
+`SKILL.md`'s Move 2 over `aux_dispatch[]` instead: same single-message batching rule, but
+`orchestrator_mode: false` and no `handoff_path`. An aux row NEVER reaches Move 3's per-task
 postflight and NEVER contributes to `failed_tasks` — its only effect is a written file or a
 revised plan for a LATER cycle's `dispatch[]` to pick up.
 
-The hard-mode burnout circuit-breaker (single-task Stage 3b-hard) has a batch-engine counterpart
-too, `SKILL.md`'s own "MT-3-hard" subsection: the same three self-checks, reused verbatim rather
+The hard-mode burnout circuit-breaker (single-task Stage 3b-hard, deleted along with that engine)
+has a counterpart in the one surviving engine too, `SKILL.md`'s own Move 1 "Hard-mode burnout
+gate" paragraph: the same three self-checks, reused verbatim rather
 than duplicated, with the signal-firing action replaced by one call to
 `scripts/orchestrate-churn.sh --burnout-signal`.
 
@@ -492,7 +493,7 @@ itself removes it from eligibility — concurrency safety is enforced downstream
 `file_scope` overlap, not by the status string. A task stranded in `researching`/`planning` by a
 dead prior session's stale lock is admitted to `eligible_tasks`, classified by
 `scripts/orchestrate-triage-classify.sh` to the phase its status names (`researching` ->
-research, `planning` -> plan), and dispatched — Stage MT-4's per-task `task-lock.sh acquire`
+research, `planning` -> plan), and dispatched — `orchestrate-cycle-plan.sh`'s per-task `task-lock.sh acquire`
 reclaims the stale lock with a warning. A task genuinely in flight under a FRESH foreign lock is
 still never concurrently dispatched: `task-lock.sh acquire` refuses (exit 1) and the task is
 removed from that cycle's dispatch batch (never excluded, never added to `failed_tasks`) — this
@@ -504,7 +505,7 @@ If a predecessor is still in-progress (e.g., `researched`, `planned`), the depen
 
 ### Commit Granularity
 
-One commit per task per phase transition, issued inside Stage MT-4's per-task postflight loop
+One commit per task per phase transition, issued inside `orchestrate-cycle-postflight.sh`'s per-task postflight body (Move 3)
 (step 5.5) — never a combined end-of-batch commit. MT mode used to fire exactly one commit at the
 very end of a combined batch step, folding every task's diff and index rows into a single,
 unrevertable commit; that batch commit is retired, and each task's own change is committed
@@ -518,14 +519,14 @@ the full per-task scope contract. This section is the source of truth for MT com
 
 | Outcome | Commit issued where |
 |---------|---------------------|
-| `completed` | Stage MT-4 step 5.5, at the task's own postflight iteration (message: complete research/plan/implementation, per that task's `dispatch_status`) |
-| `failed` | Stage MT-4 step 5.5 still runs for a failed dispatch; artifacts and status changes it produced are real and committed |
-| `blocked` | Stage MT-4 step 5.5 still runs; same reasoning as `failed` |
-| Partial (gate-refused, or `MAX_CYCLES_MT` reached mid-loop) | Stage MT-4 step 5.5 runs at the partial-form message on every cycle that reaches it, including the cycle where `MAX_CYCLES_MT` is hit |
+| `completed` | Move 3's per-task postflight iteration (`orchestrate-cycle-postflight.sh`), (message: complete research/plan/implementation, per that task's `dispatch_status`) |
+| `failed` | Move 3's postflight body still runs for a failed dispatch; artifacts and status changes it produced are real and committed |
+| `blocked` | Move 3's postflight body still runs; same reasoning as `failed` |
+| Partial (gate-refused, or `MAX_CYCLES_MT` reached mid-loop) | Move 3's postflight body runs at the partial-form message on every cycle that reaches it, including the cycle where `MAX_CYCLES_MT` is hit |
 | Deferred self-modifying (a task whose own dispatch is deferred rather than run this cycle) | Never dispatched and never status-mutated this cycle, so it correctly produces no commit this cycle — it becomes eligible, and committable, on a later cycle |
 | Deferred-by-redeploy-checkpoint (a task excluded for the remainder of the invocation because the inter-cycle redeploy checkpoint's deploy/verify gate failed) | Never dispatched and never status-mutated for the rest of this invocation; distinct operator remedy from deferred-self-modifying — see `### The Inter-Cycle Redeploy Checkpoint` in `context/patterns/batch-orchestration-guardrails.md` |
 
-**Residue check** (non-blocking, run by Stage MT-5 after the lifecycle-cycling loop exits): warns
+**Residue check** (non-blocking, run by Move 4 after the lifecycle-cycling loop exits): warns
 only, and never commits — a blanket commit here would recreate exactly the entanglement per-task
 commits were introduced to remove.
 
@@ -548,7 +549,7 @@ fi
 
 `MAX_CYCLES_MT = min(task_count * 5, 25)`
 
-**Per-task infra-failure cap**: a missing handoff for an individual task in Stage MT-4 is deferred
+**Per-task infra-failure cap**: a missing handoff for an individual task in Move 3 is deferred
 (not marked `failed_tasks`) when it corroborates as an infra failure — see
 `context/patterns/infra-failure-discrimination.md` — up to `MAX_INFRA_FAILURES = 3` (flat per
 task, not scaled by `task_count`). The shared `MAX_CYCLES_MT` counter still increments once per

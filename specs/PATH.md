@@ -233,9 +233,9 @@ designated-candidate slot: they serialize one per cycle whether batched or not. 
 | A.1 | **145** slim `commands/orchestrate.md` | **completed 2026-09-03** | Deleted the illustrative `### MULTI-TASK DISPATCH` block and the consolidated-output template; kept Arguments, Options (added the undocumented `--hard`), STAGE 0 parse + dispatch, checkpoints. 46,874 B → 19,104 B (target ≤ 8 KB not yet reached) | ~7k tokens/invocation, zero risk |
 | A.2 | **146** `orchestrate-build-dispatch.sh` + pointer prompts + user-decision contract | **completed 2026-09-03** | Stage 3.5 became a script writing `.dispatch/{seq}.md`; all eight dispatch sites send a fixed pointer prompt; agent contracts gained "read your dispatch file first" and the `user_decision` contract; threads the artifact round | the per-cycle authored-prompt cost, on both engines |
 | A.3 | **147** `orchestrate-cycle-plan.sh` | **completed 2026-09-03** | MT-3 steps 1-4.5 and MT-4's per-task preflight/mint collapsed into one script returning the dispatch plan; consumes `force_phases` per task; creates missing task dirs; gained `--dry-run` and retired `orchestrate-dry-run-report.sh` (absorbed 141's verification bar). SKILL.md's MT-3/MT-4 pre-dispatch region: 271,733 B → 225,553 B (-46,180 B) | MT-3 (35 KB) + half of MT-4 left the engine; one fewer critical-path script |
-| A.4 | **143** `orchestrate-cycle-postflight.sh` | **revised (widened); unblocked — deps [147] satisfied, next to run** | 143's two gates are the seed; the script also absorbs recovery (now seq-checked), corroboration, writer-contract-aware recording, `user_decision` relay, status clamp, artifact link + round advance, excursion advisory, scoped commit, MT-state update, lock release | remainder of MT-4 + MT-5 (56 KB) leave the engine; 53, 138, 100 close |
-| A.5 | **148** port single-task-only features into the one engine | created, revised | Hard-mode counters into `orchestrate-churn.sh` (kept in full by decision); one loop-guard counter; drift/blocker dispatches as next-cycle rows; a single task number routed through the batch path behind a flag. Team item withdrawn | prerequisite for A.6 |
-| A.6 | **88** delete the single-task engine; rewrite `SKILL.md` as the four-move loop | revised (replaced) | Stages 1-8 deleted; MT-1..5 replaced by the loop above; narration moved to `docs/architecture/`; `## MUST NOT` reduced to a list; ≤ 20 KB. The original mode-gating premise (single-task is the hot path) is inverted by the default use and is dropped | **~70k tokens/invocation** |
+| A.4 | **143** `orchestrate-cycle-postflight.sh` | **completed 2026-09-07** | 143's two gates are the seed; the script also absorbs recovery (now seq-checked), corroboration, writer-contract-aware recording, `user_decision` relay, status clamp, artifact link + round advance, excursion advisory, scoped commit, MT-state update, lock release | remainder of MT-4 + MT-5 (56 KB) left the engine; 53, 138, 100 closed |
+| A.5 | **148** port single-task-only features into the one engine | **completed 2026-09-07** | Hard-mode counters into `orchestrate-churn.sh` (kept in full by decision); one loop-guard counter; drift/blocker dispatches as next-cycle rows; a single task number routed through the batch path behind a flag. Team item withdrawn | prerequisite for A.6, landed |
+| A.6 | **88** delete the single-task engine; rewrite `SKILL.md` as the four-move loop | **completed 2026-09-08 (this pass)** | Stages 0-8 deleted (189,000 B → 59,439 B); MT-1..5 rewritten as the four-move loop (Move 1-4, 15,459 B final); narration moved to `docs/architecture/orchestrate-state-machine.md` and `handoff-schema.md`; both `## MUST NOT` sections combined to 1,369 B; the batched `AskUserQuestion` -> `.decisions.json` -> next-dispatch-file relay built end to end; every coupled test/lint retargeted or retired with recorded deviations. The original mode-gating premise (single-task is the hot path) is inverted by the default use and was dropped | **~70k tokens/invocation** |
 | A.7 | **142** orchestrator context budget: measure and lock | revised (narrowed) | Baseline captured (numbers above), re-measured after each landing; per-file ceilings for the two orchestrator files and an eager-load ceiling wired into verify-deploy (absorbs 42); a 3-task batch's per-cycle growth measured and recorded | prevents regrowth |
 | A.8 | **150** research on demand | created | Planner dispatched first on a fresh task; it plans if the description and codebase suffice, else returns `needs_research` with a question list that becomes the research focus; `--research` forces research first. Lands after 88 so it is built once, in the thin engine | one full dispatch per specification-shaped task, which is most of them |
 
@@ -243,8 +243,9 @@ designated-candidate slot: they serialize one per cycle whether batched or not. 
 143←[147]; 148←[143]; 88←[148]; 142←[88]; 150←[88]. 88's former edges [87, 127] are dropped;
 127 no longer gates it. 142 and 150 can run in the same cycle (disjoint scopes).
 
-**Chain progress, 2026-09-03**: 125 → 149 → 145 → 146 → 147 are done, in that order, exactly as
-filed. 143 is unblocked now; 148, 88, 142, 150 remain behind it.
+**Chain progress, 2026-09-08** (supersedes the 2026-09-03 snapshot above, which is stale): 125 →
+149 → 145 → 146 → 147 → 143 → 148 → 88 are ALL done, in that order, exactly as filed. Only 142 and
+150 remain behind 88.
 
 **Why A.2 before A.3.** The dispatch-file builder is independent of the loop rewrite and lands
 the per-cycle saving on the engine *as it exists today*. If Stage A stalls after A.2, multi-task
@@ -497,17 +498,20 @@ planner's questions as its focus.
 
 ## Progress
 
-*As of 2026-09-03.*
+*As of 2026-09-08 (refreshed by 88's own implementation — see "Chain progress" below; prior
+snapshot was 2026-09-03).*
 
 | Stage | Tasks | State |
 |---|---|---|
 | Consolidation (116 → 117-127, 135) | 117-126, 128, 130-131, 133, 135 ☑ · **127 ☐** | shape done; one deletion left |
-| A — thin lead | 125 ☑ → 149 ☑ → 145 ☑ → 146 ☑ → 147 ☑ → **143 ☐ (next, unblocked)** → 148 ☐ → 88 ☐ → [142 ☐, 150 ☐] | **5/9 done**; ~405 KB/~100k tokens → ~308 KB/~77k tokens eager so far, target ≤25k tokens; per-cycle authored text now ~0 for the planning half (147), postflight half still pending (143) |
+| A — thin lead | 125 ☑ → 149 ☑ → 145 ☑ → 146 ☑ → 147 ☑ → 143 ☑ → 148 ☑ → **88 ☑ (this pass)** → [142 ☐, 150 ☐] | **8/9 done**; single-task engine deleted, `SKILL.md` rewritten as the four-move loop (measured 189,000 B → 15,459 B); only 142/150 remain in Stage A |
 | B — wide-batch correctness | 144 ☑, 20 ☑, 72 ☑, 139→140 ☐, 14 ☐, 51 ☐, 91→136 ☐, 13 ☐, 129 ☐ (141 absorbed) | 3/9 done; rest batchable |
 | C — other budgets | 44 ☐, 89 ☐ (42 absorbed) | ☐ low; 44 unblocked by 144's narrowing |
 | D — extensions/repo | 113 ☑, 27 ☑, 74→75/76 ☐, 137 ☐, 134 ☐, 29→30 ☐, 43 ☐, 39 ☐, 45 ☐, 22 ☐ | 2/10 done; independent |
 | E — optional | Workflow spike, lazy-reference diet | after A |
 
-**Critical path now**: Stage A, headed by 143 (147's dependency satisfied 2026-09-03). A.1 and
-A.2 already landed their measurable savings; A.6 (88) is still where the single-task engine — and
-the bulk of the remaining `SKILL.md` bytes — is deleted.
+**Critical path now**: Stage A's engine-deletion arc (143 → 148 → 88) is complete: the single-task
+engine is deleted outright, `skill-orchestrate/SKILL.md` is the four-move loop (plan -> dispatch ->
+postflight -> branch) at 15,459 B (target was `<= 20,000 B`), and the batched `AskUserQuestion` ->
+`.decisions.json` -> next-dispatch-file relay is built end to end. Only 142 and 150 remain to close
+Stage A entirely.

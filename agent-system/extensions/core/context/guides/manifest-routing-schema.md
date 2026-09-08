@@ -27,7 +27,7 @@ block, `hard_contracts`, with a genuinely different shape (see its own subsectio
 | `routing_hard` | skill name (e.g. `"skill-lean-research-hard"`) | `command-route-skill.sh` (`--hard` mode) |
 | `routing_agents` | agent name, no `.md` suffix (e.g. `"epi-research-agent"`) | `command-route-agent.sh` (standard mode) |
 | `routing_agents_hard` | agent name (e.g. `"lean-research-hard-agent"`) | `command-route-agent.sh` (`--hard` mode) |
-| `hard_contracts` | array of contract paths/`replace:` entries (see below) | `skill-orchestrate/SKILL.md` Stage 3.5 Dispatch Prep, via `routing_lookup_flat()` |
+| `hard_contracts` | array of contract paths/`replace:` entries (see below) | `orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep, via `routing_lookup_flat()` |
 
 `routing`/`routing_hard` resolve which **skill** a command (`/research`, `/plan`, `/implement`)
 invokes. `routing_agents`/`routing_agents_hard` resolve which **agent** `/orchestrate` and
@@ -50,7 +50,7 @@ counterpart-key rule; it is independently optional.
 Unlike the four blocks above, `hard_contracts` is a **one-level** map:
 `{ task_type: [ path_or_directive, ... ] }` — no intervening `op` key. A `--hard` dispatch's
 per-phase contract list already varies by `phase` (`research`/`plan`/`implement`), not by
-`task_type`, inside `skill-orchestrate/SKILL.md`'s own Stage 3.5 logic, so the manifest key only
+`task_type`, inside `orchestrate-build-dispatch.sh`'s own Stage 3.5 logic, so the manifest key only
 needs to vary by `task_type`; forcing a fabricated `op` level onto this block to reuse
 `routing_lookup()` would misrepresent its shape. It resolves through a dedicated sibling
 function, `routing_lookup_flat(block, task_type)`, in `scripts/lib/manifest-routing-lib.sh` —
@@ -79,7 +79,7 @@ Example:
 
 **Current status**: no extension declares this block today — the mechanism is additive and
 stays unexercised by real data on day one. Its sole consumer is
-`skill-orchestrate/SKILL.md`'s Stage 3.5 Dispatch Prep ("Hard-mode contract injection" subsection),
+`orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep ("Hard-mode contract injection" subsection),
 which builds the final `hard_contracts_block` prompt-injection string from the resolved list.
 
 ---
@@ -226,6 +226,6 @@ committing; it fails loudly on a missing counterpart key or a non-existent agent
 - `scripts/command-route-agent.sh` — agent resolution (`/orchestrate`, `/orchestrate --hard`)
 - `scripts/lint/lint-routing-wiring.sh` — wiring-validation gate (verify-deploy.sh gate7)
 - `scripts/tests/test-routing-resolution.sh` — table-driven parity test
-- `skills/skill-orchestrate/SKILL.md` — Stage 3.5 Dispatch Prep, the `hard_contracts` block's
+- `scripts/orchestrate-build-dispatch.sh` — Stage 3.5 Dispatch Prep, the `hard_contracts` block's
   sole consumer
 - `context/guides/hard-mode-routing.md` — `--hard`-specific resolution detail and history

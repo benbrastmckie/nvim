@@ -100,7 +100,7 @@ per-objective accumulation mechanism that feeds it.
 In multi-task `/orchestrate`, the `research`/`plan`/`implement` scopes above apply **once per
 task**, keyed to that task's own directory and its own `.return-meta.json` — never unioned across
 tasks into a single combined commit. A union commit cannot be reverted per task. Concretely: MT
-mode's per-task postflight loop (`skill-orchestrate`'s Stage MT-4 step 5.5) issues one scoped
+mode's per-task postflight loop (`orchestrate-cycle-postflight.sh`, called from `skill-orchestrate`'s Move 3) issues one scoped
 commit per task per phase transition, reusing this same contract with `task_dir` and
 `modified_files` resolved from that task's own state — never a sibling task's.
 
@@ -323,7 +323,7 @@ the addendum and falls through to the plain commit message — it must never bre
   (`commit-acquire`/`commit-release`) that `git-commit-scoped.sh` uses to serialize commits
 - `.claude/context/standards/orchestrator-runtime-files.md` — the two-class ephemeral/durable
   policy the canonical exclusion set above implements, with the full freshness-gate rationale
-- `.claude/skills/skill-orchestrate/SKILL.md` — Stage MT-4 step 5.5, the MT per-task commit site
+- `.claude/scripts/orchestrate-cycle-postflight.sh` — the per-task commit site
   that applies the "Multi-Task Application" scope above once per task
 - `.claude/docs/architecture/orchestrate-state-machine.md` — MT Mode's Commit Granularity
   subsection, and `.claude/context/patterns/batch-orchestration-guardrails.md` — hazard 2's

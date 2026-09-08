@@ -39,22 +39,25 @@ piece of evidence for why a discrimination contract — not just louder banners 
 `scripts/orchestrate-recover-outcome.sh` line 205 sets
 `evidence_reason="ARTIFACTS_SHAPE_MISMATCH"`, and the in-file comment already explains exactly why
 it matters (lines 92-93): *"A non-empty array yielding no path is proof of a shape mismatch (e.g.
-a bare-string array), not proof of 'no artifacts'."* That comment has never been read by any
-consumer. Every site that reads `evidence_reason` gates on `PHASES_ZERO_ON_SUCCESS` alone and
-ignores `ARTIFACTS_SHAPE_MISMATCH` entirely (citations verified against current file text; the
-original diagnosis's line numbers had already drifted by the time this document was written,
-which is itself evidence that citations must always be re-verified rather than trusted from a
-prior report):
+a bare-string array), not proof of 'no artifacts'."*
 
-- `skills/skill-orchestrate/SKILL.md:682` (single-task Stage 5 recovered-outcome branch,
-  covering both effort modes — the formerly-separate hard-mode engine's own mirrored site was
-  merged into this one when that file was deleted)
-- `skills/skill-orchestrate/SKILL.md:826` (handoff-present branch, D3 note)
-- `skills/skill-orchestrate/SKILL.md:1870` (multi-task Stage MT-4 mirror)
-- `skills/skill-orchestrate/SKILL.md:2316` (the three-reachable-branches prose specification)
+**Historical note (citations superseded by the four-move loop rewrite)**: at the time this
+document was written, every site that reads `evidence_reason` lived inline in the single-task
+engine and gated on `PHASES_ZERO_ON_SUCCESS` alone, ignoring `ARTIFACTS_SHAPE_MISMATCH` entirely —
+four dead-signal consumer sites at specific `skill-orchestrate/SKILL.md` line numbers. That engine
+is now deleted; the single shared per-task postflight body,
+`scripts/orchestrate-cycle-postflight.sh`, is both consumer sites' current home, and BOTH now
+gate on `ARTIFACTS_SHAPE_MISMATCH` explicitly (verified against current file text, 2026-09-08):
 
-Four consumer sites, one signal, zero readers. This is Deliverable 2's class (b) below — a
-detector with no consumer, not a missing detector.
+- `scripts/orchestrate-cycle-postflight.sh` (handoff-present path, "Advisory
+  ARTIFACTS_SHAPE_MISMATCH probe" section) — records `ARTIFACTS_SHAPE_MISMATCH` via
+  `skill_orchestrate_append_detected_defect`
+- `scripts/orchestrate-cycle-postflight.sh` (recovered `.return-meta.json` path, the
+  `evidence_reason` check alongside `PHASES_ZERO_ON_SUCCESS`) — records `ARTIFACTS_SHAPE_MISMATCH`
+  via the same function
+
+The dead-signal gap this section originally documented is closed; this paragraph is kept as
+motivating-case history, not a live defect report.
 
 ## The predicate
 
@@ -226,10 +229,9 @@ beside the existing banner** — the diagnosis is already in hand.
 
 | Site | File:line | What it detects | Defect class |
 |------|-----------|------------------|--------------|
-| Off-schema Tier C (single-task) | `skills/skill-orchestrate/SKILL.md:977` | `dispatch_status` outside the accept-list — `OFF_SCHEMA_STATUS` (both effort modes; the formerly-separate hard-mode engine's own mirrored site was merged into this one) | `OFF_SCHEMA_STATUS` |
-| Off-schema (multi-task) | `skills/skill-orchestrate/SKILL.md:2028-2038` | same, Stage MT-4 prose specification | `OFF_SCHEMA_STATUS` |
-| Stale-handoff gate | `skills/skill-orchestrate/SKILL.md:590-591` | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug | `HANDOFF_STALE_OR_ABSENT` |
-| Stray-handoff sweep | `skills/skill-orchestrate/SKILL.md:606-612` | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) | `HANDOFF_MISLOCATED` |
+| Off-schema Tier C | `scripts/orchestrate-cycle-postflight.sh` (`--defect-class OFF_SCHEMA_STATUS` site, "cycle-postflight-tier-c") | `dispatch_status` outside the accept-list — the single shared per-task postflight body for every batch size and effort mode (the former single-task/multi-task engine split, and each one's separate mirrored site, no longer exist) | `OFF_SCHEMA_STATUS` |
+| Stale-handoff gate | `scripts/orchestrate-cycle-postflight.sh` (mtime staleness gate, before the handoff-present branch) | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug | `HANDOFF_STALE_OR_ABSENT` |
+| Stray-handoff sweep | `scripts/orchestrate-cycle-postflight.sh` (`--defect-class HANDOFF_MISLOCATED` site) | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) | `HANDOFF_MISLOCATED` |
 | Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim | `META_MISSING_AFTER_NARRATION` |
 
 ### Class (b) — computed but discarded

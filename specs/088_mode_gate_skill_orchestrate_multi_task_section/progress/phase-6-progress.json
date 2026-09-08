@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Update the pointer and registry surface",
+  "started_at": "2026-09-08T07:20:00Z",
+  "last_updated": "2026-09-08T08:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update critical-paths.json label", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"]},
+    {"id": 2, "description": "Add build-dispatch/cycle-postflight registry entries", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/orchestrator-critical-paths.json"]},
+    {"id": 3, "description": "Verify registry edit against verify-deploy.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Sweep non-test files referencing SKILL.md, repoint dangling Stage citations", "status": "done", "files_touched": [
+      "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+      "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+      "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+      "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+      "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+      "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "agent-system/extensions/core/context/standards/git-staging-scope.md"
+    ]},
+    {"id": 5, "description": "Refresh specs/PATH.md Progress table and Chain progress narrative", "status": "done", "files_touched": ["specs/PATH.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.4",
+      "description": "The sweep found 24 files referencing skill-orchestrate/SKILL.md (matching the Scope Hypothesis's 'roughly two dozen'), but 16 of those also cite specific deleted Stage/MT-stage names, totaling ~139 individual citations -- far more than 'most are expected to be plain path references needing no change.'",
+      "type": "scope_correction",
+      "reason": "Fixed the 8 files whose citations assert current SKILL.md structure a reader would try to locate and fail to find (including one factually-wrong claim in orchestrate-state-machine.md about skill_preflight_update()'s call site, and stale absolute line-number citations in system-defect-discrimination.md). Left 9 heavier files unchanged after verifying 'Stage N'/'Stage MT-N' as a historical/conceptual anchor is an already-established codebase pattern -- the surviving scripts' own header comments use identical language (orchestrate-build-dispatch.sh's 'Stage 3.5 (Dispatch Prep)', orchestrate-cycle-postflight.sh's own 6 remaining Stage references) -- so these are a continuation of existing terminology, not newly dangling. A full mechanical rename of ~120 remaining citations (batch-orchestration-guardrails.md alone carries 34) was judged disproportionate to this task's core scope; recorded as a follow-up.",
+      "annotation": "See the Phase 6 task-4 checklist annotation in the plan file for the full file-by-file accounting"
+    }
+  ]
+}

@@ -8,7 +8,7 @@
   "critical_paths": [
     {
       "path": "skills/skill-orchestrate/SKILL.md",
-      "label": "multi-task dispatch state machine (both effort modes: hard-mode dispatch contracts now live here too, since the former standalone hard-mode engine was merged in and deleted)"
+      "label": "the four-move loop (plan -> dispatch -> postflight -> branch): one engine for every batch size, including a batch of one; the former single-task state machine and the former dual-engine merge are both deleted"
     },
     {
       "path": "commands/orchestrate.md",
@@ -41,6 +41,14 @@
     {
       "path": "scripts/orchestrate-cycle-plan.sh",
       "label": "cycle dispatch-plan composer (admission, classification, lock acquire, status writes, dispatch-seq mint, --dry-run admission report surface)"
+    },
+    {
+      "path": "scripts/orchestrate-build-dispatch.sh",
+      "label": "per-dispatch context-file builder (Move 1's dispatch-file writer, called internally by orchestrate-cycle-plan.sh for every dispatch[] row)"
+    },
+    {
+      "path": "scripts/orchestrate-cycle-postflight.sh",
+      "label": "shared per-task postflight body (Move 3: handoff read, completion-claim gate, status transition, artifact link, scoped commit)"
     },
     {
       "path": "scripts/verify-deploy.sh",

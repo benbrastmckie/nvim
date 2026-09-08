@@ -109,8 +109,7 @@ fi
 Core's own four standalone lifecycle-stage `-hard` skills (the research/plan/implement stage
 skills plus the standalone hard-mode orchestrator) were deleted: `--hard` behavior for
 `general`/`meta`/`markdown` task types is now a `hard_mode` flag inside the single
-`skill-orchestrate` engine (Stage 3.5's hard-mode contract injection, Stage 4's H1 per-phase
-dispatch branch), not a separate skill file or a separate manifest routing table. Core's
+`skill-orchestrate` engine (`orchestrate-build-dispatch.sh`'s Stage 3.5 hard-mode contract injection, `orchestrate-cycle-plan.sh`'s H1 per-phase dispatch selection), not a separate skill file or a separate manifest routing table. Core's
 `routing_hard`/`routing_agents_hard` manifest blocks were removed along with the skills.
 
 Extensions that still declare their own domain-specific `-hard` skills remain reachable via
@@ -131,10 +130,7 @@ manifest routing exactly as before:
 `command-route-agent.sh` — the same shared `manifest-routing-lib.sh` ladder
 `command-route-skill.sh` uses, called with `effort_flag="hard"` against each manifest's
 `routing_agents_hard` block instead of `routing_agents`. There is no longer a second, standalone
-engine file: base mode and hard mode share Stage 1b's resolution calls and diverge only inside
-`skill-orchestrate/SKILL.md` itself, on the `$hard_mode` variable (derived once in Stage 1 from
-`effort_flag == "hard"`) — see that file's own acceptance-checklist table for the full mapping of
-which stage each hard-mode technique (H1/H4/H5/H6/etc.) now lives in. See
+engine file: base mode and hard mode share `orchestrate-cycle-plan.sh`'s `resolve_agent()` resolution calls and diverge only on the `$hard_mode` variable (derived once per invocation from `effort_flag == "hard"`) — see `docs/architecture/orchestrate-state-machine.md` for the full mapping of which script now owns each hard-mode technique (H1/H4/H5/H6/etc.). See
 `context/guides/manifest-routing-schema.md` for the full routing model.
 
 ---
@@ -169,8 +165,8 @@ entry. Undeclared-but-deployed skills are automatically reachable via Step 4e.
 
 - `.claude/scripts/lib/manifest-routing-lib.sh` — Shared ladder implementation
 - `.claude/scripts/command-route-skill.sh` — Skill resolution (research.md/plan.md/implement.md)
-- `.claude/scripts/command-route-agent.sh` — Agent resolution (called from skill-orchestrate's
-  Stage 1b, both effort modes)
+- `.claude/scripts/command-route-agent.sh` — Agent resolution (called from
+  orchestrate-cycle-plan.sh's resolve_agent(), both effort modes)
 - `.claude/extensions/core/manifest.json` — Core routing_hard / routing_agents_hard entries
 - `.claude/extensions/cslib/manifest.json` — CSLib routing_hard / routing_agents_hard entries
 - `.claude/extensions/lean/manifest.json` — Lean routing_hard / routing_agents_hard entries

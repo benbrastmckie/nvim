@@ -273,7 +273,7 @@ concurrent co-dispatch in THIS SAME invocation — bypassing it would risk two a
 same files in the same pass, a hazard `--allow-scope-collision` deliberately does not reach.
 
 This is intentionally narrower than `/orchestrate`'s own multi-cycle Tier-1 resequencing
-(`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, which can retry the identical verdict across
+(`scripts/orchestrate-cycle-plan.sh`'s step 4.5, which can retry the identical verdict across
 MANY cycles as tasks progress toward completion): plain multi-task commands get exactly one bonus
 pass, not an open-ended cycling loop, because they have no wave/cycle concept to cycle within.
 See `context/patterns/batch-orchestration-guardrails.md`'s "Scope Limitation and Residual Risk"
@@ -626,7 +626,7 @@ footprint-aware wave-computation logic is needed for tasks created together in t
   files, e.g. `/orchestrate 785,787` where 785 and 787 were created independently): no
   creation-time comparison exists between them, so `dependencies[]` may be silent about a real
   file conflict. This residual gap is closed by the runtime wave-split check documented in
-  `.claude/skills/skill-orchestrate/SKILL.md` Stage MT-3 (step 4.5): before dispatching a
+  `.claude/scripts/orchestrate-cycle-plan.sh` (step 4.5): before dispatching a
   wave/cycle with 2+ tasks, compare `file_scope` pairwise and defer the lower-priority task if an
   overlap has no `dependencies[]` edge.
 
