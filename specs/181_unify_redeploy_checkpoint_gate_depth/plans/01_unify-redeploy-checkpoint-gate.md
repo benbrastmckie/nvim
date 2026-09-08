@@ -214,36 +214,36 @@ than inlining it at the call site.
 
 ---
 
-### Phase 3: Wire the unified verdict pipeline into the checkpoint (Defects A + C) [NOT STARTED]
+### Phase 3: Wire the unified verdict pipeline into the checkpoint (Defects A + C) [COMPLETED]
 
 **Goal**: The checkpoint defers only on confirmed, attributable findings, and reports a
 fast/full depth disagreement as such.
 
 **Tasks**:
-- [ ] In the `else` (deploy landed) branch, after `new_findings` is computed and found
+- [x] In the `else` (deploy landed) branch, after `new_findings` is computed and found
       non-empty, take ONE confirmation snapshot via `deploy_findings_snapshot` at the SAME full
-      depth as the pre/post pair, and derive `confirmed_new` and the dropped `flaky` set.
-- [ ] Apply `deploy_baseline_unattributable_findings` to `confirmed_new` using the
+      depth as the pre/post pair, and derive `confirmed_new` and the dropped `flaky` set. *(completed)*
+- [x] Apply `deploy_baseline_unattributable_findings` to `confirmed_new` using the
       `cycle_modified_files_json` already read at the top of the checkpoint block, deriving
-      `unrelated` and the final `blocking` set.
-- [ ] If `blocking` is empty: take the branch (c)-equivalent path — proceed loudly, record
+      `unrelated` and the final `blocking` set. *(completed)*
+- [x] If `blocking` is empty: take the branch (c)-equivalent path — proceed loudly, record
       `deployed_critical_paths`, and record a `verify_deploy_baseline_notices` entry carrying the
       flaky and unrelated finding lines and their counts, plus a distinguishing marker so this
       new sub-branch is not confused with the original (c). Emit a clear stderr line stating the
-      batch is continuing and why.
-- [ ] If `blocking` is non-empty: defer, reusing Phase 1's finding-naming message and ledger
-      detail but now printing the `blocking` set (not the raw `new_findings`).
-- [ ] Defect A reporting: when `deploy_exit -eq 0` (deploy-headless reported
+      batch is continuing and why. *(completed)*
+- [x] If `blocking` is non-empty: defer, reusing Phase 1's finding-naming message and ledger
+      detail but now printing the `blocking` set (not the raw `new_findings`). *(completed)*
+- [x] Defect A reporting: when `deploy_exit -eq 0` (deploy-headless reported
       `landed_verify_clean` at `--skip-slow` depth) and `blocking` is non-empty, add an explicit
       line stating that the deploy's own fast verify passed and that these findings come from
       the slow gate deferred by `--skip-slow`, so the two verdicts are a depth disagreement, not
-      a contradiction. Record the depth in the notice/ledger entry.
-- [ ] Extend — do not delete — the comment block above `post_findings`. Keep the original
+      a contradiction. Record the depth in the notice/ledger entry. *(completed)*
+- [x] Extend — do not delete — the comment block above `post_findings`. Keep the original
       full-depth argument, then state that the depth asymmetry against `deploy-headless.sh`'s
-      internal `--skip-slow` run is now explicitly reported rather than silently resolved.
-- [ ] Assert (in a comment) that the pre and post snapshots must remain at identical depth, and
-      why an asymmetric pair would make every gate-8 finding look new.
-- [ ] Leave branch (a) and the original branch (c) untouched.
+      internal `--skip-slow` run is now explicitly reported rather than silently resolved. *(completed)*
+- [x] Assert (in a comment) that the pre and post snapshots must remain at identical depth, and
+      why an asymmetric pair would make every gate-8 finding look new. *(completed)*
+- [x] Leave branch (a) and the original branch (c) untouched. *(completed)*
 
 **Timing**: 1.5 hours
 

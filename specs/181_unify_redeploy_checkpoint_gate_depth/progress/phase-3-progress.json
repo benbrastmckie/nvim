@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the unified verdict pipeline into the checkpoint (Defects A + C)",
+  "started_at": "2026-09-08T00:00:00Z",
+  "last_updated": "2026-09-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirmation snapshot + confirmed_new/flaky derivation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Attribution filter -> unrelated/blocking derivation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "blocking empty -> proceed loudly with distinguishing notice", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "blocking non-empty -> defer using blocking set", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Defect A depth-disagreement reporting", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Extend comment block above post_findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Assert pre/post depth symmetry in comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Leave branch (a) and original branch (c) untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

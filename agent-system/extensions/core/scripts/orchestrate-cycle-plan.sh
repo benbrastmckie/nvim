@@ -554,17 +554,36 @@ emit_and_exit() {
 #
 # Failure contract (the same three-branch (a)/(b)/(c) contract
 # context/patterns/batch-orchestration-guardrails.md's "### The Inter-Cycle Redeploy Checkpoint"
-# subsection documents, and command-gate-out.sh's rc==6 handler already implements):
+# subsection documents, and command-gate-out.sh's rc==6 handler already implements, EXTENDED by
+# the confirmation/attribution filters below):
 #   (a) deploy-headless.sh exit 1 or 2 (the deploy did not land) -- unconditional defer, no
 #       baseline consultation. Exit 3 is deliberately EXCLUDED from this branch: it means the
 #       deploy LANDED but inline verification reported failures, which belongs to the
 #       baseline-relative comparison below, not here.
 #   (b)/(c) deploy landed (exit 0 or 3) -- compare pre/post verify-deploy.sh --findings snapshots
 #       (via lib/deploy-baseline-lib.sh, which also folds a verify-deploy.sh exit 2 into the
-#       single FINDING gate0 [SENTINEL] line per the documented exit-2 resolution rule). Any
-#       newly-introduced finding defers (b); an unchanged or shrunk finding set proceeds loudly
-#       with a recorded verify_deploy_baseline_notices entry (c) -- this is what makes a
-#       pre-existing, unrelated red gate stop deferring the whole batch.
+#       single FINDING gate0 [SENTINEL] line per the documented exit-2 resolution rule). A
+#       candidate new finding (present post, absent pre) is then passed through TWO additive
+#       filters, in order, before it is allowed to defer anything:
+#         1. CONFIRMATION (deploy_baseline_confirm_new_findings): re-run verify-deploy.sh once
+#            more, on a now-settled machine, and keep only candidate findings that REPRODUCE. A
+#            candidate that does not reproduce was flaky -- most concretely, a load-sensitive
+#            test flaking under the load THIS checkpoint's own full deploy + full verify just
+#            generated (see lib/deploy-baseline-lib.sh's load-sensitivity note) -- and is dropped.
+#         2. ATTRIBUTION (deploy_baseline_unattributable_findings): of the confirmed findings,
+#            drop any that POSITIVELY name an identifier absent from this batch's own
+#            `cycle_modified_files` -- i.e. a red gate this batch could not have caused. This is
+#            the SAME "pre-existing, unrelated red gate must not defer the batch" philosophy
+#            branch (c) already embodies, extended from *temporally* pre-existing (branch (c)'s
+#            original scope: identical in both snapshots) to *causally* unattributable (a NEW
+#            finding this batch still did not cause). Fail-safe direction: a finding naming no
+#            identifier at all is NEVER dropped by this filter and stays blocking.
+#       Only findings surviving BOTH filters ("blocking") defer (b), naming themselves in the
+#       stderr warning and the defer_ledger detail (Defect B). An empty blocking set -- whether
+#       because new_findings was empty outright (original branch (c)) or because every candidate
+#       was shown flaky/unrelated (the new filtered sub-branch) -- proceeds loudly with a
+#       recorded verify_deploy_baseline_notices entry; the notice's own fields distinguish the
+#       two cases (see the `filtered` marker below) so they are never confused with each other.
 CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json"
 cycle_modified_files_json=$(mt_get_json '.cycle_modified_files')
 if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" != "null" ] && [ -f "$CRITICAL_PATHS_FILE" ]; then
@@ -604,6 +623,20 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
       # so an empty post_findings is a reliable, cheaper stand-in for a separately-captured exit
       # code; post_exit below is derived from that emptiness (and the exit-2 sentinel marker)
       # purely for the diagnostic notice field, not as a second live invocation.
+      #
+      # DEFECT A -- this documented full-depth choice is DELIBERATE, not an oversight, and is
+      # PRESERVED here, not silently lowered: deploy-headless.sh's OWN internal verify-deploy.sh
+      # call runs `--skip-slow` (defers gate 8, the shell test suite, and nothing else), so a
+      # `deploy_exit -eq 0` ("landed_verify_clean") only ever certifies the FAST subset. Taking
+      # this pre/post pair at full depth independently is what lets the baseline comparison see
+      # slow-gate (gate 8) findings too. The asymmetry against deploy-headless.sh's own fast
+      # verify is no longer silently resolved in either direction: see the fast/full depth
+      # disagreement report below, fired exactly when `deploy_exit -eq 0` yet the full-depth
+      # comparison still finds a genuine blocking finding.
+      # The pre/post pair itself MUST stay at IDENTICAL depth (both full, no `--skip-slow` on
+      # either side) -- an asymmetric pair would make every gate-8 finding look "new" simply
+      # because pre never looked for it, which is a strictly worse bug than the depth mismatch
+      # against deploy-headless.sh being reported at all.
       post_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
       matched_paths_json=$(echo "$matched_json" | jq -c '[.[].path]')
       if [ -z "$post_findings" ]; then
@@ -616,21 +649,72 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
         new_findings=$(deploy_baseline_new_findings "$pre_findings" "$post_findings")
         if [ -z "$new_findings" ]; then
           # Branch (c): every post-redeploy finding was already present pre-redeploy -- proceed,
-          # loudly, and record a baseline notice.
+          # loudly, and record a baseline notice. UNCHANGED (PRESERVE) -- this is the original,
+          # temporally-pre-existing case; it never reaches the confirmation/attribution filters
+          # below because there is no candidate new finding to filter in the first place.
           echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE - findings predate this redeploy, 0 newly introduced; batch continuing]" >&2
           echo "<!-- verify-deploy-baseline pre=$(echo "$pre_findings" | grep -c .) post=$(echo "$post_findings" | grep -c .) new=0 proceeded=true -->" >&2
           mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
-          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe}')" '.verify_deploy_baseline_notices += [$entry]'
+          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe, filtered:false}')" '.verify_deploy_baseline_notices += [$entry]'
         else
-          # Branch (b): at least one newly-introduced finding relative to the pre-redeploy
-          # baseline -- defer, do not re-attempt. Name the specific finding(s) in both the
-          # stderr warning and the defer_ledger detail, so the operator can act without
-          # re-running the whole gate to discover what was new (Defect B).
-          echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline; deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
-          printf '%s\n' "$new_findings" | sed 's/^/    /' >&2
-          mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
-            .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
-          mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --arg nf "$new_findings" --argjson nfc "$(printf '%s\n' "$new_findings" | grep -c .)" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("verify-deploy.sh new findings vs. pre-redeploy baseline (" + ($nfc|tostring) + "): " + $nf)}')" '.defer_ledger += [$entry]'
+          # At least one CANDIDATE new finding relative to the pre-redeploy baseline. DEFECT C:
+          # before this candidate is allowed to defer the whole batch, run it through the
+          # confirmation filter (drop findings that do not reproduce on a fresh, now-settled
+          # re-run -- flaky) and then the attribution filter (drop confirmed findings that
+          # positively name an identifier absent from this batch's own cycle_modified_files --
+          # unrelated). Only the survivors ("blocking") may defer. This confirmation snapshot is
+          # taken at the SAME full depth as the pre/post pair (never `--skip-slow`) so it is
+          # comparing like with like -- exactly one extra verify-deploy.sh call, fired only on
+          # this rare would-be-defer path.
+          confirm_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
+          confirmed_new=$(deploy_baseline_confirm_new_findings "$new_findings" "$confirm_findings")
+          flaky_findings=$(comm -23 <(printf '%s\n' "$new_findings" | sort -u) <(printf '%s\n' "$confirmed_new" | sort -u))
+          unrelated_findings=$(deploy_baseline_unattributable_findings "$confirmed_new" "$cycle_modified_files_json")
+          blocking=$(comm -23 <(printf '%s\n' "$confirmed_new" | sort -u) <(printf '%s\n' "$unrelated_findings" | sort -u))
+
+          if [ -z "$blocking" ]; then
+            # Branch (c)-equivalent: every candidate new finding was shown flaky or unrelated to
+            # this batch's own modified_files -- proceed loudly, exactly like the original
+            # branch (c), but with a notice that carries WHAT was filtered and WHY (`filtered:
+            # true` is the distinguishing marker so this sub-branch is never confused with the
+            # original, temporally-pre-existing branch (c) above).
+            echo "[orchestrate] REDEPLOY CHECKPOINT: every new verify-deploy.sh finding vs. the pre-redeploy baseline was confirmed flaky or unrelated to this batch's own modified files; batch continuing." >&2
+            [ -n "$flaky_findings" ] && { echo "  flaky (did not reproduce on re-run):" >&2; printf '%s\n' "$flaky_findings" | sed 's/^/    /' >&2; }
+            [ -n "$unrelated_findings" ] && { echo "  unrelated (names an identifier absent from this batch's modified files):" >&2; printf '%s\n' "$unrelated_findings" | sed 's/^/    /' >&2; }
+            mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
+            mt_set --argjson entry "$(jq -n -c \
+              --argjson c "$cycle_count" \
+              --argjson pre "$(echo "$pre_findings" | grep -c .)" \
+              --argjson post "$(echo "$post_findings" | grep -c .)" \
+              --argjson nfc "$(printf '%s\n' "$new_findings" | grep -c .)" \
+              --argjson pe "$post_exit" \
+              --arg flaky "$flaky_findings" \
+              --argjson flakyc "$(printf '%s\n' "$flaky_findings" | grep -c .)" \
+              --arg unrelated "$unrelated_findings" \
+              --argjson unrelatedc "$(printf '%s\n' "$unrelated_findings" | grep -c .)" \
+              '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:$nfc, post_exit:$pe, filtered:true, flaky_count:$flakyc, flaky_findings:$flaky, unrelated_count:$unrelatedc, unrelated_findings:$unrelated, blocking_count:0}')" '.verify_deploy_baseline_notices += [$entry]'
+          else
+            # Branch (b): at least one CONFIRMED, ATTRIBUTABLE finding relative to the
+            # pre-redeploy baseline -- defer, do not re-attempt. Name the specific blocking
+            # finding(s) in both the stderr warning and the defer_ledger detail, so the operator
+            # can act without re-running the whole gate to discover what was new (Defect B) --
+            # printing the FILTERED `blocking` set, never the raw pre-filter `new_findings`.
+            echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: verify-deploy.sh exit $post_exit with new findings vs. pre-redeploy baseline (confirmed reproducible and attributable to this batch); deferring remaining tasks. Fix the deploy/verify failure, redeploy manually, then re-run /orchestrate on the remaining task numbers." >&2
+            printf '%s\n' "$blocking" | sed 's/^/    /' >&2
+            # DEFECT A depth-disagreement report: deploy_exit -eq 0 means deploy-headless.sh's
+            # own internal --skip-slow verify already reported landed_verify_clean (a fast PASS)
+            # for THIS same tree -- yet the full-depth comparison still finds a blocking finding.
+            # That is a depth disagreement (the finding lives in the slow gate --skip-slow
+            # deferred), not a contradiction between two verdicts of the same depth; say so.
+            depth_disagreement=false
+            if [ "$deploy_exit" -eq 0 ]; then
+              depth_disagreement=true
+              echo "  [orchestrate] DEPTH NOTE: deploy-headless.sh's own --skip-slow verify passed (fast PASS); the finding(s) above come from the full-depth (slow-gate) verify this checkpoint runs independently -- a depth disagreement, not a contradiction." >&2
+            fi
+            mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
+              .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
+            mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --arg nf "$blocking" --argjson nfc "$(printf '%s\n' "$blocking" | grep -c .)" --argjson dd "$depth_disagreement" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("verify-deploy.sh new findings vs. pre-redeploy baseline (" + ($nfc|tostring) + ", confirmed+attributable): " + $nf), depth_disagreement:$dd}')" '.defer_ledger += [$entry]'
+          fi
         fi
       fi
     fi
