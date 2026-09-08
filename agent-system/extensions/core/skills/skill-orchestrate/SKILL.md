@@ -230,7 +230,9 @@ Full accounting: `docs/architecture/orchestrate-cycle-postflight.md`. Never read
 `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` content during the loop —
 `orchestrate-cycle-postflight.sh` performs every sanctioned read (the handoff, gated by mtime and
 `dispatch_seq`; the bounded `.return-meta.json`/phase-marker recovery fallbacks). Context grows by
-~450 tokens per cycle per task, regardless of artifact complexity.
+a measured 871 B (~218 tokens) per cycle per task, regardless of artifact complexity — see
+`docs/architecture/orchestrate-state-machine.md`'s `## Context Flatness Guarantee` for the
+re-runnable measurement (`scripts/tests/test-orchestrate-context-growth.sh`).
 
 ## MUST NOT (Postflight Boundary)
 

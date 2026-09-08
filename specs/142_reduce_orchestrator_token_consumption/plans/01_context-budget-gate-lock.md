@@ -353,25 +353,35 @@ ceiling; do not retrofit the range to match.
 
 ---
 
-### Phase 5: Correct the Context Flatness prose [NOT STARTED]
+### Phase 5: Correct the Context Flatness prose [COMPLETED]
 
 **Goal**: Replace the stale `## Context Flatness Guarantee` claim in
 `docs/architecture/orchestrate-state-machine.md` with the measured figure and the correct mechanism.
 
 **Tasks**:
-- [ ] Rewrite the section (currently at ~line 211) so it names
+- [x] Rewrite the section (currently at ~line 211) so it names
       `orchestrate-cycle-postflight.sh`'s compact JSON as what the lead reads on the normal path,
       cross-referencing `docs/architecture/orchestrate-cycle-postflight.md`'s existing
       `## Context Flatness: What Each Read Is Bounded To` section rather than restating it.
-- [ ] Replace the "`.orchestrator-handoff.json` is ≤ 400 tokens / grows by ~400 tokens per cycle"
+      *(completed)*
+- [x] Replace the "`.orchestrator-handoff.json` is ≤ 400 tokens / grows by ~400 tokens per cycle"
       claim with the measured per-task-per-cycle byte figure from Phase 4, naming the test that
-      produces it so a future reader can re-run rather than trust the sentence.
-- [ ] Confirm the illustrative `handoff=$(cat ...)` bash block still reflects a real read path; if
+      produces it so a future reader can re-run rather than trust the sentence. *(completed: 871 B
+      / ~218 tokens, naming test-orchestrate-context-growth.sh)*
+- [x] Confirm the illustrative `handoff=$(cat ...)` bash block still reflects a real read path; if
       it no longer does, either correct it or label it historical — do not leave it implying the
-      lead reads the handoff directly on the normal path.
-- [ ] Grep for the same stale "~400 tokens" claim elsewhere
+      lead reads the handoff directly on the normal path. *(completed: it no longer reflected the
+      real path — replaced with the actual `orchestrate-cycle-postflight.sh` invocation SKILL.md's
+      own Move 3 uses)*
+- [x] Grep for the same stale "~400 tokens" claim elsewhere
       (`grep -rn '400 tokens' agent-system/extensions/`) and correct every surviving instance.
-- [ ] Do not cite task numbers in this file (it lives outside `specs/**`).
+      *(completed: corrected 5 instances of the LEAD PER-CYCLE GROWTH claim specifically —
+      SKILL.md, context-protective-lead.md (x3), orchestrate-cycle-postflight.md's ambiguous
+      wording disambiguated. Left untouched: handoff-schema.md (x4) and wrap-up.md, whose "≤400
+      tokens" is a distinct, still-accurate WRITER-SIDE size ceiling on the handoff file itself —
+      unrelated to the stale lead-growth claim this phase targets, and not itself stale)*
+- [x] Do not cite task numbers in this file (it lives outside `specs/**`). *(completed; verified
+      via check-task-references.sh: 0 unexempted occurrences)*
 
 **Timing**: 0.5 hours
 

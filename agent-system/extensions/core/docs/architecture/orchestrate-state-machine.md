@@ -210,31 +210,42 @@ Step 5: RE-DISPATCH IMPLEMENT
 
 ## Context Flatness Guarantee
 
-On the normal path the orchestrator reads only the handoff object after each dispatch — it never
-opens research reports, plan files, or implementation summaries for comprehension during its
-state machine loop. Three narrow, grep-only exceptions are sanctioned (adversarial-verification
-grep, next-phase selection grep, and the Stage 5 phase-marker recovery grep); see the exception
-table in `docs/architecture/handoff-schema.md` for the full accounting. After each dispatch on
-the normal path it reads only:
+On the normal path the orchestrator never reads `.orchestrator-handoff.json` directly — it never
+opens research reports, plan files, implementation summaries, or the raw handoff object for
+comprehension during its state machine loop. Instead, after every dispatch (both engines, Move 3)
+it invokes `orchestrate-cycle-postflight.sh`, which performs the sanctioned handoff read (gated by
+mtime staleness and the `dispatch_seq` identity check) and every recovery fallback internally, and
+returns one compact JSON line the lead actually consumes:
 
 ```bash
-handoff=$(cat "specs/${padded_num}_${project_name}/.orchestrator-handoff.json")
-status=$(echo "$handoff" | jq -r '.status')
-blockers=$(echo "$handoff" | jq -c '.blockers // []')
-next_hint=$(echo "$handoff" | jq -r '.next_action_hint // "none"')
-# Dual-form resolution (see handoff-schema.md's "Two Accepted Forms"): accepts EITHER the nested
-# continuation_context.handoff_path OR the flat top-level continuation_path, normalized to
-# { handoff_path, orchestrator_mode: true } or null.
-continuation=$(echo "$handoff" | jq -c '
-  ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
-  (.continuation_path // null) as $flat |
-  ($nested // $flat) as $resolved |
-  if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end
-')
+postflight_json=$(bash .claude/scripts/orchestrate-cycle-postflight.sh "$t" \
+  --session "$session_id" --state-file specs/state.json --phase "$phase" \
+  --task-dir "$task_dir_rel" --task-type "$task_type" --agent "$agent" \
+  --plan-path "$plan_path_for_task" --cycle-count "${cycle_count:-0}" \
+  --transport-error "${task_transport_error:-false}" --force-invoked "$force")
+dispatch_status=$(echo "$postflight_json" | jq -r '.status')
+verdict=$(echo "$postflight_json" | jq -r '.verdict')
+halt=$(echo "$postflight_json" | jq -r '.halt')
 ```
 
-The `.orchestrator-handoff.json` file is **≤ 400 tokens**. The orchestrator context grows by
-only ~400 tokens per cycle, regardless of the complexity of the delegated work.
+Three narrow, grep-only exceptions to "the lead never reads artifact content" are sanctioned
+elsewhere in the loop (adversarial-verification grep, next-phase selection grep, and the phase-marker
+recovery grep, the last of which lives *inside* `orchestrate-cycle-postflight.sh` itself, not in
+the lead); see the exception table in `docs/architecture/handoff-schema.md` for the full
+accounting, and `docs/architecture/orchestrate-cycle-postflight.md`'s own
+`## Context Flatness: What Each Read Is Bounded To` section for exactly what that script reads on
+the lead's behalf (never restated here).
+
+Per-task-per-cycle growth is a **measured** figure, not an estimate: **871 bytes** (~218 tokens),
+produced by `scripts/tests/test-orchestrate-context-growth.sh` — a disposable 3-task fixture cycle
+through the real `orchestrate-cycle-plan.sh` / `orchestrate-build-dispatch.sh` /
+`orchestrate-cycle-postflight.sh` call graph. Re-run that suite (deterministic; it prints a
+`PER_TASK_PER_CYCLE_BYTES:` line) to reproduce or re-derive the number after a future change,
+rather than trusting this sentence. The measured total breaks down as: an amortized share of one
+`orchestrate-cycle-plan.sh` call's `plan_json` per cycle (~234 B/task on a 3-task batch — this
+includes real, currently-unfiltered noise from `update-task-status.sh`'s unredirected preflight
+`echo`, not just the clean JSON), the Move 2 pointer prompt plus Context object per task (~463 B),
+and the Move 3 `orchestrate-cycle-postflight.sh` compact JSON per task (~174 B).
 
 ---
 

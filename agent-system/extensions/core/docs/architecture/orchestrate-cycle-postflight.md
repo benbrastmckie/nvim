@@ -67,9 +67,12 @@ must not own:
 ## Context Flatness: What Each Read Is Bounded To
 
 The two files read per dispatch are `.orchestrator-handoff.json` (≤400 tokens) and, on the
-missing/stale-handoff path only, `.return-meta.json`. This ensures context grows by only ~450
-tokens per cycle regardless of artifact complexity — enforced entirely inside the script now,
-not duplicated across two engine bodies.
+missing/stale-handoff path only, `.return-meta.json`. This bounds THIS SCRIPT's own input reads
+to ~450 tokens per cycle regardless of artifact complexity — enforced entirely inside the script
+now, not duplicated across two engine bodies. (This is the script's own read ceiling, not the
+lead's total per-cycle context growth, which also includes the cycle-plan JSON and the Move 2
+dispatch prompt — see `docs/architecture/orchestrate-state-machine.md`'s `## Context Flatness
+Guarantee` for that measured, larger figure.)
 
 ### Recovery exception (return-meta fallback)
 

@@ -10,7 +10,7 @@
 
 Lead agents (skill orchestrators, the /orchestrate state machine) must act as **project managers**, not workers. They route tasks, track status via metadata, and delegate all analytical work -- including synthesis -- to subagents with fresh context windows. A lead that reads full artifacts, loads format specs, or performs inline synthesis is violating this pattern.
 
-The reference implementation is `skill-orchestrate`, which grows by only ~450 tokens per cycle regardless of artifact complexity.
+The reference implementation is `skill-orchestrate`, which grows by a measured 871 B (~218 tokens) per cycle per task regardless of artifact complexity -- see `docs/architecture/orchestrate-state-machine.md`'s `## Context Flatness Guarantee` for the re-runnable measurement.
 
 ---
 
@@ -143,7 +143,11 @@ The orchestrator handoff pattern, proven in `skill-orchestrate`, is the canonica
 
 ### The Pattern
 
-After each dispatch cycle, the lead reads only a compact JSON handoff object (~400 tokens total):
+After each dispatch cycle, the lead reads only a compact JSON summary object (a generic
+illustration below; `skill-orchestrate`'s own implementation gets this from
+`orchestrate-cycle-postflight.sh`'s stdout rather than reading `.orchestrator-handoff.json`
+directly -- see `docs/architecture/orchestrate-state-machine.md`'s `## Context Flatness
+Guarantee` for the measured 871 B/task/cycle figure):
 
 ```json
 {
@@ -229,11 +233,13 @@ Skill authors should review their lead skills against this checklist:
 ### What It Does Right
 
 1. **Reads state via jq only** -- One field extraction per cycle (`status`)
-2. **Reads only handoff JSON** -- The `.orchestrator-handoff.json` file (~400 tokens)
+2. **Never reads the raw handoff** -- `orchestrate-cycle-postflight.sh` performs the sanctioned
+   `.orchestrator-handoff.json` read on the lead's behalf and returns a compact JSON summary
 3. **Never reads full artifacts** -- Research reports, plans, and summaries are never loaded
 4. **Passes paths to agents** -- `plan_path` and `continuation_context` are paths/objects, not file content
 5. **Explicit constraints** -- Has a documented "MUST NOT" section enforcing these rules
-6. **Constant context growth** -- ~450 tokens per cycle regardless of artifact complexity
+6. **Constant context growth** -- a measured 871 B (~218 tokens) per cycle per task, regardless of
+   artifact complexity (`scripts/tests/test-orchestrate-context-growth.sh`)
 
 This is the model all lead agents should follow.
 
