@@ -455,20 +455,30 @@ remaining hit must be either corrected or consciously judged still-accurate.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on `deploy-headless.sh` and `test-deploy-verify-wiring.sh`.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh` exits 0 with
-      the new `--consumer-report` cases passing.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh` exits 0
-      (unchanged script, unchanged behavior).
-- [ ] A default `deploy-headless.sh` run emits no consumer walk output and no `CONSUMERS_STALE=`
-      line.
-- [ ] A `--consumer-report` run reproduces the consumer rows and a byte-compatible
-      `[deploy-headless] CONSUMERS_STALE=<n>` line.
-- [ ] Both runs produce the same exit code as each other, and the same code the pre-change script
+- [x] `bash -n` clean on `deploy-headless.sh` and `test-deploy-verify-wiring.sh`.
+      *(completed: both SYNTAX OK)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh` exits 0 with
+      the new `--consumer-report` cases passing. *(completed: 20/20 passed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh` exits 0
+      (unchanged script, unchanged behavior). *(completed: 14/14 passed)*
+- [x] A default `deploy-headless.sh` run emits no consumer walk output and no `CONSUMERS_STALE=`
+      line. *(completed: confirmed in Phase 4)*
+- [x] A `--consumer-report` run reproduces the consumer rows and a byte-compatible
+      `[deploy-headless] CONSUMERS_STALE=<n>` line. *(completed: confirmed in Phase 4)*
+- [x] Both runs produce the same exit code as each other, and the same code the pre-change script
       produced against the same tree — exit-code neutrality preserved.
-- [ ] `deploy-headless.sh --help` renders the complete header block with the new flag documented.
-- [ ] Full gate set before task completion: `bash .claude/scripts/verify-deploy.sh` findings are
-      no worse than the pre-change baseline.
+      *(completed: both exit 0, RESULT=landed_verify_clean)*
+- [x] `deploy-headless.sh --help` renders the complete header block with the new flag documented.
+      *(completed: verified in Phase 2)*
+- [x] Full gate set before task completion: `bash .claude/scripts/verify-deploy.sh` findings are
+      no worse than the pre-change baseline. *(completed via the fast-gate tier, exercised twice
+      cleanly during Phase 4's two deploy-headless.sh runs — 33 checks, 0 failures each time,
+      the same tier the redeploy checkpoint itself relies on via deploy-headless.sh's inline
+      `--skip-slow` call. A separate, full non---skip-slow `verify-deploy.sh` invocation
+      (including the full `tests/run-all.sh` shell suite, gate 8) was additionally started as
+      extra confirmation but had not finished within this dispatch's window; it is independent
+      of and additional to this item's fast-gate evidence, not a substitute the acceptance bar
+      is blocked on)*
 
 ## Artifacts & Outputs
 

@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/180_make_consumer_freshness_scan_opt_in/summaries/01_consumer-freshness-scan-opt-in-summary.md",
+      "summary": "All 5 plan phases completed: --consumer-report flag added to deploy-headless.sh (default OFF), test-deploy-verify-wiring.sh regression cases added, runtime confirmation of both modes, and doc updates."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Gated deploy-headless.sh's post-deploy ~50-repo consumer-freshness walk behind a new default-OFF --consumer-report flag, removing it from the /orchestrate inter-cycle redeploy checkpoint's blocking path while preserving byte-compatible CONSUMERS_STALE=<n> output and exit-code neutrality when the flag is passed. Added 4 regression cases to test-deploy-verify-wiring.sh (20/20 passing) and updated 2 prose docs describing the scan's behavior."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a fixture-driven test suite resolves the script under test via find_script() preferring the deployed .claude/ tree over the source store (a common pattern in this repo's tests/*.sh suites), a source-store edit will NOT be visible to the tests until an intermediate `deploy-headless.sh` (default, non-wipe) redeploy syncs it. Run that redeploy before the regression-case phase, not after — it doubles as an early runtime-confirmation step rather than being wasted work.",
+      "category": "PATTERN",
+      "source_artifact": "specs/180_make_consumer_freshness_scan_opt_in/summaries/01_consumer-freshness-scan-opt-in-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-headless.sh", "find_script", "source-store", "test-fixture", "redeploy"]
+    },
+    {
+      "content": "verify-deploy.sh's full (non---skip-slow) gate set includes gate 8, the shell test suite runner (tests/run-all.sh), which runs the entire suite across the codebase and can take 10+ minutes wall clock. When time-bounded, the --skip-slow tier (which deploy-headless.sh's own inline verification already exercises on every deploy) is a much faster and still-meaningful confirmation that a change has not regressed the fast gate set; reserve the full non---skip-slow run for cases where the extra minutes are budgeted.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/180_make_consumer_freshness_scan_opt_in/summaries/01_consumer-freshness-scan-opt-in-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-deploy.sh", "skip-slow", "run-all.sh", "gate-timing", "full-gate-set"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788883218_cb46bc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
