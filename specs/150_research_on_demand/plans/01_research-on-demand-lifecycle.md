@@ -1,7 +1,7 @@
 # Implementation Plan: Task #150
 
 - **Task**: 150 - Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: Task 88 (completed - four-move engine is the only engine)
 - **Research Inputs**: specs/150_research_on_demand/reports/01_research-on-demand-lifecycle.md
