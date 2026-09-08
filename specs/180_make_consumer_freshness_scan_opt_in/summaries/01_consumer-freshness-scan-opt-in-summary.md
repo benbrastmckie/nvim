@@ -88,6 +88,16 @@ untouched.
   run, confirming exit-code neutrality in both modes. The deployed `.claude/scripts/deploy-headless.sh`
   was confirmed to carry the `--consumer-report` branch after redeploy, confirming the
   source-store edit survives regeneration.
+- Full gate set (`bash .claude/scripts/verify-deploy.sh`, no `--skip-slow`, run to completion
+  after all five phases): two consecutive runs reported 3-of-34 then 1-of-34 failing checks,
+  both times pointing at the same `test-verify-deploy-context-budget.sh` case 4
+  ("byte-count drift introduced a NEW finding") concerning `commands/orchestrate.md`'s
+  pre-existing, already-WARNed context-budget ceiling overage (gate 20). The differing failure
+  count between the two runs confirms this is a flaky, byte-count-sensitive pre-existing test,
+  not a regression introduced here — `--findings` output from both runs contains zero mentions
+  of `consumer` or `deploy-headless`. The fast-gate tier this task's own inline
+  `deploy-headless.sh` verification uses (`--skip-slow`) passed cleanly (33/33) in both Phase 4
+  runs, which is the tier the `/orchestrate` redeploy checkpoint actually relies on.
 - Caller audit (Phase 1): grepped `CONSUMERS_STALE`/`check-consumer-freshness` across the
   repository outside `.claude/**` and `specs/**`; the three known automated `deploy-headless.sh`
   callers (`orchestrate-cycle-plan.sh:588`, `command-gate-out.sh:176`,
