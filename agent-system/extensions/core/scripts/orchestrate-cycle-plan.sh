@@ -167,6 +167,27 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+
+# ── Stream-discipline helper ────────────────────────────────────────────────────────────────────
+# Every orchestrate-* helper this script shells out to contracts stdout for its JSON/NDJSON payload
+# and stderr for human diagnostics. Capturing such a helper with `2>&1` folds the diagnostics into
+# the payload, and the `jq` that parses it then fails (or, for the NDJSON consumers that branch on
+# exit status, silently ingests a garbage row while still reporting success). This runs a helper
+# with the streams kept apart: stdout lands in the caller's named variable, stderr is forwarded to
+# our own stderr so nothing is lost, and the helper's exit status is preserved for the caller's
+# `if`. The forwarded text is also left in CAPTURE_DIAG for failure-branch warning messages.
+CAPTURE_DIAG=""
+run_capture_stdout() {
+  local __outvar="$1"; shift
+  local __diag_file __out __rc=0
+  __diag_file=$(mktemp "${TMPDIR:-/tmp}/orchestrate-capture.XXXXXX")
+  __out=$("$@" 2>"$__diag_file") || __rc=$?
+  CAPTURE_DIAG=$(cat "$__diag_file" 2>/dev/null || true)
+  rm -f "$__diag_file"
+  [ -n "$CAPTURE_DIAG" ] && printf '%s\n' "$CAPTURE_DIAG" >&2
+  printf -v "$__outvar" '%s' "$__out"
+  return "$__rc"
+}
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
@@ -934,13 +955,13 @@ else
         ;;
     esac
 
-    if aux_dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-aux-dispatch.sh" "$t" "$aux_kind" "${build_aux_args[@]}" 2>&1); then
+    if run_capture_stdout aux_dispatch_json bash "$SCRIPT_DIR/orchestrate-build-aux-dispatch.sh" "$t" "$aux_kind" "${build_aux_args[@]}"; then
       aux_build_exit=0
     else
       aux_build_exit=$?
     fi
     if [ "$aux_build_exit" -ne 0 ]; then
-      echo "[orchestrate] WARNING: orchestrate-build-aux-dispatch.sh failed for task #$t kind=$aux_kind (exit $aux_build_exit): $aux_dispatch_json" >&2
+      echo "[orchestrate] WARNING: orchestrate-build-aux-dispatch.sh failed for task #$t kind=$aux_kind (exit $aux_build_exit): ${CAPTURE_DIAG:-$aux_dispatch_json}" >&2
       continue
     fi
     aux_file=$(echo "$aux_dispatch_json" | jq -r '.dispatch_file')
@@ -1137,7 +1158,7 @@ if [ "${#eligible_tasks[@]}" -eq 0 ]; then
 fi
 
 # ── (e) Classification (triage-classify.sh, called once, reused for both phase-map and grouping) ──
-if triage_ndjson=$(bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" mt "${eligible_tasks[@]}" 2>&1); then
+if run_capture_stdout triage_ndjson bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" mt "${eligible_tasks[@]}"; then
   triage_exit=0
 else
   triage_exit=$?
@@ -1217,7 +1238,7 @@ inv_count="${#eligible_tasks[@]}"
 
 admit_args=(--invocation-count "$inv_count" --session-id "$session_id")
 [ -n "$phase_map_arg" ] && admit_args+=(--phase-map "$phase_map_arg")
-if admit_ndjson=$(bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" "${admit_args[@]}" "${eligible_tasks[@]}" 2>&1); then
+if run_capture_stdout admit_ndjson bash "$SCRIPT_DIR/orchestrate-batch-admit.sh" "${admit_args[@]}" "${eligible_tasks[@]}"; then
   admit_exit=0
 else
   admit_exit=$?
@@ -1602,19 +1623,13 @@ for t in "${probed_dispatch_post_h1[@]}"; do
       build_args+=(--focus "$task_research_questions")
     fi
   fi
-  # Keep the two streams apart: orchestrate-build-dispatch.sh writes advisory diagnostics
-  # (notably the --lit resolver's [lit:auto] rationale) to stderr, and merging them into stdout
-  # here would prepend non-JSON text to the payload jq parses just below.
-  build_diag_file=$(mktemp "${TMPDIR:-/tmp}/orchestrate-build-dispatch.XXXXXX")
-  if dispatch_json=$(bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}" 2>"$build_diag_file"); then
+  if run_capture_stdout dispatch_json bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}"; then
     build_exit=0
   else
     build_exit=$?
   fi
-  build_diag=$(cat "$build_diag_file" 2>/dev/null); rm -f "$build_diag_file"
-  [ -n "$build_diag" ] && printf '%s\n' "$build_diag" >&2
   if [ "$build_exit" -ne 0 ]; then
-    echo "[orchestrate] WARNING: orchestrate-build-dispatch.sh failed for task #$t (exit $build_exit): ${build_diag:-$dispatch_json}" >&2
+    echo "[orchestrate] WARNING: orchestrate-build-dispatch.sh failed for task #$t (exit $build_exit): ${CAPTURE_DIAG:-$dispatch_json}" >&2
     out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "orchestrate-build-dispatch.sh failed; deferring to a later cycle"}')")
     continue
   fi

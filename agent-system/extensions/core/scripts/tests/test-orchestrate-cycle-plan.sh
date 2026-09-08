@@ -1060,12 +1060,20 @@ info "Group 11: inter-cycle redeploy checkpoint (three-branch contract)"
 G11_CALL_MARKER="$WORKDIR/.claude/scripts/.g11_verify_call_count"
 
 # write_g11_verify_stub <pre_findings_line_or_empty> <post_findings_line_or_empty> <exit_code>
-# Call-counting: 1st invocation prints only the PRE line (if any) and exits with the given code;
-# every subsequent invocation prints PRE+POST lines (if any) and exits with the given code. This
-# mirrors "the post snapshot is a superset when a NEW finding appeared" (branch b) vs. "the post
-# snapshot is identical to pre" (branch c) using literal line content, not just exit codes.
+#   [confirm_findings_line_or_empty]
+# Call-counting, matching the checkpoint's own three-call order once the confirmation/attribution
+# filters are reached (pre_findings, then deploy-headless.sh, then post_findings, then --
+# ONLY when a candidate new finding is found -- a third confirmation snapshot):
+#   1st invocation: prints only the PRE line (if any).
+#   2nd invocation: prints PRE + POST lines (if any) -- this is the post-redeploy snapshot.
+#   3rd+ invocation: prints PRE + CONFIRM lines (if any) -- this is the confirmation re-run.
+# The optional 4th argument defaults to the POST value when omitted, preserving the exact
+# pre-Phase-3 two-call behavior for every existing case that never reaches a 3rd call: passing
+# an explicit "" for confirm (distinct from omitting it) simulates a finding that does NOT
+# reproduce on the confirmation re-run -- i.e. flaky.
 write_g11_verify_stub() {
-  local pre="$1" post="$2" rc="$3"
+  local pre="$1" post="$2" rc="$3" confirm="${4-__G11_CONFIRM_UNSET__}"
+  if [ "$confirm" = "__G11_CONFIRM_UNSET__" ]; then confirm="$post"; fi
   cat > "$WORKDIR/.claude/scripts/verify-deploy.sh" <<EOF
 #!/usr/bin/env bash
 marker="$G11_CALL_MARKER"
@@ -1074,7 +1082,8 @@ count=0
 count=\$((count + 1))
 echo "\$count" > "\$marker"
 if [ -n "$pre" ]; then echo "$pre"; fi
-if [ "\$count" -gt 1 ] && [ -n "$post" ]; then echo "$post"; fi
+if [ "\$count" -eq 2 ] && [ -n "$post" ]; then echo "$post"; fi
+if [ "\$count" -ge 3 ] && [ -n "$confirm" ]; then echo "$confirm"; fi
 exit $rc
 EOF
   chmod +x "$WORKDIR/.claude/scripts/verify-deploy.sh"
@@ -1178,6 +1187,158 @@ if [ "$(jq -r '.deployed_critical_paths | index(".claude/scripts/orchestrate-cyc
   pass "checkpoint (c): deployed_critical_paths records the matched critical path"
 else
   fail "checkpoint (c): deployed_critical_paths does not record the matched path (mt_state: $(cat "$mt_c" 2>/dev/null))"
+fi
+
+# ── Case (d): a candidate new finding does NOT reproduce on the confirmation re-run -- FLAKY.
+# Must NOT defer the batch; a verify_deploy_baseline_notices entry records it as flaky, and
+# deployed_critical_paths is still recorded (proceeding, not skipping the deploy bookkeeping). ──
+g11_seed_state_and_mt "g11_d"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1 ""
+write_g11_deploy_headless_stub 3
+run_sut --session g11_d -- 9101
+mt_d="$WORKDIR/specs/.orchestrator-multi-state-g11_d.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_d" 2>/dev/null)" = "false" ] || \
+   [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_d" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (d): a flaky (non-reproducing) new finding does NOT defer the batch"
+else
+  fail "checkpoint (d): batch was unexpectedly deferred (mt_state: $(cat "$mt_d" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices[-1].filtered' "$mt_d" 2>/dev/null)" = "true" ] && \
+   [ "$(jq -r '.verify_deploy_baseline_notices[-1].flaky_count' "$mt_d" 2>/dev/null)" -ge "1" ]; then
+  pass "checkpoint (d): notice records the finding as flaky (filtered:true, flaky_count>=1)"
+else
+  fail "checkpoint (d): expected a filtered notice with flaky_count>=1 (mt_state: $(cat "$mt_d" 2>/dev/null))"
+fi
+if [ "$(jq -r '.deployed_critical_paths | index(".claude/scripts/orchestrate-cycle-plan.sh") != null' "$mt_d" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (d): deployed_critical_paths still recorded when proceeding on a flaky finding"
+else
+  fail "checkpoint (d): deployed_critical_paths not recorded (mt_state: $(cat "$mt_d" 2>/dev/null))"
+fi
+
+# ── Case (e): a CONFIRMED new finding names an identifier absent from this batch's own
+# cycle_modified_files -- UNRELATED. Must NOT defer; notice records it as unrelated. ────────────
+g11_seed_state_and_mt "g11_e"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate8 [FAIL] test-lake-build-guard.sh" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_e -- 9101
+mt_e="$WORKDIR/specs/.orchestrator-multi-state-g11_e.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_e" 2>/dev/null)" = "false" ] || \
+   [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_e" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (e): a confirmed but unrelated new finding does NOT defer the batch"
+else
+  fail "checkpoint (e): batch was unexpectedly deferred (mt_state: $(cat "$mt_e" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices[-1].filtered' "$mt_e" 2>/dev/null)" = "true" ] && \
+   [ "$(jq -r '.verify_deploy_baseline_notices[-1].unrelated_count' "$mt_e" 2>/dev/null)" -ge "1" ]; then
+  pass "checkpoint (e): notice records the finding as unrelated (filtered:true, unrelated_count>=1)"
+else
+  fail "checkpoint (e): expected a filtered notice with unrelated_count>=1 (mt_state: $(cat "$mt_e" 2>/dev/null))"
+fi
+
+# ── Case (f): a CONFIRMED new finding names an identifier PRESENT in this batch's own
+# cycle_modified_files -- genuinely attributable. Must still defer (the gate is not disabled). ──
+g11_seed_state_and_mt "g11_f"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate3 [FAIL] .claude/scripts/orchestrate-cycle-plan.sh" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_f -- 9101
+mt_f="$WORKDIR/specs/.orchestrator-multi-state-g11_f.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_f" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (f): a confirmed, attributable new finding still defers the batch"
+else
+  fail "checkpoint (f): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_f" 2>/dev/null))"
+fi
+
+# ── Case (g): the defer message (stderr) and defer_ledger[].detail both name the specific
+# blocking finding -- Defect B, now against the FILTERED set. Reuses case (f)'s already-run
+# fixture and captured $LAST_STDERR (no separate run needed). ──────────────────────────────────
+if printf '%s' "$LAST_STDERR" | grep -q "orchestrate-cycle-plan.sh"; then
+  pass "checkpoint (g): defer stderr names the specific blocking finding"
+else
+  fail "checkpoint (g): defer stderr does not name the finding (stderr: $LAST_STDERR)"
+fi
+if [ "$(jq -r '.defer_ledger[-1].detail' "$mt_f" 2>/dev/null | grep -c "orchestrate-cycle-plan.sh")" -ge "1" ]; then
+  pass "checkpoint (g): defer_ledger[].detail names the specific blocking finding"
+else
+  fail "checkpoint (g): defer_ledger[].detail does not name the finding (mt_state: $(cat "$mt_f" 2>/dev/null))"
+fi
+
+# ── Case (h): a CONFIRMED new finding names NO identifier at all -- the attribution filter must
+# NEVER treat an identifier-free finding as unrelated (fail-safe toward blocking). Still defers. ─
+g11_seed_state_and_mt "g11_h"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_h -- 9101
+mt_h="$WORKDIR/specs/.orchestrator-multi-state-g11_h.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_h" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (h): an identifier-free confirmed finding still defers (fail-safe attribution)"
+else
+  fail "checkpoint (h): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_h" 2>/dev/null))"
+fi
+
+# ── Case (i): depth-symmetry regression guard -- a gate-8 finding present in BOTH pre and post
+# snapshots is NOT treated as new (comm -13 sees it in both sets) and takes the ORIGINAL branch
+# (c), never reaching the confirmation call at all (only 2 verify-deploy.sh calls). ─────────────
+g11_seed_state_and_mt "g11_i"
+write_g11_verify_stub "FINDING gate8 [FAIL] test-lake-build-guard.sh" "FINDING gate8 [FAIL] test-lake-build-guard.sh" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_i -- 9101
+mt_i="$WORKDIR/specs/.orchestrator-multi-state-g11_i.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_i" 2>/dev/null)" = "false" ] || \
+   [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_i" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (i): a gate-8 finding present in BOTH pre and post is not treated as new"
+else
+  fail "checkpoint (i): batch was unexpectedly deferred (mt_state: $(cat "$mt_i" 2>/dev/null))"
+fi
+if [ "$(jq -r '.verify_deploy_baseline_notices[-1].filtered' "$mt_i" 2>/dev/null)" = "false" ]; then
+  pass "checkpoint (i): takes the ORIGINAL branch (c) (filtered:false), not the new filtered sub-branch"
+else
+  fail "checkpoint (i): expected filtered:false (original branch (c)) (mt_state: $(cat "$mt_i" 2>/dev/null))"
+fi
+if [ -f "$G11_CALL_MARKER" ] && [ "$(cat "$G11_CALL_MARKER")" = "2" ]; then
+  pass "checkpoint (i): verify-deploy.sh called exactly twice (no confirmation call when new_findings is empty)"
+else
+  fail "checkpoint (i): expected exactly two verify-deploy.sh calls, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
+fi
+
+# ── Case (j): call-count guard for the ORIGINAL branch (c) (identical to the pre-existing case
+# (c) fixture) -- confirms it makes exactly two verify-deploy.sh calls, i.e. the confirmation
+# snapshot is fired ONLY when there is a candidate new finding to confirm. ──────────────────────
+g11_seed_state_and_mt "g11_j"
+write_g11_verify_stub "FINDING gate1 pre-existing" "" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_j -- 9101
+if [ -f "$G11_CALL_MARKER" ] && [ "$(cat "$G11_CALL_MARKER")" = "2" ]; then
+  pass "checkpoint (j): branch (c) (no new findings) makes exactly two verify-deploy.sh calls"
+else
+  fail "checkpoint (j): expected exactly two verify-deploy.sh calls, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
+fi
+
+# ── Case (k): Defect A depth-disagreement report -- deploy-headless.sh's OWN internal
+# --skip-slow verify reports exit 0 (landed_verify_clean, a fast PASS) for this same tree, yet
+# the checkpoint's independent full-depth comparison still finds a confirmed, attributable
+# blocking finding. Reported as an explicit depth disagreement, not a silent contradiction. Goes
+# beyond the plan's originally-enumerated (d)-(j) letter range per its own Scope Hypothesis note
+# ("add ... cases as the wiring actually requires"), since the Testing & Validation section
+# separately names this as its own acceptance criterion. ───────────────────────────────────────
+g11_seed_state_and_mt "g11_k"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate3 [FAIL] .claude/scripts/orchestrate-cycle-plan.sh" 1
+write_g11_deploy_headless_stub 0
+run_sut --session g11_k -- 9101
+mt_k="$WORKDIR/specs/.orchestrator-multi-state-g11_k.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_k" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (k): still defers despite deploy-headless.sh's own fast verify passing"
+else
+  fail "checkpoint (k): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_k" 2>/dev/null))"
+fi
+if printf '%s' "$LAST_STDERR" | grep -q "DEPTH NOTE"; then
+  pass "checkpoint (k): stderr carries the explicit depth-disagreement note"
+else
+  fail "checkpoint (k): stderr missing the depth-disagreement note (stderr: $LAST_STDERR)"
+fi
+if [ "$(jq -r '.defer_ledger[-1].depth_disagreement' "$mt_k" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (k): defer_ledger[].depth_disagreement records the depth disagreement"
+else
+  fail "checkpoint (k): defer_ledger[].depth_disagreement is not true (mt_state: $(cat "$mt_k" 2>/dev/null))"
 fi
 
 rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER"
@@ -1371,6 +1532,97 @@ if [ -n "$g14_line_1402" ] && ! echo "$g14_line_1402" | grep -q -- "--focus"; th
   pass "Group 14: no research_questions -> no --focus flag passed (byte-for-byte no-op)"
 else
   fail "Group 14: unexpected --focus (or missing argv line) for the ordinary research candidate: '$g14_line_1402'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 15: stdout/stderr stream discipline at every JSON-consuming collaborator call.
+#
+# This script's output contract reserves stdout for the single-line plan JSON and puts every
+# human diagnostic on stderr. Each collaborator it shells out to (orchestrate-build-dispatch.sh,
+# orchestrate-build-aux-dispatch.sh, orchestrate-triage-classify.sh, orchestrate-batch-admit.sh)
+# holds the same contract for its OWN stdout payload. Capturing any of them with `2>&1` folds
+# their diagnostics into the payload, and the jq that parses it then either fails outright (the
+# single-object consumers) or -- worse, because the exit status is still 0 and the degraded-path
+# warning never fires -- silently ingests a garbage NDJSON row.
+#
+# These collaborators are chatty on stderr in production: the --lit resolver's [lit:auto]
+# rationale alone fires on essentially every literature-mode run. The stubs below therefore make
+# each one write to stderr while returning a VALID payload on stdout, and assert (a) stdout is
+# still parseable plan JSON and (b) the diagnostic reached stderr rather than vanishing.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 15: stdout stays pure JSON when collaborators write to stderr"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "[orchestrate-build-dispatch] [lit:auto] simulated resolver rationale (fixture)" >&2
+proj_num="$1"; phase="$2"
+jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "[triage] simulated classifier diagnostic (fixture)" >&2
+for a in "$@"; do
+  case "$a" in
+    mt) continue ;;
+    *) jq -n -c --argjson t "$a" '{task_number: $t, group: "plan", reason: "fixture"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "[admit] simulated admission diagnostic (fixture)" >&2
+for a in "$@"; do
+  case "$a" in
+    --*) prev="$a"; continue ;;
+    *) if [ "${prev:-}" = "--invocation-count" ] || [ "${prev:-}" = "--session-id" ] || [ "${prev:-}" = "--phase-map" ]; then prev=""; continue; fi
+       jq -n -c --argjson t "$a" '{task_number: $t, decision: "admit", reason: "fixture"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1501, "project_name": "g15_chatty_collaborators", "task_type": "general", "status": "not_started", "description": "collaborators write to stderr; stdout must stay pure JSON", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g15_sess -- 1501
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 15: SUT exits 0 with chatty collaborators"
+else
+  fail "Group 15: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  pass "Group 15: stdout parses as JSON despite collaborator stderr on all four call sites"
+else
+  fail "Group 15: stdout is not parseable JSON -- stderr leaked into the payload: '$LAST_STDOUT'"
+fi
+
+g15_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
+if [ "$g15_dispatch_file" = "/fake/1501-plan.md" ]; then
+  pass "Group 15: dispatch_file parsed correctly from the stub payload (not corrupted by stderr)"
+else
+  fail "Group 15: expected /fake/1501-plan.md, got '$g15_dispatch_file'"
+fi
+
+g15_missing=""
+for marker in "[lit:auto] simulated resolver rationale" "[triage] simulated classifier diagnostic" "[admit] simulated admission diagnostic"; do
+  echo "$LAST_STDERR" | grep -qF "$marker" || g15_missing="${g15_missing}${marker}; "
+done
+if [ -z "$g15_missing" ]; then
+  pass "Group 15: all three collaborator diagnostics forwarded to stderr (nothing swallowed)"
+else
+  fail "Group 15: diagnostics missing from stderr: $g15_missing"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
