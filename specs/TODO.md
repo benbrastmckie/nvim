@@ -11,8 +11,8 @@ next_project_number: 176
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,151,152,155,157,162,163,166,167,168,171,172 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,170,173,174,175 | 29,74,88,139,151,155,162,172 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,152,155,157,162,163,166,167,168,170,171,172 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175 | 29,74,88,139,155,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -32,11 +32,10 @@ next_project_number: 176
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) === (see above)
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-151 [IMPLEMENTING] — Two verify-deploy.sh gate failures are live in this repo today, b
-  └─ 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
-152 [PLANNED] — An unrelated multi-task /orchestrate batch was fully blocked by t
+152 [IMPLEMENTING] — An unrelated multi-task /orchestrate batch was fully blocked by t
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
+170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
 172 [NOT STARTED] — Close the taught-pattern gap that produced 22 unreapable poll loo
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
@@ -1234,7 +1233,7 @@ ACCEPTANCE.
 ---
 
 ### 152. Stop hand-maintained line_count drift and unrelated red gates from blocking task completion and whole batches
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1278,7 +1277,7 @@ ACCEPTANCE.
 ---
 
 ### 151. Fix the two pre-existing verify-deploy gate failures (state-writer boundary, whole-tree orphan)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
