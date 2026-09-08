@@ -289,30 +289,44 @@ the count at five.
 
 ---
 
-### Phase 4: Per-cycle lead-growth probe [NOT STARTED]
+### Phase 4: Per-cycle lead-growth probe [COMPLETED]
 
 **Goal**: A re-runnable fixture test that runs a disposable 3-task cycle through the real cycle
 scripts and reports the lead's total accumulated bytes per task per cycle, converting the
 "~1 KB per task per cycle" target into a measured number.
 
 **Tasks**:
-- [ ] Add `scripts/tests/test-orchestrate-context-growth.sh`, reusing
+- [x] Add `scripts/tests/test-orchestrate-context-growth.sh`, reusing
       `test-orchestrate-cycle-plan.sh`'s sandbox shape (synthetic `$WORKDIR/.claude/scripts/` tree
       so `deploy-root-guard.sh` passes and every SCRIPT_DIR-anchored PROJECT_ROOT resolves inside
-      the fixture) and its stub convention for collaborators not under test.
-- [ ] Build a 3-task fixture `state.json` + task dirs; run `orchestrate-cycle-plan.sh` and capture
-      its `plan_json` stdout bytes (`wc -c`).
-- [ ] For each of the 3 tasks, run `orchestrate-build-dispatch.sh` and capture the bytes of the
+      the fixture) and its stub convention for collaborators not under test. *(completed)*
+- [x] Build a 3-task fixture `state.json` + task dirs; run `orchestrate-cycle-plan.sh` and capture
+      its `plan_json` stdout bytes (`wc -c`). *(completed; deviation/finding: cycle-plan.sh's live
+      preflight write path leaks update-task-status.sh's unredirected `echo "OK: task N status ->
+      X"` onto its own stdout ahead of the final JSON line -- a real, pre-existing property of the
+      production call path (SKILL.md's own `plan_json=$(bash orchestrate-cycle-plan.sh ...)`
+      capture does not filter it either), tolerated in production because the lead is an LLM
+      reading Bash output loosely rather than a strict `jq` parse. The suite measures the RAW
+      contaminated stdout for the byte count (matching real lead exposure) and separately extracts
+      the trailing JSON line for its own parsing. Out of 142's scope to fix (not named in
+      MUST-NOT-DAMAGE, not part of this task's four gates); recorded as a Stage C follow-up
+      observation in the summary)*
+- [x] For each of the 3 tasks, run `orchestrate-build-dispatch.sh` and capture the bytes of the
       lead-visible pointer prompt + context object it yields (the dispatch FILE itself is read by
-      the dispatched agent, not the lead — exclude it and say so in a comment).
-- [ ] Run `orchestrate-cycle-postflight.sh` per task against fixture handoffs; capture its compact
-      JSON stdout bytes.
-- [ ] Emit a labelled per-component breakdown plus `PER_TASK_PER_CYCLE_BYTES: <n>` on its own line
+      the dispatched agent, not the lead — exclude it and say so in a comment). *(completed)*
+- [x] Run `orchestrate-cycle-postflight.sh` per task against fixture handoffs; capture its compact
+      JSON stdout bytes. *(completed; deviation: postflight's `--session` must be the cycle's bare
+      session_id, matching cycle-plan.sh's own multi-state file derivation -- the per-task-suffixed
+      session_id is only for a non-implement phase's Move 2 dispatch Context object, never for
+      Move 3 postflight; SKILL.md's own Move 3 code confirms this by using `$session_id`, not the
+      suffixed form)*
+- [x] Emit a labelled per-component breakdown plus `PER_TASK_PER_CYCLE_BYTES: <n>` on its own line
       (machine-greppable, matching the repo's stable-output-contract convention), and assert it is
       under a generous regression ceiling (suggest 2,048 B — a regression detector, not a tight
-      target) so the suite fails loudly if lead growth balloons.
-- [ ] Document in the file header that this is the executable form of the growth probe and how to
-      re-run it.
+      target) so the suite fails loudly if lead growth balloons. *(completed: measured
+      871 B/task/cycle, deterministic across repeated runs, well under the 2,048 B ceiling)*
+- [x] Document in the file header that this is the executable form of the growth probe and how to
+      re-run it. *(completed)*
 
 **Timing**: 1.5 hours
 
