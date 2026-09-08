@@ -33,29 +33,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/189_fix_channel_confusion_orchestrate_pipeline/summaries/01_fix-channel-confusion-orchestrate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "synthetic-tree", "test-harness-sandbox", "acceptance-check", "orchestrate"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "synthetic-tree",
+        "test-harness-sandbox",
+        "acceptance-check",
+        "orchestrate"
+      ]
     },
     {
       "content": "Channel-confusion bug class (a script's own stdout carrying both prose logs and structured data it also emits, or a script consuming a collaborator's 2>&1-merged output as if it were pure data) has two independent directions that both need separate fixes: EMIT (structural exec 3>&1 1>&2 entry-point redirect + fd-3 emit, so no future callee can leak into the data channel) and INGEST (a shared run_capture_stdout-style helper at every collaborator call site that explicitly drops stderr before parsing). Fixing one direction does not subsume the other. The dangerous INGEST shape is a while-read NDJSON loop fed from a 2>&1 capture -- the collaborator can still exit 0 while the loop silently ingests a garbage row, so no error path fires at all.",
       "category": "PATTERN",
       "source_artifact": "specs/189_fix_channel_confusion_orchestrate_pipeline/summaries/01_fix-channel-confusion-orchestrate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["stdout-json-channel", "channel-confusion", "run_capture_stdout", "exec-fd-redirect", "while-read-ndjson"]
+      "suggested_keywords": [
+        "stdout-json-channel",
+        "channel-confusion",
+        "run_capture_stdout",
+        "exec-fd-redirect",
+        "while-read-ndjson"
+      ]
     },
     {
       "content": "A per-task cycle/retry budget must be charged at the point work is actually dispatched/consumed, not at the point a plan or composition is merely produced -- otherwise a parse failure or other no-op re-run silently and permanently burns budget for work that never happened. The general fix pattern is idempotent composition: cache the composed result keyed by a monotonic sequence number already available in state (here, dispatch_seq), and on re-entry with that key unchanged, return the cached result verbatim without re-charging. For durability across process restarts, add a second, durable ledger entry alongside the in-session cache so the same guarantee holds across invocations, not just within one.",
       "category": "PATTERN",
       "source_artifact": "specs/189_fix_channel_confusion_orchestrate_pipeline/summaries/01_fix-channel-confusion-orchestrate-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["idempotent-composition", "budget-charging", "plan-cache", "pending-dispatch-ledger", "no-charge-for-a-read"]
+      "suggested_keywords": [
+        "idempotent-composition",
+        "budget-charging",
+        "plan-cache",
+        "pending-dispatch-ledger",
+        "no-charge-for-a-read"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788893689_6c8327",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

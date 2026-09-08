@@ -89,6 +89,7 @@ next_project_number: 190
 - **Topic**: core-agent-system
 - **Dependencies**: Task 150
 - **Plan**: [189_fix_channel_confusion_orchestrate_pipeline/plans/01_fix-channel-confusion-orchestrate.md]
+- **Summary**: [189_fix_channel_confusion_orchestrate_pipeline/summaries/01_fix-channel-confusion-orchestrate-summary.md]
 
 **Description**: Fix three channel-confusion defects in the orchestrate cycle-plan pipeline that misled a live /orchestrate run. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

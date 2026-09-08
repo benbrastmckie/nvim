@@ -21,6 +21,11 @@
           "path": "specs/189_fix_channel_confusion_orchestrate_pipeline/plans/01_fix-channel-confusion-orchestrate.md",
           "type": "plan",
           "summary": "7-phase plan fixing three channel-confusion defects in the orchestrate cycle-plan pipeline: structural fd-3 stdout/JSON discipline, charge-free replay of unconsumed plan compositions, and truthful Class C/D predispatch-review negatives, plus a maintained lint for the defect class."
+        },
+        {
+          "path": "specs/189_fix_channel_confusion_orchestrate_pipeline/summaries/01_fix-channel-confusion-orchestrate-summary.md",
+          "type": "summary",
+          "summary": "Final cycle closing Phase 7 (maintained channel-discipline lint + end-to-end acceptance re-check) of the three-defect orchestrate cycle-plan channel-confusion fix; phases 1-6 landed in earlier cycles."
         }
       ],
       "file_scope": [
@@ -35,7 +40,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"
-      ]
+      ],
+      "completion_summary": "Closed the final phase of the orchestrate channel-confusion fix: committed the untracked lint-json-channel-discipline.sh and its 11-test fixture suite, checked off Phase 7's plan checklist, and re-verified SKILL.md's Move 1 snippet and commands/orchestrate.md's dry-run invocation parse/run cleanly against the source-store scripts. All 7 phases are now [COMPLETED]; 243 tests pass across the five directly-affected suites."
     },
     {
       "project_number": 188,
