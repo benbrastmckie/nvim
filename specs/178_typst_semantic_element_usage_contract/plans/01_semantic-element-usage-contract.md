@@ -1,7 +1,7 @@
 # Implementation Plan: Semantic Element Usage Contract for the Typst Extension
 
 - **Task**: 178 - Author the missing semantics layer for the typst extension's semantic elements, and wire it into the implementation agent and skill as an actual structural gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md

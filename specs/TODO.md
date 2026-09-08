@@ -11,8 +11,8 @@ next_project_number: 183
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177,178,180 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175,179,181 | 29,74,88,139,155,162,172,178,180 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,88,89,127,136,139,155,157,162,163,166,167,168,170,171,172,176,177,179,180 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,129,140,142,150,156,164,173,174,175,181 | 29,74,88,139,155,162,172,180 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165,182 | 163,164,181 | core-agent-system, file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -54,8 +54,7 @@ next_project_number: 183
 155 [IMPLEMENTING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
-178 [IMPLEMENTING] — Author the missing semantics layer for the typst extension's sema
-  └─ 179 [NOT STARTED] — Add a mechanical element-placement and density lint to the typst 
+179 [NOT STARTED] — Add a mechanical element-placement and density lint to the typst 
 
 ### Literature
 
@@ -265,12 +264,13 @@ ACCEPTANCE. The lint fires on the observed defect in `08-agency.typ` (a 25-item 
 
 ### 178. Add a semantic element usage contract to the typst extension and enforce it in the agent
 - **Effort**: 3-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md]
 - **Plan**: [178_typst_semantic_element_usage_contract/plans/01_semantic-element-usage-contract.md]
+- **Summary**: [178_typst_semantic_element_usage_contract/summaries/01_semantic-element-usage-contract-summary.md]
 
 **Description**: Author the missing semantics layer for the typst extension's semantic elements, and wire it into the implementation agent and skill as an actual structural gate.
 
