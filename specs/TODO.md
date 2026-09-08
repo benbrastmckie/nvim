@@ -35,7 +35,7 @@ next_project_number: 190
   └─ 173 [NOT STARTED] — Make the guard-side analogue of the poll-loop leak impossible, so
   └─ 174 [NOT STARTED] — Give the system a way to clean up waiters that already leaked, co
   └─ 175 [NOT STARTED] — Wire the already-written teardown rule into the specific contract
-180 [NOT STARTED] — Move the post-deploy consumer-freshness scan off the blocking pat
+180 [PLANNED] — Move the post-deploy consumer-freshness scan off the blocking pat
   └─ 181 [NOT STARTED] — Fix three related defects in the /orchestrate inter-cycle redeplo
     └─ 182 [NOT STARTED] — Give the /orchestrate inter-cycle redeploy checkpoint a durable r
 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard operational-stale
@@ -350,10 +350,11 @@ Widening that predicate (and its deployed_critical_paths idempotence backing sto
 
 ### 180. Make the consumer-freshness scan opt-in in deploy-headless.sh
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Plan**: [180_make_consumer_freshness_scan_opt_in/plans/01_consumer-freshness-scan-opt-in.md]
 
 **Description**: Move the post-deploy consumer-freshness scan off the blocking path of the /orchestrate inter-cycle redeploy checkpoint by making it opt-in.
 

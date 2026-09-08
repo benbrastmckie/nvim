@@ -1117,7 +1117,7 @@
     {
       "project_number": 180,
       "project_name": "make_consumer_freshness_scan_opt_in",
-      "status": "not_started",
+      "status": "planned",
       "task_type": "meta",
       "title": "Make the consumer-freshness scan opt-in in deploy-headless.sh",
       "topic": "core-agent-system",
@@ -1128,10 +1128,17 @@
         "agent-system/extensions/core/scripts/deploy-headless.sh",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/180_make_consumer_freshness_scan_opt_in/plans/01_consumer-freshness-scan-opt-in.md",
+          "type": "plan",
+          "summary": "5-phase plan gating deploy-headless.sh's post-deploy consumer-freshness scan behind a default-OFF --consumer-report flag, preserving byte-compatible CONSUMERS_STALE= output and exit-code neutrality."
+        }
+      ],
       "description": "Move the post-deploy consumer-freshness scan off the blocking path of the /orchestrate inter-cycle redeploy checkpoint by making it opt-in.\n\nOBSERVED COST. In session sess_1788827855_dfff06 (orchestrating tasks 155 and 156), the redeploy checkpoint consumed roughly 10 minutes of wall clock in a single cycle. Part of that cost is a consumer-repo staleness walk over approximately 50 repositories (CONSUMERS_STALE=50), printing per-extension STALE/CANNOTVERIFY rows for each.\n\nWHY THIS IS PURE COST. The scan is report-only by explicit design. deploy-headless.sh's own comment at the scan site states it 'is report-only and can NEVER change this script's exit code', and the script states plainly that it never redeploys into a consumer -- the documented remedy is to run the deploy manually in each stale repo. So on the critical path of a blocking gate this walk produces output that the gate cannot act on and that the orchestrator does not consume.\n\nLOCATION. The scan lives in the post-deploy block of agent-system/extensions/core/scripts/deploy-headless.sh (the '--- Post-deploy stale-consumer report (TIER 3, additive output only)' section), invoking check-consumer-freshness.sh --stale-only. Some flag plumbing may also touch verify-deploy.sh.\n\nSCOPE OF WORK.\nA. Gate the scan behind an explicit opt-in flag (default OFF), following verify-deploy.sh's existing 'always explicit, never derived. Default OFF' flag convention rather than inventing a new one.\nB. Preserve the CONSUMERS_STALE=<n> stderr contract for callers that DO opt in -- deploy-headless.sh's header documents this as the way a caller reads the consumer-staleness signal on its own, so the line must remain byte-compatible when the flag is passed.\nC. Confirm no current caller depends on the scan running unconditionally. If a caller does, pass the new flag there explicitly rather than flipping the default.\n\nACCEPTANCE. A default deploy-headless.sh run performs no consumer walk and emits no per-consumer STALE/CANNOTVERIFY rows; the same run with the opt-in flag reproduces today's output including the CONSUMERS_STALE=<n> line. The checkpoint's wall-clock cost drops by the scan's share. The scan's exit-code neutrality is unchanged in both modes.\n\nORDERING. This is the lowest-risk of the three redeploy-checkpoint tasks and lands first so that deploy-headless.sh is settled before the gate-depth work modifies it.\n\nSOURCE STORE. All edits land under agent-system/extensions/core/** at the GLOBAL root /home/benjamin/.config/nvim. Never edit .claude/**, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md.\n\nSAFETY CONSTRAINT. Do not disable or weaken any gate that can change the deploy verdict. This task removes reporting from the blocking path; it must not remove verification.",
       "created": "2026-09-08T01:46:54Z",
-      "last_updated": "2026-09-08T01:46:54Z"
+      "last_updated": "2026-09-08T16:05:45Z",
+      "session_id": "sess_1788883218_cb46bc"
     },
     {
       "project_number": 181,
