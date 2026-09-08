@@ -1,10 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/156_document_comparator_trust_boundary/summaries/01_comparator-doctor-trust-boundary-summary.md",
+      "summary": "Doctor mode on /lean (binary presence + C3 lean4export version-match via bounded lean-toolchain walk-up) demonstrated across all four states; comparator-guide.md trust-model document; advisory-only proof-debt-policy note; extension surface registered and check-extension-docs.sh green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a /lean doctor mode (SKILL.md + commands/lean.md) that probes Comparator binary presence and checks the C3 lean4export version-match constraint, demonstrated against fixtures in all four verdict states (matched, missing, mismatched, UNKNOWN). Wrote context/project/lean4/tools/comparator-guide.md stating verbatim what a green Comparator result does and does not certify, added an advisory-only policy note to proof-debt-policy.md, and registered the new file across the extension's index-entries.json/EXTENSION.md/README.md so check-extension-docs.sh stays green."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/EXTENSION.md",
+    "agent-system/extensions/lean/README.md",
+    "agent-system/extensions/lean/commands/lean.md",
+    "agent-system/extensions/lean/context/project/lean4/README.md",
+    "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md",
+    "agent-system/extensions/lean/context/project/lean4/tools/comparator-guide.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/skills/skill-lean-version/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a binary with no --version/--help flag and no elan-toolchain path visible to ldd (e.g. lean4export in the Comparator toolchain), version-compatibility cannot be checked via binary introspection. A robust alternative: bounded (e.g. 5-level) directory walk-up from the resolved binary's realpath looking for a sibling marker file (here, lean-toolchain), diffed against the target's own copy of that marker. A 'no marker file found within the bound' outcome must be reported as an explicit UNKNOWN/cannot-verify state, never silently treated as a pass — this is easy to get wrong by defaulting to whichever branch is coded last.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/156_document_comparator_trust_boundary/summaries/01_comparator-doctor-trust-boundary-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["version-match", "binary-introspection", "walk-up", "doctor-mode", "toolchain-coupling"]
+    },
+    {
+      "content": "When mirroring the same bash logic in two markdown files (a skill and its command wrapper), extract both to scratch files and diff them byte-for-byte as a verification step. Byte-identical blocks are strong, cheap evidence of zero drift between the two authored copies — cheaper than manually re-reading both for consistency.",
+      "category": "PATTERN",
+      "source_artifact": "specs/156_document_comparator_trust_boundary/summaries/01_comparator-doctor-trust-boundary-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["dual-authoring", "drift-detection", "verification", "markdown-skills"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788832204_b452d0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
