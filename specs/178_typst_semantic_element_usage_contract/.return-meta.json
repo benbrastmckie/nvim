@@ -1,8 +1,49 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "task_number": 178,
-  "session_id": "sess_1788831210_6c6dbe",
-  "dispatch_seq": 4
+  "status": "implemented",
+  "dispatch_seq": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/178_typst_semantic_element_usage_contract/summaries/01_semantic-element-usage-contract-summary.md",
+      "summary": "Authored the semantic-element-usage.md standard and installed it as an executed structural self-review gate in the typst implementation agent and skill, plus wiring into the context index, theorem-environments.md, and chapter-template.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Authored a new semantic-element-usage.md standard for the typst extension covering nine semantic elements (definition, theorem, lemma, corollary, example, proof, remark, rule-block, rule-list), wired it into index-entries.json and README.md, gave theorem-environments.md and chapter-template.md the semantics they lacked, and installed an executed Stage 4C structural self-review plus enforceable MUST NOT items in both typst-implementation-agent.md and skill-typst-implementation/SKILL.md so compile-green stops being the sole verification gate."
+  },
+  "modified_files": [
+    "agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md",
+    "agent-system/extensions/typst/index-entries.json",
+    "agent-system/extensions/typst/context/project/typst/README.md",
+    "agent-system/extensions/typst/context/project/typst/patterns/theorem-environments.md",
+    "agent-system/extensions/typst/context/project/typst/templates/chapter-template.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+    "specs/178_typst_semantic_element_usage_contract/plans/01_semantic-element-usage-contract.md",
+    "specs/178_typst_semantic_element_usage_contract/summaries/01_semantic-element-usage-contract-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an unenforced checklist line has already failed to change agent behavior once (an agent demonstrably loaded a norm and still violated it), the fix is to route the norm into a verification stage the agent actually executes -- a self-review sub-step with a stated output inside the phase-completion gate (e.g. 'name each file, answer these N questions, state the fix applied') -- plus MUST NOT items, and install it at EVERY authoring path, including any skill-level Stage 5b self-execution fallback that bypasses the agent's own verification. A gate installed only in the agent leaves the fallback path ungated; grep for the skill's self-execution-fallback pattern to confirm there is no third bypassing path before declaring the gate complete.",
+      "category": "PATTERN",
+      "source_artifact": "specs/178_typst_semantic_element_usage_contract/summaries/01_semantic-element-usage-contract-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["enforcement", "self-review", "must-not", "self-execution-fallback", "agent-contract", "falsified-hypothesis", "structural-gate"]
+    },
+    {
+      "content": "When writing a usage/semantics standard for a family of related elements (theorem-environment-style semantic markup), structure each element's entry with three fixed labeled parts -- What it is for, Expected density, Legal placement -- and add a Universal Placement Rule stated once and cross-referenced from each entry, rather than restating placement logic per element. Pair the standard with a single Worked Contrast (Correct vs Incorrect) built directly from the real observed defect, and close with a verbatim Self-Review Questions list the enforcing agent/skill can answer as its executed gate output.",
+      "category": "PATTERN",
+      "source_artifact": "specs/178_typst_semantic_element_usage_contract/summaries/01_semantic-element-usage-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["standard-authoring", "usage-contract", "semantic-elements", "worked-contrast", "self-review-questions"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1788831210_6c6dbe",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

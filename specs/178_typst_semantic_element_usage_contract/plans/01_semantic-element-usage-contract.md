@@ -349,27 +349,32 @@ gate and the phase's file list grows.
 
 ---
 
-### Phase 6: Acceptance Verification Against the Observed Defect [NOT STARTED]
+### Phase 6: Acceptance Verification Against the Observed Defect [COMPLETED]
 
 **Goal**: Confirm the delivered contract would actually have flagged the document that motivated
 it, and that nothing landed in the deploy artifact.
 
 **Tasks**:
-- [ ] Re-read the new standard cold and answer, for every covered element, "what is it for" and
+- [x] Re-read the new standard cold and answer, for every covered element, "what is it for" and
       "where may it appear" using only the file — the task's stated acceptance criterion
-- [ ] Walk the observed defect (a `#remark("Formalization Status")[...]` with a 25-item numbered
+      *(completed: verified answerable for all 9 covered elements)*
+- [x] Walk the observed defect (a `#remark("Formalization Status")[...]` with a 25-item numbered
       checklist and label `<rem-agency-status>`, standing immediately after `= Agency <sec-agency>`
       with no intervening prose) against each of: the standard, the agent's Stage 4C, the agent's
       MUST NOT list, and the skill's new subsection. Record which specific rule catches it in each
-    location
-- [ ] Confirm the enumerated-tracking-content question "where does this belong instead" has an
-      explicit answer in the standard
-- [ ] `git status --short` and the staged diff: confirm no path under `.claude/**` was written and
-      no `.typ` file anywhere was modified
-- [ ] Validate `index-entries.json` parses and the new entry's `line_count` still matches the
-      final file after all Phase 1-5 edits
-- [ ] Run the repository's applicable lints/gates for changed markdown and JSON (including the
-      task-reference check for files outside `specs/**`)
+    location *(completed: standard's Universal Placement Rule + Remark entry catches both the
+    chapter-opener placement and the enumerated list; agent Stage 4C self-review Q1-Q3 catches it;
+    agent MUST NOT items 7-8 catch it; skill MUST NOT (Document Structure) items 1-2 catch it)*
+- [x] Confirm the enumerated-tracking-content question "where does this belong instead" has an
+      explicit answer in the standard *(completed: "Where Tracking Content Belongs" section)*
+- [x] `git status --short` and the staged diff: confirm no path under `.claude/**` was written and
+      no `.typ` file anywhere was modified *(completed: confirmed via `git diff --name-only` over
+      all 5 task commits — no `.claude/**` or `.typ` path present)*
+- [x] Validate `index-entries.json` parses and the new entry's `line_count` still matches the
+      final file after all Phase 1-5 edits *(completed: 27 entries, line_count 281 matches `wc -l`)*
+- [x] Run the repository's applicable lints/gates for changed markdown and JSON (including the
+      task-reference check for files outside `specs/**`) *(completed:
+      `check-task-references.sh --quiet agent-system/extensions/typst` -> PASS, 0 occurrences)*
 
 **Timing**: 0.75 hours
 
@@ -389,23 +394,23 @@ it, and that nothing landed in the deploy artifact.
 
 ## Testing & Validation
 
-- [ ] `semantic-element-usage.md` exists and covers every element defined in
+- [x] `semantic-element-usage.md` exists and covers every element defined in
       `theorem-environments.md` and `rule-environments.md`, each with purpose, density, and
-      placement
-- [ ] The remark norm as written flags both the chapter-opener placement and the enumerated
-      status list of the motivating defect
-- [ ] Enumerated tracking content has a stated legal home in the standard
-- [ ] `theorem-environments.md` Label Conventions table has a `rem:` row
-- [ ] `chapter-template.md` shows a remark following a substantial result, plus a labeled
-      anti-pattern
-- [ ] `index-entries.json` parses; new entry present with `typst-implementation-agent` in
-      `load_when.agents` and an accurate `line_count`
-- [ ] `typst-implementation-agent.md` Stage 4C carries an executed structural self-review naming
-      the standard, and the MUST NOT list carries both prohibitions
-- [ ] `skill-typst-implementation/SKILL.md` carries the same prohibitions in a subsection distinct
-      from the postflight-boundary list, plus a Stage 5b self-review step
-- [ ] No file under `.claude/**` modified; no `.typ` file modified
-- [ ] Task-reference lint passes for all changed files outside `specs/**`
+      placement *(completed)*
+- [x] The remark norm as written flags both the chapter-opener placement and the enumerated
+      status list of the motivating defect *(completed)*
+- [x] Enumerated tracking content has a stated legal home in the standard *(completed)*
+- [x] `theorem-environments.md` Label Conventions table has a `rem:` row *(completed)*
+- [x] `chapter-template.md` shows a remark following a substantial result, plus a labeled
+      anti-pattern *(completed)*
+- [x] `index-entries.json` parses; new entry present with `typst-implementation-agent` in
+      `load_when.agents` and an accurate `line_count` *(completed)*
+- [x] `typst-implementation-agent.md` Stage 4C carries an executed structural self-review naming
+      the standard, and the MUST NOT list carries both prohibitions *(completed)*
+- [x] `skill-typst-implementation/SKILL.md` carries the same prohibitions in a subsection distinct
+      from the postflight-boundary list, plus a Stage 5b self-review step *(completed)*
+- [x] No file under `.claude/**` modified; no `.typ` file modified *(completed)*
+- [x] Task-reference lint passes for all changed files outside `specs/**` *(completed)*
 
 ## Artifacts & Outputs
 
