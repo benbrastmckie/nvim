@@ -1,10 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/171_fix_literature_ingest_dedup_hang/summaries/01_fix-ingest-dedup-hang-summary.md",
+      "summary": "Collapsed check_duplicate_title()'s O(n) per-title python3 subprocess loop into one bounded, fail-open batch invocation; added a regression suite and doc updates. Measured full-index check dropped from 9-10 minutes to ~0.7s."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rewrote check_duplicate_title() in literature-ingest-online.sh to use a single hard-timed (10s), fail-open .zotero-title-sim.py --batch invocation instead of one python3 subprocess per index.json title, added the --batch mode itself, wrote an 11-assertion regression suite (test-title-sim-dedup.sh, registered in manifest.json), and documented the contract. Measured full-index dedup check time on the real 11,793-entry index dropped from an observed 9-10 minutes (or 540s timeout) to ~0.7 seconds, with the WARNING text and 0.85 threshold preserved byte-for-byte and the 2-argv contract used by zotero-resolve-pdf.sh unchanged."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/context/project/literature/tools/zotero-scripts.md",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/.zotero-title-sim.py",
+    "agent-system/extensions/literature/scripts/literature-ingest-online.sh",
+    "agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When collapsing an O(n) per-item subprocess loop (e.g. one python3 invocation per candidate against a large index) into a single batch invocation, feed the candidate list via stdin rather than argv to avoid ARG_MAX limits, and wrap the batch call in a hard `timeout` with fail-open semantics (any non-zero exit/timeout/empty/unparseable output treated as 'no result found', function still returns success) so the optimization can never turn a recommendation-only check into a blocking one. Guard the assignment against `set -euo pipefail` aborting on the fail-open branch with `result=\"$(...)\" || true` as a standalone assignment (not `local x=$(...)`, which masks the command substitution's exit status).",
+      "category": "PATTERN",
+      "source_artifact": "specs/171_fix_literature_ingest_dedup_hang/summaries/01_fix-ingest-dedup-hang-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["batch-invocation", "subprocess-loop", "fail-open", "timeout", "set -euo pipefail", "ARG_MAX"]
+    },
+    {
+      "content": "A deliberate-break regression check (revert a threshold/constant and confirm the test suite fails) is only meaningful if the near-duplicate/near-match test fixture actually exercises the comparison being guarded. A fixture that hits an earlier short-circuit path (e.g. an exact-normalized-equality match that always scores 1.0) will pass regardless of a threshold regression, silently defeating the deliberate-break check. Pick a fixture whose score falls strictly between the threshold and any short-circuit value.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/171_fix_literature_ingest_dedup_hang/summaries/01_fix-ingest-dedup-hang-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deliberate-break-check", "regression-suite", "test-fixture", "short-circuit", "threshold-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788894448_36ce34",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
