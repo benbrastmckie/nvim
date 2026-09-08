@@ -28,8 +28,8 @@ next_project_number: 188
 139 [NOT STARTED] — Bare git history rewrites (`git commit --amend`, `git reset` with
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 140 [NOT STARTED] — Give agent-system/extensions/core/hooks/guard-destructive-git.sh 
-142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
-150 [NOT STARTED] — Research on demand: let the planner decide whether a research pha
+142 [RESEARCHED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
+150 [RESEARCHING] — Research on demand: let the planner decide whether a research pha
 157 [NOT STARTED] — The "Grouped by Topic" summary lines in TODO.md are cut with a bl
 166 [NOT STARTED] — DEFECT: a produced research report used section headings that are
 170 [NOT STARTED] — Audit all shell test suites in the source store for assertions wh
@@ -1453,7 +1453,7 @@ ACCEPTANCE.
 ---
 
 ### 150. Research on demand: planner-first lifecycle with research only when the planner asks or --research forces it
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 88
@@ -1479,10 +1479,11 @@ REFERENCE: specs/PATH.md, "Decisions".
 ---
 
 ### 142. Orchestrator context budget: measure and lock
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 88
+- **Research**: [142_reduce_orchestrator_token_consumption/reports/01_context-budget-gate-measurement.md]
 
 **Description**: === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-lock; absorbs the context-budget gate) ===
 SUPERSEDING SCOPE. The sweep described below is now the Stage A chain in specs/PATH.md (slim command, dispatch builder, cycle-plan, cycle-postflight, feature port, engine deletion). This task is the measurement and the lock, and it absorbs the warning-first context-budget gate from the abandoned verify-deploy context-gates task (its broken-@-ref half already holds and needs no work).
