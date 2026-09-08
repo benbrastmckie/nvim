@@ -1,25 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/155_thread_compare_flag_through_lean_implementation/plans/01_compare-flag-lean-threading.md",
-      "summary": "Six-phase plan threading an advisory --compare flag from parse-command-args.sh through orchestrate plumbing, both lean implementation skills and agents, into a documented comparator block in .return-meta.json."
-    }
-  ],
-  "next_steps": "Run /implement 155 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1788827855_dfff06_155",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": 3
-  },
-  "modified_files": [
-    "specs/155_thread_compare_flag_through_lean_implementation/plans/01_compare-flag-lean-threading.md"
-  ],
-  "memory_candidates": []
+    "session_id": "sess_1788827855_dfff06",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

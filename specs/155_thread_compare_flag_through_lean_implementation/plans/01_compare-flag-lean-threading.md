@@ -1,7 +1,7 @@
 # Implementation Plan: Task #155
 
 - **Task**: 155 - Thread an advisory `--compare` flag through the lean implementation path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: `lean-comparator-run.sh` (exists, tested), `lean-challenge-snapshot.sh` (exists, tested); dependency-ordered behind the in-flight lean artifact-skeletons work that edits `agents/lean-implementation-agent.md` and `agents/lean-research-agent.md`
 - **Research Inputs**: specs/155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md
@@ -178,23 +178,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Flag Spine — `COMPARE_FLAG` in `parse-command-args.sh` [NOT STARTED]
+### Phase 1: Flag Spine — `COMPARE_FLAG` in `parse-command-args.sh` [COMPLETED]
 
 **Goal**: `--compare` is parsed into an exported boolean `COMPARE_FLAG`, shaped exactly like
 `LIT_FLAG`, and stripped from `FOCUS_PROMPT` so it never leaks into a description.
 
 **Tasks**:
-- [ ] Add a `COMPARE_FLAG` line to the file's header comment block enumerating exported
+- [x] Add a `COMPARE_FLAG` line to the file's header comment block enumerating exported
       variables, worded like the existing `LIT_FLAG` line and naming it a mode hint that composes
       with `--hard` (the header block is load-bearing documentation — extend it, do not merely add
-      the assignment).
-- [ ] Add `COMPARE_FLAG="false"` to the flag-init default block, adjacent to `LIT_FLAG="false"`.
-- [ ] Add the `if [[ "$remaining" =~ --compare ]]; then COMPARE_FLAG="true"; fi` match block,
-      adjacent to the `--lit` block.
-- [ ] Add `| sed 's/--compare//g' \` to the `FOCUS_PROMPT` construction chain.
-- [ ] Add `COMPARE_FLAG` to the final `export` line.
-- [ ] Confirm `COMPARE_FLAG` is NOT modeled on `EFFORT_FLAG` (no enum slot, no mutual exclusion
-      with `--hard`, `--fast`, or any model flag).
+      the assignment). *(completed)*
+- [x] Add `COMPARE_FLAG="false"` to the flag-init default block, adjacent to `LIT_FLAG="false"`. *(completed)*
+- [x] Add the `if [[ "$remaining" =~ --compare ]]; then COMPARE_FLAG="true"; fi` match block,
+      adjacent to the `--lit` block. *(completed)*
+- [x] Add `| sed 's/--compare//g' \` to the `FOCUS_PROMPT` construction chain. *(completed)*
+- [x] Add `COMPARE_FLAG` to the final `export` line. *(completed)*
+- [x] Confirm `COMPARE_FLAG` is NOT modeled on `EFFORT_FLAG` (no enum slot, no mutual exclusion
+      with `--hard`, `--fast`, or any model flag). *(completed)*
 
 **Timing**: 0.5 hours
 
