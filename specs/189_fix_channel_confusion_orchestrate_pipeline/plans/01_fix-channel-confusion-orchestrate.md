@@ -398,39 +398,41 @@ consumed replays the cached plan verbatim and charges no cycle.
 
 ---
 
-### Phase 6: Do not charge for a read — durable cross-invocation ledger [NOT STARTED]
+### Phase 6: Do not charge for a read — durable cross-invocation ledger [COMPLETED]
 
 **Goal**: close the failure actually observed in production, where a parse failure in one
 `/orchestrate` invocation permanently consumed a cycle and the *next* invocation started from a
 fresh `mt_state_file` that could not see the wasted charge.
 
 **Tasks**:
-- [ ] Extend `orchestrate-loop-guard-init.sh` with a `pending_dispatch` field on the
+- [x] Extend `orchestrate-loop-guard-init.sh` with a `pending_dispatch` field on the
       `.orchestrator-loop-guard` file, alongside `cycle_count`, preserving every other field
       exactly as `--flush` already does. Shape:
       `{seq: int, phase: string, forced: bool, dispatch_file: string, recorded_at: string}` or
       absent. Add `--record-pending <task_dir> <json>` and `--clear-pending <task_dir>` forms,
       and extend `--seed`'s output to include `pending_dispatch` (defaulting to `null` for a
       pre-schema guard file, matching the existing `// 0` forward-compatibility posture).
-      Document all of it in the script header.
-- [ ] In `orchestrate-cycle-plan.sh`'s live half, before the `cycle_counts[t]` increment at
+      Document all of it in the script header. *(completed)*
+- [x] In `orchestrate-cycle-plan.sh`'s live half, before the `cycle_counts[t]` increment at
       `:1650-1654`: if the seeded `pending_dispatch` for this task exists, matches the freshly
       composed row in `(phase, forced)`, and its `dispatch_file` still exists on disk, then this
       is a replay of an already-charged-but-never-consumed dispatch — reuse the recorded `seq`,
       skip the increment, skip the `--flush`, and log a named
       `[orchestrate] UNCONSUMED DISPATCH REPLAY: …` line to stderr. Otherwise charge as today and
-      record the new `pending_dispatch`.
-- [ ] In `orchestrate-cycle-postflight.sh`, clear `pending_dispatch` for the task on **any**
+      record the new `pending_dispatch`. *(completed)*
+- [x] In `orchestrate-cycle-postflight.sh`, clear `pending_dispatch` for the task on **any**
       postflight outcome (success, failure, defer, halt) — reaching postflight at all is proof the
-      dispatch was consumed, so a run that got that far can never be replayed.
-- [ ] Update `context/reference/state-management-schema.md` (or the loop-guard file's documented
-      schema home, whichever the codebase actually uses) with the new field.
-- [ ] Add test groups to `test-orchestrate-cycle-plan.sh` and `test-loop-guard-budget-override.sh`:
+      dispatch was consumed, so a run that got that far can never be replayed. *(completed)*
+- [x] Update `context/reference/state-management-schema.md` (or the loop-guard file's documented
+      schema home, whichever the codebase actually uses) with the new field. *(completed: used
+      context/standards/orchestrator-runtime-files.md, the loop guard's actual documented schema
+      home -- state-management-schema.md has no loop-guard-file section at all)*
+- [x] Add test groups to `test-orchestrate-cycle-plan.sh` and `test-loop-guard-budget-override.sh`:
       a fresh session against a guard file carrying a matching, file-present `pending_dispatch`
       does not increment `cycle_count`; the same with a *different* phase, a missing dispatch
-      file, or a cleared `pending_dispatch` does increment it exactly once.
-- [ ] Confirm `--continue-budget`'s existing archive-and-reset path still works and now also
-      clears `pending_dispatch`.
+      file, or a cleared `pending_dispatch` does increment it exactly once. *(completed)*
+- [x] Confirm `--continue-budget`'s existing archive-and-reset path still works and now also
+      clears `pending_dispatch`. *(completed)*
 
 **Timing**: 2 hours
 

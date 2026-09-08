@@ -302,6 +302,23 @@ notice_prefix="[orchestrate]"
 attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 detecting_site_prefix="skill-orchestrate/SKILL.md"
 
+# Item (b), durable cross-invocation ledger: clear pending_dispatch unconditionally, on ANY
+# postflight outcome (success, failure, defer, off-schema — all count), for BOTH engines
+# uniformly (only orchestrate-cycle-plan.sh's multi-task path writes it today, via
+# orchestrate-loop-guard-init.sh --record-pending, but clearing is engine-agnostic since it
+# targets the durable per-task ${TASK_DIR}/.orchestrator-loop-guard file, not the ephemeral
+# mt_state_file). Reaching postflight at all — this call, right now — is proof the composition
+# that recorded it was consumed, so the NEXT orchestrate-cycle-plan.sh composition for this task
+# can never mistake this now-consumed dispatch for an unconsumed one to replay. Run BEFORE any
+# other write below, matching Decision (b)'s "first state write" placement in the multi-task
+# `is_live` block for its plan_cache counterpart. `--clear-pending` is itself a safe no-op when
+# nothing was ever recorded, so this never errors on an ordinary dispatch with no pending ledger
+# entry. Gated on is_live: a --dry-run postflight performs no writes at all, matching every other
+# mutation in this script.
+if is_live; then
+  bash "${SCRIPT_DIR}/orchestrate-loop-guard-init.sh" --clear-pending "$TASK_DIR" >/dev/null 2>&1 || true
+fi
+
 # ─── WORK (a.0): stray-handoff sweep (both engines, by construction) ───────────────────────────
 # Historically single-task-only (orchestrate-stage5-gates.sh, called only from single-task
 # Stage 5). A mechanism-agnostic backstop for a handoff written outside its task directory (the

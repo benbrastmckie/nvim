@@ -240,6 +240,35 @@ refusal, or any other partial exit, leaves the guard fully in place, exactly as 
 guard's entire job is to persist across exactly this gap so a subsequent `--continue-budget`
 invocation has `cycle_count` to read.
 
+### `pending_dispatch`: the durable, cross-invocation half of "do not charge for a read"
+
+`pending_dispatch` — `{seq: int, phase: string, forced: bool, dispatch_file: string,
+recorded_at: string}` or absent — is a NEWER field on this same guard file, written by
+`orchestrate-loop-guard-init.sh --record-pending` at the same charge site that increments
+`cycle_count`, and cleared by `--clear-pending` (called unconditionally by
+`orchestrate-cycle-postflight.sh` on every outcome — success, failure, defer, off-schema all
+count — since reaching postflight at all is proof the recorded dispatch was consumed). Unlike
+`dispatch_seq_counter`/`detected_defects`/`plan_version`/`max_cycles` above, it is NOT
+unconditionally carried forward: `--continue-budget`'s reset explicitly clears it too (alongside
+resetting `cycle_count` to `0`), because a stale entry from the now-exhausted (and separately
+archived) cycle must not survive into the freshly reset guard and be mistaken for a
+currently-unconsumed charge.
+
+The read side lives in `orchestrate-cycle-plan.sh`'s live per-task dispatch loop, immediately
+before the `cycle_count` increment: if a seeded `pending_dispatch` (read via
+`orchestrate-loop-guard-init.sh --seed`, which now also returns this field) matches the freshly
+composed row in `(phase, forced)` AND its recorded `dispatch_file` still exists on disk (proof no
+postflight ever ran to consume it), the composition reuses the recorded `seq` and skips both the
+`cycle_count` increment and the `--flush` call — this is a replay of an already-charged,
+never-consumed dispatch, not a genuinely new cycle. This closes the specific failure chain a live
+`/orchestrate` run reproduced: a defect that let one invocation dispatch nothing while still
+charging a cycle left that charge permanently stranded, since the NEXT invocation started from a
+fresh, unrelated `mt_state_file` (keyed by a new `session_id`) with no way to see it — the durable
+guard file, not the ephemeral multi-state file, is this mechanism's source of truth. Its
+IN-SESSION counterpart — replaying an unconsumed COMPOSITION (the whole plan, not one task's
+row) within the same `mt_state_file` — is `plan_cache`, a separate field on the multi-state file
+itself; see `orchestrate-cycle-plan.sh`'s own header for that mechanism's full contract.
+
 ## Consumer Repo Setup
 
 There is no automatic way for the source store to deliver a repo-root `.gitignore` contribution —

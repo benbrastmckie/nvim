@@ -1892,6 +1892,132 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 19: durable cross-invocation pending_dispatch ledger. A FRESH session (a different
+# session_id every time -- a genuinely new mt_state_file, so the in-session plan_cache from
+# Group 18 never applies here) against a durable guard file carrying a matching, file-present
+# pending_dispatch does not increment cycle_count; a mismatch on phase, a missing dispatch file,
+# or an absent pending_dispatch all charge normally.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+#!/usr/bin/env bash
+proj_num="$1"; phase="$2"
+jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 1901, "project_name": "g19_pending", "task_type": "general", "status": "not_started", "description": "durable pending_dispatch ledger", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+g19_guard_file="$WORKDIR/specs/1901_g19_pending/.orchestrator-loop-guard"
+g19_real_dispatch_file="$WORKDIR/specs/1901_g19_pending/plans/01_fixture.md"
+mkdir -p "$WORKDIR/specs/1901_g19_pending/plans"
+echo "fixture" > "$g19_real_dispatch_file"
+mkdir -p "$WORKDIR/specs/1901_g19_pending"
+
+# Case 1: matching pending_dispatch (phase=plan, forced=false), dispatch_file present on disk.
+cat > "$g19_guard_file" <<EOF
+{"dispatch_seq_counter": 3, "cycle_count": 2, "pending_dispatch": {"seq": 3, "phase": "plan", "forced": false, "dispatch_file": "${g19_real_dispatch_file}", "recorded_at": "2026-01-01T00:00:00Z"}}
+EOF
+run_sut --session g19_sess_case1 -- 1901
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 19 case 1: SUT exits 0"
+else
+  fail "Group 19 case 1: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
+  pass "Group 19 case 1: logs the UNCONSUMED DISPATCH REPLAY notice"
+else
+  fail "Group 19 case 1: expected the UNCONSUMED DISPATCH REPLAY notice; got: '$LAST_STDERR'"
+fi
+if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
+  pass "Group 19 case 1: the durable guard file's cycle_count is unchanged (no --flush)"
+else
+  fail "Group 19 case 1: expected cycle_count unchanged at 2; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+fi
+g19_mt_state_1="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case1.json"
+if [ "$(jq -r --arg t "1901" '.cycle_counts[$t]' "$g19_mt_state_1" 2>/dev/null)" = "2" ]; then
+  pass "Group 19 case 1: in-memory cycle_counts[1901] matches the seeded (unincremented) value"
+else
+  fail "Group 19 case 1: in-memory cycle_counts[1901] diverged: $(cat "$g19_mt_state_1" 2>/dev/null)"
+fi
+if [ "$(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)" = "3" ]; then
+  pass "Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one"
+else
+  fail "Group 19 case 1: expected dispatch_seq[1901]=3 (reused); got: $(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)"
+fi
+
+# Case 2: phase mismatch (pending_dispatch recorded for "research", candidate actually dispatches
+# "plan") -- must NOT replay; charges normally.
+cat > "$g19_guard_file" <<EOF
+{"dispatch_seq_counter": 3, "cycle_count": 2, "pending_dispatch": {"seq": 3, "phase": "research", "forced": false, "dispatch_file": "${g19_real_dispatch_file}", "recorded_at": "2026-01-01T00:00:00Z"}}
+EOF
+reset_lock_dirs
+run_sut --session g19_sess_case2 -- 1901
+if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
+  fail "Group 19 case 2: unexpectedly replayed despite a phase mismatch"
+else
+  pass "Group 19 case 2: a phase mismatch does not replay"
+fi
+if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
+  pass "Group 19 case 2: cycle_count charges normally (2 -> 3) on a phase mismatch"
+else
+  fail "Group 19 case 2: expected cycle_count=3 after a genuine charge; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+fi
+
+# Case 3: matching phase/forced, but the recorded dispatch_file no longer exists on disk -- must
+# NOT replay (no proof of non-consumption); charges normally.
+cat > "$g19_guard_file" <<EOF
+{"dispatch_seq_counter": 3, "cycle_count": 2, "pending_dispatch": {"seq": 3, "phase": "plan", "forced": false, "dispatch_file": "${WORKDIR}/specs/1901_g19_pending/plans/99_never-existed.md", "recorded_at": "2026-01-01T00:00:00Z"}}
+EOF
+reset_lock_dirs
+run_sut --session g19_sess_case3 -- 1901
+if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
+  fail "Group 19 case 3: unexpectedly replayed despite a missing dispatch_file"
+else
+  pass "Group 19 case 3: a missing dispatch_file does not replay"
+fi
+if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
+  pass "Group 19 case 3: cycle_count charges normally (2 -> 3) when the dispatch_file is missing"
+else
+  fail "Group 19 case 3: expected cycle_count=3 after a genuine charge; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+fi
+
+# Case 4: no pending_dispatch recorded at all (the ordinary case) -- charges normally, and
+# records a fresh pending_dispatch for the NEXT invocation to potentially replay.
+cat > "$g19_guard_file" <<EOF
+{"dispatch_seq_counter": 3, "cycle_count": 2}
+EOF
+reset_lock_dirs
+run_sut --session g19_sess_case4 -- 1901
+if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
+  pass "Group 19 case 4: no pending_dispatch charges normally (2 -> 3)"
+else
+  fail "Group 19 case 4: expected cycle_count=3; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+fi
+
+# Note: dispatch_seq_counter here mints from THIS (fresh) session's own mt_state_file, which
+# starts empty every session_id -- it has no relationship to the durable guard file's
+# vestigial "dispatch_seq_counter" field, so the newly recorded seq is 1, not 4.
+if jq -e '.pending_dispatch.phase == "plan" and .pending_dispatch.seq == 1' "$g19_guard_file" >/dev/null 2>&1; then
+  pass "Group 19 case 4: a fresh pending_dispatch is recorded (seq=1, phase=plan) for a future invocation"
+else
+  fail "Group 19 case 4: expected a fresh pending_dispatch to be recorded; got: $(cat "$g19_guard_file" 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

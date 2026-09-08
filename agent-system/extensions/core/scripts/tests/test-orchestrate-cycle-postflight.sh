@@ -38,7 +38,7 @@ require_file() {
 SUT_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
 require_file "$SUT_SRC"
 for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
-         orchestrate-churn.sh \
+         orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
          errors-append.sh events-append.sh; do
@@ -62,7 +62,7 @@ setup_sandbox() {
   rm -rf "$WORKDIR"
   mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
-           orchestrate-churn.sh \
+           orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
            errors-append.sh events-append.sh; do
@@ -1043,6 +1043,51 @@ if echo "$LAST_STDERR" | grep -qF "$g_fd3_marker"; then
   pass "invariant (fd-3): update-task-status.sh's own stdout confirmation landed on stderr, not the data channel"
 else
   fail "invariant (fd-3): expected update-task-status.sh's confirmation on stderr; got: '$LAST_STDERR'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Invariant: pending_dispatch ledger clearing (Item (b)'s durable cross-invocation half). Any
+# postflight outcome is proof the composition that recorded pending_dispatch was consumed, so
+# this script clears it unconditionally as one of its first writes -- engine-agnostic (targets
+# the durable per-task .orchestrator-loop-guard file directly, not the ephemeral mt_state_file).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Invariant: pending_dispatch is cleared from the durable loop-guard file on any postflight outcome"
+setup_sandbox
+pd_candidate_num=1602
+mkdir -p "$WORKDIR/specs/${pd_candidate_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${pd_candidate_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${pd_candidate_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${pd_candidate_num} -- pending_dispatch clearing invariant", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${pd_candidate_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 5, "detected_defects": [], "infra_failures": 0, "cycle_count": 3, "pending_dispatch": {"seq": 5, "phase": "implement", "forced": false, "dispatch_file": "/fake/path.md", "recorded_at": "2026-01-01T00:00:00Z"}}
+EOF
+future_window=$(( $(now_ts) + 500 ))
+cat > "$WORKDIR/specs/${pd_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":5,"artifacts":[{"type":"summary","path":"specs/${pd_candidate_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1}}
+EOF
+touch -d "@${future_window}" "$WORKDIR/specs/${pd_candidate_num}_candidate/.return-meta.json" 2>/dev/null || true
+run_sut "specs/${pd_candidate_num}_candidate" --session sess_pd --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file "specs/${pd_candidate_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 5 --dispatch-start-ts "$future_window" "$pd_candidate_num"
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "invariant (pending-dispatch): SUT exits 0"
+else
+  fail "invariant (pending-dispatch): SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+pd_guard_file="$WORKDIR/specs/${pd_candidate_num}_candidate/.orchestrator-loop-guard"
+if jq -e '.pending_dispatch == null or has("pending_dispatch") == false' "$pd_guard_file" >/dev/null 2>&1; then
+  pass "invariant (pending-dispatch): pending_dispatch was cleared from the durable loop-guard file"
+else
+  fail "invariant (pending-dispatch): pending_dispatch still present: $(cat "$pd_guard_file")"
+fi
+if [ "$(jq -r '.cycle_count' "$pd_guard_file" 2>/dev/null)" = "3" ]; then
+  pass "invariant (pending-dispatch): every other loop-guard field (cycle_count) is preserved"
+else
+  fail "invariant (pending-dispatch): cycle_count was not preserved: $(cat "$pd_guard_file")"
 fi
 
 echo ""

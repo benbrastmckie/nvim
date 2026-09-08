@@ -151,7 +151,8 @@ else
 EOF
     mkdir -p "$CP_WORKDIR/specs/950_loop_guard_target2"
     jq -n --argjson dsc 7 --argjson dd '["marker"]' \
-      '{cycle_count: 13, dispatch_seq_counter: $dsc, detected_defects: $dd}' \
+      --argjson pd '{"seq": 6, "phase": "implement", "forced": false, "dispatch_file": "/fake/never-existed.md", "recorded_at": "2026-01-01T00:00:00Z"}' \
+      '{cycle_count: 13, dispatch_seq_counter: $dsc, detected_defects: $dd, pending_dispatch: $pd}' \
       > "$CP_WORKDIR/specs/950_loop_guard_target2/.orchestrator-loop-guard"
 
     # Stubs for the LIVE-only dispatch path Case T2-2 reaches (Case T2-1 refuses before either is
@@ -206,6 +207,18 @@ EOF
       pass "TARGET 2 case T2-2: the exhausted guard is archived aside for auditability"
     else
       fail "TARGET 2 case T2-2: no archived exhausted-guard file found"
+    fi
+    # Item (b): --continue-budget's reset also clears pending_dispatch -- the STALE entry from
+    # the now-exhausted (and separately archived) cycle (seq=6, dispatch_file pointing at a file
+    # that never existed) must not survive into the freshly reset guard. This SAME cycle's own
+    # genuine dispatch (case T2-2 above) then records its own fresh pending_dispatch afterward,
+    # as any ordinary charge does -- so the assertion is "the stale one is gone", not "empty".
+    if [[ -f "$post_guard" ]] && \
+       [[ "$(jq -r '.pending_dispatch.seq' "$post_guard" 2>/dev/null)" != "6" ]] && \
+       [[ "$(jq -r '.pending_dispatch.dispatch_file' "$post_guard" 2>/dev/null)" != "/fake/never-existed.md" ]]; then
+      pass "TARGET 2 case T2-2: --continue-budget's reset clears the stale pending_dispatch entry"
+    else
+      fail "TARGET 2 case T2-2: expected the stale pending_dispatch entry cleared; got: $(cat "$post_guard" 2>/dev/null)"
     fi
   fi
 fi

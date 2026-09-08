@@ -892,13 +892,21 @@ fi
 # session_id, i.e. a fresh mt_state_file, ever re-seeds). READ-ONLY (orchestrate-loop-guard-init.sh
 # --seed never mutates or `mkdir -p`s), so this is safe under --dry-run — Decision 1's durable
 # backing store is peeked, never written, until an actual LIVE dispatch flushes it back below.
+# Also seeds `pending_dispatch_seed[$t]` (Item (b)'s durable, CROSS-invocation counterpart to the
+# in-session plan_cache above): the recorded `{seq, phase, forced, dispatch_file, recorded_at}`
+# of the last dispatch this task's durable guard file charged, or absent if none/never-recorded.
+# Consumed at the charge site below, in the live per-task dispatch loop.
+declare -A pending_dispatch_seed=()
 for t in "${task_args[@]}"; do
   [ -z "${project_names[$t]:-}" ] && continue
   _padded=$(printf "%03d" "$t")
   _task_dir_abs="${PROJECT_ROOT}/specs/${_padded}_${project_names[$t]}"
-  _seeded=$(bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --seed "$_task_dir_abs" 2>/dev/null | jq -r '.cycle_count // 0' 2>/dev/null) || _seeded=0
+  _seed_out=$(bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --seed "$_task_dir_abs" 2>/dev/null) || _seed_out=""
+  _seeded=$(printf '%s' "$_seed_out" | jq -r '.cycle_count // 0' 2>/dev/null) || _seeded=0
   case "$_seeded" in ''|*[!0-9]*) _seeded=0 ;; esac
   mt_set --arg t "$t" --argjson v "$_seeded" '.cycle_counts[$t] //= $v'
+  _seed_pending=$(printf '%s' "$_seed_out" | jq -c '.pending_dispatch // null' 2>/dev/null) || _seed_pending="null"
+  [ "$_seed_pending" != "null" ] && pending_dispatch_seed[$t]="$_seed_pending"
 done
 mt_save
 
@@ -1228,7 +1236,17 @@ for t in "${task_args[@]}"; do
           echo "[orchestrate] BUDGET EXHAUSTED for task #$t (cycle_count=${_task_cycle_count}/${_task_max_cycles}) — --continue-budget authorized a fresh budget. Archived exhausted guard to ${_exhausted_dest}." >&2
         fi
         bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$_task_dir_abs" 0 >/dev/null 2>&1 || true
+        # Item (b): a fresh budget also starts with a clean pending_dispatch ledger. The
+        # exhausted guard's own history (including whatever it last recorded) is already
+        # preserved verbatim in the archived copy above; the live file carrying a stale entry
+        # forward past the reset would let a future cycle mistake an old, already-exhausted
+        # cycle's charge for a currently-unconsumed one.
+        bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --clear-pending "$_task_dir_abs" >/dev/null 2>&1 || true
       fi
+      # Also drop the IN-MEMORY seed (read earlier, before this reset ran) -- otherwise the
+      # later charge site below would still see the now-stale value and could falsely match it
+      # against this cycle's freshly composed row.
+      unset "pending_dispatch_seed[$t]"
       mt_set --arg t "$t" '.cycle_counts[$t] = 0'
     else
       budget_blocked_tasks[$t]=1
@@ -1759,9 +1777,45 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # actually being built this cycle (mirrors single-task Stage 7's "increment cycle_count after a
   # dispatch" idiom, scoped per task), and flush the new value back to the durable
   # ${TASK_DIR}/.orchestrator-loop-guard file so it survives past this ephemeral mt_state_file.
-  task_new_cycle_count=$(mt_get --arg t "$t" '((.cycle_counts[$t] // 0) + 1)')
-  mt_set --arg t "$t" --argjson v "$task_new_cycle_count" '.cycle_counts[$t] = $v'
-  bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$task_dir_abs" "$task_new_cycle_count" >/dev/null 2>&1 || true
+  #
+  # Item (b), durable CROSS-invocation half (the in-session half is the plan_cache replay near
+  # the top of this script, which already short-circuits the trivial "re-run this exact
+  # composition with nothing new" case before this point is ever reached again within one
+  # session). Before charging: does pending_dispatch_seed[$t] -- seeded above from the durable
+  # guard file, i.e. potentially written by a DIFFERENT, now-defunct session -- describe THIS
+  # exact row (same phase, same forced flag) AND does its recorded dispatch_file still exist on
+  # disk (proof no postflight ever consumed it -- postflight clears pending_dispatch as its own
+  # first act on any outcome)? If so, this is a replay of an already-charged-but-never-consumed
+  # dispatch: reuse the recorded seq (so a postflight dispatch_seq check against that prior,
+  # still-live attempt's own artifacts keeps matching), skip the increment, skip the --flush.
+  # Otherwise charge as today and record the new pending_dispatch.
+  _pd_forced_this_cycle="${forced_this_cycle[$t]:-false}"
+  _pd_replay=false
+  if [ -n "${pending_dispatch_seed[$t]:-}" ]; then
+    _pd_phase=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.phase // ""')
+    _pd_forced=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.forced // false')
+    _pd_dispatch_file=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.dispatch_file // ""')
+    if [ "$_pd_phase" = "$g" ] && [ "$_pd_forced" = "$_pd_forced_this_cycle" ] && \
+       [ -n "$_pd_dispatch_file" ] && [ -f "$_pd_dispatch_file" ]; then
+      _pd_replay=true
+    fi
+  fi
+  if [ "$_pd_replay" = "true" ]; then
+    _pd_seq=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.seq')
+    mt_set --arg t "$t" --argjson seq "$_pd_seq" '.dispatch_seq[$t] = $seq'
+    task_dispatch_seq="$_pd_seq"
+    task_new_cycle_count=$(mt_get --arg t "$t" '(.cycle_counts[$t] // 0)')
+    echo "[orchestrate] UNCONSUMED DISPATCH REPLAY: task #$t's $g dispatch (seq=$_pd_seq) was already charged by a prior invocation and never consumed (its recorded dispatch_file still exists on disk) -- reusing that charge instead of charging again." >&2
+  else
+    task_new_cycle_count=$(mt_get --arg t "$t" '((.cycle_counts[$t] // 0) + 1)')
+    mt_set --arg t "$t" --argjson v "$task_new_cycle_count" '.cycle_counts[$t] = $v'
+    bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$task_dir_abs" "$task_new_cycle_count" >/dev/null 2>&1 || true
+    _pd_record_json=$(jq -n -c --argjson seq "$task_dispatch_seq" --arg phase "$g" \
+      --argjson forced "$_pd_forced_this_cycle" --arg df "$dispatch_file" \
+      --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '{seq: $seq, phase: $phase, forced: $forced, dispatch_file: $df, recorded_at: $ts}')
+    bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --record-pending "$task_dir_abs" "$_pd_record_json" >/dev/null 2>&1 || true
+  fi
 
   # `force` (Phase 7 addition, orchestrate-cycle-postflight.sh's --force-invoked wiring): this is
   # the ONLY point in the whole per-cycle pipeline where "was this task's phase forced this

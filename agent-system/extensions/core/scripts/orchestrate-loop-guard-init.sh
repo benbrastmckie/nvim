@@ -41,8 +41,10 @@
 #     read-only PROBE convention, e.g. `task-lock.sh check` vs. `acquire`). A missing directory,
 #     missing file, or unparseable JSON all degrade to `cycle_count: 0` (first sight of this task
 #     — the same "resume at 0" posture the single-task locked region's own resume-read applies to
-#     a pre-schema guard file via its `// 0` idiom).
-#     Output: `{"cycle_count": <int>}`.
+#     a pre-schema guard file via its `// 0` idiom). Also peeks `pending_dispatch` (see
+#     `--record-pending`/`--clear-pending` below), defaulting to `null` for a pre-schema guard
+#     file — the same forward-compatibility posture as `cycle_count`'s `// 0`.
+#     Output: `{"cycle_count": <int>, "pending_dispatch": <object>|null}`.
 #
 #   orchestrate-loop-guard-init.sh --flush <task_dir_abs> <cycle_count>
 #     Read-modify-write "<task_dir_abs>/.orchestrator-loop-guard": sets `.cycle_count` to the given
@@ -54,8 +56,27 @@
 #     old-format guard already is today.
 #     Output: `{"cycle_count": <int>}` (echoes the value just written).
 #
-# Exit codes: 0 on normal completion. 2 — usage error, jq unavailable, or a non-integer
-# `--flush` cycle_count argument.
+#   orchestrate-loop-guard-init.sh --record-pending <task_dir_abs> <json>
+#     Read-modify-write: sets `.pending_dispatch` to the given JSON object verbatim (must already
+#     be a valid, already-serialized JSON object — this form does not construct it), preserving
+#     every other field, including `cycle_count`. Creates the file/directory if absent, exactly
+#     like `--flush`. The durable cross-invocation ledger half of "do not charge for a read": a
+#     dispatch row this cycle actually charges records itself here so a LATER invocation (a fresh
+#     `mt_state_file`, unlike `--seed`/`--flush`'s in-session `plan_cache` counterpart) can tell
+#     "was this exact charge ever consumed" even after the charging session is long gone.
+#     Shape written: `{seq: int, phase: string, forced: bool, dispatch_file: string,
+#     recorded_at: string}`. Output: `{"pending_dispatch": <object just written>}`.
+#
+#   orchestrate-loop-guard-init.sh --clear-pending <task_dir_abs>
+#     Read-modify-write: `del(.pending_dispatch)`, preserving every other field. Reaching
+#     postflight for a dispatch at all is proof it was consumed — success, failure, defer, and
+#     off-schema outcomes all clear it identically. A missing file, or a file with no
+#     `pending_dispatch` key, is a safe no-op (idempotent clear). Does NOT `mkdir -p` — clearing a
+#     ledger entry that was never recorded (no directory at all) has nothing to do. Output:
+#     `{"pending_dispatch": null}`.
+#
+# Exit codes: 0 on normal completion. 2 — usage error, jq unavailable, a non-integer `--flush`
+# cycle_count argument, or invalid JSON given to `--record-pending`.
 
 set -uo pipefail
 
@@ -73,11 +94,14 @@ case "${1:-}" in
     fi
     seed_guard_file="${seed_task_dir}/.orchestrator-loop-guard"
     seed_cycle_count=0
+    seed_pending_json="null"
     if [ -f "$seed_guard_file" ] && jq empty "$seed_guard_file" 2>/dev/null; then
       seed_cycle_count=$(jq -r '.cycle_count // 0' "$seed_guard_file" 2>/dev/null) || seed_cycle_count=0
       case "$seed_cycle_count" in ''|*[!0-9]*) seed_cycle_count=0 ;; esac
+      seed_pending_json=$(jq -c '.pending_dispatch // null' "$seed_guard_file" 2>/dev/null) || seed_pending_json="null"
     fi
-    jq -n -c --argjson c "$seed_cycle_count" '{cycle_count: $c}'
+    jq -n -c --argjson c "$seed_cycle_count" --argjson p "$seed_pending_json" \
+      '{cycle_count: $c, pending_dispatch: $p}'
     exit 0
     ;;
   --flush)
@@ -105,6 +129,47 @@ case "${1:-}" in
       '.cycle_count = $c | .last_updated = $updated' \
       > "${flush_guard_file}.tmp" && mv "${flush_guard_file}.tmp" "$flush_guard_file"
     jq -n -c --argjson c "$flush_cycle_count" '{cycle_count: $c}'
+    exit 0
+    ;;
+  --record-pending)
+    rp_task_dir="${2:-}"
+    rp_json="${3:-}"
+    if [ -z "$rp_task_dir" ] || [ "$#" -ne 3 ]; then
+      echo "ERROR: orchestrate-loop-guard-init.sh: usage: orchestrate-loop-guard-init.sh --record-pending <task_dir_abs> <json>" >&2
+      exit 2
+    fi
+    if ! printf '%s' "$rp_json" | jq empty >/dev/null 2>&1; then
+      echo "ERROR: orchestrate-loop-guard-init.sh: --record-pending <json> is not valid JSON." >&2
+      exit 2
+    fi
+    mkdir -p "$rp_task_dir"
+    rp_guard_file="${rp_task_dir}/.orchestrator-loop-guard"
+    rp_base="{}"
+    if [ -f "$rp_guard_file" ] && jq empty "$rp_guard_file" 2>/dev/null; then
+      rp_base=$(cat "$rp_guard_file")
+    fi
+    printf '%s\n' "$rp_base" | jq -c \
+      --argjson p "$rp_json" \
+      --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '.pending_dispatch = $p | .last_updated = $updated' \
+      > "${rp_guard_file}.tmp" && mv "${rp_guard_file}.tmp" "$rp_guard_file"
+    jq -n -c --argjson p "$rp_json" '{pending_dispatch: $p}'
+    exit 0
+    ;;
+  --clear-pending)
+    cp_task_dir="${2:-}"
+    if [ -z "$cp_task_dir" ] || [ "$#" -ne 2 ]; then
+      echo "ERROR: orchestrate-loop-guard-init.sh: usage: orchestrate-loop-guard-init.sh --clear-pending <task_dir_abs>" >&2
+      exit 2
+    fi
+    cp_guard_file="${cp_task_dir}/.orchestrator-loop-guard"
+    if [ -f "$cp_guard_file" ] && jq empty "$cp_guard_file" 2>/dev/null; then
+      jq -c --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        'del(.pending_dispatch) | .last_updated = $updated' \
+        "$cp_guard_file" > "${cp_guard_file}.tmp" && mv "${cp_guard_file}.tmp" "$cp_guard_file"
+    fi
+    # A missing/unparseable guard file: nothing to clear, still a success (idempotent).
+    jq -n -c '{pending_dispatch: null}'
     exit 0
     ;;
 esac

@@ -1,0 +1,20 @@
+{
+  "phase": 6,
+  "phase_name": "Do not charge for a read -- durable cross-invocation ledger",
+  "started_at": "2026-09-08T03:05:00Z",
+  "last_updated": "2026-09-08T04:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend orchestrate-loop-guard-init.sh with pending_dispatch field and new flag forms", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh"]},
+    {"id": 2, "description": "Gate the cycle_counts[t] increment in orchestrate-cycle-plan.sh on unconsumed pending_dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Clear pending_dispatch on any postflight outcome in orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Update state-management-schema.md with the new field", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 5, "description": "Add test groups to test-orchestrate-cycle-plan.sh and test-loop-guard-budget-override.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Confirm --continue-budget still works and now also clears pending_dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Documented the new field in context/reference/state-management-schema.md as the plan literally named", "result": "failed", "reason": "that file has no loop-guard-file schema section at all; the loop guard's actual documented schema home is context/standards/orchestrator-runtime-files.md (which already documents cycle_count/dispatch_seq_counter semantics), matching the plan's own escape hatch: 'or the loop-guard file's documented schema home, whichever the codebase actually uses'."},
+    {"approach": "First Group 19 fixture ran cases 2-4 without reset_lock_dirs between them", "result": "failed", "reason": "case 1's task-lock.sh acquire was never released (no postflight ran), so cases 2-4 (different sessions, same task) found the lock held and deferred instead of dispatching, leaving cycle_count unchanged and producing false failures. Fixed by adding reset_lock_dirs before each case."}
+  ],
+  "handoff_count": 0
+}
