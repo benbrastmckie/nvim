@@ -463,7 +463,7 @@ exists, both must be gated, not just the first.
 
 ---
 
-### Phase 7: Maintained lint for the channel-discipline class, and the full gate run [NOT STARTED]
+### Phase 7: Maintained lint for the channel-discipline class, and the full gate run [IN PROGRESS]
 
 **Goal**: the defect class cannot regress unnoticed, and the whole change set passes the full gate
 set. The one place this task's scope collides with the checkpoint tasks' territory is recorded
