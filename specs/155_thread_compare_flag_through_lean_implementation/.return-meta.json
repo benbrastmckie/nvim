@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md",
+      "summary": "Maps the --compare wiring path (flag spine, skill delegation context, agent Final Verification Stage, .return-meta.json comparator block, postflight surfacing) onto the already-built lean-comparator-run.sh and lean-challenge-snapshot.sh, and flags an open scope question about /orchestrate-level flag plumbing."
+    }
+  ],
+  "next_steps": "Run /plan 155 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788827855_dfff06_155",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "This repo's default permitted_axioms whitelist for Lean Comparator (leanprover/comparator) integration is propext,Quot.sound,Classical.choice -- the three foundational classical axioms, matching the task-153 vendored test fixture (tests/fixtures/comparator/simple_match/config.json) and consistent with proof-debt-policy.md's 'no NEW axioms' policy (these three are ambient, not new).",
+      "category": "PATTERN",
+      "source_artifact": "specs/155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["comparator", "permitted_axioms", "lean4", "propext", "Classical.choice"]
+    },
+    {
+      "content": "lean-comparator-run.sh checks out ONE commit (git worktree add --detach) for both --challenge-module and --solution-module. Since a Challenge is committed immutably at plan-approval time and the Solution only exists after implementation finishes, any caller must pass --commit as the POST-implementation HEAD (not the Challenge's own recorded commit), and independently re-verify the Challenge file's content hash at that HEAD against the immutable manifest's content_sha256 before trusting the run -- lean-comparator-run.sh itself does not perform this cross-check.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["comparator", "git-worktree", "commit-selection", "immutability", "lean4"]
+    },
+    {
+      "content": "In this repo, flag threading for /orchestrate options happens in three places that must all move together: core/scripts/parse-command-args.sh (CLI parsing, exports FOO_FLAG), orchestrate-cycle-plan.sh (translates FOO_FLAG into a --foo arg for orchestrate-build-dispatch.sh, ~line 1476 alongside lit_flag/hard_mode/effort_flag), and orchestrate-build-dispatch.sh itself (re-parses --foo and decides what goes into the dispatch file / delegation context). A new mode-hint flag that only touches parse-command-args.sh and a downstream skill's delegation-context template, without touching the two orchestrate-*.sh sites, will never actually reach the skill under /orchestrate dispatch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrate", "flag-threading", "parse-command-args", "orchestrate-build-dispatch", "dispatch-context"]
+    }
+  ],
+  "dispatch_seq": 1
+}

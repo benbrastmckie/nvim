@@ -48,7 +48,7 @@ next_project_number: 178
 74 [NOT STARTED] — Build a shared, task-type-agnostic guard script that detects a us
   └─ 75 [NOT STARTED] — Wire the shared LaTeX build guard into the latex extension's life
   └─ 76 [NOT STARTED] — Close the coverage gap that the latex-extension wiring cannot rea
-155 [RESEARCHING] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
+155 [RESEARCHED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
   └─ 156 [NOT STARTED] — BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 167 [NOT STARTED] — Make continuous-build (vimtex `latexmk -pvc`) safety guidance alw
 
@@ -985,10 +985,11 @@ ACCEPTANCE.
 ---
 
 ### 155. Thread an advisory --compare flag through the lean implementation path
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 137, Task 153, Task 154
+- **Research**: [155_thread_compare_flag_through_lean_implementation/reports/01_compare-flag-lean-threading.md]
 
 **Description**: BACKGROUND (verified 2026-09-07, shared by all Comparator tasks).
 leanprover/comparator (Apache-2.0, github.com/leanprover/comparator, default branch master,
