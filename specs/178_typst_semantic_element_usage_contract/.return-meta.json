@@ -1,28 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
   "task_number": 178,
-  "session_id": "sess_1788831210_6c6dbe_178",
-  "dispatch_seq": 3,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/178_typst_semantic_element_usage_contract/plans/01_semantic-element-usage-contract.md",
-      "summary": "6-phase plan authoring the typst semantic-element usage standard and wiring it as a structural self-review gate into the implementation agent, skill, context index, mechanics file, and chapter template."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 4.5,
-  "dependency_waves": [[1], [2, 3, 4, 5], [6]],
-  "memory_candidates": [
-    {
-      "content": "When a documented norm has already failed to change agent behavior once (an unenforced checklist line the agent demonstrably loaded and still violated), the fix is never one more prose line. Route the norm into a verification stage the agent actually executes (a self-review sub-step with a stated output inside the phase-completion gate), plus MUST NOT items, and install it at EVERY authoring path -- including any skill-level self-execution fallback that bypasses the agent's own verification stage. A gate installed only in the agent leaves the fallback path ungated.",
-      "category": "PATTERN",
-      "source_artifact": "specs/178_typst_semantic_element_usage_contract/plans/01_semantic-element-usage-contract.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["enforcement", "self-review", "must-not", "self-execution-fallback", "agent-contract", "falsified-hypothesis"]
-    }
-  ],
-  "next_steps": "Run /implement 178 to execute the plan"
+  "session_id": "sess_1788831210_6c6dbe",
+  "dispatch_seq": 4
 }

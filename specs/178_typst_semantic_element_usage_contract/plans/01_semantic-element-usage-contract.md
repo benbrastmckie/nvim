@@ -1,7 +1,7 @@
 # Implementation Plan: Semantic Element Usage Contract for the Typst Extension
 
 - **Task**: 178 - Author the missing semantics layer for the typst extension's semantic elements, and wire it into the implementation agent and skill as an actual structural gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/178_typst_semantic_element_usage_contract/reports/01_semantic-element-usage-contract.md
@@ -111,38 +111,38 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author the Semantic Element Usage Standard [NOT STARTED]
+### Phase 1: Author the Semantic Element Usage Standard [COMPLETED]
 
 **Goal**: Create the missing semantics layer — a single standard stating, per semantic element,
 what it is for, its expected density, and its legal placement.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md`
-- [ ] Write a short preamble stating the file's scope: these elements are rhetorical commitments,
-      not decorations; `typst compile` has no opinion on any of them
-- [ ] Write a **Universal Placement Rule** section applying to every element: a semantic element
+- [x] Create `agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md` *(completed)*
+- [x] Write a short preamble stating the file's scope: these elements are rhetorical commitments,
+      not decorations; `typst compile` has no opinion on any of them *(completed)*
+- [x] Write a **Universal Placement Rule** section applying to every element: a semantic element
       MUST NOT be the first body content after a heading with no intervening prose. Every heading
-      opens with prose that states what the section is about; elements come after that prose
-- [ ] Write one subsection per element, each with three labeled parts — **What it is for**,
+      opens with prose that states what the section is about; elements come after that prose *(completed)*
+- [x] Write one subsection per element, each with three labeled parts — **What it is for**,
       **Expected density**, **Legal placement** — covering: `definition`, `theorem`, `lemma`,
       `corollary`, `example`, `proof`, `remark`, and `rule-block` / `rule-list` from
-      `patterns/rule-environments.md`
-- [ ] Encode the user's remark norm in substance, close to its original wording: remarks are for
+      `patterns/rule-environments.md` *(completed: also covers corollary, confirmed present via cor: label prefix)*
+- [x] Encode the user's remark norm in substance, close to its original wording: remarks are for
       SPARING, high-value OFF-TOPIC points or big-picture reflections on the current development;
       they typically FOLLOW some substantial result; a remark is never a chapter opener and never
-      a long enumerated status/tracking list
-- [ ] Add a **Where tracking content belongs** section: enumerated formalization-status /
+      a long enumerated status/tracking list *(completed)*
+- [x] Add a **Where tracking content belongs** section: enumerated formalization-status /
       completion-tracking checklists are task-management material and belong in `specs/**` task
       artifacts; if they must live in the document at all, an appendix or a dedicated status
-      section — never chapter-opening body prose, never inside a `#remark`
-- [ ] Add a **Worked contrast** section with an explicit INCORRECT example (a `#remark` carrying an
+      section — never chapter-opening body prose, never inside a `#remark` *(completed)*
+- [x] Add a **Worked contrast** section with an explicit INCORRECT example (a `#remark` carrying an
       enumerated status list immediately under a chapter heading) and its CORRECT counterpart
       (opening prose; result; then a short reflective remark), matching the Correct/Incorrect
-      style already used in `standards/textbook-standards.md`
-- [ ] Add a closing **Self-review questions** list the agent and skill can execute verbatim at
-      Phase 5's gate (one question per prohibition)
-- [ ] Cross-reference `standards/type-theory-foundations.md` as the narrow, pre-existing instance
-      of the same sparingness principle, so the two are not read as competing rules
+      style already used in `standards/textbook-standards.md` *(completed)*
+- [x] Add a closing **Self-review questions** list the agent and skill can execute verbatim at
+      Phase 5's gate (one question per prohibition) *(completed)*
+- [x] Cross-reference `standards/type-theory-foundations.md` as the narrow, pre-existing instance
+      of the same sparingness principle, so the two are not read as competing rules *(completed)*
 
 **Timing**: 1.25 hours
 
