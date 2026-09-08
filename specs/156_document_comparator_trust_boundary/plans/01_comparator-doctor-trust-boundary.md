@@ -119,7 +119,7 @@ does and does not certify, and link it from the lean4 context index. This is the
 of the task.
 
 **Tasks**:
-- [ ] Create `context/project/lean4/tools/comparator-guide.md` with this section order:
+- [x] Create `context/project/lean4/tools/comparator-guide.md` with this section order:
   1. What Comparator is, in two or three sentences, and when an operator would reach for it.
   2. **What a green result certifies** — the three upstream properties, quoted verbatim: the
      named theorems "Prove the same statement as provided in `Challenge`", "Use no more axioms
@@ -142,11 +142,11 @@ of the task.
      surfaced but does not fail verification, downgrade status, or block completion.
   8. A short cross-reference to `domain/comparator-integration.md` for implementation detail
      (clean-room worktree, verdict vocabulary, runner flags) — pointer only, no duplication.
-- [ ] State explicitly, in the section describing the doctor's version verdict, that
+- [x] State explicitly, in the section describing the doctor's version verdict, that
       `UNKNOWN (cannot verify)` is not a pass.
-- [ ] Add one bullet under `## Key Files` in `context/project/lean4/README.md` linking
+- [x] Add one bullet under `## Key Files` in `context/project/lean4/README.md` linking
       `tools/comparator-guide.md` with a one-line description.
-- [ ] Verify no task-number references anywhere in either file.
+- [x] Verify no task-number references anywhere in either file.
 
 **Timing**: 1.25 hours
 
@@ -181,35 +181,35 @@ the guide.
 
 ---
 
-### Phase 2: Doctor mode in skill-lean-version and commands/lean.md [NOT STARTED]
+### Phase 2: Doctor mode in skill-lean-version and commands/lean.md [COMPLETED]
 
 **Goal**: Add `doctor` as a fourth mode to the Lean version skill and mirror it in the `/lean`
 command, probing the four Comparator binaries and checking the C3 version match.
 
 **Tasks**:
-- [ ] `skills/skill-lean-version/SKILL.md`: add `doctor` to the Step 1 argument parser's
+- [x] `skills/skill-lean-version/SKILL.md`: add `doctor` to the Step 1 argument parser's
       `case "$arg"` mode list and to the Step 3 route-by-mode list; add a new mode step
       implementing the probe.
-- [ ] Implement binary resolution reusing the four env-var names from
+- [x] Implement binary resolution reusing the four env-var names from
       `scripts/lean-comparator-run.sh`'s `resolve_binary()`: `COMPARATOR_BIN` (comparator),
       `COMPARATOR_LANDRUN` (landrun), `COMPARATOR_LEAN4EXPORT` (lean4export), `COMPARATOR_NANODA`
       (nanoda_bin, optional). Each: override var first, then `command -v`.
-- [ ] For each binary report: name, present yes/no, resolved path (`readlink -f`) when present,
+- [x] For each binary report: name, present yes/no, resolved path (`readlink -f`) when present,
       and the override env var an operator may set.
-- [ ] Implement the C3 version check for `lean4export` only: `readlink -f` the resolved binary,
+- [x] Implement the C3 version check for `lean4export` only: `readlink -f` the resolved binary,
       walk up at most 5 parent directories looking for a `lean-toolchain` file, compare its
       trimmed content against the target project's own `lean-toolchain`. Emit exactly one of four
       labels: `matched`, `mismatched`, `UNKNOWN (cannot verify)`, or a not-applicable note when
       `lean4export` is absent. Never emit OK/pass/green for the unknown case.
-- [ ] On `mismatched` and on `UNKNOWN`, print the two toolchain strings (or the missing-file
+- [x] On `mismatched` and on `UNKNOWN`, print the two toolchain strings (or the missing-file
       reason) plus the actionable remedy, e.g. "confirm manually that lean4export at `<path>` was
       built against `<target-toolchain>`".
-- [ ] Handle the target project having no `lean-toolchain` at all (report it; do not crash).
-- [ ] `commands/lean.md`: add `doctor` to the `## Modes` table, to STEP 1's mode-parsing comment,
+- [x] Handle the target project having no `lean-toolchain` at all (report it; do not crash).
+- [x] `commands/lean.md`: add `doctor` to the `## Modes` table, to STEP 1's mode-parsing comment,
       and to STEP 2's routing list; add `### STEP 3D: Doctor Mode` mirroring the skill's steps;
       add a `### Doctor Output` example under `## Output Examples` showing all three states.
-- [ ] Update the `argument-hint` frontmatter in `commands/lean.md` to include `doctor`.
-- [ ] Verify no task-number references in either file.
+- [x] Update the `argument-hint` frontmatter in `commands/lean.md` to include `doctor`.
+- [x] Verify no task-number references in either file.
 
 **Timing**: 1.5 hours
 

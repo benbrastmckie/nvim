@@ -1,0 +1,50 @@
+{
+  "phase": 2,
+  "phase_name": "Doctor mode in skill-lean-version and commands/lean.md",
+  "started_at": "2026-09-07T00:10:00Z",
+  "last_updated": "2026-09-07T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add doctor to SKILL.md mode parser and router, implement the probe",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/skills/skill-lean-version/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Implement binary resolution reusing the four env-var names from lean-comparator-run.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/skills/skill-lean-version/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Implement the C3 lean4export version-match check with four-valued verdict",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/skills/skill-lean-version/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Mirror doctor mode in commands/lean.md (modes table, argument-hint, STEP 1/2, STEP 3D, output example)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/commands/lean.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Verify no task-number references in either file; verify env-var and bash-block agreement",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

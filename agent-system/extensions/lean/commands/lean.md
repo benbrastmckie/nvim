@@ -1,7 +1,7 @@
 ---
 description: Manage Lean toolchain and Mathlib versions
 allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
-argument-hint: "[check|upgrade|rollback] [--dry-run] [--version VERSION]"
+argument-hint: "[check|upgrade|rollback|doctor] [--dry-run] [--version VERSION]"
 ---
 
 # /lean Command
@@ -21,6 +21,7 @@ Manage Lean toolchain and Mathlib versions. Provides status display, interactive
 | `check` (default) | Show current versions and available updates |
 | `upgrade` | Interactively upgrade toolchain and Mathlib |
 | `rollback` | Revert to a previous version from backup |
+| `doctor` | Probe the Comparator environment: binary presence + C3 `lean4export` version match |
 
 ## Options
 
@@ -44,7 +45,7 @@ dry_run=false
 target_version=""
 
 # Parse from $ARGUMENTS
-# First non-flag argument is mode (check, upgrade, rollback)
+# First non-flag argument is mode (check, upgrade, rollback, doctor)
 # --dry-run sets dry_run=true
 # --version or --version=X sets target_version
 ```
@@ -60,6 +61,7 @@ Based on parsed mode:
 - `check` -> **IMMEDIATELY CONTINUE** to STEP 3A (Check Mode)
 - `upgrade` -> **IMMEDIATELY CONTINUE** to STEP 3B (Upgrade Mode)
 - `rollback` -> **IMMEDIATELY CONTINUE** to STEP 3C (Rollback Mode)
+- `doctor` -> **IMMEDIATELY CONTINUE** to STEP 3D (Doctor Mode)
 
 ---
 
@@ -220,6 +222,135 @@ Based on parsed mode:
 
 ---
 
+### STEP 3D: Doctor Mode
+
+**EXECUTE NOW**: Probe the Comparator environment. This mode only reports on the environment —
+it does not install or fix anything. See
+`context/project/lean4/tools/comparator-guide.md` for what a green Comparator result does and
+does not certify.
+
+1. **Resolve each binary**, reusing `lean-comparator-run.sh`'s exact override-var names and
+   resolution order (override var first, `command -v` fallback; a set-but-non-executable override
+   is a resolution FAILURE, not a silent fall-through to PATH):
+   ```bash
+   resolve_binary() {
+     local override_var="$1" path_name="$2" override_val
+     override_val="${!override_var:-}"
+     if [ -n "$override_val" ]; then
+       if [ -x "$override_val" ]; then
+         echo "$override_val"
+         return 0
+       fi
+       return 1
+     fi
+     command -v "$path_name" 2>/dev/null
+   }
+   ```
+
+   | Binary | Override env var | Required |
+   |--------|-------------------|----------|
+   | `comparator` | `COMPARATOR_BIN` | yes |
+   | `landrun` | `COMPARATOR_LANDRUN` | yes |
+   | `lean4export` | `COMPARATOR_LEAN4EXPORT` | yes |
+   | `nanoda_bin` | `COMPARATOR_NANODA` | no (only used with `--enable-nanoda`) |
+
+2. **Check the C3 version-match constraint for `lean4export` only** — it must be built against
+   the *target project's* Lean toolchain, not Comparator's own. `lean4export` has no
+   `--version`/`--help` flag and real binaries observed are statically linked with no
+   elan-toolchain path visible to `ldd`, so binary introspection is not used. Instead, walk up at
+   most 5 parent directories from the resolved binary's realpath looking for a sibling
+   `lean-toolchain` file, and diff its content against the target project's own `lean-toolchain`:
+   ```bash
+   find_lean_toolchain_upward() {
+     local dir="$1" max_levels="$2" level=0
+     while [ "$level" -le "$max_levels" ]; do
+       if [ -f "$dir/lean-toolchain" ]; then
+         echo "$dir/lean-toolchain"
+         return 0
+       fi
+       [ "$dir" = "/" ] && break
+       dir="$(dirname "$dir")"
+       level=$((level + 1))
+     done
+     return 1
+   }
+
+   check_lean4export_version() {
+     local lean4export_bin="$1" target_toolchain_file="$2"
+     local bin_path resolved_dir found_file found_toolchain target_toolchain
+
+     bin_path="$(readlink -f "$lean4export_bin")"
+     resolved_dir="$(dirname "$bin_path")"
+     found_file="$(find_lean_toolchain_upward "$resolved_dir" 5 || true)"
+
+     if [ -z "$found_file" ]; then
+       echo "UNKNOWN (cannot verify)"
+       echo "  reason: no lean-toolchain found within 5 parent directories of $bin_path"
+       echo "  remedy: confirm manually that lean4export at $bin_path was built against the target project's toolchain"
+       return
+     fi
+
+     found_toolchain="$(tr -d '\n' < "$found_file")"
+
+     if [ ! -f "$target_toolchain_file" ]; then
+       echo "UNKNOWN (cannot verify)"
+       echo "  reason: target project has no lean-toolchain file at $target_toolchain_file"
+       return
+     fi
+     target_toolchain="$(tr -d '\n' < "$target_toolchain_file")"
+
+     if [ "$found_toolchain" = "$target_toolchain" ]; then
+       echo "matched"
+       echo "  lean4export toolchain ($found_file): $found_toolchain"
+       echo "  target project toolchain ($target_toolchain_file): $target_toolchain"
+     else
+       echo "mismatched"
+       echo "  lean4export toolchain ($found_file): $found_toolchain"
+       echo "  target project toolchain ($target_toolchain_file): $target_toolchain"
+       echo "  remedy: confirm manually that lean4export at $bin_path was built against $target_toolchain, or install a matching lean4export and set COMPARATOR_LEAN4EXPORT"
+     fi
+   }
+   ```
+   **`UNKNOWN (cannot verify)` is never a pass.** Never report OK/pass/green for that outcome.
+
+3. **Report all four binaries plus the version verdict**:
+   ```bash
+   echo "Comparator Environment Doctor"
+   echo "=============================="
+   echo ""
+
+   for pair in "comparator:COMPARATOR_BIN" "landrun:COMPARATOR_LANDRUN" "lean4export:COMPARATOR_LEAN4EXPORT"; do
+     name="${pair%%:*}"
+     var="${pair##*:}"
+     path="$(resolve_binary "$var" "$name" || true)"
+     if [ -n "$path" ]; then
+       echo "$name: present ($(readlink -f "$path")) [override: $var]"
+     else
+       echo "$name: MISSING [override: $var]"
+     fi
+   done
+
+   nanoda_path="$(resolve_binary COMPARATOR_NANODA nanoda_bin || true)"
+   if [ -n "$nanoda_path" ]; then
+     echo "nanoda_bin: present ($(readlink -f "$nanoda_path")) [override: COMPARATOR_NANODA] (optional)"
+   else
+     echo "nanoda_bin: not found [override: COMPARATOR_NANODA] (optional)"
+   fi
+
+   echo ""
+   echo "lean4export version check (C3):"
+   lean4export_path="$(resolve_binary COMPARATOR_LEAN4EXPORT lean4export || true)"
+   if [ -z "$lean4export_path" ]; then
+     echo "  not applicable — lean4export is absent"
+   else
+     check_lean4export_version "$lean4export_path" "lean-toolchain" | sed 's/^/  /'
+   fi
+   ```
+
+**STOP** - execution complete.
+
+---
+
 ## Examples
 
 ### Check Current Versions
@@ -256,6 +387,13 @@ Based on parsed mode:
 ```bash
 # Restore previous version from backup
 /lean rollback
+```
+
+### Doctor
+
+```bash
+# Probe the Comparator environment (binaries + C3 version match)
+/lean doctor
 ```
 
 ## Output Examples
@@ -320,6 +458,61 @@ Backup saved to: .lean-version-backup/
 
 Next: Run /lake to verify the build passes.
 ```
+
+### Doctor Output
+
+All three acceptance states, shown as the doctor would report them (state C, present-but-mismatched, is the one that matters most — see `context/project/lean4/tools/comparator-guide.md`):
+
+**State: all present, `lean4export` version matched**
+```
+Comparator Environment Doctor
+==============================
+
+comparator: present (/home/user/.nix-profile/bin/comparator) [override: COMPARATOR_BIN]
+landrun: present (/home/user/.nix-profile/bin/landrun) [override: COMPARATOR_LANDRUN]
+lean4export: present (/home/user/checkout/.lake/build/bin/lean4export) [override: COMPARATOR_LEAN4EXPORT]
+nanoda_bin: not found [override: COMPARATOR_NANODA] (optional)
+
+lean4export version check (C3):
+  matched
+    lean4export toolchain (/home/user/checkout/lean-toolchain): leanprover/lean4:v4.27.0-rc1
+    target project toolchain (lean-toolchain): leanprover/lean4:v4.27.0-rc1
+```
+
+**State: a binary missing**
+```
+Comparator Environment Doctor
+==============================
+
+comparator: present (/home/user/.nix-profile/bin/comparator) [override: COMPARATOR_BIN]
+landrun: present (/home/user/.nix-profile/bin/landrun) [override: COMPARATOR_LANDRUN]
+lean4export: MISSING [override: COMPARATOR_LEAN4EXPORT]
+nanoda_bin: not found [override: COMPARATOR_NANODA] (optional)
+
+lean4export version check (C3):
+  not applicable — lean4export is absent
+```
+
+**State: present but mismatched — the state that matters**
+```
+Comparator Environment Doctor
+==============================
+
+comparator: present (/home/user/.nix-profile/bin/comparator) [override: COMPARATOR_BIN]
+landrun: present (/home/user/.nix-profile/bin/landrun) [override: COMPARATOR_LANDRUN]
+lean4export: present (/home/user/other-checkout/.lake/build/bin/lean4export) [override: COMPARATOR_LEAN4EXPORT]
+nanoda_bin: not found [override: COMPARATOR_NANODA] (optional)
+
+lean4export version check (C3):
+  mismatched
+    lean4export toolchain (/home/user/other-checkout/lean-toolchain): leanprover/lean4:v4.34.0-rc2
+    target project toolchain (lean-toolchain): leanprover/lean4:v4.27.0-rc1
+    remedy: confirm manually that lean4export at /home/user/other-checkout/.lake/build/bin/lean4export was built against leanprover/lean4:v4.27.0-rc1, or install a matching lean4export and set COMPARATOR_LEAN4EXPORT
+```
+
+A fourth outcome, `UNKNOWN (cannot verify)` (no `lean-toolchain` discoverable within the 5-level
+walk-up bound), is never rendered as a pass — see `comparator-guide.md`'s version-coupling
+section.
 
 ## Safety
 
