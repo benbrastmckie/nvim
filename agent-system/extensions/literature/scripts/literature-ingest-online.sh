@@ -71,9 +71,10 @@
 #   ONLINE_INGEST_DUPLICATE_DETECTED     create-item path only: the DOI-normalized live-library
 #                                         dedup check found an existing Zotero item whose `.doi`
 #                                         matches the record's (normalized) DOI. Hard stop --
-#                                         deliberately stricter than the non-blocking
-#                                         check_duplicate_title() -- because the Web API performs
-#                                         no server-side dedup. NO Zotero write is attempted.
+#                                         deliberately stricter than the non-blocking,
+#                                         hard-timed, fail-open check_duplicate_title() -- because
+#                                         the Web API performs no server-side dedup. NO Zotero
+#                                         write is attempted.
 #   ONLINE_INGEST_DEDUP_CHECK_FAILED     create-item path only: the live dedup check itself could
 #                                         not be performed (zotero-read.sh search failed or
 #                                         returned unparseable output). Never conflated with "no
@@ -92,7 +93,9 @@
 # DOI-normalized, live-library dedup check (check_live_doi_duplicate(), see below), which
 # performs a hard stop (ONLINE_INGEST_DUPLICATE_DETECTED, create-item path only) on a confirmed
 # duplicate. A non-fresh classification with no DOI to check falls through honestly (logged, not
-# silently treated as a pass) to the existing, non-blocking check_duplicate_title() heuristic.
+# silently treated as a pass) to the existing, non-blocking check_duplicate_title() heuristic --
+# a single bounded (10s timeout) .zotero-title-sim.py --batch invocation against index.json,
+# fail-open on timeout/failure/unparseable output, so it can never gate or delay ingestion.
 #
 # EXIT CODES:
 #   0   ONLINE_INGEST_INGESTED or ONLINE_INGEST_ATTACHED printed (full success)

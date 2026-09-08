@@ -284,27 +284,27 @@ file remains valid JSON (`jq . manifest.json > /dev/null`).
 
 ---
 
-### Phase 4: Record the measured outcome and the redeploy requirement [NOT STARTED]
+### Phase 4: Record the measured outcome and the redeploy requirement [COMPLETED]
 
 **Goal**: Update the script's own documentation to reflect the bounded, fail-open check, and
 record the before/after timing plus the stale-deploy caveat where a future reader will find them.
 
 **Tasks**:
-- [ ] Measure and record: wall-clock of a full-index dedup check before the fix (from the task
+- [x] Measure and record: wall-clock of a full-index dedup check before the fix (from the task
       description's observed 9-10 minutes / rc=124 at 540s) and after (Phase 2's measurement),
       against the confirmed 11,793-entry index.
-- [ ] Update the `literature-ingest-online.sh` header comment block where it describes the
+- [x] Update the `literature-ingest-online.sh` header comment block where it describes the
       non-blocking `check_duplicate_title()` heuristic (the `EXPORT FRESHNESS + LIVE DEDUP GUARD`
       paragraph, ~line 95, and the `ONLINE_INGEST_DUPLICATE_DETECTED` token description, ~line
       75) so the "non-blocking" claim is backed by the new hard time bound and fail-open
       semantics.
-- [ ] Add a short subsection to
+- [x] Add a short subsection to
       `agent-system/extensions/literature/context/project/literature/tools/zotero-scripts.md`
       (or the most specific existing home found at implementation time) describing the dedup
       check's contract: recommendation-only, single bounded invocation, 0.85 threshold,
       fail-open on timeout/parse failure. Cite the script and function by name — no task numbers
       (`.claude/rules/no-task-references-in-deliverables.md`).
-- [ ] Note in the implementation summary that `.claude/scripts/literature-ingest-online.sh` and
+- [x] Note in the implementation summary that `.claude/scripts/literature-ingest-online.sh` and
       `.claude/scripts/.zotero-title-sim.py` are stale deploy copies until the user redeploys the
       literature extension, and that the sibling `literature-briefing.sh` SIGPIPE fix is already
       in the source store and likewise only awaits redeployment.

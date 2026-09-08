@@ -23,6 +23,35 @@ must be passed as a SEPARATE argument. A single quoted multi-word phrase is trea
 and matches nothing. See `patterns/agent-exploration.md` ("Two Search Tools") for the full
 comparison against `literature-search.sh`.
 
+## Duplicate-Title Dedup Check
+
+`literature-ingest-online.sh`'s `check_duplicate_title()` is a recommendation-only,
+non-blocking guard that runs before either Zotero-write path (create-item or
+attach-to-existing). It scores the incoming title against every title in the global
+`index.json` and, on a match at or above the 0.85 similarity threshold, logs a `WARNING:
+possible duplicate --` line to stderr — it never gates or delays ingestion, and always returns
+success.
+
+The check is a single bounded invocation, not a per-title loop: `check_duplicate_title()` pipes
+every `index.json` title through one `python3 .zotero-title-sim.py --batch <title>` call under
+a `timeout 10`, rather than spawning a subprocess per candidate. `.zotero-title-sim.py --batch`
+reads existing titles on stdin, short-circuits to score `1.0` on the first normalized-equality
+match (skipping `SequenceMatcher` scoring entirely for that title), and otherwise keeps the
+first strict-maximum `SequenceMatcher` ratio (ties broken by index order, matching the original
+per-title loop). `.zotero-title-sim.py`'s original 2-argv CLI form
+(`sim.py TITLE_A TITLE_B` -> a single float) is unchanged and still backs
+`zotero-resolve-pdf.sh`'s `title_similarity()`.
+
+Fail-open semantics: a timeout, non-zero exit, empty output, or an output line that does not
+parse as `<score><TAB><title>` is treated as "no duplicate found" — the function always returns
+0. This bounds the check's cost to the 10s timeout in the worst case (measured at roughly 1s
+against an 11,793-entry index in practice), instead of the multi-minute, unbounded stall of the
+former one-`python3`-process-per-title loop.
+
+See `agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh` for the
+regression suite locking in the threshold, the WARNING text, the tie-break order, the
+2-argv/batch contracts, and the fail-open paths.
+
 ## Related
 
 - `domain/zotero-integration.md` — export setup and the `zot` CLI

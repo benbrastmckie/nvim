@@ -1,0 +1,12 @@
+{
+  "phase": 4,
+  "phase_name": "Record the measured outcome and the redeploy requirement",
+  "started_at": "2026-09-08T22:41:33Z",
+  "last_updated": "2026-09-08T22:41:33Z",
+  "objectives": [
+    {"id": 1, "description": "Measure before/after timing; update header comment block; add dedup-check contract subsection to zotero-scripts.md", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh", "agent-system/extensions/literature/context/project/literature/tools/zotero-scripts.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
