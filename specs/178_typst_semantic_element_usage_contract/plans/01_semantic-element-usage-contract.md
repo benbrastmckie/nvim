@@ -245,25 +245,28 @@ of the standard.
 
 ---
 
-### Phase 4: Model Correct Remark Placement in the Chapter Template [NOT STARTED]
+### Phase 4: Model Correct Remark Placement in the Chapter Template [COMPLETED]
 
 **Goal**: Make the template demonstrate the norm in situ rather than leaving it unstated, so the
 positive pattern is visible where chapters are actually drafted.
 
 **Tasks**:
-- [ ] In `context/project/typst/templates/chapter-template.md`, add a worked example showing a
+- [x] In `context/project/typst/templates/chapter-template.md`, add a worked example showing a
       `#theorem[...]` (or `#definition`) followed by `#proof[...]`, followed immediately by a
       short `#remark[...]` that reflects on the result just established — the "remark follows a
-      substantial result" pattern
-- [ ] Label the correct example explicitly (e.g. `**Correct**`) and pair it with a labeled
+      substantial result" pattern *(completed: new "Remark Placement" subsection)*
+- [x] Label the correct example explicitly (e.g. `**Correct**`) and pair it with a labeled
       INCORRECT counterexample showing a `#remark` as the first content after a chapter heading,
-      carrying an enumerated status list
-- [ ] Confirm the existing `#remark[...]` under `== Multi-Agent Modality` in "Example: Minimal
+      carrying an enumerated status list *(completed)*
+- [x] Confirm the existing `#remark[...]` under `== Multi-Agent Modality` in "Example: Minimal
       Chapter" either gains a preceding substantial result or is not left standing as the
       template's only remark model (research found it is not a valid positive example as written)
-- [ ] Extend the "Checklist for New Chapters" with an item referencing the new standard by path
+      *(completed: added a definition/theorem/proof before the remark so it is now a valid
+      positive example itself)*
+- [x] Extend the "Checklist for New Chapters" with an item referencing the new standard by path
       — as reinforcement of Phase 5's gate, explicitly NOT as this task's enforcement mechanism
-- [ ] Do not otherwise restructure the template
+      *(completed)*
+- [x] Do not otherwise restructure the template *(completed: only additions)*
 
 **Timing**: 0.5 hours
 

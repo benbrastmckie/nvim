@@ -160,6 +160,46 @@ primitive constructors, then derive standard operators.
 ]
 ```
 
+### Remark Placement
+
+Full guidance lives in `standards/semantic-element-usage.md`. A remark is a sparing, high-value
+reflection that **follows a substantial result** — never a chapter opener, and never a container
+for an enumerated status or tracking list.
+
+**Correct** (remark follows a theorem and its proof):
+```typst
+== Composition
+
+#theorem("Agency Composition")[
+  If agents $a$ and $b$ can each guarantee $phi$, their coalition can guarantee $phi$.
+] <thm:agency-composition>
+
+#proof[
+  ...
+  #qed
+]
+
+#remark[
+  This composition result depends essentially on agents forming a monoid under group
+  action; @sec-extensions revisits this when group structure is relaxed.
+]
+```
+
+**Incorrect** (remark as chapter opener, carrying a tracking list — do not do this):
+```typst
+= Agency
+
+#remark("Formalization Status")[
+  1. Agent primitives formalized
+  2. Ability operator defined
+  // ... a long enumerated tracking list; this belongs in a specs/** artifact
+  // or a dedicated status section, never inside a #remark, and never as the
+  // chapter's opening content
+]
+
+== Agent Primitives
+```
+
 ### Tables
 
 ```typst
@@ -208,8 +248,25 @@ One natural extension is to branching temporal structures.
 
 Another extension adds agent-indexed modalities.
 
+#definition("Agent-Indexed Modality")[
+  For each agent $a in Agt$, the operator $Box_a$ reads "agent $a$ knows that".
+]
+
+#theorem("Distribution over Agents")[
+  If $Box_a (phi -> psi)$ and $Box_a phi$, then $Box_a psi$.
+] <thm:agent-distribution>
+
+#proof[
+  Immediate from the K axiom instantiated at agent $a$'s accessibility relation.
+  #qed
+]
+
 #remark[
-  Multi-agent extensions require careful treatment of common knowledge.
+  This result depends only on each agent's modality being a normal modal operator; it says
+  nothing yet about *common* knowledge, which is a fixed point over all agents and is treated
+  separately below (see the note on `standards/semantic-element-usage.md` — this remark
+  illustrates the "follows a substantial result" placement rule; per that standard it must not
+  stand as a chapter's or section's first content).
 ]
 ```
 
@@ -226,6 +283,10 @@ Another extension adds agent-indexed modalities.
 - [ ] No package imports (all through template.typ)
 - [ ] Labels added to key definitions/theorems
 - [ ] Added to main document's `#include` list
+- [ ] Semantic elements follow `standards/semantic-element-usage.md` (no element as first body
+      content after a heading; remarks are sparing, follow a substantial result, and never carry
+      enumerated status/tracking content) — this checklist line is reinforcement only; the
+      enforced gate lives in the implementation agent's Stage 4C self-review
 
 ---
 
