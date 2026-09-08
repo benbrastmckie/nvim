@@ -268,29 +268,29 @@ the others, or downstream readers will see `null`.
 
 ---
 
-### Phase 4: Test coverage for the new verdict behavior [NOT STARTED]
+### Phase 4: Test coverage for the new verdict behavior [COMPLETED]
 
 **Goal**: The new contract is pinned by tests, including the regressions this plan's own design
 could introduce.
 
 **Tasks**:
-- [ ] Extend the Group 11 stub helpers so `write_g11_verify_stub` can serve a THIRD response
-      (the confirmation snapshot), driven by the existing call-counting marker.
-- [ ] Case (d) — **flaky does not defer**: post reports a new finding, the confirmation snapshot
+- [x] Extend the Group 11 stub helpers so `write_g11_verify_stub` can serve a THIRD response
+      (the confirmation snapshot), driven by the existing call-counting marker. *(completed)*
+- [x] Case (d) — **flaky does not defer**: post reports a new finding, the confirmation snapshot
       does not reproduce it. Assert the batch is NOT deferred, a notice records the finding as
-      flaky, and `deployed_critical_paths` was still recorded.
-- [ ] Case (e) — **unrelated does not defer**: a confirmed new finding names a file absent from
-      `cycle_modified_files`. Assert no deferral and a notice recording it as unrelated.
-- [ ] Case (f) — **genuine attributable still defers**: a confirmed new finding names a file
-      present in `cycle_modified_files`. Assert `deferred_deploy_checkpoint` contains the task.
-- [ ] Case (g) — **the defer message names the finding**: assert the captured stderr contains
-      the specific finding text, and that `defer_ledger[].detail` does too.
-- [ ] Case (h) — **identifier-free finding still defers**: a confirmed new finding naming no
-      path or basename must NOT be filtered out as unrelated.
-- [ ] Case (i) — **depth symmetry regression guard**: a gate-8 finding present in BOTH pre and
-      post snapshots is not treated as new and takes the original branch (c).
-- [ ] Case (j) — **call-count guard**: a branch (c) run takes exactly two `verify-deploy.sh`
-      calls (no confirmation pass when there is nothing to confirm).
+      flaky, and `deployed_critical_paths` was still recorded. *(completed)*
+- [x] Case (e) — **unrelated does not defer**: a confirmed new finding names a file absent from
+      `cycle_modified_files`. Assert no deferral and a notice recording it as unrelated. *(completed)*
+- [x] Case (f) — **genuine attributable still defers**: a confirmed new finding names a file
+      present in `cycle_modified_files`. Assert `deferred_deploy_checkpoint` contains the task. *(completed)*
+- [x] Case (g) — **the defer message names the finding**: assert the captured stderr contains
+      the specific finding text, and that `defer_ledger[].detail` does too. *(completed)*
+- [x] Case (h) — **identifier-free finding still defers**: a confirmed new finding naming no
+      path or basename must NOT be filtered out as unrelated. *(completed)*
+- [x] Case (i) — **depth symmetry regression guard**: a gate-8 finding present in BOTH pre and
+      post snapshots is not treated as new and takes the original branch (c). *(completed)*
+- [x] Case (j) — **call-count guard**: a branch (c) run takes exactly two `verify-deploy.sh`
+      calls (no confirmation pass when there is nothing to confirm). *(completed: added case (k) too, for the Defect A depth-disagreement acceptance criterion)*
 
 **Timing**: 1.5 hours
 

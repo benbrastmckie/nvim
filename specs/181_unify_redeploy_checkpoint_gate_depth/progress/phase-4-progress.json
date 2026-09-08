@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Test coverage for the new verdict behavior",
+  "started_at": "2026-09-08T00:00:00Z",
+  "last_updated": "2026-09-08T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend write_g11_verify_stub with a third (confirmation) response", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Case (d) flaky does not defer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Case (e) unrelated does not defer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Case (f) genuine attributable still defers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Case (g) defer message names the finding", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Case (h) identifier-free finding still defers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Case (i) depth symmetry regression guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Case (j) call-count guard + Case (k) depth-disagreement acceptance criterion (added beyond plan letter range)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 9, "description": "Full test-orchestrate-cycle-plan.sh passes (112/112)", "status": "done", "files_touched": []},
+    {"id": 10, "description": "run-all.sh --quiet: 1 failure observed, diagnosed as expected pre-deploy drift (gate3/gate5 flagging the 3 undeployed source files this task edited), not a real regression; will be re-verified after the final deploy at Stage 7 of this dispatch", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "Ran the failing test-verify-deploy-context-budget.sh case in isolation with a manually-built fixture", "result": "diagnosed", "reason": "Confirmed the FAIL was gate3/gate5 deployed-vs-source drift for exactly the 3 files this task edited (lib/deploy-baseline-lib.sh, orchestrate-cycle-plan.sh, test-orchestrate-cycle-plan.sh) -- expected until the final deploy, not a logic regression."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "4.8", "description": "Case (j) - call-count guard", "type": "altered", "reason": "Added an extra case (k) beyond the plan's (d)-(j) letter range to explicitly cover the Testing & Validation section's separately-named Defect A depth-disagreement acceptance criterion, per the phase's own Scope Hypothesis permission to add cases as wiring requires.", "annotation": "*(deviation: altered — added case (k) for depth-disagreement coverage)*"}
+  ]
+}
