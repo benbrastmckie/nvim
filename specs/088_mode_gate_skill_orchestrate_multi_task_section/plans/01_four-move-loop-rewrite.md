@@ -256,24 +256,34 @@ built in Phase 4 has a stable, already-tested target to write against.
 
 ---
 
-### Phase 3: Delete single-task Stages 0-8 [NOT STARTED]
+### Phase 3: Delete single-task Stages 0-8 [COMPLETED]
 
 **Goal**: Remove the unreachable engine from `SKILL.md` in one deliberate, fence-safe,
 bottom-up pass, leaving the multi-task section as the file's only execution flow.
 
 **Tasks**:
 
-- [ ] Run a fence-state-aware scan of `SKILL.md` confirming no `^## ` or `^### ` heading lies
+- [x] Run a fence-state-aware scan of `SKILL.md` confirming no `^## ` or `^### ` heading lies
       inside a fenced code block, and record the result. This is the documented hazard the task
       description flags; do not skip it because a prior measurement said it was clean.
-- [ ] Delete, bottom-up so earlier line numbers never drift: Stage 8, Stage 7, Stage 6,
+      *(completed: python fence-tracking scan found 0 fence-interior headings, file ends outside
+      any fence)*
+- [x] Delete, bottom-up so earlier line numbers never drift: Stage 8, Stage 7, Stage 6,
       Stage 5b, Stage 5a, Stage 5, Stage 4, Stage 3.5 (already a stub), Stage 3, Stage 2b,
-      Stage 2, Stage 1b, Stage 1, Stage 0.
-- [ ] Remove the mode branch entirely: with Stage 0 gone there is no `multi_task_mode` detection
-      and no "skip Stages 1-8" instruction anywhere in the file.
-- [ ] Confirm nothing outside the deleted region referenced a deleted stage by name from within
-      `SKILL.md` itself; fix any internal cross-reference that now dangles.
-- [ ] Record the measured byte count after deletion.
+      Stage 2, Stage 1b, Stage 1, Stage 0. *(completed: deleted as one contiguous range, lines
+      25-2224 of the pre-edit file, since the range was computed fresh from a single grep pass
+      immediately before deletion -- no incremental drift risk)*
+- [x] Remove the mode branch entirely: with Stage 0 gone there is no `multi_task_mode` detection
+      and no "skip Stages 1-8" instruction anywhere in the file. *(completed: rewrote the
+      "## Multi-Task Mode" opening paragraph to state there is one engine now)*
+- [x] Confirm nothing outside the deleted region referenced a deleted stage by name from within
+      `SKILL.md` itself; fix any internal cross-reference that now dangles. *(completed: fixed
+      the Stage MT-2 "same routing table as Stage 1b" reference to point at
+      command-route-agent.sh; remaining Stage N mentions inside the MUST NOT sections and the
+      historical hard-mode note are conceptual/historical, not broken headings, and are in
+      Phase 4's own trim scope)*
+- [x] Record the measured byte count after deletion. *(completed: 59,439 B, matching Phase 3's
+      Scope Hypothesis of ~59,000 B)*
 
 **Timing**: 1.5 hours
 
