@@ -399,7 +399,7 @@
     {
       "project_number": 88,
       "project_name": "mode_gate_skill_orchestrate_multi_task_section",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -433,7 +433,7 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-09-08T04:19:31Z",
+      "last_updated": "2026-09-08T04:25:03Z",
       "session_id": "sess_1788840700_afed94",
       "title": "Delete the single-task engine and rewrite skill-orchestrate as the four-move loop",
       "artifacts": [
@@ -441,6 +441,11 @@
           "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
           "type": "report",
           "summary": "Research on the superseded (engine-deletion) scope for skill-orchestrate/SKILL.md: dependency status, current byte breakdown, existing cycle-plan/build-dispatch/cycle-postflight script coverage, the not-yet-built AskUserQuestion/.decisions.json mechanism, and the test/lint surface coupled to SKILL.md's internal structure."
+        },
+        {
+          "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md",
+          "type": "plan",
+          "summary": "7-phase, 12-hour plan to delete the single-task engine, rewrite skill-orchestrate/SKILL.md as the four-move loop at <=20,000 B, build the batched AskUserQuestion/.decisions.json path, and retarget the coupled test/lint surface."
         }
       ],
       "next_artifact_number": 2

@@ -1,42 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
-      "summary": "Research on the superseded (engine-deletion) scope for skill-orchestrate/SKILL.md: dependency status, current byte breakdown, existing cycle-plan/build-dispatch/cycle-postflight script coverage, the not-yet-built AskUserQuestion/.decisions.json mechanism, and the test/lint surface coupled to SKILL.md's internal structure."
+      "type": "plan",
+      "path": "specs/088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md",
+      "summary": "7-phase, 12-hour plan to delete the single-task engine, rewrite skill-orchestrate/SKILL.md as the four-move loop at <=20,000 B, build the batched AskUserQuestion/.decisions.json path, and retarget the coupled test/lint surface."
     }
   ],
-  "next_steps": "Run /plan 88 to create implementation plan",
+  "next_steps": "Run /implement 88 to execute the plan",
   "metadata": {
     "session_id": "sess_1788840700_afed94",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 12,
+    "dependency_waves": [[1, 2, 3], [4], [5, 6], [7]]
   },
-  "findings_count": 9,
   "memory_candidates": [
     {
-      "content": "In this repo, a task description block can carry chronologically-stacked '=== ADDENDUM ===' / '=== REVISED ===' / '=== ORIGINAL DESCRIPTION FOLLOWS ===' sections where addenda at the TOP supersede an original description preserved at the BOTTOM for history. Always check for this pattern and state.json's own recorded `title` field (which tracks the current, superseded scope) before planning against the bottom-most text.",
+      "content": "When a skill rewrite deletes prose that tests scrape, sequence the work as: (1) relocate surviving narration into docs FIRST as an additive, disjoint phase, (2) delete the dead region bottom-up in one atomic-batch commit so earlier line numbers never drift, (3) rewrite, (4) retarget tests LAST. Ship any new script-side READER before the lead-side WRITER that feeds it, so the writer has an already-tested target and the schema is fixed once. This ordering keeps every wave-1 phase file-disjoint and makes each phase independently revertible.",
       "category": "PATTERN",
-      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["task description", "supersession", "addendum", "state.json title", "PATH.md"]
-    },
-    {
-      "content": "lint-postflight-boundary.sh locates a skill's postflight section via a generic heading heuristic (`### Stage [6-9]` / `### Stage 1[0-9]`) and silently SKIPs (not FAILs) when no match is found. Any skill rewrite that abandons numbered 'Stage N' headings for a differently-named structure (e.g. a 'move'-based loop) will cause this lint to stop enforcing the postflight boundary for that file without any visible failure. Check this lint's heuristic whenever renaming a skill's stage headings.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
+      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/plans/01_four-move-loop-rewrite.md",
       "confidence": 0.8,
-      "suggested_keywords": ["lint-postflight-boundary", "SKILL.md headings", "silent skip", "stage naming", "orchestrate"]
-    },
-    {
-      "content": "specs/PATH.md is a hand-maintained plan-of-record whose Progress/Chain-progress tables can lag real state.json/CHANGE_LOG.md completions by multiple task landings (observed: tasks 143 and 148 both completed and archived while PATH.md's own text still described 143 as 'next, unblocked'). Always cross-check PATH.md's dependency/blocking claims against state.json and CHANGE_LOG.md directly rather than trusting PATH.md's prose as current.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/088_mode_gate_skill_orchestrate_multi_task_section/reports/01_delete-single-task-engine.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["PATH.md", "staleness", "dependency check", "state.json", "CHANGE_LOG.md"]
+      "suggested_keywords": ["skill rewrite", "phase sequencing", "bottom-up deletion", "reader before writer", "docs absorption"]
     }
   ],
-  "dispatch_seq": 1
+  "dispatch_seq": 2
 }
