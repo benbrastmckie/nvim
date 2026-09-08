@@ -89,11 +89,14 @@
 # Output: one compact JSON line on stdout:
 #   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, halt,
 #    infra_exempt_cycle, aux_signal, note}
-#   verdict ∈ ok|defer|blocked|failed|ask_user
+#   verdict ∈ ok|defer|blocked|failed|ask_user|needs_research
 #   halt: true only when dispatch_status was off-schema (garbage/unrecognized) — the ONE case
 #     that still means "stop the whole /orchestrate invocation" (mirrors the single-task engine's
 #     historical `EXIT (partial)`). A genuine in-vocabulary verdict="failed"
 #     (dispatch_status="failed") leaves halt=false — the task stays in-flight for the next cycle.
+#     verdict="needs_research" (a planner-only outcome: the planner declined to write a plan and
+#     is asking for a research phase, carrying `research_questions`) ALSO leaves halt=false —
+#     it is a routing fork, not a failure, and must never reach the off-schema catch-all.
 #   infra_exempt_cycle: true only when this cycle was exempted from the cycle_count budget by the
 #     corroborated infra-failure discrimination (WORK (a)'s recovery-declined branch) — the ONE
 #     case where the caller must NOT increment cycle_count. Every other verdict="defer" (partial
@@ -680,6 +683,23 @@ if [ "$have_outcome" = "true" ]; then
     partial|failed|blocked)
       echo "${notice_prefix} Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition performed; the task remains at its current in-flight status." >&2
       ;;
+    needs_research)
+      # Planner-only verdict: the planner declined to write a plan and is asking for a research
+      # phase. This is always a plan-phase dispatch outcome, so operation="plan" here (matching
+      # the "planned)" arm above) -- but skill_postflight_update's own needs_research case arm
+      # (see skill-base.sh) resolves the STATE_STATUS to "researching", not "planned", and calls
+      # update-task-status.sh with the literal target_status "needs_research" rather than
+      # $operation. It also reads research_questions off this dispatch's .return-meta.json and
+      # persists it (overwrite-on-write) via --research-questions. Never shares the
+      # researched|planned|implemented arms' logic above, and never falls into the off-schema
+      # catch-all below: this arm must not set offschema_dispatch_status=true and must not reach
+      # system-defect-record.sh.
+      if is_live; then
+        skill_postflight_update "$task_number" "plan" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode" >&2
+      else
+        echo "${notice_prefix} [dry-run] would transition task ${task_number} to researching (needs_research verdict) and persist research_questions — no write performed." >&2
+      fi
+      ;;
     *)
       offschema_dispatch_status=true
       case "$artifact_type" in
@@ -801,6 +821,11 @@ elif [ "$have_outcome" = "true" ]; then
     partial) verdict="defer" ;;
     failed)  verdict="failed" ;;
     blocked) verdict="blocked" ;;
+    # needs_research is its own verdict, deliberately NOT "defer": "defer" means "in-flight,
+    # retry the SAME phase next cycle" (its established meaning throughout this script), which is
+    # semantically wrong here -- the phase actually changes from plan to research. halt stays
+    # false (see the halt-decision comment block below), matching every other non-halting verdict.
+    needs_research) verdict="needs_research" ;;
     *)       verdict="failed" ;;
   esac
 elif [ "$infra_exempt_cycle" = "true" ]; then
@@ -908,6 +933,7 @@ if is_live; then
       ;;
     partial) commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})" ;;
     failed|blocked) commit_message="task ${task_number}: orchestration dispatch ${dispatch_status}" ;;
+    needs_research) commit_message="task ${task_number}: request research (needs_research)" ;;
     *) commit_message="task ${task_number}: orchestration dispatch off-schema" ;;
   esac
 

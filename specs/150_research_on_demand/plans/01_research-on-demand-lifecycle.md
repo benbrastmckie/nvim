@@ -261,34 +261,34 @@ persist the planner's question list durably on the task record.
 
 ---
 
-### Phase 3: Postflight `needs_research` arms [NOT STARTED]
+### Phase 3: Postflight `needs_research` arms [COMPLETED]
 
 **Goal**: Make a `needs_research` dispatch outcome resolve to a clean, non-halting verdict that
 writes `researching` and persists the question list -- never touching the off-schema catch-all.
 
 **Tasks**:
-- [ ] Insert a `needs_research)` arm into `orchestrate-cycle-postflight.sh`'s status-transition
+- [x] Insert a `needs_research)` arm into `orchestrate-cycle-postflight.sh`'s status-transition
       switch, positioned **before** the `*)` catch-all and after the
       `partial|failed|blocked)` arm. It calls `skill_postflight_update` with the
       `needs_research` target status and must not set `offschema_dispatch_status=true` or reach
-      `system-defect-record.sh`.
-- [ ] Add a `needs_research)` arm to the verdict-resolution switch, resolving to a new sixth
+      `system-defect-record.sh`. *(completed: verified end-to-end via fixture -- no OFF_SCHEMA_STATUS defect recorded, no off-schema stderr mention)*
+- [x] Add a `needs_research)` arm to the verdict-resolution switch, resolving to a new sixth
       verdict value `needs_research` -- not `defer`, whose established meaning ("in-flight, retry
       the same phase next cycle") is semantically wrong here because the phase changes from plan
-      to research.
-- [ ] Extend the verdict enum documented in the script's header comment block (the sole
+      to research. *(completed)*
+- [x] Extend the verdict enum documented in the script's header comment block (the sole
       authoritative listing of `ok|defer|blocked|failed|ask_user`) to include `needs_research`,
       with a one-line description matching the existing entries' style, and extend the `halt`
-      field's documentation to state that `needs_research` leaves `halt=false`.
-- [ ] Confirm the `next_artifact_number` advance logic treats `needs_research` correctly: no plan
+      field's documentation to state that `needs_research` leaves `halt=false`. *(completed)*
+- [x] Confirm the `next_artifact_number` advance logic treats `needs_research` correctly: no plan
       artifact was produced, so the round must not advance. Verify the existing condition
       (which advances on `researched`, or on force-invoked `planned`/`implemented`) already
-      excludes `needs_research` and record that it does.
-- [ ] Add a commit-message arm for `needs_research` in the postflight commit switch, or record
-      explicitly why none is needed if no artifact is written.
-- [ ] Confirm the thin lead consuming this verdict handles the new value: check
+      excludes `needs_research` and record that it does. *(completed: confirmed by code reading and by fixture -- next_artifact_number stayed 1 after a live needs_research postflight)*
+- [x] Add a commit-message arm for `needs_research` in the postflight commit switch, or record
+      explicitly why none is needed if no artifact is written. *(completed: added an arm -- state.json IS written on this path even though no plan artifact is, so a commit is needed)*
+- [x] Confirm the thin lead consuming this verdict handles the new value: check
       `skill-orchestrate/SKILL.md`'s handling of the verdict field and extend it if it switches on
-      the enum exhaustively.
+      the enum exhaustively. *(completed: SKILL.md's Move 3 loop uses independent if/elif guards on specific verdict values, not an exhaustive case/esac -- needs_research falls through harmlessly and the loop proceeds normally; no change needed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Postflight needs_research arms",
+  "started_at": "2026-09-08T01:20:00Z",
+  "last_updated": "2026-09-08T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert needs_research) arm into status-transition switch, before *) catch-all, after partial|failed|blocked)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Add needs_research) arm to verdict-resolution switch, new sixth verdict value (not defer)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Extend verdict enum in header comment block, extend halt field doc", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Confirm next_artifact_number advance logic excludes needs_research", "status": "done", "note": "Confirmed by reading do_artifact_round_advance's condition (dispatch_status==researched, or force_invoked && dispatch_status in {planned,implemented}) -- needs_research matches neither, no code change needed. Verified end-to-end by fixture: next_artifact_number stayed 1 after a live needs_research postflight run."},
+    {"id": 5, "description": "Add commit-message arm for needs_research, or record why none needed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"], "note": "Added arm ('task {N}: request research (needs_research)') rather than skipping -- unlike a true no-op, state.json IS written (status + research_questions) even though no plan artifact is produced, so a commit is needed to persist that write."},
+    {"id": 6, "description": "Confirm skill-orchestrate/SKILL.md's verdict handling; extend if it switches exhaustively", "status": "done", "note": "Confirmed via grep: SKILL.md's Move 3 loop only checks verdict==ask_user, halt==true, verdict==defer&&infra_exempt_cycle, and verdict==failed&&halt!=true via independent if/elif guards -- not an exhaustive case/esac over the full enum. verdict=needs_research falls through all of them (correctly: not ask_user, not defer, not failed) and the loop proceeds normally to the next cycle, where the classifier (Phase 4) will route the now-'researching' task to research. No SKILL.md change needed."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "fixture_dry_run": "PASS - full orchestrate-cycle-postflight.sh sandbox fixture (real collaborator scripts copied in, matching test-orchestrate-cycle-postflight.sh's own harness shape) with .return-meta.json status=needs_research, phase=plan: dry-run yields {status:needs_research, verdict:needs_research, halt:false}; state.json left byte-identical",
+    "fixture_live_run": "PASS - live run yields the same {verdict:needs_research, halt:false}; state.json active_projects[0] updated to status='researching' with research_questions persisted; next_artifact_number stayed at 1 (not advanced); loop-guard .detected_defects stayed []; no OFF-SCHEMA mention in stderr"
+  }
+}
