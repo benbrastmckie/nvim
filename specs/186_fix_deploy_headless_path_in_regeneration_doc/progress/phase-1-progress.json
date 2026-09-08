@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Capture and Classification Confirmation",
+  "started_at": "2026-09-08T22:52:00Z",
+  "last_updated": "2026-09-08T23:04:30Z",
+  "objectives": [
+    {"id": 1, "description": "Record defect-class census (bash scripts/deploy-headless.sh)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record full-form census of deploy-headless.sh occurrences", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm the two real paths on disk", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm failure mode (exit 127, stderr-only) first-hand", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Capture pre-edit gate baseline to /tmp/186-gate-baseline.txt", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Snapshot the working tree before any edits", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "First verify-deploy.sh baseline run overlapped with git-snapshot.sh's tree revert mid-run", "result": "failed", "reason": "Concurrent tree mutation invalidated the run (spurious 1/34 FAIL); re-ran on a stable tree after restoring the snapshot's stash, yielding a clean 34/34 PASS baseline"}
+  ],
+  "handoff_count": 0,
+  "notes": "git-snapshot.sh 186 (per plan's Phase 1 task) stashed and reverted pre-existing, task-unrelated uncommitted changes that were present in the working tree before this dispatch started (.claude-extensions.json, .memory/memory-index.json, several after/ftplugin/*.lua files, agent-system/extensions/{core,literature,typst}/index-entries.json, docs/MAPPINGS.md, docs/TYPST.md, lua/neotex/plugins/editor/*, lua/neotex/util/*, specs/157_.../plans/01_....md, specs/events.jsonl). These were popped back from stash@{0} (git-snapshot-1788908157) immediately after, with no conflicts, and are present in the tree again. Flagged per observation duty; not part of task 186's scope."
+}

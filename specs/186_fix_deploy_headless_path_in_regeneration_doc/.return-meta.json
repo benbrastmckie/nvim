@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/186_fix_deploy_headless_path_in_regeneration_doc/plans/01_fix-deploy-headless-invocation-path.md",
-      "summary": "5-phase plan correcting the 12 wrong `bash scripts/deploy-headless.sh` invocation sites across 6 source-store files, adding an exit-127 warning and a regression guard, while preserving ~16 correct-in-context reference occurrences."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 3.25,
-  "dependency_waves": 4,
-  "memory_candidates": [
-    {
-      "content": "When a repo documents a script that exists at two real paths (a deployed copy and its source-store original), a bare relative path like `scripts/foo.sh` is systematically ambiguous: it is CORRECT as an extension-root-relative identifier in lists/tables, and WRONG as an invocation from a repo root. The reliable discriminator is not the path string but the `bash ` prefix (or a runnable code fence / operator-facing 'run this' remedy text). Census the defect class with `grep -rn 'bash scripts/foo.sh'` rather than `grep -rn 'scripts/foo.sh'` -- the latter over-matches correct reference-class sites by roughly 2:1 and invites a destructive mass-rewrite. A wrong path also fails with exit 127 writing only to stderr, so any caller capturing stdout alone sees a silent no-op rather than a failure.",
-      "category": "PATTERN",
-      "source_artifact": "specs/186_fix_deploy_headless_path_in_regeneration_doc/plans/01_fix-deploy-headless-invocation-path.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "invocation-path", "source-store", "reference-vs-invocation", "exit-127", "grep-discriminator"]
-    }
-  ],
-  "next_steps": "Run /implement 186 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1788894448_36ce34_186",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1788894448_36ce34",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

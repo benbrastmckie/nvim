@@ -1,7 +1,7 @@
 # Implementation Plan: Task #186
 
 - **Task**: 186 - Fix the wrong deploy-headless.sh invocation path documented in regeneration-is-manual-only.md
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: None (planned directly from the task description plus a first-hand source-store survey performed during planning -- see Overview)
@@ -157,27 +157,43 @@ Phases within the same wave can execute in parallel. Phases 2 and 3 touch disjoi
 
 ---
 
-### Phase 1: Baseline Capture and Classification Confirmation [NOT STARTED]
+### Phase 1: Baseline Capture and Classification Confirmation [COMPLETED]
 
 **Goal**: Freeze a pre-edit reference point so later phases can prove they changed exactly the
 intended sites and introduced no new gate failures. No source files are modified in this phase.
 
 **Tasks**:
-- [ ] Record the defect-class census: `grep -rn 'bash scripts/deploy-headless\.sh' agent-system/`
+- [x] Record the defect-class census: `grep -rn 'bash scripts/deploy-headless\.sh' agent-system/`
       -- confirm 12 hits across the 6 files named in the Site Inventory. If the count or the file
       set differs, reconcile against the inventory and note the delta before proceeding.
-- [ ] Record the full-form census:
+      *(completed: 12 hits across exactly the 6 inventoried files, no divergence)*
+- [x] Record the full-form census:
       `grep -rhoE '[A-Za-z0-9_./-]*deploy-headless\.sh' agent-system/ | sort | uniq -c | sort -rn`
       -- expected today: 149 bare `deploy-headless.sh`, 28 `scripts/...`, 9 `.claude/scripts/...`,
       plus the shell-internal and source-store-relative forms.
-- [ ] Confirm the two real paths on disk: `find . -name deploy-headless.sh -not -path './.git/*'`.
-- [ ] Confirm the failure mode first-hand and capture stdout and stderr separately:
+      *(completed: exact match -- 149/28/9 plus 3 WORKDIR/, 3 SCRIPT_DIR/../, 3 REPO_ROOT/, 2
+      SCRIPT_DIR/, 2 agent-system/extensions/core/scripts/)*
+- [x] Confirm the two real paths on disk: `find . -name deploy-headless.sh -not -path './.git/*'`.
+      *(completed: `.claude/scripts/deploy-headless.sh` and
+      `agent-system/extensions/core/scripts/deploy-headless.sh`, matching the Overview)*
+- [x] Confirm the failure mode first-hand and capture stdout and stderr separately:
       `bash scripts/deploy-headless.sh --help; echo "exit=$?"` -- expect exit 127 with the
       diagnostic on stderr and nothing on stdout.
-- [ ] Capture the pre-edit gate baseline to a scratch file:
+      *(completed: exit=127, stdout empty, stderr "bash: scripts/deploy-headless.sh: No such file
+      or directory")*
+- [x] Capture the pre-edit gate baseline to a scratch file:
       `bash .claude/scripts/verify-deploy.sh > /tmp/186-gate-baseline.txt 2>&1; echo "exit=$?" >> /tmp/186-gate-baseline.txt`.
       Record the exit code and the list of failing checks verbatim.
-- [ ] Snapshot the working tree before any edits: `bash .claude/scripts/git-snapshot.sh 186`.
+      *(completed: 34/34 checks PASS, exit=0; sole findable signal is the pre-existing
+      non-failing WARN on commands/orchestrate.md's 15965 B vs 8000 B ceiling. A first attempt at
+      this capture overlapped with the git-snapshot.sh tree revert below and produced a spurious
+      1/34 FAIL; discarded and re-run on the stable, restored tree)*
+- [x] Snapshot the working tree before any edits: `bash .claude/scripts/git-snapshot.sh 186`.
+      *(completed: git-snapshot.sh's default mode reverted and stashed the tree as
+      `git-snapshot-1788908157` (stash@{0}). This also stashed pre-existing, task-unrelated
+      uncommitted changes that were present before this dispatch began; those were popped back
+      cleanly immediately after with no conflicts and are present in the tree again -- see the
+      phase-1 progress file's `notes` field)*
 
 **Timing**: 0.5 hours
 
