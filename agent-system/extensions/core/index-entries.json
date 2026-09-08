@@ -1005,7 +1005,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 483,
+      "line_count": 485,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2598,7 +2598,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Declared orchestrator-critical paths and scope roots driving the self-modification defer verdict",
-      "line_count": 70,
+      "line_count": 78,
       "keywords": [
         "reference",
         "orchestrate",
@@ -2622,7 +2622,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Hard-mode routing resolution precedence used by command-route-skill.sh for --hard",
-      "line_count": 179,
+      "line_count": 175,
       "keywords": [
         "hard-mode",
         "routing",
