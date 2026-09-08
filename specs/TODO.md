@@ -21,7 +21,7 @@ next_project_number: 183
 
 44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not per-session). `commands/
 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from accumulating
-88 [PLANNED] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
+88 [IMPLEMENTING] — === ADDENDUM 2026-09-02 (team mode deleted; dry-run report retire
   └─ 14 [NOT STARTED] — === REVISED 2026-08-24 (refactor survey) ===
   └─ 129 [NOT STARTED] — Audit every `\b` word-boundary construct used in a grep pattern a
   └─ 142 [NOT STARTED] — === REVISED 2026-09-02 (thin-lead path: narrowed to measure-and-l
@@ -1635,7 +1635,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 88. Delete the single-task engine and rewrite skill-orchestrate as the four-move loop
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 148
