@@ -23,22 +23,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/180_make_consumer_freshness_scan_opt_in/summaries/01_consumer-freshness-scan-opt-in-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deploy-headless.sh", "find_script", "source-store", "test-fixture", "redeploy"]
+      "suggested_keywords": [
+        "deploy-headless.sh",
+        "find_script",
+        "source-store",
+        "test-fixture",
+        "redeploy"
+      ]
     },
     {
       "content": "verify-deploy.sh's full (non---skip-slow) gate set includes gate 8, the shell test suite runner (tests/run-all.sh), which runs the entire suite across the codebase and can take 10+ minutes wall clock. When time-bounded, the --skip-slow tier (which deploy-headless.sh's own inline verification already exercises on every deploy) is a much faster and still-meaningful confirmation that a change has not regressed the fast gate set; reserve the full non---skip-slow run for cases where the extra minutes are budgeted.",
       "category": "INSIGHT",
       "source_artifact": "specs/180_make_consumer_freshness_scan_opt_in/summaries/01_consumer-freshness-scan-opt-in-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["verify-deploy.sh", "skip-slow", "run-all.sh", "gate-timing", "full-gate-set"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "skip-slow",
+        "run-all.sh",
+        "gate-timing",
+        "full-gate-set"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788883218_cb46bc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

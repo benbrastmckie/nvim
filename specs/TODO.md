@@ -355,6 +355,7 @@ Widening that predicate (and its deployed_critical_paths idempotence backing sto
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Plan**: [180_make_consumer_freshness_scan_opt_in/plans/01_consumer-freshness-scan-opt-in.md]
+- **Summary**: [180_make_consumer_freshness_scan_opt_in/summaries/01_consumer-freshness-scan-opt-in-summary.md]
 
 **Description**: Move the post-deploy consumer-freshness scan off the blocking path of the /orchestrate inter-cycle redeploy checkpoint by making it opt-in.
 
