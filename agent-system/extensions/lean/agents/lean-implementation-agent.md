@@ -250,7 +250,7 @@ This verification happens at the END of implementation, after all phases are com
 
 4. **Verify build passes**:
    ```bash
-   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- 2>&1
+   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build 2>&1
    ```
    Run this via `Bash(run_in_background: true)` — a foreground call can livelock past the tool's
    own timeout on a long build. See `context/project/lean4/operations/long-builds.md` for why

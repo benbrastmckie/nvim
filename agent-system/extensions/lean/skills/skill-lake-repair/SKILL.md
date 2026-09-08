@@ -78,7 +78,7 @@ Attempt to build the project:
 if [ -n "$module" ]; then
   build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- "$module" 2>&1)
 else
-  build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 2>&1)
+  build_output=$(bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build 2>&1)
 fi
 build_exit_code=$?
 ```

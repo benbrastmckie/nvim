@@ -1,7 +1,7 @@
 # Implementation Plan: Task #176
 
 - **Task**: 176 - Fix the documented `lake-build-guard.sh` full-build invocation across the lean extension
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research phase; the dispatch description is a confirmed specification -- defect, root cause, site list, and acceptance bar were all supplied and independently re-verified during planning)
@@ -115,24 +115,28 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Correct the full-build caller sites [NOT STARTED]
+### Phase 1: Correct the full-build caller sites [IN PROGRESS]
 
 **Goal**: Every empty-vector `lake-build-guard.sh build` invocation in the source store names
 `build` as its lake subcommand, with surrounding prose intent preserved.
 
 **Tasks**:
-- [ ] Re-run `grep -rn "lake-build-guard.sh build" agent-system/` and confirm the empty-vector
+- [x] Re-run `grep -rn "lake-build-guard.sh build" agent-system/` and confirm the empty-vector
       set before editing anything -- do not edit from this plan's list without re-deriving it
-- [ ] `agents/lean-implementation-agent.md:253`: `... build --timeout 1800 -- 2>&1`
-      -> `... build --timeout 1800 -- build 2>&1`
-- [ ] `agents/lean-implementation-hard-agent.md:392`: same shape, same replacement
-- [ ] `rules/lean4.md:51`: `` `... build --timeout 1800 --` `` -> `` `... build --timeout 1800 -- build` ``
+      *(completed: confirmed exactly 5 broken sites across 4 files, matching plan)*
+- [x] `agents/lean-implementation-agent.md:253`: `... build --timeout 1800 -- 2>&1`
+      -> `... build --timeout 1800 -- build 2>&1` *(completed)*
+- [x] `agents/lean-implementation-hard-agent.md:392`: same shape, same replacement *(completed)*
+- [x] `rules/lean4.md:51`: `` `... build --timeout 1800 --` `` -> `` `... build --timeout 1800 -- build` ``
       (keep the "Final verification only:" lead-in and the "(full project)" continuation on line 52)
-- [ ] `rules/lean4.md:74`: `` Full project: `--` (no module) `` -> `` Full project: `-- build` ``
+      *(completed)*
+- [x] `rules/lean4.md:74`: `` Full project: `--` (no module) `` -> `` Full project: `-- build` ``
       (this is the fifth site, found during planning and NOT in the dispatch's list of four)
-- [ ] `skills/skill-lake-repair/SKILL.md:81`: `... build --timeout 1800 2>&1`
-      -> `... build --timeout 1800 -- build 2>&1` (this site has no `--` at all; add it)
-- [ ] Confirm no other line in the five touched regions was altered
+      *(completed)*
+- [x] `skills/skill-lake-repair/SKILL.md:81`: `... build --timeout 1800 2>&1`
+      -> `... build --timeout 1800 -- build 2>&1` (this site has no `--` at all; add it) *(completed)*
+- [x] Confirm no other line in the five touched regions was altered *(completed: git diff hunks
+      show exactly the 5 targeted lines changed, nothing else in context)*
 
 **Timing**: 0.5 hours
 

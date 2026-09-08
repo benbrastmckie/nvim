@@ -389,7 +389,7 @@ Before writing final metadata, run the complete verification suite:
 
 4. **Verify build passes**:
    ```bash
-   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- 2>&1
+   bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build 2>&1
    ```
    Run via `Bash(run_in_background: true)` — see
    `context/project/lean4/operations/long-builds.md` for why both the detachment and the guard

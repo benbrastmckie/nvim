@@ -1,39 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/176_fix_documented_full_build_guard_invocation/plans/01_fix-full-build-guard-invocation.md",
-      "summary": "4-phase plan correcting five empty-vector lake-build-guard.sh full-build invocations across four lean-extension source files, with a fake-lake runtime proof, exhaustive source-store audit, consumer-propagation record, and a usage-banner handoff."
-    }
-  ],
-  "dispatch_seq": 4,
-  "next_steps": "Run /implement 176 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 1.75,
-  "dependency_waves": 3,
-  "user_decision": {
-    "question": "The dispatch's acceptance clause asks to deploy the affected extension and confirm the regenerated .claude/** copies carry the fix, but the `lean` extension is not active in this repository (.claude-extensions.json lists core, email, literature, memory, nix, nvim), so no lean artifact is regenerated here. Should the fix be pushed into a lean-active consumer repo, or left for those repos to pull on their own schedule?",
-    "options": [
-      "Source-store only - fix and runtime-verify here, run check-consumer-freshness.sh read-only to name the stale lean-active consumers (~/Projects/BimodalLogic, ~/Projects/cslib, ~/Projects/Logos/Theory), and let each pull on its own schedule",
-      "Also deploy - run `bash .claude/scripts/deploy-headless.sh ~/Projects/BimodalLogic` (the repo where the defect was observed) to regenerate its .claude/ tree and confirm the corrected strings landed there"
-    ],
-    "recommended": "Source-store only - fix and runtime-verify here, run check-consumer-freshness.sh read-only to name the stale lean-active consumers (~/Projects/BimodalLogic, ~/Projects/cslib, ~/Projects/Logos/Theory), and let each pull on its own schedule",
-    "blocking": false
-  },
-  "memory_candidates": [
-    {
-      "content": "In the agent-system source store (~/.config/nvim/agent-system/extensions/**), a fix to an extension that is NOT in the source repo's own .claude-extensions.json cannot be deploy-verified in that repo: deploy-headless.sh force-loads core and resyncs only already-active extensions, so it regenerates no artifact for an inactive extension. Any acceptance criterion of the form 'deploy and confirm the regenerated .claude/** copies carry the fix' is therefore unsatisfiable in-repo for such an extension. The honest resolution is a read-only propagation record: confirm the touched files are deploy-carried by the extension's manifest.json provides.* blocks, then run check-consumer-freshness.sh --stale-only to name which registered consumer repos are behind. Pushing deploy-headless.sh into a consumer repo is technically possible (it takes a TARGET_REPO argument) but inverts the pull-only consumer architecture and drags every unrelated pending source change along, so it belongs behind an explicit user decision, not an implementer's default.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/176_fix_documented_full_build_guard_invocation/plans/01_fix-full-build-guard-invocation.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["deploy-headless", "consumer-freshness", "extension-not-active", "source-store", "acceptance-criteria", "pull-only"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1788894448_36ce34_176",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1788894448_36ce34",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

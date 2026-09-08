@@ -48,7 +48,7 @@ Use `lean_goal` + `lake build` instead (detached, guarded — see
 4. Phase-end: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- Module.Name`
    (scoped), detached via `Bash(run_in_background: true)`; fall back to the unscoped form if
    module name unknown
-5. Final verification only: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 --`
+5. Final verification only: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build`
    (full project), same detached, guarded invocation
 
 ## Common Tactics
@@ -71,7 +71,7 @@ Canonical invocation shape:
 bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args>
 ```
 
-Prefer scoped: `-- Module.Name` | Full project: `--` (no module) | Clean: `lake clean` then the
+Prefer scoped: `-- Module.Name` | Full project: `-- build` (no module) | Clean: `lake clean` then the
 guarded build.
 
 **When to use each**:
