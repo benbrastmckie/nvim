@@ -318,31 +318,35 @@ every hit against the shape Phase 1 emits; the grep, not this list, is authorita
 
 ---
 
-### Phase 4: Deploy the source store and reconcile the live global entry [NOT STARTED]
+### Phase 4: Deploy the source store and reconcile the live global entry [COMPLETED]
 
 **Goal**: The repaired scripts are live in `.claude/`, and `~/.claude.json`'s top-level
 `mcpServers."lean-lsp"` holds the sanctioned wrapper-free shape.
 
 **Tasks**:
-- [ ] Run the sanctioned deploy from `~/.config/nvim`:
+- [x] Run the sanctioned deploy from `~/.config/nvim`:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive
       resync mode; `--dry-run` first to inspect). Do NOT hand-copy any file into any `.claude/`
-      tree.
-- [ ] Confirm `.claude/scripts/setup-lean-mcp.sh` and `.claude/scripts/verify-lean-mcp.sh` are
+      tree. *(completed: verify-deploy.sh PASS, 33 checks, 0 failures)*
+- [x] Confirm `.claude/scripts/setup-lean-mcp.sh` and `.claude/scripts/verify-lean-mcp.sh` are
       byte-identical to their source-store originals after the deploy (they are today, so any
-      difference means the deploy did not land).
-- [ ] Back up the live config: `cp ~/.claude.json ~/.claude.json.bak.$(date +%Y%m%d%H%M%S)` and
-      record the backup path in the phase notes.
-- [ ] From `~/Projects/BimodalLogic`, run `setup-lean-mcp.sh --dry-run`, read the reported
+      difference means the deploy did not land). *(completed: diff -q confirms identical)*
+- [x] Back up the live config: `cp ~/.claude.json ~/.claude.json.bak.$(date +%Y%m%d%H%M%S)` and
+      record the backup path in the phase notes. *(completed: backup at
+      /home/benjamin/.claude.json.bak.20260909102821)*
+- [x] From `~/Projects/BimodalLogic`, run `setup-lean-mcp.sh --dry-run`, read the reported
       before/after, then run it for real. Expect the whole-entry replacement path from Phase 1,
-      not an env-only update.
-- [ ] Confirm the resulting entry with `jq '.mcpServers."lean-lsp"' ~/.claude.json`:
+      not an env-only update. *(completed: dry-run and real run both reported whole-shape
+      replacement of the dead wrapper entry)*
+- [x] Confirm the resulting entry with `jq '.mcpServers."lean-lsp"' ~/.claude.json`:
       `command: "uvx"`, `args: ["lean-lsp-mcp"]`, `env.LEAN_LOG_LEVEL: "WARNING"`,
       `env.LEAN_PROJECT_PATH: "/home/benjamin/Projects/BimodalLogic"`, and no path anywhere in
-      the entry pointing inside a `.claude/` tree.
-- [ ] Confirm `.mcpServers."playwright"` and every other top-level key in `~/.claude.json` are
+      the entry pointing inside a `.claude/` tree. *(completed: confirmed exact shape)*
+- [x] Confirm `.mcpServers."playwright"` and every other top-level key in `~/.claude.json` are
       untouched (diff the backup against the new file and read the diff in full).
-- [ ] Run the repaired `verify-lean-mcp.sh` from `~/Projects/BimodalLogic`: expect exit 0.
+      *(completed: full diff shows only the lean-lsp command/args/env fields changed)*
+- [x] Run the repaired `verify-lean-mcp.sh` from `~/Projects/BimodalLogic`: expect exit 0.
+      *(completed: PASS, exit 0)*
 
 **Timing**: 45 minutes
 
