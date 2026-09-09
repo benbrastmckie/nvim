@@ -441,30 +441,30 @@ text, both fixed in this phase:
 
 ---
 
-### Phase 5: Classifier archive read (Defect 2, Decision (d)) [NOT STARTED]
+### Phase 5: Classifier archive read (Defect 2, Decision (d)) [COMPLETED]
 
 **Goal**: `orchestrate-triage-classify.sh` and `orchestrate-cycle-plan.sh` agree on an archived
 task's status instead of one calling it nonexistent.
 
 **Tasks**:
-- [ ] Source Phase 1's `task-lookup-lib.sh` in `orchestrate-triage-classify.sh`, with the same
+- [x] Source Phase 1's `task-lookup-lib.sh` in `orchestrate-triage-classify.sh`, with the same
       two-candidate resolution order used elsewhere, placed ABOVE the `engine` branch so
-      `single` and `mt` behave identically.
-- [ ] Extend the up-front `lookup_json` jq (which resolves each candidate's `status` and
+      `single` and `mt` behave identically. *(completed)*
+- [x] Extend the up-front `lookup_json` jq (which resolves each candidate's `status` and
       `project_name` for the handoff read) to fall back to the flattened archive projects when
-      the candidate is absent from `active_projects`. Active entries win.
-- [ ] Extend the verdicts jq the same way, so an archived-and-terminal candidate reaches the
+      the candidate is absent from `active_projects`. Active entries win. *(completed)*
+- [x] Extend the verdicts jq the same way, so an archived-and-terminal candidate reaches the
       `is_terminal` branch and returns `group:"terminal"` with its real status — not the
-      null-entry `group:"skip"` / "not found in state.json" branch. No new verdict value.
-- [ ] Keep the null-entry `skip` branch for a candidate genuinely present in neither store.
-- [ ] Update the classifier's own file-header table and its Context Flatness Constraint note to
+      null-entry `group:"skip"` / "not found in state.json" branch. No new verdict value. *(completed)*
+- [x] Keep the null-entry `skip` branch for a candidate genuinely present in neither store. *(completed)*
+- [x] Update the classifier's own file-header table and its Context Flatness Constraint note to
       record that it now reads the sibling `archive/state.json` in addition to `state.json` —
       the same kind of read, not a new capability class. Keep both engine tables in the header
-      in lockstep.
-- [ ] Consider the handoff read for an archived candidate: the handoff path must be derived
+      in lockstep. *(completed)*
+- [x] Consider the handoff read for an archived candidate: the handoff path must be derived
       from the resolved (possibly archived) task directory, not the active-path assumption.
-      Use `task_lookup_dir`.
-- [ ] `shellcheck` clean.
+      Use `task_lookup_dir`. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -475,12 +475,27 @@ task's status instead of one calling it nonexistent.
 **Files to modify**:
 - `agent-system/extensions/core/scripts/orchestrate-triage-classify.sh` - archive read, both jq
   lookups, header table and constraint note
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` - add
+  `lib/task-lookup-lib.sh` to the sandbox's require/copy lists (surfaced during this phase, same
+  gap as Phase 1/4's test-fixture misses)
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` green
-  (existing suite must pass unchanged; Phase 7 adds the new coverage).
+  (existing suite must pass unchanged; Phase 7 adds the new coverage). Confirmed: 48 passed,
+  0 failed, after adding the missing library copy to the sandbox.
 - Manual: the classifier returns `group:"terminal"` with `status:"completed"` for an archived
-  task number, for BOTH `--engine single` and `--engine mt`.
+  task number, for BOTH `--engine single` and `--engine mt`. Confirmed against a fixture with one
+  `completed_projects` entry and one `archived_projects` entry carrying `orphan_archived`
+  (normalizes to `completed`) -- both resolved to `group:"terminal"`, `status:"completed"` on
+  both engines.
+
+**(correction, implementation time)**: sourcing `task-lookup-lib.sh` initially crashed this
+script's own `bash -n`/execution with a bash syntax error, NOT a jq error: an apostrophe inside a
+newly-added comment (`` the blocked arm's own ``) sat inside the jq program's *outer bash
+single-quoted string*, terminating that string early and leaving the rest of the embedded jq
+source to be parsed as literal bash. Fixed by rewording the comment without a contraction — this
+file has zero apostrophes anywhere inside its embedded jq blocks for exactly this reason, a
+convention now confirmed by grep rather than assumed.
 
 ---
 

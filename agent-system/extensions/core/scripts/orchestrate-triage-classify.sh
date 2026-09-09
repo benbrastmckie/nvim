@@ -42,9 +42,12 @@
 #   - skill-base.sh write functions (skill_preflight_update, skill_postflight_update, etc.)
 #   - reconcile-task-status.sh (without --dry-run)
 #   - the Agent or Skill tool, or anything that dispatches one
-# This script reads ONLY specs/state.json and, for `partial`-status candidates, that candidate's
-# own specs/{NNN}_{SLUG}/.orchestrator-handoff.json — never a plan, report, or summary file
-# (Context Flatness Constraint).
+# This script reads ONLY specs/state.json, its sibling specs/archive/state.json (Phase 5 of the
+# task that fixed this classifier's archive-blindness -- read-only, active-wins, the same kind of
+# read as state.json itself, not a new capability class; sourced via scripts/lib/task-lookup-lib.sh
+# rather than a hand-copied jq), and, for `partial`-status candidates, that candidate's own
+# specs/{NNN}_{SLUG}/.orchestrator-handoff.json — never a plan, report, or summary file (Context
+# Flatness Constraint).
 #
 # Precedence for `partial` status (transcribed from the single-task Stage 4 handler's explicit
 # reads, which both engines share):
@@ -84,6 +87,14 @@
 #   | planning (NEW -- was skip, folded into the old "researching, planning, unknown" row)    | plan     | plan     |
 #   | unknown (unrecognized/garbage status)       | skip        | skip          |
 #   | terminal (completed/abandoned/expanded)      | terminal    | terminal      |
+#
+# The `terminal` row above applies identically whether the candidate is still in
+# `active_projects` or has already been archived by `/todo` (Phase 5 archive read, both engines):
+# an archived-and-terminal candidate reaches this row with its real status, not the null-entry
+# "not found in state.json" `skip` branch. No new verdict value was added for the archived case —
+# a forced `/orchestrate` dispatch never consults this verdict anyway (`effective_group` in
+# orchestrate-cycle-plan.sh overrides it), and every OTHER caller of this classifier is correctly
+# served by the plain `terminal` verdict either way.
 #
 # `researching`/`planning` no longer route to `skip`: eligibility is no longer status-gated (a
 # task is admitted/deferred by locks, dependencies[], and file_scope overlap downstream, never by
@@ -188,9 +199,21 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/continuation-pointer-lib.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
+
+# Phase 5 (Defect 2, Decision (d)): archive read, placed ABOVE the `engine` branch so `single` and
+# `mt` behave identically. /todo moves every terminal task (completed/abandoned/expanded) OUT of
+# `.active_projects` and into the sibling `archive/state.json`; without this, an archived
+# candidate hit the null-entry branch below ("not found in state.json") and returned
+# `group:"skip"`, while orchestrate-cycle-plan.sh's own `lookup_project` already resolved the same
+# candidate to its real terminal status via this exact archive. The two scripts disagreed on the
+# same task. Sourced from scripts/lib/task-lookup-lib.sh (Phase 1) -- the same library, same
+# normalization rule, not a second hand-copied jq. Read-only: this array is never written back.
+archived_projects_json="$(task_lookup_archived_projects_json "$STATE_FILE")"
 
 effort=""
 while [ "$#" -gt 0 ]; do
@@ -252,9 +275,12 @@ now_epoch() { date -u +%s; }
 candidates_json="[$(printf '%s\n' "$@" | paste -sd, -)]"
 
 # Single read of STATE_FILE to resolve each candidate's status/project_name — needed up front so
-# we know, per candidate, whether (and where) to read a handoff file below.
-if lookup_json=$(jq -n -c --argjson candidates "$candidates_json" --slurpfile state_arr "$STATE_FILE" '
-  ($state_arr[0].active_projects // []) as $all |
+# we know, per candidate, whether (and where) to read a handoff file below. Archive-aware: `$all`
+# is active_projects FIRST, archived projects appended after -- `first` below therefore prefers an
+# active entry over an archived one for any project_number that (should never, but) appears in
+# both, matching task_lookup_entry's own active-wins contract.
+if lookup_json=$(jq -n -c --argjson candidates "$candidates_json" --argjson archived "$archived_projects_json" --slurpfile state_arr "$STATE_FILE" '
+  (($state_arr[0].active_projects // []) + $archived) as $all |
   [ $candidates[] as $c |
     ([$all[] | select(.project_number == $c)] | first) as $entry |
     { task_number: $c, status: ($entry.status // null), project_name: ($entry.project_name // null) }
@@ -294,8 +320,11 @@ while [ "$idx" -lt "$lookup_count" ]; do
     continue
   fi
 
-  padded=$(printf "%03d" "$row_task")
-  handoff_path="$PROJECT_ROOT/specs/${padded}_${row_project}/.orchestrator-handoff.json"
+  # Archive-aware directory resolution (task-lookup-lib.sh): in practice a partial/blocked
+  # candidate is never archived (/todo only archives terminal completed/abandoned/expanded
+  # tasks), but this keeps the handoff path correct rather than silently assuming the active
+  # path should that ever change.
+  handoff_path="$PROJECT_ROOT/$(task_lookup_dir "$row_task" "$row_project" "$PROJECT_ROOT")/.orchestrator-handoff.json"
 
   if [ ! -f "$handoff_path" ]; then
     handoff_info_json=$(echo "$handoff_info_json" | jq --argjson t "$row_task" \
@@ -343,11 +372,18 @@ if verdicts=$(jq -n -c \
   --arg effort "$effort" \
   --argjson candidates "$candidates_json" \
   --argjson handoff_info "$handoff_info_json" \
+  --argjson archived "$archived_projects_json" \
   --slurpfile state_arr "$STATE_FILE" \
   '
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
 
-  ($state_arr[0].active_projects // []) as $all |
+  # Archive-aware, same active-wins-by-concatenation-order contract as the lookup_json pass
+  # above: an archived-and-terminal candidate now reaches the is_terminal branch below with its
+  # real status, instead of the null-entry branch group:"skip". Also used, unchanged in shape, by
+  # the dependency-status resolution the blocked arm performs further down -- a dependency that
+  # has itself been archived (a completed predecessor /todo already swept out of active_projects)
+  # is now visible there too, for the same reason.
+  (($state_arr[0].active_projects // []) + $archived) as $all |
   $candidates[] as $c |
   ([$all[] | select(.project_number == $c)] | first) as $entry |
   ($handoff_info[($c|tostring)] // null) as $hinfo |
