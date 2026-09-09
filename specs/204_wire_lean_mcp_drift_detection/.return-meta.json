@@ -1,33 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 204,
-  "session_id": "sess_1788973693_82555f_204",
-  "dispatch_seq": 4,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md",
-      "summary": "Finds none of the four lean-lsp-using lean skills route through skill_preflight_update, so a manifest hooks.preflight declaration (nix's pattern) would be dead code for lean; recommends a direct per-skill Stage 2 call to a new lean-owned wrapper around verify-lean-mcp.sh --quiet, WARN-only, ~30ms measured cost, silent no-op outside a Lean project."
+      "type": "plan",
+      "path": "specs/204_wire_lean_mcp_drift_detection/plans/01_wire-lean-mcp-drift-detection.md",
+      "summary": "5-phase, ~3.25h plan wiring verify-lean-mcp.sh into lean skill Stage 2 preflight via a new WARN-only lean-owned wrapper, with a fixture-based regression suite, measured cost, and doc/deploy gates."
     }
   ],
+  "dispatch_seq": 5,
+  "phase_count": 5,
+  "estimated_hours": 3.25,
+  "dependency_waves": [[1], [2, 3], [4], [5]],
   "memory_candidates": [
     {
-      "content": "In this repo's extension system, a manifest's top-level `hooks.preflight` field (distinct from `provides.hooks`) only fires if the owning extension's skills route Stage 2 through `skill_preflight_update` in skill-base.sh (see context/patterns/skill-preflight-flow.md). Before wiring a new preflight check via that mechanism, grep the extension's own SKILL.md files for `skill_preflight_update` — an extension can declare the hook while its skills silently never reach it (confirmed true for the lean extension as of this task; nix is the one live counter-example).",
+      "content": "When a shell script under agent-system/extensions/ reads a user-global config via a bare \"$HOME/...\" path with no env override (e.g. core/scripts/verify-lean-mcp.sh reading \"$HOME/.claude.json\"), a regression suite can still fixture it fully by pointing HOME at a per-fixture mktemp -d dir -- no production-script change, no CONFIG_PATH override parameter, and no reads against the operator's real config. Pair it with an anti-vacuous guard asserting two different failure fixtures produce DIFFERENT messages, which proves the wrapper reads the underlying exit code rather than emitting one blanket message.",
       "category": "PATTERN",
-      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["skill_preflight_update", "hooks.preflight", "extension manifest", "skill-base.sh", "lifecycle hook"]
-    },
-    {
-      "content": "verify-lean-mcp.sh --quiet against a live ~/.claude.json (~183KB) runs in ~30ms wall clock (jq-only, ~6 sequential jq calls + git rev-parse, no network/repo-walk/server-spawn) -- a useful reference cost figure for 'is this cheap enough for a hot dispatch path' questions involving small-file jq reads.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["verify-lean-mcp.sh", "wall-clock cost", "jq performance", "preflight cost budget"]
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/plans/01_wire-lean-mcp-drift-detection.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["HOME override", "shell fixture testing", "anti-vacuous test", "config isolation", "mktemp fixture"]
     }
   ],
-  "next_steps": "Run /plan 204 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1788973693_82555f_204",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 204
+  },
+  "next_steps": "Run /implement 204 to execute the plan"
 }
