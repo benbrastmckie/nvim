@@ -1,0 +1,74 @@
+{
+  "phase": 6,
+  "phase_name": "Regression test - the ACCEPTANCE demonstration",
+  "started_at": "2026-09-09T20:34:17Z",
+  "last_updated": "2026-09-09T20:37:19Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-runtime-file-tracking.sh skeleton",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Case 1: FAIL with git rm -r --cached on tracked deploy-lock",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Case 2: untrack then PASS, file stays on disk",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Case 3: doc-sync pin (block == runtime_ignore_block())",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Case 4: Check C guard",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Case 5: every lib member has probe+regex 1:1",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Register in manifest.json, chmod +x, verify run-all.sh discovery",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

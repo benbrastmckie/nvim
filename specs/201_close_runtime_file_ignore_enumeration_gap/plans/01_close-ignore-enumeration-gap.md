@@ -367,34 +367,40 @@ gate 14, so it is out of this phase's scope and was left untouched)*
 
 ---
 
-### Phase 6: Regression test — the ACCEPTANCE demonstration [NOT STARTED]
+### Phase 6: Regression test — the ACCEPTANCE demonstration [COMPLETED]
 
 **Goal**: The dispatch's acceptance behaviour is executable and permanent, and the markdown block
 is machine-pinned to the lib.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh` following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh` following
       `context/standards/shell-script-testing.md` conventions (PASSED/FAILED counters,
       `set -uo pipefail`, scratch repo under the scratchpad or a `mktemp -d`, trap cleanup).
-- [ ] Case 1 (the ACCEPTANCE line): build a scratch repo seeded with the lib's gitignore block,
+      *(completed)*
+- [x] Case 1 (the ACCEPTANCE line): build a scratch repo seeded with the lib's gitignore block,
       then force-add a tracked `specs/.deploy-lock/owner` (`git add -f`), run
       `check-runtime-file-tracking.sh`, assert exit 1, assert the output contains
       `git rm -r --cached` and the `specs/.deploy-lock` path — the `-r` form specifically, since
       the un-generalized branch would emit the plain form and silently pass a weaker assertion.
-- [ ] Case 2: `git rm -r --cached specs/.deploy-lock` in the scratch repo, assert the file is
-      still on disk, re-run the script, assert exit 0 / `PASS`.
-- [ ] Case 3 (doc-sync pin for scope (d)): extract the fenced `gitignore` block from
+      *(completed: 3 assertions — exit 1, `-r` form present, un-generalized plain form absent)*
+- [x] Case 2: `git rm -r --cached specs/.deploy-lock` in the scratch repo, assert the file is
+      still on disk, re-run the script, assert exit 0 / `PASS`. *(completed)*
+- [x] Case 3 (doc-sync pin for scope (d)): extract the fenced `gitignore` block from
       `context/standards/orchestrator-runtime-files.md` and assert it equals
       `runtime_ignore_block()` output exactly. This is the mechanism that makes the markdown site
-      "provably agree" with the script lists.
-- [ ] Case 4 (Check C guard): assert a scratch repo that ignores `.orchestrator-handoff.json`
+      "provably agree" with the script lists. *(completed)*
+- [x] Case 4 (Check C guard): assert a scratch repo that ignores `.orchestrator-handoff.json`
       fails Check C — protecting the MUST NOT from a future over-broad pattern added to the lib.
-- [ ] Case 5: assert every lib member has a Check A probe and a Check B regex (the two derived
-      lists are 1:1 by construction, not by discipline).
-- [ ] Register the new test in `manifest.json`'s `scripts` array. `run-all.sh` auto-discovers
+      *(completed)*
+- [x] Case 5: assert every lib member has a Check A probe and a Check B regex (the two derived
+      lists are 1:1 by construction, not by discipline). *(completed: verified all 6 parallel
+      arrays are the same length, and that length is exactly 16)*
+- [x] Register the new test in `manifest.json`'s `scripts` array. `run-all.sh` auto-discovers
       `test-*.sh`, so no runner registration is needed — verify discovery rather than assume it.
-- [ ] `chmod +x` the new test (`run-all.sh` reports a non-executable suite as a loud `[SKIP]`,
-      which would silently remove this test from the regression net).
+      *(completed: registered; discovery confirmed by reading run-all.sh's own glob logic —
+      plain `test-*.sh` globbing, no allowlist)*
+- [x] `chmod +x` the new test (`run-all.sh` reports a non-executable suite as a loud `[SKIP]`,
+      which would silently remove this test from the regression net). *(completed)*
 
 **Timing**: 1 hour
 
