@@ -193,6 +193,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
@@ -256,8 +258,10 @@ SESSION_REGISTRY_REAP_MIN="${SESSION_REGISTRY_REAP_MIN:-240}"
 SESSION_REGISTRY_DEAD_PID_MIN="${SESSION_REGISTRY_DEAD_PID_MIN:-10}"
 
 # --- resolve_task_dir: task_number [create_mode] -> specs/{NNN}_{SLUG} absolute path ---
-# Prefers state.json's project_name (authoritative); falls back to a filesystem glob
-# so the lock still works if state.json lookup fails for any reason.
+# Prefers state.json's project_name (authoritative, archive-aware via task-lookup-lib.sh --
+# active projects win, the archive is consulted only when the number is absent from them);
+# falls back to a filesystem glob so the lock still works if state.json lookup fails for any
+# reason.
 #
 # The second parameter is opt-in and OMITTED by every caller except cmd_acquire, which
 # passes the literal string "create". With no second argument (or any value other than
@@ -270,6 +274,15 @@ SESSION_REGISTRY_DEAD_PID_MIN="${SESSION_REGISTRY_DEAD_PID_MIN:-10}"
 # fails closed via the final `return 1`. Creation is attempted only AFTER the find
 # fallback has already failed, so on project_name/on-disk slug drift the existing
 # on-disk directory is still resolved rather than a second, empty one being created.
+#
+# Archive awareness (surfaced by this task's acceptance path, not originally scoped here): a
+# forced dispatch against an archived-and-terminal task reaches task-lock.sh acquire like any
+# other dispatch. Without this, `dir` below was derived as the hardcoded
+# specs/${padded}_${project_name} (an active-only shape) and the directory-existence check
+# failed for an archived task even though `project_name` itself resolved correctly, falling
+# through to the maxdepth-1 `specs/` glob (also active-only) and ultimately `return 1` --
+# "could not resolve task directory". `task_lookup_dir` resolves the SAME directory
+# orchestrate-build-dispatch.sh's own skill_validate_input already wrote the dispatch file into.
 resolve_task_dir() {
   local task_number="$1" create_mode="${2:-}"
   local padded project_name dir state_dir=""
@@ -277,11 +290,9 @@ resolve_task_dir() {
   padded=$(printf "%03d" "$task_number" 2>/dev/null) || return 1
 
   if [ -f "$STATE_FILE" ] && command -v jq >/dev/null 2>&1; then
-    project_name=$(jq -r --argjson num "$task_number" \
-      '.active_projects[]? | select(.project_number == $num) | .project_name // empty' \
-      "$STATE_FILE" 2>/dev/null) || true
+    project_name=$(task_lookup_entry "$task_number" "$STATE_FILE" | jq -r '.project_name // empty' 2>/dev/null) || true
     if [ -n "$project_name" ]; then
-      dir="$PROJECT_ROOT/specs/${padded}_${project_name}"
+      dir="$PROJECT_ROOT/$(task_lookup_dir "$task_number" "$project_name" "$PROJECT_ROOT")"
       if [ -d "$dir" ]; then
         echo "$dir"
         return 0

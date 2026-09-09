@@ -499,43 +499,43 @@ convention now confirmed by grep rather than assumed.
 
 ---
 
-### Phase 6: cycle-plan fixture coverage [NOT STARTED]
+### Phase 6: cycle-plan fixture coverage [COMPLETED]
 
 **Goal**: The three acceptance cases plus the no-regression guarantee are pinned by committed
 fixtures that fail against the pre-fix scripts.
 
 **Tasks**:
-- [ ] Add a new Group to
+- [x] Add a new Group to
       `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh`, following the
       suite's existing conventions (`pass`/`fail`/`info` helpers, `mktemp -d` workdir with
       `trap EXIT`, inline heredoc fixtures, exit 0 iff `FAILED == 0`) per
-      `context/standards/shell-script-testing.md`.
-- [ ] Case A — active terminal, forced: a `completed` task in `active_projects` with
+      `context/standards/shell-script-testing.md`. *(completed)*
+- [x] Case A — active terminal, forced: a `completed` task in `active_projects` with
       `--force-phases research` produces a dispatch row with `phase: "research"` and
-      `force: true`, and does NOT emit `stop_reason: "all_terminal"`.
-- [ ] Case B — archived terminal, forced: a task absent from `active_projects` but present in
+      `force: true`, and does NOT emit `stop_reason: "all_terminal"`. *(completed)*
+- [x] Case B — archived terminal, forced: a task absent from `active_projects` but present in
       `archive/state.json`'s `completed_projects`, with its directory at
       `specs/archive/{NNN}_{slug}/`, dispatches, and the dispatch row's `task_dir` points at
       the ARCHIVE directory. Model the archive fixture shape on Group 7, which already builds
-      `archive/state.json` alongside a sibling `active_projects` state.
-- [ ] Case C — unforced terminal: the same `completed` task with NO forcing flag yields
+      `archive/state.json` alongside a sibling `active_projects` state. *(completed)*
+- [x] Case C — unforced terminal: the same `completed` task with NO forcing flag yields
       `stop_reason: "all_terminal"` and zero dispatch rows. This is the Non-Goal regression
-      guard.
-- [ ] Case D — LIVE no-regression: a non-`--dry-run` run against a `completed` fixture task with
+      guard. *(completed)*
+- [x] Case D — LIVE no-regression: a non-`--dry-run` run against a `completed` fixture task with
       `--force-phases research`, using the REAL `update-task-status.sh` and `skill-base.sh`
       (NOT the stubbed-`update-task-status.sh` pattern Groups 4/5 use), asserting `state.json`'s
       status is still exactly `completed` after the dispatch. Model the sandbox on
-      `test-orchestrate-cycle-postflight.sh`, which copies real collaborator scripts unmodified.
-- [ ] Case E — `--force-phases implement` on a `completed` task dispatches (Decision (c)'s
-      posture is tested, not just documented).
-- [ ] Verify Group 10 Case I's existing `all_terminal` fixture still passes UNMODIFIED (it is
+      `test-orchestrate-cycle-postflight.sh`, which copies real collaborator scripts unmodified. *(completed)*
+- [x] Case E — `--force-phases implement` on a `completed` task dispatches (Decision (c)'s
+      posture is tested, not just documented). *(completed)*
+- [x] Verify Group 10 Case I's existing `all_terminal` fixture still passes UNMODIFIED (it is
       driven by a pre-seeded `failed_tasks` entry against an `implementing` task, so this
       task's change does not touch it). If it needed modification, that is a signal the
-      exemption predicate was written too broadly — investigate rather than edit the fixture.
-- [ ] Mutation check per `shell-script-testing.md`: confirm each new case FAILS against the
+      exemption predicate was written too broadly — investigate rather than edit the fixture. *(completed)*
+- [x] Mutation check per `shell-script-testing.md`: confirm each new case FAILS against the
       pre-fix scripts (stash the source changes, or run against a pristine copy) and record that
-      evidence in the commit body.
-- [ ] `shellcheck` clean.
+      evidence in the commit body. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 2 hours
 
@@ -549,13 +549,51 @@ each sentence to a case; add cases for any unmapped sentence rather than declari
 closed.
 
 **Files to modify**:
-- `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` - new group,
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` - new Group 21,
   Cases A-E
+- `agent-system/extensions/core/scripts/task-lock.sh` - archive-aware `resolve_task_dir` (see
+  correction note below)
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh`,
+  `test-phase-heartbeat.sh`, `test-loop-guard-budget-override.sh`,
+  `test-orchestrate-context-growth.sh` - add `lib/task-lookup-lib.sh` to each suite's own
+  sandbox require/copy lists (surfaced by the task-lock.sh fix; see correction note)
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` exits 0 with
-  every new case reported PASS.
-- Each new case reported FAIL against the pre-fix source (mutation evidence).
+  every new case reported PASS. Confirmed: 170 passed, 0 failed.
+- Each new case reported FAIL against the pre-fix source (mutation evidence). Confirmed: reverted
+  `orchestrate-cycle-plan.sh`, `orchestrate-triage-classify.sh`, `skill-base.sh`, `task-lock.sh`,
+  and `orchestrate-build-dispatch.sh` to their pre-task content (`git show <pre-task
+  commit>:<path>`), re-ran the suite: Cases A, B, D (clamp-notice and dispatch assertions), and E
+  all FAILED as expected (7 assertions), while Case C (the unforced-terminal regression guard)
+  correctly PASSED both before and after, and all 20 pre-existing groups remained green (163
+  passed pre-fix + 7 mutation-confirmed failures = 170 total). Restored all five files to their
+  committed content afterward and re-confirmed 170/0.
+- `test-orchestrate-churn.sh`, `test-phase-heartbeat.sh`, `test-loop-guard-budget-override.sh`,
+  `test-orchestrate-context-growth.sh` all green after their sandbox-fixture fixes (25/0, 19/0,
+  8/0, 6/0 respectively).
+
+**(correction, implementation time)**: Case B's LIVE run surfaced a SIXTH archive-blind site not
+named anywhere in the task description, research, or plan: `task-lock.sh`'s own
+`resolve_task_dir()` had its own hand-copied, active-projects-only `project_name` lookup and its
+own hardcoded `specs/${padded}_${project_name}` directory derivation — completely independent of
+`orchestrate-cycle-plan.sh`'s `lookup_project`/Phase 1's library. `task-lock.sh acquire` runs
+unconditionally in the live per-task dispatch loop for EVERY dispatch, so an archived task's
+forced round failed at lock-acquire time with "could not resolve task directory", even after
+Phases 1-5's fixes. Fixed by sourcing `scripts/lib/task-lookup-lib.sh` and routing
+`resolve_task_dir()`'s lookup and directory derivation through `task_lookup_entry`/
+`task_lookup_dir`, preserving the function's existing find-based fallback and `create_mode`
+semantics unchanged. This fix, in turn, broke four OTHER test suites that each build their own
+isolated sandbox copying `task-lock.sh` + `lib/common.sh` but not the new `lib/task-lookup-lib.sh`
+(`test-orchestrate-churn.sh`, `test-phase-heartbeat.sh`, `test-loop-guard-budget-override.sh`,
+`test-orchestrate-context-growth.sh`) — the same class of gap Phases 1/4/5 already hit and fixed
+in three OTHER suites, now recurring a fourth-through-seventh time because every suite maintains
+an independently-authored sandbox-fixture list. Swept the full `tests/` directory for every
+remaining `task-lock.sh`-copying suite and confirmed the rest (`test-git-commit-scoped.sh`,
+`test-handoff-dispatch-identity.sh`, `test-postflight-deploy-gate.sh`, `test-force-phases.sh`,
+`test-gate-out-repair-reporting.sh`, `test-roadmap-items-producer.sh`,
+`test-skill-base-lifecycle.sh`, `test-update-task-status.sh`) were already unaffected (verified
+green, not merely assumed).
 
 ---
 

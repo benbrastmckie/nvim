@@ -71,7 +71,7 @@ SCRIPTS=(
 )
 LIBS=(
   common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh
-  phase-heading-patterns.sh deploy-baseline-lib.sh status-vocabulary.sh
+  phase-heading-patterns.sh deploy-baseline-lib.sh status-vocabulary.sh task-lookup-lib.sh
 )
 
 for f in "${SCRIPTS[@]}"; do require_file "$CORE_DIR/$f"; done

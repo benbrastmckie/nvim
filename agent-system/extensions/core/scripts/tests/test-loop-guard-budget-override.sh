@@ -122,7 +122,7 @@ else
     fi
   done
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-           phase-heading-patterns.sh deploy-baseline-lib.sh; do
+           phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh; do
     if [[ -f "$CORE_DIR/lib/$f" ]]; then
       cp "$CORE_DIR/lib/$f" "$CP_WORKDIR/.claude/scripts/lib/$f"
     else

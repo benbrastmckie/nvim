@@ -64,6 +64,7 @@ cp "$SRC_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.s
 cp "$SRC_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 cp "$SRC_DIR/lib/phase-heading-patterns.sh" "$TMPROOT/.claude/scripts/lib/phase-heading-patterns.sh"
 cp "$SRC_DIR/lib/file-scope-overlap.sh" "$TMPROOT/.claude/scripts/lib/file-scope-overlap.sh"
+cp "$SRC_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-lookup-lib.sh"
 chmod +x "$TMPROOT/.claude/scripts/update-phase-status.sh" "$TMPROOT/.claude/scripts/task-lock.sh"
 
 UPS="$TMPROOT/.claude/scripts/update-phase-status.sh"

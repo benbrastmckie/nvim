@@ -2110,6 +2110,177 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 21: forced phase on terminal and archived tasks (task acceptance, Cases A-E)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 21: forced phase on terminal and archived tasks (Cases A-E)"
+
+# Restore the REAL classify/admit collaborators -- a prior group (13/15/16) may have left a stub
+# in place, same precaution Group 20 takes. Also install the REAL orchestrate-build-dispatch.sh,
+# update-task-status.sh, state-write.sh, and generate-todo.sh (never stubbed anywhere in this
+# file until now) plus lib/status-vocabulary.sh (update-task-status.sh's own VOCAB_LIB
+# dependency, not previously needed by any earlier group) -- Case B needs the REAL
+# orchestrate-build-dispatch.sh to actually resolve TASK_DIR via task_lookup_dir, and Case D
+# needs the REAL update-task-status.sh (not Groups 4/5's stub) so the preflight clamp exercises
+# real map_status()/state.json read-modify-write, per this phase's own verification requirement.
+cp "$CORE_DIR/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+cp "$CORE_DIR/orchestrate-batch-admit.sh" "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+cp "$CORE_DIR/orchestrate-build-dispatch.sh" "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+cp "$CORE_DIR/update-task-status.sh" "$WORKDIR/.claude/scripts/update-task-status.sh"
+cp "$CORE_DIR/state-write.sh" "$WORKDIR/.claude/scripts/state-write.sh"
+cp "$CORE_DIR/generate-todo.sh" "$WORKDIR/.claude/scripts/generate-todo.sh"
+cp "$CORE_DIR/lib/status-vocabulary.sh" "$WORKDIR/.claude/scripts/lib/status-vocabulary.sh"
+chmod +x "$WORKDIR"/.claude/scripts/*.sh
+
+# ── Case A: active terminal, forced -- must dispatch, must NOT stop at all_terminal ─────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2101, "project_name": "g21a_active_completed", "task_type": "general", "status": "completed", "description": "active terminal task, forced research", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21a.json"
+run_sut --session g21a --dry-run --force-phases research -- 2101
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Case A: SUT exits 0"
+else
+  fail "Case A: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 2101 and .phase == "research" and .force == true)) | length')" = "1" ]; then
+  pass "Case A: active-terminal candidate #2101 dispatches with phase=research, force=true"
+else
+  fail "Case A: candidate #2101 did not dispatch as forced research (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.stop')" = "null" ]; then
+  pass "Case A: does NOT stop with all_terminal (the forced-phase exemption keeps all_done false)"
+else
+  fail "Case A: unexpectedly stopped: $(jqf '.stop')"
+fi
+
+# ── Case B: archived terminal, forced -- dispatches into specs/archive/{NNN}_{slug}/ ────────────
+mkdir -p "$WORKDIR/specs/archive"
+cat > "$WORKDIR/specs/archive/state.json" <<'EOF'
+{
+  "completed_projects": [
+    {"project_number": 2102, "project_name": "g21b_archived_completed", "status": "completed", "next_artifact_number": 2}
+  ]
+}
+EOF
+write_state <<'EOF'
+{
+  "active_projects": []
+}
+EOF
+rm -rf "$WORKDIR/specs/archive/2102_g21b_archived_completed"
+mkdir -p "$WORKDIR/specs/archive/2102_g21b_archived_completed/reports"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21b.json"
+run_sut --session g21b --force-phases research -- 2102
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Case B: SUT exits 0 (LIVE)"
+else
+  fail "Case B: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+b_dispatch_file=$(jqf '.dispatch | map(select(.task == 2102)) | .[0].dispatch_file // ""')
+if [[ "$b_dispatch_file" == *"/specs/archive/2102_g21b_archived_completed/"* ]]; then
+  pass "Case B: archived-terminal candidate #2102's dispatch_file lands under specs/archive/ (got: $b_dispatch_file)"
+else
+  fail "Case B: expected dispatch_file under specs/archive/2102_g21b_archived_completed/, got: '$b_dispatch_file' (stdout: $LAST_STDOUT, stderr: $LAST_STDERR)"
+fi
+if [ -n "$b_dispatch_file" ] && [ -f "$b_dispatch_file" ]; then
+  pass "Case B: the dispatch file was actually written to disk"
+else
+  fail "Case B: dispatch file '$b_dispatch_file' does not exist on disk"
+fi
+b_status_after=$(jq -r '.completed_projects[] | select(.project_number == 2102) | .status' "$WORKDIR/specs/archive/state.json")
+if [ "$b_status_after" = "completed" ]; then
+  pass "Case B: archive/state.json status is untouched (still completed; the archive read is read-only)"
+else
+  fail "Case B: archive/state.json status unexpectedly changed to '$b_status_after'"
+fi
+
+# ── Case C: unforced terminal -- must still stop at all_terminal, zero dispatch rows ────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2103, "project_name": "g21c_unforced_terminal", "task_type": "general", "status": "completed", "description": "unforced terminal must still stop", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21c.json"
+run_sut --session g21c --dry-run -- 2103
+if [ "$(jqf '.stop.reason')" = "all_terminal" ]; then
+  pass "Case C: unforced terminal candidate #2103 stops with all_terminal (Non-Goal regression guard)"
+else
+  fail "Case C: expected stop_reason all_terminal, got: $(jqf '.stop') (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | length')" = "0" ]; then
+  pass "Case C: zero dispatch rows for the unforced terminal candidate"
+else
+  fail "Case C: expected zero dispatch rows, got: $LAST_STDOUT"
+fi
+
+# ── Case D: LIVE no-regression -- REAL update-task-status.sh, status stays completed ────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2105, "project_name": "g21d_live_no_regression", "task_type": "general", "status": "completed", "description": "live forced research round must not regress status", "dependencies": [], "file_scope": [], "next_artifact_number": 2}
+  ]
+}
+EOF
+rm -rf "$WORKDIR/specs/2105_g21d_live_no_regression"
+mkdir -p "$WORKDIR/specs/2105_g21d_live_no_regression/reports"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21d.json"
+d_status_before=$(jq -r '.active_projects[] | select(.project_number == 2105) | .status' "$WORKDIR/specs/state.json")
+run_sut --session g21d --force-phases research -- 2105
+d_status_after=$(jq -r '.active_projects[] | select(.project_number == 2105) | .status' "$WORKDIR/specs/state.json")
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Case D: LIVE forced round exits 0"
+else
+  fail "Case D: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if [ "$d_status_before" = "completed" ] && [ "$d_status_after" = "completed" ]; then
+  pass "Case D: state.json status is 'completed' both before and after the LIVE forced round (no regression)"
+else
+  fail "Case D: status regressed -- before='$d_status_before' after='$d_status_after' (stderr: $LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -q '\[monotonic-max\]'; then
+  pass "Case D: the preflight clamp actually fired (named [monotonic-max] notice present on stderr)"
+else
+  fail "Case D: expected a [monotonic-max] clamp notice on stderr; got: $LAST_STDERR"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 2105)) | length')" = "1" ]; then
+  pass "Case D: candidate #2105 still dispatches despite the clamp skipping the status write"
+else
+  fail "Case D: candidate #2105 did not dispatch (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case E: --force-phases implement on a completed task dispatches (Decision (c)) ──────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2104, "project_name": "g21e_forced_implement", "task_type": "general", "status": "completed", "description": "forced implement on completed task", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21e.json"
+run_sut --session g21e --dry-run --force-phases implement -- 2104
+if [ "$(jqf '.dispatch | map(select(.task == 2104 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
+  pass "Case E: --force-phases implement on a completed task dispatches with phase=implement, force=true"
+else
+  fail "Case E: candidate #2104 did not dispatch as forced implement (stdout: $LAST_STDOUT)"
+fi
+
+# ── Regression guard: Group 10 Case I's failed_tasks-driven all_terminal fixture must remain
+# untouched by this group's changes (it is re-run implicitly by being earlier in this same file;
+# nothing here re-executes it -- this comment simply records that the assertion was NOT modified
+# to accommodate the forced-phase exemption predicate, matching the Verification note above). ────
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

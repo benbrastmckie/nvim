@@ -33,7 +33,7 @@ require_file() {
 
 SUT_SRC="$CORE_DIR/orchestrate-churn.sh"
 require_file "$SUT_SRC"
-for f in task-lock.sh deploy-root-guard.sh lib/common.sh; do
+for f in task-lock.sh deploy-root-guard.sh lib/common.sh lib/task-lookup-lib.sh; do
   require_file "$CORE_DIR/$f"
 done
 
@@ -51,6 +51,7 @@ cp "$CORE_DIR/orchestrate-churn.sh" "$WORKDIR/.claude/scripts/orchestrate-churn.
 cp "$CORE_DIR/task-lock.sh" "$WORKDIR/.claude/scripts/task-lock.sh"
 cp "$CORE_DIR/deploy-root-guard.sh" "$WORKDIR/.claude/scripts/deploy-root-guard.sh"
 cp "$CORE_DIR/lib/common.sh" "$WORKDIR/.claude/scripts/lib/common.sh"
+cp "$CORE_DIR/lib/task-lookup-lib.sh" "$WORKDIR/.claude/scripts/lib/task-lookup-lib.sh"
 chmod +x "$WORKDIR"/.claude/scripts/*.sh
 mkdir -p "$WORKDIR/specs"
 

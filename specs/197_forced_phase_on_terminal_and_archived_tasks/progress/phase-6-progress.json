@@ -1,0 +1,34 @@
+{
+  "phase": 6,
+  "phase_name": "cycle-plan fixture coverage",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Group 21 (Cases A-E) to test-orchestrate-cycle-plan.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Fix task-lock.sh archive-blind resolve_task_dir (surfaced by Case B)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Fix 4 other test suites' sandbox lists missing task-lookup-lib.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh", "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh", "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh"]},
+    {"id": 4, "description": "Mutation evidence: revert 5 source files to pre-task content, confirm 7 new assertions fail, restore", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.additional",
+      "description": "task-lock.sh's resolve_task_dir() was archive-blind (its own hand-copied active-only lookup, independent of task-lookup-lib.sh)",
+      "type": "altered",
+      "reason": "Surfaced when Case B's LIVE run failed at task-lock.sh acquire with could not resolve task directory. Fixed by routing resolve_task_dir through task_lookup_entry/task_lookup_dir.",
+      "annotation": "n/a (recorded inline in phase 6 verification section as a correction note)"
+    },
+    {
+      "task_id": "6.additional-2",
+      "description": "Four other test suites (churn, phase-heartbeat, loop-guard-budget-override, context-growth) build isolated sandboxes copying task-lock.sh without lib/task-lookup-lib.sh",
+      "type": "altered",
+      "reason": "Same recurring gap as Phase 1/4/5's test-fixture misses, now surfaced a fourth time by the task-lock.sh fix. Swept the whole tests/ directory and confirmed no further suite is affected.",
+      "annotation": "n/a (recorded inline in phase 6 verification section)"
+    }
+  ]
+}
