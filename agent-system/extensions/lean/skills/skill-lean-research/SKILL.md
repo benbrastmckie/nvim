@@ -69,6 +69,13 @@ bash .claude/scripts/state-write.sh \
 
 **Update TODO.md**: Use Edit tool to change status marker from `[NOT STARTED]` or `[RESEARCHED]` to `[RESEARCHING]`.
 
+```bash
+# WARN-only: reports lean-lsp MCP registration drift without blocking dispatch.
+if [ -x .claude/scripts/lean-mcp-preflight-check.sh ]; then
+  bash .claude/scripts/lean-mcp-preflight-check.sh || true
+fi
+```
+
 ---
 
 ### Stage 3: Prepare Delegation Context

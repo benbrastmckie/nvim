@@ -73,6 +73,13 @@ Update task status to "researching" BEFORE invoking subagent.
 bash .claude/scripts/update-task-status.sh preflight "$task_number" research "$session_id"
 ```
 
+```bash
+# WARN-only: reports lean-lsp MCP registration drift without blocking dispatch.
+if [ -x .claude/scripts/lean-mcp-preflight-check.sh ]; then
+  bash .claude/scripts/lean-mcp-preflight-check.sh || true
+fi
+```
+
 ---
 
 ### Stage 3: Prepare Delegation Context

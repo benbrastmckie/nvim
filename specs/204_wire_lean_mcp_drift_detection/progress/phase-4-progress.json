@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the call sites and register the script for deploy",
+  "started_at": "2026-09-09T01:10:00Z",
+  "last_updated": "2026-09-09T01:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append guarded call to Stage 2 of the four lean-lsp-using skills", "status": "done", "files_touched": [
+      "agent-system/extensions/lean/skills/skill-lean-research/SKILL.md",
+      "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
+      "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+      "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
+    ]},
+    {"id": 2, "description": "Add script + test to manifest provides.scripts, no top-level hooks object", "status": "done", "files_touched": ["agent-system/extensions/lean/manifest.json"]},
+    {"id": 3, "description": "Diff each touched file to confirm pure additions", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Scope Hypothesis grep 'lean-research-agent\\|lean-implementation-agent'", "result": "failed", "reason": "undercounted (found 2 of 4) -- -hard variants dispatch to lean-research-hard-agent/lean-implementation-hard-agent, not a substring match; reconciled via direct subagent_type inspection, recorded in plan"}
+  ],
+  "handoff_count": 0
+}

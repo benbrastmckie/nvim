@@ -268,33 +268,33 @@ can take.
 
 ---
 
-### Phase 4: Wire the call sites and register the script for deploy [NOT STARTED]
+### Phase 4: Wire the call sites and register the script for deploy [COMPLETED]
 
 **Goal**: The check actually runs at the moment a lean4 task is about to dispatch — and the script
 actually reaches `.claude/scripts/` on deploy.
 
 **Tasks**:
-- [ ] Append the invocation to **Stage 2 (Preflight Status Update)** of each lean SKILL.md that
+- [x] Append the invocation to **Stage 2 (Preflight Status Update)** of each lean SKILL.md that
       dispatches to a lean-lsp-using agent, immediately after that skill's existing, unmodified
       status-update call:
       `agent-system/extensions/lean/skills/skill-lean-research/SKILL.md` (whose Stage 2 uses
       `state-write.sh`), `.../skill-lean-research-hard/SKILL.md`, `.../skill-lean-implementation/SKILL.md`,
       `.../skill-lean-implementation-hard/SKILL.md` (the latter three use
       `update-task-status.sh preflight`).
-- [ ] Use one self-contained, existence-guarded block per file, worded identically across all four:
+- [x] Use one self-contained, existence-guarded block per file, worded identically across all four:
       an `if [ -x .claude/scripts/lean-mcp-preflight-check.sh ]` guard wrapping a
       `bash .claude/scripts/lean-mcp-preflight-check.sh || true` call, with a one-line comment stating
       the WARN-only contract. Do not reorder or edit any existing Stage 2 content.
-- [ ] Explicitly leave `skill-lake-repair` and `skill-lean-version` untouched — both are
+- [x] Explicitly leave `skill-lake-repair` and `skill-lean-version` untouched — both are
       direct-execution skills with no lifecycle preflight and no lean-lsp usage.
-- [ ] Do **not** add a top-level `hooks` object to `agent-system/extensions/lean/manifest.json`. It
+- [x] Do **not** add a top-level `hooks` object to `agent-system/extensions/lean/manifest.json`. It
       would be inert given the current call graph and would falsely imply the nix mechanism is live
       for lean.
-- [ ] Add `lean-mcp-preflight-check.sh` and `tests/test-lean-mcp-preflight-check.sh` to
+- [x] Add `lean-mcp-preflight-check.sh` and `tests/test-lean-mcp-preflight-check.sh` to
       `agent-system/extensions/lean/manifest.json`'s `provides.scripts` array (both entries are
       relative to the extension's `scripts/` dir, matching how `lean-sorry-census.sh` and its test
       are already listed).
-- [ ] `git diff` each of the six touched files and confirm every hunk is a pure addition.
+- [x] `git diff` each of the six touched files and confirm every hunk is a pure addition.
 
 **Timing**: 0.75 hours
 
@@ -306,6 +306,16 @@ actually reaches `.claude/scripts/` on deploy.
 time with `grep -rln 'lean-research-agent\|lean-implementation-agent' agent-system/extensions/lean/skills/*/SKILL.md`
 before editing; if that set is not exactly the four named above, reconcile and record the discrepancy
 rather than editing the four blindly.
+
+**Reconciliation (recorded)**: the literal grep above found only 2 files
+(`skill-lean-research/SKILL.md`, `skill-lean-implementation/SKILL.md`), not 4 -- the `-hard`
+variants dispatch to `subagent_type: "lean-research-hard-agent"` /
+`"lean-implementation-hard-agent"`, and `-hard-agent` is not a substring match for
+`-agent` alone, so the pattern undercounted rather than overcounting. Confirmed by direct
+`subagent_type` inspection that all four named skills (including both `-hard` variants) do
+dispatch via the Agent tool to a lean-lsp-using agent, and that `skill-lake-repair` and
+`skill-lean-version` contain no `subagent_type`/Agent-tool dispatch at all. All four named
+skills received the call site; no fifth file was found.
 
 **Files to modify**:
 - `agent-system/extensions/lean/skills/skill-lean-research/SKILL.md` - Stage 2 gains the guarded call
