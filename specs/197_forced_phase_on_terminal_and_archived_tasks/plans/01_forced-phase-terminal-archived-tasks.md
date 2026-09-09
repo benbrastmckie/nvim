@@ -358,44 +358,44 @@ correction rather than stopping at five.
 
 ---
 
-### Phase 4: Preflight status clamp and archive-absent write skip (Defect 4, Decision (b)) [NOT STARTED]
+### Phase 4: Preflight status clamp and archive-absent write skip (Defect 4, Decision (b)) [COMPLETED]
 
 **Goal**: A forced round on a terminal task never writes an in-progress status, so `state.json`
 reads `completed` before, during, and after — and an archived task's status write is skipped
 rather than exiting 1.
 
 **Tasks**:
-- [ ] `skill-base.sh`: give `skill_preflight_update` an optional 4th positional
+- [x] `skill-base.sh`: give `skill_preflight_update` an optional 4th positional
       `status_clamp_mode`, mirroring `skill_postflight_update`'s existing shape exactly. Absent
-      or empty preserves today's behavior byte-for-byte for every existing call site.
-- [ ] `skill-base.sh`: when `status_clamp_mode == "monotonic-max"`, resolve
+      or empty preserves today's behavior byte-for-byte for every existing call site. *(completed)*
+- [x] `skill-base.sh`: when `status_clamp_mode == "monotonic-max"`, resolve
       `lib/status-vocabulary.sh` with the same two-candidate order the postflight clamp uses,
       read the task's current status (archive-aware, via Phase 1's `task_lookup_entry`), and
       when `status_vocabulary_would_regress "$current" "$target"` is true, SKIP the
       `update-task-status.sh preflight` call with a named `[monotonic-max]` notice — while still
       running the extension hook and appending the lifecycle event, exactly as the postflight
-      clamp does. Return 0; a clamp skip is never a refusal.
-- [ ] `skill-base.sh`: map the preflight operation to the resting status it would write
+      clamp does. Return 0; a clamp skip is never a refusal. *(completed)*
+- [x] `skill-base.sh`: map the preflight operation to the resting status it would write
       (`research -> researching`, `plan -> planning`, `implement -> implementing`) for the
       regression comparison, mirroring `update-task-status.sh`'s `map_status()` rather than
       re-deriving a second table. Do NOT add a `needs_research` special case: preflight's
-      operation is always one of the three above.
-- [ ] `skill-base.sh`: add an archive-absent guard AHEAD of the clamp in BOTH
+      operation is always one of the three above. *(completed)*
+- [x] `skill-base.sh`: add an archive-absent guard AHEAD of the clamp in BOTH
       `skill_preflight_update` and `skill_postflight_update` — when
       `task_lookup_is_active` is false, skip the `update-task-status.sh` call entirely with a
       named notice explaining that the archive is read-only. Without this, an archived task's
       status write reaches `update-task-status.sh`'s "task not found in state.json" `exit 1`
-      and kills the cycle under `set -e`.
-- [ ] `skill-base.sh`: make `skill_postflight_update`'s existing `_clamp_current_status` read
+      and kills the cycle under `set -e`. *(completed)*
+- [x] `skill-base.sh`: make `skill_postflight_update`'s existing `_clamp_current_status` read
       archive-aware via `task_lookup_entry`, so the clamp's comparator is correct for an
-      archived task rather than empty (empty currently disables the clamp silently).
-- [ ] `orchestrate-cycle-plan.sh`: pass `"monotonic-max"` as `skill_preflight_update`'s 4th
+      archived task rather than empty (empty currently disables the clamp silently). *(completed)*
+- [x] `orchestrate-cycle-plan.sh`: pass `"monotonic-max"` as `skill_preflight_update`'s 4th
       argument when `forced_this_cycle[$t]` is true, and nothing otherwise. This value is
-      already computed in the same process before the preflight call.
-- [ ] Confirm (do not assume) that with the clamp in place, `skill_postflight_update`'s existing
+      already computed in the same process before the preflight call. *(completed)*
+- [x] Confirm (do not assume) that with the clamp in place, `skill_postflight_update`'s existing
       monotonic-max clamp now reads `completed` as its comparator and correctly skips the
-      `researched`/`planned` write, and that `implemented` remains a no-op rewrite to `completed`.
-- [ ] `shellcheck` clean.
+      `researched`/`planned` write, and that `implemented` remains a no-op rewrite to `completed`. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 2 hours
 
@@ -405,16 +405,39 @@ rather than exiting 1.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/skill-base.sh` - preflight clamp parameter and body,
-  archive-absent guards in both update functions, archive-aware postflight comparator
+  archive-absent guards in both update functions, archive-aware postflight comparator, fail-safe
+  shim for an unresolvable task-lookup-lib.sh
 - `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` - pass the clamp mode at the
   preflight call site
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` - add
+  `task-lookup-lib.sh` to the sandbox's require/copy lists (surfaced during this phase)
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` green
   (its Acceptance 6/7 monotonic-max fixtures must still pass unchanged).
 - Manual scratch run of a full forced `--research` round against a `completed` fixture task with
   the REAL `update-task-status.sh`: `state.json` status is `completed` at every observation
-  point. Phase 6 turns this into a committed fixture.
+  point. Phase 6 turns this into a committed fixture. Confirmed: ran to completion, dispatch file
+  written, `state.json` status observed `completed` both before and after the forced round.
+
+**(correction, implementation time)**: adding the unconditional `task_lookup_is_active` guard to
+`skill_preflight_update`/`skill_postflight_update` surfaced two issues not named in the plan
+text, both fixed in this phase:
+1. `test-orchestrate-cycle-postflight.sh`'s sandbox never copied the new
+   `lib/task-lookup-lib.sh` alongside its `skill-base.sh` copy (the same gap Phase 1 already hit
+   and fixed in `test-orchestrate-cycle-plan.sh`, missed here because this test suite's own
+   sandbox-setup list is independent). Without the fix, `task_lookup_is_active` was UNDEFINED in
+   the sandbox process, and `! task_lookup_is_active ...` read the resulting "command not found"
+   (exit 127) as "not active", silently skipping every preflight/postflight status write for
+   every task in that suite (5 failures: acceptance 6/7/8b and the fd-3 invariant). Fixed by
+   adding `task-lookup-lib.sh` to both the `require_file` and copy loops.
+2. More generally: an undefined `task_lookup_is_active`/`task_lookup_entry` (a missing or
+   not-yet-redeployed library, in ANY consumer, not just this test) would fail SILENTLY toward
+   skipping every status write rather than failing loudly or preserving old behavior. Added a
+   fail-safe shim block in `skill-base.sh` immediately after the two-candidate source attempt:
+   if the functions did not resolve, define minimal shims reproducing this codebase's
+   PRE-EXISTING active-projects-only behavior (with a loud one-time `WARNING:`), so a missing
+   library degrades to yesterday's behavior instead of a silent global write outage.
 
 ---
 

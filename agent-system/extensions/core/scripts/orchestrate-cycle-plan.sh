@@ -1732,7 +1732,12 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # (j) Preflight status write. update-task-status.sh confirms on stdout; the entry-point
   # `exec 3>&1 1>&2` redirect above already routes fd 1 (this call's stdout) to the diagnostic
   # stream structurally, so no per-call-site `>&2` is needed here any more.
-  skill_preflight_update "$t" "$g" "$dispatch_session"
+  # Phase 4 (Decision (b)): a forced round on a terminal task must never regress its status.
+  # "monotonic-max" is passed ONLY when this cycle's dispatch is forced; an ordinary dispatch
+  # passes the empty string, preserving today's exact preflight-write behavior byte-for-byte.
+  preflight_clamp_mode=""
+  [ "${forced_this_cycle[$t]:-false}" = "true" ] && preflight_clamp_mode="monotonic-max"
+  skill_preflight_update "$t" "$g" "$dispatch_session" "$preflight_clamp_mode"
 
   # (l) orchestrate-build-dispatch.sh — Stage 3.5 Dispatch Prep's sole implementation.
   build_args=(--session "$dispatch_session" --seq "$task_dispatch_seq" --dispatch-start-ts "$task_dispatch_start_ts")

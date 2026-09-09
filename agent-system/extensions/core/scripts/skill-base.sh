@@ -57,6 +57,26 @@ if [ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/task-lookup-lib.sh" ]; then
 elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/task-lookup-lib.sh" ]; then
   source "$(dirname "${BASH_SOURCE[0]}")/lib/task-lookup-lib.sh"
 fi
+# Fail-SAFE, not fail-skip: if neither candidate resolved (a stale deploy, or a test sandbox that
+# has not copied the new library alongside skill-base.sh), do NOT let every preflight/postflight
+# status write silently no-op -- an undefined `task_lookup_is_active` call would otherwise exit
+# non-zero (command not found), which `! task_lookup_is_active ...` below reads as "not active",
+# skipping EVERY status write for EVERY task, archived or not. Define minimal shims that
+# reproduce this task's PRE-EXISTING (active-projects-only) behavior instead, with a loud one-
+# time warning, so a missing library degrades to yesterday's behavior rather than a silent global
+# write outage.
+if ! declare -F task_lookup_entry >/dev/null 2>&1; then
+  echo "WARNING: [skill-base] scripts/lib/task-lookup-lib.sh not resolvable at either candidate path -- archive-aware lookup disabled, falling back to active-projects-only behavior (an archived task will be treated as not found/not active, matching this codebase's behavior before task-lookup-lib.sh existed)." >&2
+  task_lookup_entry() {
+    jq -c --argjson n "$1" '.active_projects[]? | select(.project_number == $n)' "$2" 2>/dev/null | head -1
+  }
+  task_lookup_is_active() {
+    jq -e --argjson n "$1" 'any((.active_projects // [])[]; .project_number == $n)' "$2" >/dev/null 2>&1
+  }
+  task_lookup_dir() {
+    printf 'specs/%03d_%s\n' "$1" "$2"
+  }
+fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # EXTENSION HOOKS: Lifecycle hook invocation for loaded extensions.
@@ -248,17 +268,71 @@ skill_validate_input() {
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2: Update status to in-progress variant
-# Usage: skill_preflight_update "$task_number" "$operation" "$session_id"
+# Usage: skill_preflight_update "$task_number" "$operation" "$session_id" ["$status_clamp_mode"]
 # operation: "research" | "plan" | "implement" | "revise"
 # Calls extension hook: hooks.preflight (after status update)
+#
+# Optional 4th argument: `status_clamp_mode`, mirroring skill_postflight_update's own clamp
+# parameter exactly. Absent or empty (every existing call site, byte-for-byte) preserves today's
+# behavior. `"monotonic-max"` resolves scripts/lib/status-vocabulary.sh (same two-candidate order
+# skill_postflight_update's own clamp uses), maps `operation` to the resting state
+# update-task-status.sh's own map_status() would write (research->researching, plan->planning,
+# implement->implementing -- preflight's operation is always one of these three, never
+# needs_research, so no special case is needed here the way postflight's clamp needs one), and
+# on a regression SKIPS the update-task-status.sh call below with a named `[monotonic-max]`
+# notice -- while still running the extension hook and the lifecycle event exactly as on any
+# other path. Never a refusal: this function always returns 0.
+#
+# Archive-absent guard (ahead of the clamp, unconditional on status_clamp_mode): when the task is
+# absent from active_projects (task_lookup_is_active false -- an archived task), the status write
+# is skipped entirely with a named notice. Without this, an archived task's preflight write
+# reaches update-task-status.sh's "task not found in state.json" exit 1 and kills the cycle under
+# `set -e`. The archive is read-only everywhere in this codebase; this is the write-side half of
+# that contract.
 skill_preflight_update() {
   local task_number="$1"
   local operation="$2"
   local session_id="$3"
+  local status_clamp_mode="${4:-}"
   local _t0
   _t0=$(date +%s.%N)
-  bash .claude/scripts/update-task-status.sh preflight "$task_number" "$operation" "$session_id"
-  # Extension hook: preflight (runs after status update)
+  local _skip_write=false
+
+  if ! task_lookup_is_active "$task_number" specs/state.json; then
+    _skip_write=true
+    echo "NOTICE: [skill-base] task ${task_number}: preflight status write skipped -- task is archived (the archive is read-only; no in-progress status can be recorded for a task no longer in active_projects)." >&2
+  elif [[ "$status_clamp_mode" == "monotonic-max" ]]; then
+    # Same two-candidate resolution order skill_postflight_update's own clamp uses.
+    if [[ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/status-vocabulary.sh" ]]; then
+      source "${SKILL_REPO_ROOT}/.claude/scripts/lib/status-vocabulary.sh"
+    elif [[ -f "$(dirname "${BASH_SOURCE[0]}")/lib/status-vocabulary.sh" ]]; then
+      source "$(dirname "${BASH_SOURCE[0]}")/lib/status-vocabulary.sh"
+    fi
+    if declare -F status_vocabulary_would_regress >/dev/null 2>&1; then
+      local _preflight_target=""
+      case "$operation" in
+        research) _preflight_target="researching" ;;
+        plan)     _preflight_target="planning" ;;
+        implement) _preflight_target="implementing" ;;
+      esac
+      if [[ -n "$_preflight_target" ]]; then
+        local _clamp_current_status
+        _clamp_current_status=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.status // ""' 2>/dev/null)
+        if [[ -n "$_clamp_current_status" ]] && status_vocabulary_would_regress "$_clamp_current_status" "$_preflight_target"; then
+          _skip_write=true
+          echo "[monotonic-max] task ${task_number}: forced ${operation} preflight would regress status from '${_clamp_current_status}' to '${_preflight_target}' — skipping the status write."
+        fi
+      fi
+    else
+      echo "WARNING: [skill-base] status_clamp_mode=monotonic-max requested but status_vocabulary_would_regress is not resolvable (deploy-first stale-copy hazard?) — clamp not applied, status write proceeds normally." >&2
+    fi
+  fi
+
+  if [[ "$_skip_write" != "true" ]]; then
+    bash .claude/scripts/update-task-status.sh preflight "$task_number" "$operation" "$session_id"
+  fi
+  # Extension hook: preflight (runs after status update) -- unconditional, exactly as before this
+  # change, regardless of whether the write above ran or was clamp-/archive-skipped.
   skill_run_extension_hook "preflight" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
   # Unified event store: one non-blocking milestone event per lifecycle stage
   local _dur
@@ -735,11 +809,21 @@ skill_postflight_update() {
   local _t0
   _t0=$(date +%s.%N)
   local _postflight_rc=0
-  # Monotonic-max clamp (A2, opt-in via status_clamp_mode): resolve BEFORE the case statement so
-  # the skip decision is available to the case arm below. `_clamp_skip` defaults to false --
-  # every existing 4-arg/5-arg call site takes this branch and is completely unaffected.
-  local _clamp_skip=false
-  if [[ "$status_clamp_mode" == "monotonic-max" ]]; then
+  # `_skip_write` (formerly `_clamp_skip`) gates the actual update-task-status.sh call below for
+  # EITHER of two independent reasons: the archive-absent guard immediately below (unconditional,
+  # any status), or the monotonic-max clamp further down (opt-in via status_clamp_mode, ranked
+  # statuses only). Defaults false -- every existing 4-arg/5-arg call site against an active task
+  # takes neither branch and is completely unaffected.
+  local _skip_write=false
+
+  # Archive-absent guard (ahead of the clamp, unconditional on status_clamp_mode): the archive is
+  # read-only everywhere in this codebase. Without this, an archived task's postflight write
+  # reaches update-task-status.sh's "task not found in state.json" exit 1 and kills the cycle
+  # under `set -e`.
+  if ! task_lookup_is_active "$task_number" specs/state.json; then
+    _skip_write=true
+    echo "NOTICE: [skill-base] task ${task_number}: postflight status write skipped -- task is archived (the archive is read-only; artifact link, if any, is still applied by the caller)." >&2
+  elif [[ "$status_clamp_mode" == "monotonic-max" ]]; then
     # Same two-candidate resolution order skill-base.sh's own lib/common.sh source (top of this
     # file) already uses: SKILL_REPO_ROOT-qualified deployed path first, source-store-relative
     # BASH_SOURCE fallback second. Do not invent a third order.
@@ -749,12 +833,15 @@ skill_postflight_update() {
       source "$(dirname "${BASH_SOURCE[0]}")/lib/status-vocabulary.sh"
     fi
     if declare -F status_vocabulary_would_regress >/dev/null 2>&1; then
+      # Archive-aware comparator (task-lookup-lib.sh): task_lookup_entry falls back to the
+      # archive when the number is absent from active_projects. The archive-absent guard above
+      # already handles the fully-archived case; this keeps the comparator correct (rather than
+      # silently empty, which disables the clamp) for any future caller that reaches this branch
+      # for a task resolvable only via the archive.
       local _clamp_current_status
-      _clamp_current_status=$(jq -r --argjson num "$task_number" \
-        '.active_projects[] | select(.project_number == $num) | .status // ""' \
-        specs/state.json 2>/dev/null)
+      _clamp_current_status=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.status // ""' 2>/dev/null)
       if [[ -n "$_clamp_current_status" ]] && status_vocabulary_would_regress "$_clamp_current_status" "$status"; then
-        _clamp_skip=true
+        _skip_write=true
         echo "[monotonic-max] task ${task_number}: forced ${operation} would regress status from '${_clamp_current_status}' to '${status}' — skipping the status write (artifact link, if any, is still applied by the caller)."
       fi
     else
@@ -763,7 +850,7 @@ skill_postflight_update() {
   fi
   case "$status" in
     researched|planned|implemented)
-      if [[ "$_clamp_skip" == "true" ]]; then
+      if [[ "$_skip_write" == "true" ]]; then
         :
       else
         # --file-scope-add write-back (research only): read proposed_file_scope from this
@@ -784,7 +871,7 @@ skill_postflight_update() {
       fi
       ;;
     needs_research)
-      if [[ "$_clamp_skip" == "true" ]]; then
+      if [[ "$_skip_write" == "true" ]]; then
         :
       else
         # --research-questions write-back: read research_questions from this task's own

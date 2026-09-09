@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Preflight status clamp and archive-absent write skip (Defect 4, Decision (b))",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill_preflight_update: monotonic-max clamp + archive-absent guard", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "skill_postflight_update: archive-absent guard + archive-aware comparator", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "orchestrate-cycle-plan.sh: pass monotonic-max clamp mode when forced", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Fail-safe shim for unresolvable task-lookup-lib.sh; fix test sandbox missing the lib copy", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.additional",
+      "description": "test-orchestrate-cycle-postflight.sh's sandbox did not copy the new lib/task-lookup-lib.sh, causing all its status writes to silently no-op under the new archive-absent guard",
+      "type": "altered",
+      "reason": "Discovered when the new unconditional guard exposed the gap (5 test failures). Fixed the fixture and additionally hardened skill-base.sh with a fail-safe shim so a missing library never silently disables every status write again.",
+      "annotation": "n/a (recorded inline in phase 4's verification section)"
+    }
+  ]
+}
