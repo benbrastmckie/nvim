@@ -421,25 +421,43 @@ is machine-pinned to the lib.
 
 ---
 
-### Phase 7: Redeploy, full verification, and index sync [NOT STARTED]
+### Phase 7: Redeploy, full verification, and index sync [COMPLETED]
 
 **Goal**: The deployed `.claude/` tree matches the source store, every gate is green end-to-end,
 and metadata drift checks pass.
 
 **Tasks**:
-- [ ] Update `agent-system/extensions/core/index-entries.json`'s `line_count` for
+- [x] Update `agent-system/extensions/core/index-entries.json`'s `line_count` for
       `standards/orchestrator-runtime-files.md` (currently `356`) to the post-edit count.
-- [ ] Check `ps aux` for an in-flight `deploy-headless.sh` before deploying; wait rather than
-      race the mutex this task is about.
-- [ ] Run the deploy so `.claude/` picks up the new lib, the rewired check script, and the new
+      *(completed: 356 -> 405)*
+- [x] Check `ps aux` for an in-flight `deploy-headless.sh` before deploying; wait rather than
+      race the mutex this task is about. *(completed: no in-flight deploy, no
+      `specs/.deploy-lock/` present)*
+- [x] Run the deploy so `.claude/` picks up the new lib, the rewired check script, and the new
       test. Confirm `.claude/scripts/lib/runtime-file-patterns.sh` exists and that the deployed
       `check-runtime-file-tracking.sh` sources it successfully from the flattened tree.
-- [ ] Run `bash .claude/scripts/check-runtime-file-tracking.sh` (the *deployed* copy) against this
-      repo: expect `PASS`.
-- [ ] Run the full shell test suite (`scripts/tests/run-all.sh`) and confirm no suite regressed.
-- [ ] Run `shellcheck` across every file this task touched.
-- [ ] Run `check-task-references.sh` to confirm no task-number citations leaked into any
-      deliverable outside `specs/**`.
+      *(completed: deploy landed, RESULT=landed_verify_red — the one verify-deploy.sh FAIL is
+      an unrelated pre-existing eager-context-budget baseline drift on `commands/orchestrate.md`,
+      touching none of this task's files; see phase notes below)*
+- [x] Run `bash .claude/scripts/check-runtime-file-tracking.sh` (the *deployed* copy) against this
+      repo: expect `PASS`. *(completed: PASS, all three checks passed — this is gate 14, and it
+      was also independently confirmed green inside the deploy's own verify-deploy.sh run)*
+- [x] Run the full shell test suite (`scripts/tests/run-all.sh`) and confirm no suite regressed.
+      *(completed: 74 passed, 9 failed, 0 skipped, 83 total. All 9 failures are in
+      `test-state-write-regen-timing.sh` (2) and `test-task-lock-reap.sh` (5) [1 pre-existing pass
+      in each suite too] — both pre-existing failures unrelated to this task: their own fixture's
+      copied-script list is missing `lib/task-lookup-lib.sh`, a dependency `task-lock.sh` gained
+      from unrelated prior work (tasks 197/186/81 per `git log`), never touched by this task. This
+      task's own three new/rewired suites (`test-runtime-file-tracking.sh`,
+      `test-deploy-orphans.sh`, `test-deploy-propagation.sh`) all PASS.)*
+- [x] Run `shellcheck` across every file this task touched. *(completed: clean except the
+      established, repo-wide-precedented findings — SC2034 on export-only lib arrays (matches
+      `lib/task-reference-patterns.sh`'s own baseline) and SC2329/SC2001 on the mandated
+      trap-cleanup/sed-indent test idiom (matches every existing suite's baseline, including the
+      two fixtures before this task touched them); `check-runtime-file-tracking.sh` itself,
+      explicitly named in the dispatch for its pre-existing SC2034, is now fully clean, exit 0)*
+- [x] Run `check-task-references.sh` to confirm no task-number citations leaked into any
+      deliverable outside `specs/**`. *(completed: 0 occurrences across every touched file)*
 
 **Timing**: 0.75 hours
 
@@ -464,18 +482,24 @@ and metadata drift checks pass.
 
 ## Testing & Validation
 
-- [ ] `shellcheck` clean on `check-runtime-file-tracking.sh`, the new lib, the new test, and both
-      rewired fixtures — including the previously pre-existing `SC2034`
-- [ ] `check-runtime-file-tracking.sh` PASSes against this repo from both the source store and
-      the deployed `.claude/` copy
-- [ ] `test-runtime-file-tracking.sh` demonstrates FAIL-with-`git rm -r --cached` on a tracked
+- [x] `shellcheck` clean on `check-runtime-file-tracking.sh`, the new lib, the new test, and both
+      rewired fixtures — including the previously pre-existing `SC2034` *(completed:
+      `check-runtime-file-tracking.sh` fully clean exit 0; the other files carry only the
+      established repo-wide-precedented SC2034/SC2329/SC2001 classes, not new findings)*
+- [x] `check-runtime-file-tracking.sh` PASSes against this repo from both the source store and
+      the deployed `.claude/` copy *(completed: both PASS)*
+- [x] `test-runtime-file-tracking.sh` demonstrates FAIL-with-`git rm -r --cached` on a tracked
       `specs/.deploy-lock/owner` and PASS after untracking, with the on-disk file intact
-- [ ] Both deploy harnesses (`test-deploy-orphans.sh`, `test-deploy-propagation.sh`) still pass
-      against a real headless deploy
-- [ ] The standards file's fenced block is byte-identical to `runtime_ignore_block()`
-- [ ] Check C still fails a repo that ignores `.orchestrator-handoff.json` (the MUST NOT holds)
-- [ ] `git ls-files` shows no ephemeral class member tracked in this repo
-- [ ] `check-task-references.sh` green
+      *(completed: Cases 1/2, plus both deliberate-break mutation checks)*
+- [x] Both deploy harnesses (`test-deploy-orphans.sh`, `test-deploy-propagation.sh`) still pass
+      against a real headless deploy *(completed: both PASS standalone and inside `run-all.sh`)*
+- [x] The standards file's fenced block is byte-identical to `runtime_ignore_block()`
+      *(completed: verified via diff and via Case 3 of the regression test)*
+- [x] Check C still fails a repo that ignores `.orchestrator-handoff.json` (the MUST NOT holds)
+      *(completed: Case 4)*
+- [x] `git ls-files` shows no ephemeral class member tracked in this repo *(completed: confirmed
+      zero hits, both at Phase 2 and again after the Phase 7 redeploy)*
+- [x] `check-task-references.sh` green *(completed: 0 occurrences across every touched file)*
 
 ## Artifacts & Outputs
 

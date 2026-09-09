@@ -1,0 +1,67 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy, full verification, and index sync",
+  "started_at": "2026-09-09T20:37:53Z",
+  "last_updated": "2026-09-09T20:51:27Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Update index-entries.json line_count",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Check no in-flight deploy before deploying",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Run deploy, confirm lib/check-script land",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Run deployed check-runtime-file-tracking.sh against this repo",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Run full shell test suite run-all.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "shellcheck across every touched file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "check-task-references.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

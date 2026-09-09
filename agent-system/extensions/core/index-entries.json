@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 496,
+      "line_count": 505,
       "keywords": [
         "format",
         "plan",
@@ -2330,7 +2330,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Fix-forward recovery contract: disambiguates 'reach green'/'restore green' as fix-forward-only, and defines the 3-rung Recovery Ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-smallest-scope-rollback)",
-      "line_count": 88,
+      "line_count": 95,
       "keywords": [
         "fix-forward",
         "recovery-ladder",
@@ -2573,7 +2573,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 203,
+      "line_count": 234,
       "keywords": [
         "patterns",
         "file-scope",
@@ -2951,7 +2951,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 356,
+      "line_count": 405,
       "keywords": [
         "runtime-files",
         "cleanup",
