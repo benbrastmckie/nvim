@@ -254,35 +254,36 @@ whether its failure prevents a spawn.
 
 ---
 
-### Phase 3: Record the durable invariant and update lean-extension docs [NOT STARTED]
+### Phase 3: Record the durable invariant and update lean-extension docs [COMPLETED]
 
 **Goal**: The rule whose violation produced this defect is written down where a future author
 choosing a registration surface will read it, and the lean extension's own docs describe the
 sanctioned shape without implying a wrapper.
 
 **Tasks**:
-- [ ] Add a short subsection to
+- [x] Add a short subsection to
       `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`, adjacent to
       "Choosing a registration surface (the hybrid model)", stating the invariant: an
       `mcpServers` `command` path must never resolve inside any repository's own `.claude/`
       deploy tree, because that tree is disposable and regenerated wholesale per
       `rules/source-store-deploy-boundary.md`. Frame the failure mode precisely — it looks
       configured until the next regeneration or a fresh clone, then fails as a silent ENOENT.
-- [ ] Give the invariant one worked negative example (this defect, described by shape and never
+      *(completed)*
+- [x] Give the invariant one worked negative example (this defect, described by shape and never
       by task number) and the two existing positive examples the file already carries:
       `playwright`'s Nix-built wrapper binary and `lean-lsp`'s `uvx`-resolved package, both at
-      stable locations outside any `.claude/` tree.
-- [ ] Record the single-global-entry trade-off named in the user decision below, so the
-      concurrent-two-Lean-projects cost is documented rather than rediscovered.
-- [ ] Update `agent-system/extensions/lean/README.md` (its registration paragraph) and
+      stable locations outside any `.claude/` tree. *(completed)*
+- [x] Record the single-global-entry trade-off named in the user decision below, so the
+      concurrent-two-Lean-projects cost is documented rather than rediscovered. *(completed)*
+- [x] Update `agent-system/extensions/lean/README.md` (its registration paragraph) and
       `agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md` (its
       "writes an entry shaped like this" block) so the documented shape matches exactly what
       Phase 1's `generate_lean_lsp_config` emits, and so neither implies a wrapper script is
-      involved.
-- [ ] Verify the claim in `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`
+      involved. *(completed)*
+- [x] Verify the claim in `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`
       that `verify-lean-mcp.sh` has "no automated caller by design" is still accurate after
       Phase 2, and leave it for the companion drift-detection task to revise if that task adds
-      one.
+      one. *(completed)*
 
 **Timing**: 45 minutes
 

@@ -35,12 +35,19 @@ in any settings file) by `core/scripts/setup-lean-mcp.sh`, which writes an entry
       "command": "uvx",
       "args": ["lean-lsp-mcp"],
       "env": {
+        "LEAN_LOG_LEVEL": "WARNING",
         "LEAN_PROJECT_PATH": "/path/to/project"
       }
     }
   }
 }
 ```
+
+No wrapper script is involved: `command` is `uvx` (a package runner resolved on `PATH`), and the
+only per-project value is carried by the `LEAN_PROJECT_PATH` environment variable. See
+[MCP Server Ownership](../../../../../core/context/patterns/mcp-server-ownership.md)'s recorded
+invariant — a server's `command` must never resolve inside any repository's own `.claude/`
+deploy tree.
 
 User scope is required rather than project-scoped `.mcp.json` because project-scoped servers
 require an interactive approval prompt that a subagent cannot satisfy. Tool permissions are

@@ -61,6 +61,43 @@ arguments?**
     needs a computed `LEAN_PROJECT_PATH`, so `core/scripts/setup-lean-mcp.sh` computes it and
     merges the result into user scope.
 
+### Invariant: a command path must never resolve inside a repository's own `.claude/` tree
+
+Whichever surface a server is registered on, its `command` (and any path-valued `args`) must
+resolve to a stable location OUTSIDE any repository's own `.claude/` directory — never inside
+one. `.claude/` is a disposable deploy artifact, wholesale-regenerated from the source store (see
+`rules/source-store-deploy-boundary.md`); a hand-authored file placed there survives only until
+the next regeneration or a fresh clone.
+
+**The failure mode this invariant prevents**: an entry pointing into `.claude/` looks configured
+— the JSON shape is valid, the file exists at the moment it was written — right up until the
+deploy tree is regenerated or the repository is re-cloned, at which point the referenced file is
+simply gone and the server fails at spawn with a silent `ENOENT`. Nothing about the failure names
+its own cause: the error reports a missing file path, not "this command was never supposed to
+live here." This is precisely the shape a hand-edit to `~/.claude.json` took once already —
+a `lean-lsp` entry was pointed at a wrapper script inside a project's `.claude/scripts/`, the
+tree was later regenerated without that hand-authored file, and every session in every project
+relying on the (top-level, global) entry then failed at spawn with no indication the registered
+path itself was the defect. Two positive examples already in this repo show the correct
+alternative — a command path anchored at a stable, non-deploy location:
+
+- `playwright` — a Nix-built wrapper binary at a fixed store/profile path, registered once via a
+  home-manager activation block.
+- `lean-lsp` — resolved via `uvx` (a package runner on `PATH`, not a path into any repository),
+  with the per-project value carried entirely through the `LEAN_PROJECT_PATH` environment
+  variable rather than through the command path itself.
+
+**Trade-off recorded**: under this invariant, `lean-lsp` remains a single global (user-scope,
+top-level `mcpServers`) entry — there is no per-project computed *command*, only a per-project
+computed *env var*, and that env var can point at only one project at a time. Working in two Lean
+projects concurrently (e.g. `BimodalLogic` and `cslib`) means `LEAN_PROJECT_PATH` names one of
+them at any given moment; switching which project lean-lsp indexes requires re-running
+`core/scripts/setup-lean-mcp.sh` from the other project. This is a known, accepted limitation of
+the single-global-entry model, not an oversight — a project-scoped local entry would let both
+projects hold their own correct path simultaneously, but formalizing that as a second sanctioned
+mechanism is a deliberate non-goal here (see the task's `user_decision` record for the option
+considered and declined).
+
 ### Grant permissions at the same scope where the server is registered
 
 This is the governing rule the hybrid model depends on, and getting it backwards is the most

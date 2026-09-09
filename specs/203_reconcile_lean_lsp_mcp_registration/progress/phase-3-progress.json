@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Record the durable invariant and update lean-extension docs",
+  "started_at": "2026-09-09T17:22:34Z",
+  "last_updated": "2026-09-09T17:25:34Z",
+  "objectives": [
+    {"id": 1, "description": "Add invariant subsection to mcp-server-ownership.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]},
+    {"id": 2, "description": "Add negative example + two positive examples", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]},
+    {"id": 3, "description": "Record single-global-entry trade-off", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]},
+    {"id": 4, "description": "Update lean README.md and mcp-tools-guide.md to match emitted shape", "status": "done", "files_touched": ["agent-system/extensions/lean/README.md", "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"]},
+    {"id": 5, "description": "Verify utility-scripts-inventory.md claim still accurate", "status": "done", "files_touched": [], "note": "Claim ('no automated caller by design') remains accurate after Phase 2; left for companion drift-detection task"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
