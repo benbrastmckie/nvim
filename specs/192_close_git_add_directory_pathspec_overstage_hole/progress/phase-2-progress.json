@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Extend the over-staging predicate and its header enumeration",
+  "started_at": "2026-09-09T00:10:00Z",
+  "last_updated": "2026-09-09T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read header before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add per-token directory/glob check to ADD_SEGMENTS loop with refusal message", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 3, "description": "Update header enumeration + quoted-pathspec limitation note", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 4, "description": "Run full suite + shellcheck", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

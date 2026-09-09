@@ -29,14 +29,27 @@
 # Over-staging patterns (blocked independently of the snapshot-marker exemption):
 #   - git add -A / git add --all         (stages the entire working tree)
 #   - git add .                          (bare dot pathspec; stages the entire cwd tree)
+#   - git add <dir>/ (or a no-slash on-disk directory) / git add <glob>
+#                                         (a directory or glob pathspec stages every modified
+#                                          file it expands to, the same over-staging harm as
+#                                          -A/--all/bare-dot in a narrower disguise; an explicit
+#                                          multi-file list, e.g. `git add -- a.lean b.lean`, is
+#                                          the sanctioned form and is NOT matched by this check)
 #   - git commit -a / -am / --all        (implicitly stages all tracked-file modifications)
 #
 # This guard has NO exemption mechanism for over-staging -- unlike the destructive-command
-# chain above, a fresh snapshot marker does NOT and must NEVER exempt these three forms.
+# chain above, a fresh snapshot marker does NOT and must NEVER exempt these four forms.
 # A snapshot makes a *destructive* command recoverable (data-loss problem); over-staging is
 # a scope-pollution problem that a snapshot does not make acceptable. See
 # .claude/context/standards/git-staging-scope.md for the scoped-staging contract these
 # patterns enforce.
+#
+# Directory/glob pathspec detector -- accepted, pre-existing-shaped limitation: like the bare
+# `.` check above, this reads $COMMAND_SCAN, whose upfront quote-strip erases quoted spans. A
+# QUOTED over-broad pathspec (e.g. `git add -- "some/dir/"`) is therefore invisible to this
+# check, exactly as `git add "."` is already invisible to the bare-dot check. This is a known,
+# symmetric blind spot, not an oversight, and is not closed here -- see the quote-strip note
+# above for why a second, non-quote-stripped scan variable is deliberately not introduced.
 #
 # git-snapshot.sh's own sanctioned `git add -A` (scripts/git-snapshot.sh, --branch mode
 # only, against a throwaway wip-snapshot branch) needs no exemption here: this hook only
@@ -128,6 +141,31 @@ if [ -n "$ADD_SEGMENTS" ]; then
     fi
     if echo "$seg" | grep -qE -- '(^|[[:space:]])\.([[:space:]]|$)'; then
       OVERSTAGE_REASON="git add . stages the entire current directory tree; stage explicit task-scoped paths instead"
+      break
+    fi
+    # Per-token directory/glob pathspec check (see header note above for the quoted-pathspec
+    # blind spot). Strip the leading "git add" (and any leading ;/&/| separator this segment's
+    # extraction regex may have captured), then skip any flag token (starts with "-", including
+    # the bare "--" separator) and test each remaining pathspec token for directory-or-glob
+    # shape. `read -ra` (not unquoted word-splitting) is used deliberately so the shell's own
+    # pathname expansion never silently consumes a literal glob token before it can be inspected.
+    seg_rest=$(echo "$seg" | sed -E 's/^[;&|]*[[:space:]]*git[[:space:]]+add[[:space:]]*//')
+    read -ra ADD_TOKENS <<< "$seg_rest" || true
+    for tok in "${ADD_TOKENS[@]:-}"; do
+      [ -z "$tok" ] && continue || true
+      case "$tok" in
+        -*) continue ;;
+      esac
+      if [[ "$tok" == */ ]] || [ -d "$tok" ]; then
+        OVERSTAGE_REASON="git add with a directory pathspec ('$tok') stages every modified file under it; stage explicit task-scoped paths instead"
+        break
+      fi
+      if echo "$tok" | grep -q '[*?[]'; then
+        OVERSTAGE_REASON="git add with a glob pathspec ('$tok') stages every matching modified file; stage explicit task-scoped paths instead"
+        break
+      fi
+    done
+    if [ -n "$OVERSTAGE_REASON" ]; then
       break
     fi
   done <<< "$ADD_SEGMENTS"

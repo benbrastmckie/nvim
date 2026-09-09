@@ -148,33 +148,33 @@ helper pattern.
 
 ---
 
-### Phase 2: Extend the over-staging predicate and its header enumeration [NOT STARTED]
+### Phase 2: Extend the over-staging predicate and its header enumeration [COMPLETED]
 
 **Goal**: Turn the Phase 1 RED cases GREEN by adding a per-token directory/glob check to the
 existing `ADD_SEGMENTS` loop, with a pathspec-naming refusal message, and update the file header's
 over-staging enumeration so the file no longer misdescribes itself.
 
 **Tasks**:
-- [ ] Re-read the header (over-staging enumeration block) before editing, in case the sibling
-      history-rewrite-predicate task has already landed and changed it
-- [ ] Inside the existing `ADD_SEGMENTS` `while` loop, after the `-A`/bare-dot checks, add a
+- [x] Re-read the header (over-staging enumeration block) before editing, in case the sibling
+      history-rewrite-predicate task has already landed and changed it *(completed: unchanged since Phase 1)*
+- [x] Inside the existing `ADD_SEGMENTS` `while` loop, after the `-A`/bare-dot checks, add a
       per-token pass over the segment: skip the leading `git add` words, any token starting with
-      `-`, and the bare `--` separator
-- [ ] For each remaining (pathspec) token, set `OVERSTAGE_REASON` and `break` when: (1) the token
-      ends with `/`; (2) `[ -d "$token" ]` is true; (3) the token contains `*`, `?`, or `[`
-- [ ] Word-splitting on the segment is adequate and consistent with the file's existing
+      `-`, and the bare `--` separator *(completed)*
+- [x] For each remaining (pathspec) token, set `OVERSTAGE_REASON` and `break` when: (1) the token
+      ends with `/`; (2) `[ -d "$token" ]` is true; (3) the token contains `*`, `?`, or `[` *(completed)*
+- [x] Word-splitting on the segment is adequate and consistent with the file's existing
       regex/word-level heuristics — do NOT introduce a tokenizer, and do NOT introduce a second
-      non-quote-stripped scan variable
-- [ ] Compose the refusal message in the existing `OVERSTAGE_REASON` sentence shape, naming the
+      non-quote-stripped scan variable *(completed: used `read -ra` on $seg_rest, no tokenizer, no second scan variable)*
+- [x] Compose the refusal message in the existing `OVERSTAGE_REASON` sentence shape, naming the
       offending token verbatim and repeating the "stage explicit task-scoped paths instead"
-      guidance the `-A` branch gives
-- [ ] Add a fourth bullet to the header's over-staging enumeration for the directory/glob pathspec
-      form
-- [ ] Add a short header note, in the style of the file's existing "Out of scope (deliberate, not
+      guidance the `-A` branch gives *(completed)*
+- [x] Add a fourth bullet to the header's over-staging enumeration for the directory/glob pathspec
+      form *(completed)*
+- [x] Add a short header note, in the style of the file's existing "Out of scope (deliberate, not
       an oversight)" block, stating that a *quoted* over-broad pathspec is not caught — symmetric
-      with the bare-dot check's identical existing blind spot
-- [ ] Keep the no-exemption stance explicit: the new form joins the same class the header already
-      says a snapshot marker must NEVER exempt
+      with the bare-dot check's identical existing blind spot *(completed)*
+- [x] Keep the no-exemption stance explicit: the new form joins the same class the header already
+      says a snapshot marker must NEVER exempt *(completed: header now says "these four forms")*
 
 **Timing**: 1 hour
 
