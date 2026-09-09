@@ -1,63 +1,76 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md",
-      "summary": "9-phase plan closing five defects behind one shared archive-lookup library: cycle-plan forced-phase eligibility exemption, classifier archive read, skill_validate_input terminal bypass + archive fallback, preflight monotonic-max clamp with archive-absent write skip, and archived-task-directory path resolution; plus fixtures for both suites and docs."
+      "type": "summary",
+      "path": "specs/197_forced_phase_on_terminal_and_archived_tasks/summaries/01_forced-phase-terminal-archived-tasks-summary.md",
+      "summary": "9-phase implementation closing five defects behind one shared archive-lookup library; full gate set green; live-verified against real production task 189 (active) and task 137 (archived), including a mid-Phase-9 fix for a real jq argv-length failure in the classifier's archive read."
     }
   ],
-  "next_steps": "Run /implement 197 to execute the plan",
-  "phase_count": 9,
-  "estimated_hours": 11,
-  "dependency_waves": [
-    [
-      1
-    ],
-    [
-      2,
-      5
-    ],
-    [
-      3,
-      7
-    ],
-    [
-      4
-    ],
-    [
-      6,
-      8
-    ],
-    [
-      9
-    ]
+  "completion_data": {
+    "completion_summary": "Made /orchestrate N --research/--plan/--implement work on terminal (completed/abandoned/expanded) tasks, both still-active and already-archived by /todo, without ever regressing status or un-archiving. Closed the two named defects plus three more surfaced during research/planning (skill_validate_input's hard terminal exit, an absent preflight status-regression clamp, and archived-task directory resolution) behind one shared archive-aware lookup library. Full gate set green (170+57+65 fixture passes, 0 unexempted task-reference occurrences, shellcheck clean); live-verified against this repo's own real production data, which also surfaced and fixed a genuine jq argv-length defect in the classifier's archive read that no small synthetic fixture had caught."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/task-lookup-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-loop-guard-budget-override.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a bash script needs to hand a large JSON payload built in a shell variable to jq, prefer piping it via stdin (e.g. `echo \"$big_json\" | jq --argjson n \"$small_scalar\" ...`) or writing it to a mktemp temp file and reading it back with `--slurpfile`, rather than embedding it as a `jq --argjson name \"$big_json\"` command-line argument. Linux caps a single exec argv element at MAX_ARG_STRLEN (128 KiB), well below ARG_MAX (2 MB) and easy to hit with a real-scale JSON payload (a ~1 MB flattened archive failed deterministically with 'Argument list too long', exit 126). Small synthetic test fixtures rarely exceed 128 KiB, so this class of bug survives a fully green fixture suite and only surfaces against real production-scale data -- add at least one fixture case sized past the 128 KiB threshold for any jq call site that consumes a payload whose size scales with the repository's own history (an archive, an index, an accumulated log).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/197_forced_phase_on_terminal_and_archived_tasks/summaries/01_forced-phase-terminal-archived-tasks-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "argjson",
+        "slurpfile",
+        "MAX_ARG_STRLEN",
+        "argument-list-too-long",
+        "shell-scripting"
+      ]
+    },
+    {
+      "content": "To live-smoke-test an orchestrator/agent-system script against a repo's own real production state.json (rather than only small synthetic fixtures) without risking any mutation to the real repo: build an isolated /tmp root, symlink its .claude/ to the real .claude/ (read-only tool access, since PROJECT_ROOT is derived from the invoking script's own path -- SCRIPT_DIR N levels up -- independent of any --state-file override), then copy (never symlink) the real specs/state.json, specs/archive/state.json, and the specific real task directories under test into the isolated root's own specs/ tree. Every write the script under test performs lands inside the isolated root; the real repo is read-only throughout. This caught a genuine jq argv-length defect (see the paired TECHNIQUE memory) that zero small fixtures had exercised.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/197_forced_phase_on_terminal_and_archived_tasks/summaries/01_forced-phase-terminal-archived-tasks-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "smoke-test",
+        "live-verification",
+        "orchestrate",
+        "isolated-root",
+        "production-scale",
+        "PROJECT_ROOT"
+      ]
+    }
   ],
   "metadata": {
-    "session_id": "sess_1788956447_28a717_197",
+    "session_id": "sess_1788970118_5fdaef",
     "agent_type": "general-implementation-agent",
-    "delegation_depth": 1,
+    "delegation_depth": 2,
     "delegation_path": [
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
   },
-  "memory_candidates": [
-    {
-      "content": "In this repo's task-management system, /todo does not merely rewrite state -- it MOVES the task directory from specs/{NNN}_{slug}/ to specs/archive/{NNN}_{slug}/ (skill-todo/SKILL.md Stage 10). Every code path that derives a task directory as the hardcoded string specs/{NNN}_{project_name} (skill-base.sh's skill_validate_input, and roughly five sites in orchestrate-cycle-plan.sh: loop-guard seed, aux dispatch, exhausted loop guard, hard-mode H1 plan/handoff read, and the dispatch-row task_dir pair) therefore resolves to a NON-EXISTENT path for an archived task, and silently creates a fresh empty sibling directory rather than failing. Any feature that makes archived tasks reachable (forced /orchestrate phases, recovery, re-dispatch) must route task-directory derivation through a single archive-aware resolver that prefers specs/{NNN}_{slug} and falls back to specs/archive/{NNN}_{slug}, or the work will be scattered across two directories. This is distinct from, and additional to, the state.json-vs-archive/state.json lookup gap: fixing the state lookup alone leaves the directory gap open.",
-      "category": "PATTERN",
-      "source_artifact": "specs/197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "orchestrate",
-        "archive",
-        "task-directory",
-        "todo-archival",
-        "path-resolution",
-        "skill_validate_input"
-      ]
-    }
-  ]
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

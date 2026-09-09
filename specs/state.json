@@ -1490,7 +1490,8 @@
           "summary": "9-phase implementation closing five defects behind one shared archive-lookup library; full gate set green; live-verified against real production task 189 (active) and task 137 (archived), including a mid-Phase-9 fix for a real jq argv-length failure in the classifier's archive read."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Made /orchestrate N --research/--plan/--implement work on terminal (completed/abandoned/expanded) tasks, both still-active and already-archived by /todo, without ever regressing status or un-archiving. Closed the two named defects plus three more surfaced during research/planning (skill_validate_input's hard terminal exit, an absent preflight status-regression clamp, and archived-task directory resolution) behind one shared archive-aware lookup library. Full gate set green (170+57+65 fixture passes, 0 unexempted task-reference occurrences, shellcheck clean); live-verified against this repo's own real production data, which also surfaced and fixed a genuine jq argv-length defect in the classifier's archive read that no small synthetic fixture had caught."
     },
     {
       "project_number": 198,
