@@ -46,7 +46,7 @@ next_project_number: 198
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
-196 [NOT STARTED] — Make research the default first phase for an un-researched...
+196 [PLANNED] — Make research the default first phase for an un-researched...
   └─ 197 [NOT STARTED] — Honor a forced phase on a terminal task, including one...
 
 ### Extensions
@@ -116,10 +116,11 @@ ACCEPTANCE. /orchestrate N --research on a completed task in active_projects dis
 ---
 
 ### 196. Make research the default first phase for an un-researched task unless --fast is given
-- **Status**: [NOT STARTED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Plan**: [196_research_first_default_unless_fast/plans/01_research-first-default-unless-fast.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the change up via their own redeploy.
 

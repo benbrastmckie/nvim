@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/196_research_first_default_unless_fast/plans/01_research-first-default-unless-fast.md",
+      "summary": "5-phase plan inverting /orchestrate's not_started default to research-first, made effort-conditional inside orchestrate-triage-classify.sh so --fast preserves plan-first."
+    }
+  ],
+  "next_steps": "Run /implement 196 to execute the plan",
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1788956447_28a717_196",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4.5,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 1
+}
