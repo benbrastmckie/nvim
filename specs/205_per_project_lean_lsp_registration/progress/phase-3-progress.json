@@ -1,0 +1,67 @@
+{
+  "phase": 3,
+  "phase_name": "Teach the writer per-project scope",
+  "started_at": "2026-09-09T19:45:00Z",
+  "last_updated": "2026-09-09T20:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add --scope project|global|both flag defaulting to project",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Implement project-scope read/compare/write against .projects[$path].mcpServers.\"lean-lsp\", auto-vivifying ancestors, atomic temp-file-then-mv",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"],
+      "note": "jq's assignment autovivification (.projects[$path].mcpServers.\"lean-lsp\" = $leanConfig) creates every missing intermediate object; confirmed empirically against a fixture HOME with no .projects key at all."
+    },
+    {
+      "id": 3,
+      "description": "Reuse whole-entry comparison and whole-entry overwrite (never per-field)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add --remove at project scope, and --retire-global to delete only the top-level global entry",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Add --quiet mode: silent+exit0 on match, one line on write",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Keep --dry-run honest for every new path",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Update the script header comment block to the per-project model",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/setup-lean-mcp.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_log": [
+    "Fixture HOME, no .projects key: --scope project --project PROJ1 creates .projects[PROJ1].mcpServers.\"lean-lsp\" with canonical shape -- PASS",
+    "Second identical run: file md5sum unchanged (silent no-op except log lines) -- PASS",
+    "Divergent entry (command=/bad/wrapper.sh, args=[]) at same path: replaced wholesale with canonical shape -- PASS",
+    "--dry-run on a divergent entry: file md5sum unchanged -- PASS",
+    "--retire-global on a fixture with both a global entry and a project entry: global entry removed, .projects untouched -- PASS",
+    "Two different project paths (PROJ1, PROJ2) registered in sequence: both entries survive with their own LEAN_PROJECT_PATH -- PASS",
+    "--quiet on a fresh write: exactly one line ('lean-lsp: registered for PROJ1 (project scope)') -- PASS",
+    "--quiet on a matching no-op: zero output -- PASS",
+    "--remove at project scope: entry deleted, .projects[PROJ1].mcpServers left as {} -- PASS",
+    "--remove --quiet: zero output -- PASS"
+  ]
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Per-Project lean-lsp Registration
 
 - **Task**: 205 - Replace the single-global lean-lsp entry with per-project scoped registration written automatically at session start
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 13 hours
 - **Dependencies**: 203 (COMPLETED), 204 (COMPLETED)
 - **Research Inputs**: specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md
@@ -143,7 +143,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Confirm precedence, reachability, and hook timing [NOT STARTED]
+### Phase 1: Confirm precedence, reachability, and hook timing [COMPLETED]
 
 **Goal**: Establish, by fresh-session experiment rather than assertion, the three mechanism facts
 every later phase depends on: that a project-scoped entry takes precedence over the global one,
@@ -151,20 +151,20 @@ that a subagent can reach it, and whether a `SessionStart`-hook write is visible
 session or only the next one.
 
 **Tasks**:
-- [ ] Hand-write a project-scoped `lean-lsp` entry for one Lean project (e.g. BimodalLogic) into
+- [x] Hand-write a project-scoped `lean-lsp` entry for one Lean project (e.g. BimodalLogic) into
       `.projects[<path>].mcpServers` with a `LEAN_PROJECT_PATH` deliberately DIFFERENT from the
       global entry's, so precedence is observable rather than ambiguous
-- [ ] In a fresh `claude -p` session started in that directory, call a lean-lsp tool and confirm
+- [x] In a fresh `claude -p` session started in that directory, call a lean-lsp tool and confirm
       which project answered (use a declaration/file unique to one project — never a query both
       projects could satisfy)
-- [ ] Repeat the same probe from a subagent dispatch to confirm subagent reachability of the
+- [x] Repeat the same probe from a subagent dispatch to confirm subagent reachability of the
       project-scoped entry
-- [ ] Install a throwaway `SessionStart` (matcher `startup`) hook that writes a project-scoped
+- [x] Install a throwaway `SessionStart` (matcher `startup`) hook that writes a project-scoped
       entry for a directory with none, start a fresh session there, and record whether lean-lsp
       is available in THAT session or only the next one
-- [ ] Record all three outcomes verbatim (commands + observed output) in the implementation
+- [x] Record all three outcomes verbatim (commands + observed output) in the implementation
       progress file; they become inputs to Phase 4's messaging contract and Phase 8's doc text
-- [ ] Remove every throwaway fixture entry and the throwaway hook before closing the phase
+- [x] Remove every throwaway fixture entry and the throwaway hook before closing the phase
 
 **Timing**: 1 hour
 
@@ -179,26 +179,26 @@ session or only the next one.
 
 ---
 
-### Phase 2: Relocate the registration scripts into the lean extension [NOT STARTED]
+### Phase 2: Relocate the registration scripts into the lean extension [COMPLETED]
 
 **Goal**: Resolve issue 7 per D3 — move `setup-lean-mcp.sh` and `verify-lean-mcp.sh` from the
 core extension to the lean extension as a pure relocation, with no behavior change, so every
 later semantic edit happens in the final location.
 
 **Tasks**:
-- [ ] `git mv agent-system/extensions/core/scripts/{setup,verify}-lean-mcp.sh agent-system/extensions/lean/scripts/`
-- [ ] Remove both entries from `agent-system/extensions/core/manifest.json` `provides.scripts`
-- [ ] Add both entries to `agent-system/extensions/lean/manifest.json` `provides.scripts`
-- [ ] Update every source-store reference to the old `core/scripts/` path: enumerate with
+- [x] `git mv agent-system/extensions/core/scripts/{setup,verify}-lean-mcp.sh agent-system/extensions/lean/scripts/`
+- [x] Remove both entries from `agent-system/extensions/core/manifest.json` `provides.scripts`
+- [x] Add both entries to `agent-system/extensions/lean/manifest.json` `provides.scripts`
+- [x] Update every source-store reference to the old `core/scripts/` path: enumerate with
       `grep -rn "core/scripts/setup-lean-mcp\|core/scripts/verify-lean-mcp\|extensions/core/scripts" agent-system/`
       and fix each (known: `mcp-server-ownership.md`, `docs/guides/permission-configuration.md`,
       `docs/reference/utility-scripts-inventory.md`, `lean/README.md`,
       `lean/context/project/lean4/tools/mcp-tools-guide.md`)
-- [ ] Confirm `test-lean-mcp-preflight-check.sh`'s dual-layout `VERIFIER_SRC` probe still
+- [x] Confirm `test-lean-mcp-preflight-check.sh`'s dual-layout `VERIFIER_SRC` probe still
       resolves (its source-store candidate `../../../core/scripts/verify-lean-mcp.sh` becomes
       dead; its sibling candidate `../verify-lean-mcp.sh` now hits) and update the header comment
       that explains the two candidates
-- [ ] Redeploy and confirm `.claude/scripts/` still carries both scripts
+- [x] Redeploy and confirm `.claude/scripts/` still carries both scripts
 
 **Timing**: 1 hour
 
@@ -232,26 +232,26 @@ grep's actual result governs.
 
 ---
 
-### Phase 3: Teach the writer per-project scope [NOT STARTED]
+### Phase 3: Teach the writer per-project scope [COMPLETED]
 
 **Goal**: Give `setup-lean-mcp.sh` a project-scope write path that reuses
 `generate_lean_lsp_config()` and the whole-entry reconciliation discipline, and make
 project-scope the default, with the global entry retired per D2.
 
 **Tasks**:
-- [ ] Add a `--scope project|global|both` flag defaulting to `project`
-- [ ] Implement the project-scope read/compare/write against
+- [x] Add a `--scope project|global|both` flag defaulting to `project`
+- [x] Implement the project-scope read/compare/write against
       `.projects[$path].mcpServers."lean-lsp"`, creating the `.projects[$path]` and `.mcpServers`
       objects when absent, using the same temp-file-then-`mv` atomic rename
-- [ ] Reuse the existing whole-entry comparison (`$existing == $canonical`) and whole-entry
+- [x] Reuse the existing whole-entry comparison (`$existing == $canonical`) and whole-entry
       overwrite — never a targeted `env.LEAN_PROJECT_PATH` assignment — so command/args drift is
       corrected too
-- [ ] Add `--remove` support at project scope, and a `--retire-global` action that deletes the
+- [x] Add `--remove` support at project scope, and a `--retire-global` action that deletes the
       top-level `.mcpServers."lean-lsp"` entry (D2)
-- [ ] Add a `--quiet` mode suitable for hook invocation: silent and exit 0 when the entry already
+- [x] Add a `--quiet` mode suitable for hook invocation: silent and exit 0 when the entry already
       matches, one line when it writes
-- [ ] Keep `--dry-run` honest for every new path
-- [ ] Update the script header comment block (its `Usage`/`Options`/behavior narrative) to the
+- [x] Keep `--dry-run` honest for every new path
+- [x] Update the script header comment block (its `Usage`/`Options`/behavior narrative) to the
       per-project model
 
 **Timing**: 1.5 hours

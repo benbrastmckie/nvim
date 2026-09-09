@@ -1,0 +1,40 @@
+{
+  "phase": 1,
+  "phase_name": "Confirm precedence, reachability, and hook timing",
+  "started_at": "2026-09-09T18:39:00Z",
+  "last_updated": "2026-09-09T19:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Hand-write a project-scoped lean-lsp entry for BimodalLogic with a LEAN_PROJECT_PATH different from the global entry, then confirm from a fresh session which project answers",
+      "status": "done",
+      "files_touched": [],
+      "note": "Global entry at start: .mcpServers.\"lean-lsp\".env.LEAN_PROJECT_PATH = /home/benjamin/Projects/BimodalLogic. Hand-wrote .projects[\"/home/benjamin/Projects/BimodalLogic\"].mcpServers.\"lean-lsp\".env.LEAN_PROJECT_PATH = /home/benjamin/Projects/cslib via jq. Ran: `cd ~/Projects/BimodalLogic && claude -p \"Call mcp__lean-lsp__lean_file_outline with file_path=Cslib.lean, then with file_path=FormalSystem/Syntax.lean\" --allowedTools mcp__lean-lsp__lean_file_outline --permission-mode bypassPermissions`. RESULT: Call 1 (Cslib.lean, a cslib-only file) SUCCEEDED with a full real import list (185 imports) -- proves the session resolved against cslib, not BimodalLogic. Call 2 (FormalSystem/Syntax.lean, a BimodalLogic-only file) FAILED with 'Error executing tool lean_file_outline: Invalid Lean file path: '\"'\"'FormalSystem/Syntax.lean'\"'\"' not found in any Lean project (no lean-toolchain ancestor or file does not exist)' -- confirms the session did NOT fall back to BimodalLogic. CONCLUSION: the project-scoped .projects[<path>].mcpServers entry takes precedence over the top-level global .mcpServers entry for that same project directory, from a freshly-started session, with no hook involved (the entry was written before the session started)."
+    },
+    {
+      "id": 2,
+      "description": "Repeat the probe from a subagent dispatch to confirm subagent reachability of the project-scoped entry",
+      "status": "done",
+      "files_touched": [],
+      "note": "With the same hand-written BimodalLogic->cslib override from objective 1 still in place, ran: `cd ~/Projects/BimodalLogic && claude -p \"Use the Task tool to dispatch a general-purpose subagent. Instruct the subagent to call mcp__lean-lsp__lean_file_outline with file_path=Cslib.lean and report the raw result verbatim.\" --allowedTools Task,mcp__lean-lsp__lean_file_outline --permission-mode bypassPermissions`. RESULT: the dispatched subagent's tool call also resolved against the cslib project (same 185-import list as objective 1's Call 1), explicitly noting 'the outline resolved against a Cslib project (not this BimodalLogic working directory -- there is no Cslib.lean here)'. CONCLUSION: a project-scoped entry is reachable from a dispatched subagent, not just the main session -- consistent with mcp-server-ownership.md's existing project-scope reachability finding for .mcp.json, now confirmed for .projects[<path>].mcpServers as well."
+    },
+    {
+      "id": 3,
+      "description": "Install a throwaway SessionStart (matcher startup) hook that writes a project-scoped entry for a directory with none, start a fresh session there, and record whether lean-lsp is available in THAT session or only the next one",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed /home/benjamin/Projects/cslib-pr648 had no .projects entry beforehand (jq check: 'ABSENT'). Appended a throwaway hooks.SessionStart entry (matcher startup) to the LIVE ~/.claude/settings.json only (not to ~/.dotfiles -- this was a same-session-only probe): command = `bash /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/setup-lean-mcp.sh --scope project --quiet 2>/dev/null || echo '{}'`. Ran three sequential fresh `claude -p` sessions in ~/Projects/cslib-pr648, each calling mcp__lean-lsp__lean_file_outline on Cslib.lean (a file that exists in this worktree). Session 1 (the very first session in this directory, whose own hook invocation performed the write): tool call FAILED with the same 'not found in any Lean project' error as objective-1's negative case, even though a post-hoc jq check confirmed the hook DID write the correct .projects[\"/home/benjamin/Projects/cslib-pr648\"].mcpServers.\"lean-lsp\" entry (LEAN_PROJECT_PATH correct) during that session. Session 2 (started fresh after session 1 exited, entry already present on disk before session 2 started): tool call ALSO FAILED with the identical error. Session 3 (started fresh after session 2 exited): tool call SUCCEEDED (185-import list), for both an absolute and a project-root-relative file_path. CONCLUSION (primary, load-bearing for Phase 4): a SessionStart hook's own write is demonstrably NOT visible within that SAME session -- session 1's failure, immediately following its own successful write, is clean evidence of the session-start snapshot trap already documented in mcp-server-ownership.md (the tool registry snapshot is taken at a point in CLI startup that precedes or is independent of the SessionStart hook's execution). Phase 4's hook MUST therefore emit a same-session restart notice on every write, per the plan's own risk mitigation, rather than assume next-session visibility is immediate. SECONDARY, non-load-bearing anomaly: session 2 also failed despite the entry being present on disk before it started, while session 3 (no further hook write occurred -- the hook was a quiet no-op in sessions 2 and 3) succeeded. This is NOT re-explained by hook timing (no write occurred in sessions 2 or 3) and is most plausibly a cslib-pr648-specific lean-lsp-mcp cold-index/cache warm-up latency independent of registration scope (this worktree's Lean toolchain/build cache had not been touched by lean-lsp-mcp before session 1); it does not weaken the primary conclusion above, which rests entirely on the session-1-vs-pre-written-BimodalLogic-case comparison, not on the session-2/session-3 pair. Recorded honestly rather than smoothed over."
+    },
+    {
+      "id": 4,
+      "description": "Remove every throwaway fixture entry and the throwaway hook before closing the phase",
+      "status": "done",
+      "files_touched": [],
+      "note": "Restored ~/.claude/settings.json from its pre-phase-1 backup (removing the throwaway SessionStart hook entry, leaving the pre-existing sleep-inhibitor entry untouched). Deleted .projects[\"/home/benjamin/Projects/BimodalLogic\"].mcpServers.\"lean-lsp\" and .projects[\"/home/benjamin/Projects/cslib-pr648\"].mcpServers.\"lean-lsp\" from ~/.claude.json via jq. Verified via jq that both are now {} and that the top-level global entry is back to its original BimodalLogic-pointing state (untouched throughout this phase). Deleted the temporary ~/.claude.json.bak-205-phase1 and ~/.claude.settings.json.bak-205-phase1 backup files (Phase 9 takes its own fresh snapshot before making real changes)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -25,7 +25,7 @@ The `lean-lsp` MCP server provides four capability groups:
 ## Configuration
 
 The server is registered in user-scope `~/.claude.json` (never in a project-scoped `.mcp.json` or
-in any settings file) by `core/scripts/setup-lean-mcp.sh`, which writes an entry shaped like this:
+in any settings file) by `lean/scripts/setup-lean-mcp.sh`, which writes an entry shaped like this:
 
 ```json
 {

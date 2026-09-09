@@ -62,7 +62,9 @@
       "tests/fixtures/challenge/solution_weakened.lean",
       "tests/fixtures/challenge/solution_cosmetic.lean",
       "lean-mcp-preflight-check.sh",
-      "tests/test-lean-mcp-preflight-check.sh"
+      "tests/test-lean-mcp-preflight-check.sh",
+      "setup-lean-mcp.sh",
+      "verify-lean-mcp.sh"
     ],
     "hooks": []
   },

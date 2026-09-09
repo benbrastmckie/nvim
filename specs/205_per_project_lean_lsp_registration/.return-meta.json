@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/205_per_project_lean_lsp_registration/plans/01_per-project-lean-lsp-registration.md",
-      "summary": "10-phase plan flipping lean-lsp from one global ~/.claude.json entry to per-project .projects[<path>].mcpServers entries written by a user-level SessionStart hook, inverting the verifier, tests, and recorded invariants that currently enforce the single-global model."
-    }
-  ],
-  "next_steps": "Run /implement 205 to execute the plan",
-  "phase_count": 10,
-  "estimated_hours": 13,
-  "dependency_waves": [[1, 2], [3], [4, 5], [6, 8, 9], [7], [10]],
-  "memory_candidates": [
-    {
-      "content": "On this machine, a Claude Code hook that must fire in EVERY session (including a fresh git worktree with no .claude/ deploy) cannot be contributed through an extension's settings-fragment.json: that merges into a repo's .claude/settings.local.json, which a worktree without a deploy never has. It must be registered at user level in ~/.claude/settings.json -- but that file's `hooks` key is home-manager-ENFORCED (~/.dotfiles/modules/home/core/dotfiles.nix activation.claudeSettings resets [_NOTE, env, hooks, model, permissions, statusLine] from ~/.dotfiles/config/claude/settings.json on every rebuild), so a durable user-level hook must be written to the dotfiles source and optionally mirrored into the live file for immediate effect. Related constraint: a session's MCP tool registry is a startup snapshot, so a SessionStart hook that writes MCP registration may only take effect in the NEXT session in that directory -- verify empirically with a fresh `claude -p`, never a running session.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/205_per_project_lean_lsp_registration/plans/01_per-project-lean-lsp-registration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["SessionStart hook", "home-manager enforced settings", "claude settings.json", "MCP registration", "worktree", "settings-fragment"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1788979129_59669f_205",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1788979129_59669f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

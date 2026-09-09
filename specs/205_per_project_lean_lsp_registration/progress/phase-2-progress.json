@@ -1,0 +1,67 @@
+{
+  "phase": 2,
+  "phase_name": "Relocate the registration scripts into the lean extension",
+  "started_at": "2026-09-09T19:20:00Z",
+  "last_updated": "2026-09-09T19:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "git mv setup-lean-mcp.sh and verify-lean-mcp.sh from core/scripts/ to lean/scripts/",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/setup-lean-mcp.sh",
+        "agent-system/extensions/lean/scripts/verify-lean-mcp.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Update core and lean manifest.json provides.scripts entries",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/lean/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Fix every source-store reference to the old core/scripts/ path (grep-enumerated)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+        "agent-system/extensions/core/docs/guides/permission-configuration.md",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+        "agent-system/extensions/lean/README.md",
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+      ],
+      "note": "grep -rln 'setup-lean-mcp|verify-lean-mcp' agent-system/ docs/ enumerated exactly these 5 doc/pattern files plus the two scripts themselves plus lean-mcp-preflight-check.sh (which references the two by NAME, not by core/scripts/ path, so needed no path fix) plus the test suite (objective 4). Matches the plan's Scope Hypothesis of ~8 files. utility-scripts-inventory.md's own entries use the deployed .claude/scripts/ path already (unaffected by the source-store relocation) so only its two literal core/scripts/ substring occurrences (in the setup-lean-mcp.sh worked-example sentence) needed the substitution."
+    },
+    {
+      "id": 4,
+      "description": "Confirm test-lean-mcp-preflight-check.sh's dual-layout VERIFIER_SRC probe still resolves and update the header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"
+      ],
+      "note": "Collapsed the two-candidate loop (source-store core/scripts/../../../ vs deployed sibling) to a single sibling candidate, since verify-lean-mcp.sh now lives beside the test suite (scripts/tests/../) in BOTH the source store and a deployed consumer tree. Updated the header comment and the missing-verifier error message to match. Full suite re-run after the change: 8/8 PASS."
+    },
+    {
+      "id": 5,
+      "description": "Redeploy and confirm .claude/scripts/ still carries both scripts",
+      "status": "done",
+      "files_touched": [],
+      "note": "DEVIATION (recorded, not a defect): this source-store repo (/home/benjamin/.config/nvim) does NOT currently have the 'lean' extension loaded in its OWN .claude/ deployment (confirmed via .claude-extensions.json: active extensions are core, memory, nvim, nix, email, literature -- lean is absent). deploy-headless.sh's default mode only resyncs already-ACTIVE extensions, so it cannot deploy lean-owned files here regardless of this task's changes -- this is a pre-existing fact about this repo's extension selection, not something task 205 should change (enabling 'lean' here would be an out-of-scope, unrelated behavioral change to this source repo's own deployed configuration). The move DID surface a real, fixable side effect: two now-orphaned files (setup-lean-mcp.sh, verify-lean-mcp.sh under .claude/scripts/, leftover from when core owned them) started failing check-extension-docs.sh's content-drift check and verify-deploy.sh's find_orphans gate. Fixed by deleting those two orphan files from .claude/scripts/ (gitignored deploy artifact, not git-tracked) -- confirmed both check-extension-docs.sh and the orphan-detection gate now PASS. The verification this task item actually cares about -- that the relocated scripts deploy correctly from their new source-store location -- was instead discharged against the two real Lean-project consumer repos that DO have lean active: ran `bash .claude/scripts/deploy-headless.sh` from ~/Projects/BimodalLogic (verify-deploy.sh: PASS, 14 checks, 0 failures) and ~/Projects/cslib (deploy-headless.sh: 'Resynced 6 extension(s)', clean), then confirmed byte-for-byte `diff` equality between each consumer's newly-deployed .claude/scripts/{setup,verify}-lean-mcp.sh and this repo's agent-system/extensions/lean/scripts/ source for both files, in both consumer repos."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Redeploy and confirm .claude/scripts/ still carries both scripts",
+      "type": "altered",
+      "reason": "The source-store repo itself does not have the lean extension loaded, so its own deploy-headless.sh cannot exercise this path; verification was performed against the BimodalLogic and cslib consumer repos instead, which is the mechanism that actually matters for the task's real acceptance surface.",
+      "annotation": "*(deviation: altered — verified via BimodalLogic/cslib consumer redeploys instead of this source repo's own deploy, since lean is not loaded here; also deleted two now-orphaned .claude/scripts/ files left over from core's prior ownership)*"
+    }
+  ]
+}

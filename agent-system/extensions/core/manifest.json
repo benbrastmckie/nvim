@@ -112,6 +112,7 @@
       "lib/manifest-routing-lib.sh",
       "lib/phase-heading-patterns.sh",
       "lib/return-meta-artifacts-lib.sh",
+      "lib/task-lookup-lib.sh",
       "lib/task-reference-patterns.sh",
       "lib/status-vocabulary.sh",
       "lifecycle-notify.sh",
@@ -149,7 +150,6 @@
       "reconcile-artifacts.sh",
       "reconcile-task-status.sh",
       "roadmap-integration.sh",
-      "setup-lean-mcp.sh",
       "skill-base.sh",
       "state-write.sh",
       "system-defect-record.sh",
@@ -237,8 +237,7 @@
       "validate-state.sh",
       "validate-index.sh",
       "validate-wiring.sh",
-      "verify-deploy.sh",
-      "verify-lean-mcp.sh"
+      "verify-deploy.sh"
     ],
     "hooks": [
       "claude-stop-notify.sh",

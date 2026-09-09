@@ -58,7 +58,7 @@ arguments?**
     activation block.
   - **Per-project computed arguments needed** — the server's configuration depends on something
     computed at setup time for *this* project specifically. `lean-lsp` is the worked example: it
-    needs a computed `LEAN_PROJECT_PATH`, so `core/scripts/setup-lean-mcp.sh` computes it and
+    needs a computed `LEAN_PROJECT_PATH`, so `lean/scripts/setup-lean-mcp.sh` computes it and
     merges the result into user scope.
 
 ### Invariant: a command path must never resolve inside a repository's own `.claude/` tree
@@ -92,7 +92,7 @@ top-level `mcpServers`) entry — there is no per-project computed *command*, on
 computed *env var*, and that env var can point at only one project at a time. Working in two Lean
 projects concurrently (e.g. `BimodalLogic` and `cslib`) means `LEAN_PROJECT_PATH` names one of
 them at any given moment; switching which project lean-lsp indexes requires re-running
-`core/scripts/setup-lean-mcp.sh` from the other project. This is a known, accepted limitation of
+`lean/scripts/setup-lean-mcp.sh` from the other project. This is a known, accepted limitation of
 the single-global-entry model, not an oversight — a project-scoped local entry would let both
 projects hold their own correct path simultaneously, but formalizing that as a second sanctioned
 mechanism is a deliberate non-goal here (see the task's `user_decision` record for the option

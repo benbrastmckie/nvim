@@ -25,7 +25,7 @@ The `lean-lsp` MCP server provides live Lean LSP access for agents.
 uvx lean-lsp-mcp
 ```
 
-Registration is performed by the operator running `core/scripts/setup-lean-mcp.sh`, which writes
+Registration is performed by the operator running `lean/scripts/setup-lean-mcp.sh`, which writes
 this server into user-scope `~/.claude.json` as `{"type":"stdio","command":"uvx","args":
 ["lean-lsp-mcp"],"env":{"LEAN_LOG_LEVEL":"WARNING","LEAN_PROJECT_PATH":"<computed path>"}}` --
 `uvx` resolved on `PATH`, no wrapper script involved, and no path anywhere in the entry that
