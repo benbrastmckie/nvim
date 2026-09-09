@@ -1,6 +1,6 @@
 {
   "status": "implemented",
-  "dispatch_seq": 6,
+  "dispatch_seq": 7,
   "artifacts": [
     {
       "type": "summary",
@@ -9,17 +9,11 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "Wired verify-lean-mcp.sh into an automated caller: a new WARN-only lean-mcp-preflight-check.sh wrapper appended to Stage 2 of the four lean-lsp-using skills, proven against a fixture reproducing the observed drift shape (with a mutation check confirming the fixtures are discriminative), measured at ~6-25ms added cost, and confirmed live in a deploying consumer repo."
+    "completion_summary": "Wired verify-lean-mcp.sh into an automated caller: a new WARN-only lean-mcp-preflight-check.sh wrapper appended to Stage 2 of the four lean-lsp-using skills, proven against a fixture reproducing the observed drift shape (with a mutation check confirming the fixtures are discriminative), measured at ~6-25ms added cost, and confirmed live in a deploying consumer repo. This dispatch (7) cleared the completion-deploy gate refusal left by the prior dispatch by running the sanctioned headless deploy and fixing a stale line_count in the lean extension's index-entries.json."
   },
   "modified_files": [
-    "agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh",
-    "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh",
-    "agent-system/extensions/lean/manifest.json",
-    "agent-system/extensions/lean/skills/skill-lean-research/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
-    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+    ".claude-extensions.json",
+    "agent-system/extensions/lean/index-entries.json"
   ],
   "memory_candidates": [
     {
@@ -60,6 +54,19 @@
         "hot path check",
         "degraded mode"
       ]
+    },
+    {
+      "content": "When a task's postflight completion-deploy gate refuses with '[deploy-check] ... extension is stale relative to its source store', the fix is not a hand-edit under .claude/** -- it is running the sanctioned headless deploy (bash .claude/scripts/deploy-headless.sh) from the repo root, which regenerates .claude/** from agent-system/extensions/** AND rewrites the repo-root .claude-extensions.json's per-extension source_git_head to match the current HEAD of that extension's source_dir. Verify the fix directly (source agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh and call deploy_freshness_status <repo_root> <extension>) or via update-task-status.sh's own --dry-run postflight flag, rather than assuming the deploy alone cleared it. An extension with NO entry in .claude-extensions.json (e.g. one not selected in this repo's picker) reads as CANNOTVERIFY, which is a non-blocking inconclusive pass-through, not a defect to fix.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/summaries/01_wire-lean-mcp-drift-detection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-check gate",
+        "deploy-freshness-lib.sh",
+        "deploy-headless.sh",
+        ".claude-extensions.json",
+        "postflight --dry-run verification"
+      ]
     }
   ],
   "metadata": {
@@ -73,7 +80,5 @@
     ],
     "phases_completed": 5,
     "phases_total": 5
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }
