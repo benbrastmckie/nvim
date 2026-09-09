@@ -127,8 +127,7 @@ if [ -z "$PROJECT_ENTRY" ] || [ "$PROJECT_ENTRY" = "null" ]; then
     log "  the per-project model this project has no lean-lsp registration at all (there is no"
     log "  global fallback to fall back to -- see mcp-server-ownership.md)."
     log ""
-    log "Run setup-lean-mcp.sh --scope project (from this directory, or --project"
-    log "'$EXPECTED_PROJECT_PATH') to configure"
+    log "Run setup-lean-mcp.sh --scope project --project '$EXPECTED_PROJECT_PATH' to configure"
     exit 1
 fi
 

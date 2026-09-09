@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
-# lean-mcp-preflight-check.sh -- WARN-only lean-lsp MCP registration drift check
+# lean-mcp-preflight-check.sh -- WARN-only per-project lean-lsp MCP registration drift check
 #
 # Invoked directly from Stage 2 (Preflight Status Update) of the lean skills that dispatch to
-# lean-lsp-using agents. It wraps the existing core verifier (verify-lean-mcp.sh) into something
+# lean-lsp-using agents. It wraps the lean-extension verifier (verify-lean-mcp.sh) into something
 # safe to call on every such dispatch:
 #
 #   - Silent and exit 0 when the current directory is not a Lean project.
-#   - Silent and exit 0 when lean-lsp registration is correct.
-#   - One actionable, setup-lean-mcp.sh-naming message on drift -- still exit 0.
+#   - Silent and exit 0 when this project's OWN .projects[<path>].mcpServers."lean-lsp" entry is
+#     correctly registered (the per-project model -- see verify-lean-mcp.sh's header).
+#   - One actionable, setup-lean-mcp.sh-naming message on drift -- still exit 0. Under the
+#     per-project model, drift now means: this project has no entry at all (most commonly a
+#     freshly created worktree the SessionStart hook has not yet reached, or reached before this
+#     preflight check ran in the same session -- see the session-start snapshot trap), its entry
+#     is stale/wrong-shaped, or a top-level global entry has survived retirement.
 #
 # Contract: WARN, never BLOCK. lean4 work without lean-lsp is an accepted degraded mode
 # (compiled probes remain available), so this script must never cause a caller to treat its
@@ -68,7 +73,7 @@ fi
 if [ "$rc" -eq 2 ]; then
     echo "[lean-mcp-preflight] lean-lsp currently indexes a different Lean project"
 else
-    echo "[lean-mcp-preflight] lean-lsp MCP registration does not match the sanctioned form"
+    echo "[lean-mcp-preflight] lean-lsp is not registered for this project"
 fi
 
 filtered="$(printf '%s\n' "$output" | grep -E '^\[FAIL\]|^\[WARN\]|^Run setup-lean-mcp' || true)"

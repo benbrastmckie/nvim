@@ -370,20 +370,20 @@ its `jq` path, that check is rewritten too and the deviation is recorded.
 
 ---
 
-### Phase 6: Realign the preflight wrapper [NOT STARTED]
+### Phase 6: Realign the preflight wrapper [COMPLETED]
 
 **Goal**: Keep `lean-mcp-preflight-check.sh` WARN-only and always exit 0 while its emitted
 messages and its copied detection stay truthful under the inverted semantics.
 
 **Tasks**:
-- [ ] Re-read the wrapper's own emitted strings and update the two branch messages so the exit-1
+- [x] Re-read the wrapper's own emitted strings and update the two branch messages so the exit-1
       branch reads as "not registered for this project" rather than "does not match the
       sanctioned form", and the exit-2 branch still reads as wrong-project indexing
-- [ ] Confirm the generic `[FAIL]`/`[WARN]`/`Run setup-lean-mcp` filter still captures the
+- [x] Confirm the generic `[FAIL]`/`[WARN]`/`Run setup-lean-mcp` filter still captures the
       verifier's new remedy lines; extend the filter pattern if any new remedy line shape escapes it
-- [ ] Re-verify the copied lakefile detection block is still verbatim-identical to the
+- [x] Re-verify the copied lakefile detection block is still verbatim-identical to the
       verifier's, per the lockstep note, after Phase 5's edits
-- [ ] Update the header comment's description of what drift now means
+- [x] Update the header comment's description of what drift now means
 
 **Timing**: 0.5 hours
 

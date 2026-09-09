@@ -1,0 +1,47 @@
+{
+  "phase": 6,
+  "phase_name": "Realign the preflight wrapper",
+  "started_at": "2026-09-09T21:05:00Z",
+  "last_updated": "2026-09-09T21:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read emitted strings and update the two branch messages for the inverted semantics",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"],
+      "note": "exit-1 branch message changed from 'lean-lsp MCP registration does not match the sanctioned form' to 'lean-lsp is not registered for this project'. exit-2 branch message ('lean-lsp currently indexes a different Lean project') left unchanged -- still accurate under the per-project model."
+    },
+    {
+      "id": 2,
+      "description": "Confirm the generic [FAIL]/[WARN]/Run setup-lean-mcp filter still captures the verifier's new remedy lines; extend if needed",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/verify-lean-mcp.sh"],
+      "note": "All four of verify-lean-mcp.sh's new remedy lines begin with the literal text 'Run setup-lean-mcp.sh', so the existing '^Run setup-lean-mcp' grep anchor still captures every one -- no filter pattern change needed. Found and fixed a related bug while checking this: Check 2's original remedy text (written during Phase 5) wrapped across two physical log lines, and the wrapper's line-oriented grep would have silently truncated it (kept only the first line, dropping the closing project-path clause) -- reformatted to a single line so the full remedy survives the filter."
+    },
+    {
+      "id": 3,
+      "description": "Re-verify the copied lakefile detection block is still verbatim-identical to the verifier's, after Phase 5's edits",
+      "status": "done",
+      "files_touched": [],
+      "note": "Confirmed unchanged: Phase 5 only retargeted WHERE entries are read from (.projects[path] instead of top-level), never the lakefile.lean/lakefile.toml + git-root detection predicate itself. The wrapper's early-exit negated form and the verifier's path-resolving positive form were already structurally different (by design, before this task) while testing the identical logical predicate; that relationship is unchanged."
+    },
+    {
+      "id": 4,
+      "description": "Update the header comment's description of what drift now means",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.verify",
+      "description": "Run test-lean-mcp-preflight-check.sh and confirm all fixtures pass with the realigned wrapper",
+      "type": "deferred",
+      "reason": "Fixture B (the 'correctly registered' case) now legitimately FAILS: it writes only a top-level GLOBAL lean-lsp entry, which was sufficient under the pre-task single-global model but is no longer sufficient under Phase 5's per-project model (Check 2 now requires a project-SCOPED entry; a global-only entry is drift regardless of its own shape). Fixtures A, C, D, E and both mutation-check assertions all still pass (7 of 8), confirming this phase's own realignment (message text, filter capture, header comment) is correct. Rewriting fixture B's setup helper to the per-project shape is explicitly Phase 7's chartered work ('Extend the fixture regression suite' -- adds the new concurrent/fresh-worktree/inverted-Check-9 fixtures and is the natural place to also repair this pre-existing fixture's now-stale assumption), not a Phase 6 defect.",
+      "annotation": "*(deviation: deferred to phase 7 — fixture B's write_claude_json helper needs a project-scope rewrite under the new model)*"
+    }
+  ]
+}
