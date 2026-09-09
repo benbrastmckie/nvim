@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Add RED fixture cases to the guard test suite",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read helper contract and conventions", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add fixture section: BLOCK cases for dir/glob overstaging", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 3, "description": "Add fixture section: ALLOW cases (explicit multi-file list, message text, plain file)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 4, "description": "Run suite against unmodified hook, record RED vs GREEN", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

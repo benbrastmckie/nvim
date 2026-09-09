@@ -300,6 +300,55 @@ assert_blocked_dirty "no-bypass: real destructive command beside quoted text sta
   'git reset --hard HEAD~1 && echo "done"'
 
 # =====================================================================
+# Directory/glob over-staging pathspec cases (the directory-pathspec-overstage hole).
+# Recorded RED set against the unmodified hook (confirmed by a run of this suite before the
+# ADD_SEGMENTS per-token directory/glob detector was added -- all four failed with exit=0):
+#   - git add -- dir/ (trailing slash)
+#   - git add dir/ (no -- separator)
+#   - git add some_dir (no trailing slash, real on-disk directory)
+#   - git add src/*.lean (glob pathspec)
+# The loop at that point tests only whole-segment `-A`/`--all`/bare-`.` regexes and never
+# inspects individual pathspec tokens, so a directory or glob pathspec passed straight through
+# as exit 0. The three ALLOW cases below (explicit multi-file list, plain single file, and a
+# directory-looking string inside a commit message) were already GREEN pre-fix and remain GREEN
+# after -- they guard against a regression the fix must not introduce.
+# =====================================================================
+
+# --- BLOCK: directory pathspec, with and without the "--" separator ---
+assert_blocked_dirty "overstage: git add -- dir/ (trailing slash)" \
+  "git add -- dir/"
+assert_blocked_dirty "overstage: git add dir/ (no -- separator)" \
+  "git add dir/"
+
+# --- BLOCK: no-trailing-slash on-disk directory pathspec (filesystem [ -d ] check) ---
+overstage_realdir_repo="$(make_dirty_repo)"
+mkdir -p "$overstage_realdir_repo/some_dir"
+echo "nested" > "$overstage_realdir_repo/some_dir/nested.txt"
+overstage_realdir_code="$(run_hook_in "$overstage_realdir_repo" "git add some_dir")"
+rm -rf "$overstage_realdir_repo"
+if [ "$overstage_realdir_code" -eq 2 ]; then
+  pass "overstage: git add some_dir (no trailing slash, real on-disk dir): blocked (exit 2) in dirty repo"
+else
+  fail "overstage: git add some_dir (no trailing slash, real on-disk dir): expected exit 2 in dirty repo, got exit=$overstage_realdir_code"
+fi
+
+# --- BLOCK: glob pathspec ---
+assert_blocked_dirty "overstage: git add src/*.lean (glob pathspec)" \
+  "git add src/*.lean"
+
+# --- ALLOW: the sanctioned explicit multi-file list stays permitted, no exemption needed ---
+assert_allowed_dirty "overstage allow: git add -- a.lean b.lean (explicit multi-file list)" \
+  "git add -- a.lean b.lean"
+
+# --- ALLOW: plain single-file control ---
+assert_allowed_dirty "overstage allow: git add foo.txt (plain single file)" \
+  "git add foo.txt"
+
+# --- ALLOW: a directory-looking string inside a commit message must not trip the detector ---
+assert_allowed_dirty "overstage allow: commit message mentions some/dir/ (not a real git add)" \
+  'git commit -m "clean up some/dir/ later"'
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

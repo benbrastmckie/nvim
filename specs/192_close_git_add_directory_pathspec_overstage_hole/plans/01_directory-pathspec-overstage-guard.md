@@ -1,7 +1,7 @@
 # Implementation Plan: Task #192
 
 - **Task**: 192 - Close the directory-pathspec hole in guard-destructive-git.sh's over-staging predicate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None (soft file-footprint overlap with the sibling history-rewrite-predicate task; both edit `hooks/guard-destructive-git.sh`)
 - **Research Inputs**: specs/192_close_git_add_directory_pathspec_overstage_hole/reports/01_directory-pathspec-overstage-hole.md
@@ -100,7 +100,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add RED fixture cases to the guard test suite [NOT STARTED]
+### Phase 1: Add RED fixture cases to the guard test suite [COMPLETED]
 
 **Goal**: Encode every ACCEPTANCE case from the dispatch's item (f) as fixtures in
 `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`, and confirm the
@@ -108,20 +108,20 @@ BLOCK-expecting ones fail (RED) against the unmodified hook so the suite is prov
 the real defect rather than passing vacuously.
 
 **Tasks**:
-- [ ] Read the existing suite's helper contract (`make_dirty_repo`, `run_hook_in`,
-      `assert_blocked_dirty`, `assert_allowed_dirty`) and its section-comment conventions
-- [ ] Add a new clearly-labelled section for the directory/glob over-staging cases, following the
-      existing "Phase N defect cases" comment style
-- [ ] BLOCK cases: `git add -- dir/`, `git add dir/`, and (if the `[ -d ]` extension is adopted in
-      Phase 2) a no-trailing-slash on-disk directory case, plus a glob case `git add src/*.lean`
-- [ ] For the no-trailing-slash case only, add a small helper (or an inline `mkdir` step) that
+- [x] Read the existing suite's helper contract (`make_dirty_repo`, `run_hook_in`,
+      `assert_blocked_dirty`, `assert_allowed_dirty`) and its section-comment conventions *(completed)*
+- [x] Add a new clearly-labelled section for the directory/glob over-staging cases, following the
+      existing "Phase N defect cases" comment style *(completed)*
+- [x] BLOCK cases: `git add -- dir/`, `git add dir/`, and (if the `[ -d ]` extension is adopted in
+      Phase 2) a no-trailing-slash on-disk directory case, plus a glob case `git add src/*.lean` *(completed)*
+- [x] For the no-trailing-slash case only, add a small helper (or an inline `mkdir` step) that
       creates a real directory inside the fixture repo before invoking the hook, since `[ -d ]` is
-      a filesystem test — mechanical extension of `make_dirty_repo`, not a new pattern
-- [ ] ALLOW cases: `git add -- a.lean b.lean` (sanctioned explicit multi-file list);
+      a filesystem test — mechanical extension of `make_dirty_repo`, not a new pattern *(completed: inline mkdir, no new helper)*
+- [x] ALLOW cases: `git add -- a.lean b.lean` (sanctioned explicit multi-file list);
       `git commit -m "clean up some/dir/ later"` (directory-looking string in a message);
-      a plain single-file `git add foo.txt` control
-- [ ] Run the suite against the UNMODIFIED hook and record which cases are RED vs. already GREEN,
-      in a section comment mirroring the file's existing "Recorded RED set" convention
+      a plain single-file `git add foo.txt` control *(completed)*
+- [x] Run the suite against the UNMODIFIED hook and record which cases are RED vs. already GREEN,
+      in a section comment mirroring the file's existing "Recorded RED set" convention *(completed: 46 passed, 4 failed as expected)*
 
 **Timing**: 0.5 hours
 
