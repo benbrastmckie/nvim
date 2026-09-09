@@ -1654,9 +1654,15 @@
           "path": "specs/201_close_runtime_file_ignore_enumeration_gap/plans/01_close-ignore-enumeration-gap.md",
           "type": "plan",
           "summary": "7-phase plan replacing three hand-maintained runtime-file enumerations with a single-source lib, closing five class gaps and demonstrating the acceptance behaviour via a new regression test."
+        },
+        {
+          "path": "specs/201_close_runtime_file_ignore_enumeration_gap/summaries/01_close-ignore-enumeration-gap-summary.md",
+          "type": "summary",
+          "summary": "Closed the runtime-file ignore enumeration gap via a single-source lib (scripts/lib/runtime-file-patterns.sh, 16 members) consumed by check-runtime-file-tracking.sh and both deploy test fixtures, a doc-sync-pinned standards block, and a new regression test demonstrating the tracked-mutex FAIL -> git rm -r --cached -> PASS acceptance behaviour end-to-end."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Introduced scripts/lib/runtime-file-patterns.sh as the single canonical definition of the 16-member ephemeral orchestrator runtime-file class, rewired check-runtime-file-tracking.sh and both deploy test fixtures onto it, generalized the git rm -r --cached remediation to every directory-class member, updated the standards doc and consumer .gitignore, and added a new regression test (test-runtime-file-tracking.sh) proving the tracked-specs/.deploy-lock/owner FAIL/remediation/PASS cycle and the doc-sync pin. Verified end-to-end via a real headless redeploy with gate 14 green."
     },
     {
       "project_number": 202,

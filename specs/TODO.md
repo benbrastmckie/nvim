@@ -356,6 +356,7 @@ second should make sure all three entries read as a coherent set.
 - **Dependencies**: None
 - **Research**: [201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md]
 - **Plan**: [201_close_runtime_file_ignore_enumeration_gap/plans/01_close-ignore-enumeration-gap.md]
+- **Summary**: [201_close_runtime_file_ignore_enumeration_gap/summaries/01_close-ignore-enumeration-gap-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
