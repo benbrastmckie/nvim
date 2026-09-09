@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Retire cslib's orphaned wrapper and project-scoped override",
+  "started_at": "2026-09-09T17:26:28Z",
+  "last_updated": "2026-09-09T17:29:28Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm Phase 4 landed and verify-lean-mcp.sh passes globally", "status": "done", "files_touched": [], "note": "verify-lean-mcp.sh --quiet from BimodalLogic: PASS, exit 0"},
+    {"id": 2, "description": "Archive cslib wrapper to scratchpad, then remove it", "status": "done", "files_touched": [], "note": "Archived with md5sum-verified copy, then rm'd. File was untracked, outside this repo."},
+    {"id": 3, "description": "Remove cslib project-scoped override via jq (fresh backup first)", "status": "done", "files_touched": [], "note": "Backup at /home/benjamin/.claude.json.bak.20260909102913"},
+    {"id": 4, "description": "Confirm cslib project entry otherwise intact", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Sweep all project mcpServers for .claude/-resident command paths", "status": "done", "files_touched": [], "note": "0 projects carry any mcpServers entries now; find confirms no lean-lsp-mcp-wrapper.sh remains under ~/Projects"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

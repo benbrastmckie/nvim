@@ -373,28 +373,33 @@ every hit against the shape Phase 1 emits; the grep, not this list, is authorita
 
 ---
 
-### Phase 5: Retire cslib's orphaned wrapper and project-scoped override [NOT STARTED]
+### Phase 5: Retire cslib's orphaned wrapper and project-scoped override [COMPLETED]
 
 **Goal**: cslib depends on no unreproducible hand-authored file and shares the sanctioned
 mechanism.
 
 **Tasks**:
-- [ ] Re-confirm Phase 4 landed and `verify-lean-mcp.sh` passes globally before touching cslib,
-      so cslib is never left without a registration.
-- [ ] Archive rather than blind-delete: copy
+- [x] Re-confirm Phase 4 landed and `verify-lean-mcp.sh` passes globally before touching cslib,
+      so cslib is never left without a registration. *(completed: PASS, exit 0)*
+- [x] Archive rather than blind-delete: copy
       `~/Projects/cslib/.claude/scripts/lean-lsp-mcp-wrapper.sh` to the session scratchpad first,
       so its content is recoverable during this task if a surprise emerges, then remove the file.
-- [ ] Remove the project-scoped override with
+      *(completed: md5sum-verified copy archived, then removed)*
+- [x] Remove the project-scoped override with
       `jq 'del(.projects["/home/benjamin/Projects/cslib"].mcpServers."lean-lsp")'` against
       `~/.claude.json`, writing through a same-directory temp file and `mv` (a fresh backup
-      first, per Phase 4's pattern).
-- [ ] Confirm `.projects["/home/benjamin/Projects/cslib"]` still exists with its other keys
-      intact and that only the `lean-lsp` server entry was removed.
-- [ ] Confirm no other project key in `~/.claude.json` carries a `mcpServers` entry whose
+      first, per Phase 4's pattern). *(completed: backup at
+      /home/benjamin/.claude.json.bak.20260909102913)*
+- [x] Confirm `.projects["/home/benjamin/Projects/cslib"]` still exists with its other keys
+      intact and that only the `lean-lsp` server entry was removed. *(completed: diff shows only
+      mcpServers.lean-lsp removed; every other key intact)*
+- [x] Confirm no other project key in `~/.claude.json` carries a `mcpServers` entry whose
       `command` resolves inside a `.claude/` tree —
       `jq -r '.projects | to_entries[] | .value.mcpServers // {} | to_entries[] | .value.command'`
       — and report any additional offenders found rather than silently fixing beyond scope.
-- [ ] Do not create, restore, or template any replacement wrapper in either repo.
+      *(completed: sweep returns zero projects with any mcpServers entries; no offenders found)*
+- [x] Do not create, restore, or template any replacement wrapper in either repo. *(completed:
+      none created)*
 
 **Timing**: 30 minutes
 
