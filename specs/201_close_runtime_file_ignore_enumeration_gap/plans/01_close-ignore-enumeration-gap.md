@@ -270,32 +270,34 @@ member means a third enumeration site inside the script was missed.
 
 ---
 
-### Phase 4: Standards file — class rows, block, and the scope-(d) decision record [NOT STARTED]
+### Phase 4: Standards file — class rows, block, and the scope-(d) decision record [COMPLETED]
 
 **Goal**: The canonical standards file documents all class members, matches the lib's block
 byte-for-byte, and records the single-source decision.
 
 **Tasks**:
-- [ ] Add Class Table rows for `specs/.deploy-lock/` (writer `deploy-headless.sh`),
+- [x] Add Class Table rows for `specs/.deploy-lock/` (writer `deploy-headless.sh`),
       `specs/.scope-lock/` and `specs/.commit-lock/` (writer `task-lock.sh`
       `cmd_scope_acquire`/`cmd_commit_acquire`; `git-commit-scoped.sh` for the latter's use
       site), and `specs/.errors.lock` (writer `errors-append.sh`), each with writer / reader /
       cleanup site / disposition, mirroring the existing `.lock/` and `.events.lock` rows.
-- [ ] Replace the Consumer Repo Setup fenced block with the exact output of the lib's
+      *(completed)*
+- [x] Replace the Consumer Repo Setup fenced block with the exact output of the lib's
       `runtime_ignore_block()` — this adds the four gaps and `.dispatch/`, resolving the
-      block's standing contradiction with the file's own Class Table.
-- [ ] Add a sentence to the "Not classified here (reviewed and deliberately excluded)" paragraph
+      block's standing contradiction with the file's own Class Table. *(completed: verified
+      byte-identical via diff against `runtime_ignore_block()`)*
+- [x] Add a sentence to the "Not classified here (reviewed and deliberately excluded)" paragraph
       covering `specs/.eager-context-snapshot-{ISO8601}.json`: opt-in human-invoked diagnostic
       snapshot, no automated writer, purpose is later human diffing — same
-      preserve-the-evidence class as `.stray-handoff-*`, deliberately not ephemeral.
-- [ ] Add a short "Single source of truth" subsection recording the scope-(d) decision: the two
+      preserve-the-evidence class as `.stray-handoff-*`, deliberately not ephemeral. *(completed)*
+- [x] Add a short "Single source of truth" subsection recording the scope-(d) decision: the two
       script-internal lists and both test fixtures derive mechanically from
       `scripts/lib/runtime-file-patterns.sh`; the markdown block cannot `source` a bash lib and
       is instead pinned to it by an assertion in `tests/test-runtime-file-tracking.sh`. State
       the reasoning (this file had already drifted from its own Class Table and from both
-      fixtures) so a future editor does not re-hand-maintain the block.
-- [ ] Add the cross-reference comment inside the fenced block itself pointing at the lib, so a
-      reader who finds only the block knows where the truth lives.
+      fixtures) so a future editor does not re-hand-maintain the block. *(completed)*
+- [x] Add the cross-reference comment inside the fenced block itself pointing at the lib, so a
+      reader who finds only the block knows where the truth lives. *(completed)*
 
 **Timing**: 0.75 hours
 

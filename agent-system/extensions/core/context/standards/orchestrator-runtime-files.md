@@ -48,6 +48,10 @@ Every runtime file falls into exactly one of two classes:
 | `.return-meta-*.json` (suffixed variants, e.g. `.return-meta-orchestrate.json`, `specs/.return-meta-multi-{session_id}.json`) | Distinct from the bare `.return-meta.json` above — see "The bare-vs-suffixed distinction" below | Varies by variant. **`specs/.return-meta-multi-{session_id}.json` has no reader anywhere in the source store today** — it is written for collision/audit hygiene only; a future reader-adder must add the read-time `session_id` verification check together with the reader, not separately | Varies | **Ephemeral** |
 | `specs/.sessions/{session_id}.json` | `task-lock.sh session-register`/`session-heartbeat` | **None in the source store today** — the in-flight session registry is produced but not yet consumed; a future reader-adder must add its own freshness/ownership checks together with the reader, not separately (mirrors the `specs/.return-meta-multi-{session_id}.json` row above) | `task-lock.sh session-release` at session end; `task-lock.sh session-reap` after `SESSION_REGISTRY_REAP_MIN` (or sooner via the pid-liveness-shortened `dead-pid` band, floored by `SESSION_REGISTRY_DEAD_PID_MIN`) | **Ephemeral** |
 | `.dispatch/{seq}.md` | `scripts/orchestrate-build-dispatch.sh`, once per dispatch | The dispatched agent, exactly once, immediately after being pointed at it by the lead's fixed pointer prompt | Bulk `rm -rf "${task_dir}/.dispatch/"` at every loop-termination site (single-task Stage 8, both effort modes) and the per-task MT-5 equivalent — **not** a per-dispatch `rm -f`, since this is the only per-task ephemeral entry that accumulates one file per dispatch rather than being a singleton overwritten in place | **Ephemeral** (directory class, like `.lock/` — probe a file inside it, e.g. `${PROBE_DIR}/.dispatch/1.md`) |
+| `specs/.deploy-lock/` (directory, `owner` file) | `scripts/deploy-headless.sh` (fail-open mutex acquired inline, deliberately without sourcing `task-lock.sh` — this script is about to overwrite the deployed copy of that very file) | Same script's own acquire block, on the next invocation (holder-declared staleness via `DEPLOY_LOCK_STALE_SEC`, default 120s; warn-and-proceed on failure, never blocking) | `rm -rf` via a `trap release_deploy_mutex EXIT` at the end of the deploy invocation that created it | **Ephemeral** (directory class, like `.lock/`) |
+| `specs/.scope-lock/` (directory) | `task-lock.sh`'s `acquire_scope_mutex`/`cmd_scope_acquire` (cross-task `file_scope` overlap check, generalized `acquire_named_mutex` primitive) | Same script's own acquire loop; fails closed (nonzero) on a 5s wait-budget timeout rather than ever failing open | `release_scope_mutex` (`rm -rf`) at the end of the held critical section, or reclaimed by a waiter past the holder-declared `stale_sec` (default 10s) | **Ephemeral** (directory class, like `.lock/`) |
+| `specs/.commit-lock/` (directory) | `task-lock.sh`'s `acquire_commit_mutex`/`cmd_commit_acquire`, called from `scripts/git-commit-scoped.sh` to serialize the `git add` + `git commit` pair around scoped commits — a DISTINCT mutex from `.scope-lock/` above (distinct reentrancy flag, distinct staleness/budget: 30s/15000ms vs 10s/5000ms, sized for up to `MAX_TASKS=8` concurrent committers) | Same script's own acquire loop | `release_commit_mutex` (`rm -rf`) at the end of the held critical section, or reclaimed by a waiter past the holder-declared `stale_sec` (default 30s) | **Ephemeral** (directory class, like `.lock/`) |
+| `specs/.errors.lock` | `scripts/errors-append.sh` (`flock -x` guard around both its `append` and read-modify-write subcommands, held across the entire read → merge/transform → validate → write) | Itself, for the duration of a single invocation | Released by `flock` at the end of the invocation | **Ephemeral** — structurally identical to `specs/.events.lock` above |
 
 **Not classified here (reviewed and deliberately excluded)**: `.stray-handoff-{timestamp}.json`,
 and, for the identical reason, `.stale-loop-guard-{ts}.json` / `.stale-churn-state-{ts}.json`.
@@ -62,6 +66,14 @@ never read back by anything, never itself a control-flow input. All three are in
 out of both the ephemeral and durable-provenance classes above; if any recurs often enough to need
 its own policy, that policy belongs to its own sweep/detector mechanism, not this file-tracking
 split.
+
+`specs/.eager-context-snapshot-{ISO8601}.json` is the same shape of exclusion for a different
+reason: it is an **opt-in, human-invoked** diagnostic snapshot with no automated writer, whose
+purpose is later human diffing across two points in time. It is never a control-flow input, so it
+does not fit the ephemeral rationale, and it is not a per-dispatch audit trail either, so it is
+not durable provenance — same "preserve the evidence, do not gitignore it" class as the
+stray-handoff/stale-guard trio above. It is deliberately left out of both classes and out of the
+lib's 16-member enumeration.
 
 ### The bare-vs-suffixed `.return-meta.json` distinction
 
@@ -288,6 +300,9 @@ following block to the consumer repo's **own root** `/.gitignore` **by hand, onc
 # agent-system/extensions/core/context/standards/orchestrator-runtime-files.md for the full
 # two-class policy and rationale. Deliberately does NOT include .orchestrator-handoff.json or
 # .return-meta.json — those are durable, freshness-gated provenance and MUST stay tracked.
+# Canonical source: agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh
+# (runtime_ignore_block()) -- this block is generated from that lib and pinned to it by
+# tests/test-runtime-file-tracking.sh Case 3; do not hand-edit the pattern list here.
 **/.lock/
 **/.orchestrator-loop-guard
 **/.continuation-loop-guard
@@ -299,9 +314,43 @@ following block to the consumer repo's **own root** `/.gitignore` **by hand, onc
 **/.events.lock
 **/.sessions/
 **/.freshness-warn-streak.json
+**/.dispatch/
+**/.deploy-lock/
+**/.scope-lock/
+**/.commit-lock/
+**/.errors.lock
 ```
 
 Run `check-runtime-file-tracking.sh` afterward to confirm coverage (see "Verification" below).
+
+### Single source of truth (scope decision record)
+
+This block, `scripts/check-runtime-file-tracking.sh`'s two internal lists (Check A's probe array
+and Check B's tracked-file-regex array), and both deploy-harness test fixtures
+(`scripts/tests/test-deploy-orphans.sh`, `scripts/tests/test-deploy-propagation.sh`) are five
+sites that must agree on the same 16-member class. Before this decision, they were three
+hand-maintained enumerations plus two fixtures claiming (falsely, by the time this was audited)
+to "mirror" this markdown block by hand — the exact shape that let `.deploy-lock/`,
+`.scope-lock/`, `.commit-lock/`, `.errors.lock`, and `.dispatch/` drift out of sync across the
+sites in mutually inconsistent ways.
+
+**Decision**: the two script-internal lists and both test fixtures now derive mechanically from
+`scripts/lib/runtime-file-patterns.sh` — one canonical record (gitignore pattern, Check A probe
+path, Check B regex, directory-class flag) per class member, sourced directly by
+`check-runtime-file-tracking.sh` and by both fixtures when they seed a scratch repo's
+`.gitignore`. This markdown block is the one site that *cannot* mechanically derive from the lib
+(a markdown fenced block cannot `source` a bash file), so it is instead **pinned** to the lib: 
+`scripts/tests/test-runtime-file-tracking.sh` Case 3 extracts this fenced block verbatim and
+asserts it is byte-identical to the lib's `runtime_ignore_block()` output, failing loudly if a
+future edit changes one without the other.
+
+**Reasoning**: the lib was proportionate here because the mechanical consumers (a lint script and
+two test fixtures) already shared an identical pattern-list shape, and the drift was actively
+live in this repo's own history at audit time (Check A's probe list and Check B's regex list
+inside the *same* script already disagreed on `.dispatch/`) — the maintenance-in-triplicate shape
+was demonstrably the root cause, not a theoretical risk. Any future class member is added to the
+lib once; the markdown block is regenerated from `runtime_ignore_block()` and the doc-sync test
+catches a forgotten regeneration.
 
 **This gitignore coverage is the primary, sufficient control.** The staging-narrowing described in
 `git-staging-scope.md` is defense-in-depth for a repo that has not yet applied this block — it

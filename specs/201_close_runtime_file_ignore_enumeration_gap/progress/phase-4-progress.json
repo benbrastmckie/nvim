@@ -1,0 +1,51 @@
+{
+  "phase": 4,
+  "phase_name": "Standards file - class rows, block, and scope-(d) decision record",
+  "started_at": "2026-09-09T20:30:07Z",
+  "last_updated": "2026-09-09T20:31:27Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Class Table rows for the 4 gaps",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Replace Consumer Repo Setup block with lib output",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add exclusion note for .eager-context-snapshot",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add Single source of truth subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add cross-reference comment inside fenced block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
