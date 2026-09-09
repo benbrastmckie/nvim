@@ -513,14 +513,21 @@ Move 2 Agent call has returned).
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 2. All-terminal check                   │     │
 │  │    all tasks in {completed, abandoned,  │     │─── YES ──► EXIT (success)
-│  │    expanded, failed_tasks}?             │     │
+│  │    expanded, failed_tasks} AND none of  │     │      (unless a forced phase
+│  │    those terminal ones has a PENDING    │     │       is pending -- see below)
+│  │    FORCED phase?                        │     │
 │  │    [scripts/orchestrate-cycle-plan.sh]  │     │
 │  └──────────────────┬──────────────────────┘     │
 │                     │ NO                         │
 │  ┌──────────────────▼──────────────────────┐     │
 │  │ 3. Build eligible_tasks[]               │     │
 │  │    Filter each task:                    │     │
-│  │    (a) not terminal                     │     │
+│  │    (a) not terminal, UNLESS a forced    │     │
+│  │        phase is pending for it (an      │     │
+│  │        explicit --research/--plan/      │     │
+│  │        --implement admits a terminal    │     │
+│  │        task; ordinary dispatch never    │     │
+│  │        can)                             │     │
 │  │    (b) all predecessors terminal        │     │
 │  │    (eligibility is not status-gated on  │     │
 │  │    an in-flight string -- see Dependency│     │
@@ -619,7 +626,17 @@ fi
 ### Dependency Gating Model
 
 Tasks progress through lifecycle phases independently. A task becomes eligible when:
-1. Its current status is not terminal (`completed`, `abandoned`, `expanded`) and not in `failed_tasks`
+1. Its current status is not terminal (`completed`, `abandoned`, `expanded`) and not in
+   `failed_tasks` -- **UNLESS an explicit forced phase is pending for it** (`--research`,
+   `--plan`, or `--implement` supplied this invocation, or a not-yet-exhausted
+   `force_phases_remaining[]` queue seeded by a prior cycle). A terminal task with a pending
+   forced phase is admitted to `eligible_tasks` exactly as if it were non-terminal; a terminal
+   task with NO pending forced phase is excluded exactly as before. This exemption is narrow and
+   opt-in by construction: ordinary (unforced) dispatch can never reach a terminal task, and an
+   `/orchestrate` invocation with no forcing flag on a fully terminal set still stops at the
+   All-terminal check with `stop_reason: "all_terminal"`, dispatching nothing -- see "Forced
+   Phases on a Terminal or Archived Task" below for the full contract, including status
+   preservation and archived-task directory resolution.
 2. All of its predecessors in the dependency graph are in a terminal state
 
 **Eligibility is NOT status-gated on an in-flight string.** A task's own status among
@@ -637,6 +654,120 @@ is the same defer-not-exclude gate `file_scope_collision` already uses.
 If a predecessor is `failed`, the dependent task is immediately moved to `failed_tasks` with status `blocked`.
 
 If a predecessor is still in-progress (e.g., `researched`, `planned`), the dependent task waits until the next cycle when the predecessor reaches terminal state.
+
+### Forced Phases on a Terminal or Archived Task
+
+`--research`/`--plan`/`--implement` are the phase-forcing flags (see `commands/orchestrate.md`'s
+Options table). Ordinarily they matter only for a task that has already progressed past the named
+phase; this section covers their behavior once that task is TERMINAL (`completed`/`abandoned`/
+`expanded`) -- including the case where `/todo` has already moved it out of `active_projects` and
+into `specs/archive/{NNN}_{slug}/`.
+
+**Eligibility exemption, not a reordering.** The forced-phase exemption named in the Dependency
+Gating Model above is implemented as a per-task predicate (`task_has_forced_phase`) that guards
+the All-terminal check and the eligibility filter, computed from data (`--force-phases`,
+`force_phases_remaining[]`) that already exists before either check runs. It deliberately does
+NOT reorder `force_phases_remaining` seeding/consumption ahead of those checks -- that ordering,
+and the `mt_` state-writing sequence built on it, stays exactly as it was. Only ONE additional
+narrow exemption was added: a terminal task with a pending forced phase is no longer treated as
+"nothing left to do".
+
+**Status is never regressed.** A terminal task's `state.json` status is the SAME before, during,
+and after a forced round -- `completed` stays `completed`, `abandoned` stays `abandoned`,
+`expanded` stays `expanded`. This is enforced by a monotonic-max clamp present on BOTH the
+preflight and postflight status writes:
+- `skill_preflight_update` (called once per dispatch, before the agent runs) accepts an optional
+  `status_clamp_mode="monotonic-max"` argument, passed by `orchestrate-cycle-plan.sh` only when
+  the phase was actually forced this cycle. When set, it maps the operation
+  (`research`/`plan`/`implement`) to the resting state an unclamped write would produce
+  (`researching`/`planning`/`implementing`), compares that against the task's CURRENT status via
+  `scripts/lib/status-vocabulary.sh`'s `status_vocabulary_would_regress`, and skips the
+  `update-task-status.sh preflight` call entirely on a regression -- emitting a named
+  `[monotonic-max]` notice rather than silently doing nothing.
+- `skill_postflight_update` already carried this same clamp (added by a prior task); this task
+  made its status comparator archive-aware (see below) so it stays correct for an archived task
+  too.
+
+BOTH calls need their own clamp because they are separate processes, potentially far apart in
+time (a dispatched agent runs between them), with `state.json` as the only persisted
+intermediate signal -- an unclamped preflight write would corrupt the very comparator the
+postflight clamp reads. A forced `--implement` on a `completed` task is the one case where the
+clamp can never actually fire (`postflight:implement` always resolves to `completed`, and
+`implemented` is deliberately unranked in `status-vocabulary.sh`), which is part of why forcing
+`--implement` on an already-completed task is permitted on the same terms as `--research`/
+`--plan`: on the status axis it is the safest of the three, though the user is still knowingly
+re-running implementation work against already-shipped code.
+
+**The archive is read-only.** `/todo` moves every terminal task's directory from
+`specs/{NNN}_{slug}/` to `specs/archive/{NNN}_{slug}/` and moves its `state.json` entry from
+`active_projects` into the sibling `specs/archive/state.json` (`completed_projects` or
+`archived_projects`, status normalized -- see `scripts/lib/task-lookup-lib.sh`'s header). A forced
+round against such a task:
+- Resolves the task's identity and directory via `task_lookup_entry`/`task_lookup_dir`
+  (`scripts/lib/task-lookup-lib.sh`), which prefer the active directory when it exists and fall
+  back to the archive directory when only that exists -- so the round's dispatch file and new
+  `MM_` artifact land NEXT TO the task's existing reports and plans, never into a fresh, wrong,
+  empty sibling.
+- NEVER writes `specs/archive/state.json`. Both `skill_preflight_update` and
+  `skill_postflight_update` skip the `update-task-status.sh` call entirely for a task absent from
+  `active_projects` (an archive-absent guard, ahead of the clamp), emitting a named notice rather
+  than reaching `update-task-status.sh`'s "task not found in state.json" hard exit.
+- Consequently, `next_artifact_number` advance and the `state.json` artifact-link write are both
+  no-ops for an archived task (their `jq` updates select an empty set against `active_projects`).
+  Completion of a forced round on an archived task is recorded by the artifact FILE itself,
+  written into the archive directory -- not by any `state.json` mutation. This asymmetry (a live
+  task's round updates both the file AND `state.json`; an archived task's round updates only the
+  file) is intended, not a bug.
+- `orchestrate-triage-classify.sh` independently reads the same `specs/archive/state.json` (also
+  via `task-lookup-lib.sh`, above its own `engine` branch so `single` and `mt` agree), so an
+  archived-and-terminal candidate classifies as `group:"terminal"` with its real status on both
+  engines -- the classifier and `orchestrate-cycle-plan.sh`'s own `lookup_project` never disagree
+  about whether the task exists.
+- `task-lock.sh acquire` (the real, mutating lock every live dispatch takes) resolves the SAME
+  archive-aware directory independently, via its own `resolve_task_dir()` sourcing
+  `task-lookup-lib.sh` -- without this, a forced dispatch against an archived task would pass
+  every check above and then fail at lock-acquire time with "could not resolve task directory".
+
+**What does NOT change.** An `/orchestrate` invocation with no phase-forcing flag on a fully
+terminal set is completely unaffected by any of the above: `task_has_forced_phase` returns false
+for every task, the All-terminal check fires exactly as it always has, and the cycle stops with
+`stop_reason: "all_terminal"`, dispatching nothing. Only an EXPLICIT `--research`/`--plan`/
+`--implement` (or a not-yet-exhausted `force_phases_remaining[]` queue from a prior explicit
+invocation) ever admits a terminal task.
+
+**Worked example** (single task, forced, already archived):
+
+```
+Task #N: status=completed, archived by /todo to specs/archive/042_example/
+
+$ /orchestrate N --research
+
+Cycle 1:
+Refresh: N=completed (resolved via specs/archive/state.json, not active_projects)
+task_has_forced_phase(N): TRUE (--research supplied this invocation)
+All-terminal check: skipped for N (forced-phase exemption) -- all_done stays false
+Eligible: [N]  (terminal, but forced)
+Classify: orchestrate-triage-classify.sh returns group:"terminal" for N (archive read) --
+          irrelevant here, since effective_group[N] is overridden to "research" by the
+          forced_phases_remaining queue anyway
+task-lock.sh acquire: resolves specs/archive/042_example/ (task-lookup-lib.sh), succeeds
+Preflight: skill_preflight_update(N, research, ..., "monotonic-max") -- clamp fires
+           ([monotonic-max] notice), status write skipped, N stays "completed"
+Dispatch: research N -- writes specs/archive/042_example/.dispatch/{seq}.md
+After agent completes: 02_{slug}.md report written into specs/archive/042_example/reports/
+Postflight: skill_postflight_update(N, research, ..., "researched", ...) -- the
+            archive-absent guard fires first (N is not in active_projects), status write
+            skipped entirely; N stays "completed" in specs/archive/state.json
+
+Cycle 2 (a second /orchestrate N --research, or none):
+Refresh: N=completed (unchanged)
+task_has_forced_phase(N): FALSE (force_phases_remaining[N] was popped in cycle 1;
+                           no new --research supplied)
+All-terminal check: N is terminal AND has no pending forced phase -> all_done stays true
+                    for a batch of just N
+EXIT: stop_reason="all_terminal" -- exactly the un-forced behavior, now that the one
+      requested forced round has already run to completion.
+```
 
 ### Commit Granularity
 

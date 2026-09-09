@@ -639,38 +639,38 @@ green, not merely assumed).
 
 ---
 
-### Phase 8: Documentation [NOT STARTED]
+### Phase 8: Documentation [COMPLETED]
 
 **Goal**: The forcing flags' behavior on terminal and archived tasks is stated plainly where a
 reader looks for it, and the preflight/postflight clamp pairing is recorded.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/commands/orchestrate.md`: extend the `--research`,
+- [x] `agent-system/extensions/core/commands/orchestrate.md`: extend the `--research`,
       `--plan`, and `--implement` rows to state plainly that each applies to a terminal
       (completed/abandoned/expanded) task and to an archived one; that the task's status is NOT
       regressed by the forced round; that an `/orchestrate` with NO forcing flag on a terminal
       task still stops with `all_terminal` and dispatches nothing; and, for `--implement`
       specifically, that forcing it on a completed task re-runs implementation work against
-      already-shipped code (Decision (c)'s posture, documented rather than gated).
-- [ ] `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`: update the
+      already-shipped code (Decision (c)'s posture, documented rather than gated). *(completed)*
+- [x] `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`: update the
       Dependency Gating Model prose so the eligibility rule carries the forced-phase exemption;
       update the ASCII diagram's "All-terminal check" and "Eligibility" nodes; update the worked
-      examples with a terminal-but-forced walkthrough.
-- [ ] Same file: add a short subsection recording that BOTH `skill_preflight_update` and
+      examples with a terminal-but-forced walkthrough. *(completed)*
+- [x] Same file: add a short subsection recording that BOTH `skill_preflight_update` and
       `skill_postflight_update` must be clamp-aware for a forced round on an already-advanced
       task, and why — the two calls are separate processes potentially far apart in time, with
       `state.json` as the only persisted intermediate signal, so a preflight write corrupts the
-      postflight clamp's own comparator.
-- [ ] Same file: record the archived-task posture — the archive is read-only; a forced round's
+      postflight clamp's own comparator. *(completed)*
+- [x] Same file: record the archived-task posture — the archive is read-only; a forced round's
       artifacts land in `specs/archive/{NNN}_{slug}/`; the `state.json` artifact link,
       `next_artifact_number` advance, and status write are all skipped or no-ops for an archived
-      task, and that asymmetry is intended, not a bug.
-- [ ] `agent-system/extensions/core/merge-sources/claudemd.md` (the `/orchestrate` command-table
+      task, and that asymmetry is intended, not a bug. *(completed)*
+- [x] `agent-system/extensions/core/merge-sources/claudemd.md` (the `/orchestrate` command-table
       row): extend the existing "never regressing status" clause to name terminal and archived
-      tasks, so the generated `CLAUDE.md` row is accurate.
-- [ ] Do NOT write task numbers into any of these files (they live outside `specs/`) — cite
+      tasks, so the generated `CLAUDE.md` row is accurate. *(completed)*
+- [x] Do NOT write task numbers into any of these files (they live outside `specs/`) — cite
       durable anchors: script names, function names, section headings. See
-      `rules/no-task-references-in-deliverables.md`.
+      `rules/no-task-references-in-deliverables.md`. *(completed)*
 
 **Timing**: 1 hour
 
