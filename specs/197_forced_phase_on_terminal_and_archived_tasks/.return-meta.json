@@ -1,28 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 4,
+  "status": "planned",
+  "dispatch_seq": 5,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/197_forced_phase_on_terminal_and_archived_tasks/reports/01_forced-phase-terminal-archived-tasks.md",
-      "summary": "Confirms Defect 1 (ordering) and Defect 2 (archive lookup) as described, narrows Defect 1's actual fix to the two is_terminal_status continue sites, and identifies two previously-unnamed blockers (skill_validate_input's hard terminal-status exit in orchestrate-build-dispatch.sh, and skill_preflight_update's total absence of a monotonic-max-style regression clamp) that must also be fixed for the acceptance criteria to hold; records recommendations for decisions (a)-(e)."
+      "type": "plan",
+      "path": "specs/197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md",
+      "summary": "9-phase plan closing five defects behind one shared archive-lookup library: cycle-plan forced-phase eligibility exemption, classifier archive read, skill_validate_input terminal bypass + archive fallback, preflight monotonic-max clamp with archive-absent write skip, and archived-task-directory path resolution; plus fixtures for both suites and docs."
     }
   ],
-  "next_steps": "Run /plan 197 to create implementation plan covering all four defects (the two named in the task description plus the two newly identified: orchestrate-build-dispatch.sh's skill_validate_input terminal block, and skill_preflight_update's missing monotonic-max clamp)",
-  "findings_count": 4,
+  "next_steps": "Run /implement 197 to execute the plan",
+  "phase_count": 9,
+  "estimated_hours": 11,
+  "dependency_waves": [[1], [2, 5], [3, 7], [4], [6, 8], [9]],
   "metadata": {
     "session_id": "sess_1788956447_28a717_197",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
   "memory_candidates": [
     {
-      "content": "In this repo's /orchestrate pipeline, skill_postflight_update's 'monotonic-max' status-regression clamp (scripts/skill-base.sh) reads its 'current status' comparator LIVE from specs/state.json at postflight call time. Because skill_preflight_update (called first, in the same process, moments before dispatch) unconditionally overwrites state.json's status to the phase's in-progress variant with NO clamp of its own, the postflight clamp ends up comparing against the value its own round's preflight just wrote -- not the task's true pre-round status. This is invisible for already-shipped forced-phase use cases (forcing a phase whose target rank happens to be forward of the task's ordinary resting rank), but breaks for the highest-ranked statuses (completed, rank 7) where forcing research/plan resolves to a lower rank that reads as 'not a regression' against the preflight-corrupted comparator, causing a permanent downgrade. Any future work on forced-phase status handling must add an equivalent clamp to skill_preflight_update, not just skill_postflight_update.",
+      "content": "In this repo's task-management system, /todo does not merely rewrite state -- it MOVES the task directory from specs/{NNN}_{slug}/ to specs/archive/{NNN}_{slug}/ (skill-todo/SKILL.md Stage 10). Every code path that derives a task directory as the hardcoded string specs/{NNN}_{project_name} (skill-base.sh's skill_validate_input, and roughly five sites in orchestrate-cycle-plan.sh: loop-guard seed, aux dispatch, exhausted loop guard, hard-mode H1 plan/handoff read, and the dispatch-row task_dir pair) therefore resolves to a NON-EXISTENT path for an archived task, and silently creates a fresh empty sibling directory rather than failing. Any feature that makes archived tasks reachable (forced /orchestrate phases, recovery, re-dispatch) must route task-directory derivation through a single archive-aware resolver that prefers specs/{NNN}_{slug} and falls back to specs/archive/{NNN}_{slug}, or the work will be scattered across two directories. This is distinct from, and additional to, the state.json-vs-archive/state.json lookup gap: fixing the state lookup alone leaves the directory gap open.",
       "category": "PATTERN",
-      "source_artifact": "specs/197_forced_phase_on_terminal_and_archived_tasks/reports/01_forced-phase-terminal-archived-tasks.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrate", "monotonic-max", "status-clamp", "force-phases", "skill_preflight_update", "status-regression"]
+      "source_artifact": "specs/197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "archive", "task-directory", "todo-archival", "path-resolution", "skill_validate_input"]
     }
   ]
 }
