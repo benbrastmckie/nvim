@@ -401,24 +401,24 @@ messages and its copied detection stay truthful under the inverted semantics.
 
 ---
 
-### Phase 7: Extend the fixture regression suite [NOT STARTED]
+### Phase 7: Extend the fixture regression suite [COMPLETED]
 
 **Goal**: Prove the new behavior by fixture, including the genuinely concurrent multi-project and
 fresh-worktree cases the task demands, without weakening the existing mutation-check discipline.
 
 **Tasks**:
-- [ ] Add a fixture registering two Lean projects at once, asserting each resolves to its OWN
+- [x] Add a fixture registering two Lean projects at once, asserting each resolves to its OWN
       `LEAN_PROJECT_PATH` (the case a single-global model cannot pass)
-- [ ] Add a fresh-worktree fixture: a second working directory of an already-registered repo,
+- [x] Add a fresh-worktree fixture: a second working directory of an already-registered repo,
       asserting it registers independently rather than inheriting or colliding with the parent
-- [ ] Add both directions of the inverted Check 9: correct project-scoped entry PASSes; surviving
+- [x] Add both directions of the inverted Check 9: correct project-scoped entry PASSes; surviving
       global entry FAILs
-- [ ] Add an unregistered-Lean-project fixture asserting the new exit-1 remedy text
-- [ ] Extend the neutralizing-mutation check to each new fixture so none can pass vacuously, and
+- [x] Add an unregistered-Lean-project fixture asserting the new exit-1 remedy text
+- [x] Extend the neutralizing-mutation check to each new fixture so none can pass vacuously, and
       record in the suite header exactly which mutation neutralizes which fixture
-- [ ] Add a writer-level suite (or extend this one) covering `setup-lean-mcp.sh --scope project`
+- [x] Add a writer-level suite (or extend this one) covering `setup-lean-mcp.sh --scope project`
       idempotency, whole-entry replacement, and `--retire-global`
-- [ ] Declare any new test/fixture files in `agent-system/extensions/lean/manifest.json`
+- [x] Declare any new test/fixture files in `agent-system/extensions/lean/manifest.json`
       `provides.scripts`
 
 **Timing**: 2 hours

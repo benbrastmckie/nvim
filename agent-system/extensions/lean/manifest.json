@@ -65,7 +65,8 @@
       "tests/test-lean-mcp-preflight-check.sh",
       "setup-lean-mcp.sh",
       "verify-lean-mcp.sh",
-      "install-lean-lsp-session-hook.sh"
+      "install-lean-lsp-session-hook.sh",
+      "tests/test-lean-mcp-registration.sh"
     ],
     "hooks": [
       "lean-lsp-register-project.sh"

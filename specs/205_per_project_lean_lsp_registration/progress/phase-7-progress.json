@@ -1,0 +1,71 @@
+{
+  "phase": 7,
+  "phase_name": "Extend the fixture regression suite",
+  "started_at": "2026-09-09T21:25:00Z",
+  "last_updated": "2026-09-09T22:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add a fixture registering two Lean projects at once, asserting each resolves to its OWN LEAN_PROJECT_PATH",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"],
+      "note": "Fixture F."
+    },
+    {
+      "id": 2,
+      "description": "Add a fresh-worktree fixture: a second working directory registers independently rather than inheriting/colliding",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"],
+      "note": "Fixture G, two steps: unregistered worktree correctly reports unregistered (no inheritance), then registering it leaves the main repo's entry byte-identical."
+    },
+    {
+      "id": 3,
+      "description": "Add both directions of the inverted Check 9: correct entry PASSes; surviving global FAILs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"],
+      "note": "PASS direction is fixture B (rewritten for the per-project model in the same pass, since it was the deferred Phase 6 item). FAIL direction is the new fixture H."
+    },
+    {
+      "id": 4,
+      "description": "Add an unregistered-Lean-project fixture asserting the new exit-1 remedy text",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"],
+      "note": "Fixture I."
+    },
+    {
+      "id": 5,
+      "description": "Extend the neutralizing-mutation check to each new fixture; record which mutation neutralizes which fixture",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh"],
+      "note": "Two mutations, recorded in the suite's own header comment: Mutation 1 (wrapper-level, pre-existing, extended) covers fixtures A, D, E, H, I. Mutation 2 (new, verifier-level: deletes the Check 9 block from verify-lean-mcp.sh) targets fixture H specifically, with fixture F1's config as the non-regression control (unaffected by the same mutation). Fixtures F and G are deliberately excluded from mutation coverage and this is explained inline: their PASS assertions are non-vacuous by construction (they assert two DIFFERING LEAN_PROJECT_PATH values, which a shared-state bug would make equal with no mutation needed to expose it)."
+    },
+    {
+      "id": 6,
+      "description": "Add a writer-level suite (or extend this one) covering setup-lean-mcp.sh --scope project idempotency, whole-entry replacement, and --retire-global",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-mcp-registration.sh"],
+      "note": "New separate file (kept separate per the plan's parenthetical option), 6 cases + 1 mutation check, all PASS."
+    },
+    {
+      "id": 7,
+      "description": "Declare any new test/fixture files in lean's manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/manifest.json"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Mutation 2's fixture-H test using a freshly-created scratch copy directory (REPO_H_MUT under a different mktemp path) so the original fixture H stays byte-identical for reuse",
+      "result": "failed",
+      "reason": "The scratch copy's absolute path differs from REPO_H's, but the mutation reused HOME_H (whose .claude.json keys the project entry under REPO_H's own path). Querying from the scratch copy's directory made $(pwd) resolve to the scratch path, which has NO entry in HOME_H's .projects -- Check 2 (absent entry) failed instead of exercising Check 9, giving a false FAIL for the wrong reason. Fixed by overwriting REPO_H's OWN deployed verifier in place after confirming mutation 1 no longer needs the original file, so the querying path and the config key always match."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_log": [
+    "test-lean-mcp-preflight-check.sh: 17/17 PASS (fixtures A-I plus both mutation checks)",
+    "test-lean-mcp-registration.sh: 7/7 PASS (cases 1-6 plus mutation check)",
+    "No fixture in either suite reads or writes the real ~/.claude.json -- every one points HOME at its own mktemp -d directory"
+  ]
+}
