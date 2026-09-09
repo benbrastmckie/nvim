@@ -28,22 +28,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/196_research_first_default_unless_fast/summaries/01_research-first-default-unless-fast-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["classifier", "effort-flag", "one-code-path", "orchestrate", "routing-default"]
+      "suggested_keywords": [
+        "classifier",
+        "effort-flag",
+        "one-code-path",
+        "orchestrate",
+        "routing-default"
+      ]
     },
     {
       "content": "In a shell fixture suite where earlier test groups stub out a collaborator script inside a synthetic sandbox tree and never restore it, a later group needing the REAL collaborator must explicitly restore it itself (cp from the source dir) rather than assuming an earlier group's own restore (placed right after ITS OWN stub) covers every later group too. Grep for every `cat > .../collaborator.sh` occurrence in the test file before adding a new group that depends on live collaborator behavior.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/196_research_first_default_unless_fast/summaries/01_research-first-default-unless-fast-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["shell-testing", "fixture-sandbox", "stub-restore", "test-isolation"]
+      "suggested_keywords": [
+        "shell-testing",
+        "fixture-sandbox",
+        "stub-restore",
+        "test-isolation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788956447_28a717",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
