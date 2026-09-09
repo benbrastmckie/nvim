@@ -1,5 +1,5 @@
 ---
-next_project_number: 196
+next_project_number: 198
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 196
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175,195 | 29,74,139,162,172,194 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194,196 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175,195,197 | 29,74,139,162,172,194,196 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -46,6 +46,8 @@ next_project_number: 196
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
+196 [NOT STARTED] — Make research the default first phase for an un-researched...
+  └─ 197 [NOT STARTED] — Honor a forced phase on a terminal task, including one...
 
 ### Extensions
 
@@ -83,6 +85,71 @@ next_project_number: 196
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 
 ## Tasks
+
+### 197. Honor a forced phase on a terminal task, including one already archived by /todo
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 196
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the change up via their own redeploy.
+
+REQUEST. The user wants `/orchestrate N --research` to work on a task that is already complete. Today it silently does nothing.
+
+DEFECT 1 -- ORDERING. In scripts/orchestrate-cycle-plan.sh, is_terminal_status() is defined at lines 1123-1128; the all-terminal check at lines 1138-1148 sets stop_reason="all_terminal" and calls emit_and_exit as soon as every named task is terminal, and the eligibility loop at line 1156 independently `continue`s past any terminal task. BOTH run BEFORE per-task force_phases consumption, which does not begin until line 1324 ("(f) Per-task force_phases consumption"). scripts/orchestrate-triage-classify.sh independently returns group:"terminal" for completed/abandoned/expanded at lines 326-329. So `/orchestrate 42 --research` on a completed task short-circuits to all_terminal and dispatches nothing. The blocker is ordering, not intent: --research/--plan/--implement already parse (parse-command-args.sh line ~152), already thread through as --force-phases (orchestrate-cycle-plan.sh lines 288, 429-452, 504), and already consume per-task from force_phases_remaining (lines 1324-1340, 1710). Their documented contract (commands/orchestrate.md lines 25-26 and 51-53) is: canonical lifecycle order regardless of typed order, a new MM_ artifact round, NEVER regresses status, stop after the last named phase.
+
+DEFECT 2 -- ARCHIVED TASKS, AND IT IS NOT FIXED BY REORDERING. /todo archives every terminal task OUT of .active_projects. orchestrate-cycle-plan.sh already handles this: lines 405-413 read ${STATE_FILE%state.json}archive/state.json, flattening completed_projects and archived_projects and normalizing status (completed/abandoned/expanded preserved verbatim; any archive-only status such as orphan_archived mapped to completed), and lookup_project() at lines 415-425 consults the archive whenever a number is absent from active projects, with active entries winning. scripts/orchestrate-triage-classify.sh does NOT: line 316 binds `($state_arr[0].active_projects // []) as $all` and nothing else, so an archived task hits the null-entry branch at lines 321-323 and returns group:"skip", reason "not found in state.json". The two scripts therefore disagree about the same archived task -- cycle-plan resolves it to completed, the classifier calls it nonexistent. Reordering the terminal check alone leaves the archived case broken. A fix that closes only the ordering defect is INCOMPLETE and must not be accepted.
+
+DECISIONS THE RESEARCH PHASE MUST WEIGH AND RECORD -- DO NOT PRE-DECIDE.
+(a) How a terminal task with a pending forced phase becomes eligible: reorder force_phases consumption ahead of the all-terminal check and the eligibility loop, versus computing a "has a pending forced phase" set up front and exempting exactly those tasks from both terminal `continue`s. Weigh which keeps the (b)/(c)/(f) section structure and the mt_ state-writing order coherent, since force_phases_remaining seeding currently writes state that the earlier checks do not read.
+(b) What status a completed task holds while a forced phase runs, and what it holds afterward. Keeping it completed while a new MM_ round is written is FAVORED, per the existing never-regresses-status clause, but must be justified against how orchestrate-cycle-postflight.sh's monotonic-max clamp and update-task-status.sh's map_status actually behave on a completed task -- verify rather than assume.
+(c) Whether --implement forced on a completed task is permitted on the same terms as --research, or needs a stricter gate (re-running an implementation against already-implemented work is materially riskier than re-running research or planning). Decide for all three flags explicitly; do not fix --research and leave the other two undefined.
+(d) Whether the classifier gains the archive read directly (mirroring lookup_project's existing shape, which is the natural fix) or receives resolved statuses from its caller -- and whether it should keep returning group:"terminal" for a forced-phase task or gain a distinct verdict. Note that the research-first default task lands first and may already have established a precedent for feeding the classifier new inputs; reuse that answer rather than inventing a second one.
+(e) Whether the all_terminal stop message must distinguish "terminal and nothing forced" (a correct stop) from "terminal but a forced phase is pending" (which must no longer stop at all), and whether the archive read should ever WRITE -- un-archiving a task versus reading it read-only and leaving /todo's archive untouched. Read-only is FAVORED but must be justified against how the eventual completion of a forced round on an archived task is recorded.
+
+SCOPE. Implement the chosen fix across both defects together. Add fixture coverage in scripts/tests/test-orchestrate-cycle-plan.sh for a completed task with --force-phases research (must dispatch, not stop at all_terminal -- note line 1041 already has an all_terminal assertion whose fixture must remain valid), and for a completed-and-archived task with --force-phases research. Add coverage in scripts/tests/test-orchestrate-triage-classify.sh for the archived-task lookup. Update commands/orchestrate.md so the --research/--plan/--implement rows state plainly whether they apply to terminal and archived tasks, and update docs/architecture/orchestrate-state-machine.md's terminal-state handling to match.
+
+MUST NOT. Do not edit .claude/** . Do not make terminal tasks eligible for ORDINARY dispatch -- only an explicitly forced phase may reach one; an /orchestrate with no phase-forcing flag must still stop with all_terminal on a fully terminal set. Do not regress a completed task's status as a side effect of the fix. Do not change the not_started default routing -- that is the companion task's territory; this task lands second and builds on it. Do not write task numbers into any deliverable outside specs/. shellcheck clean per context/standards/shell-strict-mode.md.
+
+ACCEPTANCE. /orchestrate N --research on a completed task in active_projects dispatches a research round and writes a new MM_ artifact. The same on a completed-and-ARCHIVED task also dispatches, with the classifier and cycle-plan agreeing on its status rather than one calling it nonexistent. /orchestrate N with no forcing flag on the same terminal task still stops with all_terminal and dispatches nothing. The chosen posture for --plan and --implement on terminal tasks is implemented and documented, not left undefined. Fixtures cover the active-terminal, archived-terminal, and unforced-terminal cases. Full gate set green: test-orchestrate-cycle-plan.sh, test-orchestrate-triage-classify.sh, check-task-references.sh.
+
+---
+
+### 196. Make research the default first phase for an un-researched task unless --fast is given
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the change up via their own redeploy.
+
+REQUEST. The user wants /orchestrate to research first whenever a task has not already been researched, UNLESS --fast was passed. Today the system implements the exact opposite, deliberately.
+
+CURRENT BEHAVIOR, AND WHY IT IS NOT AN ACCIDENT. The completed "research on demand" work (Stage A.8) flipped not_started from research to plan on purpose: a specification-shaped task reaches [PLANNED] in one dispatch instead of two, and planner-agent regains research on demand by returning a needs_research verdict carrying a focused question list. That prior decision, its rationale, and its hazards are recorded in specs/150_research_on_demand/ (report, plan, summary) and MUST be read before touching anything. This task inverts that default; it does not get to pretend the default was arbitrary.
+
+VERIFIED ANCHORS (each confirmed on disk).
+- scripts/orchestrate-triage-classify.sh:330-333 -- the live jq classifier row: `elif $status == "not_started" then ... group:"plan" ... reason "...routes to plan (research on demand -- the planner requests research via needs_research if the description does not suffice)"`.
+- scripts/orchestrate-triage-classify.sh:409 -- the blocked-discharge previous_status re-routing table: `(if $p == "not_started" then "plan"`.
+- scripts/orchestrate-triage-classify.sh:60 -- the header routing table row `| not_started | plan | plan |`, and the line-101 note about the shared not_started/researched/planned ladder.
+- scripts/orchestrate-cycle-plan.sh:1300-1313 -- the degraded-classifier inline fallback table (`not_started) triage_group[$t]="plan"`, `researching) triage_group[$t]="research"`), carrying its own "research on demand -- Stage A.8" comment. It must stay in agreement with the live classifier; a fixture already asserts exactly that parity.
+- scripts/orchestrate-cycle-plan.sh:1737-1743 -- the research_questions --focus wiring at the research-dispatch build call.
+- Doc/contract surfaces asserting the current default: docs/architecture/orchestrate-state-machine.md lines 25-26 (Complete State Table), 77, 90, 117, 161-162 (ASCII diagram plus the "merges into a single dispatch plan node" prose), 305 and 324 (worked-example flows); agents/general-research-agent.md and agents/planner-agent.md (the needs_research contract); commands/orchestrate.md line 45 (the --fast row of the flag table); context/standards/status-markers.md (the documented two-phase default and [RESEARCHING]'s two producers).
+
+THE PLUMBING PROBLEM, MEASURED. scripts/orchestrate-triage-classify.sh accepts NO effort/--fast argument whatsoever -- `grep -c 'fast\|effort'` on that file returns 0. scripts/orchestrate-cycle-plan.sh parses --fast at line 293 into effort_flag and forwards it to command-route-agent.sh (line 1509) and orchestrate-build-dispatch.sh (line 1729); today --fast carries model-and-agent-selection semantics ONLY, with no phase-skipping meaning anywhere. Making the default effort-aware therefore requires a structural choice.
+
+DECISIONS THE RESEARCH PHASE MUST WEIGH AND RECORD -- DO NOT PRE-DECIDE.
+(a) Where effort-awareness lives: give orchestrate-triage-classify.sh a new effort input (keeping the "one code path" classification discipline its own header asserts) versus having orchestrate-cycle-plan.sh post-adjust the classifier's verdict for --fast. Weigh both against that header's explicit one-code-path contract and against the degraded-fallback parity fixture, which will need the same answer applied twice if the caller post-adjusts.
+(b) What "has not already been researched" means precisely. not_started is the obvious case, but decide explicitly for: researched (already has a report -- must NOT re-research), planned/implementing/partial (progressed past research), and the blocked-discharge previous_status ladder at line 409, which mirrors the live row and will otherwise silently keep the old default.
+(c) What becomes of the needs_research verdict. Under research-first it is largely redundant on the default path but is precisely the escape hatch that keeps --fast safe -- a --fast task whose description turns out to be insufficient still needs the planner able to ask. Retaining it on the --fast path is FAVORED but must be justified, not assumed; decide and record whether it also survives on the now-default research-first path or becomes unreachable there.
+(d) Whether --fast's new phase-skipping semantics should be documented as a second, independent meaning of the flag or whether a distinct flag would be clearer -- and if --fast is kept, state plainly in commands/orchestrate.md that it now changes WHICH PHASES RUN, not merely reasoning depth.
+
+SCOPE. Implement the chosen design across every site that encodes the default, keeping the live classifier and the degraded fallback table in agreement. Update the routing table in the classifier header, the state-machine doc's state table, ASCII diagram, prose footnote and both worked examples, the planner and research agent contracts, the --fast row of the command flag table, and status-markers.md's two-phase-default narrative. Update the fixtures that assert the current default deliberately and with a comment naming the new contract: scripts/tests/test-orchestrate-triage-classify.sh lines 97-107 (the single-engine sandbox probe), 224-240 (the mt-engine not_started row), 298-323 (the blocked-discharge previous_status row); scripts/tests/test-orchestrate-cycle-plan.sh Group 13 (lines 1430-1485, degraded-fallback parity) and Group 14 (lines 1490+, research_questions --focus wiring). Add NEW coverage for the --fast path, which has no fixture today.
+
+MUST NOT. Do not edit .claude/** . Do not silently delete the needs_research verdict, its postflight case arm, its update-task-status.sh map_status arm, or the research_questions field and its state-schema.json admission -- a decision to retire any of them must be explicit, recorded, and complete rather than partial (the prior work documents that an unhandled needs_research falls into orchestrate-cycle-postflight.sh's catch-all and produces halt=true plus an OFF_SCHEMA_STATUS defect). Do not change terminal-status handling or forced-phase consumption -- that is the companion task's territory and the file scopes overlap by design, so this task lands first. Do not write task numbers into any deliverable outside specs/ (see .claude/rules/no-task-references-in-deliverables.md). shellcheck clean per context/standards/shell-strict-mode.md.
+
+ACCEPTANCE. Without --fast, a not_started task dispatches research, then plan, then implement; a task at researched or later never re-researches. With --fast, a not_started task still dispatches straight to plan, and the planner can still send it back via needs_research if the chosen design retains that arm. The degraded fallback table and the live classifier agree on every row, proven by the existing parity fixture. The blocked-discharge previous_status ladder agrees with the live not_started row. Every doc surface listed above describes the new default with no residual claim that plan-first is the default. New fixtures cover both the --fast and non---fast not_started paths. Full gate set green: test-orchestrate-triage-classify.sh, test-orchestrate-cycle-plan.sh, lint-agent-contracts.sh, check-task-references.sh.
+
+---
 
 ### 195. Replace is_contractual_handoff_writer allowlist with a dispatch-derived predicate
 - **Status**: [NOT STARTED]
