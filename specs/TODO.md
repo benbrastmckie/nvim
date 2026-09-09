@@ -1,5 +1,5 @@
 ---
-next_project_number: 194
+next_project_number: 196
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 194
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175,195 | 29,74,139,162,172,194 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -44,6 +44,8 @@ next_project_number: 194
 191 [NOT STARTED] — Stop plan-mandated git-snapshot from reverting task-unrelated...
 192 [NOT STARTED] — Close the directory-pathspec hole in guard-destructive-git.sh...
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
+194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
+  └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
 
 ### Extensions
 
@@ -81,6 +83,82 @@ next_project_number: 194
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 
 ## Tasks
+
+### 195. Replace is_contractual_handoff_writer allowlist with a dispatch-derived predicate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 194
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
+
+DEFECT. is_contractual_handoff_writer() in agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh returns 0 for exactly two hard-mode agents:
+
+  is_contractual_handoff_writer() {
+    case "$1" in
+      cslib-implementation-hard-agent|lean-implementation-hard-agent) return 0 ;;
+      *) return 1 ;;
+    esac
+  }
+
+Every other agent falls through to `return 1` and is treated as a non-writer. Consequently all base-mode implementation agents -- general-implementation-agent (the default for general/meta/markdown and, via noncore-exact routing, formal task types), lean-implementation-agent, typst-implementation-agent -- plus every research and plan agent are excused when .orchestrator-handoff.json is absent. No HANDOFF_STALE_OR_ABSENT defect is recorded via system-defect-record.sh, and a real failure goes unattributed.
+
+OBSERVED LIVE (evidence, not hypothesis). An /orchestrate implement dispatch to general-implementation-agent died on context exhaustion ('Prompt is too long') without writing a handoff. Postflight emitted verbatim:
+
+  [orchestrate] WARN: agent name 'general-implementation-agent' is not on the contractual handoff-writer allowlist -- treated as a non-writer, no defect recorded for the absent handoff. If 'general-implementation-agent' is a genuine new hard-mode writer, add it to is_contractual_handoff_writer() in this script.
+
+The run then degraded silently to heading-scan recovery (plan headings showed 16/16 phases closed) and no defect row was recorded.
+
+THE DECISION IS NOT PRE-MADE -- WEIGH (a) AGAINST (b) IN RESEARCH.
+  (a) Extend the hardcoded allowlist to cover every lifecycle agent.
+  (b) Invert the predicate so writer status derives from whether the dispatch supplied a handoff_path, eliminating the agent-name list entirely and making the contract self-maintaining as new agents and extensions are added.
+
+Option (b) is FAVORED but must be justified, not assumed. The case for it: the existing list has already drifted behind the agent roster, which is the proximate cause of the observed miss. The structural support: skill-orchestrate/SKILL.md Move 3 loops over .dispatch[] rows ONLY and states outright that an aux_dispatch[] row never reaches Move 3; Move 2 supplies handoff_path to every dispatch[] row and deliberately omits the key for aux rows. So every agent that reaches postflight is, by construction, a handoff-expected dispatch.
+
+THE WRINKLE THAT MUST BE RESOLVED. Postflight does not receive handoff_path as an argument. It derives handoff_file itself from --task-dir. Option (b) therefore requires choosing between two concrete shapes, and the research phase must pick one and record why:
+  - Treat 'reached postflight at all' as the predicate (simplest; correct today given the Move 3 dispatch[]-only loop, but silently depends on that invariant holding).
+  - Thread an explicit --handoff-expected true|false flag from the dispatch row through skill-orchestrate's Move 3 call site (more plumbing; preserves the distinction explicitly if an aux row ever starts reaching postflight).
+Assess both against how postflight actually receives dispatch metadata today -- its full CLI contract is documented in its own header Usage block.
+
+SCOPE. Implement the chosen fix. Replace the now-misleading WARN text at the fall-through branch, which currently instructs the reader to 'add it to is_contractual_handoff_writer() in this script' -- guidance that will be wrong under either fix. Update the D1 header comment block, which asserts the allowlist is 'the complete, closed set of contractual writers today'. Add fixture coverage to scripts/tests/test-orchestrate-cycle-postflight.sh for the absent-handoff branch under a base-mode lifecycle agent, which is the exact case that produced no defect row in the observed run.
+
+DEPENDS ON the lifecycle-agent contract alignment task, which must land first: widening detection ahead of the stated obligation would record defects against agents whose contracts never asked them to write a handoff.
+
+MUST NOT. Do not weaken the mtime staleness gate, the dispatch_seq identity gate, or the fail-closed 9999999999 sentinel -- this change concerns only the ABSENT-handoff branch, never the present-but-stale or present-but-mismatched branches, which already record unconditionally. Do not edit agent contract files (the companion task's territory; the file scopes are deliberately disjoint). Do not write task numbers into any script or skill deliverable (see .claude/rules/no-task-references-in-deliverables.md).
+
+ACCEPTANCE. An absent .orchestrator-handoff.json from any lifecycle dispatch -- base mode included -- records a HANDOFF_STALE_OR_ABSENT defect. An aux dispatch still records none. The fixture reproduces the observed general-implementation-agent case and demonstrates the defect row is now written. The WARN text and D1 header comment no longer instruct the reader toward a removed or superseded mechanism. shellcheck clean per context/standards/shell-strict-mode.md.
+
+---
+
+### 194. Align lifecycle agent contracts on .orchestrator-handoff.json writing
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/agents/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped).
+
+DEFECT. The handoff-writing obligation is asserted by orchestrate-cycle-postflight.sh's detection logic but is NOT uniformly stated in the agent contracts it judges. Several agents that are routinely dispatched through a dispatch[] row -- and therefore reach postflight, where an absent .orchestrator-handoff.json is a real failure signal -- carry no statement of the obligation at all.
+
+STARTING EVIDENCE (measured 2026-09-09 by counting '.orchestrator-handoff.json' occurrences in each agent's own contract file under agent-system/extensions/*/agents/):
+  - planner-agent: 0
+  - lean-implementation-agent: 0
+  - typst-implementation-agent: 0
+  - general-research-agent: 2
+  - general-implementation-agent: 5
+  - lean-implementation-hard-agent: 7
+
+THIS COUNT IS A STARTING POINT, NOT A VERIFIED-COMPLETE ROSTER. It samples six agents only. The audit must independently enumerate EVERY agent reachable via a dispatch[] row -- research, plan, and implement phases, across core and all loaded extensions -- rather than trusting the six above. Use skill-orchestrate/SKILL.md Move 2 and the routing tables in each extension manifest.json (routing_agents / routing_agents_hard) to derive the true reachable set; a mention count of zero is evidence of a missing contract statement, and a nonzero count is not by itself evidence that the statement is correct or complete.
+
+WHY THIS COMES FIRST. The companion task widens postflight's contractual-writer predicate so that an absent handoff from a lifecycle agent is recorded as a HANDOFF_STALE_OR_ABSENT defect instead of being silently excused. Widening detection BEFORE the contracts state the obligation would flood errors.json with defect rows attributed to agents that were never told to write a handoff -- correct detection against an unstated obligation. This task establishes the obligation so the widened detection lands on a contract that actually exists.
+
+SCOPE. For each agent in the reachable set that lacks the obligation, add an explicit contract statement: it MUST write .orchestrator-handoff.json to the task directory named by its dispatch context's handoff_path, on every dispatch where orchestrator_mode is true. Match the wording and placement already used by the agents that state it correctly (general-implementation-agent and lean-implementation-hard-agent are the fullest existing examples) rather than inventing a new phrasing. Note the asymmetry to preserve: an aux_dispatch[] row is deliberately given NO handoff_path key and never writes a handoff -- any contract wording must not oblige an agent dispatched in that mode.
+
+MUST NOT. Do not modify orchestrate-cycle-postflight.sh or the predicate itself -- that is the companion task's territory and the two file scopes are deliberately disjoint. Do not weaken or restate the aux-dispatch exemption. Do not write task numbers into any agent contract (see .claude/rules/no-task-references-in-deliverables.md).
+
+ACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, consistently-worded handoff-writing obligation naming .orchestrator-handoff.json and its handoff_path source. The audit records the full enumerated reachable set and the derivation method, so a future reader can re-verify completeness without re-deriving it. The aux-dispatch exemption remains intact and is stated where relevant.
+
+---
 
 ### 193. Carry concurrent-sibling territory in base-mode dispatch briefs, the only channel that reaches a running dispatch
 - **Status**: [NOT STARTED]
