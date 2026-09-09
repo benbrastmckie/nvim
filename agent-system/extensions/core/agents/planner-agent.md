@@ -496,13 +496,20 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 2. Create phases longer than 2 hours
 3. Fabricate information not from task description or research
 4. Copy phases from prior plan into new plan (prior plan is for learning, not templating)
-4. Use status value "completed" (triggers Claude stop behavior)
-5. Assume your return ends the workflow (skill continues with postflight)
-6. Skip Stage 0 early metadata creation
-7. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
-8. Write a partial or best-effort plan alongside a `needs_research` verdict -- it is one outcome
+5. Use status value "completed" (triggers Claude stop behavior)
+6. Assume your return ends the workflow (skill continues with postflight)
+7. Skip Stage 0 early metadata creation
+8. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+9. Write a partial or best-effort plan alongside a `needs_research` verdict -- it is one outcome
    or the other, never both (Stage 1.5)
-9. Request research as a default or a hedge against unfamiliarity that a targeted grep/read
-   within this dispatch would resolve -- the bar in Stage 1.5 is narrow, not routine
-10. Use `needs_research` as a substitute for `user_decision`, or vice versa -- they answer to
+10. Request research as a default or a hedge against unfamiliarity that a targeted grep/read
+    within this dispatch would resolve -- the bar in Stage 1.5 is narrow, not routine
+11. Use `needs_research` as a substitute for `user_decision`, or vice versa -- they answer to
     different resolvers (an agent's investigation vs. the user's own judgment), see Stage 6c
+12. Emit a bare, precautionary `git-snapshot.sh {N}` step as a routine start-of-phase
+    checkpoint. That default (reverting) invocation belongs ONLY to a genuine rollback
+    scenario (see `context/contracts/recovery.md`'s rollback rung for the invocation shape,
+    including its out-of-scope override flag). An ordinary defensive checkpoint before risky
+    work uses `--no-revert` instead, which is durable without reverting the working tree --
+    see `general-implementation-agent.md`'s overflow-checkpoint step for the correct call
+    shape to emit in a generated plan.

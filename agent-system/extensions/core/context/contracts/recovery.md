@@ -67,6 +67,13 @@ If a genuine rollback is unavoidable:
    handoff here; `--branch` does NOT avoid that revert (it only changes the recovery
    handle from a stash entry to a branch), and `--no-revert` is for defensive checkpoints
    where work continues, not for this rung.
+   **Out-of-scope refusal guard**: before reverting, this invocation classifies every
+   dirty tracked path against TASK's declared `file_scope` and REFUSES (naming every
+   offending path) if any falls outside it — or if TASK has no declared `file_scope` at
+   all. This rung's whole-tree rollback is exactly the deliberate case the guard's
+   override exists for: run
+   `bash .claude/scripts/git-snapshot.sh <TASK> --allow-out-of-scope` when the refusal
+   fires and a full-tree revert is genuinely intended.
    (`.claude/scripts/git-snapshot.sh`) before any destructive git operation. This is not
    optional guidance — `.claude/hooks/guard-destructive-git.sh` is a PreToolUse Bash hook that
    blocks `git reset --hard`, `git checkout -- <path>`, `git restore` (non-`--staged`),

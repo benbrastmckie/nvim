@@ -377,33 +377,40 @@ its stdout, exit code, or arguments in a way the new refusal path breaks.
 
 ---
 
-### Phase 5: Documentation and contract guardrails [NOT STARTED]
+### Phase 5: Documentation and contract guardrails [COMPLETED]
 
 **Goal**: Stop plan authors re-inventing the bare precautionary `git-snapshot.sh {N}` idiom, and
 keep every document that instructs a default-mode invocation consistent with the new guard.
 
 **Tasks**:
-- [ ] `agents/planner-agent.md`: add a `MUST NOT` bullet after the existing item list
+- [x] `agents/planner-agent.md`: add a `MUST NOT` bullet after the existing item list
       (currently ending at item 10) forbidding emission of a bare `git-snapshot.sh` call as a
       routine start-of-phase / precautionary plan step. State the positive form: reverting
       default mode belongs only to `recovery.md`'s rung (c) genuine-rollback scenario; a
       defensive checkpoint uses `--no-revert`. Note that the two `MUST NOT` items numbered `4`
       in that list are a pre-existing numbering collision — renumber while adding, or leave
-      untouched, but do not compound it.
-- [ ] `context/formats/plan-format.md`: add a one-paragraph cross-reference in the
+      untouched, but do not compound it. *(completed: renumbered items 4-11 sequentially and
+      added the new bullet as item 12)*
+- [x] `context/formats/plan-format.md`: add a one-paragraph cross-reference in the
       `## Rollback/Contingency` template guidance pointing at `recovery.md` rung (c) and the
       default-vs-`--no-revert` mode distinction, so a plan author reaches the correct mode
-      without already knowing `recovery.md` exists.
-- [ ] `rules/git-workflow.md`: update the "No Destructive Git on Uncommitted Work" exemption 2
+      without already knowing `recovery.md` exists. *(completed)*
+- [x] `rules/git-workflow.md`: update the "No Destructive Git on Uncommitted Work" exemption 2
       and the "Before any intentional rollback" paragraph to mention the scope guard and the
       `--allow-out-of-scope` override, so the documented rollback recipe still works verbatim.
-- [ ] `context/contracts/recovery.md`: update rung (c) step 1 to note that default mode now
+      *(completed)*
+- [x] `context/contracts/recovery.md`: update rung (c) step 1 to note that default mode now
       refuses when the dirty tree carries tracked paths outside the task's `file_scope` (or when
       no `file_scope` is declared), and show the `--allow-out-of-scope` form as the deliberate
-      whole-tree rollback invocation.
-- [ ] Do NOT touch `general-implementation-agent.md`, `general-research-agent.md`, or
+      whole-tree rollback invocation. *(completed)*
+- [x] Do NOT touch `general-implementation-agent.md`, `general-research-agent.md`, or
       `context/patterns/checkpoint-before-overflow.md` — all three already call `--no-revert`
-      correctly and are unaffected by the guard.
+      correctly and are unaffected by the guard. *(confirmed: git status shows zero changes to
+      any of the three; the Scope Hypothesis grep below additionally surfaced six more
+      mention-only hits -- task-lock.md, git-workflow-narrative.md, shell-strict-mode.md,
+      guard-destructive-git.sh, manifest.json, cslib/commands/pr.md -- none of which instruct a
+      default-mode invocation (they mention the script name, its marker/timestamp window, or
+      its --branch exemption rationale only), so none required editing)*
 
 **Timing**: 1 hour
 

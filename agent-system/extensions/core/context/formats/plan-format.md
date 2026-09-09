@@ -73,6 +73,15 @@ reintroduced, not as a description of live behavior.
 8. **Artifacts & Outputs** – enumerate expected outputs with paths.
 9. **Rollback/Contingency** – brief plan if changes must be reverted.
 
+**A Rollback/Contingency step that reverts uncommitted work is a snapshot-then-rollback
+recipe, not a bare precautionary checkpoint.** When this section calls for taking a
+backup of the working tree before a genuine rollback (git reset/checkout/clean or similar),
+point at `context/contracts/recovery.md`'s rollback rung for the exact invocation shape,
+including its out-of-scope override flag for the deliberate whole-tree case — never emit a
+bare `git-snapshot.sh {N}` as a routine start-of-phase precaution; see
+`agents/planner-agent.md`'s MUST NOT list for the rationale and `--no-revert`'s alternative
+role as a durable, non-reverting checkpoint.
+
 ## Implementation Phases (format)
 - Heading: `### Phase N: {name} [STATUS]`
 - Valid `[STATUS]` values: `[NOT STARTED]`, `[IN PROGRESS]`, `[COMPLETED]`,

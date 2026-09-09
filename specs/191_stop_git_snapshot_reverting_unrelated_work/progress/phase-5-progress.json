@@ -1,0 +1,15 @@
+{
+  "phase": 5,
+  "phase_name": "Documentation and contract guardrails",
+  "started_at": "2026-09-09T21:22:00Z",
+  "last_updated": "2026-09-09T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "planner-agent.md: new MUST NOT bullet against bare git-snapshot.sh emission", "status": "done", "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"], "note": "Also renumbered the pre-existing duplicate-4 numbering collision while adding item 12, rather than leaving it or compounding it."},
+    {"id": 2, "description": "plan-format.md: Rollback/Contingency cross-reference to recovery.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "git-workflow.md: exemption + rollback recipe update for the guard/override", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 4, "description": "recovery.md rung (c): note the guard and show --allow-out-of-scope form", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/recovery.md"], "note": "Verification: lint-agent-contracts.sh 101/0/0 pass/warn/fail; check-task-references.sh cannot run outside a deployed tree (deferred to Phase 6's deploy) but the shared task-reference-patterns.sh library shows zero matches against all four edited files when run directly; every quoted git-snapshot.sh command line was confirmed copy-pasteable (both TASK-then-flag and flag-then-TASK orderings work) against the Phase 3/4 script's actual --help output."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
