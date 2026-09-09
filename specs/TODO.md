@@ -1,5 +1,5 @@
 ---
-next_project_number: 198
+next_project_number: 201
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 198
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194,196 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194,196,198,199,200 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175,195,197 | 29,74,139,162,172,194,196 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -48,6 +48,8 @@ next_project_number: 198
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
 196 [IMPLEMENTING] — Make research the default first phase for an un-researched...
   └─ 197 [NOT STARTED] — Honor a forced phase on a terminal task, including one...
+199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
 
 ### Extensions
 
@@ -83,8 +85,134 @@ next_project_number: 198
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
+198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 200. Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A defect fixed in the source store and marked completed can remain live indefinitely in a consumer repository's deployed `.claude/` tree, where it continues to mislead every agent that reads it. Nothing enforces propagation, and the only detector is opt-in and report-only.
+
+OBSERVED LIVE (2026-09-09). A lean-implementation-agent dispatch in ~/Projects/BimodalLogic followed its own deployed agent definition's documented build command and got exit 77 (`build mode requires a lake subcommand`), because the deployed copy read `lake-build-guard.sh build --timeout 1800 -- 2>&1` -- an empty lake-argument vector that can never launch a build.
+
+THAT EXACT DEFECT WAS ALREADY FIXED AND CLOSED. Task 176 ("Fix the documented lake-build-guard full-build invocation across the lean extension") corrected precisely these call sites and is marked completed. Verified by direct comparison:
+
+  agent-system/extensions/lean/agents/lean-implementation-agent.md:253   (SOURCE, correct)
+    bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build 2>&1
+  /home/benjamin/Projects/BimodalLogic/.claude/agents/lean-implementation-agent.md:253   (DEPLOYED, stale/broken)
+    bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- 2>&1
+
+The same divergence holds for lean-implementation-hard-agent.md:392, rules/lean4.md:51, and skills/skill-lake-repair/SKILL.md:81. So no documentation fix is needed in the source store -- it is already correct. The defect is entirely one of PROPAGATION. Do not "re-fix" the source store; confirm it is correct and leave it alone.
+
+THE STALENESS IS PARTIAL, WHICH IS THE DANGEROUS PART. In the same deployed tree, `core/scripts/git-snapshot.sh` is BYTE-IDENTICAL between source and deploy, while `lean/agents/lean-implementation-agent.md` differs. An operator (or agent) who spot-checks one file and concludes "the deploy is fresh, so the source store is the right edit target" reaches a correct conclusion about the edit target for the wrong reason, and will not suspect that a DIFFERENT file in the same tree is months out of date. This exact reasoning was performed during the observing session. Any remedy must make partial staleness visible, not just whole-tree staleness.
+
+ROOT CAUSE, CONFIRMED IN THE SOURCE. The detector exists but is deliberately inert by default:
+  - `agent-system/extensions/core/scripts/check-consumer-freshness.sh` exists and can report STALE/CANNOTVERIFY rows per consumer repo.
+  - In `deploy-headless.sh` it fires ONLY behind `--consumer-report` (`CONSUMER_REPORT=false` by default). Task 180 made it opt-in on purpose, for a good reason: on the blocking redeploy-checkpoint path it walked ~50 repositories, cost ~10 minutes of wall clock, and produced output the gate could not act on.
+  - The script's own comments state the scan "is report-only and can NEVER change this script's exit code", and that deploy-headless.sh never redeploys into a consumer -- the documented remedy is for a human to run the deploy manually in each stale repo.
+So the design is: detect only if asked, never act, and rely on a human remembering. The observed defect is that design working exactly as specified.
+
+THIS IS NOT A REQUEST TO REVERT TASK 180. Putting a 10-minute unactionable walk back on a blocking gate would re-create a worse problem. The question is how to close the propagation gap WITHOUT that cost. Weigh at least these, and recommend:
+  (a) PULL-SIDE FRESHNESS CHECK. Have the consuming repo verify its own `.claude/` tree against the source store at a cheap, natural moment -- e.g. skill preflight in `core/scripts/skill-base.sh`, or dispatch time -- rather than having the source repo push-scan 50 consumers. This inverts the cost: each repo checks only itself, only when it is actually being used. Strongly consider this as the primary direction.
+  (b) CHEAP WHOLE-TREE FINGERPRINT. A single content hash or manifest digest per deployed extension, so "is this tree current?" is one comparison instead of a file walk -- and so PARTIAL staleness is caught, which a timestamp or a single-file spot-check will not catch.
+  (c) MAKE THE SIGNAL ACTIONABLE. If a stale consumer is detected at dispatch time, decide what happens: warn loudly in the dispatch brief, auto-redeploy, or refuse the dispatch. An unactionable warning is what already exists and it did not work.
+Do not pre-commit to one; measure the cost of the cheap check and justify the choice.
+
+SCOPE BOUNDARY. Detection and signalling of consumer staleness, plus whatever minimal action the recommendation supports. Not in scope: re-fixing the lean docs (already correct at source), and redeploying every consumer repo as a data-migration exercise. Bringing ~/Projects/BimodalLogic's tree current is a reasonable one-line verification step at acceptance time, not the deliverable.
+
+MUST NOT. Do not put an unbounded consumer walk back on any blocking gate path. Do not edit `.claude/**` in any repo by hand -- a stale deployed tree is fixed by redeploying it, never by hand-patching it, and hand-patching would additionally mask the very divergence this task exists to detect. Do not change the lean extension's already-correct source documentation.
+
+ACCEPTANCE. A consuming repo whose deployed `.claude/` tree diverges from the source store in even ONE file is detected, cheaply, at a moment when the information can still change what an agent does -- demonstrated by a fixture that reproduces the observed shape (one file identical, one file stale, in the same tree). The chosen remedy's wall-clock cost is measured and shown not to reintroduce the regression task 180 removed. The recommendation and its rejected alternatives are recorded. shellcheck clean per context/standards/shell-strict-mode.md. Finally, verify by redeploying into ~/Projects/BimodalLogic that the four stale lean call sites there now match source.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 199. Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
+
+DECIDE, THEN IMPLEMENT: should concurrent same-repo /orchestrate dispatches keep sharing one working tree and one build directory, or should each dispatch get an isolated one? Weigh the two options against the accumulated evidence; do not presuppose either.
+
+WHY THIS IS BEING ASKED NOW. Informing agents about each other has already been filed as the remedy (task 193, "carry concurrent-sibling territory in base-mode dispatch briefs"), and it is the right fix for the information gap. But a further live batch shows harm that information alone does not remove: two dispatches can both know about each other and still contend for one `.lake` directory and one working tree. This task addresses the SHARED-RESOURCE question that sits underneath the information question.
+
+OBSERVED LIVE (2026-09-09, ~/Projects/BimodalLogic, tasks 574 and 575 dispatched concurrently as lean-implementation-agent into ONE shared working tree).
+  (a) BUILD CONTENTION. The 575 dispatch lost two builds to concurrent `lake` processes sharing a single `.lake` directory. One of the two was self-inflicted: it ran `scripts/check-module-invariants.sh` alongside a guarded build.
+  (b) WORKING-TREE CONTENTION. The 575 dispatch's default-mode `git-snapshot.sh` reverted the 574 dispatch's uncommitted work (filed separately; see tasks 191 and the lean contract task).
+
+CRITICAL CORRECTION TO THE ORIGINAL DIAGNOSIS -- THE BUILD MUTEX ALREADY EXISTS. This was initially reported as "needs a build mutex in lake-build-guard.sh". Verified against the source: agent-system/extensions/core/scripts/lake-build-guard.sh ALREADY implements a proper `flock`-based mutex on `$GUARD_LAKE_DIR/build-guard.lock`, with a lock-wait timeout (exit 75), abandoned-lock recovery via flock's automatic release on process exit, and result sharing between a waiter and the holder. It also degrades audibly when `flock` is missing rather than silently running unserialized. The mutex is not missing.
+
+WHAT IS ACTUALLY MISSING IS THAT THE MUTEX IS OPT-IN. The guard's own header states it: "any other consumer must opt in explicitly by invoking `lake-build-guard.sh build ...`". Any process that runs bare `lake` bypasses the lock entirely. The self-inflicted collision in (a) is exactly this: `/home/benjamin/Projects/BimodalLogic/scripts/check-module-invariants.sh` calls bare `lake build` (and `lake build BimodalTest`) directly, with no guard. So the failure mode is BYPASS, not absence.
+
+NOTE ON THAT PARTICULAR SCRIPT'S OWNERSHIP: check-module-invariants.sh is a BimodalLogic project-local script, NOT an agent-system file. Fixing that one call site is a consumer-repo change and is OUT OF SCOPE for this task. What IS in scope is the general question it exposes: how does the agent system get unguarded lake-invoking callers to participate in the mutex, given that it cannot edit every consumer repo's scripts?
+
+THE TWO OPTIONS TO WEIGH. Produce an explicit recommendation with reasoning; the deciding artifact is as much the deliverable as the code.
+
+  OPTION 1 -- KEEP THE SHARED TREE, TIGHTEN THE GUARDS. Continue dispatching concurrent siblings into one working tree and one `.lake`, and close the holes one at a time. Already-filed work on this branch: task 191 (git-snapshot revert), task 192 (directory-pathspec over-staging hole), task 193 (territory in briefs). This task's contribution on this branch would be making mutex participation harder to bypass -- e.g. documenting a required-participation contract for agent-invoked builds, detecting an unguarded concurrent `lake` and failing loudly rather than racing, or advising consumer repos to route their own build scripts through the guard.
+    Cost to weigh: this is the fourth-plus patch to the same shared-resource root cause, each one closing an enumerated hole. Note the pattern already observed in task 192, where a refusal that enumerated forms simply taught the enumeration and the agent reached for the nearest unnamed form.
+
+  OPTION 2 -- PER-DISPATCH GIT WORKTREE ISOLATION. Give each concurrent implement dispatch its own `git worktree` (and therefore its own `.lake`), merging results back at commit time.
+    Weigh honestly: it removes BOTH observed harm classes at once -- no shared tree means no sibling revert and no shared `.lake` -- and it does so without reducing concurrency. Against that: `.lake` is not shared either, so each worktree pays a full cold build (potentially very expensive for this repo; measure it, do not assume); merge-back at commit time is new machinery; the harness already exposes a worktree isolation mode for subagents, so check what is reusable before building. Some prior art on worktrees exists in the source store under the lean and cslib extensions (comparator runs, lint-fix wave assignment) -- read it before designing.
+
+  A SPLIT VERDICT IS AN ACCEPTABLE OUTCOME. For example: worktree isolation for lean4/cslib implement dispatches where builds are expensive and collisions are frequent, shared tree for cheap doc/meta dispatches. If that is the recommendation, say so and define the predicate that selects between them.
+
+EXPLICITLY NOT A CONTRADICTION OF TASK 193. That task's MUST NOT says "do not serialize all multi-task dispatch as the fix; concurrency is the design". Worktree isolation is not serialization -- it preserves full concurrency and removes the shared resource instead. Option 1 is likewise not serialization. Neither branch of this decision proposes running the batch sequentially. Coordinate with task 193 rather than re-deciding what it owns: it decides what a dispatch is TOLD, this decides what a dispatch RUNS IN.
+
+WORK.
+  (a) Measure before deciding: cold-build cost for this repo under a fresh worktree, and the observed frequency of guard-lock contention versus outright bypass.
+  (b) Produce the written recommendation with the trade-off reasoning, recorded in the task summary and in core/context/patterns/batch-orchestration-guardrails.md.
+  (c) Implement the chosen option.
+  (d) Whichever option wins, document the mutex's opt-in nature and the bypass hazard where agents will actually read it -- lean/rules/lean4.md's build section, and the guard's own header if the participation contract changes.
+
+MUST NOT. Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md or the plan format (task 191 owns those). Do not edit hooks/guard-destructive-git.sh (task 192). Do not implement the territory payload (task 193). Do not edit any BimodalLogic project-local script. Do not remove or weaken the existing flock mutex under either option.
+
+FOOTPRINT NOTE. This task's file_scope overlaps tasks 182, 193 and 197 on orchestrate-cycle-plan.sh; the file-footprint admission gate will serialize them. Whichever lands last reconciles the header contracts.
+
+ACCEPTANCE. A written, evidence-backed recommendation exists naming the chosen isolation posture and the reasoning against the rejected one, with the cold-build measurement that informed it. The chosen option is implemented. A fixture reproduces the observed batch shape -- two concurrent lean4 implement dispatches in one repo, one of them invoking an unguarded `lake` -- and demonstrates the new behaviour. The opt-in nature of the build mutex is documented where an agent will read it. shellcheck clean per context/standards/shell-strict-mode.md for any shell touched. Redeploy and confirm the change is live in a consumer repo.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 198. Mandate git-snapshot --no-revert in the lean implementation agent contracts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).
+
+DEFECT. The lean implementation agent contracts say NOTHING about git-snapshot.sh. Verified by grep against the source store: `orchestrator_mode`, `git-snapshot` and `no-revert` each appear ZERO times in agent-system/extensions/lean/agents/lean-implementation-agent.md. A lean implementation dispatch that reaches for a pre-work backup therefore finds no guidance at all and lands on the script's DEFAULT mode, which reverts the working tree repo-globally.
+
+OBSERVED LIVE (2026-09-09, ~/Projects/BimodalLogic, tasks 574 and 575 dispatched concurrently as lean-implementation-agent into ONE shared working tree). The 575 dispatch ran `git-snapshot.sh 575` in default mode while the 574 dispatch was concurrently editing the same tree. Default mode runs `git stash push -u` repo-globally with NO pathspec, so it stashed away the SIBLING dispatch's uncommitted work: 574's `.return-meta.json`, `.claude-extensions.json`, and 7 lines of `specs/events.jsonl`. The 575 dispatch noticed the over-capture and restored from `stash@{0}` (kept, not dropped), so nothing was ultimately lost -- but detection and repair depended ENTIRELY on the agent happening to notice. A less attentive dispatch proceeds on a silently reverted tree with no error at any layer.
+
+THIS IS A CALLING-CONVENTION GAP, NOT A SCRIPT BUG. git-snapshot.sh already documents the hazard loudly in its own header ("WARNING: default and --branch modes REVERT the working tree"; "Despite the name, this script is NOT read-only in its default or --branch modes") and already implements the correct alternative: `--no-revert`, which builds a durable stash object via `git stash create` + `git stash store` WITHOUT touching the working tree, described in the header as the mode for "when you want a durable backup and intend to KEEP WORKING". agent-system/extensions/core/agents/general-implementation-agent.md ALREADY calls it correctly with `--no-revert` and explains why. The lean agents were simply never given the same bullet.
+
+CORROBORATION THAT THIS RECURS. `git stash list` in ~/Projects/BimodalLogic currently holds 44 entries, 32 of them named `git-snapshot-*`, accumulated across many sessions. This is not a one-off.
+
+SCOPE -- DELIBERATELY SMALL, SHIPS ON ITS OWN. Add to both lean implementation agent contracts an explicit instruction that `git-snapshot.sh` MUST be invoked with `--no-revert` whenever the dispatch is running under `orchestrator_mode` (i.e. whenever a concurrent sibling dispatch may share the working tree), and SHOULD be preferred generally when the agent intends to keep working after the snapshot. State the reason in one line -- default mode reverts the tree repo-globally and will capture a sibling's in-flight edits -- so the bullet teaches the hazard rather than only the incantation. Mirror the wording already used in core/agents/general-implementation-agent.md rather than inventing a second phrasing.
+
+RELATIONSHIP TO OTHER FILED WORK -- READ BEFORE STARTING.
+  - Task 191 ("Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work") owns the SCRIPT-LEVEL remedy in core/scripts/git-snapshot.sh plus core/rules/git-workflow.md and the plan-format/planner emission path. This task deliberately does NOT touch any of those files. A contract bullet is the cheap interim mitigation that can land immediately; it is explicitly NOT a substitute for the runtime guard, because a bullet can be forgotten. Both are wanted.
+  - Task 191's currently-recorded design direction keys the proposed refusal on "tracked paths OUTSIDE the task's declared file_scope". Note for that task, and record it in this task's summary: that predicate does not cleanly cover the concurrent-sibling case observed here, where a sibling's edits may fall INSIDE an overlapping declared scope. A live-concurrent-dispatch predicate is a distinct condition from an out-of-file_scope predicate. Surface this; do not implement it here.
+
+MUST NOT. Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md, or the plan format -- those belong to task 191 and would collide. Do not weaken or remove `--no-revert`. Do not `git stash drop`/`clear` any existing entry.
+
+ACCEPTANCE. Both lean implementation agent contracts instruct `--no-revert` under orchestrator_mode, with the one-line rationale. The wording matches the existing core agent contract. The lean extension is redeployed and the regenerated `.claude/**` copies carry the bullet (see the deploy-propagation task -- a source-store fix that never reaches the consuming repo changes nothing for a running agent).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 197. Honor a forced phase on a terminal task, including one already archived by /todo
 - **Status**: [NOT STARTED]
