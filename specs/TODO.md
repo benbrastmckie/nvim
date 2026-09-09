@@ -11,7 +11,7 @@ next_project_number: 206
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202,205 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,163,164,173,174,175,195,198 | 29,74,139,162,172,188,191,194 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
@@ -91,18 +91,18 @@ next_project_number: 206
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
-205 [PLANNED] — Replace the single-global lean-lsp entry with per-project...
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
 
 ### 205. Per project lean lsp registration
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 203, Task 204
 - **Research**: [205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md]
 - **Plan**: [205_per_project_lean_lsp_registration/plans/01_per-project-lean-lsp-registration.md]
+- **Summary**: [205_per_project_lean_lsp_registration/summaries/01_per-project-lean-lsp-registration-summary.md]
 
 **Description**: Replace the single-global lean-lsp entry with per-project scoped registration written automatically at session start, so many concurrent Lean projects each index correctly
 
