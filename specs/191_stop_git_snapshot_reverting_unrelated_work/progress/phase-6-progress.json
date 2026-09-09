@@ -1,0 +1,25 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, full gate, and consistency",
+  "started_at": "2026-09-09T21:42:00Z",
+  "last_updated": "2026-09-09T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Verify no hand-edits under .claude/** during Phases 1-5", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh; confirm new/changed files appear in .claude/", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"], "note": "First deploy-headless.sh run failed Gate 20 (eager-load budget) due to git-workflow.md's legitimate growth; fixed via deliberate baseline bump. Second run: verify-deploy PASS 33/33, RESULT=landed_verify_clean."},
+    {"id": 3, "description": "Run run-all.sh, confirm fully green", "status": "done", "files_touched": [], "note": "NOT fully green: 9 pre-existing, unrelated failures identified and evidenced (see plan Phase 6 Reasoned Exclusions). test-git-snapshot.sh and test-guard-destructive-git.sh both PASS within the same run. Phase closed as [COMPLETED WITH EXCLUSIONS] per status-markers.md's five-condition admission test."},
+    {"id": 4, "description": "Confirm deployed test copy passes from its deployed location", "status": "done", "files_touched": [], "note": "bash .claude/scripts/tests/test-git-snapshot.sh: 4 passed, 0 failed."},
+    {"id": 5, "description": "Re-run acceptance scenario end to end, record output", "status": "done", "files_touched": [], "note": "Against deployed .claude/scripts/git-snapshot.sh: exit 1, stderr names outside/unrelated.txt, tree left untouched (both files still dirty per git status --porcelain)."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "deploy-headless.sh Gate 20 eager-load budget check failed after Phase 5's git-workflow.md addition",
+      "type": "altered",
+      "reason": "The addition was required by Phase 5's own task list; the budget-lock config explicitly documents a deliberate re-derivation path for exactly this case.",
+      "annotation": "resolved via a deliberate, evidenced baseline_bytes bump in orchestrator-context-budget.json (63973 -> 64450), not a plan deviation requiring rework"
+    }
+  ]
+}

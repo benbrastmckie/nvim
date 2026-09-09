@@ -441,24 +441,60 @@ this list or a verified already-correct `--no-revert` caller.
 
 ---
 
-### Phase 6: Deploy, full gate, and consistency [NOT STARTED]
+### Phase 6: Deploy, full gate, and consistency [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Regenerate `.claude/**` from the source store and run the repository's full gate set,
 proving the change is live and nothing regressed.
 
 **Tasks**:
-- [ ] Verify no file under `.claude/**` was hand-edited during Phases 1-5:
-      `git status --short .claude/` before deploying.
-- [ ] Run the repository's documented redeploy (`deploy-headless.sh`); confirm
+- [x] Verify no file under `.claude/**` was hand-edited during Phases 1-5:
+      `git status --short .claude/` before deploying. *(completed: `.claude/` is entirely
+      gitignored -- `git status --short .claude/` is always empty by construction -- so this
+      was verified instead by diffing each of the nine source-store files this task touched
+      against their `.claude/` counterparts; all matched byte-for-byte before the deploy step
+      below ran, confirming zero hand-edits landed there)*
+- [x] Run the repository's documented redeploy (`deploy-headless.sh`); confirm
       `.claude/scripts/git-snapshot.sh`, `.claude/scripts/lib/file-scope-overlap.sh`, and
-      `.claude/scripts/tests/test-git-snapshot.sh` all appear with the new content.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm a fully
-      green suite (the Phase 1 expected-red window is now closed).
-- [ ] Confirm the deployed copy of the new test passes when run from its deployed location, not
+      `.claude/scripts/tests/test-git-snapshot.sh` all appear with the new content. *(completed:
+      `deploy-headless.sh` run twice -- first surfaced Gate 20's eager-load-budget regression
+      (see deviation note below, fixed via a deliberate baseline bump), second run:
+      `[verify-deploy] PASS -- 33 check(s), 0 failure(s)`, `RESULT=landed_verify_clean`)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm a fully
+      green suite (the Phase 1 expected-red window is now closed). *(NOT fully green -- 9
+      pre-existing, unrelated failures found; see `#### Reasoned Exclusions` below. The
+      Phase-1-relevant window IS closed: `test-git-snapshot.sh` and
+      `test-guard-destructive-git.sh` both pass inside this same run)*
+- [x] Confirm the deployed copy of the new test passes when run from its deployed location, not
       only from the source store (this is what the `SCRIPT_DIR`-relative resolution buys).
-- [ ] Re-run the acceptance scenario end to end in a scratch fixture and record the output in
+      *(completed: `bash .claude/scripts/tests/test-git-snapshot.sh` -- 4 passed, 0 failed, run
+      directly from the deployed tree)*
+- [x] Re-run the acceptance scenario end to end in a scratch fixture and record the output in
       the summary: dirty tree with out-of-scope tracked modifications -> default mode refuses,
-      names the paths, tree untouched.
+      names the paths, tree untouched. *(completed against the DEPLOYED `.claude/scripts/
+      git-snapshot.sh`: exit 1, stderr names `outside/unrelated.txt`, final `git status
+      --porcelain` still shows both files dirty -- nothing was mutated)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-conflict-predicate.sh`, `test-four-tier-conflict.sh`, `test-session-registry.sh`, `test-state-write-concurrency.sh`, `test-state-write-large-payload.sh`, `test-state-write-regen-timing.sh`, `test-task-lock-reap.sh`, `test-postflight-deploy-gate.sh` (8 of 9 `run-all.sh` failures) | Each fixture copies `task-lock.sh` into a scratch `.claude/scripts/` tree but never copies `lib/task-lookup-lib.sh`, which `task-lock.sh` sources unconditionally near its top. This is a pre-existing fixture-completeness gap in each suite's own `REQUIRED_LIBS`/copy list, unrelated to `file-scope-overlap.sh` or `git-snapshot.sh` (neither of which any of these eight fixtures' failures trace back to). | Direct inspection of each fixture's copy list (`grep -n "task-lookup-lib\|REQUIRED_LIBS\|cp .*lib" <file>`) confirms none copies `lib/task-lookup-lib.sh`; every failure's INFO line reads `task-lock.sh: line 197: .../lib/task-lookup-lib.sh: No such file or directory`. `git log --oneline -5 -- scripts/task-lock.sh` shows its `task-lookup-lib.sh` sourcing line was introduced by tasks unrelated to this one (197, 186, 81, 1012), predating this task entirely. Phase 2's own verification additionally re-ran three of these eight suites (`test-conflict-predicate.sh`, `test-four-tier-conflict.sh`, `test-session-registry.sh`) against a `git stash`-reverted copy of `file-scope-overlap.sh` and confirmed byte-identical pass/fail counts with and without this task's additive change. |
+| `test-lint-json-channel-discipline.sh` (1 of 9 `run-all.sh` failures) | Its "real corpus" auto-discovery case flags two unredirected-stdout-write violations in `scripts/orchestrate-triage-classify.sh` -- a file this task never reads, edits, or otherwise touches. | `git log --oneline -3 -- scripts/orchestrate-triage-classify.sh` shows its last three commits belong to tasks 197 and 196; `git status --short` for that path is empty throughout this task's dispatch. |
+
+No follow-up task is recorded for either row: both are pre-existing repository defects entirely
+outside this task's declared `file_scope` and stated ACCEPTANCE criterion, discovered only
+because `run-all.sh` is a repo-wide suite. Fixing them is not this task's remaining work to hand
+off to a future dispatch.
+
+**Deviation (baseline bump, not an exclusion)**: the first `deploy-headless.sh` run failed
+Gate 20 (`eager-load total (64394 B) exceeds recorded baseline (63973 B)`) because
+Phase 5's required `rules/git-workflow.md` addition (an eagerly-loaded rule) legitimately grew
+the eager-load total by 421 B. Per that config file's own documented re-derivation process,
+`context/config/orchestrator-context-budget.json`'s `eager_load.baseline_bytes` was deliberately
+bumped from 63973 to 64450 (a small margin over the new 64394 B measured total), with the reason
+recorded inline in the JSON. This is a deliberate, reviewed, evidenced budget-lock update
+directly caused by this task's own required documentation edit -- not a third exclusion, since
+nothing was left undone.
 
 **Timing**: 0.75 hours
 
