@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Author the lean-owned preflight wrapper",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm verify-lean-mcp.sh exit-code map", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create lean-mcp-preflight-check.sh with lean-project pre-check, verifier invocation, WARN-only output, always exit 0", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 3, "description": "shellcheck clean; verify non-Lean silence, drift detection, exit-2 distinct message", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

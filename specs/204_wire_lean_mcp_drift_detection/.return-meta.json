@@ -1,31 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/204_wire_lean_mcp_drift_detection/plans/01_wire-lean-mcp-drift-detection.md",
-      "summary": "5-phase, ~3.25h plan wiring verify-lean-mcp.sh into lean skill Stage 2 preflight via a new WARN-only lean-owned wrapper, with a fixture-based regression suite, measured cost, and doc/deploy gates."
-    }
-  ],
-  "dispatch_seq": 5,
-  "phase_count": 5,
-  "estimated_hours": 3.25,
-  "dependency_waves": [[1], [2, 3], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "When a shell script under agent-system/extensions/ reads a user-global config via a bare \"$HOME/...\" path with no env override (e.g. core/scripts/verify-lean-mcp.sh reading \"$HOME/.claude.json\"), a regression suite can still fixture it fully by pointing HOME at a per-fixture mktemp -d dir -- no production-script change, no CONFIG_PATH override parameter, and no reads against the operator's real config. Pair it with an anti-vacuous guard asserting two different failure fixtures produce DIFFERENT messages, which proves the wrapper reads the underlying exit code rather than emitting one blanket message.",
-      "category": "PATTERN",
-      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/plans/01_wire-lean-mcp-drift-detection.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["HOME override", "shell fixture testing", "anti-vacuous test", "config isolation", "mktemp fixture"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1788973693_82555f_204",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 204
-  },
-  "next_steps": "Run /implement 204 to execute the plan"
+    "session_id": "sess_1788973693_82555f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }

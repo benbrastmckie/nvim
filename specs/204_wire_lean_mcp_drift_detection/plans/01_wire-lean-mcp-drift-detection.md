@@ -1,7 +1,7 @@
 # Implementation Plan: Task #204
 
 - **Task**: 204 - Wire verify-lean-mcp.sh into a moment where lean-lsp registration drift is actually caught
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: Task 203 (COMPLETED — reconciled the sanctioned registration shape; its changes to `verify-lean-mcp.sh` are already reflected below)
 - **Research Inputs**: specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md
@@ -116,44 +116,44 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author the lean-owned preflight wrapper [NOT STARTED]
+### Phase 1: Author the lean-owned preflight wrapper [COMPLETED]
 
 **Goal**: A new script that turns the existing verifier into something safe to call on a hot path —
 silent on green, silent outside a Lean project, actionable on drift, never fatal.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/verify-lean-mcp.sh` and confirm the current
+- [x] Re-read `agent-system/extensions/core/scripts/verify-lean-mcp.sh` and confirm the current
       exit-code map before writing any dispatch logic on it. Expected as of this plan: **exit 0** =
       valid; **exit 2** = Check 7 project-path mismatch only; **exit 1** = everything else (config
       absent, `lean-lsp` unregistered, command inside a `.claude/` tree, wrong command, wrong args,
       `LEAN_PROJECT_PATH` unset, configured path nonexistent, project-scoped shadow entry). If the
       map has changed again, update this plan's Phase 2 fixture expectations before proceeding.
-- [ ] Create `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh`, `chmod +x`.
-- [ ] `set -euo pipefail` (Class A per `shell-strict-mode.md`: no counter idiom, not sourced).
-- [ ] Accept — and ignore — the five positional lifecycle args other hook scripts take
+- [x] Create `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh`, `chmod +x`.
+- [x] `set -euo pipefail` (Class A per `shell-strict-mode.md`: no counter idiom, not sourced).
+- [x] Accept — and ignore — the five positional lifecycle args other hook scripts take
       (`task_number`, `task_type`, `task_dir`, `session_id`, `operation`), so the script can later be
       moved to a manifest `hooks.preflight` declaration without a signature change. Model the header
       on `agent-system/extensions/nix/scripts/nix-preflight.sh`.
-- [ ] **Lean-project pre-check first**: if neither `lakefile.lean` nor `lakefile.toml` exists in
+- [x] **Lean-project pre-check first**: if neither `lakefile.lean` nor `lakefile.toml` exists in
       `$PWD`, and neither exists at `git rev-parse --show-toplevel`, `exit 0` immediately with no
       output. Copy this detection verbatim from `verify-lean-mcp.sh`, with a comment naming the
       lockstep requirement. This satisfies WORK item (d) without touching the verifier's own
       operator-facing loud error.
-- [ ] Locate the verifier at `.claude/scripts/verify-lean-mcp.sh` (its deployed path — confirmed
+- [x] Locate the verifier at `.claude/scripts/verify-lean-mcp.sh` (its deployed path — confirmed
       present); if it is absent, `exit 0` silently (a deploy that predates it must not produce noise).
-- [ ] Invoke it **once**, non-quiet, capturing stdout+stderr and the exit status without tripping
+- [x] Invoke it **once**, non-quiet, capturing stdout+stderr and the exit status without tripping
       `-e` (`output=$(... ) || rc=$?` form). On `rc = 0`, print nothing and `exit 0`.
-- [ ] On non-zero: print one `[lean-mcp-preflight]` header line whose wording distinguishes
+- [x] On non-zero: print one `[lean-mcp-preflight]` header line whose wording distinguishes
       `rc = 2` ("lean-lsp currently indexes a different Lean project") from all other non-zero rc
       ("lean-lsp MCP registration does not match the sanctioned form"), then the captured lines
       matching `^\[FAIL\]`, `^\[WARN\]`, or `^Run setup-lean-mcp`. If that filter yields nothing,
       print a single fallback line naming `setup-lean-mcp.sh` as the remedy. Every branch names
       `setup-lean-mcp.sh`.
-- [ ] `exit 0` unconditionally at the end — the contract is WARN, never BLOCK.
-- [ ] Header comment records: WARN-only contract, always-exit-0 guarantee, the detection-lockstep
+- [x] `exit 0` unconditionally at the end — the contract is WARN, never BLOCK.
+- [x] Header comment records: WARN-only contract, always-exit-0 guarantee, the detection-lockstep
       requirement, and the follow-up note that this belongs behind a manifest `hooks.preflight`
       declaration once the lean skills adopt `skill-preflight-flow.md`. No task numbers.
-- [ ] `shellcheck agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` — clean.
+- [x] `shellcheck agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` — clean.
 
 **Timing**: 0.75 hours
 
