@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 192,
+  "session_id": "sess_1788984427_1d2334_192",
+  "dispatch_seq": 9,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/192_close_git_add_directory_pathspec_overstage_hole/reports/01_directory-pathspec-overstage-hole.md",
+      "summary": "Recommends extending guard-destructive-git.sh's over-staging predicate with a per-token check (trailing-slash primary; filesystem -d and glob-metachar as low-cost general-rule extensions) inside the existing ADD_SEGMENTS loop, confirms git-commit-scoped.sh's internal directory-pathspec git add is invisible to the hook (no conflict, no exemption needed), and documents the quoted-pathspec blind spot inherent in reusing COMMAND_SCAN as an accepted pre-existing-shaped limitation."
+    }
+  ],
+  "next_steps": "Run /plan 192 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "guard-destructive-git.sh's PreToolUse hook only ever observes the literal top-level tool_input.command string of a Bash call. Any git add/commit invoked as a subprocess inside a wrapper script (e.g. git-commit-scoped.sh's internal `git add \"${task_dir}/\"` with a directory pathspec) is structurally invisible to the hook and needs no exemption -- this is the established, reusable pattern (already documented for git-snapshot.sh's internal `git add -A`) for any future sanctioned command that would otherwise trip a Bash-level guard.",
+      "category": "PATTERN",
+      "source_artifact": "specs/192_close_git_add_directory_pathspec_overstage_hole/reports/01_directory-pathspec-overstage-hole.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["guard-destructive-git", "PreToolUse hook", "subprocess invisibility", "wrapper script", "over-staging"]
+    },
+    {
+      "content": "guard-destructive-git.sh's upfront COMMAND_SCAN quote-strip (sed 's/\"[^\"]*\"/\"\"/g') replaces an ENTIRE quoted span with literal empty quotes before any detector runs. This correctly neutralizes commit-message false positives (e.g. -m \"fix -a bug\"), but as a side effect erases any legitimate quoted git-add pathspec argument too, so a quoted directory/glob pathspec (git add -- \"some/dir/\") bypasses detection -- the same pre-existing blind spot already affects the bare-dot check (git add \".\" is not caught either). Any future detector reusing COMMAND_SCAN inherits this same quoted-argument blind spot; it is a structural tradeoff of the shared quote-strip, not a per-detector bug.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/192_close_git_add_directory_pathspec_overstage_hole/reports/01_directory-pathspec-overstage-hole.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["COMMAND_SCAN", "quote-strip", "guard-destructive-git", "false positive", "blind spot", "pathspec"]
+    }
+  ]
+}
