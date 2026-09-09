@@ -1,35 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md",
-      "summary": "Confirms .deploy-lock/ is missing from all three enumeration sites, finds three more mutex/lock artifacts (.scope-lock/, .commit-lock/, .errors.lock) with the same gap via the sweep, notes the historical tracked file is already untracked (via plain git rm, not --cached), and recommends a shared-lib single-source fix for the two check-runtime-file-tracking.sh lists plus updates to two test fixtures that mirror the gitignore block."
+      "type": "plan",
+      "path": "specs/201_close_runtime_file_ignore_enumeration_gap/plans/01_close-ignore-enumeration-gap.md",
+      "summary": "7-phase plan replacing three hand-maintained runtime-file enumerations with a single-source lib, closing five class gaps and demonstrating the acceptance behaviour via a new regression test."
     }
   ],
-  "next_steps": "Run /plan 201 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1788984427_1d2334_201",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
-  "findings_count": 9,
+  "next_steps": "Run /implement 201 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 4.5,
+  "dependency_waves": 4,
   "memory_candidates": [
     {
-      "content": "This repo has a live single-source-of-truth precedent for keeping two lint/check scripts' pattern lists in agreement: scripts/lib/task-reference-patterns.sh is sourced by both check-task-references.sh (repo-wide lint) and hooks/validate-no-task-references.sh (write-time gate), so neither defines its detection regex locally. When a task needs two scripts to agree on an enumerated pattern set (e.g. check-runtime-file-tracking.sh's EPHEMERAL_PROBES vs b_patterns arrays), extracting a shared scripts/lib/*.sh array is the established idiom here, not a novel invention.",
+      "content": "When one lint script is itself one of several hand-maintained enumerations of a class it exists to police, the enumerations drift in mutually inconsistent ways and the lint goes blind to whole sub-classes. Diagnostic signal that this has already happened: the two internal lists of the SAME script disagree (e.g. a probe list covers a member the tracked-file regex list does not), and downstream test fixtures that claim to 'mirror' a canonical doc block have silently drifted ahead of it. The proportionate remedy is a single sourced bash lib holding one record per class member (pattern + probe path + regex + type flag), with every mechanical consumer deriving from it; a markdown block that cannot 'source' the lib is pinned instead by a doc-sync assertion inside the regression test. Precedent in this repo: scripts/lib/task-reference-patterns.sh, sourced by both a lint and a write-time hook.",
       "category": "PATTERN",
-      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md",
+      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/plans/01_close-ignore-enumeration-gap.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shellcheck", "single-source-of-truth", "scripts/lib", "gitignore", "enumeration-drift"]
-    },
-    {
-      "content": "gitignore glob **/.lock/ only matches directories literally named .lock; sibling mutex directories with different names (.scope-lock/, .commit-lock/, .deploy-lock/) are invisible to that one line and need their own explicit patterns. When auditing a runtime-file ignore policy built around a directory-name mutex convention, grep the source scripts for every distinct mutex/lock directory NAME rather than assuming one glob pattern covers the whole family.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["gitignore", "glob-pattern", "mutex", "task-lock.sh", "runtime-files"]
+      "suggested_keywords": ["enumeration-drift", "single-source-of-truth", "lint-blindness", "doc-sync-assertion", "shared-pattern-lib", "gitignore-coverage"]
     }
   ],
-  "dispatch_seq": 2
+  "metadata": {
+    "session_id": "sess_1788984427_1d2334_201",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 4
 }
