@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/191_stop_git_snapshot_reverting_unrelated_work/reports/01_git-snapshot-scope-guard.md",
+      "summary": "Root-causes the revert incident to an ad hoc bare git-snapshot.sh call in task 186's plan, documents file_scope's shape/reliability as the scope oracle, and recommends a runtime out-of-scope guard plus a planner-agent.md guardrail and stash-identity fix."
+    }
+  ],
+  "next_steps": "Run /plan 191 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788984427_1d2334_191",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 6,
+  "memory_candidates": [
+    {
+      "content": "state.json's file_scope field mixes three shapes across live tasks: exact file paths, directory prefixes with a trailing slash, and shell-glob patterns (e.g. 'agent-system/extensions/*/agents/**'). Any code comparing a path against file_scope must use prefix/glob matching (bash `[[ \"$path\" == $pattern ]]`), not exact string equality, and must have an explicit fallback for the ~10% of tasks with no file_scope declared at all.",
+      "category": "PATTERN",
+      "source_artifact": "specs/191_stop_git_snapshot_reverting_unrelated_work/reports/01_git-snapshot-scope-guard.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file_scope", "state.json", "glob-matching", "scope-guard", "git-snapshot"]
+    },
+    {
+      "content": "git-snapshot.sh's default and --branch modes both revert the working tree (stash-push or commit-then-checkout); only --no-revert leaves it dirty. The only known unsafe caller pattern found in this codebase is a plan-authored 'snapshot before any edits' step using bare default mode -- no template or agent contract instructs this; it was an ad hoc habit generalized from recovery.md's rung (c) (genuine-rollback precursor) without registering that rung (c) presupposes an imminent destructive op, not a routine precaution. Every correct caller (general-implementation-agent.md, general-research-agent.md) already uses --no-revert for checkpoint-style calls.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/191_stop_git_snapshot_reverting_unrelated_work/reports/01_git-snapshot-scope-guard.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["git-snapshot", "recovery.md", "planner-agent", "revert-hazard", "rung-c"]
+    }
+  ],
+  "dispatch_seq": 1
+}
