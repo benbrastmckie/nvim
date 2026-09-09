@@ -533,24 +533,24 @@ removed since planning is handled accordingly.
 
 ---
 
-### Phase 10: Acceptance demonstration [NOT STARTED]
+### Phase 10: Acceptance demonstration [COMPLETED]
 
 **Goal**: Demonstrate — not assert — that two Lean projects open concurrently each resolve
 lean-lsp against their own project, using evidence a wrong-project answer cannot fake.
 
 **Tasks**:
-- [ ] Pick a declaration or file present in one project and absent from the other in BOTH
+- [x] Pick a declaration or file present in one project and absent from the other in BOTH
       directions (e.g. a `BimodalLogic`-only declaration and a `cslib`-only one), and record the
       exact identifiers chosen
-- [ ] Start two fresh sessions (`claude -p`) concurrently, one per project directory — never a
+- [x] Start two fresh sessions (`claude -p`) concurrently, one per project directory — never a
       pre-existing session, per the session-start snapshot trap
-- [ ] In each, call a real lean-lsp tool (e.g. declaration lookup / diagnostics) for BOTH
+- [x] In each, call a real lean-lsp tool (e.g. declaration lookup / diagnostics) for BOTH
       identifiers; the own-project identifier must resolve and the other-project identifier must
       NOT
-- [ ] Repeat for the `cslib-pr648` worktree, which must have been registered automatically by the
+- [x] Repeat for the `cslib-pr648` worktree, which must have been registered automatically by the
       hook with zero manual steps
-- [ ] Record the full command lines and verbatim outputs in the implementation summary
-- [ ] Confirm both sessions ran genuinely concurrently (overlapping wall-clock, recorded)
+- [x] Record the full command lines and verbatim outputs in the implementation summary
+- [x] Confirm both sessions ran genuinely concurrently (overlapping wall-clock, recorded)
 
 **Timing**: 1 hour
 

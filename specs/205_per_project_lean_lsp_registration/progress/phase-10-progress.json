@@ -1,0 +1,96 @@
+{
+  "phase": 10,
+  "phase_name": "Acceptance demonstration",
+  "started_at": "2026-09-09T23:50:00Z",
+  "last_updated": "2026-09-10T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Pick project-unique identifiers in both directions and record them",
+      "status": "done",
+      "files_touched": [],
+      "note": "BimodalLogic-only file: FormalSystem/Syntax.lean. cslib-only file (also present in the cslib-pr648 worktree, since it is a worktree of cslib): Cslib.lean. Both were already established and cross-checked during Phase 1's empirical probes."
+    },
+    {
+      "id": 2,
+      "description": "Start two fresh concurrent claude -p sessions, one per project directory",
+      "status": "done",
+      "files_touched": [],
+      "note": "Two independent concurrent pairs run, both confirmed genuinely overlapping by wall-clock timestamp and by a live `ps` snapshot showing both `claude -p` processes present simultaneously with identical elapsed time. Pair 1: BimodalLogic + cslib-pr648 (SESSION1_START/SESSION2_START both 2026-09-09T19:54:26Z). Pair 2: BimodalLogic + cslib directly (SESSION3_START/SESSION4_START both 2026-09-09T19:55:17Z) -- this second pair directly reproduces the ORIGINAL reported defect scenario (a session in BimodalLogic alongside cslib)."
+    },
+    {
+      "id": 3,
+      "description": "In each session, call a real lean-lsp tool for BOTH identifiers; own-project resolves, other-project does not",
+      "status": "done",
+      "files_touched": [],
+      "note": "All 4 sessions: mcp__lean-lsp__lean_file_outline on the own-project identifier returned a real JSON outline (populated imports array); on the cross-project identifier it returned 'Error executing tool lean_file_outline: Invalid Lean file path: ... not found in any Lean project (no lean-toolchain ancestor or file does not exist)'. Full verbatim command lines and outputs recorded below in command_log."
+    },
+    {
+      "id": 4,
+      "description": "Repeat for the cslib-pr648 worktree, which must have been registered automatically by the hook with zero manual steps",
+      "status": "done",
+      "files_touched": [],
+      "note": "Session 2 (this phase) queried cslib-pr648 and resolved correctly. Its registration was never hand-typed by an operator: it was written automatically by lean-lsp-register-project.sh during Phase 4's real end-to-end acceptance test (a genuinely fresh `claude -p \"Just report OK\"` session with no lean-lsp-specific prompting at all), and Phase 9's later `setup-lean-mcp.sh --project ... --scope project` invocation was confirmed a no-op ('already configured correctly') against that same automatically-written entry -- it did not create or alter it."
+    },
+    {
+      "id": 5,
+      "description": "Record the full command lines and verbatim outputs in the implementation summary",
+      "status": "done",
+      "files_touched": [],
+      "note": "Recorded in this progress file's command_log and carried into the implementation summary."
+    },
+    {
+      "id": 6,
+      "description": "Confirm both sessions ran genuinely concurrently (overlapping wall-clock, recorded)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Pair 1: SESSION1 19:54:26-19:54:50Z, SESSION2 19:54:26-19:54:55Z (fully overlapping). Pair 2: SESSION3 19:55:17-19:55:38Z, SESSION4 19:55:17-19:55:34Z (fully overlapping). Both pairs additionally confirmed via a live `ps -eo pid,etimes,args` snapshot mid-run showing both `claude -p` child processes present at once with matching elapsed times."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "command_log": [
+    {
+      "pair": 1,
+      "session": "SESSION1 (BimodalLogic)",
+      "command": "cd ~/Projects/BimodalLogic && claude -p \"Call mcp__lean-lsp__lean_file_outline with file_path=\\\"FormalSystem/Syntax.lean\\\" (own-project identifier, should resolve) and report the raw result verbatim. Then call it again with file_path=\\\"Cslib.lean\\\" (other-project identifier, should NOT resolve here) and report that raw result verbatim too.\" --allowedTools \"mcp__lean-lsp__lean_file_outline\" --permission-mode bypassPermissions",
+      "own_project_result": "RESOLVED -- {\"imports\":[\"FormalSystem.Syntax.Formula\", ... 8 entries ...],\"declarations\":[],\"total_declarations\":null}",
+      "cross_project_result": "REJECTED -- Error executing tool lean_file_outline: Invalid Lean file path: 'Cslib.lean' not found in any Lean project (no lean-toolchain ancestor or file does not exist)",
+      "start": "2026-09-09T19:54:26Z",
+      "end": "2026-09-09T19:54:50Z"
+    },
+    {
+      "pair": 1,
+      "session": "SESSION2 (cslib-pr648)",
+      "command": "cd ~/Projects/cslib-pr648 && claude -p \"Call mcp__lean-lsp__lean_file_outline with file_path=\\\"Cslib.lean\\\" (own-project identifier, should resolve) and report the raw result verbatim. Then call it again with file_path=\\\"FormalSystem/Syntax.lean\\\" (other-project identifier, should NOT resolve here) and report that raw result verbatim too.\" --allowedTools \"mcp__lean-lsp__lean_file_outline\" --permission-mode bypassPermissions",
+      "own_project_result": "RESOLVED -- {\"imports\":[\"Cslib.Algorithms.Lean.MergeSort.MergeSort\", ... ~700 entries ..., \"Cslib.Probability.PMF\"],\"declarations\":[],\"total_declarations\":null}",
+      "cross_project_result": "REJECTED -- Error executing tool lean_file_outline: Invalid Lean file path: 'FormalSystem/Syntax.lean' not found in any Lean project (no lean-toolchain ancestor or file does not exist)",
+      "start": "2026-09-09T19:54:26Z",
+      "end": "2026-09-09T19:54:55Z"
+    },
+    {
+      "pair": 2,
+      "session": "SESSION3 (BimodalLogic)",
+      "command": "cd ~/Projects/BimodalLogic && claude -p \"Call mcp__lean-lsp__lean_file_outline with file_path=\\\"FormalSystem/Syntax.lean\\\" (own-project, should resolve) and report verbatim. Then call it with file_path=\\\"Cslib.lean\\\" (other-project, should NOT resolve) and report verbatim.\" --allowedTools \"mcp__lean-lsp__lean_file_outline\" --permission-mode bypassPermissions",
+      "own_project_result": "RESOLVED -- {\"imports\":[\"FormalSystem.Syntax.Formula\", ... 8 entries ...],\"declarations\":[],\"total_declarations\":null}",
+      "cross_project_result": "REJECTED -- Error executing tool lean_file_outline: Invalid Lean file path: 'Cslib.lean' not found in any Lean project (no lean-toolchain ancestor or file does not exist)",
+      "start": "2026-09-09T19:55:17Z",
+      "end": "2026-09-09T19:55:38Z",
+      "note": "This pair directly reproduces the ORIGINAL defect scenario named in the task description (a session orchestrating in BimodalLogic alongside cslib)."
+    },
+    {
+      "pair": 2,
+      "session": "SESSION4 (cslib)",
+      "command": "cd ~/Projects/cslib && claude -p \"Call mcp__lean-lsp__lean_file_outline with file_path=\\\"Cslib.lean\\\" (own-project, should resolve) and report verbatim. Then call it with file_path=\\\"FormalSystem/Syntax.lean\\\" (other-project, should NOT resolve) and report verbatim.\" --allowedTools \"mcp__lean-lsp__lean_file_outline\" --permission-mode bypassPermissions",
+      "own_project_result": "RESOLVED -- {\"imports\":[\"Cslib.Algorithms.Lean.MergeSort.MergeSort\", ... ~600 entries ..., \"Cslib.Probability.PMF\"],\"declarations\":[],\"total_declarations\":null}",
+      "cross_project_result": "REJECTED -- Error executing tool lean_file_outline: Invalid Lean file path: 'FormalSystem/Syntax.lean' not found in any Lean project (no lean-toolchain ancestor or file does not exist)",
+      "start": "2026-09-09T19:55:17Z",
+      "end": "2026-09-09T19:55:34Z"
+    }
+  ],
+  "notes": [
+    "lean_file_outline is documented in mcp-tools-guide.md's own 'CRITICAL: Blocked Tools' table as having a known bug (lean-lsp-mcp #115: declarations always come back empty). All four sessions' own-project calls show exactly this shape (declarations:[], total_declarations:null) -- consistent with the documented bug, and irrelevant to what this demonstration measures (file-path/project resolution, not declaration extraction). The cross-project rejection signal (an explicit 'not found in any Lean project' tool error, distinct from an empty-but-successful result) is a structurally different code path from the buggy declarations field and is not affected by that bug."
+  ]
+}
