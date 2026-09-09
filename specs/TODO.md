@@ -11,7 +11,7 @@ next_project_number: 194
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,157,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,164,173,174,175 | 29,74,139,162,172 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
@@ -28,7 +28,6 @@ next_project_number: 194
 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
   └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
   └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
-157 [IMPLEMENTING] — Fix TODO.md summary lines: prefer .title, and stop the blind...
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 172 [NOT STARTED] — Define a canonical bounded-wait idiom for detached builds
@@ -1350,11 +1349,12 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 157. Fix TODO.md summary lines: prefer .title, and stop the blind slice from splitting inline-code spans
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Plan**: [157_markdown_safe_todo_summary_truncation/plans/01_markdown-safe-summary-truncation.md]
+- **Summary**: [157_markdown_safe_todo_summary_truncation/summaries/01_markdown-safe-summary-truncation-summary.md]
 
 **Description**: The "Grouped by Topic" summary lines in TODO.md are cut with a blind character slice
 that can land inside an inline-code span, leaving an unclosed backtick that corrupts markdown

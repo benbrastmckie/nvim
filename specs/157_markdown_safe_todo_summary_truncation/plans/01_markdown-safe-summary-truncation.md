@@ -1,7 +1,7 @@
 # Implementation Plan: Markdown-safe "Grouped by Topic" truncation
 
 - **Task**: 157 - Markdown-safe TODO summary truncation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: None (task description carries a verified root cause, evidence, and acceptance bar)
