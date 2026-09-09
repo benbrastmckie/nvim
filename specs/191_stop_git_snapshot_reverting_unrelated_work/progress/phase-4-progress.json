@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Stash identity carries the task number",
+  "started_at": "2026-09-09T21:10:00Z",
+  "last_updated": "2026-09-09T21:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Change three stash message strings to include TASK_NUM", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"], "note": "TASK_NUM's derivation was moved out of Phase 3's guard-only conditional to unconditional scope (right after the clean-tree check) since --no-revert mode also needs it for its own stash message but never enters the guard block. Falls back to 'unknown' via ${TASK_NUM:-unknown} when TASK_DIR's basename has no leading digit run."},
+    {"id": 2, "description": "Confirm STASH_REF parsing still resolves; confirm no consumer parses the message", "status": "done", "files_touched": [], "note": "Verified in a live fixture: git stash list shows 'git-snapshot-900-<ts>'; STASH_REF is parsed from the ref column (stash@{N}), unaffected. Repo-wide grep for the git-snapshot- prefix outside specs/** shows only git-snapshot.sh itself and guard-destructive-git.sh (which reads only the .git-snapshot-marker filename, never the stash message)."},
+    {"id": 3, "description": "Update header mode descriptions to show new message shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

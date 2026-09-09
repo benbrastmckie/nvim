@@ -79,18 +79,25 @@
 #   nothing, so it has nothing to destroy.
 #
 #   Default mode: writes specs/{NNN}_{SLUG}/working-progress-{ts}.patch (git diff HEAD)
-#   AND runs `git stash push -u` (untracked-inclusive, without drop) as a
-#   belt-and-suspenders in-repo copy. Both the patch and the marker are written before
-#   the script exits successfully. THE WORKING TREE IS REVERTED.
+#   AND runs `git stash push -u -m git-snapshot-{task}-{ts}` (untracked-inclusive, without
+#   drop) as a belt-and-suspenders in-repo copy. Both the patch and the marker are written
+#   before the script exits successfully. THE WORKING TREE IS REVERTED.
 #
 #   --no-revert mode: writes the same working-progress-{ts}.patch, records a real stash
-#   entry via `git stash create` + `git stash store` (which build and store a stash commit
-#   object without ever touching the working tree), and copies untracked files to
-#   specs/{NNN}_{SLUG}/untracked-backup-{ts}/ because a diff cannot represent them. The
-#   working tree is left exactly as it was found. The freshness marker is still written:
-#   the resulting snapshot is genuinely recoverable, but note that because the tree stays
-#   dirty, a destructive command run afterwards discards the LIVE edits and recovery must
-#   come from the patch / stash / untracked backup.
+#   entry via `git stash create git-snapshot-{task}-{ts}` + `git stash store` (which build
+#   and store a stash commit object without ever touching the working tree), and copies
+#   untracked files to specs/{NNN}_{SLUG}/untracked-backup-{ts}/ because a diff cannot
+#   represent them. The working tree is left exactly as it was found. The freshness marker
+#   is still written: the resulting snapshot is genuinely recoverable, but note that
+#   because the tree stays dirty, a destructive command run afterwards discards the LIVE
+#   edits and recovery must come from the patch / stash / untracked backup.
+#
+#   Stash identity: every stash entry this script creates (default and --no-revert alike)
+#   is named git-snapshot-{task}-{ts}, where {task} is the owning task number (or
+#   "unknown" if TASK_DIR's basename carries no leading digit run) -- so `git stash list`
+#   lets an operator see which task produced each entry when judging which are safe to
+#   drop. `STASH_REF` is parsed from `git stash list`'s ref column (`stash@{N}`), never
+#   from this message, so the longer message does not affect that parsing.
 #
 #   TASK inference: with no TASK argument, the script reads specs/state.json and uses the
 #   single task whose status is "implementing". Inference FAILS whenever that is not
@@ -294,6 +301,14 @@ if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
   exit 0
 fi
 
+# Task number, derived once from the resolved TASK_DIR's leading digits, for BOTH the guard
+# below (default/--branch modes only) AND the stash-identity message every mode writes
+# (default, --branch, and --no-revert all embed it -- see the stash/branch section below).
+# Empty when TASK_DIR's basename has no leading digit run (e.g. a non-numbered directory
+# passed explicitly); the guard's own D4 fallback below handles that case for reverting
+# modes, and the stash-message use falls back to "unknown" (see below).
+TASK_NUM=$(basename "$TASK_DIR" | grep -oE '^[0-9]+' || true)
+
 # ─── Out-of-scope refusal guard (D1-D5) ────────────────────────────────────────────────
 # Runs BEFORE any mutation (patch/stash/branch). Classifies every dirty TRACKED path
 # against the resolved task's declared file_scope in specs/state.json, using the
@@ -303,7 +318,6 @@ fi
 # destroy) and when --allow-out-of-scope was passed (the deliberate whole-tree
 # override).
 if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]; then
-  TASK_NUM_FOR_SCOPE=$(basename "$TASK_DIR" | grep -oE '^[0-9]+' || true)
   FAIL_CLOSED_REASON=""
   FILE_SCOPE_JSON="[]"
 
@@ -311,18 +325,18 @@ if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]; then
   # script CANNOT distinguish task work from unrelated work -- precisely the state that
   # produced the incident this guard exists to close -- so a reverting mode refuses
   # rather than silently proceeding as before.
-  if [ -z "$TASK_NUM_FOR_SCOPE" ]; then
+  if [ -z "$TASK_NUM" ]; then
     FAIL_CLOSED_REASON="could not derive a task number from '$TASK_DIR' to look up its file_scope"
   elif ! command -v jq >/dev/null 2>&1; then
     FAIL_CLOSED_REASON="'jq' is not installed, so file_scope could not be read"
   elif [ ! -f specs/state.json ]; then
     FAIL_CLOSED_REASON="specs/state.json does not exist (cwd: $(pwd)); file_scope could not be read"
   else
-    FILE_SCOPE_JSON=$(jq -c --argjson n "$TASK_NUM_FOR_SCOPE" \
+    FILE_SCOPE_JSON=$(jq -c --argjson n "$TASK_NUM" \
       '[.active_projects[]? | select(.project_number == $n) | (.file_scope // [])[]]' \
       specs/state.json 2>/dev/null) || FILE_SCOPE_JSON=""
     if [ -z "$FILE_SCOPE_JSON" ] || [ "$FILE_SCOPE_JSON" = "[]" ]; then
-      FAIL_CLOSED_REASON="task $TASK_NUM_FOR_SCOPE has no declared file_scope in specs/state.json"
+      FAIL_CLOSED_REASON="task $TASK_NUM has no declared file_scope in specs/state.json"
     fi
   fi
 
@@ -353,7 +367,7 @@ if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]; then
 
   if [ "${#OUT_OF_SCOPE_PATHS[@]}" -gt 0 ]; then
     echo "git-snapshot.sh: refusing to run in ${MODE} mode -- it would revert dirty tracked" >&2
-    echo "  path(s) outside task ${TASK_NUM_FOR_SCOPE}'s declared file_scope:" >&2
+    echo "  path(s) outside task ${TASK_NUM}'s declared file_scope:" >&2
     for p in "${OUT_OF_SCOPE_PATHS[@]}"; do
       echo "    $p" >&2
     done
@@ -377,7 +391,7 @@ if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]; then
   done
   if [ "${#OUT_OF_SCOPE_UNTRACKED[@]}" -gt 0 ]; then
     echo "git-snapshot.sh: WARNING (non-blocking) -- ${MODE} mode will DELETE the following" >&2
-    echo "  untracked path(s) outside task ${TASK_NUM_FOR_SCOPE}'s declared file_scope:" >&2
+    echo "  untracked path(s) outside task ${TASK_NUM}'s declared file_scope:" >&2
     for p in "${OUT_OF_SCOPE_UNTRACKED[@]}"; do
       echo "    $p" >&2
     done
@@ -440,9 +454,9 @@ elif [ "$MODE" = "no-revert" ]; then
   # that object so it appears in `git stash list` like any other entry. Neither step
   # reverts anything. `git stash create` prints nothing when there are no tracked-file
   # changes (e.g. an untracked-only dirty tree), which is handled below.
-  STASH_SHA=$(git stash create "git-snapshot-${TS}" 2>/dev/null)
+  STASH_SHA=$(git stash create "git-snapshot-${TASK_NUM:-unknown}-${TS}" 2>/dev/null)
   if [ -n "$STASH_SHA" ]; then
-    if ! git stash store -m "git-snapshot-${TS}" "$STASH_SHA" >/dev/null 2>&1; then
+    if ! git stash store -m "git-snapshot-${TASK_NUM:-unknown}-${TS}" "$STASH_SHA" >/dev/null 2>&1; then
       echo "git-snapshot.sh: failed to store stash object $STASH_SHA (no-revert mode)" >&2
       rm -f "$PATCH_TMP"
       exit 1
@@ -472,7 +486,7 @@ else
   # Default mode: belt-and-suspenders in-repo stash copy (patch above is the primary
   # durable record; -u also captures untracked files the patch cannot represent).
   # NOTE: this REVERTS the working tree -- see the warning block above.
-  if ! git stash push -u -m "git-snapshot-${TS}" >/dev/null 2>&1; then
+  if ! git stash push -u -m "git-snapshot-${TASK_NUM:-unknown}-${TS}" >/dev/null 2>&1; then
     echo "git-snapshot.sh: failed to stash changes (diff was computed but not yet written to $PATCH_PATH)" >&2
     rm -f "$PATCH_TMP"
     exit 1

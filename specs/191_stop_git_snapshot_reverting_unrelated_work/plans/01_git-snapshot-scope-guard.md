@@ -335,24 +335,29 @@ its stdout, exit code, or arguments in a way the new refusal path breaks.
 
 ---
 
-### Phase 4: Stash identity carries the task number [NOT STARTED]
+### Phase 4: Stash identity carries the task number [COMPLETED]
 
 **Goal**: Every snapshot stash entry names its owning task, so an operator reading
 `git stash list` can judge which entries are safe to drop.
 
 **Tasks**:
-- [ ] Change the three message strings in `git-snapshot.sh` from `git-snapshot-${TS}` to
+- [x] Change the three message strings in `git-snapshot.sh` from `git-snapshot-${TS}` to
       `git-snapshot-${TASK_NUM}-${TS}`: `git stash create` (no-revert), `git stash store -m`
       (no-revert), and `git stash push -u -m` (default mode). Reuse the `TASK_NUM` already
-      derived in Phase 3 rather than re-deriving it.
-- [ ] Confirm `STASH_REF=$(git stash list | head -1 | cut -d: -f1)` still resolves correctly
-      with the longer message (it parses the ref, not the message).
-- [ ] Confirm no consumer parses the message: `guard-destructive-git.sh` reads only
+      derived in Phase 3 rather than re-deriving it. *(completed: `TASK_NUM`'s derivation was
+      relocated from inside Phase 3's guard-only `if` block to unconditional scope, since
+      `--no-revert` mode needs it too but never enters that guard; falls back to `unknown` via
+      `${TASK_NUM:-unknown}`)*
+- [x] Confirm `STASH_REF=$(git stash list | head -1 | cut -d: -f1)` still resolves correctly
+      with the longer message (it parses the ref, not the message). *(completed: verified live
+      in a fixture repo)*
+- [x] Confirm no consumer parses the message: `guard-destructive-git.sh` reads only
       `.git-snapshot-marker`; re-verify with a repo-wide grep for the literal `git-snapshot-`
-      prefix outside `specs/**`.
-- [ ] Do NOT add, invoke, or document any reaper. No `git stash drop` / `git stash clear`
-      anywhere in this task.
-- [ ] Update the script header's mode descriptions to show the new message shape.
+      prefix outside `specs/**`. *(completed)*
+- [x] Do NOT add, invoke, or document any reaper. No `git stash drop` / `git stash clear`
+      anywhere in this task. *(completed)*
+- [x] Update the script header's mode descriptions to show the new message shape.
+      *(completed)*
 
 **Timing**: 0.5 hours
 
