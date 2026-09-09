@@ -1,10 +1,67 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/205_per_project_lean_lsp_registration/summaries/01_per-project-lean-lsp-registration-summary.md",
+      "summary": "All 10 phases completed: relocated and rewrote setup/verify-lean-mcp.sh for per-project scope, added a SessionStart hook + installer for automatic zero-manual-step registration, inverted the verifier's drift semantics, extended the fixture suite, revised mcp-server-ownership.md and related docs, re-registered every active Lean project, and demonstrated concurrent-session acceptance across two project pairs."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the single-global lean-lsp MCP registration with per-project entries under ~/.claude.json's .projects[<path>].mcpServers, written automatically at session start by a new SessionStart hook, inverting every artifact (verifier, preflight wrapper, fixture suite, recorded invariants) that previously enforced the single-global model. Demonstrated acceptance with two concurrent-session pairs, including a direct reproduction of the originally reported cross-project-answer defect, now resolved."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/core/docs/architecture/extension-system.md",
+    "agent-system/extensions/core/docs/guides/permission-configuration.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/setup-lean-mcp.sh",
+    "agent-system/extensions/core/scripts/verify-lean-mcp.sh",
+    "agent-system/extensions/lean/README.md",
+    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+    "agent-system/extensions/lean/hooks/lean-lsp-register-project.sh",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh",
+    "agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh",
+    "agent-system/extensions/lean/scripts/setup-lean-mcp.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-mcp-registration.sh",
+    "agent-system/extensions/lean/scripts/verify-lean-mcp.sh",
+    ".claude-extensions.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "On this machine, a Claude Code session's MCP tool registry is snapshotted independently of SessionStart hook execution: a hook that WRITES a new per-project ~/.claude.json registration during its own session's startup is NOT reliably visible within that same session, even though the write itself succeeds and is confirmed on disk. Measured directly: three sequential fresh `claude -p` sessions in a newly-registered directory -- the first (whose own hook invocation performed the write) still resolved a tool call against the stale/global config; only a later session saw the just-written entry. Any hook that writes to ~/.claude.json's registration (mcpServers, at either the top-level user scope or a .projects[<path>] local scope) should therefore always emit a same-session-may-be-stale notice (e.g. via additionalContext) rather than assume the write takes effect immediately.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/205_per_project_lean_lsp_registration/summaries/01_per-project-lean-lsp-registration-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["SessionStart hook", "MCP registration", "session snapshot", "claude.json", "per-project scope", "hook timing"]
+    },
+    {
+      "content": "A Claude Code hook that must fire in EVERY session on a machine, including inside a freshly created git worktree with no repository .claude/ deploy at all, cannot be contributed through an extension's settings-fragment.json (that only merges into a repo's OWN .claude/settings.local.json, which a deploy-less worktree never has). It must be installed at USER level instead: copy the hook script to a stable path under $HOME/.claude/hooks/, and merge the harness hook registration directly into $HOME/.claude/settings.json. If that file is also home-manager-managed and periodically reset from a dotfiles source (check the activation block's enforced-key list), the same registration must ALSO be written into that dotfiles source, or the next rebuild silently reverts it -- verify durability by re-running the activation's own enforced-key jq merge expression against the edited source before trusting the change.",
+      "category": "PATTERN",
+      "source_artifact": "specs/205_per_project_lean_lsp_registration/summaries/01_per-project-lean-lsp-registration-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["user-level hook", "settings-fragment.json", "home-manager", "SessionStart", "worktree", "dotfiles durability"]
+    },
+    {
+      "content": "~/.claude.json's per-project local scope (.projects[\"<abs path>\"].mcpServers) takes precedence over the top-level global .mcpServers for that same project directory -- confirmed empirically (a project-scoped entry pointing at a DIFFERENT project than the global entry is the one that actually answers tool calls, from both a main session and a dispatched subagent). This makes local scope the correct registration surface for any MCP server needing per-project computed arguments where multiple such projects run concurrently on one machine -- a single global slot cannot hold more than one project's value at a time, and a stale global entry answers CONFIDENTLY WRONG rather than failing loudly, which is the most dangerous failure shape (it looks like success).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/205_per_project_lean_lsp_registration/summaries/01_per-project-lean-lsp-registration-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["MCP server", "claude.json local scope", "per-project registration", "precedence", "concurrent projects", "wrong-project answer"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788979129_59669f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 10
   }
 }

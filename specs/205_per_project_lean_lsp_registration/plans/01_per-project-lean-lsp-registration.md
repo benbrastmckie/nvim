@@ -1,7 +1,7 @@
 # Implementation Plan: Per-Project lean-lsp Registration
 
 - **Task**: 205 - Replace the single-global lean-lsp entry with per-project scoped registration written automatically at session start
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 13 hours
 - **Dependencies**: 203 (COMPLETED), 204 (COMPLETED)
 - **Research Inputs**: specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md
@@ -568,18 +568,18 @@ lean-lsp against their own project, using evidence a wrong-project answer cannot
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh` exits 0
-- [ ] The new registration/writer suite exits 0, with every new fixture neutralized by the
+- [x] `bash agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh` exits 0
+- [x] The new registration/writer suite exits 0, with every new fixture neutralized by the
       mutation check
-- [ ] `verify-lean-mcp.sh` exits 0 from each registered Lean project and non-zero from an
+- [x] `verify-lean-mcp.sh` exits 0 from each registered Lean project and non-zero from an
       unregistered one
-- [ ] `lean-mcp-preflight-check.sh` exits 0 on every branch and is byte-silent on the two silent
+- [x] `lean-mcp-preflight-check.sh` exits 0 on every branch and is byte-silent on the two silent
       branches
-- [ ] A fresh session in a `.claude/`-less worktree self-registers
-- [ ] The simulated home-manager enforced-key merge preserves the SessionStart hook entry
-- [ ] Repo lints pass: no task-number references outside `specs/**`; no new hand-authored file
+- [x] A fresh session in a `.claude/`-less worktree self-registers
+- [x] The simulated home-manager enforced-key merge preserves the SessionStart hook entry
+- [x] Repo lints pass: no task-number references outside `specs/**`; no new hand-authored file
       under `.claude/**` (source store only)
-- [ ] Deploy/reload succeeds with the relocated scripts and the new hook declared
+- [x] Deploy/reload succeeds with the relocated scripts and the new hook declared
 
 ## Artifacts & Outputs
 
