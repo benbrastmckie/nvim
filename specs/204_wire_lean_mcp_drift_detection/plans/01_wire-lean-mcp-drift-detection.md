@@ -173,43 +173,43 @@ silent on green, silent outside a Lean project, actionable on drift, never fatal
 
 ---
 
-### Phase 2: Fixture-based regression suite proving detection [NOT STARTED]
+### Phase 2: Fixture-based regression suite proving detection [COMPLETED]
 
 **Goal**: Demonstrate — not assert — that the observed drift shape is detected, that a correct
 registration is silent, and that a non-Lean repository is silent.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh`, `chmod +x`.
-- [ ] Follow the core shell-test convention (`shell-script-testing.md`; model on the sibling
+- [x] Create `agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh`, `chmod +x`.
+- [x] Follow the core shell-test convention (`shell-script-testing.md`; model on the sibling
       `tests/test-lean-sorry-census.sh`): `set -uo pipefail` (Class B — counter idiom),
       `pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED` counters, `mktemp -d` workdir with a
       `trap EXIT` cleanup, `exit 0` on all-pass / `exit 1` on any-fail.
-- [ ] Isolate every fixture by pointing `HOME` at a per-fixture temp dir holding a synthetic
+- [x] Isolate every fixture by pointing `HOME` at a per-fixture temp dir holding a synthetic
       `.claude.json` — `verify-lean-mcp.sh` reads `"$HOME/.claude.json"` with no other override, so
       this needs no change to the verifier. Never read or assert against the real `~/.claude.json`.
-- [ ] Fixture A — **the observed shape**: a fixture Lean project dir (containing `lakefile.lean`,
+- [x] Fixture A — **the observed shape**: a fixture Lean project dir (containing `lakefile.lean`,
       `git init`ed) plus a `.claude.json` whose `.mcpServers."lean-lsp".command` is an absolute path
       inside a `.claude/` tree that does not exist on disk (e.g.
       `<fixture>/repo/.claude/scripts/lean-lsp-mcp-wrapper.sh`). Assert: wrapper exit 0, output
       non-empty, output contains `setup-lean-mcp.sh`.
-- [ ] Fixture B — **correct registration**: `command: "uvx"`, `args: ["lean-lsp-mcp"]`,
+- [x] Fixture B — **correct registration**: `command: "uvx"`, `args: ["lean-lsp-mcp"]`,
       `env.LEAN_PROJECT_PATH` equal to the fixture project dir, no `.projects[...]` shadow entry.
       Assert: exit 0 and **empty** output.
-- [ ] Fixture C — **not a Lean project**: a git repo with no lakefile at CWD or git root (config
+- [x] Fixture C — **not a Lean project**: a git repo with no lakefile at CWD or git root (config
       contents irrelevant). Assert: exit 0 and empty output.
-- [ ] Fixture D — **project-path mismatch (exit 2 path)**: otherwise-correct entry whose
+- [x] Fixture D — **project-path mismatch (exit 2 path)**: otherwise-correct entry whose
       `LEAN_PROJECT_PATH` points at a different existing Lean fixture dir. Assert: exit 0, output
       non-empty, contains `setup-lean-mcp.sh`, and **differs from fixture A's output** — the
       anti-vacuous guard proving the wrapper actually reads the verifier's exit code rather than
       printing one blanket message for all failures.
-- [ ] Fixture E — **fallback path**: stub a `verify-lean-mcp.sh` on the resolved path that exits 1
+- [x] Fixture E — **fallback path**: stub a `verify-lean-mcp.sh` on the resolved path that exits 1
       with output containing none of `[FAIL]`/`[WARN]`/`Run setup-lean-mcp`. Assert: exit 0, output
       non-empty and still contains `setup-lean-mcp.sh` (the generic fallback line fired).
-- [ ] Run the suite; all fixtures pass.
-- [ ] Falsifiability check: temporarily neutralize the wrapper's failure branch (make it print
+- [x] Run the suite; all fixtures pass.
+- [x] Falsifiability check: temporarily neutralize the wrapper's failure branch (make it print
       nothing on non-zero rc), confirm fixtures A, D, and E **FAIL** while B and C still pass, then
       restore. Record this in the suite header as the mutation check.
-- [ ] `shellcheck` the suite — clean.
+- [x] `shellcheck` the suite — clean.
 
 **Timing**: 1 hour
 
@@ -233,23 +233,23 @@ fixture; add fixtures if any clause is uncovered, and record the final count in 
 
 ---
 
-### Phase 3: Measure and record the added wall-clock cost [NOT STARTED]
+### Phase 3: Measure and record the added wall-clock cost [COMPLETED]
 
 **Goal**: Turn WORK item (c) from an intention into a recorded number, for all three paths the check
 can take.
 
 **Tasks**:
-- [ ] Time the wrapper (5 runs each, report the mean) in three scenarios: (i) non-Lean directory
+- [x] Time the wrapper (5 runs each, report the mean) in three scenarios: (i) non-Lean directory
       (early-exit path — expect a few ms: one or two `test`s plus one `git rev-parse`); (ii) a Lean
       project with a correct registration (full verifier run, output discarded); (iii) a Lean project
       with a drifted registration (full verifier run plus message synthesis).
-- [ ] Compare against the recorded baselines: `verify-lean-mcp.sh --quiet` ~30ms, a bare single `jq`
+- [x] Compare against the recorded baselines: `verify-lean-mcp.sh --quiet` ~30ms, a bare single `jq`
       read ~7ms. Confirm the wrapper adds no measurable overhead of its own beyond one `git rev-parse`.
-- [ ] Confirm by inspection that the executed path performs no repository walk, no network call, and
+- [x] Confirm by inspection that the executed path performs no repository walk, no network call, and
       no MCP server spawn.
-- [ ] Record the three figures in the wrapper's header comment (one line) and in the implementation
+- [x] Record the three figures in the wrapper's header comment (one line) and in the implementation
       summary. No task numbers in the script header.
-- [ ] If scenario (ii) exceeds ~100ms on this machine, stop and record it as a finding rather than
+- [x] If scenario (ii) exceeds ~100ms on this machine, stop and record it as a finding rather than
       wiring the call sites — a check that expensive on a hot path is one that gets disabled.
 
 **Timing**: 0.25 hours
