@@ -1,7 +1,7 @@
 # Implementation Plan: Task #191
 
 - **Task**: 191 - Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/191_stop_git_snapshot_reverting_unrelated_work/reports/01_git-snapshot-scope-guard.md

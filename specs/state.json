@@ -1376,12 +1376,12 @@
     {
       "project_number": 191,
       "project_name": "stop_git_snapshot_reverting_unrelated_work",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work",
       "created": "2026-09-08T23:41:02Z",
-      "last_updated": "2026-09-09T20:20:49Z",
+      "last_updated": "2026-09-09T21:20:57Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/git-snapshot.sh",
