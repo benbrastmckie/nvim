@@ -1,0 +1,15 @@
+{
+  "phase": 7,
+  "phase_name": "classifier fixture coverage",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add archive sandbox and 4 new archive-lookup cases (both engines) to test-orchestrate-triage-classify.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"]},
+    {"id": 2, "description": "Mutation evidence: revert classifier, confirm 4 failures, restore", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

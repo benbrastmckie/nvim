@@ -447,6 +447,91 @@ else
 fi
 
 # =====================================================================
+# Archive fixture coverage (Phase 7): the classifier reads its sibling specs/archive/state.json
+# (task-lookup-lib.sh, Phase 5), agreeing with orchestrate-cycle-plan.sh's own lookup_project
+# rather than calling an archived task nonexistent. This suite had no archive surface at all
+# before this section -- $WORKDIR/specs/archive/state.json alongside $WORKDIR/specs/state.json.
+# =====================================================================
+
+check_status_group() {
+  # check_status_group <engine> <task_number> <expected_status> <expected_group> <label>
+  local engine="$1" task="$2" expected_status="$3" expected_group="$4" label="$5"
+  local out got_status got_group
+  out="$(bash "$TOOL" "$engine" "$task" 2>&1)"
+  got_status="$(echo "$out" | jq -r '.status' 2>/dev/null)"
+  got_group="$(echo "$out" | jq -r '.group' 2>/dev/null)"
+  if [ "$got_status" = "$expected_status" ] && [ "$got_group" = "$expected_group" ]; then
+    pass "$label (engine=$engine): status=$got_status group=$got_group"
+  else
+    fail "$label (engine=$engine): expected status=$expected_status group=$expected_group, got status=$got_status group=$got_group (raw: $out)"
+  fi
+}
+
+mkdir -p "$WORKDIR/specs/archive"
+
+# Case 1: candidate present ONLY in archive/state.json's completed_projects -- must classify as
+# terminal/completed, NOT the null-entry group:"skip" / "not found in state.json" branch.
+cat > "$WORKDIR/specs/archive/state.json" <<'EOF'
+{
+  "completed_projects": [
+    {"project_number": 901, "project_name": "archive_case1_completed", "status": "completed"}
+  ],
+  "archived_projects": [
+    {"project_number": 902, "project_name": "archive_case2_orphan", "status": "orphan_archived"}
+  ]
+}
+EOF
+cat > "$WORKDIR/specs/state.json" <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 904, "project_name": "archive_case4_active_wins", "status": "researching", "dependencies": []}
+  ]
+}
+EOF
+
+check_status_group "single" 901 "completed" "terminal" \
+  "archive-only candidate (completed_projects) classifies as terminal/completed, not skip"
+check_status_group "mt" 901 "completed" "terminal" \
+  "archive-only candidate (completed_projects) cross-engine agreement"
+
+# Case 2: candidate present in archived_projects with an archive-only status (orphan_archived) --
+# normalizes to completed (task-lookup-lib.sh's own normalization rule) and classifies terminal.
+check_status_group "single" 902 "completed" "terminal" \
+  "archived_projects candidate with orphan_archived status normalizes to completed, classifies terminal"
+check_status_group "mt" 902 "completed" "terminal" \
+  "archived_projects candidate with orphan_archived status cross-engine agreement"
+
+# Case 3: candidate present in NEITHER store -- the null-entry skip branch is preserved verbatim
+# (this is a regression guard, not new behavior).
+case3_single="$(bash "$TOOL" single 903 2>&1)"
+case3_group="$(echo "$case3_single" | jq -r '.group' 2>/dev/null)"
+case3_reason="$(echo "$case3_single" | jq -r '.reason' 2>/dev/null)"
+if [ "$case3_group" = "skip" ] && [[ "$case3_reason" == *"not found in state.json"* ]]; then
+  pass "candidate in neither active_projects nor the archive still classifies as skip, not found in state.json (null-entry branch preserved)"
+else
+  fail "expected group=skip with a 'not found in state.json' reason for a candidate in neither store, got group=$case3_group reason='$case3_reason' (raw: $case3_single)"
+fi
+
+# Case 4: candidate present in BOTH stores -- governed by its ACTIVE entry (active wins). The
+# archive also carries project_number 904 as completed; the live active_projects entry (status
+# researching) must win.
+cat > "$WORKDIR/specs/archive/state.json" <<'EOF'
+{
+  "completed_projects": [
+    {"project_number": 901, "project_name": "archive_case1_completed", "status": "completed"},
+    {"project_number": 904, "project_name": "archive_case4_active_wins", "status": "completed"}
+  ],
+  "archived_projects": [
+    {"project_number": 902, "project_name": "archive_case2_orphan", "status": "orphan_archived"}
+  ]
+}
+EOF
+check_status_group "single" 904 "researching" "research" \
+  "candidate present in both stores is governed by its active entry (active wins), not the archive"
+check_status_group "mt" 904 "researching" "research" \
+  "candidate present in both stores cross-engine agreement (active wins)"
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

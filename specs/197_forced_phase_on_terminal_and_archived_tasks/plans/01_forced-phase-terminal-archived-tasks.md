@@ -597,25 +597,25 @@ green, not merely assumed).
 
 ---
 
-### Phase 7: classifier fixture coverage [NOT STARTED]
+### Phase 7: classifier fixture coverage [COMPLETED]
 
 **Goal**: The archived-task lookup is pinned for both engines.
 
 **Tasks**:
-- [ ] Add archive fixture support to
+- [x] Add archive fixture support to
       `agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` — the
       suite has no archive surface today, so the sandbox needs a
-      `$WORKDIR/specs/archive/state.json` alongside its existing `$WORKDIR/specs/state.json`.
-- [ ] Case: a candidate present ONLY in `archive/state.json`'s `completed_projects` classifies
+      `$WORKDIR/specs/archive/state.json` alongside its existing `$WORKDIR/specs/state.json`. *(completed)*
+- [x] Case: a candidate present ONLY in `archive/state.json`'s `completed_projects` classifies
       as `group:"terminal"` with `status:"completed"`, NOT `group:"skip"` / "not found in
-      state.json". Assert for both `--engine single` and `--engine mt`.
-- [ ] Case: a candidate present in `archived_projects` with an archive-only status
-      (`orphan_archived`) normalizes to `completed` and classifies as `terminal`.
-- [ ] Case: a candidate present in NEITHER store still classifies as `group:"skip"` with the
-      existing "not found in state.json" reason — the null-entry branch is preserved.
-- [ ] Case: a candidate present in BOTH stores is governed by its ACTIVE entry (active wins).
-- [ ] Mutation check: confirm the archived cases FAIL against the pre-fix classifier.
-- [ ] `shellcheck` clean.
+      state.json". Assert for both `--engine single` and `--engine mt`. *(completed)*
+- [x] Case: a candidate present in `archived_projects` with an archive-only status
+      (`orphan_archived`) normalizes to `completed` and classifies as `terminal`. *(completed)*
+- [x] Case: a candidate present in NEITHER store still classifies as `group:"skip"` with the
+      existing "not found in state.json" reason — the null-entry branch is preserved. *(completed)*
+- [x] Case: a candidate present in BOTH stores is governed by its ACTIVE entry (active wins). *(completed)*
+- [x] Mutation check: confirm the archived cases FAIL against the pre-fix classifier. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -629,7 +629,13 @@ green, not merely assumed).
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` exits 0.
-- Archived cases FAIL against the pre-fix classifier (mutation evidence).
+  Confirmed: 55 passed, 0 failed (48 pre-existing + 7 new).
+- Archived cases FAIL against the pre-fix classifier (mutation evidence). Confirmed: reverted
+  `orchestrate-triage-classify.sh` to its pre-task content, re-ran: the 4 archived-candidate
+  assertions (Cases 1 and 2, both engines) FAILED as expected (got `status:null group:"skip"`),
+  while Case 3 (neither store) and Case 4 (active wins) correctly PASSED both before and after
+  (51 passed pre-fix + 4 mutation-confirmed failures = 55 total). Restored afterward and
+  re-confirmed 55/0.
 
 ---
 
