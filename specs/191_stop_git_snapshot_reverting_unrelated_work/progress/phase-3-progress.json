@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Out-of-scope refusal guard in git-snapshot.sh",
+  "started_at": "2026-09-09T20:50:00Z",
+  "last_updated": "2026-09-09T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source lib/file-scope-overlap.sh via SCRIPT_DIR-relative path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"], "note": "Had to use the same if-!-source guard idiom as task-lock.sh's ensure_file_scope_overlap_lib(), not a bare `source`, because FILE_SCOPE_OVERLAP_JQ_DEFS's `read -r -d ''` always returns exit 1 at EOF and a bare source under `set -e` aborted before any function was even defined -- discovered via the RED fixture run and fixed to match the established pattern."},
+    {"id": 2, "description": "Add --allow-out-of-scope independent boolean flag + usage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 3, "description": "Derive task number, read file_scope, enumerate/classify dirty tracked paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 4, "description": "Refusal branch: skip for no-revert/override, name paths, mutate nothing, non-zero exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 5, "description": "D4 fail-closed fallback for missing/empty file_scope, missing jq, missing state.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 6, "description": "D3 untracked WARN-only enumeration", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"]},
+    {"id": 7, "description": "Update header/usage docs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-snapshot.sh"], "note": "Verification: test-git-snapshot.sh 4/4 PASS; manual fixture checks confirmed --allow-out-of-scope override works, --branch mode guarded identically to default, D4 no-file_scope fallback refuses; test-guard-destructive-git.sh still 43/43 PASS (marker contract untouched); shellcheck's only finding (SC1091 info on the sourced lib) is byte-identical to the pre-existing pattern already present in task-lock.sh, not a new finding; git diff confirms zero edits inside the --no-revert execution block itself."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "bare top-level `source \"$SCRIPT_DIR/lib/file-scope-overlap.sh\"`", "result": "failed", "reason": "FILE_SCOPE_OVERLAP_JQ_DEFS is assigned via `read -r -d ''`, which always returns exit 1 at EOF even on full success; under this script's `set -e`, a bare source aborts immediately at that line. Fixed by switching to the `if ! . file; then ...; fi` guard idiom task-lock.sh already uses for the identical reason."}
+  ],
+  "handoff_count": 0
+}

@@ -32,15 +32,20 @@
 #             tracked under the task directory for manual recovery if needed.
 #
 # --- Usage ---
-#   git-snapshot.sh [--branch | --no-revert] [TASK]
+#   git-snapshot.sh [--branch | --no-revert] [--allow-out-of-scope] [TASK]
 #     TASK          Task number (an integer), a specs/{NNN}_{SLUG} directory path, or
 #                   omitted to infer the task from specs/state.json (see TASK inference).
 #     --branch      Instead of the default stash-based snapshot, create a WIP commit
 #                   on a scratch branch (wip-snapshot-{ts}) capturing the dirty tree,
 #                   then return to the original branch.
 #     --no-revert   Take the snapshot WITHOUT mutating the working tree (see modes).
+#     --allow-out-of-scope
+#                   Override the out-of-scope refusal guard below. Independent of the
+#                   three modes; combinable with either.
 #     --help, -h    Print the usage summary and exit 0.
-#   The three modes are mutually exclusive; passing more than one is an error.
+#   --branch and --no-revert are mutually exclusive with each other; passing both is an
+#   error. --allow-out-of-scope is a separate boolean and does not count toward that
+#   mutual-exclusion check.
 #
 # --- WARNING: default and --branch modes REVERT the working tree ---
 #   Despite the name, this script is NOT read-only in its default or --branch modes.
@@ -55,6 +60,23 @@
 #   Use --no-revert when you want a durable backup and intend to KEEP WORKING. Use the
 #   default (or --branch) when the snapshot is a precursor to an already-decided
 #   destructive git command, where a clean tree is the intended handoff.
+#
+# --- Out-of-scope refusal guard (default and --branch modes only) ---
+#   Before reverting anything, these two modes classify every dirty TRACKED path
+#   against the resolved task's declared file_scope in specs/state.json (via the
+#   canonical path_covered_by_scope() predicate in lib/file-scope-overlap.sh -- see
+#   context/patterns/file-footprint-overlap.md's "Containment vs. Overlap" section).
+#   If any dirty tracked path falls outside that scope, the script REFUSES -- naming
+#   every offending path -- rather than sweeping unrelated work away, and mutates
+#   NOTHING (no patch, no stash, no marker, no branch). This is fail-closed: it also
+#   refuses when the task has no declared (or empty) file_scope, when
+#   specs/state.json is missing, or when `jq` is unavailable -- in each case the
+#   script cannot tell task work apart from unrelated work, which is the exact
+#   condition that caused this guard to be written. Pass --allow-out-of-scope for the
+#   deliberate whole-tree case (the guard's refusal message names this flag). Dirty
+#   UNTRACKED paths outside scope are WARNED about on stderr, never refusal-triggering
+#   (see D3 in the implementation for why). --no-revert is NEVER guarded: it reverts
+#   nothing, so it has nothing to destroy.
 #
 #   Default mode: writes specs/{NNN}_{SLUG}/working-progress-{ts}.patch (git diff HEAD)
 #   AND runs `git stash push -u` (untracked-inclusive, without drop) as a
@@ -85,20 +107,41 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# This single relative path resolves to agent-system/extensions/core/scripts/lib/ in
+# source-store mode and to .claude/scripts/lib/ in deployed mode, with no branching.
+# Sourced via `if ! . file; then` (never a bare top-level `source`) because
+# FILE_SCOPE_OVERLAP_JQ_DEFS is assigned with `read -r -d ''`, which always returns
+# exit status 1 at EOF even on a fully successful read -- a bare `source` under this
+# script's `set -e` would abort right there, before any function in the file is even
+# defined. task-lock.sh's ensure_file_scope_overlap_lib() hits this identical gotcha
+# and uses the same `if !` guard for the same reason.
+# shellcheck source=lib/file-scope-overlap.sh
+if ! . "$SCRIPT_DIR/lib/file-scope-overlap.sh" 2>/dev/null; then
+  echo "git-snapshot.sh: could not source $SCRIPT_DIR/lib/file-scope-overlap.sh." >&2
+  echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
+  echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh." >&2
+  exit 1
+fi
+
 MODE="default"
 TASK_ARG=""
 MODE_FLAG_COUNT=0
+ALLOW_OUT_OF_SCOPE=0
 
 print_usage() {
   cat << 'USAGE'
-Usage: git-snapshot.sh [--branch | --no-revert] [TASK]
+Usage: git-snapshot.sh [--branch | --no-revert] [--allow-out-of-scope] [TASK]
 
-  TASK          Task number (an integer), a specs/{NNN}_{SLUG} directory path, or
-                omitted to infer the single "implementing" task from specs/state.json.
-  --branch      Snapshot by committing the dirty tree to a scratch branch
-                (wip-snapshot-{ts}), then returning to the original branch.
-  --no-revert   Snapshot WITHOUT mutating the working tree.
-  --help, -h    Print this usage and exit 0.
+  TASK                 Task number (an integer), a specs/{NNN}_{SLUG} directory path, or
+                        omitted to infer the single "implementing" task from
+                        specs/state.json.
+  --branch             Snapshot by committing the dirty tree to a scratch branch
+                        (wip-snapshot-{ts}), then returning to the original branch.
+  --no-revert          Snapshot WITHOUT mutating the working tree.
+  --allow-out-of-scope Override the out-of-scope refusal guard below (default and
+                        --branch modes only; --no-revert is never guarded).
+  --help, -h           Print this usage and exit 0.
 
 WARNING: the default and --branch modes BOTH revert the working tree.
   Default mode runs `git stash push -u`; --branch mode commits to a scratch branch and
@@ -108,7 +151,20 @@ WARNING: the default and --branch modes BOTH revert the working tree.
   recovery handle -- it does NOT avoid the revert.
   Use --no-revert to take a durable backup and keep working.
 
-The three modes are mutually exclusive.
+OUT-OF-SCOPE REFUSAL GUARD: before reverting anything, default and --branch modes
+  classify every dirty TRACKED path against the resolved task's declared file_scope in
+  specs/state.json. If any dirty tracked path falls outside that scope, the script
+  REFUSES (naming every offending path) rather than sweeping unrelated work away --
+  and mutates nothing (no patch, no stash, no marker, no branch). This also fires,
+  fail-closed, when the task has no declared file_scope, when specs/state.json is
+  missing, or when 'jq' is unavailable, since the script then cannot tell task work
+  apart from unrelated work. Pass --allow-out-of-scope for the deliberate whole-tree
+  case. Dirty UNTRACKED out-of-scope paths are WARNED about (not refused) in reverting
+  modes, since default mode's `-u` will delete them too but refusing on every untracked
+  scratch/build artifact would make the guard fire on nearly every real tree.
+
+--branch and --no-revert are mutually exclusive with each other; --allow-out-of-scope is
+an independent flag and may be combined with either (or neither).
 USAGE
 }
 
@@ -121,6 +177,9 @@ for arg in "$@"; do
     --no-revert)
       MODE="no-revert"
       MODE_FLAG_COUNT=$((MODE_FLAG_COUNT + 1))
+      ;;
+    --allow-out-of-scope)
+      ALLOW_OUT_OF_SCOPE=1
       ;;
     --help|-h)
       print_usage
@@ -233,6 +292,96 @@ fi
 if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
   echo "git-snapshot.sh: nothing to snapshot (working tree is clean)"
   exit 0
+fi
+
+# ─── Out-of-scope refusal guard (D1-D5) ────────────────────────────────────────────────
+# Runs BEFORE any mutation (patch/stash/branch). Classifies every dirty TRACKED path
+# against the resolved task's declared file_scope in specs/state.json, using the
+# canonical path_covered_by_scope() predicate (see
+# context/patterns/file-footprint-overlap.md's "Containment vs. Overlap" section).
+# Skipped entirely for --no-revert (D2: it reverts nothing, so it has nothing to
+# destroy) and when --allow-out-of-scope was passed (the deliberate whole-tree
+# override).
+if [ "$MODE" != "no-revert" ] && [ "$ALLOW_OUT_OF_SCOPE" -ne 1 ]; then
+  TASK_NUM_FOR_SCOPE=$(basename "$TASK_DIR" | grep -oE '^[0-9]+' || true)
+  FAIL_CLOSED_REASON=""
+  FILE_SCOPE_JSON="[]"
+
+  # D4: fail-closed no-file_scope fallback. Any of these three conditions means the
+  # script CANNOT distinguish task work from unrelated work -- precisely the state that
+  # produced the incident this guard exists to close -- so a reverting mode refuses
+  # rather than silently proceeding as before.
+  if [ -z "$TASK_NUM_FOR_SCOPE" ]; then
+    FAIL_CLOSED_REASON="could not derive a task number from '$TASK_DIR' to look up its file_scope"
+  elif ! command -v jq >/dev/null 2>&1; then
+    FAIL_CLOSED_REASON="'jq' is not installed, so file_scope could not be read"
+  elif [ ! -f specs/state.json ]; then
+    FAIL_CLOSED_REASON="specs/state.json does not exist (cwd: $(pwd)); file_scope could not be read"
+  else
+    FILE_SCOPE_JSON=$(jq -c --argjson n "$TASK_NUM_FOR_SCOPE" \
+      '[.active_projects[]? | select(.project_number == $n) | (.file_scope // [])[]]' \
+      specs/state.json 2>/dev/null) || FILE_SCOPE_JSON=""
+    if [ -z "$FILE_SCOPE_JSON" ] || [ "$FILE_SCOPE_JSON" = "[]" ]; then
+      FAIL_CLOSED_REASON="task $TASK_NUM_FOR_SCOPE has no declared file_scope in specs/state.json"
+    fi
+  fi
+
+  if [ -n "$FAIL_CLOSED_REASON" ]; then
+    echo "git-snapshot.sh: refusing to run in ${MODE} mode (which reverts the working tree)." >&2
+    echo "  reason: $FAIL_CLOSED_REASON" >&2
+    echo "  Nothing has been mutated -- no patch, no stash, no marker, no branch." >&2
+    echo "  fix:    pass --allow-out-of-scope to proceed anyway (reverts the WHOLE dirty" >&2
+    echo "          tree), or --no-revert for a durable, non-reverting snapshot instead." >&2
+    exit 1
+  fi
+
+  mapfile -t SCOPE_ENTRIES < <(printf '%s' "$FILE_SCOPE_JSON" | jq -r '.[]')
+
+  # Dirty TRACKED paths. `git diff --name-only HEAD` (no --cached) already reports every
+  # path that differs from HEAD in the working tree, which covers staged AND unstaged
+  # changes alike (staging copies to the index; the working-tree file the diff reads
+  # remains modified either way), so a second --cached pass is not needed.
+  mapfile -t DIRTY_TRACKED < <(git diff --name-only HEAD 2>/dev/null)
+
+  OUT_OF_SCOPE_PATHS=()
+  for p in "${DIRTY_TRACKED[@]}"; do
+    [ -z "$p" ] && continue
+    if ! path_covered_by_scope "$p" "${SCOPE_ENTRIES[@]}"; then
+      OUT_OF_SCOPE_PATHS+=("$p")
+    fi
+  done
+
+  if [ "${#OUT_OF_SCOPE_PATHS[@]}" -gt 0 ]; then
+    echo "git-snapshot.sh: refusing to run in ${MODE} mode -- it would revert dirty tracked" >&2
+    echo "  path(s) outside task ${TASK_NUM_FOR_SCOPE}'s declared file_scope:" >&2
+    for p in "${OUT_OF_SCOPE_PATHS[@]}"; do
+      echo "    $p" >&2
+    done
+    echo "  Nothing has been mutated -- no patch, no stash, no marker, no branch." >&2
+    echo "  fix:    pass --allow-out-of-scope to proceed anyway (reverts the WHOLE dirty" >&2
+    echo "          tree), or --no-revert for a durable, non-reverting snapshot instead." >&2
+    exit 1
+  fi
+
+  # D3: out-of-scope UNTRACKED paths are WARN-only, never refusal-triggering. Default
+  # mode's `-u` will delete them too, but refusing on every untracked scratch/build
+  # artifact would make the guard fire on nearly every real tree. Enumerated only after
+  # the tracked-path refusal above has already been cleared.
+  mapfile -t DIRTY_UNTRACKED < <(git ls-files --others --exclude-standard 2>/dev/null)
+  OUT_OF_SCOPE_UNTRACKED=()
+  for p in "${DIRTY_UNTRACKED[@]}"; do
+    [ -z "$p" ] && continue
+    if ! path_covered_by_scope "$p" "${SCOPE_ENTRIES[@]}"; then
+      OUT_OF_SCOPE_UNTRACKED+=("$p")
+    fi
+  done
+  if [ "${#OUT_OF_SCOPE_UNTRACKED[@]}" -gt 0 ]; then
+    echo "git-snapshot.sh: WARNING (non-blocking) -- ${MODE} mode will DELETE the following" >&2
+    echo "  untracked path(s) outside task ${TASK_NUM_FOR_SCOPE}'s declared file_scope:" >&2
+    for p in "${OUT_OF_SCOPE_UNTRACKED[@]}"; do
+      echo "    $p" >&2
+    done
+  fi
 fi
 
 TS=$(date +%s)

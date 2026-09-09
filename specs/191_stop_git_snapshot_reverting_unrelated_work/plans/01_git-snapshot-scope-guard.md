@@ -271,38 +271,42 @@ lines within the new function, and by running both consumers' suites (below) bef
 
 ---
 
-### Phase 3: Out-of-scope refusal guard in git-snapshot.sh [NOT STARTED]
+### Phase 3: Out-of-scope refusal guard in git-snapshot.sh [COMPLETED]
 
 **Goal**: Default and `--branch` modes classify the dirty tracked tree against the resolved
 task's `file_scope` and REFUSE — writing no patch, no stash, no marker — when any tracked path
 falls outside it, naming every offending path and the override flag.
 
 **Tasks**:
-- [ ] Source `lib/file-scope-overlap.sh` from `git-snapshot.sh` using a `SCRIPT_DIR`-relative
+- [x] Source `lib/file-scope-overlap.sh` from `git-snapshot.sh` using a `SCRIPT_DIR`-relative
       path (`$SCRIPT_DIR/lib/file-scope-overlap.sh`), matching the sibling test's
-      resolves-in-both-layouts pattern.
-- [ ] Add `--allow-out-of-scope` to the argument loop as an INDEPENDENT boolean (per D5): it
+      resolves-in-both-layouts pattern. *(completed: sourced via the same `if ! . file; then`
+      guard idiom task-lock.sh's ensure_file_scope_overlap_lib() uses -- see deviation note
+      below)*
+- [x] Add `--allow-out-of-scope` to the argument loop as an INDEPENDENT boolean (per D5): it
       must not increment `MODE_FLAG_COUNT` and must not participate in the three-mode
-      mutual-exclusion check. Extend `print_usage()` accordingly.
-- [ ] After `resolve_task_dir()` succeeds and after the existing clean-tree early exit, and
+      mutual-exclusion check. Extend `print_usage()` accordingly. *(completed)*
+- [x] After `resolve_task_dir()` succeeds and after the existing clean-tree early exit, and
       BEFORE the `PATCH_TMP` / stash / branch work: derive the task number from
       `basename "$TASK_DIR"`'s leading digits and read that task's `file_scope` from
-      `specs/state.json` via `jq`.
-- [ ] Enumerate dirty TRACKED paths (`git diff --name-only HEAD`, plus staged entries) and
-      classify each with `path_covered_by_scope()`.
-- [ ] Refusal branch (skipped entirely when `MODE=no-revert`, or when `--allow-out-of-scope`
+      `specs/state.json` via `jq`. *(completed)*
+- [x] Enumerate dirty TRACKED paths (`git diff --name-only HEAD`, plus staged entries) and
+      classify each with `path_covered_by_scope()`. *(completed: `git diff --name-only HEAD`
+      alone already reports staged AND unstaged changes -- verified empirically -- so no
+      second `--cached` pass was needed)*
+- [x] Refusal branch (skipped entirely when `MODE=no-revert`, or when `--allow-out-of-scope`
       was passed): print every out-of-scope path on stderr, one per line, plus the reason and
       the exact override command line; exit non-zero having mutated NOTHING (no patch file,
-      no stash, no marker, no branch).
-- [ ] Implement D4's fail-closed fallback: absent/empty `file_scope`, missing `jq`, or missing
+      no stash, no marker, no branch). *(completed)*
+- [x] Implement D4's fail-closed fallback: absent/empty `file_scope`, missing `jq`, or missing
       `specs/state.json` all refuse in reverting modes with a distinct, self-explaining message
-      naming which of the three conditions fired.
-- [ ] Implement D3: enumerate out-of-scope UNTRACKED paths (`git ls-files --others
+      naming which of the three conditions fired. *(completed)*
+- [x] Implement D3: enumerate out-of-scope UNTRACKED paths (`git ls-files --others
       --exclude-standard`) as a stderr WARNING in reverting modes, explicitly labeled as
-      non-blocking, noting `-u` will delete them.
-- [ ] Update the script's header comment block and `print_usage()` to document the guard, the
+      non-blocking, noting `-u` will delete them. *(completed)*
+- [x] Update the script's header comment block and `print_usage()` to document the guard, the
       override, the tracked-only refusal boundary, and the fail-closed no-scope behavior. Do
-      not weaken or reword the existing `--no-revert` documentation.
+      not weaken or reword the existing `--no-revert` documentation. *(completed)*
 
 **Timing**: 2 hours
 
