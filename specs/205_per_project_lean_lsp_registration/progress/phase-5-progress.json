@@ -1,0 +1,50 @@
+{
+  "phase": 5,
+  "phase_name": "Invert the verifier",
+  "started_at": "2026-09-09T20:50:00Z",
+  "last_updated": "2026-09-09T21:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redirect Checks 3-8 at .projects[$path].mcpServers.\"lean-lsp\"",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/verify-lean-mcp.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Rewrite Check 2 to fail on ABSENCE of the project-scoped entry, remedy names setup-lean-mcp.sh (project scope)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/verify-lean-mcp.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Replace Check 9 with the inverse: surviving top-level global entry is drift, remedy names --retire-global",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/verify-lean-mcp.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Preserve exit-code contract (0/1/2)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/verify-lean-mcp.sh"],
+      "note": "Verified all 5 fixtures return the documented codes: 0 (correct+no-global), 1 (absent entry), 2 (path mismatch), 1 (correct+surviving-global, non-zero as specified), 1 (.claude/-boundary violation)."
+    },
+    {
+      "id": 5,
+      "description": "Update the script header comment block to the per-project model",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/scripts/verify-lean-mcp.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_log": [
+    "Fixture: correct project-scoped entry, no global entry -> exit 0, PASS message -- matches plan",
+    "Fixture: no project-scoped entry -> exit 1, remedy names setup-lean-mcp.sh -- matches plan",
+    "Fixture: project-scoped entry's LEAN_PROJECT_PATH names a different project -> exit 2 -- matches plan",
+    "Fixture: correct project-scoped entry PLUS surviving global entry -> exit 1 (non-zero), remedy names --retire-global -- matches plan",
+    "Fixture: project-scoped command resolves inside a .claude/ tree -> still fails on the boundary check (invariant untouched) -- matches plan"
+  ]
+}

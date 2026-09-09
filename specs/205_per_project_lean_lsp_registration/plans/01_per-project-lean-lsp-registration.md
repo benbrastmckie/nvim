@@ -326,23 +326,23 @@ worktree with no `.claude/` deploy, per D4 and D5.
 
 ---
 
-### Phase 5: Invert the verifier [NOT STARTED]
+### Phase 5: Invert the verifier [COMPLETED]
 
 **Goal**: Rewrite `verify-lean-mcp.sh` so the project-scoped entry is the authoritative subject
 of every check and Check 9's polarity flips: absence or staleness of the project-scoped entry is
 the drift, and a surviving global entry is drift too (D2).
 
 **Tasks**:
-- [ ] Redirect Checks 3-8 (`.claude/`-path boundary, command, args, `LEAN_PROJECT_PATH` present,
+- [x] Redirect Checks 3-8 (`.claude/`-path boundary, command, args, `LEAN_PROJECT_PATH` present,
       path match, path exists + Lake marker) at `.projects[$path].mcpServers."lean-lsp"`
-- [ ] Rewrite Check 2 to fail when the project-scoped entry is ABSENT for a detected Lean
+- [x] Rewrite Check 2 to fail when the project-scoped entry is ABSENT for a detected Lean
       project, with remedy text naming `setup-lean-mcp.sh` (project scope), not deletion
-- [ ] Replace Check 9 with the inverse check: a surviving top-level `.mcpServers."lean-lsp"` is
+- [x] Replace Check 9 with the inverse check: a surviving top-level `.mcpServers."lean-lsp"` is
       reported as drift with a `--retire-global` remedy, since it can silently answer for an
       unregistered project
-- [ ] Preserve the existing exit-code contract (0 valid, 1 missing/invalid, 2 path mismatch) so
+- [x] Preserve the existing exit-code contract (0 valid, 1 missing/invalid, 2 path mismatch) so
       `lean-mcp-preflight-check.sh`'s exit-2 branch keeps its distinct meaning
-- [ ] Update the script header comment block to the per-project model
+- [x] Update the script header comment block to the per-project model
 
 **Timing**: 1.5 hours
 
