@@ -91,16 +91,17 @@ next_project_number: 206
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
-205 [NOT STARTED] — Replace the single-global lean-lsp entry with per-project...
+205 [RESEARCHED] — Replace the single-global lean-lsp entry with per-project...
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
 
 ### 205. Per project lean lsp registration
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 203, Task 204
+- **Research**: [205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md]
 
 **Description**: Replace the single-global lean-lsp entry with per-project scoped registration written automatically at session start, so many concurrent Lean projects each index correctly
 

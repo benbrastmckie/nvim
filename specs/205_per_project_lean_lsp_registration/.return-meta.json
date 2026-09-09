@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md",
+      "summary": "Confirms .projects[<path>].mcpServers is a live, empty, unwritten-to registration surface; identifies the email extension's settings-fragment.json hooks.PreToolUse + provides.hooks pairing as the precedented mechanism for an extension-owned native SessionStart hook; maps all 7 outstanding issues to specific files and confirms task 203's research already named this exact fix as its declined 'Option B'."
+    }
+  ],
+  "next_steps": "Run /plan 205 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788979129_59669f_205",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "An extension can add a native Claude Code SessionStart (or other harness-level) hook without touching core's settings.json or manifest hooks object: declare the script under the extension's own hooks/ directory in provides.hooks, and merge a hooks.<Event> block into the extension's settings-fragment.json. merge.lua's deep_merge/merge_hook_event_array specifically recognizes hook-event arrays ({matcher, hooks} objects) and merges by matcher — appending new hook entries into an existing same-matcher block or appending a new matcher block — never duplicating. Precedent: agent-system/extensions/email/settings-fragment.json's hooks.PreToolUse + hooks/mail-guard.sh. This is distinct from the internal agent-system lifecycle-hook system (manifest.json top-level hooks object, preflight/postflight stages via skill-base.sh) — the two must not be conflated.",
+      "category": "PATTERN",
+      "source_artifact": "specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["settings-fragment", "SessionStart hook", "extension hooks", "merge_settings", "provides.hooks"]
+    },
+    {
+      "content": "~/.claude.json's .projects[<abs-path>].mcpServers is a real, first-class per-project MCP registration surface (Claude Code's 'local scope'), already present as an empty object on every registered project path on this machine. It is distinct from the top-level global mcpServers object and takes precedence over it for that project. Nothing in this repo currently writes to it, but mcp-server-ownership.md already names it as the mechanism a per-project-computed-argument server (like lean-lsp) would need for true multi-project concurrency, as opposed to the single-global-entry model which only one project can correctly use at a time.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["claude.json", "mcpServers", "project scope", "local scope", "lean-lsp"]
+    }
+  ],
+  "dispatch_seq": 1
+}
