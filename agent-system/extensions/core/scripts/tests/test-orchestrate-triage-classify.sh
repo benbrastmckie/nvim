@@ -101,10 +101,10 @@ probe_out="$(bash "$TOOL" single 999 2>&1)"
 probe_exit=$?
 probe_group="$(echo "$probe_out" | jq -r '.group' 2>/dev/null)"
 
-if [ "$probe_exit" -eq 0 ] && [ "$probe_group" = "plan" ]; then
+if [ "$probe_exit" -eq 0 ] && [ "$probe_group" = "research" ]; then
   pass "sandbox shape: \$WORKDIR/.claude/scripts/ satisfies deploy-root-guard.sh, PROJECT_ROOT == \$WORKDIR (no STATE_FILE override needed)"
 else
-  fail "sandbox shape: expected exit 0 and group=plan for the not_started probe task (research on demand, Stage A.8), got exit=$probe_exit output=$probe_out"
+  fail "sandbox shape: expected exit 0 and group=research for the not_started probe task (research-first default, no --effort), got exit=$probe_exit output=$probe_out"
   echo ""
   echo "Results: ${PASSED} passed, ${FAILED} failed"
   echo "ERROR: sandbox probe failed; aborting before building fixtures (per Rollback/Contingency: escalate rather than route around the friction)." >&2
@@ -183,6 +183,28 @@ check_fixture() {
   fi
 }
 
+# check_fixture_effort <effort|""> <engine> <task_number> <expected_handoff_state> <expected_group> <label>
+# Effort-aware sibling of check_fixture, added as a separate wrapper rather than widening
+# check_fixture's own signature at its ~40 existing call sites. Empty effort omits --effort
+# entirely, matching the classifier's own "no flag" convention.
+check_fixture_effort() {
+  local effort="$1" engine="$2" task="$3" expected_state="$4" expected_group="$5" label="$6"
+  local out
+  if [ -n "$effort" ]; then
+    out="$(bash "$TOOL" --effort "$effort" "$engine" "$task" 2>&1)"
+  else
+    out="$(bash "$TOOL" "$engine" "$task" 2>&1)"
+  fi
+  local got_state got_group
+  got_state="$(echo "$out" | jq -r '.handoff_state' 2>/dev/null)"
+  got_group="$(echo "$out" | jq -r '.group' 2>/dev/null)"
+  if [ "$got_state" = "$expected_state" ] && [ "$got_group" = "$expected_group" ]; then
+    pass "$label (effort=${effort:-none}, engine=$engine): handoff_state=$got_state group=$got_group"
+  else
+    fail "$label (effort=${effort:-none}, engine=$engine): expected handoff_state=$expected_state group=$expected_group, got handoff_state=$got_state group=$got_group (raw: $out)"
+  fi
+}
+
 # --- Fixture A: single engine (this is the mutation-check assertion) ---
 check_fixture "single" 101 "continuation" "implement" \
   "Fixture A (flat continuation_path only, the H9 writer's real shape)"
@@ -232,18 +254,28 @@ cat > "$WORKDIR/specs/state.json" <<'EOF'
 EOF
 
 # --- not_started: mt engine (pairs with the single-engine sandbox probe above) ---
-# Research on demand (Stage A.8): not_started now routes to plan, not research -- the planner
-# itself requests a research phase via needs_research if the description does not suffice. See
-# the researching -> research mutation-check fixture (project 112) below for the surviving
-# research-routing row.
-check_fixture "mt" 105 "not_applicable" "plan" \
-  "not_started (mt engine, pairs with the single-engine sandbox probe) -- research on demand default"
+# Research-first default (no --effort or --effort hard): not_started routes to research. Passing
+# --effort fast preserves the prior plan-first behavior as an escape hatch -- the planner can
+# still request research via needs_research if the description does not suffice. See the
+# researching -> research mutation-check fixture (project 112) below for the always-research row.
+check_fixture "mt" 105 "not_applicable" "research" \
+  "not_started (mt engine, pairs with the single-engine sandbox probe) -- research-first default, no --effort"
+check_fixture_effort "" "single" 105 "not_applicable" "research" \
+  "not_started (single engine) -- research-first default, no --effort"
+check_fixture_effort "fast" "single" 105 "not_applicable" "plan" \
+  "not_started (single engine) -- --effort fast preserves plan-first"
+check_fixture_effort "fast" "mt" 105 "not_applicable" "plan" \
+  "not_started (mt engine) -- --effort fast preserves plan-first"
+check_fixture_effort "hard" "single" 105 "not_applicable" "research" \
+  "not_started (single engine) -- --effort hard is NOT --fast, stays research-first"
 
-# --- researched -> plan, both engines ---
+# --- researched -> plan, both engines (unaffected by --effort; a report already exists) ---
 check_fixture "single" 106 "not_applicable" "plan" \
   "researched -> plan"
 check_fixture "mt" 106 "not_applicable" "plan" \
   "researched -> plan cross-engine agreement"
+check_fixture_effort "fast" "single" 106 "not_applicable" "plan" \
+  "researched -> plan even under --effort fast (never re-researches)"
 
 # --- planned -> implement, both engines ---
 check_fixture "single" 107 "not_applicable" "implement" \
@@ -314,13 +346,18 @@ check_fixture "single" 120 "absent" "implement" \
 check_fixture "mt" 120 "absent" "implement" \
   "blocked, discharged (dependency completed, previous_status=planned) -> implement cross-engine agreement"
 
-# --- (a2) discharged, previous_status=not_started -- research on demand (Stage A.8): routes to
-# plan, not research, mirroring the live not_started row's own flip. Dependency 121 is NOT passed
-# as a classifier argument below, same mechanism-discrimination shape as (a) above. ---
-check_fixture "single" 129 "absent" "plan" \
-  "blocked, discharged (dependency completed, previous_status=not_started) -> plan (research on demand default)"
-check_fixture "mt" 129 "absent" "plan" \
-  "blocked, discharged (dependency completed, previous_status=not_started) -> plan cross-engine agreement"
+# --- (a2) discharged, previous_status=not_started -- research-first default: routes to research,
+# mirroring the live not_started row's own flip. --effort fast preserves plan-first here too.
+# Dependency 121 is NOT passed as a classifier argument below, same mechanism-discrimination
+# shape as (a) above. ---
+check_fixture "single" 129 "absent" "research" \
+  "blocked, discharged (dependency completed, previous_status=not_started) -> research (research-first default)"
+check_fixture "mt" 129 "absent" "research" \
+  "blocked, discharged (dependency completed, previous_status=not_started) -> research cross-engine agreement"
+check_fixture_effort "fast" "single" 129 "absent" "plan" \
+  "blocked, discharged (previous_status=not_started) -> plan under --effort fast, mirrors the live row"
+check_fixture_effort "fast" "mt" 129 "absent" "plan" \
+  "blocked, discharged (previous_status=not_started) -> plan under --effort fast cross-engine agreement"
 
 # --- (b) discharged but handoff blockers present -- needs_human overrides discharge, BOTH engines ---
 check_fixture "single" 122 "blockers" "needs_human" \
@@ -382,6 +419,25 @@ check_fixture "single" 113 "not_applicable" "plan" \
   "planning -> plan (mutation-check fixture)"
 check_fixture "mt" 113 "not_applicable" "plan" \
   "planning -> plan cross-engine agreement (mutation-check fixture)"
+
+# --effort fast must NOT skip a research phase the planner explicitly requested by returning
+# needs_research (status researching): only the not_started rows read effort.
+check_fixture_effort "fast" "single" 112 "not_applicable" "research" \
+  "researching -> research even under --effort fast (planner-requested research never skipped)"
+check_fixture_effort "fast" "mt" 112 "not_applicable" "research" \
+  "researching -> research even under --effort fast cross-engine agreement"
+
+# =====================================================================
+# Invalid --effort value: exits 2 with a loud stderr line, matching the unknown-engine precedent.
+# =====================================================================
+
+invalid_out="$(bash "$TOOL" --effort bogus single 112 2>&1)"
+invalid_exit=$?
+if [ "$invalid_exit" -eq 2 ] && echo "$invalid_out" | grep -qF -- "--effort must be 'fast' or 'hard'"; then
+  pass "--effort bogus -> exit 2 with loud stderr line"
+else
+  fail "--effort bogus -> expected exit 2 with '--effort must be fast or hard' message, got exit=$invalid_exit output=$invalid_out"
+fi
 
 # =====================================================================
 # Summary

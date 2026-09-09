@@ -1,7 +1,7 @@
 # Implementation Plan: Task #196
 
 - **Task**: 196 - Make research the default first phase for an un-researched task unless --fast is given
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research artifact for this round; see "Research Integration")
@@ -175,35 +175,35 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Effort-aware classifier + its fixtures [NOT STARTED]
+### Phase 1: Effort-aware classifier + its fixtures [COMPLETED]
 
 **Goal**: `orchestrate-triage-classify.sh` accepts `--effort` and routes `not_started` (live row
 and blocked-discharge ladder) to `research` unless effort is `fast`, with its own fixture suite
 green.
 
 **Tasks**:
-- [ ] Add flag parsing ahead of the positional `<engine>`: consume `--effort <value>` (and
+- [x] Add flag parsing ahead of the positional `<engine>`: consume `--effort <value>` (and
       `--effort=<value>`), default empty, reject any value other than `fast`/`hard` with a loud
-      stderr line and `exit 2`.
-- [ ] Update the usage string (line ~26) and the `Usage:` comment to the new signature.
-- [ ] Pass the parsed effort into the verdict `jq` invocation as `--arg effort`.
-- [ ] Flip the live `not_started` row: `group` is `research` unless `$effort == "fast"`, with a
-      `reason` string that names which default applied and why.
-- [ ] Flip the blocked-discharge `previous_status` ladder's `not_started` arm identically
-      (`if $p == "not_started" then (if $effort == "fast" then "plan" else "research" end)`).
-- [ ] Update the header engine table's `not_started` row to show both effort variants, and revise
+      stderr line and `exit 2`. *(completed)*
+- [x] Update the usage string (line ~26) and the `Usage:` comment to the new signature. *(completed)*
+- [x] Pass the parsed effort into the verdict `jq` invocation as `--arg effort`. *(completed)*
+- [x] Flip the live `not_started` row: `group` is `research` unless `$effort == "fast"`, with a
+      `reason` string that names which default applied and why. *(completed)*
+- [x] Flip the blocked-discharge `previous_status` ladder's `not_started` arm identically
+      (`if $p == "not_started" then (if $effort == "fast" then "plan" else "research" end)`). *(completed)*
+- [x] Update the header engine table's `not_started` row to show both effort variants, and revise
       the adjacent prose that currently asserts the research-on-demand default as unconditional.
-      Keep the four-site lockstep note, extending it to name the effort input.
-- [ ] In `tests/test-orchestrate-triage-classify.sh`: update the sandbox probe (expects
+      Keep the four-site lockstep note, extending it to name the effort input. *(completed)*
+- [x] In `tests/test-orchestrate-triage-classify.sh`: update the sandbox probe (expects
       `group=plan` for `not_started` today → `research`), the mt `not_started` fixture, and the
       discharged-`not_started` fixtures (single + mt), each with a comment naming the new
-      contract rather than the old one.
-- [ ] Extend the fixture helper with an optional effort argument (e.g. a `check_fixture_effort`
-      wrapper) rather than changing `check_fixture`'s five-argument signature at ~40 call sites.
-- [ ] Add NEW fixtures: `--effort fast` + `not_started` → `plan` (both engines);
+      contract rather than the old one. *(completed)*
+- [x] Extend the fixture helper with an optional effort argument (e.g. a `check_fixture_effort`
+      wrapper) rather than changing `check_fixture`'s five-argument signature at ~40 call sites. *(completed)*
+- [x] Add NEW fixtures: `--effort fast` + `not_started` → `plan` (both engines);
       `--effort hard` + `not_started` → `research`; `--effort fast` + `researching` → `research`;
       `--effort fast` + `researched` → `plan`; `--effort fast` + discharged
-      `previous_status=not_started` → `plan`; an invalid `--effort bogus` → exit 2.
+      `previous_status=not_started` → `plan`; an invalid `--effort bogus` → exit 2. *(completed: 48 assertions passing, up from 38)*
 
 **Timing**: 1.25 hours
 

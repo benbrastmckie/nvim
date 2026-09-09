@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Effort-aware classifier + its fixtures",
+  "started_at": "2026-09-09T12:30:00Z",
+  "last_updated": "2026-09-09T12:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --effort flag parsing ahead of positional <engine>, update usage/comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 2, "description": "Pass parsed effort into jq verdict invocation as --arg effort", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 3, "description": "Flip live not_started row and blocked-discharge ladder arm; update header table + prose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 4, "description": "Update existing fixtures (sandbox probe, mt not_started, discharged not_started) for new default", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"]},
+    {"id": 5, "description": "Add effort-aware fixture helper and new fixtures for --fast/--hard/researching/researched/discharged/invalid", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

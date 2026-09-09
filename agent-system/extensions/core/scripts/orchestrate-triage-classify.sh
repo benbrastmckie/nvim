@@ -23,9 +23,16 @@
 # uses — not because the two engines' verdicts still diverge on this row.
 #
 # Usage:
-#   orchestrate-triage-classify.sh <engine> <task_number> [<task_number> ...]
+#   orchestrate-triage-classify.sh [--effort <fast|hard>] <engine> <task_number> [<task_number> ...]
 #
-# where <engine> is exactly "single" or "mt".
+# where <engine> is exactly "single" or "mt". `--effort` (and `--effort=<value>`) is parsed
+# strictly BEFORE the positional <engine> so it can never be confused with a task number.
+# Omitted means "no effort flag" — the research-first default applies. `--effort fast` changes
+# ONLY the `not_started` routing (the live row below and the blocked-discharge
+# `previous_status == "not_started"` arm) to `plan`, preserving the pre-research-first behavior
+# as `--fast`'s escape hatch; `--effort hard` does NOT alter routing — only the literal value
+# `"fast"` does. Any other `--effort` value exits 2 with a loud stderr line, matching the
+# unknown-engine precedent below.
 #
 # Forbidden calls (this script is read-only; it must never be the mechanism by which a dry-run or
 # a classification-only caller mutates anything):
@@ -53,11 +60,16 @@
 # fallback classifier table inside orchestrate-cycle-plan.sh (used only when THIS script exits
 # non-zero) MUST be changed together, never independently — this script is the executable source
 # of truth those sections point back to. Four sites, not three: the degraded fallback is easy to
-# forget precisely because it is normally dormant.):
+# forget precisely because it is normally dormant. The `not_started` row is now EFFORT-
+# CONDITIONAL (research-first by default, plan-first under `--effort fast`); the degraded
+# fallback in orchestrate-cycle-plan.sh must encode the identical effort branch, not just the
+# same unconditional group, or the two sites silently diverge exactly on the row this rewrite
+# touches.):
 #
 #   | status                                  | mt group    | single group  |
 #   |------------------------------------------|-------------|---------------|
-#   | not_started                               | plan        | plan          |
+#   | not_started, no --effort or --effort hard | research    | research      |
+#   | not_started, --effort fast                | plan        | plan          |
 #   | researched                                 | plan        | plan          |
 #   | planned, implementing                      | implement   | implement     |
 #   | partial + continuation                     | implement   | implement     |
@@ -179,6 +191,28 @@ source "${SCRIPT_DIR}/lib/continuation-pointer-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
+
+effort=""
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --effort)
+      effort="${2:-}"
+      shift 2 || true
+      ;;
+    --effort=*)
+      effort="${1#--effort=}"
+      shift || true
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [ -n "$effort" ] && [ "$effort" != "fast" ] && [ "$effort" != "hard" ]; then
+  echo "ERROR: orchestrate-triage-classify.sh: --effort must be 'fast' or 'hard' (got '$effort')." >&2
+  exit 2
+fi
 
 engine="${1:-}"
 shift || true
@@ -306,6 +340,7 @@ done
 
 if verdicts=$(jq -n -c \
   --arg engine "$engine" \
+  --arg effort "$effort" \
   --argjson candidates "$candidates_json" \
   --argjson handoff_info "$handoff_info_json" \
   --slurpfile state_arr "$STATE_FILE" \
@@ -328,9 +363,14 @@ if verdicts=$(jq -n -c \
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
      reason:("task #" + ($c|tostring) + " is terminal (" + $status + ")")}
   elif $status == "not_started" then
-    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"plan",
+    (if $effort == "fast" then "plan" else "research" end) as $grp |
+    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:$grp,
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
-     reason:("task #" + ($c|tostring) + " is not_started; routes to plan (research on demand -- the planner requests research via needs_research if the description does not suffice)")}
+     reason:(if $effort == "fast" then
+       ("task #" + ($c|tostring) + " is not_started; --effort fast routes to plan (research-first default skipped -- the planner can still request research via needs_research if the description does not suffice)")
+     else
+       ("task #" + ($c|tostring) + " is not_started; routes to research (research-first default -- pass --fast to route straight to plan instead)")
+     end)}
   elif $status == "researched" then
     {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"plan",
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
@@ -406,7 +446,7 @@ if verdicts=$(jq -n -c \
        reason:("task #" + ($c|tostring) + " is blocked with satisfied dependencies but no previous_status; cannot determine discharge phase, needs human")}
     else
       ($prev) as $p |
-      (if $p == "not_started" then "plan"
+      (if $p == "not_started" then (if $effort == "fast" then "plan" else "research" end)
        elif $p == "researched" then "plan"
        elif ($p == "planned" or $p == "implementing") then "implement"
        elif $p == "researching" then "research"
