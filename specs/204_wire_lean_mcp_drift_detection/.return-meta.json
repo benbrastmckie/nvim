@@ -1,12 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/204_wire_lean_mcp_drift_detection/summaries/01_wire-lean-mcp-drift-detection-summary.md",
+      "summary": "All 5 phases completed: authored a WARN-only lean-mcp-preflight-check.sh wrapper around verify-lean-mcp.sh, a fixture-based regression suite with a mutation/falsifiability check, measured wall-clock cost, wired the check into Stage 2 of the four lean-lsp-using skills, and updated the inventory doc -- verified against a real deploy in a repo that loads the lean extension."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired verify-lean-mcp.sh into an automated caller: a new WARN-only lean-mcp-preflight-check.sh wrapper appended to Stage 2 of the four lean-lsp-using skills, proven against a fixture reproducing the observed drift shape (with a mutation check confirming the fixtures are discriminative), measured at ~6-25ms added cost, and confirmed live in a deploying consumer repo."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/skills/skill-lean-research/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shell test suite that resolves a sibling script belonging to a DIFFERENT extension (e.g. a lean-owned test invoking core's verify-lean-mcp.sh) must not hardcode a single SCRIPT_DIR-relative path. The source store keeps extensions in separate directory trees (lean/scripts/tests/../../../core/scripts/foo.sh), but deploy flattens every extension's scripts into one .claude/scripts/ directory, making the sibling one level up instead (scripts/tests/../foo.sh). Try both candidate paths in order (source-store form, then deployed-tree form) so the same suite runs identically pre- and post-deploy -- caught by actually re-deploying to a consumer repo and re-running the suite there, not merely by running it in the source tree.",
+      "category": "PATTERN",
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/summaries/01_wire-lean-mcp-drift-detection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["source store vs deployed tree", "cross-extension script path", "shell test suite portability", "deploy flattening", "SCRIPT_DIR relative path"]
+    },
+    {
+      "content": "In a bash test harness, do not capture a called function's side-effect variable (e.g. an exit-code global set via `$?` inside the function) through command substitution: `OUT=\"$(fn ...)\"` runs fn in a subshell, so any variable it sets is discarded when the subshell exits, producing an unbound-variable error under `set -u` on the next read. Fix: have the function write its captured stdout+stderr to a caller-supplied output file and run it directly in the current shell (no `$()` wrapper) so `$?`/the side-effect variable is read immediately in the parent shell; read the file separately for the content.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/summaries/01_wire-lean-mcp-drift-detection-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash subshell", "command substitution", "set -u unbound variable", "exit code capture", "test harness helper function"]
+    },
+    {
+      "content": "For a hot-path preflight check wrapping an existing diagnostic script with strict exit codes, prefer WARN-always-exit-0 over propagating the underlying tool's exit code as a block, when the degraded mode remains usable (e.g. lean4 work without lean-lsp still works via compiled probes, just slower). Make the WARN actionable (name the exact remedy command) rather than a bare mismatch report -- an unactionable warning is functionally equivalent to no warning, which is the original defect this pattern exists to fix. Distinguish semantically different non-zero exit codes in the message (e.g. 'currently indexes a different project' vs 'misregistered') so operators don't learn to ignore the check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/summaries/01_wire-lean-mcp-drift-detection-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["WARN vs BLOCK", "preflight check design", "actionable warning", "hot path check", "degraded mode"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788973693_82555f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
   }
 }
