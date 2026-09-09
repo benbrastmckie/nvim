@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 204,
+  "session_id": "sess_1788973693_82555f_204",
+  "dispatch_seq": 4,
+  "findings_count": 12,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md",
+      "summary": "Finds none of the four lean-lsp-using lean skills route through skill_preflight_update, so a manifest hooks.preflight declaration (nix's pattern) would be dead code for lean; recommends a direct per-skill Stage 2 call to a new lean-owned wrapper around verify-lean-mcp.sh --quiet, WARN-only, ~30ms measured cost, silent no-op outside a Lean project."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's extension system, a manifest's top-level `hooks.preflight` field (distinct from `provides.hooks`) only fires if the owning extension's skills route Stage 2 through `skill_preflight_update` in skill-base.sh (see context/patterns/skill-preflight-flow.md). Before wiring a new preflight check via that mechanism, grep the extension's own SKILL.md files for `skill_preflight_update` — an extension can declare the hook while its skills silently never reach it (confirmed true for the lean extension as of this task; nix is the one live counter-example).",
+      "category": "PATTERN",
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill_preflight_update", "hooks.preflight", "extension manifest", "skill-base.sh", "lifecycle hook"]
+    },
+    {
+      "content": "verify-lean-mcp.sh --quiet against a live ~/.claude.json (~183KB) runs in ~30ms wall clock (jq-only, ~6 sequential jq calls + git rev-parse, no network/repo-walk/server-spawn) -- a useful reference cost figure for 'is this cheap enough for a hot dispatch path' questions involving small-file jq reads.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-lean-mcp.sh", "wall-clock cost", "jq performance", "preflight cost budget"]
+    }
+  ],
+  "next_steps": "Run /plan 204 to create implementation plan"
+}
