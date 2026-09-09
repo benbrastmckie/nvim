@@ -1,35 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md",
-      "summary": "Confirms .projects[<path>].mcpServers is a live, empty, unwritten-to registration surface; identifies the email extension's settings-fragment.json hooks.PreToolUse + provides.hooks pairing as the precedented mechanism for an extension-owned native SessionStart hook; maps all 7 outstanding issues to specific files and confirms task 203's research already named this exact fix as its declined 'Option B'."
+      "type": "plan",
+      "path": "specs/205_per_project_lean_lsp_registration/plans/01_per-project-lean-lsp-registration.md",
+      "summary": "10-phase plan flipping lean-lsp from one global ~/.claude.json entry to per-project .projects[<path>].mcpServers entries written by a user-level SessionStart hook, inverting the verifier, tests, and recorded invariants that currently enforce the single-global model."
     }
   ],
-  "next_steps": "Run /plan 205 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1788979129_59669f_205",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
-  "findings_count": 7,
+  "next_steps": "Run /implement 205 to execute the plan",
+  "phase_count": 10,
+  "estimated_hours": 13,
+  "dependency_waves": [[1, 2], [3], [4, 5], [6, 8, 9], [7], [10]],
   "memory_candidates": [
     {
-      "content": "An extension can add a native Claude Code SessionStart (or other harness-level) hook without touching core's settings.json or manifest hooks object: declare the script under the extension's own hooks/ directory in provides.hooks, and merge a hooks.<Event> block into the extension's settings-fragment.json. merge.lua's deep_merge/merge_hook_event_array specifically recognizes hook-event arrays ({matcher, hooks} objects) and merges by matcher — appending new hook entries into an existing same-matcher block or appending a new matcher block — never duplicating. Precedent: agent-system/extensions/email/settings-fragment.json's hooks.PreToolUse + hooks/mail-guard.sh. This is distinct from the internal agent-system lifecycle-hook system (manifest.json top-level hooks object, preflight/postflight stages via skill-base.sh) — the two must not be conflated.",
-      "category": "PATTERN",
-      "source_artifact": "specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["settings-fragment", "SessionStart hook", "extension hooks", "merge_settings", "provides.hooks"]
-    },
-    {
-      "content": "~/.claude.json's .projects[<abs-path>].mcpServers is a real, first-class per-project MCP registration surface (Claude Code's 'local scope'), already present as an empty object on every registered project path on this machine. It is distinct from the top-level global mcpServers object and takes precedence over it for that project. Nothing in this repo currently writes to it, but mcp-server-ownership.md already names it as the mechanism a per-project-computed-argument server (like lean-lsp) would need for true multi-project concurrency, as opposed to the single-global-entry model which only one project can correctly use at a time.",
+      "content": "On this machine, a Claude Code hook that must fire in EVERY session (including a fresh git worktree with no .claude/ deploy) cannot be contributed through an extension's settings-fragment.json: that merges into a repo's .claude/settings.local.json, which a worktree without a deploy never has. It must be registered at user level in ~/.claude/settings.json -- but that file's `hooks` key is home-manager-ENFORCED (~/.dotfiles/modules/home/core/dotfiles.nix activation.claudeSettings resets [_NOTE, env, hooks, model, permissions, statusLine] from ~/.dotfiles/config/claude/settings.json on every rebuild), so a durable user-level hook must be written to the dotfiles source and optionally mirrored into the live file for immediate effect. Related constraint: a session's MCP tool registry is a startup snapshot, so a SessionStart hook that writes MCP registration may only take effect in the NEXT session in that directory -- verify empirically with a fresh `claude -p`, never a running session.",
       "category": "INSIGHT",
-      "source_artifact": "specs/205_per_project_lean_lsp_registration/reports/01_per-project-lean-lsp-registration.md",
+      "source_artifact": "specs/205_per_project_lean_lsp_registration/plans/01_per-project-lean-lsp-registration.md",
       "confidence": 0.85,
-      "suggested_keywords": ["claude.json", "mcpServers", "project scope", "local scope", "lean-lsp"]
+      "suggested_keywords": ["SessionStart hook", "home-manager enforced settings", "claude settings.json", "MCP registration", "worktree", "settings-fragment"]
     }
   ],
-  "dispatch_seq": 1
+  "metadata": {
+    "session_id": "sess_1788979129_59669f_205",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 2
 }
