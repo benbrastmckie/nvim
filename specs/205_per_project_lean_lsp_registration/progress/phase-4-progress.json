@@ -1,0 +1,61 @@
+{
+  "phase": 4,
+  "phase_name": "SessionStart hook and its user-level installer",
+  "started_at": "2026-09-09T20:15:00Z",
+  "last_updated": "2026-09-09T20:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lean-lsp-register-project.sh: detect Lake project, silent when not, else invoke Phase 3 writer at project scope in quiet mode",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/hooks/lean-lsp-register-project.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Resolve the writer from a stable absolute path, never the calling repo's .claude/ tree",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/hooks/lean-lsp-register-project.sh"],
+      "note": "Design decision: the installer additionally copies setup-lean-mcp.sh itself to a stable user-level path ($HOME/.claude/scripts/setup-lean-mcp.sh, distinct from any repository's own .claude/scripts/), and the hook resolves the writer from THAT path -- not from CWD's repo-local .claude/scripts/. This is required because the acceptance scenario (cslib-pr648) has no repository .claude/ deploy at all, so a repo-relative resolution would silently do nothing there."
+    },
+    {
+      "id": 3,
+      "description": "Apply Phase 1's timing finding: emit a restart notice on a same-session write; stay silent when the entry already matched",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/hooks/lean-lsp-register-project.sh"],
+      "note": "Phase 1 measured that a same-session hook write is NOT reliably visible, so this hook always emits the additionalContext restart notice on a write (never conditions it on an same-session-visible/not-visible branch, since the measured answer was uniformly 'not visible')."
+    },
+    {
+      "id": 4,
+      "description": "Hook always exits 0, never emits non-JSON noise",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/hooks/lean-lsp-register-project.sh"],
+      "note": "set -uo pipefail (no -e); every exit path (not-Lean, writer-not-installed, writer-failed, writer-no-op, writer-wrote, no-jq) echoes exactly one line of valid JSON and exits 0. Verified with 4 fixture scenarios (fresh write, no-op repeat, non-Lean dir, writer-not-installed) -- all produced exactly the expected JSON shape."
+    },
+    {
+      "id": 5,
+      "description": "Declare lean-lsp-register-project.sh in lean's manifest.json provides.hooks",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/lean/manifest.json"]
+    },
+    {
+      "id": 6,
+      "description": "Create install-lean-lsp-session-hook.sh: idempotent two-file install + merge hooks.SessionStart into both dotfiles source and live settings; warn (never fail) on missing dotfiles; --dry-run/--remove",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh",
+        "agent-system/extensions/lean/manifest.json"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Run the installer and confirm the hook fires in a fresh session",
+      "status": "done",
+      "files_touched": [],
+      "note": "REAL, PERMANENT machine-level change (per D4/D5, sanctioned by the plan -- not a fixture): ran install-lean-lsp-session-hook.sh --dry-run first (previewed 2 file copies + 2 settings merges), then for real. Installed: $HOME/.claude/hooks/lean-lsp-register-project.sh and $HOME/.claude/scripts/setup-lean-mcp.sh (both byte-identical to their agent-system/extensions/lean/ source). Added the hooks.SessionStart(matcher=startup) entry to BOTH ~/.dotfiles/config/claude/settings.json and ~/.claude/settings.json. Verified idempotency: a second real run reported '(no-op)' for both settings files and re-copied the same file content. Verified durability against a home-manager rebuild by re-running dotfiles.nix's own enforced-key jq merge expression (['_NOTE','env','hooks','model','permissions','statusLine']) against the edited dotfiles source and the live file: the new SessionStart entry survives in the merge result. ACCEPTANCE-GRADE END-TO-END TEST: cslib-pr648 (the exact worktree named in the task description, confirmed to have NO .claude/ directory at all) had its .projects entry emptied by Phase 1's cleanup; started a genuinely fresh `claude -p` session there with no lean-lsp-specific prompting at all (just 'report OK'); post-session jq check showed .projects[\"/home/benjamin/Projects/cslib-pr648\"].mcpServers.\"lean-lsp\" now correctly populated with LEAN_PROJECT_PATH=/home/benjamin/Projects/cslib-pr648 -- registered automatically, with zero manual steps, exactly per the task's stated acceptance bar. Per D4/D5's Non-Goals, the ~/.dotfiles edit was applied but is intentionally left UNCOMMITTED in that repository."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

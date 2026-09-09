@@ -64,9 +64,12 @@
       "lean-mcp-preflight-check.sh",
       "tests/test-lean-mcp-preflight-check.sh",
       "setup-lean-mcp.sh",
-      "verify-lean-mcp.sh"
+      "verify-lean-mcp.sh",
+      "install-lean-lsp-session-hook.sh"
     ],
-    "hooks": []
+    "hooks": [
+      "lean-lsp-register-project.sh"
+    ]
   },
   "routing": {
     "research": {

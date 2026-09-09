@@ -274,31 +274,31 @@ project-scope the default, with the global entry retired per D2.
 
 ---
 
-### Phase 4: SessionStart hook and its user-level installer [NOT STARTED]
+### Phase 4: SessionStart hook and its user-level installer [COMPLETED]
 
 **Goal**: Make registration automatic at session start in ANY directory, including a fresh
 worktree with no `.claude/` deploy, per D4 and D5.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/hooks/lean-lsp-register-project.sh`: detect the
+- [x] Create `agent-system/extensions/lean/hooks/lean-lsp-register-project.sh`: detect the
       enclosing Lake project (`lakefile.lean`/`lakefile.toml` at CWD or git root, in lockstep
       with the two scripts' detection), exit 0 silently when not a Lean project, otherwise invoke
       the Phase 3 writer at project scope in quiet mode
-- [ ] Make the hook resolve the writer from a stable absolute path, never from the calling
+- [x] Make the hook resolve the writer from a stable absolute path, never from the calling
       repository's `.claude/` tree (D5 / the `mcp-server-ownership.md` invariant)
-- [ ] Apply Phase 1's timing finding: if a same-session write is not visible, emit a one-line
+- [x] Apply Phase 1's timing finding: if a same-session write is not visible, emit a one-line
       notice naming the project just registered and stating that a restart is required; if it is
       visible, stay silent on the success path
-- [ ] Make the hook always exit 0 and never emit non-JSON noise that could break the harness
+- [x] Make the hook always exit 0 and never emit non-JSON noise that could break the harness
       hook contract (follow the `2>/dev/null || echo '{}'` shape used by existing hook entries)
-- [ ] Declare `lean-lsp-register-project.sh` in `agent-system/extensions/lean/manifest.json`
+- [x] Declare `lean-lsp-register-project.sh` in `agent-system/extensions/lean/manifest.json`
       `provides.hooks` (currently `[]`) so consumer repos get a deployed copy
-- [ ] Create `agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh`: idempotently
+- [x] Create `agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh`: idempotently
       copy the hook to `~/.claude/hooks/lean-lsp-register-project.sh` and merge a
       `hooks.SessionStart` matcher-`startup` entry into BOTH
       `~/.dotfiles/config/claude/settings.json` and live `~/.claude/settings.json`; warn (never
       fail) when the dotfiles source is absent; support `--dry-run` and `--remove`
-- [ ] Run the installer and confirm the hook fires in a fresh session
+- [x] Run the installer and confirm the hook fires in a fresh session
 
 **Timing**: 2 hours
 
