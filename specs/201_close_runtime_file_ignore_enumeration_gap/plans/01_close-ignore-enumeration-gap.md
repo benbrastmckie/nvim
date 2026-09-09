@@ -178,23 +178,28 @@ those and not in the lib, the hypothesis is wrong and the lib is short.
 
 ---
 
-### Phase 2: Consumer `.gitignore` and untracking verification [NOT STARTED]
+### Phase 2: Consumer `.gitignore` and untracking verification [COMPLETED]
 
 **Goal**: This repo's own root `/.gitignore` covers the full class *before* the lint widens, and
 the already-performed untracking is verified rather than re-attempted.
 
 **Tasks**:
-- [ ] Add `**/.deploy-lock/` and `**/.scope-lock/` to the repo root `/.gitignore` in the existing
+- [x] Add `**/.deploy-lock/` and `**/.scope-lock/` to the repo root `/.gitignore` in the existing
       ephemeral-runtime-state block (`**/.commit-lock/`, `**/.errors.lock`, `**/.dispatch/` are
-      already present — verify rather than duplicate).
-- [ ] Verify no class member is currently tracked: `git ls-files | grep -E '\.deploy-lock/|\.scope-lock/|\.commit-lock/|\.errors\.lock'`.
-- [ ] Confirm `specs/.deploy-lock/owner` is absent from both index and disk (already untracked in
+      already present — verify rather than duplicate). *(completed)*
+- [x] Verify no class member is currently tracked: `git ls-files | grep -E '\.deploy-lock/|\.scope-lock/|\.commit-lock/|\.errors\.lock'`.
+      *(completed: zero hits)*
+- [x] Confirm `specs/.deploy-lock/owner` is absent from both index and disk (already untracked in
       commit `cf51ce8bb`). Record in the phase notes that the untrack used a plain `git rm`
       rather than the documented `git rm --cached`, harmless here only because no deploy was
       live. **Do not re-run any untrack against a path that no longer exists.**
-- [ ] If — contrary to expectation — a tracked member *is* found: check `ps aux` for a live
+      *(completed: confirmed absent from index (`git ls-files`) and from disk — no
+      `specs/.deploy-lock/` directory exists currently, no live deploy in flight; no untrack
+      action taken)*
+- [x] If — contrary to expectation — a tracked member *is* found: check `ps aux` for a live
       `deploy-headless.sh` first, and only then run `git rm -r --cached <dir>` (never plain
-      `git rm`, never touching the on-disk file).
+      `git rm`, never touching the on-disk file). *(completed: not applicable, no tracked member
+      found)*
 
 **Timing**: 0.5 hours
 

@@ -48,6 +48,8 @@
 **/.events.lock
 **/.errors.lock
 **/.commit-lock/
+**/.deploy-lock/
+**/.scope-lock/
 **/.sessions/
 **/.freshness-warn-streak.json
 # Note: specs/events.jsonl and specs/errors.json are deliberately NOT ignored — they are
