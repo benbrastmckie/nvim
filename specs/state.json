@@ -923,24 +923,31 @@
     {
       "project_number": 162,
       "project_name": "formalize_files_to_modify_and_harvest_file_scope",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Formalize the existing Files to modify convention in plan-format and harvest it into file_scope at plan postflight",
       "description": "Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.\n\nFRAMING -- THIS IS NOT A GREENFIELD FIELD. `**Files to modify**:` is already a de facto universal convention. Verified: present in 10/10 plan files under specs/*/plans/ in this repo (11/12 in ~/Projects/BimodalLogic); already EMITTED by the planner's own phase template at agent-system/extensions/core/agents/planner-agent.md:259 (`**Files to modify**:` followed by `- `path/to/file` - {what changes}`). What is missing is only its FORMALIZATION: context/formats/plan-format.md's per-phase field list (lines 76-95: Goal, Tasks, Timing, Depends on, Verification Tier, Commit Mode, Scope Hypothesis, Owner) does not enumerate it. The task is to formalize the convention and pin a stable grammar, NOT to invent a carrier.\n\nCONSEQUENCE: the harvest has near-total existing coverage to work against immediately, making this substantially lower-risk than a greenfield field would be. Do not design for a sparse-adoption rollout; design for a convention already in place.\n\nCOMPATIBILITY CONSTRAINTS (binding -- three existing consumers reference this by name; any grammar settled on MUST keep all three working):\n1. agent-system/extensions/core/agents/general-implementation-agent.md:65 -- reads \"Files to modify/create per phase\" when extracting from the plan.\n2. agent-system/extensions/core/skills/skill-orchestrate/SKILL.md:1274,1280 -- the H1 territory block sets `\"owned_files\": \"derive from plan_path's Phase N \\\"Files to modify\\\" list\"`.\n3. agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh:1335 -- the same territory derivation, ported verbatim.\n\nIMPORTANT NUANCE about consumers 2 and 3: neither parses the list itself. Per the comment at SKILL.md:1274, \"The orchestrator does not parse the plan's 'Files to modify' list itself -- it points the agent at the plan/phase location\" and the agent derives owned_files from the phase section. So the constraint these two impose is HEADING-NAME STABILITY (the literal string is embedded in a prompt directive handed to an agent), not parser grammar. Changing the heading text would silently break the directive with no parse error. Treat the name as frozen.\n\nGRAMMAR: two punctuation variants exist in practice -- `**Files to modify**:` (64 occurrences) and `**Files to modify:**` (6). This matches plan-format.md's already-documented \"Field-punctuation tolerance\" rule for per-phase field labels, which states both forms are accepted; the harvester MUST accept both. Settle the list-item grammar against the planner template's emitted shape (`- `path/to/file` - {what changes}`), tolerating the backtick-quoted path and the trailing ` - {description}`.\n\nSCOPE-HYPOTHESIS ALIGNMENT: plan-format.md:251 defines any plan-asserted file list as \"a hypothesis requiring implementation-time confirmation, never a fact\". The state schema (context/schemas/state-schema.json:227) independently describes file_scope as \"prospective, not filesystem-validated\". These align: harvesting a plan-time hypothesis into a prospective field is coherent, and the harvest MUST NOT filesystem-validate the paths or drop ones that do not yet exist (new files are exactly what a plan creates). Where a phase carries a `**Scope Hypothesis:**` line, decide whether it informs the harvest or is ignored, and record the ruling.\n\nWORK: (1) add `**Files to modify**:` to plan-format.md's per-phase field list with its grammar, marking it required-or-advisory deliberately; (2) record the three consumers above in plan-format.md as compatibility constraints so a future format change accounts for them, mirroring how that file already lists the three consumers of the phase-heading contract; (3) build the harvester (anticipated: agent-system/extensions/core/scripts/plan-file-scope-harvest.sh) that unions every phase's list into a deduplicated file_scope; (4) wire it into plan postflight, writing via state-write.sh (the single mutex-guarded writer -- do not hand-roll a jq read-modify-write).\n\nDECIDE, DO NOT ASSUME: whether harvest OVERWRITES an existing file_scope or unions into it; whether a plan revision (/revise, a new MM_ plan round) re-harvests; whether a harvest failure is fatal to postflight or a warning (note update-task-status.sh's and state-write.sh --regen-todo's existing posture is a loud warning, not a hard failure).\n\nACCEPTANCE: plan-format.md enumerates the field with its grammar and its three named consumers; the harvester extracts the correct union from all 10 local plan files under specs/*/plans/ and accepts both punctuation variants; a plan postflight on a task with a plan populates a non-empty file_scope; the three existing consumers are demonstrably unbroken (the heading string is unchanged); shellcheck clean per context/standards/shell-strict-mode.md.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
       "topic": "file-scope-lifecycle",
       "priority": "medium",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-09T17:00:45Z",
-      "session_id": "sess_1788973236_730802_162",
+      "last_updated": "2026-09-09T17:06:54Z",
+      "session_id": "sess_1788973236_730802",
       "dependencies": [
         197
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md",
+          "type": "report",
+          "summary": "Verifies 18/18 local plan coverage and exact grammar of 'Files to modify', confirms an existing reusable --file-scope-add union-merge mechanism in update-task-status.sh, identifies three (not one) postflight-plan call sites needing the harvest wired in, and resolves the dispatch's three open decisions (union merge, revision re-harvest, non-fatal failure)."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/context/formats/plan-format.md",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"
-      ]
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 163,

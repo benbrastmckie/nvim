@@ -82,7 +82,7 @@ next_project_number: 205
 
 ### File Scope Lifecycle
 
-162 [RESEARCHING] — Formalize the existing Files to modify convention in...
+162 [RESEARCHED] — Formalize the existing Files to modify convention in...
   └─ 164 [NOT STARTED] — Backfill filescope for existing tasks and decide the...
     └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent...
 163 [NOT STARTED] — Surface missing and empty filescope in validate-state.sh and...
@@ -1889,10 +1889,11 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 162. Formalize the existing Files to modify convention in plan-format and harvest it into file_scope at plan postflight
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 197
+- **Research**: [162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md]
 
 **Description**: Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.
 

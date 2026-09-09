@@ -1,15 +1,35 @@
 {
-  "status": "in_progress",
-  "started_at": "2026-09-09T00:00:00Z",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing dispatch file for task 162"
-  },
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md",
+      "summary": "Verifies 18/18 local plan coverage and exact grammar of 'Files to modify', confirms an existing reusable --file-scope-add union-merge mechanism in update-task-status.sh, identifies three (not one) postflight-plan call sites needing the harvest wired in, and resolves the dispatch's three open decisions (union merge, revision re-harvest, non-fatal failure)."
+    }
+  ],
+  "next_steps": "Run /plan 162 to create implementation plan",
+  "dispatch_seq": 1,
   "metadata": {
     "session_id": "sess_1788973236_730802_162",
     "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  }
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "When a task asks to 'wire X into plan postflight', check for ALL call sites of `update-task-status.sh postflight <N> plan <session>`, not just the obvious orchestrator-postflight.sh one. In this codebase there are three: orchestrator-postflight.sh Stage 7, reconcile-task-status.sh (two call sites, self-healing status reconciliation), and skill-reviser/SKILL.md Stage 7 (/revise path). A plan or implementation that only touches the first will silently miss plan revisions and reconciliation-driven promotions.",
+      "category": "PATTERN",
+      "source_artifact": "specs/162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["update-task-status.sh", "postflight", "plan", "skill-reviser", "reconcile-task-status.sh", "call-sites"]
+    },
+    {
+      "content": "update-task-status.sh already has a reusable additive union-merge mechanism for state.json's file_scope field: --file-scope-add=<json-array>, routed through the single mutex-guarded state-write.sh writer, currently restricted to operation=postflight && target_status=research. Any new task needing to merge more paths into file_scope at a different postflight point should widen this flag's restriction rather than hand-rolling a new jq read-modify-write or a parallel merge mechanism.",
+      "category": "CONFIG",
+      "source_artifact": "specs/162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["file_scope", "update-task-status.sh", "state-write.sh", "union-merge", "--file-scope-add"]
+    }
+  ]
 }
