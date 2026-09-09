@@ -1,7 +1,7 @@
 # Implementation Plan: Task #203
 
 - **Task**: 203 - Reconcile lean-lsp MCP registration with the source store's sanctioned wrapper-free mechanism
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md
@@ -137,34 +137,34 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Make setup-lean-mcp.sh reconcile a divergent entry [NOT STARTED]
+### Phase 1: Make setup-lean-mcp.sh reconcile a divergent entry [COMPLETED]
 
 **Goal**: `setup-lean-mcp.sh` restores the sanctioned shape from ANY prior state of
 `.mcpServers."lean-lsp"`, including a hand-edited wrapper entry, and works in `lakefile.toml`
 projects.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/setup-lean-mcp.sh`, extend project-path
+- [x] In `agent-system/extensions/core/scripts/setup-lean-mcp.sh`, extend project-path
       auto-detection to accept `lakefile.toml` as well as `lakefile.lean`, in both the CWD test
       and the git-root test. Preserve the existing precedence (CWD first, then git root) and the
-      existing error message when neither is found.
-- [ ] Replace the "already configured" branch's env-only comparison and env-only update. Compare
+      existing error message when neither is found. *(completed)*
+- [x] Replace the "already configured" branch's env-only comparison and env-only update. Compare
       the WHOLE entry against the shape `generate_lean_lsp_config` would emit for this
       `PROJECT_PATH`; when it differs in any field, overwrite the entire
       `.mcpServers."lean-lsp"` object with the generated config (`jq --argjson leanConfig
       '.mcpServers."lean-lsp" = $leanConfig'`, the same assignment the add-new branch already
-      uses), not a targeted `env.LEAN_PROJECT_PATH` assignment.
-- [ ] Report the reconciliation honestly in the non-dry-run output: name the old `command` and
+      uses), not a targeted `env.LEAN_PROJECT_PATH` assignment. *(completed)*
+- [x] Report the reconciliation honestly in the non-dry-run output: name the old `command` and
       `args` being replaced, not only the project-path change, so an operator sees that a
-      divergent shape was corrected rather than a path bumped.
-- [ ] Make `--dry-run` print the same whole-entry before/after for the divergent case, so it can
-      be used to inspect the pending repair without mutating the live config.
-- [ ] Replace `mkdir -p specs/tmp` and both `mktemp -p specs/tmp` call sites with a temp file
+      divergent shape was corrected rather than a path bumped. *(completed)*
+- [x] Make `--dry-run` print the same whole-entry before/after for the divergent case, so it can
+      be used to inspect the pending repair without mutating the live config. *(completed)*
+- [x] Replace `mkdir -p specs/tmp` and both `mktemp -p specs/tmp` call sites with a temp file
       created in the same directory as `$CLAUDE_CONFIG` (e.g. `mktemp
       "${CLAUDE_CONFIG}.tmp.XXXXXXXXXX"`), keeping `mv` same-filesystem and atomic, and removing
-      the CWD-relative directory creation entirely.
-- [ ] Re-run the `--dry-run` reproduction against the live divergent entry and confirm it now
-      reports a full-shape replacement rather than an env-only path update.
+      the CWD-relative directory creation entirely. *(completed)*
+- [x] Re-run the `--dry-run` reproduction against the live divergent entry and confirm it now
+      reports a full-shape replacement rather than an env-only path update. *(completed)*
 
 **Timing**: 1 hour
 

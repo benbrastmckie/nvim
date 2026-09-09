@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Make setup-lean-mcp.sh reconcile a divergent entry",
+  "started_at": "2026-09-09T17:19:51Z",
+  "last_updated": "2026-09-09T17:21:51Z",
+  "objectives": [
+    {"id": 1, "description": "Extend project-path auto-detection to accept lakefile.toml", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/setup-lean-mcp.sh"]},
+    {"id": 2, "description": "Replace already-configured branch with whole-entry comparison/overwrite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/setup-lean-mcp.sh"]},
+    {"id": 3, "description": "Report reconciliation honestly (old command/args named)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/setup-lean-mcp.sh"]},
+    {"id": 4, "description": "Make --dry-run print whole-entry before/after", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/setup-lean-mcp.sh"]},
+    {"id": 5, "description": "Fix temp-file hygiene (mktemp alongside CLAUDE_CONFIG)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/setup-lean-mcp.sh"]},
+    {"id": 6, "description": "Re-run dry-run reproduction against live divergent entry", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

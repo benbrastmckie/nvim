@@ -64,11 +64,13 @@ done
 
 # Detect project path if not provided
 if [ -z "$PROJECT_PATH" ]; then
-    # Try to detect from current directory or git root
-    if [ -f "lakefile.lean" ]; then
+    # Try to detect from current directory or git root. Lean 4 projects use lakefile.lean;
+    # some (e.g. cslib) use lakefile.toml instead -- both are valid Lake project markers.
+    GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+    if [ -f "lakefile.lean" ] || [ -f "lakefile.toml" ]; then
         PROJECT_PATH="$(pwd)"
-    elif [ -f "$(git rev-parse --show-toplevel 2>/dev/null)/lakefile.lean" ]; then
-        PROJECT_PATH="$(git rev-parse --show-toplevel)"
+    elif [ -n "$GIT_ROOT" ] && { [ -f "$GIT_ROOT/lakefile.lean" ] || [ -f "$GIT_ROOT/lakefile.toml" ]; }; then
+        PROJECT_PATH="$GIT_ROOT"
     else
         echo "Error: Could not detect Lean project path."
         echo "Run from project directory or use --project PATH"
@@ -77,8 +79,6 @@ if [ -z "$PROJECT_PATH" ]; then
 fi
 
 CLAUDE_CONFIG="$HOME/.claude.json"
-
-mkdir -p specs/tmp
 
 echo "Configuration:"
 echo "  Project path: $PROJECT_PATH"
@@ -117,8 +117,9 @@ if $REMOVE; then
         exit 0
     fi
 
-    # Remove lean-lsp using jq
-    TMP_FILE=$(mktemp -p specs/tmp tmp.XXXXXXXXXX)
+    # Remove lean-lsp using jq. Temp file lives alongside $CLAUDE_CONFIG so mv stays a
+    # same-filesystem atomic rename regardless of CWD.
+    TMP_FILE=$(mktemp "${CLAUDE_CONFIG}.tmp.XXXXXXXXXX")
     jq 'del(.mcpServers."lean-lsp")' "$CLAUDE_CONFIG" > "$TMP_FILE"
     mv "$TMP_FILE" "$CLAUDE_CONFIG"
 
@@ -159,32 +160,51 @@ EOF
     exit 0
 fi
 
-# Config exists, check if lean-lsp already configured
+# Config exists, check if lean-lsp already configured. The comparison and the repair both
+# operate on the WHOLE entry (not just env.LEAN_PROJECT_PATH), because a hand-edited or
+# otherwise divergent entry can carry a wrong command/args while still matching on project
+# path alone -- an entry-shape drift that a field-only comparison cannot see or fix.
 if jq -e '.mcpServers."lean-lsp"' "$CLAUDE_CONFIG" > /dev/null 2>&1; then
-    EXISTING_PATH=$(jq -r '.mcpServers."lean-lsp".env.LEAN_PROJECT_PATH // empty' "$CLAUDE_CONFIG")
+    EXISTING_ENTRY=$(jq -c '.mcpServers."lean-lsp"' "$CLAUDE_CONFIG")
+    EXISTING_COMMAND=$(jq -r '.mcpServers."lean-lsp".command // "(none)"' "$CLAUDE_CONFIG")
+    EXISTING_ARGS=$(jq -c '.mcpServers."lean-lsp".args // []' "$CLAUDE_CONFIG")
+    EXISTING_PATH=$(jq -r '.mcpServers."lean-lsp".env.LEAN_PROJECT_PATH // "(none)"' "$CLAUDE_CONFIG")
 
-    if [ "$EXISTING_PATH" = "$PROJECT_PATH" ]; then
+    LEAN_CONFIG=$(generate_lean_lsp_config)
+    CANONICAL_ENTRY=$(printf '%s' "$LEAN_CONFIG" | jq -c '.')
+
+    ENTRIES_MATCH=$(jq -n --argjson a "$EXISTING_ENTRY" --argjson b "$CANONICAL_ENTRY" '$a == $b')
+
+    if [ "$ENTRIES_MATCH" = "true" ]; then
         echo "lean-lsp already configured with correct project path."
         echo "No changes needed."
         exit 0
     fi
 
-    echo "lean-lsp already configured but with different project path:"
-    echo "  Current: $EXISTING_PATH"
-    echo "  New: $PROJECT_PATH"
+    echo "lean-lsp already configured but diverges from the sanctioned shape:"
+    echo "  Current command:      $EXISTING_COMMAND"
+    echo "  Current args:         $EXISTING_ARGS"
+    echo "  Current project path: $EXISTING_PATH"
+    echo "  Sanctioned command:      uvx"
+    echo "  Sanctioned args:         [\"lean-lsp-mcp\"]"
+    echo "  Sanctioned project path: $PROJECT_PATH"
     echo ""
 
     if $DRY_RUN; then
-        echo "[DRY RUN] Would update LEAN_PROJECT_PATH to: $PROJECT_PATH"
+        echo "[DRY RUN] Would replace the entire lean-lsp entry with:"
+        printf '%s\n' "$LEAN_CONFIG" | sed 's/^/  /'
         exit 0
     fi
 
-    # Update the project path
-    TMP_FILE=$(mktemp -p specs/tmp tmp.XXXXXXXXXX)
-    jq --arg path "$PROJECT_PATH" '.mcpServers."lean-lsp".env.LEAN_PROJECT_PATH = $path' "$CLAUDE_CONFIG" > "$TMP_FILE"
+    # Overwrite the whole entry with the sanctioned shape -- never a targeted per-field
+    # assignment, so command/args drift (e.g. a dead wrapper script) is corrected along
+    # with the project path. Temp file lives alongside $CLAUDE_CONFIG so mv stays a
+    # same-filesystem atomic rename regardless of CWD.
+    TMP_FILE=$(mktemp "${CLAUDE_CONFIG}.tmp.XXXXXXXXXX")
+    jq --argjson leanConfig "$LEAN_CONFIG" '.mcpServers."lean-lsp" = $leanConfig' "$CLAUDE_CONFIG" > "$TMP_FILE"
     mv "$TMP_FILE" "$CLAUDE_CONFIG"
 
-    echo "Updated LEAN_PROJECT_PATH to: $PROJECT_PATH"
+    echo "Replaced lean-lsp entry with the sanctioned shape (command, args, and project path)."
     echo ""
     echo "Restart Claude Code for changes to take effect."
     exit 0
@@ -202,7 +222,7 @@ fi
 # Add lean-lsp to existing config
 echo "Adding lean-lsp to existing configuration..."
 
-TMP_FILE=$(mktemp -p specs/tmp tmp.XXXXXXXXXX)
+TMP_FILE=$(mktemp "${CLAUDE_CONFIG}.tmp.XXXXXXXXXX")
 LEAN_CONFIG=$(generate_lean_lsp_config)
 
 # Use jq to add the server, preserving existing content

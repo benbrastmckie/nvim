@@ -1,39 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md",
-      "summary": "6-phase plan repairing setup-lean-mcp.sh (whole-entry reconciliation + lakefile.toml detection), promoting verify-lean-mcp.sh command/args drift from WARN to FAIL, recording the no-command-paths-inside-.claude/ invariant, then reconciling ~/.claude.json, retiring cslib's orphaned wrapper and project-scoped override, and proving the fix by an observed spawn plus real tool call in both BimodalLogic and cslib."
-    }
-  ],
-  "next_steps": "Run /implement 203 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1788973693_82555f_203",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1788973693_82555f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "phase_count": 6,
-  "estimated_hours": 4.5,
-  "dependency_waves": [[1, 3], [2], [4], [5], [6]],
-  "user_decision": {
-    "question": "Should lean-lsp stay registered as a single global user-scope entry in ~/.claude.json (one LEAN_PROJECT_PATH at a time, re-run setup-lean-mcp.sh when switching Lean projects), or should project-scoped local entries be formalized as a second sanctioned mechanism so BimodalLogic and cslib can each hold their own correct path simultaneously?",
-    "options": [
-      "Option A - Single global user-scope entry only; retire cslib's project-scoped override; switching Lean projects means re-running setup-lean-mcp.sh",
-      "Option B - Formalize project-scoped local entries as a second sanctioned mechanism; extend setup-lean-mcp.sh to write .projects[<cwd>].mcpServers and document local scope in mcp-server-ownership.md"
-    ],
-    "recommended": "Option A - Single global user-scope entry only; retire cslib's project-scoped override; switching Lean projects means re-running setup-lean-mcp.sh",
-    "blocking": false
-  },
-  "memory_candidates": [
-    {
-      "content": "Repair-script blind spot pattern: a setup/reconcile script whose 'already configured' idempotency check compares only ONE field of an entry (e.g. setup-lean-mcp.sh comparing only env.LEAN_PROJECT_PATH) cannot repair, and cannot even detect, drift in the entry's other fields (command, args). Worse, when the compared field happens to match, the script reports 'already configured correctly' and exits 0 while the entry is unspawnable. Whenever a script both GENERATES a canonical object shape and CHECKS an existing one, the check must compare against the full generated shape and the repair must overwrite the whole object -- never a targeted per-field assignment. The companion verifier has the mirror-image defect: severities must match what actually breaks the thing (a dead command is FAIL, not WARN), or wiring that verifier into automated drift detection detects nothing.",
-      "category": "PATTERN",
-      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["idempotency", "config reconciliation", "drift detection", "verifier severity", "setup script", "shape comparison"]
-    }
-  ],
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }
