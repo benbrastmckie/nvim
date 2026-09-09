@@ -1,0 +1,77 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy, regenerate, and verify against live data",
+  "started_at": "2026-09-08T01:45:00Z",
+  "last_updated": "2026-09-08T02:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Deploy source store, confirm deployed copy matches byte-for-byte",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Regenerate specs/TODO.md via generate-todo.sh",
+      "status": "done",
+      "files_touched": [
+        "specs/TODO.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Backtick-parity census over whole regenerated section",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Show witness line before/after, attribute to sub-fix (a) only",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Diff against baseline, read every changed line",
+      "status": "done",
+      "files_touched": [
+        "specs/157_markdown_safe_todo_summary_truncation/regenerated-grouped-by-topic-after.txt"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Demonstrate both title-bearing and title-less directions",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Assert budget/word-boundary guarantees over whole section",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Locate real cross-topic see-above line or state its absence",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Confirm no admin preamble fragments on title-bearing lines",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "wrapped a full (non--skip-slow) verify-deploy.sh run in a 300s bash timeout for Phase 5's deploy-verification step",
+      "result": "failed",
+      "reason": "a full sweep takes 8-10 minutes on this host; the 300s cap killed it mid-gate-8 with no verdict line, which reads as red but is not. Resolved by relying on deploy-headless.sh's internal --skip-slow fast gate (completes in ~100s, RESULT=landed_verify_clean, 33/33) plus the two full-sweep green baselines already established earlier in this session, per orchestrator guidance -- never re-launching the full sweep redundantly."
+    }
+  ],
+  "handoff_count": 0
+}

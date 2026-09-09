@@ -358,35 +358,67 @@ post-Phase-3 file (line numbers will have shifted) rather than trusting these nu
 
 ---
 
-### Phase 5: Deploy, regenerate, and verify against live data [NOT STARTED]
+### Phase 5: Deploy, regenerate, and verify against live data [COMPLETED]
 
 **Goal**: Land the fix in the deployed tree, regenerate `specs/TODO.md` from `state.json`, and
 demonstrate every acceptance criterion on real output — including eyeballing the content change
 that sub-fix (a) makes.
 
 **Tasks**:
-- [ ] Deploy the source store (`bash .claude/scripts/deploy-headless.sh`) and confirm
+- [x] Deploy the source store (`bash .claude/scripts/deploy-headless.sh`) and confirm
       `.claude/scripts/generate-task-order.sh` now matches the source-store copy byte for byte
-- [ ] Regenerate `specs/TODO.md` via `bash .claude/scripts/generate-todo.sh` (never by hand)
-- [ ] Assert mechanically over the **whole** regenerated "Grouped by Topic" section that every
-      line has an even backtick count — a census, not a spot check
-- [ ] Show the witness line before and after, from the Phase 1 baseline file. Record explicitly
+      *(completed: RESULT=landed_verify_clean, 33 checks 0 failures; `diff -q` confirms
+      byte-identical deployed copies of both generate-task-order.sh and the new test file)*
+- [x] Regenerate `specs/TODO.md` via `bash .claude/scripts/generate-todo.sh` (never by hand)
+      *(completed)*
+- [x] Assert mechanically over the **whole** regenerated "Grouped by Topic" section that every
+      line has an even backtick count — a census, not a spot check *(completed: zero odd-count
+      lines across all 65 lines of the section)*
+- [x] Show the witness line before and after, from the Phase 1 baseline file. Record explicitly
       that its repair demonstrates sub-fix (a) (its source string changed), and that sub-fix (b)
       is proven only by the Phase 2 adversarial fixture — do not present the witness as proof
-      of (b)
-- [ ] Diff the section against the Phase 1 baseline and **read every changed line**, not just
+      of (b) *(completed: before "44 [PLANNED] — LOWER PRIORITY (per-invocation cost, not
+      per-session). `commands/" (unclosed backtick); after "44 [PLANNED] — Slim commands/task.md,
+      the largest per-invocation context..." (title-derived, no backtick at all since task 44's
+      title happens to contain none). Recorded explicitly: this proves (a) only -- (a) silenced
+      the witness by switching its source string, not by exercising any strip/boundary logic on
+      a backtick. (b) is proven exclusively by the Phase 2 suite's 1a/1b/1c adversarial fixtures,
+      which place a hazard character deliberately at the cut boundary)*
+- [x] Diff the section against the Phase 1 baseline and **read every changed line**, not just
       the count. Confirm each title-derived line is more informative than the description
-      fragment it replaced; flag any that are worse
-- [ ] Demonstrate both directions of sub-fix (a): pick title-bearing tasks and confirm the title
+      fragment it replaced; flag any that are worse *(completed: 24 of 26 title-bearing tasks'
+      lines changed -- 2 titles happened to already coincide closely with their description's
+      opening words. Every changed title-bearing line read as more informative than the
+      description fragment it replaced, most strikingly for tasks whose description opened with
+      an administrative preamble the title bypasses entirely (43, 22, 14, 140, 166: "=== REVISED"
+      / "DEFECT:" / "PRODUCER-SIDE" fragments replaced by real titles). None flagged as worse.
+      Title-less tasks (127 among them) changed too, but only in truncation boundary/marker, not
+      content -- same description, cleaner cut)*
+- [x] Demonstrate both directions of sub-fix (a): pick title-bearing tasks and confirm the title
       is shown; pick title-less tasks from the Phase 1 list and confirm they still render from
-      `.description` and are not degraded
-- [ ] Assert no line exceeds the budget; assert every truncated line ends at a word boundary
-      with the marker and every untruncated line carries none
-- [ ] Locate an actual cross-topic "(see above)" line in the regenerated output and verify the
+      `.description` and are not degraded *(completed: title-bearing -- 44, 43, 22, 162 all show
+      title text verbatim; title-less -- 51, 89, 127, 183 (all from the Phase 1 list of 12) still
+      render their .description, now with a cleaner word-boundary cut and marker instead of the
+      pre-fix silent mid-word truncation -- an improvement, not a degradation)*
+- [x] Assert no line exceeds the budget; assert every truncated line ends at a word boundary
+      with the marker and every untruncated line carries none *(completed: a full-section
+      mechanical check found zero lines with a description field over 65 chars (excluding the
+      fixed "(see above)" suffix, which sits outside the budgeted content); task 172's and 177's
+      lines are exact real-data examples of untruncated content correctly carrying no marker)*
+- [x] Locate an actual cross-topic "(see above)" line in the regenerated output and verify the
       same guarantees on it directly. If none exists in the live data, say so plainly and lean
       on Phase 2's case group 4 rather than claiming a live demonstration that did not happen
-- [ ] Confirm no administrative preamble fragments (`=== REVISED`, `=== ADDENDUM`) remain on
-      lines belonging to title-bearing tasks
+      *(completed: exactly one "(see above)" line exists in live data -- task 165, appearing
+      under both its parents (162 and 163) -- and it is the plain full-`task_desc` branch
+      (same-topic reuse), not the 40-char `short_desc` cross-topic branch. Stated plainly: the
+      40-char branch has NO live demonstration in this repository's current data, matching the
+      Phase 1/description finding that it requires a specific Uncategorized-bridging topology
+      this repo's live topics do not currently form. Phase 2's case group 4 (fixtures 909-912)
+      is the sole proof of that branch's guarantees, as anticipated)*
+- [x] Confirm no administrative preamble fragments (`=== REVISED`, `=== ADDENDUM`) remain on
+      lines belonging to title-bearing tasks *(completed: a full-section grep for these fragments
+      found exactly one remaining occurrence, task 127, which is title-less -- expected and
+      unchanged per the Non-Goals. Zero occurrences on any title-bearing task's line)*
 
 **Timing**: 1 hour
 

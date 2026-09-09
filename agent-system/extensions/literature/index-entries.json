@@ -435,7 +435,7 @@
         "literature-ingest-online"
       ],
       "summary": "Inventory of the Zotero-related scripts shipped by this extension (search, read, write, setup, chunk, attach-chunks, cite-extract, online-ingest bridge) plus the separate-argument search gotcha",
-      "line_count": 31,
+      "line_count": 60,
       "load_when": {
         "agents": [
           "literature-agent",

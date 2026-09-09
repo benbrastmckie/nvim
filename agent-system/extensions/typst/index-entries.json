@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/typst/patterns/theorem-environments.md",
-      "line_count": 74,
+      "line_count": 83,
       "load_when": {
         "agents": [
           "typst-implementation-agent"
@@ -348,7 +348,7 @@
     },
     {
       "path": "project/typst/templates/chapter-template.md",
-      "line_count": 243,
+      "line_count": 304,
       "load_when": {
         "agents": [
           "typst-implementation-agent"
@@ -468,7 +468,7 @@
     },
     {
       "path": "project/typst/README.md",
-      "line_count": 35,
+      "line_count": 36,
       "load_when": {
         "agents": [
           "typst-implementation-agent",
