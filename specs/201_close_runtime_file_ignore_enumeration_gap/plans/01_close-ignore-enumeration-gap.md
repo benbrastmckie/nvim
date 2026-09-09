@@ -1,7 +1,7 @@
 # Implementation Plan: Task #201
 
 - **Task**: 201 - Close runtime-file ignore enumeration gap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None declared. Non-blocking file-footprint overlap with task 51 (`not_started`); this task lands first, no reconciliation needed now.
 - **Research Inputs**: specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md
@@ -129,26 +129,30 @@ run in this repo goes red at gate 14.
 
 ---
 
-### Phase 1: Canonical runtime-file class lib [NOT STARTED]
+### Phase 1: Canonical runtime-file class lib [COMPLETED]
 
 **Goal**: One place that defines the ephemeral runtime-file class, from which every mechanical
 consumer derives.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh` with a header
       comment modelled on `lib/task-reference-patterns.sh`: state that this is the ONLY
       definition of the class, name its consumers, and name the markdown block it is pinned to.
-- [ ] Define one canonical record per class member carrying: gitignore pattern, Check A
+      *(completed)*
+- [x] Define one canonical record per class member carrying: gitignore pattern, Check A
       representative probe path, Check B tracked-file regex, and a directory-class flag (used by
       the `git rm -r --cached` remediation branch). Parallel indexed arrays are acceptable and
       simplest under `set -uo pipefail`; associative arrays are fine if kept bash-4-safe.
-- [ ] Seed it with the existing 11 covered members **plus** `.dispatch/` (currently in Check A
+      *(completed: 6 parallel arrays, dir basename lookup helper)*
+- [x] Seed it with the existing 11 covered members **plus** `.dispatch/` (currently in Check A
       and both fixtures but in neither the Check B list nor the standards block) **plus** the
       four gaps: `.deploy-lock/`, `.scope-lock/`, `.commit-lock/`, `.errors.lock`.
-- [ ] Provide `runtime_ignore_block()` emitting the exact fenced gitignore body (comment header
+      *(completed: 16 members total)*
+- [x] Provide `runtime_ignore_block()` emitting the exact fenced gitignore body (comment header
       + patterns) that the standards block and both test fixtures must carry verbatim.
-- [ ] Register `lib/runtime-file-patterns.sh` in `agent-system/extensions/core/manifest.json`'s
-      `scripts` array, in the existing alphabetical `lib/*` position.
+      *(completed)*
+- [x] Register `lib/runtime-file-patterns.sh` in `agent-system/extensions/core/manifest.json`'s
+      `scripts` array, in the existing alphabetical `lib/*` position. *(completed)*
 
 **Timing**: 1 hour
 

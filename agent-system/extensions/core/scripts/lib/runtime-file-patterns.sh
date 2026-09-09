@@ -1,0 +1,187 @@
+#!/usr/bin/env bash
+# runtime-file-patterns.sh - Single source of truth for the "ephemeral orchestrator runtime
+# state" file class: which small scratch files/directories under specs/ are gitignored and
+# untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
+# bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
+#
+# Exports one canonical record per class member (16 total) consumed by BOTH mechanical
+# consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
+# two deploy-harness test fixtures that seed a scratch repo's .gitignore
+# (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
+# consumer defines its own probe list, tracked-file regex list, or gitignore pattern list --
+# this is the ONLY place any of them is defined. Modeled directly on the precedent already
+# established in this repo for a lint/hook pattern pair: scripts/lib/task-reference-patterns.sh.
+#
+# The markdown policy document (context/standards/orchestrator-runtime-files.md's "Consumer
+# Repo Setup" fenced block) cannot `source` a bash lib, so it is instead PINNED to this lib by a
+# machine assertion in scripts/tests/test-runtime-file-tracking.sh (Case 3): that test extracts
+# the fenced block from the markdown file and asserts it is byte-identical to this file's
+# runtime_ignore_block() output. Editing the block in the markdown without updating this lib (or
+# vice versa) fails that test. See that standards file's "Single source of truth" subsection for
+# the full decision record.
+#
+# Usage: `source` this file, then read the parallel arrays directly (all indexed in lockstep by
+# RUNTIME_FILE_IDS -- index i's id, pattern, probe, regex, and dir flag/basename all describe the
+# SAME class member) or call the two accessor functions below.
+
+# ─── Canonical class membership (16 members) ───────────────────────────────────────────────────
+# One entry per array, per member, in the exact order the "Consumer Repo Setup" gitignore block
+# emits them: the 11 members already covered before this lib existed, then `.dispatch/` (already
+# gitignored and already probed by the pre-existing Check A, but missing from the pre-existing
+# Check B list and the standards block -- a live divergence this lib closes), then the four
+# further gaps found by this task's sweep (`.deploy-lock/`, `.scope-lock/`, `.commit-lock/`,
+# `.errors.lock`). Do not reorder without also re-checking runtime_ignore_block() callers that
+# assume this is the documented block's order.
+
+declare -a RUNTIME_FILE_IDS=(
+  "lock"
+  "orchestrator-loop-guard"
+  "continuation-loop-guard"
+  "orchestrator-churn-state"
+  "postflight-loop-guard"
+  "orchestrator-multi-state"
+  "drift-inspection"
+  "return-meta-suffixed"
+  "events-lock"
+  "sessions"
+  "freshness-warn-streak"
+  "dispatch"
+  "deploy-lock"
+  "scope-lock"
+  "commit-lock"
+  "errors-lock"
+)
+
+# Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
+declare -a RUNTIME_FILE_PATTERNS=(
+  "**/.lock/"
+  "**/.orchestrator-loop-guard"
+  "**/.continuation-loop-guard"
+  "**/.orchestrator-churn-state.json"
+  "**/.postflight-loop-guard"
+  "**/.orchestrator-multi-state*.json"
+  "**/.drift-inspection.json"
+  "**/.return-meta-*.json"
+  "**/.events.lock"
+  "**/.sessions/"
+  "**/.freshness-warn-streak.json"
+  "**/.dispatch/"
+  "**/.deploy-lock/"
+  "**/.scope-lock/"
+  "**/.commit-lock/"
+  "**/.errors.lock"
+)
+
+# Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
+# Directory-class members are probed with a file inside the directory, since a gitignore
+# pattern for a directory only matches paths under it, not the bare directory name in isolation.
+declare -a RUNTIME_FILE_PROBES=(
+  "specs/000_probe/.lock/holder.json"
+  "specs/000_probe/.orchestrator-loop-guard"
+  "specs/000_probe/.continuation-loop-guard"
+  "specs/000_probe/.orchestrator-churn-state.json"
+  "specs/000_probe/.postflight-loop-guard"
+  "specs/.orchestrator-multi-state-sess_0000000000_probe.json"
+  "specs/000_probe/.drift-inspection.json"
+  "specs/000_probe/.return-meta-orchestrate.json"
+  "specs/.events.lock"
+  "specs/.sessions/sess_0000000000_probe.json"
+  "specs/.freshness-warn-streak.json"
+  "specs/000_probe/.dispatch/1.md"
+  "specs/.deploy-lock/owner"
+  "specs/.scope-lock/owner"
+  "specs/.commit-lock/owner"
+  "specs/.errors.lock"
+)
+
+# Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
+# means an ephemeral-class file is tracked and must be untracked (never deleted).
+declare -a RUNTIME_FILE_B_REGEX=(
+  '/\.lock/'
+  '\.orchestrator-loop-guard$'
+  '\.continuation-loop-guard$'
+  '\.orchestrator-churn-state\.json$'
+  '\.postflight-loop-guard$'
+  '\.orchestrator-multi-state(-[^/]+)?\.json$'
+  '\.drift-inspection\.json$'
+  '\.return-meta-[^/]*\.json$'
+  '\.events\.lock$'
+  '/\.sessions/[^/]+\.json$'
+  '\.freshness-warn-streak\.json$'
+  '/\.dispatch/'
+  '/\.deploy-lock/'
+  '/\.scope-lock/'
+  '/\.commit-lock/'
+  '\.errors\.lock$'
+)
+
+# Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
+# a hit at this index. A "1" member's bare directory basename is given in
+# RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
+declare -a RUNTIME_FILE_IS_DIR=(
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0"
+)
+declare -a RUNTIME_FILE_DIR_BASENAME=(
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" ""
+)
+
+# ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
+
+# runtime_ignore_block
+# Emits the exact fenced gitignore body (comment header + all 16 patterns, in the order above)
+# that context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" block and both
+# deploy-harness test fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) must carry
+# verbatim. Callers write this to a `.gitignore` file or embed it in a fenced markdown block --
+# never hand-copy it; a hand-copy is exactly the drift this lib exists to prevent.
+runtime_ignore_block() {
+  cat <<'BLOCK_EOF'
+# Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
+# guards. Ignored because these have no freshness gate on read — a git-restored copy would
+# silently corrupt in-flight cycle/churn state. See
+# agent-system/extensions/core/context/standards/orchestrator-runtime-files.md for the full
+# two-class policy and rationale. Deliberately does NOT include .orchestrator-handoff.json or
+# .return-meta.json — those are durable, freshness-gated provenance and MUST stay tracked.
+# Canonical source: agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh
+# (runtime_ignore_block()) -- this block is generated from that lib and pinned to it by
+# tests/test-runtime-file-tracking.sh Case 3; do not hand-edit the pattern list here.
+**/.lock/
+**/.orchestrator-loop-guard
+**/.continuation-loop-guard
+**/.orchestrator-churn-state.json
+**/.postflight-loop-guard
+**/.orchestrator-multi-state*.json
+**/.drift-inspection.json
+**/.return-meta-*.json
+**/.events.lock
+**/.sessions/
+**/.freshness-warn-streak.json
+**/.dispatch/
+**/.deploy-lock/
+**/.scope-lock/
+**/.commit-lock/
+**/.errors.lock
+BLOCK_EOF
+}
+
+# runtime_file_dir_basename_for_hit <tracked-file-path>
+# Prints (on stdout) the directory-class basename (e.g. ".lock") whose pattern matches the given
+# tracked-file hit, and returns 0. Returns 1 and prints nothing if the hit belongs to a
+# file-class member (or no member at all). Used by check-runtime-file-tracking.sh's Check B to
+# print the correct `git rm -r --cached <dir>` remediation for ANY directory-class member, not
+# just `.lock/` (the pre-existing, narrower hardcoded form this generalizes).
+runtime_file_dir_basename_for_hit() {
+  local hit="$1"
+  local i basename
+  for i in "${!RUNTIME_FILE_IDS[@]}"; do
+    if [ "${RUNTIME_FILE_IS_DIR[$i]}" = "1" ]; then
+      basename="${RUNTIME_FILE_DIR_BASENAME[$i]}"
+      case "$hit" in
+        */"$basename"/*)
+          echo "$basename"
+          return 0
+          ;;
+      esac
+    fi
+  done
+  return 1
+}

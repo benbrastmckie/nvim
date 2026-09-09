@@ -1,0 +1,56 @@
+{
+  "phase": 1,
+  "phase_name": "Canonical runtime-file class lib",
+  "started_at": "2026-09-09T20:24:37Z",
+  "last_updated": "2026-09-09T20:26:05Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lib/runtime-file-patterns.sh with header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Define one canonical record per class member",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Seed with 11 existing + .dispatch/ + 4 gaps (16 total)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Provide runtime_ignore_block()",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Register lib in manifest.json scripts array",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/201_close_runtime_file_ignore_enumeration_gap/plans/01_close-ignore-enumeration-gap.md",
-      "summary": "7-phase plan replacing three hand-maintained runtime-file enumerations with a single-source lib, closing five class gaps and demonstrating the acceptance behaviour via a new regression test."
-    }
-  ],
-  "next_steps": "Run /implement 201 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 4.5,
-  "dependency_waves": 4,
-  "memory_candidates": [
-    {
-      "content": "When one lint script is itself one of several hand-maintained enumerations of a class it exists to police, the enumerations drift in mutually inconsistent ways and the lint goes blind to whole sub-classes. Diagnostic signal that this has already happened: the two internal lists of the SAME script disagree (e.g. a probe list covers a member the tracked-file regex list does not), and downstream test fixtures that claim to 'mirror' a canonical doc block have silently drifted ahead of it. The proportionate remedy is a single sourced bash lib holding one record per class member (pattern + probe path + regex + type flag), with every mechanical consumer deriving from it; a markdown block that cannot 'source' the lib is pinned instead by a doc-sync assertion inside the regression test. Precedent in this repo: scripts/lib/task-reference-patterns.sh, sourced by both a lint and a write-time hook.",
-      "category": "PATTERN",
-      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/plans/01_close-ignore-enumeration-gap.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["enumeration-drift", "single-source-of-truth", "lint-blindness", "doc-sync-assertion", "shared-pattern-lib", "gitignore-coverage"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1788984427_1d2334_201",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 4
+    "session_id": "sess_1788984427_1d2334",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
