@@ -30,22 +30,41 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/191_stop_git_snapshot_reverting_unrelated_work/summaries/01_git-snapshot-scope-guard-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["read -d ''", "set -e", "source", "heredoc", "file-scope-overlap.sh", "bash-gotcha"]
+      "suggested_keywords": [
+        "read -d ''",
+        "set -e",
+        "source",
+        "heredoc",
+        "file-scope-overlap.sh",
+        "bash-gotcha"
+      ]
     },
     {
       "content": "Several scratch-fixture test suites under scripts/ (test-conflict-predicate.sh, test-four-tier-conflict.sh, test-session-registry.sh, test-state-write-concurrency.sh, test-state-write-large-payload.sh, test-state-write-regen-timing.sh, test-task-lock-reap.sh, test-postflight-deploy-gate.sh) copy task-lock.sh into an isolated .claude/scripts/ tree but never copy lib/task-lookup-lib.sh, which task-lock.sh sources unconditionally near its top. Every one of these fixtures therefore fails at task-lock.sh invocation time with 'lib/task-lookup-lib.sh: No such file or directory', independent of whatever the suite is actually trying to test. This is a real, pre-existing, unrelated repo defect (confirmed via git log that task-lock.sh's task-lookup-lib.sh dependency predates any of several recent, unrelated tasks) worth fixing as its own small task: add lib/task-lookup-lib.sh to each fixture's copy list.",
       "category": "INSIGHT",
       "source_artifact": "specs/191_stop_git_snapshot_reverting_unrelated_work/summaries/01_git-snapshot-scope-guard-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["task-lock.sh", "task-lookup-lib.sh", "fixture", "run-all.sh", "missing-dependency"]
+      "suggested_keywords": [
+        "task-lock.sh",
+        "task-lookup-lib.sh",
+        "fixture",
+        "run-all.sh",
+        "missing-dependency"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1788984427_1d2334",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
