@@ -21,7 +21,14 @@
 # Usage:
 #   orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
 #     [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
-#     [--territory "..."] [--phase-number N] [--dispatch-start-ts TS]
+#     [--territory "..."] [--phase-number N] [--dispatch-start-ts TS] [--allow-terminal]
+#
+# --allow-terminal: forwarded verbatim as skill_validate_input's 2nd positional argument, so a
+# forced /orchestrate dispatch (--research/--plan/--implement on an already-terminal task) can
+# reach this script's task-identity resolution instead of hitting skill_validate_input's
+# terminal-state exit 1. Absent by default -- only orchestrate-cycle-plan.sh's forced path ever
+# passes it (when forced_this_cycle[$t] is true). An ordinary (unforced) dispatch never sees this
+# flag and behaves exactly as before.
 #
 # --compare: advisory-only, lean-implementation-scoped mode hint (see COMPARE_FLAG in
 # parse-command-args.sh). Emits a single `- compare_flag: true` line into the written dispatch
@@ -56,8 +63,9 @@
 #
 # Exit codes:
 #   0 - dispatch file written successfully; JSON printed on stdout
-#   1 - task not found in state.json, or task is in a terminal state (propagated from
-#       skill_validate_input, which itself exits 1 in both cases)
+#   1 - task not found in state.json or the archive, or task is in a terminal state and
+#       --allow-terminal was not passed (propagated from skill_validate_input, which itself
+#       exits 1 in both cases)
 #   2 - usage error (missing/invalid arguments)
 
 set -euo pipefail
@@ -68,7 +76,7 @@ usage() {
   cat <<'USAGE'
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
          [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
-         [--territory "..."] [--phase-number N] [--dispatch-start-ts TS]
+         [--territory "..."] [--phase-number N] [--dispatch-start-ts TS] [--allow-terminal]
 
 <phase> is one of: research | plan | implement
 USAGE
@@ -103,6 +111,7 @@ focus_prompt=""
 territory=""
 dispatch_start_ts=""
 phase_number=""
+allow_terminal="false"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -118,6 +127,7 @@ while [ "$#" -gt 0 ]; do
     --focus) focus_prompt="${2:-}"; shift 2 ;;
     --territory) territory="${2:-}"; shift 2 ;;
     --dispatch-start-ts) dispatch_start_ts="${2:-}"; shift 2 ;;
+    --allow-terminal) allow_terminal="true"; shift ;;
     --help|-h) usage; exit 0 ;;
     *)
       echo "ERROR: orchestrate-build-dispatch.sh: unrecognized argument: $1" >&2
@@ -144,7 +154,7 @@ fi
 source "${SCRIPT_DIR}/skill-base.sh"
 cd "$SKILL_REPO_ROOT"
 
-skill_validate_input "$task_number"
+skill_validate_input "$task_number" "$allow_terminal"
 description="$DESCRIPTION"
 task_type="$TASK_TYPE"
 

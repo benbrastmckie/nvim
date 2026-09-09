@@ -890,8 +890,7 @@ fi
 declare -A pending_dispatch_seed=()
 for t in "${task_args[@]}"; do
   [ -z "${project_names[$t]:-}" ] && continue
-  _padded=$(printf "%03d" "$t")
-  _task_dir_abs="${PROJECT_ROOT}/specs/${_padded}_${project_names[$t]}"
+  _task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
   _seed_out=$(bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --seed "$_task_dir_abs" 2>/dev/null) || _seed_out=""
   _seeded=$(printf '%s' "$_seed_out" | jq -r '.cycle_count // 0' 2>/dev/null) || _seeded=0
   case "$_seeded" in ''|*[!0-9]*) _seeded=0 ;; esac
@@ -925,8 +924,7 @@ declare -A aux_consume_drift_file=()    # t -> true: rm .drift-inspection.json i
 
 for t in "${task_args[@]}"; do
   [ -z "${project_names[$t]:-}" ] && continue
-  aux_padded=$(printf "%03d" "$t")
-  aux_task_dir_abs="${PROJECT_ROOT}/specs/${aux_padded}_${project_names[$t]}"
+  aux_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
   aux_blocker_file="${aux_task_dir_abs}/.blocker-research.json"
   aux_drift_file="${aux_task_dir_abs}/.drift-inspection.json"
 
@@ -1100,12 +1098,12 @@ else
       mt_set --arg t "$t" 'del(.aux_pending[$t])'
     fi
     if [ "${aux_consume_blocker_file[$t]:-}" = "true" ]; then
-      aux_padded2=$(printf "%03d" "$t")
-      rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.blocker-research.json"
+      aux_task_dir_abs2="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
+      rm -f "${aux_task_dir_abs2}/.blocker-research.json"
     fi
     if [ "${aux_consume_drift_file[$t]:-}" = "true" ]; then
-      aux_padded2=$(printf "%03d" "$t")
-      rm -f "${PROJECT_ROOT}/specs/${aux_padded2}_${project_names[$t]}/.drift-inspection.json"
+      aux_task_dir_abs2="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
+      rm -f "${aux_task_dir_abs2}/.drift-inspection.json"
     fi
   done
   mt_save
@@ -1242,7 +1240,7 @@ for t in "${task_args[@]}"; do
       # detected_defects, ...) via orchestrate-loop-guard-init.sh --flush. Never touches disk
       # under --dry-run — the live path re-applies this on the next real invocation.
       if [ "$dry_run" != "true" ]; then
-        _task_dir_abs="${PROJECT_ROOT}/specs/$(printf "%03d" "$t")_${project_names[$t]}"
+        _task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
         _guard_file="${_task_dir_abs}/.orchestrator-loop-guard"
         if [ -f "$_guard_file" ]; then
           _exhausted_dest="${_task_dir_abs}/.exhausted-loop-guard-$(date -u +%s).json"
@@ -1580,8 +1578,7 @@ for t in "${probed_dispatch[@]}"; do
   [ "${effective_group[$t]}" != "implement" ] && continue
   h1_project_name="${project_names[$t]:-}"
   [ -z "$h1_project_name" ] && continue
-  h1_padded=$(printf "%03d" "$t")
-  h1_task_dir_abs="${PROJECT_ROOT}/specs/${h1_padded}_${h1_project_name}"
+  h1_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "$h1_project_name" "$PROJECT_ROOT")"
   h1_plan_path=$(ls -1 "${h1_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || h1_plan_path=""
   h1_handoff_file="${h1_task_dir_abs}/.orchestrator-handoff.json"
   if [ -f "$h1_handoff_file" ]; then
@@ -1689,8 +1686,7 @@ for t in "${probed_dispatch_post_h1[@]}"; do
     out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "task not found in state.json; cannot resolve project directory"}')")
     continue
   fi
-  padded=$(printf "%03d" "$t")
-  task_dir_rel="specs/${padded}_${project_name}"
+  task_dir_rel="$(task_lookup_dir "$t" "$project_name" "$SKILL_REPO_ROOT")"
   task_dir_abs="${SKILL_REPO_ROOT}/${task_dir_rel}"
 
   # (g) Task directory creation — the multi-task missing-directory gap. Ordered strictly before
@@ -1746,6 +1742,11 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   [ "$hard_mode" = "true" ] && build_args+=(--hard)
   [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
   [ -n "$model_flag" ] && build_args+=(--model "$model_flag")
+  # Phase 3 (Defect 3): a forced dispatch against an already-terminal task must survive
+  # skill_validate_input's terminal-state gate inside orchestrate-build-dispatch.sh. Empty-value-
+  # skips-flag, same convention as every other flag above: an ordinary (unforced) dispatch never
+  # sets forced_this_cycle[$t], so this never appends for it.
+  [ "${forced_this_cycle[$t]:-false}" = "true" ] && build_args+=(--allow-terminal)
   # H1 (Phase 4): only ever set for a hard-mode implement candidate whose heading-scan selected
   # a phase this cycle — absent from every base-mode call and from a hard-mode implement candidate
   # that fell through to ordinary status-derived dispatch (no open heading found, not inconclusive).

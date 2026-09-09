@@ -1,0 +1,35 @@
+{
+  "phase": 3,
+  "phase_name": "Terminal bypass and archive fallback in dispatch validation (Defect 3)",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill_validate_input allow_terminal + archive-aware lookup/dir + TASK_IS_ARCHIVED", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "orchestrate-build-dispatch.sh --allow-terminal flag, usage, exit-code doc", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "orchestrate-cycle-plan.sh: forward --allow-terminal; route 7 padded-dir derivations through task_lookup_dir", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Fix skill_read_artifact_number archive-blindness and set -e-unsafe legacy fallback (surfaced during implementation)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.additional",
+      "description": "skill_read_artifact_number's next_artifact_number lookup and legacy fallback were archive-blind and set -e-unsafe on a glob miss",
+      "type": "altered",
+      "reason": "Not named in the plan's enumerated files, but directly on this phase's acceptance path: an archived-task forced dispatch would crash inside orchestrate-build-dispatch.sh immediately after skill_validate_input succeeded. Fixed in the same phase.",
+      "annotation": "n/a (recorded in Scope Hypothesis correction note, not a checklist item)"
+    },
+    {
+      "task_id": "3.scope-hypothesis",
+      "description": "Plan hypothesized 5 specs/${padded} derivation sites in orchestrate-cycle-plan.sh; live grep found 7 (the aux .blocker-research.json/.drift-inspection.json consume/rm sites were missed).",
+      "type": "altered",
+      "reason": "Corrected per the phase's own Scope Hypothesis instruction to convert what is actually there and record the correction.",
+      "annotation": "n/a (recorded inline in the plan's Scope Hypothesis note)"
+    }
+  ]
+}

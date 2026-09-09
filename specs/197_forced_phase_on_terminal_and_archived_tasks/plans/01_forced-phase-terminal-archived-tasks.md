@@ -275,41 +275,41 @@ terminal task still does not.
 
 ---
 
-### Phase 3: Terminal bypass and archive fallback in dispatch validation (Defect 3) [NOT STARTED]
+### Phase 3: Terminal bypass and archive fallback in dispatch validation (Defect 3) [COMPLETED]
 
 **Goal**: A forced dispatch survives `skill_validate_input`, resolves an archived task's
 identity and directory correctly, and is not silently deferred forever.
 
 **Tasks**:
-- [ ] `skill-base.sh`: give `skill_validate_input` an optional 2nd positional
+- [x] `skill-base.sh`: give `skill_validate_input` an optional 2nd positional
       `allow_terminal` (default empty/false), following the same optional-positional convention
       `skill_postflight_update` already uses. When true, the `completed|abandoned|expanded`
       block is skipped and a named notice is emitted to stderr recording that a forced dispatch
       is proceeding against a terminal task. Absent the argument, behavior is byte-for-byte
-      unchanged.
-- [ ] `skill-base.sh`: replace `skill_validate_input`'s `active_projects`-only `TASK_DATA`
+      unchanged. *(completed)*
+- [x] `skill-base.sh`: replace `skill_validate_input`'s `active_projects`-only `TASK_DATA`
       lookup with `task_lookup_entry` from Phase 1, so an archived task is found rather than
       hitting the "not found in state.json" `exit 1`. The not-found `exit 1` remains for a task
-      present in neither.
-- [ ] `skill-base.sh`: export a new `TASK_IS_ARCHIVED` (`true`/`false`) from
-      `skill_validate_input`, set from `task_lookup_is_active`. Phase 4 consumes it.
-- [ ] `skill-base.sh`: derive `TASK_DIR` via `task_lookup_dir` (Phase 1) instead of the
+      present in neither. *(completed)*
+- [x] `skill-base.sh`: export a new `TASK_IS_ARCHIVED` (`true`/`false`) from
+      `skill_validate_input`, set from `task_lookup_is_active`. Phase 4 consumes it. *(completed)*
+- [x] `skill-base.sh`: derive `TASK_DIR` via `task_lookup_dir` (Phase 1) instead of the
       hardcoded `specs/${PADDED_NUM}_${PROJECT_NAME}`, so an archived task's dispatch file and
       artifacts land in `specs/archive/{NNN}_{slug}/` next to its existing reports and plans.
-      `TASK_DIR_ABS` continues to be `${SKILL_REPO_ROOT}/${TASK_DIR}`.
-- [ ] `orchestrate-build-dispatch.sh`: add an `--allow-terminal` flag to the argument loop,
+      `TASK_DIR_ABS` continues to be `${SKILL_REPO_ROOT}/${TASK_DIR}`. *(completed)*
+- [x] `orchestrate-build-dispatch.sh`: add an `--allow-terminal` flag to the argument loop,
       forwarded as `skill_validate_input`'s 2nd argument. Update the usage block and the
       script's own exit-code doc header (which currently transcribes the unconditional terminal
-      `exit 1` as one of its two exit-1 causes).
-- [ ] `orchestrate-cycle-plan.sh`: append `--allow-terminal` to `build_args` when
+      `exit 1` as one of its two exit-1 causes). *(completed)*
+- [x] `orchestrate-cycle-plan.sh`: append `--allow-terminal` to `build_args` when
       `forced_this_cycle[$t]` is true, using the same empty-value-skips-flag convention the
-      surrounding flags already use.
-- [ ] `orchestrate-cycle-plan.sh`: route the remaining hardcoded
+      surrounding flags already use. *(completed)*
+- [x] `orchestrate-cycle-plan.sh`: route the remaining hardcoded
       `specs/${padded}_${project_name}` derivations through `task_lookup_dir` so an archived
       task's loop-guard, handoff anchor, dispatch-row `task_dir`, aux-dispatch paths, and
       hard-mode plan/handoff reads all resolve to the same directory the dispatch file was
-      written into. Do not leave a mixed set.
-- [ ] `shellcheck` clean on all three files.
+      written into. Do not leave a mixed set. *(completed)*
+- [x] `shellcheck` clean on all three files. *(completed)*
 
 **Timing**: 2 hours
 
@@ -323,6 +323,21 @@ hard-mode H1, and the dispatch-row `task_dir_rel`/`task_dir_abs` pair). Confirm 
 implementation time with
 `grep -n 'specs/\${\?padded\|specs/\$(printf' agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`
 and convert every hit; if the count differs, convert what is actually there and record the
+**(correction, implementation time)**: the live grep found SEVEN sites, not five — the aux
+`.blocker-research.json`/`.drift-inspection.json` consume/rm sites (a separate pair from the aux
+dispatch decision computation) use the same `specs/${aux_padded2}_${project_names[$t]}` shape and
+were missed by the plan's own enumeration. All seven were converted (loop-guard seed, aux
+dispatch decision, the two aux consume/rm sites, exhausted loop guard, hard-mode H1, and the
+dispatch-row pair) — see the file diff. Also surfaced at implementation time, outside this
+phase's originally enumerated files: `skill_read_artifact_number` in `skill-base.sh` had its own
+independent, unenumerated archive-blindness bug (its `next_artifact_number` lookup only ever read
+`.active_projects`, and its legacy fallback both reconstructed the active-only directory shape
+AND crashed under `set -e -o pipefail` on a non-matching glob). Left unfixed, a forced round on
+an archived task would build a valid `TASK_DIR` via `skill_validate_input` and then abort inside
+`orchestrate-build-dispatch.sh`'s very next call, reproducing this task's own defect one call
+deeper. Fixed in the same phase (archive-aware lookup via `task_lookup_entry`, archive-aware
+fallback directory via ambient `TASK_DIR`, and the `set -e`-safety fix) since it sits squarely on
+this phase's acceptance path.
 correction rather than stopping at five.
 
 **Files to modify**:

@@ -12,7 +12,8 @@
 #     skill_preflight_update "$task_number" "research" "$session_id"
 #
 # VARIABLE EXPORTS:
-#   skill_validate_input  -> TASK_DATA, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR
+#   skill_validate_input  -> TASK_DATA, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR,
+#                            TASK_DIR_ABS, TASK_IS_ARCHIVED
 #   skill_read_artifact_number -> ARTIFACT_NUMBER, ARTIFACT_PADDED
 #   skill_read_metadata   -> SUBAGENT_STATUS, ARTIFACT_PATH, ARTIFACT_TYPE, ARTIFACT_SUMMARY, MEMORY_CANDIDATES
 #
@@ -43,6 +44,18 @@ if [ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/common.sh" ]; then
   source "${SKILL_REPO_ROOT}/.claude/scripts/lib/common.sh"
 elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh" ]; then
   source "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SHARED LIBRARY: scripts/lib/task-lookup-lib.sh (archive-aware task lookup: active-wins entry
+# lookup, active-membership predicate, archived-task-directory resolution). Same two-candidate
+# resolution order as common.sh immediately above. Needed by skill_validate_input,
+# skill_preflight_update, and skill_postflight_update below, all of which must find an archived
+# task rather than treating it as nonexistent.
+if [ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/task-lookup-lib.sh" ]; then
+  source "${SKILL_REPO_ROOT}/.claude/scripts/lib/task-lookup-lib.sh"
+elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/task-lookup-lib.sh" ]; then
+  source "$(dirname "${BASH_SOURCE[0]}")/lib/task-lookup-lib.sh"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -179,15 +192,26 @@ _events_append_observable() {
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1: Validate input task number
-# Usage: skill_validate_input "$task_number"
-# Exports: TASK_DATA, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR
-# Exit 1 if task not found or in terminal state
+# Usage: skill_validate_input "$task_number" ["$allow_terminal"]
+# Exports: TASK_DATA, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR, TASK_DIR_ABS,
+#          TASK_IS_ARCHIVED
+# Exit 1 if task not found in EITHER active_projects or the archive, or (absent allow_terminal)
+# in a terminal state.
+#
+# Optional 2nd positional: `allow_terminal` ("true"/empty). Absent or empty (every existing call
+# site, byte-for-byte) preserves today's behavior exactly: the completed/abandoned/expanded block
+# below still hard-exits. When "true" (a forced `/orchestrate` dispatch), that block is SKIPPED
+# and a named notice is emitted to stderr instead, recording that a forced dispatch is proceeding
+# against a terminal task. This is opt-in and default-off by construction — nothing but an
+# explicit forced-phase caller ever passes it.
 skill_validate_input() {
   local task_number="$1"
+  local allow_terminal="${2:-}"
   PADDED_NUM=$(printf "%03d" "$task_number")
-  TASK_DATA=$(jq -r --argjson num "$task_number" \
-    '.active_projects[] | select(.project_number == $num)' \
-    specs/state.json)
+  # Archive-aware lookup (task-lookup-lib.sh, sourced above): active projects win; the archive is
+  # consulted only when the number is absent from active_projects, so an archived task is found
+  # here instead of hitting the not-found exit below.
+  TASK_DATA=$(task_lookup_entry "$task_number" specs/state.json)
   if [ -z "$TASK_DATA" ]; then
     echo "ERROR: Task $task_number not found in state.json" >&2
     exit 1
@@ -196,17 +220,30 @@ skill_validate_input() {
   TASK_STATUS=$(echo "$TASK_DATA" | jq -r '.status')
   PROJECT_NAME=$(echo "$TASK_DATA" | jq -r '.project_name')
   DESCRIPTION=$(echo "$TASK_DATA" | jq -r '.description // ""')
-  TASK_DIR="specs/${PADDED_NUM}_${PROJECT_NAME}"
+  # Archive-aware directory resolution (task-lookup-lib.sh): an archived task's dispatch file and
+  # artifacts land in specs/archive/{NNN}_{slug}/, next to its existing reports and plans, rather
+  # than a hardcoded specs/{NNN}_{slug} that no longer exists (and would otherwise be silently
+  # re-created as a fresh, empty, WRONG sibling directory).
+  TASK_DIR=$(task_lookup_dir "$task_number" "$PROJECT_NAME" "$SKILL_REPO_ROOT")
   # Absolute companion to TASK_DIR. TASK_DIR stays relative because many existing consumers
   # depend on its relative form; TASK_DIR_ABS is the anchor to hand to dispatched agents and
   # to build write destinations from.
   TASK_DIR_ABS="${SKILL_REPO_ROOT}/${TASK_DIR}"
-  # Block terminal states
-  if [ "$TASK_STATUS" = "completed" ] || [ "$TASK_STATUS" = "abandoned" ] || [ "$TASK_STATUS" = "expanded" ]; then
-    echo "ERROR: Task $task_number is in terminal state [$TASK_STATUS]" >&2
-    exit 1
+  if task_lookup_is_active "$task_number" specs/state.json; then
+    TASK_IS_ARCHIVED="false"
+  else
+    TASK_IS_ARCHIVED="true"
   fi
-  export TASK_DATA TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM TASK_DIR TASK_DIR_ABS
+  # Block terminal states (unless a forced dispatch explicitly opted in via allow_terminal).
+  if [ "$TASK_STATUS" = "completed" ] || [ "$TASK_STATUS" = "abandoned" ] || [ "$TASK_STATUS" = "expanded" ]; then
+    if [ "$allow_terminal" = "true" ]; then
+      echo "NOTICE: [skill-base] Task $task_number is in terminal state [$TASK_STATUS]; proceeding because a forced dispatch explicitly opted in (allow_terminal=true)." >&2
+    else
+      echo "ERROR: Task $task_number is in terminal state [$TASK_STATUS]" >&2
+      exit 1
+    fi
+  fi
+  export TASK_DATA TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM TASK_DIR TASK_DIR_ABS TASK_IS_ARCHIVED
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -308,13 +345,25 @@ skill_read_artifact_number() {
   local artifact_dir="$4"  # "reports/" | "plans/" | "summaries/"
   local mode="${5:-prev}"
   local next_num
-  next_num=$(jq -r --argjson num "$task_number" \
-    '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
-    specs/state.json)
+  # Archive-aware (task-lookup-lib.sh, sourced at the top of this file): active projects win, the
+  # archive is consulted only when the number is absent from active_projects. Without this, an
+  # archived task's next_artifact_number was invisible here (the old inline jq only ever read
+  # .active_projects), forcing every archived-task call down the legacy fallback below even
+  # though the archived record itself still carries the real next_artifact_number verbatim (see
+  # skill-todo's archival jq, which copies the whole active_projects entry unmodified).
+  next_num=$(task_lookup_entry "$task_number" specs/state.json | jq -r '.next_artifact_number // 1')
   if [ "$next_num" = "null" ] || [ -z "$next_num" ]; then
-    # Legacy fallback: count existing artifacts in directory
-    local count
-    count=$(ls "specs/${padded_num}_${project_name}/${artifact_dir}"*[0-9][0-9]*.md 2>/dev/null | wc -l)
+    # Legacy fallback: count existing artifacts in directory. Prefers the ambient TASK_DIR set by
+    # skill_validate_input (this function's only call site always runs after it, in the same
+    # process) -- archive-aware, so an archived task's fallback counts against
+    # specs/archive/{NNN}_{slug}/, not a nonexistent specs/{NNN}_{slug}/. Falls back to
+    # reconstructing the active-only path when TASK_DIR is unset, preserving today's exact
+    # behavior for any caller that never ran skill_validate_input.
+    local count fallback_task_dir
+    fallback_task_dir="${TASK_DIR:-specs/${padded_num}_${project_name}}"
+    # `|| count=0` guards the glob-miss case: under `set -e -o pipefail`, `ls` on a non-matching
+    # glob exits non-zero and would otherwise abort the whole script here.
+    count=$(ls "${fallback_task_dir}/${artifact_dir}"*[0-9][0-9]*.md 2>/dev/null | wc -l) || count=0
     ARTIFACT_NUMBER=$((count + 1))
   elif [ "$mode" = "current" ]; then
     ARTIFACT_NUMBER="$next_num"
