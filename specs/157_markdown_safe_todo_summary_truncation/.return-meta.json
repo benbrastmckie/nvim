@@ -1,12 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/157_markdown_safe_todo_summary_truncation/summaries/01_markdown-safe-summary-truncation-summary.md",
+      "summary": "Six-phase implementation of markdown-safe, title-aware, word-boundary truncation at both slice sites in generate-task-order.sh, with a new 16-assertion regression suite, live-data verification, and a render-side-parity port to the .opencode/ mirror."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed both blind character-slice sites in generate-task-order.sh's Grouped by Topic summary lines: the source expression now prefers .title over .description, strips inline-markup hazard characters before slicing, and truncates on a word boundary with a visible marker reserved within budget; the cross-topic short_desc slice shares the same guarantees via a new idempotent bash helper. Added a 16-assertion regression suite (proven red against the pre-fix script, green after), deployed, regenerated specs/TODO.md against live data with full line-by-line verification, and ported the fix to the .opencode/ renderer mirror. Full gate set (79-suite shell test run, task-reference lint, deploy-freshness) all green."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/generate-task-order.sh",
+    "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+    ".opencode/scripts/generate-task-order.sh",
+    "specs/157_markdown_safe_todo_summary_truncation/baseline-grouped-by-topic.txt",
+    "specs/157_markdown_safe_todo_summary_truncation/pre-fix-test-run.log",
+    "specs/157_markdown_safe_todo_summary_truncation/post-fix-test-run.log",
+    "specs/157_markdown_safe_todo_summary_truncation/regenerated-grouped-by-topic-after.txt",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a truncate-to-budget-with-word-boundary-and-marker requirement that must be applied at more than one slice site (e.g. a primary render plus a shortened secondary annotation derived from the same field), implement it once per language needed (a jq `def` and a bash function) with IDENTICAL semantics: reserve the marker's length WITHIN the stated budget (cut = budget - marker_len, not budget + marker_len), back off to the last word boundary at-or-before that cut point, and make the bash helper idempotent against an already-marked input (strip a trailing marker before re-cutting) so a value already truncated by the primary slice is never double-marked when a smaller secondary budget cuts it again. Never open-code the same truncation logic a second time at a second site -- that is exactly how the original defect this pattern fixes was introduced.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/157_markdown_safe_todo_summary_truncation/summaries/01_markdown-safe-summary-truncation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["truncation", "word-boundary", "jq", "bash-helper", "idempotent", "markdown-safety"]
+    },
+    {
+      "content": "Adding a new scripts/tests/test-*.sh file under any extension in agent-system/extensions/ requires registering it in that extension's own manifest.json `provides.scripts` array, or the next deploy fails doc-lint with `FAIL: script file on disk NOT in provides.scripts: <path>` even though the file itself is syntactically fine and passes when run directly. This is easy to miss because the test suite itself runs correctly pre-deploy (run-all.sh discovers it via glob, no registration needed there) -- the registration is a doc-lint/deploy-time requirement, not a test-discovery requirement, so a suite can be written, pass locally, and still break the next deploy-headless.sh run until the manifest entry is added.",
+      "category": "CONFIG",
+      "source_artifact": "specs/157_markdown_safe_todo_summary_truncation/summaries/01_markdown-safe-summary-truncation-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "doc-lint", "deploy-headless", "new-test-file"]
+    },
+    {
+      "content": "general-implementation-agent (and any implement-stage agent) must NEVER call update-task-status.sh directly to transition a task's status to completed -- that is the orchestrator's own postflight job, performed AFTER the agent returns and its .return-meta.json (status: implemented, never completed) is read. Calling it directly prematurely flips specs/state.json and regenerates specs/TODO.md (and, via update-phase-status.sh's own mechanism, can touch the plan's plan-level Status field too), which can desync from what the orchestrator's postflight then expects to do itself (completion_data propagation, roadmap linking, memory-candidate harvesting). If this happens, it can be cleanly undone with zero collateral damage by restoring specs/state.json from `git show HEAD:specs/state.json` (never hand-edit JSON with Python's json.dump on this file without `ensure_ascii=False` -- the default escapes every non-ASCII character like em-dashes into \\uXXXX sequences, corrupting every OTHER task's description field in a giant unwanted diff), re-applying only the single targeted field via `jq`, regenerating TODO.md, and reverting the plan file's Status line with Edit.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/157_markdown_safe_todo_summary_truncation/summaries/01_markdown-safe-summary-truncation-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["update-task-status.sh", "postflight-boundary", "agent-contract", "json-ensure_ascii", "state.json-edit-safety"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788894448_36ce34",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }
