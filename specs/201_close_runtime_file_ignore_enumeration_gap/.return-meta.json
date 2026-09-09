@@ -1,10 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/201_close_runtime_file_ignore_enumeration_gap/summaries/01_close-ignore-enumeration-gap-summary.md",
+      "summary": "Closed the runtime-file ignore enumeration gap via a single-source lib (scripts/lib/runtime-file-patterns.sh, 16 members) consumed by check-runtime-file-tracking.sh and both deploy test fixtures, a doc-sync-pinned standards block, and a new regression test demonstrating the tracked-mutex FAIL -> git rm -r --cached -> PASS acceptance behaviour end-to-end."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Introduced scripts/lib/runtime-file-patterns.sh as the single canonical definition of the 16-member ephemeral orchestrator runtime-file class, rewired check-runtime-file-tracking.sh and both deploy test fixtures onto it, generalized the git rm -r --cached remediation to every directory-class member, updated the standards doc and consumer .gitignore, and added a new regression test (test-runtime-file-tracking.sh) proving the tracked-specs/.deploy-lock/owner FAIL/remediation/PASS cycle and the doc-sync pin. Verified end-to-end via a real headless redeploy with gate 14 green."
+  },
+  "modified_files": [
+    ".gitignore",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "git check-ignore reports an already-TRACKED path as NOT ignored, even when a .gitignore pattern matches it byte-for-byte -- gitignore rules never apply retroactively to tracked files, and check-ignore faithfully reflects that. Consequence for any lint/test that probes 'is this path ignored': if the probe path happens to coincide with a path that got force-tracked (git add -f) in a fixture or in real history, Check A-style ignore-coverage assertions will report a false 'not ignored' finding for that specific path even though the pattern itself is correct -- this is expected, not a bug in the pattern, and a regression test reproducing a tracked-file incident should expect BOTH the ignore-coverage check AND the tracked-file check to fail together on that path, then both to pass together once untracked.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/summaries/01_close-ignore-enumeration-gap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-check-ignore", "tracked-files", "gitignore-semantics", "lint-testing", "false-positive"]
+    },
+    {
+      "content": "When a markdown policy doc's fenced code block must stay byte-identical to a bash lib's generated output (because the doc can't `source` the lib), pin them with a dedicated regression-test case that extracts the fenced block via awk and diffs it against the lib function's stdout -- rather than trusting hand-maintenance. Demonstrate the pin is load-bearing with a deliberate-break check: temporarily desync one side, confirm the test goes red, restore. This is the doc-sync pattern that closes the 'N enumerations drift independently' defect class when one of the N sites is prose, not code.",
+      "category": "PATTERN",
+      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/summaries/01_close-ignore-enumeration-gap-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["doc-sync", "single-source-of-truth", "regression-test", "markdown-pin", "enumeration-drift"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788984427_1d2334",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
