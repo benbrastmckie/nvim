@@ -1,7 +1,7 @@
 # Implementation Plan: Task #191
 
 - **Task**: 191 - Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/191_stop_git_snapshot_reverting_unrelated_work/reports/01_git-snapshot-scope-guard.md
@@ -149,7 +149,7 @@ docs edits are deliberately serialized because 3 and 4 both edit the same file.
 
 ---
 
-### Phase 1: Fixture test reproducing the incident tree [NOT STARTED]
+### Phase 1: Fixture test reproducing the incident tree [IN PROGRESS]
 
 **Goal**: A fixture-driven regression suite that builds the exact incident tree shape (dirty
 tracked files both inside and outside a declared `file_scope`) and asserts default-mode
@@ -157,34 +157,42 @@ tracked files both inside and outside a declared `file_scope`) and asserts defau
 unfixed script — that demonstrated failure is this phase's deliverable.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh` in full
+- [x] Read `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh` in full
       and reuse its structure verbatim: `SCRIPT_DIR`-relative resolution of the script under
       test (`$SCRIPT_DIR/../git-snapshot.sh`, which resolves in both source-store and deployed
       layouts with no branching), `pass()/fail()/info()` helpers, `PASSED`/`FAILED` counters,
       `mktemp -d` workdir with `trap cleanup EXIT`, exit 0 all-pass / exit 1 any-fail.
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-git-snapshot.sh` with a
+      *(completed)*
+- [x] Write `agent-system/extensions/core/scripts/tests/test-git-snapshot.sh` with a
       `make_scoped_repo()` helper: `git init` a temp repo, create `specs/900_fixture/` and a
       minimal `specs/state.json` whose task 900 entry declares
       `file_scope: ["in-scope/"]`, commit `in-scope/tracked.txt` and `outside/unrelated.txt`,
       then dirty BOTH so `git status --porcelain` is genuinely non-empty.
-- [ ] Add a fixture self-check as the FIRST case (mirroring the sibling suite's precondition
+      *(completed: fixture number kept out of the "task N" citation shape to satisfy
+      validate-no-task-references.sh -- see FIXTURE_NUM/FIXTURE_DIR_NAME in the test)*
+- [x] Add a fixture self-check as the FIRST case (mirroring the sibling suite's precondition
       guard): fail loudly if the fixture tree is not actually dirty, so later cases can never
-      pass vacuously.
-- [ ] Add the core case: run `git-snapshot.sh 900` (default mode) in the fixture; assert
+      pass vacuously. *(completed)*
+- [x] Add the core case: run `git-snapshot.sh 900` (default mode) in the fixture; assert
       non-zero exit, assert `outside/unrelated.txt` is still dirty in the working tree, and
-      assert the offending path appears in stderr.
-- [ ] Add the negative-control case: an all-in-scope dirty tree still snapshots successfully
+      assert the offending path appears in stderr. *(completed: asserted against combined
+      stdout+stderr capture, which stderr is always a subset of)*
+- [x] Add the negative-control case: an all-in-scope dirty tree still snapshots successfully
       (exit 0, tree reverted, marker written) — this is what proves the guard did not simply
-      break the script.
-- [ ] Add the `--no-revert` regression case: `--no-revert` on the SAME out-of-scope tree exits
+      break the script. *(completed: status scoped to the two original fixture paths, since
+      the snapshot itself legitimately leaves new untracked patch/marker artifacts)*
+- [x] Add the `--no-revert` regression case: `--no-revert` on the SAME out-of-scope tree exits
       0 and leaves the tree exactly as found (guards D2's boundary: `--no-revert` is never
-      guarded).
-- [ ] Register the new file in `agent-system/extensions/core/manifest.json`'s scripts list
+      guarded). *(completed: same original-paths-only status scoping as the negative control)*
+- [x] Register the new file in `agent-system/extensions/core/manifest.json`'s scripts list
       (alongside the other `tests/test-*.sh` entries) so it is deployed. `index-entries.json`
-      needs no entry — `scripts/**` has zero entries there.
-- [ ] Run the suite and CAPTURE the pre-fix failure output into the phase's progress record;
+      needs no entry — `scripts/**` has zero entries there. *(completed: verified 0 scripts/
+      entries in index-entries.json)*
+- [x] Run the suite and CAPTURE the pre-fix failure output into the phase's progress record;
       confirm the core case fails because the out-of-scope file was stashed away, not for an
-      unrelated fixture reason.
+      unrelated fixture reason. *(completed: pre-fix run = 3 passed, 1 failed; only the core
+      case fails, exit=0 and outside/unrelated.txt clean/reverted -- recorded in
+      progress/phase-1-progress.json)*
 
 **Timing**: 1.5 hours
 

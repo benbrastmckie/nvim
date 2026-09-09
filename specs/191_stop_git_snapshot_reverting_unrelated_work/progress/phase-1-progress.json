@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Fixture test reproducing the incident tree",
+  "started_at": "2026-09-09T20:21:00Z",
+  "last_updated": "2026-09-09T20:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-git-snapshot.sh with make_scoped_repo helper, fixture self-check, core/negative-control/--no-revert cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-snapshot.sh"]},
+    {"id": 2, "description": "Register new test file in manifest.json scripts list", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Run suite, capture pre-fix RED evidence for core case", "status": "done", "files_touched": [], "note": "Pre-fix run: 3 passed, 1 failed. Only the core out-of-scope case fails (exit=0, outside/unrelated.txt reverted/clean, no path named on output) -- fixture self-check, negative control, and --no-revert regression all pass against the unfixed script as expected."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
