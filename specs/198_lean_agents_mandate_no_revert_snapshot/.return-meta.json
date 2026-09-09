@@ -1,0 +1,45 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 3 tasks from 4 reported defect instances. One reported defect was already fixed at source (stale deploy, not a doc bug); one was substantially covered by an existing task; the third and fourth were folded into a single isolation-posture decision task spanning all three failure modes.",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/198_lean_agents_mandate_no_revert_snapshot/",
+      "summary": "Lean agent contracts mandate git-snapshot --no-revert under orchestrator_mode"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/199_concurrent_dispatch_isolation_posture/",
+      "summary": "Weigh and implement worktree isolation vs shared-tree guards for concurrent dispatches"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/200_consumer_deploy_propagation_gap/",
+      "summary": "Close the consumer-repo deploy propagation gap leaving fixed defects live in deployed trees"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 198, 199, 200 added and Task Order regenerated"
+    }
+  ],
+  "next_steps": "Run /orchestrate 198 first (trivial data-loss mitigation, ships immediately), then 200 and 199 in parallel.",
+  "metadata": {
+    "session_id": "sess_1788958534_402e35",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "meta",
+      "meta-builder-agent"
+    ],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 3
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ]
+}

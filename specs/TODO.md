@@ -142,43 +142,73 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
-DECIDE, THEN IMPLEMENT: should concurrent same-repo /orchestrate dispatches keep sharing one working tree and one build directory, or should each dispatch get an isolated one? Weigh the two options against the accumulated evidence; do not presuppose either.
+DECIDE, THEN IMPLEMENT: should concurrent same-repo /orchestrate dispatches keep sharing one working tree and one build directory, or should each dispatch get an isolated one? Weigh the options against the accumulated evidence; do not presuppose either.
 
-WHY THIS IS BEING ASKED NOW. Informing agents about each other has already been filed as the remedy (task 193, "carry concurrent-sibling territory in base-mode dispatch briefs"), and it is the right fix for the information gap. But a further live batch shows harm that information alone does not remove: two dispatches can both know about each other and still contend for one `.lake` directory and one working tree. This task addresses the SHARED-RESOURCE question that sits underneath the information question.
+=== THE ROOT CAUSE PRODUCES THREE DISTINCT FAILURE MODES ===
 
-OBSERVED LIVE (2026-09-09, ~/Projects/BimodalLogic, tasks 574 and 575 dispatched concurrently as lean-implementation-agent into ONE shared working tree).
-  (a) BUILD CONTENTION. The 575 dispatch lost two builds to concurrent `lake` processes sharing a single `.lake` directory. One of the two was self-inflicted: it ran `scripts/check-module-invariants.sh` alongside a guarded build.
-  (b) WORKING-TREE CONTENTION. The 575 dispatch's default-mode `git-snapshot.sh` reverted the 574 dispatch's uncommitted work (filed separately; see tasks 191 and the lean contract task).
+All three were observed live on 2026-09-09 in ~/Projects/BimodalLogic, tasks 574 and 575 dispatched concurrently as lean-implementation-agent into ONE shared working tree. They share a single root cause -- concurrent dispatch onto shared mutable resources -- but each has its own mechanism, and no single per-mechanism patch addresses more than one of them. This taxonomy is the core input to the decision.
 
-CRITICAL CORRECTION TO THE ORIGINAL DIAGNOSIS -- THE BUILD MUTEX ALREADY EXISTS. This was initially reported as "needs a build mutex in lake-build-guard.sh". Verified against the source: agent-system/extensions/core/scripts/lake-build-guard.sh ALREADY implements a proper `flock`-based mutex on `$GUARD_LAKE_DIR/build-guard.lock`, with a lock-wait timeout (exit 75), abandoned-lock recovery via flock's automatic release on process exit, and result sharing between a waiter and the holder. It also degrades audibly when `flock` is missing rather than silently running unserialized. The mutex is not missing.
+  MODE 1a -- WORKING-TREE REVERT. The 575 dispatch ran `git-snapshot.sh 575` in DEFAULT mode while 574 was editing the same tree. Default mode runs `git stash push -u` repo-globally with NO pathspec, stashing away the sibling's uncommitted work (574's `.return-meta.json`, `.claude-extensions.json`, 7 lines of `specs/events.jsonl`). Detected and restored from `stash@{0}` by the agent noticing -- nothing at any layer would have caught it otherwise. Corroboration that this recurs: `git stash list` holds 44 entries, 32 named `git-snapshot-*`.
+    Fixed by: auto/mandated `--no-revert`. Does NOT fix 1b or 2.
 
-WHAT IS ACTUALLY MISSING IS THAT THE MUTEX IS OPT-IN. The guard's own header states it: "any other consumer must opt in explicitly by invoking `lake-build-guard.sh build ...`". Any process that runs bare `lake` bypasses the lock entirely. The self-inflicted collision in (a) is exactly this: `/home/benjamin/Projects/BimodalLogic/scripts/check-module-invariants.sh` calls bare `lake build` (and `lake build BimodalTest`) directly, with no guard. So the failure mode is BYPASS, not absence.
+  MODE 1b -- CROSS-TASK COMMIT BLEED. VERIFIED DIRECTLY. Commit 08936bfbb ("task 574 phase 5: TM-star ledger rows and declaration-site Paper: lines") carries THREE task-575 rows in docs/theorem-index.md -- `isPlusStateLocal_of_stateLocal`, `plusStateLocal_plusValid_iff_stab`, `stateLocal_ofPlus_iff` -- plus a table header. Reproduce with `git show 08936bfbb -- docs/theorem-index.md`. Self-reported by the 574 dispatch and confirmed by the 575 dispatch. Both agreed nothing should be reverted, because reverting would delete 575's legitimate rows from HEAD. Recorded as cross-task bleed, NOT misattributed authorship.
+    Fixed by: nothing currently filed. See the next section -- this is the mode that breaks the existing mitigation.
 
-NOTE ON THAT PARTICULAR SCRIPT'S OWNERSHIP: check-module-invariants.sh is a BimodalLogic project-local script, NOT an agent-system file. Fixing that one call site is a consumer-repo change and is OUT OF SCOPE for this task. What IS in scope is the general question it exposes: how does the agent system get unguarded lake-invoking callers to participate in the mutex, given that it cannot edit every consumer repo's scripts?
+  MODE 2 -- BUILD CONTENTION. The 575 dispatch lost two builds to concurrent `lake` processes sharing one `.lake` directory. One was self-inflicted: it ran `scripts/check-module-invariants.sh` alongside a guarded build.
+    Fixed by: a build mutex. Does NOT fix 1a or 1b.
 
-THE TWO OPTIONS TO WEIGH. Produce an explicit recommendation with reasoning; the deciding artifact is as much the deliverable as the code.
+=== WHY MODE 1b IS THE DECISIVE EVIDENCE: IT DEFEATS THE EXISTING MITIGATION ===
 
-  OPTION 1 -- KEEP THE SHARED TREE, TIGHTEN THE GUARDS. Continue dispatching concurrent siblings into one working tree and one `.lake`, and close the holes one at a time. Already-filed work on this branch: task 191 (git-snapshot revert), task 192 (directory-pathspec over-staging hole), task 193 (territory in briefs). This task's contribution on this branch would be making mutex participation harder to bypass -- e.g. documenting a required-participation contract for agent-invoked builds, detecting an unguarded concurrent `lake` and failing loudly rather than racing, or advising consumer repos to route their own build scripts through the guard.
-    Cost to weigh: this is the fourth-plus patch to the same shared-resource root cause, each one closing an enumerated hole. Note the pattern already observed in task 192, where a refusal that enumerated forms simply taught the enumeration and the agent reached for the nearest unnamed form.
+core/rules/git-workflow.md forbids `git add -A` and `git commit -am` for exactly this hazard -- pulling in "concurrent-session or unrelated stray edits" -- and prescribes targeted explicit-path staging as the remedy. The 574 dispatch FOLLOWED that prescription. It staged docs/theorem-index.md by explicit whole path, correctly, and bled anyway.
+
+The reason is structural and cannot be patched at the staging layer as currently designed: EXPLICIT-PATH STAGING CANNOT SPLIT A FILE. Path granularity is the file. Two dispatches touching one shared file bleed into each other's commits no matter how carefully each one stages. In this repo several files are shared by construction -- docs/theorem-index.md, README.md, scripts/check-module-invariants.sh -- so the collision surface is not incidental.
+
+INTERACTION WITH THE OVER-STAGING WORK (task 192) -- IMPORTANT, READ IT. That task widens the over-staging predicate to catch directory pathspecs, and its MUST NOT correctly protects "an explicit list of named file paths" as the sanctioned form that agents are told to use. Nothing here contradicts that: the explicit list must indeed remain permitted, because blocking it would leave agents with no compliant way to commit at all. What mode 1b establishes is narrower and does not overturn task 192: the sanctioned form is SUFFICIENT against over-broad staging and INSUFFICIENT against concurrent same-file dispatch. These are different hazards. Do not re-decide task 192's predicate here; do record this qualification so the rules stop implying that explicit-path staging is a complete answer under concurrency.
+
+=== THE OPTIONS TO WEIGH ===
+
+Produce an explicit recommendation with reasoning; the deciding artifact is as much the deliverable as the code. Score each option against ALL THREE failure modes above -- an option that fixes one mode and leaves two open should be scored as such.
+
+  OPTION 1 -- KEEP THE SHARED TREE, PATCH PER MECHANISM. Continue dispatching siblings into one working tree and one `.lake`, closing holes individually. Already filed on this branch: task 191 (git-snapshot revert, mode 1a), task 192 (directory-pathspec over-staging), task 193 (territory in briefs). This task's contribution would be hardening mutex participation for mode 2.
+    Score honestly: this branch has no answer to mode 1b at all. It is also the fourth-plus patch against one root cause, each closing an enumerated hole -- note the pattern already recorded in task 192, where a refusal that enumerated forms simply taught the enumeration and the agent reached for the nearest unnamed form.
 
   OPTION 2 -- PER-DISPATCH GIT WORKTREE ISOLATION. Give each concurrent implement dispatch its own `git worktree` (and therefore its own `.lake`), merging results back at commit time.
-    Weigh honestly: it removes BOTH observed harm classes at once -- no shared tree means no sibling revert and no shared `.lake` -- and it does so without reducing concurrency. Against that: `.lake` is not shared either, so each worktree pays a full cold build (potentially very expensive for this repo; measure it, do not assume); merge-back at commit time is new machinery; the harness already exposes a worktree isolation mode for subagents, so check what is reusable before building. Some prior art on worktrees exists in the source store under the lean and cslib extensions (comparator runs, lint-fix wave assignment) -- read it before designing.
+    Weigh honestly: it is the only option that addresses all three modes at once -- no shared tree means no sibling revert (1a) and no shared working copy to bleed from (1b); no shared `.lake` means no build contention (2) -- and it does so WITHOUT reducing concurrency. Against that: each worktree pays a full cold build, potentially very expensive for this repo (MEASURE IT, do not assume); merge-back at commit time is new machinery and does not make same-file conflicts vanish, it converts them from silent bleed into an explicit merge that someone or something must resolve -- cost that honestly, it is the main weakness of this option; the harness already exposes a worktree isolation mode for subagents, so check what is reusable before building. Prior art exists in the source store under the lean and cslib extensions (comparator runs, lint-fix wave assignment) -- read it before designing.
 
-  A SPLIT VERDICT IS AN ACCEPTABLE OUTCOME. For example: worktree isolation for lean4/cslib implement dispatches where builds are expensive and collisions are frequent, shared tree for cheap doc/meta dispatches. If that is the recommendation, say so and define the predicate that selects between them.
+  OPTION 3 -- NARROWER STAGING-LAYER ALTERNATIVE, WORTH COSTING BEFORE COMMITTING TO 2. Either (i) teach `core/scripts/git-commit-scoped.sh` to stage by HUNK rather than by path, so a dispatch commits only its own edits within a shared file; or (ii) have it REFUSE a shared file while a sibling dispatch holds uncommitted edits in it, forcing explicit sequencing. This targets mode 1b directly and is far cheaper than worktrees.
+    Weigh honestly: (i) needs a reliable way to attribute a hunk to a dispatch, which the system may not have -- establish whether it does before recommending it. (ii) needs live sibling-edit knowledge at commit time, which relates to what task 193 makes available; say so and do not duplicate that work. Neither variant addresses modes 1a or 2.
 
-EXPLICITLY NOT A CONTRADICTION OF TASK 193. That task's MUST NOT says "do not serialize all multi-task dispatch as the fix; concurrency is the design". Worktree isolation is not serialization -- it preserves full concurrency and removes the shared resource instead. Option 1 is likewise not serialization. Neither branch of this decision proposes running the batch sequentially. Coordinate with task 193 rather than re-deciding what it owns: it decides what a dispatch is TOLD, this decides what a dispatch RUNS IN.
+  A SPLIT VERDICT IS AN ACCEPTABLE OUTCOME -- e.g. worktree isolation for lean4/cslib implement dispatches where builds are expensive and collisions frequent, shared tree plus option 3 for cheap doc/meta dispatches. If that is the recommendation, define the predicate that selects between them.
 
-WORK.
-  (a) Measure before deciding: cold-build cost for this repo under a fresh worktree, and the observed frequency of guard-lock contention versus outright bypass.
-  (b) Produce the written recommendation with the trade-off reasoning, recorded in the task summary and in core/context/patterns/batch-orchestration-guardrails.md.
+=== NOT A CONTRADICTION OF TASK 193 ===
+
+That task's MUST NOT says "do not serialize all multi-task dispatch as the fix; concurrency is the design". No option here proposes running the batch sequentially: worktree isolation preserves full concurrency and removes the shared resource instead. Coordinate rather than re-decide -- task 193 decides what a dispatch is TOLD, this decides what a dispatch RUNS IN. Note also that informing agents is demonstrably insufficient on its own for mode 1b: both dispatches here ended up fully aware of each other and the bleed still landed in history.
+
+=== CORRECTION TO THE ORIGINAL MODE-2 DIAGNOSIS: THE BUILD MUTEX ALREADY EXISTS ===
+
+Mode 2 was initially reported as "needs a build mutex in lake-build-guard.sh". Verified against the source: agent-system/extensions/core/scripts/lake-build-guard.sh ALREADY implements a `flock`-based mutex on `$GUARD_LAKE_DIR/build-guard.lock`, with lock-wait timeout (exit 75), abandoned-lock recovery via flock's automatic release on process exit, and result sharing between waiter and holder. It degrades audibly when `flock` is absent rather than silently running unserialized. The mutex is not missing.
+
+WHAT IS MISSING IS THAT IT IS OPT-IN. The guard's header states it: "any other consumer must opt in explicitly by invoking `lake-build-guard.sh build ...`". Any process running bare `lake` bypasses the lock. The self-inflicted collision is exactly this -- /home/benjamin/Projects/BimodalLogic/scripts/check-module-invariants.sh calls bare `lake build` and `lake build BimodalTest` (around lines 638/644) with no guard. The failure mode is BYPASS, not absence. Note that this same script is itself one of the shared-by-construction files implicated in mode 1b (it was modified in commit 08936bfbb).
+  OWNERSHIP: check-module-invariants.sh is a BimodalLogic project-local script, NOT an agent-system file. Fixing that call site is OUT OF SCOPE. In scope is the general question it exposes: how does the agent system get unguarded lake-invoking callers to participate in the mutex, given that it cannot edit every consumer repo's scripts?
+
+=== WORK ===
+
+  (a) Measure before deciding: cold-build cost for this repo under a fresh worktree; observed frequency of guard-lock contention versus outright bypass; whether per-dispatch hunk attribution is even available (gates option 3(i)).
+  (b) Produce the written recommendation scoring every option against all three failure modes, recorded in the task summary and in core/context/patterns/batch-orchestration-guardrails.md.
   (c) Implement the chosen option.
-  (d) Whichever option wins, document the mutex's opt-in nature and the bypass hazard where agents will actually read it -- lean/rules/lean4.md's build section, and the guard's own header if the participation contract changes.
+  (d) Whichever option wins, document (i) the mutex's opt-in nature and the bypass hazard, in lean/rules/lean4.md's build section and the guard's header if the participation contract changes; and (ii) the mode-1b qualification -- that explicit-path staging does not protect against concurrent same-file dispatch -- wherever the rules currently present targeted staging as the concurrency remedy.
 
-MUST NOT. Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md or the plan format (task 191 owns those). Do not edit hooks/guard-destructive-git.sh (task 192). Do not implement the territory payload (task 193). Do not edit any BimodalLogic project-local script. Do not remove or weaken the existing flock mutex under either option.
+=== MUST NOT ===
 
-FOOTPRINT NOTE. This task's file_scope overlaps tasks 182, 193 and 197 on orchestrate-cycle-plan.sh; the file-footprint admission gate will serialize them. Whichever lands last reconciles the header contracts.
+Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md or the plan format (task 191 owns those; the mode-1b rules qualification in (d)(ii) must be coordinated with that task rather than written directly into git-workflow.md here). Do not edit hooks/guard-destructive-git.sh or re-decide the over-staging predicate (task 192). Do not block explicit multi-file path staging -- it must remain the sanctioned form. Do not implement the territory payload (task 193). Do not edit any BimodalLogic project-local script. Do not remove or weaken the existing flock mutex under any option. Do not attempt retroactive repair of commit 08936bfbb -- both dispatches deliberately agreed against reverting, because the bled rows are legitimate content.
 
-ACCEPTANCE. A written, evidence-backed recommendation exists naming the chosen isolation posture and the reasoning against the rejected one, with the cold-build measurement that informed it. The chosen option is implemented. A fixture reproduces the observed batch shape -- two concurrent lean4 implement dispatches in one repo, one of them invoking an unguarded `lake` -- and demonstrates the new behaviour. The opt-in nature of the build mutex is documented where an agent will read it. shellcheck clean per context/standards/shell-strict-mode.md for any shell touched. Redeploy and confirm the change is live in a consumer repo.
+=== FOOTPRINT NOTE ===
+
+file_scope overlaps tasks 182, 193 and 197 on orchestrate-cycle-plan.sh, and task 191 conceptually on the staging rules; the file-footprint admission gate will serialize the overlapping ones. Whichever lands last reconciles the header contracts.
+
+=== ACCEPTANCE ===
+
+A written, evidence-backed recommendation exists naming the chosen posture, scoring every option against modes 1a, 1b and 2 explicitly, with the cold-build measurement and the hunk-attribution feasibility finding that informed it. The chosen option is implemented. A fixture reproduces the observed batch shape -- two concurrent lean4 implement dispatches in one repo, both editing one shared markdown file, one of them invoking an unguarded `lake` -- and demonstrates that cross-task bleed into a commit no longer occurs (or, if option 1 was chosen, documents plainly that it still can and why that was accepted). The opt-in nature of the build mutex is documented where an agent will read it. shellcheck clean per context/standards/shell-strict-mode.md for any shell touched. Redeploy and confirm the change is live in a consumer repo.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
@@ -211,6 +241,9 @@ MUST NOT. Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md, 
 ACCEPTANCE. Both lean implementation agent contracts instruct `--no-revert` under orchestrator_mode, with the one-line rationale. The wording matches the existing core agent contract. The lean extension is redeployed and the regenerated `.claude/**` copies carry the bullet (see the deploy-propagation task -- a source-store fix that never reaches the consuming repo changes nothing for a running agent).
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+SCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause produces three distinct failure modes: working-tree revert (this one), cross-task commit bleed via whole-path staging on a shared file, and .lake build contention. The isolation-posture task enumerates all three with verified evidence and decides the structural remedy. This contract bullet addresses ONLY the working-tree revert mode, and only by convention rather than by construction. Do not let it close out the other two, and do not let its landing be read as evidence that the shared-tree posture is safe.
 
 ---
 
