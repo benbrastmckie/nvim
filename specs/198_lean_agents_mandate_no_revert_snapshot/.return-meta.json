@@ -1,6 +1,6 @@
 {
   "status": "tasks_created",
-  "summary": "Created 3 tasks from 4 reported defect instances. One reported defect was already fixed at source (stale deploy, not a doc bug); one was substantially covered by an existing task; the third and fourth were folded into a single isolation-posture decision task spanning all three failure modes.",
+  "summary": "Created 4 tasks. Of 4 reported defect instances: one was already fixed at source (stale deploy, not a doc bug), one was substantially covered by an existing task, and two were folded into a single isolation-posture decision spanning all three failure modes. A fourth defect was found in-flight and filed.",
   "artifacts": [
     {
       "type": "task",
@@ -21,9 +21,14 @@
       "type": "task_entry",
       "path": "/home/benjamin/.config/nvim/specs/TODO.md",
       "summary": "Tasks 198, 199, 200 added and Task Order regenerated"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/201_close_runtime_file_ignore_enumeration_gap/",
+      "summary": "Close the ephemeral-runtime-file ignore enumeration gap (live deploy mutex committed)"
     }
   ],
-  "next_steps": "Run /orchestrate 198 first (trivial data-loss mitigation, ships immediately), then 200 and 199 in parallel.",
+  "next_steps": "Run /orchestrate 198 and 201 first (small, independent, both live-proven), then 200, then 199.",
   "metadata": {
     "session_id": "sess_1788958534_402e35",
     "agent_type": "meta-builder-agent",
@@ -36,7 +41,7 @@
     "mode": "prompt",
     "mode_target": "global",
     "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 3
+    "tasks_created": 4
   },
   "modified_files": [
     "/home/benjamin/.config/nvim/specs/state.json",
