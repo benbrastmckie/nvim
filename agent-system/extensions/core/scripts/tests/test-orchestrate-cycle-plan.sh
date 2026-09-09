@@ -1427,14 +1427,18 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-# Group 13: degraded-classifier fallback table (research on demand, Stage A.8) -- the path taken
-# ONLY when orchestrate-triage-classify.sh itself exits non-zero. This is the drift risk the live
+# Group 13: degraded-classifier fallback table -- the path taken ONLY when
+# orchestrate-triage-classify.sh itself exits non-zero. This is the drift risk the live
 # classifier's own header discipline note does not, by itself, prevent: a fourth site
 # (orchestrate-cycle-plan.sh's inline fallback `case` statement) that must move in lockstep with
 # the live classifier but is normally dormant, so a missed edit here would silently ship a
-# not_started->research fallback while the live path correctly routes to plan. --dry-run is
-# sufficient: the decision pass (which the fallback table lives inside) runs unconditionally and
-# --dry-run renders its output directly, per this script's own header.
+# not_started->plan fallback while the live path correctly routes to research (or vice versa).
+# The `not_started` row is now EFFORT-CONDITIONAL (research-first default, `--fast` preserves the
+# prior plan-first behavior); both effort variants are asserted below against the fallback table,
+# and Group 20 asserts the SAME two variants against the LIVE classifier so the two never
+# silently diverge. --dry-run is sufficient: the decision pass (which the fallback table lives
+# inside) runs unconditionally and --dry-run renders its output directly, per this script's own
+# header.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 13: degraded-classifier fallback table (orchestrate-triage-classify.sh exit != 0)"
 
@@ -1469,10 +1473,10 @@ else
   fail "Group 13: no degraded-classifier WARNING in stderr: $LAST_STDERR"
 fi
 
-if [ "$(jqf '.dispatch | map(select(.task == 1301)) | .[0].phase')" = "plan" ]; then
-  pass "Group 13: fallback table routes not_started -> plan (research on demand default, matching the live classifier)"
+if [ "$(jqf '.dispatch | map(select(.task == 1301)) | .[0].phase')" = "research" ]; then
+  pass "Group 13: fallback table routes not_started -> research (research-first default, no --fast, matching the live classifier)"
 else
-  fail "Group 13: expected not_started candidate #1301 to route to plan via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
+  fail "Group 13: expected not_started candidate #1301 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 1302)) | .[0].phase')" = "research" ]; then
@@ -1481,8 +1485,31 @@ else
   fail "Group 13: expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
 fi
 
-# Restore the real classifier for any test run after this point (none currently follow, but this
-# keeps the sandbox state honest rather than leaving a degraded stub as the last-written copy).
+# --fast variant: not_started reverts to plan (the pre-research-first escape hatch); researching
+# is NEVER skipped by --fast (only not_started reads effort).
+reset_lock_dirs
+run_sut --session g13_sess_fast --dry-run --fast -- 1301 1302
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 13 (--fast): SUT exits 0 despite the degraded classifier"
+else
+  fail "Group 13 (--fast): SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 1301)) | .[0].phase')" = "plan" ]; then
+  pass "Group 13 (--fast): fallback table routes not_started -> plan, matching the live classifier's --effort fast row"
+else
+  fail "Group 13 (--fast): expected not_started candidate #1301 to route to plan via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 1302)) | .[0].phase')" = "research" ]; then
+  pass "Group 13 (--fast): fallback table keeps researching -> research even under --fast (planner-requested research never skipped)"
+else
+  fail "Group 13 (--fast): expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
+fi
+
+# Restore the real classifier for any test run after this point -- Group 20 below relies on the
+# real (non-stubbed) classifier being back in place.
 cp "$CORE_DIR/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 
@@ -2015,6 +2042,70 @@ if jq -e '.pending_dispatch.phase == "plan" and .pending_dispatch.seq == 1' "$g1
   pass "Group 19 case 4: a fresh pending_dispatch is recorded (seq=1, phase=plan) for a future invocation"
 else
   fail "Group 19 case 4: expected a fresh pending_dispatch to be recorded; got: $(cat "$g19_guard_file" 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 20: LIVE (non-degraded) classifier forwarding -- proves this script actually forwards
+# --fast through to orchestrate-triage-classify.sh as --effort fast, as distinct from Group 13's
+# degraded-fallback table merely having the branch hardcoded. Exercised through --dry-run against
+# the REAL classifier. Groups 15/16 (upstream) overwrite BOTH orchestrate-triage-classify.sh and
+# orchestrate-batch-admit.sh with always-"plan"/always-"admit" stubs and never restore them, so
+# both are restored here first -- Group 13's own restore only covers the gap up to Group 14.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 20: live classifier forwarding (not_started research-first default, --fast escape hatch)"
+
+cp "$CORE_DIR/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+cp "$CORE_DIR/orchestrate-batch-admit.sh" "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2001, "project_name": "g20_not_started", "task_type": "general", "status": "not_started", "description": "fresh task, live-classifier research-first default check", "dependencies": [], "file_scope": []},
+    {"project_number": 2002, "project_name": "g20_researched", "task_type": "general", "status": "researched", "description": "already researched, must never re-research", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g20_sess --dry-run -- 2001 2002
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 20: SUT exits 0 (no --fast)"
+else
+  fail "Group 20: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 2001)) | .[0].phase')" = "research" ]; then
+  pass "Group 20: live classifier routes not_started -> research with no --fast (research-first default)"
+else
+  fail "Group 20: expected not_started candidate #2001 to route to research, got: $(jqf '.dispatch | map(select(.task == 2001))')"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 2002)) | .[0].phase')" = "plan" ]; then
+  pass "Group 20: live classifier keeps researched -> plan with no --fast (never re-researches)"
+else
+  fail "Group 20: expected researched candidate #2002 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2002))')"
+fi
+
+reset_lock_dirs
+run_sut --session g20_sess_fast --dry-run --fast -- 2001 2002
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 20 (--fast): SUT exits 0"
+else
+  fail "Group 20 (--fast): SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 2001)) | .[0].phase')" = "plan" ]; then
+  pass "Group 20 (--fast): live classifier routes not_started -> plan (the pre-research-first escape hatch), proving --fast actually reaches --effort"
+else
+  fail "Group 20 (--fast): expected not_started candidate #2001 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2001))')"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 2002)) | .[0].phase')" = "plan" ]; then
+  pass "Group 20 (--fast): live classifier keeps researched -> plan under --fast too (never re-researches)"
+else
+  fail "Group 20 (--fast): expected researched candidate #2002 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2002))')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

@@ -1285,7 +1285,9 @@ if [ "${#eligible_tasks[@]}" -eq 0 ]; then
 fi
 
 # ── (e) Classification (triage-classify.sh, called once, reused for both phase-map and grouping) ──
-if run_capture_stdout triage_ndjson bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" mt "${eligible_tasks[@]}"; then
+triage_classify_args=(mt)
+[ -n "${effort_flag:-}" ] && triage_classify_args=(--effort "$effort_flag" mt)
+if run_capture_stdout triage_ndjson bash "$SCRIPT_DIR/orchestrate-triage-classify.sh" "${triage_classify_args[@]}" "${eligible_tasks[@]}"; then
   triage_exit=0
 else
   triage_exit=$?
@@ -1297,13 +1299,15 @@ if [ "$triage_exit" -ne 0 ]; then
   for t in "${eligible_tasks[@]}"; do
     st="${current_statuses[$t]}"
     case "$st" in
-      # not_started now routes to plan (research on demand -- Stage A.8): the planner assesses
-      # whether the description suffices and requests research itself via needs_research if not.
-      # researching stays in the research arm -- that row is load-bearing for the needs_research
-      # return path (a task a planner sent back for research must re-enter research, not plan).
-      # Splitting the previously-combined `not_started|researching)` case is the point of this
-      # edit; researched/planning are unaffected and still route to plan.
-      not_started) triage_group[$t]="plan" ;;
+      # not_started is EFFORT-CONDITIONAL (research-first default, inverted from plan-first --
+      # see orchestrate-triage-classify.sh's own header table and the identical live jq row this
+      # fallback must stay in lockstep with; the Group 13 parity fixture in
+      # tests/test-orchestrate-cycle-plan.sh asserts both effort variants agree with the live
+      # classifier). researching stays in the research arm -- that row is load-bearing for the
+      # needs_research return path (a task a planner sent back for research must re-enter
+      # research, not plan) and is NEVER skipped by --fast (only not_started reads effort).
+      # researched/planning are unaffected by effort and still route to plan.
+      not_started) if [ "${effort_flag:-}" = "fast" ]; then triage_group[$t]="plan"; else triage_group[$t]="research"; fi ;;
       researching) triage_group[$t]="research" ;;
       researched|planning) triage_group[$t]="plan" ;;
       planned|implementing|partial) triage_group[$t]="implement" ;;

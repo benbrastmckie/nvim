@@ -235,32 +235,32 @@ treat every hit outside the header comment as a candidate before editing.
 
 ---
 
-### Phase 2: Caller wiring + degraded-fallback parity [NOT STARTED]
+### Phase 2: Caller wiring + degraded-fallback parity [COMPLETED]
 
 **Goal**: `orchestrate-cycle-plan.sh` forwards its already-parsed `effort_flag` to the
 classifier, and its inline degraded fallback table encodes the identical effort-conditional rule.
 
 **Tasks**:
-- [ ] At the classifier call site (line ~1288), pass `--effort "$effort_flag"` when `effort_flag`
-      is non-empty (empty-value-skips-flag convention, matching `--focus`/`--file-scope-add`).
-- [ ] Update the degraded fallback `case` (lines ~1297-1313): `not_started` routes to `research`
+- [x] At the classifier call site (line ~1288), pass `--effort "$effort_flag"` when `effort_flag`
+      is non-empty (empty-value-skips-flag convention, matching `--focus`/`--file-scope-add`). *(completed)*
+- [x] Update the degraded fallback `case` (lines ~1297-1313): `not_started` routes to `research`
       unless `effort_flag == "fast"`, in which case `plan`. Leave `researching`,
-      `researched|planning`, `planned|implementing|partial`, `blocked`, `*` untouched.
-- [ ] Replace the existing "not_started now routes to plan (research on demand -- Stage A.8)"
+      `researched|planning`, `planned|implementing|partial`, `blocked`, `*` untouched. *(completed)*
+- [x] Replace the existing "not_started now routes to plan (research on demand -- Stage A.8)"
       comment block with one naming the new effort-conditional contract and the parity fixture
-      that enforces it.
-- [ ] Update this script's own header/usage comment lines (~126, ~253) only if they assert the
-      routing default; the `--fast` token already appears there.
-- [ ] In `tests/test-orchestrate-cycle-plan.sh` Group 13: keep the degraded-classifier stub, and
+      that enforces it. *(completed)*
+- [x] Update this script's own header/usage comment lines (~126, ~253) only if they assert the
+      routing default; the `--fast` token already appears there. *(completed: confirmed neither line asserts a routing default, no edit needed)*
+- [x] In `tests/test-orchestrate-cycle-plan.sh` Group 13: keep the degraded-classifier stub, and
       assert `not_started` → `research` for the default run; add a second `run_sut ... --fast ...`
       invocation over the same fixture asserting `not_started` → `plan` and `researching` →
-      `research`. Rewrite the group's header comment to name the new contract.
-- [ ] Add a NEW group (Group 15) exercising the LIVE (non-degraded) classifier through
+      `research`. Rewrite the group's header comment to name the new contract. *(completed)*
+- [x] Add a NEW group (Group 15) exercising the LIVE (non-degraded) classifier through
       `--dry-run`: `not_started` → `research` without `--fast`, → `plan` with `--fast`;
       `researched` → `plan` under both. This is the first fixture that proves the caller actually
-      forwards the effort, as distinct from the fallback table having it hardcoded.
-- [ ] Confirm Group 14 (`research_questions` `--focus` wiring) still passes unmodified; do not
-      edit it.
+      forwards the effort, as distinct from the fallback table having it hardcoded. *(completed: numbered Group 20, not Group 15 -- Groups 15/16 were already taken by the "stdout/stderr stream discipline" and "entry-point fd-3 redirect" groups this task's description did not anticipate; also restores orchestrate-batch-admit.sh alongside the classifier since Group 16 leaves both stubbed)*
+- [x] Confirm Group 14 (`research_questions` `--focus` wiring) still passes unmodified; do not
+      edit it. *(completed: unmodified, still passing)*
 
 **Timing**: 1 hour
 

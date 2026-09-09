@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Caller wiring + degraded-fallback parity",
+  "started_at": "2026-09-09T12:50:00Z",
+  "last_updated": "2026-09-09T13:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Forward effort_flag to classifier at call site", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Update degraded fallback case table for effort-conditional not_started", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Check header/usage comments for stale default claims", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Rewrite Group 13 fixture for both effort variants", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Add new Group 20 (live classifier forwarding via --dry-run)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Confirm Group 14 unmodified and passing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Add a NEW group (Group 15) exercising the LIVE (non-degraded) classifier",
+      "type": "altered",
+      "reason": "Group 15 and Group 16 already existed (stdout/stderr stream discipline, entry-point fd-3 redirect) -- the plan's line-number-derived group number had drifted. Added as Group 20 (next available) instead, and additionally restored orchestrate-batch-admit.sh since Group 16 leaves it stubbed too.",
+      "annotation": "*(completed: numbered Group 20, not Group 15 -- Groups 15/16 were already taken ...)*"
+    }
+  ]
+}
