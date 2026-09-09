@@ -28,10 +28,15 @@
 # hooks.preflight declaration later without a signature change):
 #   $1 = task_number   $2 = task_type   $3 = task_dir   $4 = session_id   $5 = operation
 #
-# Measured added wall-clock cost (5-run means, this machine): non-Lean early exit ~3ms;
-# correctly-registered Lean project (full verifier run, output discarded) ~31ms; drifted Lean
-# project (full verifier run plus message synthesis) ~32ms. No repository walk, no network call,
-# no MCP server spawn on any path.
+# Measured added wall-clock cost (5-run means, `date +%s%N` deltas around `bash script.sh`,
+# this machine, synthetic fixtures under a per-run mktemp HOME): non-Lean early exit ~6ms;
+# correctly-registered Lean project (full 9-check verifier run through Check 9, output
+# discarded) ~25ms; drifted Lean project (Check 3 fails fast, output captured and filtered)
+# ~20ms. All three are within the same order of magnitude as the ~30ms verify-lean-mcp.sh
+# --quiet baseline and well under the ~100ms budget. No repository walk, no network call, no MCP
+# server spawn on any path -- confirmed by inspection: every command reachable from this script
+# and from verify-lean-mcp.sh is `test`, `jq`, `git rev-parse --show-toplevel`, or output
+# formatting.
 
 set -euo pipefail
 
