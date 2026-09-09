@@ -199,31 +199,31 @@ it must receive the same whole-entry treatment.
 
 ---
 
-### Phase 2: Make verify-lean-mcp.sh fail on an unspawnable registration [NOT STARTED]
+### Phase 2: Make verify-lean-mcp.sh fail on an unspawnable registration [COMPLETED]
 
 **Goal**: The verifier's severities match what actually breaks a spawn, and it sees a
 project-scoped entry that shadows the global one.
 
 **Tasks**:
-- [ ] Copy Phase 1's settled `lakefile.toml`-aware detection block verbatim into
+- [x] Copy Phase 1's settled `lakefile.toml`-aware detection block verbatim into
       `agent-system/extensions/core/scripts/verify-lean-mcp.sh` so the two standalone operator
       scripts cannot disagree about which directories are Lean projects. Apply the same change to
-      Check 7's `lakefile.lean` presence warning.
-- [ ] Promote Check 3 (`command != "uvx"`) and Check 4 (`args[0] != "lean-lsp-mcp"`) from `warn`
+      Check 7's `lakefile.lean` presence warning. *(completed)*
+- [x] Promote Check 3 (`command != "uvx"`) and Check 4 (`args[0] != "lean-lsp-mcp"`) from `warn`
       to `fail` with a non-zero exit, since neither shape can spawn the sanctioned server. Keep
-      the existing remedy line ("Run setup-lean-mcp.sh to fix") on the new failure paths.
-- [ ] Add a check that the configured `command` does not resolve inside any repository's
+      the existing remedy line ("Run setup-lean-mcp.sh to fix") on the new failure paths. *(completed)*
+- [x] Add a check that the configured `command` does not resolve inside any repository's
       `.claude/` directory, naming the invariant recorded in Phase 3 in its failure message.
       This is the check that would have caught the original defect by shape rather than by the
-      incidental absence of an env var.
-- [ ] Add a check for a project-scoped shadow: if
+      incidental absence of an env var. *(completed)*
+- [x] Add a check for a project-scoped shadow: if
       `.projects["<expected project path>"].mcpServers."lean-lsp"` exists in `~/.claude.json`,
       report it explicitly, since a local-scope entry silently overrides the global one the rest
       of the script inspects. Under Option A (see the user decision below) this is a failure;
-      state that framing in the message.
-- [ ] Confirm the exit-code contract documented in the script header (`0` valid, `1` missing or
+      state that framing in the message. *(completed)*
+- [x] Confirm the exit-code contract documented in the script header (`0` valid, `1` missing or
       invalid, `2` path mismatch) still holds for every new failure path, and update the header
-      comment if a new class needs its own code.
+      comment if a new class needs its own code. *(completed)*
 
 **Timing**: 1 hour
 

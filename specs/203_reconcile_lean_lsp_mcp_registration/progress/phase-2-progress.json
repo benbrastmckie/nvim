@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Make verify-lean-mcp.sh fail on an unspawnable registration",
+  "started_at": "2026-09-09T17:21:55Z",
+  "last_updated": "2026-09-09T17:23:55Z",
+  "objectives": [
+    {"id": 1, "description": "Copy lakefile.toml-aware detection into verify-lean-mcp.sh (project detect + Check 7)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-lean-mcp.sh"]},
+    {"id": 2, "description": "Promote Check 3/4 from warn to fail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-lean-mcp.sh"]},
+    {"id": 3, "description": "Add check: command must not resolve inside a .claude/ tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-lean-mcp.sh"]},
+    {"id": 4, "description": "Add check: project-scoped shadow entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-lean-mcp.sh"]},
+    {"id": 5, "description": "Confirm exit-code contract still holds; update header if needed", "status": "done", "files_touched": [], "note": "0/1/2 contract unchanged; new failures classified as 1 (invalid) consistent with header"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
