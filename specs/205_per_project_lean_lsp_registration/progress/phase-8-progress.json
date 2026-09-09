@@ -1,0 +1,77 @@
+{
+  "phase": 8,
+  "phase_name": "Revise the recorded invariants and docs",
+  "started_at": "2026-09-09T22:15:00Z",
+  "last_updated": "2026-09-09T22:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite the Trade-off recorded paragraph with the live concurrency evidence",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]
+    },
+    {
+      "id": 2,
+      "description": "Update the Registration section: local scope is now sanctioned for per-project computed arguments",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"],
+      "note": "Restructured the two-surface model into a three-way choice (project .mcp.json / user scope / local scope), with lean-lsp moved from the user-scope worked example to the new local-scope one."
+    },
+    {
+      "id": 3,
+      "description": "Update 'Choosing a registration surface' worked example and the setup-script location",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]
+    },
+    {
+      "id": 4,
+      "description": "Cross-reference the session-start snapshot trap section with Phase 1's measured finding",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]
+    },
+    {
+      "id": 5,
+      "description": "Leave the .claude/-command-path invariant text unmodified; state it is unaffected",
+      "status": "done",
+      "files_touched": [],
+      "note": "Verified by git diff: no +/- markers touch the '### Invariant: a command path must never resolve...' heading or its body (the failure-mode paragraph and the two playwright/lean-lsp bullets) -- only the Trade-off paragraph beneath it changed, and that paragraph now explicitly states the invariant itself is unaffected."
+    },
+    {
+      "id": 6,
+      "description": "Update docs/reference/utility-scripts-inventory.md for all three scripts plus the new hook and installer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"],
+      "note": "5 entries: setup-lean-mcp.sh (new entry), verify-lean-mcp.sh (rewritten for per-project model), lean-mcp-preflight-check.sh (rewritten), lean-lsp-register-project.sh (new), install-lean-lsp-session-hook.sh (new)."
+    },
+    {
+      "id": 7,
+      "description": "Add the sanctioned per-repo-vs-user-level hook pattern to extension-system.md's Settings Merging section",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/extension-system.md"],
+      "note": "New 'How an extension contributes a native harness hook' subsection, naming the email extension's mail-guard.sh as the per-repo precedent and lean-lsp-register-project.sh as the user-level precedent, including the freshly-created-worktree-has-no-.claude/-at-all rationale for why the latter cannot be extension-contributed. Also fixed two now-stale 'only user-scope ~/.claude.json' claims elsewhere in the same file to acknowledge local scope."
+    },
+    {
+      "id": 8,
+      "description": "Update lean README.md and EXTENSION.md if either describes lean-lsp registration",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/README.md",
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+      ],
+      "note": "README.md's MCP Tool Setup section rewritten for automatic per-project registration. EXTENSION.md checked -- its one lean-lsp mention is a generic one-liner with no registration-mechanism detail, no change needed. mcp-tools-guide.md's Configuration section and two adjacent paragraphs (command-path invariant note, subagent-reachability rationale) rewritten -- the latter also corrected a second, independent stale claim ('subagent cannot satisfy' a project-scoped .mcp.json prompt) that mcp-server-ownership.md's own 'Workspace trust' section had already superseded before this task even started."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_log": [
+    "grep -n \"deliberate non-goal|accepted limitation\" mcp-server-ownership.md: no matches (RC=1)",
+    "git diff confirms the Invariant heading+body is untouched; only the Trade-off paragraph beneath it changed",
+    "check-task-references.sh --quiet: PASS, 0 unexempted occurrences",
+    "check-extension-docs.sh: PASS across all 20 extensions after two line_count drifts (mcp-server-ownership.md, mcp-tools-guide.md) were repaired via generate-context-line-counts.sh --write"
+  ],
+  "notes": [
+    "Observed during doc review (not a task-205 defect, recorded for completeness): mcp-tools-guide.md's own 'CRITICAL: Blocked Tools' table lists lean_file_outline as buggy (lean-lsp-mcp #115, 'declarations always empty'). Phase 1's empirical probes used lean_file_outline's IMPORTS list and its file-not-found error text as the registration-resolution signal, never its (bugged) declarations field, so the bug does not undermine those probes' conclusions -- but a future re-verification should prefer lean_hover_info per this guide's own guidance."
+  ]
+}

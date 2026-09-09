@@ -1054,7 +1054,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Registration vs. permission ownership boundary for MCP servers",
-      "line_count": 298,
+      "line_count": 385,
       "keywords": [
         "mcp",
         "registration",
@@ -1859,7 +1859,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 438,
+      "line_count": 441,
       "keywords": [
         "standards",
         "status",

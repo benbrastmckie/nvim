@@ -24,24 +24,37 @@ The `lean-lsp` MCP server provides four capability groups:
 
 ## Configuration
 
-The server is registered in user-scope `~/.claude.json` (never in a project-scoped `.mcp.json` or
-in any settings file) by `lean/scripts/setup-lean-mcp.sh`, which writes an entry shaped like this:
+The server is registered PER PROJECT in `~/.claude.json`'s LOCAL scope (never in a project-scoped
+`.mcp.json`, never in any settings file, and no longer as a single top-level global entry), under
+`.projects["<abs project path>"].mcpServers."lean-lsp"`. Registration is automatic: a
+`SessionStart` hook (`lean-lsp-register-project.sh`) detects the enclosing Lake project at the
+start of every session and invokes `lean/scripts/setup-lean-mcp.sh --scope project --quiet` to
+write or repair THIS project's own entry, shaped like this:
 
 ```json
 {
-  "mcpServers": {
-    "lean-lsp": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["lean-lsp-mcp"],
-      "env": {
-        "LEAN_LOG_LEVEL": "WARNING",
-        "LEAN_PROJECT_PATH": "/path/to/project"
+  "projects": {
+    "/path/to/project": {
+      "mcpServers": {
+        "lean-lsp": {
+          "type": "stdio",
+          "command": "uvx",
+          "args": ["lean-lsp-mcp"],
+          "env": {
+            "LEAN_LOG_LEVEL": "WARNING",
+            "LEAN_PROJECT_PATH": "/path/to/project"
+          }
+        }
       }
     }
   }
 }
 ```
+
+Every Lean project on the machine gets its own such entry, so many concurrent Lean projects each
+index correctly at once. See
+[MCP Server Ownership](../../../../../core/context/patterns/mcp-server-ownership.md) for the full
+per-project-vs-global rationale.
 
 No wrapper script is involved: `command` is `uvx` (a package runner resolved on `PATH`), and the
 only per-project value is carried by the `LEAN_PROJECT_PATH` environment variable. See
@@ -49,10 +62,13 @@ only per-project value is carried by the `LEAN_PROJECT_PATH` environment variabl
 invariant — a server's `command` must never resolve inside any repository's own `.claude/`
 deploy tree.
 
-User scope is required rather than project-scoped `.mcp.json` because project-scoped servers
-require an interactive approval prompt that a subagent cannot satisfy. Tool permissions are
-granted separately, by a `mcp__lean-lsp__*` wildcard in this extension's own
-`settings-fragment.json`. See
+`~/.claude.json` (local scope) is required rather than project-scoped `.mcp.json` because
+`lean-lsp` needs a per-project computed `LEAN_PROJECT_PATH` with multiple Lean projects open
+concurrently on this machine -- not because of any subagent-reachability limitation (a
+project-scoped `.mcp.json` server IS reachable by a dispatched subagent once the workspace is
+trusted; see MCP Server Ownership's "Workspace trust" section). Tool permissions are granted
+separately, by a `mcp__lean-lsp__*` wildcard in USER-scope `~/.claude/settings.json`, which
+covers every project regardless of which one currently holds a registered local-scope entry. See
 [MCP Server Ownership](../../../../../core/context/patterns/mcp-server-ownership.md) for the
 full registration/permission split.
 

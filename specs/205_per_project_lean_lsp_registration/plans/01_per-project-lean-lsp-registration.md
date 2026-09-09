@@ -445,32 +445,32 @@ behavior requires and record the final count.
 
 ---
 
-### Phase 8: Revise the recorded invariants and docs [NOT STARTED]
+### Phase 8: Revise the recorded invariants and docs [COMPLETED]
 
 **Goal**: Overturn `mcp-server-ownership.md`'s recorded single-global trade-off with the
 concurrency evidence, document local scope as sanctioned, and leave the `.claude/`-command-path
 invariant fully intact.
 
 **Tasks**:
-- [ ] Rewrite the "Trade-off recorded" paragraph under the `.claude/`-path invariant: replace
+- [x] Rewrite the "Trade-off recorded" paragraph under the `.claude/`-path invariant: replace
       "accepted limitation / deliberate non-goal" with the live evidence that overturned it (a
       session orchestrating in BimodalLogic held a lean-lsp pointed at cslib; many concurrent
       projects including PR worktrees; the failure connects successfully and answers wrongly)
-- [ ] Update the `## Registration` section's claim that "only the user scope is a sanctioned
+- [x] Update the `## Registration` section's claim that "only the user scope is a sanctioned
       registration mechanism in this repo; nothing here writes to the local scope" — local scope
       is now sanctioned for per-project computed arguments, written automatically at session start
-- [ ] Update "Choosing a registration surface (the hybrid model)" so the `lean-lsp` worked example
+- [x] Update "Choosing a registration surface (the hybrid model)" so the `lean-lsp` worked example
       names project-scoped local registration, and update the `core/scripts/`-shaped setup-script
       description to the lean extension's location (D3)
-- [ ] Cross-reference the "session-start snapshot trap" section with Phase 1's measured finding
-- [ ] Leave the `.claude/`-command-path invariant text itself unmodified; state explicitly in the
+- [x] Cross-reference the "session-start snapshot trap" section with Phase 1's measured finding
+- [x] Leave the `.claude/`-command-path invariant text itself unmodified; state explicitly in the
       revised trade-off paragraph that it is unaffected
-- [ ] Update `docs/reference/utility-scripts-inventory.md` entries for all three scripts plus the
+- [x] Update `docs/reference/utility-scripts-inventory.md` entries for all three scripts plus the
       new hook and installer
-- [ ] Add the email-precedent + this task's hook to `docs/architecture/extension-system.md`'s
+- [x] Add the email-precedent + this task's hook to `docs/architecture/extension-system.md`'s
       "Settings Merging" section as the sanctioned "how an extension contributes a native hook"
       pattern, including the user-level vs. per-repo distinction Overview fact 2 establishes
-- [ ] Update `agent-system/extensions/lean/README.md` and `EXTENSION.md` if either describes
+- [x] Update `agent-system/extensions/lean/README.md` and `EXTENSION.md` if either describes
       lean-lsp registration
 
 **Timing**: 1.5 hours

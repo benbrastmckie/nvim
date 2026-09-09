@@ -20,46 +20,63 @@ first tool call, so both must be verified independently.
 
 ## Registration
 
-MCP servers register through exactly two files: `~/.claude.json` and `.mcp.json`. Nothing else
-registers a server — see "Not registration" below. `~/.claude.json` itself carries two internal
-scopes — **local** (per-project entries keyed under that project's own path, private to the
-machine) and **user** (top-level, applying across every project) — but only the user scope is a
-sanctioned registration mechanism in this repo; nothing here writes to the local scope. That
-leaves an actionable, binary choice for extension authors:
+MCP servers register through exactly two files: `~/.claude.json` and `.mcp.json`.
+Nothing else registers a server — see "Not registration" below. `~/.claude.json` itself carries
+two internal scopes — **local** (per-project entries keyed under that project's own absolute
+path, under `.projects["<abs path>"].mcpServers`, private to the machine) and **user** (top-level
+`mcpServers`, applying across every project). Both scopes are sanctioned registration mechanisms
+in this repo as of the per-project `lean-lsp` registration work: local scope is the correct
+choice specifically when a server needs per-project computed arguments AND multiple instances of
+that per-project configuration must coexist on the same machine at once (see `lean-lsp` below).
+That leaves a three-way, actionable choice for extension authors:
 
 1. **Project-scoped `.mcp.json`**, at the project root. A JSON file, in the same
    `mcpServers`-object shape as `~/.claude.json`, declaring servers usable only within this
    repository. This is the surface for extension-owned, repo-local servers.
-2. **User-scope `~/.claude.json`** (its top-level `mcpServers` object, not the local per-project
-   one), written by one of two sanctioned mechanisms:
+2. **User-scope `~/.claude.json`** (its top-level `mcpServers` object), written by one of two
+   sanctioned mechanisms:
    - **A host-level or home-manager activation block**, for servers with no per-project computed
      arguments. The activation block writes the server's `command`/`args`/`env` directly into
      `~/.claude.json`'s top-level `mcpServers` object once, outside of any single project's
-     lifecycle.
-   - **A setup script under `core/scripts/`**, mirroring `setup-lean-mcp.sh`'s shape, for servers
-     that need per-project computed arguments (for example, a project path detected at setup
-     time). The script detects or computes those arguments, then `jq`-merges the result into
-     `~/.claude.json`'s top-level `mcpServers`, preserving whatever the file already holds for
-     other servers.
+     lifecycle. `playwright` is the worked example (see below).
+   - **A setup script**, for a server that needs a single, machine-wide computed argument where
+     only one project is ever open at a time. (No current worked example in this repo remains in
+     this shape — `lean-lsp`, the prior occupant of this bullet, moved to local scope below once
+     concurrent multi-project use overturned that assumption; see the invariant subsection.)
+3. **Local-scope `~/.claude.json`** (`.projects["<abs project path>"].mcpServers`), for a server
+   that needs PER-PROJECT computed arguments where MULTIPLE projects run concurrently on the same
+   machine. `lean-lsp` is the worked example: each Lean project needs its own computed
+   `LEAN_PROJECT_PATH`, and this machine routinely has several Lean projects open at once
+   (including PR-review worktrees), so a single user-scope slot cannot hold more than one
+   project's value at a time. Written automatically, per project, by a `SessionStart` hook
+   (`lean-lsp-register-project.sh`, installed at USER level, not contributed through the lean
+   extension's own `settings-fragment.json` — a per-repo hook only merges into a repository's OWN
+   `.claude/settings.local.json`, which a freshly created worktree with no `.claude/` deploy at
+   all never has; see `docs/architecture/extension-system.md`'s "Settings Merging" section for
+   the user-level-vs-per-repo distinction this forces) that invokes a writer script
+   (`lean/scripts/setup-lean-mcp.sh --scope project`) using the same detect-then-`jq`-merge
+   shape as a user-scope setup script, just targeted at `.projects[<path>].mcpServers` instead of
+   the top-level object, and preserving whatever the file already holds for every other project
+   and server.
 
 ### Choosing a registration surface (the hybrid model)
 
-The two surfaces are not interchangeable — pick one by asking a single question: **does this
-server's usefulness end at this repository's boundary, and does it need no per-project computed
-arguments?**
+Pick a surface by asking two questions in order:
 
-- **Yes to both → project-scoped `.mcp.json`.** The server is extension-owned and repo-local; it
-  has no reason to exist for any other project. This is the primary surface for new
-  extension-declared servers going forward.
-- **No to either → user scope.** Two shapes recur in this repo today:
-  - **Genuine machine capability** — installed once per machine, useful across every project,
-    independent of which repository is open. `playwright` is the worked example: a Nix-built
-    wrapper binary plus a machine-level browser cache, registered once via a home-manager
-    activation block.
-  - **Per-project computed arguments needed** — the server's configuration depends on something
-    computed at setup time for *this* project specifically. `lean-lsp` is the worked example: it
-    needs a computed `LEAN_PROJECT_PATH`, so `lean/scripts/setup-lean-mcp.sh` computes it and
-    merges the result into user scope.
+1. **Does this server's usefulness end at this repository's boundary, and does it need no
+   per-project computed arguments?** Yes to both → **project-scoped `.mcp.json`**. The server is
+   extension-owned and repo-local; it has no reason to exist for any other project. This is the
+   primary surface for new extension-declared servers going forward.
+2. **Does it need per-project computed arguments?** No → **user scope** (a genuine machine
+   capability, installed once, useful across every project regardless of which is open;
+   `playwright` is the worked example — a Nix-built wrapper binary plus a machine-level browser
+   cache, registered once via a home-manager activation block). Yes, AND multiple such projects
+   run concurrently on this machine → **local scope**, written automatically per project by a
+   `SessionStart` hook (`lean-lsp` is the worked example — see above). A per-project need where
+   only ONE project is ever open at a time could in principle still use a user-scope setup script
+   instead, but no current server in this repo is in that shape; default to local scope for any
+   new per-project-computed-argument server unless a concrete single-project-at-a-time
+   constraint is established first.
 
 ### Invariant: a command path must never resolve inside a repository's own `.claude/` tree
 
@@ -87,16 +104,30 @@ alternative — a command path anchored at a stable, non-deploy location:
   with the per-project value carried entirely through the `LEAN_PROJECT_PATH` environment
   variable rather than through the command path itself.
 
-**Trade-off recorded**: under this invariant, `lean-lsp` remains a single global (user-scope,
-top-level `mcpServers`) entry — there is no per-project computed *command*, only a per-project
-computed *env var*, and that env var can point at only one project at a time. Working in two Lean
-projects concurrently (e.g. `BimodalLogic` and `cslib`) means `LEAN_PROJECT_PATH` names one of
-them at any given moment; switching which project lean-lsp indexes requires re-running
-`lean/scripts/setup-lean-mcp.sh` from the other project. This is a known, accepted limitation of
-the single-global-entry model, not an oversight — a project-scoped local entry would let both
-projects hold their own correct path simultaneously, but formalizing that as a second sanctioned
-mechanism is a deliberate non-goal here (see the task's `user_decision` record for the option
-considered and declined).
+**Trade-off record OVERTURNED by concurrency evidence, not merely revised**: this section
+previously recorded `lean-lsp` as a single global (user-scope, top-level `mcpServers`) entry,
+treating that as a limitation the repo had chosen to live with, with per-project local-scope
+registration explicitly ruled out. That was wrong for this machine, and the evidence that
+overturned it was observed live, not hypothesized: a session orchestrating in `BimodalLogic` held
+a `lean-lsp` entry pointed at
+`cslib` — the single global slot, last written by whichever session most recently ran the setup
+script, silently answered every OTHER concurrent session's lean-lsp calls against the WRONG
+project. This is not a cosmetic inconvenience; it is the most dangerous failure shape available,
+because it connects successfully and returns a confident, plausible, WRONG answer rather than
+failing visibly. This machine routinely runs several Lean projects at once — `cslib`,
+`BimodalLogic`, and ephemeral PR-review worktrees such as `cslib-pr648` — so "switching which
+project lean-lsp indexes requires re-running the setup script" was never a rare edge case here;
+it was the steady state, silently wrong more often than not. `lean-lsp` is now registered per
+project under LOCAL scope (`.projects[<path>].mcpServers`, see the Registration section above),
+written automatically at session start by `lean-lsp-register-project.sh`, with the top-level
+global entry retired entirely (its mere presence is itself now flagged as drift — see
+`verify-lean-mcp.sh`'s inverted Check 9). An absent per-project entry fails LOUDLY (no lean-lsp
+tool at all); that is strictly safer than a stale entry answering confidently for the wrong
+project. **The invariant itself — a command path must never resolve inside a repository's own
+`.claude/` tree — is completely unaffected by this reversal**: `lean-lsp` still resolves via
+`uvx`, never a repository-relative path, at every scope. Only the SLOT the per-project env var
+lives in changed (local instead of global); the invariant's own reasoning about command-path
+stability was never the thing that was wrong.
 
 ### Grant permissions at the same scope where the server is registered
 
@@ -116,9 +147,13 @@ DENIED outright. This is exactly why an autonomous run can stall on a tool call 
 interactively elsewhere: the server is registered somewhere reachable, but the grant was written
 to the wrong scope for the run's actual project.
 
-**Worked pair**: `lean-lsp` is the in-repo positive control — registered in user scope
-(`~/.claude.json`) and granted in user scope via a `mcp__lean-lsp__*` wildcard in
-`~/.claude/settings.json`. Symmetric, correct. `playwright` is the live counter-example —
+**Worked pair**: `lean-lsp` is the in-repo positive control — registered per-project in LOCAL
+scope (`~/.claude.json`'s `.projects[<path>].mcpServers`) and granted via a `mcp__lean-lsp__*`
+wildcard in USER-scope `~/.claude/settings.json`. This is not a scope mismatch: a permission
+grant in `~/.claude/settings.json` applies to every session on the machine regardless of which
+scope actually registered the server that session resolves to, so the same single wildcard grant
+covers lean-lsp correctly whether it was previously a single global entry or is now a per-project
+local one. `playwright` is the live counter-example —
 registered in user scope, but its 9-tool safe-tier enumeration (see the "Carve-out" subsection
 below) appears only inside the `web` and `present` extensions' `settings-fragment.json` files,
 with zero `mcp__playwright__*` entries in `~/.claude/settings.json` itself. Every project without
@@ -153,6 +188,17 @@ server was added.
 **Anyone re-verifying registration or reachability MUST use a fresh session (or `claude -p`),
 never an already-running one.** Testing from a stale session reproduces the same false negative
 every time, regardless of how correctly the server is registered or permitted.
+
+**Measured for a `SessionStart`-hook write specifically** (the per-project `lean-lsp`
+registration hook, `lean-lsp-register-project.sh`): a hook's OWN write, performed during that
+same session's startup, is NOT reliably visible within that same session — confirmed
+empirically, not assumed, by running three sequential fresh sessions in a previously-unregistered
+directory. The session whose own hook invocation performed the write still resolved lean-lsp
+calls against the WRONG (stale/global) configuration; only a subsequent fresh session saw the
+just-written entry. This is the same snapshot effect as the paragraph above, just triggered by a
+hook's write instead of a manual edit, and it is why the hook always emits an `additionalContext`
+restart notice on every write rather than assuming same-session visibility (see
+`lean-lsp-register-project.sh`'s own header for the mechanism).
 
 ### Not registration
 
@@ -254,21 +300,25 @@ exists to prevent — always verify both.
 
 Follow top to bottom when adding a new server:
 
-1. **Pick a scope first.** Does this server's usefulness end at this repository's boundary, and
-   does it need no per-project computed arguments? Yes to both → project scope. Otherwise → user
-   scope. (See "Choosing a registration surface" above.)
+1. **Pick a scope first**, per "Choosing a registration surface" above: project scope (repo-local,
+   no per-project computed arguments) → project-scoped `.mcp.json`; no per-project computed
+   arguments needed at all → user scope; per-project computed arguments with multiple such
+   projects live on the machine concurrently → local scope.
 2. **Pick a registration mechanism within that scope.**
    - Project scope: add the server to the project root's `.mcp.json`.
-   - User scope, no per-project computed arguments needed → a host-level or home-manager
-     activation block.
-   - User scope, per-project computed arguments needed → a setup script under `core/scripts/`,
-     mirroring `setup-lean-mcp.sh`.
-3. **Write the permission grant at the SAME scope as registration** (see "Grant permissions at
-   the same scope where the server is registered" above): project-scope registration → the owning
-   extension's `settings-fragment.json` `permissions.allow`; user-scope registration →
-   `~/.claude/settings.json`. Either way, use a wildcard (`"mcp__{server}__*"`), not core's
-   settings and not an enumeration — unless the server needs a safe/unsafe split (see "Carve-out"
-   above).
+   - User scope: a host-level or home-manager activation block.
+   - Local scope: a `SessionStart` hook, installed at USER level (never contributed through an
+     extension's per-repo `settings-fragment.json` — see the Registration section's local-scope
+     bullet above for why), that invokes a writer script targeting
+     `.projects[<path>].mcpServers` — mirroring `lean-lsp-register-project.sh` /
+     `lean/scripts/setup-lean-mcp.sh --scope project`.
+3. **Write the permission grant in USER scope regardless of registration scope** (see "Grant
+   permissions at the same scope where the server is registered" above and the `lean-lsp` Worked
+   Pair note): a `~/.claude/settings.json` wildcard grant (`"mcp__{server}__*"`) applies to every
+   session on the machine no matter which scope registered the server that session resolves to.
+   Project-scope registration is the one exception — grant in the owning extension's
+   `settings-fragment.json` instead. Never core's settings, and never an enumeration — unless the
+   server needs a safe/unsafe split (see "Carve-out" above).
 4. **Verify both axes from a fresh session** (never an already-running one — see "The
    session-start snapshot trap" above): run `claude mcp list` and confirm the server shows
    `Connected`, then make one real tool call and confirm it does not prompt.

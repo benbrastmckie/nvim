@@ -25,16 +25,27 @@ The `lean-lsp` MCP server provides live Lean LSP access for agents.
 uvx lean-lsp-mcp
 ```
 
-Registration is performed by the operator running `lean/scripts/setup-lean-mcp.sh`, which writes
-this server into user-scope `~/.claude.json` as `{"type":"stdio","command":"uvx","args":
-["lean-lsp-mcp"],"env":{"LEAN_LOG_LEVEL":"WARNING","LEAN_PROJECT_PATH":"<computed path>"}}` --
-`uvx` resolved on `PATH`, no wrapper script involved, and no path anywhere in the entry that
-resolves inside any repository's own `.claude/` deploy tree. Permissions are granted by this
-extension's own `settings-fragment.json` (`mcp__lean-lsp__*`, a wildcard). Neither
-`manifest.json` nor a settings file registers the server -- see
+Registration is AUTOMATIC, per Lean project, with zero manual steps: a `SessionStart` hook
+(`lean-lsp-register-project.sh`, installed once per machine by
+`lean/scripts/install-lean-lsp-session-hook.sh`) detects the enclosing Lake project at the start
+of every session and writes/repairs that project's own entry under
+`~/.claude.json`'s `.projects["<abs project path>"].mcpServers."lean-lsp"` as
+`{"type":"stdio","command":"uvx","args":["lean-lsp-mcp"],"env":{"LEAN_LOG_LEVEL":"WARNING",
+"LEAN_PROJECT_PATH":"<this project's path>"}}` -- `uvx` resolved on `PATH`, no wrapper script
+involved, and no path anywhere in the entry that resolves inside any repository's own `.claude/`
+deploy tree. Each Lean project gets its OWN entry, so many concurrent Lean projects (including a
+PR-review worktree with no `.claude/` deploy at all) each index correctly at once -- there is no
+single global slot to fight over. An operator can still run
+`lean/scripts/setup-lean-mcp.sh --scope project` manually (e.g. to force an immediate repair
+without waiting for the next session start); the one-time installer and `--retire-global`
+rollback are documented in that script's own `--help`. Permissions are granted in USER-scope
+`~/.claude/settings.json` (`mcp__lean-lsp__*`, a wildcard) -- a single grant there covers every
+project regardless of which one currently holds a registered entry. Neither `manifest.json` nor
+a settings file registers the server -- see
 [MCP Server Ownership](../core/context/patterns/mcp-server-ownership.md) for the full
-registration/permission split and the durable command-path invariant. No API key required. The
-server depends on a working Lean 4 toolchain (installed via `elan`).
+registration/permission split, the per-project-vs-global rationale, and the durable
+command-path invariant. No API key required. The server depends on a working Lean 4 toolchain
+(installed via `elan`).
 
 **Capabilities** (used by `lean-research-agent` and `lean-implementation-agent`):
 

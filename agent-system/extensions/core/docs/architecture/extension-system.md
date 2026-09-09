@@ -224,7 +224,7 @@ The manifest declares what the extension provides:
 | `provides` | object | yes | What files/directories the extension provides (12 categories) |
 | `merge_targets` | object | yes | Files that get merged (CLAUDE.md, index.json, settings.json) |
 
-**Note on `mcp_servers`**: This field may appear in some manifests but is NOT directly consumed by the loader, and it does not register an MCP server. Neither this field nor an `mcpServers` key inside a `settings-fragment.json` file registers a server -- only user-scope `~/.claude.json` does that. See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full registration/permission split, and [Settings Merging](#settings-merging) below for what a `settings-fragment.json` file actually merges (permission grants).
+**Note on `mcp_servers`**: This field may appear in some manifests but is NOT directly consumed by the loader, and it does not register an MCP server. Neither this field nor an `mcpServers` key inside a `settings-fragment.json` file registers a server -- only `~/.claude.json` does that (its top-level user scope, or its per-project `.projects[<path>].mcpServers` local scope). See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full registration/permission split, and [Settings Merging](#settings-merging) below for what a `settings-fragment.json` file actually merges (permission grants).
 
 **Note on `section_id`**: The `section_id` field in `merge_targets.claudemd` is vestigial for the CLAUDE.md use case. `generate_claudemd()` regenerates CLAUDE.md completely from all loaded extension `EXTENSION.md` files; it does not use section markers.
 
@@ -497,9 +497,9 @@ Extensions can provide settings and permission grants (including MCP tool permis
 
 **Note**: Neither `manifest.json`'s `mcp_servers` field nor an `mcpServers` key inside a settings
 fragment registers an MCP server -- Claude Code never reads `settings.json`/`settings.local.json`
-for server definitions, only user-scope `~/.claude.json`. All settings merging goes through the
-`merge_targets.settings` mechanism, but that mechanism's only functional MCP-related effect is
-permission grants like the example above. See
+for server definitions, only `~/.claude.json` (both its user and local/per-project scopes). All
+settings merging goes through the `merge_targets.settings` mechanism, but that mechanism's only
+functional MCP-related effect is permission grants like the example above. See
 [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for where registration
 actually happens.
 
@@ -508,6 +508,37 @@ actually happens.
 - Objects are deep merged
 - Scalars only added if not present (no overwrite)
 - Tracked for clean removal on unload via `unmerge_settings()`
+
+### How an extension contributes a native harness hook
+
+A `settings-fragment.json` can also declare a `hooks` key (the `provides.hooks` file-copy targets
+in a manifest are a DIFFERENT thing -- see the top-level `hooks` object note earlier in this
+document for lifecycle hooks; THIS section is about native Claude Code harness hooks like
+`PreToolUse`/`SessionStart`/`Stop`). Two shapes exist, and picking the wrong one for the job
+silently produces a hook that never fires:
+
+1. **Per-repo hook (the common case)**: the fragment's `hooks` key merges into the CONSUMING
+   REPOSITORY's OWN `.claude/settings.json` at deploy/load time, alongside the permission grants
+   above. This fires only in sessions started inside that specific repository, and only once its
+   `.claude/` deploy tree actually exists. The email extension's `mail-guard.sh` PreToolUse hook
+   is the worked example -- see its `settings-fragment.json`.
+2. **User-level hook (required when a repo-local deploy cannot be assumed)**: some hooks must
+   fire in EVERY session on the machine, including inside a freshly created git worktree that has
+   no `.claude/` directory at all yet -- a per-repo fragment hook literally cannot reach that
+   case, because there is no `.claude/settings.local.json` for it to merge into. The per-project
+   `lean-lsp` registration hook (`lean-lsp-register-project.sh`) is the worked example: it is
+   installed OUTSIDE the extension-loader/settings-fragment mechanism entirely, by a dedicated
+   installer script (`install-lean-lsp-session-hook.sh`) that copies the hook to
+   `$HOME/.claude/hooks/` and merges its `hooks.SessionStart` entry directly into
+   `$HOME/.claude/settings.json` (and, for durability across a `home-manager switch`, into the
+   home-manager-managed dotfiles source that file is periodically reset from). This is a
+   one-time, per-machine, operator-run install step -- not something `manager.load()` performs
+   automatically when the extension is loaded into a given repo.
+
+Choosing between them is the same "does this need to work with no repo-local deploy at all?"
+question that also governs MCP server scope (see MCP Server Ownership's local-scope discussion) --
+if the answer is yes, the hook cannot be extension-contributed; it must be a dedicated user-level
+installer, run once per machine, independent of which repositories load the extension.
 
 ---
 
