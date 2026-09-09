@@ -13,6 +13,13 @@
 #       NOT ignored. A repo that ignores them fails this check with the offending .gitignore
 #       line named via `git check-ignore -v`.
 #
+# Checks A and B both derive their probe/pattern lists from scripts/lib/runtime-file-patterns.sh
+# -- the single canonical definition of the ephemeral-class membership, also consumed by
+# tests/test-deploy-orphans.sh and tests/test-deploy-propagation.sh (their scratch-repo
+# `.gitignore` seeding) and pinned to context/standards/orchestrator-runtime-files.md's "Consumer
+# Repo Setup" block by tests/test-runtime-file-tracking.sh Case 3. Do not hand-add a class member
+# to either list below -- add it to the lib instead, in exactly one place.
+#
 # Exit code: 0 if all checks pass, 1 if any check fails.
 #
 # Usage: bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh
@@ -22,32 +29,32 @@ set -uo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m'
 
 FAILURES=0
 PROBE_DIR="specs/000_probe"
 
-# Ephemeral-class representative paths (Check A / Check B). Directory classes (.lock/) are
-# probed with a file inside them, since git-ignore patterns for a directory only match paths
-# under it.
-declare -a EPHEMERAL_PROBES=(
-  "${PROBE_DIR}/.orchestrator-loop-guard"
-  "${PROBE_DIR}/.orchestrator-churn-state.json"
-  "${PROBE_DIR}/.drift-inspection.json"
-  "${PROBE_DIR}/.lock/holder.json"
-  "${PROBE_DIR}/.dispatch/1.md"
-  "${PROBE_DIR}/.continuation-loop-guard"
-  "${PROBE_DIR}/.postflight-loop-guard"
-  "specs/.orchestrator-multi-state-sess_0000000000_probe.json"
-  "specs/.return-meta-multi-sess_0000000000_probe.json"
-  "${PROBE_DIR}/.return-meta-orchestrate.json"
-  "specs/.events.lock"
-  "specs/.sessions/sess_0000000000_probe.json"
-  "specs/.freshness-warn-streak.json"
-)
+# --- Shared runtime-file-patterns library ---
+# Deploy-tree-first / source-store-fallback resolution relative to THIS script's own directory,
+# so the same lookup works whether this file is run from the source store
+# (agent-system/extensions/core/scripts/) or the deployed, flattened tree (.claude/scripts/) --
+# both trees keep the lib at the same "./lib/runtime-file-patterns.sh" relative position.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUNTIME_LIB="${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
+if [[ ! -f "$RUNTIME_LIB" ]]; then
+  echo "ERROR: shared library lib/runtime-file-patterns.sh not found at: $RUNTIME_LIB" >&2
+  exit 5
+fi
+# shellcheck disable=SC1090
+. "$RUNTIME_LIB"
 
-# Durable-provenance paths (Check C) — MUST NOT be ignored.
+# Ephemeral-class representative paths (Check A), derived from the lib. Directory classes
+# (.lock/, .dispatch/, .deploy-lock/, .scope-lock/, .commit-lock/, .sessions/) are probed with a
+# file inside them, since a git-ignore pattern for a directory only matches paths under it.
+declare -a EPHEMERAL_PROBES=("${RUNTIME_FILE_PROBES[@]}")
+
+# Durable-provenance paths (Check C) — MUST NOT be ignored. Not part of the ephemeral-class lib
+# (they are the opposite disposition), so these stay locally defined.
 declare -a DURABLE_PROBES=(
   "${PROBE_DIR}/.orchestrator-handoff.json"
   "${PROBE_DIR}/.return-meta.json"
@@ -80,19 +87,7 @@ fi
 echo ""
 echo "Check B - no ephemeral-class file is currently tracked:"
 b_failed=0
-b_patterns=(
-  '\.orchestrator-loop-guard$'
-  '\.orchestrator-churn-state\.json$'
-  '\.drift-inspection\.json$'
-  '/\.lock/'
-  '\.continuation-loop-guard$'
-  '\.postflight-loop-guard$'
-  '\.orchestrator-multi-state(-[^/]+)?\.json$'
-  '\.return-meta-[^/]*\.json$'
-  '\.events\.lock$'
-  '/\.sessions/[^/]+\.json$'
-  '\.freshness-warn-streak\.json$'
-)
+b_patterns=("${RUNTIME_FILE_B_REGEX[@]}")
 tracked_files=$(git ls-files 2>/dev/null)
 for pattern in "${b_patterns[@]}"; do
   hits=$(echo "$tracked_files" | grep -E "$pattern" || true)
@@ -101,9 +96,10 @@ for pattern in "${b_patterns[@]}"; do
     while IFS= read -r hit; do
       [ -z "$hit" ] && continue
       echo -e "  ${RED}FAIL${NC} tracked ephemeral file: $hit"
-      if [[ "$hit" == *"/.lock/"* ]]; then
-        lock_dir="${hit%/.lock/*}/.lock"
-        echo "        remediation: git rm -r --cached \"$lock_dir\"  (file stays on disk)"
+      dir_basename="$(runtime_file_dir_basename_for_hit "$hit" || true)"
+      if [ -n "$dir_basename" ]; then
+        dir_path="${hit%/"$dir_basename"/*}/${dir_basename}"
+        echo "        remediation: git rm -r --cached \"$dir_path\"  (file stays on disk)"
       else
         echo "        remediation: git rm --cached \"$hit\"  (file stays on disk)"
       fi

@@ -219,28 +219,32 @@ the already-performed untracking is verified rather than re-attempted.
 
 ---
 
-### Phase 3: Rewire `check-runtime-file-tracking.sh` onto the lib [NOT STARTED]
+### Phase 3: Rewire `check-runtime-file-tracking.sh` onto the lib [COMPLETED]
 
 **Goal**: Both of the script's lists derive from the lib, the remediation line is correct for
 every directory-class member, and the file is shellcheck clean.
 
 **Tasks**:
-- [ ] Source `lib/runtime-file-patterns.sh` (resolve the path so it works from both the source
+- [x] Source `lib/runtime-file-patterns.sh` (resolve the path so it works from both the source
       store and the flattened deployed `.claude/scripts/` tree — the deploy merges `lib/` under
-      `.claude/scripts/lib/`, so a `$(dirname "$0")/lib/...` form covers both).
-- [ ] Replace the literal `EPHEMERAL_PROBES` array with values derived from the lib.
-- [ ] Replace the literal `b_patterns` array with values derived from the lib. This closes the
-      already-live Check A/Check B divergence on `.dispatch/`.
-- [ ] Generalize the Check B remediation branch: replace the hardcoded
+      `.claude/scripts/lib/`, so a `$(dirname "$0")/lib/...` form covers both). *(completed:
+      `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` + `${SCRIPT_DIR}/lib/...`)*
+- [x] Replace the literal `EPHEMERAL_PROBES` array with values derived from the lib. *(completed)*
+- [x] Replace the literal `b_patterns` array with values derived from the lib. This closes the
+      already-live Check A/Check B divergence on `.dispatch/`. *(completed)*
+- [x] Generalize the Check B remediation branch: replace the hardcoded
       `if [[ "$hit" == *"/.lock/"* ]]` with a lookup against the lib's directory-class flag, so
       **every** directory member (`.lock/`, `.dispatch/`, `.deploy-lock/`, `.scope-lock/`,
       `.commit-lock/`, `.sessions/`) prints `git rm -r --cached "<dir>"` and files print
       `git rm --cached "<file>"`. This is what the ACCEPTANCE line requires for
-      `specs/.deploy-lock/owner`.
-- [ ] Resolve the pre-existing `SC2034` on `YELLOW`: either wire it into a real output line or
-      remove the declaration. Do not suppress with a directive without stating why.
-- [ ] Add a cross-reference comment naming the lib as the sole source and pointing at the
-      standards block and the two fixtures.
+      `specs/.deploy-lock/owner`. *(completed: `runtime_file_dir_basename_for_hit()`; verified
+      live in a scratch repo — FAIL with `git rm -r --cached "specs/.deploy-lock"` on a
+      force-tracked `specs/.deploy-lock/owner`, then PASS after that exact untrack)*
+- [x] Resolve the pre-existing `SC2034` on `YELLOW`: either wire it into a real output line or
+      remove the declaration. Do not suppress with a directive without stating why. *(completed:
+      removed — `YELLOW` had no live use anywhere in the file)*
+- [x] Add a cross-reference comment naming the lib as the sole source and pointing at the
+      standards block and the two fixtures. *(completed)*
 
 **Timing**: 1 hour
 
