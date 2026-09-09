@@ -47,6 +47,44 @@ normalize_topic() {
   printf '%s' "$t"
 }
 
+# truncate_word_boundary <text> <budget> -- shared bash-side counterpart to build_graph's
+# wb_truncate jq helper (~line 155 area): truncates <text> to at most <budget> characters,
+# backing off to the last space at or before (budget - 3) and appending "..." so the TOTAL
+# length (content + marker) never exceeds budget. Ported verbatim from the core copy
+# (agent-system/extensions/core/scripts/generate-task-order.sh) as part of the render-side
+# slice-safety fix -- see that file's copy for the full rationale comment.
+#
+# Idempotent against an already-marked input: if <text> already ends with "..." (e.g. it is the
+# already-truncated output of the primary 65-char slice, being cut again to a smaller
+# cross-topic budget), the existing marker is stripped before re-cutting so the result never
+# carries a doubled "......" marker.
+truncate_word_boundary() {
+  local text="$1" budget="$2"
+  local marker="..."
+  local mlen=${#marker}
+
+  if [[ ${#text} -le $budget ]]; then
+    printf '%s' "$text"
+    return
+  fi
+
+  if [[ "$text" == *"$marker" ]]; then
+    text="${text%"$marker"}"
+    if [[ ${#text} -le $budget ]]; then
+      printf '%s' "$text"
+      return
+    fi
+  fi
+
+  local cut=$(( budget - mlen ))
+  (( cut < 0 )) && cut=0
+  local sliced="${text:0:$cut}"
+  if [[ "$sliced" == *' '* ]]; then
+    sliced="${sliced% *}"
+  fi
+  printf '%s%s' "$sliced" "$marker"
+}
+
 # ============================================================================
 # Parse Arguments
 # ============================================================================
@@ -144,22 +182,48 @@ build_graph() {
   raw_data=$(get_active_tasks)
 
   # Preload all task descriptions in one jq call using @base64 encoding to avoid newline issues
+  #
+  # Source-string selection and slicing -- ported verbatim from the core copy
+  # (agent-system/extensions/core/scripts/generate-task-order.sh), see that file's copy of this
+  # comment for the full per-step rationale:
+  #   1. (.title // .description // .project_name) -- prefer a purpose-written .title.
+  #   2. ltrimstr(" ") -- drop one accidental leading space.
+  #   3. gsub("`";""), gsub("\\*";""), gsub("_";""), gsub("\\[";"") -- strip inline-markup
+  #      hazard characters before slicing.
+  #   4. gsub("\n";" ") -- normalize embedded newlines to spaces INSIDE jq.
+  #   5. wb_truncate(65) -- truncate only when over budget, word-boundary backoff plus marker,
+  #      reserved within the budget.
   local desc_data
-  desc_data=$(jq -r '.active_projects[] |
+  desc_data=$(jq -r '
+    def wb_truncate(budget):
+      if (length > budget) then
+        (.[0:(budget - 3)] | sub(" [^ ]*$"; "")) + "..."
+      else
+        .
+      end;
+    .active_projects[] |
     select(.status == "completed" | not) |
     select(.status == "abandoned" | not) |
     select(.status == "expanded" | not) |
-    "\(.project_number)|\((.description // .project_name) | ltrimstr(" ") | .[0:65])"
+    "\(.project_number)|\(
+      (.title // .description // .project_name)
+      | ltrimstr(" ")
+      | gsub("`"; "")
+      | gsub("\\*"; "")
+      | gsub("_"; "")
+      | gsub("\\["; "")
+      | gsub("\n"; " ")
+      | wb_truncate(65)
+    )"
   ' "$STATE_FILE" 2>/dev/null)
 
   # Load descriptions into task_desc map
-  # Read line by line; description may not contain | (we split on first | only)
+  # Read line by line; description may not contain | (we split on first | only). Newlines were
+  # already normalized to spaces inside the jq program above.
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     local tn="${line%%|*}"
     local desc="${line#*|}"
-    # Replace any embedded newlines in desc with space
-    desc="${desc//$'\n'/ }"
     [[ -n "$tn" ]] && task_desc["$tn"]="$desc"
   done <<< "$desc_data"
 
@@ -503,8 +567,11 @@ _print_topic_node() {
   if [[ -n "${_globally_visited[$task_num]+x}" && "$depth" -gt 0 ]]; then
     local task_topic_val="${task_topic[$task_num]:-}"
     if [[ -n "$task_topic_val" && "$(normalize_topic "$task_topic_val")" != "$_current_section_topic" ]]; then
-      # Shorten desc to first 40 chars for cross-topic annotation
-      local short_desc="${desc:0:40}"
+      # Shorten desc to a 40-char budget via truncate_word_boundary (defined near
+      # normalize_topic above), ported from the core copy -- idempotent against $desc already
+      # carrying a marker from the primary 65-char slice.
+      local short_desc
+      short_desc="$(truncate_word_boundary "$desc" 40)"
       echo "${prefix}${task_num} [${status_display}] — (${task_topic_val}: ${short_desc}) (see above)"
     else
       echo "${prefix}${task_num} [${status_display}] — ${desc} (see above)"

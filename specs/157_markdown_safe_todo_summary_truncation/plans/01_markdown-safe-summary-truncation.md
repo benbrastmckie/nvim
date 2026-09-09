@@ -445,26 +445,39 @@ one far above suggests the truncation change is rewriting lines it should have l
 
 ---
 
-### Phase 6: Mirror to `.opencode/` and run the full gate set [NOT STARTED]
+### Phase 6: Mirror to `.opencode/` and run the full gate set [COMPLETED]
 
 **Goal**: Apply the same two slice fixes to the tracked `.opencode/` renderer mirror, then run
 the repository's full test suite and lints.
 
 **Tasks**:
-- [ ] Apply the settled Phase 3 expression to `.opencode/scripts/generate-task-order.sh`'s own
+- [x] Apply the settled Phase 3 expression to `.opencode/scripts/generate-task-order.sh`'s own
       source expression, and the settled Phase 4 treatment to its own cross-topic slice. Port
       **only** those two changes — the mirror has diverged substantially (it lacks the
       transitive-reduction block and the `deploy-root-guard.sh` sourcing), and a wholesale
-      sync is explicitly out of scope
-- [ ] Diff the mirror before and after to confirm nothing beyond the two expressions moved
-- [ ] Note in the execution summary that this follows the established render-side-parity
-      practice for this mirror rather than being a new precedent
-- [ ] Run `bash .claude/scripts/tests/run-all.sh` and confirm no regression, with the new suite
-      discovered and passing
-- [ ] Run the task-reference lint and confirm no task numbers were introduced outside `specs/**`
+      sync is explicitly out of scope *(completed: also ported the truncate_word_boundary bash
+      helper, since the Phase 4 treatment requires it -- this is the supporting code for "those
+      two changes", not a third change)*
+- [x] Diff the mirror before and after to confirm nothing beyond the two expressions moved
+      *(completed: exactly three diff hunks -- the new helper next to normalize_topic, the
+      build_graph source expression, and the short_desc call site. A `--print` smoke run against
+      the live state.json produced output identical to the core copy's)*
+- [x] Note in the execution summary that this follows the established render-side-parity
+      practice for this mirror rather than being a new precedent *(completed, see summary)*
+- [x] Run `bash .claude/scripts/tests/run-all.sh` and confirm no regression, with the new suite
+      discovered and passing *(completed: 79 passed, 0 failed, 0 skipped, 79 total --
+      test-generate-task-order.sh discovered and passing among them)*
+- [x] Run the task-reference lint and confirm no task numbers were introduced outside `specs/**`
       (the new test file, the generator comments, and the `.opencode/` mirror are all
-      deliverables under this rule)
-- [ ] Confirm the deploy-freshness state is clean so the completion deploy gate will pass
+      deliverables under this rule) *(completed: check-task-references.sh --quiet reports 0
+      unexempted occurrences across all 4 scanned trees)*
+- [x] Confirm the deploy-freshness state is clean so the completion deploy gate will pass
+      *(completed: check-deploy-freshness.sh reports clean; deploy-headless.sh's fast gate
+      reports RESULT=landed_verify_clean, 33/33 checks. Note: an intermediate check hit a
+      transient "TODO.md is OUT OF SYNC" validate-state.sh finding caused purely by a UTC
+      date-rollover in the generated timestamp line between the Phase 5 regeneration and this
+      phase's re-check -- not a defect in the fix. Resolved by regenerating specs/TODO.md again
+      before the final deploy)*
 
 **Timing**: 0.75 hours
 
