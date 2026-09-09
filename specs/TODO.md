@@ -1,5 +1,5 @@
 ---
-next_project_number: 205
+next_project_number: 206
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 205
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202,205 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,163,164,173,174,175,195,198 | 29,74,139,162,172,188,191,194 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
@@ -91,9 +91,44 @@ next_project_number: 205
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
+205 [NOT STARTED] — Replace the single-global lean-lsp entry with per-project...
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 205. Per project lean lsp registration
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 203, Task 204
+
+**Description**: Replace the single-global lean-lsp entry with per-project scoped registration written automatically at session start, so many concurrent Lean projects each index correctly
+
+The single-global-entry model (Option A, adopted as a deliberate non-goal against project scope) is wrong for this machine: many Lean projects run simultaneously and constantly, including PR worktrees such as cslib-pr648 alongside cslib and BimodalLogic. With one global LEAN_PROJECT_PATH, every concurrent session except the one that last ran setup-lean-mcp.sh silently indexes the WRONG Lean project. This connects successfully and returns confident wrong answers rather than failing, which is the most dangerous failure shape. This was observed live, not hypothesized: a session orchestrating in BimodalLogic held a lean-lsp pointed at cslib.
+
+SETTLED BY USER, not to be re-litigated as a non-blocking user_decision: registration must be AUTOMATIC at session start. A hook detects the enclosing Lean project (lakefile.lean or lakefile.toml, matching the detection already fixed for both) and writes or refreshes that project path in its own project-scoped entry, so a freshly created worktree is correct on first use with zero manual steps. Explicit per-project setup and warn-only detection were both considered and declined as leaving new worktrees silently wrong.
+
+Recommended mechanism, to be confirmed during planning: the per-project object in the user config at .projects[<abs path>].mcpServers, NOT a committed .mcp.json at project root. Rationale: .mcp.json is git-tracked and cannot be committed into upstream repositories the user does not own (cslib), and it hits the documented workspace-trust gate on every fresh clone or worktree, which is precisely the high-frequency case here. The per-project user-config object is machine-local and has no trust gate. Planning must verify the precedence and subagent-reachability claims for whichever surface is chosen.
+
+Outstanding issues this must resolve, each of which currently ENFORCES the wrong model and will actively fight the fix:
+
+1. verify-lean-mcp.sh Check 9 hard-FAILs when a project-scoped lean-lsp entry exists, treating it as drift and instructing the operator to delete it. Under per-project scope this inverts: a project-scoped entry becomes the expected state, and its ABSENCE or a wrong path inside it becomes the drift. The check must be rewritten, not merely relaxed.
+
+2. setup-lean-mcp.sh writes only the top-level global entry. It needs to write and reconcile project-scoped entries, preserving the whole-entry reconciliation behavior that was added to stop it silently ignoring a divergent command and args.
+
+3. mcp-server-ownership.md records the single-global-entry limitation as an accepted trade-off and names project scope for lean-lsp an explicit non-goal. That recorded invariant must be revised with the concurrency evidence that overturned it. The separate invariant forbidding any mcpServers command path inside a disposable .claude deploy tree stays intact and must not be weakened.
+
+4. lean-mcp-preflight-check.sh drift semantics change meaning under per-project scope and its emitted remedy text must follow. It must remain WARN-only and always exit 0.
+
+5. The fixture-based regression suite needs cases for genuinely concurrent multi-project registration, including two projects registered at once each resolving to its own path, and a new worktree of an already-registered repository. The existing mutation check discipline must be preserved so fixtures stay discriminative.
+
+6. cslib project-scoped override was retired under the previous model. Its intent was correct for this workflow and only its implementation was wrong, a hardcoded wrapper binary path. Re-establish cslib and every other active Lean project under the new sanctioned mechanism.
+
+7. setup-lean-mcp.sh and verify-lean-mcp.sh currently live in the core extension while lean-mcp-preflight-check.sh lives in the lean extension. Assess whether this split is still correct once registration becomes lean-specific and per-project.
+
+Acceptance must be demonstrated rather than asserted: two or more Lean projects open concurrently in separate sessions, each returning a real lean-lsp tool result resolved against its own project, proven by a file or declaration that exists in one project and not the other so a wrong-project answer cannot masquerade as success.
+
+---
 
 ### 204. Wire verify-lean-mcp.sh into a moment where lean-lsp registration drift is actually caught
 - **Status**: [COMPLETED]
