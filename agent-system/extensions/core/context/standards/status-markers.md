@@ -47,14 +47,15 @@ this document and the schema/library ever disagree, the schema/library wins.
 
 **Timestamps**: Always include `- **Researched**: YYYY-MM-DD` when started
 
-**Two producers**: `preflight:research` (an ordinary research dispatch, whether `/orchestrate`'s
-own routing or `--research` forcing it) is the original producer. Under `/orchestrate`'s
-research-on-demand default (see "The Two-Phase Default with Research on Demand" below), this
-resting state also has a SECOND producer: `postflight:needs_research`, written when a planner
-declines to plan and returns a `needs_research` verdict. Both producers resolve to the identical
-`researching` resting state — the second reuses it rather than minting a new one — so the state
-itself carries no signal about which producer wrote it; consult the task's `research_questions`
-field (non-empty only on the `needs_research` path) or the dispatch history to tell them apart.
+**Two producers**: `preflight:research` (an ordinary research dispatch — `/orchestrate`'s own
+research-first default for a `not_started` task, its own `--research` forcing it, or a direct
+`/research` call) is the original producer. Under `/orchestrate`'s `--fast`-only escape hatch
+(see "The Effort-Conditional Default with a `--fast` Escape Hatch" below), this resting state
+also has a SECOND producer: `postflight:needs_research`, written when a planner declines to plan
+and returns a `needs_research` verdict. Both producers resolve to the identical `researching`
+resting state — the second reuses it rather than minting a new one — so the state itself carries
+no signal about which producer wrote it; consult the task's `research_questions` field
+(non-empty only on the `needs_research` path) or the dispatch history to tell them apart.
 
 #### `[RESEARCHED]`
 **TODO.md Format**: `- **Status**: [RESEARCHED]`  
@@ -290,21 +291,23 @@ semantically-overlapping fourth marker would require re-touching every site
 **Preflight**: Status updated BEFORE work begins  
 **Postflight**: Status updated AFTER work completes
 
-### The Two-Phase Default with Research on Demand
+### The Effort-Conditional Default with a `--fast` Escape Hatch
 
 The table above describes each command's OWN preflight/postflight status pair in isolation.
-`/orchestrate`'s own routing decision for a fresh (`not_started`) task is a separate concern,
-and — as of Stage A.8 — no longer runs `/research` unconditionally first. The default
-`/orchestrate` lifecycle is `plan → implement`, not `research → plan → implement`: a
-`not_started` task dispatches straight to the planner, which itself decides whether research is
-needed (an opening assessment step in `agents/planner-agent.md`) and requests a research phase
-on demand — via the `needs_research` verdict noted under `[RESEARCHING]`'s "Two producers" above
-— only when its own assessment says the description does not suffice. `--research` (the
-phase-forcing flag) still runs `/research` unconditionally first, unchanged, independent of this
-default. See `docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork"
-section for the full routing narrative, the worked-example flows, and the state table detail —
-this document only notes the status-marker-level consequence (a second producer for
-`[RESEARCHING]`), not the routing mechanics themselves.
+`/orchestrate`'s own routing decision for a fresh (`not_started`) task is a separate concern. The
+default `/orchestrate` lifecycle is `research → plan → implement`: a `not_started` task
+dispatches straight to research, before any planner assessment runs at all. Passing `--fast`
+inverts this for that one invocation, reverting to the pre-research-first `plan → implement`
+lifecycle: the task dispatches straight to the planner instead, which itself decides whether
+research is needed anyway (an opening assessment step in `agents/planner-agent.md`) and requests
+a research phase on demand — via the `needs_research` verdict noted under `[RESEARCHING]`'s "Two
+producers" above — only when its own assessment says the description does not suffice. `--hard`
+does NOT skip research (only the literal effort value `fast` alters routing); `--research` (the
+phase-forcing flag) still runs `/research` unconditionally first, independent of and overriding
+this default, even under `--fast`. See `docs/architecture/orchestrate-state-machine.md`'s "The
+`needs_research` Fork" section for the full routing narrative, the worked-example flows, and the
+state table detail — this document only notes the status-marker-level consequence (a second
+producer for `[RESEARCHING]`), not the routing mechanics themselves.
 
 ---
 

@@ -290,37 +290,37 @@ re-parsing.
 
 ---
 
-### Phase 3: Documentation surfaces [NOT STARTED]
+### Phase 3: Documentation surfaces [COMPLETED]
 
 **Goal**: every doc asserting the plan-first default describes the new effort-conditional
 research-first default, with no residual claim that plan-first is the default.
 
 **Tasks**:
-- [ ] `docs/architecture/orchestrate-state-machine.md`: rewrite the Complete State Table's
-      `not_started` and `researching` rows for the effort-conditional default.
-- [ ] Same file: rewrite "The `needs_research` Fork" section — the default lifecycle is now
+- [x] `docs/architecture/orchestrate-state-machine.md`: rewrite the Complete State Table's
+      `not_started` and `researching` rows for the effort-conditional default. *(completed)*
+- [x] Same file: rewrite "The `needs_research` Fork" section — the default lifecycle is now
       `research → plan → implement`; the fork is what makes `--fast` safe and what covers forced
       plan rounds and stranded `planning` statuses; `--research` remains independent and
-      unaffected.
-- [ ] Same file: fix the ASCII diagram (the `not_started` branch no longer merges into the
+      unaffected. *(completed: retitled to "The `needs_research` Fork (the `--fast` Escape Hatch)")*
+- [x] Same file: fix the ASCII diagram (the `not_started` branch no longer merges into the
       `dispatch plan` node by default) and the prose footnote that currently says the
-      `not_started`/`researched` fork "merges into a single `dispatch plan` node".
-- [ ] Same file: update both worked examples. The current "Normal Flow (specification-shaped
+      `not_started`/`researched` fork "merges into a single `dispatch plan` node". *(completed)*
+- [x] Same file: update both worked examples. The current "Normal Flow (specification-shaped
       task, no research needed)" becomes the `--fast` flow (retitle and add `--fast` to the
       invocation); the "Research-on-Demand Flow" example is retained as the `--fast` +
       `needs_research` escape-hatch flow. Add a new default (non-`--fast`) three-cycle flow:
-      `not_started` → research → plan → implement.
-- [ ] `commands/orchestrate.md`: rewrite the `--fast` row to state plainly that the flag now
+      `not_started` → research → plan → implement. *(completed: added "Default Flow (research-first)" ahead of the two retitled examples)*
+- [x] `commands/orchestrate.md`: rewrite the `--fast` row to state plainly that the flag now
       changes WHICH PHASES RUN (skipping the default research phase for an un-researched task),
       not merely reasoning depth, and that the planner can still request research via
       `needs_research`. Note composability: `--hard` does NOT skip research; `--research` forces
-      research even under `--fast`.
-- [ ] `commands/orchestrate.md`: check the lifecycle prose near lines 2/11/25 for a stale
-      default claim and correct it if present.
-- [ ] `context/standards/status-markers.md`: rewrite the "The Two-Phase Default with Research on
+      research even under `--fast`. *(completed)*
+- [x] `commands/orchestrate.md`: check the lifecycle prose near lines 2/11/25 for a stale
+      default claim and correct it if present. *(completed: both already read "research -> plan -> implement -> complete", already consistent with the new default, no edit needed)*
+- [x] `context/standards/status-markers.md`: rewrite the "The Two-Phase Default with Research on
       Demand" section (heading included) for the new default, keeping `[RESEARCHING]`'s
       two-producers note accurate (both producers survive) and keeping the pointer to
-      `orchestrate-state-machine.md` for the routing mechanics.
+      `orchestrate-state-machine.md` for the routing mechanics. *(completed: retitled to "The Effort-Conditional Default with a `--fast` Escape Hatch")*
 
 **Timing**: 1 hour
 

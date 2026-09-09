@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Documentation surfaces",
+  "started_at": "2026-09-09T13:15:00Z",
+  "last_updated": "2026-09-09T13:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Complete State Table not_started/researching rows", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 2, "description": "Rewrite the needs_research Fork section", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 3, "description": "Fix ASCII diagram and prose footnote", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 4, "description": "Update worked examples (retitle + add default flow)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "Rewrite --fast row in commands/orchestrate.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 6, "description": "Check lifecycle prose near top of orchestrate.md", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Rewrite status-markers.md two-phase-default section", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
