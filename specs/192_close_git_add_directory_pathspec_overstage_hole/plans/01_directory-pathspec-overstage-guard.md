@@ -1,7 +1,7 @@
 # Implementation Plan: Task #192
 
 - **Task**: 192 - Close the directory-pathspec hole in guard-destructive-git.sh's over-staging predicate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None (soft file-footprint overlap with the sibling history-rewrite-predicate task; both edit `hooks/guard-destructive-git.sh`)
 - **Research Inputs**: specs/192_close_git_add_directory_pathspec_overstage_hole/reports/01_directory-pathspec-overstage-hole.md
@@ -266,24 +266,24 @@ inconsistent.
 
 ---
 
-### Phase 4: Redeploy and verify the deployed hook fires [NOT STARTED]
+### Phase 4: Redeploy and verify the deployed hook fires [COMPLETED]
 
 **Goal**: Regenerate the `.claude/` deploy tree from the source store and confirm the extended
 predicate actually fires from the deployed copy that `settings.json` registers, closing the
 dispatch's ACCEPTANCE requirement.
 
 **Tasks**:
-- [ ] Run the headless deploy: `bash .claude/scripts/deploy-headless.sh` (non-destructive resync)
-- [ ] Confirm the deployed `.claude/hooks/guard-destructive-git.sh` contains the new detector
-      (diff or grep against the source-store copy)
-- [ ] Run the deployed test suite copy (`.claude/scripts/tests/test-guard-destructive-git.sh`) and
+- [x] Run the headless deploy: `bash .claude/scripts/deploy-headless.sh` (non-destructive resync) *(completed)*
+- [x] Confirm the deployed `.claude/hooks/guard-destructive-git.sh` contains the new detector
+      (diff or grep against the source-store copy) *(completed: diff shows NO DIFF)*
+- [x] Run the deployed test suite copy (`.claude/scripts/tests/test-guard-destructive-git.sh`) and
       confirm it is green — the suite's relative `HOOK` path resolves in both source-store and
-      deployed mode by design
-- [ ] Live smoke test in a throwaway dirty repo: pipe a synthetic PreToolUse payload for
+      deployed mode by design *(completed: 50 passed, 0 failed)*
+- [x] Live smoke test in a throwaway dirty repo: pipe a synthetic PreToolUse payload for
       `git add -- somedir/` into the deployed hook and confirm exit 2 with the pathspec named,
-      and for `git add -- a.lean b.lean` confirm exit 0
-- [ ] Confirm `settings.json`'s registration still points at
-      `bash .claude/hooks/guard-destructive-git.sh` (unchanged; verify, do not edit)
+      and for `git add -- a.lean b.lean` confirm exit 0 *(completed)*
+- [x] Confirm `settings.json`'s registration still points at
+      `bash .claude/hooks/guard-destructive-git.sh` (unchanged; verify, do not edit) *(completed: unchanged, verified only)*
 
 **Timing**: 0.5 hours
 
