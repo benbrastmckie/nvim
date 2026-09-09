@@ -1,0 +1,43 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
+      "summary": "Confirms the lean-lsp wrapper is an orphaned hand-edit (not a missing source-store provision), confirms the NixOS PATH export is not load-bearing today (elan is a NixOS system package reachable via /run/current-system/sw/bin alone), confirms both --lean-project-path and LEAN_PROJECT_PATH are genuinely supported by lean-lsp-mcp with CLI taking precedence, recommends retiring cslib's orphaned wrapper, and recommends recording a durable invariant that mcpServers command paths must never point inside a repo's disposable .claude/ deploy tree."
+    }
+  ],
+  "next_steps": "Run /plan 203 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788973693_82555f_203",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 540,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 6,
+  "memory_candidates": [
+    {
+      "content": "On this NixOS machine, elan is installed as a system package: /run/current-system/sw/bin/lake and /run/current-system/sw/bin/lean are symlinks into the elan Nix store path. A bare `uvx <tool>` (or any subprocess) needs only /run/current-system/sw/bin on PATH to reach a working Lean toolchain -- user-level ~/.elan/bin PATH exports are redundant on this machine. Verified empirically with `env -i PATH=/run/current-system/sw/bin:/usr/bin:/bin ... lake env lean --version` succeeding against a real project.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lean", "elan", "PATH", "NixOS", "uvx", "toolchain"]
+    },
+    {
+      "content": "lean-lsp-mcp's CLI accepts --lean-project-path AND reads LEAN_PROJECT_PATH from the environment; when --lean-project-path is passed, the source explicitly overwrites os.environ[LEAN_PROJECT_PATH] before the server reads it, so CLI takes precedence over env when both are present. Both conventions are individually valid against the real server interface -- a divergence between two call sites using different conventions is not by itself evidence one of them is wrong.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lean-lsp-mcp", "CLI precedence", "env var", "MCP server config"]
+    },
+    {
+      "content": "MCP registration durable invariant candidate: an mcpServers command path in ~/.claude.json or .mcp.json must never point inside a repository's own .claude/ deploy tree, because that tree is disposable and regenerated wholesale (rules/source-store-deploy-boundary.md). A command path violating this looks configured until the next regeneration or a fresh clone, then fails as a silent ENOENT -- exactly the failure mode observed with an orphaned lean-lsp-mcp-wrapper.sh hand-edit.",
+      "category": "PATTERN",
+      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["mcp registration", "deploy boundary", "gitignored .claude", "ENOENT", "invariant"]
+    }
+  ],
+  "dispatch_seq": 1
+}
