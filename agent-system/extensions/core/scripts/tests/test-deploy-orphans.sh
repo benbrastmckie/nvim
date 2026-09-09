@@ -73,26 +73,18 @@ trap cleanup EXIT
 TARGET="$WORKDIR/scratch-repo"
 mkdir -p "$TARGET"
 git -C "$TARGET" init -q
-cat > "$TARGET/.gitignore" <<'GITIGNORE_EOF'
-# Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
-# guards. Mirrors the "Consumer Repo Setup" block in
-# context/standards/orchestrator-runtime-files.md, seeded here so this scratch repo represents
-# a properly-onboarded consumer for gate14 (check-runtime-file-tracking.sh)'s ignore-coverage
-# check -- a bare, never-onboarded git repo would fail Check A for reasons unrelated to what
-# this harness actually tests (deploy propagation).
-**/.lock/
-**/.dispatch/
-**/.orchestrator-loop-guard
-**/.continuation-loop-guard
-**/.orchestrator-churn-state.json
-**/.postflight-loop-guard
-**/.orchestrator-multi-state*.json
-**/.drift-inspection.json
-**/.return-meta-*.json
-**/.events.lock
-**/.sessions/
-**/.freshness-warn-streak.json
-GITIGNORE_EOF
+# Seeded from scripts/lib/runtime-file-patterns.sh's runtime_ignore_block() -- the single
+# canonical source for the ephemeral-runtime-state gitignore block, also consumed by
+# check-runtime-file-tracking.sh and pinned to context/standards/orchestrator-runtime-files.md's
+# "Consumer Repo Setup" block by tests/test-runtime-file-tracking.sh Case 3. This is generated,
+# not hand-mirrored, so it cannot drift ahead of or behind that block again -- seeded here only
+# so this scratch repo represents a properly-onboarded consumer for gate14
+# (check-runtime-file-tracking.sh)'s ignore-coverage check; a bare, never-onboarded git repo
+# would fail Check A for reasons unrelated to what this harness actually tests (deploy
+# propagation / orphan detection).
+# shellcheck disable=SC1090,SC1091
+. "${SCRIPT_DIR}/../lib/runtime-file-patterns.sh"
+runtime_ignore_block > "$TARGET/.gitignore"
 git -C "$TARGET" -c user.email="test@test.local" -c user.name="deploy-orphans-test" \
   commit -q --allow-empty -m "scratch init"
 

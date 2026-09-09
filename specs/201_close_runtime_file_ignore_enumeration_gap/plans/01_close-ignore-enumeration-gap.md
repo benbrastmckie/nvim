@@ -322,21 +322,23 @@ exactly the defect class this task exists to close, so diff it, do not eyeball i
 
 ---
 
-### Phase 5: Rewire the two deploy test fixtures [NOT STARTED]
+### Phase 5: Rewire the two deploy test fixtures [COMPLETED]
 
 **Goal**: The fixtures' embedded `.gitignore` is generated from the lib, so they can never again
 drift ahead of or behind the standards block.
 
 **Tasks**:
-- [ ] In `tests/test-deploy-orphans.sh`, replace the hand-maintained `GITIGNORE_EOF` heredoc with
+- [x] In `tests/test-deploy-orphans.sh`, replace the hand-maintained `GITIGNORE_EOF` heredoc with
       a call that sources the lib and writes `runtime_ignore_block()` to `$TARGET/.gitignore`.
-- [ ] Do the same in `tests/test-deploy-propagation.sh`.
-- [ ] Update each fixture's surrounding comment: it currently claims to "mirror" the standards
+      *(completed)*
+- [x] Do the same in `tests/test-deploy-propagation.sh`. *(completed)*
+- [x] Update each fixture's surrounding comment: it currently claims to "mirror" the standards
       block by hand, which was already false (both carried `**/.dispatch/` while the block did
-      not). Restate it as derived-from-the-lib.
-- [ ] Keep the scratch-repo bootstrap semantics otherwise unchanged — these harnesses test
+      not). Restate it as derived-from-the-lib. *(completed)*
+- [x] Keep the scratch-repo bootstrap semantics otherwise unchanged — these harnesses test
       deploy propagation and orphan handling, not ignore coverage; the `.gitignore` seeding only
-      exists so gate 14 does not fail for unrelated reasons.
+      exists so gate 14 does not fail for unrelated reasons. *(completed: no other bootstrap
+      logic touched)*
 
 **Timing**: 0.5 hours
 
@@ -346,7 +348,11 @@ drift ahead of or behind the standards block.
 
 **Scope Hypothesis**: exactly two fixtures embed the block. Confirm with
 `grep -rl 'orchestrator-loop-guard' agent-system/extensions/*/scripts/` before editing — a third
-embedder would be a further, unfixed enumeration site.
+embedder would be a further, unfixed enumeration site. *(confirmed: the grep also hits
+`tests/test-git-commit-scoped.sh`, which embeds its own unrelated 4-line `.gitignore` heredoc
+for testing `git-commit-scoped.sh`'s own staging-narrowing logic under a "covered"/"not-covered"
+toggle — it does not claim to mirror the standards block and does not run a real deploy through
+gate 14, so it is out of this phase's scope and was left untouched)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` - generate `.gitignore`

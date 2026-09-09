@@ -1,0 +1,47 @@
+{
+  "phase": 5,
+  "phase_name": "Rewire the two deploy test fixtures",
+  "started_at": "2026-09-09T20:31:55Z",
+  "last_updated": "2026-09-09T20:33:46Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "test-deploy-orphans.sh: generate .gitignore from lib",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "test-deploy-propagation.sh: same",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update fixture comments to say derived-from-lib",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm exactly two fixtures embed the block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
