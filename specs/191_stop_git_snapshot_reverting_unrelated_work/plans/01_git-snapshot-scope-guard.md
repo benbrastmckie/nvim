@@ -149,7 +149,7 @@ docs edits are deliberately serialized because 3 and 4 both edit the same file.
 
 ---
 
-### Phase 1: Fixture test reproducing the incident tree [IN PROGRESS]
+### Phase 1: Fixture test reproducing the incident tree [COMPLETED]
 
 **Goal**: A fixture-driven regression suite that builds the exact incident tree shape (dirty
 tracked files both inside and outside a declared `file_scope`) and asserts default-mode
@@ -218,27 +218,31 @@ time with `grep -c '"path": "scripts/' agent-system/extensions/core/index-entrie
 
 ---
 
-### Phase 2: Canonical path-containment predicate [NOT STARTED]
+### Phase 2: Canonical path-containment predicate [COMPLETED]
 
 **Goal**: Add a one-directional "is this concrete path covered by this declared scope?"
 predicate to the canonical single-source location, so `git-snapshot.sh` consumes it instead of
 inventing a fourth private copy of path matching.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/context/patterns/file-footprint-overlap.md` and
+- [x] Read `agent-system/extensions/core/context/patterns/file-footprint-overlap.md` and
       `agent-system/extensions/core/scripts/lib/file-scope-overlap.sh` in full, confirming that
       `scopes_overlap()` and `FILE_SCOPE_OVERLAP_JQ_DEFS` answer the symmetric task-vs-task
-      question and that neither is being modified.
-- [ ] Add a "Containment vs. overlap" subsection to `file-footprint-overlap.md` defining the
+      question and that neither is being modified. *(completed)*
+- [x] Add a "Containment vs. overlap" subsection to `file-footprint-overlap.md` defining the
       one-directional rule exactly once: a concrete path `P` is COVERED by scope entry `S` when,
       after the document's existing normalization, `P == S`, or `P` starts with `S + "/"`, or
       (extension) `S` contains a glob metacharacter and `P` matches it under bash pattern
       matching. State explicitly that the glob clause is a *containment-only* extension and does
-      NOT apply to the symmetric overlap rule above it, which remains glob-free.
-- [ ] Add `path_covered_by_scope()` to `lib/file-scope-overlap.sh` — pure bash (no `jq`,
+      NOT apply to the symmetric overlap rule above it, which remains glob-free. *(completed:
+      also amended the pre-existing Non-Goals bullet to reconcile it with the new
+      containment-only glob exception, rather than leaving an apparent contradiction)*
+- [x] Add `path_covered_by_scope()` to `lib/file-scope-overlap.sh` — pure bash (no `jq`,
       no subshell per call), additive only, taking a path and the scope entries, returning 0
       when covered and 1 otherwise. Reference the new doc subsection by name in its comment.
-- [ ] Do NOT modify `scopes_overlap()` or the `FILE_SCOPE_OVERLAP_JQ_DEFS` heredoc.
+      *(completed)*
+- [x] Do NOT modify `scopes_overlap()` or the `FILE_SCOPE_OVERLAP_JQ_DEFS` heredoc. *(completed:
+      verified via `git diff` -- 48 pure insertions, zero deletions/modifications)*
 
 **Timing**: 1 hour
 

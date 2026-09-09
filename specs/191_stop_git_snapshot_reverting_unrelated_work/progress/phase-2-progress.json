@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Canonical path-containment predicate",
+  "started_at": "2026-09-09T20:32:00Z",
+  "last_updated": "2026-09-09T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read file-footprint-overlap.md and file-scope-overlap.sh in full, confirm scopes_overlap()/JQ_DEFS untouched", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Containment vs overlap subsection to file-footprint-overlap.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"]},
+    {"id": 3, "description": "Add path_covered_by_scope() to file-scope-overlap.sh, additive-only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"]},
+    {"id": 4, "description": "Verify no modification to scopes_overlap()/FILE_SCOPE_OVERLAP_JQ_DEFS; re-run consumer suites", "status": "done", "files_touched": [], "note": "git diff on the lib shows 48 pure insertions, zero deletions/modifications. Throwaway driver exercised all 4 containment shapes (exact/dir-prefix-no-slash/dir-prefix-with-slash/glob/non-match/multi-entry/empty-scope), all PASS. test-conflict-predicate.sh (25p/8f), test-four-tier-conflict.sh (9p/4f), test-session-registry.sh (1p/10f), test-common-lib.sh (30p/0f) -- identical pass/fail counts confirmed against a git-stash-reverted baseline copy of the file, proving these pre-existing failures (missing lib/task-lookup-lib.sh in scratch fixtures) are unrelated to this change."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -155,3 +155,51 @@ scopes_overlap() {
 scopes_overlap_first(\$a; \$b)"
   jq -n -r --argjson a "$scope_a" --argjson b "$scope_b" "$prog" 2>/dev/null
 }
+
+# ─── path_covered_by_scope: one-directional containment predicate (ADDITIVE, sibling function) ─
+# Usage: path_covered_by_scope "$path" "$scope_entry_1" ["$scope_entry_2" ...]
+# Answers a DIFFERENT question from scopes_overlap() above: is one concrete path P covered by a
+# declared file_scope (an array of entries), rather than whether two scopes-as-sets overlap. Per
+# context/patterns/file-footprint-overlap.md's "Containment vs. Overlap" section, P is covered by
+# entry S when P == S, or P starts with S + "/", or (containment-only extension) S is a glob
+# pattern that matches P under ordinary bash pattern matching. Pure bash -- no jq, no subshell
+# per call -- since this predicate has exactly one string-comparison consumer (git-snapshot.sh's
+# per-dirty-path classification loop) and does not need jq's array/JSON handling that
+# scopes_overlap()'s callers (task-lock.sh, orchestrate-batch-admit.sh) already have in hand.
+# Returns 0 (covered) as soon as any entry matches; 1 (not covered) if none do, including when
+# no scope entries are passed at all.
+path_covered_by_scope() {
+  local path="$1"
+  shift
+  local norm_path="${path%/}"
+  local entry norm_entry
+
+  for entry in "$@"; do
+    norm_entry="${entry%/}"
+
+    # Clause 1: exact match.
+    if [ "$norm_path" = "$norm_entry" ]; then
+      return 0
+    fi
+
+    # Clause 2: norm_entry is a directory-prefix ancestor of norm_path.
+    case "$norm_path" in
+      "$norm_entry"/*)
+        return 0
+        ;;
+    esac
+
+    # Clause 3 (containment-only extension): norm_entry is a glob pattern that matches
+    # norm_path. Only attempted when norm_entry actually contains a glob metacharacter, so an
+    # ordinary literal entry never risks an accidental pattern-matching interpretation.
+    case "$norm_entry" in
+      *[\*\?\[]*)
+        if [[ "$norm_path" == $norm_entry ]]; then
+          return 0
+        fi
+        ;;
+    esac
+  done
+
+  return 1
+}

@@ -34,6 +34,33 @@ with the directory path plus `/`. This is the typical case a file-scope entry is
 one task declaring the whole skill directory as its scope, another declaring just the one file
 inside it.
 
+## Containment vs. Overlap
+
+**Containment** is a distinct, one-directional predicate, siblings to (never a replacement for)
+the symmetric Overlap Rule above: a concrete path `P` is **covered by** a single declared scope
+entry `S` when, after this document's own normalization, any of the following holds:
+
+1. **Exact match**: `P == S`.
+2. **`S` is a directory-prefix ancestor of `P`**: `P` starts with `S + "/"`.
+3. **(extension) `S` is a glob pattern that matches `P`**: `S` contains a glob metacharacter
+   (`*`, `?`, or `[`), and `P` matches `S` under ordinary bash pattern matching (`[[ "$P" ==
+   $S ]]`, unquoted right-hand side).
+
+Containment answers "is this one concrete path inside that one declared scope?" — the question a
+consumer with a single dirty file path and a single task's `file_scope` array needs answered.
+Overlap answers a different, symmetric question — "do these two scopes, as sets of paths, share
+any territory?" — which is what serializing two tasks' declared scopes against each other needs.
+Neither subsumes the other: containment is deliberately one-directional (clause 2 only tests `S`
+as an ancestor of `P`, never the reverse — an entry nested *inside* the concrete path does not
+make the path "covered"), and only containment carries the glob-matching extension in clause 3.
+
+**The glob clause is containment-only.** It is an additive extension bolted onto the
+one-directional predicate above and does **not** apply to the symmetric Overlap Rule, which
+remains glob-free exactly as stated in the Non-Goals section below. A small minority of live
+`file_scope` entries (observed: 3 of 249) use a glob shape such as
+`agent-system/extensions/*/agents/**`; without this clause, containment would silently fail to
+recognize a concrete path as covered by such an entry.
+
 ## Pairwise-Over-a-Set Pseudocode
 
 To detect overlap across a set of tasks (or phases), each carrying a `file_scope` (or
@@ -186,8 +213,12 @@ scan.
 
 ## Non-Goals
 
-- No glob or regex matching (e.g. `*.lua`, `**/test_*`) — only literal directory-prefix
-  containment.
+- No glob or regex matching in the symmetric **Overlap Rule** (e.g. `*.lua`, `**/test_*`) — only
+  literal directory-prefix containment between two scopes. The one-directional **Containment**
+  predicate (see that section above) is the sole, deliberate exception: its clause 3 glob
+  extension exists because a caller comparing one concrete dirty path against one declared scope
+  has no symmetric-overlap use case to protect, and the ~1% of live `file_scope` entries that are
+  glob-shaped would otherwise never be recognized as covering anything.
 - No filesystem validation of declared paths.
 - No opinion on scan scope: this document defines the overlap PREDICATE only
   (`overlaps(pathA, pathB)` and its pairwise-set application), not how widely a caller applies
