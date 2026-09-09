@@ -1,7 +1,7 @@
 # Implementation Plan: Task #203
 
 - **Task**: 203 - Reconcile lean-lsp MCP registration with the source store's sanctioned wrapper-free mechanism
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md

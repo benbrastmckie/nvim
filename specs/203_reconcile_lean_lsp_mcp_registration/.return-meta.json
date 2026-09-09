@@ -1,10 +1,47 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/203_reconcile_lean_lsp_mcp_registration/summaries/01_reconcile-lean-lsp-registration-summary.md",
+      "summary": "All 6 phases completed: repaired setup-lean-mcp.sh (whole-entry reconciliation + lakefile.toml detection) and verify-lean-mcp.sh (WARN-to-FAIL promotion, .claude/-deploy-tree check, project-scope-shadow check); recorded the durable command-path invariant in mcp-server-ownership.md and updated lean-extension docs; reconciled the live ~/.claude.json global lean-lsp entry; retired cslib's orphaned wrapper and project-scoped override; proved the fix with an observed lean-lsp spawn plus a real MCP tool call from fresh sessions in both ~/Projects/BimodalLogic and ~/Projects/cslib."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Reconciled lean-lsp MCP registration to the sanctioned wrapper-free uvx+LEAN_PROJECT_PATH shape: repaired setup-lean-mcp.sh and verify-lean-mcp.sh so they can detect/repair command-shape drift (not just project-path drift) and support lakefile.toml projects, recorded the durable no-command-paths-inside-.claude/ invariant, reconciled the live global ~/.claude.json entry, retired cslib's orphaned wrapper and project-scoped override, and proved lean-lsp spawns with a real tool call from fresh sessions in both ~/Projects/BimodalLogic and ~/Projects/cslib. The global LEAN_PROJECT_PATH is currently left pointing at ~/Projects/cslib (the last-verified project); switching to another Lean project requires re-running setup-lean-mcp.sh from that project's directory."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/core/scripts/setup-lean-mcp.sh",
+    "agent-system/extensions/core/scripts/verify-lean-mcp.sh",
+    "agent-system/extensions/lean/README.md",
+    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+    "specs/203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md",
+    "specs/203_reconcile_lean_lsp_mcp_registration/summaries/01_reconcile-lean-lsp-registration-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Config-reconciliation script pattern (generalized from the lean-lsp MCP registration repair): when a setup/reconcile script both GENERATES a canonical config object and CHECKS an existing one for 'already configured', the idempotency check must compare the WHOLE generated shape via deep equality (e.g. `jq -n --argjson a \"$existing\" --argjson b \"$canonical\" '$a == $b'`, order-independent) and the repair path must overwrite the WHOLE object in one jq assignment -- never a single targeted field. A field-only check can report 'already configured correctly' and exit 0 while other fields (e.g. command/args) are silently broken. Apply the identical fix to any paired verifier: severities must reflect what actually breaks the thing being verified (an unspawnable command is FAIL, not WARN), or wiring that verifier into automated drift detection catches nothing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/summaries/01_reconcile-lean-lsp-registration-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["config reconciliation", "idempotency", "jq deep equality", "verifier severity", "setup script", "mcpServers"]
+    },
+    {
+      "content": "A `mcpServers` entry's `command` path must never resolve inside any repository's own `.claude/` deploy tree, because that tree is disposable and wholesale-regenerated (rules/source-store-deploy-boundary.md). A command pointed there looks valid until the next regeneration or fresh clone, then fails as a silent ENOENT with no indication the registered path itself was the defect. Verify this by shape (does command/args resolve inside any .claude/ directory?), not just by whether required env vars are present -- a registration can be 'complete' by field-presence checks while still being unspawnable.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/summaries/01_reconcile-lean-lsp-registration-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mcp server ownership", "deploy boundary", "ENOENT", "command path", "claude.json"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788973693_82555f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 3
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

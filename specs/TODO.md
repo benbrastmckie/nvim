@@ -11,8 +11,8 @@ next_project_number: 205
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202,203 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,163,164,173,174,175,195,198,204 | 29,74,139,162,172,188,191,194,203 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202,204 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,163,164,173,174,175,195,198 | 29,74,139,162,172,188,191,194 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
 | 5 | 182,199 | 191,192,193 | core-agent-system |
@@ -91,8 +91,7 @@ next_project_number: 205
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
-203 [PLANNED] — Reconcile lean-lsp MCP registration with the source store's...
-  └─ 204 [NOT STARTED] — Wire verify-lean-mcp.sh into a moment where lean-lsp...
+204 [NOT STARTED] — Wire verify-lean-mcp.sh into a moment where lean-lsp...
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
@@ -135,12 +134,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 203. Reconcile lean-lsp MCP registration with the source store's sanctioned wrapper-free mechanism
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Research**: [203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md]
 - **Plan**: [203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md]
+- **Summary**: [203_reconcile_lean_lsp_mcp_registration/summaries/01_reconcile-lean-lsp-registration-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
