@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Full gate set and closeout",
+  "started_at": "2026-09-09T14:00:00Z",
+  "last_updated": "2026-09-09T14:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run the four named gates", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run two regression suites", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Non-deletion audit for needs_research plumbing", "status": "done", "files_touched": []},
+    {"id": 4, "description": "shellcheck over all four edited shell files", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Acceptance walkthrough, record evidence for each clause", "status": "done", "files_touched": ["specs/196_research_first_default_unless_fast/plans/01_research-first-default-unless-fast.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

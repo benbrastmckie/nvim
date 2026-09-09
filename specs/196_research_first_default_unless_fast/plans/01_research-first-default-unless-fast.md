@@ -1,7 +1,7 @@
 # Implementation Plan: Task #196
 
 - **Task**: 196 - Make research the default first phase for an un-researched task unless --fast is given
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research artifact for this round; see "Research Integration")
@@ -398,27 +398,59 @@ task names exactly these two). Confirm with the grep in the last task above befo
 
 ---
 
-### Phase 5: Full gate set and closeout [NOT STARTED]
+### Phase 5: Full gate set and closeout [COMPLETED]
 
 **Goal**: every gate green, the acceptance bar demonstrably met, and no `needs_research` plumbing
 lost.
 
 **Tasks**:
-- [ ] Run the four named gates: `tests/test-orchestrate-triage-classify.sh`,
+- [x] Run the four named gates: `tests/test-orchestrate-triage-classify.sh`,
       `tests/test-orchestrate-cycle-plan.sh`, `scripts/lint/lint-agent-contracts.sh`,
-      `scripts/check-task-references.sh`.
-- [ ] Run `tests/test-orchestrate-cycle-postflight.sh` and
+      `scripts/check-task-references.sh`. *(completed: 48/48, 156/156, 101/101, 0 unexempted)*
+- [x] Run `tests/test-orchestrate-cycle-postflight.sh` and
       `tests/test-orchestrate-build-dispatch.sh` as regression checks (both assert
-      `needs_research` behavior and the classifier's shared-library sourcing).
-- [ ] Non-deletion audit: confirm each `needs_research` site named in
+      `needs_research` behavior and the classifier's shared-library sourcing). *(completed: 65/65, 66/66)*
+- [x] Non-deletion audit: confirm each `needs_research` site named in
       `specs/150_research_on_demand/summaries/01_...-summary.md` is still present —
       `orchestrate-cycle-postflight.sh`'s case arm, `update-task-status.sh`'s
       `postflight:needs_research` `map_status` arm, `skill-base.sh`'s `needs_research)` arm,
       `validate-return-meta.sh`/`validate-handoff.sh` `valid_statuses`, and
-      `context/schemas/state-schema.json`'s `research_questions` admission.
-- [ ] `shellcheck` over both edited scripts and both edited test scripts.
-- [ ] Acceptance walkthrough against the description's ACCEPTANCE paragraph, recording the
-      evidence line for each of its six clauses.
+      `context/schemas/state-schema.json`'s `research_questions` admission. *(completed: all five sites confirmed present via targeted grep)*
+- [x] `shellcheck` over both edited scripts and both edited test scripts. *(completed: clean -- 0 errors/warnings introduced on any of the 4 files, identical info/warning counts to the pre-task baseline)*
+- [x] Acceptance walkthrough against the description's ACCEPTANCE paragraph, recording the
+      evidence line for each of its six clauses. *(completed, see below)*
+
+**Acceptance Walkthrough** (against the task description's ACCEPTANCE paragraph):
+
+1. *Without `--fast`, a `not_started` task dispatches research, then plan, then implement; a task
+   at `researched` or later never re-researches.* — Evidence: live classifier direct invocation
+   (Phase 5 verification run) returns `group:"research"` for `not_started` with no `--effort`,
+   and `group:"plan"` for `researched`/`planned`/`implementing` regardless of effort; Group 20 in
+   `tests/test-orchestrate-cycle-plan.sh` proves the same through the full `orchestrate-cycle-plan.sh`
+   `--dry-run` path.
+2. *With `--fast`, a `not_started` task still dispatches straight to plan, and the planner can
+   still send it back via `needs_research` if the chosen design retains that arm.* — Evidence:
+   the same live-classifier run with `--effort fast` returns `group:"plan"` for `not_started`;
+   the Phase 5 non-deletion audit confirms `needs_research`'s full plumbing (postflight case arm,
+   `map_status` arm, `skill-base.sh` arm, `valid_statuses`, `research_questions` schema
+   admission) is untouched and functional.
+3. *The degraded fallback table and the live classifier agree on every row, proven by the
+   existing parity fixture.* — Evidence: `tests/test-orchestrate-cycle-plan.sh` Group 13
+   (degraded, both effort variants) and Group 20 (live, both effort variants) assert identical
+   `not_started`/`researched` routing outcomes; both pass.
+4. *The blocked-discharge `previous_status` ladder agrees with the live `not_started` row.* —
+   Evidence: `tests/test-orchestrate-triage-classify.sh` fixture #129 (discharged,
+   `previous_status=not_started`) asserts `research` with no effort and `plan` under
+   `--effort fast`, mirroring the live row's own two variants; both pass.
+5. *Every doc surface listed above describes the new default with no residual claim that
+   plan-first is the default.* — Evidence: `grep -rn 'default lifecycle is .plan'
+   agent-system/extensions/core/` and `grep -rn 'research on demand'
+   agent-system/extensions/core/{docs,commands,context}` both return zero hits after Phase 3.
+6. *New fixtures cover both the `--fast` and non-`--fast` `not_started` paths. Full gate set
+   green: `test-orchestrate-triage-classify.sh`, `test-orchestrate-cycle-plan.sh`,
+   `lint-agent-contracts.sh`, `check-task-references.sh`.* — Evidence: assertion counts rose from
+   38→48 and 96→156 respectively (both suites green); `lint-agent-contracts.sh` 101/101;
+   `check-task-references.sh` 0 unexempted occurrences.
 
 **Timing**: 0.5 hours
 
@@ -440,19 +472,19 @@ lost.
 
 ## Testing & Validation
 
-- [ ] `test-orchestrate-triage-classify.sh` green, assertion count > 38
-- [ ] `test-orchestrate-cycle-plan.sh` green, assertion count > 96
-- [ ] `test-orchestrate-cycle-postflight.sh` green (regression)
-- [ ] `test-orchestrate-build-dispatch.sh` green (regression)
-- [ ] `lint/lint-agent-contracts.sh` green
-- [ ] `check-task-references.sh` reports 0 unexempted occurrences
-- [ ] `shellcheck` clean on all four edited shell files
-- [ ] `not_started` → `research` (no flag) and → `plan` (`--fast`) proven through BOTH the live
-      classifier and the degraded fallback table
-- [ ] `researched`, `planning`, `planned`, `implementing`, `partial` unchanged under both efforts
-- [ ] `--fast` + `researching` → `research` (planner-requested research never skipped)
-- [ ] `--hard` → research-first (not treated as fast)
-- [ ] Blocked-discharge `previous_status == not_started` mirrors the live row under both efforts
+- [x] `test-orchestrate-triage-classify.sh` green, assertion count > 38 *(48)*
+- [x] `test-orchestrate-cycle-plan.sh` green, assertion count > 96 *(156)*
+- [x] `test-orchestrate-cycle-postflight.sh` green (regression) *(65/65)*
+- [x] `test-orchestrate-build-dispatch.sh` green (regression) *(66/66)*
+- [x] `lint/lint-agent-contracts.sh` green *(101/101)*
+- [x] `check-task-references.sh` reports 0 unexempted occurrences *(confirmed)*
+- [x] `shellcheck` clean on all four edited shell files *(confirmed, 0 new findings)*
+- [x] `not_started` → `research` (no flag) and → `plan` (`--fast`) proven through BOTH the live
+      classifier and the degraded fallback table *(Group 13 + Group 20)*
+- [x] `researched`, `planning`, `planned`, `implementing`, `partial` unchanged under both efforts *(confirmed)*
+- [x] `--fast` + `researching` → `research` (planner-requested research never skipped) *(confirmed)*
+- [x] `--hard` → research-first (not treated as fast) *(confirmed)*
+- [x] Blocked-discharge `previous_status == not_started` mirrors the live row under both efforts *(confirmed)*
 
 ## Artifacts & Outputs
 

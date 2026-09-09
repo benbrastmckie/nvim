@@ -1,10 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/196_research_first_default_unless_fast/summaries/01_research-first-default-unless-fast-summary.md",
+      "summary": "All 5 plan phases completed: effort-aware classifier, caller wiring + fallback parity, doc surfaces, agent contract surfaces, full gate set green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Inverted /orchestrate's not_started classifier default from plan-first to research-first, made effort-conditional via a new --effort flag on orchestrate-triage-classify.sh so --fast preserves the prior plan-first behavior; updated the caller's degraded fallback table, all documentation/agent-contract surfaces, and extended fixture coverage (38->48 and 96->156 assertions). Full gate set green (4 named gates + 2 regressions), needs_research plumbing verified fully intact."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shared classification rule must vary by an orthogonal input (e.g. an effort/mode flag) and the rule already carries a documented 'one code path, N lockstep sites' discipline, add the new input as a flag on the shared script itself (parsed strictly before positional args) rather than having the caller post-adjust the verdict. A caller post-adjustment creates a NEW drift-prone site and must be applied twice if the caller also carries a degraded/fallback copy of the same table.",
+      "category": "PATTERN",
+      "source_artifact": "specs/196_research_first_default_unless_fast/summaries/01_research-first-default-unless-fast-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["classifier", "effort-flag", "one-code-path", "orchestrate", "routing-default"]
+    },
+    {
+      "content": "In a shell fixture suite where earlier test groups stub out a collaborator script inside a synthetic sandbox tree and never restore it, a later group needing the REAL collaborator must explicitly restore it itself (cp from the source dir) rather than assuming an earlier group's own restore (placed right after ITS OWN stub) covers every later group too. Grep for every `cat > .../collaborator.sh` occurrence in the test file before adding a new group that depends on live collaborator behavior.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/196_research_first_default_unless_fast/summaries/01_research-first-default-unless-fast-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shell-testing", "fixture-sandbox", "stub-restore", "test-isolation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1788956447_28a717",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
