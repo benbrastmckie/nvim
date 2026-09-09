@@ -1,5 +1,5 @@
 ---
-next_project_number: 202
+next_project_number: 203
 ---
 
 # TODO
@@ -11,13 +11,12 @@ next_project_number: 202
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,166,167,168,170,172,177,184,185,187,191,192,194,197,200,201 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,162,173,174,175,188,198 | 29,74,139,172,191,197 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 163,164,195 | 162,188,194 | core-agent-system, file-scope-lifecycle |
-| 4 | 165 | 163,164 | file-scope-lifecycle |
-| 5 | 190,193 | 165 | core-agent-system |
-| 6 | 182,199 | 191,192,193 | core-agent-system |
-| 7 | 183 | 182 | core-agent-system |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,191,192,194,200,201,202 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,163,164,173,174,175,195,198 | 29,74,139,162,172,188,191,194 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 165 | 163,164 | file-scope-lifecycle |
+| 4 | 190,193 | 165 | core-agent-system |
+| 5 | 182,199 | 191,192,193 | core-agent-system |
+| 6 | 183 | 182 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -41,14 +40,13 @@ next_project_number: 202
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
+188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
 191 [NOT STARTED] — Stop plan-mandated git-snapshot from reverting task-unrelated...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 192 [NOT STARTED] — Close the directory-pathspec hole in guard-destructive-git.sh...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
-197 [IMPLEMENTING] — Honor a forced phase on a terminal task, including one...
-  └─ 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
 201 [NOT STARTED] — Close the ephemeral-runtime-file ignore enumeration gap that...
 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
@@ -75,6 +73,7 @@ next_project_number: 202
 ### Neovim
 
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task...
+202 [NOT STARTED] — Make the picker's Reload All] and Regenerate] entries honest...
 
 ### Opencode
 
@@ -95,6 +94,117 @@ next_project_number: 202
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 202. Make the picker's [Reload All] and [Regenerate] entries honest and self-documenting, and rule on their redundancy
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Fix the <leader>al picker's [Reload All] / [Regenerate] entries: a factually wrong one-line description, an absent Command Details preview for both, and an undecided redundancy question.
+
+EDIT TARGET: lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**. This is nvim-config Lua UI code, NOT agent-system/extensions/**; nothing here touches the deployed .claude/ tree.
+
+=== VERIFIED CURRENT BEHAVIOUR (read from source, not inferred) ===
+
+The two entries are DIFFERENT operations, and both act on the CURRENT REPO ONLY (cwd):
+
+[Reload All] (picker/init.lua:159-286) opens a vim.ui.select submenu with four choices --
+"Reload All", "Unload All", "Step Through", "Cancel". The "Reload All" choice calls
+exts.resync_all(), whose own doc comment at shared/extensions/init.lua:895-898 states: "Never
+unloads: each extension is re-loaded in place via manager.load(..., {force = true}), so there is
+no destructive intermediate 'everything unloaded' state." It force-resyncs every CURRENTLY LOADED
+extension in Kahn's-algorithm dependency order. Non-destructive. No confirmation prompt.
+("Step Through" is currently a no-op that just reopens the picker.)
+
+[Regenerate] (picker/init.lua:110-156) calls exts.wipe({project_dir = vim.fn.getcwd()}), which
+runs vim.fn.delete(target_dir, "rf") at shared/extensions/init.lua:1253 -- snapshot ->
+rm -rf base_dir -> regenerate from the surviving project-root extension manifest -> restore
+settings.local.json and .syncprotect-listed paths -> clear staging. Destructive. Confirmation
+required.
+
+=== DEFECT 1: THE [Reload All] ONE-LINER DESCRIBES [Regenerate], NOT ITSELF ===
+
+display/entries.lua:980-982 renders [Reload All] with the trailing text:
+
+    "Wipe and reload all loaded extensions"
+
+It does not wipe. resync_all never unloads and never deletes. The word "Wipe" belongs to
+[Regenerate], whose own one-liner at entries.lua:995-997 ("Wipe and rebuild from the extension
+manifest") is accurate. So the picker currently presents two adjacent entries whose visible
+descriptions both begin "Wipe and ...", one of which is false -- which is precisely the confusion
+that motivated this task: an operator reaching for a rebuild picked [Reload All] on the strength
+of that line.
+
+Note the contradiction is already internal to the codebase: display/previewer.lua:129-130
+describes the same entry correctly as "Force-resyncs every currently loaded extension in
+dependency order (non-destructive)." Two descriptions of one entry disagree.
+
+=== DEFECT 2: NEITHER ENTRY HAS A Command Details PREVIEW ===
+
+Both entries are created with entry_type = "special" plus a boolean flag (is_reload_all,
+is_regenerate) at entries.lua:974-999. The previewer's define_preview dispatch chain
+(previewer.lua:628-661) branches on is_heading, is_help, and then eleven entry_type values --
+skill, hook_event, lib, script, test, template, doc, command, extension, agent, root_file. There
+is NO branch for is_reload_all, is_regenerate, or entry_type == "special". Both therefore fall to
+the terminal else at previewer.lua:658-659, which writes the single line "Unknown entry type"
+into the "Command Details" pane.
+
+So the pane is not blank -- it renders a developer-facing error string for two entries that are
+working as designed. The real documentation for both operations exists, but it is buried inside
+preview_help (previewer.lua:129-135), reachable only by selecting the separate [Keyboard
+Shortcuts] entry.
+
+DECIDE, do not assume: whether to add a dedicated preview_special branch keyed on the two boolean
+flags, or to give special entries a shared preview keyed on entry_type == "special" that reads a
+per-entry description field. Either way, the terminal else branch should stop being reachable for
+entries the picker itself ships -- consider whether "Unknown entry type" is the right fallback at
+all, or whether it should name the offending entry so the next gap is diagnosable.
+
+=== DEFECT 3: THE REDUNDANCY QUESTION, UNDECIDED ===
+
+There is genuine partial overlap: [Regenerate]'s wipe-and-rebuild reloads the same extension set
+[Reload All] resyncs, so it subsumes the OUTCOME while differing in method, risk, and guarantees.
+Whether that justifies two entries is a real design call, not an obvious yes or no. Weigh at
+least: (a) keep both, with corrected descriptions that make the destructive/non-destructive
+distinction the FIRST thing each line says; (b) collapse [Regenerate] into the [Reload All]
+submenu as a fourth, confirmation-gated choice alongside Unload All, giving one entry point for
+all bulk extension operations; (c) keep both but rename them so neither reads as a synonym of the
+other. Record the ruling and its reasoning.
+
+While deciding (b), note the [Reload All] submenu already contains a dead choice: "Step Through"
+(init.lua:180-185) does nothing but reopen the picker. Decide its disposition too -- implement or
+remove; do not leave a menu item that silently no-ops.
+
+=== A CORRECTION TO THE OPERATOR'S MENTAL MODEL, WORTH RECORDING IN THE PREVIEW TEXT ===
+
+[Regenerate] is sometimes remembered as "run Reload All across every repo that has loaded the
+agent system, preserving each repo's own loaded extension set". It does NOT do that, and never
+has -- it is single-repo, scoped to vim.fn.getcwd(), exactly like [Reload All].
+
+That cross-repo capability is a DIFFERENT, already-filed, not-yet-started piece of work: the
+task titled "Implement <leader>al repo registration and 'Global Update' action" describes
+registering repos that <leader>al loads extensions into, and adding a 'Global Update' entry
+"similar to 'Reload All'" that reloads all extensions already loaded in each registered repo.
+Coordinate with it rather than implementing cross-repo behaviour here; this task's job is to make
+the two EXISTING single-repo entries honest and self-documenting. Whichever of the two lands
+second should make sure all three entries read as a coherent set.
+
+=== ACCEPTANCE ===
+
+- [Reload All]'s visible one-liner no longer claims it wipes, and states its non-destructive
+  force-resync nature; [Regenerate]'s continues to state its destructive nature. The two lines are
+  distinguishable at a glance.
+- Selecting either entry renders real content in the "Command Details" pane -- what it does, what
+  it touches, whether it is destructive, whether it prompts -- and "Unknown entry type" is no
+  longer reachable for any entry the picker ships.
+- The entries.lua one-liner and the previewer text for a given entry agree with each other and
+  with the implementation; a check or comment records that they must be kept in sync.
+- The redundancy ruling is recorded with reasoning, and "Step Through" is either implemented or
+  removed.
+- Verified by opening <leader>al and selecting each entry, not by reading the diff alone.
+
+---
 
 ### 201. Close the ephemeral-runtime-file ignore enumeration gap that lets a live deploy mutex be committed
 - **Status**: [NOT STARTED]
@@ -298,7 +408,7 @@ SCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause
 ---
 
 ### 197. Honor a forced phase on a terminal task, including one already archived by /todo
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 196
