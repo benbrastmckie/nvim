@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md",
+      "summary": "Confirms .deploy-lock/ is missing from all three enumeration sites, finds three more mutex/lock artifacts (.scope-lock/, .commit-lock/, .errors.lock) with the same gap via the sweep, notes the historical tracked file is already untracked (via plain git rm, not --cached), and recommends a shared-lib single-source fix for the two check-runtime-file-tracking.sh lists plus updates to two test fixtures that mirror the gitignore block."
+    }
+  ],
+  "next_steps": "Run /plan 201 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1788984427_1d2334_201",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 9,
+  "memory_candidates": [
+    {
+      "content": "This repo has a live single-source-of-truth precedent for keeping two lint/check scripts' pattern lists in agreement: scripts/lib/task-reference-patterns.sh is sourced by both check-task-references.sh (repo-wide lint) and hooks/validate-no-task-references.sh (write-time gate), so neither defines its detection regex locally. When a task needs two scripts to agree on an enumerated pattern set (e.g. check-runtime-file-tracking.sh's EPHEMERAL_PROBES vs b_patterns arrays), extracting a shared scripts/lib/*.sh array is the established idiom here, not a novel invention.",
+      "category": "PATTERN",
+      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shellcheck", "single-source-of-truth", "scripts/lib", "gitignore", "enumeration-drift"]
+    },
+    {
+      "content": "gitignore glob **/.lock/ only matches directories literally named .lock; sibling mutex directories with different names (.scope-lock/, .commit-lock/, .deploy-lock/) are invisible to that one line and need their own explicit patterns. When auditing a runtime-file ignore policy built around a directory-name mutex convention, grep the source scripts for every distinct mutex/lock directory NAME rather than assuming one glob pattern covers the whole family.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gitignore", "glob-pattern", "mutex", "task-lock.sh", "runtime-files"]
+    }
+  ],
+  "dispatch_seq": 2
+}
