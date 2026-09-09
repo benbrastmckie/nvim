@@ -40,7 +40,21 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL_SRC="$SCRIPT_DIR/../lean-mcp-preflight-check.sh"
-VERIFIER_SRC="$SCRIPT_DIR/../../../core/scripts/verify-lean-mcp.sh"
+
+# verify-lean-mcp.sh's location relative to this suite differs between the source store (lean
+# and core are separate extension trees: scripts/tests/../../../core/scripts/) and a deployed
+# consumer repo (every extension's scripts/ flattens into a single .claude/scripts/, so it is a
+# sibling one level up: scripts/tests/../). Try both so this suite runs identically from either
+# layout -- see utility-scripts-inventory.md's lean-mcp-preflight-check.sh entry.
+VERIFIER_SRC=""
+for candidate in \
+  "$SCRIPT_DIR/../../../core/scripts/verify-lean-mcp.sh" \
+  "$SCRIPT_DIR/../verify-lean-mcp.sh"; do
+  if [ -f "$candidate" ]; then
+    VERIFIER_SRC="$candidate"
+    break
+  fi
+done
 
 PASSED=0
 FAILED=0
@@ -54,8 +68,8 @@ if [ ! -f "$TOOL_SRC" ]; then
   exit 1
 fi
 
-if [ ! -f "$VERIFIER_SRC" ]; then
-  echo "ERROR: expected verify-lean-mcp.sh at $VERIFIER_SRC" >&2
+if [ -z "$VERIFIER_SRC" ]; then
+  echo "ERROR: expected verify-lean-mcp.sh at either $SCRIPT_DIR/../../../core/scripts/verify-lean-mcp.sh (source store) or $SCRIPT_DIR/../verify-lean-mcp.sh (deployed tree)" >&2
   exit 1
 fi
 

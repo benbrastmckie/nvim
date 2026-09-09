@@ -1,7 +1,7 @@
 # Implementation Plan: Task #204
 
 - **Task**: 204 - Wire verify-lean-mcp.sh into a moment where lean-lsp registration drift is actually caught
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: Task 203 (COMPLETED — reconciled the sanctioned registration shape; its changes to `verify-lean-mcp.sh` are already reflected below)
 - **Research Inputs**: specs/204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md
@@ -333,31 +333,38 @@ skills received the call site; no fifth file was found.
 
 ---
 
-### Phase 5: Documentation, deploy verification, and final gates [NOT STARTED]
+### Phase 5: Documentation, deploy verification, and final gates [COMPLETED]
 
 **Goal**: The inventory stops claiming the verifier has no automated caller, the artifact actually
 lands in a deploy tree, and every repo-wide gate is green.
 
 **Tasks**:
-- [ ] Update the `verify-lean-mcp.sh` entry in
+- [x] Update the `verify-lean-mcp.sh` entry in
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` — remove
       "Invoked manually by an operator; no automated caller by design" and name the new automated
       caller and the moment it fires. Durable anchors only, no task numbers.
-- [ ] Add an inventory entry for `lean-mcp-preflight-check.sh` describing its WARN-only,
+- [x] Add an inventory entry for `lean-mcp-preflight-check.sh` describing its WARN-only,
       always-exit-0 contract, its silent non-Lean-project path, and its measured cost.
-- [ ] Record the follow-up (migrate the four lean skills onto `skill-preflight-flow.md`, then replace
+- [x] Record the follow-up (migrate the four lean skills onto `skill-preflight-flow.md`, then replace
       the four inline calls with a single manifest `hooks.preflight` declaration pointing at this same
       script) in the inventory entry and the script header — as a durable-anchor note, not a task
       reference. Optionally raise it with `/task` after this task lands.
-- [ ] Run `shellcheck` over both new shell files and confirm clean per `shell-strict-mode.md`.
-- [ ] Re-run the regression suite end to end after all edits.
-- [ ] Deploy/reload this repository's extension set and confirm the new script appears at
+- [x] Run `shellcheck` over both new shell files and confirm clean per `shell-strict-mode.md`.
+- [x] Re-run the regression suite end to end after all edits.
+- [x] Deploy/reload this repository's extension set and confirm the new script appears at
       `.claude/scripts/lean-mcp-preflight-check.sh` with the executable bit (note: the lean extension
       is not currently loaded in this repo, so verify in a repo that loads it, or verify the manifest
-      entry resolves during a dry-run deploy — record which was done).
-- [ ] Run the repo-wide task-reference lint (`scripts/check-task-references.sh`) and confirm no new
+      entry resolves during a dry-run deploy — record which was done). *(completed: verified in
+      `~/Projects/BimodalLogic`, which loads the lean extension from this repo's source store --
+      ran `bash .claude/scripts/deploy-headless.sh` there twice (once before, once after the
+      deployed-vs-source-tree relative-path fix to the test suite's `VERIFIER_SRC` resolution),
+      confirmed `.claude/scripts/lean-mcp-preflight-check.sh` and
+      `.claude/scripts/tests/test-lean-mcp-preflight-check.sh` land with the executable bit, the
+      Stage 2 guard block appears in the deployed `skill-lean-research/SKILL.md`, and the
+      deployed regression suite exits 0 with all 8 assertions PASS)*
+- [x] Run the repo-wide task-reference lint (`scripts/check-task-references.sh`) and confirm no new
       occurrence outside `specs/**`.
-- [ ] Confirm no file under any `.claude/**` tree was hand-edited (`git status` shows changes only
+- [x] Confirm no file under any `.claude/**` tree was hand-edited (`git status` shows changes only
       under `agent-system/**` and `specs/**`).
 
 **Timing**: 0.5 hours
@@ -381,19 +388,19 @@ lands in a deploy tree, and every repo-wide gate is green.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh` exits 0,
+- [x] `bash agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh` exits 0,
       every fixture PASS.
-- [ ] Fixture A (a `command` path inside a `.claude/` tree that does not exist on disk) produces
+- [x] Fixture A (a `command` path inside a `.claude/` tree that does not exist on disk) produces
       non-empty output naming `setup-lean-mcp.sh` — the acceptance bar's "demonstrated, not asserted".
-- [ ] Fixture B (correct registration) produces byte-empty output.
-- [ ] Fixture C (non-Lean repository) produces byte-empty output and exit 0.
-- [ ] Fixture D's message differs from fixture A's (exit-2 vs exit-1 branches are genuinely distinct).
-- [ ] Mutation check recorded: fixtures A/D/E fail against a neutralized wrapper.
-- [ ] Three wall-clock measurements recorded (non-Lean early exit / correct registration / drifted).
-- [ ] `shellcheck` clean on `lean-mcp-preflight-check.sh` and its test suite.
-- [ ] `jq empty` passes on the modified lean manifest; both new `provides.scripts` entries present.
-- [ ] No task-number references introduced outside `specs/**`.
-- [ ] No hand-edits under any `.claude/**` tree.
+- [x] Fixture B (correct registration) produces byte-empty output.
+- [x] Fixture C (non-Lean repository) produces byte-empty output and exit 0.
+- [x] Fixture D's message differs from fixture A's (exit-2 vs exit-1 branches are genuinely distinct).
+- [x] Mutation check recorded: fixtures A/D/E fail against a neutralized wrapper.
+- [x] Three wall-clock measurements recorded (non-Lean early exit / correct registration / drifted).
+- [x] `shellcheck` clean on `lean-mcp-preflight-check.sh` and its test suite.
+- [x] `jq empty` passes on the modified lean manifest; both new `provides.scripts` entries present.
+- [x] No task-number references introduced outside `specs/**`.
+- [x] No hand-edits under any `.claude/**` tree.
 
 ## Artifacts & Outputs
 
