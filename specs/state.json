@@ -51,7 +51,10 @@
       "description": "Fix orchestrate-predispatch-review.sh Class A false positive: archived completed dependencies reported as nonexistent. MEASURED STATE (observed live in the BimodalLogic repository): the Class A dependency-edge classifier resolves a task dependencies[] against specs/state.json active_projects[] ONLY. A dependency that was completed and then archived by /todo is moved out of active_projects[] into specs/archive/{NNN}_{slug}/, so the classifier reports it as `nonexistent` -- the loudest verdict it has -- when the dependency is in fact SATISFIED. Measured there: 37 unique dependency numbers flagged nonexistent across roughly 30 tasks; ALL 37 resolve to a directory under specs/archive/, and ZERO are genuinely absent. The advisory is therefore ~100 percent false-positive noise on a mature repository, which trains an operator to ignore Class A entirely and would mask a real dangling edge when one finally appears. WORK: teach the Class A classifier a third verdict distinguishing (a) satisfied-and-archived -- resolvable under specs/archive/ -- from (b) genuinely nonexistent -- resolvable nowhere. Report (a) at informational volume or not at all; reserve the loud `nonexistent` wording for (b). Confirm the archive lookup matches the directory naming /todo actually writes (zero-padded {NNN}_{slug}), and decide whether a completed-but-not-yet-archived dependency warrants its own verdict. Check whether scripts/orchestrate-batch-admit.sh and scripts/orchestrate-triage-classify.sh share the same active_projects-only assumption and need the same correction -- the eligibility path narrows out-of-batch edges separately, so a false `nonexistent` there could have different consequences than in the advisory. EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh (this repository is the source store; consuming repositories only carry a gitignored deployed copy under .claude/, so a fix authored there is wiped by the next regeneration). ACCEPTANCE: running the review against a state file whose dependencies point at archived tasks reports zero `nonexistent` findings and classifies those edges as satisfied; a synthetic dependency on a number present in neither active_projects[] nor specs/archive/ still reports loudly as `nonexistent`; the deployed copy in a consuming repo reproduces both outcomes after redeploy.",
       "topic": "core-agent-system",
       "created": "2026-09-08T14:55:15Z",
-      "last_updated": "2026-09-08T14:55:15Z"
+      "last_updated": "2026-09-08T14:55:15Z",
+      "dependencies": [
+        197
+      ]
     },
     {
       "project_number": 187,
@@ -118,7 +121,10 @@
       "description": "Decide whether to port the hard-mode loop-guard operational-staleness detector into orchestrate-cycle-plan.sh, or record its removal as accepted.\n\nCONTEXT. The single-task /orchestrate engine (skill-orchestrate/SKILL.md Stages 0-8) was deleted when SKILL.md was rewritten as the four-move loop. That engine carried a 3-signal operational-staleness detector for .orchestrator-loop-guard, gated on hard mode only. It has NO equivalent in the surviving batch engine (orchestrate-cycle-plan.sh), so /orchestrate --hard no longer detects a stale-but-syntactically-valid loop guard at all.\n\nWHAT WAS LOST (the detector's own contract, for reference when deciding):\n  Signal 1 -- schema/version drift: guard .max_cycles differs from the live MAX_CYCLES.\n  Signal 2 -- plan-lineage drift: guard .plan_version differs from the newest plans/*.md basename. Skipped when either side is empty or \"none\" (an absent plans/ directory is never itself evidence of staleness).\n  Signal 3 -- mtime-age backstop: guard older than ORCHESTRATOR_LOOP_GUARD_STALE_DAYS (default 7). An unreadable mtime (stat returns 0) is treated as NOT stale.\n  Any one signal tripping was sufficient. On trip: archive the guard aside to .stale-loop-guard-<ts>.json (never delete), co-archive .orchestrator-churn-state.json under the same timestamp if present, then fall through to fresh init at cycle 0.\n\nTHIS IS A DECISION TASK, NOT A PORT TASK. The prior engine's own comments recorded that whether BASE mode should gain the detector unconditionally was already an open, undecided question. Deleting the hard-mode copy did not settle that question -- it removed the only implementation. Evaluate at least: (a) port into orchestrate-cycle-plan.sh for all effort modes; (b) port hard-mode-only, preserving the old asymmetry; (c) accept the loss and sweep the retired test's remaining references. Do not pre-commit to an option.\n\nEVIDENCE. The retired test scripts/tests/test-loop-guard-staleness.sh was removed from git tracking in commit 2d09265cc. The capability loss is recorded under \"Plan Deviations\" and \"Follow-ups\" in specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md.\n\nACCEPTANCE: a recorded decision with rationale; if ported, the detector works under the batch engine and has test coverage; if accepted as lost, the removal is documented where a future reader will find it rather than surviving only as summary prose.",
       "topic": "core-agent-system",
       "created": "2026-09-08T06:28:44Z",
-      "last_updated": "2026-09-08T06:28:44Z"
+      "last_updated": "2026-09-08T06:28:44Z",
+      "dependencies": [
+        182
+      ]
     },
     {
       "project_number": 172,
@@ -925,7 +931,9 @@
       "created": "2026-09-07T00:00:00Z",
       "last_updated": "2026-09-07T00:00:00Z",
       "session_id": "sess_1788807903_6c4f5c",
-      "dependencies": [],
+      "dependencies": [
+        197
+      ],
       "artifacts": [],
       "file_scope": [
         "agent-system/extensions/core/context/formats/plan-format.md",
@@ -945,7 +953,9 @@
       "created": "2026-09-07T00:00:00Z",
       "last_updated": "2026-09-07T00:00:00Z",
       "session_id": "sess_1788807903_6c4f5c",
-      "dependencies": [],
+      "dependencies": [
+        188
+      ],
       "artifacts": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/validate-state.sh",
@@ -1006,7 +1016,9 @@
       "created": "2026-09-07T00:00:00Z",
       "last_updated": "2026-09-07T00:00:00Z",
       "session_id": "sess_1788809689_86fcdd",
-      "dependencies": [],
+      "dependencies": [
+        196
+      ],
       "artifacts": [],
       "file_scope": [
         "agent-system/extensions/core/agents/general-research-agent.md",
@@ -1280,7 +1292,8 @@
       "priority": "high",
       "effort": "4 hours",
       "dependencies": [
-        181
+        181,
+        193
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
@@ -1301,7 +1314,9 @@
       "title": "Fix cross-session admission blindness for self-modifying candidates",
       "created": "2026-09-08T23:40:25Z",
       "last_updated": "2026-09-08T23:40:25Z",
-      "dependencies": [],
+      "dependencies": [
+        165
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"
@@ -1353,7 +1368,10 @@
       "title": "Carry concurrent-sibling territory in base-mode dispatch briefs, the only channel that reaches a running dispatch",
       "created": "2026-09-08T23:55:12Z",
       "last_updated": "2026-09-08T23:55:12Z",
-      "dependencies": [],
+      "dependencies": [
+        165,
+        197
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
@@ -1384,7 +1402,8 @@
       "topic": "core-agent-system",
       "title": "Replace is_contractual_handoff_writer allowlist with a dispatch-derived predicate",
       "dependencies": [
-        194
+        194,
+        162
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
@@ -1435,7 +1454,7 @@
     {
       "project_number": 197,
       "project_name": "forced_phase_on_terminal_and_archived_tasks",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Honor a forced phase on a terminal task, including one already archived by /todo",
@@ -1452,7 +1471,7 @@
       ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the change up via their own redeploy.\n\nREQUEST. The user wants `/orchestrate N --research` to work on a task that is already complete. Today it silently does nothing.\n\nDEFECT 1 -- ORDERING. In scripts/orchestrate-cycle-plan.sh, is_terminal_status() is defined at lines 1123-1128; the all-terminal check at lines 1138-1148 sets stop_reason=\"all_terminal\" and calls emit_and_exit as soon as every named task is terminal, and the eligibility loop at line 1156 independently `continue`s past any terminal task. BOTH run BEFORE per-task force_phases consumption, which does not begin until line 1324 (\"(f) Per-task force_phases consumption\"). scripts/orchestrate-triage-classify.sh independently returns group:\"terminal\" for completed/abandoned/expanded at lines 326-329. So `/orchestrate 42 --research` on a completed task short-circuits to all_terminal and dispatches nothing. The blocker is ordering, not intent: --research/--plan/--implement already parse (parse-command-args.sh line ~152), already thread through as --force-phases (orchestrate-cycle-plan.sh lines 288, 429-452, 504), and already consume per-task from force_phases_remaining (lines 1324-1340, 1710). Their documented contract (commands/orchestrate.md lines 25-26 and 51-53) is: canonical lifecycle order regardless of typed order, a new MM_ artifact round, NEVER regresses status, stop after the last named phase.\n\nDEFECT 2 -- ARCHIVED TASKS, AND IT IS NOT FIXED BY REORDERING. /todo archives every terminal task OUT of .active_projects. orchestrate-cycle-plan.sh already handles this: lines 405-413 read ${STATE_FILE%state.json}archive/state.json, flattening completed_projects and archived_projects and normalizing status (completed/abandoned/expanded preserved verbatim; any archive-only status such as orphan_archived mapped to completed), and lookup_project() at lines 415-425 consults the archive whenever a number is absent from active projects, with active entries winning. scripts/orchestrate-triage-classify.sh does NOT: line 316 binds `($state_arr[0].active_projects // []) as $all` and nothing else, so an archived task hits the null-entry branch at lines 321-323 and returns group:\"skip\", reason \"not found in state.json\". The two scripts therefore disagree about the same archived task -- cycle-plan resolves it to completed, the classifier calls it nonexistent. Reordering the terminal check alone leaves the archived case broken. A fix that closes only the ordering defect is INCOMPLETE and must not be accepted.\n\nDECISIONS THE RESEARCH PHASE MUST WEIGH AND RECORD -- DO NOT PRE-DECIDE.\n(a) How a terminal task with a pending forced phase becomes eligible: reorder force_phases consumption ahead of the all-terminal check and the eligibility loop, versus computing a \"has a pending forced phase\" set up front and exempting exactly those tasks from both terminal `continue`s. Weigh which keeps the (b)/(c)/(f) section structure and the mt_ state-writing order coherent, since force_phases_remaining seeding currently writes state that the earlier checks do not read.\n(b) What status a completed task holds while a forced phase runs, and what it holds afterward. Keeping it completed while a new MM_ round is written is FAVORED, per the existing never-regresses-status clause, but must be justified against how orchestrate-cycle-postflight.sh's monotonic-max clamp and update-task-status.sh's map_status actually behave on a completed task -- verify rather than assume.\n(c) Whether --implement forced on a completed task is permitted on the same terms as --research, or needs a stricter gate (re-running an implementation against already-implemented work is materially riskier than re-running research or planning). Decide for all three flags explicitly; do not fix --research and leave the other two undefined.\n(d) Whether the classifier gains the archive read directly (mirroring lookup_project's existing shape, which is the natural fix) or receives resolved statuses from its caller -- and whether it should keep returning group:\"terminal\" for a forced-phase task or gain a distinct verdict. Note that the research-first default task lands first and may already have established a precedent for feeding the classifier new inputs; reuse that answer rather than inventing a second one.\n(e) Whether the all_terminal stop message must distinguish \"terminal and nothing forced\" (a correct stop) from \"terminal but a forced phase is pending\" (which must no longer stop at all), and whether the archive read should ever WRITE -- un-archiving a task versus reading it read-only and leaving /todo's archive untouched. Read-only is FAVORED but must be justified against how the eventual completion of a forced round on an archived task is recorded.\n\nSCOPE. Implement the chosen fix across both defects together. Add fixture coverage in scripts/tests/test-orchestrate-cycle-plan.sh for a completed task with --force-phases research (must dispatch, not stop at all_terminal -- note line 1041 already has an all_terminal assertion whose fixture must remain valid), and for a completed-and-archived task with --force-phases research. Add coverage in scripts/tests/test-orchestrate-triage-classify.sh for the archived-task lookup. Update commands/orchestrate.md so the --research/--plan/--implement rows state plainly whether they apply to terminal and archived tasks, and update docs/architecture/orchestrate-state-machine.md's terminal-state handling to match.\n\nMUST NOT. Do not edit .claude/** . Do not make terminal tasks eligible for ORDINARY dispatch -- only an explicitly forced phase may reach one; an /orchestrate with no phase-forcing flag must still stop with all_terminal on a fully terminal set. Do not regress a completed task's status as a side effect of the fix. Do not change the not_started default routing -- that is the companion task's territory; this task lands second and builds on it. Do not write task numbers into any deliverable outside specs/. shellcheck clean per context/standards/shell-strict-mode.md.\n\nACCEPTANCE. /orchestrate N --research on a completed task in active_projects dispatches a research round and writes a new MM_ artifact. The same on a completed-and-ARCHIVED task also dispatches, with the classifier and cycle-plan agreeing on its status rather than one calling it nonexistent. /orchestrate N with no forcing flag on the same terminal task still stops with all_terminal and dispatches nothing. The chosen posture for --plan and --implement on terminal tasks is implemented and documented, not left undefined. Fixtures cover the active-terminal, archived-terminal, and unforced-terminal cases. Full gate set green: test-orchestrate-cycle-plan.sh, test-orchestrate-triage-classify.sh, check-task-references.sh.",
       "created": "2026-09-09T12:17:52Z",
-      "last_updated": "2026-09-09T13:53:16Z",
+      "last_updated": "2026-09-09T13:53:29Z",
       "session_id": "sess_1788956447_28a717",
       "artifacts": [
         {
@@ -1464,6 +1483,11 @@
           "path": "specs/197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md",
           "type": "plan",
           "summary": "9-phase plan closing five defects behind one shared archive-lookup library: cycle-plan forced-phase eligibility exemption, classifier archive read, skill_validate_input terminal bypass + archive fallback, preflight monotonic-max clamp with archive-absent write skip, and archived-task-directory path resolution; plus fixtures for both suites and docs."
+        },
+        {
+          "path": "specs/197_forced_phase_on_terminal_and_archived_tasks/summaries/01_forced-phase-terminal-archived-tasks-summary.md",
+          "type": "summary",
+          "summary": "9-phase implementation closing five defects behind one shared archive-lookup library; full gate set green; live-verified against real production task 189 (active) and task 137 (archived), including a mid-Phase-9 fix for a real jq argv-length failure in the classifier's archive read."
         }
       ],
       "next_artifact_number": 2
@@ -1475,7 +1499,9 @@
       "task_type": "meta",
       "topic": "lean-extension",
       "title": "Mandate git-snapshot --no-revert in the lean implementation agent contracts",
-      "dependencies": [],
+      "dependencies": [
+        191
+      ],
       "file_scope": [
         "agent-system/extensions/lean/agents/lean-implementation-agent.md",
         "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
@@ -1493,7 +1519,11 @@
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches",
-      "dependencies": [],
+      "dependencies": [
+        191,
+        192,
+        193
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",

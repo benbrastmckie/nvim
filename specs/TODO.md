@@ -11,9 +11,13 @@ next_project_number: 202
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194,197,198,199,200,201 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175,195 | 29,74,139,162,172,194 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 165 | 163,164 | file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,166,167,168,170,172,177,184,185,187,191,192,194,197,200,201 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,162,173,174,175,188,198 | 29,74,139,172,191,197 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 163,164,195 | 162,188,194 | core-agent-system, file-scope-lifecycle |
+| 4 | 165 | 163,164 | file-scope-lifecycle |
+| 5 | 190,193 | 165 | core-agent-system |
+| 6 | 182,199 | 191,192,193 | core-agent-system |
+| 7 | 183 | 182 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -34,22 +38,25 @@ next_project_number: 202
   └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
   └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
   └─ 175 [NOT STARTED] — Enforce waiter teardown in the agent contracts that spawn...
-182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
-183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
-188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 191 [NOT STARTED] — Stop plan-mandated git-snapshot from reverting task-unrelated...
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 192 [NOT STARTED] — Close the directory-pathspec hole in guard-destructive-git.sh...
-193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
-197 [PLANNED] — Honor a forced phase on a terminal task, including one...
-199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+197 [IMPLEMENTING] — Honor a forced phase on a terminal task, including one...
+  └─ 188 [NOT STARTED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
 201 [NOT STARTED] — Close the ephemeral-runtime-file ignore enumeration gap that...
+182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
+  └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
+190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
+193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
+  └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency... (see above)
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 
 ### Extensions
 
@@ -181,7 +188,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 191, Task 192, Task 193
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -261,7 +268,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: lean-extension
-- **Dependencies**: None
+- **Dependencies**: Task 191
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).
 
@@ -291,12 +298,13 @@ SCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause
 ---
 
 ### 197. Honor a forced phase on a terminal task, including one already archived by /todo
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 196
 - **Research**: [197_forced_phase_on_terminal_and_archived_tasks/reports/01_forced-phase-terminal-archived-tasks.md]
 - **Plan**: [197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md]
+- **Summary**: [197_forced_phase_on_terminal_and_archived_tasks/summaries/01_forced-phase-terminal-archived-tasks-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the change up via their own redeploy.
 
@@ -363,7 +371,7 @@ ACCEPTANCE. Without --fast, a not_started task dispatches research, then plan, t
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 194
+- **Dependencies**: Task 194, Task 162
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
 
@@ -439,7 +447,7 @@ ACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, cons
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 165, Task 197
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -535,7 +543,7 @@ ACCEPTANCE. In a dirty tree carrying tracked modifications outside the task's fi
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 165
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -674,7 +682,7 @@ avoid a duplicate; split it out if the planner judges it separable.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 197
 
 **Description**: Fix orchestrate-predispatch-review.sh Class A false positive: archived completed dependencies reported as nonexistent. MEASURED STATE (observed live in the BimodalLogic repository): the Class A dependency-edge classifier resolves a task dependencies[] against specs/state.json active_projects[] ONLY. A dependency that was completed and then archived by /todo is moved out of active_projects[] into specs/archive/{NNN}_{slug}/, so the classifier reports it as `nonexistent` -- the loudest verdict it has -- when the dependency is in fact SATISFIED. Measured there: 37 unique dependency numbers flagged nonexistent across roughly 30 tasks; ALL 37 resolve to a directory under specs/archive/, and ZERO are genuinely absent. The advisory is therefore ~100 percent false-positive noise on a mature repository, which trains an operator to ignore Class A entirely and would mask a real dangling edge when one finally appears. WORK: teach the Class A classifier a third verdict distinguishing (a) satisfied-and-archived -- resolvable under specs/archive/ -- from (b) genuinely nonexistent -- resolvable nowhere. Report (a) at informational volume or not at all; reserve the loud `nonexistent` wording for (b). Confirm the archive lookup matches the directory naming /todo actually writes (zero-padded {NNN}_{slug}), and decide whether a completed-but-not-yet-archived dependency warrants its own verdict. Check whether scripts/orchestrate-batch-admit.sh and scripts/orchestrate-triage-classify.sh share the same active_projects-only assumption and need the same correction -- the eligibility path narrows out-of-batch edges separately, so a false `nonexistent` there could have different consequences than in the advisory. EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh (this repository is the source store; consuming repositories only carry a gitignored deployed copy under .claude/, so a fix authored there is wiped by the next regeneration). ACCEPTANCE: running the review against a state file whose dependencies point at archived tasks reports zero `nonexistent` findings and classifies those edges as satisfied; a synthetic dependency on a number present in neither active_projects[] nor specs/archive/ still reports loudly as `nonexistent`; the deployed copy in a consuming repo reproduces both outcomes after redeploy.
 
@@ -772,7 +780,7 @@ ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 182
 
 **Description**: Decide whether to port the hard-mode loop-guard operational-staleness detector into orchestrate-cycle-plan.sh, or record its removal as accepted.
 
@@ -797,7 +805,7 @@ ACCEPTANCE: a recorded decision with rationale; if ported, the detector works un
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 181
+- **Dependencies**: Task 181, Task 193
 
 **Description**: Give the /orchestrate inter-cycle redeploy checkpoint a durable run ledger so it stops re-running a full redeploy that just happened.
 
@@ -1541,7 +1549,7 @@ carry the new text.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 196
 
 **Description**: DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the "agent has no skeleton at all" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.
 
@@ -1642,7 +1650,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: None
+- **Dependencies**: Task 188
 
 **Description**: Make an ABSENT or EMPTY `file_scope` visible. Today it is invisible everywhere, by construction.
 
@@ -1672,7 +1680,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: None
+- **Dependencies**: Task 197
 
 **Description**: Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.
 

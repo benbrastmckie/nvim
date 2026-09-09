@@ -1,7 +1,7 @@
 # Implementation Plan: Task #197
 
 - **Task**: 197 - Make `/orchestrate N --research`/`--plan`/`--implement` work on a terminal (and/or archived) task
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: specs/196_research_first_default_unless_fast/ (COMPLETED; landed first, established the "routing rules live in the classifier, not in a caller post-adjustment" precedent reused here)
 - **Research Inputs**: specs/197_forced_phase_on_terminal_and_archived_tasks/reports/01_forced-phase-terminal-archived-tasks.md
@@ -691,27 +691,61 @@ reader looks for it, and the preflight/postflight clamp pairing is recorded.
 
 ---
 
-### Phase 9: Gate set, deploy, and mirror [NOT STARTED]
+### Phase 9: Gate set, deploy, and mirror [COMPLETED]
 
 **Goal**: Everything green against the deployed tree the tests actually resolve.
 
 **Tasks**:
-- [ ] `shellcheck` clean on every modified shell file, per
-      `context/standards/shell-strict-mode.md`.
-- [ ] Redeploy the source store to `.claude/` via `bash .claude/scripts/deploy-headless.sh`
+- [x] `shellcheck` clean on every modified shell file, per
+      `context/standards/shell-strict-mode.md`. *(completed: only pre-existing info-level
+      findings (SC1091 source-not-following, SC2016, SC2012, SC2034, SC2155, SC2329) remain,
+      all predating this task or matching an existing unsuppressed convention; zero new
+      findings)*
+- [x] Redeploy the source store to `.claude/` via `bash .claude/scripts/deploy-headless.sh`
       before running the gate set — several collaborators resolve
       `${SKILL_REPO_ROOT}/.claude/scripts/...` first, so a source-only change can otherwise be
-      silently masked by a stale deployed copy.
-- [ ] Confirm the new `scripts/lib/task-lookup-lib.sh` is actually present in the deployed tree
-      after the redeploy (a new file is the most likely deploy-manifest omission).
-- [ ] Run the full gate set: `test-orchestrate-cycle-plan.sh`,
+      silently masked by a stale deployed copy. *(completed: `[deploy-headless] RESULT=landed_verify_clean`, 33 checks 0 failures; run twice, once before and once after the mid-phase classifier fix below)*
+- [x] Confirm the new `scripts/lib/task-lookup-lib.sh` is actually present in the deployed tree
+      after the redeploy (a new file is the most likely deploy-manifest omission). *(completed: confirmed present at `.claude/scripts/lib/task-lookup-lib.sh`)*
+- [x] Run the full gate set: `test-orchestrate-cycle-plan.sh`,
       `test-orchestrate-triage-classify.sh`, `test-orchestrate-cycle-postflight.sh`,
-      `check-task-references.sh`.
-- [ ] Verify no file under `.claude/**` was hand-edited at any point (only the deploy wrote
-      there): `git status` review plus a scan of the working tree.
-- [ ] End-to-end smoke, live: `/orchestrate` cycle-plan against a real `completed` task with
+      `check-task-references.sh`. *(completed: 170/170, 57/57 (incl. 2 new Case 5 fixtures), 65/65, 0 unexempted occurrences — all exit 0)*
+- [x] Verify no file under `.claude/**` was hand-edited at any point (only the deploy wrote
+      there): `git status` review plus a scan of the working tree. *(completed: `.claude/` is
+      gitignored (`/.claude/` in .gitignore); `git status --porcelain -- .claude/` returns
+      nothing to track)*
+- [x] End-to-end smoke, live: `/orchestrate` cycle-plan against a real `completed` task with
       `--force-phases research` dispatches and leaves the task's status at `completed`; the same
-      task unforced stops with `all_terminal`.
+      task unforced stops with `all_terminal`. *(completed: ran the deployed, unstubbed
+      `orchestrate-cycle-plan.sh` in an isolated root — symlinked `.claude/`, copied real
+      `specs/state.json` + `specs/archive/state.json` + the real task directories — against
+      real task 189 (active, completed) and real task 137 (archived, completed). Forced
+      research dispatched for both (dispatch file written; task 137's landed under
+      `specs/archive/137_.../.dispatch/`); status stayed `completed` throughout; archived
+      `state.json` was untouched; the same task 189 unforced stopped with `all_terminal` and
+      zero dispatch rows. No production file was touched — all mutation happened inside the
+      isolated `/tmp` root.)*
+
+**Deviation — mid-phase defect found and fixed (not a plan-file edit, a real runtime bug)**: the
+live smoke test above, run against this repo's OWN 1,009,723-byte `specs/archive/state.json`,
+surfaced a defect in Phase 5's classifier archive read that no fixture (all synthetic, small)
+had exercised: `orchestrate-triage-classify.sh` passed the full flattened archive through
+`jq --argjson archived "$archived_projects_json"` at two call sites (state-lookup and verdict
+composition). Linux's per-argument `MAX_ARG_STRLEN` (128 KiB) is well below this repo's real
+archive size, so both calls failed with `jq: Argument list too long` (exit 126) on every
+invocation, and the classifier silently degraded to its non-archive-aware inline fallback —
+meaning Phase 5's fix, though correct in shape and green against every existing (small) fixture,
+never actually executed against this repo's real data. Fixed by writing the flattened archive to
+a `mktemp` temp file (cleaned via `trap ... EXIT`) and reading it back with `--slurpfile
+archived_raw` at both call sites instead of embedding it inline — matching the pattern
+`task_lookup_entry` in `task-lookup-lib.sh` already uses (pipe via stdin, not argv) for the
+sibling `orchestrate-cycle-plan.sh` archive read, which is why that script was never affected.
+Added Case 5 (`test-orchestrate-triage-classify.sh`, single + mt engines): a synthetic
+605,938-byte archive (2000 entries) that mutation-checks red pre-fix (`git stash`; exit 126,
+matching the real error verbatim) and green post-fix. Re-ran the full gate set and the live
+smoke test after this fix; all green. See
+`agent-system/extensions/core/scripts/orchestrate-triage-classify.sh` and
+`agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`.
 
 **Timing**: 1 hour
 
@@ -720,7 +754,10 @@ reader looks for it, and the preflight/postflight clamp pairing is recorded.
 **Verification Tier**: full
 
 **Files to modify**:
-- none (verification and deploy only)
+- none planned (verification and deploy only); in practice also touched
+  `agent-system/extensions/core/scripts/orchestrate-triage-classify.sh` and
+  `agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh` per the
+  deviation above
 
 **Verification**:
 - All four gate scripts exit 0.
@@ -730,21 +767,32 @@ reader looks for it, and the preflight/postflight clamp pairing is recorded.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` exits 0,
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` exits 0,
       including the five new cases and the unmodified Group 7 and Group 10 Case I fixtures.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`
-      exits 0, including the four new archive cases for both engines.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
-      exits 0 with its existing monotonic-max fixtures unmodified.
-- [ ] `bash .claude/scripts/check-task-references.sh` clean.
-- [ ] `shellcheck` clean on `task-lookup-lib.sh`, `orchestrate-cycle-plan.sh`,
+      *(completed: 170 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh`
+      exits 0, including the four new archive cases for both engines. *(completed: 57 passed,
+      0 failed — includes the four archive cases plus the two Case 5 large-archive fixtures
+      added during Phase 9's live smoke test)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
+      exits 0 with its existing monotonic-max fixtures unmodified. *(completed: 65 passed,
+      0 failed)*
+- [x] `bash .claude/scripts/check-task-references.sh` clean. *(completed: 0 unexempted
+      occurrences across 4 trees)*
+- [x] `shellcheck` clean on `task-lookup-lib.sh`, `orchestrate-cycle-plan.sh`,
       `orchestrate-triage-classify.sh`, `orchestrate-build-dispatch.sh`, `skill-base.sh`, and
-      both modified test suites.
-- [ ] Mutation evidence recorded for every new fixture case (each fails pre-fix).
-- [ ] Acceptance walk: forced research on an active-terminal task dispatches and writes a new
+      both modified test suites. *(completed: zero new findings; only pre-existing info-level
+      findings remain)*
+- [x] Mutation evidence recorded for every new fixture case (each fails pre-fix). *(completed:
+      Phases 6/7 progress files record per-case mutation evidence; Phase 9's own Case 5 addition
+      was independently mutation-checked via `git stash` — fails with the exact real-world
+      "Argument list too long" (exit 126) pre-fix, passes post-fix)*
+- [x] Acceptance walk: forced research on an active-terminal task dispatches and writes a new
       `MM_` artifact; forced research on an archived-terminal task dispatches into
       `specs/archive/{NNN}_{slug}/`; unforced terminal stops with `all_terminal`; status stays
-      `completed` throughout in all three.
+      `completed` throughout in all three. *(completed: verified live in Phase 9 against real
+      production task 189 (active) and task 137 (archived) in an isolated `/tmp` root — see
+      Phase 9's task list above for the full walkthrough)*
 
 ## Artifacts & Outputs
 

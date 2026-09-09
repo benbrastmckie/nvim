@@ -1,0 +1,66 @@
+{
+  "phase": 9,
+  "phase_name": "Gate set, deploy, and mirror",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T09:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "shellcheck clean on every modified shell file",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Redeploy source store to .claude/ via deploy-headless.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm task-lookup-lib.sh present in deployed tree",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run full gate set (cycle-plan, triage-classify, cycle-postflight, check-task-references)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Verify no file under .claude/** was hand-edited",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "End-to-end smoke test on real completed and archived tasks",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"
+      ],
+      "note": "Live smoke test against this repo's real ~1MB specs/archive/state.json surfaced a real defect in Phase 5's classifier archive read (jq --argjson archived over Linux's 128KiB MAX_ARG_STRLEN, exit 126, silent fallback). Fixed in-phase: both call sites in orchestrate-triage-classify.sh now write the flattened archive to a mktemp temp file and read it back via --slurpfile instead of embedding it as a command-line argument. Added mutation-checked Case 5 fixture coverage (both engines) in test-orchestrate-triage-classify.sh. Re-ran the full gate set and the live smoke test after the fix; all green."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Run cycle-plan.sh directly against the real repo's specs/state.json in-place",
+      "result": "rejected",
+      "reason": "PROJECT_ROOT resolves from the invoking script's own path (SCRIPT_DIR, 2 levels up), independent of --state-file, so a copy-only smoke test would still write real dispatch files into the real specs/189_.../ and specs/archive/137_.../ directories. Switched to a fully isolated /tmp root with a symlinked .claude/ and copied specs/ tree instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.mid-phase-fix",
+      "description": "orchestrate-triage-classify.sh's two jq --argjson archived call sites (state-lookup and verdict composition), added in Phase 5",
+      "type": "altered",
+      "reason": "Live smoke test against this repo's real archive/state.json (1,009,723 bytes) reproduced 'jq: Argument list too long' (exit 126) on every classifier invocation -- the flattened archive exceeds Linux's 128KiB per-argument MAX_ARG_STRLEN when passed via --argjson. Fixed by writing the flattened archive to a mktemp temp file and reading it back via --slurpfile at both call sites, matching the stdin-piping pattern task_lookup_entry already uses safely. Added mutation-checked Case 5 fixture coverage.",
+      "annotation": "*(deviation: altered -- see Phase 9's own 'Deviation' note in the plan body for the full defect and fix writeup)*"
+    }
+  ]
+}

@@ -532,6 +532,52 @@ check_status_group "mt" 904 "researching" "research" \
   "candidate present in both stores cross-engine agreement (active wins)"
 
 # =====================================================================
+# Case 5 (Phase 9 hardening): a real, long-lived repo's archive/state.json flattens to a JSON
+# payload well past Linux's per-argument MAX_ARG_STRLEN (128 KiB) -- observed live against this
+# repo's own ~1 MB specs/archive/state.json, which made BOTH jq calls that embedded the flattened
+# archive via `--argjson archived "$archived_projects_json"` fail with "Argument list too long"
+# (exit 126), silently degrading every /orchestrate cycle to the non-archive-aware inline
+# fallback. Fixed by writing the flattened archive to a temp file and reading it back via
+# `--slurpfile` (no argv-size ceiling) instead of embedding it inline. This fixture reproduces
+# that scale: 2000 synthetic completed_projects entries, each carrying a realistic-length
+# description field, comfortably exceeding 128 KiB once flattened. Regression guard: run this
+# BEFORE the fix (`git stash` the orchestrate-triage-classify.sh change) and the case FAILS with
+# "Argument list too long" on stderr; run it AFTER and it PASSES with a clean status/group.
+# =====================================================================
+
+filler="$(head -c 200 /dev/zero | tr '\0' 'x')"
+jq -n -c --arg filler "$filler" \
+  '{completed_projects: [range(0; 2000) | {project_number: (9000 + .), project_name: ("archive_case5_bulk_" + (. | tostring)), status: "completed", description: $filler}], archived_projects: []}' \
+  > "$WORKDIR/specs/archive/state.json"
+archive_bytes="$(wc -c < "$WORKDIR/specs/archive/state.json")"
+
+cat > "$WORKDIR/specs/state.json" <<'EOF'
+{
+  "active_projects": []
+}
+EOF
+
+case5_out="$(bash "$TOOL" single 9500 2>&1)"
+case5_exit=$?
+case5_status="$(echo "$case5_out" | jq -r '.status' 2>/dev/null)"
+case5_group="$(echo "$case5_out" | jq -r '.group' 2>/dev/null)"
+if [ "$case5_exit" -eq 0 ] && [ "$case5_status" = "completed" ] && [ "$case5_group" = "terminal" ]; then
+  pass "Case 5: an archive well past MAX_ARG_STRLEN (${archive_bytes} bytes flattened) still classifies terminal/completed, not an 'Argument list too long' failure"
+else
+  fail "Case 5: expected exit=0 status=completed group=terminal against a ${archive_bytes}-byte archive, got exit=$case5_exit status=$case5_status group=$case5_group (raw: $case5_out)"
+fi
+
+case5_mt_out="$(bash "$TOOL" mt 9500 2>&1)"
+case5_mt_exit=$?
+case5_mt_status="$(echo "$case5_mt_out" | jq -r '.status' 2>/dev/null)"
+case5_mt_group="$(echo "$case5_mt_out" | jq -r '.group' 2>/dev/null)"
+if [ "$case5_mt_exit" -eq 0 ] && [ "$case5_mt_status" = "completed" ] && [ "$case5_mt_group" = "terminal" ]; then
+  pass "Case 5: cross-engine agreement (mt) against the same oversized archive"
+else
+  fail "Case 5 (mt): expected exit=0 status=completed group=terminal, got exit=$case5_mt_exit status=$case5_mt_status group=$case5_mt_group (raw: $case5_mt_out)"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

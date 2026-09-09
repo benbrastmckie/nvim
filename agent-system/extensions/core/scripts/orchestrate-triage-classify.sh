@@ -213,7 +213,16 @@ STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # candidate to its real terminal status via this exact archive. The two scripts disagreed on the
 # same task. Sourced from scripts/lib/task-lookup-lib.sh (Phase 1) -- the same library, same
 # normalization rule, not a second hand-copied jq. Read-only: this array is never written back.
+#
+# Written to a temp file and read back via --slurpfile rather than passed as a jq --argjson
+# command-line argument: a repo with a long-lived archive can flatten to a JSON string well past
+# the OS argv/environment size limit (observed: ~960KB triggering "Argument list too long", exit
+# 126, on a real archive/state.json), which --argjson embeds directly into jq's exec argv while
+# --slurpfile reads from disk with no such ceiling.
 archived_projects_json="$(task_lookup_archived_projects_json "$STATE_FILE")"
+archived_projects_tmpfile="$(mktemp "${TMPDIR:-/tmp}/orchestrate-triage-archived.XXXXXX")"
+trap 'rm -f "$archived_projects_tmpfile"' EXIT
+printf '%s' "$archived_projects_json" > "$archived_projects_tmpfile"
 
 effort=""
 while [ "$#" -gt 0 ]; do
@@ -279,8 +288,8 @@ candidates_json="[$(printf '%s\n' "$@" | paste -sd, -)]"
 # is active_projects FIRST, archived projects appended after -- `first` below therefore prefers an
 # active entry over an archived one for any project_number that (should never, but) appears in
 # both, matching task_lookup_entry's own active-wins contract.
-if lookup_json=$(jq -n -c --argjson candidates "$candidates_json" --argjson archived "$archived_projects_json" --slurpfile state_arr "$STATE_FILE" '
-  (($state_arr[0].active_projects // []) + $archived) as $all |
+if lookup_json=$(jq -n -c --argjson candidates "$candidates_json" --slurpfile archived_raw "$archived_projects_tmpfile" --slurpfile state_arr "$STATE_FILE" '
+  (($state_arr[0].active_projects // []) + $archived_raw[0]) as $all |
   [ $candidates[] as $c |
     ([$all[] | select(.project_number == $c)] | first) as $entry |
     { task_number: $c, status: ($entry.status // null), project_name: ($entry.project_name // null) }
@@ -372,7 +381,7 @@ if verdicts=$(jq -n -c \
   --arg effort "$effort" \
   --argjson candidates "$candidates_json" \
   --argjson handoff_info "$handoff_info_json" \
-  --argjson archived "$archived_projects_json" \
+  --slurpfile archived_raw "$archived_projects_tmpfile" \
   --slurpfile state_arr "$STATE_FILE" \
   '
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
@@ -383,7 +392,7 @@ if verdicts=$(jq -n -c \
   # the dependency-status resolution the blocked arm performs further down -- a dependency that
   # has itself been archived (a completed predecessor /todo already swept out of active_projects)
   # is now visible there too, for the same reason.
-  (($state_arr[0].active_projects // []) + $archived) as $all |
+  (($state_arr[0].active_projects // []) + $archived_raw[0]) as $all |
   $candidates[] as $c |
   ([$all[] | select(.project_number == $c)] | first) as $entry |
   ($handoff_info[($c|tostring)] // null) as $hinfo |
