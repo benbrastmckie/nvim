@@ -41,26 +41,33 @@ Extract standard delegation fields (see `return-metadata-file.md` for schema). A
 - `prior_plan_path` - Path to prior plan (if exists, reference only)
 - Plan path: `{NN}_{slug}.md` (using `artifact_number` for `{NN}`)
 
-### Stage 1.5: Opening Assessment — Research on Demand (Stage A.8)
+### Stage 1.5: Opening Assessment — the `--fast` Escape Hatch
 
 **Mandatory, before any plan construction.** The default `/orchestrate` lifecycle is
-`plan → implement`, not `research → plan → implement`: most dispatched tasks reach this agent
-with NO `research_path` at all. This stage decides whether that is a problem.
+`research → plan → implement`: a fresh, un-researched task dispatches to research BEFORE it ever
+reaches this agent, so most dispatched tasks arrive here WITH a `research_path` already set, and
+this stage's assessment never fires for them (see the skip rule immediately below). A plan
+dispatch that arrives with NO `research_path` at all means one of: `--fast` was passed (the
+planner regains the assessment responsibility this stage implements), a forced
+`--plan`/`--force-phases plan` round bypassed research deliberately, or a `planning` status was
+stranded by a dead prior session and is being re-dispatched. This stage decides whether the
+absence of a report is a problem in any of those cases.
 
 **Skip this stage entirely (proceed directly to Stage 2) when `research_path` is provided.** A
-report already exists for this round — either because `--research` forced it, or because a
-prior `needs_research` verdict from THIS agent already routed the task through a research phase.
-A task that already has a report is never asked again: plan with whatever this round's research
-produced, even if imperfect, rather than requesting a second round. See
-`docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork" section for the
-full routing narrative this stage feeds.
+report already exists for this round — because the research-first default already ran it,
+because `--research` forced it, or because a prior `needs_research` verdict from THIS agent
+already routed the task through a research phase. A task that already has a report is never
+asked again: plan with whatever this round's research produced, even if imperfect, rather than
+requesting a second round. See `docs/architecture/orchestrate-state-machine.md`'s "The
+`needs_research` Fork" section for the full routing narrative this stage feeds.
 
-**When no `research_path` is provided** (the ordinary entry point for a fresh, `not_started`
-task): assess whether the task description, plus what you can read directly in the codebase
-within this dispatch's own tool budget (`Read`, `Grep`, `Glob` — no web search, no deep
-exploration budget beyond what a normal planning pass already uses), suffices to write a plan
-meeting every `plan-format.md` requirement: a phased breakdown with concrete file targets, and
-verification criteria that do not rest on guesswork.
+**When no `research_path` is provided** (typically `--fast`, a forced plan round, or a stranded
+`planning` status — see above, never the ordinary research-first entry path): assess whether the
+task description, plus what you can read directly in the codebase within this dispatch's own
+tool budget (`Read`, `Grep`, `Glob` — no web search, no deep exploration budget beyond what a
+normal planning pass already uses), suffices to write a plan meeting every `plan-format.md`
+requirement: a phased breakdown with concrete file targets, and verification criteria that do
+not rest on guesswork.
 
 **The bar for requesting research is narrow — it is not a default:**
 
@@ -463,10 +470,11 @@ Return 3-6 bullet points summarizing: phase count, effort estimate, scope covere
 
 See `rules/error-handling.md` for general error patterns. Agent-specific behavior:
 - **Invalid task**: Write `failed` status to metadata file
-- **No `research_path` provided**: this is the ordinary research-on-demand entry point (Stage
-  A.8), not a defect. Run Stage 1.5's assessment: proceed to plan directly if the description and
-  codebase reads suffice; otherwise return `needs_research` per Stage 6c. Never silently "proceed
-  with task description only" without running the assessment first.
+- **No `research_path` provided**: not a defect — it means `--fast`, a forced plan round, or a
+  stranded `planning` status, never the ordinary research-first entry path (see Stage 1.5). Run
+  Stage 1.5's assessment: proceed to plan directly if the description and codebase reads suffice;
+  otherwise return `needs_research` per Stage 6c. Never silently "proceed with task description
+  only" without running the assessment first.
 - **Timeout**: Save partial plan, write partial status with resume info
 - **File operation failure**: Write `failed` status with error description
 

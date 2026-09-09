@@ -351,28 +351,28 @@ and resolve every hit before closing the phase.
 
 ---
 
-### Phase 4: Agent contract surfaces [NOT STARTED]
+### Phase 4: Agent contract surfaces [COMPLETED]
 
 **Goal**: `planner-agent.md` and `general-research-agent.md` describe the new default without
 weakening the `needs_research` contract.
 
 **Tasks**:
-- [ ] `agents/planner-agent.md` Stage 1.5: correct the framing that "most dispatched tasks reach
+- [x] `agents/planner-agent.md` Stage 1.5: correct the framing that "most dispatched tasks reach
       this agent with NO `research_path` at all" and that a missing `research_path` is "the
       ordinary entry point for a fresh, `not_started` task". Under the new default, a plan
       dispatch with no `research_path` means one of: `--fast`, a forced `--plan`/`--force-phases
-      plan` round, or a `planning` status stranded by a dead session — enumerate these.
-- [ ] Same file: keep the `research_path`-present skip rule, the narrow bar, all four negative
+      plan` round, or a `planning` status stranded by a dead session — enumerate these. *(completed: retitled Stage 1.5's heading to "the `--fast` Escape Hatch" and rewrote the framing paragraph with the enumeration)*
+- [x] Same file: keep the `research_path`-present skip rule, the narrow bar, all four negative
       examples, and the `needs_research` vs. `user_decision` distinction verbatim. Only the
-      framing paragraphs change.
-- [ ] Same file: update the Error Handling bullet ("No `research_path` provided: this is the
+      framing paragraphs change. *(completed: verified verbatim retention)*
+- [x] Same file: update the Error Handling bullet ("No `research_path` provided: this is the
       ordinary research-on-demand entry point") to match the new enumeration, and re-check
-      Critical Requirements item 8 for a stale default claim.
-- [ ] `agents/general-research-agent.md`: update the `focus_prompt` note so it no longer implies
+      Critical Requirements item 8 for a stale default claim. *(completed: item 8 confirmed to carry no stale default claim, no edit needed there)*
+- [x] `agents/general-research-agent.md`: update the `focus_prompt` note so it no longer implies
       a research dispatch is the exceptional case; a `focus_prompt` carrying forwarded
-      `research_questions` is still handled identically to any other focus.
-- [ ] Verify no other agent contract asserts the plan-first default:
-      `grep -rn 'research on demand\|not_started' agent-system/extensions/core/agents/`.
+      `research_questions` is still handled identically to any other focus. *(completed)*
+- [x] Verify no other agent contract asserts the plan-first default:
+      `grep -rn 'research on demand\|not_started' agent-system/extensions/core/agents/`. *(completed: only unrelated hits -- schema example JSON and progress-file objective-status vocabulary, not routing-default assertions)*
 
 **Timing**: 0.75 hours
 

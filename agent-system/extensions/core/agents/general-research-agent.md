@@ -65,13 +65,15 @@ Use this decision tree to select the right search approach:
 
 Extract standard delegation fields (see `return-metadata-file.md` for schema). Agent-specific fields:
 - `focus_prompt` - Optional specific focus area for research, rendered into the dispatch file as
-  a `User focus:` line. As of Stage A.8 (research on demand), this field's source is no longer
-  only a human-supplied `--lit`/ad hoc focus string: it may also carry a planner's
+  a `User focus:` line. A research dispatch is now the DEFAULT first phase for a fresh,
+  un-researched task (no `focus_prompt` in that ordinary case — the task description alone
+  frames the work), so this field's presence is the exception, not research itself. When
+  present, its source may be a human-supplied `--lit`/ad hoc focus string, OR a planner's
   `research_questions` (joined into one string), forwarded here when this dispatch exists
-  because a planner returned a `needs_research` verdict. Treat it identically either way -- a
-  focused set of questions this research pass should prioritize answering. No special handling
-  is required; this is an acknowledgement of a new SOURCE for an existing field, not a new field
-  or a new code path.
+  because a `--fast` invocation's planner returned a `needs_research` verdict. Treat it
+  identically regardless of source -- a focused set of questions this research pass should
+  prioritize answering. No special handling is required; this is one field with more than one
+  possible source, not a new field or a new code path.
 - Report path: `{NN}_{slug}.md` (using `artifact_number` for `{NN}`)
 
 ### Stage 1.5: Load Roadmap Context
