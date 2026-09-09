@@ -428,30 +428,38 @@ declaring the retirement complete.
 
 ---
 
-### Phase 6: Prove it with an observed spawn and a real tool call in both repos [NOT STARTED]
+### Phase 6: Prove it with an observed spawn and a real tool call in both repos [COMPLETED]
 
 **Goal**: Acceptance. The lean-lsp MCP server actually starts and answers a real tool call in
 BOTH `~/Projects/BimodalLogic` and `~/Projects/cslib`.
 
 **Tasks**:
-- [ ] From `~/Projects/BimodalLogic`, in a FRESH session (`claude -p` or a new interactive
+- [x] From `~/Projects/BimodalLogic`, in a FRESH session (`claude -p` or a new interactive
       session — never the session that made the change, which cannot see a modified
-      `~/.claude.json`), confirm the `lean-lsp` server connects with no ENOENT.
-- [ ] Make at least one real `mcp__lean-lsp__*` tool call against a BimodalLogic Lean file and
-      record the actual response, not merely the connection state.
-- [ ] Re-point the shared global entry at cslib: from `~/Projects/cslib`, run
+      `~/.claude.json`), confirm the `lean-lsp` server connects with no ENOENT. *(completed:
+      `claude -p` from BimodalLogic reports lean-lsp Connected via `uvx lean-lsp-mcp`, no
+      ENOENT)*
+- [x] Make at least one real `mcp__lean-lsp__*` tool call against a BimodalLogic Lean file and
+      record the actual response, not merely the connection state. *(completed:
+      `lean_file_outline` on FormalSystem.lean returned real JSON with its imports list)*
+- [x] Re-point the shared global entry at cslib: from `~/Projects/cslib`, run
       `setup-lean-mcp.sh` (Phase 1's `lakefile.toml` detection makes this work without
       `--project`; if it still needs the flag, that is a Phase 1 regression, not a workaround to
-      accept), then `verify-lean-mcp.sh` for exit 0.
-- [ ] From `~/Projects/cslib`, in a fresh session, confirm the server connects and make at least
+      accept), then `verify-lean-mcp.sh` for exit 0. *(completed: worked without --project;
+      verify-lean-mcp.sh PASS, exit 0)*
+- [x] From `~/Projects/cslib`, in a fresh session, confirm the server connects and make at least
       one real `mcp__lean-lsp__*` tool call against a cslib Lean file, recording the response.
       This is the run that proves retiring the wrapper did not regress the one repo that
-      previously worked.
-- [ ] Leave `LEAN_PROJECT_PATH` pointing at whichever project the operator is next working in,
+      previously worked. *(completed: `lean_file_outline` on Cslib.lean returned real (large)
+      JSON import list; `claude mcp list` shows lean-lsp Connected; `grep -r ENOENT` across
+      cslib's MCP logs returned zero matches)*
+- [x] Leave `LEAN_PROJECT_PATH` pointing at whichever project the operator is next working in,
       and state plainly in the summary which one that is and that switching requires re-running
-      `setup-lean-mcp.sh` under the single-global-entry model.
-- [ ] Record both spawn transcripts (or their salient excerpts) in the implementation summary as
+      `setup-lean-mcp.sh` under the single-global-entry model. *(completed: left pointing at
+      /home/benjamin/Projects/cslib, the last-verified project; stated in the summary)*
+- [x] Record both spawn transcripts (or their salient excerpts) in the implementation summary as
       the acceptance evidence. A green deploy or a green verifier alone does not close this task.
+      *(completed)*
 
 **Timing**: 45 minutes
 
@@ -469,22 +477,23 @@ BOTH `~/Projects/BimodalLogic` and `~/Projects/cslib`.
 
 ## Testing & Validation
 
-- [ ] `bash -n` and (where available) `shellcheck` pass on both modified scripts.
-- [ ] `setup-lean-mcp.sh` is idempotent: a second run against an already-correct entry reports no
+- [x] `bash -n` and (where available) `shellcheck` pass on both modified scripts.
+- [x] `setup-lean-mcp.sh` is idempotent: a second run against an already-correct entry reports no
       changes needed and mutates nothing.
-- [ ] `setup-lean-mcp.sh` fully repairs a divergent wrapper-shaped entry, verified against a
+- [x] `setup-lean-mcp.sh` fully repairs a divergent wrapper-shaped entry, verified against a
       scratchpad copy before it is ever run against the live config.
-- [ ] `verify-lean-mcp.sh` exits non-zero on a wrapper-shaped command, on a `.claude/`-resident
+- [x] `verify-lean-mcp.sh` exits non-zero on a wrapper-shaped command, on a `.claude/`-resident
       command path, and on a project-scoped shadow entry.
-- [ ] Both scripts detect the project path in a `lakefile.toml` project and in a `lakefile.lean`
+- [x] Both scripts detect the project path in a `lakefile.toml` project and in a `lakefile.lean`
       project.
-- [ ] `~/.claude.json` diffs touch only the `lean-lsp` entries; `playwright` and all unrelated
+- [x] `~/.claude.json` diffs touch only the `lean-lsp` entries; `playwright` and all unrelated
       keys are byte-identical.
-- [ ] No file was hand-authored into any `.claude/` tree; `.claude/` changes came only from
+- [x] No file was hand-authored into any `.claude/` tree; `.claude/` changes came only from
       `deploy-headless.sh`.
-- [ ] Repository-wide task-reference lint passes (no task numbers outside `specs/**`).
-- [ ] ACCEPTANCE: an observed lean-lsp spawn plus a real tool call in BOTH repos, from fresh
-      sessions.
+- [x] Repository-wide task-reference lint passes (no task numbers outside `specs/**`).
+      *(completed: deploy-headless.sh's check-task-references.sh --quiet reported no findings)*
+- [x] ACCEPTANCE: an observed lean-lsp spawn plus a real tool call in BOTH repos, from fresh
+      sessions. *(completed: BimodalLogic and cslib both confirmed, see Phase 6)*
 
 ## Artifacts & Outputs
 
