@@ -1,7 +1,7 @@
 # Implementation Plan: Task #197
 
 - **Task**: 197 - Make `/orchestrate N --research`/`--plan`/`--implement` work on a terminal (and/or archived) task
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: specs/196_research_first_default_unless_fast/ (COMPLETED; landed first, established the "routing rules live in the classifier, not in a caller post-adjustment" precedent reused here)
 - **Research Inputs**: specs/197_forced_phase_on_terminal_and_archived_tasks/reports/01_forced-phase-terminal-archived-tasks.md
@@ -169,40 +169,40 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Shared archive-aware task-lookup library [NOT STARTED]
+### Phase 1: Shared archive-aware task-lookup library [COMPLETED]
 
 **Goal**: One sourced library owning the archive-state read, the status normalization, the
 active-wins lookup, and the archived-task-directory resolution — so no consumer hand-copies the
 rule.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/task-lookup-lib.sh`, following the
+- [x] Create `agent-system/extensions/core/scripts/lib/task-lookup-lib.sh`, following the
       shape and header conventions of `scripts/lib/status-vocabulary.sh` and
       `scripts/lib/phase-heading-patterns.sh` (idempotent source guard, exported functions,
-      doc header naming its consumers and the "grep for sourcers" discovery mechanism).
-- [ ] Implement `task_lookup_archived_projects_json <state_file>`: reads
+      doc header naming its consumers and the "grep for sourcers" discovery mechanism). *(completed)*
+- [x] Implement `task_lookup_archived_projects_json <state_file>`: reads
       `${state_file%state.json}archive/state.json`, flattens `completed_projects` and
       `archived_projects`, preserves `completed`/`abandoned`/`expanded` verbatim and maps any
       other archive-only status (e.g. `orphan_archived`) to `completed`. Emits `[]` when the
       archive file is absent or unreadable. Transcribe the existing jq from
-      `orchestrate-cycle-plan.sh` verbatim — this is an extraction, not a rewrite.
-- [ ] Implement `task_lookup_entry <project_number> <state_file>`: echoes the matching record.
+      `orchestrate-cycle-plan.sh` verbatim — this is an extraction, not a rewrite. *(completed)*
+- [x] Implement `task_lookup_entry <project_number> <state_file>`: echoes the matching record.
       Active projects win; the archive is consulted only when the number is absent from
-      `active_projects`. Echoes nothing when neither has it.
-- [ ] Implement `task_lookup_is_active <project_number> <state_file>`: exit 0 iff the number is
-      present in `active_projects` (the predicate the status-write skip in Phase 4 needs).
-- [ ] Implement `task_lookup_dir <project_number> <project_name> <repo_root>`: returns
+      `active_projects`. Echoes nothing when neither has it. *(completed)*
+- [x] Implement `task_lookup_is_active <project_number> <state_file>`: exit 0 iff the number is
+      present in `active_projects` (the predicate the status-write skip in Phase 4 needs). *(completed)*
+- [x] Implement `task_lookup_dir <project_number> <project_name> <repo_root>`: returns
       `specs/{NNN}_{project_name}` when that directory exists, else
       `specs/archive/{NNN}_{project_name}` when THAT exists, else the active path (so a
-      brand-new task with no directory yet is unchanged). Path is repo-root-relative.
-- [ ] Refactor `orchestrate-cycle-plan.sh` to source the library and delete its inline
+      brand-new task with no directory yet is unchanged). Path is repo-root-relative. *(completed)*
+- [x] Refactor `orchestrate-cycle-plan.sh` to source the library and delete its inline
       `archived_projects_json` block and `lookup_project` body, delegating to the library
       functions. Preserve the existing function name `lookup_project` as a thin wrapper so no
-      call site changes in this phase.
-- [ ] Resolve the library with the same two-candidate order used elsewhere in `skill-base.sh`:
+      call site changes in this phase. *(completed)*
+- [x] Resolve the library with the same two-candidate order used elsewhere in `skill-base.sh`:
       `${SKILL_REPO_ROOT}/.claude/scripts/lib/...` first, `$(dirname "${BASH_SOURCE[0]}")/lib/...`
-      fallback second. Do not invent a third order.
-- [ ] `shellcheck` clean per `context/standards/shell-strict-mode.md`.
+      fallback second. Do not invent a third order. *(completed)*
+- [x] `shellcheck` clean per `context/standards/shell-strict-mode.md`. *(completed)*
 
 **Timing**: 1.5 hours
 

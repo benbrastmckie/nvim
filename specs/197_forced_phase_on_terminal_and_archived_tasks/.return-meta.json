@@ -1,6 +1,6 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "artifacts": [
     {
       "type": "plan",
@@ -11,12 +11,38 @@
   "next_steps": "Run /implement 197 to execute the plan",
   "phase_count": 9,
   "estimated_hours": 11,
-  "dependency_waves": [[1], [2, 5], [3, 7], [4], [6, 8], [9]],
+  "dependency_waves": [
+    [
+      1
+    ],
+    [
+      2,
+      5
+    ],
+    [
+      3,
+      7
+    ],
+    [
+      4
+    ],
+    [
+      6,
+      8
+    ],
+    [
+      9
+    ]
+  ],
   "metadata": {
     "session_id": "sess_1788956447_28a717_197",
-    "agent_type": "planner-agent",
+    "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
   "memory_candidates": [
     {
@@ -24,7 +50,14 @@
       "category": "PATTERN",
       "source_artifact": "specs/197_forced_phase_on_terminal_and_archived_tasks/plans/01_forced-phase-terminal-archived-tasks.md",
       "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "archive", "task-directory", "todo-archival", "path-resolution", "skill_validate_input"]
+      "suggested_keywords": [
+        "orchestrate",
+        "archive",
+        "task-directory",
+        "todo-archival",
+        "path-resolution",
+        "skill_validate_input"
+      ]
     }
   ]
 }

@@ -239,6 +239,10 @@ if ! . "${SCRIPT_DIR}/lib/deploy-baseline-lib.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/deploy-baseline-lib.sh." >&2
   exit 2
 fi
+if ! . "${SCRIPT_DIR}/lib/task-lookup-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/task-lookup-lib.sh." >&2
+  exit 2
+fi
 
 MAX_INFRA_FAILURES=3
 # Decision 2 (Phase 5) — aux_dispatch[] escalation caps, ported verbatim from single-task Stage
@@ -374,13 +378,12 @@ if [ ! -f "$STATE_FILE" ]; then
   exit 2
 fi
 
-# Single read of STATE_FILE's active_projects array, bound once and reused by every per-candidate
-# lookup below (status refresh, dependency resolution) — mirrors orchestrate-batch-admit.sh's and
-# orchestrate-triage-classify.sh's own `$all`-binding idiom: a lookup against an already-bound
-# array, rather than a fresh `.active_projects[] | select(...)` per call, is both cheaper (one
-# read instead of N) and outside lint-task-lookup-adoption.sh's narrow-full-record-lookup pattern
-# (which is anchored on the literal ".active_projects[]" substring appearing per-call).
-all_projects_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null) || all_projects_json='[]'
+# NOTE: the per-candidate active_projects read this section used to bind once (all_projects_json)
+# has moved inside scripts/lib/task-lookup-lib.sh's task_lookup_entry, which now owns both the
+# active-projects lookup and the archive-fallback lookup behind lookup_project() below — the
+# single-shared-library requirement (Phase 1) outweighs the one-read-instead-of-N micro-
+# optimization the old inline binding bought; every lookup_project() call re-reads STATE_FILE via
+# jq, same as it already did for the archive branch before this change.
 
 # Companion read of the ARCHIVE, resolved as STATE_FILE's sibling exactly the way
 # roadmap-integration.sh resolves it (`${STATE_PATH%state.json}archive/state.json`), so a fixture
@@ -402,26 +405,14 @@ all_projects_json=$(jq -c '.active_projects // []' "$STATE_FILE" 2>/dev/null) ||
 # predecessor distinction still works; any other archive-only status (`orphan_archived`) maps to
 # "completed", since an orphan recovery is applied to finished work and there is no in-flight
 # orphan to wait on.
-archive_state_file="${STATE_FILE%state.json}archive/state.json"
-if [ -f "$archive_state_file" ]; then
-  archived_projects_json=$(jq -c '
-    [ ((.completed_projects // [])[], ((.archived_projects // [])[])) |
-      .status = (if (.status | IN("completed", "abandoned", "expanded")) then .status else "completed" end) ]
-  ' "$archive_state_file" 2>/dev/null) || archived_projects_json='[]'
-else
-  archived_projects_json='[]'
-fi
-
+# Extracted to scripts/lib/task-lookup-lib.sh (sourced above) so the archive-normalization rule
+# lives in exactly one place; lookup_project below is kept as a thin wrapper so no call site
+# changes in this phase.
 lookup_project() {
-  # Usage: lookup_project <project_number> — echoes the matching record (or nothing).
-  # Active projects win; the archive is consulted only when the number is absent from them, so a
-  # task that somehow appears in both is still governed by its live entry.
-  local found
-  found=$(echo "$all_projects_json" | jq -c --argjson n "$1" '.[] | select(.project_number == $n)' 2>/dev/null | head -1)
-  if [ -z "$found" ]; then
-    found=$(echo "$archived_projects_json" | jq -c --argjson n "$1" '.[] | select(.project_number == $n)' 2>/dev/null | head -1)
-  fi
-  echo "$found"
+  # Usage: lookup_project <project_number> — echoes the matching record (or nothing). Thin
+  # wrapper over task_lookup_entry (active projects win; the archive is consulted only when the
+  # number is absent from them).
+  task_lookup_entry "$1" "$STATE_FILE"
 }
 
 # Force-phases: split + validate against the closed set, up front (a corrupted delegation

@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Shared archive-aware task-lookup library",
+  "started_at": "2026-09-09T00:00:00Z",
+  "last_updated": "2026-09-09T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create task-lookup-lib.sh with archive read, entry lookup, is_active, dir resolution", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lib/task-lookup-lib.sh"]},
+    {"id": 2, "description": "Refactor orchestrate-cycle-plan.sh to source the library and delegate lookup_project", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Update test harness to copy the new lib file", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
