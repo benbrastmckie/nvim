@@ -1,197 +1,203 @@
 {
   "version": "1.0.0",
   "extensions": {
-    "core": {
+    "memory": {
+      "status": "active",
+      "installed_files": [
+        ".claude/commands/learn.md",
+        ".claude/commands/distill.md",
+        ".claude/skills/skill-learn/README.md",
+        ".claude/skills/skill-learn/SKILL.md",
+        ".claude/skills/skill-distill/README.md",
+        ".claude/skills/skill-distill/SKILL.md",
+        ".claude/context/project/memory/README.md",
+        ".claude/context/project/memory/distill-usage.md",
+        ".claude/context/project/memory/domain/memory-reference.md",
+        ".claude/context/project/memory/knowledge-capture-usage.md",
+        ".claude/context/project/memory/learn-usage.md",
+        ".claude/context/project/memory/memory-setup.md",
+        ".claude/context/project/memory/memory-troubleshooting.md",
+        ".claude/context/project/memory/telemetry-guardrails.md",
+        ".claude/scripts/bootstrap-harvest.sh",
+        ".claude/scripts/bootstrap-harvest-transcripts.sh",
+        ".claude/scripts/bootstrap-harvest-history.sh",
+        ".claude/scripts/bootstrap-harvest-attribution.sh",
+        ".claude/extensions/memory/manifest.json"
+      ],
+      "data_skeleton_files": [],
       "merged_sections": {
-        "index": {
-          "paths": [
-            "architecture/component-checklist.md",
-            "architecture/context-layers.md",
-            "architecture/generation-guidelines.md",
-            "architecture/system-overview.md",
-            "checkpoints/checkpoint-commit.md",
-            "checkpoints/checkpoint-gate-in.md",
-            "checkpoints/checkpoint-gate-out.md",
-            "checkpoints/README.md",
-            "formats/command-output.md",
-            "formats/command-structure.md",
-            "formats/errors-format.md",
-            "formats/events-format.md",
-            "formats/frontmatter.md",
-            "formats/handoff-artifact.md",
-            "formats/plan-format.md",
-            "formats/progress-file.md",
-            "formats/report-format.md",
-            "formats/return-metadata-file.md",
-            "formats/roadmap-format.md",
-            "formats/subagent-return.md",
-            "formats/summary-format.md",
-            "formats/task-order-format.md",
-            "guides/extension-development.md",
-            "guides/loader-reference.md",
-            "meta/context-revision-guide.md",
-            "meta/domain-patterns.md",
-            "meta/meta-guide.md",
-            "orchestration/architecture.md",
-            "orchestration/delegation.md",
-            "orchestration/orchestration-core.md",
-            "orchestration/orchestration-reference.md",
-            "orchestration/orchestrator.md",
-            "orchestration/postflight-pattern.md",
-            "orchestration/preflight-pattern.md",
-            "orchestration/sessions.md",
-            "orchestration/state-management.md",
-            "orchestration/validation.md",
-            "patterns/anti-stop-patterns.md",
-            "patterns/artifact-linking-todo.md",
-            "patterns/checkpoint-execution.md",
-            "patterns/context-discovery.md",
-            "patterns/early-metadata-pattern.md",
-            "patterns/file-metadata-exchange.md",
-            "patterns/inline-status-update.md",
-            "patterns/jq-escaping-workarounds.md",
-            "patterns/infra-failure-discrimination.md",
-            "patterns/system-defect-discrimination.md",
-            "patterns/mcp-tool-recovery.md",
-            "patterns/mcp-server-ownership.md",
-            "patterns/metadata-file-return.md",
-            "patterns/multi-task-operations.md",
-            "patterns/postflight-control.md",
-            "patterns/roadmap-update.md",
-            "patterns/skill-lifecycle.md",
-            "patterns/thin-wrapper-skill.md",
-            "processes/implementation-workflow.md",
-            "processes/planning-workflow.md",
-            "processes/research-workflow.md",
-            "README.md",
-            "reference/artifact-templates.md",
-            "reference/README.md",
-            "reference/skill-agent-mapping.md",
-            "reference/state-management-schema.md",
-            "reference/workflow-diagrams.md",
-            "repo/project-overview.md",
-            "repo/update-project.md",
-            "routing.md",
-            "schemas/errors-schema.json",
-            "schemas/events-schema.json",
-            "schemas/state-schema.json",
-            "schemas/frontmatter-schema.json",
-            "schemas/subagent-frontmatter.yaml",
-            "standards/analysis-framework.md",
-            "standards/census-methodology.md",
-            "standards/ci-workflow.md",
-            "standards/code-patterns.md",
-            "standards/documentation-standards.md",
-            "standards/error-handling.md",
-            "standards/git-integration.md",
-            "standards/git-safety.md",
-            "standards/interactive-selection.md",
-            "standards/postflight-tool-restrictions.md",
-            "standards/shell-script-testing.md",
-            "standards/shell-strict-mode.md",
-            "standards/status-markers.md",
-            "standards/task-management.md",
-            "standards/testing.md",
-            "standards/xml-structure.md",
-            "templates/agent-template.md",
-            "templates/command-template.md",
-            "templates/delegation-context.md",
-            "templates/orchestrator-template.md",
-            "templates/subagent-template.md",
-            "templates/thin-wrapper-skill.md",
-            "troubleshooting/workflow-interruptions.md",
-            "validation.md",
-            "workflows/command-lifecycle.md",
-            "workflows/preflight-postflight.md",
-            "workflows/review-process.md",
-            "workflows/task-breakdown.md",
-            "index.schema.json",
-            "contracts/adversarial-verification.md",
-            "contracts/anti-analysis.md",
-            "contracts/convergence.md",
-            "contracts/orchestrator-discipline.md",
-            "contracts/recovery.md",
-            "contracts/reference-grounding.md",
-            "contracts/territory.md",
-            "contracts/phase-closure.md",
-            "contracts/pre-edit-gate.md",
-            "contracts/wrap-up.md",
-            "contracts/no-task-references-bullet.md",
-            "patterns/regeneration-is-manual-only.md",
-            "patterns/batch-orchestration-guardrails.md",
-            "patterns/file-footprint-overlap.md",
-            "reference/orchestrator-critical-paths.json",
-            "guides/hard-mode-routing.md",
-            "guides/manifest-routing-schema.md",
-            "patterns/batch-drain-loop.md",
-            "patterns/checkpoint-before-overflow.md",
-            "patterns/dispatch-report-not-termination.md",
-            "patterns/context-exhaustion-detection.md",
-            "patterns/context-protective-lead.md",
-            "patterns/lit-stage4a-flow.md",
-            "patterns/skill-preflight-flow.md",
-            "patterns/skill-postflight-flow.md",
-            "patterns/skill-self-execution-fallback.md",
-            "patterns/subagent-continuation-loop.md",
-            "patterns/task-lock.md",
-            "patterns/topic-assignment-pattern.md",
-            "standards/git-staging-scope.md",
-            "standards/orchestrator-runtime-files.md",
-            "standards/user-decision-contract.md",
-            "standards/context-tier-semantics.md",
-            "standards/task-reference-exemptions.md",
-            "standards/git-workflow-narrative.md",
-            "standards/error-recovery-strategies.md",
-            "patterns/todo-archival-reference.md",
-            "patterns/orchestrate-batch-results-template.md",
-            "patterns/deploy-orphan-detection.md",
-            "contracts/return-meta-artifacts-template.md",
-            "patterns/ci-deploy-tree-bootstrap.md",
-            "patterns/adoption-lint-conventions.md",
-            "patterns/mode-gated-section-loading.md"
-          ]
-        },
         "settings": {
-          "hooks": {
+          "mcpServers": {
             "type": "merged",
             "children": {
-              "PostToolUse": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
-              },
-              "SessionStart": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
-              },
-              "SubagentStop": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
-              },
-              "Stop": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
-              },
-              "PreToolUse": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
-              },
-              "UserPromptSubmit": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
+              "obsidian-memory": {
+                "type": "merged",
+                "children": {
+                  "env": {
+                    "type": "merged",
+                    "children": []
+                  },
+                  "args": {
+                    "type": "appended",
+                    "items": []
+                  }
+                }
               }
             }
           }
+        },
+        "index": {
+          "paths": [
+            "project/memory/learn-usage.md",
+            "project/memory/memory-setup.md",
+            "project/memory/memory-troubleshooting.md",
+            "project/memory/domain/memory-reference.md",
+            "project/memory/knowledge-capture-usage.md",
+            "project/memory/distill-usage.md",
+            "project/memory/telemetry-guardrails.md",
+            "project/memory/README.md"
+          ]
         }
       },
       "installed_dirs": [],
-      "source_git_head": "9095ad6b7d520b944b81fab68a8dce83e88f28a7",
-      "loaded_at": "2026-09-09T00:15:51Z",
+      "source_git_head": "46d57dcf4102c60515b3c0779aef074d2ffc8ce5",
+      "version": "1.0.0",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
+      "loaded_at": "2026-09-09T18:04:14Z"
+    },
+    "nvim": {
+      "status": "active",
+      "installed_files": [
+        ".claude/agents/neovim-research-agent.md",
+        ".claude/agents/neovim-implementation-agent.md",
+        ".claude/rules/neovim-lua.md",
+        ".claude/skills/skill-neovim-research/SKILL.md",
+        ".claude/skills/skill-neovim-implementation/SKILL.md",
+        ".claude/context/project/neovim/README.md",
+        ".claude/context/project/neovim/domain/extension-deploy-modes.md",
+        ".claude/context/project/neovim/domain/lsp-overview.md",
+        ".claude/context/project/neovim/domain/lua-patterns.md",
+        ".claude/context/project/neovim/domain/neovim-api.md",
+        ".claude/context/project/neovim/domain/plugin-ecosystem.md",
+        ".claude/context/project/neovim/guides/neovim-integration.md",
+        ".claude/context/project/neovim/guides/tts-stt-integration.md",
+        ".claude/context/project/neovim/hooks/wezterm-integration.md",
+        ".claude/context/project/neovim/patterns/autocommand-patterns.md",
+        ".claude/context/project/neovim/patterns/ftplugin-patterns.md",
+        ".claude/context/project/neovim/patterns/keymap-patterns.md",
+        ".claude/context/project/neovim/patterns/plugin-spec.md",
+        ".claude/context/project/neovim/standards/box-drawing-guide.md",
+        ".claude/context/project/neovim/standards/documentation-policy.md",
+        ".claude/context/project/neovim/standards/emoji-policy.md",
+        ".claude/context/project/neovim/standards/lua-assertion-patterns.md",
+        ".claude/context/project/neovim/standards/lua-style-guide.md",
+        ".claude/context/project/neovim/standards/testing-patterns.md",
+        ".claude/context/project/neovim/templates/ftplugin-template.md",
+        ".claude/context/project/neovim/templates/plugin-template.md",
+        ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
+        ".claude/context/project/neovim/tools/telescope-guide.md",
+        ".claude/context/project/neovim/tools/treesitter-guide.md",
+        ".claude/scripts/nvim-context.sh",
+        ".claude/extensions/nvim/manifest.json"
+      ],
+      "data_skeleton_files": [],
+      "merged_sections": {
+        "index": {
+          "paths": [
+            "project/neovim/README.md",
+            "project/neovim/domain/lua-patterns.md",
+            "project/neovim/domain/neovim-api.md",
+            "project/neovim/domain/plugin-ecosystem.md",
+            "project/neovim/domain/lsp-overview.md",
+            "project/neovim/patterns/autocommand-patterns.md",
+            "project/neovim/patterns/ftplugin-patterns.md",
+            "project/neovim/patterns/keymap-patterns.md",
+            "project/neovim/patterns/plugin-spec.md",
+            "project/neovim/standards/lua-style-guide.md",
+            "project/neovim/standards/testing-patterns.md",
+            "project/neovim/templates/ftplugin-template.md",
+            "project/neovim/templates/plugin-template.md",
+            "project/neovim/tools/lazy-nvim-guide.md",
+            "project/neovim/tools/telescope-guide.md",
+            "project/neovim/tools/treesitter-guide.md",
+            "project/neovim/standards/box-drawing-guide.md",
+            "project/neovim/standards/documentation-policy.md",
+            "project/neovim/standards/emoji-policy.md",
+            "project/neovim/standards/lua-assertion-patterns.md",
+            "project/neovim/hooks/wezterm-integration.md",
+            "project/neovim/guides/neovim-integration.md",
+            "project/neovim/guides/tts-stt-integration.md",
+            "project/neovim/domain/extension-deploy-modes.md"
+          ]
+        }
+      },
+      "installed_dirs": [],
+      "source_git_head": "296b695690f718011afa8aef2c69275629f2cb05",
+      "version": "1.0.0",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
+      "loaded_at": "2026-09-09T18:04:14Z"
+    },
+    "nix": {
+      "status": "active",
+      "installed_files": [
+        ".claude/agents/nix-research-agent.md",
+        ".claude/agents/nix-implementation-agent.md",
+        ".claude/rules/nix.md",
+        ".claude/skills/skill-nix-research/SKILL.md",
+        ".claude/skills/skill-nix-implementation/SKILL.md",
+        ".claude/context/project/nix/README.md",
+        ".claude/context/project/nix/domain/flakes.md",
+        ".claude/context/project/nix/domain/home-manager.md",
+        ".claude/context/project/nix/domain/nix-language.md",
+        ".claude/context/project/nix/domain/nixos-modules.md",
+        ".claude/context/project/nix/patterns/derivation-patterns.md",
+        ".claude/context/project/nix/patterns/module-patterns.md",
+        ".claude/context/project/nix/patterns/overlay-patterns.md",
+        ".claude/context/project/nix/standards/nix-style-guide.md",
+        ".claude/context/project/nix/tools/home-manager-guide.md",
+        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
+        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
+        ".claude/scripts/nix-preflight.sh",
+        ".claude/scripts/nix-context.sh",
+        ".claude/extensions/nix/manifest.json"
+      ],
+      "data_skeleton_files": [],
+      "merged_sections": {
+        "settings": {
+          "permissions": {
+            "type": "merged",
+            "children": {
+              "allow": {
+                "type": "appended",
+                "items": []
+              }
+            }
+          }
+        },
+        "index": {
+          "paths": [
+            "project/nix/README.md",
+            "project/nix/domain/nix-language.md",
+            "project/nix/domain/flakes.md",
+            "project/nix/domain/nixos-modules.md",
+            "project/nix/domain/home-manager.md",
+            "project/nix/patterns/module-patterns.md",
+            "project/nix/patterns/overlay-patterns.md",
+            "project/nix/patterns/derivation-patterns.md",
+            "project/nix/standards/nix-style-guide.md",
+            "project/nix/tools/nixos-rebuild-guide.md",
+            "project/nix/tools/home-manager-guide.md",
+            "project/nix/tools/mcp-nixos-integration.md"
+          ]
+        }
+      },
+      "installed_dirs": [],
+      "source_git_head": "296b695690f718011afa8aef2c69275629f2cb05",
+      "version": "1.0.0",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
+      "loaded_at": "2026-09-09T18:04:14Z"
+    },
+    "core": {
       "status": "active",
       "installed_files": [
         ".claude/agents/code-reviewer-agent.md",
@@ -423,6 +429,7 @@
         ".claude/scripts/lib/manifest-routing-lib.sh",
         ".claude/scripts/lib/phase-heading-patterns.sh",
         ".claude/scripts/lib/return-meta-artifacts-lib.sh",
+        ".claude/scripts/lib/task-lookup-lib.sh",
         ".claude/scripts/lib/task-reference-patterns.sh",
         ".claude/scripts/lib/status-vocabulary.sh",
         ".claude/scripts/lifecycle-notify.sh",
@@ -605,169 +612,201 @@
         ".claude/.gitignore",
         ".claude/extensions/core/manifest.json"
       ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/core",
-      "version": "1.0.0",
-      "data_skeleton_files": []
-    },
-    "email": {
+      "data_skeleton_files": [],
       "merged_sections": {
-        "index": {
-          "paths": [
-            "project/email/email-preferences.md",
-            "project/email/domain/wrapper-contracts.md",
-            "project/email/domain/safety-invariants.md",
-            "project/email/domain/index-architecture.md",
-            "project/email/domain/staleness-detection.md",
-            "project/email/domain/archive-mode-risk.md",
-            "project/email/patterns/bulk-bucket-review.md",
-            "project/email/patterns/propose-review-confirm-execute.md",
-            "project/email/standards/recall-on-keep-bias.md",
-            "project/email/design/email-to-memory-preferences.md",
-            "project/email/patterns/email-cleanup-all-mode.md"
-          ]
-        },
         "settings": {
           "hooks": {
-            "children": {
-              "PreToolUse": {
-                "items": [],
-                "type": "hook_merged",
-                "hook_items": []
-              }
-            },
-            "type": "merged"
-          },
-          "permissions": {
-            "children": {
-              "deny": {
-                "items": [],
-                "type": "appended"
-              }
-            },
-            "type": "merged"
-          }
-        }
-      },
-      "installed_dirs": [],
-      "source_git_head": "296b695690f718011afa8aef2c69275629f2cb05",
-      "loaded_at": "2026-09-09T00:15:52Z",
-      "status": "active",
-      "installed_files": [
-        ".claude/agents/email-implementation-agent.md",
-        ".claude/commands/email.md",
-        ".claude/skills/skill-email-implementation/SKILL.md",
-        ".claude/skills/skill-email-cleanup/SKILL.md",
-        ".claude/skills/skill-email-sync/SKILL.md",
-        ".claude/context/project/email/design/email-to-memory-preferences.md",
-        ".claude/context/project/email/domain/archive-mode-risk.md",
-        ".claude/context/project/email/domain/index-architecture.md",
-        ".claude/context/project/email/domain/safety-invariants.md",
-        ".claude/context/project/email/domain/staleness-detection.md",
-        ".claude/context/project/email/domain/wrapper-contracts.md",
-        ".claude/context/project/email/email-preferences.md",
-        ".claude/context/project/email/patterns/bulk-bucket-review.md",
-        ".claude/context/project/email/patterns/email-cleanup-all-mode.md",
-        ".claude/context/project/email/patterns/propose-review-confirm-execute.md",
-        ".claude/context/project/email/standards/recall-on-keep-bias.md",
-        ".claude/scripts/email-preference-harvest.sh",
-        ".claude/hooks/mail-guard.sh",
-        ".claude/extensions/email/manifest.json"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
-      "version": "1.0.0",
-      "data_skeleton_files": []
-    },
-    "nix": {
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "project/nix/README.md",
-            "project/nix/domain/nix-language.md",
-            "project/nix/domain/flakes.md",
-            "project/nix/domain/nixos-modules.md",
-            "project/nix/domain/home-manager.md",
-            "project/nix/patterns/module-patterns.md",
-            "project/nix/patterns/overlay-patterns.md",
-            "project/nix/patterns/derivation-patterns.md",
-            "project/nix/standards/nix-style-guide.md",
-            "project/nix/tools/nixos-rebuild-guide.md",
-            "project/nix/tools/home-manager-guide.md",
-            "project/nix/tools/mcp-nixos-integration.md"
-          ]
-        },
-        "settings": {
-          "permissions": {
             "type": "merged",
             "children": {
-              "allow": {
-                "items": [],
-                "type": "appended"
+              "SessionStart": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
+              },
+              "SubagentStop": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
+              },
+              "PostToolUse": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
+              },
+              "PreToolUse": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
+              },
+              "UserPromptSubmit": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
+              },
+              "Stop": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
               }
             }
           }
-        }
-      },
-      "installed_dirs": [],
-      "source_git_head": "296b695690f718011afa8aef2c69275629f2cb05",
-      "loaded_at": "2026-09-09T00:15:52Z",
-      "status": "active",
-      "installed_files": [
-        ".claude/agents/nix-research-agent.md",
-        ".claude/agents/nix-implementation-agent.md",
-        ".claude/rules/nix.md",
-        ".claude/skills/skill-nix-research/SKILL.md",
-        ".claude/skills/skill-nix-implementation/SKILL.md",
-        ".claude/context/project/nix/README.md",
-        ".claude/context/project/nix/domain/flakes.md",
-        ".claude/context/project/nix/domain/home-manager.md",
-        ".claude/context/project/nix/domain/nix-language.md",
-        ".claude/context/project/nix/domain/nixos-modules.md",
-        ".claude/context/project/nix/patterns/derivation-patterns.md",
-        ".claude/context/project/nix/patterns/module-patterns.md",
-        ".claude/context/project/nix/patterns/overlay-patterns.md",
-        ".claude/context/project/nix/standards/nix-style-guide.md",
-        ".claude/context/project/nix/tools/home-manager-guide.md",
-        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
-        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
-        ".claude/scripts/nix-preflight.sh",
-        ".claude/scripts/nix-context.sh",
-        ".claude/extensions/nix/manifest.json"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
-      "version": "1.0.0",
-      "data_skeleton_files": []
-    },
-    "literature": {
-      "merged_sections": {
+        },
         "index": {
           "paths": [
-            "project/literature/domain/literature-index.md",
-            "project/literature/patterns/agent-exploration.md",
-            "project/literature/patterns/adhoc-navigation-directive.md",
-            "project/literature/patterns/zotero-pdf-resolution.md",
-            "project/literature/domain/format-decision.md",
-            "project/literature/patterns/zotero-item-creation.md",
-            "project/literature/domain/extension-dependencies.md",
-            "project/literature/domain/sparse-coverage.md",
-            "project/literature/domain/zotero-integration.md",
-            "project/literature/patterns/literature-command-modes.md",
-            "project/literature/patterns/cite-workflow.md",
-            "project/literature/tools/literature-dir-config.md",
-            "project/literature/tools/zotero-scripts.md",
-            "guides/literature-organization.md",
-            "project/literature/patterns/chunk-file-conventions.md",
-            "project/literature/domain/pymupdf4llm-fragmentation.md",
-            "project/literature/domain/corpus-directory-conventions.md",
-            "project/literature/patterns/shared-module-extraction-for-gate-checks.md",
-            "project/literature/patterns/provenance-fidelity.md",
-            "project/literature/domain/fts5-query-semantics.md",
-            "project/literature/domain/tier3-provider-fallback.md"
+            "architecture/component-checklist.md",
+            "architecture/context-layers.md",
+            "architecture/generation-guidelines.md",
+            "architecture/system-overview.md",
+            "checkpoints/checkpoint-commit.md",
+            "checkpoints/checkpoint-gate-in.md",
+            "checkpoints/checkpoint-gate-out.md",
+            "checkpoints/README.md",
+            "formats/command-output.md",
+            "formats/command-structure.md",
+            "formats/errors-format.md",
+            "formats/events-format.md",
+            "formats/frontmatter.md",
+            "formats/handoff-artifact.md",
+            "formats/plan-format.md",
+            "formats/progress-file.md",
+            "formats/report-format.md",
+            "formats/return-metadata-file.md",
+            "formats/roadmap-format.md",
+            "formats/subagent-return.md",
+            "formats/summary-format.md",
+            "formats/task-order-format.md",
+            "guides/extension-development.md",
+            "guides/loader-reference.md",
+            "meta/context-revision-guide.md",
+            "meta/domain-patterns.md",
+            "meta/meta-guide.md",
+            "orchestration/architecture.md",
+            "orchestration/delegation.md",
+            "orchestration/orchestration-core.md",
+            "orchestration/orchestration-reference.md",
+            "orchestration/orchestrator.md",
+            "orchestration/postflight-pattern.md",
+            "orchestration/preflight-pattern.md",
+            "orchestration/sessions.md",
+            "orchestration/state-management.md",
+            "orchestration/validation.md",
+            "patterns/anti-stop-patterns.md",
+            "patterns/artifact-linking-todo.md",
+            "patterns/checkpoint-execution.md",
+            "patterns/context-discovery.md",
+            "patterns/early-metadata-pattern.md",
+            "patterns/file-metadata-exchange.md",
+            "patterns/inline-status-update.md",
+            "patterns/jq-escaping-workarounds.md",
+            "patterns/infra-failure-discrimination.md",
+            "patterns/system-defect-discrimination.md",
+            "patterns/mcp-tool-recovery.md",
+            "patterns/mcp-server-ownership.md",
+            "patterns/metadata-file-return.md",
+            "patterns/multi-task-operations.md",
+            "patterns/postflight-control.md",
+            "patterns/roadmap-update.md",
+            "patterns/skill-lifecycle.md",
+            "patterns/thin-wrapper-skill.md",
+            "processes/implementation-workflow.md",
+            "processes/planning-workflow.md",
+            "processes/research-workflow.md",
+            "README.md",
+            "reference/artifact-templates.md",
+            "reference/README.md",
+            "reference/skill-agent-mapping.md",
+            "reference/state-management-schema.md",
+            "reference/workflow-diagrams.md",
+            "repo/project-overview.md",
+            "repo/update-project.md",
+            "routing.md",
+            "schemas/errors-schema.json",
+            "schemas/events-schema.json",
+            "schemas/state-schema.json",
+            "schemas/frontmatter-schema.json",
+            "schemas/subagent-frontmatter.yaml",
+            "standards/analysis-framework.md",
+            "standards/census-methodology.md",
+            "standards/ci-workflow.md",
+            "standards/code-patterns.md",
+            "standards/documentation-standards.md",
+            "standards/error-handling.md",
+            "standards/git-integration.md",
+            "standards/git-safety.md",
+            "standards/interactive-selection.md",
+            "standards/postflight-tool-restrictions.md",
+            "standards/shell-script-testing.md",
+            "standards/shell-strict-mode.md",
+            "standards/status-markers.md",
+            "standards/task-management.md",
+            "standards/testing.md",
+            "standards/xml-structure.md",
+            "templates/agent-template.md",
+            "templates/command-template.md",
+            "templates/delegation-context.md",
+            "templates/orchestrator-template.md",
+            "templates/subagent-template.md",
+            "templates/thin-wrapper-skill.md",
+            "troubleshooting/workflow-interruptions.md",
+            "validation.md",
+            "workflows/command-lifecycle.md",
+            "workflows/preflight-postflight.md",
+            "workflows/review-process.md",
+            "workflows/task-breakdown.md",
+            "index.schema.json",
+            "contracts/adversarial-verification.md",
+            "contracts/anti-analysis.md",
+            "contracts/convergence.md",
+            "contracts/orchestrator-discipline.md",
+            "contracts/recovery.md",
+            "contracts/reference-grounding.md",
+            "contracts/territory.md",
+            "contracts/phase-closure.md",
+            "contracts/pre-edit-gate.md",
+            "contracts/wrap-up.md",
+            "contracts/no-task-references-bullet.md",
+            "patterns/regeneration-is-manual-only.md",
+            "patterns/batch-orchestration-guardrails.md",
+            "patterns/file-footprint-overlap.md",
+            "reference/orchestrator-critical-paths.json",
+            "guides/hard-mode-routing.md",
+            "guides/manifest-routing-schema.md",
+            "patterns/batch-drain-loop.md",
+            "patterns/checkpoint-before-overflow.md",
+            "patterns/dispatch-report-not-termination.md",
+            "patterns/context-exhaustion-detection.md",
+            "patterns/context-protective-lead.md",
+            "patterns/lit-stage4a-flow.md",
+            "patterns/skill-preflight-flow.md",
+            "patterns/skill-postflight-flow.md",
+            "patterns/skill-self-execution-fallback.md",
+            "patterns/subagent-continuation-loop.md",
+            "patterns/task-lock.md",
+            "patterns/topic-assignment-pattern.md",
+            "standards/git-staging-scope.md",
+            "standards/orchestrator-runtime-files.md",
+            "standards/user-decision-contract.md",
+            "standards/context-tier-semantics.md",
+            "standards/task-reference-exemptions.md",
+            "standards/git-workflow-narrative.md",
+            "standards/error-recovery-strategies.md",
+            "patterns/todo-archival-reference.md",
+            "patterns/orchestrate-batch-results-template.md",
+            "patterns/deploy-orphan-detection.md",
+            "contracts/return-meta-artifacts-template.md",
+            "patterns/ci-deploy-tree-bootstrap.md",
+            "patterns/adoption-lint-conventions.md",
+            "patterns/mode-gated-section-loading.md"
           ]
         }
       },
       "installed_dirs": [],
-      "source_git_head": "9095ad6b7d520b944b81fab68a8dce83e88f28a7",
-      "loaded_at": "2026-09-09T00:15:52Z",
+      "source_git_head": "d259dbeb7529e2951e9f75f998b5a1d300381f20",
+      "version": "1.0.0",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/core",
+      "loaded_at": "2026-09-09T18:04:13Z"
+    },
+    "literature": {
       "status": "active",
       "installed_files": [
         ".claude/agents/literature-agent.md",
@@ -849,145 +888,107 @@
         ".claude/scripts/tests/fixtures/tier3-unpaywall-200.json",
         ".claude/extensions/literature/manifest.json"
       ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
-      "version": "2.0.0",
-      "data_skeleton_files": []
-    },
-    "memory": {
+      "data_skeleton_files": [],
       "merged_sections": {
         "index": {
           "paths": [
-            "project/memory/learn-usage.md",
-            "project/memory/memory-setup.md",
-            "project/memory/memory-troubleshooting.md",
-            "project/memory/domain/memory-reference.md",
-            "project/memory/knowledge-capture-usage.md",
-            "project/memory/distill-usage.md",
-            "project/memory/telemetry-guardrails.md",
-            "project/memory/README.md"
+            "project/literature/domain/literature-index.md",
+            "project/literature/patterns/agent-exploration.md",
+            "project/literature/patterns/adhoc-navigation-directive.md",
+            "project/literature/patterns/zotero-pdf-resolution.md",
+            "project/literature/domain/format-decision.md",
+            "project/literature/patterns/zotero-item-creation.md",
+            "project/literature/domain/extension-dependencies.md",
+            "project/literature/domain/sparse-coverage.md",
+            "project/literature/domain/zotero-integration.md",
+            "project/literature/patterns/literature-command-modes.md",
+            "project/literature/patterns/cite-workflow.md",
+            "project/literature/tools/literature-dir-config.md",
+            "project/literature/tools/zotero-scripts.md",
+            "guides/literature-organization.md",
+            "project/literature/patterns/chunk-file-conventions.md",
+            "project/literature/domain/pymupdf4llm-fragmentation.md",
+            "project/literature/domain/corpus-directory-conventions.md",
+            "project/literature/patterns/shared-module-extraction-for-gate-checks.md",
+            "project/literature/patterns/provenance-fidelity.md",
+            "project/literature/domain/fts5-query-semantics.md",
+            "project/literature/domain/tier3-provider-fallback.md"
           ]
-        },
-        "settings": {
-          "mcpServers": {
-            "children": {
-              "obsidian-memory": {
-                "children": {
-                  "env": {
-                    "children": [],
-                    "type": "merged"
-                  },
-                  "args": {
-                    "items": [],
-                    "type": "appended"
-                  }
-                },
-                "type": "merged"
-              }
-            },
-            "type": "merged"
-          }
         }
       },
       "installed_dirs": [],
-      "source_git_head": "46d57dcf4102c60515b3c0779aef074d2ffc8ce5",
-      "loaded_at": "2026-09-09T00:15:52Z",
+      "source_git_head": "9095ad6b7d520b944b81fab68a8dce83e88f28a7",
+      "version": "2.0.0",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
+      "loaded_at": "2026-09-09T18:04:13Z"
+    },
+    "email": {
       "status": "active",
       "installed_files": [
-        ".claude/commands/learn.md",
-        ".claude/commands/distill.md",
-        ".claude/skills/skill-learn/README.md",
-        ".claude/skills/skill-learn/SKILL.md",
-        ".claude/skills/skill-distill/README.md",
-        ".claude/skills/skill-distill/SKILL.md",
-        ".claude/context/project/memory/README.md",
-        ".claude/context/project/memory/distill-usage.md",
-        ".claude/context/project/memory/domain/memory-reference.md",
-        ".claude/context/project/memory/knowledge-capture-usage.md",
-        ".claude/context/project/memory/learn-usage.md",
-        ".claude/context/project/memory/memory-setup.md",
-        ".claude/context/project/memory/memory-troubleshooting.md",
-        ".claude/context/project/memory/telemetry-guardrails.md",
-        ".claude/scripts/bootstrap-harvest.sh",
-        ".claude/scripts/bootstrap-harvest-transcripts.sh",
-        ".claude/scripts/bootstrap-harvest-history.sh",
-        ".claude/scripts/bootstrap-harvest-attribution.sh",
-        ".claude/extensions/memory/manifest.json"
+        ".claude/agents/email-implementation-agent.md",
+        ".claude/commands/email.md",
+        ".claude/skills/skill-email-implementation/SKILL.md",
+        ".claude/skills/skill-email-cleanup/SKILL.md",
+        ".claude/skills/skill-email-sync/SKILL.md",
+        ".claude/context/project/email/design/email-to-memory-preferences.md",
+        ".claude/context/project/email/domain/archive-mode-risk.md",
+        ".claude/context/project/email/domain/index-architecture.md",
+        ".claude/context/project/email/domain/safety-invariants.md",
+        ".claude/context/project/email/domain/staleness-detection.md",
+        ".claude/context/project/email/domain/wrapper-contracts.md",
+        ".claude/context/project/email/email-preferences.md",
+        ".claude/context/project/email/patterns/bulk-bucket-review.md",
+        ".claude/context/project/email/patterns/email-cleanup-all-mode.md",
+        ".claude/context/project/email/patterns/propose-review-confirm-execute.md",
+        ".claude/context/project/email/standards/recall-on-keep-bias.md",
+        ".claude/scripts/email-preference-harvest.sh",
+        ".claude/hooks/mail-guard.sh",
+        ".claude/extensions/email/manifest.json"
       ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
-      "version": "1.0.0",
-      "data_skeleton_files": []
-    },
-    "nvim": {
+      "data_skeleton_files": [],
       "merged_sections": {
+        "settings": {
+          "hooks": {
+            "type": "merged",
+            "children": {
+              "PreToolUse": {
+                "type": "hook_merged",
+                "hook_items": [],
+                "items": []
+              }
+            }
+          },
+          "permissions": {
+            "type": "merged",
+            "children": {
+              "deny": {
+                "type": "appended",
+                "items": []
+              }
+            }
+          }
+        },
         "index": {
           "paths": [
-            "project/neovim/README.md",
-            "project/neovim/domain/lua-patterns.md",
-            "project/neovim/domain/neovim-api.md",
-            "project/neovim/domain/plugin-ecosystem.md",
-            "project/neovim/domain/lsp-overview.md",
-            "project/neovim/patterns/autocommand-patterns.md",
-            "project/neovim/patterns/ftplugin-patterns.md",
-            "project/neovim/patterns/keymap-patterns.md",
-            "project/neovim/patterns/plugin-spec.md",
-            "project/neovim/standards/lua-style-guide.md",
-            "project/neovim/standards/testing-patterns.md",
-            "project/neovim/templates/ftplugin-template.md",
-            "project/neovim/templates/plugin-template.md",
-            "project/neovim/tools/lazy-nvim-guide.md",
-            "project/neovim/tools/telescope-guide.md",
-            "project/neovim/tools/treesitter-guide.md",
-            "project/neovim/standards/box-drawing-guide.md",
-            "project/neovim/standards/documentation-policy.md",
-            "project/neovim/standards/emoji-policy.md",
-            "project/neovim/standards/lua-assertion-patterns.md",
-            "project/neovim/hooks/wezterm-integration.md",
-            "project/neovim/guides/neovim-integration.md",
-            "project/neovim/guides/tts-stt-integration.md",
-            "project/neovim/domain/extension-deploy-modes.md"
+            "project/email/email-preferences.md",
+            "project/email/domain/wrapper-contracts.md",
+            "project/email/domain/safety-invariants.md",
+            "project/email/domain/index-architecture.md",
+            "project/email/domain/staleness-detection.md",
+            "project/email/domain/archive-mode-risk.md",
+            "project/email/patterns/bulk-bucket-review.md",
+            "project/email/patterns/propose-review-confirm-execute.md",
+            "project/email/standards/recall-on-keep-bias.md",
+            "project/email/design/email-to-memory-preferences.md",
+            "project/email/patterns/email-cleanup-all-mode.md"
           ]
         }
       },
       "installed_dirs": [],
       "source_git_head": "296b695690f718011afa8aef2c69275629f2cb05",
-      "loaded_at": "2026-09-09T00:15:52Z",
-      "status": "active",
-      "installed_files": [
-        ".claude/agents/neovim-research-agent.md",
-        ".claude/agents/neovim-implementation-agent.md",
-        ".claude/rules/neovim-lua.md",
-        ".claude/skills/skill-neovim-research/SKILL.md",
-        ".claude/skills/skill-neovim-implementation/SKILL.md",
-        ".claude/context/project/neovim/README.md",
-        ".claude/context/project/neovim/domain/extension-deploy-modes.md",
-        ".claude/context/project/neovim/domain/lsp-overview.md",
-        ".claude/context/project/neovim/domain/lua-patterns.md",
-        ".claude/context/project/neovim/domain/neovim-api.md",
-        ".claude/context/project/neovim/domain/plugin-ecosystem.md",
-        ".claude/context/project/neovim/guides/neovim-integration.md",
-        ".claude/context/project/neovim/guides/tts-stt-integration.md",
-        ".claude/context/project/neovim/hooks/wezterm-integration.md",
-        ".claude/context/project/neovim/patterns/autocommand-patterns.md",
-        ".claude/context/project/neovim/patterns/ftplugin-patterns.md",
-        ".claude/context/project/neovim/patterns/keymap-patterns.md",
-        ".claude/context/project/neovim/patterns/plugin-spec.md",
-        ".claude/context/project/neovim/standards/box-drawing-guide.md",
-        ".claude/context/project/neovim/standards/documentation-policy.md",
-        ".claude/context/project/neovim/standards/emoji-policy.md",
-        ".claude/context/project/neovim/standards/lua-assertion-patterns.md",
-        ".claude/context/project/neovim/standards/lua-style-guide.md",
-        ".claude/context/project/neovim/standards/testing-patterns.md",
-        ".claude/context/project/neovim/templates/ftplugin-template.md",
-        ".claude/context/project/neovim/templates/plugin-template.md",
-        ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
-        ".claude/context/project/neovim/tools/telescope-guide.md",
-        ".claude/context/project/neovim/tools/treesitter-guide.md",
-        ".claude/scripts/nvim-context.sh",
-        ".claude/extensions/nvim/manifest.json"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
       "version": "1.0.0",
-      "data_skeleton_files": []
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
+      "loaded_at": "2026-09-09T18:04:13Z"
     }
   }
 }
