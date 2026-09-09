@@ -11,8 +11,8 @@ next_project_number: 202
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194,196,198,199,200,201 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,164,173,174,175,195,197 | 29,74,139,162,172,194,196 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,163,166,167,168,170,172,177,182,183,184,185,187,188,190,191,192,193,194,197,198,199,200,201 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,164,173,174,175,195 | 29,74,139,162,172,194 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -46,8 +46,7 @@ next_project_number: 202
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
-196 [IMPLEMENTING] — Make research the default first phase for an un-researched...
-  └─ 197 [NOT STARTED] — Honor a forced phase on a terminal task, including one...
+197 [NOT STARTED] — Honor a forced phase on a terminal task, including one...
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
 201 [NOT STARTED] — Close the ephemeral-runtime-file ignore enumeration gap that...
@@ -321,7 +320,7 @@ ACCEPTANCE. /orchestrate N --research on a completed task in active_projects dis
 ---
 
 ### 196. Make research the default first phase for an un-researched task unless --fast is given
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
