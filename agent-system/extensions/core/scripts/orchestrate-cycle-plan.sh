@@ -1125,10 +1125,31 @@ in_json_array() {
   jq -e --argjson n "$1" '. as $arr | ($arr | index($n)) != null' >/dev/null 2>&1 <<<"$2"
 }
 
+# task_has_forced_phase <t> — Decision (a): the exemption predicate that lets a terminal task
+# with a pending forced phase reach eligible_tasks, without reordering section (f)'s seeding and
+# consumption. Returns 0 (has a pending forced phase) when EITHER the CLI supplied
+# --force-phases this invocation (canonical_force_phases_json, computed well above, before
+# is_terminal_status is even defined) OR this task already carries a non-empty
+# force_phases_remaining[] queue seeded on a prior cycle. Returns 1 otherwise. Only an
+# explicitly forced phase may exempt a terminal task from the two guarded `continue`s below —
+# ordinary (unforced) dispatch must never reach a terminal task, which is exactly why this
+# predicate, not a broader terminal-status change, is the fix.
+task_has_forced_phase() {
+  local t="$1"
+  if [ "$(echo "$canonical_force_phases_json" | jq 'length')" -gt 0 ]; then
+    return 0
+  fi
+  local remaining
+  remaining=$(mt_get_json --arg t "$t" '.force_phases_remaining[$t] // []')
+  [ "$(echo "$remaining" | jq 'length')" -gt 0 ]
+}
+
 # ── (b) All-terminal check ───────────────────────────────────────────────────────────────────────
+# Contract: only an explicitly forced phase may admit a terminal task past this check. An
+# `/orchestrate` invocation with no forcing flag on a fully terminal set must still stop here.
 all_done=true
 for t in "${task_args[@]}"; do
-  if is_terminal_status "${current_statuses[$t]}"; then continue; fi
+  if is_terminal_status "${current_statuses[$t]}" && ! task_has_forced_phase "$t"; then continue; fi
   if in_json_array "$t" "$failed_tasks_json"; then continue; fi
   if in_json_array "$t" "$deferred_deploy_checkpoint_json"; then continue; fi
   all_done=false
@@ -1141,10 +1162,12 @@ if [ "$all_done" = "true" ]; then
 fi
 
 # ── (c) Eligibility ───────────────────────────────────────────────────────────────────────────────
+# Same contract as (b) immediately above: only an explicitly forced phase may admit a terminal
+# task into eligible_tasks; ordinary dispatch never can.
 declare -a eligible_tasks=()
 declare -A budget_blocked_tasks=()
 for t in "${task_args[@]}"; do
-  if is_terminal_status "${current_statuses[$t]}"; then continue; fi
+  if is_terminal_status "${current_statuses[$t]}" && ! task_has_forced_phase "$t"; then continue; fi
   if in_json_array "$t" "$failed_tasks_json"; then continue; fi
   if in_json_array "$t" "$deferred_deploy_checkpoint_json"; then continue; fi
 

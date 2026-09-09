@@ -228,32 +228,32 @@ fold any additional site found into this phase's refactor rather than leaving a 
 
 ---
 
-### Phase 2: Forced-phase exemption in cycle-plan eligibility (Defect 1) [NOT STARTED]
+### Phase 2: Forced-phase exemption in cycle-plan eligibility (Defect 1) [COMPLETED]
 
 **Goal**: A terminal task with a pending forced phase reaches `eligible_tasks`; an unforced
 terminal task still does not.
 
 **Tasks**:
-- [ ] Add `task_has_forced_phase <t>` to `orchestrate-cycle-plan.sh`, defined next to
+- [x] Add `task_has_forced_phase <t>` to `orchestrate-cycle-plan.sh`, defined next to
       `is_terminal_status`. Returns 0 when EITHER `canonical_force_phases_json` is non-empty
       (the CLI supplied forcing this invocation — already computed well before
       `is_terminal_status` is defined) OR `mt_json`'s `.force_phases_remaining[$t]` is a
-      non-empty array (a queue seeded on a prior cycle and not yet exhausted).
-- [ ] Guard the all-terminal check's terminal `continue` (section (b)) with the new predicate:
+      non-empty array (a queue seeded on a prior cycle and not yet exhausted). *(completed)*
+- [x] Guard the all-terminal check's terminal `continue` (section (b)) with the new predicate:
       a terminal task with a pending forced phase must NOT be skipped, so `all_done` goes false
-      and `emit_and_exit` with `stop_reason="all_terminal"` is not reached.
-- [ ] Guard the eligibility loop's terminal `continue` (section (c)) with the same predicate.
-- [ ] Leave the `failed_tasks` and `deferred_deploy_checkpoint` `continue`s in both sections
-      completely untouched — they are independent of `is_terminal_status`.
-- [ ] Leave every OTHER `is_terminal_status` use untouched: the predecessor/dependency
+      and `emit_and_exit` with `stop_reason="all_terminal"` is not reached. *(completed)*
+- [x] Guard the eligibility loop's terminal `continue` (section (c)) with the same predicate. *(completed)*
+- [x] Leave the `failed_tasks` and `deferred_deploy_checkpoint` `continue`s in both sections
+      completely untouched — they are independent of `is_terminal_status`. *(completed)*
+- [x] Leave every OTHER `is_terminal_status` use untouched: the predecessor/dependency
       evaluations inside the eligibility loop and below it govern whether a *dependency* is
-      satisfied, not whether the candidate itself is eligible.
-- [ ] Confirm section (f)'s seeding loop now reaches the terminal-but-forced task (it iterates
+      satisfied, not whether the candidate itself is eligible. *(completed)*
+- [x] Confirm section (f)'s seeding loop now reaches the terminal-but-forced task (it iterates
       `eligible_tasks`) and that `effective_group[$t]` is set from the forced phase, overriding
-      whatever the classifier returned — including `group:"terminal"`.
-- [ ] Add a short comment at both guarded sites naming the contract: only an explicitly forced
-      phase may admit a terminal task; ordinary dispatch never can.
-- [ ] `shellcheck` clean.
+      whatever the classifier returned — including `group:"terminal"`. *(completed)*
+- [x] Add a short comment at both guarded sites naming the contract: only an explicitly forced
+      phase may admit a terminal task; ordinary dispatch never can. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 1.5 hours
 
