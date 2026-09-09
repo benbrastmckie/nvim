@@ -1,5 +1,5 @@
 ---
-next_project_number: 206
+next_project_number: 207
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 206
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202,206 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,163,164,173,174,175,195 | 29,74,139,162,172,188,194 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
@@ -44,6 +44,7 @@ next_project_number: 206
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
+206 [NOT STARTED] — Fix test fixtures missing lib/task-lookup-lib.sh
 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
   └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
@@ -89,6 +90,16 @@ next_project_number: 206
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 206. Fix test fixtures missing task lookup lib
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix test fixtures missing lib/task-lookup-lib.sh
+
+---
 
 ### 205. Per project lean lsp registration
 - **Status**: [COMPLETED]

@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 206,
+  "next_project_number": 207,
   "active_projects": [
+    {
+      "project_number": 206,
+      "project_name": "fix_test_fixtures_missing_task_lookup_lib",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "Fix test fixtures missing lib/task-lookup-lib.sh",
+      "topic": "core-agent-system",
+      "created": "2026-09-09T21:46:25Z",
+      "last_updated": "2026-09-09T21:46:25Z"
+    },
     {
       "project_number": 205,
       "project_name": "per_project_lean_lsp_registration",
