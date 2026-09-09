@@ -1,7 +1,7 @@
 # Implementation Plan: Task #201
 
 - **Task**: 201 - Close runtime-file ignore enumeration gap
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None declared. Non-blocking file-footprint overlap with task 51 (`not_started`); this task lands first, no reconciliation needed now.
 - **Research Inputs**: specs/201_close_runtime_file_ignore_enumeration_gap/reports/01_close_ignore_enumeration_gap.md

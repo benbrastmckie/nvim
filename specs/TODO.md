@@ -11,7 +11,7 @@ next_project_number: 206
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,192,194,198,200,201,202 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,192,194,198,200,202 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,163,164,173,174,175,195 | 29,74,139,162,172,188,194 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
@@ -46,7 +46,6 @@ next_project_number: 206
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
-201 [IMPLEMENTING] — Close the ephemeral-runtime-file ignore enumeration gap that...
 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
   └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
@@ -348,7 +347,7 @@ second should make sure all three entries read as a coherent set.
 ---
 
 ### 201. Close the ephemeral-runtime-file ignore enumeration gap that lets a live deploy mutex be committed
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
