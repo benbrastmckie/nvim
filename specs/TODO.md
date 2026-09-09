@@ -91,18 +91,19 @@ next_project_number: 205
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
-204 [PLANNED] — Wire verify-lean-mcp.sh into a moment where lean-lsp...
+204 [IMPLEMENTING] — Wire verify-lean-mcp.sh into a moment where lean-lsp...
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
 
 ### 204. Wire verify-lean-mcp.sh into a moment where lean-lsp registration drift is actually caught
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 203
 - **Research**: [204_wire_lean_mcp_drift_detection/reports/01_wire-verify-lean-mcp-preflight.md]
 - **Plan**: [204_wire_lean_mcp_drift_detection/plans/01_wire-lean-mcp-drift-detection.md]
+- **Summary**: [204_wire_lean_mcp_drift_detection/summaries/01_wire-lean-mcp-drift-detection-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ and agent-system/extensions/core/ (never .claude/**).
 
