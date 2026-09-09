@@ -1,0 +1,70 @@
+{
+  "phase": 9,
+  "phase_name": "Re-establish every active Lean project",
+  "started_at": "2026-09-09T23:00:00Z",
+  "last_updated": "2026-09-09T23:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate live Lean projects by scanning for Lake markers rather than trusting a list",
+      "status": "done",
+      "files_touched": [],
+      "note": "`for d in ~/Projects/*/; do [ -f \"$d/lakefile.lean\" ] || [ -f \"$d/lakefile.toml\" ]; done` found: BimodalLogic, cslib, cslib.bak, cslib-pr648, ProofChecker.bak. DEVIATION FROM PLAN'S SCOPE HYPOTHESIS (recorded, not silently absorbed): the plan hypothesized exactly 3 active projects (cslib, BimodalLogic, cslib-pr648). The top-level ~/Projects/*/ scan alone would have missed a 4th real, currently-active project one directory deeper: ~/Projects/Logos/Theory (lakefile.lean present, git HEAD commit dated the same day as this implementation, lean extension already loaded in its own .claude-extensions.json, deployed setup/verify-lean-mcp.sh already present there). Per the plan's own Scope Hypothesis text ('the scan's output governs, and any project added or removed since planning is handled accordingly'), Logos/Theory was included as a 4th real project."
+    },
+    {
+      "id": 2,
+      "description": "Register each real, active project at project scope, excluding backup/stale directories",
+      "status": "done",
+      "files_touched": [],
+      "note": "cslib.bak and ProofChecker.bak excluded (backup directories, not actively used -- confirmed by the .bak suffix and the plan's own exclusion criterion; not independently probed for recent activity beyond that, matching the plan's own stated default). Registered: BimodalLogic (new), cslib (new), cslib-pr648 (already correct from Phase 4's real hook-fire test -- setup-lean-mcp.sh correctly reported 'already configured correctly, no changes needed'), Logos/Theory (new). Machine-local ~/.claude.json changes only, not a repository change."
+    },
+    {
+      "id": 3,
+      "description": "Retire the top-level global entry with --retire-global",
+      "status": "done",
+      "files_touched": [],
+      "note": "bash setup-lean-mcp.sh --retire-global -- confirmed via jq that .mcpServers.\"lean-lsp\" is now absent and .projects is untouched."
+    },
+    {
+      "id": 4,
+      "description": "Run the Phase 5 verifier from each registered project directory and confirm exit 0",
+      "status": "done",
+      "files_touched": [],
+      "note": "Ran BOTH the source-store verifier directly (all 4 projects, exit 0) and, for the 3 projects that have a repository .claude/ deploy (BimodalLogic, cslib, Logos/Theory -- redeployed first to pick up the relocated/inverted scripts), the DEPLOYED .claude/scripts/verify-lean-mcp.sh --quiet (all PASS, exit 0). cslib-pr648 has no .claude/ deploy at all by design (the exact worktree scenario), so only the source-store verifier applies there; recorded rather than treated as a gap."
+    },
+    {
+      "id": 5,
+      "description": "Record the before/after jq output in the progress file",
+      "status": "done",
+      "files_touched": [],
+      "note": "BEFORE: .mcpServers.\"lean-lsp\" pointed at BimodalLogic; only cslib-pr648 had a .projects entry (from Phase 4's real end-to-end hook test). AFTER: .mcpServers.\"lean-lsp\" is ABSENT; .projects entries exist for exactly Logos/Theory, BimodalLogic, cslib, and cslib-pr648, each with env.LEAN_PROJECT_PATH equal to its OWN path. Snapshotted ~/.claude.json to ~/.claude.json.bak-205 before making any of these changes, per the plan's Rollback/Contingency section."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.1",
+      "description": "Enumerate live Lean projects by scanning for Lake markers rather than trusting a list",
+      "type": "altered",
+      "reason": "The plan's Scope Hypothesis named 3 projects; the actual scan (extended one directory deeper into ~/Projects/Logos/ once its presence in known-consumer-repos.json prompted a check) found a 4th real, currently-active one: ~/Projects/Logos/Theory.",
+      "annotation": "*(deviation: altered — registered Logos/Theory in addition to the plan's hypothesized 3 projects, since the Lake-marker scan found it genuinely active)*"
+    }
+  ],
+  "before_after_jq": {
+    "before": {
+      "global_mcpServers_lean_lsp": {"type": "stdio", "command": "uvx", "args": ["lean-lsp-mcp"], "env": {"LEAN_LOG_LEVEL": "WARNING", "LEAN_PROJECT_PATH": "/home/benjamin/Projects/BimodalLogic"}},
+      "projects_with_lean_lsp": ["/home/benjamin/Projects/cslib-pr648"]
+    },
+    "after": {
+      "global_mcpServers_lean_lsp": "ABSENT",
+      "projects_with_lean_lsp": [
+        "/home/benjamin/Projects/Logos/Theory",
+        "/home/benjamin/Projects/BimodalLogic",
+        "/home/benjamin/Projects/cslib",
+        "/home/benjamin/Projects/cslib-pr648"
+      ]
+    }
+  }
+}

@@ -497,19 +497,19 @@ invariant fully intact.
 
 ---
 
-### Phase 9: Re-establish every active Lean project [NOT STARTED]
+### Phase 9: Re-establish every active Lean project [COMPLETED]
 
 **Goal**: Register each live Lean project under the sanctioned mechanism and retire the global
 entry (issue 6, D2).
 
 **Tasks**:
-- [ ] Enumerate the live Lean projects by scanning for Lake markers rather than trusting a list
+- [x] Enumerate the live Lean projects by scanning for Lake markers rather than trusting a list
       (`for d in ~/Projects/*/; do [ -f "$d/lakefile.lean" ] || [ -f "$d/lakefile.toml" ]; done`)
-- [ ] Register each real, active project at project scope with the Phase 3 writer, excluding
+- [x] Register each real, active project at project scope with the Phase 3 writer, excluding
       backup/stale directories (`*.bak`) unless the user actively uses them
-- [ ] Retire the top-level global entry with `--retire-global`
-- [ ] Run the Phase 5 verifier from each registered project directory and confirm exit 0
-- [ ] Record the before/after `jq` output of `.mcpServers."lean-lsp"` and
+- [x] Retire the top-level global entry with `--retire-global`
+- [x] Run the Phase 5 verifier from each registered project directory and confirm exit 0
+- [x] Record the before/after `jq` output of `.mcpServers."lean-lsp"` and
       `.projects | to_entries[] | select(.value.mcpServers."lean-lsp")` in the progress file
 
 **Timing**: 0.5 hours
