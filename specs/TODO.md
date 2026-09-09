@@ -11,11 +11,11 @@ next_project_number: 206
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,192,194,198,200,202 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,163,164,173,174,175,195 | 29,74,139,162,172,188,194 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
-| 5 | 182,199 | 192,193 | core-agent-system |
+| 5 | 182,199 | 193 | core-agent-system |
 | 6 | 183 | 182 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,8 +41,6 @@ next_project_number: 206
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
 188 [RESEARCHED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-192 [PLANNED] — Close the directory-pathspec hole in guard-destructive-git.sh...
-  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
@@ -51,7 +49,7 @@ next_project_number: 206
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
   └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency... (see above)
-  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 
 ### Extensions
 
@@ -730,12 +728,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 192. Close the directory-pathspec hole in guard-destructive-git.sh over-staging predicate
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [192_close_git_add_directory_pathspec_overstage_hole/reports/01_directory-pathspec-overstage-hole.md]
 - **Plan**: [192_close_git_add_directory_pathspec_overstage_hole/plans/01_directory-pathspec-overstage-guard.md]
+- **Summary**: [192_close_git_add_directory_pathspec_overstage_hole/summaries/01_directory-pathspec-overstage-guard-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

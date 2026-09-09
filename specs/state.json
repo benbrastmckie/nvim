@@ -1414,12 +1414,12 @@
     {
       "project_number": 192,
       "project_name": "close_git_add_directory_pathspec_overstage_hole",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Close the directory-pathspec hole in guard-destructive-git.sh over-staging predicate",
       "created": "2026-09-08T23:55:12Z",
-      "last_updated": "2026-09-09T21:31:33Z",
+      "last_updated": "2026-09-09T21:43:33Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/hooks/guard-destructive-git.sh",
@@ -1439,9 +1439,15 @@
           "path": "specs/192_close_git_add_directory_pathspec_overstage_hole/plans/01_directory-pathspec-overstage-guard.md",
           "type": "plan",
           "summary": "4-phase test-first plan extending guard-destructive-git.sh's over-staging predicate to directory/glob git add pathspecs, with doc reconciliation and deploy verification."
+        },
+        {
+          "path": "specs/192_close_git_add_directory_pathspec_overstage_hole/summaries/01_directory-pathspec-overstage-guard-summary.md",
+          "type": "summary",
+          "summary": "Closed the directory/glob git add over-staging hole in guard-destructive-git.sh: test-first fixtures (RED->GREEN), per-token detector, four prose sites reconciled, redeployed and verified against the deployed hook."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Extended guard-destructive-git.sh's over-staging predicate to refuse directory and glob git add pathspecs (with no exemption), while keeping the sanctioned explicit multi-file list permitted; reconciled four prose enumeration sites and verified the fix fires from the redeployed hook."
     },
     {
       "project_number": 193,
