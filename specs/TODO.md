@@ -91,7 +91,7 @@ next_project_number: 205
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
-203 [RESEARCHED] — Reconcile lean-lsp MCP registration with the source store's...
+203 [PLANNED] — Reconcile lean-lsp MCP registration with the source store's...
   └─ 204 [NOT STARTED] — Wire verify-lean-mcp.sh into a moment where lean-lsp...
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
@@ -135,11 +135,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 203. Reconcile lean-lsp MCP registration with the source store's sanctioned wrapper-free mechanism
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Research**: [203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md]
+- **Plan**: [203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 

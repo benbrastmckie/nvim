@@ -1,43 +1,39 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
-      "summary": "Confirms the lean-lsp wrapper is an orphaned hand-edit (not a missing source-store provision), confirms the NixOS PATH export is not load-bearing today (elan is a NixOS system package reachable via /run/current-system/sw/bin alone), confirms both --lean-project-path and LEAN_PROJECT_PATH are genuinely supported by lean-lsp-mcp with CLI taking precedence, recommends retiring cslib's orphaned wrapper, and recommends recording a durable invariant that mcpServers command paths must never point inside a repo's disposable .claude/ deploy tree."
+      "type": "plan",
+      "path": "specs/203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md",
+      "summary": "6-phase plan repairing setup-lean-mcp.sh (whole-entry reconciliation + lakefile.toml detection), promoting verify-lean-mcp.sh command/args drift from WARN to FAIL, recording the no-command-paths-inside-.claude/ invariant, then reconciling ~/.claude.json, retiring cslib's orphaned wrapper and project-scoped override, and proving the fix by an observed spawn plus real tool call in both BimodalLogic and cslib."
     }
   ],
-  "next_steps": "Run /plan 203 to create implementation plan",
+  "next_steps": "Run /implement 203 to execute the plan",
   "metadata": {
     "session_id": "sess_1788973693_82555f_203",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 540,
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "findings_count": 6,
+  "phase_count": 6,
+  "estimated_hours": 4.5,
+  "dependency_waves": [[1, 3], [2], [4], [5], [6]],
+  "user_decision": {
+    "question": "Should lean-lsp stay registered as a single global user-scope entry in ~/.claude.json (one LEAN_PROJECT_PATH at a time, re-run setup-lean-mcp.sh when switching Lean projects), or should project-scoped local entries be formalized as a second sanctioned mechanism so BimodalLogic and cslib can each hold their own correct path simultaneously?",
+    "options": [
+      "Option A - Single global user-scope entry only; retire cslib's project-scoped override; switching Lean projects means re-running setup-lean-mcp.sh",
+      "Option B - Formalize project-scoped local entries as a second sanctioned mechanism; extend setup-lean-mcp.sh to write .projects[<cwd>].mcpServers and document local scope in mcp-server-ownership.md"
+    ],
+    "recommended": "Option A - Single global user-scope entry only; retire cslib's project-scoped override; switching Lean projects means re-running setup-lean-mcp.sh",
+    "blocking": false
+  },
   "memory_candidates": [
     {
-      "content": "On this NixOS machine, elan is installed as a system package: /run/current-system/sw/bin/lake and /run/current-system/sw/bin/lean are symlinks into the elan Nix store path. A bare `uvx <tool>` (or any subprocess) needs only /run/current-system/sw/bin on PATH to reach a working Lean toolchain -- user-level ~/.elan/bin PATH exports are redundant on this machine. Verified empirically with `env -i PATH=/run/current-system/sw/bin:/usr/bin:/bin ... lake env lean --version` succeeding against a real project.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lean", "elan", "PATH", "NixOS", "uvx", "toolchain"]
-    },
-    {
-      "content": "lean-lsp-mcp's CLI accepts --lean-project-path AND reads LEAN_PROJECT_PATH from the environment; when --lean-project-path is passed, the source explicitly overwrites os.environ[LEAN_PROJECT_PATH] before the server reads it, so CLI takes precedence over env when both are present. Both conventions are individually valid against the real server interface -- a divergence between two call sites using different conventions is not by itself evidence one of them is wrong.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lean-lsp-mcp", "CLI precedence", "env var", "MCP server config"]
-    },
-    {
-      "content": "MCP registration durable invariant candidate: an mcpServers command path in ~/.claude.json or .mcp.json must never point inside a repository's own .claude/ deploy tree, because that tree is disposable and regenerated wholesale (rules/source-store-deploy-boundary.md). A command path violating this looks configured until the next regeneration or a fresh clone, then fails as a silent ENOENT -- exactly the failure mode observed with an orphaned lean-lsp-mcp-wrapper.sh hand-edit.",
+      "content": "Repair-script blind spot pattern: a setup/reconcile script whose 'already configured' idempotency check compares only ONE field of an entry (e.g. setup-lean-mcp.sh comparing only env.LEAN_PROJECT_PATH) cannot repair, and cannot even detect, drift in the entry's other fields (command, args). Worse, when the compared field happens to match, the script reports 'already configured correctly' and exits 0 while the entry is unspawnable. Whenever a script both GENERATES a canonical object shape and CHECKS an existing one, the check must compare against the full generated shape and the repair must overwrite the whole object -- never a targeted per-field assignment. The companion verifier has the mirror-image defect: severities must match what actually breaks the thing (a dead command is FAIL, not WARN), or wiring that verifier into automated drift detection detects nothing.",
       "category": "PATTERN",
-      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/reports/01_reconcile-lean-lsp-registration.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["mcp registration", "deploy boundary", "gitignored .claude", "ENOENT", "invariant"]
+      "source_artifact": "specs/203_reconcile_lean_lsp_mcp_registration/plans/01_reconcile-lean-lsp-registration.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["idempotency", "config reconciliation", "drift detection", "verifier severity", "setup script", "shape comparison"]
     }
   ],
-  "dispatch_seq": 1
+  "dispatch_seq": 2
 }
