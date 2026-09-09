@@ -140,6 +140,9 @@ never fall back to staging the entire working tree.
 - `git rebase -i`
 - `git add -A` / `git add .` (stages the entire working tree; use targeted staging per
   `@.claude/context/standards/git-staging-scope.md` instead)
+- A directory or glob `git add` pathspec (e.g. `git add -- some/dir/`, `git add src/*.lean`) —
+  same over-staging problem as `git add -A`/`.` in a narrower disguise; an explicit multi-file
+  list (`git add -- a.lean b.lean`) remains permitted
 - `git commit -am` (implicitly stages all tracked-file modifications — same over-staging problem)
 
 ## Message Template

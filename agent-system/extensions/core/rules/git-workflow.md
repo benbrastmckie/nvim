@@ -83,8 +83,18 @@ template, and the fail-safe under-stage-not-over-stage direction).
 - `git add -A` (or `git add .`) — stages the entire working tree, silently pulling in
   concurrent-session or unrelated stray edits; use targeted, work-scoped staging instead. See
   `.claude/context/standards/git-staging-scope.md` for the per-operation commit-scope contract.
+- A **directory or glob `git add` pathspec** (e.g. `git add -- some/dir/`, `git add some/dir`,
+  `git add src/*.lean`) — stages every modified file the pathspec expands to, the identical
+  over-staging harm as `git add -A`/`git add .` in a narrower disguise. The sanctioned explicit
+  multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains permitted.
 - `git commit -am` — implicitly stages all tracked-file modifications, the same over-staging
   problem as `git add -A`
+
+**Enforced by `guard-destructive-git.sh`**: all four bullets immediately above are enforced
+mechanically by the same `guard-destructive-git.sh` PreToolUse Bash hook described below for the
+destructive-command class — its over-staging predicate blocks them on a dirty working tree via
+`exit 2`, with NO snapshot-marker exemption (a snapshot makes a destructive command recoverable;
+it does not make scope pollution acceptable).
 
 ### No Destructive Git on Uncommitted Work
 

@@ -158,7 +158,13 @@ overall staging shape only — it is NOT the sanctioned implementation.**
 Set" above — a caller reading only this template and reproducing the unconditional `git add
 "${ephemeral_excludes[@]}"` shape shown here verbatim would reintroduce the `.lock/`-present
 abort hazard that conditional injection exists to close. Prefer invoking
-`git-commit-scoped.sh` directly over hand-rolling this template's `git add`/`git commit` pair:
+`git-commit-scoped.sh` directly over hand-rolling this template's `git add`/`git commit` pair —
+running the template's `git add "${stage_paths[@]}"` line as a raw top-level Bash command is now
+correctly BLOCKED by `guard-destructive-git.sh` on a dirty tree, since `${task_dir}/` is a
+directory pathspec (see "Forbidden Operations" above); `git-commit-scoped.sh` is the sanctioned
+path precisely because its own internal `git add` runs as a subprocess, never as the literal
+top-level `tool_input.command` the hook observes (the same structural-invisibility precedent
+`guard-destructive-git.sh`'s header documents for `git-snapshot.sh`):
 
 ```bash
 padded_num=$(printf "%03d" "$task_number")
@@ -196,6 +202,10 @@ task-scoped commit:
 
 - `git add -A`
 - `git add .`
+- A **directory or glob `git add` pathspec** (e.g. `git add -- some/dir/`, `git add some/dir`,
+  `git add src/*.lean`) — stages every modified file the pathspec expands to, the identical
+  over-staging harm as `git add -A`/`git add .` in a narrower disguise. The sanctioned explicit
+  multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains the correct form.
 - `git commit -am` (implicitly stages all tracked-file modifications)
 - A **bare, unscoped `git commit`** (no trailing `-- <pathspec>...`) — see "Commit-Level Path
   Scoping and Cross-Process Serialization" below. Even when staging was correctly narrowed by
@@ -206,6 +216,15 @@ task-scoped commit:
 These commands stage (or commit) more than the operation actually produced, which can silently
 include a concurrent session's stray edits, unrelated in-progress work, or accidental file
 changes that have nothing to do with the current operation.
+
+**Enforced by `guard-destructive-git.sh`**: the first four bullets above (`git add -A`/`--all`,
+`git add .`, a directory-or-glob `git add` pathspec, and `git commit -a`/`-am`/`--all`) are
+enforced mechanically, not just by convention — `.claude/hooks/guard-destructive-git.sh`'s
+over-staging predicate blocks all four on a dirty working tree via exit 2, with NO
+snapshot-marker exemption (see that hook's header for the data-loss vs. scope-pollution
+rationale). The bare-unscoped-commit bullet is not part of that predicate; it is enforced by
+`git-commit-scoped.sh` always naming its pathspec, per "Commit-Level Path Scoping and
+Cross-Process Serialization" below.
 
 ## Commit-Level Path Scoping and Cross-Process Serialization
 

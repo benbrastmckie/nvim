@@ -203,31 +203,36 @@ introducing a new top-level variable means the scope hypothesis was wrong and ne
 
 ---
 
-### Phase 3: Reconcile the rule and standard enumerations [NOT STARTED]
+### Phase 3: Reconcile the rule and standard enumerations [COMPLETED]
 
 **Goal**: Bring `context/standards/git-staging-scope.md` and `rules/git-workflow.md` into
 agreement with the implemented predicate, including consistent "enforced by
 `guard-destructive-git.sh`" framing for the over-staging class.
 
 **Tasks**:
-- [ ] `context/standards/git-staging-scope.md`, "Forbidden Operations": add a bullet for a
+- [x] `context/standards/git-staging-scope.md`, "Forbidden Operations": add a bullet for a
       directory or glob `git add` pathspec, worded so the sanctioned explicit multi-file list is
-      visibly unaffected
-- [ ] Same file: add a short "enforced by `guard-destructive-git.sh`'s over-staging predicate"
+      visibly unaffected *(completed)*
+- [x] Same file: add a short "enforced by `guard-destructive-git.sh`'s over-staging predicate"
       sentence, matching the phrasing `git-workflow.md` already uses for the destructive-command
-      class
-- [ ] `rules/git-workflow.md`, "Never Run": add a directory/glob `git add` bullet, and add the same
+      class *(completed)*
+- [x] `rules/git-workflow.md`, "Never Run": add a directory/glob `git add` bullet, and add the same
       "enforced by `guard-destructive-git.sh`" framing to the over-staging bullets so both classes
-      read consistently
-- [ ] Note in `git-staging-scope.md` (near the illustrative hand-rolled template that shows
+      read consistently *(completed)*
+- [x] Note in `git-staging-scope.md` (near the illustrative hand-rolled template that shows
       `git add "${stage_paths[@]}"` with a directory pathspec) that running that template's
       `git add` as a raw top-level Bash command is now correctly blocked, and that
-      `git-commit-scoped.sh` is the sanctioned path — do not delete the template
-- [ ] Regenerate context line counts and validate the index:
+      `git-commit-scoped.sh` is the sanctioned path — do not delete the template *(completed)*
+- [x] Regenerate context line counts and validate the index:
       `bash .claude/scripts/generate-context-line-counts.sh` (or equivalent) then
       `bash .claude/scripts/validate-context-index.sh`, so
       `agent-system/extensions/core/index-entries.json`'s `line_count` for
-      `standards/git-staging-scope.md` does not drift
+      `standards/git-staging-scope.md` does not drift *(completed: 333 -> 352, validate-context-index.sh PASSED, 0 errors)*
+- [x] Deviation (additional, not in original task list): a fourth enumeration site was found by
+      the Scope Hypothesis's own grep directive —
+      `agent-system/extensions/core/skills/skill-git-workflow/SKILL.md`'s "Never Run" section
+      mirrors `rules/git-workflow.md`'s bullet-per-form enumeration exactly; added the same
+      directory/glob bullet there for consistency *(deviation: altered — scope hypothesis's fourth-site check found skill-git-workflow/SKILL.md)*
 
 **Timing**: 0.75 hours
 

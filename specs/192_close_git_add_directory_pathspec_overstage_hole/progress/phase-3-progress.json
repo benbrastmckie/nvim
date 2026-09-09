@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Reconcile the rule and standard enumerations",
+  "started_at": "2026-09-09T00:30:00Z",
+  "last_updated": "2026-09-09T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Grep for other enumeration sites before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Update git-staging-scope.md Forbidden Operations + enforced-by framing + template note", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Update rules/git-workflow.md Never Run + enforced-by framing", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md", "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"]},
+    {"id": 4, "description": "Regenerate context line counts and validate index", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Grep for a fourth over-staging enumeration site per Scope Hypothesis",
+      "type": "altered",
+      "reason": "skill-git-workflow/SKILL.md's Never Run section mirrors rules/git-workflow.md's bullet-per-form enumeration exactly and would misdescribe the guard if left unchanged; added the same directory/glob bullet there",
+      "annotation": "*(deviation: altered — scope hypothesis's fourth-site check found skill-git-workflow/SKILL.md)*"
+    }
+  ]
+}
