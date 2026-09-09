@@ -1,12 +1,27 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
-  "next_steps": "",
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/188_predispatch_review_archived_dependency_false_positive/reports/01_archived-dependency-false-positive.md",
+      "summary": "Confirms the Class A nonexistent-dependency false positive (root cause: active_projects-only lookup), empirically reproduces it in this repo (20/20 flagged edges are archived, 0 genuinely nonexistent), and recommends reusing scripts/lib/task-lookup-lib.sh (already proven by orchestrate-triage-classify.sh) to add a distinct archived-satisfied bucket; finds batch-admit.sh and triage-classify.sh need no correction."
+    }
+  ],
+  "next_steps": "Run /plan 188 to create implementation plan",
   "metadata": {
     "session_id": "sess_1788973236_730802_188",
     "agent_type": "general-research-agent",
     "delegation_depth": 1,
     "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
+  "memory_candidates": [
+    {
+      "content": "scripts/lib/task-lookup-lib.sh is the codebase's single source of truth for archive-aware task lookup (task_lookup_archived_projects_json/task_lookup_entry/task_lookup_is_active/task_lookup_dir), reading specs/archive/state.json's completed_projects+archived_projects and normalizing status. Any /orchestrate-family script that resolves a task or dependency number against specs/state.json's active_projects[] ONLY will silently misclassify an archived (terminal, satisfied) task as absent/nonexistent once /todo moves it out of active_projects[]. When passing the archived array into jq, use --slurpfile from a mktemp file rather than --argjson: a real archive/state.json can exceed OS argv/ARG_MAX (observed ~960KB triggering 'Argument list too long', exit 126).",
+      "category": "PATTERN",
+      "source_artifact": "specs/188_predispatch_review_archived_dependency_false_positive/reports/01_archived-dependency-false-positive.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["task-lookup-lib", "archive-aware", "active_projects", "orchestrate-predispatch-review", "ARG_MAX", "slurpfile"]
+    }
+  ],
   "dispatch_seq": 2
 }
