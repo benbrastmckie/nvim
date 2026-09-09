@@ -1,0 +1,12 @@
+{
+  "status": "in_progress",
+  "artifacts": [],
+  "next_steps": "",
+  "metadata": {
+    "session_id": "sess_1788973236_730802_188",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "dispatch_seq": 2
+}

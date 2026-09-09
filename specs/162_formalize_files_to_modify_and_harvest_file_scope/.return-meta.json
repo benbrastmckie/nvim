@@ -1,0 +1,15 @@
+{
+  "status": "in_progress",
+  "started_at": "2026-09-09T00:00:00Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Agent started, parsing dispatch file for task 162"
+  },
+  "metadata": {
+    "session_id": "sess_1788973236_730802_162",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  }
+}
