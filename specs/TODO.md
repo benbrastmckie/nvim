@@ -1,18 +1,18 @@
 ---
-next_project_number: 207
+next_project_number: 209
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-09. Generated from state.json dependency graph.*
+*Updated 2026-09-12. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202,206 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,163,164,173,174,175,195 | 29,74,139,162,172,188,194 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202,206,207 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 14,30,75,76,140,163,164,173,174,175,195,208 | 29,74,139,162,172,188,194,207 | core-agent-system, extensions, literature, ... |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
 | 5 | 182,199 | 193 | core-agent-system |
@@ -65,6 +65,8 @@ next_project_number: 207
 ### Literature
 
 39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
+207 [NOT STARTED] — Fix silent truncation in zotero-generate-export.sh Path 1...
+  └─ 208 [NOT STARTED] — Explain Path 1 pagination shortfall or revisit Zotero export...
 
 ### Neovim
 
@@ -90,6 +92,214 @@ next_project_number: 207
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 208. Explain Path 1 pagination shortfall or revisit Zotero export path-preference order
+- **Effort**: 2-4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: Task 207
+
+**Description**: Explain the Path 1 pagination shortfall in zotero-generate-export.sh -- or, if Path 1 cannot reach parity with sqlite reconstruction, change the path-preference order with a documented rationale.
+
+=== THE OPEN QUESTION (flagged as unknown, NOT guessed -- do not assume a cause) ===
+
+Even with the accumulator truncation fixed, Path 1 pagination terminates at 481 items: at start=400
+the API returns 81 items, which is < limit, so the loop treats it as end-of-pagination. But the same
+local API's own Total-Results header reports 4042 for the same library. Those two numbers disagree
+and the reason is UNKNOWN.
+
+Candidate directions to investigate (none verified, none preferred):
+  - csljson format filtering interacting with limit/start applied PRE-filter, so each page is
+    silently thinned after the window is computed;
+  - a local-API pagination quirk specific to the csljson format or to Zotero 7's local endpoint;
+  - attachment/note items inflating Total-Results (the library has 1473 PDF attachments and 62 notes,
+    while the bibliographic item count is 4049).
+
+Verify empirically against the live API. Do NOT settle this from reasoning alone, and do not treat
+any of the three candidates as the answer before measuring.
+
+=== PRECONDITION: REQUIRES ZOTERO RUNNING ===
+
+Path 1 exists only while Zotero is open -- the local API at localhost:23119 is served by the running
+application. A probe during task creation returned HTTP 000 (unreachable) because Zotero was
+deliberately quit so Path 3 could produce the complete export. WHOEVER PICKS THIS UP MUST OPEN ZOTERO
+FIRST, then confirm the API is reachable before starting. This is a setup step, not a blocker.
+
+=== REFERENCE POINT ===
+
+Path 3 (direct sqlite reconstruction, Zotero closed) produced a complete, verified 4049-item export
+matching `select count(*) from items` exactly. That export is the ground truth to compare Path 1
+against: /home/benjamin/Projects/Literature/zotero-library.json, 4049 items, source
+"sqlite-reconstruction" per its .zotero-library.meta.json stamp. Note $LITERATURE_DIR
+(/home/benjamin/Projects/Literature) is OUTSIDE this repo -- the export is never in the repo, and
+resolve_library_path() resolves it (tier 1 $ZOTERO_LIBRARY, then $LITERATURE_DIR).
+
+=== WORK ITEMS ===
+
+1. Measure the actual relationship between Total-Results, the csljson page contents, and the
+   bibliographic item count against the live API. Determine whether limit/start are applied before
+   or after format filtering, and whether attachments/notes are counted in Total-Results.
+
+2. Either (a) explain the 481-vs-4042 discrepancy and fix Path 1 so it reaches parity with Path 3,
+   or (b) if Path 1 provably cannot reach parity, change the Path 1 > Path 3 preference order in the
+   generation control flow and document why. Option (b) is a legitimate outcome, not a failure --
+   the current preference order was chosen on the assumption that a live API pull is more current
+   than a sqlite read, and that assumption is what this task tests.
+
+3. If the preference order changes, update the affected docs and the script's own header rationale
+   comments so the ordering and its justification stay discoverable. Verified doc touchpoints
+   (zotero-integration.md and tools/zotero-scripts.md do NOT mention this script -- zero grep hits):
+     context/project/literature/patterns/zotero-pdf-resolution.md
+     context/project/literature/domain/literature-index.md
+     context/project/literature/domain/corpus-directory-conventions.md
+     commands/literature.md
+
+=== ACCEPTANCE CRITERIA ===
+
+1. The 481-vs-4042 discrepancy is either explained with empirical evidence, or the path-preference
+   order is changed with a documented rationale.
+2. If Path 1 is fixed, a full export via Path 1 matches the sqlite-reconstruction item count.
+3. Whichever outcome, the resulting path-selection behavior is documented where a future reader will
+   find it, including the reason.
+
+=== DEPENDENCY RATIONALE ===
+
+Depends on the Path 1 accumulator fix. This is substantive, not bookkeeping: (a) both tasks modify
+fetch_path1 in the same file, and (b) pagination termination cannot be observed cleanly while the
+accumulator is still silently discarding pages and the error-swallowing fallback is masking failures.
+Measure only after the truncation fix is in place.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed
+.claude/** tree -- it is a gitignored, disposable deploy artifact wiped by the next regeneration.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 207. Fix silent truncation in zotero-generate-export.sh Path 1 accumulator
+- **Effort**: 2-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+
+**Description**: Fix the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1 (Zotero 7 local API pull), and add a shrink guard so a truncated pull can never again overwrite a complete export.
+
+=== VERIFIED DEFECT (diagnosed empirically with an instrumented trace, not hypothesized) ===
+
+fetch_path1()'s accumulator passes the entire growing JSON array as a single jq argv string:
+
+    all_items="$(jq -n --argjson a "$all_items" --argjson b "$filtered" '$a + $b' 2>/dev/null || echo "$all_items")"
+
+At ~200 accumulated items the string reaches 152KB and jq dies with "Argument list too long". The cause is Linux MAX_ARG_STRLEN: a SINGLE argument is capped at 128KiB (32 x 4KiB pages), independent of ARG_MAX (2MB on this machine). The trailing `2>/dev/null || echo "$all_items"` then swallows the error and yields the prior value, so the loop keeps fetching pages 3..41 and silently discards every one, then exits 0 printing a success message ("wrote 200 entries").
+
+Instrumented trace output:
+
+    start=0   page_len=100 filtered_len=100   accum: 0 -> 100
+    start=100 page_len=100 filtered_len=100   accum: 100 -> 200
+    start=200 page_len=100 filtered_len=100   accum: 200 -> 200   !!! ACCUMULATION FAILED
+    start=300 page_len=100 filtered_len=100   accum: 200 -> 200   !!! ACCUMULATION FAILED
+
+Deterministic; reproduced twice. Affects any library past ~200 items -- not user- or data-specific.
+
+REAL-WORLD IMPACT (already occurred, actual data loss): a regeneration run with Zotero open overwrote a good 4046-item export with a 200-item one and reported success. Recovered only because the pre-state item count had been captured beforehand; the export is not git-tracked and had no backup. Which path runs decides the outcome: Zotero closed -> Path 3 sqlite reconstruction (correct); Zotero open -> Path 1 (truncates to 200). The failure is invisible in the common case and catastrophic in the other.
+
+=== WORK ITEMS ===
+
+1. TEMP-FILE ACCUMULATOR. Write each fetched page to $tmpdir/page_N.json and combine once at the end with `jq -s 'add'`, so neither a page nor the accumulator ever transits argv. Retain the existing attachment/note CSL-type filter (currently applied per-page at the `filtered` step). Clean up $tmpdir on all exit paths.
+
+2. MAKE FAILURE LOUD. A failed fetch OR a failed accumulation must abort with a non-zero return and NO write, rather than `break` into a partial that looks complete. Remove the error-swallowing `2>/dev/null || echo "$all_items"` fallback entirely -- it discards the only evidence anything went wrong, and today the break path is indistinguishable from normal pagination completion. Distinguish the three terminal conditions explicitly: genuine end-of-pagination (short page), max_pages guard hit, and error.
+
+3. SHRINK GUARD. Refuse to overwrite an existing export with one containing dramatically fewer items unless explicitly forced. This alone would have prevented the data loss. `--force` is ALREADY TAKEN for the staleness/exists override (see the existing arg parser and exit code 3), so the guard needs its own opt-out flag or a distinct threshold semantic -- resolve which during planning and state the rationale.
+
+   SHRINK-GUARD SPEC NOTE (verified live state, do not re-derive): the export currently on disk is
+   /home/benjamin/Projects/Literature/zotero-library.json -- 2099350 bytes, 4049 items, source
+   "sqlite-reconstruction" per its .zotero-library.meta.json stamp. $LITERATURE_DIR is
+   /home/benjamin/Projects/Literature, which is OUTSIDE this repo; the export is never in the repo,
+   and resolve_library_path() resolves it (tier 1 $ZOTERO_LIBRARY, then $LITERATURE_DIR). So the
+   guard has a real, complete 4049-item file to protect on the very next run -- its primary and
+   immediately-live scenario is exactly the one that already caused loss. Design a no-existing-export
+   branch too (a legitimate case), but do NOT frame the guard as "first regeneration is unguarded by
+   construction" -- that is only true of a genuinely absent export, which is not the state here.
+   The prior truncated 200-item file is NOT on disk (it was overwritten by the successful Path 3
+   regeneration); generate a truncated fixture rather than expecting to find one.
+
+4. REGRESSION COVERAGE for the >128KiB accumulator boundary specifically, since that exact threshold is what made this invisible. Also cover the shrink guard blocking a catastrophic overwrite.
+
+   SPECIFIED TEST MECHANISM (verified feasible offline -- do NOT conclude a live API is needed and
+   skip the test): scripts/tests/curl-stub.sh is already a PATH-shadowing curl stub, and
+   zotero-generate-export.sh calls bare `curl` (never an absolute path, never `command curl`), so a
+   PATH-shadowing stub genuinely intercepts it. Extend the stub to dispatch on localhost:23119 and
+   serve synthetic paged csljson bodies large enough to cross the 128KiB single-arg boundary. This
+   needs no live API and no running Zotero.
+
+5. DOC UPDATE for the changed contract, using these VERIFIED touchpoints.
+
+   CORRECTED DOC TARGETS (verified by grep -- use these, not zotero-integration.md or
+   tools/zotero-scripts.md, NEITHER of which mentions zotero-generate-export.sh at all: zero hits):
+     context/project/literature/patterns/zotero-pdf-resolution.md
+     context/project/literature/domain/literature-index.md
+     context/project/literature/domain/corpus-directory-conventions.md
+     commands/literature.md
+   Deliberately avoiding zotero-integration.md also keeps this task at ZERO file overlap with the
+   active zotero-metadata-resolution task (see SCOPE BOUNDARIES below).
+
+=== ALREADY-VERIFIED NEGATIVE RESULT -- DO NOT RE-RUN THIS SWEEP ===
+
+The sibling-script sweep for the same MAX_ARG_STRLEN bug is COMPLETE. Every script under the
+literature extension was grepped for `--argjson` accumulation in a loop. RESULT: line 258 of
+zotero-generate-export.sh is the ONLY genuine argv-accumulation instance in the extension. Every
+other accumulator pipes the GROWING value through stdin and passes only the single new item via
+argv, so MAX_ARG_STRLEN does not apply to any of them:
+    cite-extract.sh:259, zotero-search.sh:422, literature-discover.sh:280,
+    zotero-generate-export.sh:484
+This negative result is recorded so a later reader does not re-fund the sweep as a research phase.
+
+=== ADJACENT-CODE WARNING (do not misfire here) ===
+
+Line 484 in synthesize_citekeys:
+
+    result="$(echo "$result" | jq --argjson e "$entry" '. + [$e]' 2>/dev/null || echo "$result")"
+
+This is NOT an instance of the same bug and is NOT a data-loss path. It pipes the growing
+accumulator via stdin; only the single small `$entry` crosses argv. It runs on EVERY path including
+Path 3, which is consistent with Path 3 having correctly produced the complete 4049-item export. It
+is O(n^2) and it does swallow errors, but fixing it is OUT OF SCOPE for this task. Do not rewrite it
+as though it shared the MAX_ARG_STRLEN cause -- that is exactly the adjacent-code misfire an
+implementer makes when handed a MAX_ARG_STRLEN brief.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A >200-item library exports completely via Path 1, or fails loudly with a non-zero exit and NO write.
+2. No silent-truncation path remains in fetch_path1 -- specifically, no error-swallowing
+   `2>/dev/null ||` fallback that can return a short result as success.
+3. The shrink guard blocks a catastrophic overwrite of the existing complete export and is exercised
+   by a test; its opt-out mechanism is distinct from the existing --force staleness override, with a
+   documented rationale for the chosen semantic.
+4. Regression coverage exists for the >128KiB accumulator boundary specifically, implemented offline
+   via the PATH-shadowing curl stub.
+5. The changed contract is reflected in the four verified doc touchpoints.
+
+=== SCOPE BOUNDARIES ===
+
+No dependency on the active zotero-metadata-resolution task: its file_scope covers the WRITE /
+metadata-resolution path (literature-ingest-online.sh, literature-discover.sh, zotero-item-creation.md,
+zotero-integration.md, README.md) and excludes zotero-generate-export.sh entirely -- a different
+concern from this export READ path. Keeping doc edits off zotero-integration.md leaves zero file
+overlap, deliberately so this urgent data-loss fix is not serialized behind that task's larger scope.
+
+Standing operational rule until this task lands: any regeneration must be done with Zotero CLOSED,
+so Path 3 sqlite reconstruction runs instead of the truncating Path 1.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed
+.claude/** tree -- it is a gitignored, disposable deploy artifact wiped by the next regeneration.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
 
 ### 206. Fix test fixtures missing task lookup lib
 - **Status**: [NOT STARTED]
