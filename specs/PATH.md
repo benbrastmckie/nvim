@@ -44,6 +44,17 @@ Batch 3 proposed. Stages B-E were **not** re-surveyed this pass; the 26 tasks fi
 2026-09-03 are listed under "Filed since the last survey" rather than folded into stage rows,
 so the gap is visible instead of implied away.*
 
+*Sixth pass, 2026-09-14: **re-survey of everything filed since 2026-09-03** (tasks 155-212), ranked
+by how essential each is to the core agent system working correctly rather than by theme. The
+result is the new "Core-essential path" section directly below, which supersedes Batch 3 and the
+"Filed since the last survey" table. Two facts changed underneath this file since the fifth pass:
+**decision 7 is superseded** (196 made research-first the default again, planner-first only under
+`--fast`), and 197 made forced phases work on terminal and archived tasks. Checked by execution this
+pass, not read off task text: three core test suites are red on `master` (one cause is 206's; one is
+an unfiled regression from 197; one is undiagnosed), the postflight verdict ladder accepts a
+`researched` status without checking that a report file exists, and the handoff-writer allowlist
+still names only two hard-mode agents. 22 completed tasks are awaiting `/todo`.*
+
 **Goal (two halves, in priority order)**
 
 1. `/orchestrate` is the only lifecycle entry point, driven by flags. **Done** in shape:
@@ -55,6 +66,177 @@ so the gap is visible instead of implied away.*
    nothing in context. **Not done.** The consolidation moved logic *into* the engine file without
    thinning it, and the engine is now the single largest per-invocation context cost in the
    system. Everything in Stage A below is about this.
+
+---
+
+## Core-essential path (surveyed 2026-09-14)
+
+Stage A is closed, so the orchestrator is no longer the bottleneck. What's left is a set of
+defects where the core system **silently does the wrong thing**: it loses work, reports a phase
+complete when it isn't, fails on its own entry command, or ships a fix that never reaches the repos
+that use it. This section ranks the 52 open tasks by that test. Everything under Stages B-E below is
+now historical context; where they disagree, this section wins.
+
+### What landed since the fifth pass (2026-09-08 → 2026-09-14)
+
+| Task | What it changed for the core |
+|---|---|
+| 180, 181 | Redeploy checkpoint: consumer walk opt-in (`--consumer-report`); defer messages name the blocking finding; flaky/unattributable findings no longer defer a batch |
+| 189 | JSON stdout channel discipline across the orchestrate pipeline, plus `lint-json-channel-discipline.sh` |
+| 191, 192 | `git-snapshot.sh` refuses to revert out-of-scope work; `guard-destructive-git.sh` blocks directory/glob `git add` pathspecs |
+| **196** | **Research-first is the default again**; planner-first only under `--fast`. Supersedes decision 7 below; `needs_research` plumbing kept |
+| 197 | Forced phases on terminal and archived tasks; shared archive-aware `lib/task-lookup-lib.sh` |
+| 201 | Canonical runtime-file class in `lib/runtime-file-patterns.sh` |
+| 203-205 | Per-project lean-lsp MCP registration (extension) |
+| 155-157, 171, 176, 178-179, 186 | Extension or doc fixes |
+
+All 22 are still in `active_projects` at `[COMPLETED]`; `/todo` has not run.
+
+**Measured this pass**: `skill-orchestrate/SKILL.md` 16,025 B (≤ 20,000 B ceiling holds; +566 B
+since 2026-09-08), `commands/orchestrate.md` 17,755 B, eager load 65,198 B (~16.3k tokens,
++2,213 B), `commands/task.md` 40,726 B (44 recorded 37,465 B).
+
+### Verified by execution this pass
+
+- **Three core suites are red on `master`.**
+  - `test-postflight-deploy-gate.sh`: 7 FAIL. The fixture's `REQUIRED_LIBS` omits
+    `task-lookup-lib.sh`, which `task-lock.sh:197` now sources unconditionally. This is **206**.
+  - `test-lint-json-channel-discipline.sh`: 2 FAIL. Real-corpus violation at
+    `orchestrate-triage-classify.sh:225`, added by 197 phase 9's argv-length fix (`3d100ff42`).
+    **Unfiled.**
+  - `test-gate-out-repair-reporting.sh`: 4 FAIL (Cases 3, 4, 6). This fixture copies `lib/*.sh`
+    whole, so it isn't 206's cause. **Undiagnosed, unfiled.**
+  - For contrast, the eight orchestrate suites that source the new lib directly all pass
+    (cycle-plan, cycle-postflight, triage-classify, churn, phase-heartbeat, loop-guard-budget,
+    context-growth, predispatch-review).
+- **A missing research report is not caught.** In `orchestrate-cycle-postflight.sh`'s verdict
+  ladder (~line 857), a recovered `.return-meta.json` reporting `researched` maps straight to
+  `verdict=ok`, and nothing checks that the report file exists. A dispatch that writes neither file
+  gets `failed`, but any findings it sent by message are thrown away. This is **212**'s part (a),
+  answered.
+- **The handoff-writer allowlist is unchanged.** `is_contractual_handoff_writer()`
+  (`orchestrate-cycle-postflight.sh:421-424`) names only `cslib-implementation-hard-agent` and
+  `lean-implementation-hard-agent`. When any base-mode agent's handoff is missing, no defect is
+  recorded. This is **195**, still live.
+- **188 is still live.** `orchestrate-predispatch-review.sh` contains no archive lookup, even though
+  197 shipped the shared archive-aware library it could call.
+
+### Tier 1: the core misreports or fails on its own entry path (do first)
+
+| Rank | Task | Why it's essential | Eligible | Collides with |
+|---|---|---|---|---|
+| 1 | **212** gate research dispatch on a missing report | Records a research phase complete with no report (verified above) and loses message-borne findings. Every task's first dispatch is research by default since 196, so this sits on the hottest path in the system | after 194 | 195 (`orchestrate-cycle-postflight.sh`, now in 212's `file_scope`; edge 195←212 applied); 194 (`general-research-agent.md`; edge 212←194 applied) |
+| 2 | **200** consumer deploy propagation | A completed fix stays broken in consumer repos indefinitely; observed live with 176's lean fix. Without this, every other row in this table is "done" only in this repo | yes | 76 (`skill-base.sh`, a critical path) |
+| 3 | **194 → 195** handoff contract, then writer predicate | Base-mode failures are excused at postflight and go unattributed (verified above). 195 also waits on 162 | 194 yes; 195 after 194 + 162 + 212 | 212, 198, 139 (agent files) |
+| 4 | **209** init consumer `specs/` + `specs/.gitignore` | `/task` fails at its first command in any fresh repo, and every scoped commit there picks up lock and session files (observed 2026-09-14, twice) | yes | 210, 211, 44 (`commands/task.md`); 51 (edges applied) |
+| 5 | **210** topic assignment order in `/task` create | Create mode as written always exits 4 at step 4.5 and leaves `active_topics` empty; the zero-topic picker isn't a valid `AskUserQuestion` input | after 209 | 209, 211 |
+| 6 | **206** + the two unfiled red suites | A red gate teaches people to ignore gates. Cheap. `file_scope` now names all three suites | yes | 170 (`core/scripts/tests/`; edge applied) |
+
+### Tier 2: wide batches are safe (the default mode runs many tasks at once)
+
+Three live incidents on 2026-09-08 and 09-09 share one root cause: concurrent dispatches write to
+shared state, and admission can't see the collision. They were (a) two sessions editing
+`orchestrate-cycle-plan.sh` at once (190), (b) a default-mode snapshot stashing a sibling
+dispatch's work (198, 199), and (c) a pair dispatched with no collision check because neither task
+declared a `file_scope` (165). 191 and 192 closed two of the mechanisms. The rest is one chain:
+
+```
+162 (harvest file_scope from plans) ─┬─> 164 (backfill) ─┐
+                                     └─> 195             ├─> 165 (admission posture for absent scope) ─┬─> 190 (cross-session admission)
+188 (Class A archived false positive) ──> 163 (surface absent scope) ─┘                                └─> 193 (territory in base-mode briefs) ─┬─> 199 (isolation posture)
+                                                                                                                                                └─> 182 (redeploy ledger) ─> 183
+194 (handoff contract, all agent files) ─┬─> 139 (forbid concurrent history rewrites) ─┬─> 140 (hook predicate)
+                                        │                                             └─> 14  (no fan-out; marker/commit sync)
+                                        ├─> 198 (lean agents: --no-revert snapshot)
+                                        └─> 212 ─> 195
+```
+
+The diagram above predates the 2026-09-14 edge update in one respect: **193 no longer depends on
+165.** 193 now waits only on 197, which is done. 162 and 188 are both eligible now.
+
+**Edge loosened (applied 2026-09-14)**: 193←165 was removed. Putting territory into base-mode
+briefs only needs whatever `file_scope` already exists; it doesn't need the absent-scope ruling.
+
+### Tier 3: correct but costly, noisy, or misrouting
+
+| Task | Why not higher |
+|---|---|
+| **211** task-type keyword false positives | Misroutes to the wrong agent (meta/lean4) but the user sees the type at creation. Serialize after 209/210 (`commands/task.md`) |
+| **51** runtime files out of `specs/` root + reaper coverage | Clutter and unreaped files, not wrong behaviour; must re-check 209's generated `specs/.gitignore` whichever lands second |
+| **172 → 173/174/175** bounded build waiters | 22 leaked poll loops in one lean batch; the core pattern gap is real but the trigger is lean builds |
+| **170** isolate shell suites from host state | Flaky gates under load; eligible (151, 169 done) |
+| **127** collapse routing ladder | Dead manifest keys; its item (6), which lints routing entries that name a nonexistent agent, is the part with correctness value |
+| **136** plan Status-line ownership, **166** section-heading conformance | Validator noise; recoverable |
+| **182 → 183** redeploy ledger, loop-guard staleness disposition | Cost, not correctness, now that 180/181 removed the batch-deferring behaviour; gated behind 193 in Tier 2 |
+| **89, 44** context budgets | Per-invocation tokens only |
+
+### Not on the core path
+
+Extension, editor, or doc work. Some items are live defects inside their own extension and matter
+there: **43** (email safety context never loads) and **207** (a Zotero export silently truncates and
+overwrites a complete export) deserve priority within their extensions.
+
+22 (.opencode spam), 29 → 30 (MCP from manifests), 39, 43, 45, 202 (picker UI), 74 → 75/76,
+167 (latex watcher), 168, 177, 184, 185, 187, 129, 207 → 208.
+
+### Edges and scopes applied to `state.json` (2026-09-14)
+
+These went through `state-write.sh --regen-todo`. The result was diffed against a dry run and
+matched. `validate-state.sh` reports 0 failures.
+
+| Change | Tasks | Why |
+|---|---|---|
+| Dependency added | 212←194, 198←194, 139←194 | Same agent files. 194's former glob scope was invisible to the overlap predicate, which admitted 194 alongside all three |
+| | 195←212 | Both edit `orchestrate-cycle-postflight.sh` |
+| | 210←209, 211←210, 44←211 | All edit `commands/task.md`; fix behaviour before slimming |
+| | 51←209 | Same runtime-file list and standards doc |
+| | 170←206 | Both edit `core/scripts/tests/` |
+| | 136←166 | Both edit `validate-artifact.sh` |
+| Dependency removed | 193←165 | See Tier 2 |
+| `file_scope` added | 212: `orchestrate-cycle-postflight.sh` · 188: `orchestrate-predispatch-review.sh` · 206: the three red suites · 183: `orchestrate-cycle-plan.sh` | These tasks declared no scope, or an incomplete one, so admission couldn't see them |
+| `file_scope` replaced | 194: `agent-system/extensions/*/agents/**` → the 19 concrete `extensions/<ext>/agents/` directories | A glob matches nothing in the prefix-overlap predicate. `validate-state.sh` now WARNs that 194's scope is coarse (it overlaps 14, 76, 136, 139, 166, 175, 198, 212). That's accurate and intended: 194 audits every agent |
+
+### Recommended batches (supersede Batch 3)
+
+Two admission rules shape what actually runs in parallel:
+
+1. **Critical-path tasks run one per cycle.** A task whose `file_scope` names an orchestrator-critical
+   path (`context/reference/orchestrator-critical-paths.json`) takes the single designated slot.
+   Those paths include `SKILL.md`, `skill-base.sh`, `task-lock.sh`, `orchestrate-batch-admit.sh` and
+   the cycle scripts.
+2. **The lowest task number wins that slot, not the highest priority.** Keep 14, 51 and 170 out of
+   any batch whose critical members should go first.
+
+Waves below are dependency waves. Each task still takes several cycles, one per phase
+(research → plan → implement).
+
+```
+# Batch A: Tier 1 + chain heads (12 tasks). Critical-path members: 200, 212.
+/orchestrate 194, 206, 209, 188, 139, 200, 212, 210, 198, 163, 140, 211
+#   wave 1: 194, 206, 209, 188            + 200 (critical)   <- confirmed by orchestrate-cycle-plan.sh --dry-run
+#   wave 2: 210, 198, 139, 163            + 212 (critical)
+#   wave 3: 211, 140
+
+# Batch B: file_scope chain + handoff predicate (7 tasks). Nearly all critical-path, so effectively serial.
+/orchestrate 162, 164, 193, 195, 165, 190, 199
+#   order: 162 -> 193 (+164 alongside) -> 195 -> 165 -> 190 -> 199
+
+# Batch C: Tier 3 cleanup (14 tasks). Parallel: 166, 172, 127, 89, then 173/174/175, 136, 44.
+/orchestrate 166, 172, 127, 89, 173, 174, 175, 136, 44, 14, 51, 170, 182, 183
+#   critical-path, serial: 14 -> 51 -> 170 -> 182 -> 183
+```
+
+**Dry-run evidence (2026-09-14)**: `orchestrate-cycle-plan.sh --dry-run` on Batch A's twelve
+numbers dispatched exactly 194, 206, 209, 188 and 200, with nothing deferred or blocked. 139 was
+correctly withheld pending 194. Batches B and C were not dry-run; their dependencies aren't
+satisfied yet, so a dry run would show only their heads.
+
+Keep 76 out of any batch containing 200 (both edit `skill-base.sh`). Off-path tasks (see "Not on the
+core path") can ride along with any batch that has room.
+
+Before Batch A: run `/todo` to archive the 22 completed tasks. 197's archive-aware lookup makes that
+safe for dependency resolution, but only this session's green suites back that claim. The fixture
+that exercises `task-lock.sh` in isolation is red (206).
 
 ---
 
@@ -377,7 +559,12 @@ report entirely; `--dry-run` reads live off `orchestrate-cycle-plan.sh`).
 held throughout: each member touched `SKILL.md` or another critical path, so each took the
 designated-candidate slot and serialized one per cycle whether batched or not.
 
-**Batch 3 — the next one to run.** Stage A is closed, so the serialization constraint that
+**Batch 3: mostly done, superseded 2026-09-14.** 180, 181 and 189 landed. 182 is now gated
+behind 193, and 188 moved into Tier 2's chain head. 44 and 89 were not run. See "Recommended
+batches (supersede Batch 3)" under Core-essential path for what to run next. The original text
+follows for the record.
+
+**Batch 3 (as proposed 2026-09-08).** Stage A is closed, so the serialization constraint that
 shaped Batches 1-2 is gone for everything except the orchestrator-critical cluster below. Two
 candidate groupings, in priority order:
 
@@ -426,14 +613,23 @@ not** run 76 alongside a Stage A member (it touches `skill-base.sh`).
    outlives it.
 6. **Hard mode: kept in full**, contract injection and the stateful counters both. 148 builds
    `orchestrate-churn.sh` as specified.
-7. **Research on demand.** The planner is dispatched first and asks for research only when the
-   plan would otherwise rest on guesses; `--research` forces research first. 150.
+7. ~~**Research on demand.** The planner is dispatched first and asks for research only when the
+   plan would otherwise rest on guesses; `--research` forces research first. 150.~~ **Superseded
+   2026-09-09 by 196**: research-first is the default for a fresh task again; `--fast` restores
+   planner-first. 150's `needs_research` return path survives and is still honoured when the
+   planner runs first.
 8. **Dry-run report: retired.** Rarely used, and two renderings of one verdict is how 141's
    defect arose. `orchestrate-cycle-plan.sh --dry-run` prints the plan it would dispatch. 147.
 9. **Consumer validation: no fixed checks.** This file recommends tests to run (next section);
    it does not gate completion on them.
 
-Nothing is open. New questions go here as they arise.
+**Recorded 2026-09-14:**
+
+10. **193←165 dropped.** Applied to `state.json`, together with the ten edges and five scope fixes in
+    "Edges and scopes applied".
+11. **206 widened to all three red suites.** Applied as `file_scope` only. Its description is still
+    the one-line title, so a `/revise 206` should add the two extra causes recorded under
+    Observations before it is dispatched.
 
 ---
 
@@ -478,6 +674,22 @@ planner's questions as its focus.
 ---
 
 ## Observations, unfiled
+
+- **New 2026-09-14**: `test-lint-json-channel-discipline.sh` fails on the real corpus at
+  `orchestrate-triage-classify.sh:225` (`printf ... > "$archived_projects_tmpfile"` in a script
+  whose header declares JSON-on-stdout). It was introduced by `3d100ff42`, and it's probably a lint
+  false positive on a redirected write rather than a real channel leak. Either way the suite is red.
+- **New 2026-09-14**: `test-gate-out-repair-reporting.sh` Cases 3, 4 and 6 fail (fix counts read 0).
+  The last edits to its subjects came from 197 phases 3-4 (`skill-base.sh`). Undiagnosed.
+- ~~212's declared `file_scope` omits `orchestrate-cycle-postflight.sh`~~ **Resolved 2026-09-14**:
+  added, with edge 195←212.
+- **New 2026-09-14**: a glob entry in `file_scope` collides with nothing in practice. Admission
+  admitted 194 (`*/agents/**`) alongside 198, 139 and 212, all of which edit agent files. The
+  prefix-overlap predicate (`lib/file-scope-overlap.sh`) evidently doesn't expand globs. 194 was the only instance and is
+  fixed. Neither task creation nor `validate-state.sh` rejects glob entries, though, so the class
+  can recur.
+- The 240 MB `literature-pyenv/` virtualenv is **still** untracked and un-ignored (re-checked
+  2026-09-14).
 
 - ~~`--hard` undocumented in `orchestrate.md`'s Options table~~ **Resolved by 145, 2026-09-03**:
   `orchestrate.md:46` now documents it in the Options table.
@@ -557,15 +769,21 @@ cluster, so sequencing is now a priority question rather than a dependency quest
 under "Recommended batches" — the operational-defect group (180, 181, 182, 189, 188) is the
 recommended next front, because it is the machinery every other task runs on.
 
-**One caveat on this table**: Stages B-E were surveyed 2026-09-02 and have not been re-surveyed
-since. Twenty-six open tasks filed after that date appear nowhere in them — see "Filed since the
-last survey" below. The stage rows above are accurate for what they cover and silent about the
-rest; do not read "3/9 done" as "6 tasks left in B".
+**Re-surveyed 2026-09-14.** The stage rows above are stale for B-D: 13, 91, 134 and 137 have
+also completed and been archived. Every open task, including the ones filed after 2026-09-03, is now
+placed in a tier under "Core-essential path" near the top of this file.
 
-### Filed since the last survey (2026-09-03 onward, unplaced in any stage)
+| Tier | Tasks | State |
+|---|---|---|
+| 1: core misreports or fails on its entry path | 212, 200, 194 → 195, 209, 210, 206 | 0/7 done; all but 195 eligible now |
+| 2: wide batches safe | 162, 188 → 163, 164 → 165 → 190; 193 → 199; 194 → 139 → 140, 14; 194 → 198 | 0/12 done; 162, 188, 193 eligible now; 139, 198 after 194 |
+| 3: costly, noisy, misrouting | 211, 51, 172 → 173/174/175, 170, 127, 136, 166, 182 → 183, 89, 44 | 0/14 done |
+| Off the core path | 22, 29 → 30, 39, 43, 45, 202, 74 → 75/76, 167, 168, 177, 184, 185, 187, 129, 207 → 208 | extension/editor/doc |
 
-Recorded here so the roadmap stops implying these do not exist. Grouped by theme, not yet
-prioritized into stages — a re-survey pass should place them properly.
+**Critical path now**: 212 → (194 → 195), with 200 alongside. Those are the defects that make a
+correct-looking run wrong. Then the Tier 2 chain from 162/188.
+
+### Filed 2026-09-03 → 2026-09-08 (superseded by the tiers above; kept for the record)
 
 | Cluster | Tasks | Note |
 |---|---|---|
