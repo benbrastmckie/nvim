@@ -1,5 +1,5 @@
 ---
-next_project_number: 213
+next_project_number: 216
 ---
 
 # TODO
@@ -11,10 +11,12 @@ next_project_number: 213
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,162,166,167,168,172,177,184,185,187,188,193,194,200,202,206,207,209 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,75,76,136,139,163,164,170,173,174,175,182,198,199,208,210,212 | 29,74,162,166,172,188,193,194,206,207,209 | core-agent-system, extensions, literature, ... |
-| 3 | 14,140,165,183,195,211 | 139,162,163,164,182,210,212 | core-agent-system, file-scope-lifecycle |
-| 4 | 44,190 | 165,211 | core-agent-system |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,51,75,76,136,139,163,170,173,174,175,198,208,210,214 | 29,74,166,172,188,194,206,207,209,213 | core-agent-system, extensions, literature, ... |
+| 3 | 14,140,162,193,211,212,215 | 139,194,210,214 | core-agent-system, file-scope-lifecycle |
+| 4 | 44,164,182,195,199 | 162,193,211,212 | core-agent-system, file-scope-lifecycle |
+| 5 | 165,183 | 163,164,182 | core-agent-system, file-scope-lifecycle |
+| 6 | 190 | 165 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -33,10 +35,6 @@ next_project_number: 213
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
 188 [RESEARCHED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
-  └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
-    └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
-  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
     └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
@@ -51,6 +49,15 @@ next_project_number: 213
   └─ 210 [NOT STARTED] — Fix topic assignment order and zero-topic picker in /task...
     └─ 211 [NOT STARTED] — Stop /task task-type detection from matching incidental keywords
       └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
+213 [NOT STARTED] — Pass /orchestrate focus text through to the dispatch file
+  └─ 214 [NOT STARTED] — Make forced orchestrate phases stop as documented instead of...
+    └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning... (see above)
+    └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
+      └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
+        └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
+      └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+    └─ 212 [NOT STARTED] — Detect and recover research dispatches that skip their report... (see above)
+    └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -94,11 +101,102 @@ next_project_number: 213
 
 ## Tasks
 
+### 215. Add a sanctioned undo for a prepared but never-run orchestrate dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 214
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+GAP. There is no supported way to undo a dispatch that orchestrate-cycle-plan.sh prepared but that was never run (no Agent call, no postflight). The live pass changes six things before any agent runs: the preflight status write (status, last_updated, session_id), the task lock, the .dispatch/{seq}.md file, the dispatch_seq counter, the per-task cycle count in .orchestrator-loop-guard (with its pending_dispatch record), and the multi-state file. When such a dispatch is unwanted, the user has to reverse all of it by hand. guard-destructive-git.sh correctly blocks git-based undo on a dirty tree, so hand edits are the only option today.
+
+OBSERVED LIVE (2026-09-14, ~/Projects/Logos/Verification). A stray plan dispatch was prepared on a RESEARCHED task. The user restored the status, rebuilt TODO.md, and deleted the dispatch file, lock and cycle count by hand. The stray last_updated and session_id stayed in specs/state.json and were never committed or reverted, and the deleted lock file was left as an uncommitted deletion.
+
+EXISTING PIECES TO REUSE. orchestrate-cycle-plan.sh already records `pending_dispatch` {seq, phase, forced, dispatch_file, recorded_at} through `orchestrate-loop-guard-init.sh --record-pending`, and already detects an "UNCONSUMED DISPATCH REPLAY" by checking that the recorded dispatch_file still exists. task-lock.sh has `release`. update-task-status.sh and state-write.sh are the sanctioned state writers. git-commit-scoped.sh is the sanctioned path-scoped committer.
+
+WORK.
+(a) Add scripts/orchestrate-unwind-dispatch.sh <task_number> --session SID [--dry-run]. It refuses unless a pending_dispatch exists whose dispatch_file is still on disk and no postflight has consumed it. It then restores the earlier status and the earlier last_updated/session_id (record them at preflight if they are not recorded yet; decide where, e.g. in the pending_dispatch record), releases the lock only if this session holds it, deletes the dispatch file, rolls back the cycle count and clears pending_dispatch, fixes the multi-state file if it is present, regenerates TODO.md, and optionally commits only the paths it touched with git-commit-scoped.sh. It must not use destructive git.
+(b) Document it as the sanctioned recovery path in docs/architecture/orchestrate-state-machine.md and context/standards/git-safety.md (next to the guard-destructive-git.sh explanation), and point to it from the SKILL.md "Move 1" stop handling.
+(c) Decide whether the orchestrating session should call it automatically when a prepared dispatch row is never issued (e.g. a crash between Move 1 and Move 2, or a plan that is intentionally abandoned), or only by hand. Justify the choice.
+
+MUST NOT. Do not add an exemption to guard-destructive-git.sh. Do not unwind a dispatch that an agent has started or that postflight has consumed. Do not edit .claude/**.
+
+ACCEPTANCE. A fixture test prepares a live plan dispatch on a RESEARCHED task, runs the unwind script, and asserts state.json matches the pre-dispatch entry exactly (status, last_updated, session_id), TODO.md is regenerated, the lock is released, the dispatch file is gone, the loop-guard cycle count and pending_dispatch match their earlier values, and `git status --porcelain -- specs/` shows no leftovers after the scoped commit. A second case asserts it refuses once postflight has consumed the dispatch. shellcheck clean. Redeploy and confirm.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 214. Make forced orchestrate phases stop as documented instead of dispatching the next phase
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 213
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A phase-forcing flag (`--research`/`--plan`/`--implement`) is documented to STOP after the last named phase, but orchestrate-cycle-plan.sh falls through to normal status-based dispatch once the forced queue is empty. Any later call on the same session, including a "check" call, starts the next lifecycle phase for real.
+
+OBSERVED LIVE (2026-09-14, ~/Projects/Logos/Verification). After a forced research round finished and the task was RESEARCHED, the orchestrating session re-ran orchestrate-cycle-plan.sh as a final check, without the research-only flag. It moved the task to [PLANNING], wrote a new .dispatch/{seq}.md, took the task lock, added to the task's cycle count, and wrote a new last_updated/session_id into state.json. The user had to restore the status by hand, rebuild TODO.md and delete the dispatch file, lock and cycle count.
+
+ROOT CAUSE (verified in the source store).
+  - Contract: commands/orchestrate.md (`--research` row: "STOPS after the last named phase") and the merge-sources/claudemd.md /orchestrate row ("stopping after the last named phase rather than falling through to status-derived dispatch").
+  - Code: section (f) "Per-task force_phases consumption" sets `effective_group[t] = triage_group[t]` whenever `force_phases_remaining[t]` is empty. The live pass empties the queue as it dispatches (`.force_phases_remaining[$t][1:]`), and seeding uses `//=`, so later cycles never refill it. After the forced phase is dispatched, a RESEARCHED task routes to plan whether or not the flag is passed again. Nothing records that this session was a forced round.
+  - A read-only `--dry-run` already exists, but skills/skill-orchestrate/SKILL.md never says that a re-check or status probe must use it (or read mt_state_file) instead of a live call, and docs/architecture/orchestrate-state-machine.md does not document what happens after the queue empties.
+  - The contradiction also exists in docs: the CLAUDE.md multi-task paragraph says tasks fall "through to ordinary status-derived classification once its own forced sequence is exhausted". Settle on one contract.
+
+WORK.
+(a) Persist per-task "forced round" state in the multi-state file (e.g. record the original forced sequence when it is seeded). When that queue is empty, the task must be excluded from dispatch (terminal for this session, with a clear stop or skip reason) rather than routed by status. This must hold even when a later invocation omits --force-phases.
+(b) Settle the contradiction in favour of the documented STOP contract (or, if research shows fall-through is relied on, pick explicitly and fix every doc). Update commands/orchestrate.md, merge-sources/claudemd.md, docs/architecture/orchestrate-state-machine.md and SKILL.md so they agree.
+(c) SKILL.md: add a MUST NOT for live re-invocation of orchestrate-cycle-plan.sh purely to inspect state. Name `--dry-run` (or reading mt_state_file) as the only sanctioned check, and require the loop to stop on the plan's stop verdict.
+(d) Check whether an unforced live call on a forced session's mt_state_file can still charge a cycle, take a lock or write a preflight status; after the fix it must do none of these.
+
+MUST NOT. Do not change unforced behaviour for sessions that never used a forcing flag (normal lifecycle progression must continue). Do not regress status on terminal tasks (keep the monotonic-max clamp). Do not edit .claude/**.
+
+ACCEPTANCE. A regression test in scripts/tests/test-force-phases.sh reproduces the observed case: a RESEARCHED task with `--force-phases research`, research dispatched and postflighted, then (1) a second live call with the flag and (2) a live call without it. Both produce no dispatch rows, leave status RESEARCHED, write no dispatch file, take no lock, and leave cycle_counts unchanged. The test fails against the current script. An unforced multi-phase session still advances research -> plan -> implement. shellcheck clean. Redeploy and confirm in a consumer repo.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 213. Pass /orchestrate focus text through to the dispatch file
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. The focus text after the task number (e.g. `/orchestrate N --research "<questions>"`) never reaches the dispatch file. The agent is dispatched without the user's questions.
+
+OBSERVED LIVE (2026-09-14, ~/Projects/Logos/Verification). A forced research round was run with quoted focus text. The generated .dispatch/{seq}.md had no "User focus:" block, so the user had to add the questions to the dispatch file by hand before the agent read it.
+
+ROOT CAUSE (verified in the source store).
+  - commands/orchestrate.md parses `$2+` as FOCUS_PROMPT and passes `focus_prompt=` to skill-orchestrate.
+  - skills/skill-orchestrate/SKILL.md "Move 1: Plan the cycle" calls scripts/orchestrate-cycle-plan.sh with every other flag (--force-phases, --model, --clean, --lit, --hard, --fast, ...) but NOT the focus text.
+  - orchestrate-cycle-plan.sh has no --focus flag at all (its argument parser rejects unknown flags). In its live pass, section (l), it builds `--focus` for orchestrate-build-dispatch.sh ONLY from the task's own `research_questions` field, and only for research dispatches. Its own comment says a task forced by --research "passes no --focus flag at all".
+  - orchestrate-build-dispatch.sh already accepts `--focus "..."` and already renders "User focus:" (and feeds memory retrieval for research). No change is needed there.
+
+WORK.
+(a) Add `--focus "<text>"` to orchestrate-cycle-plan.sh: parse it, document it in the usage block and header, and include it in the plan-cache key if that cache would otherwise replay a composition built without it.
+(b) In section (l), pass --focus for research dispatches. When both user focus text and research_questions exist, combine them into one clearly labelled string; neither may silently replace the other. Decide and document whether plan (and implement) dispatches should also carry user focus text. Check orchestrate-build-dispatch.sh's phase gate and the single-task path, and make the behavior match the `$2+` contract in commands/orchestrate.md ("Applies to all tasks in multi-task mode").
+(c) Pass `--focus "$focus_prompt"` in SKILL.md Move 1, using the same pattern the other flags use (omit the flag when the value is empty), with quoting safe for text containing spaces and quotes.
+(d) Make --dry-run show that focus text was received, so a user can check it before a live run.
+
+MUST NOT. Do not change the research_questions path for tasks without user focus text (keep that output byte-for-byte). Do not edit .claude/**.
+
+ACCEPTANCE. A fixture test in scripts/tests/test-orchestrate-cycle-plan.sh runs a forced research cycle with `--focus "Q1? Q2?"` and asserts that the built dispatch file contains a "User focus:" block with that text; a second case with both focus text and research_questions asserts both appear; a case with no focus text matches the current output. shellcheck clean. Redeploy and confirm in a consumer repo that `/orchestrate N --research "..."` produces the block without hand edits.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
 ### 212. Detect and recover research dispatches that skip their report file
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 194
+- **Dependencies**: Task 194, Task 213, Task 214
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -345,6 +443,13 @@ shellcheck clean per context/standards/shell-strict-mode.md. Redeploy and confir
 repo.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== AMENDED 2026-09-14 (orchestrate focus/stray-dispatch survey) ===
+SECOND OBSERVATION, SAME REPO. Later /orchestrate runs in ~/Projects/Logos/Verification show that runtime files are ALREADY TRACKED, which a new ignore file alone will not fix, because git keeps tracking files that match an ignore rule. Tracked there: specs/.commit-lock/{owner,claimed_at,stale_sec}, specs/.events.lock, three specs/.orchestrator-multi-state-sess_*.json, per-task .orchestrator-loop-guard files, and per-task .lock/holder.json and .dispatch/*.md files (their deletions later showed up as uncommitted " D" entries in git status). Newer multi-state and .return-meta-multi-*.json files are untracked but not ignored.
+ADDED WORK.
+(g) The setup script (or a clearly named companion step it calls) must find already-tracked files matching runtime-file-patterns.sh under specs/ and untrack them with `git rm --cached` (never deleting the working copy), then leave the change staged for the caller's scoped commit or report it. Run it idempotently wherever (c) calls the setup script, and never on .orchestrator-handoff.json or .return-meta.json.
+(h) check-runtime-file-tracking.sh must report already-tracked runtime files as a failure, even when specs/.gitignore covers them.
+ADDED ACCEPTANCE. In a scratch repo where .commit-lock/, .events.lock, a .lock/holder.json, a .dispatch/1.md, a .orchestrator-loop-guard and a multi-state file are committed, running the setup path untracks all of them while leaving the files on disk; the next scoped commit plus the lock release leaves `git status --porcelain -- specs/` empty.
 
 ---
 
@@ -791,7 +896,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 191, Task 192, Task 193
+- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 214
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -904,7 +1009,7 @@ SCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 162, Task 194, Task 212
+- **Dependencies**: Task 162, Task 194, Task 212, Task 213, Task 214
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
 
@@ -980,7 +1085,7 @@ ACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, cons
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 197
+- **Dependencies**: Task 197, Task 213, Task 214
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -1127,7 +1232,7 @@ ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 182
+- **Dependencies**: Task 182, Task 213, Task 214
 
 **Description**: Decide whether to port the hard-mode loop-guard operational-staleness detector into orchestrate-cycle-plan.sh, or record its removal as accepted.
 
@@ -1152,7 +1257,7 @@ ACCEPTANCE: a recorded decision with rationale; if ported, the detector works un
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 181, Task 193
+- **Dependencies**: Task 181, Task 193, Task 213, Task 214
 
 **Description**: Give the /orchestrate inter-cycle redeploy checkpoint a durable run ledger so it stops re-running a full redeploy that just happened.
 
@@ -1801,7 +1906,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 197
+- **Dependencies**: Task 197, Task 213, Task 214
 - **Research**: [162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md]
 
 **Description**: Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.
@@ -2381,7 +2486,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 88, Task 139
+- **Dependencies**: Task 88, Task 139, Task 213, Task 214
 
 **Description**: === REVISED 2026-08-24 (refactor survey) ===
 NARROWED: roughly half of this task already landed with the handoff-identity work and must not be redone. skill-orchestrate/SKILL.md:2374,2384 now treats in_progress (and null/empty) as OFF-SCHEMA rather than routing it toward failed_tasks, and orchestrate-recover-outcome.sh:233 emits a clean STATUS_IN_PROGRESS verdict. Verified in the source store today.
