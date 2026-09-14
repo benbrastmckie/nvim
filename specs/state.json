@@ -720,7 +720,8 @@
       "priority": "medium",
       "title": "Add a concurrency-gated history-rewrite predicate to guard-destructive-git.sh",
       "dependencies": [
-        139
+        139,
+        215
       ],
       "file_scope": [
         "agent-system/extensions/core/hooks/guard-destructive-git.sh",
@@ -883,7 +884,8 @@
       "dependencies": [
         151,
         169,
-        206
+        206,
+        215
       ],
       "artifacts": [],
       "file_scope": [

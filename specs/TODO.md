@@ -12,9 +12,9 @@ next_project_number: 216
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,75,76,136,139,163,170,173,174,175,198,208,210,214 | 29,74,166,172,188,194,206,207,209,213 | core-agent-system, extensions, literature, ... |
-| 3 | 14,140,162,193,211,212,215 | 139,194,210,214 | core-agent-system, file-scope-lifecycle |
-| 4 | 44,164,182,195,199 | 162,193,211,212 | core-agent-system, file-scope-lifecycle |
+| 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214 | 29,74,166,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
+| 3 | 14,162,193,211,212,215 | 139,194,210,214 | core-agent-system, file-scope-lifecycle |
+| 4 | 44,140,164,170,182,195,199 | 139,162,193,206,211,212,215 | core-agent-system, file-scope-lifecycle |
 | 5 | 165,183 | 163,164,182 | core-agent-system, file-scope-lifecycle |
 | 6 | 190 | 165 | core-agent-system |
 
@@ -58,6 +58,8 @@ next_project_number: 216
       └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
     └─ 212 [NOT STARTED] — Detect and recover research dispatches that skip their report... (see above)
     └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
+      └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
+      └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -1375,7 +1377,7 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 151, Task 169, Task 206
+- **Dependencies**: Task 151, Task 169, Task 206, Task 215
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
@@ -1940,7 +1942,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 139
+- **Dependencies**: Task 139, Task 215
 
 **Description**: Give agent-system/extensions/core/hooks/guard-destructive-git.sh a SECOND, INDEPENDENT predicate that blocks or loudly warns on history rewrites (`git commit --amend`, `git reset` without `--hard`) when evidence of a concurrent writer exists. This is the enforcement half of the policy its predecessor task establishes in the rules and agent contracts.
 
