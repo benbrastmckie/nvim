@@ -1,17 +1,17 @@
 ---
-next_project_number: 209
+next_project_number: 213
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-12. Generated from state.json dependency graph.*
+*Updated 2026-09-14. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202,206,207 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202,206,207,209,210,211,212 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 14,30,75,76,140,163,164,173,174,175,195,208 | 29,74,139,162,172,188,194,207 | core-agent-system, extensions, literature, ... |
 | 3 | 165 | 163,164 | file-scope-lifecycle |
 | 4 | 190,193 | 165 | core-agent-system |
@@ -45,6 +45,10 @@ next_project_number: 209
   └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
 206 [NOT STARTED] — Fix test fixtures missing lib/task-lookup-lib.sh
+209 [NOT STARTED] — Set up a fresh repo specs/ state and runtime-file ignore...
+210 [NOT STARTED] — Fix topic assignment order and zero-topic picker in /task...
+211 [NOT STARTED] — Stop /task task-type detection from matching incidental keywords
+212 [NOT STARTED] — Detect and recover research dispatches that skip their report...
 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
   └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
@@ -92,6 +96,260 @@ next_project_number: 209
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 212. Detect and recover research dispatches that skip their report file
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. Research subagents sometimes skip their only required deliverable, the report file plus
+.return-meta.json, and send their findings by message instead, citing an instruction that doesn't
+exist.
+
+OBSERVED (2026-09-01, /orchestrate batch of 7 tasks, session sess_1788267679_adbb09; the repo
+wasn't recorded, so find it by grepping consumer repos' specs/ for that session id). Seven
+general-research-agent subagents ran concurrently with prompts requiring a report and
+.return-meta.json. 5 of 7 wrote neither file. Three explained why by citing rules that don't
+exist:
+  - research-128: "No files were written -- per this session's operating notes, findings were
+    delivered directly to team-lead via SendMessage rather than as report artifacts"
+  - research-133: "no `.return-meta.json` written by this research pass per this session's
+    no-report-file instruction"
+  - research-120: "No files were modified -- this was research only."
+research-123 and research-130 wrote both files correctly with the same prompt structure, so
+nothing in the environment blocked writes. Checked and absent: no such instruction in
+.claude/settings.json, settings.local.json, ~/.claude/settings.json hooks, the agent definition or
+the dispatch prompts. The findings themselves were high quality; only the files were lost.
+
+POSSIBLE CAUSE (unconfirmed). The session's bypass-permissions preamble ("do your work through the
+Bash tool wherever it can accomplish the job", "Do not call the AgentTool unless the user
+requested it") may have been over-generalized by subagents into a ban on writing files.
+
+WORK.
+(a) Check the current behavior first. When a research dispatch returns without the report or
+    .return-meta.json, does skill-orchestrate's postflight (or the dispatch validation) detect it
+    today, and what happens: re-dispatch, [PARTIAL], or silently accepted? Report what you find
+    before designing anything.
+(b) If there's no check, add a hard gate after dispatch: a missing or empty report file or
+    .return-meta.json fails the dispatch. Keep any findings the agent returned by message: write
+    them into the report path, marked as recovered from the agent's message, then re-dispatch or
+    mark [PARTIAL] per context/contracts/recovery.md. Findings must never be lost.
+(c) Harden general-research-agent.md (and the other research agents and the shared research
+    contract): writing the report file is mandatory, no session-level note overrides it, and
+    "findings delivered by message" does not count as completion.
+(d) If feasible, try to reproduce the cause: several concurrent research dispatches under
+    bypass-permissions. Record the outcome whether or not it reproduces.
+
+MUST NOT. Do not discard findings that arrived only by message. Do not serialize batch research
+dispatch as the fix; concurrency is intended. Do not weaken the .return-meta.json shape contract.
+
+ACCEPTANCE. A fixture simulates a research dispatch that returns findings by message with no
+report file. The orchestrator detects it, keeps the findings in the report path, and marks the
+dispatch failed/partial or re-dispatches, and never records the research phase as complete.
+Agent definitions state that the report file is mandatory. shellcheck clean for any shell touched.
+Redeploy and confirm.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 211. Stop /task task-type detection from matching incidental keywords
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and
+agent-system/extensions/literature/ (never .claude/**).
+
+DECIDE, THEN IMPLEMENT: how should /task pick a task_type when a routing keyword appears in a
+description only in passing?
+
+DEFECT. commands/task.md step 4 picks the type from the first keyword match, and three rules
+misroute real descriptions:
+  (a) Step 4a (line ~121): "meta", "agent", "command", "skill" anywhere in the description ->
+      `meta`, with no exceptions. Here "agent" means an AI agent, not this repo's agent system.
+      Observed 2026-09-14, ~/Projects/Logos/Verification: "research and revise the AI agent
+      objectives ... training models ... agent harnesses" would have become a meta task.
+  (b) Step 4d, first row: "lean", "proof", etc. -> `lean4`. Observed the same day: a
+      business-strategy description asking "Why Lean over Rocq when there are more resources for
+      software verification in Rocq?" would have been routed to the Lean agents, and a
+      description mentioning "the Logos proof theory" matches "proof". In both cases the
+      maintainer overrode the type to `general` by judgment, which the command doesn't allow for.
+  (c) Step 4b: the literature extension's manifest.json has
+      `keyword_overrides: {"meta": {"keywords": ["literature","zotero","bibliography","citation"]}}`
+      (verified still present in the source store). Step 4b treats the key as the task_type, so
+      any description containing the word "literature" becomes meta. Observed 2026-09-03 on a
+      lean4 formalization task. context/guides/extension-development.md (~lines 103-108) already
+      warns that single common words are prone to false positives.
+
+PRIOR WORK. The earlier fix that limited typst/latex task types to formatting-only work solved
+this problem for step 4d's tool-name rows only (by putting content rows first). It did not touch
+step 4a, the lean4 row or extension overrides.
+
+OPTIONS TO WEIGH (score each against all three observed cases):
+  1. Narrower keywords: 4a matches only agent-system signals (".claude/", "agent system",
+     "slash command", "SKILL.md", a named skill or agent), not bare words.
+  2. Confirmation: when the match comes from one keyword in a long or mixed description, show the
+     detected type, the keyword that caused it, and one or two alternatives in a question to the
+     user. Needs a fixed default for autonomous callers (see topic-assignment-pattern.md's
+     Autonomous Context section).
+  3. Content scoring: count signals per type across the whole description, not first-match-wins.
+  A mix of these is fine. Define the exact rule.
+
+WORK.
+(a) Fix the literature manifest: remove the override or map it to the correct type, and document
+    that keyword_overrides keys ARE task types (check the other manifests for the same mistake).
+(b) Implement the chosen detection rule in commands/task.md and in every other place that repeats
+    the table (grep for it; /fix-it, /review, /spawn and /meta may have copies), ideally from one
+    shared definition.
+(c) Update the CLAUDE.md merge source for the Task-Type-Based Routing section if its description
+    changes.
+
+MUST NOT. Do not change how /meta sets task_type directly. Do not make detection ask questions
+in autonomous contexts. Do not remove the rule that genuine agent-system descriptions resolve to
+meta.
+
+ACCEPTANCE. A fixture test runs the detection rule on: the two Verification descriptions above
+(expected: general), the Sep 3 lean4-with-"literature" description (expected: lean4),
+"Update skill-orchestrate's dispatch to pass --lit" (expected: meta), and "Prove soundness lemma
+in Metalogic/Soundness.lean" (expected: lean4). All pass from the deployed copy.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 210. Fix topic assignment order and zero-topic picker in /task create mode
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. Topic assignment in /task create mode has three problems:
+  (a) Wrong order. commands/task.md step 4.5 (line ~209) runs
+      `bash .claude/scripts/manage-topics.sh set "$next_num" "$topic"` BEFORE step 6 adds the
+      task to state.json. manage-topics.sh `set` exits 4 (task-not-found, line ~160) when the task
+      doesn't exist, so as written the step always fails.
+  (b) Topic never registered. Step 6's state-write.sh filter sets the task's `topic` field but
+      does not add the topic to `active_topics`. Following the steps as written leaves
+      active_topics empty. Observed 2026-09-14 in ~/Projects/Logos/Verification: after step 6,
+      `jq .active_topics` was [] until manage-topics.sh add/set was run by hand afterwards.
+  (c) Picker breaks with no topics. When active_topics is empty (every fresh repo's first task),
+      the Mode A picker in context/patterns/topic-assignment-pattern.md produces just
+      ["New topic..."]. The AskUserQuestion tool requires 2-4 options, each with a label and a
+      description. The pattern doc's templates also use a `"type": "select"` / `"freeText"` shape
+      that doesn't match the tool's real schema, so every caller has to improvise.
+
+For comparison, Expand Mode and Review Mode already call `set` after the state write. Only create
+mode has the order wrong, which suggests an editing slip rather than a design choice.
+
+WORK.
+(a) Move the manage-topics.sh call in create mode to after step 6's write, or add the topic to
+    active_topics inside step 6's filter and drop the separate call. Pick one approach and use it
+    everywhere a task is created (create, expand, review follow-ups, recover, and /spawn, /fix-it,
+    /review, /meta). Check each caller's order; don't assume.
+(b) Rewrite the AskUserQuestion templates in topic-assignment-pattern.md to match the tool's real
+    schema (question, header, multiSelect, and options as {label, description}).
+(c) Define what happens with zero existing topics. For example, offer 1-2 topic names suggested
+    from the description plus "New topic...", or go straight to free-text input. Keep the rule
+    that topic assignment is mandatory: no Skip option, and the "Defer" option stays exclusive to
+    --sync backfill.
+(d) Add a fixture test: create mode on a state with zero topics and on a state with existing
+    topics. Both leave the task's topic and active_topics set, with no non-zero exit from
+    manage-topics.sh.
+
+MUST NOT. Do not add a Skip or Defer option to any creation path. Do not change manage-topics.sh's
+exit-code contract; callers depend on exit 4.
+
+ACCEPTANCE. Following commands/task.md create mode exactly as written on a fresh state.json
+produces a task with its topic set and the topic listed in active_topics, and no step exits
+non-zero. The pattern doc's templates are valid AskUserQuestion inputs. Fixture tests cover both
+cases. shellcheck clean for any shell changed. Redeploy and confirm.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 209. Set up a fresh repo specs/ state and runtime-file ignore rules automatically
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A consumer repo that has never used the task system has no specs/ state and no ignore
+rules for runtime files. Two things break the first time /task runs there:
+  (a) /task create mode assumes specs/state.json exists. Its first command
+      (`jq -r '.next_project_number' specs/state.json`) fails with "No such file or directory",
+      and no documented step creates specs/state.json, specs/archive/state.json or specs/TODO.md.
+      The agent has to build them by hand from context/schemas/state-schema.json.
+  (b) The repo's .gitignore has none of the runtime-file patterns, so every
+      `git-commit-scoped.sh ... -- specs/` commit picks up the system's own lock and session files.
+
+OBSERVED LIVE (2026-09-14, ~/Projects/Logos/Verification, fresh repo; root .gitignore is only
+`/.claude` and `/.agent-logs`).
+  - Commit 37544c5 (first task creation) added specs/.commit-lock/{owner,claimed_at,stale_sec}.
+    The script then released the lock, which deleted those files from disk and left three unstaged
+    deletions. Commit 76aac71 cleaned them up by hand.
+  - Commit 4b8541d (second task creation) did the same thing again (cleanup commit 9ac4674). It
+    also picked up a concurrent session's specs/.events.lock,
+    specs/.orchestrator-multi-state-sess_*.json, specs/.sessions/sess_*.json,
+    specs/001_*/.dispatch/2.md and specs/tmp/claude-tts-notify.log.
+  The scoped-commit form was used correctly each time. The files simply weren't ignored.
+
+WHY EARLIER FIXES DIDN'T HELP. scripts/lib/runtime-file-patterns.sh already defines the full
+runtime-file list, including `**/.commit-lock/`, and runtime_ignore_block() prints it. But
+context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" section still treats
+adding it to a repo as a manual paste into the repo-root .gitignore. A fresh repo never gets it.
+The earlier ignore-list work ruled out delivering a repo-root .gitignore from the source store,
+because root_files deploys into .claude/. That limitation does not apply to specs/.gitignore:
+patterns in that file are relative to specs/, so it can be written directly.
+Separately, specs/tmp/ is not in the runtime-file list at all.
+
+WORK.
+(a) Add one idempotent setup script (e.g. scripts/init-specs.sh). It creates specs/,
+    specs/archive/, a schema-valid specs/state.json (next_project_number 1, empty
+    active_projects and active_topics), specs/archive/state.json and a generated specs/TODO.md.
+    It MUST NOT overwrite anything that already exists.
+(b) Have the same script write or refresh specs/.gitignore from runtime-file-patterns.sh,
+    converted to patterns relative to specs/. Decide whether to use a marked managed block (so
+    user-added lines survive) or to own the whole file, and justify the choice.
+(c) Call the script from /task create mode before step 1, and from any other command that can
+    be the first to touch specs/ (/orchestrate, /meta, /fix-it, /review, /spawn; check the list,
+    don't assume it). Also decide whether deploy (the extension loader and deploy-headless.sh)
+    should run it, and respect .syncprotect if it does.
+(d) Add specs/tmp/ (or whatever the TTS notify hook's log directory really is; find its writer)
+    to runtime-file-patterns.sh, so every place that uses the list stays in agreement.
+(e) Update orchestrator-runtime-files.md's Consumer Repo Setup section: the specs/ ignore rules
+    are now installed automatically, and any remaining manual step is stated plainly.
+(f) Make check-runtime-file-tracking.sh accept specs/.gitignore as valid coverage, not just the
+    repo-root .gitignore.
+
+COORDINATION. The task that moves session state files out of the specs/ root
+(move_session_state_files_out_of_specs_root) edits the same list and standards file. Whichever
+lands second must re-check that the generated specs/.gitignore covers the new paths.
+
+MUST NOT. Do not add .orchestrator-handoff.json or .return-meta.json to any ignore list; the
+standards file says they must stay tracked. Do not write or modify the consumer's repo-root
+.gitignore. Do not overwrite existing specs/ state. Do not rewrite history in any consumer repo.
+
+ACCEPTANCE. In a scratch git repo with no specs/, running /task's create path from the deployed
+copy creates valid state files and specs/.gitignore. A following git-commit-scoped.sh commit of
+specs/ contains no .commit-lock/, .events.lock, .sessions/, orchestrator multi-state or tmp files,
+and the working tree is clean afterwards (demonstrated with a fixture test). Running the setup
+script again changes nothing. check-runtime-file-tracking.sh passes on that repo.
+shellcheck clean per context/standards/shell-strict-mode.md. Redeploy and confirm in a consumer
+repo.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 208. Explain Path 1 pagination shortfall or revisit Zotero export path-preference order
 - **Effort**: 2-4 hours
