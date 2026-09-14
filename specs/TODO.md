@@ -11,28 +11,20 @@ next_project_number: 213
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,45,51,74,89,127,129,136,139,162,166,167,168,170,172,177,184,185,187,188,194,198,200,202,206,207,209,210,211,212 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 14,30,75,76,140,163,164,173,174,175,195,208 | 29,74,139,162,172,188,194,207 | core-agent-system, extensions, literature, ... |
-| 3 | 165 | 163,164 | file-scope-lifecycle |
-| 4 | 190,193 | 165 | core-agent-system |
-| 5 | 182,199 | 193 | core-agent-system |
-| 6 | 183 | 182 | core-agent-system |
+| 1 | 22,29,39,43,45,74,89,127,129,162,166,167,168,172,177,184,185,187,188,193,194,200,202,206,207,209 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,51,75,76,136,139,163,164,170,173,174,175,182,198,199,208,210,212 | 29,74,162,166,172,188,193,194,206,207,209 | core-agent-system, extensions, literature, ... |
+| 3 | 14,140,165,183,195,211 | 139,162,163,164,182,210,212 | core-agent-system, file-scope-lifecycle |
+| 4 | 44,190 | 165,211 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
-44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
-51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
 129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
-136 [NOT STARTED] — Stop implementation agents hand-writing the plan-level Status...
-139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
-  └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
-  └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
-170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
+  └─ 136 [NOT STARTED] — Stop implementation agents hand-writing the plan-level Status...
 172 [NOT STARTED] — Define a canonical bounded-wait idiom for detached builds
   └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
   └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
@@ -41,20 +33,25 @@ next_project_number: 213
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
 188 [RESEARCHED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
-  └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
-200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
-206 [NOT STARTED] — Fix test fixtures missing lib/task-lookup-lib.sh
-209 [NOT STARTED] — Set up a fresh repo specs/ state and runtime-file ignore...
-210 [NOT STARTED] — Fix topic assignment order and zero-topic picker in /task...
-211 [NOT STARTED] — Stop /task task-type detection from matching incidental keywords
-212 [NOT STARTED] — Detect and recover research dispatches that skip their report...
-182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
-  └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
-190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
-  └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency... (see above)
+  └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
+    └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
+  └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
+    └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
+    └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
+  └─ 212 [NOT STARTED] — Detect and recover research dispatches that skip their report...
+    └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
+200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
+206 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
+209 [NOT STARTED] — Set up a fresh repo specs/ state and runtime-file ignore...
+  └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
+  └─ 210 [NOT STARTED] — Fix topic assignment order and zero-topic picker in /task...
+    └─ 211 [NOT STARTED] — Stop /task task-type detection from matching incidental keywords
+      └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
+190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
 
@@ -101,7 +98,7 @@ next_project_number: 213
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 194
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -160,7 +157,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 210
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and
 agent-system/extensions/literature/ (never .claude/**).
@@ -226,7 +223,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 209
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -565,7 +562,72 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Topic**: core-agent-system
 - **Dependencies**: None
 
-**Description**: Fix test fixtures missing lib/task-lookup-lib.sh
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. Three core shell test suites are red on master. The original title names only the first
+(a test fixture missing lib/task-lookup-lib.sh); the other two surfaced alongside it and are in
+this task's file_scope, so all three are in scope:
+  (1) scripts/tests/test-postflight-deploy-gate.sh - 7 FAIL. The fixture builds a minimal script
+      tree from an explicit lib list and that list is missing lib/task-lookup-lib.sh.
+  (2) scripts/tests/test-lint-json-channel-discipline.sh - 2 FAIL. The real-corpus pass reports a
+      VIOLATION in orchestrate-triage-classify.sh.
+  (3) scripts/tests/test-gate-out-repair-reporting.sh - 4 FAIL. Cause not yet diagnosed.
+
+VERIFIED EVIDENCE (run 2026-09-14 on master).
+  (1) test-postflight-deploy-gate.sh line ~85: REQUIRED_LIBS=(common.sh phase-heading-patterns.sh
+      status-vocabulary.sh file-scope-overlap.sh). It omits task-lookup-lib.sh, which
+      task-lock.sh:197 sources unconditionally (added with the shared archive-aware task-lookup
+      library). The fixture's task-lock.sh fails to load, so update-task-status.sh exits 2 in
+      cases c2-c5 and c7.
+  (2) test-lint-json-channel-discipline.sh flags orchestrate-triage-classify.sh:225,
+      `printf '%s' "$archived_projects_json" > "$archived_projects_tmpfile"`, as an "unredirected
+      stdout write in a script whose header declares a JSON-on-stdout contract" (line added by
+      commit 3d100ff42). The write IS redirected to a file, so this looks like a false positive
+      in the lint predicate (it probably does not recognise a redirect to a variable-named path).
+  (3) test-gate-out-repair-reporting.sh: Case 3 expects SKILL_VALIDATE_FIXES=2 and gets 0; Case 4
+      reads fixes=0 errors=1; Case 6 (stale globals check) reads fixes=0. This fixture copies
+      lib/*.sh wholesale from the deploy tree, so it is NOT the missing-lib cause. A candidate
+      (unconfirmed) is the archive-aware changes to skill-base.sh / dispatch validation in
+      commits f6051c255 and 5a446d6e1.
+  A quick grep shows other suites under scripts/tests/ that reference task-lock.sh,
+  skill-base.sh or update-task-status.sh together with explicit lib names (e.g.
+  test-update-task-status.sh, test-git-commit-scoped.sh, test-phase-heartbeat.sh,
+  test-corroborate-phase-counts.sh, test-resume-scan-nonconformance.sh); they have not been
+  checked for the same gap. The eight orchestrate suites that source task-lookup-lib.sh directly
+  were verified green and are not in scope.
+
+WORK.
+(a) Suite (1): add task-lookup-lib.sh to the fixture's REQUIRED_LIBS (plus anything else it
+    transitively needs; check by running, don't assume). Keep the fixture's explicit list rather
+    than switching to a wholesale copy unless you justify the change.
+(b) Suite (2): decide between fixing the lint predicate so a redirect to a file path held in a
+    variable is not flagged, allowlisting this line with a stated reason, or changing the code.
+    Record the decision and why. If the predicate is fixed, add a lint fixture case covering
+    `> "$var"` redirects so the false positive cannot come back, and confirm genuine unredirected
+    stdout writes are still caught.
+(c) Suite (3): diagnose the root cause first and write it down (which change altered
+    SKILL_VALIDATE_FIXES counting or reporting, and whether the test or the code is now wrong).
+    Then fix the side that is actually wrong. If the code behaviour changed on purpose, update
+    the test's expectations only with a written justification tied to that design change.
+(d) Audit every test fixture under core/scripts/tests/ that copies task-lock.sh, skill-base.sh or
+    update-task-status.sh using an EXPLICIT lib list, for the same missing-lib gap. Fix any gaps
+    found, and record the audit result (suites checked, gaps found, fixes made) in the
+    implementation summary.
+
+COORDINATION. A later task isolating shell suites from host state
+(isolate_shell_suites_from_host_state) depends on this one and edits core/scripts/tests/. Keep
+fixture changes minimal and local so that work lands cleanly on top.
+
+MUST NOT. Do not weaken or delete assertions to get suites green. Do not hand-edit .claude/**. Do
+not make task-lock.sh's source of task-lookup-lib.sh silently optional (it is a critical path)
+unless that is justified and recorded as a deliberate design decision.
+
+ACCEPTANCE. All three suites pass run from the source store and from the deployed .claude/ copy
+after redeploy. The fixture audit result is recorded. The suite (2) decision and the suite (3)
+root cause are recorded. shellcheck clean per context/standards/shell-strict-mode.md for every
+shell file touched.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
@@ -998,7 +1060,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: lean-extension
-- **Dependencies**: Task 191
+- **Dependencies**: Task 191, Task 194
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).
 
@@ -1101,7 +1163,7 @@ ACCEPTANCE. Without --fast, a not_started task dispatches research, then plan, t
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 194, Task 162
+- **Dependencies**: Task 162, Task 194, Task 212
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
 
@@ -1177,7 +1239,7 @@ ACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, cons
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 165, Task 197
+- **Dependencies**: Task 197
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -1886,7 +1948,7 @@ ACCEPTANCE. Every `lake-build-guard.sh build` invocation in the source store eit
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 151, Task 169
+- **Dependencies**: Task 151, Task 169, Task 206
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
@@ -2927,7 +2989,7 @@ DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 146
+- **Dependencies**: Task 146, Task 194
 
 **Description**: Bare git history rewrites (`git commit --amend`, `git reset` without `--hard`) are forbidden nowhere in the agent system, and the one place that looks like a prohibition is scoped so that it structurally cannot fire on the hazard that actually occurred. Add the prohibition to the rules and to the agent contracts, and correct the existing mis-scoped bullet rather than merely adding alongside it.
 
@@ -2968,7 +3030,7 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 91, Task 146
+- **Dependencies**: Task 91, Task 146, Task 166
 
 **Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
 
@@ -3265,7 +3327,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 143
+- **Dependencies**: Task 143, Task 209
 
 **Description**: Stop session-scoped orchestration runtime files from accumulating at the specs/ root, and make the existing reap path actually run. Originally scoped as "move the files into a dot-prefixed directory"; widened after a manual cleanup swept 79 stranded files across 5 repos (oldest dated 2026-07-11), because relocation alone hides the clutter without stopping the growth.
 
@@ -3300,7 +3362,7 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 87, Task 149
+- **Dependencies**: Task 87, Task 149, Task 211
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
