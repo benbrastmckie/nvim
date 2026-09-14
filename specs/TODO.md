@@ -1,5 +1,5 @@
 ---
-next_project_number: 216
+next_project_number: 217
 ---
 
 # TODO
@@ -13,9 +13,9 @@ next_project_number: 216
 |------|-------|------------|--------|
 | 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214 | 29,74,166,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
-| 3 | 14,162,193,211,212,215 | 139,194,210,214 | core-agent-system, file-scope-lifecycle |
-| 4 | 44,140,164,170,182,195,199 | 139,162,193,206,211,212,215 | core-agent-system, file-scope-lifecycle |
-| 5 | 165,183 | 163,164,182 | core-agent-system, file-scope-lifecycle |
+| 3 | 14,162,193,211,212,216 | 139,194,210,214 | core-agent-system, file-scope-lifecycle |
+| 4 | 44,164,182,195,199,215 | 162,193,211,212,216 | core-agent-system, file-scope-lifecycle |
+| 5 | 140,165,170 | 139,163,164,206,215 | core-agent-system, file-scope-lifecycle |
 | 6 | 190 | 165 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -54,12 +54,12 @@ next_project_number: 216
     └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning... (see above)
     └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
       └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
-        └─ 183 [NOT STARTED] — Decide whether to port the hard-mode loop-guard...
       └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
     └─ 212 [NOT STARTED] — Detect and recover research dispatches that skip their report... (see above)
-    └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
-      └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
-      └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+    └─ 216 [NOT STARTED] — Reset the /orchestrate cycle bound on each run and admit...
+      └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
+        └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
+        └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -103,11 +103,53 @@ next_project_number: 216
 
 ## Tasks
 
-### 215. Add a sanctioned undo for a prepared but never-run orchestrate dispatch
+### 216. Reset the /orchestrate cycle bound on each run and admit forced phases by artifact, not status
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 214
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+INTENT (user, 2026-09-14). A typical workflow is `/orchestrate N --research` several times, then `/orchestrate N --plan`, then more plan revisions, and only then `/orchestrate N` or `/orchestrate N --implement`. The cycle bound exists only to stop unbounded work WITHIN one run (e.g. a hard Lean proof). It must reset on every /orchestrate run. Forced phases must be admitted by artifacts, not status. Design for simplicity: one admission rule, no status special-case matrix.
+
+CURRENT BEHAVIOUR (verified in the source store).
+  - The counter carries over between runs, on purpose. orchestrate-cycle-plan.sh section (a2) loads cycle_counts[t] from the saved ${TASK_DIR}/.orchestrator-loop-guard (orchestrate-loop-guard-init.sh --seed). It adds 1 on every dispatch and saves it back (--flush). The limit is 5 per task, 13 with --hard. --continue-budget is the only way past it: it archives the exhausted guard to .exhausted-loop-guard-<ts>.json and resets. context/standards/orchestrator-runtime-files.md ("cycle_count semantics and the budget-continuation override (Defect B)") records "cumulative across invocations, by design", and test-session-runtime-files.sh Case 3 guards it. docs/architecture/orchestrate-state-machine.md contradicts this ("Maximum dispatch cycles per /orchestrate invocation"). Result: a few forced research/plan runs exhaust the budget and later runs are refused with MAX_CYCLES.
+  - Forced phases already override status routing (section (f)), and task_has_forced_phase admits terminal tasks. But a forced implement never checks that a plan exists: orchestrate-build-dispatch.sh finds the plan with `ls plans/*.md | sort -V | tail -1` and sends an empty plan_path when there is none.
+  - A plan dispatch sets research_artifact to `.[0]` of the task's report artifacts. Every artifact writer removes older links of the same type before adding the new one (state-management.md, "Artifacts Are Append-Only (With Same-Type Supersession)"), so that should already be the newest report. No known defect; (c) only pins it with a test.
+  - /orchestrate has no --revise. /revise N is a separate command that works at any status. orchestrate-cycle-plan.sh can already dispatch reviser-agent (the plan-revision aux kind).
+
+WORK.
+(a) Counter resets on each run. cycle_counts starts at 0 in each run's multi-state file; the saved cycle_count is no longer read or written for budgeting. The saved guard file keeps only what must persist: dispatch_seq_counter (must never repeat within a task), pending_dispatch and detected_defects. Remove --continue-budget end to end (parse-command-args.sh, commands/orchestrate.md, SKILL.md Move 1, orchestrate-cycle-plan.sh, including the exhausted-guard archive path and the MAX_INFRA_FAILURES override). Re-running /orchestrate is the explicit way to continue. Keep the per-run bound (5, or 13 with --hard) and the max_cycles stop reason. Replace the Defect B section in orchestrator-runtime-files.md with the per-run contract and why. Invert test-session-runtime-files.sh Case 3, and retire or rework test-loop-guard-budget-override.sh.
+(b) One admission rule for forced phases, keyed on artifacts:
+    - research: always admitted, at any status.
+    - plan: always admitted, at any status. If the task already has a plan (plans/*.md exists), dispatch reviser-agent (plan revision, a new plan in the current round, same as /revise). Otherwise dispatch planner-agent. There is no separate --revise flag; /revise N stays as the standalone command, unchanged.
+    - implement: admitted whenever plans/*.md exists, at any status (researched, planned, partial, completed, ...). With no plan, emit a blocked[] row ("no plan artifact; run --plan first") and dispatch nothing.
+    Dependency gating, file_scope admission and the monotonic-max status clamp are unchanged. Runs without a forcing flag keep today's status routing.
+(c) Add a test that a plan dispatch (planner or reviser) names the NEWEST report after several research rounds. Change code only if that test fails.
+(d) Record the loop-guard staleness detector's disposition: it is moot once no counter is carried between runs, because nothing stale is trusted for budgeting any more. Record it in orchestrator-runtime-files.md next to the existing detector text, not only in a summary.
+(e) Make commands/orchestrate.md (the --research/--plan/--implement rows, the removed --continue-budget row, error handling), merge-sources/claudemd.md (the /orchestrate row), skills/skill-orchestrate/SKILL.md and docs/architecture/orchestrate-state-machine.md agree with (a)-(c).
+
+MUST NOT. Do not let dispatch_seq_counter reset or repeat. Do not change routing for runs without a forcing flag. Do not add a status matrix; (b) is the whole rule. Do not edit .claude/**.
+
+ACCEPTANCE.
+  - Fixture: six forced runs in a row on one task (separate sessions) are never refused for budget, and within ONE run the bound still stops the task at 5 (13 with --hard).
+  - --implement on a RESEARCHED task that has a plan dispatches implement; --implement on a task with no plan yields a blocked[] row and no dispatch file, lock or status write.
+  - --plan on a task with an existing plan dispatches reviser-agent and produces a revised plan in the current round; --plan with no plan dispatches planner-agent and creates one. Both are admitted at any status, including terminal.
+  - A plan dispatch after two research rounds names the newest report.
+  - dispatch_seq never repeats across runs.
+  - --continue-budget is gone (grep finds nothing in the source store outside history).
+  - shellcheck clean. Redeploy and confirm in a consumer repo.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 215. Add a sanctioned undo for a prepared but never-run orchestrate dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 214, Task 216
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -127,6 +169,9 @@ MUST NOT. Do not add an exemption to guard-destructive-git.sh. Do not unwind a d
 ACCEPTANCE. A fixture test prepares a live plan dispatch on a RESEARCHED task, runs the unwind script, and asserts state.json matches the pre-dispatch entry exactly (status, last_updated, session_id), TODO.md is regenerated, the lock is released, the dispatch file is gone, the loop-guard cycle count and pending_dispatch match their earlier values, and `git status --porcelain -- specs/` shows no leftovers after the scoped commit. A second case asserts it refuses once postflight has consumed the dispatch. shellcheck clean. Redeploy and confirm.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+AMENDMENT (2026-09-14). A follow-on task (this task now depends on it) makes the cycle counter reset on each run: cycle_counts lives only in the run's multi-state file, and the saved guard file no longer carries cycle_count. So DROP "rolls back the cycle count" from WORK (a), and change ACCEPTANCE from "the loop-guard cycle count and pending_dispatch match their earlier values" to "pending_dispatch and dispatch_seq_counter in the loop-guard file match their earlier values". Everything else stands.
 
 ---
 
@@ -159,6 +204,9 @@ MUST NOT. Do not change unforced behaviour for sessions that never used a forcin
 ACCEPTANCE. A regression test in scripts/tests/test-force-phases.sh reproduces the observed case: a RESEARCHED task with `--force-phases research`, research dispatched and postflighted, then (1) a second live call with the flag and (2) a live call without it. Both produce no dispatch rows, leave status RESEARCHED, write no dispatch file, take no lock, and leave cycle_counts unchanged. The test fails against the current script. An unforced multi-phase session still advances research -> plan -> implement. shellcheck clean. Redeploy and confirm in a consumer repo.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+AMENDMENT (2026-09-14, alongside the per-run cycle-bound task). Scope the "forced round" state from (a) to ONE run's multi-state file (one session_id). A NEW /orchestrate run with a new forcing flag (e.g. --research, then later --plan) must start clean and be admitted. The stop-after-last-forced-phase guarantee applies within a run only. A follow-on task will make cycle_counts reset on each run and admit forced phases by artifact (research/plan always; implement when a plan exists; --plan revises when a plan exists), so do not add status-based admission here. The acceptance assertion "cycle_counts unchanged" still stands within the run.
 
 ---
 
@@ -1231,7 +1279,7 @@ ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a 
 ---
 
 ### 183. Decide loop guard staleness detector disposition
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 182, Task 213, Task 214
@@ -1251,6 +1299,8 @@ THIS IS A DECISION TASK, NOT A PORT TASK. The prior engine's own comments record
 EVIDENCE. The retired test scripts/tests/test-loop-guard-staleness.sh was removed from git tracking in commit 2d09265cc. The capability loss is recorded under "Plan Deviations" and "Follow-ups" in specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md.
 
 ACCEPTANCE: a recorded decision with rationale; if ported, the detector works under the batch engine and has test coverage; if accepted as lost, the removal is documented where a future reader will find it rather than surviving only as summary prose.
+
+ABANDONED (2026-09-14): superseded by "Reset the /orchestrate cycle bound on each run and admit forced phases by artifact, not status". Once cycle_count is no longer carried between runs, a stale guard file can no longer be trusted for budgeting, so the staleness detector has nothing to protect. That task records this outcome in context/standards/orchestrator-runtime-files.md.
 
 ---
 

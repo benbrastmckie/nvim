@@ -135,6 +135,7 @@ since 2026-09-08), `commands/orchestrate.md` 17,755 B, eager load 65,198 B (~16.
 | Rank | Task | Why it's essential | Eligible | Collides with |
 |---|---|---|---|---|
 | 1 | **213 → 214** pass focus text through; forced phases stop as documented | Both observed live in Verification on 2026-09-14. (213) The text after `--research` never reaches the dispatch file: `SKILL.md` Move 1 doesn't pass it on, and `orchestrate-cycle-plan.sh` has no `--focus` option. (214) After a forced phase the task falls through to status routing, and passing the flag again doesn't refill the queue. So any live re-check moves a RESEARCHED task to PLANNING, writes a dispatch file, takes the lock and counts a cycle. The state change is silent. Small fixes, and they gate eight tasks | 213 yes; 214 after 213 | `orchestrate-cycle-plan.sh` + `SKILL.md`: 14, 162, 182, 183, 193, 195, 199, 212 (all now depend on 213 and 214, decision 12); 182 also `test-orchestrate-cycle-plan.sh`; 170 (`scripts/tests/`, via 215) |
+| 1b | **216** reset the cycle bound on each run; admit forced phases by artifact | Asked for by the user after 213-215. The saved per-task `cycle_count` (the "Defect B" decision) adds up across runs, so repeated `--research`/`--plan` runs use up the 5-cycle budget and later runs are refused. 216 makes the bound last one run and removes `--continue-budget`. It also sets one admission rule: `--research`/`--plan` at any status, with `--plan` using `reviser-agent` when a plan already exists (no `--revise` flag; `/revise N` is unchanged), and `--implement` whenever `plans/*.md` exists | after 214 | Same forced-phase code as 214 (`orchestrate-cycle-plan.sh` section (f), `SKILL.md`, `commands/orchestrate.md`); 215 (`orchestrate-loop-guard-init.sh`, `orchestrate-state-machine.md`; edge 215←216 applied); supersedes 183 |
 | 2 | **212** gate research dispatch on a missing report | Records a research phase complete with no report (verified above) and loses message-borne findings. Every task's first dispatch is research by default since 196, so this sits on the hottest path in the system | after 194, 213, 214 | 195 (`orchestrate-cycle-postflight.sh`, now in 212's `file_scope`; edge 195←212 applied); 194 (`general-research-agent.md`; edge 212←194 applied); 213/214 (`skill-orchestrate/`) |
 | 3 | **200** consumer deploy propagation | A completed fix stays broken in consumer repos indefinitely; observed live with 176's lean fix. Without this, every other row in this table is "done" only in this repo. **213 and 214 need it too**: Verification only gets them after a redeploy | yes | 76 (`skill-base.sh`, a critical path) |
 | 4 | **194 → 195** handoff contract, then writer predicate | Base-mode failures are excused at postflight and go unattributed (verified above). 195 also waits on 162 | 194 yes; 195 after 194 + 162 + 212 + 213 + 214 | 212, 198, 139 (agent files) |
@@ -179,7 +180,7 @@ briefs only needs whatever `file_scope` already exists; it doesn't need the abse
 | **170** isolate shell suites from host state | Flaky gates under load; eligible (151, 169 done) |
 | **127** collapse routing ladder | Dead manifest keys; its item (6), which lints routing entries that name a nonexistent agent, is the part with correctness value |
 | **136** plan Status-line ownership, **166** section-heading conformance | Validator noise; recoverable |
-| **182 → 183** redeploy ledger, loop-guard staleness disposition | Cost, not correctness, now that 180/181 removed the batch-deferring behaviour; gated behind 193 in Tier 2 |
+| **182** redeploy ledger (183 abandoned 2026-09-14, superseded by 216) | Cost, not correctness, now that 180/181 removed the batch-deferring behaviour; gated behind 193 in Tier 2 |
 | **89, 44** context budgets | Per-invocation tokens only |
 | **215** undo a set-up-but-unrun dispatch (`orchestrate-unwind-dispatch.sh`) | Recovery tooling, not a correctness fix. Once 214 lands, the stray transition that needed it should stop happening. Today a manual undo means editing four artifacts by hand, and it still misses `last_updated`/`session_id`, because `guard-destructive-git.sh` blocks a git undo (correctly). Runs after 214. 140 now waits on it (both edit `git-safety.md`), and so does 170 (`scripts/tests/`) |
 
@@ -213,6 +214,10 @@ matched. `validate-state.sh` reports 0 failures.
 | | 140←215 | Both edit `context/standards/git-safety.md` |
 | | 170←215 | 170's `core/scripts/tests/` covers the tests added by 213, 214 and 215 (215 depends on 214, and 214 on 213) |
 | Description extended (addendum) | 209: untrack runtime files git already tracks (`git rm --cached`) and fail the tracking check while any remain | Found in the Verification repo |
+| Created (second addendum) | 216←214; topic `core-agent-system` | Cycle bound resets on each run; forced phases admitted by artifact; `--plan` revises when a plan exists; `--continue-budget` removed. See Tier 1 rank 1b |
+| Dependency added (second addendum) | 215←216 | 215 no longer rolls back a saved cycle count (description amended); both edit `orchestrate-loop-guard-init.sh` and `orchestrate-state-machine.md` |
+| Description amended (second addendum) | 214: forced-round state is scoped to one run's multi-state file, so a new run with a new forcing flag starts clean | Keeps 214 consistent with 216 |
+| Abandoned (second addendum) | 183, superseded by 216 | Without a counter carried between runs, a stale loop guard is never trusted for budgeting, so the staleness detector has nothing to protect. 216 records this in `orchestrator-runtime-files.md` |
 
 ### Recommended batches (supersede Batch 3)
 
@@ -230,11 +235,12 @@ Waves below are dependency waves. Each task still takes several cycles, one per 
 
 ```
 # Batch A: Tier 1 + chain heads (15 tasks). Critical-path members: 200, 212, 213, 214.
-/orchestrate 213, 214, 215, 194, 206, 209, 188, 139, 200, 212, 210, 198, 163, 140, 211
+/orchestrate 213, 214, 216, 215, 194, 206, 209, 188, 139, 200, 212, 210, 198, 163, 140, 211
 #   wave 1: 194, 206, 209, 188            + 200, 213 (critical)   <- confirmed by orchestrate-cycle-plan.sh --dry-run
 #   wave 2: 210, 198, 139, 163            + 214 (critical)
-#   wave 3: 211, 215                      + 212 (critical; after 194, 213, 214)
-#   wave 4: 140 (after 139 and 215)
+#   wave 3: 211                           + 216, 212 (critical; 216 after 214; 212 after 194, 213, 214)
+#   wave 4: 215 (after 216)
+#   wave 5: 140 (after 139 and 215)
 
 # Batch B: file_scope chain + handoff predicate (7 tasks). Nearly all critical-path, so effectively serial.
 # Needs 213 and 214 (Batch A) done first: 162, 193, 195 and 199 all wait on them.
@@ -242,8 +248,8 @@ Waves below are dependency waves. Each task still takes several cycles, one per 
 #   order: 162 -> 193 (+164 alongside) -> 195 -> 165 -> 190 -> 199
 
 # Batch C: Tier 3 cleanup (14 tasks). Parallel: 166, 172, 127, 89, then 173/174/175, 136, 44.
-/orchestrate 166, 172, 127, 89, 173, 174, 175, 136, 44, 14, 51, 170, 182, 183
-#   critical-path, serial: 14 -> 51 -> 170 -> 182 -> 183
+/orchestrate 166, 172, 127, 89, 173, 174, 175, 136, 44, 14, 51, 170, 182
+#   critical-path, serial: 14 -> 51 -> 170 -> 182   (183 abandoned, superseded by 216)
 ```
 
 **Dry-run evidence (2026-09-14)**: `orchestrate-cycle-plan.sh --dry-run` on Batch A's twelve
