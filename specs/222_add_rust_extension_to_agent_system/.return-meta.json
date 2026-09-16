@@ -33,22 +33,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extension", "manifest.json", "python-template", "lean-extension", "agent-system"]
+      "suggested_keywords": [
+        "extension",
+        "manifest.json",
+        "python-template",
+        "lean-extension",
+        "agent-system"
+      ]
     },
     {
       "content": "A new extension's manifest.json needs a `keyword_overrides` block (`{\"<task_type>\": {\"keywords\": [...], \"aliases\": []}}`) for /task to auto-infer that task type from description text -- core's task.md keyword table is hardcoded and has no row for extension-provided task types, so without keyword_overrides the new task type is only reachable by explicit task_type selection.",
       "category": "INSIGHT",
       "source_artifact": "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["keyword_overrides", "manifest.json", "task-type-inference", "extension"]
+      "suggested_keywords": [
+        "keyword_overrides",
+        "manifest.json",
+        "task-type-inference",
+        "extension"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789574220_61e93a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

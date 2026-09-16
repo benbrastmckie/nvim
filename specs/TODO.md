@@ -117,6 +117,7 @@ next_project_number: 223
 - **Dependencies**: None
 - **Research**: [222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md]
 - **Plan**: [222_add_rust_extension_to_agent_system/plans/01_add-rust-extension.md]
+- **Summary**: [222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md]
 
 **Description**: Add a Rust extension to the agent system, modeled on the python and nix extensions, including research into the optimal toolchain and agent configuration for Rust development with AI coding agents like Claude Code, keeping the implementation lean and adding nothing not well-motivated
 

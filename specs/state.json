@@ -22,9 +22,15 @@
           "path": "specs/222_add_rust_extension_to_agent_system/plans/01_add-rust-extension.md",
           "type": "plan",
           "summary": "4-phase plan creating a lean python-modeled rust extension (10 files) plus README-table and lint in-scope registration, verified by source-store lints."
+        },
+        {
+          "path": "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md",
+          "type": "summary",
+          "summary": "Created a lean rust extension (10 files) modeled on python, registered in the extensions README and lint in-scope list, verified by source-store lints."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Created agent-system/extensions/rust/ (manifest, EXTENSION.md, README.md, index-entries.json, opencode-agents.json, research/implementation agents with a cargo check/clippy/fmt/test verification loop, two wrapper skills, one context README), registered it in the extensions README table and the agent-contracts lint in-scope list, and verified with lint-routing-wiring.sh and lint-agent-contracts.sh (both pass with zero new failures)."
     },
     {
       "project_number": 219,
