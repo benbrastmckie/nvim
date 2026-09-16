@@ -25,6 +25,7 @@ Extensions add domain-specific elements:
 | latex | latex | LaTeX document preparation | [README](latex/README.md) |
 | typst | typst | Modern document typesetting | [README](typst/README.md) |
 | python | python | Python development | [README](python/README.md) |
+| rust | rust | Rust development | [README](rust/README.md) |
 | nix | nix | NixOS and Home Manager configuration | [README](nix/README.md) |
 | web | web | Astro/Tailwind web development | [README](web/README.md) |
 | z3 | z3 | Z3 SMT solver | [README](z3/README.md) |

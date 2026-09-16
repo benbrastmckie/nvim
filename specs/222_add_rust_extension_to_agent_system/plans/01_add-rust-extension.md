@@ -182,17 +182,17 @@ practices) and its wrapper skill.
 
 ---
 
-### Phase 4: Context README, registration, and full lint pass [NOT STARTED]
+### Phase 4: Context README, registration, and full lint pass [COMPLETED]
 
 **Goal**: Complete the file set, register the extension in existing inventories, and run the
 full source-store gate set.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/rust/context/project/rust/README.md` (~40-50 lines, generic): Cargo package/workspace layout, edition/MSRV note (`rust-version` in `Cargo.toml`), where to look up APIs (docs.rs, `cargo doc`), pointer to the implementation agent's best-practices section. No invented downstream project content.
-- [ ] Add a `| rust | rust | Rust development | [README](rust/README.md) |` row to `agent-system/extensions/README.md`'s Available Extensions table (after python).
-- [ ] Add `"rust/agents/rust-implementation-agent.md"` to `IN_SCOPE_RELATIVE_PATHS` in `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` (after the python line), since the agent authors deliverable files outside `specs/**`.
-- [ ] Run the gate set from the repo root against the source store: `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh`, `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`, `jq empty` on all rust JSON files, and the task-reference check over `agent-system/extensions/rust/` (no "task N" citations). Compare failures against a pre-change baseline run so only new failures count.
-- [ ] Confirm every `provides` entry in `manifest.json` resolves to an existing file/dir, and every `index-entries.json` path and agent name exists.
+- [x] Create `agent-system/extensions/rust/context/project/rust/README.md` (~40-50 lines, generic): Cargo package/workspace layout, edition/MSRV note (`rust-version` in `Cargo.toml`), where to look up APIs (docs.rs, `cargo doc`), pointer to the implementation agent's best-practices section. No invented downstream project content. *(completed)*
+- [x] Add a `| rust | rust | Rust development | [README](rust/README.md) |` row to `agent-system/extensions/README.md`'s Available Extensions table (after python). *(completed)*
+- [x] Add `"rust/agents/rust-implementation-agent.md"` to `IN_SCOPE_RELATIVE_PATHS` in `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` (after the python line), since the agent authors deliverable files outside `specs/**`. *(completed)*
+- [x] Run the gate set from the repo root against the source store: `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh`, `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`, `jq empty` on all rust JSON files, and the task-reference check over `agent-system/extensions/rust/` (no "task N" citations). Compare failures against a pre-change baseline run so only new failures count. *(completed: both lints exit 0, 0 new failures; jq empty OK on all 3 rust JSON files; task-reference check 0 occurrences)*
+- [x] Confirm every `provides` entry in `manifest.json` resolves to an existing file/dir, and every `index-entries.json` path and agent name exists. *(completed)*
 
 **Timing**: 1 hour 15 minutes
 

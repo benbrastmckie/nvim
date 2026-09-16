@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/rust/README.md",
-      "line_count": 45,
+      "line_count": 38,
       "load_when": {
         "agents": [
           "rust-implementation-agent",

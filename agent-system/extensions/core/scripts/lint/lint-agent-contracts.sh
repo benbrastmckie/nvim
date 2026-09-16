@@ -254,6 +254,7 @@ IN_SCOPE_RELATIVE_PATHS=(
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
+  "rust/agents/rust-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
