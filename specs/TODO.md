@@ -1,20 +1,20 @@
 ---
-next_project_number: 220
+next_project_number: 222
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-15. Generated from state.json dependency graph.*
+*Updated 2026-09-16. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214 | 29,74,166,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
-| 3 | 14,162,193,211,212,216,217 | 139,174,194,210,214 | core-agent-system, file-scope-lifecycle |
-| 4 | 44,164,182,195,199,215,218 | 162,193,211,212,216,217 | core-agent-system, file-scope-lifecycle |
+| 3 | 14,162,193,211,212,216,217,220 | 139,173,174,194,210,214 | core-agent-system, file-scope-lifecycle |
+| 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
 | 5 | 140,165,170,219 | 139,163,164,206,215,218 | core-agent-system, file-scope-lifecycle |
 | 6 | 190 | 165 | core-agent-system |
 
@@ -29,11 +29,14 @@ next_project_number: 220
   └─ 136 [NOT STARTED] — Stop implementation agents hand-writing the plan-level Status...
 172 [NOT STARTED] — Define a canonical bounded-wait idiom for detached builds
   └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
+    └─ 220 [NOT STARTED] — Make a guarded Lean build verdict machine-readable so a...
+      └─ 221 [NOT STARTED] — Correct the Lean build-verification contracts: never a piped...
   └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
     └─ 217 [NOT STARTED] — Replace RSS+VmSwap over-count with PSS-based reclaimable...
       └─ 218 [NOT STARTED] — Track Lean tree idleness by CPU delta and gate reclamation on...
         └─ 219 [NOT STARTED] — Prompt via desktop notification before killing idle costly...
   └─ 175 [NOT STARTED] — Enforce waiter teardown in the agent contracts that spawn...
+    └─ 221 [NOT STARTED] — Correct the Lean build-verification contracts: never a piped... (see above)
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
@@ -105,6 +108,69 @@ next_project_number: 220
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 221. Correct the Lean build-verification contracts: never a piped status, never a self-matching process scan
+- **Effort**: 3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 220, Task 172, Task 175
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
+
+DEFECT CLASS (both halves observed live in one two-task /orchestrate run against ~/Projects/BimodalLogic): an agent verified its work with an instrument that could not report failure, so correct work looked broken and broken work looked correct. Neither half is a Lean defect.
+
+HALF 1 -- a process-liveness test that can never return empty. `pgrep -f 'lake-build-guard.sh'` matches the polling shell's OWN argv, because the pattern appears in the command line of the shell running the wait. Consequences: two implementation dispatches idled roughly 56 minutes on a build that had already finished green, because the watcher never terminated; a subagent independently cited non-zero "guard: N" process counts as evidence the build was still alive, when every one of those counts was matching the orchestrator's own watcher loops rather than any real guard; and the orchestrator propagated the broken test to a subagent as recommended practice before the subagent caught it. One broken instrument corrupted two agents' evidence.
+
+HALF 2 -- see the dependency task on the guard for the pipe-masked exit code; this task lands the CONSUMER-side half of that fix.
+
+WHAT IS ALREADY COVERED ELSEWHERE, AND WHAT IS LEFT (verified against the current source store, do not re-do the covered part): the guard's own header and `print_help()` ALREADY carry the `pgrep -f` self-match prohibition and the `while kill -0 "$holder_pid"` idiom, and the suite's case 21 already asserts that help text. The bounded-waiter dependency task owns the blocking-wait contract (hard timeout, writer-liveness check, one-waiter-per-log) and the teardown dependency task owns tearing a waiter down. What NO existing task covers is the VERIFICATION-EVIDENCE question: how an agent decides that a finished build passed, and why a process count is never an answer to it. The lean extension's contracts currently leave that vacuum open in four specific, checked places.
+
+WORK.
+(a) agent-system/extensions/lean/context/project/lean4/operations/long-builds.md -- add a "Reading the build's verdict" section stating the evidence hierarchy that actually held up in the observed run, strongest last: (1) the guard's own exit code, captured un-piped, or the guard's new `result` mode from the dependency task; (2) the explicit `Build completed successfully (N jobs)` line in the guard's captured output file TOGETHER WITH `grep -c 'error:'` returning 0 over both the captured stdout and the captured stderr; (3) an `.olean`-newer-than-source check per touched module, which proves the module's PRESENCE in the build rather than the mere absence of a complaint and is therefore the strongest of the three. State the prohibition explicitly and once: never pipe the guard invocation into `tail`/`head`/`grep` and then read `$?` -- that is the pipe's exit code, not the guard's; redirect to a log file and capture `GUARD_EXIT=$?` instead. Keep to this file's established single-statement-plus-pointer convention and point at the guard's own documented capture paths rather than restating them.
+(b) Same file, "Passive progress checks" -- close the PID vacuum that invites the broken test. The four existing checks all take a `<PID>` the section never tells the reader how to obtain, which is exactly the gap an improvised `pgrep -f` fills. Name the source: `holder_pid` from the guard's record, or `status --verbose`. Add the prohibition that any `pgrep -f` pattern naming the guard, the watcher, or the wrapper script self-matches the polling shell's own argv and can never return empty while the watcher lives; where a real-worker match is genuinely needed, use a non-self-matching pattern (the bracket trick, e.g. `pgrep -f '[b]in/lake build'`, or matching `[c]heck-module-invariants`). Strengthen the existing "liveness caveat" with the sharper statement the run demonstrated: a process count is never evidence of a build's OUTCOME, and a count that cannot go to zero is not evidence of anything at all.
+(c) agent-system/extensions/lean/rules/lean4.md -- the "Build Commands" section's canonical invocation shape carries no exit-code discipline. Add the un-piped capture form and a pointer to (a). Do not restate the contract.
+(d) agent-system/extensions/lean/agents/lean-implementation-agent.md (step 4 of the verification block) and agent-system/extensions/lean/agents/lean-implementation-hard-agent.md (phase-completion step D and verification step 4) -- all three sites today say `Record: build_passed (true/false)` while specifying no method for determining it. That unspecified predicate is where the false green entered. Replace each with the determination method from (a), pointing at the anchor rather than duplicating the hierarchy.
+
+NOTE ON A NON-DEFECT (checked, do not "fix"): agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md uses `build_output=$(... 2>&1)` followed by `build_exit_code=$?`, which correctly captures the guard's own exit code -- command substitution is not a pipeline. Leave it alone.
+
+MUST NOT. Edit .claude/** (deploy artifact). Edit lake-build-guard.sh or its test suite (the dependency task owns those). Restate the bounded-waiter contract or the teardown rule in these files -- point at their anchors. Duplicate the evidence hierarchy into more than one file.
+
+ACCEPTANCE. No file in the lean extension recommends, or leaves room for, a `pgrep -f` pattern that names the thing doing the polling; every site that records a build verdict names how that verdict is obtained; a reader of the passive-progress section can get a PID without inventing a process scan; redeploy and confirm the deployed tree matches.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 220. Make a guarded Lean build verdict machine-readable so a pipeline cannot mask it
+- **Effort**: 3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 173
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated from it).
+
+DEFECT (observed live in a two-task /orchestrate run against ~/Projects/BimodalLogic): an agent reported a Lean build as "exit 0" when it had in fact failed on a module error. The invocation was of the shape `bash lake-build-guard.sh build --timeout 1800 -- build 2>&1 | tail -60`, whose `$?` is `tail`'s exit code, not the guard's. The agent caught and retracted the claim itself, but the orchestrator had already relayed the false green to a sibling dispatch. The instrument could not report failure, so a broken build looked correct.
+
+WHY THIS IS NOT ALREADY FIXED BY THE SIBLING GUARD TASK: the dependency task ("Guarantee lake-build-guard.sh writes a terminal record on every exit path") makes the record TERMINAL so a waiter can always drain -- it is about waiter termination, not about a consumer reading a verdict. Verified against the current source store: `write_inflight_record()`/`finalize_record()` do already record `state=`, `exit_status=`, `holder_pid=`, `log_path=`, and `run_as_holder()` already captures build stdout/stderr to `<root>/.lake/build-guard.stdout` and `.build-guard.stderr`. NONE of those four paths is documented anywhere a consumer would find them: the header's non-goals list mentions only "lock/result/log/capture files under the resolved project's own .lake/ directory" without naming them, and `print_help()` names none of them. There is also no read path -- `main()` dispatches exactly `status|preflight|build`, and `status` reports in-flight state only, never a finished build's verdict. So the machine-readable verdict exists on disk today and is unreachable by contract, which is precisely what pushes a consumer back onto parsing a pipeline's text.
+
+WORK.
+(a) Add a `result` subcommand (`lake-build-guard.sh result [--dir DIR] [--verbose]`) that reads `<root>/.lake/build-guard.result` and reports the recorded `state`, `exit_status`, `holder_pid`, `start_epoch`/`end_epoch`, `scope_key`, and the absolute stdout/stderr/log capture paths. Design the exit-code band so the BUILD'S OWN VERDICT is carried by the guard's exit code and never has to be scraped out of text: distinguish at minimum no-record-present, non-terminal (`state=in_flight`, plus whatever terminal-abort state the dependency task introduces), terminal-with-zero, and terminal-with-nonzero. Follow the existing house style for a detect-only mode (see `cmd_status()`: 0 / 10, report on stdout) rather than inventing a new one, and do NOT collide with the reserved 75-79 guard band.
+(b) Add an assertion facility so a caller can prove the record describes ITS OWN build rather than a concurrent sibling's. The record is per-project and overwritten by each holder, so a bare read is ambiguous under exactly the concurrency this guard exists to serialize. Evaluate `--expect-pid PID` and `--expect-scope` (matching the caller's own normalized lake argument vector via the existing `compute_scope_key()`); refuse loudly on mismatch rather than reporting a sibling's verdict.
+(c) Emit one terminal, stably-prefixed status line on the holder path (house style: the existing `lake-build-guard:` stderr prefix, e.g. `lake-build-guard: STATUS: exit_status=N`), so that even a consumer that ignores (a) and pipes the invocation still sees an unambiguous status token inside its own captured text. This is the belt-and-braces half of the structural fix; it must not appear on the REPLAY path in a way that breaks the existing byte-equality assertions on replayed stdout/stderr (suite cases 1/3).
+(d) Document all of it: name `.lake/build-guard.result`, `.lake/build-guard.stdout`, `.lake/build-guard.stderr`, and the log path explicitly in both `print_help()` and the file header, add a `result` row to the USAGE block and the EXIT CODES block, and state in one place that a consumer MUST read the verdict via `result` or an un-piped `$?` and never from a pipeline's last stage.
+(e) Extend agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh in its existing numbered-case style: `result` against no record, against an in_flight record, against a terminal-zero record, against a terminal-nonzero record; `--expect-pid`/`--expect-scope` mismatch refusal; the STATUS line present on a fresh build and absent-or-harmless on a replay; and a help-text assertion for the newly documented capture paths in the style of the suite's existing case 21 (which greps `--help` for the `kill -0` and `pgrep` guidance). Add the suite's customary mutation-kill notes explaining which deletion breaks which case.
+
+PRESERVE (existing documented contracts, all verified present): the three-mode subcommand shape, the reserved 75-79 band with its stated meanings, the exit-code passthrough guarantee for a validated lake argument vector, the LAKE_SUBCOMMANDS allowlist behaviour including exit 77, the five-condition staleness policy in `decide_sharing()`, the `lake-build-guard: REPLAY:` marker contract, `--timeout` as a lock-WAIT budget only, and the rule that `cmd_status()` never scans the process table.
+
+MUST NOT. Edit .claude/** (deploy artifact). Change the staleness policy or the sharing decision. Add a second concurrency mechanism. Parse `lake`'s own output format inside the guard (explicitly rejected upstream: the job-count line is a property of lake's text, not of anything the guard records). Touch any file outside this task's file_scope -- the consumer-side contract corrections are a separate dependent task.
+
+ACCEPTANCE. `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` passes; shellcheck clean; `--help` names all four capture paths and the `result` mode; a caller can obtain a finished build's pass/fail from the guard's own exit code with no text parsing and no pipeline in the invocation.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 219. Prompt via desktop notification before killing idle costly Lean trees, with re-verified targeted kill and snooze
 - **Effort**: 4 hours
