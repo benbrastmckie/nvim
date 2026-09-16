@@ -1,0 +1,32 @@
+{
+  "agent": {
+    "rust-research": {
+      "description": "Research Rust development topics and crates",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/rust-research-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "webfetch": true,
+        "websearch": true
+      }
+    },
+    "rust-implementation": {
+      "description": "Implement Rust code and applications",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/rust-implementation-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true
+      }
+    }
+  }
+}

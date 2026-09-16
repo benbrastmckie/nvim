@@ -77,7 +77,7 @@ next_project_number: 223
   └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
   └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
 167 [NOT STARTED] — Make vimtex continuous-build safety always-in-effect via the...
-222 [PLANNED] — Add a Rust extension to the agent system, modeled on the...
+222 [IMPLEMENTING] — Add a Rust extension to the agent system, modeled on the...
 
 ### Literature
 
@@ -111,7 +111,7 @@ next_project_number: 223
 ## Tasks
 
 ### 222. Add rust extension to agent system
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

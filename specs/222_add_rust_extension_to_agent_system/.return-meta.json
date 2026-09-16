@@ -1,22 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/222_add_rust_extension_to_agent_system/plans/01_add-rust-extension.md",
-      "summary": "4-phase plan creating a lean python-modeled rust extension (10 files) plus README-table and lint in-scope registration, verified by source-store lints."
-    }
-  ],
-  "next_steps": "Run /implement 222 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 4,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1789574220_61e93a_222",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1789574220_61e93a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
   },
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }

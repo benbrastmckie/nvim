@@ -1,7 +1,7 @@
 # Implementation Plan: Task #222
 
 - **Task**: 222 - Add Rust extension to agent system
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md
@@ -95,18 +95,18 @@ No roadmap consulted for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Extension scaffold and manifest [NOT STARTED]
+### Phase 1: Extension scaffold and manifest [COMPLETED]
 
 **Goal**: Create the extension's top-level metadata files so every later file has a declared
 home and name.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/python/{manifest.json,EXTENSION.md,README.md,index-entries.json,opencode-agents.json}` in full as templates.
-- [ ] Create `agent-system/extensions/rust/manifest.json`: name/task_type `rust`, version `1.0.0`, description "Rust development with cargo build, clippy, rustfmt, and test integration", `dependencies: ["core"]`, `provides.agents` (`rust-research-agent.md`, `rust-implementation-agent.md`), `provides.skills` (`skill-rust-research`, `skill-rust-implementation`), `provides.context: ["project/rust"]`, empty commands/rules/scripts/hooks; `routing.research/implement` -> skills; `routing_agents.research/plan/implement` -> `rust-research-agent`/`planner-agent`/`rust-implementation-agent`; `merge_targets` claudemd (`section_id: "extension_rust"`), index, opencode_json; plus the `keyword_overrides` block from Decisions.
-- [ ] Create `EXTENSION.md` (~30 lines, python's section shape): language routing table (`rust` -> skills, tools incl. `Bash (cargo check/clippy/fmt/test)`), skill-agent mapping table, "no dedicated commands" note, context pointer.
-- [ ] Create `README.md` (~60 lines): purpose, file inventory, verification loop, and a short "Deliberately omitted" section (no MCP server / rules / hooks, with one-line reasons, naming `crates-mcp`/`docsrs-mcp` as possible future optional additions).
-- [ ] Create `index-entries.json` with a single entry for `project/rust/README.md` (`load_when.agents`: both rust agents; `task_types`: `rust`), matching python's entry schema exactly.
-- [ ] Create `opencode-agents.json` mirroring python's two-agent shape with rust names.
+- [x] Read `agent-system/extensions/python/{manifest.json,EXTENSION.md,README.md,index-entries.json,opencode-agents.json}` in full as templates. *(completed)*
+- [x] Create `agent-system/extensions/rust/manifest.json`: name/task_type `rust`, version `1.0.0`, description "Rust development with cargo build, clippy, rustfmt, and test integration", `dependencies: ["core"]`, `provides.agents` (`rust-research-agent.md`, `rust-implementation-agent.md`), `provides.skills` (`skill-rust-research`, `skill-rust-implementation`), `provides.context: ["project/rust"]`, empty commands/rules/scripts/hooks; `routing.research/implement` -> skills; `routing_agents.research/plan/implement` -> `rust-research-agent`/`planner-agent`/`rust-implementation-agent`; `merge_targets` claudemd (`section_id: "extension_rust"`), index, opencode_json; plus the `keyword_overrides` block from Decisions. *(completed)*
+- [x] Create `EXTENSION.md` (~30 lines, python's section shape): language routing table (`rust` -> skills, tools incl. `Bash (cargo check/clippy/fmt/test)`), skill-agent mapping table, "no dedicated commands" note, context pointer. *(completed)*
+- [x] Create `README.md` (~60 lines): purpose, file inventory, verification loop, and a short "Deliberately omitted" section (no MCP server / rules / hooks, with one-line reasons, naming `crates-mcp`/`docsrs-mcp` as possible future optional additions). *(completed)*
+- [x] Create `index-entries.json` with a single entry for `project/rust/README.md` (`load_when.agents`: both rust agents; `task_types`: `rust`), matching python's entry schema exactly. *(completed)*
+- [x] Create `opencode-agents.json` mirroring python's two-agent shape with rust names. *(completed)*
 
 **Timing**: 1 hour
 

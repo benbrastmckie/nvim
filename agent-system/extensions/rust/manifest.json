@@ -1,0 +1,66 @@
+{
+  "name": "rust",
+  "version": "1.0.0",
+  "description": "Rust development with cargo build, clippy, rustfmt, and test integration",
+  "task_type": "rust",
+  "dependencies": [
+    "core"
+  ],
+  "provides": {
+    "agents": [
+      "rust-research-agent.md",
+      "rust-implementation-agent.md"
+    ],
+    "skills": [
+      "skill-rust-research",
+      "skill-rust-implementation"
+    ],
+    "commands": [],
+    "rules": [],
+    "context": [
+      "project/rust"
+    ],
+    "scripts": [],
+    "hooks": []
+  },
+  "routing": {
+    "research": {
+      "rust": "skill-rust-research"
+    },
+    "implement": {
+      "rust": "skill-rust-implementation"
+    }
+  },
+  "routing_agents": {
+    "research": {
+      "rust": "rust-research-agent"
+    },
+    "plan": {
+      "rust": "planner-agent"
+    },
+    "implement": {
+      "rust": "rust-implementation-agent"
+    }
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_rust"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    },
+    "opencode_json": {
+      "source": "opencode-agents.json",
+      "target": "opencode.json"
+    }
+  },
+  "keyword_overrides": {
+    "rust": {
+      "keywords": ["rust", "cargo", "rustc", "clippy", "crates.io"],
+      "aliases": []
+    }
+  }
+}
