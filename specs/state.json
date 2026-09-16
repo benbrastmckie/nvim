@@ -5,18 +5,23 @@
     {
       "project_number": 222,
       "project_name": "add_rust_extension_to_agent_system",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Add a Rust extension to the agent system, modeled on the python and nix extensions, including research into the optimal toolchain and agent configuration for Rust development with AI coding agents like Claude Code, keeping the implementation lean and adding nothing not well-motivated",
       "topic": "extensions",
       "created": "2026-09-16T15:54:09Z",
-      "last_updated": "2026-09-16T16:01:43Z",
+      "last_updated": "2026-09-16T16:03:38Z",
       "session_id": "sess_1789574220_61e93a",
       "artifacts": [
         {
           "path": "specs/222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md",
           "type": "report",
           "summary": "Research on adding a lean Rust extension modeled on the python/nix extensions: recommended file set, cargo-based verification loop, and a well-motivated decision to omit an MCP server and a dedicated rules file."
+        },
+        {
+          "path": "specs/222_add_rust_extension_to_agent_system/plans/01_add-rust-extension.md",
+          "type": "plan",
+          "summary": "4-phase plan creating a lean python-modeled rust extension (10 files) plus README-table and lint in-scope registration, verified by source-store lints."
         }
       ],
       "next_artifact_number": 2
