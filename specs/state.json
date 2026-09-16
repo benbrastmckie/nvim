@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 222,
+  "next_project_number": 223,
   "active_projects": [
+    {
+      "project_number": 222,
+      "project_name": "add_rust_extension_to_agent_system",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Add a Rust extension to the agent system, modeled on the python and nix extensions, including research into the optimal toolchain and agent configuration for Rust development with AI coding agents like Claude Code, keeping the implementation lean and adding nothing not well-motivated",
+      "topic": "extensions",
+      "created": "2026-09-16T15:54:09Z",
+      "last_updated": "2026-09-16T15:54:09Z"
+    },
     {
       "project_number": 219,
       "project_name": "refresh_idle_lean_tree_notify_prompt",

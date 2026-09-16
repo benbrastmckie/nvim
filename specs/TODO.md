@@ -1,5 +1,5 @@
 ---
-next_project_number: 222
+next_project_number: 223
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 222
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,222 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214 | 29,74,166,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
 | 3 | 14,162,193,211,212,216,217,220 | 139,173,174,194,210,214 | core-agent-system, file-scope-lifecycle |
 | 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
@@ -77,6 +77,7 @@ next_project_number: 222
   └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
   └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
 167 [NOT STARTED] — Make vimtex continuous-build safety always-in-effect via the...
+222 [NOT STARTED] — Add a Rust extension to the agent system, modeled on the...
 
 ### Literature
 
@@ -108,6 +109,16 @@ next_project_number: 222
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 222. Add rust extension to agent system
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Add a Rust extension to the agent system, modeled on the python and nix extensions, including research into the optimal toolchain and agent configuration for Rust development with AI coding agents like Claude Code, keeping the implementation lean and adding nothing not well-motivated
+
+---
 
 ### 221. Correct the Lean build-verification contracts: never a piped status, never a self-matching process scan
 - **Effort**: 3 hours
