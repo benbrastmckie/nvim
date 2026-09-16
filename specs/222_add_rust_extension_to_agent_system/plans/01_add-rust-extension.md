@@ -155,15 +155,15 @@ home and name.
 
 ---
 
-### Phase 3: Implementation agent and skill [NOT STARTED]
+### Phase 3: Implementation agent and skill [COMPLETED]
 
 **Goal**: Provide `rust-implementation-agent` (with the cargo verification loop and inline best
 practices) and its wrapper skill.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/python/agents/python-implementation-agent.md` and `skills/skill-python-implementation/SKILL.md` in full.
-- [ ] Create `agents/rust-implementation-agent.md`, preserving every shared contract section (including the no-task-references MUST NOT bullet and the `.claude/**` source-store bullet if present in the python original). Replace "Build Tools" with: `cargo check` (per-edit compile check), `cargo clippy --all-targets --all-features -- -D warnings` (lint gate), `cargo fmt` then `cargo fmt --check` (format gate), `cargo test` (final verification). Replace the Python best-practices block with a short "Rust Best Practices" section: lib vs bin crate layout and workspaces; `thiserror` (libraries) / `anyhow` (applications); no `unwrap()`/`expect()` outside tests and examples; `#[cfg(test)] mod tests` unit tests plus `tests/` integration tests; prefer borrowing over cloning to satisfy the borrow checker only when it does not obscure intent (i.e., do not silence errors with gratuitous `.clone()`); no new `unsafe` without a `// SAFETY:` comment.
-- [ ] Create `skills/skill-rust-implementation/SKILL.md`: substitute names/task type only.
+- [x] Read `agent-system/extensions/python/agents/python-implementation-agent.md` and `skills/skill-python-implementation/SKILL.md` in full. *(completed)*
+- [x] Create `agents/rust-implementation-agent.md`, preserving every shared contract section (including the no-task-references MUST NOT bullet and the `.claude/**` source-store bullet if present in the python original). Replace "Build Tools" with: `cargo check` (per-edit compile check), `cargo clippy --all-targets --all-features -- -D warnings` (lint gate), `cargo fmt` then `cargo fmt --check` (format gate), `cargo test` (final verification). Replace the Python best-practices block with a short "Rust Best Practices" section: lib vs bin crate layout and workspaces; `thiserror` (libraries) / `anyhow` (applications); no `unwrap()`/`expect()` outside tests and examples; `#[cfg(test)] mod tests` unit tests plus `tests/` integration tests; prefer borrowing over cloning to satisfy the borrow checker only when it does not obscure intent (i.e., do not silence errors with gratuitous `.clone()`); no new `unsafe` without a `// SAFETY:` comment. *(completed)*
+- [x] Create `skills/skill-rust-implementation/SKILL.md`: substitute names/task type only. *(completed)*
 
 **Timing**: 1 hour
 
