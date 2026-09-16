@@ -1,0 +1,52 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 tasks for the guarded-build verdict instrumentation defects surfaced by a live two-task /orchestrate run. Investigation found existing tasks 172/173/175 already cover the unbounded-wait and terminal-record halves; the new tasks are scoped to the uncovered verification-evidence concern and declared dependent on them.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 220 and 221 added to TODO.md (waves 3 and 4)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Tasks 220 and 221 appended to active_projects; next_project_number advanced to 222"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/220_guard_machine_readable_build_status/",
+      "summary": "Task directory for the guard-side structural fix (result subcommand, documented capture paths, terminal status line)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/221_lean_build_verdict_evidence_contracts/",
+      "summary": "Task directory for the consumer-side contract corrections in the lean extension"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1789539230_6e4106",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 540,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [220, 221],
+    "topic": "core-agent-system"
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+    "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md",
+    "agent-system/extensions/lean/rules/lean4.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+  ],
+  "next_steps": "Task 220 is blocked behind existing task 173 (guard terminal-record work) and task 221 behind 220/172/175. Run /research 173 to unblock the chain, or /orchestrate 172,173,175,220,221 to drive the whole cluster in dependency order."
+}
