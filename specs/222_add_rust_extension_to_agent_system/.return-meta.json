@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md",
+      "summary": "Research on adding a lean Rust extension modeled on the python/nix extensions: recommended file set, cargo-based verification loop, and a well-motivated decision to omit an MCP server and a dedicated rules file."
+    }
+  ],
+  "next_steps": "Run /plan 222 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1789574220_61e93a_222",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "When adding a new language extension to agent-system/extensions/, use the python extension (not nix) as the lean base template: no rules/ file, no MCP server, no hooks/scripts, no settings-fragment.json -- only manifest.json, EXTENSION.md, README.md, index-entries.json, opencode-agents.json, two agents, two skills, and an optional short context/project/<lang>/README.md. Only add nix-style extras (MCP server, hooks, rules file, deep context tree) when a language-specific condition independently motivates them (e.g. a single community-converged MCP server, a foreign syntax needing deep docs, or conventions not mechanically auto-enforced by the language's own formatter/linter).",
+      "category": "PATTERN",
+      "source_artifact": "specs/222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension", "agent-system", "manifest.json", "lean", "python-extension", "nix-extension"]
+    },
+    {
+      "content": "The Rust MCP-server ecosystem (crates-mcp, docsrs-mcp, rust-analyzer-mcp/rust-mcp, cargo-mcp) as of 2026 is fragmented across small community crates with no single converged/blessed server comparable to mcp-nixos for Nix. Do not default-bundle one into a new extension; WebSearch/WebFetch against docs.rs/crates.io is an adequate substitute, matching how the python extension already covers docs.python.org/PyPI without an MCP server.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["mcp-server", "rust", "crates-mcp", "docsrs-mcp", "mcp-nixos"]
+    }
+  ],
+  "dispatch_seq": 1
+}

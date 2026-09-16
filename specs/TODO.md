@@ -77,7 +77,7 @@ next_project_number: 223
   └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
   └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
 167 [NOT STARTED] — Make vimtex continuous-build safety always-in-effect via the...
-222 [NOT STARTED] — Add a Rust extension to the agent system, modeled on the...
+222 [RESEARCHED] — Add a Rust extension to the agent system, modeled on the...
 
 ### Literature
 
@@ -111,10 +111,11 @@ next_project_number: 223
 ## Tasks
 
 ### 222. Add rust extension to agent system
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md]
 
 **Description**: Add a Rust extension to the agent system, modeled on the python and nix extensions, including research into the optimal toolchain and agent configuration for Rust development with AI coding agents like Claude Code, keeping the implementation lean and adding nothing not well-motivated
 
