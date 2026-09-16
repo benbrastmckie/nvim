@@ -1,7 +1,7 @@
 # Implementation Plan: Task #222
 
 - **Task**: 222 - Add Rust extension to agent system
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/222_add_rust_extension_to_agent_system/reports/01_add_rust_extension.md
@@ -214,12 +214,12 @@ README table, lint in-scope list, nothing else). Confirm by `grep -rn "python-im
 
 ## Testing & Validation
 
-- [ ] All rust JSON files parse (`jq empty`).
-- [ ] `lint-routing-wiring.sh`: rust routing keys have routing_agents counterparts and agent files exist.
-- [ ] `lint-agent-contracts.sh`: rust agents pass model and no-task-references-bullet checks.
-- [ ] No python/ModelChecker residue in any rust file.
-- [ ] No task-number references in any deliverable file.
-- [ ] No writes under `.claude/**`.
+- [x] All rust JSON files parse (`jq empty`). *(completed)*
+- [x] `lint-routing-wiring.sh`: rust routing keys have routing_agents counterparts and agent files exist. *(completed: 264 passed, 0 failed)*
+- [x] `lint-agent-contracts.sh`: rust agents pass model and no-task-references-bullet checks. *(completed: 104 passed, 0 warnings, 0 failed)*
+- [x] No python/ModelChecker residue in any rust file. *(completed)*
+- [x] No task-number references in any deliverable file. *(completed: 0 occurrences)*
+- [x] No writes under `.claude/**`. *(completed)*
 
 ## Artifacts & Outputs
 

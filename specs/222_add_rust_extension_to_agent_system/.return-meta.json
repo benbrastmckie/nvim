@@ -1,12 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md",
+      "summary": "Created a lean rust extension (10 files) modeled on python, registered in the extensions README and lint in-scope list, verified by source-store lints."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created agent-system/extensions/rust/ (manifest, EXTENSION.md, README.md, index-entries.json, opencode-agents.json, research/implementation agents with a cargo check/clippy/fmt/test verification loop, two wrapper skills, one context README), registered it in the extensions README table and the agent-contracts lint in-scope list, and verified with lint-routing-wiring.sh and lint-agent-contracts.sh (both pass with zero new failures)."
+  },
+  "modified_files": [
+    "agent-system/extensions/rust/manifest.json",
+    "agent-system/extensions/rust/EXTENSION.md",
+    "agent-system/extensions/rust/README.md",
+    "agent-system/extensions/rust/index-entries.json",
+    "agent-system/extensions/rust/opencode-agents.json",
+    "agent-system/extensions/rust/agents/rust-research-agent.md",
+    "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+    "agent-system/extensions/rust/skills/skill-rust-research/SKILL.md",
+    "agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md",
+    "agent-system/extensions/rust/context/project/rust/README.md",
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "specs/222_add_rust_extension_to_agent_system/plans/01_add-rust-extension.md",
+    "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a new language/domain extension to agent-system/extensions/, prefer the python extension as the structural template over nix: python is the lean baseline (manifest, EXTENSION.md, README.md, index-entries.json, opencode-agents.json, 2 agents, 2 thin wrapper skills, 1 context README) while nix additionally carries an MCP server, settings-fragment.json, a dedicated rules file, and hooks -- only copy those heavier elements when the new domain has a genuine equivalent need (e.g. an established MCP server), not by default.",
+      "category": "PATTERN",
+      "source_artifact": "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension", "manifest.json", "python-template", "lean-extension", "agent-system"]
+    },
+    {
+      "content": "A new extension's manifest.json needs a `keyword_overrides` block (`{\"<task_type>\": {\"keywords\": [...], \"aliases\": []}}`) for /task to auto-infer that task type from description text -- core's task.md keyword table is hardcoded and has no row for extension-provided task types, so without keyword_overrides the new task type is only reachable by explicit task_type selection.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/222_add_rust_extension_to_agent_system/summaries/01_add-rust-extension-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["keyword_overrides", "manifest.json", "task-type-inference", "extension"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1789574220_61e93a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 4,
     "phases_total": 4
-  },
-  "dispatch_seq": 3
+  }
 }
