@@ -130,14 +130,14 @@ home and name.
 
 ---
 
-### Phase 2: Research agent and skill [NOT STARTED]
+### Phase 2: Research agent and skill [COMPLETED]
 
 **Goal**: Provide `rust-research-agent` and its thin wrapper skill.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/python/agents/python-research-agent.md` and `skills/skill-python-research/SKILL.md` in full.
-- [ ] Create `agents/rust-research-agent.md`: same frontmatter shape (`model: sonnet`), same stage structure; Rust research sources (docs.rs, crates.io, doc.rust-lang.org/std, the Rust Reference, Clippy lint list, `cargo doc --open`/`cargo tree` for local exploration); codebase discovery hints (`Cargo.toml`, `Cargo.lock`, `src/lib.rs`/`src/main.rs`, `[workspace] members`, `tests/`, `benches/`).
-- [ ] Create `skills/skill-rust-research/SKILL.md`: substitute names/task type only; keep all shared flow imports (preflight/postflight/lit-stage4a) unchanged.
+- [x] Read `agent-system/extensions/python/agents/python-research-agent.md` and `skills/skill-python-research/SKILL.md` in full. *(completed)*
+- [x] Create `agents/rust-research-agent.md`: same frontmatter shape (`model: sonnet`), same stage structure; Rust research sources (docs.rs, crates.io, doc.rust-lang.org/std, the Rust Reference, Clippy lint list, `cargo doc --open`/`cargo tree` for local exploration); codebase discovery hints (`Cargo.toml`, `Cargo.lock`, `src/lib.rs`/`src/main.rs`, `[workspace] members`, `tests/`, `benches/`). *(completed)*
+- [x] Create `skills/skill-rust-research/SKILL.md`: substitute names/task type only; keep all shared flow imports (preflight/postflight/lit-stage4a) unchanged. *(completed)*
 
 **Timing**: 45 minutes
 
