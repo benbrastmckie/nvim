@@ -55,7 +55,7 @@ next_project_number: 235
     └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
-226 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
+226 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
 234 [RESEARCHED] — Fix the state-write.sh spill-name collision that silently...
@@ -201,10 +201,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 226. Fix scoped commit dropping staged deletions
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**).
 
