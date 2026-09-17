@@ -304,21 +304,21 @@ before editing.
 
 ---
 
-### Phase 5: Formal, CSLib, Epidemiology, Email, Lean Rollout (11 agents) [NOT STARTED]
+### Phase 5: Formal, CSLib, Epidemiology, Email, Lean Rollout (11 agents) [COMPLETED]
 
 **Goal**: Add the canonical block to the remaining zero-count agents in the `formal`, `cslib`,
 `epidemiology`, `email`, and `lean` extensions.
 
 **Tasks**:
-- [ ] Resolve each agent's phase variant from its extension manifest, including `cslib`'s
+- [x] Resolve each agent's phase variant from its extension manifest, including `cslib`'s
       `routing_agents_hard` block for `cslib-research-hard-agent`.
-- [ ] Insert the matching canonical variant per file.
-- [ ] `lean-implementation-agent.md` carries the unrelated context-pressure handoff mechanism —
+- [x] Insert the matching canonical variant per file. *(completed)*
+- [x] `lean-implementation-agent.md` carries the unrelated context-pressure handoff mechanism —
       place the new subsection so the two file types are visibly distinct (same treatment Phase 6
-      applies at scale).
-- [ ] `email-implementation-agent.md` is wrapper-only; the block adds no wrapper calls and must not
-      disturb the safety-invariant sections.
-- [ ] Commit per file as a green sub-step.
+      applies at scale). *(disambiguation clause appended)*
+- [x] `email-implementation-agent.md` is wrapper-only; the block adds no wrapper calls and must not
+      disturb the safety-invariant sections. *(placed after Stage 5, before Critical Requirements)*
+- [x] Commit per file as a green sub-step. *(11 commits)*
 
 **Timing**: 1.25 hours
 
