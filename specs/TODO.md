@@ -11,12 +11,10 @@ next_project_number: 235
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224,226,227,228,229,234 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214,225,230,231 | 29,74,166,172,188,194,207,209,213,224,228,229 | core-agent-system, extensions, literature, ... |
-| 3 | 14,162,193,211,212,216,217,220,232 | 139,173,174,194,210,214,230,231 | core-agent-system, file-scope-lifecycle |
-| 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
-| 5 | 140,165,170,219 | 139,163,164,206,215,218 | core-agent-system, file-scope-lifecycle |
-| 6 | 190,233 | 165,231 | core-agent-system |
+| 1 | 22,29,39,45,89,127,129,167,172,177,184,185,188,194,200,202,206,207,209,213,223,224,226,227,228,234 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,43,51,74,139,162,163,166,173,174,193,208,210,212,215 | 29,167,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
+| 3 | 44,75,76,136,140,165,170,182,199,217,221 | 74,139,162,163,166,173,174,193,194,206,210,215 | core-agent-system, extensions, file-scope-lifecycle |
+| 4 | 190 | 165 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -25,61 +23,41 @@ next_project_number: 235
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
 129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
-166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
-  └─ 136 [NOT STARTED] — Stop implementation agents hand-writing the plan-level Status...
 172 [NOT STARTED] — Define a canonical bounded-wait idiom for detached builds
   └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
-    └─ 220 [NOT STARTED] — Make a guarded Lean build verdict machine-readable so a...
-      └─ 221 [NOT STARTED] — Correct the Lean build-verification contracts: never a piped...
+    └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:...
   └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
-    └─ 217 [NOT STARTED] — Replace RSS+VmSwap over-count with PSS-based reclaimable...
-      └─ 218 [NOT STARTED] — Track Lean tree idleness by CPU delta and gate reclamation on...
-        └─ 219 [NOT STARTED] — Prompt via desktop notification before killing idle costly...
-  └─ 175 [NOT STARTED] — Enforce waiter teardown in the agent contracts that spawn...
-    └─ 221 [NOT STARTED] — Correct the Lean build-verification contracts: never a piped... (see above)
+    └─ 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
 188 [RESEARCHED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-  └─ 230 [NOT STARTED] — Decide and implement the disposition for dependency edges...
-    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the...
-  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,...
-    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the... (see above)
-    └─ 233 [NOT STARTED] — Infer missing dependency edges from overlapping filescope...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
-    └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
+    └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
     └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
-  └─ 212 [NOT STARTED] — Detect and recover research dispatches that skip their report...
-    └─ 195 [NOT STARTED] — Replace iscontractualhandoffwriter allowlist with a...
+  └─ 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
+    └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
+  └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive...
+  └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:... (see above)
 200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
 206 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 209 [NOT STARTED] — Set up a fresh repo specs/ state and runtime-file ignore...
   └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
-  └─ 210 [NOT STARTED] — Fix topic assignment order and zero-topic picker in /task...
-    └─ 211 [NOT STARTED] — Stop /task task-type detection from matching incidental keywords
-      └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
-213 [NOT STARTED] — Pass /orchestrate focus text through to the dispatch file
-  └─ 214 [NOT STARTED] — Make forced orchestrate phases stop as documented instead of...
-    └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning... (see above)
-    └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
-      └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
-      └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-    └─ 212 [NOT STARTED] — Detect and recover research dispatches that skip their report... (see above)
-    └─ 216 [NOT STARTED] — Reset the /orchestrate cycle bound on each run and admit...
-      └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
-        └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
-        └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
-224 [NOT STARTED] — Add a tamper-resistant single-use /please grant, a push...
-  └─ 225 [NOT STARTED] — Add the user-only /please command, its never-list, the...
+  └─ 210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
+    └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
+213 [NOT STARTED] — Fix forced /orchestrate phases: pass focus text through, stop...
+  └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
+    └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
+    └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+  └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive... (see above)
+  └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
+    └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
+    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 226 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
-  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,... (see above)
-229 [NOT STARTED] — Carry a reason on each dependency edge so a hard ordering...
-  └─ 230 [NOT STARTED] — Decide and implement the disposition for dependency edges... (see above)
-  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,... (see above)
 234 [NOT STARTED] — Fix the state-write.sh spill-name collision that silently...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
@@ -87,11 +65,11 @@ next_project_number: 235
 
 29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced...
   └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced...
-43 [NOT STARTED] — Decide and implement how email safety context actually...
-74 [NOT STARTED] — Add shared LaTeX build-conflict guard script (detect...
-  └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
-  └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
 167 [NOT STARTED] — Make vimtex continuous-build safety always-in-effect via the...
+  └─ 74 [NOT STARTED] — Add shared LaTeX build-conflict guard script (detect...
+    └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
+    └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
+43 [NOT STARTED] — Decide and implement how email safety context actually...
 
 ### Literature
 
@@ -107,13 +85,11 @@ next_project_number: 235
 ### Opencode
 
 22 [RESEARCHING] — Freeze .opencode: silence fragment validation spam and record...
-168 [NOT STARTED] — Correct the disproven project-scoped MCP claim in the...
 
 ### File Scope Lifecycle
 
-162 [RESEARCHED] — Formalize the existing Files to modify convention in...
-  └─ 164 [NOT STARTED] — Backfill filescope for existing tasks and decide the...
-    └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent...
+162 [RESEARCHED] — Formalize Files to modify, harvest it into filescope at every...
+  └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent...
 163 [NOT STARTED] — Surface missing and empty filescope in validate-state.sh and...
   └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent... (see above)
 
@@ -121,7 +97,6 @@ next_project_number: 235
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
-198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
 
@@ -164,12 +139,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 233. Infer missing dependency edges from overlapping file_scope declarations, consuming the absent-scope ruling rather than re-deciding granularity
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 231, Task 165
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): depends on a granularity ruling (task 165) that does not exist yet and, by its own text, is likely to conclude warn-only. Re-file after 165 if the ruling makes inference trustworthy.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 GAP. Two tasks whose declared file_scope entries overlap must be serialized, but no pass infers that edge from the declarations themselves outside the narrow cases already covered. The missing edge is the dangerous one: it licenses concurrency that should not happen, and it fails silently, because nothing reports a constraint nobody wrote down.
 
@@ -192,12 +169,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 232. Surface dependency-graph health metrics alongside the computed wave schedule
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 228, Task 230, Task 231
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): premise falsified by execution (see task 230's reason): the wave schedule is computed over active tasks only, so archived edges do not distort it. Metrics nobody acts on are noise; not built.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 GAP. scripts/generate-task-order.sh computes the wave schedule -- Kahn's BFS over the dependency edges, ~lines 391-450, with a cycle fallback that parks unassigned tasks in a placeholder wave 99 -- and renders a wave table into TODO.md. It never measures the graph's QUALITY. Wave membership is reported; nothing reports whether the graph that produced it is healthy, and so nothing ever prompts a human to fix it.
 
@@ -225,12 +204,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 231. Establish a post-creation-burst dependency-analysis pass, extending the existing pre-dispatch review rather than forking it
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 228, Task 229, Task 188
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): an analysis pass over file_scope declarations whose granularity is known to be too coarse to carry it (see the sibling inference task's own text). The one surviving idea, persisting the step-4.5 wave-split deferral as a dependency edge, is recorded in specs/PATH.md's unfiled observations for after task 165.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 DEFECT. Dependencies are declared task-by-task at creation time, when the author can see one task and not the graph, and nothing ever revisits them. There is no moment at which the graph as a whole is examined. The dangerous direction of error is the MISSING edge, not the wrong one: a missing edge is what licenses concurrency that should not happen, and it fails silently by construction, because a graph cannot report a constraint nobody wrote down.
 
@@ -256,12 +237,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 230. Decide and implement the disposition for dependency edges pointing at terminal or archived tasks
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 229, Task 188
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): premise falsified by execution: generate-task-order.sh, orchestrate-cycle-plan.sh and orchestrate-triage-classify.sh already treat edges to archived tasks as satisfied (51 sits in wave 2 despite its edge to archived 143). The only live harm is the predispatch classifier's nonexistent verdict, owned by task 188. Pruning at archival is a one-line addition to /todo's dependency-update step if 188 leaves anything to prune.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 DEFECT. A dependency edge whose target has already been archived is permanently satisfied and carries no ordering information, but it stays in `dependencies[]` forever and is treated as a live edge by every reader. No check flags it, because the one check that could does not consider archival a defect.
 
@@ -297,12 +280,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 229. Carry a reason on each dependency edge so a hard ordering constraint is distinguishable from a soft preference
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): reasons on dependency edges have no machine consumer; ordering intent stays in task descriptions as prose (an ORDERING: line), to be recorded in state-management-schema.md when task 162 lands. No schema change.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 DEFECT. A dependency edge records THAT one task must follow another and never WHY. `dependencies` is a bare array of integers, so a hard ordering constraint (this task edits a file that task creates) and a soft preference (it reads better in this order) are indistinguishable to every later reader -- human or machine. Nothing can safely prune, relax, or reorder an edge it cannot interpret.
 
@@ -407,15 +392,19 @@ ACCEPTANCE. A regression test covering three shapes -- a scoped commit containin
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+ROOT CAUSE FOUND (2026-09-17 survey, read from the source store; confirm by the regression test before relying on it): the V2 safety gate at git-commit-scoped.sh:181 keeps a positive pathspec only if `[ -e "$p" ] || git ls-files --error-unmatch -- "$p"` succeeds. After `git rm <file>` the path is gone from BOTH the working tree and the index, so the gate drops it with the WARN "dropping unmatched pathspec" and the deletion never reaches `git add`/`git commit`. A rename fails the same way for its delete half. The fix is to also accept a path present in HEAD (`git ls-tree` / `git cat-file -e HEAD:<p>`) or in the staged diff (`git diff --cached --name-only -- <p>`), so a staged deletion counts as matched. The out-of-scope-deletion ruling in the description still needs deciding.
+
 ---
 
 ### 225. Add the user-only /please command, its never-list, the pr-prohibition exception and the CLAUDE.md command entry
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 224
 
-**Description**: Add the user-only /please command, its never-list, the pr-prohibition exception, and the CLAUDE.md command-reference entry. Only agent-system/extensions/core/ is edited (commands/please.md, commands/README.md, rules/pr-prohibition.md, merge-sources/claudemd.md), never .claude/. Builds on the grant mechanism and guards from the predecessor task (dependency).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 224 (/please) as its second phase; no work lost
+
+Add the user-only /please command, its never-list, the pr-prohibition exception, and the CLAUDE.md command-reference entry. Only agent-system/extensions/core/ is edited (commands/please.md, commands/README.md, rules/pr-prohibition.md, merge-sources/claudemd.md), never .claude/. Builds on the grant mechanism and guards from the predecessor task (dependency).
 
 (1) commands/please.md, user-only, modeled on commands/merge.md and commands/tag.md: authorizes one otherwise-blocked action per invocation (e.g. "/please force-push main to origin"). Parse the requested action; show the exact command and its effect (for pushes: local vs remote SHAs); confirm with AskUserQuestion before any irreversible step; prefer safe forms (--force-with-lease=<ref>:<observed remote SHA> over --force); do only the literal request; log the action to specs/events.jsonl via scripts/events-append.sh. Caveat to state in the command: the grant proves the user typed /please, not that the command the agent then runs is the one meant, so the confirmation step is mandatory for anything irreversible.
 
@@ -429,7 +418,7 @@ Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
 
 ---
 
-### 224. Add a tamper-resistant single-use /please grant, a push guard, and grant checks in the destructive-git guard
+### 224. Add /please: single-use grant, push guard, destructive-git grant check, the user-only command, rule exception and docs
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -454,6 +443,19 @@ Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
 OVERLAP NOTE (no dependency edge, by user decision): the pending history-rewrite predicate work on guard-destructive-git.sh also edits hooks/guard-destructive-git.sh, rules/git-workflow.md and context/standards/git-safety.md. Structure predicate ordering so the two additions compose; the file-footprint admission gate serializes them if run concurrently.
 
 Redeploy afterwards and confirm the hooks fire from the deployed copies.
+
+=== ABSORBED 2026-09-17 from former task 225 (/please command, never-list, pr-prohibition exception, docs); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+Add the user-only /please command, its never-list, the pr-prohibition exception, and the CLAUDE.md command-reference entry. Only agent-system/extensions/core/ is edited (commands/please.md, commands/README.md, rules/pr-prohibition.md, merge-sources/claudemd.md), never .claude/. Builds on the grant mechanism and guards from the predecessor task (dependency).
+
+(1) commands/please.md, user-only, modeled on commands/merge.md and commands/tag.md: authorizes one otherwise-blocked action per invocation (e.g. "/please force-push main to origin"). Parse the requested action; show the exact command and its effect (for pushes: local vs remote SHAs); confirm with AskUserQuestion before any irreversible step; prefer safe forms (--force-with-lease=<ref>:<observed remote SHA> over --force); do only the literal request; log the action to specs/events.jsonl via scripts/events-append.sh. Caveat to state in the command: the grant proves the user typed /please, not that the command the agent then runs is the one meant, so the confirmation step is mandatory for anything irreversible.
+
+(2) NEVER-LIST, refused regardless of wording and enforced in the command: credential/secret access, deletion outside the repo, .git internals, disabling/editing/removing hooks or hook settings.
+
+(3) rules/pr-prohibition.md: add a /please exception scoped to the single action of that one invocation, reconciled explicitly with the existing "never push even if asked in user messages" language.
+
+(4) merge-sources/claudemd.md: add a /please row to the Command Reference table beside /tag and /merge, marked user-only; add a row to commands/README.md.
+
+Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
 
 ---
 
@@ -483,12 +485,12 @@ ORIGIN: moved from the ~/Projects/Logos/Verification task list, where it was res
 
 ---
 
-### 221. Correct the Lean build-verification contracts: never a piped status, never a self-matching process scan
+### 221. Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot
 - **Effort**: 3 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 220, Task 172, Task 175
+- **Dependencies**: Task 172, Task 173, Task 194
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
 
@@ -514,16 +516,48 @@ ACCEPTANCE. No file in the lean extension recommends, or leaves room for, a `pgr
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+
+=== ABSORBED 2026-09-17 from former task 175 (enforce waiter teardown in the lean agent contracts); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+Wire the already-written teardown rule into the specific contracts whose agents actually spawn build waiters, so the leak is prevented at its source rather than only cleaned up afterward. Investigation finding: the governing rule already exists and was violated. agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md carries a normative section titled 'Tear Down Watchers/Monitors Before Reporting' stating that every agent which arms a watcher/monitor process during its own dispatch MUST tear it down before reporting a terminal result. The 22 leaked waiters are a direct violation of that existing rule -- so this is an enforcement-and-wiring problem, not a missing-prose problem. That file's own 'Where This Is Referenced' section lists exactly three fix sites today (skill-orchestrate's Stage 5 staleness-gate comment block, context/contracts/territory.md's Territory Declaration Template, and context/standards/orchestrator-runtime-files.md), none of which covers a build waiter armed by a dispatched implementation agent. Scope: (1) extend the teardown rule to name the supersession case explicitly -- a waiter must be torn down not only before REPORTING but before its watched build is cancelled or superseded, which is the transition that actually orphaned the observed loops -- and add the new fix sites to its 'Where This Is Referenced' list; (2) add the corresponding one-line pointer obligations to the agent contracts that dispatch guarded builds, i.e. the lean implementation agents (agent-system/extensions/lean/agents/lean-implementation-agent.md and lean-implementation-hard-agent.md), pointing at the bounded-waiter anchor and the teardown rule rather than restating either. Follow the established single-statement-plus-pointer convention: the model lives in one file, fix sites point at it. Do not duplicate the waiter contract text into the agent files.
+
+=== ABSORBED 2026-09-17 from former task 198 (mandate git-snapshot --no-revert in the lean agent contracts); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).
+
+DEFECT. The lean implementation agent contracts say NOTHING about git-snapshot.sh. Verified by grep against the source store: `orchestrator_mode`, `git-snapshot` and `no-revert` each appear ZERO times in agent-system/extensions/lean/agents/lean-implementation-agent.md. A lean implementation dispatch that reaches for a pre-work backup therefore finds no guidance at all and lands on the script's DEFAULT mode, which reverts the working tree repo-globally.
+
+OBSERVED LIVE (2026-09-09, ~/Projects/BimodalLogic, tasks 574 and 575 dispatched concurrently as lean-implementation-agent into ONE shared working tree). The 575 dispatch ran `git-snapshot.sh 575` in default mode while the 574 dispatch was concurrently editing the same tree. Default mode runs `git stash push -u` repo-globally with NO pathspec, so it stashed away the SIBLING dispatch's uncommitted work: 574's `.return-meta.json`, `.claude-extensions.json`, and 7 lines of `specs/events.jsonl`. The 575 dispatch noticed the over-capture and restored from `stash@{0}` (kept, not dropped), so nothing was ultimately lost -- but detection and repair depended ENTIRELY on the agent happening to notice. A less attentive dispatch proceeds on a silently reverted tree with no error at any layer.
+
+THIS IS A CALLING-CONVENTION GAP, NOT A SCRIPT BUG. git-snapshot.sh already documents the hazard loudly in its own header ("WARNING: default and --branch modes REVERT the working tree"; "Despite the name, this script is NOT read-only in its default or --branch modes") and already implements the correct alternative: `--no-revert`, which builds a durable stash object via `git stash create` + `git stash store` WITHOUT touching the working tree, described in the header as the mode for "when you want a durable backup and intend to KEEP WORKING". agent-system/extensions/core/agents/general-implementation-agent.md ALREADY calls it correctly with `--no-revert` and explains why. The lean agents were simply never given the same bullet.
+
+CORROBORATION THAT THIS RECURS. `git stash list` in ~/Projects/BimodalLogic currently holds 44 entries, 32 of them named `git-snapshot-*`, accumulated across many sessions. This is not a one-off.
+
+SCOPE -- DELIBERATELY SMALL, SHIPS ON ITS OWN. Add to both lean implementation agent contracts an explicit instruction that `git-snapshot.sh` MUST be invoked with `--no-revert` whenever the dispatch is running under `orchestrator_mode` (i.e. whenever a concurrent sibling dispatch may share the working tree), and SHOULD be preferred generally when the agent intends to keep working after the snapshot. State the reason in one line -- default mode reverts the tree repo-globally and will capture a sibling's in-flight edits -- so the bullet teaches the hazard rather than only the incantation. Mirror the wording already used in core/agents/general-implementation-agent.md rather than inventing a second phrasing.
+
+RELATIONSHIP TO OTHER FILED WORK -- READ BEFORE STARTING.
+  - Task 191 ("Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work") owns the SCRIPT-LEVEL remedy in core/scripts/git-snapshot.sh plus core/rules/git-workflow.md and the plan-format/planner emission path. This task deliberately does NOT touch any of those files. A contract bullet is the cheap interim mitigation that can land immediately; it is explicitly NOT a substitute for the runtime guard, because a bullet can be forgotten. Both are wanted.
+  - Task 191's currently-recorded design direction keys the proposed refusal on "tracked paths OUTSIDE the task's declared file_scope". Note for that task, and record it in this task's summary: that predicate does not cleanly cover the concurrent-sibling case observed here, where a sibling's edits may fall INSIDE an overlapping declared scope. A live-concurrent-dispatch predicate is a distinct condition from an out-of-file_scope predicate. Surface this; do not implement it here.
+
+MUST NOT. Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md, or the plan format -- those belong to task 191 and would collide. Do not weaken or remove `--no-revert`. Do not `git stash drop`/`clear` any existing entry.
+
+ACCEPTANCE. Both lean implementation agent contracts instruct `--no-revert` under orchestrator_mode, with the one-line rationale. The wording matches the existing core agent contract. The lean extension is redeployed and the regenerated `.claude/**` copies carry the bullet (see the deploy-propagation task -- a source-store fix that never reaches the consuming repo changes nothing for a running agent).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+SCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause produces three distinct failure modes: working-tree revert (this one), cross-task commit bleed via whole-path staging on a shared file, and .lake build contention. The isolation-posture task enumerates all three with verified evidence and decides the structural remedy. This contract bullet addresses ONLY the working-tree revert mode, and only by convention rather than by construction. Do not let it close out the other two, and do not let its landing be read as evidence that the shared-tree posture is safe.
+
 ---
 
 ### 220. Make a guarded Lean build verdict machine-readable so a pipeline cannot mask it
 - **Effort**: 3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 173
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated from it).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 173 (guard terminal record + result subcommand); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated from it).
 
 DEFECT (observed live in a two-task /orchestrate run against ~/Projects/BimodalLogic): an agent reported a Lean build as "exit 0" when it had in fact failed on a module error. The invocation was of the shape `bash lake-build-guard.sh build --timeout 1800 -- build 2>&1 | tail -60`, whose `$?` is `tail`'s exit code, not the guard's. The agent caught and retracted the claim itself, but the orchestrator had already relayed the false green to a sibling dispatch. The instrument could not report failure, so a broken build looked correct.
 
@@ -548,12 +582,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 219. Prompt via desktop notification before killing idle costly Lean trees, with re-verified targeted kill and snooze
 - **Effort**: 4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 218
+- **Dependencies**: Task 217
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 217 (cost-aware idle Lean tree reclamation); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
 
 OBSERVED LIVE (2026-09-15): a Lean LSP tree was reported as "15.1 GB" reclaimable while earlyoom showed 14-16.6 GB available throughout; real reclaim was ~2.3 GB swap plus a little anon. User policy: idle trees that cost nothing may stay; trees that cost memory get a prompt (never a silent kill) after being idle a while. Memory floor 1 GB approved.
 
@@ -578,12 +614,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 218. Track Lean tree idleness by CPU delta and gate reclamation on a memory floor
 - **Effort**: 3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 217
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 217 (cost-aware idle Lean tree reclamation); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
 
 OBSERVED LIVE (2026-09-15): a Lean LSP tree was reported as "15.1 GB" reclaimable while earlyoom showed 14-16.6 GB available throughout; real reclaim was ~2.3 GB swap plus a little anon. User policy: idle trees that cost nothing may stay; trees that cost memory get a prompt (never a silent kill) after being idle a while. Memory floor 1 GB approved.
 
@@ -604,7 +642,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
-### 217. Replace RSS+VmSwap over-count with PSS-based reclaimable memory in claude-refresh passes
+### 217. Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill
 - **Effort**: 2 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -629,15 +667,59 @@ ACCEPTANCE. Fixture of N workers sharing a large Pss_File reports reclaimable = 
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+=== ABSORBED 2026-09-17 from former task 218 (CPU-delta idleness and the memory-floor cost gate); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
+
+OBSERVED LIVE (2026-09-15): a Lean LSP tree was reported as "15.1 GB" reclaimable while earlyoom showed 14-16.6 GB available throughout; real reclaim was ~2.3 GB swap plus a little anon. User policy: idle trees that cost nothing may stay; trees that cost memory get a prompt (never a silent kill) after being idle a while. Memory floor 1 GB approved.
+
+DEFECT. lean_row_is_idle uses ps etimes (process AGE) plus ps pcpu, which in procps-ng is lifetime cputime/elapsed. Any long-lived tree reads <1%, so an actively used 5h-old tree counts as "idle".
+
+WORK (consumes the reclaimable figure from the PSS memory helper, hence the dependency).
+(a) CPU-delta idle tracking: per-tree state in ~/.local/state/claude-refresh/lean-trees.json keyed by root pid + process starttime (/proc/PID/stat field 22). Each run, store the summed utime+stime of all tree members; if it increased since the last run, reset last_active; idle_for = now - last_active. Replace the pcpu/etimes gate entirely. Hourly run granularity is acceptable. Prune entries for trees that no longer exist.
+(b) State file writes atomic (tmp + mv). Tolerate a missing or corrupt file: treat as first sighting, NEVER as idle.
+(c) Cost gate: a tree is prompt-eligible only when idle_for >= LEAN_LSP_IDLE_THRESHOLD_MIN (default 240) AND reclaimable >= LEAN_LSP_MEM_FLOOR_MB (default 1024). Otherwise report it as "idle, cheap, kept" (or active). Interactive /refresh uses this same gate and the same numbers for its existing AskUserQuestion prompt.
+(d) Tests (fixture /proc via PROC_ROOT, fixture state dir): CPU-delta idle state machine (first sighting not idle; unchanged cputime accrues idle_for; increased cputime resets), pid reuse with different starttime treated as a new tree, corrupt/missing state file, floor gate both sides of the threshold.
+(e) Update Pass Inventory rows in commands/refresh.md and skills/skill-refresh/SKILL.md for the new idle definition and cost gate.
+
+MUST NOT. Kill anything silently. Change UID/system-slice predicates or termination ordering. Edit .claude/**.
+
+ACCEPTANCE. Active 5h-old tree whose cputime grows is never idle; a tree idle >=240 min with <1 GB reclaimable is reported kept; tests pass; shellcheck clean; redeploy and confirm.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== ABSORBED 2026-09-17 from former task 219 (notify-before-kill prompt path with snooze); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
+
+OBSERVED LIVE (2026-09-15): a Lean LSP tree was reported as "15.1 GB" reclaimable while earlyoom showed 14-16.6 GB available throughout; real reclaim was ~2.3 GB swap plus a little anon. User policy: idle trees that cost nothing may stay; trees that cost memory get a prompt (never a silent kill) after being idle a while. Memory floor 1 GB approved.
+
+WORK (builds on the cost gate and per-tree state file).
+(a) Prompt path: when the headless hourly run (--dry-run) finds an eligible tree that is not snoozed or already prompted, launch a detached `systemd-run --user --unit=claude-refresh-prompt-<rootpid>-<starttime>` (the unit name must NOT match claude-*.scope, which the user's claude-session-reaper stops) running `notify-send -a claude-refresh -u critical -t 0 -A default=Kill --wait "Idle Lean tree (<project>)" "idle Xh, N GB reclaimable -- click to kill, dismiss to keep 4h"` (or equivalent that blocks on the chosen action). Project = lake serve cwd (/proc/PID/cwd).
+    DESIGN REFINEMENT (notification daemon): the user runs mako with no dmenu-style action launcher, so named notify-send actions cannot be selected by clicking. Therefore use a single `-A default=Kill` action (mako left-click invokes the default action) and treat dismiss / right-click / expiry / no action returned as "Keep" (snooze). Pass `-t 0` so the notification does not auto-expire. The complementary mako rule ([app-name=claude-refresh] default-timeout=0) and the NixOS home-manager install of the timer/service with a correct PATH are handled by a separate ~/.dotfiles task (external, not in this repo).
+(b) On the default action ("Kill", i.e. left-click): run `claude-refresh.sh --lean-tree <pid>:<starttime> --force`. The new --lean-tree mode re-verifies starttime identity, still idle, and still over the floor before the existing ordered workers -> server -> root termination; if anything changed, skip and log.
+(c) On dismiss / right-click / expiry / any non-default outcome (treated as "Keep"): record snooze_until = now + LEAN_LSP_SNOOZE_MIN (default 240) in the state file. Dedupe so a tree is prompted at most once per snooze window (record prompted state before launching).
+(d) Degrade gracefully when notify-send, systemd-run, or a DBus session bus is absent: log only, never kill.
+(e) The hourly unit (systemd/claude-refresh.service) ExecStart stays --dry-run; prompting happens only in the separate transient unit. Keep generic units portable, but document that Environment=PATH=/usr/bin:/bin is broken on NixOS and that NixOS installs these units via home-manager (the dotfiles change is a separate task).
+(f) Interactive /refresh keeps its AskUserQuestion prompt with the shared gate and numbers.
+(g) Tests (fixture /proc via PROC_ROOT, stubbed notify-send/systemd-run on PATH): stubbed notify-send printing "default" -> kill path, printing nothing/other -> snooze path, starttime re-verification refusal (pid reused), still-idle/still-over-floor re-check refusal, snooze dedupe (no second prompt inside window, prompt again after expiry), missing notify-send/systemd-run/DBus degrades to log-only, unit name never matches claude-*.scope.
+(h) Docs: commands/refresh.md and skills/skill-refresh/SKILL.md (Pass Inventory rows, --lean-tree flag, env vars LEAN_LSP_IDLE_THRESHOLD_MIN / LEAN_LSP_MEM_FLOOR_MB / LEAN_LSP_SNOOZE_MIN, prompt flow, NixOS note).
+
+MUST NOT. Kill without explicit user action. Change UID/system-slice predicates or termination ordering. Edit .claude/**.
+
+ACCEPTANCE. Tests pass; shellcheck clean; redeploy and confirm; a manual end-to-end check shows one notification per snooze window and a left-click Kill that refuses when the tree became active, and a dismiss that records a 4h snooze.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
 ---
 
 ### 216. Reset the /orchestrate cycle bound on each run and admit forced phases by artifact, not status
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 214
+- **Dependencies**: Task 213
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 213 (forced-phase fixes); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 INTENT (user, 2026-09-14). A typical workflow is `/orchestrate N --research` several times, then `/orchestrate N --plan`, then more plan revisions, and only then `/orchestrate N` or `/orchestrate N --implement`. The cycle bound exists only to stop unbounded work WITHIN one run (e.g. a hard Lean proof). It must reset on every /orchestrate run. Forced phases must be admitted by artifacts, not status. Design for simplicity: one admission rule, no status special-case matrix.
 
@@ -677,7 +759,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 214, Task 216
+- **Dependencies**: Task 213
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -704,12 +786,14 @@ AMENDMENT (2026-09-14). A follow-on task (this task now depends on it) makes the
 ---
 
 ### 214. Make forced orchestrate phases stop as documented instead of dispatching the next phase
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 213
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 213 (forced-phase fixes); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 DEFECT. A phase-forcing flag (`--research`/`--plan`/`--implement`) is documented to STOP after the last named phase, but orchestrate-cycle-plan.sh falls through to normal status-based dispatch once the forced queue is empty. Any later call on the same session, including a "check" call, starts the next lifecycle phase for real.
 
@@ -738,7 +822,7 @@ AMENDMENT (2026-09-14, alongside the per-run cycle-bound task). Scope the "force
 
 ---
 
-### 213. Pass /orchestrate focus text through to the dispatch file
+### 213. Fix forced /orchestrate phases: pass focus text through, stop after the last forced phase, reset the cycle bound per run, admit by artifact
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -768,13 +852,78 @@ ACCEPTANCE. A fixture test in scripts/tests/test-orchestrate-cycle-plan.sh runs 
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+
+=== ABSORBED 2026-09-17 from former task 214 (stop forced phases falling through to status dispatch); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A phase-forcing flag (`--research`/`--plan`/`--implement`) is documented to STOP after the last named phase, but orchestrate-cycle-plan.sh falls through to normal status-based dispatch once the forced queue is empty. Any later call on the same session, including a "check" call, starts the next lifecycle phase for real.
+
+OBSERVED LIVE (2026-09-14, ~/Projects/Logos/Verification). After a forced research round finished and the task was RESEARCHED, the orchestrating session re-ran orchestrate-cycle-plan.sh as a final check, without the research-only flag. It moved the task to [PLANNING], wrote a new .dispatch/{seq}.md, took the task lock, added to the task's cycle count, and wrote a new last_updated/session_id into state.json. The user had to restore the status by hand, rebuild TODO.md and delete the dispatch file, lock and cycle count.
+
+ROOT CAUSE (verified in the source store).
+  - Contract: commands/orchestrate.md (`--research` row: "STOPS after the last named phase") and the merge-sources/claudemd.md /orchestrate row ("stopping after the last named phase rather than falling through to status-derived dispatch").
+  - Code: section (f) "Per-task force_phases consumption" sets `effective_group[t] = triage_group[t]` whenever `force_phases_remaining[t]` is empty. The live pass empties the queue as it dispatches (`.force_phases_remaining[$t][1:]`), and seeding uses `//=`, so later cycles never refill it. After the forced phase is dispatched, a RESEARCHED task routes to plan whether or not the flag is passed again. Nothing records that this session was a forced round.
+  - A read-only `--dry-run` already exists, but skills/skill-orchestrate/SKILL.md never says that a re-check or status probe must use it (or read mt_state_file) instead of a live call, and docs/architecture/orchestrate-state-machine.md does not document what happens after the queue empties.
+  - The contradiction also exists in docs: the CLAUDE.md multi-task paragraph says tasks fall "through to ordinary status-derived classification once its own forced sequence is exhausted". Settle on one contract.
+
+WORK.
+(a) Persist per-task "forced round" state in the multi-state file (e.g. record the original forced sequence when it is seeded). When that queue is empty, the task must be excluded from dispatch (terminal for this session, with a clear stop or skip reason) rather than routed by status. This must hold even when a later invocation omits --force-phases.
+(b) Settle the contradiction in favour of the documented STOP contract (or, if research shows fall-through is relied on, pick explicitly and fix every doc). Update commands/orchestrate.md, merge-sources/claudemd.md, docs/architecture/orchestrate-state-machine.md and SKILL.md so they agree.
+(c) SKILL.md: add a MUST NOT for live re-invocation of orchestrate-cycle-plan.sh purely to inspect state. Name `--dry-run` (or reading mt_state_file) as the only sanctioned check, and require the loop to stop on the plan's stop verdict.
+(d) Check whether an unforced live call on a forced session's mt_state_file can still charge a cycle, take a lock or write a preflight status; after the fix it must do none of these.
+
+MUST NOT. Do not change unforced behaviour for sessions that never used a forcing flag (normal lifecycle progression must continue). Do not regress status on terminal tasks (keep the monotonic-max clamp). Do not edit .claude/**.
+
+ACCEPTANCE. A regression test in scripts/tests/test-force-phases.sh reproduces the observed case: a RESEARCHED task with `--force-phases research`, research dispatched and postflighted, then (1) a second live call with the flag and (2) a live call without it. Both produce no dispatch rows, leave status RESEARCHED, write no dispatch file, take no lock, and leave cycle_counts unchanged. The test fails against the current script. An unforced multi-phase session still advances research -> plan -> implement. shellcheck clean. Redeploy and confirm in a consumer repo.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+AMENDMENT (2026-09-14, alongside the per-run cycle-bound task). Scope the "forced round" state from (a) to ONE run's multi-state file (one session_id). A NEW /orchestrate run with a new forcing flag (e.g. --research, then later --plan) must start clean and be admitted. The stop-after-last-forced-phase guarantee applies within a run only. A follow-on task will make cycle_counts reset on each run and admit forced phases by artifact (research/plan always; implement when a plan exists; --plan revises when a plan exists), so do not add status-based admission here. The acceptance assertion "cycle_counts unchanged" still stands within the run.
+
+
+=== ABSORBED 2026-09-17 from former task 216 (per-run cycle bound and admission by artifact); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+INTENT (user, 2026-09-14). A typical workflow is `/orchestrate N --research` several times, then `/orchestrate N --plan`, then more plan revisions, and only then `/orchestrate N` or `/orchestrate N --implement`. The cycle bound exists only to stop unbounded work WITHIN one run (e.g. a hard Lean proof). It must reset on every /orchestrate run. Forced phases must be admitted by artifacts, not status. Design for simplicity: one admission rule, no status special-case matrix.
+
+CURRENT BEHAVIOUR (verified in the source store).
+  - The counter carries over between runs, on purpose. orchestrate-cycle-plan.sh section (a2) loads cycle_counts[t] from the saved ${TASK_DIR}/.orchestrator-loop-guard (orchestrate-loop-guard-init.sh --seed). It adds 1 on every dispatch and saves it back (--flush). The limit is 5 per task, 13 with --hard. --continue-budget is the only way past it: it archives the exhausted guard to .exhausted-loop-guard-<ts>.json and resets. context/standards/orchestrator-runtime-files.md ("cycle_count semantics and the budget-continuation override (Defect B)") records "cumulative across invocations, by design", and test-session-runtime-files.sh Case 3 guards it. docs/architecture/orchestrate-state-machine.md contradicts this ("Maximum dispatch cycles per /orchestrate invocation"). Result: a few forced research/plan runs exhaust the budget and later runs are refused with MAX_CYCLES.
+  - Forced phases already override status routing (section (f)), and task_has_forced_phase admits terminal tasks. But a forced implement never checks that a plan exists: orchestrate-build-dispatch.sh finds the plan with `ls plans/*.md | sort -V | tail -1` and sends an empty plan_path when there is none.
+  - A plan dispatch sets research_artifact to `.[0]` of the task's report artifacts. Every artifact writer removes older links of the same type before adding the new one (state-management.md, "Artifacts Are Append-Only (With Same-Type Supersession)"), so that should already be the newest report. No known defect; (c) only pins it with a test.
+  - /orchestrate has no --revise. /revise N is a separate command that works at any status. orchestrate-cycle-plan.sh can already dispatch reviser-agent (the plan-revision aux kind).
+
+WORK.
+(a) Counter resets on each run. cycle_counts starts at 0 in each run's multi-state file; the saved cycle_count is no longer read or written for budgeting. The saved guard file keeps only what must persist: dispatch_seq_counter (must never repeat within a task), pending_dispatch and detected_defects. Remove --continue-budget end to end (parse-command-args.sh, commands/orchestrate.md, SKILL.md Move 1, orchestrate-cycle-plan.sh, including the exhausted-guard archive path and the MAX_INFRA_FAILURES override). Re-running /orchestrate is the explicit way to continue. Keep the per-run bound (5, or 13 with --hard) and the max_cycles stop reason. Replace the Defect B section in orchestrator-runtime-files.md with the per-run contract and why. Invert test-session-runtime-files.sh Case 3, and retire or rework test-loop-guard-budget-override.sh.
+(b) One admission rule for forced phases, keyed on artifacts:
+    - research: always admitted, at any status.
+    - plan: always admitted, at any status. If the task already has a plan (plans/*.md exists), dispatch reviser-agent (plan revision, a new plan in the current round, same as /revise). Otherwise dispatch planner-agent. There is no separate --revise flag; /revise N stays as the standalone command, unchanged.
+    - implement: admitted whenever plans/*.md exists, at any status (researched, planned, partial, completed, ...). With no plan, emit a blocked[] row ("no plan artifact; run --plan first") and dispatch nothing.
+    Dependency gating, file_scope admission and the monotonic-max status clamp are unchanged. Runs without a forcing flag keep today's status routing.
+(c) Add a test that a plan dispatch (planner or reviser) names the NEWEST report after several research rounds. Change code only if that test fails.
+(d) Record the loop-guard staleness detector's disposition: it is moot once no counter is carried between runs, because nothing stale is trusted for budgeting any more. Record it in orchestrator-runtime-files.md next to the existing detector text, not only in a summary.
+(e) Make commands/orchestrate.md (the --research/--plan/--implement rows, the removed --continue-budget row, error handling), merge-sources/claudemd.md (the /orchestrate row), skills/skill-orchestrate/SKILL.md and docs/architecture/orchestrate-state-machine.md agree with (a)-(c).
+
+MUST NOT. Do not let dispatch_seq_counter reset or repeat. Do not change routing for runs without a forcing flag. Do not add a status matrix; (b) is the whole rule. Do not edit .claude/**.
+
+ACCEPTANCE.
+  - Fixture: six forced runs in a row on one task (separate sessions) are never refused for budget, and within ONE run the bound still stops the task at 5 (13 with --hard).
+  - --implement on a RESEARCHED task that has a plan dispatches implement; --implement on a task with no plan yields a blocked[] row and no dispatch file, lock or status write.
+  - --plan on a task with an existing plan dispatches reviser-agent and produces a revised plan in the current round; --plan with no plan dispatches planner-agent and creates one. Both are admitted at any status, including terminal.
+  - A plan dispatch after two research rounds names the newest report.
+  - dispatch_seq never repeats across runs.
+  - --continue-budget is gone (grep finds nothing in the source store outside history).
+  - shellcheck clean. Redeploy and confirm in a consumer repo.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
 ---
 
-### 212. Detect and recover research dispatches that skip their report file
+### 212. Postflight honesty: gate research on a report file and derive the handoff-writer predicate from the dispatch row
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 194, Task 213, Task 214
+- **Dependencies**: Task 194, Task 213
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -827,15 +976,56 @@ Redeploy and confirm.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+=== ABSORBED 2026-09-17 from former task 195 (dispatch-derived handoff-writer predicate); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
+
+DEFECT. is_contractual_handoff_writer() in agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh returns 0 for exactly two hard-mode agents:
+
+  is_contractual_handoff_writer() {
+    case "$1" in
+      cslib-implementation-hard-agent|lean-implementation-hard-agent) return 0 ;;
+      *) return 1 ;;
+    esac
+  }
+
+Every other agent falls through to `return 1` and is treated as a non-writer. Consequently all base-mode implementation agents -- general-implementation-agent (the default for general/meta/markdown and, via noncore-exact routing, formal task types), lean-implementation-agent, typst-implementation-agent -- plus every research and plan agent are excused when .orchestrator-handoff.json is absent. No HANDOFF_STALE_OR_ABSENT defect is recorded via system-defect-record.sh, and a real failure goes unattributed.
+
+OBSERVED LIVE (evidence, not hypothesis). An /orchestrate implement dispatch to general-implementation-agent died on context exhaustion ('Prompt is too long') without writing a handoff. Postflight emitted verbatim:
+
+  [orchestrate] WARN: agent name 'general-implementation-agent' is not on the contractual handoff-writer allowlist -- treated as a non-writer, no defect recorded for the absent handoff. If 'general-implementation-agent' is a genuine new hard-mode writer, add it to is_contractual_handoff_writer() in this script.
+
+The run then degraded silently to heading-scan recovery (plan headings showed 16/16 phases closed) and no defect row was recorded.
+
+THE DECISION IS NOT PRE-MADE -- WEIGH (a) AGAINST (b) IN RESEARCH.
+  (a) Extend the hardcoded allowlist to cover every lifecycle agent.
+  (b) Invert the predicate so writer status derives from whether the dispatch supplied a handoff_path, eliminating the agent-name list entirely and making the contract self-maintaining as new agents and extensions are added.
+
+Option (b) is FAVORED but must be justified, not assumed. The case for it: the existing list has already drifted behind the agent roster, which is the proximate cause of the observed miss. The structural support: skill-orchestrate/SKILL.md Move 3 loops over .dispatch[] rows ONLY and states outright that an aux_dispatch[] row never reaches Move 3; Move 2 supplies handoff_path to every dispatch[] row and deliberately omits the key for aux rows. So every agent that reaches postflight is, by construction, a handoff-expected dispatch.
+
+THE WRINKLE THAT MUST BE RESOLVED. Postflight does not receive handoff_path as an argument. It derives handoff_file itself from --task-dir. Option (b) therefore requires choosing between two concrete shapes, and the research phase must pick one and record why:
+  - Treat 'reached postflight at all' as the predicate (simplest; correct today given the Move 3 dispatch[]-only loop, but silently depends on that invariant holding).
+  - Thread an explicit --handoff-expected true|false flag from the dispatch row through skill-orchestrate's Move 3 call site (more plumbing; preserves the distinction explicitly if an aux row ever starts reaching postflight).
+Assess both against how postflight actually receives dispatch metadata today -- its full CLI contract is documented in its own header Usage block.
+
+SCOPE. Implement the chosen fix. Replace the now-misleading WARN text at the fall-through branch, which currently instructs the reader to 'add it to is_contractual_handoff_writer() in this script' -- guidance that will be wrong under either fix. Update the D1 header comment block, which asserts the allowlist is 'the complete, closed set of contractual writers today'. Add fixture coverage to scripts/tests/test-orchestrate-cycle-postflight.sh for the absent-handoff branch under a base-mode lifecycle agent, which is the exact case that produced no defect row in the observed run.
+
+DEPENDS ON the lifecycle-agent contract alignment task, which must land first: widening detection ahead of the stated obligation would record defects against agents whose contracts never asked them to write a handoff.
+
+MUST NOT. Do not weaken the mtime staleness gate, the dispatch_seq identity gate, or the fail-closed 9999999999 sentinel -- this change concerns only the ABSENT-handoff branch, never the present-but-stale or present-but-mismatched branches, which already record unconditionally. Do not edit agent contract files (the companion task's territory; the file scopes are deliberately disjoint). Do not write task numbers into any script or skill deliverable (see .claude/rules/no-task-references-in-deliverables.md).
+
+ACCEPTANCE. An absent .orchestrator-handoff.json from any lifecycle dispatch -- base mode included -- records a HANDOFF_STALE_OR_ABSENT defect. An aux dispatch still records none. The fixture reproduces the observed general-implementation-agent case and demonstrates the defect row is now written. The WARN text and D1 header comment no longer instruct the reader toward a removed or superseded mechanism. shellcheck clean per context/standards/shell-strict-mode.md.
+
 ---
 
 ### 211. Stop /task task-type detection from matching incidental keywords
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 210
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 210 (/task create fixes); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and
 agent-system/extensions/literature/ (never .claude/**).
 
 DECIDE, THEN IMPLEMENT: how should /task pick a task_type when a routing keyword appears in a
@@ -895,7 +1085,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
-### 210. Fix topic assignment order and zero-topic picker in /task create mode
+### 210. Fix /task create: topic assignment order and registration, and task-type keyword false positives
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -943,6 +1133,65 @@ ACCEPTANCE. Following commands/task.md create mode exactly as written on a fresh
 produces a task with its topic set and the topic listed in active_topics, and no step exits
 non-zero. The pattern doc's templates are valid AskUserQuestion inputs. Fixture tests cover both
 cases. shellcheck clean for any shell changed. Redeploy and confirm.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== ABSORBED 2026-09-17 from former task 211 (task-type keyword false positives); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and
+agent-system/extensions/literature/ (never .claude/**).
+
+DECIDE, THEN IMPLEMENT: how should /task pick a task_type when a routing keyword appears in a
+description only in passing?
+
+DEFECT. commands/task.md step 4 picks the type from the first keyword match, and three rules
+misroute real descriptions:
+  (a) Step 4a (line ~121): "meta", "agent", "command", "skill" anywhere in the description ->
+      `meta`, with no exceptions. Here "agent" means an AI agent, not this repo's agent system.
+      Observed 2026-09-14, ~/Projects/Logos/Verification: "research and revise the AI agent
+      objectives ... training models ... agent harnesses" would have become a meta task.
+  (b) Step 4d, first row: "lean", "proof", etc. -> `lean4`. Observed the same day: a
+      business-strategy description asking "Why Lean over Rocq when there are more resources for
+      software verification in Rocq?" would have been routed to the Lean agents, and a
+      description mentioning "the Logos proof theory" matches "proof". In both cases the
+      maintainer overrode the type to `general` by judgment, which the command doesn't allow for.
+  (c) Step 4b: the literature extension's manifest.json has
+      `keyword_overrides: {"meta": {"keywords": ["literature","zotero","bibliography","citation"]}}`
+      (verified still present in the source store). Step 4b treats the key as the task_type, so
+      any description containing the word "literature" becomes meta. Observed 2026-09-03 on a
+      lean4 formalization task. context/guides/extension-development.md (~lines 103-108) already
+      warns that single common words are prone to false positives.
+
+PRIOR WORK. The earlier fix that limited typst/latex task types to formatting-only work solved
+this problem for step 4d's tool-name rows only (by putting content rows first). It did not touch
+step 4a, the lean4 row or extension overrides.
+
+OPTIONS TO WEIGH (score each against all three observed cases):
+  1. Narrower keywords: 4a matches only agent-system signals (".claude/", "agent system",
+     "slash command", "SKILL.md", a named skill or agent), not bare words.
+  2. Confirmation: when the match comes from one keyword in a long or mixed description, show the
+     detected type, the keyword that caused it, and one or two alternatives in a question to the
+     user. Needs a fixed default for autonomous callers (see topic-assignment-pattern.md's
+     Autonomous Context section).
+  3. Content scoring: count signals per type across the whole description, not first-match-wins.
+  A mix of these is fine. Define the exact rule.
+
+WORK.
+(a) Fix the literature manifest: remove the override or map it to the correct type, and document
+    that keyword_overrides keys ARE task types (check the other manifests for the same mistake).
+(b) Implement the chosen detection rule in commands/task.md and in every other place that repeats
+    the table (grep for it; /fix-it, /review, /spawn and /meta may have copies), ideally from one
+    shared definition.
+(c) Update the CLAUDE.md merge source for the Task-Type-Based Routing section if its description
+    changes.
+
+MUST NOT. Do not change how /meta sets task_type directly. Do not make detection ask questions
+in autonomous contexts. Do not remove the rule that genuine agent-system descriptions resolve to
+meta.
+
+ACCEPTANCE. A fixture test runs the detection rule on: the two Verification descriptions above
+(expected: general), the Sep 3 lean4-with-"literature" description (expected: lean4),
+"Update skill-orchestrate's dispatch to pass --lit" (expected: meta), and "Prove soundness lemma
+in Metalogic/Soundness.lean" (expected: lean4). All pass from the deployed copy.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
@@ -1312,6 +1561,8 @@ shell file touched.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+ADDENDUM (2026-09-17 survey, verified by running all 63 core suites): suite (3) test-gate-out-repair-reporting.sh is now GREEN on master (19 passed, 0 failed), so it leaves this task's scope and file_scope. Only suites (1) and (2) remain red: (1) still 7 FAIL for the missing task-lookup-lib.sh fixture entry; (2) still the one VIOLATION at orchestrate-triage-classify.sh:225 (a redirect to a variable-named file). Work items (a), (b) and (d) stand; item (c) is withdrawn.
+
 ---
 
 ### 202. Make the picker's [Reload All] and [Regenerate] entries honest and self-documenting, and rule on their redundancy
@@ -1474,7 +1725,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 214
+- **Dependencies**: Task 191, Task 192, Task 193, Task 213
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -1576,12 +1827,14 @@ re-deciding declaration granularity here.
 ---
 
 ### 198. Mandate git-snapshot --no-revert in the lean implementation agent contracts
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 191, Task 194
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 221 (lean implementation-agent contract corrections); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).
 
 DEFECT. The lean implementation agent contracts say NOTHING about git-snapshot.sh. Verified by grep against the source store: `orchestrator_mode`, `git-snapshot` and `no-revert` each appear ZERO times in agent-system/extensions/lean/agents/lean-implementation-agent.md. A lean implementation dispatch that reaches for a pre-work backup therefore finds no guidance at all and lands on the script's DEFAULT mode, which reverts the working tree repo-globally.
 
@@ -1609,12 +1862,14 @@ SCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause
 ---
 
 ### 195. Replace is_contractual_handoff_writer allowlist with a dispatch-derived predicate
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 162, Task 194, Task 212, Task 213, Task 214
+- **Dependencies**: Task 162, Task 194, Task 212, Task 213
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 212 (postflight honesty); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped). Consumer repos pick the fix up via their own redeploy.
 
 DEFECT. is_contractual_handoff_writer() in agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh returns 0 for exactly two hard-mode agents:
 
@@ -1688,7 +1943,7 @@ ACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, cons
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 197, Task 213, Task 214
+- **Dependencies**: Task 197, Task 213
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -1783,12 +2038,14 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 187. Unify commit attribution convention
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 
-**Description**: Decide and enforce one commit-attribution convention across scripted and hand-written agent commits.
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): cosmetic: the harness now supplies commit attribution and git-commit-scoped.sh composes its own Session trailer; inconsistent trailers affect no behaviour.
+
+Decide and enforce one commit-attribution convention across scripted and hand-written agent commits.
 
 OBSERVED. Across the 16 commits of a single completed task, exactly one commit carried the session-attribution trailer and 15 did not. The one that carried it (2d09265cc) was hand-written by an implementation agent using git directly; the other 15 were produced by scripts/git-commit-scoped.sh, which composes its own commit message from --message plus a Session: line and never picks up harness-supplied attribution guidance. The result is a single task whose history is inconsistent for no principled reason.
 
@@ -1852,7 +2109,7 @@ ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a 
 - **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 182, Task 213, Task 214
+- **Dependencies**: Task 182, Task 213
 
 **Description**: Decide whether to port the hard-mode loop-guard operational-staleness detector into orchestrate-cycle-plan.sh, or record its removal as accepted.
 
@@ -1879,7 +2136,7 @@ ABANDONED (2026-09-14): superseded by "Reset the /orchestrate cycle bound on eac
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 181, Task 193, Task 213, Task 214
+- **Dependencies**: Task 181, Task 193, Task 213
 
 **Description**: Give the /orchestrate inter-cycle redeploy checkpoint a durable run ledger so it stops re-running a full redeploy that just happened.
 
@@ -1951,12 +2208,14 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 
 ### 175. Enforce waiter teardown in the agent contracts that spawn build waiters
 - **Effort**: 1-2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 172
 
-**Description**: Wire the already-written teardown rule into the specific contracts whose agents actually spawn build waiters, so the leak is prevented at its source rather than only cleaned up afterward. Investigation finding: the governing rule already exists and was violated. agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md carries a normative section titled 'Tear Down Watchers/Monitors Before Reporting' stating that every agent which arms a watcher/monitor process during its own dispatch MUST tear it down before reporting a terminal result. The 22 leaked waiters are a direct violation of that existing rule -- so this is an enforcement-and-wiring problem, not a missing-prose problem. That file's own 'Where This Is Referenced' section lists exactly three fix sites today (skill-orchestrate's Stage 5 staleness-gate comment block, context/contracts/territory.md's Territory Declaration Template, and context/standards/orchestrator-runtime-files.md), none of which covers a build waiter armed by a dispatched implementation agent. Scope: (1) extend the teardown rule to name the supersession case explicitly -- a waiter must be torn down not only before REPORTING but before its watched build is cancelled or superseded, which is the transition that actually orphaned the observed loops -- and add the new fix sites to its 'Where This Is Referenced' list; (2) add the corresponding one-line pointer obligations to the agent contracts that dispatch guarded builds, i.e. the lean implementation agents (agent-system/extensions/lean/agents/lean-implementation-agent.md and lean-implementation-hard-agent.md), pointing at the bounded-waiter anchor and the teardown rule rather than restating either. Follow the established single-statement-plus-pointer convention: the model lives in one file, fix sites point at it. Do not duplicate the waiter contract text into the agent files.
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 221 (lean implementation-agent contract corrections); no work lost
+
+Wire the already-written teardown rule into the specific contracts whose agents actually spawn build waiters, so the leak is prevented at its source rather than only cleaned up afterward. Investigation finding: the governing rule already exists and was violated. agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md carries a normative section titled 'Tear Down Watchers/Monitors Before Reporting' stating that every agent which arms a watcher/monitor process during its own dispatch MUST tear it down before reporting a terminal result. The 22 leaked waiters are a direct violation of that existing rule -- so this is an enforcement-and-wiring problem, not a missing-prose problem. That file's own 'Where This Is Referenced' section lists exactly three fix sites today (skill-orchestrate's Stage 5 staleness-gate comment block, context/contracts/territory.md's Territory Declaration Template, and context/standards/orchestrator-runtime-files.md), none of which covers a build waiter armed by a dispatched implementation agent. Scope: (1) extend the teardown rule to name the supersession case explicitly -- a waiter must be torn down not only before REPORTING but before its watched build is cancelled or superseded, which is the transition that actually orphaned the observed loops -- and add the new fix sites to its 'Where This Is Referenced' list; (2) add the corresponding one-line pointer obligations to the agent contracts that dispatch guarded builds, i.e. the lean implementation agents (agent-system/extensions/lean/agents/lean-implementation-agent.md and lean-implementation-hard-agent.md), pointing at the bounded-waiter anchor and the teardown rule rather than restating either. Follow the established single-statement-plus-pointer convention: the model lives in one file, fix sites point at it. Do not duplicate the waiter contract text into the agent files.
 
 ---
 
@@ -1971,7 +2230,7 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 
 ---
 
-### 173. Guarantee lake-build-guard.sh writes a terminal record on every exit path
+### 173. Guarantee lake-build-guard.sh writes a terminal record on every exit path and exposes the build verdict through a result subcommand
 - **Effort**: 3-4 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -1979,6 +2238,28 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 - **Dependencies**: Task 172
 
 **Description**: Make the guard-side analogue of the poll-loop leak impossible, so that any correctly-written waiter can always drain. Investigation finding: lake-build-guard.sh does NOT write the observed `EXIT=` sentinel at all -- that was agent-side. What it does write is a structured record at <root>/.lake/build-guard.result via two functions: write_inflight_record() emits `state=in_flight`, `holder_pid=$$`, `start_epoch=`, empty `exit_status=`, and `log_path=`; finalize_record() rewrites it as `state=complete` with the real `exit_status=`. The defect: finalize_record() is reached only on the normal return path out of run_as_holder(). There is no trap, so if the holder shell is killed, cancelled, or superseded (exactly the lock-contention scenario that triggered the observed leak), the record is left permanently at `state=in_flight` with a `holder_pid` that names a dead process. A waiter consuming that record has no terminal transition to observe -- the same unbounded-termination defect, one layer down. Fix directions to evaluate (not prescriptive): install an EXIT/INT/TERM trap in run_as_holder() that finalizes the record with a distinguishable terminal state (e.g. state=aborted with a reserved exit_status) so existing waiters drain rather than hang; confirm holder_pid is documented as the liveness handle that the bounded-waiter contract's `kill -0` check reads, since it is already written and is the natural handle; and make sure the waiter/sharing path in cmd_build treats an in_flight record whose holder_pid is dead as stale rather than as a live build to wait behind. Preserve the guard's existing documented contracts: the subcommand shape (status/preflight/build), the reserved 77 usage band, exit 75 on lock-wait timeout, the five-condition staleness policy on the sharing decision, and the `--timeout` semantics (a lock-WAIT budget, never a build-duration limit). Extend agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh with coverage for the killed-holder case: a holder killed mid-build must leave a terminal record, and a waiter must not block on a record whose holder_pid is dead. Land the fix in the nvim source store only.
+
+=== ABSORBED 2026-09-17 from former task 220 (machine-readable build verdict: result subcommand); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated from it).
+
+DEFECT (observed live in a two-task /orchestrate run against ~/Projects/BimodalLogic): an agent reported a Lean build as "exit 0" when it had in fact failed on a module error. The invocation was of the shape `bash lake-build-guard.sh build --timeout 1800 -- build 2>&1 | tail -60`, whose `$?` is `tail`'s exit code, not the guard's. The agent caught and retracted the claim itself, but the orchestrator had already relayed the false green to a sibling dispatch. The instrument could not report failure, so a broken build looked correct.
+
+WHY THIS IS NOT ALREADY FIXED BY THE SIBLING GUARD TASK: the dependency task ("Guarantee lake-build-guard.sh writes a terminal record on every exit path") makes the record TERMINAL so a waiter can always drain -- it is about waiter termination, not about a consumer reading a verdict. Verified against the current source store: `write_inflight_record()`/`finalize_record()` do already record `state=`, `exit_status=`, `holder_pid=`, `log_path=`, and `run_as_holder()` already captures build stdout/stderr to `<root>/.lake/build-guard.stdout` and `.build-guard.stderr`. NONE of those four paths is documented anywhere a consumer would find them: the header's non-goals list mentions only "lock/result/log/capture files under the resolved project's own .lake/ directory" without naming them, and `print_help()` names none of them. There is also no read path -- `main()` dispatches exactly `status|preflight|build`, and `status` reports in-flight state only, never a finished build's verdict. So the machine-readable verdict exists on disk today and is unreachable by contract, which is precisely what pushes a consumer back onto parsing a pipeline's text.
+
+WORK.
+(a) Add a `result` subcommand (`lake-build-guard.sh result [--dir DIR] [--verbose]`) that reads `<root>/.lake/build-guard.result` and reports the recorded `state`, `exit_status`, `holder_pid`, `start_epoch`/`end_epoch`, `scope_key`, and the absolute stdout/stderr/log capture paths. Design the exit-code band so the BUILD'S OWN VERDICT is carried by the guard's exit code and never has to be scraped out of text: distinguish at minimum no-record-present, non-terminal (`state=in_flight`, plus whatever terminal-abort state the dependency task introduces), terminal-with-zero, and terminal-with-nonzero. Follow the existing house style for a detect-only mode (see `cmd_status()`: 0 / 10, report on stdout) rather than inventing a new one, and do NOT collide with the reserved 75-79 guard band.
+(b) Add an assertion facility so a caller can prove the record describes ITS OWN build rather than a concurrent sibling's. The record is per-project and overwritten by each holder, so a bare read is ambiguous under exactly the concurrency this guard exists to serialize. Evaluate `--expect-pid PID` and `--expect-scope` (matching the caller's own normalized lake argument vector via the existing `compute_scope_key()`); refuse loudly on mismatch rather than reporting a sibling's verdict.
+(c) Emit one terminal, stably-prefixed status line on the holder path (house style: the existing `lake-build-guard:` stderr prefix, e.g. `lake-build-guard: STATUS: exit_status=N`), so that even a consumer that ignores (a) and pipes the invocation still sees an unambiguous status token inside its own captured text. This is the belt-and-braces half of the structural fix; it must not appear on the REPLAY path in a way that breaks the existing byte-equality assertions on replayed stdout/stderr (suite cases 1/3).
+(d) Document all of it: name `.lake/build-guard.result`, `.lake/build-guard.stdout`, `.lake/build-guard.stderr`, and the log path explicitly in both `print_help()` and the file header, add a `result` row to the USAGE block and the EXIT CODES block, and state in one place that a consumer MUST read the verdict via `result` or an un-piped `$?` and never from a pipeline's last stage.
+(e) Extend agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh in its existing numbered-case style: `result` against no record, against an in_flight record, against a terminal-zero record, against a terminal-nonzero record; `--expect-pid`/`--expect-scope` mismatch refusal; the STATUS line present on a fresh build and absent-or-harmless on a replay; and a help-text assertion for the newly documented capture paths in the style of the suite's existing case 21 (which greps `--help` for the `kill -0` and `pgrep` guidance). Add the suite's customary mutation-kill notes explaining which deletion breaks which case.
+
+PRESERVE (existing documented contracts, all verified present): the three-mode subcommand shape, the reserved 75-79 band with its stated meanings, the exit-code passthrough guarantee for a validated lake argument vector, the LAKE_SUBCOMMANDS allowlist behaviour including exit 77, the five-condition staleness policy in `decide_sharing()`, the `lake-build-guard: REPLAY:` marker contract, `--timeout` as a lock-WAIT budget only, and the rule that `cmd_status()` never scans the process table.
+
+MUST NOT. Edit .claude/** (deploy artifact). Change the staleness policy or the sharing decision. Add a second concurrency mechanism. Parse `lake`'s own output format inside the guard (explicitly rejected upstream: the job-count line is a property of lake's text, not of anything the guard records). Touch any file outside this task's file_scope -- the consumer-side contract corrections are a separate dependent task.
+
+ACCEPTANCE. `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` passes; shellcheck clean; `--help` names all four capture paths and the `result` mode; a caller can obtain a finished build's pass/fail from the guard's own exit code with no text parsing and no pipeline in the invocation.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
@@ -2228,12 +2509,14 @@ Place it so it composes with, not duplicates, what is already there.
 ---
 
 ### 168. Correct opencode mcp scoping claim
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: opencode
 - **Dependencies**: None
 
-**Description**: Correct the disproven project-scoped MCP claim in the OpenCode doc tree.
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): a doc correction inside .opencode/, a tree the user declared FROZEN (task 22's policy: not maintained, not generated, not deleted).
+
+Correct the disproven project-scoped MCP claim in the OpenCode doc tree.
 
 An earlier task verified against Claude Code's actual behavior that there is NO categorical subagent barrier to project-scoped MCP servers (.mcp.json) -- the real constraint is one-time workspace trust, not per-call access -- and landed the corrected wording in agent-system/extensions/core/docs/docs-README.md (see its "MCP Configuration" section). Two tracked, live files in the parallel OpenCode tree still carry the disproven claim verbatim and were explicitly scoped OUT of that task under its canonical-source constraint:
   .opencode/extensions/core/docs/README.md:227
@@ -2422,7 +2705,7 @@ carry the new text.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 196
+- **Dependencies**: Task 194, Task 196
 
 **Description**: DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the "agent has no skeleton at all" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.
 
@@ -2466,7 +2749,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 163, Task 164
+- **Dependencies**: Task 162, Task 163
 
 **Description**: Settle whether an ABSENT `file_scope` should be admission-relevant in agent-system/extensions/core/scripts/orchestrate-batch-admit.sh, or remain purely advisory -- and implement the ruling.
 
@@ -2490,12 +2773,14 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 164. Backfill file_scope for existing tasks and decide the disposition for plan-less tasks
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 162
 
-**Description**: One-shot backfill of `file_scope` for existing tasks that lack a usable one, plus an explicit ruling on the tasks the backfill CANNOT reach.
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 162 as its final backfill phase; no work lost
+
+One-shot backfill of `file_scope` for existing tasks that lack a usable one, plus an explicit ruling on the tasks the backfill CANNOT reach.
 
 WHY THIS IS REACHABLE: because `**Files to modify**:` is an already-universal convention (10/10 plan files locally, 11/12 in ~/Projects/BimodalLogic, emitted by the planner template at agents/planner-agent.md:259), any task that HAS a plan can be backfilled by reusing the harvester built alongside plan-format formalization. This is not a from-scratch inference problem for that population.
 
@@ -2549,11 +2834,11 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 
 ---
 
-### 162. Formalize the existing Files to modify convention in plan-format and harvest it into file_scope at plan postflight
+### 162. Formalize Files to modify, harvest it into file_scope at every plan postflight site, and backfill existing tasks
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 197, Task 213, Task 214
+- **Dependencies**: Task 197, Task 213
 - **Research**: [162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md]
 
 **Description**: Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.
@@ -2580,6 +2865,30 @@ DECIDE, DO NOT ASSUME: whether harvest OVERWRITES an existing file_scope or unio
 ACCEPTANCE: plan-format.md enumerates the field with its grammar and its three named consumers; the harvester extracts the correct union from all 10 local plan files under specs/*/plans/ and accepts both punctuation variants; a plan postflight on a task with a plan populates a non-empty file_scope; the three existing consumers are demonstrably unbroken (the heading string is unchanged); shellcheck clean per context/standards/shell-strict-mode.md.
 
 CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+=== ABSORBED 2026-09-17 from former task 164 (backfill file_scope for existing tasks); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+One-shot backfill of `file_scope` for existing tasks that lack a usable one, plus an explicit ruling on the tasks the backfill CANNOT reach.
+
+WHY THIS IS REACHABLE: because `**Files to modify**:` is an already-universal convention (10/10 plan files locally, 11/12 in ~/Projects/BimodalLogic, emitted by the planner template at agents/planner-agent.md:259), any task that HAS a plan can be backfilled by reusing the harvester built alongside plan-format formalization. This is not a from-scratch inference problem for that population.
+
+REUSE, DO NOT DUPLICATE: the derivation logic belongs to the harvester script (anticipated agent-system/extensions/core/scripts/plan-file-scope-harvest.sh). The backfill script must call or source it, never re-implement path extraction -- two divergent parsers for one convention is precisely the defect this chain exists to remove.
+
+THE HARD PART -- PLAN-LESS TASKS (decide and record, do not silently leave uncovered): a task with NO plan yet has no "Files to modify" list to harvest, so the plan-based route cannot reach it. In BimodalLogic this is the MAJORITY of the 22 affected tasks -- most are status `not_started` and will never have had a plan. Options to weigh explicitly:
+  (a) leave them absent and let plan-time population (the formalized harvest) cover them naturally when they are eventually planned -- zero risk, but leaves the gap open for however long they sit unplanned;
+  (b) infer a provisional file_scope from the task description/title, accepting that it is a guess -- note the schema already frames file_scope as "prospective, not filesystem-validated", so a provisional value is not a category error, but a WRONG one is worse than absence because it produces false confidence in the collision guard;
+  (c) write an explicit sentinel (e.g. `[]`) to distinguish "deliberately unknown" from "never considered" -- but see the empty-vs-absent distinction, since an empty array may read as "touches nothing" and would suppress the very warning that should stay lit.
+RECORD THE CHOSEN DISPOSITION AND ITS REASONING. Leaving this population undiscussed is the failure mode this paragraph exists to prevent.
+
+SAFETY: the backfill mutates specs/state.json across repos. It MUST write via state-write.sh (the single mutex-guarded writer; hand-rolled `jq ... > tmp && mv` sequences are exactly what that script was built to eliminate). It MUST offer a dry-run that prints the proposed per-task diff without writing, and MUST be idempotent -- a second run over an already-backfilled state changes nothing. It must never overwrite a task that already has a non-empty file_scope.
+
+CROSS-REPO SCOPE: decide whether the script targets only the invoking repo or accepts a `--state-file` / repo argument. The measured need is largely in ~/Projects/BimodalLogic, not here, so a repo-local-only tool would not address the motivating case. Note state-write.sh already supports `--state-file` for non-default targets.
+
+ORDERING: this task is a prerequisite for making an absent file_scope admission-relevant. Backfilling before any enforcement tightens is the mitigation that keeps legacy tasks from being blocked.
+
+ACCEPTANCE: dry-run prints an accurate per-task diff and writes nothing; a real run raises this repo's coverage to 38/38 and BimodalLogic's toward 49/49 for the plan-bearing population; re-running is a no-op; tasks with an existing non-empty file_scope are untouched; the plan-less disposition is implemented and its reasoning recorded; shellcheck clean per context/standards/shell-strict-mode.md.
+
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader, so edits there are silently wiped. Backfilled DATA under specs/** is exempt from this rule -- specs/** is the legitimate write target for task-management artifacts. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
@@ -2667,11 +2976,11 @@ RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and 
 
 ---
 
-### 136. Stop implementation agents hand-writing the plan-level Status field, and make the validator catch it
+### 136. Implementation-agent contract corrections: plan-level Status ownership, no fan-out, marker/commit sync, validator catch
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 91, Task 146, Task 166
+- **Dependencies**: Task 91, Task 139, Task 146, Task 166, Task 194
 
 **Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
 
@@ -2718,6 +3027,70 @@ ACCEPTANCE.
   - Redeploy and confirm the fix survives regeneration (.claude/ is a deploy artifact; the edit target is agent-system/extensions/).
 
 PROVENANCE. Root-caused 2026-09-01 during an /orchestrate 507 run in the BimodalLogic repo, where the postflight status transition failed with "Failed to update status in .../plans/02_frame-level-validity-indexing.md" and the orchestrator repaired the line by hand. Consumer-side handling is task 91; this entry covers the producer and validator ends, which 91's file_scope excludes.
+
+=== ABSORBED 2026-09-17 from former task 14 (no fan-out, terminal status, marker/commit sync in implementation agents); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+=== REVISED 2026-08-24 (refactor survey) ===
+NARROWED: roughly half of this task already landed with the handoff-identity work and must not be redone. skill-orchestrate/SKILL.md:2374,2384 now treats in_progress (and null/empty) as OFF-SCHEMA rather than routing it toward failed_tasks, and orchestrate-recover-outcome.sh:233 emits a clean STATUS_IN_PROGRESS verdict. Verified in the source store today.
+WHAT REMAINS is the AGENT-CONTRACT side only, and it is untouched: general-implementation-agent.md contains NO fan-out prohibition, and NO requirement that a sub-agent which commits a phase must update that phase's marker in the same commit. Both gaps are what produced the original symptom -- dispatches fanning out to phase sub-agents and terminating before writing a terminal status, leaving plan markers reading [NOT STARTED] against landed commits.
+Rescope to those two contract additions. Do not re-litigate the status-vocabulary half.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Two dispatches in a single batch fanned out to phase sub-agents and terminated before writing a terminal status, costing a recovery cycle each. Recorded as err_1786344051474_RcIhk6.
+
+OBSERVED FAILURE MODE: a dispatched implementation agent spawned per-phase sub-agents, returned while they were still running, and left .return-meta.json at status=in_progress. Per context/formats/return-metadata-file.md that value is early-metadata-only and never a legal terminal dispatch outcome, so orchestrate-recover-outcome.sh correctly declines it (reason STATUS_IN_PROGRESS). The orchestrator contract for an unresolvable dispatch is failed_tasks - which would have been WRONG here, since 6 of 10 phases had in fact been committed. Correct handling came from rules/error-handling.md Delegation Interrupted Recovery (keep status, resume), not from the orchestrator stage contract.
+
+COMPOUNDING DEFECT - STALE PLAN MARKERS: the sub-agents committed phases 3, 4, 5 and 7 but left every one of those phase markers reading [NOT STARTED]. Because the orchestrator phase-marker recovery grep reads exactly those markers, it would have reported 2/10 against a true 6/10. A resume driven by markers alone would have redone committed work. Recovery only succeeded because the actual state was reconstructed from git log and diffs instead.
+
+TWO INDEPENDENT QUESTIONS, BOTH IN SCOPE:
+  1. Should a dispatched implementation agent fan out to sub-agents at all? If yes, it must still write a terminal status covering its childrens work; if no, the prohibition belongs in the agent contract, not in per-dispatch prompt text (the workaround used during the incident).
+  2. Should a sub-agent that commits a phase be required to update that phases marker in the same commit? Markers and commits diverging silently is the deeper defect - it degrades the recovery path for every future interrupted dispatch, not just fan-out ones.
+
+CONSIDER ALSO: whether the orchestrator should treat status=in_progress plus evidence of committed phase work as PARTIAL/resume rather than routing it toward failed_tasks, so correct handling does not depend on an operator noticing.
+
+ACCEPTANCE: an interrupted fan-out dispatch is either impossible by contract, or leaves markers and terminal status accurate enough that resume needs no manual git archaeology.
+
+SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== REVISED 2026-08-24 (second live occurrence, extension-agent gap) ===
+RECURRED, AND THE CONTRACT GAP IS WIDER THAN THIS TASK'S CURRENT SCOPE. A seven-task lean4 batch
+orchestrated in a separate consumer repo reproduced this exact failure mode TWICE in one
+implementation cycle: two of seven dispatches performed real work, committed it, and then
+terminated WITHOUT writing a terminal handoff, leaving .return-meta.json at status=in_progress.
+orchestrate-recover-outcome.sh correctly declined both (STATUS_IN_PROGRESS); both needed a
+re-dispatch cycle to resolve, exactly as the original incident did.
+
+SCOPE CORRECTION (the actionable part). Both offending dispatches ran
+extensions/lean/agents/lean-implementation-agent.md, NOT
+extensions/core/agents/general-implementation-agent.md -- the only agent contract this task's
+file_scope currently names. The terminal-status requirement is therefore missing from the
+EXTENSION implementation agents as well as the core one, and fixing only the core file would
+leave the reproducing path untouched. file_scope is extended accordingly to the lean pair. Treat
+the core agent as the normative contract and the extension agents as required conformers; if a
+shared include or a single normative statement referenced by all implementation agents is the
+better mechanism, prefer that over copying the same paragraph into four files.
+
+MARKER DIVERGENCE RECURRED IN THE OPPOSITE DIRECTION -- fold into question 2, do not treat as a
+separate concern. The original incident recorded markers UNDER-claiming (phases committed, markers
+still [NOT STARTED]). This batch recorded the inverse: one task's plan carried five of seven
+phases marked [COMPLETED] while its sole declared file_scope target was UNMODIFIED against HEAD --
+markers OVER-claiming against work that had not landed. A resume driven by those markers would
+have skipped real work rather than redone it. Both signs share one root cause, which question 2
+already names: markers and committed reality are allowed to diverge silently. Any fix must be
+bidirectional -- a marker must not be promotable without the corresponding work being verifiable,
+and committed work must not leave its marker unpromoted. The over-claim direction was only caught
+because the orchestrator cross-checked the marker count against the working tree; a fix that
+merely tightens promotion-on-commit would not have caught it.
+
+WHAT IS ALREADY GOOD AND MUST NOT BE UNDONE. The re-dispatch path worked: both tasks resumed from
+their real state and completed, and the resumed dispatches -- when explicitly instructed to write
+the handoff FIRST and to re-verify prior phase markers with a real build rather than trust them --
+both reported correctly and downgraded nothing falsely. That per-dispatch prompt text is the
+workaround this task exists to retire; it is evidence the contract wording works, not a substitute
+for putting it in the contract.
+
+ACCEPTANCE (extends, does not replace, the original): the terminal-status requirement and the
+fan-out resolution apply to extension implementation agents as well as the core one, demonstrated
+against a lean4 dispatch; and marker/reality divergence is caught in BOTH directions.
 
 ---
 
@@ -2766,6 +3139,9 @@ ACCEPTANCE: every site is accompanied by a recorded empirical result under the d
 
 SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+CONFIRMED INSTANCE (2026-09-17 survey, carried from the cslib consumer repo's own task list, where it is filed as a local defect and cannot be fixed): lean/scripts/lean-sorry-census.sh matches `\bsorry\b` on comment-stripped text and therefore ALSO matches the "sorry" inside `set_option warn.sorry false in`, because `.` is a non-word character. Every suppression annotation is counted as an extra phantom sorry: measured there as 41 reported = 23 real + 18 annotation lines (repo-wide 45 = 27 + 18). This is exactly the compositional word-boundary class this task audits, on a file already in its file_scope; fix it as part of the audit and add a fixture with a `warn.sorry` line. The consumer repo task can then be abandoned with a pointer here.
 
 ---
 
@@ -2889,7 +3265,7 @@ ACCEPTANCE: a latex preflight hook exists, is executable, is declared in the man
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 130, Task 148
+- **Dependencies**: Task 130, Task 148, Task 167
 
 **Description**: Build a shared, task-type-agnostic guard script that detects a user-owned LaTeX continuous-build watcher (`latexmk -pvc`, typically driven by nvim's vimtex plugin) competing for the same .tex target an agent is about to build, and that can report, stop, and restore it. This task delivers the MECHANISM only; wiring it into lifecycle stages is handled by the two dependent tasks.
 
@@ -2961,7 +3337,7 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 87, Task 149, Task 211
+- **Dependencies**: Task 87, Task 149, Task 210
 - **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
 - **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
@@ -2974,7 +3350,7 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 194
 
 **Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is email-extension-internal context-loading work, classified extension-internal by the consolidation audit, and is unrelated to the orchestrate-engine collapse. Original description follows.LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
 
@@ -3130,12 +3506,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 14. Prevent implementation-agent fan-out from returning non-terminal status and stale plan markers
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 88, Task 139, Task 213, Task 214
+- **Dependencies**: Task 88, Task 139, Task 213
 
-**Description**: === REVISED 2026-08-24 (refactor survey) ===
+**Description**: ABANDONED 2026-09-17 (seventh-pass consolidation): merged into task 136 (implementation-agent contract corrections); the SKILL.md half landed earlier and is dropped
+
+=== REVISED 2026-08-24 (refactor survey) ===
 NARROWED: roughly half of this task already landed with the handoff-identity work and must not be redone. skill-orchestrate/SKILL.md:2374,2384 now treats in_progress (and null/empty) as OFF-SCHEMA rather than routing it toward failed_tasks, and orchestrate-recover-outcome.sh:233 emits a clean STATUS_IN_PROGRESS verdict. Verified in the source store today.
 WHAT REMAINS is the AGENT-CONTRACT side only, and it is untouched: general-implementation-agent.md contains NO fan-out prohibition, and NO requirement that a sub-agent which commits a phase must update that phase's marker in the same commit. Both gaps are what produced the original symptom -- dispatches fanning out to phase sub-agents and terminating before writing a terminal status, leaving plan markers reading [NOT STARTED] against landed commits.
 Rescope to those two contract additions. Do not re-litigate the status-vocabulary half.

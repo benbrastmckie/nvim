@@ -64,7 +64,198 @@ moved a RESEARCHED task to PLANNING. (215) Nothing can undo a dispatch that was 
 `SKILL.md`. By decision 12, eight open tasks that edit those files now wait on them. 215 goes into
 Tier 3. 55 tasks are open.*
 
-**Goal (two halves, in priority order)**
+*Seventh pass, 2026-09-17: **the backlog grew from 55 to 72 open tasks and no core task closed.**
+Eighteen tasks were filed since the sixth pass (217-234); the one completion (222, a Rust
+extension) is off the core path. Tier 1 stands at 0/9. This pass is a consolidation survey, ranked
+by one test: does the task make the core system correct for the Lean work that runs on it in the
+consumer repos. It proposes merging twelve tasks into their siblings and abandoning seven, which
+leaves 53. The manifest was proposed, then **applied the same day** on the user's instruction
+(decision 13); the scope corrections, ordering edges and description addenda were applied
+alongside it. The section "Seventh pass" directly below supersedes the sixth pass's
+tiers and batches where they disagree.*
+
+---
+
+## Seventh pass (2026-09-17): consolidate before dispatching
+
+### What changed since the sixth pass (2026-09-14 → 2026-09-17)
+
+| Filed | What it is | Lean-supporting? |
+|---|---|---|
+| 217 → 218 → 219 | `/refresh` cost-aware idle Lean LSP tree reclamation (PSS accounting, CPU-delta idleness, notify-before-kill). One feature in one script, filed as a three-task chain | yes (Lean LSP trees) |
+| 220 → 221 | `lake-build-guard.sh result` subcommand; lean agent contracts stop reading a piped `$?` and stop `pgrep -f`-ing themselves. Both halves observed live in BimodalLogic | yes |
+| 223 | Comparator-on-NixOS fixes for the lean extension; research done (moved from Verification) | yes |
+| 224 → 225 | `/please` single-use grant, push guard, grant check in the destructive-git guard, plus the command and docs | no (user-requested feature) |
+| 226 | `git-commit-scoped.sh` drops staged deletions; observed twice in BimodalLogic | yes |
+| 227 | The source-store boundary rule names a path that exists only here; unfollowable in every consumer | yes |
+| 228 → 229 → 230/231 → 232, 231 → 233 | Six dependency-graph tasks: batch-as-default doc, reasons on edges, terminal-edge disposition, post-burst analysis pass, graph metrics, scope-derived edge inference | no |
+| 234 | `state-write.sh` silently binds every `--argjson-file` after the first to the first file's value; exit 0 | yes (every state write in every repo) |
+
+Also: `/todo` has not run since 2026-09-14; 183 (abandoned) and 222 (completed) sit in
+`active_projects` awaiting it.
+
+### Verified by execution this pass
+
+- **All 63 core suites were run.** 61 green, 2 red, both known: `test-postflight-deploy-gate.sh`
+  (7 FAIL, the `task-lookup-lib.sh` fixture gap) and `test-lint-json-channel-discipline.sh` (2
+  FAIL, the redirect-to-`$var` false positive at `orchestrate-triage-classify.sh:225`).
+  **`test-gate-out-repair-reporting.sh` is green (19/19)**, so 206's third suite is gone; its
+  description and `file_scope` were narrowed accordingly.
+- **Sizes are flat.** `SKILL.md` 16,025 B, `commands/orchestrate.md` 17,755 B, eager load 65,198 B
+  (~16.3k tokens), all identical to 2026-09-14. The engine is not regrowing. The weight is now in
+  scripts and context: core holds 431 files / 6.3 MB, 112 scripts, 64 test suites and 1.67 MB of
+  `context/` (`patterns/` alone is 613 KB). The three largest scripts are `orchestrate-cycle-plan.sh`
+  111,813 B, `skill-base.sh` 90,535 B and `task-lock.sh` 86,540 B.
+- **The dry run over all 72 open tasks** (`orchestrate-cycle-plan.sh --dry-run`, `state.json`
+  checksum unchanged) admits 26 research dispatches, 188 and 223 to plan, 39 to implement; 0
+  blocked. Before this pass's scope fix, 224's directory-level declarations (`hooks/`,
+  `scripts/tests/`) deferred **234** (the state-write data-corruption fix) behind a feature and
+  collided with 129. After narrowing 224 to its nine concrete files, 234 dispatches.
+- **226's root cause is in the code, not a hypothesis.** `git-commit-scoped.sh:181` keeps a positive
+  pathspec only if it exists on disk or in the index. After `git rm` it is in neither, so the V2 gate
+  drops it with a WARN and commits the rest. A rename loses its delete half the same way. The fix is
+  to also accept a path present in HEAD or in the staged diff. Recorded in 226's description.
+- **The wave table already ignores edges to archived tasks.** 51 sits in wave 2 although its edge
+  to 143 (archived) is still declared; 14 is "blocked by 139" only, not by 88. `generate-task-order.sh`
+  binds `active_projects` only, and unresolvable targets fall out of Kahn's BFS as satisfied.
+  `orchestrate-cycle-plan.sh` and `orchestrate-triage-classify.sh` resolve archived targets
+  explicitly (197). So 230's and 232's central premise, that archived edges corrupt the critical
+  path and wave widths, does not hold; the one live harm is the classifier's `nonexistent` verdict,
+  which 188 (researched) already owns.
+- **184 is live, not a paper concern.** `skeleton=true` appears in 11 artifacts across BimodalLogic,
+  cslib and Theory; the batch engine has no completion branch for a skeleton plan
+  (`orchestrate-cycle-plan.sh:1558` records the deletion).
+- **Runtime-file clutter (51)**: 34 session files sit in this repo's `specs/` root, 42 in Theory's,
+  15 in BimodalLogic's.
+- **Consumer deploy (200)**: `check-consumer-freshness.sh` reports PossibleWorlds' core STALE.
+- **Two agent-system defects are filed in a consumer repo** (standing rule 1): cslib 595 wants a
+  dependency-integrity gate that `validate-state.sh` Check D3 already provides (their deployed copy is
+  behind), and cslib 608 is a `\bsorry\b` word-boundary double count in `lean-sorry-census.sh`, which
+  is exactly 129's class on a file already in 129's scope. 608's evidence was carried into 129.
+- **96 pairs of open tasks share file territory with no ordering edge** between them (direct or
+  transitive). Most are directory-level declarations (170's `scripts/tests/`, 194's `*/agents/`,
+  224's former `hooks/`). The runtime wave-split check defers these at dispatch, so they cost cycles
+  rather than correctness; the merges below remove the densest clusters (five tasks on the two lean
+  implementation-agent files; four on `orchestrate-cycle-plan.sh` + `SKILL.md`).
+
+### The lean-supporting core set
+
+These are the core tasks whose absence is felt in a Lean repo's `/orchestrate` run. Everything
+else is either a defect only this repo hits, or an improvement.
+
+| Cluster | Tasks (after the manifest) | Why it bites Lean work |
+|---|---|---|
+| Silent data loss in the writers | **234**, **226** | Every state write and every scoped commit in every repo. Both tiny |
+| Forced phases and honest postflight | **213** (absorbing 214, 216) → **212** (absorbing 195) → 215; 194 first | The `--research`/`--plan` workflow the user runs on proofs; research phases recorded complete without a report |
+| Build verdict | 172; **173** (absorbing 220) → **221** (absorbing 175, 198) | A broken build looked green; 56 minutes idled on a finished build; a snapshot reverted a sibling's work |
+| Idle Lean trees | 174 → **217** (absorbing 218, 219) | Memory pressure on the Lean host; prompt, never silent kill |
+| Skeleton plans | **184** | Strategic-sorry plans cannot reach a terminal status under the batch engine |
+| Lean extension content | **223**, 177 | Comparator on NixOS; dependency tracing |
+| Propagation and bootstrap | **200**, **227**, 209 → 210 (absorbing 211), 51 | A fix stays broken in BimodalLogic until someone redeploys; the boundary rule is unfollowable there; `/task` fails on a fresh repo |
+| Concurrency in a shared tree | 188; 162 (absorbing 164) → 165 → 190; 163; 193 → 199 | The 574/575 and 544/545 incidents; the classifier noise |
+| Agent contracts | 194 → **136** (absorbing 14), 139 → 140 | Fan-out, marker/commit sync, Status ownership, history rewrites |
+
+### Manifest (APPLIED 2026-09-17, decision 13)
+
+**Applied the same day, by the user's instruction**, in one `state-write.sh` transaction
+(`validate-state.sh`: 0 failures, 3 warnings, down from 6). Each merge appended the absorbed task's
+description verbatim under an `=== ABSORBED 2026-09-17 from former task N ===` header, unioned
+its `file_scope`, and repointed every dependent; the surviving task got a new title. Each
+abandonment prefixed the task's description with its reason. The 19 abandoned entries stay in
+`active_projects` until `/todo` archives them, exactly like 183. Open count **72 → 53**; the wave
+table went from six waves to four; the dry run admits 22 tasks with 0 blocked. No metatask was
+created: the revision work was mechanical and is finished, so a task to do it would only add to
+the backlog it was cutting. The table below is the record of what was done.
+
+Two rules drove it. A linear chain of small tasks that all serialize on one file is one task with
+phases, not three tasks: the chain costs three dispatches per link and a critical-path slot per
+cycle, and produces no more than the single task would. And an analysis surface is not built over
+a graph whose own declarations are known to be too coarse to carry it.
+
+| Op | Tasks | Result |
+|---|---|---|
+| Merge | **214, 216 → 213** | One "forced-phase fixes" task, three phases: focus text through; stop after the last forced phase within a run; per-run cycle bound and admit-by-artifact. 215 and the eight dependents (14, 162, 182, 193, 195, 199, 212, plus 183's successor) repoint to 213 |
+| Merge | **220 → 173** | Guard: terminal record on every exit path, then `result` subcommand and `--expect-pid/--expect-scope`. Same two files |
+| Merge | **175, 198 → 221** | Lean implementation-agent contract corrections: build-verdict method, waiter teardown, `--no-revert` snapshot. Same two agent files, one incident family. Deps 172, 173 |
+| Merge | **218, 219 → 217** | Cost-aware idle Lean tree reclamation, three phases. Dep 174 |
+| Merge | **14 → 136** | Implementation-agent contract text: fan-out prohibition, marker/commit sync, plan-level Status ownership, validator catch. Drop `SKILL.md` from scope (that half landed). Deps 166, 194, 139 |
+| Merge | **195 → 212** | Postflight honesty: gate research on a report file, derive the handoff-writer predicate from the dispatch row. Drop the 162 edge |
+| Merge | **164 → 162** | Harvester, its three wiring sites (`orchestrator-postflight.sh`, `reconcile-task-status.sh`, `/revise`), then the backfill as a final phase |
+| Merge | **211 → 210** | `/task` create defects: topic order and registration, keyword false positives. Same file |
+| Merge | **225 → 224** | `/please`: mechanism, then command, rule exception and docs, two phases |
+| Abandon | **229** | Reasons on edges have no machine consumer; record the prose convention ("ORDERING:" in the description) in `state-management-schema.md` when 162 lands, no schema change |
+| Abandon | **230, 232** | Premise falsified above: wave and eligibility consumers already ignore archived edges. Pruning at archival is a one-line addition to `/todo`'s existing dependency-update step; file it only if the classifier fix (188) leaves anything to prune |
+| Abandon | **231, 233** | Both build passes over `file_scope` at a granularity 233's own text calls too coarse. One idea survives as an observation: persist the step-4.5 wave-split deferral as an edge, after 165 rules on absent scope |
+| Abandon | **168** | A doc correction in a tree the user declared frozen (22's policy) |
+| Abandon | **187** | Cosmetic; the harness now supplies attribution and `git-commit-scoped.sh` composes its own trailer |
+| Keep, reorder | 74 → 75/76 after **167** | 167 is the always-on rule; land it, then decide whether the three-task mechanism is still wanted |
+| Keep | 228 | Doc only; low; carries the collision-visibility argument, which is worth stating once |
+
+Net: 72 open → 53 (12 merged away, 7 abandoned). Every capability in a merged or abandoned task
+has a named home above, except 229-233's analysis surfaces, which are dropped by decision.
+
+Abandoned this pass (19): 14, 164, 168, 175, 187, 195, 198, 211, 214, 216, 218, 219, 220, 225,
+229, 230, 231, 232, 233. Plus 183 from the sixth pass and 222 completed: **21 entries await
+`/todo`.**
+
+**Dependency graph after the manifest** (from the regenerated `TODO.md`, read-only dry run
+confirmed `state.json` untouched):
+
+| Wave | Tasks |
+|---|---|
+| 1 | 22, 29, 39, 45, 89, 127, 129, 167, 172, 177, 184, 185, 188, 194, 200, 202, 206, 207, 209, 213, 223, 224, 226, 227, 228, 234 |
+| 2 | 30, 43, 51, 74, 139, 162, 163, 166, 173, 174, 193, 208, 210, 212, 215 |
+| 3 | 44, 75, 76, 136, 140, 165, 170, 182, 199, 217, 221 |
+| 4 | 190 |
+
+Deferred by the runtime scope check in the dry run, all correctly: 29 and 45 behind 22 (picker
+Lua), 202 behind 45, 224 behind 129 (`guard-destructive-git.sh`).
+
+### Applied to `state.json` this pass
+
+Through `state-write.sh --regen-todo`; `validate-state.sh` 0 failures, 5 warnings (was 6).
+
+| Change | Tasks | Why |
+|---|---|---|
+| `file_scope` narrowed | 224: `hooks/`, `scripts/tests/` → nine concrete files | The directory declarations deferred 234 and collided with 129 in the dry run |
+| `file_scope` filled | 226: `git-commit-scoped.sh` + its suite · 227: the rule file | Both were empty, invisible to admission |
+| `file_scope` narrowed | 206: `test-gate-out-repair-reporting.sh` removed | Suite is green |
+| Description extended | 206 (suite 3 withdrawn) · 226 (root cause at line 181) · 129 (the `warn.sorry` instance from cslib) | See above |
+| Dependency added | 136←194, 166←194, 43←194 | 194 audits every agent file; the specific agent edits go after it. 43←194 also frees 194 from the dry run's deferral behind 43 |
+
+Not committed: `specs/state.json`, `specs/TODO.md` and this file carry the changes uncommitted.
+
+### Recommended batches (the manifest is applied; these are live)
+
+```
+# Batch A: writers, forced phases, build verdict, bootstrap. Critical-path members: 213, 200, 212.
+/orchestrate 234, 226, 206, 213, 200, 194, 209, 188, 173, 172, 174, 184, 223, 177, 227
+#   wave 1: 234, 226, 206, 194, 209, 188(plan), 172, 174, 184, 223(plan), 177, 227  + 213, 200 (critical)
+#   wave 2: 173 (after 172)                                                        + 212 (after 194, 213)
+
+# Batch B: contracts and concurrency. Serial where it touches cycle-plan/postflight.
+/orchestrate 221, 217, 215, 136, 139, 210, 51, 162, 163, 193, 140, 165, 190, 199
+
+# Batch C: the rest, whenever there is room.
+/orchestrate 228, 182, 170, 127, 89, 44, 185, 129, 224, 166, 167, 22, 43, 39, 207, 208, 45, 202, 29, 30
+```
+
+Before Batch A: `/todo` to archive the 21 terminal entries (19 abandoned this pass, 183, 222).
+Then re-run the dry run once; 197's archive-aware lookup has held under every archival so far,
+but standing rule 3 applies.
+
+### Decisions
+
+13. **The manifest: applied in full**, by the user's instruction on 2026-09-17. Nine merges, seven
+    abandonments, and 74←167. The merges are recoverable by `/task --recover` on the absorbed
+    number; the abandonments are terminal.
+14. **74/75/76 after 167.** Applied as the edge 74←167. Land the rule first and reassess the
+    mechanism trio when 167 completes.
+15. **`/todo` next.** 21 entries await archival; run it before Batch A.
+16. **No metatask for the revision work.** It was mechanical and is done; filing a task to do it
+    would have added to the backlog it was cutting.
+
+---
 
 1. `/orchestrate` is the only lifecycle entry point, driven by flags. **Done** in shape:
    `/research`, `/plan`, `/implement` are deleted (124); hard mode and team mode are folded into
@@ -79,6 +270,10 @@ Tier 3. 55 tasks are open.*
 ---
 
 ## Core-essential path (surveyed 2026-09-14)
+
+*Superseded in part by the seventh pass above (2026-09-17): the tiers still describe the defect
+classes correctly, but the task numbers, batches and the "0/9" progress line are stale once the
+manifest is applied. Where the two disagree, the seventh pass wins.*
 
 Stage A is closed, so the orchestrator is no longer the bottleneck. What's left is a set of
 defects where the core system **silently does the wrong thing**: it loses work, reports a phase
@@ -721,6 +916,18 @@ planner's questions as its focus.
 
 ## Observations, unfiled
 
+- **New 2026-09-17**: the runtime wave-split check (`orchestrate-cycle-plan.sh` step 4.5) defers a
+  cross-batch `file_scope` collision on every run and records nothing. Persisting that deferral as
+  a `dependencies[]` edge is the one idea from the abandoned 231 worth keeping; it belongs after
+  165 rules on absent scope, and it is a one-line write through `state-write.sh`, not a task of its
+  own yet.
+- **New 2026-09-17**: two agent-system defects live in cslib's task list (595, 608). 608's
+  evidence is now in 129; 595 is satisfied by `validate-state.sh` Check D3 once cslib redeploys
+  (200's class). Both should be abandoned there with a pointer here.
+- **New 2026-09-17**: `state-write.sh`'s `--argjson-file` collision (234) means any caller passing
+  two of them, or mixing one with `--arg`, has been writing corrupt data silently. This pass used
+  `--arg` only, for that reason. 234's caller audit should start with `/task` multi-create and
+  `/todo`.
 - **New 2026-09-14 (Verification repo, one-off cleanup, not a task)**: after the stray
   `[PLANNING]` transition was undone by hand, that repo still has uncommitted deletions
   (`.commit-lock/`, `004_*/.lock/holder.json`, four files under `006_*/.dispatch/`). It also still
@@ -838,6 +1045,12 @@ placed in a tier under "Core-essential path" near the top of this file.
 **Critical path now**: 213 → 214 → 212 → (194 → 195), with 200 alongside. Those are the defects
 that make a correct-looking run wrong. 213 and 214 come first because they gate eight tasks and
 corrupt state on a live re-check. Then the Tier 2 chain from 162/188.
+
+**Re-surveyed 2026-09-17 (seventh pass).** Nothing in the tier table above closed; 18 tasks were
+filed. Open count 72. The lean-supporting critical path, after the proposed manifest, is
+234 + 226 (writers) → 213 (forced phases, absorbing 214/216) → 212 (postflight honesty, absorbing
+195), with 200 alongside, then 173 → 221 (build verdict) and 194 → 136/139 (contracts). See
+"Seventh pass" near the top of this file for the manifest, the applied edges and the batches.
 
 ### Filed 2026-09-03 → 2026-09-08 (superseded by the tiers above; kept for the record)
 
