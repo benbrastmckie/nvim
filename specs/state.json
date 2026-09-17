@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 223,
+  "next_project_number": 224,
   "active_projects": [
     {
       "project_number": 222,
@@ -1350,6 +1350,33 @@
       "created": "2026-09-16T06:18:20Z",
       "last_updated": "2026-09-16T06:18:20Z",
       "priority": "high"
+    },
+    {
+      "project_number": 223,
+      "project_name": "record_comparator_nixos_fixes_in_lean_extension",
+      "title": "Record the Comparator-on-NixOS fixes in the lean extension",
+      "task_type": "meta",
+      "status": "researched",
+      "topic": "lean-extension",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md",
+        "agent-system/extensions/lean/context/project/lean4/tools/comparator-guide.md",
+        "agent-system/extensions/lean/scripts/lean-comparator-run.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh"
+      ],
+      "description": "Record the Comparator-on-NixOS fixes in the lean extension source store (~/.config/nvim/agent-system/extensions/lean, not .claude/): update context/project/lean4/domain/comparator-integration.md, context/project/lean4/tools/comparator-guide.md and scripts/lean-comparator-run.sh (with scripts/tests/test-lean-comparator-run.sh) so a Comparator run works on this host. Fixes found while certifying framed_channel: (1) put the pinned toolchain bin/ before the elan shim on PATH, since landrun cannot execute the shim (the `lake: Permission denied` failure the design record notes but never explains); (2) invoke as `lake env comparator config.json`; (3) point TMPDIR inside the writable .lake directory because bv_decide writes SAT files to /tmp, which the sandbox makes read-only; (4) grant --rox on git's nix store libraries, otherwise Lake decides the package URL changed and deletes .lake/packages/<dep>. Also document: lean4export panics when permitted_axioms names an axiom absent from the Challenge (handle a flagged bv_decide row by permitting only the trusted axioms and requiring the exact Illegal axiom rejection, which still proves the statement matches); `lake update` in a tool-pinning package silently rewrites lean-toolchain unless --keep-toolchain; batched Lean4Lean runs can exceed 19 GB and trigger earlyoom, so run one module per process; an outer landrun around lake env and Comparator itself. Reference implementation: framed_channel/recheck-comparator.sh, recheck-revs.sh and comparator-configs.sh in this repository, and the task 32 report and summary. Redeploy .claude/ afterwards.\n\nORIGIN: moved from the ~/Projects/Logos/Verification task list, where it was researched; the research report was copied here as reports/01_comparator-nixos-fixes.md. The reference implementation it transcribes lives in ~/Projects/Logos/Verification/framed_channel/ (recheck-comparator.sh, recheck-revs.sh, comparator-configs.sh). Task numbers inside the report refer to that repository's task list.",
+      "artifacts": [
+        {
+          "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/reports/01_comparator-nixos-fixes.md",
+          "type": "report",
+          "summary": "Research on transcribing the live-proven Comparator-on-NixOS fixes (toolchain PATH ordering, landrun TMPDIR and git --rox grants, lake env invocation) into the lean extension, plus documentation-only lessons and test coverage gaps."
+        }
+      ],
+      "next_artifact_number": 2,
+      "created": "2026-09-17T07:55:14Z",
+      "last_updated": "2026-09-17T07:55:14Z",
+      "priority": "medium"
     }
   ],
   "completed_projects": [],

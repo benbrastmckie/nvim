@@ -1,17 +1,17 @@
 ---
-next_project_number: 223
+next_project_number: 224
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-16. Generated from state.json dependency graph.*
+*Updated 2026-09-17. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214 | 29,74,166,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
 | 3 | 14,162,193,211,212,216,217,220 | 139,173,174,194,210,214 | core-agent-system, file-scope-lifecycle |
 | 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
@@ -105,9 +105,23 @@ next_project_number: 223
 ### Lean Extension
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
+223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 223. Record the Comparator-on-NixOS fixes in the lean extension
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+- **Research**: [223_record_comparator_nixos_fixes_in_lean_extension/reports/01_comparator-nixos-fixes.md]
+
+**Description**: Record the Comparator-on-NixOS fixes in the lean extension source store (~/.config/nvim/agent-system/extensions/lean, not .claude/): update context/project/lean4/domain/comparator-integration.md, context/project/lean4/tools/comparator-guide.md and scripts/lean-comparator-run.sh (with scripts/tests/test-lean-comparator-run.sh) so a Comparator run works on this host. Fixes found while certifying framed_channel: (1) put the pinned toolchain bin/ before the elan shim on PATH, since landrun cannot execute the shim (the `lake: Permission denied` failure the design record notes but never explains); (2) invoke as `lake env comparator config.json`; (3) point TMPDIR inside the writable .lake directory because bv_decide writes SAT files to /tmp, which the sandbox makes read-only; (4) grant --rox on git's nix store libraries, otherwise Lake decides the package URL changed and deletes .lake/packages/<dep>. Also document: lean4export panics when permitted_axioms names an axiom absent from the Challenge (handle a flagged bv_decide row by permitting only the trusted axioms and requiring the exact Illegal axiom rejection, which still proves the statement matches); `lake update` in a tool-pinning package silently rewrites lean-toolchain unless --keep-toolchain; batched Lean4Lean runs can exceed 19 GB and trigger earlyoom, so run one module per process; an outer landrun around lake env and Comparator itself. Reference implementation: framed_channel/recheck-comparator.sh, recheck-revs.sh and comparator-configs.sh in this repository, and the task 32 report and summary. Redeploy .claude/ afterwards.
+
+ORIGIN: moved from the ~/Projects/Logos/Verification task list, where it was researched; the research report was copied here as reports/01_comparator-nixos-fixes.md. The reference implementation it transcribes lives in ~/Projects/Logos/Verification/framed_channel/ (recheck-comparator.sh, recheck-revs.sh, comparator-configs.sh). Task numbers inside the report refer to that repository's task list.
+
+---
 
 ### 222. Add rust extension to agent system
 - **Status**: [COMPLETED]
