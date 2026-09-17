@@ -344,3 +344,142 @@ Added JSON delegation context to skill-researcher/SKILL.md Stage 3 including:
 - [PATTERN] Metadata Delegation Pattern with .return-meta.json
 
 ---
+
+### 2026-09-17
+
+**Task 222: add_rust_extension_to_agent_system**
+- Status: completed
+- Type: meta
+- Summary: Created agent-system/extensions/rust/ (manifest, EXTENSION.md, README.md,
+  index-entries.json, opencode-agents.json, research/implementation agents with a cargo
+  check/clippy/fmt/test verification loop, two wrapper skills, one context README), registered
+  it in the extensions README table and the agent-contracts lint in-scope list, and verified
+  with lint-routing-wiring.sh and lint-agent-contracts.sh (both pass with zero new failures).
+
+**Task 219: refresh_idle_lean_tree_notify_prompt**
+- Status: abandoned
+- Type: meta
+- Summary: Prompt via desktop notification before killing idle costly Lean trees, with
+  re-verified targeted kill and snooze. Abandoned in seventh-pass backlog consolidation.
+
+**Task 218: refresh_lean_cpu_delta_idle_cost_gate**
+- Status: abandoned
+- Type: meta
+- Summary: Track Lean tree idleness by CPU delta and gate reclamation on a memory floor.
+  Abandoned in seventh-pass backlog consolidation.
+
+**Task 214: stop_forced_phase_fallthrough_dispatch**
+- Status: abandoned
+- Type: meta
+- Summary: Make forced orchestrate phases stop as documented instead of dispatching the next
+  phase. Abandoned in seventh-pass backlog consolidation.
+
+**Task 211: fix_task_type_keyword_false_positives**
+- Status: abandoned
+- Type: meta
+- Summary: Stop /task task-type detection from matching incidental keywords. Abandoned in
+  seventh-pass backlog consolidation.
+
+**Task 187: unify_commit_attribution_convention**
+- Status: abandoned
+- Type: meta
+- Summary: Decide and enforce one commit-attribution convention across scripted and
+  hand-written agent commits. Abandoned 2026-09-17 (seventh-pass consolidation): cosmetic --
+  the harness now supplies commit attribution and git-commit-scoped.sh composes its own
+  Session trailer; inconsistent trailers affect no behaviour.
+
+**Task 183: decide_loop_guard_staleness_detector_disposition**
+- Status: abandoned
+- Type: meta
+- Summary: Decide whether to port the hard-mode loop-guard operational-staleness detector into
+  orchestrate-cycle-plan.sh. Abandoned 2026-09-14: superseded by task 216 (reset the
+  /orchestrate cycle bound each run) -- once cycle_count is no longer carried between runs, a
+  stale guard file can no longer be trusted for budgeting.
+
+**Task 175: enforce_waiter_teardown_contracts**
+- Status: abandoned
+- Type: meta
+- Summary: Enforce waiter teardown in the agent contracts that spawn build waiters. Abandoned
+  in seventh-pass backlog consolidation.
+
+**Task 168: correct_opencode_mcp_scoping_claim**
+- Status: abandoned
+- Type: meta
+- Summary: Correct the disproven project-scoped MCP claim in the OpenCode doc tree. Abandoned
+  2026-09-17 (seventh-pass consolidation): a doc correction inside .opencode/, a tree the user
+  declared FROZEN (task 22's policy: not maintained, not generated, not deleted).
+
+**Task 14: prevent_implementation_agent_nonterminal_fanout**
+- Status: abandoned
+- Type: meta
+- Summary: Prevent implementation-agent fan-out from returning non-terminal status and stale
+  plan markers. Abandoned in seventh-pass backlog consolidation.
+
+**Task 164: backfill_file_scope_for_existing_tasks**
+- Status: abandoned
+- Type: meta
+- Summary: Backfill file_scope for existing tasks and decide the disposition for plan-less
+  tasks. Abandoned in seventh-pass backlog consolidation.
+
+**Task 195: replace_handoff_writer_allowlist_predicate**
+- Status: abandoned
+- Type: meta
+- Summary: Replace is_contractual_handoff_writer allowlist with a dispatch-derived predicate.
+  Abandoned in seventh-pass backlog consolidation.
+
+**Task 198: lean_agents_mandate_no_revert_snapshot**
+- Status: abandoned
+- Type: meta
+- Summary: Mandate git-snapshot --no-revert in the lean implementation agent contracts.
+  Abandoned in seventh-pass backlog consolidation.
+
+**Task 216: per_run_cycle_bound_artifact_admission**
+- Status: abandoned
+- Type: meta
+- Summary: Reset the /orchestrate cycle bound on each run and admit forced phases by artifact,
+  not status. Abandoned in seventh-pass backlog consolidation.
+
+**Task 220: guard_machine_readable_build_status**
+- Status: abandoned
+- Type: meta
+- Summary: Make a guarded Lean build verdict machine-readable so a pipeline cannot mask it.
+  Abandoned in seventh-pass backlog consolidation.
+
+**Task 225: please_command_rule_and_docs**
+- Status: abandoned
+- Type: meta
+- Summary: Add the user-only /please command, its never-list, the pr-prohibition exception and
+  the CLAUDE.md command entry. Abandoned in seventh-pass backlog consolidation.
+
+**Task 229: carry_reason_on_dependency_edges**
+- Status: abandoned
+- Type: meta
+- Summary: Carry a reason on each dependency edge so a hard ordering constraint is
+  distinguishable from a soft preference. Abandoned in seventh-pass backlog consolidation.
+
+**Task 230: decide_disposition_for_terminal_dependency_edges**
+- Status: abandoned
+- Type: meta
+- Summary: Decide and implement the disposition for dependency edges pointing at terminal or
+  archived tasks. Abandoned in seventh-pass backlog consolidation.
+
+**Task 231: post_creation_burst_dependency_analysis_pass**
+- Status: abandoned
+- Type: meta
+- Summary: Establish a post-creation-burst dependency-analysis pass, extending the existing
+  pre-dispatch review rather than forking it. Abandoned in seventh-pass backlog consolidation.
+
+**Task 232: surface_dependency_graph_health_metrics**
+- Status: abandoned
+- Type: meta
+- Summary: Surface dependency-graph health metrics alongside the computed wave schedule.
+  Abandoned in seventh-pass backlog consolidation.
+
+**Task 233: file_scope_derived_dependency_edge_inference**
+- Status: abandoned
+- Type: meta
+- Summary: Infer missing dependency edges from overlapping file_scope declarations, consuming
+  the absent-scope ruling rather than re-deciding granularity. Abandoned in seventh-pass
+  backlog consolidation.
+
+---
