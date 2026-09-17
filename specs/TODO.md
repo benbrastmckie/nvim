@@ -310,6 +310,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [227_resolve_source_store_target_in_deployed_trees/reports/01_source-store-rule-has-no-target.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/rules/source-store-deploy-boundary.md and whatever deploy step is chosen to parameterize it (never .claude/**).
 
