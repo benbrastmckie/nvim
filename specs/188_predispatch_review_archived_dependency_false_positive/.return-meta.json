@@ -25,22 +25,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["task-lookup-lib", "archive-aware", "slurpfile", "argv-limit", "state.json"]
+      "suggested_keywords": [
+        "task-lookup-lib",
+        "archive-aware",
+        "slurpfile",
+        "argv-limit",
+        "state.json"
+      ]
     },
     {
       "content": "When splitting a report section's findings into a demoted-but-still-visible sub-list (never suppress, only demote volume/wording), reuse an existing two-part Deferred/Admitted-style convention already present elsewhere in the same script rather than inventing a new top-level section header. Give each sub-list its own accurate '0 findings' negative so no negative message falsely implies the absence of items that only moved to the other list.",
       "category": "PATTERN",
       "source_artifact": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["report-rendering", "never-silent", "demotion", "two-part-list"]
+      "suggested_keywords": [
+        "report-rendering",
+        "never-silent",
+        "demotion",
+        "two-part-list"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789687584_deac58",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

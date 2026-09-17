@@ -271,12 +271,18 @@
           "path": "specs/188_predispatch_review_archived_dependency_false_positive/plans/01_archive-aware-dependency-classifier.md",
           "type": "plan",
           "summary": "5-phase plan making orchestrate-predispatch-review.sh's Class A dependency classifier archive-aware via task-lookup-lib.sh, adding an archived_satisfied bucket, test fixtures, guardrail doc sync, and deploy acceptance."
+        },
+        {
+          "path": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
+          "type": "summary",
+          "summary": "Class A dependency classifier now distinguishes archived-satisfied dependencies (informational) from genuinely nonexistent ones (loud), with new test coverage and synced guardrail docs."
         }
       ],
       "next_artifact_number": 2,
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
-      ]
+      ],
+      "completion_summary": "Fixed orchestrate-predispatch-review.sh's Class A false positive: dependencies satisfied by an archived task now classify as archived_satisfied (informational) instead of the loud nonexistent verdict. Added a task-lookup-lib-based archive merge, split Class A report rendering into primary/archived-satisfied lists, added 3 new test scenarios (21/21 passing), and synced the guardrail documentation's bucket enumeration. Verified live: 24 real archived-satisfied edges across this repo's active_projects[], 0 false nonexistent findings, reproduced from the deployed .claude/ copy."
     },
     {
       "project_number": 185,
