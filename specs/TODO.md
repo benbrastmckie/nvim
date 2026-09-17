@@ -1,5 +1,5 @@
 ---
-next_project_number: 234
+next_project_number: 235
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 234
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224,226,227,228,229 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224,226,227,228,229,234 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214,225,230,231 | 29,74,166,172,188,194,207,209,213,224,228,229 | core-agent-system, extensions, literature, ... |
 | 3 | 14,162,193,211,212,216,217,220,232 | 139,173,174,194,210,214,230,231 | core-agent-system, file-scope-lifecycle |
 | 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
@@ -41,6 +41,11 @@ next_project_number: 234
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 187 [NOT STARTED] — Decide and enforce one commit-attribution convention across...
 188 [RESEARCHED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
+  └─ 230 [NOT STARTED] — Decide and implement the disposition for dependency edges...
+    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the...
+  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,...
+    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the... (see above)
+    └─ 233 [NOT STARTED] — Infer missing dependency edges from overlapping filescope...
 194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
     └─ 14 [NOT STARTED] — Prevent implementation-agent fan-out from returning...
@@ -71,13 +76,11 @@ next_project_number: 234
 226 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
-  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,...
-    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the...
-    └─ 233 [NOT STARTED] — Infer missing dependency edges from overlapping filescope...
-229 [NOT STARTED] — Carry a reason on each dependency edge so a hard ordering...
-  └─ 230 [NOT STARTED] — Decide and implement the disposition for dependency edges...
-    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the... (see above)
   └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,... (see above)
+229 [NOT STARTED] — Carry a reason on each dependency edge so a hard ordering...
+  └─ 230 [NOT STARTED] — Decide and implement the disposition for dependency edges... (see above)
+  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,... (see above)
+234 [NOT STARTED] — Fix the state-write.sh spill-name collision that silently...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -121,6 +124,44 @@ next_project_number: 234
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 234. Fix the state-write.sh spill-name collision that silently discards every --argjson-file binding after the first
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. scripts/state-write.sh silently discards data on any call passing MORE THAN ONE `--argjson-file`. Every binding after the first resolves to the FIRST file's value. There is no error, no warning, and the exit code is 0. This is silent wrong data through the single mutex-guarded writer that every specs/state.json read-modify-write in the system is meant to be routed through, and it FAILS OPEN.
+
+ROOT CAUSE -- ONE LINE. In the `--argjson-file` branch:
+
+    private_name="__spill_${#SPILL_FILES[@]}"          # line 226
+
+The `--arg`/`--argjson` auto-spill branch at line 205 computes the identical expression, but appends to `SPILL_FILES` at line 207, so its counter advances correctly. The `--argjson-file` branch NEVER appends -- the caller supplied the file, so nothing is `mktemp`-ed and there is nothing to register for cleanup -- leaving `${#SPILL_FILES[@]}` at 0 forever. Every `--argjson-file` binding is therefore named `__spill_0`. The resulting repeated `jq --slurpfile __spill_0 ...` arguments collide, jq binds one value for the name, and the `EFFECTIVE_FILTER` prefix built at lines 274-280 dutifully aliases every caller-visible `$NAME` to that same single value.
+
+THE MIXED CASE IS ALSO BROKEN, AND IS THE SUBTLER HALF. Because the two branches share one counter that only one of them advances, an `--argjson-file` spill CONSUMES index N without advancing it. A subsequent `--arg`/`--argjson` auto-spill then claims the same index N and collides with it. A call mixing the two forms can therefore corrupt bindings even when it passes only a single `--argjson-file`. Any fix must repair the shared-counter discipline, not merely special-case the multi-file path.
+
+OBSERVED -- REPRODUCED TWICE, INDEPENDENTLY.
+  - Six `--argjson-file` bindings in one call, writing six distinct task descriptions in a single transaction: all six records received the FIRST description. Exit 0, no diagnostic. Detected only because all six stored values came back at an identical character count; without that coincidence the corruption would have been committed unnoticed.
+  - A minimal two-file call, run separately to confirm: both bindings resolved to the first file's value and the second file's content was lost entirely. Exit 0.
+
+SEVERITY, STATED PLAINLY. The whole purpose of this script, per its own header, is to be the one correct writer -- it exists because nine scripts plus two inline command blocks each rolled their own unserialized read-modify-write and corrupted state. A silent value-substitution bug in that script is worse than the class of bug it was written to eliminate, because the failure is invisible at the call site: the transform succeeds, the JSON validates, the mutex behaves, and the mv is atomic. Everything the script guarantees still holds; the data is simply wrong.
+
+CAUTION FOR THE IMPLEMENTER -- THIS BIT ALREADY. state-write.sh derives PROJECT_ROOT from its own script path (BASH_SOURCE), NOT from the caller's working directory. Invoking the DEPLOYED copy from a scratch directory to test it therefore writes to the REAL specs/state.json. This happened during reproduction and required a restore from HEAD. A regression test MUST invoke a copy of the script rooted inside a fixture tree so its self-resolved PROJECT_ROOT points at the fixture, never the deployed script with a redirected argument. Note that `--state-file` does NOT make this safe on its own: PROJECT_ROOT still feeds the log path and other resolutions.
+
+DEPLOY-TREE NOTE. The fix lands in agent-system/extensions/core/scripts/state-write.sh. The gitignored deployed copy under .claude/scripts/ carries the identical line and is regenerated from the source store, so it must not be hand-edited; verify the fix after a redeploy rather than patching the copy.
+
+SCOPE. Repair the spill-name allocation so every spilled binding gets a distinct private name across BOTH branches. Consider whether the two branches should share one explicit counter, or whether the private name should derive from the caller-supplied public name instead of a positional index -- do not pre-commit; the second option is more legible in a failure message but must handle a caller passing the same NAME twice. Whatever is chosen, a duplicate private name must become a loud error rather than a silent last-write-wins, since the defect class here is precisely that collision was survivable.
+
+OUT OF SCOPE. Any change to the mutex protocol, the staging/mv sequence, the `--state-file`/`--init` contracts, or the `--regen-todo` behaviour. Any change to the jq filter interface callers rely on. Auditing callers for OTHER reasons: the audit below is bounded to identifying multi-spill callers that may already have written corrupt data.
+
+ACCEPTANCE. A regression test exists under scripts/tests/ exercising, at minimum, (a) a call with two or more `--argjson-file` bindings, asserting each resolves to its OWN file's value, and (b) a mixed call combining `--arg`/`--argjson` with `--argjson-file`, asserting the same. Both cases FAIL against the current script and PASS after the fix -- demonstrate the failure first, do not merely assert the passing state. The test invokes a fixture-rooted copy, never the deployed script, and the test itself is verified not to touch the real specs/state.json. Existing callers are audited for multi-spill usage and any already-corrupted data is identified and reported (not necessarily repaired, but never left undiscovered). The fix is verified in the deployed copy after a redeploy. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 233. Infer missing dependency edges from overlapping file_scope declarations, consuming the absent-scope ruling rather than re-deciding granularity
 - **Status**: [NOT STARTED]
@@ -187,7 +228,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 228, Task 229
+- **Dependencies**: Task 228, Task 229, Task 188
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -218,28 +259,38 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 229
+- **Dependencies**: Task 229, Task 188
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 DEFECT. A dependency edge whose target has already been archived is permanently satisfied and carries no ordering information, but it stays in `dependencies[]` forever and is treated as a live edge by every reader. No check flags it, because the one check that could does not consider archival a defect.
 
-OBSERVED (measured against specs/state.json, 2026-09-17). 26 of the 85 live dependency edges -- 31 percent -- point at tasks that are no longer in `active_projects`. Every sampled target (197, 143, 88, 87, 149, 130, 191, 192) resolves to a directory under specs/archive/, of which there are 141. These are not dangling references: scripts/validate-state.sh Check D3's dangling check (~lines 601-613) resolves a target against active_projects OR the archive and passes on an archive hit, by design. So a third of the graph's edges are structurally invisible to the only integrity check that looks at them.
+OBSERVED -- TWO INDEPENDENT REPOSITORIES, SAME PHENOMENON.
+  - THIS REPOSITORY (measured 2026-09-17): 26 of the 85 live dependency edges -- 31 percent -- point at tasks no longer in `active_projects`. Every sampled target (197, 143, 88, 87, 149, 130, 191, 192) resolves to a directory under specs/archive/, of which there are 141.
+  - THE BIMODALLOGIC CONSUMER REPOSITORY (measured independently, recorded on the already-filed classifier task #188): 37 unique dependency numbers flagged across roughly 30 tasks; ALL 37 resolve under specs/archive/ and ZERO are genuinely absent.
+Two repositories exhibiting the same ratio independently is stronger evidence than either figure alone, and establishes this as a structural consequence of the archival model rather than one repository's accumulated mess.
 
-THE CONCRETE HARM, NOT MERELY UNTIDINESS. scripts/orchestrate-predispatch-review.sh Class A classifies every raw `dependencies[]` entry on every candidate into intra_batch, out_of_batch_live, out_of_batch_terminal, or nonexistent, and warns loudly on all three non-intra_batch subcases -- including the terminal one, because context/patterns/batch-orchestration-guardrails.md Non-Negotiable 3 draws no exception for a terminal target. That is correct as a rule and corrosive in practice at this ratio: a third of all edges generate a permanent, unactionable out_of_batch_terminal finding on every orchestrate run that touches the owning task. The Class A section is the SAME section that reports genuinely dangerous `nonexistent` and `out_of_batch_live` edges. Training an operator to skim it is the harm.
+WHY NOTHING CATCHES IT. scripts/validate-state.sh Check D3's dangling check (~lines 601-613) resolves a target against active_projects OR the archive and PASSES on an archive hit, by design. So a third of the graph's edges are invisible to the only integrity check that looks at them.
 
-DECIDE THE DISPOSITION -- DO NOT PRE-COMMIT. Four options, none preferred here:
+THE CLASSIFIER REPORTS THESE AS `nonexistent`, NOT AS A TERMINAL VERDICT -- THIS IS THE LOUDEST VERDICT IT HAS. Verify against the implementation rather than the surrounding prose, because the two diverge. scripts/orchestrate-predispatch-review.sh Class A binds its candidate pool to `active_projects` only and buckets a dependency with `if $dep_entry == null then "nonexistent" elif (($dep_entry.status // "") | is_terminal) then "out_of_batch_terminal" else "out_of_batch_live" end` (~lines 216-227). An ARCHIVED target is absent from active_projects, so `$dep_entry` is null and the edge buckets as `nonexistent`. The `out_of_batch_terminal` bucket fires only for a dependency still IN active_projects carrying a terminal status -- completed, abandoned or expanded but not yet archived by /todo. So these 26 edges do not produce a muted terminal note; they produce the loudest finding the classifier emits, in the same section that reports genuinely dangling edges. That is the harm: at this ratio the section is approximately pure false positive, which trains an operator to skim it and would mask a real dangling edge when one finally appears.
+
+COORDINATION WITH THE ALREADY-FILED CLASSIFIER TASK -- READ THIS BEFORE CHOOSING AN OPTION. Task #188 (`predispatch_review_archived_dependency_false_positive`, status RESEARCHED, report already written) OWNS the classifier half: teaching Class A a verdict distinguishing satisfied-and-archived from genuinely-nonexistent, and reporting the former quietly. THIS task owns the DATA half: what, if anything, happens to the edge itself in specs/state.json. The split is the point -- #188 changes how an edge is REPORTED, this task changes whether the edge EXISTS. Do not re-decide the classifier change here, and do not edit orchestrate-predispatch-review.sh; that file is #188's declared territory.
+
+THE DEPENDENCY ON #188 IS A DECISION INPUT, NOT A FILE COLLISION. There is no file overlap between the two once the classifier option is excluded here. The edge exists because this task's option set includes a do-nothing-to-state.json option whose availability is determined entirely by #188: if it lands first and reclassifies archived targets to a quiet verdict, the report-noise harm is already gone and this task's remaining justification narrows to the data-correctness harm below. Choosing among the options without knowing whether one of them has already been implemented elsewhere is choosing blind, and picking the report-side option before #188 lands would duplicate its deliverable and collide on its file.
+
+THE HARM #188 DOES NOT ADDRESS, WHICH IS WHY THIS TASK SURVIVES ITS OUTCOME. A quieter classifier changes what is printed, not what is stored. The 26 edges remain in `dependencies[]` and remain live inputs to scripts/generate-task-order.sh's Kahn wave computation (~lines 391-450) and to anything deriving a critical path from it. A critical path traversing permanently-satisfied edges reports a chain length that does not exist, and wave widths are computed against constraints that no longer constrain anything. That is a data defect, independent of reporting volume.
+
+DECIDE THE DISPOSITION -- DO NOT PRE-COMMIT. Three options, none preferred here (a fourth, collapsing the classifier's findings into a count, has been deliberately removed: it is #188's deliverable, not this task's):
   - PRUNE AT ARCHIVAL TIME in commands/todo.md, which already has an "Update dependencies arrays" step (~line 868) at exactly the moment the target becomes terminal. Cheapest point of intervention and keeps the invariant continuously true; destroys provenance unless the reason carrier preserves it.
   - PRUNE AS A ONE-SHOT MIGRATION plus a validate-state.sh WARN to stop regression. Leaves the archival path untouched; the WARN accumulates again between runs.
-  - LEAVE THE EDGES and have predispatch-review Class A collapse terminal-target findings into a single count line rather than one finding per edge. Preserves provenance completely and fixes the actual reported harm (report noise) without touching state.json at all; does nothing for the other readers that treat the edge as live.
-  - DISTINGUISH RATHER THAN REMOVE: retain the edge with a marker that records it as satisfied. Most information-preserving, most schema surface.
-Note that options 1, 2 and 4 all interact with the reason carrier this task depends on: an edge that records WHY it exists can be pruned without losing the fact, and one that does not cannot. Weigh the options in that light rather than independently.
+  - DISTINGUISH RATHER THAN REMOVE: retain the edge with a marker recording it as satisfied. Most information-preserving, most schema surface, and the option composing best with a quieter classifier verdict, since both then agree the edge is real-but-satisfied.
+All three interact with the reason carrier this task depends on: an edge recording WHY it exists can be pruned without losing the fact, and one that does not cannot. Weigh them in that light rather than independently.
 
-ALSO DECIDE the abandoned/expanded case explicitly. An edge pointing at an ABANDONED task is not "satisfied" in the sense an archived-completed one is -- the predecessor's work never happened. Whether the dependent should be flagged for review rather than silently unblocked is a distinct question from the completed case and must be answered separately, not folded in.
+ALSO DECIDE the abandoned/expanded case explicitly. An edge pointing at an ABANDONED task is not satisfied in the sense an archived-completed one is -- the predecessor's work never happened. Whether the dependent should be flagged for review rather than silently unblocked is a distinct question from the completed case and must be answered separately, not folded in.
 
-OUT OF SCOPE. Dangling references to task numbers that exist nowhere, which Check D3 already handles correctly. Cycle detection, already implemented twice (validate-state.sh Check D3 and generate-task-order.sh compute_waves ~line 448) and not to be re-implemented. Inferring or adding edges, owned by the sibling tasks in this topic. The archival mechanism itself and CHANGE_LOG handling. Any change to Non-Negotiable 3's warn-loudly requirement: if the collapse option is chosen, the requirement is satisfied differently, not relaxed, and the guardrails document must be updated to say so rather than the requirement being quietly narrowed.
+OUT OF SCOPE. The Class A classifier verdict and any edit to orchestrate-predispatch-review.sh, owned by #188. Dangling references to task numbers existing nowhere, which Check D3 already handles correctly. Cycle detection, already implemented twice (validate-state.sh Check D3 and generate-task-order.sh compute_waves ~line 448). Inferring or adding edges, owned by sibling tasks in this topic. The archival mechanism itself and CHANGE_LOG handling. Any narrowing of context/patterns/batch-orchestration-guardrails.md Non-Negotiable 3's warn-loudly requirement: whatever is chosen, that requirement is satisfied differently, never relaxed, and the guardrails document must say so explicitly rather than the requirement being quietly weakened.
 
-ACCEPTANCE. The chosen disposition is implemented and the 31 percent figure is re-measured afterward, with the new figure recorded. A regression guard exists so the ratio cannot silently climb again: either the archival path maintains the invariant, or validate-state.sh reports the count. Whichever option is chosen, the abandoned/expanded case has an explicit written ruling. context/patterns/batch-orchestration-guardrails.md reflects the outcome where it bears on Non-Negotiable 3. shellcheck clean per context/standards/shell-strict-mode.md.
+ACCEPTANCE. The chosen disposition is implemented and the 31 percent figure is re-measured afterward, with the new figure recorded. A regression guard exists so the ratio cannot silently climb again: either the archival path maintains the invariant, or validate-state.sh reports the count. The abandoned/expanded case has an explicit written ruling. The outcome is reconciled in writing against #188's classifier change, stating what each half ended up owning. context/patterns/batch-orchestration-guardrails.md reflects the outcome where it bears on Non-Negotiable 3. shellcheck clean per context/standards/shell-strict-mode.md.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
@@ -265,7 +316,7 @@ Also decide whether a reason is REQUIRED or OPTIONAL on new edges, and what happ
 
 ENUMERATE THE BLAST RADIUS BEFORE CHOOSING. Every reader of `dependencies[]` must be listed with its access pattern, and the enumeration is itself a deliverable of this task. Known consumers: scripts/validate-state.sh (Check D3 -- self-reference, dangling, and cycle detection, the last of which builds bash associative arrays from a jq TSV of task/dependency pairs); scripts/generate-task-order.sh (compute_waves, Kahn's BFS, ~lines 391-450); commands/orchestrate.md STAGE 0 (the intra-batch dependency-graph build, ~line 157); scripts/orchestrate-cycle-plan.sh (per-cycle eligibility re-derivation); scripts/orchestrate-predispatch-review.sh (Class A raw-edge classification); scripts/orchestrate-batch-admit.sh; commands/todo.md's archival dependency-array update (~line 868); and the creation-time writer in the Multi-Task Creation Standard's Component 4a.
 
-FILE-TERRITORY CONTINGENCY, STATED SO IT IS NOT DISCOVERED LATE. This task's declared file_scope covers only what it certainly touches: the schema reference, validate-state.sh, and state-write.sh. Whether the enumerated consumers need edits is DESIGN-CONTINGENT -- the parallel-map option requires none, the widened-array option requires most of them. If the chosen design requires consumer edits, commands/orchestrate.md and the other enumerated consumers enter this task's file territory, and the task must re-declare its file_scope and re-check it against concurrent work before implementing rather than silently widening.
+FILE-TERRITORY CONTINGENCY, STATED SO IT IS NOT DISCOVERED LATE. This task's declared file_scope covers only what it certainly touches: the schema reference and validate-state.sh. scripts/state-write.sh is DELIBERATELY EXCLUDED: it applies an arbitrary caller-supplied jq filter and is agnostic to schema content, so recording a reason on an edge requires no change to it. That file is the declared territory of the separately-filed spill-name collision bug fix, and claiming it speculatively here would serialize that fix behind this one for no reason. If this task somehow does need to touch the writer, treat that as a signal the chosen design is wrong and re-check against that task before proceeding. Whether the enumerated consumers need edits is DESIGN-CONTINGENT -- the parallel-map option requires none, the widened-array option requires most of them. If the chosen design requires consumer edits, commands/orchestrate.md and the other enumerated consumers enter this task's file territory, and the task must re-declare its file_scope and re-check it against concurrent work before implementing rather than silently widening.
 
 OUT OF SCOPE. Deciding which edges SHOULD exist, or inferring new ones -- this task builds the carrier, not the content. Pruning edges whose target is terminal, which is owned by the sibling task in this topic. Cycle detection, which already exists in two places and must not be re-implemented. Any change to wave computation or to admission behaviour: an edge's reason must not become an input to whether it is enforced, or a soft reason becomes a silent concurrency licence, which is the exact hazard this topic exists to close.
 
