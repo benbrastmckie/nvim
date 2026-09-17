@@ -44,7 +44,7 @@ next_project_number: 235
   └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:... (see above)
 206 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-  └─ 226 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 226 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
     └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
 209 [PLANNING] — Set up a fresh repo specs/ state and runtime-file ignore...
   └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
@@ -207,11 +207,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 226. Fix scoped commit dropping staged deletions
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 206
 - **Research**: [226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md]
+- **Plan**: [226_fix_scoped_commit_dropping_staged_deletions/plans/01_scoped-commit-staged-deletions.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**).
 

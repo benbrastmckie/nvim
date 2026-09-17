@@ -1,27 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 2,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md",
-      "summary": "Confirms the V2 gate root cause by direct reproduction, verifies (and rejects) the naive fix, and specifies the decoupled git-add/git-commit-pathspec fix plus test shapes and the out-of-scope-deletion decision."
+      "type": "plan",
+      "path": "specs/226_fix_scoped_commit_dropping_staged_deletions/plans/01_scoped-commit-staged-deletions.md",
+      "summary": "4-phase red-first plan fixing git-commit-scoped.sh's V2 gate to classify already-staged deletions and decouple the git add pathspec set from the git commit set."
     }
   ],
-  "next_steps": "Run /plan 226 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1789687584_deac58_226",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
+  "dispatch_seq": 10,
+  "next_steps": "Run /implement 226 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 2,
+  "dependency_waves": [[1], [2], [3], [4]],
   "memory_candidates": [
     {
-      "content": "A bash git wrapper that path-scopes a commit via `git add <pathspecs>` then `git commit -- <pathspecs>` must NOT reuse the same pathspec array for both calls when a pathspec can represent an already-staged deletion (e.g. after `git rm`/`git mv`, where the path is gone from both working tree and index). `git add <already-staged-deletion-path>` errors with 'pathspec did not match any files' (exit 128), and since `git add` takes the whole pathspec array in one invocation, this aborts staging for every other path in the same call too -- turning a silent partial-drop into a loud whole-batch failure. Fix: classify each pathspec into (a) normal (exists on disk or in index) -> goes to both the git-add set and the git-commit set, (b) already-staged deletion (absent from disk+index but present at `git cat-file -e HEAD:<p>`) -> git-commit set ONLY, skip git add entirely since it's already staged, (c) genuinely unmatched -> drop. Verified directly: `git commit -m ... -- <deleted-path> <other-path>` succeeds even when only <other-path> was `git add`-ed, because git commit reads from the index, not disk.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["git", "scoped-commit", "git-add", "staged-deletion", "pathspec", "git-rm", "rename"]
+      "content": "When a shell script validates pathspecs before a git add + git commit pair, the two invocations need SEPARATE pathspec sets, not one shared array. An already-staged deletion (git rm, or the delete half of git mv) is absent from both the working tree and the index, so it must be included in `git commit -- <paths>` (or the deletion is silently dropped from the commit) but MUST be excluded from `git add` (which exits 128 on such a path, and because git add is a single all-or-nothing invocation, one bad entry aborts staging for every other path in the batch). The correct existence test for this third class is `git cat-file -e HEAD:<path>` guarded by `git rev-parse --verify -q HEAD`; a path added and removed within the same uncommitted session correctly falls through to the genuinely-unmatched branch. Generalizes to any pathspec-validating wrapper: match-vs-drop is a two-way classification that silently loses deletions; the correct shape is three-way.",
+      "category": "PATTERN",
+      "source_artifact": "specs/226_fix_scoped_commit_dropping_staged_deletions/plans/01_scoped-commit-staged-deletions.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git", "pathspec", "staged-deletion", "git-add", "scoped-commit", "shell"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1789687584_deac58_226",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
 }

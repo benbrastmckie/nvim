@@ -26,22 +26,27 @@
     {
       "project_number": 226,
       "project_name": "fix_scoped_commit_dropping_staged_deletions",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**).\n\nDEFECT. git-commit-scoped.sh silently drops staged DELETIONS from a path-scoped commit. When a scoped commit's path set includes a removed file, the removal is left out of the resulting commit and remains staged afterwards, so it must be committed separately by hand. The additions and modifications in the same path set commit normally, so the failure is partial and easy to miss -- the script exits 0 and reports success.\n\nOBSERVED TWICE in one implementation run in ~/Projects/BimodalLogic (the lakefile.lean -> lakefile.toml migration): `git rm lakefile.lean` and the rename of a disabled CI workflow file both produced commits carrying the additions but not the corresponding deletions.\n\nINVESTIGATE FIRST, DO NOT PRESUPPOSE THE CAUSE. The likely mechanism is a pathspec or `git add`-based staging step that re-derives the commit contents from the working tree (where a deleted file no longer exists) rather than from the index, but confirm this against the script's actual staging sequence before changing it. Renames are the second case to check: git records a rename as a delete plus an add, so a scoped rename may commit half of itself even when both halves are inside the declared path set.\n\nALSO IN SCOPE: decide what the script should do when a deletion falls OUTSIDE the declared path scope -- silently ignore it (current behaviour for out-of-scope paths generally) or refuse. The scoping contract exists to keep concurrent dispatches from absorbing each other's work, so quietly widening it is not acceptable; but neither is quietly narrowing a commit the caller believes is complete.\n\nACCEPTANCE. A regression test covering three shapes -- a scoped commit containing only a deletion, one mixing a deletion with additions, and a rename whose halves are both in scope -- fails against the current script and passes after the fix. The deployed trees are refreshed so consumer repositories pick the fix up (note the standing propagation gap filed separately in this topic). shellcheck clean per context/standards/shell-strict-mode.md.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\nROOT CAUSE FOUND (2026-09-17 survey, read from the source store; confirm by the regression test before relying on it): the V2 safety gate at git-commit-scoped.sh:181 keeps a positive pathspec only if `[ -e \"$p\" ] || git ls-files --error-unmatch -- \"$p\"` succeeds. After `git rm <file>` the path is gone from BOTH the working tree and the index, so the gate drops it with the WARN \"dropping unmatched pathspec\" and the deletion never reaches `git add`/`git commit`. A rename fails the same way for its delete half. The fix is to also accept a path present in HEAD (`git ls-tree` / `git cat-file -e HEAD:<p>`) or in the staged diff (`git diff --cached --name-only -- <p>`), so a staged deletion counts as matched. The out-of-scope-deletion ruling in the description still needs deciding.",
       "topic": "core-agent-system",
       "created": "2026-09-17T20:10:42Z",
-      "last_updated": "2026-09-17T23:35:13Z",
+      "last_updated": "2026-09-17T23:49:24Z",
       "file_scope": [
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
         "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
       ],
-      "session_id": "sess_1789687584_deac58_226",
+      "session_id": "sess_1789687584_deac58",
       "artifacts": [
         {
           "path": "specs/226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md",
           "type": "report",
           "summary": "Confirms the V2 gate root cause by direct reproduction, verifies (and rejects) the naive fix, and specifies the decoupled git-add/git-commit-pathspec fix plus test shapes and the out-of-scope-deletion decision."
+        },
+        {
+          "path": "specs/226_fix_scoped_commit_dropping_staged_deletions/plans/01_scoped-commit-staged-deletions.md",
+          "type": "plan",
+          "summary": "4-phase red-first plan fixing git-commit-scoped.sh's V2 gate to classify already-staged deletions and decouple the git add pathspec set from the git commit set."
         }
       ],
       "next_artifact_number": 2,
