@@ -173,28 +173,31 @@ either fails, stop and re-scope rather than editing around it.
 
 ---
 
-### Phase 2: Class A report rendering and header correction [NOT STARTED]
+### Phase 2: Class A report rendering and header correction [COMPLETED]
 
 **Goal**: The report reserves loud wording for genuine `nonexistent` edges and lists
 `archived_satisfied` edges separately at informational volume, without suppressing them.
 
 **Tasks**:
-- [ ] Split the Class A section (lines 442-456) into two derived lists using this script's own
+- [x] Split the Class A section (lines 442-456) into two derived lists using this script's own
       established two-part convention (the "Deferred: ..." / "Admitted: ..." shape already used
       by Classes C and D): a primary list of non-`archived_satisfied` findings, and a separate
-      line-labeled informational list, e.g. `Archived (satisfied): #C depends on #D`.
-- [ ] Keep both lists unconditional — an `archived_satisfied` finding is demoted in wording and
+      line-labeled informational list, e.g. `Archived (satisfied): #C depends on #D`. *(completed:
+      rendered as "Primary (live/terminal/nonexistent):" / "Archived (satisfied):" inside the
+      single Class A section, mirroring Class C/D exactly)*
+- [x] Keep both lists unconditional — an `archived_satisfied` finding is demoted in wording and
       placement, never dropped. Full suppression is explicitly rejected by the research and by
       this script's never-silent design philosophy (see its Class E comment on the "0 findings
-      vs. 0 matched" conflation).
-- [ ] Update the Class A negative line (line 452) so it no longer promises the absence of
+      vs. 0 matched" conflation). *(completed)*
+- [x] Update the Class A negative line (line 452) so it no longer promises the absence of
       archived-satisfied targets as part of the "0 findings" claim; keep the negative accurate
-      for the primary list and give the informational list its own accurate negative.
-- [ ] Update the SUT header comment (lines 11-12) from the four-bucket list to the five-bucket
-      list, keeping the guardrail-doc cross-reference intact.
-- [ ] Confirm `grep -n nonexistent` in the script shows the word only on the true-nonexistent
+      for the primary list and give the informational list its own accurate negative. *(completed)*
+- [x] Update the SUT header comment (lines 11-12) from the four-bucket list to the five-bucket
+      list, keeping the guardrail-doc cross-reference intact. *(completed)*
+- [x] Confirm `grep -n nonexistent` in the script shows the word only on the true-nonexistent
       bucket branch, the header comment's enumeration, and the primary-list negative — never on
-      an archived-satisfied path.
+      an archived-satisfied path. *(completed: verified live in a synthetic sandbox — the
+      archived-satisfied line renders "archived (satisfied)", never "nonexistent")*
 
 **Timing**: 0.5 hours
 

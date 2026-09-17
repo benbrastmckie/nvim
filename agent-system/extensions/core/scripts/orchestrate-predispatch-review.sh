@@ -8,10 +8,12 @@
 # pre-dispatch defect, by task number and path, BEFORE that discard happens:
 #
 #   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
-#     classified into intra_batch (no finding), out_of_batch_live, out_of_batch_terminal, or
-#     nonexistent. Satisfies context/patterns/batch-orchestration-guardrails.md's Non-Negotiable
-#     3, which requires warning loudly on every dropped edge and distinguishing these subcases
-#     rather than discarding all three identically — including the terminal subcase, since
+#     classified into intra_batch (no finding), out_of_batch_live, out_of_batch_terminal,
+#     archived_satisfied, or nonexistent. archived_satisfied (a dependency that was completed and
+#     then archived by /todo) reports at informational volume, never as nonexistent, since it is
+#     satisfied rather than a hazard. Satisfies context/patterns/batch-orchestration-guardrails.md's
+#     Non-Negotiable 3, which requires warning loudly on every dropped edge and distinguishing
+#     these subcases rather than discarding all identically — including the terminal subcase, since
 #     Non-Negotiable 3 draws no exception for a terminal target.
 #   Class B (metadata defects): dependencies/file_scope/title/topic present as a literal `null`
 #     on a candidate, instead of the schema's documented default (`[]` for the two array
@@ -465,18 +467,42 @@ echo "Invocation: ${task_args[*]}"
 echo ""
 
 echo "-- Class A: Dependency edge classification --"
+# Split into a primary (loud) list and a separate, clearly-labeled informational list for
+# archived_satisfied edges, using this script's own established two-part convention (the
+# "Deferred: ..." / "Admitted: ..." shape Classes C and D already use below) -- demotion, never
+# suppression, per this script's never-silent design philosophy. A dependency satisfied by an
+# archived task is not a hazard; the loud "nonexistent" wording is reserved for an edge
+# resolvable nowhere.
 class_a_lines=""
+class_a_archived_lines=""
 if [ -n "$ab_findings" ]; then
   class_a_lines=$(printf '%s\n' "$ab_findings" | jq -r '
-    select(.class == "A")
+    select(.class == "A" and .bucket != "archived_satisfied")
     | "#\(.task_number) depends on #\(.dependency): \(.bucket)" +
       (if .dependency_status then " (status: \(.dependency_status))" else "" end)
   ' 2>/dev/null) || true
+  class_a_archived_lines=$(printf '%s\n' "$ab_findings" | jq -r '
+    select(.class == "A" and .bucket == "archived_satisfied")
+    | "#\(.task_number) depends on #\(.dependency): archived (satisfied)" +
+      (if .dependency_status then " (status: \(.dependency_status))" else "" end)
+  ' 2>/dev/null) || true
 fi
-if [ -z "$class_a_lines" ]; then
-  echo "0 findings (every raw dependency edge is intra-batch, or this invocation carries no out-of-batch/nonexistent targets)."
+if [ -z "$class_a_lines" ] && [ -z "$class_a_archived_lines" ]; then
+  echo "0 findings (every raw dependency edge is intra-batch, or this invocation carries no out-of-batch/nonexistent/archived targets)."
 else
-  printf '%s\n' "$class_a_lines"
+  echo "Primary (live/terminal/nonexistent):"
+  if [ -z "$class_a_lines" ]; then
+    echo "  0 findings (every raw dependency edge is intra-batch, or resolves only to an archived-satisfied target)."
+  else
+    printf '%s\n' "$class_a_lines" | sed 's/^/  /'
+  fi
+  echo ""
+  echo "Archived (satisfied):"
+  if [ -z "$class_a_archived_lines" ]; then
+    echo "  0 archived-satisfied edges (no candidate depends on a task resolved via the archive)."
+  else
+    printf '%s\n' "$class_a_archived_lines" | sed 's/^/  /'
+  fi
 fi
 echo ""
 
