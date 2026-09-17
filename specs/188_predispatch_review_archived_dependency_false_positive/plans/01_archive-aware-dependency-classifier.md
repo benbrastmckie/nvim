@@ -1,7 +1,7 @@
 # Implementation Plan: Task #188
 
 - **Task**: 188 - Fix orchestrate-predispatch-review.sh Class A false positive: archived completed dependencies reported as nonexistent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/188_predispatch_review_archived_dependency_false_positive/reports/01_archived-dependency-false-positive.md
@@ -361,14 +361,21 @@ resolves to the archive; `nonexistent` count is zero) rather than the specific n
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on the edited script.
-- [ ] `test-orchestrate-predispatch-review.sh` passes in full from the source store, with new
+- [x] `bash -n` clean on the edited script.
+- [x] `test-orchestrate-predispatch-review.sh` passes in full from the source store, with new
       scenarios covering archived-resolving, genuinely-absent, and archive-file-absent cases.
-- [ ] A live run reports zero `nonexistent` findings where every out-of-batch edge resolves to
-      the archive.
-- [ ] A synthetic unresolvable dependency still reports `nonexistent` loudly.
-- [ ] The archive array is never passed through `--argjson` (ARG_MAX regression guard).
-- [ ] Both acceptance outcomes reproduce from the deployed `.claude/` copy after regeneration.
+      *(21 passed, 0 failed)*
+- [x] A live run reports zero `nonexistent` findings where every out-of-batch edge resolves to
+      the archive. *(confirmed against all 53 live active_projects[] candidates: 24
+      archived-satisfied edges, 0 nonexistent findings)*
+- [x] A synthetic unresolvable dependency still reports `nonexistent` loudly. *(confirmed on both
+      the source-store and deployed copies)*
+- [x] The archive array is never passed through `--argjson` (ARG_MAX regression guard).
+      *(`grep -n 'argjson.*archived' ` returns nothing)*
+- [x] Both acceptance outcomes reproduce from the deployed `.claude/` copy after regeneration.
+      *(confirmed; see Phase 5's deviation note for the one caveat -- deploy-headless.sh's own
+      exit code is 3 due to unrelated, pre-existing eager-context-budget drift, not this task's
+      change)*
 
 ## Artifacts & Outputs
 
