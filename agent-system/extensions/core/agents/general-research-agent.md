@@ -202,21 +202,42 @@ continuation loop — none exists today (unlike `general-implementation-agent`'s
 `continuation_context` / `subagent-continuation-loop.md` consumer, which the now-deleted base
 lifecycle implement skill used to own before that responsibility moved to `skill-orchestrate`).
 The value is crash-avoidance plus a discoverable partial report that a fresh
-`/orchestrate N --research` invocation can build on, not automatic resume. Do NOT
-use `wrap-up.md`'s H9 schema or `.orchestrator-handoff.json` for research — that schema and its
-consumer allowlist are implementation-agent-only. A minimal prior-handoff consumer for
+`/orchestrate N --research` invocation can build on, not automatic resume. See the
+`.orchestrator-handoff.json` (orchestrator-mode dispatches) subsection below for this agent's own
+handoff-writing obligation, which is a separate file, a separate consumer, and a separate trigger
+from the partial-report handoff artifact above. A minimal prior-handoff consumer for
 `general-research-agent` (Option B, mirroring `subagent-continuation-loop.md`'s `is_successor`
 shape) is a recommended follow-up task, not implemented here.
 
-**Defensive case, if this scoping decision is ever reversed**: should a future variant of this
-agent write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged — copy the value
-from the delegation context's `dispatch_seq` field into the handoff's own `dispatch_seq` field
-verbatim (never invent, increment, or recompute one), or omit it entirely when the delegation
-context omits it. This is the orchestrator-minted per-dispatch identity Stage 5 of both
-orchestrate engines compares against the value it minted for this cycle — see
-`context/patterns/dispatch-report-not-termination.md`. The handoff's `artifacts[]` entries MUST
-use the object shape defined in `handoff-schema.md`'s `### artifacts (required)` section — never
-a bare path string.
+### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
+
+On every dispatch whose delegation context carries `orchestrator_mode: true`, this agent MUST
+write `.orchestrator-handoff.json` before returning — on success and on a `partial` or `blocked`
+outcome alike.
+
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing. NEVER write a bare `.orchestrator-handoff.json` filename: it resolves against the
+ambient working directory at Write-tool-call time and strands the handoff outside the task
+directory, where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
+
+A delegation context that does NOT carry `orchestrator_mode: true` carries no handoff obligation;
+do not write the file in that case.
+
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field, copy
+its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment, or
+recompute one; if it is absent, omit it from the handoff too. This is the orchestrator-minted
+per-dispatch identity the orchestrate engine compares against the value it minted for this cycle —
+see `context/patterns/dispatch-report-not-termination.md`.
+
+Use the shape defined by `context/schemas/orchestrator-handoff-schema.json` (prose companion:
+`docs/architecture/handoff-schema.md`). `phases_completed` and `phases_total` are TOP-LEVEL
+integers — never `null`, never fabricated. Set `phases_completed` and `phases_total` from the
+task's current plan when one exists, otherwise both to `0`. `status` is one of `researched`,
+`partial`, `blocked`. `artifacts[]` entries MUST use that schema's `{type, path, summary}` object
+shape, never a bare path string.
 
 ### Stage 4: Synthesize Findings
 
