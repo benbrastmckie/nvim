@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-05-15",
-  "entry_count": 18,
-  "total_tokens": 2616,
+  "generated_at": "2026-09-17",
+  "entry_count": 19,
+  "total_tokens": 2990,
   "entries": [
     {
       "id": "MEM-plan-delegation-required",
@@ -21,8 +21,8 @@
       "token_count": 302,
       "created": "2026-04-13",
       "modified": "2026-04-13",
-      "last_retrieved": "2026-06-22",
-      "retrieval_count": 39
+      "last_retrieved": "2026-09-08",
+      "retrieval_count": 68
     },
     {
       "id": "MEM-config-nextcord-discord-nixos",
@@ -106,8 +106,8 @@
       "token_count": 100,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-05-25",
-      "retrieval_count": 3
+      "last_retrieved": "2026-09-03",
+      "retrieval_count": 7
     },
     {
       "id": "MEM-pattern-gate-out-defensive-check",
@@ -147,8 +147,8 @@
       "token_count": 90,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-06-12",
-      "retrieval_count": 4
+      "last_retrieved": "2026-09-16",
+      "retrieval_count": 57
     },
     {
       "id": "MEM-technique-validate-context-budgets-budget",
@@ -168,8 +168,8 @@
       "token_count": 71,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-06-20",
-      "retrieval_count": 3
+      "last_retrieved": "2026-09-01",
+      "retrieval_count": 5
     },
     {
       "id": "MEM-insight-general-implementation-agent-budget",
@@ -189,8 +189,8 @@
       "token_count": 76,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-06-20",
-      "retrieval_count": 2
+      "last_retrieved": "2026-09-01",
+      "retrieval_count": 4
     },
     {
       "id": "MEM-pattern-synthesis-fork-team-research",
@@ -373,6 +373,26 @@
       "token_count": 194,
       "created": "2026-06-08",
       "modified": "2026-06-08",
+      "last_retrieved": null,
+      "retrieval_count": 0
+    },
+    {
+      "id": "MEM-insight-context-loading-by-at-reference",
+      "path": ".memory/10-Memories/MEM-insight-context-loading-by-at-reference.md",
+      "title": "Directory placement is not a context-loading mechanism; @-references are",
+      "summary": "A file under context/contracts/ is loaded only if an explicit @-reference bullet appears in the consuming agent's '## Context References' section. Placing a file in a directory does nothing on its own.",
+      "topic": "agent-system/context",
+      "category": "insight",
+      "keywords": [
+        "context-loading",
+        "at-reference",
+        "context-contracts",
+        "index-entries.json",
+        "agent-prompt"
+      ],
+      "token_count": 374,
+      "created": "2026-08-09",
+      "modified": "2026-08-09",
       "last_retrieved": null,
       "retrieval_count": 0
     }

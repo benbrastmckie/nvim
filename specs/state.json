@@ -1188,11 +1188,11 @@
     "phantom_paths": 0
   },
   "memory_health": {
-    "last_distilled": "2026-08-09T00:00:00Z",
+    "last_distilled": "2026-09-17T23:24:07Z",
     "distill_count": 1,
-    "total_memories": 33,
-    "never_retrieved": 25,
-    "health_score": 90,
+    "total_memories": 19,
+    "never_retrieved": 11,
+    "health_score": 84,
     "status": "healthy"
   },
   "active_topics": [
