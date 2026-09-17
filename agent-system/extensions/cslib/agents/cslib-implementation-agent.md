@@ -458,16 +458,34 @@ object. Minimal example:
 See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
 full field spec.
 
-**`.orchestrator-handoff.json` prohibition**: this agent MUST NOT write
-`.orchestrator-handoff.json`, in any mode, including when `orchestrator_mode: true` is present in
-the delegation context. `.orchestrator-handoff.json` is formally hard-mode-implement-only per
-`.claude/docs/architecture/handoff-schema.md`; base-mode implementation returns status
-exclusively through `.return-meta.json`.
+### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
 
-**Defensive case, if this prohibition is ever reversed**: should a future variant of this agent
-write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged from its own delegation
-context — copy the value verbatim (never invent, increment, or recompute one), or omit it when
-the delegation context omits it. See `context/patterns/dispatch-report-not-termination.md`.
+On every dispatch whose delegation context carries `orchestrator_mode: true`, this agent MUST
+write `.orchestrator-handoff.json` before returning — on success and on a `partial` or `blocked`
+outcome alike.
+
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing. NEVER write a bare `.orchestrator-handoff.json` filename: it resolves against the
+ambient working directory at Write-tool-call time and strands the handoff outside the task
+directory, where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
+
+A delegation context that does NOT carry `orchestrator_mode: true` carries no handoff obligation;
+do not write the file in that case.
+
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field, copy
+its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment, or
+recompute one; if it is absent, omit it from the handoff too. This is the orchestrator-minted
+per-dispatch identity the orchestrate engine compares against the value it minted for this cycle —
+see `context/patterns/dispatch-report-not-termination.md`.
+
+Use the shape defined by `context/schemas/orchestrator-handoff-schema.json` (prose companion:
+`docs/architecture/handoff-schema.md`). `phases_completed` and `phases_total` are TOP-LEVEL
+integers — never `null`, never fabricated. `status` is one of `implemented`, `partial`, `blocked`.
+`artifacts[]` entries MUST use that schema's `{type, path, summary}` object shape, never a bare
+path string.
 
 ## CSLib Style Compliance
 
@@ -665,6 +683,9 @@ When approaching context limit:
     section (the standard's recognized optional section), using
     `- None (implementation followed plan)` when there were no deviations
 17. **Follow all 7 lint prevention rules** from lint-prevention-rules.md for every new declaration
+18. **Write `.orchestrator-handoff.json`** on every dispatch whose delegation context carries
+    `orchestrator_mode: true` (see the `.orchestrator-handoff.json` (orchestrator-mode dispatches)
+    subsection above)
 
 **MUST NOT**:
 1. Return JSON to the console
@@ -688,5 +709,5 @@ When approaching context limit:
 19. **Use underscores in declaration names** -- use lowerCamelCase per defsWithUnderscore linter
 20. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 21. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
-22. Write .orchestrator-handoff.json -- base-mode implementation never writes a handoff (see
-    Stage 7)
+22. Write `.orchestrator-handoff.json` when the delegation context does NOT carry
+    `orchestrator_mode: true`
