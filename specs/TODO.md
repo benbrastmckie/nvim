@@ -1,5 +1,5 @@
 ---
-next_project_number: 226
+next_project_number: 228
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 226
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224,226,227 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214,225 | 29,74,166,172,188,194,207,209,213,224 | core-agent-system, extensions, literature, ... |
 | 3 | 14,162,193,211,212,216,217,220 | 139,173,174,194,210,214 | core-agent-system, file-scope-lifecycle |
 | 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
@@ -68,6 +68,8 @@ next_project_number: 226
         └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 224 [NOT STARTED] — Add a tamper-resistant single-use /please grant, a push...
   └─ 225 [NOT STARTED] — Add the user-only /please command, its never-list, the...
+226 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -111,6 +113,58 @@ next_project_number: 226
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 227. Resolve source store target in deployed trees
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/rules/source-store-deploy-boundary.md and whatever deploy step is chosen to parameterize it (never .claude/**).
+
+DEFECT. The source-store boundary rule is UNFOLLOWABLE in every repository the system deploys into. Its "Correct Edit Target" section hard-codes `agent-system/extensions/**`, a path that exists only in this repository. In a consumer repo no such directory exists, so an agent obeying the rule has nowhere to write, and an agent ignoring it writes into the consumer's `.claude/`, which is gitignored and overwritten by the next deploy -- exactly the outcome the rule exists to prevent. Either way the rule fails closed on its own purpose.
+
+OBSERVED in ~/Projects/BimodalLogic, where `.claude/rules/source-store-deploy-boundary.md` is deployed verbatim and `/.claude` is gitignored. The rule's own "Known limitation" paragraph already names the adjacent blind spot: a PostToolUse hook "cannot know ... which repository the path belongs to". The rule text has the same blindness, one level up.
+
+THE RULE IS CORRECT IN SUBSTANCE. Do not weaken or delete the boundary. The defect is that it states an absolute path where it needs a repository-relative resolution.
+
+OPTIONS, EVALUATE DO NOT PRE-COMMIT:
+ (a) Make the target conditional in the rule text itself -- "if this repository contains agent-system/, edit there; otherwise the source store is external: do not edit .claude/**, report the needed change instead." Cheapest, no deploy-machinery change, but leaves the consumer agent with no filing mechanism.
+ (b) Have the deploy step rewrite the "Correct Edit Target" section with the real source-store location, which it knows at deploy time. Most precise, and gives the consumer agent an absolute path it can actually reach when the source store is a sibling checkout on the same machine.
+ (c) Scope the rule out of deployed trees entirely, keeping only the repository-independent agent-contract half.
+Consider also whether the consumer-side outcome should be a filed task rather than a silent report -- a consumer agent that discovers a source-store defect currently has no sanctioned channel to record it, which is how these get lost.
+
+COORDINATE, DO NOT DUPLICATE: the deploy-propagation and consumer-bootstrap tasks already in this topic own adjacent surface (stale deployed copies, and fresh-repo specs/ initialization respectively). This task owns only the rule's own target resolution.
+
+NOTE THE TWO TRAPS for whoever implements this: editing the deployed rule file in place is the very thing the rule forbids AND is wiped by the next deploy; and in a consumer repo `.claude/` is gitignored, so an in-place fix is also unreviewable. Check `.syncprotect` before assuming a local correction cannot survive sync.
+
+ACCEPTANCE. A deployed consumer tree's copy of the rule names a target an agent in that tree can actually act on, verified against at least one real consumer repository. The boundary's substance is unchanged: hand-authoring into a deployed `.claude/**` remains forbidden.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 226. Fix scoped commit dropping staged deletions
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**).
+
+DEFECT. git-commit-scoped.sh silently drops staged DELETIONS from a path-scoped commit. When a scoped commit's path set includes a removed file, the removal is left out of the resulting commit and remains staged afterwards, so it must be committed separately by hand. The additions and modifications in the same path set commit normally, so the failure is partial and easy to miss -- the script exits 0 and reports success.
+
+OBSERVED TWICE in one implementation run in ~/Projects/BimodalLogic (the lakefile.lean -> lakefile.toml migration): `git rm lakefile.lean` and the rename of a disabled CI workflow file both produced commits carrying the additions but not the corresponding deletions.
+
+INVESTIGATE FIRST, DO NOT PRESUPPOSE THE CAUSE. The likely mechanism is a pathspec or `git add`-based staging step that re-derives the commit contents from the working tree (where a deleted file no longer exists) rather than from the index, but confirm this against the script's actual staging sequence before changing it. Renames are the second case to check: git records a rename as a delete plus an add, so a scoped rename may commit half of itself even when both halves are inside the declared path set.
+
+ALSO IN SCOPE: decide what the script should do when a deletion falls OUTSIDE the declared path scope -- silently ignore it (current behaviour for out-of-scope paths generally) or refuse. The scoping contract exists to keep concurrent dispatches from absorbing each other's work, so quietly widening it is not acceptable; but neither is quietly narrowing a commit the caller believes is complete.
+
+ACCEPTANCE. A regression test covering three shapes -- a scoped commit containing only a deletion, one mixing a deletion with additions, and a rename whose halves are both in scope -- fails against the current script and passes after the fix. The deployed trees are refreshed so consumer repositories pick the fix up (note the standing propagation gap filed separately in this topic). shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 225. Add the user-only /please command, its never-list, the pr-prohibition exception and the CLAUDE.md command entry
 - **Status**: [NOT STARTED]
@@ -1251,6 +1305,31 @@ A written, evidence-backed recommendation exists naming the chosen posture, scor
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+
+=== ADDITIONAL EVIDENCE (2026-09-17, ~/Projects/BimodalLogic) ===
+THE SHARED-TREE POSTURE PRODUCED CROSS-TASK COMMIT MISATTRIBUTION, not merely a build collision.
+A four-task base-mode batch was admitted for concurrent implementation despite overlapping edit
+sets (docs/, typst/, CI_CD_PROCESS.md, sync-check-whitelist.txt). Three of the four dispatches
+committed files that still held a fourth dispatch's UNCOMMITTED rename edits, so git history now
+credits those changes to the wrong tasks. Unlike the earlier incident recorded against the
+base-mode territory task, nothing here was reverted and no build was mis-attributed -- the damage
+is permanent and silent, in the history itself.
+
+WHY THIS SHARPENS THE DECISION THIS TASK OWNS. Informing agents of each other (the territory
+work) would not have prevented this on its own: the colliding writes were correctly inside each
+task's own declared intent, and the misattribution happened at COMMIT time, when a path-scoped
+commit swept up a sibling's in-flight edits to the same path. That is a property of sharing one
+index and one working tree, which is precisely the posture this task is chartered to decide. Weigh
+it as evidence for the isolation option -- per-dispatch worktrees make the failure structurally
+impossible -- against the cost of N build directories, but do not treat it as decisive on its own.
+
+THIRD OPTION TO PRICE ALONGSIDE THE TWO ALREADY NAMED: pre-commit hunk-level ownership checks,
+i.e. keep the shared tree but refuse to commit a hunk in a path the committing task does not own.
+Cheaper than worktree isolation and it attacks the observed failure directly, but it needs a
+per-task ownership map finer than the current file_scope, which was too coarse for the collision
+gate to catch this batch at all. Coordinate with the file-scope-lifecycle tasks rather than
+re-deciding declaration granularity here.
+
 ---
 
 ### 198. Mandate git-snapshot --no-revert in the lean implementation agent contracts
@@ -1392,6 +1471,23 @@ MUST NOT. Do not make base-mode territory a hard-mode-only feature by another na
 ACCEPTANCE. A base-mode multi-task dispatch brief names its concurrent siblings and their declared file territory, and the territory.md contract is pulled in as it already is for hard mode. A fixture reproduces the observed batch shape -- two concurrent implement dispatches, one with a declared narrow scope and one with none -- and demonstrates the brief now carries what the agents lacked. The behaviour change is documented in the header contracts of both orchestrate-cycle-plan.sh and orchestrate-build-dispatch.sh. shellcheck clean per context/standards/shell-strict-mode.md.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+=== RECURRED (2026-09-17, ~/Projects/BimodalLogic, base mode, four-task batch) ===
+The 2026-09-08 incident recorded above repeated with a four-task base-mode batch whose members
+had overlapping edit sets (docs/, typst/, CI_CD_PROCESS.md, sync-check-whitelist.txt). No brief
+carried territory, none of the four knew the others existed, and three of them committed files
+still holding a fourth's uncommitted rename edits. Same missing channel, same shared tree, nine
+days later -- this is now a recurring failure, not a one-off.
+
+ONE NEW FACT WORTH CARRYING INTO THE DESIGN: the batch was ADMITTED for concurrent implementation
+even though the overlap was declarable in advance. The collision gate did not fire because the
+declared file_scope entries were too coarse to express it. That is the undeclared-scope half of
+this task (item 2) presenting in its second form -- not "no scope declared" but "scope declared at
+a granularity that cannot represent the collision." Both forms make a task invisible to the gate;
+this task's territory payload should be explicit about which granularity it carries, since a
+payload built from directory-root declarations would have told these four agents nothing useful
+even if it had been populated.
 
 ---
 
@@ -1651,6 +1747,31 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 - **Dependencies**: None
 
 **Description**: Close the taught-pattern gap that produced 22 unreapable poll loops during a multi-task /orchestrate run in ~/Projects/BimodalLogic. Investigation finding: the observed waiter shape `until grep -q "^EXIT=" <log>; do sleep ...; done` appears NOWHERE in this source store -- it is agent-improvised. Two forces create it: (a) the harness's own Bash guidance blocks foreground `sleep` and points agents at a Monitor until-loop to wait on a condition, and (b) extensions/lean/context/project/lean4/operations/long-builds.md mandates `Bash(run_in_background: true)` detachment for every `lake build` but offers no sanctioned way to BLOCK on a detached build -- its only stated discipline is 'wait for the harness completion notification', with four Passive progress checks explicitly labeled liveness-only. An agent that needs to block therefore invents an unbounded sentinel poll. The defect class: a poll loop whose exit condition is a sentinel written by a process that may die first has no bounded termination. In the observed run the agent-side wrapper was of the form `cmd > b2b.log 2>&1; echo "EXIT=$?" >> b2b.log`; when the guarded build was cancelled/superseded by lock contention with a concurrent session, the `echo` never ran, so the sentinel became unwritable by construction. 22 loops watched the same b2b.log (2 more watched b9b.log), aged 24-55 minutes, at 0% CPU -- the cost is background-shell-slot exhaustion and operator confusion, not throughput. Deliverable: a new core context pattern file (suggested agent-system/extensions/core/context/patterns/bounded-build-waiter.md) stating the defect class once, canonically, and defining a safe waiter with three mandatory properties -- (1) a hard timeout so the waiter cannot outlive its writer, (2) a writer-liveness check (`kill -0 <pid>`) rather than sentinel-polling alone, so a dead writer terminates the wait immediately, and (3) one-waiter-per-log enforcement, so a superseded build's waiter is reaped before a replacement waiter is spawned. Wire the new anchor into long-builds.md with a one-line pointer under a new section covering the blocking case (do NOT restate the model there -- follow the existing single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md). This task is foundational: it settles the waiter/writer contract that the guard-side, reaper-side, and agent-contract tasks all consume. Do not modify lake-build-guard.sh, claude-refresh.sh, or any agent file here -- those are separate dependent tasks.
+
+=== ADDITIONAL EVIDENCE (2026-09-17, ~/Projects/BimodalLogic) ===
+A SECOND, DISTINCT SYMPTOM OF THE SAME GAP: the agent does not spin an unbounded poll loop -- it
+ENDS ITS TURN. In one multi-task /orchestrate batch, two lean-implementation-agent dispatches
+stopped mid-phase with the reported reasons "waiting for lake build" and "Monitor is already
+watching", and both had to be manually resumed. Ending the turn ends the dispatch, so this costs
+a full re-dispatch cycle rather than a background-shell slot.
+
+WHY THIS BELONGS HERE AND NOT WITH THE FAN-OUT/TERMINAL-STATUS WORK: the fan-out task in this
+topic covers a dispatch that RETURNS while children run, and the marker/reality divergence that
+follows. This is the blocking-wait case -- an agent with no sanctioned way to block on a detached
+build, choosing to stop instead of to poll. Both the improvised unbounded poll recorded above and
+this turn-ending stop are the SAME missing affordance expressed two ways: long-builds.md mandates
+detachment and offers no blocking idiom, so the agent picks one of the two bad options available
+to it. The bounded waiter defined by this task is the affordance that removes both. Note also the
+"Monitor is already watching" case specifically -- the one-waiter-per-log property this task
+already requires must define what a SECOND would-be waiter does when a log is already watched
+(attach, or fail loudly), because "stop and hand back" is evidently the current default.
+
+CONTRACT HALF STAYS WITH THE DEPENDENT TASKS. The explicit MUST-NOT against ending a turn on a
+background wait, and any postflight detection of a stop without a handoff or .return-meta.json,
+belong in the agent-contract and guard tasks that depend on this one -- consistent with this
+task's existing instruction not to touch agent files. This task still owns only the canonical
+pattern file and the long-builds.md pointer; it should now state the turn-ending case alongside
+the unbounded-poll case so the dependents have one anchor to cite for both.
 
 ---
 
