@@ -42,7 +42,7 @@ next_project_number: 235
   └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
   └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive...
   └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:... (see above)
-206 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+206 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
   └─ 226 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
     └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
@@ -1049,11 +1049,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 206. Fix test fixtures missing task lookup lib
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: general
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md]
+- **Plan**: [206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

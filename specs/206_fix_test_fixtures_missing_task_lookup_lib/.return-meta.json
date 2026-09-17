@@ -1,33 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 206,
-  "session_id": "sess_1789687584_deac58_206",
-  "dispatch_seq": 3,
-  "findings_count": 4,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md",
-      "summary": "Root-causes and experimentally-verified fixes for both remaining red suites (missing task-lookup-lib.sh in test-postflight-deploy-gate.sh's REQUIRED_LIBS; a false-positive in lint-json-channel-discipline.sh's check_emit_perline redirect exclusion), plus a full item-(d) audit finding two more fixtures (test-handoff-dispatch-identity.sh, test-git-commit-scoped.sh) with the same missing-lib gap, both currently dormant rather than red."
+      "type": "plan",
+      "path": "specs/206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md",
+      "summary": "5-phase plan fixing the missing task-lookup-lib.sh fixture entry, the lint check_emit_perline variable-redirect false positive, new lint regression coverage, two dormant audit-gap fixtures, and full shellcheck/redeploy verification."
     }
   ],
+  "next_steps": "Run /implement 206 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1, 2, 4], [3], [5]],
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core/scripts/tests/, a fixture that copies task-lock.sh (or any script with an unconditional `source lib/X.sh`, no `[ -f ]` guard) via an explicit REQUIRED_LIBS-style array must include every lib that unconditionally-sourced script itself sources, or the fixture silently breaks even if the missing lib is unrelated to what the test is actually exercising. Contrast with skill-base.sh's soft-guarded sourcing of the same lib (`if [ -f ... ]; then source; else WARNING fallback; fi`), which degrades gracefully instead. When auditing for this class of gap, check not just whether a suite is currently red, but whether a --dry-run flag or similar is masking a code path that would otherwise execute the unconditionally-sourced script.",
+      "content": "In this repo's core shell test suites, fixtures that build a minimal .claude/scripts tree from an EXPLICIT lib name list are a recurring breakage class: when a production script (e.g. task-lock.sh) gains a new unconditional `source lib/<new>.sh`, every explicit-list fixture that copies that script silently loses it and fails at load time, while wholesale `lib/*.sh` copy fixtures are immune by construction. Audit approach that worked: classify each candidate suite into five buckets -- wholesale copy (safe), explicit list already complete, no fixture copy at all (script sourced from its real location), static-analysis-only (bash -n/grep, never executed), and genuine gap. Note that many lib lists span shell continuation lines, so a naive single-line grep under-reports both completeness and gaps. Gaps can be dormant rather than red (e.g. a suite that only ever runs the SUT with --dry-run never reaches the subprocess that sources the missing lib), so redness is not a reliable detector -- structural audit is.",
       "category": "PATTERN",
-      "source_artifact": "specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md",
+      "source_artifact": "specs/206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md",
       "confidence": 0.75,
-      "suggested_keywords": ["shell-test-fixtures", "task-lock.sh", "explicit-lib-list", "unconditional-source", "dormant-gap"]
-    },
-    {
-      "content": "lint-json-channel-discipline.sh's check_emit_perline() heuristic (per-line EMIT direction) excludes only >&2, >&3, and $(...)-captured lines when collecting stdout-write candidates -- it does not recognize a generic `> \"$var\"` file redirect, causing a false-positive VIOLATION on any line that writes to a temp file via a variable-named path. Fix: add `grep -vE '>[[:space:]]*\"?\\$\\{?[A-Za-z_]'` to the exclusion pipeline (scoped to variable-named redirect targets, conservative by design). Verified this does not weaken detection of genuine multi-write violations.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["lint-json-channel-discipline", "shell-lint", "false-positive", "redirect-detection", "check_emit_perline"]
+      "suggested_keywords": ["shell-test-fixtures", "explicit-lib-list", "task-lookup-lib", "dormant-test-gap", "fixture-audit", "unconditional-source"]
     }
   ],
-  "next_steps": "Run /plan 206 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1789687584_deac58_206",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 11
 }
