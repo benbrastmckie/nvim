@@ -262,21 +262,21 @@ the report's per-agent count command scoped to `agent-system/extensions/founder/
 
 ---
 
-### Phase 4: Present and Filetypes Rollout (13 agents) [NOT STARTED]
+### Phase 4: Present and Filetypes Rollout (13 agents) [COMPLETED]
 
 **Goal**: Add the canonical block to every zero-count `present` and `filetypes` agent, including the
 two router agents that themselves sub-dispatch.
 
 **Tasks**:
-- [ ] Resolve each agent's phase variant from the `present` / `filetypes` manifests' `routing_agents`
+- [x] Resolve each agent's phase variant from the `present` / `filetypes` manifests' `routing_agents`
       blocks. `present`'s `critique` key is **not** a `dispatch[]` phase — `slide-critic-agent` stays
-      out of scope and must not be edited.
-- [ ] Insert the matching canonical variant per file.
-- [ ] For `filetypes-router-agent.md` and `presentation-agent.md`, add one sentence clarifying that
+      out of scope and must not be edited. *(confirmed: slide-critic-agent untouched)*
+- [x] Insert the matching canonical variant per file. *(completed)*
+- [x] For `filetypes-router-agent.md` and `presentation-agent.md`, add one sentence clarifying that
       the obligation is the router's own, and that its second-level sub-dispatches
       (`document-agent`, `spreadsheet-agent`, `pptx-assembly-agent`) receive no `orchestrator_mode`
       and write no handoff.
-- [ ] Commit per file as a green sub-step.
+- [x] Commit per file as a green sub-step. *(13 commits)*
 
 **Timing**: 1.25 hours
 

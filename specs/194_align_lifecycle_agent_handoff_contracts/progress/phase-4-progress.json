@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Present and Filetypes Rollout (13 agents)",
+  "started_at": "2026-09-17T00:50:00Z",
+  "last_updated": "2026-09-17T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert canonical block (incl. router sub-dispatch clause) into all 13 present/filetypes agents", "status": "done", "files_touched": [
+      "agent-system/extensions/present/agents/budget-agent.md",
+      "agent-system/extensions/filetypes/agents/docx-edit-agent.md",
+      "agent-system/extensions/filetypes/agents/filetypes-router-agent.md",
+      "agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md",
+      "agent-system/extensions/present/agents/funds-agent.md",
+      "agent-system/extensions/present/agents/grant-agent.md",
+      "agent-system/extensions/filetypes/agents/presentation-agent.md",
+      "agent-system/extensions/filetypes/agents/scrape-agent.md",
+      "agent-system/extensions/filetypes/agents/sheet-agent.md",
+      "agent-system/extensions/present/agents/slide-planner-agent.md",
+      "agent-system/extensions/present/agents/slides-research-agent.md",
+      "agent-system/extensions/present/agents/slidev-assembly-agent.md",
+      "agent-system/extensions/present/agents/timeline-agent.md"
+    ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
