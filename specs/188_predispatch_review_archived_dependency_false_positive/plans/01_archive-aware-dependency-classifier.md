@@ -295,26 +295,44 @@ genuinely absent dependency still reports loudly.
 
 ---
 
-### Phase 5: Deploy regeneration and live acceptance [NOT STARTED]
+### Phase 5: Deploy regeneration and live acceptance [COMPLETED]
 
 **Goal**: The deployed `.claude/` copy reproduces both acceptance outcomes.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (default, no flag — the non-destructive
-      resync mode; do NOT pass `--wipe`).
-- [ ] Confirm the deployed copy carries the fix:
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (default, no flag — the non-destructive
+      resync mode; do NOT pass `--wipe`). *(completed: deploy landed. RESULT=landed_verify_red
+      (exit 3) rather than the expected exit 0 -- see deviation note below)*
+- [x] Confirm the deployed copy carries the fix:
       `diff agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh .claude/scripts/orchestrate-predispatch-review.sh`
-      reports no differences.
-- [ ] Acceptance check 1: run
+      reports no differences. *(completed: diff is empty)*
+- [x] Acceptance check 1: run
       `bash .claude/scripts/orchestrate-predispatch-review.sh <candidates>` over a candidate set
       whose dependencies point at archived tasks, and confirm zero `nonexistent` findings and
-      `archived_satisfied` classification for those edges.
-- [ ] Acceptance check 2: against a synthetic state file (or a candidate carrying a synthetic
+      `archived_satisfied` classification for those edges. *(completed: ran against all 53 live
+      `active_projects[]` candidates -- 24 real archived-satisfied edges found (incl. this task's
+      own #188 depends on #197), 0 nonexistent findings)*
+- [x] Acceptance check 2: against a synthetic state file (or a candidate carrying a synthetic
       dependency number present in neither `active_projects[]` nor `specs/archive/state.json`),
-      confirm `nonexistent` still fires loudly.
-- [ ] Re-run the test suite from the deployed tree
+      confirm `nonexistent` still fires loudly. *(completed: synthetic sandbox on the deployed
+      copy -- #999 depends on #999999 renders "nonexistent")*
+- [x] Re-run the test suite from the deployed tree
       (`bash .claude/scripts/tests/test-orchestrate-predispatch-review.sh`) and confirm it
-      passes there too.
+      passes there too. *(completed: 21 passed, 0 failed)*
+
+**Deviation (deploy-headless.sh exit code)**: `deploy-headless.sh` returned exit 3
+(`RESULT=landed_verify_red`), not the expected exit 0. The deploy itself landed cleanly (the
+`diff` check above is empty) and both acceptance checks plus the deployed test suite pass. The
+non-zero exit comes from `verify-deploy.sh`'s check 20 (`measure-eager-context.sh --check` +
+per-file ceilings), which reports `[FAIL] eager-load total (65198 B) exceeds recorded baseline
+(64450 B)` and `[WARN] commands/orchestrate.md exceeds its configured ceiling`. Neither is
+caused by this task: `measure-eager-context.sh --check`'s own eager-file enumeration does not
+include `context/patterns/batch-orchestration-guardrails.md` (the only content file this task
+touches outside `scripts/`), and `git status --short` confirms this task never touched
+`CLAUDE.md`, any `merge-sources/**` file, or any `rules/**` file -- the three channels that sum
+to the reported 65198 B. This is pre-existing/concurrent drift in the orchestrator context
+budget, out of this task's scope and plan, observed rather than fixed here per the
+observation-duty contract.
 
 **Timing**: 0.5 hours
 
