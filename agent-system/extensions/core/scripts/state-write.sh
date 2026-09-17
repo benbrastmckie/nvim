@@ -153,9 +153,41 @@ JQ_ARGS=()
 # `jq --slurpfile` instead, with the caller's own $NAME reference resolved unchanged by an
 # EFFECTIVE_FILTER prefix built below -- no existing or future --argjson call site has to change.
 SPILL_THRESHOLD=100000
-SPILL_FILES=()          # mktemp paths this process created; removed by cleanup() below
+SPILL_FILES=()          # mktemp paths this process created; removed by cleanup() below. A
+                         # caller-supplied --argjson-file PATH must NEVER enter this array -- see
+                         # SPILL_SEQ below for why that matters.
 SPILL_PRIVATE_NAMES=()  # jq --slurpfile binding names, e.g. __spill_0
 SPILL_PUBLIC_NAMES=()   # the caller's original NAME for each spilled binding, e.g. NAME
+SPILL_SOURCES=()        # human-readable origin of each spilled binding (parallel to
+                         # SPILL_PUBLIC_NAMES/SPILL_PRIVATE_NAMES), used only for the
+                         # duplicate-NAME error message below
+# Explicit shared counter for private-name allocation, advanced by BOTH spill branches on every
+# spill regardless of kind. Deliberately NOT derived from ${#SPILL_FILES[@]} (the historical bug:
+# the --argjson-file branch never mktemps anything, so it never appended to SPILL_FILES, and its
+# private_name="__spill_${#SPILL_FILES[@]}" computation therefore stayed on __spill_0 forever --
+# every --argjson-file binding collided, and jq's duplicate---slurpfile first-wins semantics
+# silently substituted the first spilled value for every later one). SPILL_SEQ is a separate
+# scalar so the two concerns -- "how many private names have been allocated" vs. "which mktemp
+# paths this process owns and must rm" -- can never be conflated again.
+SPILL_SEQ=0
+
+# check_spill_name_unique NAME SOURCE_DESC
+# Hard-fails (exit 1) if NAME was already spilled earlier in THIS invocation, naming the NAME and
+# both conflicting sources -- called by BOTH spill branches, before allocation, so a duplicate
+# spilled public NAME can never reach EFFECTIVE_FILTER's `as $NAME` prefix chain as a silent
+# last-write-wins. `set -u`-safe against an empty SPILL_PUBLIC_NAMES (checks length before
+# expanding the array), matching this script's existing SPILL_FILES-length-check idiom.
+check_spill_name_unique() {
+  local candidate="$1" source_desc="$2" idx
+  if [ "${#SPILL_PUBLIC_NAMES[@]}" -gt 0 ]; then
+    for idx in "${!SPILL_PUBLIC_NAMES[@]}"; do
+      if [ "${SPILL_PUBLIC_NAMES[$idx]}" = "$candidate" ]; then
+        echo "Error: duplicate spilled binding NAME '$candidate' -- already spilled from ${SPILL_SOURCES[$idx]}, and now again from $source_desc. A NAME may be spilled (via an oversized --argjson value or --argjson-file) at most once per invocation." >&2
+        exit 1
+      fi
+    done
+  fi
+}
 
 usage() {
   echo "Usage: $0 <jq-filter> --session-id SID [--state-file PATH] [--init] [--arg NAME VALUE]... [--argjson NAME VALUE]... [--argjson-file NAME PATH]... [--regen-todo] [--dry-run]" >&2
@@ -197,16 +229,19 @@ while [ "$#" -gt 0 ]; do
         exit 1
       fi
       if [ "${#3}" -gt "$SPILL_THRESHOLD" ]; then
+        check_spill_name_unique "$2" "an oversized --argjson value"
         spill_file=$(mktemp "$TMP_DIR/state-write-spill.XXXXXX") || {
           echo "Error: failed to create private spill file under $TMP_DIR" >&2
           exit 1
         }
         printf '%s' "$3" > "$spill_file"
-        private_name="__spill_${#SPILL_FILES[@]}"
+        private_name="__spill_${SPILL_SEQ}"
+        SPILL_SEQ=$((SPILL_SEQ + 1))
         JQ_ARGS+=(--slurpfile "$private_name" "$spill_file")
         SPILL_FILES+=("$spill_file")
         SPILL_PRIVATE_NAMES+=("$private_name")
         SPILL_PUBLIC_NAMES+=("$2")
+        SPILL_SOURCES+=("an oversized --argjson value")
       else
         JQ_ARGS+=(--argjson "$2" "$3")
       fi
@@ -223,10 +258,16 @@ while [ "$#" -gt 0 ]; do
         usage
         exit 1
       fi
-      private_name="__spill_${#SPILL_FILES[@]}"
+      check_spill_name_unique "$2" "--argjson-file path '$3'"
+      # NOTE: the caller-supplied PATH ("$3") is intentionally NEVER appended to SPILL_FILES --
+      # this branch mktemps nothing, the caller owns the file, and cleanup()'s
+      # `rm -f "${SPILL_FILES[@]}"` must never delete a caller's own file.
+      private_name="__spill_${SPILL_SEQ}"
+      SPILL_SEQ=$((SPILL_SEQ + 1))
       JQ_ARGS+=(--slurpfile "$private_name" "$3")
       SPILL_PRIVATE_NAMES+=("$private_name")
       SPILL_PUBLIC_NAMES+=("$2")
+      SPILL_SOURCES+=("--argjson-file path '$3'")
       shift 3
       ;;
     --regen-todo)

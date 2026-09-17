@@ -198,27 +198,29 @@ is genuinely over `SPILL_THRESHOLD`), not evidence the bug is absent.
 
 ---
 
-### Phase 2: Repair spill-name allocation and add the duplicate-NAME guard [NOT STARTED]
+### Phase 2: Repair spill-name allocation and add the duplicate-NAME guard [COMPLETED]
 
 **Goal**: Both spill branches allocate distinct private names from one shared explicit counter,
 and a duplicate spilled public NAME hard-fails loudly.
 
 **Tasks**:
-- [ ] Introduce `SPILL_SEQ=0` alongside the existing `SPILL_FILES`/`SPILL_PRIVATE_NAMES`/
+- [x] Introduce `SPILL_SEQ=0` alongside the existing `SPILL_FILES`/`SPILL_PRIVATE_NAMES`/
       `SPILL_PUBLIC_NAMES` declarations, with a comment stating why it is separate from
-      `SPILL_FILES` (cleanup ownership vs. name allocation are different concerns).
-- [ ] In the `--argjson` auto-spill branch: replace `private_name="__spill_${#SPILL_FILES[@]}"`
+      `SPILL_FILES` (cleanup ownership vs. name allocation are different concerns). *(completed)*
+- [x] In the `--argjson` auto-spill branch: replace `private_name="__spill_${#SPILL_FILES[@]}"`
       with allocation from `SPILL_SEQ`, incrementing it. Leave the `SPILL_FILES+=("$spill_file")`
-      append exactly as-is — it still owns cleanup of the `mktemp`-ed file.
-- [ ] In the `--argjson-file` branch: replace the identical expression with the same
-      `SPILL_SEQ`-based allocation. Do NOT append the caller's PATH to `SPILL_FILES`.
-- [ ] Add a duplicate-public-NAME check reached by both branches before allocation: if the incoming
+      append exactly as-is — it still owns cleanup of the `mktemp`-ed file. *(completed)*
+- [x] In the `--argjson-file` branch: replace the identical expression with the same
+      `SPILL_SEQ`-based allocation. Do NOT append the caller's PATH to `SPILL_FILES`. *(completed)*
+- [x] Add a duplicate-public-NAME check reached by both branches before allocation: if the incoming
       NAME already appears in `SPILL_PUBLIC_NAMES`, print an error to stderr naming the NAME and
       both conflicting sources and exit non-zero. Use the file's existing `if`-guarded idiom so it
-      is `set -euo pipefail`-safe.
-- [ ] Update the `--argjson-file` branch comment and any header/usage prose that describes
+      is `set -euo pipefail`-safe. *(completed: `check_spill_name_unique`, called by both
+      branches before allocation; names the NAME and both sources via a new `SPILL_SOURCES`
+      parallel array)*
+- [x] Update the `--argjson-file` branch comment and any header/usage prose that describes
       spill-name allocation, so the invariant ("one counter, both branches; `SPILL_FILES` is
-      cleanup-only") is stated where the next reader will look.
+      cleanup-only") is stated where the next reader will look. *(completed)*
 
 **Timing**: 45 minutes
 
