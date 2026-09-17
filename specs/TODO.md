@@ -30,8 +30,8 @@ next_project_number: 235
     └─ 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-188 [RESEARCHED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-194 [NOT STARTED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
+188 [PLANNING] — Fix orchestrate-predispatch-review.sh Class A false positive:...
+194 [RESEARCHING] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
     └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
@@ -39,14 +39,14 @@ next_project_number: 235
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
   └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive...
   └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:... (see above)
-200 [NOT STARTED] — Close the consumer-repo deploy propagation gap that leaves...
-206 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+200 [RESEARCHING] — Close the consumer-repo deploy propagation gap that leaves...
+206 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-209 [NOT STARTED] — Set up a fresh repo specs/ state and runtime-file ignore...
+209 [RESEARCHING] — Set up a fresh repo specs/ state and runtime-file ignore...
   └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
   └─ 210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
     └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
-213 [NOT STARTED] — Fix forced /orchestrate phases: pass focus text through, stop...
+213 [RESEARCHING] — Fix forced /orchestrate phases: pass focus text through, stop...
   └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
     └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
     └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
@@ -55,10 +55,10 @@ next_project_number: 235
     └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
-226 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+226 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
-234 [NOT STARTED] — Fix the state-write.sh spill-name collision that silently...
+234 [RESEARCHED] — Fix the state-write.sh spill-name collision that silently...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -101,10 +101,11 @@ next_project_number: 235
 ## Tasks
 
 ### 234. Fix the state-write.sh spill-name collision that silently discards every --argjson-file binding after the first
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -200,7 +201,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 226. Fix scoped commit dropping staged deletions
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -440,7 +441,7 @@ AMENDMENT (2026-09-14). A follow-on task (this task now depends on it) makes the
 ---
 
 ### 213. Fix forced /orchestrate phases: pass focus text through, stop after the last forced phase, reset the cycle bound per run, admit by artifact
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -747,7 +748,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 209. Set up a fresh repo specs/ state and runtime-file ignore rules automatically
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1038,7 +1039,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 206. Fix test fixtures missing task lookup lib
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: general
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1226,7 +1227,7 @@ second should make sure all three entries read as a coherent set.
 ---
 
 ### 200. Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1376,7 +1377,7 @@ re-deciding declaration granularity here.
 ---
 
 ### 194. Align lifecycle agent contracts on .orchestrator-handoff.json writing
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1493,7 +1494,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 188. Predispatch review archived dependency false positive
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 197
@@ -2846,6 +2847,3 @@ function, and no .opencode/ file is deleted.
 SOURCE-STORE RULE (binding): edit lua/** for the Lua emitter and agent-system/extensions/** for
 the JSON fragments; never edit .claude/**.
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
----
-
