@@ -1,5 +1,5 @@
 ---
-next_project_number: 228
+next_project_number: 234
 ---
 
 # TODO
@@ -11,12 +11,12 @@ next_project_number: 228
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224,226,227 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214,225 | 29,74,166,172,188,194,207,209,213,224 | core-agent-system, extensions, literature, ... |
-| 3 | 14,162,193,211,212,216,217,220 | 139,173,174,194,210,214 | core-agent-system, file-scope-lifecycle |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224,226,227,228,229 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214,225,230,231 | 29,74,166,172,188,194,207,209,213,224,228,229 | core-agent-system, extensions, literature, ... |
+| 3 | 14,162,193,211,212,216,217,220,232 | 139,173,174,194,210,214,230,231 | core-agent-system, file-scope-lifecycle |
 | 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
 | 5 | 140,165,170,219 | 139,163,164,206,215,218 | core-agent-system, file-scope-lifecycle |
-| 6 | 190 | 165 | core-agent-system |
+| 6 | 190,233 | 165,231 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -70,6 +70,14 @@ next_project_number: 228
   └─ 225 [NOT STARTED] — Add the user-only /please command, its never-list, the...
 226 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
+  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,...
+    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the...
+    └─ 233 [NOT STARTED] — Infer missing dependency edges from overlapping filescope...
+229 [NOT STARTED] — Carry a reason on each dependency edge so a hard ordering...
+  └─ 230 [NOT STARTED] — Decide and implement the disposition for dependency edges...
+    └─ 232 [NOT STARTED] — Surface dependency-graph health metrics alongside the... (see above)
+  └─ 231 [NOT STARTED] — Establish a post-creation-burst dependency-analysis pass,... (see above)
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -113,6 +121,189 @@ next_project_number: 228
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 233. Infer missing dependency edges from overlapping file_scope declarations, consuming the absent-scope ruling rather than re-deciding granularity
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 231, Task 165
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+GAP. Two tasks whose declared file_scope entries overlap must be serialized, but no pass infers that edge from the declarations themselves outside the narrow cases already covered. The missing edge is the dangerous one: it licenses concurrency that should not happen, and it fails silently, because nothing reports a constraint nobody wrote down.
+
+WHAT IS ALREADY COVERED, SO THIS TASK DOES NOT REBUILD IT. Per context/patterns/multi-task-operations.md's "File Footprint Overlap as a Serialization Edge": SAME-BATCH overlap (tasks created together in one run) already writes a real dependencies[] edge at creation time via Multi-Task Creation Standard Component 4a, using the shared predicate in context/patterns/file-footprint-overlap.md. CROSS-BATCH overlap is deferred at dispatch by the runtime wave-split check in orchestrate-cycle-plan.sh step 4.5, and PERSISTING that specific already-detected edge is the sibling post-burst-pass task's job, not this one's. What remains, and what this task owns, is inference over the declared corpus as a whole: overlaps between tasks that were never created together and have never yet been co-dispatched, which therefore no existing mechanism has ever compared.
+
+MOTIVATING EVIDENCE (recorded 2026-09-17 in this repository's specs). A four-task base-mode batch was admitted for concurrent implementation despite overlapping edit sets, and three dispatches committed files still holding a fourth's uncommitted work, so git history credits those changes to the wrong tasks. The admission gate saw no conflict because no edge said there was one. That incident has a downstream half -- the working-tree isolation posture -- which is owned elsewhere and is explicitly NOT this task. Graph hygiene is the upstream half, and edge inference is the specific upstream mechanism.
+
+WHY THIS CANNOT BE BUILT BEFORE THE ABSENT-SCOPE POSTURE IS RULED. This task consumes the file-scope-lifecycle topic's ruling and does not re-decide any part of it. The standing recorded evidence is that file_scope today is TOO COARSE to carry this weight, and the 2026-09-17 incident is itself an instance: the batch was admitted because the declared entries were directory-root declarations that could not express the collision, not because no scope was declared. An inference pass built on that granularity would produce edges between every pair of tasks declaring the same directory root -- serializing most of the graph and being switched off within days -- while still missing the collisions that matter. The dependency on the absent-scope admission posture is therefore load-bearing, not procedural, and it transitively covers the declaration-granularity and backfill work that posture itself depends on, which is why it is the single external edge here rather than four.
+
+DECIDE -- DO NOT PRE-COMMIT. Whether an inferred overlap should GENERATE an implicit edge (written into dependencies[], visible thereafter to every reader, at the risk of a wrong inference becoming permanent structure a human must now argue with) or merely WARN (leaving the graph untouched and the human deciding, at the risk that nobody acts and nothing changes). Note that the same question is answered for the pass as a whole by the sibling post-burst task; this task's answer must be CONSISTENT with that one or must state plainly why inference specifically warrants a different posture than the pass's other checks. Two different answers arrived at independently would be exactly the incoherence this topic exists to remove. Also decide the granularity at which the predicate operates, WITHIN whatever the absent-scope ruling permits -- and if that ruling leaves the granularity still too coarse for reliable inference, the correct outcome of this task is to say so in writing and implement the warn-only form, not to ship an inference that cannot be trusted.
+
+REUSE, DO NOT DUPLICATE. The overlap predicate lives once, in context/patterns/file-footprint-overlap.md, and is used by all three existing admission layers. This task consumes it. A second overlap implementation for inference would be two divergent answers to one question.
+
+OUT OF SCOPE. The working-tree and build isolation posture for concurrent dispatches, owned elsewhere -- this task does not touch it, and must not be read as an alternative to it. Carrying sibling territory in dispatch briefs, owned elsewhere. file_scope declaration granularity, backfill, and the absent-scope admission posture, all owned by the file-scope-lifecycle topic and CONSUMED here, never re-decided. Establishing the analysis pass itself, its home, and its propose-versus-write posture, all owned by the sibling task this one depends on. Persisting the runtime wave-split check's already-detected cross-batch edge, also that sibling's. Terminal edges and transitive redundancy, owned by other siblings in this topic.
+
+ACCEPTANCE. Inference over the declared corpus is folded into the established pass rather than standing as a separate surface, and reuses the shared overlap predicate with no second implementation. The chosen generate-versus-warn posture is recorded as a decision with its consistency against the pass's overall posture stated explicitly. The pass is run against the live corpus and its output is triaged by hand, with the true-positive and false-positive counts recorded -- a pass whose false-positive rate makes it unusable at the granularity the absent-scope ruling permits is a legitimate and well-documented outcome, and must be reported as such rather than tuned into silence. The 2026-09-17 four-task batch is used as a fixture: the pass must state, against whatever granularity is then available, whether it would or would not have produced the missing edge, and if it would not, why. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 232. Surface dependency-graph health metrics alongside the computed wave schedule
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 228, Task 230, Task 231
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+GAP. scripts/generate-task-order.sh computes the wave schedule -- Kahn's BFS over the dependency edges, ~lines 391-450, with a cycle fallback that parks unassigned tasks in a placeholder wave 99 -- and renders a wave table into TODO.md. It never measures the graph's QUALITY. Wave membership is reported; nothing reports whether the graph that produced it is healthy, and so nothing ever prompts a human to fix it.
+
+WHY THIS MATTERS OPERATIONALLY. Once batching is the documented default, the human choosing a batch needs a reason to choose one grouping over another, and the only durable source of that reason is the graph's own measured shape. A wave table alone does not tell anyone that six tasks are orphans, that one chain is eleven deep, or that wave 1 is three tasks wide against a concurrency cap of ten.
+
+CANDIDATE METRICS -- EVALUATE AND SELECT, DO NOT PRE-COMMIT TO THE FULL SET. Each is listed with the specific judgment it supports, because a metric nobody acts on is noise:
+  - ORPHAN TASKS: tasks with no inbound and no outbound edges. Distinguish the genuinely independent task (fine, and common) from the task whose author simply never declared anything (a defect). Whether that distinction is even derivable is part of the evaluation; if it is not, say so rather than shipping a count that conflates the two.
+  - CRITICAL-PATH LENGTH: the longest chain, which bounds the minimum number of waves and therefore the wall-clock floor for draining the graph. Actionable when it is long and its edges are soft.
+  - WAVE-1 WIDTH VERSUS AVAILABLE CONCURRENCY: how many tasks could dispatch immediately, against the MAX_TASKS batch-size cap. Directly answers "is my graph starving concurrency or saturating it".
+  - TERMINAL-EDGE RATIO: the share of edges pointing at archived targets, which the sibling task in this topic measures at 31 percent today and rules a disposition for.
+Also decide WHERE the metrics surface: the TODO.md Task Order section (visible to every reader, at the cost of permanent screen real estate for numbers that rarely change), a separate report mode, or both. And decide whether any metric should WARN at a threshold, noting that a threshold nobody tuned becomes a permanently-red indicator that readers learn to ignore.
+
+WHY THIS DEPENDS ON THE TERMINAL-EDGE DISPOSITION. This is a correctness dependency, not sequencing preference. With 31 percent of edges pointing at archived, permanently-satisfied targets, a critical path computed over today's graph traverses dead edges and reports a chain length that does not exist, and wave widths are computed against constraints that no longer constrain anything. Every metric above is wrong by an unknown margin until that disposition is settled. Publishing wrong numbers is worse than publishing none, because a metric is acted on.
+
+THE WAVE-1-WIDTH CAVEAT IS A DELIVERABLE, NOT AN OMISSION. Wave-1 width computed from declared edges is an UPPER BOUND on safe concurrency, not the achievable figure: the runtime wave-split check in orchestrate-cycle-plan.sh step 4.5 compares file_scope pairwise before dispatching a wave of 2 or more and defers on an undeclared overlap, so actual dispatch width can be lower than reported width. Dispatch remains safe regardless -- the runtime check is what makes it so -- but the REPORTED number is optimistic. The metric must carry that caveat where it is rendered. This is why this task does not depend on the sibling post-burst pass for correctness: persisting cross-batch overlap edges will tighten the bound, but the bound is honest in the meantime once the caveat is stated. Do not silently ship the number without it.
+
+DEPENDENCY ON THE BATCH-SELECTION DOC IS TERRITORIAL AND SEMANTIC BOTH. The wave-1-width figure feeds back into the batch-selection criteria, so this task edits the canonical batch-selection document that the sibling doc task establishes. The sibling post-burst-pass task edits that same document to point at its pass; the edge from this task to that one exists for exactly that reason, and is itself an instance of the serialization this topic is about -- two tasks editing one document with no edge between them would be admitted concurrently and would collide.
+
+OUT OF SCOPE. Changing wave computation itself: this task measures the schedule, it does not alter it. Cycle detection, already present at generate-task-order.sh ~line 448 and in validate-state.sh Check D3. Adding, inferring, or pruning edges -- every sibling task in this topic owns a piece of that and this one owns none of it. Any admission or dispatch behaviour change: a metric must never become a gate.
+
+ACCEPTANCE. The selected metrics are computed and rendered at the decided location, each one paired in the written rationale with the judgment it supports. The wave-1-width rendering carries the upper-bound caveat. Metrics are recomputed after the terminal-edge disposition lands, and the before-and-after figures are recorded so the effect of that cleanup is visible. TODO.md regeneration remains idempotent and its existing sections are unchanged in shape. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 231. Establish a post-creation-burst dependency-analysis pass, extending the existing pre-dispatch review rather than forking it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 228, Task 229
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. Dependencies are declared task-by-task at creation time, when the author can see one task and not the graph, and nothing ever revisits them. There is no moment at which the graph as a whole is examined. The dangerous direction of error is the MISSING edge, not the wrong one: a missing edge is what licenses concurrency that should not happen, and it fails silently by construction, because a graph cannot report a constraint nobody wrote down.
+
+THE UNHOUSED MOMENT. A /review or /fix-it sweep files ten tasks in one run, each declaring dependencies against only what its author happened to recall at the moment it was written. Nothing then looks at the ten together. The pre-batch moment, by contrast, ALREADY HAS A HOME -- see the next paragraph -- so this task's centre of gravity is the post-creation-burst pass.
+
+WHAT ALREADY EXISTS -- EXTEND IT, NEVER FORK IT. scripts/orchestrate-predispatch-review.sh is a shared pre-dispatch REVIEW stage invoked from commands/orchestrate.md (~line 154) before STAGE 0 discards out-of-batch edges. It reports five classes: A raw dependency-edge classification (intra_batch / out_of_batch_live / out_of_batch_terminal / nonexistent), B literal-null metadata, C self-modification and declaration coarseness, D missing cross-batch serializing edges, E session-registry contention. Its header is explicit that it is a REVIEW stage and never a fifth admission gate: it never excludes, never defers, and never writes to state.json on its default path. Any pre-batch check this task adds belongs in that script, in that register. Duplicating its classes into a new surface would produce two divergent classifiers for one question, which is the defect this topic exists to remove.
+
+DECIDE THE HOME FOR THE POST-BURST PASS -- DO NOT PRE-COMMIT. Candidates: a new command; a mode on an existing one (`/task --sync` already validates integrity and regenerates TODO.md, and `/todo` already touches dependency arrays at archival); or a lifecycle hook that fires when a creating command files more than one task in a run. Weigh discoverability against the risk that a hook makes a slow analysis pass run at a moment nobody asked for it. ALSO DECIDE, separately and explicitly: does the pass PROPOSE edges for a human to accept, or WRITE them? Propose-only is consistent with predispatch-review's report-only posture and with this system's defer-not-fail default; auto-write is what actually closes the silent-concurrency hole, since a proposal nobody reads changes nothing. Do not pre-commit on either question.
+
+THE CHECKS THIS TASK OWNS.
+  1. TRANSITIVE REDUNDANCY. An edge A->C where A->B->C already holds adds nothing and obscures the real structure. Report it; decide whether to remove it or merely mark it, noting that a redundant edge is harmless to correctness and harmful only to legibility, so removal must not be assumed to be the right answer.
+  2. PERSISTING THE CROSS-BATCH OVERLAP EDGE. context/patterns/multi-task-operations.md's "File Footprint Overlap as a Serialization Edge" section records that same-batch file_scope overlap already WRITES a real dependencies[] edge at creation time (Component 4a), while cross-batch overlap -- tasks created in separate sessions that happen to touch the same files -- is handled only by the runtime wave-split check in orchestrate-cycle-plan.sh step 4.5, which DEFERS the lower-priority task at dispatch time and writes nothing. The consequence is that the same collision is re-discovered and re-deferred on every run and never becomes visible graph structure: it exists only as transient dispatch behaviour, invisible to anyone reading the graph, to TODO.md's Task Order, and to any human choosing a batch. Persisting that edge is this task's, and only the PERSISTENCE is in scope -- deriving new overlaps that the runtime check does not already find is the sibling inference task.
+  3. THE PROSE-VERSUS-DECLARED-DEPS CONTRADICTION CHECK, SUBJECT TO A CORRECTED PREMISE. This check was proposed on the belief that task descriptions in this repository carry a fixed "ORDERING NOTE" paragraph. THEY DO NOT: the literal string appears in ZERO of the 67 active task descriptions. A looser ordering-prose pattern (variations on "must land before", "after X lands", "sequence against") matches 12 of 67, about 18 percent, with no consistent heading, marker, or grammar. The check is therefore real but has no carrier to parse. This task must either PIN a carrier -- by introducing a convention going forward and stating how the 18 percent of existing unstructured prose is handled -- or REJECT the check explicitly as unreliable and record why. It must NOT assume a heading exists. A checker built against an imagined convention would report contradictions on the 82 percent that simply say nothing, and the false-positive rate would retire the check within a week.
+
+OUT OF SCOPE, STATED EXPLICITLY. file_scope-derived edge inference, owned by the sibling task that depends on this one -- this task builds the pass; that one adds inference to it. Cycles, already detected in two places (validate-state.sh Check D3 and generate-task-order.sh compute_waves ~line 448) and not to be re-implemented. Edges pointing at terminal or archived targets, owned by the sibling task in this topic. The five existing pre-batch classes A through E, which this EXTENDS and must never fork. The shared-tree versus isolated-worktree isolation posture, owned elsewhere. Carrying concurrent-sibling territory in dispatch briefs, owned elsewhere. file_scope declaration granularity, backfill, and absent-scope admission posture, owned by the file-scope-lifecycle topic.
+
+FILE-TERRITORY CONTINGENCY. If the chosen home for the post-burst pass turns out to be a mode on `/todo`, this task's file territory intersects the terminal-edge sibling's, and the two must be serialized before implementation rather than discovering the overlap at dispatch.
+
+ACCEPTANCE. A post-creation-burst pass exists at a decided home, with its propose-versus-write posture stated as a recorded decision and not left implicit in the code. Transitive redundancy is reported. The cross-batch overlap edge is persisted rather than only deferred at runtime, and a fixture demonstrates that a collision previously re-discovered on every run now appears once as graph structure. The prose-versus-deps check is either implemented against a pinned carrier or explicitly rejected in writing, with the 18 percent measurement cited as the basis. No class of orchestrate-predispatch-review.sh is duplicated. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 230. Decide and implement the disposition for dependency edges pointing at terminal or archived tasks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 229
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A dependency edge whose target has already been archived is permanently satisfied and carries no ordering information, but it stays in `dependencies[]` forever and is treated as a live edge by every reader. No check flags it, because the one check that could does not consider archival a defect.
+
+OBSERVED (measured against specs/state.json, 2026-09-17). 26 of the 85 live dependency edges -- 31 percent -- point at tasks that are no longer in `active_projects`. Every sampled target (197, 143, 88, 87, 149, 130, 191, 192) resolves to a directory under specs/archive/, of which there are 141. These are not dangling references: scripts/validate-state.sh Check D3's dangling check (~lines 601-613) resolves a target against active_projects OR the archive and passes on an archive hit, by design. So a third of the graph's edges are structurally invisible to the only integrity check that looks at them.
+
+THE CONCRETE HARM, NOT MERELY UNTIDINESS. scripts/orchestrate-predispatch-review.sh Class A classifies every raw `dependencies[]` entry on every candidate into intra_batch, out_of_batch_live, out_of_batch_terminal, or nonexistent, and warns loudly on all three non-intra_batch subcases -- including the terminal one, because context/patterns/batch-orchestration-guardrails.md Non-Negotiable 3 draws no exception for a terminal target. That is correct as a rule and corrosive in practice at this ratio: a third of all edges generate a permanent, unactionable out_of_batch_terminal finding on every orchestrate run that touches the owning task. The Class A section is the SAME section that reports genuinely dangerous `nonexistent` and `out_of_batch_live` edges. Training an operator to skim it is the harm.
+
+DECIDE THE DISPOSITION -- DO NOT PRE-COMMIT. Four options, none preferred here:
+  - PRUNE AT ARCHIVAL TIME in commands/todo.md, which already has an "Update dependencies arrays" step (~line 868) at exactly the moment the target becomes terminal. Cheapest point of intervention and keeps the invariant continuously true; destroys provenance unless the reason carrier preserves it.
+  - PRUNE AS A ONE-SHOT MIGRATION plus a validate-state.sh WARN to stop regression. Leaves the archival path untouched; the WARN accumulates again between runs.
+  - LEAVE THE EDGES and have predispatch-review Class A collapse terminal-target findings into a single count line rather than one finding per edge. Preserves provenance completely and fixes the actual reported harm (report noise) without touching state.json at all; does nothing for the other readers that treat the edge as live.
+  - DISTINGUISH RATHER THAN REMOVE: retain the edge with a marker that records it as satisfied. Most information-preserving, most schema surface.
+Note that options 1, 2 and 4 all interact with the reason carrier this task depends on: an edge that records WHY it exists can be pruned without losing the fact, and one that does not cannot. Weigh the options in that light rather than independently.
+
+ALSO DECIDE the abandoned/expanded case explicitly. An edge pointing at an ABANDONED task is not "satisfied" in the sense an archived-completed one is -- the predecessor's work never happened. Whether the dependent should be flagged for review rather than silently unblocked is a distinct question from the completed case and must be answered separately, not folded in.
+
+OUT OF SCOPE. Dangling references to task numbers that exist nowhere, which Check D3 already handles correctly. Cycle detection, already implemented twice (validate-state.sh Check D3 and generate-task-order.sh compute_waves ~line 448) and not to be re-implemented. Inferring or adding edges, owned by the sibling tasks in this topic. The archival mechanism itself and CHANGE_LOG handling. Any change to Non-Negotiable 3's warn-loudly requirement: if the collapse option is chosen, the requirement is satisfied differently, not relaxed, and the guardrails document must be updated to say so rather than the requirement being quietly narrowed.
+
+ACCEPTANCE. The chosen disposition is implemented and the 31 percent figure is re-measured afterward, with the new figure recorded. A regression guard exists so the ratio cannot silently climb again: either the archival path maintains the invariant, or validate-state.sh reports the count. Whichever option is chosen, the abandoned/expanded case has an explicit written ruling. context/patterns/batch-orchestration-guardrails.md reflects the outcome where it bears on Non-Negotiable 3. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 229. Carry a reason on each dependency edge so a hard ordering constraint is distinguishable from a soft preference
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. A dependency edge records THAT one task must follow another and never WHY. `dependencies` is a bare array of integers, so a hard ordering constraint (this task edits a file that task creates) and a soft preference (it reads better in this order) are indistinguishable to every later reader -- human or machine. Nothing can safely prune, relax, or reorder an edge it cannot interpret.
+
+OBSERVED. specs/state.json carries 85 dependency edges across 67 active tasks (43 tasks declare at least one). Not one of them records a reason, because the schema has nowhere to put one. The consequence is concrete and recurring: any later pass that wants to propose removing a redundant edge, or to decide whether an edge may be relaxed to gain concurrency, has to re-derive the original author's intent from two task descriptions, and will reliably get it wrong for the soft cases. Edges auto-added from file_scope overlap at creation time (Multi-Task Creation Standard Component 4a) are especially affected: they are machine-generated and structurally identical to hand-authored ones, so a reader cannot tell an inferred serialization from a deliberate design ordering.
+
+DECIDE THE CARRIER -- DO NOT PRE-COMMIT. Three shapes, none preferred here:
+  - WIDEN THE ARRAY to accept `{"task": N, "reason": "..."}` objects alongside bare integers. Maximum locality; every consumer that iterates `dependencies[]` and treats the element as a number must be audited, because `.[]` on an object element breaks silently in jq comparisons rather than loudly.
+  - A PARALLEL MAP, e.g. `dependency_reasons: {"193": "..."}`, leaving `dependencies[]` byte-identical. Zero consumer breakage; the two structures can drift out of sync, which is its own defect class and would need its own validate-state.sh check.
+  - A PROSE CONVENTION in the task description with no schema change at all. Cheapest, and consistent with how ordering intent is recorded today; unparseable, and therefore useless to any automated pass -- weigh this honestly rather than dismissing it, since it may be the right answer if no machine consumer materializes.
+Also decide whether a reason is REQUIRED or OPTIONAL on new edges, and what happens to the 85 existing reasonless edges (leave, backfill, or mark as unknown-provenance). A required field with 85 grandfathered exceptions is a weaker contract than an optional field that is consistently used.
+
+ENUMERATE THE BLAST RADIUS BEFORE CHOOSING. Every reader of `dependencies[]` must be listed with its access pattern, and the enumeration is itself a deliverable of this task. Known consumers: scripts/validate-state.sh (Check D3 -- self-reference, dangling, and cycle detection, the last of which builds bash associative arrays from a jq TSV of task/dependency pairs); scripts/generate-task-order.sh (compute_waves, Kahn's BFS, ~lines 391-450); commands/orchestrate.md STAGE 0 (the intra-batch dependency-graph build, ~line 157); scripts/orchestrate-cycle-plan.sh (per-cycle eligibility re-derivation); scripts/orchestrate-predispatch-review.sh (Class A raw-edge classification); scripts/orchestrate-batch-admit.sh; commands/todo.md's archival dependency-array update (~line 868); and the creation-time writer in the Multi-Task Creation Standard's Component 4a.
+
+FILE-TERRITORY CONTINGENCY, STATED SO IT IS NOT DISCOVERED LATE. This task's declared file_scope covers only what it certainly touches: the schema reference, validate-state.sh, and state-write.sh. Whether the enumerated consumers need edits is DESIGN-CONTINGENT -- the parallel-map option requires none, the widened-array option requires most of them. If the chosen design requires consumer edits, commands/orchestrate.md and the other enumerated consumers enter this task's file territory, and the task must re-declare its file_scope and re-check it against concurrent work before implementing rather than silently widening.
+
+OUT OF SCOPE. Deciding which edges SHOULD exist, or inferring new ones -- this task builds the carrier, not the content. Pruning edges whose target is terminal, which is owned by the sibling task in this topic. Cycle detection, which already exists in two places and must not be re-implemented. Any change to wave computation or to admission behaviour: an edge's reason must not become an input to whether it is enforced, or a soft reason becomes a silent concurrency licence, which is the exact hazard this topic exists to close.
+
+ACCEPTANCE. The chosen carrier is specified in context/reference/state-management-schema.md with its required/optional posture and its ruling on the 85 existing edges. validate-state.sh validates the new form and, if the widened-array option is chosen, its Check D3 correctly handles mixed bare-integer and object elements without its cycle detection silently dropping an edge. The consumer enumeration exists as a written artifact with each consumer's access pattern and its verified status. A fixture exercises a graph containing both reasoned and reasonless edges through wave computation and produces the same waves as today. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 228. Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+GAP. `/orchestrate N[,N-N]` already performs dependency-aware wave dispatch, uniformly for a batch of one task or many. Nothing anywhere presents batching related tasks as the NORMAL way to work. The single-task invocation reads as the default and the multi-task form as a power feature; the posture should be the reverse.
+
+OBSERVED. A grep for batch-selection guidance ("which tasks to batch", "choose", "batch together", "group related") across context/patterns/multi-task-operations.md, context/patterns/batch-orchestration-guardrails.md and commands/orchestrate.md returns ZERO hits. multi-task-operations.md's own Overview frames the feature as an extension to commands that "traditionally accept a single task number", and its design principles lead with "Single-task input falls through to existing flow unchanged (zero overhead for common case)" -- naming single-task as the common case in the defining document. commands/orchestrate.md:24 already states the mechanism is uniform ("the loop uses dependency-aware wave dispatch, uniformly for a batch of one task or many"), so the capability is not in question; only its framing is.
+
+DECIDE THE CANONICAL HOME -- DO NOT PRE-COMMIT. This system's established convention is ONE canonical statement with pointers elsewhere. Candidates, none preferred here: a new context/patterns/batch-selection.md; a new section in context/patterns/multi-task-operations.md (mechanism-heavy, currently 667 lines of parsing/dispatch specification, which may be the wrong register for selection guidance); or context/patterns/batch-orchestration-guardrails.md (which by its own "Related Documents" section states principles only and delegates every mechanism, so selection PRINCIPLES arguably belong there). Whichever is chosen, merge-sources/claudemd.md and commands/orchestrate.md carry pointers, never second copies.
+
+THE SUBSTANTIVE CONTENT -- WHAT THE GUIDANCE MUST ACTUALLY SAY. Three candidate selection criteria are on the table and they DO NOT ALWAYS AGREE; the guidance is worthless unless it rules on the conflicts:
+  - TOPIC COHESION: tasks sharing a `topic` share context, so one agent's research warms the next.
+  - SHARED FILE TERRITORY: tasks touching the same files must be batched together so the graph can serialize them, rather than being run in separate sessions where nothing sees the collision.
+  - GRAPH SHAPE: a batch whose members form a connected dependency component drains cleanly; a batch of mutually independent tasks maximizes wave-1 width and therefore concurrency.
+The conflicts are real and must each be answered explicitly. Topic cohesion pulls toward grouping tasks that may have no ordering relation at all. Shared file territory pulls toward grouping tasks that serialize completely, producing a batch of width 1 that gains nothing from batching except collision visibility -- which is nonetheless a real gain and must be weighed, not dismissed. Graph shape pulls toward width, which is exactly what shared file territory pulls against. State which criterion dominates when two disagree, and say so as a rule a reader can apply, not as a list of considerations.
+
+CARRY THE COLLISION-VISIBILITY ARGUMENT EXPLICITLY. The strongest argument for batch-as-default is not throughput. It is that the admission gates (orchestrate-batch-admit.sh, the runtime wave-split check, the lock protocol) can only compare tasks they can see together. Two related tasks run in two separate sessions are mutually invisible to every in-batch check. Batching is therefore the mechanism by which collisions become checkable at all, and that is why it should be the default rather than an optimization.
+
+OUT OF SCOPE. The shared-tree versus isolated-worktree decision, which is owned elsewhere and must not be re-decided here. Telling concurrent agents about each other via dispatch briefs, also owned elsewhere. file_scope declaration granularity, backfill, and absent-scope admission posture, all owned by the file-scope-lifecycle topic -- this task may CITE shared file territory as a human selection criterion but must not specify or depend on any machine derivation of it, and should note that the territory criterion is currently a human judgment precisely because declaration granularity is under revision. No change to any admission predicate, wave computation, or dispatch behaviour: this task is framing and guidance only.
+
+ACCEPTANCE. Exactly one file states the batch-as-default posture and the selection criteria, including an explicit rule for each pairwise conflict among the three criteria. merge-sources/claudemd.md and commands/orchestrate.md point at it and do not restate it. multi-task-operations.md's Overview no longer names single-task as "the common case" in a way that contradicts the new posture. A reader with five open tasks in one topic can follow the guidance to a specific batch without further interpretation. No script, predicate or dispatch path is modified.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 227. Resolve source store target in deployed trees
 - **Status**: [NOT STARTED]
