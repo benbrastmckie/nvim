@@ -1,35 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/213_thread_focus_prompt_into_cycle_plan/reports/01_focus-prompt-forced-phase-cycle-plan.md",
-      "summary": "Confirmed root causes and file:line evidence for all three coupled defects (focus-prompt threading, forced-phase fall-through, per-run cycle budget + artifact-based admission), named the exact existing tests that must be inverted, and flagged cross-cutting interactions for the planner."
+      "type": "plan",
+      "path": "specs/213_thread_focus_prompt_into_cycle_plan/plans/01_focus-forced-phase-cycle-budget.md",
+      "summary": "7-phase plan covering all three absorbed defects (focus-prompt threading, stop-after-forced-phase, per-run cycle budget with artifact-based admission) as one serialized change to the batch orchestrator engine plus a single documentation pass."
     }
   ],
-  "next_steps": "Run /plan 213 to create implementation plan",
-  "dispatch_seq": 4,
+  "next_steps": "Run /implement 213 to execute the plan",
+  "dispatch_seq": 12,
+  "phase_count": 7,
+  "estimated_hours": 12,
+  "dependency_waves": 6,
   "metadata": {
     "session_id": "sess_1789687584_deac58_213",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 3
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
   "memory_candidates": [
     {
-      "content": "jq's `//`/`//=` operators cannot distinguish an absent map key from a key explicitly set to an empty array/null-falsy value that was previously populated then emptied (e.g. a queue popped down to []). When a bash+jq state machine needs to tell 'never started' apart from 'started and finished', use `has($k)` (or a separate boolean/marker map) instead of relying on `// default` alone.",
+      "content": "When a bash+jq orchestrator must distinguish 'this key was never seeded' from 'this key was seeded and its queue has since been consumed to []', jq's `// default` cannot do it (it fires on null/false, not on an empty array). The durable fix is a sibling boolean marker map seeded with the same `//=` idempotence as the queue itself (e.g. `.forced_round_seeded[$t] //= true` beside `.force_phases_remaining[$t] //= $q`), then a three-way branch: queue non-empty / queue empty-and-marked / unmarked. The two-way `if length > 0 ... else fall through` shape silently conflates the last two.",
       "category": "PATTERN",
-      "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/reports/01_focus-prompt-forced-phase-cycle-plan.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["jq", "state-machine", "empty-array-vs-absent", "orchestrate-cycle-plan", "bash-jq"]
-    },
-    {
-      "content": "In this repo's orchestrator engine, a test whose NAME states the intended contract but whose ASSERTIONS prove the opposite (e.g. 'stop-after-last-named' asserting fall-through) is a reliable signal that the contract was never actually implemented, only documented/named aspirationally. When auditing for a described defect, grep test names for the claimed contract and read the actual assertions, not just the name.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/reports/01_focus-prompt-forced-phase-cycle-plan.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["test-auditing", "orchestrate", "misleading-test-name", "contract-verification"]
+      "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/plans/01_focus-forced-phase-cycle-budget.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["jq", "state-machine", "empty-array-vs-absent", "forced-phase", "orchestrate-cycle-plan", "marker-map"]
     }
   ]
 }
