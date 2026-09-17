@@ -980,7 +980,7 @@
     {
       "project_number": 194,
       "project_name": "align_lifecycle_agent_handoff_contracts",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Align lifecycle agent contracts on .orchestrator-handoff.json writing",
@@ -1006,13 +1006,18 @@
       ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/agents/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped).\n\nDEFECT. The handoff-writing obligation is asserted by orchestrate-cycle-postflight.sh's detection logic but is NOT uniformly stated in the agent contracts it judges. Several agents that are routinely dispatched through a dispatch[] row -- and therefore reach postflight, where an absent .orchestrator-handoff.json is a real failure signal -- carry no statement of the obligation at all.\n\nSTARTING EVIDENCE (measured 2026-09-09 by counting '.orchestrator-handoff.json' occurrences in each agent's own contract file under agent-system/extensions/*/agents/):\n  - planner-agent: 0\n  - lean-implementation-agent: 0\n  - typst-implementation-agent: 0\n  - general-research-agent: 2\n  - general-implementation-agent: 5\n  - lean-implementation-hard-agent: 7\n\nTHIS COUNT IS A STARTING POINT, NOT A VERIFIED-COMPLETE ROSTER. It samples six agents only. The audit must independently enumerate EVERY agent reachable via a dispatch[] row -- research, plan, and implement phases, across core and all loaded extensions -- rather than trusting the six above. Use skill-orchestrate/SKILL.md Move 2 and the routing tables in each extension manifest.json (routing_agents / routing_agents_hard) to derive the true reachable set; a mention count of zero is evidence of a missing contract statement, and a nonzero count is not by itself evidence that the statement is correct or complete.\n\nWHY THIS COMES FIRST. The companion task widens postflight's contractual-writer predicate so that an absent handoff from a lifecycle agent is recorded as a HANDOFF_STALE_OR_ABSENT defect instead of being silently excused. Widening detection BEFORE the contracts state the obligation would flood errors.json with defect rows attributed to agents that were never told to write a handoff -- correct detection against an unstated obligation. This task establishes the obligation so the widened detection lands on a contract that actually exists.\n\nSCOPE. For each agent in the reachable set that lacks the obligation, add an explicit contract statement: it MUST write .orchestrator-handoff.json to the task directory named by its dispatch context's handoff_path, on every dispatch where orchestrator_mode is true. Match the wording and placement already used by the agents that state it correctly (general-implementation-agent and lean-implementation-hard-agent are the fullest existing examples) rather than inventing a new phrasing. Note the asymmetry to preserve: an aux_dispatch[] row is deliberately given NO handoff_path key and never writes a handoff -- any contract wording must not oblige an agent dispatched in that mode.\n\nMUST NOT. Do not modify orchestrate-cycle-postflight.sh or the predicate itself -- that is the companion task's territory and the two file scopes are deliberately disjoint. Do not weaken or restate the aux-dispatch exemption. Do not write task numbers into any agent contract (see .claude/rules/no-task-references-in-deliverables.md).\n\nACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, consistently-worded handoff-writing obligation naming .orchestrator-handoff.json and its handoff_path source. The audit records the full enumerated reachable set and the derivation method, so a future reader can re-verify completeness without re-deriving it. The aux-dispatch exemption remains intact and is stated where relevant.",
       "created": "2026-09-09T11:48:53Z",
-      "last_updated": "2026-09-17T23:35:25Z",
-      "session_id": "sess_1789687584_deac58_194",
+      "last_updated": "2026-09-17T23:49:51Z",
+      "session_id": "sess_1789687584_deac58",
       "artifacts": [
         {
           "path": "specs/194_align_lifecycle_agent_handoff_contracts/reports/01_handoff-obligation-audit.md",
           "type": "report",
           "summary": "Full audit of the 64 agents reachable via a dispatch[] row (research/plan/implement, core + all extensions): derivation method, per-agent .orchestrator-handoff.json mention counts, and the critical finding that 6 of the 8 nonzero-count agents state a prohibition (must be reversed, not appended to) rather than the target obligation."
+        },
+        {
+          "path": "specs/194_align_lifecycle_agent_handoff_contracts/plans/01_handoff-obligation-contract-rollout.md",
+          "type": "plan",
+          "summary": "7-phase rollout of a frozen canonical .orchestrator-handoff.json obligation block across 61 of the 64 dispatch[]-reachable agent contracts (55 additive, 6 prohibition reversals, 2 verify-only)."
         }
       ],
       "next_artifact_number": 2

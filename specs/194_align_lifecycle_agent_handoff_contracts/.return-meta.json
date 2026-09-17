@@ -1,34 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/194_align_lifecycle_agent_handoff_contracts/reports/01_handoff-obligation-audit.md",
-      "summary": "Full audit of the 64 agents reachable via a dispatch[] row (research/plan/implement, core + all extensions): derivation method, per-agent .orchestrator-handoff.json mention counts, and the critical finding that 6 of the 8 nonzero-count agents state a prohibition (must be reversed, not appended to) rather than the target obligation."
+      "type": "plan",
+      "path": "specs/194_align_lifecycle_agent_handoff_contracts/plans/01_handoff-obligation-contract-rollout.md",
+      "summary": "7-phase rollout of a frozen canonical .orchestrator-handoff.json obligation block across 61 of the 64 dispatch[]-reachable agent contracts (55 additive, 6 prohibition reversals, 2 verify-only)."
     }
   ],
-  "next_steps": "Run /plan 194 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1789687584_deac58_194",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
+  "dispatch_seq": 14,
+  "next_steps": "Run /implement 194 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 9,
+  "dependency_waves": [[1], [2, 3, 4, 5, 6], [7]],
   "memory_candidates": [
     {
-      "content": "To enumerate every agent reachable via /orchestrate's dispatch[] row (not aux_dispatch[], not second-level sub-agent delegation), collect the union of routing_agents.{research,plan,implement} and routing_agents_hard.{research,plan,implement} across every agent-system/extensions/*/manifest.json, excluding manifests with routing_exempt:true (literature, slidev) and any non-standard phase keys (e.g. present's 'critique', which is not part of dispatch[]'s fixed {research,plan,implement} phase vocabulary and is invoked by a separate non-orchestrate skill). Second-level sub-agents invoked internally by a router agent (e.g. filetypes-router-agent -> document-agent) never receive orchestrator_mode/handoff_path and are correctly out of scope.",
-      "category": "PATTERN",
-      "source_artifact": "specs/194_align_lifecycle_agent_handoff_contracts/reports/01_handoff-obligation-audit.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "dispatch", "routing_agents", "manifest.json", "handoff", "reachable-set"]
-    },
-    {
-      "content": "When auditing agent contracts for a missing obligation via grep mention-count of a keyword/filename, a nonzero count can mean the opposite of compliance: in agent-system/extensions/*/agents/*.md, 6 agents (general-implementation-agent, general-research-agent, cslib-implementation-agent, cslib-research-agent, lean-research-agent, lean-research-hard-agent) mention '.orchestrator-handoff.json' only inside explicit MUST-NOT/prohibition/non-writer-by-design language. Treat nonzero mentions as requiring content inspection, not just presence-checking, before assuming an obligation is already stated correctly.",
+      "content": "In /orchestrate, an agent named by a manifest's routing_agents block (a dispatch[] row) can ALSO be reached via an aux_dispatch[] row: orchestrate-cycle-plan.sh's aux_fixed_agent() resolves the divergence-audit kind to research_agents[$t] (default general-research-agent), while emitting orchestrator_mode:false and no handoff_path key. So 'dispatch[]-reachable' and 'aux-dispatched' are not disjoint agent sets. The consequence for contract authoring: any per-agent obligation that must hold for dispatch[] but not aux_dispatch[] should be conditioned on the presence of orchestrator_mode:true (or handoff_path) rather than stated as an unconditional agent-level rule, because the same agent file serves both call paths. Conditioning makes the aux exemption structural and removes the need to restate the aux contract in every agent file.",
       "category": "INSIGHT",
-      "source_artifact": "specs/194_align_lifecycle_agent_handoff_contracts/reports/01_handoff-obligation-audit.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["audit", "grep", "mention-count", "prohibition", "contract-review", "false-positive"]
+      "source_artifact": "specs/194_align_lifecycle_agent_handoff_contracts/plans/01_handoff-obligation-contract-rollout.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["aux_dispatch", "orchestrator_mode", "divergence-audit", "agent-contract", "handoff_path", "orchestrate-cycle-plan"]
     }
   ],
-  "dispatch_seq": 6
+  "metadata": {
+    "session_id": "sess_1789687584_deac58_194",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
 }
