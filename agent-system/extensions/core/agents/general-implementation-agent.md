@@ -685,32 +685,38 @@ value.
 }
 ```
 
-### `.orchestrator-handoff.json` (base-mode implement is a non-writer by design)
+### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
 
-This agent (base-mode `skill-orchestrate` -> `general-implementation-agent`) does **not** write
-`.orchestrator-handoff.json`, by design — matching the "Never writes a handoff, by design" row
-of `docs/architecture/handoff-schema.md`'s "Handoff Writers" table. A `handoff_path` field
-appearing in the delegation context is an anchor for the **orchestrator's own read** of a
-prior/expected handoff location — it is never an instruction for this agent to write one. When
-no handoff exists, the orchestrator recovers the dispatch outcome from `.return-meta.json` via
-its own recovery path (see that table's "Outcome Channels" section); Stage 7 above is this
-agent's complete and correct write contract.
+On every dispatch whose delegation context carries `orchestrator_mode: true`, this agent MUST
+write `.orchestrator-handoff.json` before returning — on success and on a `partial` or `blocked`
+outcome alike.
 
-**Defensive case, if a handoff is written anyway**: should some future variant of this agent (or
-a hand-authored dispatch) write `.orchestrator-handoff.json`, `phases_completed` and
-`phases_total` MUST be the real integers already computed by Stage 5a's plan-heading
-marker-repair pass above — never fabricated, never left at their zero-valued defaults — and MUST
-NEVER be `null`. They are written at the handoff's **top level**, which contrasts with
-`.return-meta.json`'s nested placement documented in the "Phase-count nesting" callout above —
-the two files use the same field names with different nesting rules, and a shape correct for one
-is wrong for the other. In this same defensive case, also echo `dispatch_seq` unchanged: if the
-delegation context carries a `dispatch_seq` field, copy its value into the handoff's own
-`dispatch_seq` field verbatim (never invent, increment, or recompute one); if absent from the
-delegation context, omit it from the handoff too. This is the orchestrator-minted per-dispatch
-identity Stage 5 of both orchestrate engines compares against the value it minted for this
-cycle — see `context/patterns/dispatch-report-not-termination.md`. The handoff's `artifacts[]`
-entries MUST use the object shape defined in `handoff-schema.md`'s `### artifacts (required)`
-section — never a bare path string.
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing. NEVER write a bare `.orchestrator-handoff.json` filename: it resolves against the
+ambient working directory at Write-tool-call time and strands the handoff outside the task
+directory, where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
+
+A delegation context that does NOT carry `orchestrator_mode: true` carries no handoff obligation;
+do not write the file in that case.
+
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field, copy
+its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment, or
+recompute one; if it is absent, omit it from the handoff too. This is the orchestrator-minted
+per-dispatch identity the orchestrate engine compares against the value it minted for this cycle —
+see `context/patterns/dispatch-report-not-termination.md`.
+
+Use the shape defined by `context/schemas/orchestrator-handoff-schema.json` (prose companion:
+`docs/architecture/handoff-schema.md`). `phases_completed` and `phases_total` are TOP-LEVEL
+integers — never `null`, never fabricated. Set `phases_completed` and `phases_total` to the real
+integers already computed by Stage 5a's plan-heading marker-repair pass above — never fabricated,
+never left at their zero-valued defaults. This contrasts with `.return-meta.json`'s nested
+placement documented in the "Phase-count nesting" callout above — the two files use the same
+field names with different nesting rules, and a shape correct for one is wrong for the other.
+`status` is one of `implemented`, `partial`, `blocked`. `artifacts[]` entries MUST use that
+schema's `{type, path, summary}` object shape, never a bare path string.
 
 ### Stage 8: Return Brief Text Summary
 
