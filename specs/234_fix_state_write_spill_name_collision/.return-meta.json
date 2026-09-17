@@ -1,22 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/234_fix_state_write_spill_name_collision/plans/01_spill-name-allocation-fix.md",
-      "summary": "5-phase plan fixing state-write.sh spill-name allocation via a shared explicit counter plus a duplicate-NAME hard error, with a RED-first fixture-rooted regression suite, redeploy verification, and caller audit."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1789687584_deac58_234",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.25,
-    "dependency_waves": [[1, 5], [2], [3], [4]]
-  },
-  "next_steps": "Run /implement 234 to execute the plan",
-  "dispatch_seq": 9
+    "session_id": "sess_1789687584_deac58",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

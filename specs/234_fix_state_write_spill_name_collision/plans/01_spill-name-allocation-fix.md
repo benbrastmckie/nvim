@@ -1,7 +1,7 @@
 # Implementation Plan: Task #234
 
 - **Task**: 234 - Fix state-write.sh spill name collision
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md
@@ -134,35 +134,40 @@ both locations, so nothing functional turns on it.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the regression suite and demonstrate RED [NOT STARTED]
+### Phase 1: Author the regression suite and demonstrate RED [COMPLETED]
 
 **Goal**: A fixture-rooted suite exists that fails against the *unmodified* `state-write.sh` on
 both defect shapes, proving it detects the defect rather than merely asserting a healthy state.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/test-state-write-spill-names.sh`, modeled on
+- [x] Create `agent-system/extensions/core/scripts/test-state-write-spill-names.sh`, modeled on
       `test-state-write-large-payload.sh`: `mktemp -d` root, `pass()`/`fail()` counters, exit 0/1,
-      `trap` cleanup of the temp root.
-- [ ] Copy into `$TMPROOT/.claude/scripts/{,lib/}`: `state-write.sh`, `task-lock.sh`,
+      `trap` cleanup of the temp root. *(completed)*
+- [x] Copy into `$TMPROOT/.claude/scripts/{,lib/}`: `state-write.sh`, `task-lock.sh`,
       `generate-todo.sh`, `deploy-root-guard.sh`, `lib/common.sh`, `lib/task-lookup-lib.sh`.
       Create a synthetic `$TMPROOT/specs/state.json`. Invoke only the fixture copy, from
       `cd "$TMPROOT"`, so its BASH_SOURCE-derived PROJECT_ROOT points inside the fixture.
-- [ ] Case A (pure multi-file): one call with two `--argjson-file` bindings writing two distinct
+      *(completed)*
+- [x] Case A (pure multi-file): one call with two `--argjson-file` bindings writing two distinct
       values; assert each resolves to its OWN file's value and that the two results differ.
-- [ ] Case B (mixed): one call combining an `--argjson-file` binding with an oversized
+      *(completed)*
+- [x] Case B (mixed): one call combining an `--argjson-file` binding with an oversized
       (>`SPILL_THRESHOLD`, but under Linux's ~131,072-byte argv ceiling — the research report
       documents this narrow usable window) `--argjson` binding; assert each resolves to its own
       value. Include a plain small `--arg` binding in the same call to confirm the non-spilling
-      path is unaffected.
-- [ ] Case C (loud error): one call passing the same public NAME for two spilled bindings; assert
+      path is unaffected. *(completed)*
+- [x] Case C (loud error): one call passing the same public NAME for two spilled bindings; assert
       a non-zero exit and a diagnostic on stderr naming the NAME. Expected to fail pre-fix (today
-      it exits 0 with silent last-write-wins).
-- [ ] Case D (ownership): assert a caller-supplied `--argjson-file` PATH still exists on disk after
-      a successful run — the anti-regression for the `SPILL_FILES` cleanup risk.
-- [ ] Add a guard assertion in the suite itself that the real repo `specs/state.json` is untouched
-      (`git status --porcelain -- specs/state.json` empty) at suite start and end.
-- [ ] Run the suite against the unmodified script; capture the failing output. Cases A, B, C MUST
-      fail. Record the observed wrong values in the run log for the summary.
+      it exits 0 with silent last-write-wins). *(completed)*
+- [x] Case D (ownership): assert a caller-supplied `--argjson-file` PATH still exists on disk after
+      a successful run — the anti-regression for the `SPILL_FILES` cleanup risk. *(completed)*
+- [x] Add a guard assertion in the suite itself that the real repo `specs/state.json` is untouched
+      (`git status --porcelain -- specs/state.json` empty) at suite start and end. *(completed)*
+- [x] Run the suite against the unmodified script; capture the failing output. Cases A, B, C MUST
+      fail. Record the observed wrong values in the run log for the summary. *(completed: Cases
+      A, B, C fail pre-fix — 2 passed, 3 failed. A: both --argjson-file bindings resolve to the
+      FIRST file's value. B: .spilled resolves to a non-array (the file binding's own value)
+      instead of the auto-spilled array. C: duplicate NAME exits 0 silently, no diagnostic.)*
 
 **Timing**: 1 hour
 
