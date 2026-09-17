@@ -177,25 +177,25 @@ text. Confirm before editing with
 
 ---
 
-### Phase 2: Reverse the Four Remaining Prohibition Contracts [NOT STARTED]
+### Phase 2: Reverse the Four Remaining Prohibition Contracts [COMPLETED]
 
 **Goal**: Apply the same reversal treatment to the 4 non-core agents whose contracts currently state
 the opposite of the new obligation, and confirm the 2 already-correct agents need no edit.
 
 **Tasks**:
-- [ ] `cslib-implementation-agent.md`: rewrite the "`.orchestrator-handoff.json` prohibition"
+- [x] `cslib-implementation-agent.md`: rewrite the "`.orchestrator-handoff.json` prohibition"
       paragraph into the implement variant; rewrite the numbered MUST-NOT checklist item ("Write
       .orchestrator-handoff.json -- base-mode implementation never writes a handoff") into a MUST-DO
       or delete it from the MUST NOT list and add the obligation to the MUST DO list.
-- [ ] `cslib-research-agent.md`: same treatment, research variant, including its MUST-NOT checklist
-      item.
-- [ ] `lean-research-agent.md`: rewrite the "(research is a non-writer by design)" subsection into
+- [x] `cslib-research-agent.md`: same treatment, research variant, including its MUST-NOT checklist
+      item. *(completed)*
+- [x] `lean-research-agent.md`: rewrite the "(research is a non-writer by design)" subsection into
       the research variant.
-- [ ] `lean-research-hard-agent.md`: same treatment, research variant.
-- [ ] Verify-only (no edit): confirm `cslib-implementation-hard-agent.md` and
+- [x] `lean-research-hard-agent.md`: same treatment, research variant. *(completed)*
+- [x] Verify-only (no edit): confirm `cslib-implementation-hard-agent.md` and
       `lean-implementation-hard-agent.md` still carry their existing correct obligation and were not
       touched — `git diff --stat` must show them absent.
-- [ ] Commit each edited file as its own green sub-step.
+- [x] Commit each edited file as its own green sub-step. *(4 commits: cf8866461, 5eb3ff1af, ef647b097, cdbd1c453)*
 
 **Timing**: 1 hour
 
