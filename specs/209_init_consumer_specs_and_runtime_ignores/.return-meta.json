@@ -1,40 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1789687584_deac58_209",
-  "dispatch_seq": 7,
-  "task_number": 209,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/209_init_consumer_specs_and_runtime_ignores/reports/01_init_consumer_specs.md",
-      "summary": "Research on bootstrapping specs/ state and runtime-file ignore rules for fresh consumer repos: state-write.sh --init refuses the default state.json path by design, six call sites need the new init call, specs/tmp writer identified, and check-runtime-file-tracking.sh's tracked-file detection (item h) already appears satisfied by existing code."
+      "type": "plan",
+      "path": "specs/209_init_consumer_specs_and_runtime_ignores/plans/01_init-specs-bootstrap.md",
+      "summary": "7-phase plan to add an idempotent init-specs.sh bootstrap (specs/ state trio, managed specs/.gitignore, untrack sweep), extend runtime-file-patterns.sh with specs/tmp, wire six-plus-one first-touch call sites, update the standards doc and lint messaging, and pin every acceptance criterion with a scratch-repo fixture suite."
     }
   ],
   "memory_candidates": [
     {
-      "content": "scripts/state-write.sh's --init mode unconditionally refuses (exit 1) to target the default live specs/state.json path (realpath-normalized comparison) as a deliberate guard against a filter typo destroying live task state. --init is only usable for explicit non-default targets like specs/archive/state.json. Any future 'bootstrap a fresh state.json' script must write that file directly rather than through state-write.sh.",
+      "content": "When a canonical bash pattern library is pinned to a markdown doc by a byte-identity test (extract fenced block, diff against the lib's emitter function), any phase that adds a class member to the lib MUST regenerate the pinned markdown block in the SAME phase, or the pin test fails at phase close. Plan the lib edit and the doc regeneration as one phase, never as two, and give that phase an `interface` verification tier because the lib has multiple mechanical consumers (lint script, deploy test fixtures, doc block).",
       "category": "PATTERN",
-      "source_artifact": "specs/209_init_consumer_specs_and_runtime_ignores/reports/01_init_consumer_specs.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["state-write.sh", "--init", "specs/state.json", "bootstrap", "guard"]
-    },
-    {
-      "content": "check-runtime-file-tracking.sh's Check A (git check-ignore -q per probe path) already honors any applicable .gitignore at any directory depth, including a specs/-local specs/.gitignore -- no logic change needed to support ignore coverage delivered from a file other than the repo-root .gitignore, only messaging updates.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/209_init_consumer_specs_and_runtime_ignores/reports/01_init_consumer_specs.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["check-runtime-file-tracking.sh", "git check-ignore", "specs/.gitignore", "gitignore resolution"]
-    },
-    {
-      "content": "check-runtime-file-tracking.sh's Check B (tracked-ephemeral-file scan via git ls-files against RUNTIME_FILE_B_REGEX) already fails independent of .gitignore coverage -- it was rewritten onto the shared lib in commit 8695facc8 (task 201, 2026-09-09), predating a later task spec that assumed this detection still needed to be built. When a task description says a check 'must' do something, verify current behavior first -- it may already be shipped.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/209_init_consumer_specs_and_runtime_ignores/reports/01_init_consumer_specs.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["verify-before-implement", "check-runtime-file-tracking.sh", "stale task spec", "git ls-files"]
+      "source_artifact": "specs/209_init_consumer_specs_and_runtime_ignores/plans/01_init-specs-bootstrap.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["single-source-of-truth", "byte-identity-pin", "phase-decomposition", "pattern-library", "generated-doc-block"]
     }
   ],
-  "next_steps": "Run /plan 209 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1789687584_deac58_209",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 209,
+    "phase_count": 7,
+    "estimated_hours": 8,
+    "dependency_waves": [[1], [2], [3, 5], [4], [6], [7]]
+  },
+  "next_steps": "Run /implement 209 to execute the plan",
+  "dispatch_seq": 15
 }
