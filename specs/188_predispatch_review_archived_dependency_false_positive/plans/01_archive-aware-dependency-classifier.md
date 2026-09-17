@@ -1,7 +1,7 @@
 # Implementation Plan: Task #188
 
 - **Task**: 188 - Fix orchestrate-predispatch-review.sh Class A false positive: archived completed dependencies reported as nonexistent
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/188_predispatch_review_archived_dependency_false_positive/reports/01_archived-dependency-false-positive.md
@@ -109,35 +109,41 @@ No roadmap_path provided in the dispatch context; no ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Archive-aware Class A/B resolution [NOT STARTED]
+### Phase 1: Archive-aware Class A/B resolution [COMPLETED]
 
 **Goal**: Class A/B resolve candidate and dependency entries against active + archived tasks,
 and Class A gains a distinct `archived_satisfied` bucket, leaving `nonexistent` for edges
 resolvable nowhere.
 
 **Tasks**:
-- [ ] Enumerate every `$all` reference in `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh`
+- [x] Enumerate every `$all` reference in `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh`
       (`grep -n '\$all' `) and confirm the Class A/B binding at line 213 is used only inside the
       Class A/B blocks (lines 216-239), and that the Class C/D/E program (lines 361-431) binds
-      its own separate `$all`. Do not proceed to the edit if this does not hold.
-- [ ] Add `source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"` (with the `# shellcheck disable=SC1091`
+      its own separate `$all`. Do not proceed to the edit if this does not hold. *(completed:
+      confirmed both hypotheses hold before editing)*
+- [x] Add `source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"` (with the `# shellcheck disable=SC1091`
       line above it) immediately after the existing `source "${SCRIPT_DIR}/lib/common.sh"` at
       line 128 and before `PROJECT_ROOT=...`, matching `orchestrate-triage-classify.sh`'s
-      ordering at its lines 200-205.
-- [ ] Before the Class A/B jq invocation (current line 207), stage the archive array:
+      ordering at its lines 200-205. *(completed)*
+- [x] Before the Class A/B jq invocation (current line 207), stage the archive array:
       `archived_projects_json="$(task_lookup_archived_projects_json "$STATE_FILE")"`, write it to
       a `mktemp` file, and register `trap 'rm -f "$archived_projects_tmpfile"' EXIT`. Carry a
       comment naming the `--argjson`/ARG_MAX rationale and pointing at
       `orchestrate-triage-classify.sh` as the precedent, rather than restating it from scratch.
-- [ ] Add `--slurpfile archived_raw "$archived_projects_tmpfile"` to the Class A/B jq invocation
+      *(completed)*
+- [x] Add `--slurpfile archived_raw "$archived_projects_tmpfile"` to the Class A/B jq invocation
       and change the `$all` binding to
       `(($state_arr[0].active_projects // []) + $archived_raw[0]) as $all`, preserving the
       active-first ordering so `first` keeps `task_lookup_entry`'s active-wins contract.
-- [ ] Bind `($archived_raw[0] | map(.project_number)) as $archived_nums` and extend the Class A
+      *(completed)*
+- [x] Bind `($archived_raw[0] | map(.project_number)) as $archived_nums` and extend the Class A
       bucket decision (lines 223-225) to four branches: `$dep_entry == null` → `"nonexistent"`;
       `($archived_nums | index($d)) != null` → `"archived_satisfied"`; terminal status →
-      `"out_of_batch_terminal"` (unchanged); else `"out_of_batch_live"` (unchanged).
-- [ ] Run `bash -n` on the edited script and confirm `grep -n 'trap '` reports exactly one trap.
+      `"out_of_batch_terminal"` (unchanged); else `"out_of_batch_live"` (unchanged). *(completed)*
+- [x] Run `bash -n` on the edited script and confirm `grep -n 'trap '` reports exactly one trap.
+      *(completed: bash -n exits 0, exactly one trap; also verified live via a synthetic
+      deployed-shaped sandbox — an archived dependency reports `archived_satisfied` and a
+      genuinely absent one still reports `nonexistent`, exit 0)*
 
 **Timing**: 0.75 hours
 

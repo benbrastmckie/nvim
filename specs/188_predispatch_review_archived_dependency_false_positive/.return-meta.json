@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/188_predispatch_review_archived_dependency_false_positive/plans/01_archive-aware-dependency-classifier.md",
-      "summary": "5-phase plan making orchestrate-predispatch-review.sh's Class A dependency classifier archive-aware via task-lookup-lib.sh, adding an archived_satisfied bucket, test fixtures, guardrail doc sync, and deploy acceptance."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 2.75,
-  "dependency_waves": 4,
-  "memory_candidates": [],
-  "next_steps": "Run /implement 188 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 16,
   "metadata": {
-    "session_id": "sess_1789687584_deac58_188",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 8
+    "session_id": "sess_1789687584_deac58",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

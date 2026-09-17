@@ -126,6 +126,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
@@ -199,6 +201,24 @@ candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]" || true
 # ---------------------------------------------------------------------------
 # Classes A and B: single read of STATE_FILE via --slurpfile, one jq program.
 # ---------------------------------------------------------------------------
+# Archive read for Class A: /todo moves every terminal task (completed/abandoned/expanded) OUT
+# of `.active_projects` and into the sibling `archive/state.json`. Without this, a candidate's
+# dependency that was satisfied and then archived resolved to a null $dep_entry and bucketed as
+# "nonexistent" -- the loudest verdict this class has -- despite being satisfied. Sourced from
+# scripts/lib/task-lookup-lib.sh (the single source of truth for archive-aware lookup), not a
+# second hand-copied jq.
+#
+# Written to a temp file and read back via --slurpfile rather than passed as a jq --argjson
+# command-line argument: a repo with a long-lived archive can flatten to a JSON string well past
+# the OS argv/environment size limit (observed: ~960KB triggering "Argument list too long", exit
+# 126, on a real archive/state.json), which --argjson embeds directly into jq's exec argv while
+# --slurpfile reads from disk with no such ceiling. Mirrors orchestrate-triage-classify.sh's own
+# use of the same library and the same tempfile pattern.
+archived_projects_json="$(task_lookup_archived_projects_json "$STATE_FILE")"
+archived_projects_tmpfile="$(mktemp "${TMPDIR:-/tmp}/orchestrate-predispatch-archived.XXXXXX")"
+trap 'rm -f "$archived_projects_tmpfile"' EXIT
+printf '%s' "$archived_projects_json" > "$archived_projects_tmpfile"
+
 # `if VAR=$(cmd); then jq_exit=0; else jq_exit=$?; fi` rather than a bare `VAR=$(cmd)` followed
 # by `jq_exit=$?`: a jq failure here is a routine, handled outcome (see the exit-2 branch just
 # below) -- under `set -e` a bare failing assignment would abort the script before jq_exit could
@@ -207,13 +227,17 @@ candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]" || true
 if ab_findings=$(jq -n -c \
   --argjson candidates "$candidates_json" \
   --slurpfile state_arr "$STATE_FILE" \
+  --slurpfile archived_raw "$archived_projects_tmpfile" \
   '
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
 
-  ($state_arr[0].active_projects // []) as $all |
+  (($state_arr[0].active_projects // []) + $archived_raw[0]) as $all |
+  ($archived_raw[0] | map(.project_number)) as $archived_nums |
   $candidates as $cands |
 
-  ( # Class A: raw dependency edge classification (never a filtered subset)
+  ( # Class A: raw dependency edge classification (never a filtered subset). $all is
+    # active-projects-first (active wins, matching the task_lookup_entry contract) with the
+    # archive appended, so a task present in both is still governed by its live entry.
     $cands[] as $c
     | ([$all[] | select(.project_number == $c)] | first) as $entry
     | select($entry != null)
@@ -221,6 +245,7 @@ if ab_findings=$(jq -n -c \
     | select(($cands | index($d)) == null)
     | ([$all[] | select(.project_number == $d)] | first) as $dep_entry
     | (if $dep_entry == null then "nonexistent"
+       elif ($archived_nums | index($d)) != null then "archived_satisfied"
        elif (($dep_entry.status // "") | is_terminal) then "out_of_batch_terminal"
        else "out_of_batch_live" end) as $bucket
     | {class: "A", task_number: $c, dependency: $d, bucket: $bucket,
