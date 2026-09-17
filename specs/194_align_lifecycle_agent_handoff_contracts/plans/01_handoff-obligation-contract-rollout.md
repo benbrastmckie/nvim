@@ -1,7 +1,7 @@
 # Implementation Plan: Align Lifecycle Agent Handoff Contracts
 
 - **Task**: 194 - Align lifecycle agent handoff contracts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/194_align_lifecycle_agent_handoff_contracts/reports/01_handoff-obligation-audit.md
@@ -114,20 +114,20 @@ phase's **Files to modify**) and may be dispatched in parallel under territory c
 
 ---
 
-### Phase 1: Freeze the Canonical Block and Land It in Core [NOT STARTED]
+### Phase 1: Freeze the Canonical Block and Land It in Core [COMPLETED]
 
 **Goal**: Author the three canonical variants (research / plan / implement) once, and apply them to
 the three core agents — two of which are prohibition reversals and one of which is a pure addition.
 After this phase the exact text every later phase copies exists in-tree.
 
 **Tasks**:
-- [ ] Re-read the wording reference: `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md`
+- [x] Re-read the wording reference: `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md`
       Stage 5 Step 1 (the `handoff_path` resolution paragraph, the "NEVER write a bare
       `.orchestrator-handoff.json` filename" rule, and the `dispatch_seq` echo paragraph) and the
       near-identical block in `cslib-implementation-hard-agent.md`.
-- [ ] Confirm the frozen text in this plan's `## Appendix: Canonical Obligation Block` still matches
+- [x] Confirm the frozen text in this plan's `## Appendix: Canonical Obligation Block` still matches
       those references; if the references have drifted, update the Appendix first and note it.
-- [ ] `general-research-agent.md`: **reverse** the prohibition. Replace the "Do NOT use
+- [x] `general-research-agent.md`: **reverse** the prohibition. *(completed)* Replace the "Do NOT use
       `wrap-up.md`'s H9 schema or `.orchestrator-handoff.json` for research — that schema and its
       consumer allowlist are implementation-agent-only" sentence with the research variant of the
       canonical block. Promote the existing "Defensive case, if this scoping decision is ever
@@ -135,18 +135,18 @@ After this phase the exact text every later phase copies exists in-tree.
       `artifacts[]` object-shape content is correct and is retained, not deleted). Leave the Option
       A / Option B context-exhaustion scoping discussion otherwise intact — it concerns the
       *other* handoff file.
-- [ ] `general-implementation-agent.md`: **reverse** the prohibition. Rewrite the
+- [x] `general-implementation-agent.md`: **reverse** the prohibition. *(completed)* Rewrite the
       "### `.orchestrator-handoff.json` (base-mode implement is a non-writer by design)" section
       into the implement variant of the canonical block, keeping its correct
       `phases_completed`/`phases_total` sourcing rule (the real integers from Stage 5a's
       marker-repair pass, never fabricated, never `null`, top level) as normal-path text. Remove the
       "Never writes a handoff, by design" claim and the "A `handoff_path` field ... is never an
       instruction for this agent to write one" sentence.
-- [ ] `planner-agent.md`: **add** the plan variant of the canonical block as a new subsection
+- [x] `planner-agent.md`: **add** the plan variant of the canonical block *(completed)* as a new subsection
       immediately after Stage 6's metadata-file contract and before Stage 7.
-- [ ] Verify none of the three files still asserts a non-writer status:
+- [x] Verify none of the three files still asserts a non-writer status: *(confirmed: 0 matches)*
       `grep -n "non-writer\|MUST NOT write\|never write" ` on each.
-- [ ] Commit each file as its own green sub-step.
+- [x] Commit each file as its own green sub-step. *(3 commits: 5e80a468f, 343d26564, 1bd188129)*
 
 **Timing**: 1.5 hours
 
