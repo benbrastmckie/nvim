@@ -1,7 +1,7 @@
 # Implementation Plan: Task #206
 
 - **Task**: 206 - fix_test_fixtures_missing_task_lookup_lib
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md
@@ -100,21 +100,21 @@ No roadmap context supplied for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Restore the missing fixture lib in the deploy-gate suite [NOT STARTED]
+### Phase 1: Restore the missing fixture lib in the deploy-gate suite [COMPLETED]
 
 **Goal**: `test-postflight-deploy-gate.sh` passes 19/19 from the source store.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh` and
-      record the red baseline (expected 12 passed / 7 failed).
-- [ ] Add `task-lookup-lib.sh` to the `REQUIRED_LIBS` array
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh` and
+      record the red baseline (expected 12 passed / 7 failed). *(completed: confirmed 12 passed, 7 failed on master)*
+- [x] Add `task-lookup-lib.sh` to the `REQUIRED_LIBS` array
       (`agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh:85`), keeping the
       explicit-list style — the existing `build_fixture_repo()` copy loop already consumes the same
-      array, so no second edit site is needed.
-- [ ] Re-run the suite and confirm 19 passed / 0 failed, with none of the previously-passing
-      cases regressing.
-- [ ] Confirm no further transitive libs are required by running, not by assumption (research
-      found `task-lookup-lib.sh` sources nothing, but the run is the evidence).
+      array, so no second edit site is needed. *(completed)*
+- [x] Re-run the suite and confirm 19 passed / 0 failed, with none of the previously-passing
+      cases regressing. *(completed: 19 passed, 0 failed)*
+- [x] Confirm no further transitive libs are required by running, not by assumption (research
+      found `task-lookup-lib.sh` sources nothing, but the run is the evidence). *(completed: single-token addition alone reached 19/0, confirming no transitive libs needed)*
 
 **Timing**: 0.25 hours
 

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md",
-      "summary": "5-phase plan fixing the missing task-lookup-lib.sh fixture entry, the lint check_emit_perline variable-redirect false positive, new lint regression coverage, two dormant audit-gap fixtures, and full shellcheck/redeploy verification."
-    }
-  ],
-  "next_steps": "Run /implement 206 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1, 2, 4], [3], [5]],
-  "memory_candidates": [
-    {
-      "content": "In this repo's core shell test suites, fixtures that build a minimal .claude/scripts tree from an EXPLICIT lib name list are a recurring breakage class: when a production script (e.g. task-lock.sh) gains a new unconditional `source lib/<new>.sh`, every explicit-list fixture that copies that script silently loses it and fails at load time, while wholesale `lib/*.sh` copy fixtures are immune by construction. Audit approach that worked: classify each candidate suite into five buckets -- wholesale copy (safe), explicit list already complete, no fixture copy at all (script sourced from its real location), static-analysis-only (bash -n/grep, never executed), and genuine gap. Note that many lib lists span shell continuation lines, so a naive single-line grep under-reports both completeness and gaps. Gaps can be dormant rather than red (e.g. a suite that only ever runs the SUT with --dry-run never reaches the subprocess that sources the missing lib), so redness is not a reliable detector -- structural audit is.",
-      "category": "PATTERN",
-      "source_artifact": "specs/206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["shell-test-fixtures", "explicit-lib-list", "task-lookup-lib", "dormant-test-gap", "fixture-audit", "unconditional-source"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "metadata": {
-    "session_id": "sess_1789687584_deac58_206",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 11
+    "session_id": "sess_1789687584_deac58",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

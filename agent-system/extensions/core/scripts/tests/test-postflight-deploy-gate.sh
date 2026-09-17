@@ -82,7 +82,7 @@ for req in "${REQUIRED_SCRIPTS[@]}"; do
     exit 2
   fi
 done
-REQUIRED_LIBS=(common.sh phase-heading-patterns.sh status-vocabulary.sh file-scope-overlap.sh)
+REQUIRED_LIBS=(common.sh phase-heading-patterns.sh status-vocabulary.sh file-scope-overlap.sh task-lookup-lib.sh)
 for req in "${REQUIRED_LIBS[@]}"; do
   if [[ ! -f "$DEPLOY_SCRIPTS_SRC/lib/$req" ]]; then
     echo "ERROR: required deployed library missing: $DEPLOY_SCRIPTS_SRC/lib/$req" >&2
