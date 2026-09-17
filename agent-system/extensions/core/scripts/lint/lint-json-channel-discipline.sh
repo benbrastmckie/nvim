@@ -200,8 +200,12 @@ check_emit_perline() {
       *'printf -v'*) continue ;;  # writes into a variable, not stdout, regardless of "printf "
     esac
     matches+=("${lineno}:${content}")
+  # The final grep excludes a redirect to a variable-named target (e.g. `> "$var"` or a
+  # mktemp-held path): that is a file write, not a stdout write, so it is not a JSON-channel
+  # discipline violation regardless of this file's stdout contract.
   done < <(grep -nE 'echo |printf |cat <<' "$file" 2>/dev/null \
-    | grep -v '>&2' | grep -v '>&3' | grep -v '\$(' | grep -v '^\s*[0-9]*:\s*#')
+    | grep -v '>&2' | grep -v '>&3' | grep -v '\$(' | grep -v '^\s*[0-9]*:\s*#' \
+    | grep -vE '>[[:space:]]*"?\$\{?[A-Za-z_]')
 
   if [ "${#matches[@]}" -eq 1 ]; then
     $VERBOSE && echo "  [OK] $file: exactly one unredirected write -- treated as the legitimate final emit: ${matches[0]}"

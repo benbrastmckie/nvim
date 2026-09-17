@@ -137,30 +137,34 @@ lib rather than adding names speculatively.
 
 ---
 
-### Phase 2: Fix the lint predicate's variable-named redirect false positive [NOT STARTED]
+### Phase 2: Fix the lint predicate's variable-named redirect false positive [COMPLETED]
 
 **Goal**: `check_emit_perline()` no longer treats a `> "$var"` file redirect as an unredirected
 stdout write; the real corpus runs clean.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh` and
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh` and
       record the red baseline (expected ~178 files, 2 violations, both in
-      `orchestrate-triage-classify.sh`).
-- [ ] Append the exclusion stage `| grep -vE '>[[:space:]]*"?\$\{?[A-Za-z_]'` to the existing
+      `orchestrate-triage-classify.sh`). *(completed: confirmed 178 files, 2 violations)*
+- [x] Append the exclusion stage `| grep -vE '>[[:space:]]*"?\$\{?[A-Za-z_]'` to the existing
       `grep -v '>&2' | grep -v '>&3' | grep -v '\$(' | grep -v '^\s*[0-9]*:\s*#'` pipeline inside
       `check_emit_perline()` (`agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh`).
       Keep the exclusion scoped to variable-named redirect targets; do not broaden it to every `>`.
-- [ ] Add a short comment above the new stage explaining what it excludes and why (a redirect to a
-      `mktemp`-held path is a file write, not a stdout write).
-- [ ] Re-run the real corpus and confirm 0 violations — including that line 527's genuine final
+      *(completed)*
+- [x] Add a short comment above the new stage explaining what it excludes and why (a redirect to a
+      `mktemp`-held path is a file write, not a stdout write). *(completed)*
+- [x] Re-run the real corpus and confirm 0 violations — including that line 527's genuine final
       emit is now cleared by the pre-existing "exactly one surviving match" branch rather than by
-      any new special case.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh`
+      any new special case. *(completed: 178 files, 0 violations)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh`
       and confirm the two previously-failing cases now pass and no other case regresses.
-- [ ] Write the suite (2) decision into the implementation notes for the summary: predicate fixed
+      *(completed: 11 passed, 0 failed; required a non-destructive `deploy-headless.sh` redeploy
+      first, since the suite's `resolve_candidate` is deploy-tree-first and was otherwise
+      re-testing the stale deployed copy — see progress file `approaches_tried`)*
+- [x] Write the suite (2) decision into the implementation notes for the summary: predicate fixed
       (not allowlisted, not a code change), with the three-part rationale — the write at line 225
       is correct as written, an allowlist entry is narrower than the defect class, and the
-      predicate fix is the general fix.
+      predicate fix is the general fix. *(completed: see progress file phase-2 notes.suite_2_decision)*
 
 **Timing**: 0.5 hours
 
