@@ -913,16 +913,20 @@ These five hold at any batch size and are never relaxed for throughput:
    documented in the Open Design Fork below.** `scripts/orchestrate-predispatch-review.sh` runs
    before `commands/orchestrate.md`'s compact STAGE 0 multi-task block discards out-of-batch edges
    to build its intra-batch-only dependency graph, and classifies every raw `dependencies[]` entry on every
-   candidate into one of four buckets — `intra_batch` (no finding), `out_of_batch_live`,
-   `out_of_batch_terminal`, and `nonexistent` — warning loudly by task number and target for all
-   three non-`intra_batch` subcases, including the terminal one (this Non-Negotiable draws no
-   exception for a terminal target). This is a REVIEW stage only: it never excludes on its own
-   account. It does not newly exclude an `out_of_batch_live` or `nonexistent` predecessor from
-   live dispatch either — `dependency_graph` (built by `commands/orchestrate.md`'s compact
-   STAGE 0 multi-task block) is intra-batch-only, so an out-of-batch edge is simply absent from it, and
-   `skills/skill-orchestrate/SKILL.md` Stage MT-3's eligibility check sees no predecessor to
-   wait on. Closing that residual live-path exclusion gap is exactly the Open Design Fork
-   question below, left unresolved by this warn-only stage on purpose.
+   candidate into one of five buckets — `intra_batch` (no finding), `out_of_batch_live`,
+   `out_of_batch_terminal`, `archived_satisfied`, and `nonexistent` — warning loudly by task
+   number and target for the `out_of_batch_live`, `out_of_batch_terminal`, and `nonexistent`
+   subcases, including the terminal one (this Non-Negotiable draws no exception for a terminal
+   target). `archived_satisfied` (a dependency that was completed and then archived by `/todo`,
+   resolvable only via `specs/archive/state.json`, never `active_projects[]`) is reported at
+   informational volume instead — it is satisfied, not a hazard, so it does not warrant the same
+   loud treatment as a dangling or out-of-batch-live edge. This is a REVIEW stage only: it never
+   excludes on its own account. It does not newly exclude an `out_of_batch_live` or `nonexistent`
+   predecessor from live dispatch either — `dependency_graph` (built by `commands/orchestrate.md`'s
+   compact STAGE 0 multi-task block) is intra-batch-only, so an out-of-batch edge is simply absent
+   from it, and `skills/skill-orchestrate/SKILL.md` Stage MT-3's eligibility check sees no
+   predecessor to wait on. Closing that residual live-path exclusion gap is exactly the Open
+   Design Fork question below, left unresolved by this warn-only stage on purpose.
 4. **Never let human-facing batch approval substitute for or gate machine admission decisions.**
    Which tasks may run concurrently is a deterministic, per-pair, machine-checked question,
    independent of whether or how a human later reviews the batch's outcome.

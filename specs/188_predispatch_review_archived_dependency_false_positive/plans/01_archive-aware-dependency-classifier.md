@@ -262,20 +262,21 @@ genuinely absent dependency still reports loudly.
 
 ---
 
-### Phase 4: Guardrail documentation sync [NOT STARTED]
+### Phase 4: Guardrail documentation sync [COMPLETED]
 
 **Goal**: The Non-Negotiable narrative describes the classifier's actual bucket set.
 
 **Tasks**:
-- [ ] Update `context/patterns/batch-orchestration-guardrails.md` Non-Negotiable 3 (lines
+- [x] Update `context/patterns/batch-orchestration-guardrails.md` Non-Negotiable 3 (lines
       ~911-924): "one of four buckets" becomes five, adding `archived_satisfied` to the
       enumeration, and the "warning loudly ... for all three non-`intra_batch` subcases" clause
       is corrected to reflect that the archived-satisfied subcase reports informationally rather
-      than loudly — a satisfied edge is not a hazard.
-- [ ] Preserve the paragraph's existing scope statements unchanged: this is still a REVIEW stage
-      that never excludes on its own account, and the Open Design Fork is still open.
-- [ ] Reference the script and the bucket names as durable anchors; introduce no task-number
-      citation (this file is outside `specs/**`).
+      than loudly — a satisfied edge is not a hazard. *(completed)*
+- [x] Preserve the paragraph's existing scope statements unchanged: this is still a REVIEW stage
+      that never excludes on its own account, and the Open Design Fork is still open. *(completed)*
+- [x] Reference the script and the bucket names as durable anchors; introduce no task-number
+      citation (this file is outside `specs/**`). *(completed: `grep -n "task [0-9]"` on the
+      changed file returns nothing)*
 
 **Timing**: 0.25 hours
 
