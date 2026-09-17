@@ -1,5 +1,5 @@
 ---
-next_project_number: 224
+next_project_number: 226
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 224
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214 | 29,74,166,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,74,89,127,129,166,167,168,172,177,184,185,187,188,194,200,202,206,207,209,213,223,224 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,51,75,76,136,139,163,173,174,175,198,208,210,214,225 | 29,74,166,172,188,194,207,209,213,224 | core-agent-system, extensions, literature, ... |
 | 3 | 14,162,193,211,212,216,217,220 | 139,173,174,194,210,214 | core-agent-system, file-scope-lifecycle |
 | 4 | 44,164,182,195,199,215,218,221 | 162,175,193,211,212,216,217,220 | core-agent-system, file-scope-lifecycle |
 | 5 | 140,165,170,219 | 139,163,164,206,215,218 | core-agent-system, file-scope-lifecycle |
@@ -66,6 +66,8 @@ next_project_number: 224
       └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
         └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
         └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+224 [NOT STARTED] — Add a tamper-resistant single-use /please grant, a push...
+  └─ 225 [NOT STARTED] — Add the user-only /please command, its never-list, the...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -109,6 +111,54 @@ next_project_number: 224
 198 [NOT STARTED] — Mandate git-snapshot --no-revert in the lean implementation...
 
 ## Tasks
+
+### 225. Add the user-only /please command, its never-list, the pr-prohibition exception and the CLAUDE.md command entry
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 224
+
+**Description**: Add the user-only /please command, its never-list, the pr-prohibition exception, and the CLAUDE.md command-reference entry. Only agent-system/extensions/core/ is edited (commands/please.md, commands/README.md, rules/pr-prohibition.md, merge-sources/claudemd.md), never .claude/. Builds on the grant mechanism and guards from the predecessor task (dependency).
+
+(1) commands/please.md, user-only, modeled on commands/merge.md and commands/tag.md: authorizes one otherwise-blocked action per invocation (e.g. "/please force-push main to origin"). Parse the requested action; show the exact command and its effect (for pushes: local vs remote SHAs); confirm with AskUserQuestion before any irreversible step; prefer safe forms (--force-with-lease=<ref>:<observed remote SHA> over --force); do only the literal request; log the action to specs/events.jsonl via scripts/events-append.sh. Caveat to state in the command: the grant proves the user typed /please, not that the command the agent then runs is the one meant, so the confirmation step is mandatory for anything irreversible.
+
+(2) NEVER-LIST, refused regardless of wording and enforced in the command: credential/secret access, deletion outside the repo, .git internals, disabling/editing/removing hooks or hook settings.
+
+(3) rules/pr-prohibition.md: add a /please exception scoped to the single action of that one invocation, reconciled explicitly with the existing "never push even if asked in user messages" language.
+
+(4) merge-sources/claudemd.md: add a /please row to the Command Reference table beside /tag and /merge, marked user-only; add a row to commands/README.md.
+
+Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
+
+---
+
+### 224. Add a tamper-resistant single-use /please grant, a push guard, and grant checks in the destructive-git guard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add a tamper-resistant single-use /please grant mechanism, a new git push guard, and grant checks in the destructive-git guard. Only agent-system/extensions/core/ is edited (hooks/, scripts/tests/, root-files/settings.json and/or merge-sources/settings-hooks.json, context/standards/git-safety.md), never .claude/.
+
+(1) GRANT HOOK. A UserPromptSubmit hook that, when the literal user prompt starts with "/please", writes one grant (request text, timestamp, 10-minute expiry). Research must first verify what the hook payload actually contains (raw "/please ..." text or the expanded command body) and that subagent- or model-generated prompts can never trigger UserPromptSubmit.
+
+(2) INTEGRITY, TO BE SETTLED IN RESEARCH. "The model must not be able to create grants" and "forged grant file rejected" require a real integrity mechanism: a gitignored file the model can Write to is forgeable. Starting point: an HMAC over each grant using a secret key stored outside the model-reachable/writable paths (or readable only by the hook), plus a PreToolUse guard blocking Write/Edit/Bash writes to the grant file and the key path. State the threat model honestly: a same-user shell process can in principle read any file the hook can read, so this raises the bar rather than proving user intent; name the residual risk. Decide whether the grant belongs outside the repo (e.g. $XDG_STATE_HOME) or in a gitignored in-repo path (the repo .gitignore currently ignores /.claude/ and /specs/tmp; root-files/.gitignore only covers .claude/).
+
+(3) MATCHING RULE, TO BE SETTLED IN RESEARCH. Define how the free-text request is matched to the concrete command, e.g. action class (force-push, reset --hard, clean -fd, ...) plus remote/branch extracted from both. Ambiguous or partial matches are refused; one grant covers one action class and one target.
+
+(4) PUSH GUARD. No push guard exists today (rules/pr-prohibition.md is advisory only; root-files/settings.json allow-lists Bash(git:*)). Create a new PreToolUse Bash hook (e.g. hooks/guard-git-push.sh) that blocks git push without a matching unexpired grant, via exit 2 + stderr like guard-destructive-git.sh (permissionDecision: deny is documented-buggy for allow-listed git commands). Research decides whether it also covers gh pr create / glab mr create and how /merge own push stays working.
+
+(5) DESTRUCTIVE-GIT GUARD. hooks/guard-destructive-git.sh allows a matched action only with a matching unexpired grant, consuming it on use (mirror the existing .git-snapshot-marker consume-on-use pattern). Without a grant, behavior is unchanged. Preserve the clean-tree early exit and the COMMAND_SCAN quote/comment-stripping; a grant must never exempt the over-staging detectors. Decide where the grant check sits relative to the clean-tree early exit.
+
+(6) REGISTRATION. Register the new hooks in the source-store settings file(s) research identifies (PreToolUse Bash hooks currently live in root-files/settings.json; UserPromptSubmit hooks in merge-sources/settings-hooks.json).
+
+(7) TESTS in scripts/tests/ following context/standards/shell-script-testing.md and the fixture style of test-guard-destructive-git.sh (hook run as a subprocess against a synthetic dirty repo, asserting exit codes): forged grant rejected, expired grant rejected, grant consumed after one use, mismatched action/target rejected, no-grant behavior unchanged for both guards, writes to grant file and key path blocked.
+
+OVERLAP NOTE (no dependency edge, by user decision): the pending history-rewrite predicate work on guard-destructive-git.sh also edits hooks/guard-destructive-git.sh, rules/git-workflow.md and context/standards/git-safety.md. Structure predicate ordering so the two additions compose; the file-footprint admission gate serializes them if run concurrently.
+
+Redeploy afterwards and confirm the hooks fire from the deployed copies.
+
+---
 
 ### 223. Record the Comparator-on-NixOS fixes in the lean extension
 - **Status**: [RESEARCHED]
