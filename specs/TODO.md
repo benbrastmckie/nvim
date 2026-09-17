@@ -39,7 +39,7 @@ next_project_number: 235
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
   └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive...
   └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:... (see above)
-200 [RESEARCHING] — Close the consumer-repo deploy propagation gap that leaves...
+200 [RESEARCHED] — Close the consumer-repo deploy propagation gap that leaves...
 206 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 209 [RESEARCHING] — Set up a fresh repo specs/ state and runtime-file ignore...
@@ -1230,10 +1230,11 @@ second should make sure all three entries read as a coherent set.
 ---
 
 ### 200. Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
