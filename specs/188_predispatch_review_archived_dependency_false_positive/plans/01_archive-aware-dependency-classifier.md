@@ -218,25 +218,31 @@ either fails, stop and re-scope rather than editing around it.
 
 ---
 
-### Phase 3: Class A dependency test fixtures [NOT STARTED]
+### Phase 3: Class A dependency test fixtures [COMPLETED]
 
 **Goal**: The suite pins both acceptance outcomes — archived dependency reports as satisfied,
 genuinely absent dependency still reports loudly.
 
 **Tasks**:
-- [ ] Add `lib/task-lookup-lib.sh` to `setup_sandbox`'s copy list (and to the `require_file`
-      preflight beside `lib/common.sh`), so the sandboxed SUT can source it.
-- [ ] Add a helper mirroring `write_state` that writes `$WORKDIR/specs/archive/state.json` (the
+- [x] Add `lib/task-lookup-lib.sh` to `setup_sandbox`'s copy list (and to the `require_file`
+      preflight beside `lib/common.sh`), so the sandboxed SUT can source it. *(completed)*
+- [x] Add a helper mirroring `write_state` that writes `$WORKDIR/specs/archive/state.json` (the
       path `task_lookup_archived_projects_json` derives as
       `${state_file%state.json}archive/state.json`), with a `completed_projects` array.
-- [ ] Add a scenario: candidate #N carries `dependencies: [M]`, where #M exists only in the
+      *(completed: `write_archive_state`)*
+- [x] Add a scenario: candidate #N carries `dependencies: [M]`, where #M exists only in the
       synthetic archive state file. Assert the output contains the `archived_satisfied` label
-      for that edge and does NOT contain `nonexistent`.
-- [ ] Add a scenario: candidate #N carries `dependencies: [M]`, where #M is in neither
+      for that edge and does NOT contain `nonexistent`. *(completed: Scenario 5; also verified
+      the fixture is non-vacuous by temporarily reverting the Phase 1 bucket branch, confirming
+      it FAILs, then restoring)*
+- [x] Add a scenario: candidate #N carries `dependencies: [M]`, where #M is in neither
       `active_projects[]` nor the archive. Assert `nonexistent` still fires for that edge.
-- [ ] Add a scenario with no `specs/archive/state.json` present at all, asserting the SUT still
+      *(completed: Scenario 6)*
+- [x] Add a scenario with no `specs/archive/state.json` present at all, asserting the SUT still
       exits 0 and renders Class A (the library's documented `"[]"`-on-absent-archive contract).
-- [ ] Run the suite and confirm every pre-existing scenario still passes.
+      *(completed: Scenario 7)*
+- [x] Run the suite and confirm every pre-existing scenario still passes. *(completed: 21 passed,
+      0 failed -- 14 pre-existing + 7 new, strictly greater than the 14 pre-change count)*
 
 **Timing**: 0.75 hours
 

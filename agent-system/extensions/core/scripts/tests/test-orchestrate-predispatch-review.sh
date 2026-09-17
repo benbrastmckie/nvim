@@ -41,6 +41,7 @@ for f in orchestrate-predispatch-review.sh deploy-root-guard.sh state-write.sh; 
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/lib/common.sh"
+require_file "$CORE_DIR/lib/task-lookup-lib.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required and is not on PATH" >&2
@@ -53,20 +54,32 @@ trap cleanup EXIT
 
 setup_sandbox() {
   rm -rf "$WORKDIR"
-  mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs"
+  mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs/archive"
   for f in orchestrate-predispatch-review.sh deploy-root-guard.sh state-write.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   cp "$CORE_DIR/lib/common.sh" "$WORKDIR/.claude/scripts/lib/common.sh"
+  cp "$CORE_DIR/lib/task-lookup-lib.sh" "$WORKDIR/.claude/scripts/lib/task-lookup-lib.sh"
   chmod +x "$WORKDIR"/.claude/scripts/*.sh
 }
 
 SUT="$WORKDIR/.claude/scripts/orchestrate-predispatch-review.sh"
 STATE_FILE="$WORKDIR/specs/state.json"
+ARCHIVE_STATE_FILE="$WORKDIR/specs/archive/state.json"
 
 write_state() {
   # Usage: write_state <<'EOF' ... EOF
   cat > "$STATE_FILE"
+}
+
+write_archive_state() {
+  # Usage: write_archive_state <<'EOF' ... EOF
+  # Mirrors write_state, but targets specs/archive/state.json -- the path
+  # task_lookup_archived_projects_json derives as "${state_file%state.json}archive/state.json".
+  # Scenarios that do not call this leave no archive/state.json in the sandbox at all, exercising
+  # task_lookup_archived_projects_json's documented "[]" on-absent-archive contract.
+  mkdir -p "$(dirname "$ARCHIVE_STATE_FILE")"
+  cat > "$ARCHIVE_STATE_FILE"
 }
 
 stub_admit() {
@@ -232,6 +245,84 @@ if echo "$LAST_STDOUT" | grep -qF "0 deferred for session contention (this signa
   pass "scenario 4: Class E's precise zero-line fires"
 else
   fail "scenario 4: expected Class E's precise zero-line; got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 5: candidate depends on a task that was completed and then archived by /todo -- the
+# false-positive this whole fix exists to close. The archived task is resolvable ONLY via
+# specs/archive/state.json (task_lookup_archived_projects_json), never active_projects[].
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Scenario 5: dependency satisfied by an archived task renders archived_satisfied, never nonexistent"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 2020, "project_name": "depends_on_archived", "task_type": "general", "status": "not_started", "description": "candidate #2020", "dependencies": [2021], "file_scope": ["lua/quux.lua"]}]}
+EOF
+write_archive_state <<'EOF'
+{"completed_projects": [{"project_number": 2021, "project_name": "archived_dep", "status": "completed"}], "archived_projects": []}
+EOF
+run_sut -- 2020
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "scenario 5: SUT exits 0"
+else
+  fail "scenario 5: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#2020 depends on #2021: archived (satisfied)"; then
+  pass "scenario 5: archived-satisfied edge is rendered under the informational label"
+else
+  fail "scenario 5: expected an archived (satisfied) row for #2020/#2021; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#2020 depends on #2021: nonexistent"; then
+  fail "scenario 5: the archived dependency is falsely reported as nonexistent"
+else
+  pass "scenario 5: the archived dependency is never reported as nonexistent"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 6: candidate depends on a task number resolvable in neither active_projects[] nor the
+# archive -- a genuinely absent target must still report loudly as nonexistent.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Scenario 6: a genuinely absent dependency still reports nonexistent"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 2022, "project_name": "depends_on_absent", "task_type": "general", "status": "not_started", "description": "candidate #2022", "dependencies": [2023], "file_scope": ["lua/corge.lua"]}]}
+EOF
+write_archive_state <<'EOF'
+{"completed_projects": [{"project_number": 2021, "project_name": "archived_dep", "status": "completed"}], "archived_projects": []}
+EOF
+run_sut -- 2022
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "scenario 6: SUT exits 0"
+else
+  fail "scenario 6: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#2022 depends on #2023: nonexistent"; then
+  pass "scenario 6: the genuinely absent dependency still reports nonexistent"
+else
+  fail "scenario 6: expected a nonexistent row for #2022/#2023; got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 7: no specs/archive/state.json at all -- task_lookup_archived_projects_json's
+# documented "[]" on-absent-archive contract; the SUT must still exit 0 and render Class A.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Scenario 7: no archive/state.json present -- SUT still exits 0 and renders Class A"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 2024, "project_name": "no_archive_file", "task_type": "general", "status": "not_started", "description": "candidate #2024", "dependencies": [], "file_scope": ["lua/grault.lua"]}]}
+EOF
+run_sut -- 2024
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "scenario 7: SUT exits 0 with no archive/state.json present"
+else
+  fail "scenario 7: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | grep -qF -- "-- Class A: Dependency edge classification --"; then
+  pass "scenario 7: Class A section still renders with no archive file present"
+else
+  fail "scenario 7: expected the Class A section header; got: $LAST_STDOUT"
 fi
 
 echo ""
