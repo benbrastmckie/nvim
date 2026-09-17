@@ -222,6 +222,29 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# EMIT case 3 (PER-LINE): a `> "$var"` file redirect must NOT be counted as an unredirected
+# stdout write. A file with one such redirected write plus exactly one legitimate final
+# unredirected emit must pass clean, with the redirected write excluded from the candidate set
+# entirely (so the "exactly one surviving match" branch still fires on the real emit) -- this is
+# the exact shape that produced a false positive at orchestrate-triage-classify.sh:225 before the
+# check_emit_perline() predicate fix.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "EMIT case 3 (per-line): a > \"\$var\" file redirect is not a stdout write, one legitimate emit remains"
+cat > "$WORKDIR/orchestrate-triage-classify.sh" <<'EOF'
+#!/usr/bin/env bash
+# Output: NDJSON on stdout, one compact JSON object per candidate, in input order.
+set -euo pipefail
+printf '%s' "$archived_projects_json" > "$archived_projects_tmpfile"
+printf '%s\n' "$verdicts"
+EOF
+run_lint "$WORKDIR/orchestrate-triage-classify.sh"
+if [ "$LAST_EXIT" -eq 0 ] && ! echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
+  pass "EMIT case 3: > \"\$var\" file redirect excluded, remaining single emit passes clean"
+else
+  fail "EMIT case 3: expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Real corpus: no explicit paths (the lint's own auto-discovery) against the real repo reports
 # it clean, apart from the one documented verify-deploy.sh allowlist entry.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

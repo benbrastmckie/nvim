@@ -183,21 +183,25 @@ stdout write; the real corpus runs clean.
 
 ---
 
-### Phase 3: Add permanent regression coverage for the redirect shape [NOT STARTED]
+### Phase 3: Add permanent regression coverage for the redirect shape [COMPLETED]
 
 **Goal**: the false positive cannot silently return, and genuine unredirected writes remain caught.
 
 **Tasks**:
-- [ ] Add a new EMIT per-line case to
+- [x] Add a new EMIT per-line case to
       `agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh`, built in
       the same style as the existing EMIT case 2 / EMIT negative control: a synthetic file named
       `orchestrate-triage-classify.sh` containing one `printf ... > "$var"` redirected write plus
       exactly one legitimate final unredirected emit. Assert a clean pass (0 violations, zero exit).
-- [ ] Verify the new case FAILS against the pre-fix predicate (stash or temporarily revert the
+      *(completed: "EMIT case 3 (per-line)")*
+- [x] Verify the new case FAILS against the pre-fix predicate (stash or temporarily revert the
       Phase 2 edit, run, confirm it reports violations, restore) — a regression test that cannot
-      fail on the old code is not a regression test.
-- [ ] Re-run the whole suite and confirm the existing EMIT case 2 (two genuine unredirected writes
-      flagged) and both negative controls still behave exactly as before.
+      fail on the old code is not a regression test. *(completed: temporarily swapped in the
+      pre-Phase-2 content for both source-store and deployed copies, confirmed exit=1/VIOLATION,
+      restored byte-for-byte — see progress file phase-3 notes.regression_verification)*
+- [x] Re-run the whole suite and confirm the existing EMIT case 2 (two genuine unredirected writes
+      flagged) and both negative controls still behave exactly as before. *(completed: 12 passed,
+      0 failed, no regression)*
 
 **Timing**: 0.5 hours
 
