@@ -1,42 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md",
-      "summary": "Research finding a tier-1 pull-side freshness detector already exists but fires only once per top-level command, not per skill dispatch; recommends moving the existing check (no new algorithm) into skill_preflight_update and surfacing it in the dispatch brief, with cost measured at ~130ms per invocation."
+      "type": "plan",
+      "path": "specs/200_consumer_deploy_propagation_gap/plans/01_per-dispatch-freshness-surface.md",
+      "summary": "7-phase plan closing the consumer deploy propagation gap by moving the existing per-extension freshness check to per-dispatch granularity and injecting the signal into the dispatch brief."
     }
   ],
-  "next_steps": "Run /plan 200 to create implementation plan",
-  "dispatch_seq": 5,
   "metadata": {
     "session_id": "sess_1789687584_deac58_200",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 8,
+    "dependency_waves": [[1, 2], [3], [4], [5, 6], [7]]
   },
   "memory_candidates": [
     {
-      "content": "The agent-system's consumer-deploy-freshness mechanism already has a per-extension, path-scoped pull-side check (check-deploy-freshness.sh + scripts/lib/deploy-freshness-lib.sh, backed by state.lua's mark_loaded stamping source_git_head into .claude-extensions.json on every load), wired into command-gate-in.sh's CHECKPOINT 1. It is NOT purely opt-in/report-only (that description fits only the fleet-wide check-consumer-freshness.sh behind --consumer-report). The real gap is granularity: command-gate-in.sh fires once per top-level command, not once per skill/agent dispatch, so a long /orchestrate run's later-spawned subagents never see a fresh check or its warning. skill_preflight_update in skill-base.sh runs once per skill dispatch and is the correct finer-grained hook point for this class of check.",
+      "content": "When an existing detector fails to prevent the defect it detects, check placement and granularity before concluding the detector is missing. In the agent-system deploy-freshness case, a pull-side staleness check already existed and already fired non-blockingly, but only once per top-level command and only onto the orchestrating session's stderr -- never into the context of the spawned subagent that actually read the stale file. The fix was to re-fire the same unchanged comparison at per-dispatch granularity (skill_preflight_update) and inject the result into the dispatch brief the agent reads, not to build a new detection mechanism. Generalizable rule: a signal's value is determined by whether it lands in the context that acts on it, at a moment when it can still change behavior. Cost note: a pull-side check (each repo checks only itself, only when used) scales with the checking repo's own size, while a push-side fleet scan scales with the consumer count -- the two differ by orders of magnitude and should never be traded off as if equivalent.",
       "category": "INSIGHT",
-      "source_artifact": "specs/200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-freshness", "command-gate-in", "skill-preflight", "consumer-repo", "propagation-gap", "source_git_head"]
-    },
-    {
-      "content": "The per-extension source_git_head freshness comparison (path-scoped git log -1 over an extension's whole source_dir) already catches single-file partial staleness within an extension directory -- any one file's change moves the recomputed head for the entire extension. A new whole-tree or per-file fingerprint/hash mechanism is redundant with this existing comparison; reuse deploy_freshness_status/deploy_freshness_stale_names from scripts/lib/deploy-freshness-lib.sh rather than inventing a second algorithm.",
-      "category": "PATTERN",
-      "source_artifact": "specs/200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md",
+      "source_artifact": "specs/200_consumer_deploy_propagation_gap/plans/01_per-dispatch-freshness-surface.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-freshness-lib", "partial-staleness", "path-scoped-git-log", "extension-granularity"]
-    },
-    {
-      "content": "orchestrate-build-dispatch.sh already injects several context blocks into per-dispatch brief files (memory-context, literature briefing, hard-mode contract block, effort block) before an agent reads them. This is the precedented, low-cost injection point for surfacing any new per-dispatch signal (e.g. a deploy-freshness warning) directly into the context a spawned subagent reads, rather than only into the top-level orchestrating session's own stderr where a spawned subagent never sees it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-build-dispatch", "context-injection", "dispatch-brief", "memory-context-precedent"]
+      "suggested_keywords": ["detector-placement", "signal-granularity", "pull-side-check", "deploy-freshness", "dispatch-context-injection", "non-blocking-warning"]
     }
-  ]
+  ],
+  "dispatch_seq": 13
 }
