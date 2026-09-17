@@ -1,45 +1,22 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md",
-      "summary": "Confirms and reproduces the state-write.sh --argjson-file/--argjson spill-name collision, audits every caller (none corrupted, none currently trigger it), compares the shared-counter vs. name-derived fix options with a recommendation, and flags a scripts/tests/ vs. flat scripts/ location conflict for the regression test."
+      "type": "plan",
+      "path": "specs/234_fix_state_write_spill_name_collision/plans/01_spill-name-allocation-fix.md",
+      "summary": "5-phase plan fixing state-write.sh spill-name allocation via a shared explicit counter plus a duplicate-NAME hard error, with a RED-first fixture-rooted regression suite, redeploy verification, and caller audit."
     }
   ],
-  "next_steps": "Run /plan 234 to create implementation plan",
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1789687584_deac58_234",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.25,
+    "dependency_waves": [[1, 5], [2], [3], [4]]
   },
-  "findings_count": 7,
-  "memory_candidates": [
-    {
-      "content": "jq's --slurpfile (and --arg/--argjson) with a duplicate NAME across two invocations in the same jq call resolves to the FIRST occurrence's value, not the last (confirmed: `jq -n --slurpfile s f1.json --slurpfile s f2.json '$s'` returns f1's content). Any script building jq argument lists programmatically that could produce a duplicate binding name must treat that as first-write-wins silent data loss, not last-write-wins.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["jq", "slurpfile", "duplicate-binding", "first-wins", "argjson"]
-    },
-    {
-      "content": "When two parallel bash arrays track independent concerns (e.g. 'names allocated' vs. 'files this process owns and must clean up'), do not let one array's length double as an allocation counter for a code path that doesn't append to that same array. A counter must be its own explicit variable, incremented by every code path that allocates from the same namespace, decoupled from any array whose membership has a different meaning (ownership/cleanup vs. naming).",
-      "category": "PATTERN",
-      "source_artifact": "specs/234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["shared-counter", "bash-arrays", "cleanup-ownership", "spill-pattern"]
-    },
-    {
-      "content": "In this repo, context/standards/shell-script-testing.md's location rule for a script's own test suite is scope-based, not name-based: a narrow single-script suite goes in scripts/tests/, but a suite that must copy multiple interdependent scripts (e.g. state-write.sh + task-lock.sh + generate-todo.sh) to run at all counts as a 'broad' suite and stays flat in scripts/, per existing precedent (all three state-write.sh suites are flat). A dispatch's literal wording can conflict with this documented convention; the convention plus existing precedent should win.",
-      "category": "PATTERN",
-      "source_artifact": "specs/234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["shell-script-testing", "test-location", "fixture-suite", "state-write"]
-    }
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/state-write.sh",
-    "agent-system/extensions/core/scripts/test-state-write-spill-names.sh"
-  ]
+  "next_steps": "Run /implement 234 to execute the plan",
+  "dispatch_seq": 9
 }

@@ -11,10 +11,11 @@ next_project_number: 235
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,45,89,127,129,167,172,177,184,185,188,194,200,202,206,207,209,213,223,224,226,227,228,234 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,43,51,74,139,162,163,166,173,174,193,208,210,212,215 | 29,167,172,188,194,207,209,213 | core-agent-system, extensions, literature, ... |
-| 3 | 44,75,76,136,140,165,170,182,199,217,221 | 74,139,162,163,166,173,174,193,194,206,210,215 | core-agent-system, extensions, file-scope-lifecycle |
-| 4 | 190 | 165 | core-agent-system |
+| 1 | 22,29,39,45,89,127,129,167,172,177,184,185,188,194,202,206,207,209,223,224,227,228,234 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,43,51,74,139,163,166,173,174,208,210,213,226 | 29,167,172,188,194,206,207,209 | core-agent-system, extensions, literature, ... |
+| 3 | 44,75,76,136,162,193,200,212,215,217,221 | 74,139,166,173,174,188,194,210,213,226,234 | core-agent-system, extensions, file-scope-lifecycle |
+| 4 | 140,165,170,182,199 | 139,162,163,193,206,215 | core-agent-system, file-scope-lifecycle |
+| 5 | 190 | 165 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -30,35 +31,39 @@ next_project_number: 235
     └─ 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-188 [PLANNED] — Fix orchestrate-predispatch-review.sh Class A false positive:...
-194 [RESEARCHED] — Align lifecycle agent contracts on .orchestrator-handoff.json...
+188 [IMPLEMENTING] — Fix orchestrate-predispatch-review.sh Class A false positive:...
+  └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves...
+194 [PLANNING] — Align lifecycle agent contracts on .orchestrator-handoff.json...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
     └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
   └─ 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
+  └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
   └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive...
   └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:... (see above)
-200 [RESEARCHED] — Close the consumer-repo deploy propagation gap that leaves...
-206 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
+206 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-209 [RESEARCHED] — Set up a fresh repo specs/ state and runtime-file ignore...
+  └─ 226 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+    └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
+209 [PLANNING] — Set up a fresh repo specs/ state and runtime-file ignore...
   └─ 51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
   └─ 210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
     └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
-213 [RESEARCHED] — Fix forced /orchestrate phases: pass focus text through, stop...
-  └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
-    └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
-    └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-  └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive... (see above)
-  └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
-    └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
-    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 213 [PLANNING] — Fix forced /orchestrate phases: pass focus text through, stop...
+    └─ 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
+      └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
+      └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+    └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
+    └─ 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive... (see above)
+    └─ 215 [NOT STARTED] — Add a sanctioned undo for a prepared but never-run...
+      └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to... (see above)
+      └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
-226 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
-234 [RESEARCHED] — Fix the state-write.sh spill-name collision that silently...
+234 [PLANNED] — Fix the state-write.sh spill-name collision that silently...
+  └─ 200 [PLANNING] — Close the consumer-repo deploy propagation gap that leaves... (see above)
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -101,11 +106,12 @@ next_project_number: 235
 ## Tasks
 
 ### 234. Fix the state-write.sh spill-name collision that silently discards every --argjson-file binding after the first
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md]
+- **Plan**: [234_fix_state_write_spill_name_collision/plans/01_spill-name-allocation-fix.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -201,10 +207,10 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 226. Fix scoped commit dropping staged deletions
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 206
 - **Research**: [226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**).
@@ -442,10 +448,10 @@ AMENDMENT (2026-09-14). A follow-on task (this task now depends on it) makes the
 ---
 
 ### 213. Fix forced /orchestrate phases: pass focus text through, stop after the last forced phase, reset the cycle bound per run, admit by artifact
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 209
 - **Research**: [213_thread_focus_prompt_into_cycle_plan/reports/01_focus-prompt-forced-phase-cycle-plan.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
@@ -750,7 +756,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 209. Set up a fresh repo specs/ state and runtime-file ignore rules automatically
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1042,7 +1048,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 206. Fix test fixtures missing task lookup lib
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: general
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1231,10 +1237,10 @@ second should make sure all three entries read as a coherent set.
 ---
 
 ### 200. Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 188, Task 194, Task 206, Task 209, Task 213, Task 226, Task 234
 - **Research**: [200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
@@ -1382,7 +1388,7 @@ re-deciding declaration granularity here.
 ---
 
 ### 194. Align lifecycle agent contracts on .orchestrator-handoff.json writing
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1500,7 +1506,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 188. Predispatch review archived dependency false positive
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 197
