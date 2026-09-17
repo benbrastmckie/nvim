@@ -223,19 +223,19 @@ agents before editing. If a fifth prohibition surfaces, report it rather than si
 
 ---
 
-### Phase 3: Founder Extension Rollout (15 agents) [NOT STARTED]
+### Phase 3: Founder Extension Rollout (15 agents) [COMPLETED]
 
 **Goal**: Add the canonical block to every zero-count `founder` agent, using the variant matching the
 `routing_agents` phase key that reaches it.
 
 **Tasks**:
-- [ ] For each file below, determine its dispatch phase from
+- [x] For each file below, determine its dispatch phase from
       `agent-system/extensions/founder/manifest.json`'s `routing_agents` block (research / plan /
       implement) and select the matching canonical variant.
-- [ ] Insert the block as a `###` subsection adjacent to the agent's existing return-metadata /
-      wrap-up stage, following Phase 1's placement precedent.
-- [ ] Commit per file (or in small same-variant groups where files are near-identical clones), each
-      as a green sub-step.
+- [x] Insert the block as a `###` subsection adjacent to the agent's existing return-metadata /
+      wrap-up stage, following Phase 1's placement precedent. *(completed: all 15 founder agents)*
+- [x] Commit per file (or in small same-variant groups where files are near-identical clones), each
+      as a green sub-step. *(15 commits)*
 
 **Timing**: 1.5 hours
 
