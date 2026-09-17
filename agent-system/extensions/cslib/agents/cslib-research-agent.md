@@ -296,16 +296,35 @@ object. Minimal example:
 See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
 full field spec.
 
-**`.orchestrator-handoff.json` prohibition**: this agent MUST NOT write
-`.orchestrator-handoff.json`, in any mode, including when `orchestrator_mode: true` is present in
-the delegation context. `.orchestrator-handoff.json` is formally hard-mode-implement-only per
-`.claude/docs/architecture/handoff-schema.md`; research agents return status exclusively through
-`.return-meta.json`.
+### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
 
-**Defensive case, if this prohibition is ever reversed**: should a future variant of this agent
-write `.orchestrator-handoff.json`, it MUST echo `dispatch_seq` unchanged from its own delegation
-context — copy the value verbatim (never invent, increment, or recompute one), or omit it when
-the delegation context omits it. See `context/patterns/dispatch-report-not-termination.md`.
+On every dispatch whose delegation context carries `orchestrator_mode: true`, this agent MUST
+write `.orchestrator-handoff.json` before returning — on success and on a `partial` or `blocked`
+outcome alike.
+
+Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
+absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
+delegation context. If neither is present, STOP and say so in your final message rather than
+guessing. NEVER write a bare `.orchestrator-handoff.json` filename: it resolves against the
+ambient working directory at Write-tool-call time and strands the handoff outside the task
+directory, where the orchestrator will read the previous cycle's leftover file instead. See
+`context/contracts/wrap-up.md`, "Write location", for the full rule.
+
+A delegation context that does NOT carry `orchestrator_mode: true` carries no handoff obligation;
+do not write the file in that case.
+
+**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field, copy
+its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment, or
+recompute one; if it is absent, omit it from the handoff too. This is the orchestrator-minted
+per-dispatch identity the orchestrate engine compares against the value it minted for this cycle —
+see `context/patterns/dispatch-report-not-termination.md`.
+
+Use the shape defined by `context/schemas/orchestrator-handoff-schema.json` (prose companion:
+`docs/architecture/handoff-schema.md`). `phases_completed` and `phases_total` are TOP-LEVEL
+integers — never `null`, never fabricated. Set `phases_completed` and `phases_total` from the
+task's current plan when one exists, otherwise both to `0`. `status` is one of `researched`,
+`partial`, `blocked`. `artifacts[]` entries MUST use that schema's `{type, path, summary}` object
+shape, never a bare path string.
 
 ## Error Handling
 
@@ -349,6 +368,9 @@ When a search tool rate limit is hit:
 10. **Apply MCP recovery pattern** when tools fail (retry, alternative, continue)
 11. **NEVER call lean_diagnostic_messages or lean_file_outline** (blocked tools)
 12. **Search both Foundations/Logic/ and Logics/** for logic-related concepts
+13. **Write `.orchestrator-handoff.json`** on every dispatch whose delegation context carries
+    `orchestrator_mode: true` (see the `.orchestrator-handoff.json` (orchestrator-mode dispatches)
+    subsection above)
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
@@ -367,5 +389,5 @@ When a search tool rate limit is hit:
 13. **Suggest introducing new axioms as a solution** - must find structural proof approach
 14. **Ignore literature sources referenced in the task** - if a paper or proof is cited, extraction is mandatory
 15. **Recommend new abstractions without checking Foundations/ first** - reuse-first is mandatory
-16. Write .orchestrator-handoff.json -- research agents never write a handoff, in any mode (see
-    Stage 7)
+16. Write `.orchestrator-handoff.json` when the delegation context does NOT carry
+    `orchestrator_mode: true`
