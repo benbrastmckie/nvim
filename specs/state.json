@@ -1477,5 +1477,14 @@
       "vault_dir": "specs/vault/01-vault/",
       "created_at": "2026-08-10T19:49:05Z"
     }
-  ]
+  ],
+  "artifacts": {
+    "227": [
+      {
+        "type": "report",
+        "path": "specs/227_resolve_source_store_target_in_deployed_trees/reports/01_source-store-rule-has-no-target.md",
+        "created": "2026-09-17T20:12:56Z"
+      }
+    ]
+  }
 }
