@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 206,
+  "session_id": "sess_1789687584_deac58_206",
+  "dispatch_seq": 3,
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md",
+      "summary": "Root-causes and experimentally-verified fixes for both remaining red suites (missing task-lookup-lib.sh in test-postflight-deploy-gate.sh's REQUIRED_LIBS; a false-positive in lint-json-channel-discipline.sh's check_emit_perline redirect exclusion), plus a full item-(d) audit finding two more fixtures (test-handoff-dispatch-identity.sh, test-git-commit-scoped.sh) with the same missing-lib gap, both currently dormant rather than red."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/tests/, a fixture that copies task-lock.sh (or any script with an unconditional `source lib/X.sh`, no `[ -f ]` guard) via an explicit REQUIRED_LIBS-style array must include every lib that unconditionally-sourced script itself sources, or the fixture silently breaks even if the missing lib is unrelated to what the test is actually exercising. Contrast with skill-base.sh's soft-guarded sourcing of the same lib (`if [ -f ... ]; then source; else WARNING fallback; fi`), which degrades gracefully instead. When auditing for this class of gap, check not just whether a suite is currently red, but whether a --dry-run flag or similar is masking a code path that would otherwise execute the unconditionally-sourced script.",
+      "category": "PATTERN",
+      "source_artifact": "specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shell-test-fixtures", "task-lock.sh", "explicit-lib-list", "unconditional-source", "dormant-gap"]
+    },
+    {
+      "content": "lint-json-channel-discipline.sh's check_emit_perline() heuristic (per-line EMIT direction) excludes only >&2, >&3, and $(...)-captured lines when collecting stdout-write candidates -- it does not recognize a generic `> \"$var\"` file redirect, causing a false-positive VIOLATION on any line that writes to a temp file via a variable-named path. Fix: add `grep -vE '>[[:space:]]*\"?\\$\\{?[A-Za-z_]'` to the exclusion pipeline (scoped to variable-named redirect targets, conservative by design). Verified this does not weaken detection of genuine multi-write violations.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lint-json-channel-discipline", "shell-lint", "false-positive", "redirect-detection", "check_emit_perline"]
+    }
+  ],
+  "next_steps": "Run /plan 206 to create implementation plan"
+}
