@@ -4,25 +4,35 @@
 # single-task features into the batch engine, Decision 1) the batch engine's shared
 # read/seed/flush helper for the same `.orchestrator-loop-guard` file's `cycle_count` field.
 #
-# Positional form (`<task_dir> <handoff_path_abs>`) covers ONLY the portion of single-task Stage 2
-# that sits strictly BEFORE the `budget-continuation-override:begin` sentinel (locked, never
-# touched — see specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md) and the small
-# blocker-escalation counter pair that sits strictly AFTER the locked region's resume-read block.
-# Nothing inside the locked region itself (budget-continuation-override:begin through each
-# engine's resume anchor, per test-loop-guard-budget-override.sh) is touched by this script or
-# its call sites. This form is deliberately a SMALL extraction — most of Stage 2 is either
-# genuinely per-engine (MAX_CYCLES value, the hard-only loop-guard-staleness detector, churn-state
-# init, current_plan_version) or inside the locked region. A small measured byte count here is the
-# correct outcome, not a shortfall (see the plan's Phase 6 Scope Hypothesis).
+# Positional form (`<task_dir> <handoff_path_abs>`) covers ONLY the small blocker-escalation
+# counter pair and the portion of single-task Stage 2 this script's own dedup originally
+# extracted. HISTORICAL NOTE (checked and confirmed stale during the per-run cycle-budget task):
+# an earlier `budget-continuation-override:begin`/`:end` sentinel region, once "locked" against
+# this extraction and documented at specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md,
+# no longer exists anywhere in this codebase -- the single-task engine that carried it, and the
+# operator-typed `--continue-budget` override it protected, are both fully retired (see this
+# script's own `--flush`/`--flush-seq` doc above for the current, per-run contract). Nothing
+# about this file's own extraction scope changed as a result; this paragraph is corrected, not
+# the code. This form is deliberately a SMALL extraction — most of Stage 2 is either genuinely
+# per-engine (MAX_CYCLES value, the hard-only loop-guard-staleness detector, churn-state init,
+# current_plan_version) or was inside the now-retired region. A small measured byte count here
+# is the correct outcome, not a shortfall.
 #
-# `--seed`/`--flush` forms back Decision 1's per-task cumulative cycle budget for the BATCH engine
-# (`orchestrate-cycle-plan.sh`), which has no locked region and no single-task Stage 2 call site of
-# its own. They touch ONLY the `cycle_count` field and `last_updated`; every other field in the
-# guard file's existing schema (`dispatch_seq_counter`, `detected_defects`,
-# `burnout_signals_this_session`, `max_cycles`, `infra_failures`, `session_id`, `plan_version`,
-# ...) is read/write-preserved untouched, matching the plan's "leave that file's JSON schema
-# unchanged" instruction — no new schema is invented, only this one field is touched by these two
-# new forms.
+# `--seed`/`--flush` forms originally backed Decision 1's per-task cumulative cycle budget for the
+# BATCH engine (`orchestrate-cycle-plan.sh`), which has no locked region and no single-task Stage 2
+# call site of its own. As of the per-run cycle-budget task, `cycle_count` is READ (via `--seed`)
+# for backward-compat visibility ONLY -- the batch engine no longer seeds its own in-session
+# `cycle_counts[t]` from it, and no longer calls `--flush` to persist it (the per-task work-cycle
+# budget now starts at 0 every run and is never carried cross-invocation; re-running /orchestrate
+# is the explicit way to continue). `--flush` itself is UNCHANGED and still writable by any other
+# caller that wants to persist `cycle_count` for its own (non-budgeting) purposes; this script
+# does not know or care who calls it. `--flush-seq` is the NEW form (this same task): it persists
+# `dispatch_seq_counter` durably, the one piece of per-task state that MUST survive across runs
+# (a repeated `dispatch_seq` would let a new run's dispatch file silently overwrite a prior run's
+# still-live one) even though the cycle budget itself does not. Every other field in the guard
+# file's existing schema (`detected_defects`, `burnout_signals_this_session`, `max_cycles`,
+# `infra_failures`, `session_id`, `plan_version`, ...) is read/write-preserved untouched by any of
+# these forms, matching the plan's "leave that file's JSON schema unchanged" instruction.
 #
 # Usage:
 #   orchestrate-loop-guard-init.sh <task_dir> <handoff_path_abs>
@@ -36,15 +46,19 @@
 #       max_blocker_escalations   int     2
 #
 #   orchestrate-loop-guard-init.sh --seed <task_dir_abs>
-#     READ-ONLY peek at "<task_dir_abs>/.orchestrator-loop-guard"'s `cycle_count` field — no
-#     mutation, no `mkdir -p`, safe to call under --dry-run (mirrors this codebase's existing
-#     read-only PROBE convention, e.g. `task-lock.sh check` vs. `acquire`). A missing directory,
-#     missing file, or unparseable JSON all degrade to `cycle_count: 0` (first sight of this task
-#     — the same "resume at 0" posture the single-task locked region's own resume-read applies to
-#     a pre-schema guard file via its `// 0` idiom). Also peeks `pending_dispatch` (see
-#     `--record-pending`/`--clear-pending` below), defaulting to `null` for a pre-schema guard
-#     file — the same forward-compatibility posture as `cycle_count`'s `// 0`.
-#     Output: `{"cycle_count": <int>, "pending_dispatch": <object>|null}`.
+#     READ-ONLY peek at "<task_dir_abs>/.orchestrator-loop-guard"'s `cycle_count` and
+#     `dispatch_seq_counter` fields — no mutation, no `mkdir -p`, safe to call under --dry-run
+#     (mirrors this codebase's existing read-only PROBE convention, e.g. `task-lock.sh check` vs.
+#     `acquire`). A missing directory, missing file, or unparseable JSON all degrade to
+#     `cycle_count: 0`/`dispatch_seq_counter: 0` (first sight of this task — the same "resume at
+#     0" posture the single-task locked region's own resume-read applies to a pre-schema guard
+#     file via its `// 0` idiom). `cycle_count` is kept for backward-compat/inert-visibility only
+#     -- the batch engine's per-task work-cycle budget no longer seeds from it (see the per-run
+#     cycle-budget task's Decision (a)); `dispatch_seq_counter` IS still actively seeded by the
+#     batch engine, to guarantee a dispatch_seq never repeats across runs. Also peeks
+#     `pending_dispatch` (see `--record-pending`/`--clear-pending` below), defaulting to `null`
+#     for a pre-schema guard file — the same forward-compatibility posture as `cycle_count`'s `// 0`.
+#     Output: `{"cycle_count": <int>, "pending_dispatch": <object>|null, "dispatch_seq_counter": <int>}`.
 #
 #   orchestrate-loop-guard-init.sh --flush <task_dir_abs> <cycle_count>
 #     Read-modify-write "<task_dir_abs>/.orchestrator-loop-guard": sets `.cycle_count` to the given
@@ -53,8 +67,26 @@
 #     routed through the batch path with no prior single-task guard file gets one seeded here,
 #     with every other field forward-compatible-defaulted (`// 0`, `// []`) by its later readers
 #     (`orchestrate-churn.sh`'s `--burnout-signal`, a future single-task resume) exactly as an
-#     old-format guard already is today.
+#     old-format guard already is today. UNCHANGED by the per-run cycle-budget task: this form
+#     still exists and is still correct for any OTHER caller wanting to persist `cycle_count` --
+#     the batch engine itself simply no longer calls it for budgeting purposes (see `--flush-seq`
+#     below for the field the batch engine calls THIS form's sibling for instead).
 #     Output: `{"cycle_count": <int>}` (echoes the value just written).
+#
+#   orchestrate-loop-guard-init.sh --flush-seq <task_dir_abs> <dispatch_seq_counter>
+#     Read-modify-write "<task_dir_abs>/.orchestrator-loop-guard": sets `.dispatch_seq_counter` to
+#     the given non-negative integer and `.last_updated` to now, preserving every other field
+#     (mirrors `--flush` exactly, but for `dispatch_seq_counter` instead of `cycle_count`). Creates
+#     the file/directory if absent, exactly like `--flush`. This is the batch engine's durable
+#     persistence for the ONE piece of per-task dispatch-sequencing state that MUST survive across
+#     `/orchestrate` runs even though the per-task cycle budget no longer does: a repeated
+#     `dispatch_seq` value across two separate runs would let a new run's dispatch file silently
+#     collide with (overwrite) a prior run's still-live one. Called at every dispatch_seq mint site
+#     in `orchestrate-cycle-plan.sh` (both the main per-task dispatch loop and the aux_dispatch[]
+#     emission loop) -- chosen over reusing `skill-base.sh`'s `skill_orchestrate_mint_dispatch_seq`
+#     because the aux emission loop mints BEFORE `skill-base.sh` is sourced in that script, and a
+#     single uniform mechanism at both call sites is simpler than splitting between two.
+#     Output: `{"dispatch_seq_counter": <int>}` (echoes the value just written).
 #
 #   orchestrate-loop-guard-init.sh --record-pending <task_dir_abs> <json>
 #     Read-modify-write: sets `.pending_dispatch` to the given JSON object verbatim (must already
@@ -75,8 +107,8 @@
 #     ledger entry that was never recorded (no directory at all) has nothing to do. Output:
 #     `{"pending_dispatch": null}`.
 #
-# Exit codes: 0 on normal completion. 2 — usage error, jq unavailable, a non-integer `--flush`
-# cycle_count argument, or invalid JSON given to `--record-pending`.
+# Exit codes: 0 on normal completion. 2 — usage error, jq unavailable, a non-integer `--flush`/
+# `--flush-seq` count argument, or invalid JSON given to `--record-pending`.
 
 set -uo pipefail
 
@@ -95,13 +127,43 @@ case "${1:-}" in
     seed_guard_file="${seed_task_dir}/.orchestrator-loop-guard"
     seed_cycle_count=0
     seed_pending_json="null"
+    seed_dispatch_seq_counter=0
     if [ -f "$seed_guard_file" ] && jq empty "$seed_guard_file" 2>/dev/null; then
       seed_cycle_count=$(jq -r '.cycle_count // 0' "$seed_guard_file" 2>/dev/null) || seed_cycle_count=0
       case "$seed_cycle_count" in ''|*[!0-9]*) seed_cycle_count=0 ;; esac
       seed_pending_json=$(jq -c '.pending_dispatch // null' "$seed_guard_file" 2>/dev/null) || seed_pending_json="null"
+      seed_dispatch_seq_counter=$(jq -r '.dispatch_seq_counter // 0' "$seed_guard_file" 2>/dev/null) || seed_dispatch_seq_counter=0
+      case "$seed_dispatch_seq_counter" in ''|*[!0-9]*) seed_dispatch_seq_counter=0 ;; esac
     fi
-    jq -n -c --argjson c "$seed_cycle_count" --argjson p "$seed_pending_json" \
-      '{cycle_count: $c, pending_dispatch: $p}'
+    jq -n -c --argjson c "$seed_cycle_count" --argjson p "$seed_pending_json" --argjson d "$seed_dispatch_seq_counter" \
+      '{cycle_count: $c, pending_dispatch: $p, dispatch_seq_counter: $d}'
+    exit 0
+    ;;
+  --flush-seq)
+    fs_task_dir="${2:-}"
+    fs_seq="${3:-}"
+    if [ -z "$fs_task_dir" ] || [ "$#" -ne 3 ]; then
+      echo "ERROR: orchestrate-loop-guard-init.sh: usage: orchestrate-loop-guard-init.sh --flush-seq <task_dir_abs> <dispatch_seq_counter>" >&2
+      exit 2
+    fi
+    case "$fs_seq" in
+      ''|*[!0-9]*)
+        echo "ERROR: orchestrate-loop-guard-init.sh: --flush-seq dispatch_seq_counter '${fs_seq}' is not a non-negative integer." >&2
+        exit 2
+        ;;
+    esac
+    mkdir -p "$fs_task_dir"
+    fs_guard_file="${fs_task_dir}/.orchestrator-loop-guard"
+    fs_base="{}"
+    if [ -f "$fs_guard_file" ] && jq empty "$fs_guard_file" 2>/dev/null; then
+      fs_base=$(cat "$fs_guard_file")
+    fi
+    printf '%s\n' "$fs_base" | jq -c \
+      --argjson s "$fs_seq" \
+      --arg updated "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      '.dispatch_seq_counter = $s | .last_updated = $updated' \
+      > "${fs_guard_file}.tmp" && mv "${fs_guard_file}.tmp" "$fs_guard_file"
+    jq -n -c --argjson s "$fs_seq" '{dispatch_seq_counter: $s}'
     exit 0
     ;;
   --flush)

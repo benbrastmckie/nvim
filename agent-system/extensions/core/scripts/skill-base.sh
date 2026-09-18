@@ -1352,13 +1352,14 @@ skill_corroborate_phase_counts() {
 # Stage 4/5 — since merged into this one file's `$hard_mode`-forked branches.
 # skill-orchestrate/SKILL.md keeps a <=3-line local function with the SAME NAME the pre-dedup
 # code used (`mint_dispatch_seq`, `append_detected_defect`, `hard_orchestrate_propagate_completion`),
-# delegating to these shared implementations — "named-shim preservation". This is required, not
-# stylistic: two tests (test-handoff-dispatch-identity.sh, test-loop-guard-budget-override.sh)
-# `eval` literal SKILL.md regions in a subshell whose cwd is a temp workdir, and one of them stubs
-# `append_detected_defect` by that exact name, so a call site inside those regions must never be
-# renamed or replaced by a script invocation. See
-# specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md for the full evidence this design
-# is built on.
+# delegating to these shared implementations — "named-shim preservation". HISTORICAL NOTE
+# (checked during the per-run cycle-budget task): the two tests this paragraph used to name as
+# the reason for that preservation (one of which, test-loop-guard-budget-override.sh, is now
+# deleted along with the `--continue-budget` mechanism it covered) no longer `eval`/stub these
+# names by exact string match — a `grep -rl append_detected_defect` over scripts/tests/ today
+# finds nothing. The named-shim convention itself is left unchanged (harmless either way, and
+# still the documented contract for skill-orchestrate/SKILL.md's own local shims), but the
+# specific test-coupling rationale this paragraph gave is stale and not restated here.
 #
 # Per the "no ambient global for a value that differs per engine" rule, `loop_guard_file` and the
 # notice prefix are always explicit parameters below. `task_number` and `cycle_count` remain

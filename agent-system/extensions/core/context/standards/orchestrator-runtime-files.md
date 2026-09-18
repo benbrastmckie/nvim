@@ -213,67 +213,77 @@ identical unconditional-trust shape in its own Stage 2 and is not changed by thi
 the Class Table row and Rationale paragraph above, both of which now state this asymmetry
 explicitly rather than leaving it to be inferred.
 
-### `cycle_count` semantics and the budget-continuation override (Defect B)
+### `cycle_count` semantics: per-run, not cumulative (per-run cycle-budget contract)
 
-`cycle_count` (the loop guard's work-cycle budget counter) is **per-task and cumulative across
-invocations, by design.** It is deliberately NOT reset when a new `session_id` appears, because
-`session_id` is regenerated on every `/orchestrate` invocation regardless of whether any work
-progressed — gating the budget on it would let an operator bypass `MAX_CYCLES` simply by
-re-invoking the command. `test-session-runtime-files.sh` Case 3 is the regression protecting this
-decision; no mechanism described in this document may disturb it.
+`cycle_count`, as read by the BATCH engine (`orchestrate-cycle-plan.sh`), is **per-task and
+per-RUN — it resets to zero at the start of every `/orchestrate` invocation, and is never seeded
+from or flushed to this durable guard file for budgeting purposes.** This supersedes an earlier
+design (the "cumulative across invocations, by design" contract this section used to document)
+whose own operator-typed continuation override (an authorization flag to reset the counter and
+continue) is now WITHDRAWN end to end: there is no override any more, because there is no
+cross-invocation counter left to override. The budget exists to bound work WITHIN one run (e.g.
+a single hard, long-running proof or implementation); re-running `/orchestrate` is the explicit,
+ordinary way to continue past an exhausted per-run budget — nothing special-cased, nothing
+flag-gated.
 
-Both engines implement an explicit, operator-typed, loudly-logged **budget-continuation
-override** (`--continue-budget`) for the one legitimate case this semantics creates: a genuinely
-exhausted budget with real work still remaining. When `cycle_count >= MAX_CYCLES` is detected at
-Stage 2 (before the main loop opens):
-- **Flag absent**: the engine refuses immediately with an honest message naming the actual resume
-  command, rather than entering the main loop and running zero iterations before falling through
-  to a stale "MAX_CYCLES reached" message.
-- **Flag present**: the exhausted guard is archived aside (copied, for auditability) and the SAME
-  guard file is reinitialized in place with `cycle_count` reset to `0` while every other
-  cross-invocation history field — `dispatch_seq_counter` (Defect A; must never repeat a value
-  within a task), `detected_defects`, `plan_version`, `max_cycles` — is carried forward
-  unchanged. This is a distinct code path from the `loop-guard-staleness` detector's
-  archive-and-fall-through-to-fresh-init above; falling through to fresh-init here would reset
-  `dispatch_seq_counter` to `0`, silently violating the Defect A "never repeats" invariant.
+The field `cycle_count` itself is left alone in the guard file's own JSON schema: never read,
+never written by the batch engine any more, but not deleted or migrated either — an old guard
+file predating this change needs no special handling, and any OTHER caller wanting to persist a
+`cycle_count` for its own purposes (e.g. a future single-task resume) keeps working against
+`orchestrate-loop-guard-init.sh --flush` unchanged. `test-session-runtime-files.sh` Case 3, which
+protected the OLD cumulative-across-invocations contract, is inverted (not merely updated) to
+assert the new per-run contract instead — a fresh session must start at `cycle_counts = 0`
+regardless of what the durable file's `cycle_count` says.
 
-**Asymmetry decision (recorded once, referenced by both engines' own Stage 2 comments so all
-copies agree)**: budget exhaustion is deliberately NOT folded into the 3-signal
-`loop-guard-staleness` detector as a fourth signal. That detector's premise is "this guard's
-content has gone stale or been superseded" — a schema/lineage/age mismatch. An exhausted guard is
-neither stale nor superseded; its `cycle_count` is completely accurate, it has simply reached the
-budget ceiling. Conflating the two would misrepresent an accurate, current guard as a
-data-integrity problem rather than what it actually is: a budget limit awaiting an explicit human
-decision to lift. Whether base mode should ever gain the general 3-signal staleness detector at
-all remains a separate, undecided question — this override does not decide it, in either engine.
+**What DOES still cross invocations**: `dispatch_seq_counter` (Defect A; must never repeat a
+value within a task across separate runs) is durably seeded (via `--seed`, read-only peek, taking
+the max of the durable value and whatever the in-session counter already holds) and durably
+flushed (via the NEW `orchestrate-loop-guard-init.sh --flush-seq` form) at every dispatch_seq mint
+site in the batch engine — both the main per-task dispatch loop and the aux_dispatch[] emission
+loop. This is the one piece of per-task state whose cross-run persistence is load-bearing: unlike
+the cycle budget, a repeated `dispatch_seq` would let a new run's dispatch file silently collide
+with (overwrite) a prior run's still-live one.
 
-**Guard lifecycle is unchanged by this override.** The loop guard is still `rm -f`'d only at
-full-loop termination (see the Class Table row above) — a partial exit via the flag-absent
-refusal, or any other partial exit, leaves the guard fully in place, exactly as before. The
-guard's entire job is to persist across exactly this gap so a subsequent `--continue-budget`
-invocation has `cycle_count` to read.
+**Loop-guard-staleness detector disposition**: the 3-signal `loop-guard-staleness` detector
+(schema/lineage/age mismatch, hard mode only — see above) is now MOOT for budgeting purposes in
+the batch engine, because nothing about `cycle_count` is trusted for budgeting across invocations
+any more — there is no cumulative counter left for a stale guard to corrupt. The detector itself
+is unchanged and still fires for its own original purpose (protecting `detected_defects`,
+`plan_version`, and the churn-state coupling described above); this is a scoping note about what
+it no longer needs to protect, not a change to its own mechanics.
+
+**Asymmetry note, retained for history**: the OLD design's "Asymmetry decision" (why budget
+exhaustion was never folded into the 3-signal staleness detector as a fourth signal) is now
+vacuous — there is no budget-exhaustion override left to fold in or keep separate. Recorded here
+only so a reader following an old cross-reference to this subsection is not left wondering where
+that paragraph went.
+
+**Guard lifecycle is otherwise unchanged.** The loop guard is still `rm -f`'d only at full-loop
+termination (see the Class Table row above); a partial exit leaves the guard fully in place,
+exactly as before. Its ongoing job, post-this-change, is `dispatch_seq_counter` durability and
+whatever else a future single-task resume needs from it — not per-task cycle budgeting.
 
 ### `pending_dispatch`: the durable, cross-invocation half of "do not charge for a read"
 
 `pending_dispatch` — `{seq: int, phase: string, forced: bool, dispatch_file: string,
-recorded_at: string}` or absent — is a NEWER field on this same guard file, written by
-`orchestrate-loop-guard-init.sh --record-pending` at the same charge site that increments
-`cycle_count`, and cleared by `--clear-pending` (called unconditionally by
-`orchestrate-cycle-postflight.sh` on every outcome — success, failure, defer, off-schema all
-count — since reaching postflight at all is proof the recorded dispatch was consumed). Unlike
-`dispatch_seq_counter`/`detected_defects`/`plan_version`/`max_cycles` above, it is NOT
-unconditionally carried forward: `--continue-budget`'s reset explicitly clears it too (alongside
-resetting `cycle_count` to `0`), because a stale entry from the now-exhausted (and separately
-archived) cycle must not survive into the freshly reset guard and be mistaken for a
-currently-unconsumed charge.
+recorded_at: string}` or absent — is a field on this same guard file, written by
+`orchestrate-loop-guard-init.sh --record-pending` at the same charge site that durably flushes
+`dispatch_seq_counter` (via the NEW `--flush-seq` form; see above — this site no longer touches
+durable `cycle_count` at all, per the per-run cycle-budget contract), and cleared by
+`--clear-pending` (called unconditionally by `orchestrate-cycle-postflight.sh` on every outcome —
+success, failure, defer, off-schema all count — since reaching postflight at all is proof the
+recorded dispatch was consumed). It is unconditionally carried forward like
+`dispatch_seq_counter`/`detected_defects`/`plan_version`/`max_cycles` above — there is no
+budget-reset override any more to specially clear it early.
 
 The read side lives in `orchestrate-cycle-plan.sh`'s live per-task dispatch loop, immediately
-before the `cycle_count` increment: if a seeded `pending_dispatch` (read via
+before the in-session `cycle_counts[t]` increment: if a seeded `pending_dispatch` (read via
 `orchestrate-loop-guard-init.sh --seed`, which now also returns this field) matches the freshly
 composed row in `(phase, forced)` AND its recorded `dispatch_file` still exists on disk (proof no
 postflight ever ran to consume it), the composition reuses the recorded `seq` and skips both the
-`cycle_count` increment and the `--flush` call — this is a replay of an already-charged,
-never-consumed dispatch, not a genuinely new cycle. This closes the specific failure chain a live
+in-session `cycle_counts[t]` increment and the durable `--flush-seq` call — this is a replay of
+an already-charged, never-consumed dispatch, not a genuinely new cycle. This closes the specific
+failure chain a live
 `/orchestrate` run reproduced: a defect that let one invocation dispatch nothing while still
 charging a cycle left that charge permanently stranded, since the NEXT invocation started from a
 fresh, unrelated `mt_state_file` (keyed by a new `session_id`) with no way to see it — the durable

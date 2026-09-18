@@ -5,8 +5,10 @@
 #
 # This suite closes a coverage gap neither existing dispatch_seq suite provides:
 # test-handoff-dispatch-identity.sh injects dispatch_seq as a fixture and exercises only the
-# downstream Stage 5 comparison; test-loop-guard-budget-override.sh asserts counter survival
-# across a budget re-init. Neither calls the mint function itself. Fixed defect: an earlier body
+# downstream Stage 5 comparison; test-orchestrate-cycle-plan.sh's Group 8 and
+# test-force-phases.sh's dispatch_seq-durability cases exercise the batch engine's OWN durable
+# seeding/flush call sites end to end, but not this shared mint function's own internals in
+# isolation. Neither calls the mint function itself. Fixed defect: an earlier body
 # derived the minted value from an ambient shell variable (`dispatch_seq_counter=$((dispatch_seq_counter
 # + 1))`), which is unset in a fresh shell/subprocess and silently collapses every mint to 1 for
 # any caller that does not hold a single long-lived shell across the whole orchestration loop.

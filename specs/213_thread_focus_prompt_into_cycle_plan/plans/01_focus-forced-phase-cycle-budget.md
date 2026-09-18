@@ -329,26 +329,26 @@ in scope after all and the phase's step list grows.
 
 ---
 
-### Phase 4: Per-run cycle budget, `--continue-budget` removal, durable dispatch_seq [NOT STARTED]
+### Phase 4: Per-run cycle budget, `--continue-budget` removal, durable dispatch_seq [COMPLETED]
 
 **Goal**: The work-cycle budget starts at 0 every run and is bounded per run (5, or 13 with
 `--hard`); `--continue-budget` no longer exists anywhere in the source store; `dispatch_seq` still
 never repeats within a task across runs.
 
 **Tasks**:
-- [ ] Check once, up front, whether `specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md`
+- [x] Check once, up front, whether `specs/055_dedupe_orchestrate_skill_bodies/locked-regions.md`
       still describes a live region (the research flagged it as likely stale documentation for the
       deleted single-task engine). Record the finding in the phase notes; do not spend effort
       honoring a lock with no referent.
-- [ ] `scripts/orchestrate-cycle-plan.sh` section (a2) (~lines 881-901): stop seeding
+- [x] `scripts/orchestrate-cycle-plan.sh` section (a2) (~lines 881-901): stop seeding
       `.cycle_counts[$t]` from the durable guard's `cycle_count`. `cycle_counts` now starts at 0 in
       each run's `mt_state_file` (the `//= {}` default already gives that). KEEP the
       `pending_dispatch_seed[$t]` peek from the same `--seed` call — that ledger stays durable.
-- [ ] Same section: ADD a durable `dispatch_seq_counter` seed. Read each task's guard file
+- [x] Same section: ADD a durable `dispatch_seq_counter` seed. Read each task's guard file
       `.dispatch_seq_counter` and set `mt_json.dispatch_seq_counter` to the maximum across the
       run's tasks (`//=`-style, first sight only). This closes the cross-run collision the research
       correction above documents.
-- [ ] At the live charge site (~lines 1826-1841): remove the
+- [x] At the live charge site (~lines 1826-1841): remove the
       `orchestrate-loop-guard-init.sh --flush ... "$task_new_cycle_count"` call (budget no longer
       persists) and add a durable seq write for the task just dispatched, so a later run resumes
       past it. Prefer reusing `skill_orchestrate_mint_dispatch_seq` (`scripts/skill-base.sh`
@@ -357,8 +357,8 @@ never repeats within a task across runs.
       (~line 1038) runs before `skill-base.sh` is sourced, give `orchestrate-loop-guard-init.sh` a
       `--flush-seq <task_dir_abs> <seq>` form instead and use it at both mint sites; state which
       option was taken and why.
-- [ ] Keep the per-run bound and the `max_cycles` stop reason unchanged (5 / 13 with `--hard`).
-- [ ] Remove `--continue-budget` end to end: `scripts/orchestrate-cycle-plan.sh` (default at
+- [x] Keep the per-run bound and the `max_cycles` stop reason unchanged (5 / 13 with `--hard`).
+- [x] Remove `--continue-budget` end to end: `scripts/orchestrate-cycle-plan.sh` (default at
       ~line 282, parse arm at ~line 301, `usage()` line, the `MAX_INFRA_FAILURES` bypass condition
       at ~line 1223 — keep the gate, drop the bypass and its "pass --continue-budget" text — and
       the whole budget-exhaustion reset branch at ~lines 1236-1262 including the
@@ -366,19 +366,19 @@ never repeats within a task across runs.
       `--clear-pending` call); `scripts/parse-command-args.sh`; `commands/orchestrate.md` (options
       row + the `continue_budget` delegation-context bullet); `skills/skill-orchestrate/SKILL.md`
       (Setup list + Move 1 flag line).
-- [ ] Update the `MAX_CYCLES` blocked-row reason text to say re-invoking `/orchestrate` is how to
+- [x] Update the `MAX_CYCLES` blocked-row reason text to say re-invoking `/orchestrate` is how to
       continue (there is no override flag any more).
-- [ ] Decide and state whether `cycle_count` stays in the guard file's JSON as inert historical
+- [x] Decide and state whether `cycle_count` stays in the guard file's JSON as inert historical
       data or is dropped. Recommended: leave the field alone (never read, never written by this
       engine) so an old guard file needs no migration; say so in a comment at the seed site.
-- [ ] Rewrite `scripts/tests/test-orchestrate-cycle-plan.sh` Group 8 (~lines 497-611): a fresh
+- [x] Rewrite `scripts/tests/test-orchestrate-cycle-plan.sh` Group 8 (~lines 497-611): a fresh
       session must start at `cycle_counts = 0` regardless of the durable file's `cycle_count`;
       within ONE run the bound still stops the task at 5 (13 with `--hard`); six forced runs in a
       row (separate sessions) are never refused for budget. Add a case asserting `dispatch_seq`
       does not repeat across two runs on the same task.
-- [ ] Invert `scripts/test-session-runtime-files.sh` Case 3 (~lines 191-211) to assert the new
+- [x] Invert `scripts/test-session-runtime-files.sh` Case 3 (~lines 191-211) to assert the new
       contract: `cycle_counts` is not seeded from the durable guard's `cycle_count` for budgeting.
-- [ ] Retire `scripts/tests/test-loop-guard-budget-override.sh` (its whole subject is the removed
+- [x] Retire `scripts/tests/test-loop-guard-budget-override.sh` (its whole subject is the removed
       override). Delete it and remove it from `scripts/tests/run-all.sh` if listed there; if any
       non-override assertion in it is still worth keeping, move that assertion into Group 8 rather
       than keeping the file alive.
@@ -411,7 +411,15 @@ before-count is not 7, reconcile the difference explicitly instead of assuming t
 - `bash scripts/tests/test-orchestrate-cycle-plan.sh`, `bash scripts/test-session-runtime-files.sh`,
   `bash scripts/tests/test-force-phases.sh`, `bash scripts/tests/test-mint-dispatch-seq.sh` all pass.
 - `grep -rn 'continue-budget\|continue_budget\|CONTINUE_BUDGET' agent-system/extensions/core/`
-  returns nothing.
+  returns nothing. *(deviation: altered — 9 hits remain across 3 files: two brief
+  historical-context comments in orchestrate-loop-guard-init.sh/skill-base.sh explaining what
+  was removed and why, plus a new regression test in test-orchestrate-cycle-plan.sh's Group 8
+  that asserts `--continue-budget` is now REJECTED as an unrecognized flag. All live
+  functionality is gone (grep over the executable flag-parsing/budget-decision code paths alone
+  is clean); the task's own top-level ACCEPTANCE wording — "grep finds nothing in the source
+  store outside history" — is followed literally here: these are historical-explanation and
+  removal-proof residue, not live behavior, and a strictly-zero-hits bar would make it
+  impossible to write a test proving the flag is actually rejected.)*
 - `shellcheck` clean on every edited `.sh`.
 - Manual: two consecutive runs on one task produce dispatch files with strictly increasing seq
   numbers and no overwrite.

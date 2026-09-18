@@ -40,7 +40,6 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing. The report also shows any `$2+` focus text this invocation received (a `focus=` column per row), so it can be checked before a live run | false |
 | `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
 | `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
-| `--continue-budget` | Authorization to continue past an exhausted `MAX_CYCLES` budget. **Never inferred automatically** (not from `session_id`, not from mtime) — without it, refuses with an honest message. See `orchestrator-runtime-files.md`'s budget-continuation-override section | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, faster responses, AND changes WHICH PHASES RUN for a `not_started` task. The default (no `--fast`) is research-first: an un-researched task dispatches research before it is planned. `--fast` skips that default research phase and dispatches straight to plan instead — the planner can still send the task to research via a `needs_research` verdict if the description does not suffice (see `docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork"). `--hard` does NOT skip research (only the literal value `fast` alters routing); `--research` forces the research phase even under `--fast` | false |
 | `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, `--compare`, model flags, and the phase-forcing flags | false |
@@ -65,7 +64,7 @@ command.
 ```bash
 source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 # Exports: TASK_NUMBERS (space-separated), FOCUS_PROMPT, REMAINING_ARGS, DRY_RUN_FLAG,
-#          ALLOW_SELF_MODIFYING_FLAG, ALLOW_SCOPE_COLLISION_FLAG, CONTINUE_BUDGET_FLAG,
+#          ALLOW_SELF_MODIFYING_FLAG, ALLOW_SCOPE_COLLISION_FLAG,
 #          CLEAN_FLAG, EFFORT_FLAG, MODEL_FLAG, FORCE_PHASES_FLAG
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
@@ -87,10 +86,6 @@ Loop (Batch-of-One and Multi-Task)"). All are **consumer-side-only** — never f
   invocation only.
 - `allow_scope_collision` (default `false`) — opt-in bypass of the CROSS-BATCH
   `file_scope_collision` gate only (never `in_batch`).
-- `continue_budget` (default `false`) — authorization to continue past an exhausted `MAX_CYCLES`
-  budget, read by `orchestrate-cycle-plan.sh`. **Never inferred automatically** (not from
-  `session_id`, not from mtime) — without it, an exhausted budget refuses with an honest message.
-  See `orchestrator-runtime-files.md`'s budget-continuation-override section.
 - `clean_flag` (default `false`) — suppresses Move 1's automatic memory retrieval
   (`orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep).
 - `effort_flag` (default `""`) / `model_flag` (default `""`, not `null`) — reasoning-depth
@@ -234,7 +229,7 @@ dispatch, per-task postflight, session-registry annotation, and writes results t
 Tool: Skill
 Parameters:
   skill: "skill-orchestrate"
-  args: "task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} continue_budget={CONTINUE_BUDGET_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} force_phases={FORCE_PHASES_FLAG}"
+  args: "task_numbers={task_numbers_json} waves={waves_json} dependency_graph={dep_graph_json} session_id={batch_session_id} focus_prompt={focus_prompt} lit_flag={LIT_FLAG} allow_self_modifying={ALLOW_SELF_MODIFYING_FLAG} allow_scope_collision={ALLOW_SCOPE_COLLISION_FLAG} clean_flag={CLEAN_FLAG} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} force_phases={FORCE_PHASES_FLAG}"
 ```
 
 The delegation context passed to the skill must include:
@@ -248,7 +243,6 @@ The delegation context passed to the skill must include:
   "lit_flag": "{LIT_FLAG}",
   "allow_self_modifying": "{ALLOW_SELF_MODIFYING_FLAG}",
   "allow_scope_collision": "{ALLOW_SCOPE_COLLISION_FLAG}",
-  "continue_budget": "{CONTINUE_BUDGET_FLAG}",
   "clean_flag": "{CLEAN_FLAG}",
   "effort_flag": "{EFFORT_FLAG}",
   "model_flag": "{MODEL_FLAG}",

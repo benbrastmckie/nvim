@@ -512,11 +512,16 @@ for n in 710 711 712 713; do
 done
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-# Group 8: Decision 1 — per-task cumulative cycle budget (durable across sessions, mode-aware
-# max_cycles, --continue-budget reset)
+# Group 8: Decision (a) — per-RUN cycle budget (resets every /orchestrate run; NOT seeded from
+# the durable guard file's cycle_count any more), mode-aware max_cycles WITHIN one run, six
+# forced runs in a row never refused for budget, and dispatch_seq durability across runs.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 8: per-task cumulative cycle budget"
+info "Group 8: per-RUN cycle budget"
 
+# ── A fresh session starts cycle_counts at 0 regardless of the durable guard file's cycle_count
+# -- the inverted core assertion (was: "resumes the prior cycle_count", now: "never seeded from
+# it at all"). Pre-seed the durable guard file at cycle_count=5 (would have exhausted the OLD
+# cross-invocation budget outright) and confirm a fresh session still dispatches normally.
 write_state <<'EOF'
 {
   "active_projects": [
@@ -526,32 +531,32 @@ write_state <<'EOF'
 EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/801_g8_budget"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_sess_a.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_sess_b.json"
+mkdir -p "$WORKDIR/specs/801_g8_budget"
+jq -n '{cycle_count: 5}' > "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_sess_a.json"
 
-# Invocation 1, session A: live dispatch charges this task's durable guard file to cycle_count=1.
 run_sut --session g8_sess_a -- 801
-guard_file="$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"
-if [ -f "$guard_file" ] && [ "$(jq -r '.cycle_count' "$guard_file")" = "1" ]; then
-  pass "budget: live dispatch flushes cycle_count=1 to the durable per-task guard file"
+if [ "$(jqf '.dispatch | map(select(.task == 801)) | length')" = "1" ]; then
+  pass "budget: a fresh session dispatches normally despite the durable guard's cycle_count=5 (never seeded from it)"
 else
-  fail "budget: durable guard file missing or wrong cycle_count after invocation 1 (got: $(cat "$guard_file" 2>/dev/null || echo MISSING))"
+  fail "budget: a fresh session was blocked despite starting at cycle_counts=0 (stdout: $LAST_STDOUT)"
+fi
+g8a_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g8_sess_a.json"
+if [ "$(jq -r --arg t "801" '.cycle_counts[$t] // 0' "$g8a_mt_state" 2>/dev/null)" = "1" ]; then
+  pass "budget: in-session cycle_counts[801] is 1 after one dispatch this run (not 6)"
+else
+  fail "budget: cycle_counts[801] is not 1 after one dispatch (got: $(jq -c '.cycle_counts' "$g8a_mt_state" 2>/dev/null))"
+fi
+if [ "$(jq -r '.cycle_count // "absent"' "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard")" = "5" ]; then
+  pass "budget: the durable guard's own cycle_count is left untouched (inert historical data, never flushed by this engine any more)"
+else
+  fail "budget: the durable guard's cycle_count was unexpectedly modified (got: $(cat "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"))"
 fi
 
-# Invocation 2, session B: a FRESH session_id (fresh mt_state_file) must still resume from the
-# durable file's cycle_count=1, seeding cycle_counts[801]=1, then charge it to 2 on dispatch --
-# this is the cross-invocation cumulative guarantee Decision 1 exists to preserve. Release session
-# A's task-lock first (mirroring the real postflight's own release once a dispatched agent
-# returns) -- otherwise session B's candidate is merely deferred as locked, never re-evaluated.
-bash "$WORKDIR/.claude/scripts/task-lock.sh" release 801 g8_sess_a >/dev/null 2>&1 || true
-run_sut --session g8_sess_b -- 801
-if [ -f "$guard_file" ] && [ "$(jq -r '.cycle_count' "$guard_file")" = "2" ]; then
-  pass "budget: a second invocation with a FRESH session_id resumes the prior cycle_count (cumulative across invocations)"
-else
-  fail "budget: cross-session resume failed (got: $(cat "$guard_file" 2>/dev/null || echo MISSING))"
-fi
-
-# ── Mode-aware max_cycles: base mode's 5 vs. hard mode's 13, observed behaviorally via --dry-run
-# (dry-run never flushes, so the durable guard file is pre-seeded directly at exactly 5).
+# ── Mode-aware max_cycles bound WITHIN one run: base mode's 5 vs. hard mode's 13. Pre-seed the
+# SESSION's own (in-session) cycle_counts directly rather than looping real dispatches -- this
+# asserts the per-run bound's arithmetic against max_cycles_per_task, not the mechanics of
+# reaching it, which Group 4/5 and elsewhere already exercise via real dispatch charges.
 write_state <<'EOF'
 {
   "active_projects": [
@@ -560,26 +565,27 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-mkdir -p "$WORKDIR/specs/802_g8_mode_aware"
-jq -n '{cycle_count: 5}' > "$WORKDIR/specs/802_g8_mode_aware/.orchestrator-loop-guard"
 rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_base.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_hard.json"
+jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_base.json"
+jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_hard.json"
 
-run_sut --session g8_mode_base --dry-run -- 802
+run_sut --session g8_mode_base -- 802
 if [ "$(jqf '.blocked | map(select(.task == 802)) | length')" = "1" ] && \
    [[ "$(jqf '.blocked | map(select(.task == 802)) | .[0].reason')" == *MAX_CYCLES* ]]; then
-  pass "budget: base mode (max_cycles=5) blocks a candidate already at cycle_count=5"
+  pass "budget: base mode (max_cycles=5) blocks a candidate already at cycle_counts=5 THIS run"
 else
-  fail "budget: base-mode candidate at cycle_count=5 was not blocked for MAX_CYCLES (stdout: $LAST_STDOUT)"
+  fail "budget: base-mode candidate at cycle_counts=5 was not blocked for MAX_CYCLES (stdout: $LAST_STDOUT)"
 fi
 
-run_sut --session g8_mode_hard --dry-run --hard -- 802
+run_sut --session g8_mode_hard --hard -- 802
 if [ "$(jqf '.dispatch | map(select(.task == 802)) | length')" = "1" ]; then
-  pass "budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_count=5"
+  pass "budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_counts=5 THIS run"
 else
-  fail "budget: hard-mode candidate at cycle_count=5 did not dispatch (stdout: $LAST_STDOUT)"
+  fail "budget: hard-mode candidate at cycle_counts=5 did not dispatch (stdout: $LAST_STDOUT)"
 fi
 
-# ── Batch-of-one budget-exhaustion stop, and --continue-budget's reset+resume override.
+# ── Batch-of-one budget-exhaustion stop, WITHIN one run (--dry-run never persists, so this
+# reflects the bound purely from a pre-seeded in-session cycle_counts value).
 write_state <<'EOF'
 {
   "active_projects": [
@@ -588,13 +594,12 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-mkdir -p "$WORKDIR/specs/803_g8_exhausted"
-jq -n '{cycle_count: 5, dispatch_seq_counter: 9, detected_defects: ["kept"]}' > "$WORKDIR/specs/803_g8_exhausted/.orchestrator-loop-guard"
 rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_exhausted_sess.json"
+jq -n --arg t "803" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_exhausted_sess.json"
 
 run_sut --session g8_exhausted_sess -- 803
 if [ "$(jqf '.stop.reason')" = "max_cycles" ]; then
-  pass "budget: a batch-of-one whose only task is budget-exhausted stops with reason=max_cycles"
+  pass "budget: a batch-of-one whose only task is budget-exhausted THIS run stops with reason=max_cycles"
 else
   fail "budget: batch-of-one exhaustion did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
 fi
@@ -603,33 +608,22 @@ if [ "$(jqf '.dispatch | length')" = "0" ]; then
 else
   fail "budget: exhausted batch-of-one unexpectedly dispatched (stdout: $LAST_STDOUT)"
 fi
-
-run_sut --session g8_exhausted_sess --continue-budget -- 803
-exhausted_guard="$WORKDIR/specs/803_g8_exhausted/.orchestrator-loop-guard"
-if [ "$(jqf '.dispatch | map(select(.task == 803)) | length')" = "1" ]; then
-  pass "budget: --continue-budget authorizes dispatching the same exhausted candidate"
+if [[ "$(jqf '.stop.message')" != *continue-budget* ]] && [[ "$(jqf '.stop.message')" == *re-invoke* ]]; then
+  pass "budget: the stop message names re-invoking /orchestrate, not the withdrawn --continue-budget flag"
 else
-  fail "budget: --continue-budget did not dispatch the exhausted candidate (stdout: $LAST_STDOUT)"
-fi
-if [ -f "$exhausted_guard" ] && [ "$(jq -r '.dispatch_seq_counter' "$exhausted_guard")" = "9" ] && \
-   [ "$(jq -r '.detected_defects | length' "$exhausted_guard")" = "1" ]; then
-  pass "budget: --continue-budget's reset preserves dispatch_seq_counter and detected_defects"
-else
-  fail "budget: --continue-budget's reset did not preserve cross-invocation history fields (got: $(cat "$exhausted_guard" 2>/dev/null))"
-fi
-if [ "$(jq -r '.cycle_count' "$exhausted_guard")" = "1" ]; then
-  pass "budget: --continue-budget resets cycle_count to 0 then charges this cycle's own dispatch (now 1)"
-else
-  fail "budget: --continue-budget did not reset+recharge cycle_count correctly (got: $(jq -r '.cycle_count' "$exhausted_guard" 2>/dev/null))"
-fi
-exhausted_archive_count=$(find "$WORKDIR/specs/803_g8_exhausted" -maxdepth 1 -name '.exhausted-loop-guard-*.json' | wc -l)
-if [ "$exhausted_archive_count" -ge 1 ]; then
-  pass "budget: --continue-budget archives the exhausted guard aside for auditability"
-else
-  fail "budget: --continue-budget did not archive the exhausted guard"
+  fail "budget: the stop message still references --continue-budget, or does not name re-invocation (got: $(jqf '.stop.message'))"
 fi
 
-# ── Mixed batch: one task's budget exhaustion excludes only that task, never the whole batch.
+# ── --continue-budget is withdrawn end to end: it is now an ordinary unrecognized flag.
+run_sut --session g8_withdrawn_sess --continue-budget -- 803
+if [ "$LAST_EXIT" -eq 2 ] && echo "$LAST_STDERR" | grep -q 'unrecognized flag'; then
+  pass "budget: --continue-budget is withdrawn -- rejected as an unrecognized flag (exit 2)"
+else
+  fail "budget: --continue-budget was not rejected as unrecognized (exit $LAST_EXIT, stderr: $LAST_STDERR)"
+fi
+
+# ── Mixed batch: one task's budget exhaustion (THIS run) excludes only that task, never the
+# whole batch.
 write_state <<'EOF'
 {
   "active_projects": [
@@ -639,10 +633,8 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-mkdir -p "$WORKDIR/specs/804_g8_mixed_exhausted"
-jq -n '{cycle_count: 5}' > "$WORKDIR/specs/804_g8_mixed_exhausted/.orchestrator-loop-guard"
-rm -rf "$WORKDIR/specs/805_g8_mixed_fresh"
 rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_mixed_sess.json"
+jq -n --arg t "804" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_mixed_sess.json"
 
 run_sut --session g8_mixed_sess -- 804 805
 if [ "$(jqf '.blocked | map(select(.task == 804)) | length')" = "1" ] && \
@@ -655,6 +647,66 @@ if [ "$(jqf '.dispatch | map(select(.task == 805)) | length')" = "1" ] && [ "$(j
   pass "budget: mixed batch's fresh sibling (#805) still dispatches this cycle; no whole-batch stop"
 else
   fail "budget: mixed batch's fresh sibling failed to dispatch or the batch stopped (stdout: $LAST_STDOUT)"
+fi
+
+# ── Six forced runs in a row (separate sessions) on ONE task are never refused for budget --
+# each run's cycle_counts starts fresh at 0, so no cross-run accumulation can ever reach
+# max_cycles_per_task regardless of how many runs have already happened.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 806, "project_name": "g8_six_runs", "task_type": "general", "status": "not_started", "description": "six-forced-runs-in-a-row candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+six_runs_ok=true
+for i in 1 2 3 4 5 6; do
+  if [ "$i" -gt 1 ]; then
+    bash "$WORKDIR/.claude/scripts/task-lock.sh" release 806 "g8_six_run_$((i - 1))" >/dev/null 2>&1 || true
+  fi
+  rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_six_run_${i}.json"
+  run_sut --session "g8_six_run_${i}" --force-phases research -- 806
+  if [ "$(jqf '.dispatch | map(select(.task == 806)) | length')" != "1" ]; then
+    six_runs_ok=false
+    info "six-forced-runs: run $i did not dispatch (stdout: $LAST_STDOUT)"
+  fi
+  if [ "$(jqf '.blocked | map(select(.task == 806 and (.reason | test("MAX_CYCLES")))) | length')" != "0" ]; then
+    six_runs_ok=false
+    info "six-forced-runs: run $i was refused for MAX_CYCLES (stdout: $LAST_STDOUT)"
+  fi
+done
+if [ "$six_runs_ok" = "true" ]; then
+  pass "budget: six forced runs in a row (separate sessions) on one task are never refused for budget"
+else
+  fail "budget: at least one of six forced runs in a row was refused for budget (see INFO lines above)"
+fi
+
+# ── dispatch_seq never repeats across runs: two separate sessions dispatching the SAME task in
+# succession must mint strictly increasing seq values, durably, even though cycle_counts itself
+# resets every run.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 807, "project_name": "g8_seq_no_repeat", "task_type": "general", "status": "implementing", "description": "dispatch_seq durability candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/807_g8_seq_no_repeat"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_seq_run1.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_seq_run2.json"
+
+run_sut --session g8_seq_run1 -- 807
+g8_durable_seq_after_run1=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/807_g8_seq_no_repeat/.orchestrator-loop-guard" 2>/dev/null)
+bash "$WORKDIR/.claude/scripts/task-lock.sh" release 807 g8_seq_run1 >/dev/null 2>&1 || true
+
+run_sut --session g8_seq_run2 -- 807
+g8_durable_seq_after_run2=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/807_g8_seq_no_repeat/.orchestrator-loop-guard" 2>/dev/null)
+if [ -n "$g8_durable_seq_after_run1" ] && [ -n "$g8_durable_seq_after_run2" ] && \
+   [ "$g8_durable_seq_after_run2" -gt "$g8_durable_seq_after_run1" ]; then
+  pass "budget: dispatch_seq_counter is durable and strictly increases across two separate runs on the same task ($g8_durable_seq_after_run1 -> $g8_durable_seq_after_run2)"
+else
+  fail "budget: dispatch_seq_counter did not durably increase across runs (run1=$g8_durable_seq_after_run1, run2=$g8_durable_seq_after_run2)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1884,11 +1936,16 @@ else
   fail "Group 18: expected cycle_counts unchanged after replay; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_2"
 fi
 g18_guard_file="$WORKDIR/specs/1801_g18_plan_cache/.orchestrator-loop-guard"
-g18_guard_cycle_count=$(jq -r '.cycle_count // 0' "$g18_guard_file" 2>/dev/null)
-if [ "$g18_guard_cycle_count" = "$g18_cycle_counts_after_1" ]; then
-  pass "Group 18: the durable loop-guard file's cycle_count matches the unchanged in-memory value (no extra flush)"
+g18_guard_dsc_after_2=$(jq -r '.dispatch_seq_counter // 0' "$g18_guard_file" 2>/dev/null)
+if [ "$g18_guard_dsc_after_2" = "$g18_dsc_after_1" ]; then
+  pass "Group 18: the durable loop-guard file's dispatch_seq_counter is unchanged by the replay (no extra --flush-seq)"
 else
-  fail "Group 18: durable loop-guard cycle_count ($g18_guard_cycle_count) diverged from the unchanged in-memory value ($g18_cycle_counts_after_1)"
+  fail "Group 18: durable loop-guard dispatch_seq_counter ($g18_guard_dsc_after_2) diverged from the pre-replay in-memory value ($g18_dsc_after_1)"
+fi
+if [ "$(jq -r '.cycle_count // "absent"' "$g18_guard_file" 2>/dev/null)" = "absent" ]; then
+  pass "Group 18: the durable loop-guard file's cycle_count is never written by this engine any more (per-run budget contract)"
+else
+  fail "Group 18: durable loop-guard cycle_count is unexpectedly present/written: $(cat "$g18_guard_file" 2>/dev/null)"
 fi
 
 # Simulate a postflight: clear plan_cache directly (mirrors orchestrate-cycle-postflight.sh's own
@@ -1938,11 +1995,14 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-# Group 19: durable cross-invocation pending_dispatch ledger. A FRESH session (a different
-# session_id every time -- a genuinely new mt_state_file, so the in-session plan_cache from
-# Group 18 never applies here) against a durable guard file carrying a matching, file-present
-# pending_dispatch does not increment cycle_count; a mismatch on phase, a missing dispatch file,
-# or an absent pending_dispatch all charge normally.
+# Group 19: durable cross-invocation pending_dispatch and dispatch_seq_counter ledgers (cycle_count
+# itself is per-run now, never durable -- see Group 8). A FRESH session (a different session_id
+# every time -- a genuinely new mt_state_file, so the in-session plan_cache from Group 18 never
+# applies here, and in-session cycle_counts always starts at 0) against a durable guard file
+# carrying a matching, file-present pending_dispatch does not charge an in-session cycle nor
+# durably flush a new dispatch_seq_counter; a mismatch on phase, a missing dispatch file, or an
+# absent pending_dispatch all charge normally (in-session cycle_counts advances by 1, and the
+# durable dispatch_seq_counter -- seeded from the guard file and minted onward -- advances too).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges"
 
@@ -1989,15 +2049,20 @@ else
   fail "Group 19 case 1: expected the UNCONSUMED DISPATCH REPLAY notice; got: '$LAST_STDERR'"
 fi
 if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
-  pass "Group 19 case 1: the durable guard file's cycle_count is unchanged (no --flush)"
+  pass "Group 19 case 1: the durable guard file's cycle_count is unchanged (never written by this engine any more)"
 else
   fail "Group 19 case 1: expected cycle_count unchanged at 2; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
 fi
-g19_mt_state_1="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case1.json"
-if [ "$(jq -r --arg t "1901" '.cycle_counts[$t]' "$g19_mt_state_1" 2>/dev/null)" = "2" ]; then
-  pass "Group 19 case 1: in-memory cycle_counts[1901] matches the seeded (unincremented) value"
+if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
+  pass "Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)"
 else
-  fail "Group 19 case 1: in-memory cycle_counts[1901] diverged: $(cat "$g19_mt_state_1" 2>/dev/null)"
+  fail "Group 19 case 1: expected durable dispatch_seq_counter unchanged at 3 after a replay; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
+fi
+g19_mt_state_1="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case1.json"
+if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_1" 2>/dev/null)" = "0" ]; then
+  pass "Group 19 case 1: in-memory cycle_counts[1901] starts at 0 THIS run (per-run budget contract; NOT seeded from the durable cycle_count=2)"
+else
+  fail "Group 19 case 1: in-memory cycle_counts[1901] diverged from the per-run-zero-start contract: $(cat "$g19_mt_state_1" 2>/dev/null)"
 fi
 if [ "$(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)" = "3" ]; then
   pass "Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one"
@@ -2017,10 +2082,21 @@ if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
 else
   pass "Group 19 case 2: a phase mismatch does not replay"
 fi
-if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
-  pass "Group 19 case 2: cycle_count charges normally (2 -> 3) on a phase mismatch"
+g19_mt_state_2="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case2.json"
+if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_2" 2>/dev/null)" = "1" ]; then
+  pass "Group 19 case 2: in-session cycle_counts[1901] charges normally (0 -> 1) on a phase mismatch"
 else
-  fail "Group 19 case 2: expected cycle_count=3 after a genuine charge; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+  fail "Group 19 case 2: expected in-session cycle_counts[1901]=1 after a genuine charge; got: $(cat "$g19_mt_state_2" 2>/dev/null)"
+fi
+if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "4" ]; then
+  pass "Group 19 case 2: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge"
+else
+  fail "Group 19 case 2: expected durable dispatch_seq_counter=4 after a genuine charge; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
+fi
+if [ "$(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
+  pass "Group 19 case 2: the durable guard's cycle_count stays untouched (never written by this engine any more)"
+else
+  fail "Group 19 case 2: durable cycle_count unexpectedly changed: $(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # Case 3: matching phase/forced, but the recorded dispatch_file no longer exists on disk -- must
@@ -2035,10 +2111,16 @@ if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
 else
   pass "Group 19 case 3: a missing dispatch_file does not replay"
 fi
-if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
-  pass "Group 19 case 3: cycle_count charges normally (2 -> 3) when the dispatch_file is missing"
+g19_mt_state_3="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case3.json"
+if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_3" 2>/dev/null)" = "1" ]; then
+  pass "Group 19 case 3: in-session cycle_counts[1901] charges normally (0 -> 1) when the dispatch_file is missing"
 else
-  fail "Group 19 case 3: expected cycle_count=3 after a genuine charge; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+  fail "Group 19 case 3: expected in-session cycle_counts[1901]=1 after a genuine charge; got: $(cat "$g19_mt_state_3" 2>/dev/null)"
+fi
+if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "4" ]; then
+  pass "Group 19 case 3: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge"
+else
+  fail "Group 19 case 3: expected durable dispatch_seq_counter=4 after a genuine charge; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # Case 4: no pending_dispatch recorded at all (the ordinary case) -- charges normally, and
@@ -2048,19 +2130,31 @@ cat > "$g19_guard_file" <<EOF
 EOF
 reset_lock_dirs
 run_sut --session g19_sess_case4 -- 1901
-if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
-  pass "Group 19 case 4: no pending_dispatch charges normally (2 -> 3)"
+g19_mt_state_4="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case4.json"
+if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_4" 2>/dev/null)" = "1" ]; then
+  pass "Group 19 case 4: no pending_dispatch charges normally in-session (0 -> 1)"
 else
-  fail "Group 19 case 4: expected cycle_count=3; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+  fail "Group 19 case 4: expected in-session cycle_counts[1901]=1; got: $(cat "$g19_mt_state_4" 2>/dev/null)"
+fi
+if [ "$(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
+  pass "Group 19 case 4: the durable guard's cycle_count stays untouched (never written by this engine any more)"
+else
+  fail "Group 19 case 4: durable cycle_count unexpectedly changed: $(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)"
 fi
 
-# Note: dispatch_seq_counter here mints from THIS (fresh) session's own mt_state_file, which
-# starts empty every session_id -- it has no relationship to the durable guard file's
-# vestigial "dispatch_seq_counter" field, so the newly recorded seq is 1, not 4.
-if jq -e '.pending_dispatch.phase == "plan" and .pending_dispatch.seq == 1' "$g19_guard_file" >/dev/null 2>&1; then
-  pass "Group 19 case 4: a fresh pending_dispatch is recorded (seq=1, phase=plan) for a future invocation"
+# Note: dispatch_seq_counter DOES durably cross invocations now (unlike cycle_count): this fresh
+# session's own (a2) seeding peeks the durable guard's dispatch_seq_counter=3, takes max(0,3)=3,
+# and section (i) mints 3+1=4 -- so the freshly recorded pending_dispatch's seq is 4, matching
+# the durable dispatch_seq_counter this same charge flushes via --flush-seq (also 4).
+if jq -e '.pending_dispatch.phase == "plan" and .pending_dispatch.seq == 4' "$g19_guard_file" >/dev/null 2>&1; then
+  pass "Group 19 case 4: a fresh pending_dispatch is recorded (seq=4, phase=plan) for a future invocation"
 else
-  fail "Group 19 case 4: expected a fresh pending_dispatch to be recorded; got: $(cat "$g19_guard_file" 2>/dev/null)"
+  fail "Group 19 case 4: expected a fresh pending_dispatch to be recorded with seq=4; got: $(cat "$g19_guard_file" 2>/dev/null)"
+fi
+if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "4" ]; then
+  pass "Group 19 case 4: the durable guard's dispatch_seq_counter durably advances (3 -> 4)"
+else
+  fail "Group 19 case 4: expected durable dispatch_seq_counter=4; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

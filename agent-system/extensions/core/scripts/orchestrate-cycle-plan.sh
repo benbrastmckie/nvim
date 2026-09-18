@@ -133,7 +133,7 @@
 # Usage:
 #   orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
 #     [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
-#     [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
+#     [--model M] [--allow-self-modifying] [--allow-scope-collision]
 #     [--dry-run] <task_number> [<task_number> ...]
 #   --state-file is always required. --session is required EXCEPT under --dry-run, where it is
 #   optional: an internal, never-persisted identity is synthesized when omitted (mt_save() is
@@ -265,7 +265,7 @@ usage() {
 Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
          [--force-phases "research,plan,implement"] [--focus "<text>"] [--clean] [--lit]
          [--compare] [--hard] [--fast] [--model M] [--allow-self-modifying]
-         [--allow-scope-collision] [--continue-budget] [--dry-run] [--no-plan-cache]
+         [--allow-scope-collision] [--dry-run] [--no-plan-cache]
          <task_number> [<task_number> ...]
 
 --state-file is always required. --session is required EXCEPT under --dry-run, where an
@@ -295,7 +295,6 @@ effort_flag=""
 model_flag=""
 allow_self_modifying="false"
 allow_scope_collision="false"
-continue_budget="false"
 dry_run="false"
 no_plan_cache="false"
 task_args=()
@@ -315,7 +314,6 @@ while [ "$#" -gt 0 ]; do
     --model) model_flag="${2:-}"; shift 2 ;;
     --allow-self-modifying) allow_self_modifying="true"; shift ;;
     --allow-scope-collision) allow_scope_collision="true"; shift ;;
-    --continue-budget) continue_budget="true"; shift ;;
     --dry-run) dry_run="true"; shift ;;
     --no-plan-cache) no_plan_cache="true"; shift ;;
     --team|--team-size|--team=*|--team-size=*)
@@ -903,23 +901,43 @@ if [ "$dry_run" != "true" ]; then
   bash "$SCRIPT_DIR/task-lock.sh" session-heartbeat "$session_id" 2>/dev/null || true
 fi
 
-# ── (a2) Seed per-task cycle_counts from the durable per-task guard file, on first sight of a
-# task THIS invocation (idempotent across the SAME session's later cycles via `//=` — only a fresh
-# session_id, i.e. a fresh mt_state_file, ever re-seeds). READ-ONLY (orchestrate-loop-guard-init.sh
-# --seed never mutates or `mkdir -p`s), so this is safe under --dry-run — Decision 1's durable
-# backing store is peeked, never written, until an actual LIVE dispatch flushes it back below.
+# ── (a2) Per-run cycle-budget contract (Decision (a)): `cycle_counts[t]` starts at a value of
+# zero every run and is NEVER seeded from the durable per-task guard file's `cycle_count` any
+# more -- the `//= {}` default on `.cycle_counts` (above) already gives every named task a
+# starting value of zero on first sight this invocation, and that is now the WHOLE seeding story
+# for budgeting. `cycle_count` in the durable guard file is no longer read or written by this
+# script for budgeting purposes; re-running /orchestrate is the explicit, only way to continue
+# past a per-run-exhausted budget (see the MAX_CYCLES block below). `cycle_count` itself is left
+# alone in the guard file's JSON schema as inert historical data (never read, never written by
+# this engine any more) -- an old guard file needs no migration, and any OTHER caller of
+# `--flush`/`--seed` (e.g. a future single-task resume) keeps working against it unchanged.
+#
+# What DOES still need durable, cross-invocation seeding: `dispatch_seq_counter`. Unlike the
+# budget, a dispatch_seq value must NEVER repeat within a task across separate /orchestrate runs
+# (a repeat would let a new run's dispatch file silently collide with a prior run's still-live
+# one) -- so this loop seeds `mt_json.dispatch_seq_counter` to the MAX of its current value and
+# every named task's own durable guard-file value, via `orchestrate-loop-guard-init.sh --seed`
+# (READ-ONLY, `mkdir -p`-free, safe under --dry-run). Taking a running max rather than a `//=`
+# first-sight assignment is deliberately idempotent regardless of how many times this loop runs
+# (e.g. once per cycle of the same run) -- it can only ever move the counter up, never down, and
+# a candidate whose durable value is already <= the in-session value (the common case on a
+# second-or-later cycle of the same run, since the live charge site below flushes durably on
+# every real dispatch) is a no-op.
+#
 # Also seeds `pending_dispatch_seed[$t]` (Item (b)'s durable, CROSS-invocation counterpart to the
 # in-session plan_cache above): the recorded `{seq, phase, forced, dispatch_file, recorded_at}`
 # of the last dispatch this task's durable guard file charged, or absent if none/never-recorded.
-# Consumed at the charge site below, in the live per-task dispatch loop.
+# Consumed at the charge site below, in the live per-task dispatch loop. UNCHANGED by the per-run
+# cycle-budget contract above -- this ledger's own durability is orthogonal to the cycle-count
+# budget.
 declare -A pending_dispatch_seed=()
 for t in "${task_args[@]}"; do
   [ -z "${project_names[$t]:-}" ] && continue
   _task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
   _seed_out=$(bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --seed "$_task_dir_abs" 2>/dev/null) || _seed_out=""
-  _seeded=$(printf '%s' "$_seed_out" | jq -r '.cycle_count // 0' 2>/dev/null) || _seeded=0
-  case "$_seeded" in ''|*[!0-9]*) _seeded=0 ;; esac
-  mt_set --arg t "$t" --argjson v "$_seeded" '.cycle_counts[$t] //= $v'
+  _seeded_dsc=$(printf '%s' "$_seed_out" | jq -r '.dispatch_seq_counter // 0' 2>/dev/null) || _seeded_dsc=0
+  case "$_seeded_dsc" in ''|*[!0-9]*) _seeded_dsc=0 ;; esac
+  mt_set --argjson d "$_seeded_dsc" '.dispatch_seq_counter = ([.dispatch_seq_counter, $d] | max)'
   _seed_pending=$(printf '%s' "$_seed_out" | jq -c '.pending_dispatch // null' 2>/dev/null) || _seed_pending="null"
   [ "$_seed_pending" != "null" ] && pending_dispatch_seed[$t]="$_seed_pending"
 done
@@ -1063,6 +1081,15 @@ else
     aux_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
     aux_dispatch_start_ts=$(date -u +%s)
     mt_set --argjson seq "$aux_dispatch_seq" '.dispatch_seq_counter = $seq'
+    # Durable dispatch_seq_counter persistence (same guarantee as the main per-task dispatch
+    # loop below, and the SAME reason this call site cannot instead use skill-base.sh's
+    # skill_orchestrate_mint_dispatch_seq: this whole aux-emission section runs BEFORE
+    # skill-base.sh is sourced later in this script -- see this section's own header comment
+    # ("neither needs skill-base.sh or a cd"). --flush-seq is the uniform mechanism used at BOTH
+    # mint sites instead, so a repeated dispatch_seq across separate /orchestrate runs can never
+    # happen regardless of which loop minted it.
+    aux_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
+    bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush-seq "$aux_task_dir_abs" "$aux_dispatch_seq" >/dev/null 2>&1 || true
 
     build_aux_args=(--session "$session_id" --seq "$aux_dispatch_seq" --dispatch-start-ts "$aux_dispatch_start_ts")
     case "$aux_kind" in
@@ -1244,52 +1271,26 @@ for t in "${task_args[@]}"; do
   # context/patterns/infra-failure-discrimination.md): the counter itself is incremented only by
   # the (not-yet-built) postflight composer's corroborated-transport-failure detection, so this
   # is a dormant no-op today; the exclusion mechanism is ready for when it starts populating
-  # infra_failures. --continue-budget authorizes proceeding past it, same as MAX_CYCLES_MT.
-  if [ "${infra_failure_counts[$t]:-0}" -ge "$MAX_INFRA_FAILURES" ] && [ "$continue_budget" != "true" ]; then
-    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "${infra_failure_counts[$t]}" --argjson m "$MAX_INFRA_FAILURES" '{task: $t, reason: ("MAX_INFRA_FAILURES reached (" + ($n|tostring) + "/" + ($m|tostring) + " corroborated Agent-tool transport/API failures); pass --continue-budget to authorize continuing")}')")
+  # infra_failures. There is no budget-override flag any more, for this gate or for MAX_CYCLES
+  # below -- re-invoking /orchestrate is the only way to continue.
+  if [ "${infra_failure_counts[$t]:-0}" -ge "$MAX_INFRA_FAILURES" ]; then
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "${infra_failure_counts[$t]}" --argjson m "$MAX_INFRA_FAILURES" '{task: $t, reason: ("MAX_INFRA_FAILURES reached (" + ($n|tostring) + "/" + ($m|tostring) + " corroborated Agent-tool transport/API failures)")}')")
     continue
   fi
 
-  # Decision 1 — per-task cumulative cycle budget (this task's own cycle_counts[t], seeded above
-  # from the durable ${TASK_DIR}/.orchestrator-loop-guard file, against max_cycles_per_task[t],
-  # re-derived fresh this invocation from --hard). Mirrors MAX_INFRA_FAILURES's own per-task shape
-  # immediately above; --continue-budget authorizes proceeding past it exactly as it already does
-  # for MAX_INFRA_FAILURES and (formerly) the whole-batch scalar.
+  # Decision (a) — per-RUN cycle budget (this candidate's own cycle_counts[t], starting at zero
+  # every run per the (a2) contract above, against max_cycles_per_task[t], re-derived fresh this
+  # invocation from --hard). There is no budget-override flag any more, and no override branch:
+  # an exhausted per-run budget is a hard stop for this run, and re-invoking /orchestrate (which
+  # starts a fresh run, hence a fresh zero-valued cycle count) is the explicit, only way to
+  # continue. This replaces the former archive-the-durable-guard-and-reset override branch, which
+  # is retired along with the flag that used to authorize it.
   _task_cycle_count=$(mt_get --arg t "$t" '.cycle_counts[$t] // 0')
   _task_max_cycles=$(mt_get --arg t "$t" '.max_cycles_per_task[$t] // 0')
   if [ "$_task_cycle_count" -ge "$_task_max_cycles" ]; then
-    if [ "$continue_budget" = "true" ]; then
-      # budget-continuation-override (Decision 1, ported from single-task Stage 2's locked
-      # `budget-continuation-override` region): archive the exhausted durable guard aside and
-      # reset cycle_count to 0 IN PLACE, preserving every other field (dispatch_seq_counter,
-      # detected_defects, ...) via orchestrate-loop-guard-init.sh --flush. Never touches disk
-      # under --dry-run — the live path re-applies this on the next real invocation.
-      if [ "$dry_run" != "true" ]; then
-        _task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
-        _guard_file="${_task_dir_abs}/.orchestrator-loop-guard"
-        if [ -f "$_guard_file" ]; then
-          _exhausted_dest="${_task_dir_abs}/.exhausted-loop-guard-$(date -u +%s).json"
-          cp "$_guard_file" "$_exhausted_dest" 2>/dev/null || true
-          echo "[orchestrate] BUDGET EXHAUSTED for task #$t (cycle_count=${_task_cycle_count}/${_task_max_cycles}) — --continue-budget authorized a fresh budget. Archived exhausted guard to ${_exhausted_dest}." >&2
-        fi
-        bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$_task_dir_abs" 0 >/dev/null 2>&1 || true
-        # Item (b): a fresh budget also starts with a clean pending_dispatch ledger. The
-        # exhausted guard's own history (including whatever it last recorded) is already
-        # preserved verbatim in the archived copy above; the live file carrying a stale entry
-        # forward past the reset would let a future cycle mistake an old, already-exhausted
-        # cycle's charge for a currently-unconsumed one.
-        bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --clear-pending "$_task_dir_abs" >/dev/null 2>&1 || true
-      fi
-      # Also drop the IN-MEMORY seed (read earlier, before this reset ran) -- otherwise the
-      # later charge site below would still see the now-stale value and could falsely match it
-      # against this cycle's freshly composed row.
-      unset "pending_dispatch_seed[$t]"
-      mt_set --arg t "$t" '.cycle_counts[$t] = 0'
-    else
-      budget_blocked_tasks[$t]=1
-      out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_task_cycle_count" --argjson m "$_task_max_cycles" '{task: $t, reason: ("MAX_CYCLES reached (" + ($n|tostring) + "/" + ($m|tostring) + " work cycles for this task); pass --continue-budget to authorize continuing past the budget")}')")
-      continue
-    fi
+    budget_blocked_tasks[$t]=1
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_task_cycle_count" --argjson m "$_task_max_cycles" '{task: $t, reason: ("MAX_CYCLES reached (" + ($n|tostring) + "/" + ($m|tostring) + " work cycles for this run); re-invoke /orchestrate to continue")}')")
+    continue
   fi
 
   eligible_tasks+=("$t")
@@ -1313,7 +1314,7 @@ if [ "${#eligible_tasks[@]}" -eq 0 ]; then
     # cycle — the batch-wide stop this reduces to for a batch of one, matching single-task Stage
     # 2's own MAX_CYCLES refusal exactly.
     stop_reason="max_cycles"
-    stop_message="Every remaining task has reached its own per-task work-cycle budget; pass --continue-budget to authorize continuing past the budget."
+    stop_message="Every remaining task has reached its own per-task work-cycle budget for this run; re-invoke /orchestrate to continue."
   elif [ "$any_stuck" = "true" ]; then
     stop_reason="no_eligible_stuck"
     stop_message="No task is eligible this cycle (all remaining tasks are waiting on in-progress predecessors); waiting for next cycle."
@@ -1920,7 +1921,12 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   else
     task_new_cycle_count=$(mt_get --arg t "$t" '((.cycle_counts[$t] // 0) + 1)')
     mt_set --arg t "$t" --argjson v "$task_new_cycle_count" '.cycle_counts[$t] = $v'
-    bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush "$task_dir_abs" "$task_new_cycle_count" >/dev/null 2>&1 || true
+    # Per-run cycle-budget contract: durable `cycle_count` is no longer flushed here (the budget
+    # itself never persists past this run). What DOES still need a durable flush is
+    # `dispatch_seq_counter` -- this task's own mt_json.dispatch_seq_counter was already minted
+    # (incremented) at section (i) above, at exactly `task_dispatch_seq`; persist that same value
+    # now via --flush-seq so a LATER run's own (a2) seeding sees it and never mints a repeat.
+    bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush-seq "$task_dir_abs" "$task_dispatch_seq" >/dev/null 2>&1 || true
     _pd_record_json=$(jq -n -c --argjson seq "$task_dispatch_seq" --arg phase "$g" \
       --argjson forced "$_pd_forced_this_cycle" --arg df "$dispatch_file" \
       --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \

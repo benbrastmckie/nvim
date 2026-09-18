@@ -176,9 +176,14 @@ else
 fi
 
 # =====================================================================
-# Case 3: resume tolerance -- loop-guard and churn-state mismatch handling is a log line, never
-# a gate. Guards the top risk: a future "make it consistent" edit that hard-fails these files
-# would break legitimate conversational-turn resume.
+# Case 3: (a) per-run cycle budget -- cycle_counts is NOT seeded from the durable guard file's
+# cycle_count for budgeting purposes any more (inverted from this case's OLD assertion, which
+# protected the OPPOSITE, now-retired "cumulative across invocations, by design" contract -- see
+# context/standards/orchestrator-runtime-files.md's "cycle_count semantics" section for the full
+# per-run rationale). (b) resume tolerance -- loop-guard dispatch_seq_counter seeding and
+# churn-state mismatch handling both remain a log line, never a gate. Guards the top risk: a
+# future "make it consistent" edit that hard-fails these files would break legitimate
+# conversational-turn resume.
 # =====================================================================
 extract_block() {
   # extract_block <file> <anchor_regex> <trailing_lines>
@@ -190,24 +195,39 @@ extract_block() {
 
 case3_ok=true
 
-# Loop-guard half (retargeted): the single-task engine's guard_session_id vs. session_id
+# (a) Per-run cycle budget: the retired seeding pattern (`.cycle_counts[$t] //= $_seeded`, which
+# used to assign the durable guard's cycle_count into mt_json.cycle_counts[t] on first sight)
+# must NOT be present anywhere in this script any more -- the ONLY seeding of cycle_counts[t] is
+# the `//= {}` default on the whole map (giving every task a starting value of zero on first
+# sight each invocation). A regression here would silently resurrect the retired
+# cross-invocation budget-carryover contract.
+if grep -qE 'cycle_counts\[\$t\]\s*//=\s*\$_seeded\b' "$CYCLE_PLAN_SCRIPT"; then
+  case3_ok=false
+  info "orchestrate-cycle-plan.sh still contains the retired 'cycle_counts[\$t] //= \$_seeded' pattern -- the per-run budget contract may have regressed"
+fi
+if ! grep -qF '.cycle_counts //= {}' "$CYCLE_PLAN_SCRIPT"; then
+  case3_ok=false
+  info "orchestrate-cycle-plan.sh no longer defaults .cycle_counts to {} -- the per-run zero-start guarantee may have regressed"
+fi
+
+# (b) Loop-guard half (retargeted): the single-task engine's guard_session_id vs. session_id
 # compare-then-tolerate check is gone along with the engine that ran it. Its replacement in
-# orchestrate-cycle-plan.sh's per-task cumulative budget (Decision 1) is stronger, not weaker:
-# the durable per-task .orchestrator-loop-guard's cycle_count is seeded via
+# orchestrate-cycle-plan.sh's durable dispatch_seq_counter seeding is stronger, not weaker: the
+# durable per-task .orchestrator-loop-guard's dispatch_seq_counter is seeded via
 # orchestrate-loop-guard-init.sh --seed with NO session_id comparison at all (see that call
 # site's own "READ-ONLY... idempotent... safe" comment) -- there is no session-keyed gate left to
 # hard-fail on, so legitimate conversational-turn resume across sessions is unconditionally
 # tolerated by construction rather than defended against at compare time.
-loop_guard_block=$(extract_block "$CYCLE_PLAN_SCRIPT" 'Seed per-task cycle_counts from the durable' 12)
+loop_guard_block=$(extract_block "$CYCLE_PLAN_SCRIPT" 'Per-run cycle-budget contract' 30)
 if [ -z "$loop_guard_block" ]; then
   case3_ok=false
-  info "could not locate the per-task cycle_counts seed block in $CYCLE_PLAN_SCRIPT"
+  info "could not locate the (a2) per-run cycle-budget block in $CYCLE_PLAN_SCRIPT"
 elif echo "$loop_guard_block" | grep -qiE 'hard-fail|abort|\bexit\b|\breturn 1\b'; then
   case3_ok=false
-  info "per-task cycle_counts seed block contains a hard-fail/abort/exit construct: $loop_guard_block"
+  info "(a2) block contains a hard-fail/abort/exit construct: $loop_guard_block"
 elif echo "$loop_guard_block" | grep -qE 'session_id.{0,20}(!=|==)|(!=|==).{0,20}session_id'; then
   case3_ok=false
-  info "per-task cycle_counts seed block unexpectedly compares session_id -- has a mismatch gate been reintroduced without a resume-tolerance review?"
+  info "(a2) block unexpectedly compares session_id -- has a mismatch gate been reintroduced without a resume-tolerance review?"
 fi
 
 churn_block=$(extract_block "$CHURN_SKILL" 'churn_session_id.*!=.*session_id' 3)
@@ -221,9 +241,9 @@ fi
 echo "$churn_block" | grep -q 'INFO:' || { case3_ok=false; info "churn-state mismatch block does not log an INFO line"; }
 
 if [ "$case3_ok" = true ]; then
-  pass "3: loop-guard resume has no session-keyed gate at all (unconditional tolerance by construction), and churn-state session_id mismatch handling remains a log line, never a gate"
+  pass "3: cycle_counts is not seeded from the durable guard's cycle_count (per-run budget contract), loop-guard resume has no session-keyed gate at all (unconditional tolerance by construction), and churn-state session_id mismatch handling remains a log line, never a gate"
 else
-  fail "3: resume-tolerance case failed (see INFO lines above)"
+  fail "3: per-run-budget/resume-tolerance case failed (see INFO lines above)"
 fi
 
 # --- Reset fixture specs/ tree for the reap cases (cases 1/2 above wrote/overwrote FILE_A) ---

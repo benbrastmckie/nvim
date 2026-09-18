@@ -30,7 +30,7 @@ diagram, and design rationale: `docs/architecture/orchestrate-state-machine.md`.
 `context/patterns/lit-stage4a-flow.md`'s resolver directives inside `orchestrate-build-dispatch.sh`
 for every per-task dispatch), `compare_flag`,
 `allow_self_modifying`, `allow_scope_collision`, `clean_flag`, `effort_flag`, `model_flag`,
-`hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`, `continue_budget`,
+`hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`,
 `focus_prompt` (the user's own free-form `$2+` text typed after the task number(s) on the
 `/orchestrate` command line — see `commands/orchestrate.md`; passed through to Move 1 below,
 applied to every task in the batch). Register the batch's in-flight session (best-effort,
@@ -83,7 +83,6 @@ plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   $( [ "${effort_flag:-}" = "fast" ] && echo --fast ) \
   $( [ "${allow_self_modifying:-false}" = "true" ] && echo --allow-self-modifying ) \
   $( [ "${allow_scope_collision:-false}" = "true" ] && echo --allow-scope-collision ) \
-  $( [ "${continue_budget:-false}" = "true" ] && echo --continue-budget ) \
   "${focus_args[@]+"${focus_args[@]}"}" \
   "${task_numbers[@]}")
 stop_json=$(echo "$plan_json" | jq -c '.stop')
