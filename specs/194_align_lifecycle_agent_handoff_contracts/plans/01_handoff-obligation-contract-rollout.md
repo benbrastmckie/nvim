@@ -347,21 +347,22 @@ zero-count agents. Confirm with the per-extension count command before editing.
 
 ---
 
-### Phase 6: Language-Toolchain Extensions Rollout (16 agents) [NOT STARTED]
+### Phase 6: Language-Toolchain Extensions Rollout (16 agents) [COMPLETED]
 
 **Goal**: Add the canonical block to the `latex`, `nvim`, `nix`, `python`, `rust`, `typst`, `web`,
 and `z3` agents — the cluster where the pre-existing context-pressure handoff text makes
 disambiguation the main risk.
 
 **Tasks**:
-- [ ] For each implementation agent, locate the existing context-pressure handoff section (typically
+- [x] For each implementation agent, locate the existing context-pressure handoff section (typically
       "Stage 4E. Handoff on Context Pressure" or equivalent) referencing
-      `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md`.
-- [ ] Place the new `.orchestrator-handoff.json` subsection so it does not read as an amendment to
+      `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md`. *(confirmed present in all 8)*
+- [x] Place the new `.orchestrator-handoff.json` subsection so it does not read as an amendment to
       that section, and include the one-clause distinction: a different file, a different consumer,
-      and both may be written in the same dispatch.
-- [ ] Insert the research variant into each research agent.
-- [ ] Commit per file as a green sub-step.
+      and both may be written in the same dispatch. *(disambiguation clause appended to all 8
+      implementation agents)*
+- [x] Insert the research variant into each research agent. *(completed)*
+- [x] Commit per file as a green sub-step. *(16 commits)*
 
 **Timing**: 1.5 hours
 

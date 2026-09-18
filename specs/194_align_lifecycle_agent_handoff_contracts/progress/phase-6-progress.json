@@ -1,0 +1,29 @@
+{
+  "phase": 6,
+  "phase_name": "Language-Toolchain Extensions Rollout (16 agents)",
+  "started_at": "2026-09-17T01:20:00Z",
+  "last_updated": "2026-09-17T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert canonical block (with disambiguation clause for 8 implementation agents) into all 16 language-toolchain agents", "status": "done", "files_touched": [
+      "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+      "agent-system/extensions/latex/agents/latex-research-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-research-agent.md",
+      "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+      "agent-system/extensions/nix/agents/nix-research-agent.md",
+      "agent-system/extensions/python/agents/python-implementation-agent.md",
+      "agent-system/extensions/python/agents/python-research-agent.md",
+      "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+      "agent-system/extensions/rust/agents/rust-research-agent.md",
+      "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+      "agent-system/extensions/typst/agents/typst-research-agent.md",
+      "agent-system/extensions/web/agents/web-implementation-agent.md",
+      "agent-system/extensions/web/agents/web-research-agent.md",
+      "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+      "agent-system/extensions/z3/agents/z3-research-agent.md"
+    ]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
