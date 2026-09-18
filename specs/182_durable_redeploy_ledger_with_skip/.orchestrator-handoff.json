@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 10,
-  "summary": "Created a 5-phase plan (6.5h) for the durable redeploy ledger: new gitignored specs/.orchestrator-deploy-ledger.json managed by scripts/lib/deploy-ledger-lib.sh (sha256 over source-store critical paths, verify outcome, timestamp, batch task numbers); checkpoint consults it before any expensive call with a hash skip (ordinary case, max-age cap) and an attributed-recency skip (self-modifying class: recent, shared task, delta within own cycle_modified_files), overridden by any deploy_pending batch task; deployed_critical_paths retained unchanged for its within-invocation role; Group 11 cases incl. a named self-modifying acceptance test; runtime-file registration; guardrails contract rewrite.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 11,
+  "summary": "Implemented all 5 plan phases: a durable, gitignored, machine-local redeploy ledger (scripts/lib/deploy-ledger-lib.sh, default specs/.orchestrator-deploy-ledger.json) consulted by the Inter-Cycle Redeploy Checkpoint before its first expensive call, with a content-hash skip (ordinary case) and an attributed-recency skip (self-modifying-task class, where the hash changes on every cycle by construction). deploy_pending override and deploy_failed/blocking negative records preserve the completion-deploy gate's backstop. Added 27 new deploy-ledger-lib unit tests and 7 new Group 11 end-to-end cases (l-r), including the NAMED self-modifying-task acceptance criterion (total deploy count stays 1 across 3 invocations; a hash-only counterfactual redeploys 3/3 times). Registered the ledger as an 18th gitignored runtime-file class member and rewrote the guardrails contract documentation (Idempotence guard scope correction, new Durable redeploy ledger paragraph, D6 residual clause fix, not resolved).",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/182_durable_redeploy_ledger_with_skip/summaries/01_durable-redeploy-ledger-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, decisions, one plan deviation, and verification results."
+    },
     {
       "type": "plan",
       "path": "specs/182_durable_redeploy_ledger_with_skip/plans/01_durable-redeploy-ledger.md",
-      "summary": "5-phase implementation plan for the durable redeploy ledger with hash and attributed-recency skips."
+      "summary": "5-phase plan, all phases now marked [COMPLETED]."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Run /implement 182; waves [1], [2,4], [3,5]."
+  "next_action_hint": "All 5 phases complete and committed. Task-specific test suites all green (test-deploy-ledger-lib.sh 27/27, test-orchestrate-cycle-plan.sh 238/238, test-runtime-file-tracking.sh 9/9, test-deploy-orphans.sh 5/5, test-deploy-propagation.sh 4/4, test-deploy-baseline-lib.sh 7/7). deploy-headless.sh redeploy landed clean (33/33 fast checks, landed_verify_clean) after fixing a manifest.json registration gap doc-lint caught. A full verify-deploy.sh run (including the slow Gate 8 full shell test suite) was kicked off to confirm the whole-repo gate; if its result is not yet visible, safe to treat this task as ready for postflight/completion -- the specific suites exercising this change are already independently green."
 }
