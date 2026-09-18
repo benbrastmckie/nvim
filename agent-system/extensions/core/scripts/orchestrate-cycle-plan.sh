@@ -1516,6 +1516,23 @@ for t in "${eligible_tasks[@]}"; do
       continue
       ;;
   esac
+
+  # Phase 5 (artifact-based admission): a forced implement with NO plan artifact -- blocked, not
+  # dispatched. PRECEDENCE (stated once, honored by construction): the `forced_round_complete`
+  # case arm above already `continue`d any task whose forced queue emptied THIS run, so a task
+  # reaching this point was either never forced, or is still mid-queue -- the two exclusion paths
+  # (Phase 3's forced-round-complete and this Phase 5 no-plan check) can never both claim the same
+  # candidate in the same cycle. Sits strictly BEFORE the lock probe, dispatch_seq mint,
+  # skill_preflight_update and orchestrate-build-dispatch.sh below, so no lock, dispatch file, or
+  # status write happens for a candidate excluded here.
+  if [ "$g" = "implement" ] && [ "${forced_this_cycle[$t]:-false}" = "true" ]; then
+    _p5_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
+    if ! ls "${_p5_task_dir_abs}/plans/"*.md >/dev/null 2>&1; then
+      out_blocked_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "no plan artifact; run --plan first"}')")
+      continue
+    fi
+  fi
+
   if [ "${admit_decision[$t]:-admit}" = "defer" ]; then
     out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "${admit_reason[$t]:-file_scope or self-modification admission defer}" '{task:$t, reason:$r}')")
     continue
@@ -1568,10 +1585,26 @@ else
 fi
 
 # ── Resolve agent per candidate (needed for both dry-run rendering and live dispatch) ────────────
+# Phase 5 (artifact-based plan admission): the `plan)` arm below takes a THIRD argument,
+# task_number, so it can check for an existing plan artifact and choose reviser-agent (revise) vs.
+# planner-agent (author) accordingly -- the whole admission rule for plan is "always admitted;
+# which agent depends only on whether plans/*.md already exists", never a status check. Every
+# call site below is updated to pass task_number as the new third positional argument;
+# command-route-agent.sh (the `research`/`implement` path) is UNCHANGED and never consulted for
+# `plan` -- confirmed by this arm's own early `return` before reaching that source line.
 resolve_agent() {
-  local op="$1" ttype="$2"
+  local op="$1" ttype="$2" tasknum="${3:-}"
   case "$op" in
-    plan) echo "planner-agent"; return ;;
+    plan)
+      if [ -n "$tasknum" ] && [ -n "${project_names[$tasknum]:-}" ]; then
+        local _ra_task_dir_abs
+        _ra_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$tasknum" "${project_names[$tasknum]}" "$PROJECT_ROOT")"
+        if ls "${_ra_task_dir_abs}/plans/"*.md >/dev/null 2>&1; then
+          echo "reviser-agent"; return
+        fi
+      fi
+      echo "planner-agent"; return
+      ;;
   esac
   local default_agent="general-research-agent"
   [ "$op" = "implement" ] && default_agent="general-implementation-agent"
@@ -1750,7 +1783,7 @@ done
 if [ "$dry_run" = "true" ]; then
   for t in "${probed_dispatch_post_h1[@]}"; do
     g="${effective_group[$t]}"
-    agent=$(resolve_agent "$g" "${task_types[$t]}")
+    agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
     dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
     dry_focus=$(compose_focus "$t" "$g")
     out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" \
@@ -1877,7 +1910,7 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
   [ -z "$dispatch_model" ] && dispatch_model_json="null" || dispatch_model_json="\"$dispatch_model\""
 
-  agent=$(resolve_agent "$g" "${task_types[$t]}")
+  agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
   if [ "$g" = "research" ]; then
     mt_set --arg t "$t" --arg a "$agent" '.research_agents[$t] = $a'
   elif [ "$g" = "implement" ]; then

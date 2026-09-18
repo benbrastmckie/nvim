@@ -426,42 +426,42 @@ before-count is not 7, reconcile the difference explicitly instead of assuming t
 
 ---
 
-### Phase 5: Artifact-based admission for forced plan and implement [NOT STARTED]
+### Phase 5: Artifact-based admission for forced plan and implement [COMPLETED]
 
 **Goal**: One admission rule, keyed on artifacts: research always; plan always (reviser when a plan
 exists, planner otherwise); implement only when a plan exists, otherwise a `blocked[]` row and
 nothing dispatched.
 
 **Tasks**:
-- [ ] State and honor the precedence rule: the Phase 3 `forced_round_complete` exclusion is
+- [x] State and honor the precedence rule: the Phase 3 `forced_round_complete` exclusion is
       evaluated FIRST; a task excluded there never reaches these checks. Add it as a comment where
       the new checks land, so the two exclusion paths can never both claim the same candidate.
-- [ ] Forced implement with no plan: in the bucketing step (beside the Phase 3 arm), when
+- [x] Forced implement with no plan: in the bucketing step (beside the Phase 3 arm), when
       `effective_group[$t] == "implement"` and `forced_this_cycle[$t] == "true"` and
       `ls "${task_dir}/plans/"*.md` matches nothing, emit
       `out_blocked_rows` with reason `"no plan artifact; run --plan first"` and `continue`. This
       must sit before the lock probe so no lock, dispatch file or status write happens.
-- [ ] Plan admission: change `resolve_agent()`'s `plan)` arm (~line 1520) from the unconditional
+- [x] Plan admission: change `resolve_agent()`'s `plan)` arm (~line 1520) from the unconditional
       `planner-agent` to a plan-presence check — `reviser-agent` when the task's newest
       `plans/*.md` exists, `planner-agent` otherwise. `resolve_agent` currently takes
       `(op, task_type)`; pass the task number or resolved task dir so the check has a path, and
       keep the function's single-return shape.
-- [ ] Make a reviser dispatch usable: `scripts/orchestrate-build-dispatch.sh`'s `plan` branch
+- [x] Make a reviser dispatch usable: `scripts/orchestrate-build-dispatch.sh`'s `plan` branch
       (~lines 181-186) currently resolves only `research_artifact`. Also resolve the newest
       `plans/*.md` (same `ls | sort -V | tail -1` idiom the implement branch uses) and, when
       non-empty, render `- existing_plan_path: <path>` in the dispatch file — the exact field name
       `agents/reviser-agent.md` reads (it also names `revision_reason` as optional; render
       `- revision_reason: forced --plan round` alongside it). Absent plan -> neither line, so the
       ordinary planner path stays byte-for-byte unchanged.
-- [ ] Confirm `command-route-agent.sh` is NOT consulted for the plan phase (today's `plan)` arm
+- [x] Confirm `command-route-agent.sh` is NOT consulted for the plan phase (today's `plan)` arm
       returns before the routing call), so extension routing is unaffected by this change. If it is
       consulted, say so and adjust rather than bypassing it.
-- [ ] Tests in `scripts/tests/test-orchestrate-cycle-plan.sh`: `--implement` on a RESEARCHED task
+- [x] Tests in `scripts/tests/test-orchestrate-cycle-plan.sh`: `--implement` on a RESEARCHED task
       WITH a plan dispatches implement; `--implement` with no plan yields exactly one `blocked[]`
       row, no dispatch file, no lock, no status write; `--plan` with an existing plan resolves
       `reviser-agent` and its dispatch file carries `existing_plan_path`; `--plan` with no plan
       resolves `planner-agent`; both are admitted at any status including terminal.
-- [ ] Test (pin-only, no code change expected): after two research rounds, a plan dispatch names
+- [x] Test (pin-only, no code change expected): after two research rounds, a plan dispatch names
       the NEWEST report. Change code only if this fails.
 
 **Timing**: 2 hours
@@ -485,8 +485,16 @@ outcome explicitly rather than quietly editing.
   rendering case
 
 **Verification**:
-- `bash scripts/tests/test-orchestrate-cycle-plan.sh` and
-  `bash scripts/tests/test-orchestrate-build-dispatch.sh` pass.
+- `bash scripts/tests/test-orchestrate-cycle-plan.sh` passes (199/199, source-store-first
+  resolution). *(deviation: altered — `bash scripts/tests/test-orchestrate-build-dispatch.sh`
+  resolves its SUT deploy-tree-first, by that suite's own documented design ("correct for a
+  suite validating what actually runs in production" -- see its own header comment); against
+  the CURRENT (pre-Phase-7-redeploy) `.claude/scripts/orchestrate-build-dispatch.sh`, the two new
+  Group 11 existing_plan_path/revision_reason assertions fail (70/72), because that deployed
+  copy predates this phase's source-store edit. Verified correctness directly: temporarily
+  copied the source-store file over the deployed one, confirmed all 72 cases pass, then reverted
+  the deployed copy to its original (unmodified) state -- no lasting `.claude/**` change. This
+  will read genuinely green, with no manual sync, once Phase 7's redeploy runs.)*
 - `shellcheck` clean on both edited scripts.
 - Manual `--dry-run`: `--plan` on a task with a plan shows `agent=reviser-agent`; `--implement` on
   a task with no plan shows the blocked reason and zero dispatch rows.

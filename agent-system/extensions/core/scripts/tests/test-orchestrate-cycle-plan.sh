@@ -2370,7 +2370,9 @@ else
   fail "Case D: candidate #2105 did not dispatch (stdout: $LAST_STDOUT)"
 fi
 
-# ── Case E: --force-phases implement on a completed task dispatches (Decision (c)) ──────────────
+# ── Case E: --force-phases implement on a completed task dispatches (Decision (c)) -- WITH a
+# plan artifact present (Phase 5's artifact-based admission rule requires one for implement;
+# a terminal status alone is not enough, matching the same rule Group 23 tests in full below).
 write_state <<'EOF'
 {
   "active_projects": [
@@ -2379,10 +2381,13 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
+rm -rf "$WORKDIR/specs/2104_g21e_forced_implement"
+mkdir -p "$WORKDIR/specs/2104_g21e_forced_implement/plans"
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2104_g21e_forced_implement/plans/01_fixture-plan.md"
 rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21e.json"
 run_sut --session g21e --dry-run --force-phases implement -- 2104
 if [ "$(jqf '.dispatch | map(select(.task == 2104 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
-  pass "Case E: --force-phases implement on a completed task dispatches with phase=implement, force=true"
+  pass "Case E: --force-phases implement on a completed task WITH a plan dispatches with phase=implement, force=true"
 else
   fail "Case E: candidate #2104 did not dispatch as forced implement (stdout: $LAST_STDOUT)"
 fi
@@ -2520,6 +2525,154 @@ if [ "$(jqf '.dispatch | map(select(.task == 2205)) | .[0].focus // ""')" = "Fro
   pass "Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text"
 else
   fail "Group 22 Case E: expected a non-empty .dispatch[].focus under --dry-run, got: $(jqf '.dispatch')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 23: Phase 5 -- artifact-based admission for forced plan and implement. One admission
+# rule, keyed on artifacts alone: implement admitted only when plans/*.md exists (else blocked,
+# "no plan artifact; run --plan first"); plan always admitted (reviser-agent when a plan exists,
+# planner-agent otherwise). All cases forced (--force-phases), at ordinary AND terminal status,
+# proving the rule is artifact-keyed, never status-keyed. Reuses Group 21's already-installed
+# REAL orchestrate-build-dispatch.sh/update-task-status.sh/state-write.sh (LIVE dispatch actually
+# writes files and reads reviser-agent.md's own field names).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 23: artifact-based admission for forced plan and implement"
+
+# ── Case A: --implement on a RESEARCHED task WITH a plan dispatches implement ───────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2301, "project_name": "g23a_implement_with_plan", "task_type": "general", "status": "researched", "description": "forced implement, plan present", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2301_g23a_implement_with_plan"
+mkdir -p "$WORKDIR/specs/2301_g23a_implement_with_plan/plans"
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2301_g23a_implement_with_plan/plans/01_fixture-plan.md"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23a.json"
+run_sut --session g23a --force-phases implement -- 2301
+if [ "$(jqf '.dispatch | map(select(.task == 2301 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
+  pass "Group 23 Case A: --implement on a RESEARCHED task WITH a plan dispatches implement"
+else
+  fail "Group 23 Case A: expected a forced implement dispatch for candidate #2301, got: $LAST_STDOUT"
+fi
+
+# ── Case B: --implement on a task with NO plan yields exactly one blocked[] row; no dispatch
+# file, lock, or status write ────────────────────────────────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2302, "project_name": "g23b_implement_no_plan", "task_type": "general", "status": "researched", "description": "forced implement, no plan present", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2302_g23b_implement_no_plan"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23b.json"
+g23b_status_before=$(jq -r '.active_projects[] | select(.project_number == 2302) | .status' "$STATE_FILE")
+run_sut --session g23b --force-phases implement -- 2302
+g23b_status_after=$(jq -r '.active_projects[] | select(.project_number == 2302) | .status' "$STATE_FILE")
+if [ "$(jqf '.blocked | map(select(.task == 2302 and (.reason == "no plan artifact; run --plan first"))) | length')" = "1" ]; then
+  pass "Group 23 Case B: --implement with no plan yields exactly one blocked[] row with the named reason"
+else
+  fail "Group 23 Case B: expected the no-plan blocked[] row, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 2302)) | length')" = "0" ]; then
+  pass "Group 23 Case B: no dispatch row for candidate #2302"
+else
+  fail "Group 23 Case B: unexpectedly dispatched candidate #2302 (stdout: $LAST_STDOUT)"
+fi
+if [ ! -d "$WORKDIR/specs/2302_g23b_implement_no_plan/.dispatch" ]; then
+  pass "Group 23 Case B: no .dispatch/ directory or file was created"
+else
+  fail "Group 23 Case B: a .dispatch/ directory was unexpectedly created"
+fi
+if [ ! -d "$WORKDIR/specs/2302_g23b_implement_no_plan/.lock" ]; then
+  pass "Group 23 Case B: no task lock was taken"
+else
+  fail "Group 23 Case B: a .lock/ directory was unexpectedly created"
+fi
+if [ "$g23b_status_before" = "$g23b_status_after" ]; then
+  pass "Group 23 Case B: status unchanged (no status write) -- before='$g23b_status_before' after='$g23b_status_after'"
+else
+  fail "Group 23 Case B: status changed -- before='$g23b_status_before' after='$g23b_status_after'"
+fi
+
+# ── Case C: --plan with an existing plan resolves reviser-agent; dispatch file carries
+# existing_plan_path (the field name agents/reviser-agent.md reads) ────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2303, "project_name": "g23c_plan_revise", "task_type": "general", "status": "researched", "description": "forced plan round, plan present -- revise", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2303_g23c_plan_revise"
+mkdir -p "$WORKDIR/specs/2303_g23c_plan_revise/plans" "$WORKDIR/specs/2303_g23c_plan_revise/reports"
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2303_g23c_plan_revise/plans/01_fixture-plan.md"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23c.json"
+run_sut --session g23c --force-phases plan -- 2303
+if [ "$(jqf '.dispatch | map(select(.task == 2303)) | .[0].agent // ""')" = "reviser-agent" ]; then
+  pass "Group 23 Case C: --plan with an existing plan resolves reviser-agent"
+else
+  fail "Group 23 Case C: expected agent=reviser-agent for candidate #2303, got: $LAST_STDOUT"
+fi
+g23c_dispatch_file=$(jqf '.dispatch | map(select(.task == 2303)) | .[0].dispatch_file // ""')
+if [ -n "$g23c_dispatch_file" ] && [ -f "$g23c_dispatch_file" ] && \
+   grep -qF "existing_plan_path: specs/2303_g23c_plan_revise/plans/01_fixture-plan.md" "$g23c_dispatch_file" && \
+   grep -qF "revision_reason: forced --plan round" "$g23c_dispatch_file"; then
+  pass "Group 23 Case C: dispatch file carries existing_plan_path and revision_reason"
+else
+  fail "Group 23 Case C: expected existing_plan_path/revision_reason in '$g23c_dispatch_file'"
+fi
+
+# ── Case D: --plan with no plan resolves planner-agent (ordinary path, unchanged) ───────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2304, "project_name": "g23d_plan_author", "task_type": "general", "status": "not_started", "description": "forced plan round, no plan present -- author", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2304_g23d_plan_author"
+mkdir -p "$WORKDIR/specs/2304_g23d_plan_author/reports"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23d.json"
+run_sut --session g23d --force-phases plan -- 2304
+if [ "$(jqf '.dispatch | map(select(.task == 2304)) | .[0].agent // ""')" = "planner-agent" ]; then
+  pass "Group 23 Case D: --plan with no plan resolves planner-agent"
+else
+  fail "Group 23 Case D: expected agent=planner-agent for candidate #2304, got: $LAST_STDOUT"
+fi
+
+# ── Case E: both plan admission modes are admitted at TERMINAL status too, proving the rule is
+# artifact-keyed, never status-keyed (mirrors Group 21's forced-admits-terminal contract) ──────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2305, "project_name": "g23e_terminal_plan_revise", "task_type": "general", "status": "completed", "description": "terminal task, forced plan round, plan present", "dependencies": [], "file_scope": []},
+    {"project_number": 2306, "project_name": "g23f_terminal_plan_author", "task_type": "general", "status": "abandoned", "description": "terminal task, forced plan round, no plan present", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2305_g23e_terminal_plan_revise" "$WORKDIR/specs/2306_g23f_terminal_plan_author"
+mkdir -p "$WORKDIR/specs/2305_g23e_terminal_plan_revise/plans"
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2305_g23e_terminal_plan_revise/plans/01_fixture-plan.md"
+mkdir -p "$WORKDIR/specs/2306_g23f_terminal_plan_author"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23ef.json"
+run_sut --session g23ef --dry-run --force-phases plan -- 2305 2306
+if [ "$(jqf '.dispatch | map(select(.task == 2305)) | .[0].agent // ""')" = "reviser-agent" ]; then
+  pass "Group 23 Case E: terminal (completed) task with a plan still resolves reviser-agent when forced"
+else
+  fail "Group 23 Case E: expected agent=reviser-agent for terminal candidate #2305, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 2306)) | .[0].agent // ""')" = "planner-agent" ]; then
+  pass "Group 23 Case E: terminal (abandoned) task with no plan still resolves planner-agent when forced"
+else
+  fail "Group 23 Case E: expected agent=planner-agent for terminal candidate #2306, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

@@ -521,6 +521,75 @@ fi
 rm -f "$DECISIONS_FILE"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 11: Phase 5 (artifact-based admission) -- the plan branch's existing_plan_path/
+# revision_reason rendering (reviser-agent.md's own Stage 1/2 field names), and a pin test that
+# a plan dispatch names the NEWEST report after several research rounds (same-type artifact
+# supersession -- context/reference/state-management-schema.md's "Artifacts Are Append-Only"
+# section -- means the state.json artifacts array holds exactly one report entry at a time, so
+# this pins that `.[0].path` already resolves correctly by construction; change code only if
+# this fails).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 11: existing_plan_path/revision_reason rendering, newest-report pin"
+
+# Case A: plan phase WITH an existing plan (the fixture's default state already seeds
+# ${TASK_DIR_REL}/plans/01_fixture-plan.md) -- both new lines render, using the exact field
+# names agents/reviser-agent.md's own Stage 1 expects.
+run_sut plan --clean --seq 11
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "existing_plan_path: ${TASK_DIR_REL}/plans/01_fixture-plan.md" "plan (existing plan present): existing_plan_path renders with the newest plan's path"
+  assert_contains "$content" "revision_reason: forced --plan round" "plan (existing plan present): revision_reason renders"
+else
+  fail "plan (existing plan present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case B: plan phase with NO existing plan -- neither line renders (the ordinary planner-agent
+# path stays byte-for-byte unchanged). Temporarily relocate the fixture's plan file.
+mv "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md" "$WORKDIR/01_fixture-plan.md.setaside"
+run_sut plan --clean --seq 11
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "existing_plan_path" "plan (no plan present): existing_plan_path line absent"
+  assert_not_contains "$content" "revision_reason" "plan (no plan present): revision_reason line absent"
+else
+  fail "plan (no plan present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+mv "$WORKDIR/01_fixture-plan.md.setaside" "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+
+# Case C: newest-report pin -- simulate the state AFTER a second research round under real
+# same-type supersession semantics (the round-1 report's artifact entry is REMOVED, not merely
+# appended alongside): state.json's artifacts array holds ONLY the round-2 report. A plan
+# dispatch must name round-2's path, not round-1's.
+printf '# Fixture report round 2\n' > "$FIXTURE/${TASK_DIR_REL}/reports/02_fixture-report-round2.md"
+cat > "$FIXTURE/specs/state.json" <<EOF
+{
+  "active_projects": [
+    {
+      "project_number": ${TASK_NUM},
+      "project_name": "${PROJECT}",
+      "task_type": "general",
+      "status": "researched",
+      "description": "Fixture task description for orchestrate-build-dispatch.sh test suite -- exercises every gatherer.",
+      "next_artifact_number": 3,
+      "artifacts": [
+        {"type": "report", "path": "${TASK_DIR_REL}/reports/02_fixture-report-round2.md", "summary": "fixture report round 2"}
+      ]
+    }
+  ]
+}
+EOF
+run_sut plan --clean --seq 11
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "research_artifact: ${TASK_DIR_REL}/reports/02_fixture-report-round2.md" "plan dispatch after two research rounds names the NEWEST report (round 2, not round 1)"
+  assert_not_contains "$content" "01_fixture-report.md" "plan dispatch after two research rounds does NOT name the superseded round-1 report"
+else
+  fail "newest-report pin: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+# Restore the original single-report fixture state for any suite appended after this one.
+build_fixture
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

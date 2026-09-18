@@ -175,6 +175,7 @@ skill_read_artifact_number "$task_number" "$PADDED_NUM" "$PROJECT_NAME" "$artifa
 
 # ─── Phase-specific inputs ──────────────────────────────────────────────────────────────────────
 research_artifact=""
+existing_plan_path=""
 plan_path=""
 continuation="null"
 
@@ -182,6 +183,13 @@ if [ "$phase" = "plan" ]; then
   research_artifact=$(jq -r --argjson num "$task_number" \
     '[.active_projects[] | select(.project_number == $num) | .artifacts // [] | .[] | select(.type == "report")] | .[0].path // ""' \
     specs/state.json)
+  # Phase 5 (artifact-based admission): a forced --plan round on a task that already has a plan
+  # dispatches reviser-agent, which reads `existing_plan_path` (see agents/reviser-agent.md's
+  # Stage 1/2) to enter Plan Revision mode rather than Description Update mode. Same
+  # `ls | sort -V | tail -1` newest-artifact idiom the implement branch below already uses.
+  # Absent plan -> stays "" -> neither line is rendered below -> the ordinary planner-agent path
+  # (no prior plan) is byte-for-byte unchanged.
+  existing_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1) || existing_plan_path=""
 fi
 
 if [ "$phase" = "implement" ]; then
@@ -365,6 +373,13 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo ""
     echo "- research_artifact: ${research_artifact}"
     echo ""
+    if [ -n "$existing_plan_path" ]; then
+      echo "## Prior Plan"
+      echo ""
+      echo "- existing_plan_path: ${existing_plan_path}"
+      echo "- revision_reason: forced --plan round"
+      echo ""
+    fi
   fi
   if [ "$phase" = "implement" ]; then
     echo "## Plan"
