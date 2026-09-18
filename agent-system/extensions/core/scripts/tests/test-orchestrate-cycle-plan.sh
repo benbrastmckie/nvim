@@ -1130,8 +1130,22 @@ fi
 # `deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh"`, and $SCRIPT_DIR resolves to this
 # fixture's own $WORKDIR/.claude/scripts (the SUT's own BASH_SOURCE-derived directory) -- so a
 # same-named stub dropped there is picked up with no further interposition machinery needed.
+#
+# Cases (l)-(r) extend this group with the durable cross-invocation redeploy ledger (Phase 1-2 of
+# this task): a hash skip for the ordinary unchanged-content case, an attributed-recency skip for
+# the self-modifying-task class (a task whose own file_scope IS the orchestrator source store, so
+# a content hash can never skip it by construction -- case (r) is the NAMED acceptance criterion
+# for this class), the deploy_pending override, and negative-record (never-skip-eligible) ledger
+# writes. These cases need a REAL (non-CANNOTVERIFY) source-store root distinct from the
+# `.claude/scripts` deploy-mirror tree already set up above: `deploy_ledger_hash_state` hashes
+# ONLY `agent-system/extensions/core` under PROJECT_ROOT (here, $WORKDIR), which cases (a)-(k)
+# never populate -- confirming, by construction, that cases (a)-(k) exercise the CANNOTVERIFY ->
+# run fallback path rather than accidentally exercising a skip.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 11: inter-cycle redeploy checkpoint (three-branch contract)"
+info "Group 11: inter-cycle redeploy checkpoint (three-branch contract + durable ledger skip rules)"
+
+# shellcheck source=/dev/null
+source "$CORE_DIR/lib/deploy-ledger-lib.sh"
 
 G11_CALL_MARKER="$WORKDIR/.claude/scripts/.g11_verify_call_count"
 
@@ -1165,20 +1179,33 @@ EOF
   chmod +x "$WORKDIR/.claude/scripts/verify-deploy.sh"
 }
 
+# write_g11_deploy_headless_stub <exit_code> -- call-counting (G11_DEPLOY_CALL_MARKER), so
+# cases (l)-(r) can assert the redeploy pipeline was (or, for a skip, was NOT) actually invoked --
+# distinct from G11_CALL_MARKER above, which counts verify-deploy.sh calls. Backward-compatible
+# with cases (a)-(k): none of them read this new marker, only the (unchanged) exit-code behavior.
+G11_DEPLOY_CALL_MARKER="$WORKDIR/.claude/scripts/.g11_deploy_call_count"
 write_g11_deploy_headless_stub() {
   local rc="$1"
   cat > "$WORKDIR/.claude/scripts/deploy-headless.sh" <<EOF
 #!/usr/bin/env bash
+marker="$G11_DEPLOY_CALL_MARKER"
+count=0
+[ -f "\$marker" ] && count=\$(cat "\$marker")
+count=\$((count + 1))
+echo "\$count" > "\$marker"
 echo "[deploy-headless] (stub) simulated run, exit $rc" >&2
 exit $rc
 EOF
   chmod +x "$WORKDIR/.claude/scripts/deploy-headless.sh"
 }
 
-g11_seed_state_and_mt() {
-  # A single terminal (abandoned) task -- mirrors Group 1's fixture shape -- so the SUT reaches
-  # the checkpoint (which runs before any candidate-eligibility work) and then cleanly stops with
-  # no dispatch, needing no orchestrate-build-dispatch.sh/update-task-status.sh stubbing.
+# g11_reset_mt <session_id> <cycle_modified_files_json> -- the state.json + mt_state half of
+# g11_seed_state_and_mt below, factored out so cases (q) and (r) can simulate a FRESH
+# `/orchestrate` invocation (new session, fresh mt_state) while the durable, specs-root-scoped
+# deploy ledger survives across the call, exactly as it does across real invocations. Does NOT
+# touch the ledger file.
+g11_reset_mt() {
+  local session="$1" cmf_json="$2"
   write_state <<'EOF'
 {
   "active_projects": [
@@ -1187,13 +1214,78 @@ g11_seed_state_and_mt() {
 }
 EOF
   reset_lock_dirs
-  rm -f "$G11_CALL_MARKER"
-  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${1}.json"
+  rm -f "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
+  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
   rm -f "$mt_file"
-  jq -n --argjson tn "[9101]" '{
+  jq -n --argjson tn "[9101]" --argjson cmf "$cmf_json" '{
     task_numbers: $tn,
-    cycle_modified_files: [".claude/scripts/orchestrate-cycle-plan.sh"]
+    cycle_modified_files: $cmf
   }' > "$mt_file"
+}
+
+g11_seed_state_and_mt() {
+  # A single terminal (abandoned) task -- mirrors Group 1's fixture shape -- so the SUT reaches
+  # the checkpoint (which runs before any candidate-eligibility work) and then cleanly stops with
+  # no dispatch, needing no orchestrate-build-dispatch.sh/update-task-status.sh stubbing.
+  # Also clears the durable deploy ledger, unlike g11_reset_mt above -- this is the "brand new
+  # invocation, no prior deploy history at all" entry point every one of cases (a)-(p) uses; only
+  # (q)'s second run and (r)'s b/c invocations deliberately reuse g11_reset_mt instead, to prove
+  # the ledger's cross-invocation durability.
+  g11_reset_mt "$1" '[".claude/scripts/orchestrate-cycle-plan.sh"]'
+  rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+}
+
+# g11_set_cycle_modified_files <session_id> <json_array> -- overrides the cycle_modified_files
+# g11_seed_state_and_mt/g11_reset_mt seeded, for a case that needs the SOURCE-STORE path itself
+# (under agent-system/extensions/core, matching what a real self-modifying task's own
+# modified_files would look like) rather than the `.claude` deploy-mirror path cases (a)-(k) use.
+g11_set_cycle_modified_files() {
+  local session="$1" cmf_json="$2"
+  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  jq --argjson cmf "$cmf_json" '.cycle_modified_files = $cmf' "$mt_file" > "${mt_file}.tmp" && mv "${mt_file}.tmp" "$mt_file"
+}
+
+# G11_SOURCE_ROOT / g11_seed_source_store / g11_mutate_source_file -- the ledger's OWN
+# hash-scope root ($WORKDIR/agent-system/extensions/core, per deploy_ledger_hash_state's
+# Decision 2 scope), distinct from the pre-existing `.claude/scripts` deploy-mirror tree set up
+# earlier in this file. Cases (a)-(k) above deliberately never populate this root -- that is what
+# proves they exercise the CANNOTVERIFY -> run fallback, not an accidental skip.
+G11_SOURCE_ROOT="$WORKDIR/agent-system/extensions/core"
+g11_seed_source_store() {
+  # (Re)creates a full fixture source-store root containing a deterministic baseline file for
+  # EVERY orchestrator-critical path (fixture content, never copied from the real repository
+  # tree), so deploy_ledger_hash_state resolves a real, non-CANNOTVERIFY hash.
+  rm -rf "$G11_SOURCE_ROOT"
+  mkdir -p "$G11_SOURCE_ROOT"
+  local rel
+  while IFS= read -r rel; do
+    [ -z "$rel" ] && continue
+    mkdir -p "$(dirname "$G11_SOURCE_ROOT/$rel")"
+    printf 'fixture baseline content for %s\n' "$rel" > "$G11_SOURCE_ROOT/$rel"
+  done < <(jq -r '.critical_paths[].path' "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json")
+}
+g11_mutate_source_file() {
+  # Usage: g11_mutate_source_file <critical-path-relative-path> -- appends a uniquely-timestamped
+  # line so the file's sha256 (and therefore the ledger's aggregate) deterministically changes.
+  local rel="$1"
+  printf 'mutated %s\n' "$(date +%s%N)" >> "$G11_SOURCE_ROOT/$rel"
+}
+
+# g11_seed_ledger <task_numbers_json> <verify_outcome> <age_seconds> -- seeds
+# specs/.orchestrator-deploy-ledger.json from the LIBRARY's own deploy_ledger_hash_state +
+# deploy_ledger_write (this test file sources the real lib above), so no test ever hand-rolls a
+# hash; only verified_at is then back-dated by <age_seconds> to control the recency/max-age
+# window checks deterministically.
+g11_seed_ledger() {
+  local tasks="$1" outcome="$2" age="$3"
+  local ledger_file="$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+  local hs
+  hs="$(deploy_ledger_hash_state "$WORKDIR" "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json")"
+  deploy_ledger_write "$ledger_file" "$hs" "$outcome" "$tasks" "sess_ledger_seed" 1
+  local now target
+  now=$(date +%s)
+  target=$((now - age))
+  jq --argjson vat "$target" '.verified_at = $vat' "$ledger_file" > "${ledger_file}.tmp" && mv "${ledger_file}.tmp" "$ledger_file"
 }
 
 # ── Case (a): deploy-headless.sh exit 1 -- unconditional defer, NO baseline consultation. The
@@ -1417,7 +1509,233 @@ else
   fail "checkpoint (k): defer_ledger[].depth_disagreement is not true (mt_state: $(cat "$mt_k" 2>/dev/null))"
 fi
 
-rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER"
+# ── Case (l): skip on unchanged hash -- the ordinary case. Ledger clean, same content, fresh
+# (well within DEPLOY_LEDGER_MAX_AGE_SEC's default 86400s) -- must skip via skip_hash without
+# ever invoking deploy-headless.sh or verify-deploy.sh at all. Deliberately configured with
+# stubs that WOULD defer if reached, so a regression that fails to skip is caught loudly. ───────
+g11_seed_state_and_mt "g11_l"
+g11_seed_source_store
+g11_seed_ledger '[9101]' "clean" 60
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
+write_g11_deploy_headless_stub 1
+run_sut --session g11_l -- 9101
+mt_l="$WORKDIR/specs/.orchestrator-multi-state-g11_l.json"
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "0" ]; then
+  pass "checkpoint (l): skip_hash never invokes deploy-headless.sh"
+else
+  fail "checkpoint (l): expected deploy-headless.sh to be skipped, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null) call(s)"
+fi
+if [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_l" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (l): the batch is not deferred on a hash skip"
+else
+  fail "checkpoint (l): batch was unexpectedly deferred (mt_state: $(cat "$mt_l" 2>/dev/null))"
+fi
+if [ "$(jq -r '.redeploy_skip_notices[-1].decision' "$mt_l" 2>/dev/null)" = "skip_hash" ]; then
+  pass "checkpoint (l): redeploy_skip_notices records decision=skip_hash"
+else
+  fail "checkpoint (l): expected redeploy_skip_notices[-1].decision=skip_hash (mt_state: $(cat "$mt_l" 2>/dev/null))"
+fi
+if [ "$(jq -r '.deployed_critical_paths | length' "$mt_l" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (l): deployed_critical_paths is left unchanged (empty) on a skip"
+else
+  fail "checkpoint (l): expected deployed_critical_paths to stay empty on a skip (mt_state: $(cat "$mt_l" 2>/dev/null))"
+fi
+
+# ── Case (m): skip within the recency window -- the self-modifying-task case. Content changed
+# on a path named in cycle_modified_files, ledger recent, same task number -- must skip via
+# skip_attributed, again without ever invoking the (defer-triggering) stubs. ────────────────────
+g11_seed_state_and_mt "g11_m"
+g11_seed_source_store
+g11_seed_ledger '[9101]' "clean" 300
+g11_mutate_source_file "scripts/orchestrate-cycle-plan.sh"
+g11_set_cycle_modified_files "g11_m" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
+write_g11_deploy_headless_stub 1
+run_sut --session g11_m -- 9101
+mt_m="$WORKDIR/specs/.orchestrator-multi-state-g11_m.json"
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "0" ]; then
+  pass "checkpoint (m): skip_attributed never invokes deploy-headless.sh"
+else
+  fail "checkpoint (m): expected deploy-headless.sh to be skipped, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null) call(s)"
+fi
+if [ "$(jq -r '.redeploy_skip_notices[-1].decision' "$mt_m" 2>/dev/null)" = "skip_attributed" ]; then
+  pass "checkpoint (m): redeploy_skip_notices records decision=skip_attributed"
+else
+  fail "checkpoint (m): expected redeploy_skip_notices[-1].decision=skip_attributed (mt_state: $(cat "$mt_m" 2>/dev/null))"
+fi
+if [ "$(jq -r '.redeploy_skip_notices[-1].attributing_tasks | index(9101) != null' "$mt_m" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (m): the skip notice attributes the skip to project #9101"
+else
+  fail "checkpoint (m): expected attributing_tasks to contain 9101 (mt_state: $(cat "$mt_m" 2>/dev/null))"
+fi
+
+# ── Case (n): NO skip when the source store genuinely changed OUTSIDE the recency window --
+# full pipeline runs, and the ledger is rewritten with the new aggregate and outcome clean. ─────
+g11_seed_state_and_mt "g11_n"
+g11_seed_source_store
+g11_seed_ledger '[9101]' "clean" 5000
+g11_mutate_source_file "scripts/orchestrate-cycle-plan.sh"
+g11_set_cycle_modified_files "g11_n" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g11_n -- 9101
+mt_n="$WORKDIR/specs/.orchestrator-multi-state-g11_n.json"
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (n): outside the recency window, the full pipeline runs (deploy-headless.sh called)"
+else
+  fail "checkpoint (n): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
+fi
+if [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_n" 2>/dev/null)" = "0" ]; then
+  pass "checkpoint (n): a clean redeploy does not defer the batch"
+else
+  fail "checkpoint (n): batch was unexpectedly deferred (mt_state: $(cat "$mt_n" 2>/dev/null))"
+fi
+ledger_n_outcome="$(jq -r '.verify_outcome' "$WORKDIR/specs/.orchestrator-deploy-ledger.json" 2>/dev/null)"
+expected_hash_n="$(deploy_ledger_hash_state "$WORKDIR" "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json" | jq -r '.aggregate')"
+ledger_n_agg="$(jq -r '.aggregate' "$WORKDIR/specs/.orchestrator-deploy-ledger.json" 2>/dev/null)"
+if [ "$ledger_n_outcome" = "clean" ] && [ "$ledger_n_agg" = "$expected_hash_n" ]; then
+  pass "checkpoint (n): the ledger is rewritten with the new aggregate and outcome clean"
+else
+  fail "checkpoint (n): expected ledger outcome=clean aggregate=$expected_hash_n, got outcome=$ledger_n_outcome aggregate=$ledger_n_agg"
+fi
+
+# ── Case (o): NO skip on a FOREIGN change -- an in-window, shared-task ledger, but the critical
+# path that actually changed on disk is absent from cycle_modified_files (something else changed
+# the source store) -- the attributed skip must not fire. ───────────────────────────────────────
+g11_seed_state_and_mt "g11_o"
+g11_seed_source_store
+g11_seed_ledger '[9101]' "clean" 300
+g11_mutate_source_file "scripts/orchestrate-cycle-plan.sh"
+g11_set_cycle_modified_files "g11_o" '["agent-system/extensions/core/scripts/task-lock.sh"]'
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g11_o -- 9101
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (o): a foreign changed critical path (not covered by cycle_modified_files) is not skipped"
+else
+  fail "checkpoint (o): expected the pipeline to run (not skip) on a foreign change, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+fi
+
+# ── Case (p): deploy_pending override -- a batch task directory's own .return-meta.json carries
+# deploy_pending:true, forcing `run` despite an otherwise-matching (skip-eligible) hash. ────────
+g11_seed_state_and_mt "g11_p"
+g11_seed_source_store
+g11_seed_ledger '[9101]' "clean" 60
+mkdir -p "$WORKDIR/specs/9101_g11_terminal"
+jq -n '{deploy_pending: true}' > "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g11_p -- 9101
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (p): a deploy_pending batch task forces run despite an otherwise-matching hash"
+else
+  fail "checkpoint (p): expected the pipeline to run under deploy_pending override, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+fi
+rm -f "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
+rmdir "$WORKDIR/specs/9101_g11_terminal" 2>/dev/null || true
+
+# ── Case (q): negative record -- a branch (b) defer writes verify_outcome:"blocking" (never
+# skip-eligible); a FOLLOWING run with genuinely unchanged content must still NOT skip, and the
+# ledger converges back to "clean" once a clean deploy lands. Uses g11_reset_mt (not
+# g11_seed_state_and_mt) for the second run so the durable ledger survives across the two
+# invocations, exactly as it would across two real /orchestrate runs. ───────────────────────────
+g11_seed_state_and_mt "g11_q"
+g11_seed_source_store
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate3 [FAIL] .claude/scripts/orchestrate-cycle-plan.sh" 1
+write_g11_deploy_headless_stub 3
+run_sut --session g11_q -- 9101
+LEDGER_FILE_Q="$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+if [ -f "$LEDGER_FILE_Q" ] && [ "$(jq -r '.verify_outcome' "$LEDGER_FILE_Q" 2>/dev/null)" = "blocking" ]; then
+  pass "checkpoint (q): a branch (b) defer writes a negative 'blocking' ledger record"
+else
+  fail "checkpoint (q): expected ledger verify_outcome=blocking after a branch-(b) defer, got: $(cat "$LEDGER_FILE_Q" 2>/dev/null || echo MISSING)"
+fi
+
+g11_reset_mt "g11_q2" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g11_q2 -- 9101
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (q): a following run with unchanged content does NOT skip on a non-eligible (blocking) ledger record"
+else
+  fail "checkpoint (q): expected the pipeline to run (not skip) despite unchanged content, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+fi
+if [ "$(jq -r '.verify_outcome' "$LEDGER_FILE_Q" 2>/dev/null)" = "clean" ]; then
+  pass "checkpoint (q): the ledger converges back to 'clean' once a clean deploy lands"
+else
+  fail "checkpoint (q): expected ledger verify_outcome=clean after the follow-up run, got $(jq -c '.' "$LEDGER_FILE_Q" 2>/dev/null)"
+fi
+
+# ── Case (r): the NAMED self-modifying-task acceptance criterion. A task whose file_scope and
+# cycle_modified_files overlap scripts/orchestrate-cycle-plan.sh. Invocation 1 (empty ledger)
+# runs the full redeploy; the fixture source file is then edited (new hash, by construction)
+# before invocations 2 and 3, which must both skip via skip_attributed -- so the TOTAL deploy
+# count across all three invocations stays 1. The counterfactual re-run with
+# DEPLOY_LEDGER_RECENT_SEC=-1 (a hash-only rule, in effect, since the recency window can never be
+# satisfied) proves this is the ATTRIBUTED rule doing the work, not the hash rule: the hash
+# changes on every one of the three invocations by construction, so a hash-only rule redeploys
+# every time (count 3). This is what proves shipping only the hash skip would leave the observed
+# failure mode fully intact. ──────────────────────────────────────────────────────────────────
+g11_run_self_modifying_sequence() {
+  # Usage: g11_run_self_modifying_sequence <label> [recent_sec_override]
+  # Fresh baseline + empty ledger, then three invocations (mutating the source file and
+  # resetting mt_state, but NOT the ledger, between each), summing the per-invocation
+  # deploy-headless.sh call counts. Echoes the total on stdout.
+  local label="$1" override="${2:-}"
+  local total=0 c
+
+  g11_reset_mt "g11_r_${label}_a" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
+  rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+  g11_seed_source_store
+  write_g11_verify_stub "" "" 0
+  write_g11_deploy_headless_stub 0
+  if [ -n "$override" ]; then
+    DEPLOY_LEDGER_RECENT_SEC="$override" run_sut --session "g11_r_${label}_a" -- 9101
+  else
+    run_sut --session "g11_r_${label}_a" -- 9101
+  fi
+  c="$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)"; total=$((total + c))
+
+  g11_mutate_source_file "scripts/orchestrate-cycle-plan.sh"
+  g11_reset_mt "g11_r_${label}_b" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
+  write_g11_deploy_headless_stub 0
+  if [ -n "$override" ]; then
+    DEPLOY_LEDGER_RECENT_SEC="$override" run_sut --session "g11_r_${label}_b" -- 9101
+  else
+    run_sut --session "g11_r_${label}_b" -- 9101
+  fi
+  c="$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)"; total=$((total + c))
+
+  g11_mutate_source_file "scripts/orchestrate-cycle-plan.sh"
+  g11_reset_mt "g11_r_${label}_c" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
+  write_g11_deploy_headless_stub 0
+  if [ -n "$override" ]; then
+    DEPLOY_LEDGER_RECENT_SEC="$override" run_sut --session "g11_r_${label}_c" -- 9101
+  else
+    run_sut --session "g11_r_${label}_c" -- 9101
+  fi
+  c="$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)"; total=$((total + c))
+
+  echo "$total"
+}
+
+g11_r_normal_count="$(g11_run_self_modifying_sequence "normal")"
+if [ "$g11_r_normal_count" = "1" ]; then
+  pass "checkpoint (r): self-modifying-task acceptance -- total deploy count stays 1 across 3 invocations (the attributed skip closes the observed failure mode)"
+else
+  fail "checkpoint (r): expected total deploy count 1 across 3 self-modifying invocations, got $g11_r_normal_count"
+fi
+
+g11_r_counterfactual_count="$(g11_run_self_modifying_sequence "counterfactual" "-1")"
+if [ "$g11_r_counterfactual_count" = "3" ]; then
+  pass "checkpoint (r): counterfactual -- a hash-only rule (DEPLOY_LEDGER_RECENT_SEC=-1, recency window unsatisfiable) redeploys on every one of the 3 invocations, proving the attributed rule (not the hash rule) is what closes the failure mode"
+else
+  fail "checkpoint (r): expected counterfactual deploy count 3 (a hash-only rule never skips the self-modifying class), got $g11_r_counterfactual_count"
+fi
+
+rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
+rm -rf "$G11_SOURCE_ROOT"
+rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 12: --compare forwarding -- an implement-phase candidate's build-dispatch argv gains

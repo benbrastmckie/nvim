@@ -256,20 +256,20 @@ wiring. If no such function exists, build the path from the `lookup_project` res
 
 ---
 
-### Phase 3: Group 11 checkpoint coverage, including the self-modifying acceptance criterion [NOT STARTED]
+### Phase 3: Group 11 checkpoint coverage, including the self-modifying acceptance criterion [COMPLETED]
 
 **Goal**: End-to-end coverage of the skip rules through the real SUT, with a named test for the
 self-modifying-task acceptance criterion.
 
 **Tasks**:
-- [ ] Add a call-counting `deploy-headless.sh` stub variant (marker file, mirroring
+- [x] Add a call-counting `deploy-headless.sh` stub variant (marker file, mirroring
   `G11_CALL_MARKER`) so tests can assert the deploy was or was not invoked.
-- [ ] Add a helper that creates a fixture source-store root at
+- [x] Add a helper that creates a fixture source-store root at
   `$WORKDIR/agent-system/extensions/core/` containing copies/stand-ins for the critical-path
   files, plus a helper that seeds `$WORKDIR/specs/.orchestrator-deploy-ledger.json` from the
   library's own `deploy_ledger_hash_state` + `deploy_ledger_write` (so tests never hand-roll
   hashes). Make `g11_seed_state_and_mt` also `rm -f` the ledger so earlier cases are isolated.
-- [ ] New cases (append after the existing (a)-(k) sequence, named for the acceptance criteria):
+- [x] New cases (append after the existing (a)-(k) sequence, named for the acceptance criteria):
   - (l) **skip on unchanged hash**: ledger clean, same content, fresh → deploy stub count 0,
     no defer, `redeploy_skip_notices[0].decision == "skip_hash"`,
     `deployed_critical_paths` unchanged (empty).
@@ -292,8 +292,12 @@ self-modifying-task acceptance criterion.
     another edit) both skip via `skip_attributed`. Assert the total deploy count stays 1 across
     all three, and assert that the same scenario with only a hash rule (simulated via
     `DEPLOY_LEDGER_RECENT_SEC=0`) would redeploy every time (count 3). This proves the
-    attributed rule is what closes the failure mode.
-- [ ] Update the Group 11 banner/`info` text to mention the ledger.
+    attributed rule is what closes the failure mode. *(deviation: altered — used
+    `DEPLOY_LEDGER_RECENT_SEC=-1`, not `0`, for the counterfactual: age is computed as whole
+    seconds via `date +%s`, so a same-second seed+decide pair could produce `age_sec == 0`,
+    making `0` a flaky, timing-dependent threshold; `-1` is unsatisfiable by any non-negative
+    age and keeps the assertion deterministic.)*
+- [x] Update the Group 11 banner/`info` text to mention the ledger.
 
 **Timing**: 1.5 hours
 

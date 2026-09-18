@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Group 11 checkpoint coverage, including the self-modifying acceptance criterion",
+  "started_at": "2026-09-18T00:40:00Z",
+  "last_updated": "2026-09-18T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add call-counting deploy-headless.sh stub, source-store/ledger seeding helpers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Add cases (l)-(r) incl. named self-modifying acceptance criterion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.new-cases-r",
+      "description": "Case (r) counterfactual: assert a hash-only rule redeploys every time using DEPLOY_LEDGER_RECENT_SEC=0",
+      "type": "altered",
+      "reason": "age_sec is computed via date +%s (whole-second granularity); a same-second seed+decide pair could yield age_sec==0, making 0 a flaky threshold for asserting the recency window is never satisfied. -1 is unsatisfiable by any non-negative age and is deterministic.",
+      "annotation": "*(deviation: altered — used DEPLOY_LEDGER_RECENT_SEC=-1, not 0, for the counterfactual: age is computed as whole seconds via date +%s, so a same-second seed+decide pair could produce age_sec == 0, making 0 a flaky, timing-dependent threshold; -1 is unsatisfiable by any non-negative age and keeps the assertion deterministic.)*"
+    }
+  ],
+  "handoff_count": 0
+}
