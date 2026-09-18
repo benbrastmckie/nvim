@@ -1,0 +1,15 @@
+{
+  "status": "researched",
+  "summary": "Confirmed the base-mode territory gap has two independent causes (h1_territory's hard-mode-only population, and territory.md's hard-mode-only contract pull-in) and located the exact fix sites in both orchestrate-cycle-plan.sh and orchestrate-build-dispatch.sh; recommended reusing probed_dispatch_post_h1 as the sibling set and an explicit sentinel for absent/coarse file_scope, coordinated with (not duplicating) task 165's admission-posture ruling.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md",
+      "summary": "Base-mode territory population research: gap confirmation, insertion points, payload shape recommendations, and coordination boundaries with tasks 165 and 199."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "dispatch_seq": 2
+}
