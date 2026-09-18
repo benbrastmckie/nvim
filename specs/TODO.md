@@ -633,6 +633,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: Task 194, Task 213
 - **Research**: [212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md]
 - **Plan**: [212_gate_research_dispatch_missing_report/plans/01_gate-research-report-handoff-predicate.md]
+- **Summary**: [212_gate_research_dispatch_missing_report/summaries/01_gate-research-report-handoff-predicate-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

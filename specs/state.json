@@ -302,9 +302,15 @@
           "path": "specs/212_gate_research_dispatch_missing_report/plans/01_gate-research-report-handoff-predicate.md",
           "type": "plan",
           "summary": "6-phase implementation plan for the research report gate and dispatch-derived handoff-writer predicate."
+        },
+        {
+          "path": "specs/212_gate_research_dispatch_missing_report/summaries/01_gate-research-report-handoff-predicate-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 6 phases, decisions, deviations, and verification evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Replaced the two-agent handoff-writer allowlist with a dispatch-derived --handoff-expected predicate (default true), added a research report-file existence gate plus report_missing output and a message-findings recovery helper wired into skill-orchestrate Move 3, and hardened all 21 research agent contracts (plus planner-agent and general-implementation-agent) against message-only delivery. 447 tests pass across 5 suites, shellcheck clean, redeployed and confirmed."
     },
     {
       "project_number": 210,
