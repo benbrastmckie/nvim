@@ -314,18 +314,31 @@ dispatch.
 
 ---
 
-### Phase 5: shellcheck, full suite, redeploy [NOT STARTED]
+### Phase 5: shellcheck, full suite, redeploy [COMPLETED]
 
 **Goal**: final gates.
 
 **Tasks**:
-- [ ] shellcheck the new script, the new test, and `orchestrate-cycle-plan.sh` (use
-  `nix shell nixpkgs#shellcheck -c shellcheck` if not on PATH); fix findings.
-- [ ] Run `scripts/tests/run-all.sh`; compare against the pre-change baseline so unrelated
-  failures are not attributed to this task.
-- [ ] Redeploy with `deploy-headless.sh` and run `verify-deploy.sh`; confirm
+- [x] shellcheck the new script, the new test, and `orchestrate-cycle-plan.sh` (use
+  `nix shell nixpkgs#shellcheck -c shellcheck` if not on PATH); fix findings. *(completed: new
+  script and new test both exit 0 at default severity (one SC2016 info addressed with an inline
+  disable comment, one SC2005 style fix, one SC2329 info addressed with an inline disable
+  comment); `orchestrate-cycle-plan.sh`'s pre-existing SC2016/SC2154 findings are all outside the
+  lines this task touched -- zero new findings introduced there)*
+- [x] Run `scripts/tests/run-all.sh`; compare against the pre-change baseline so unrelated
+  failures are not attributed to this task. *(completed: 83 passed, 2 failed, 85 total. The two
+  failures -- test-gate-out-repair-reporting.sh and test-verify-deploy-context-budget.sh -- are
+  in subsystems this task never touches (gate-out repair reporting; the eager-context-budget
+  drift already independently tracked as its own roadmap item). test-orchestrate-cycle-plan.sh
+  and test-orchestrate-unwind-dispatch.sh both pass in full)*
+- [x] Redeploy with `deploy-headless.sh` and run `verify-deploy.sh`; confirm
   `.claude/scripts/orchestrate-unwind-dispatch.sh` exists and matches the source store.
-- [ ] Commit per-substep with scoped staging (explicit file lists, never directories).
+  *(completed: RESULT=landed_verify_clean, 33/33 checks passed; `diff -q` confirms the deployed
+  script and test byte-match the source store. Required a manifest.json fix first --
+  `provides.scripts` was missing the two new files, causing a real, task-caused doc-lint FAIL;
+  fixed by adding both entries)*
+- [x] Commit per-substep with scoped staging (explicit file lists, never directories).
+  *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -341,12 +354,12 @@ dispatch.
 
 ## Testing & Validation
 
-- [ ] Pre-image fields recorded on live dispatch, preserved across replay (Phase 1 test group)
-- [ ] Happy-path unwind restores state entry, TODO.md, lock, dispatch file, `pending_dispatch`,
+- [x] Pre-image fields recorded on live dispatch, preserved across replay (Phase 1 test group)
+- [x] Happy-path unwind restores state entry, TODO.md, lock, dispatch file, `pending_dispatch`,
   `dispatch_seq_counter` exactly, and leaves `git status --porcelain -- specs/` empty
-- [ ] Refusal after postflight consumption, after an agent start, and under a foreign fresh lock
-- [ ] `--dry-run` writes nothing
-- [ ] shellcheck clean; redeploy verified
+- [x] Refusal after postflight consumption, after an agent start, and under a foreign fresh lock
+- [x] `--dry-run` writes nothing
+- [x] shellcheck clean; redeploy verified
 
 ## Artifacts & Outputs
 

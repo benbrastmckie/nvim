@@ -64,6 +64,8 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 TOP_WORKDIR="$(mktemp -d)"
+# cleanup() is invoked indirectly via `trap cleanup EXIT` below.
+# shellcheck disable=SC2329
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
 trap cleanup EXIT
 
@@ -323,7 +325,7 @@ else
   fail "Case 4: --dry-run mutated something -- state: $([ "$c4_state_sum_before" = "$c4_state_sum_after" ] && echo ok || echo CHANGED), guard: $([ "$c4_guard_sum_before" = "$c4_guard_sum_after" ] && echo ok || echo CHANGED), dispatch: $([ "$c4_dispatch_sum_before" = "$c4_dispatch_sum_after" ] && echo ok || echo CHANGED), lock: $c4_lock_present_before -> $c4_lock_present_after"
 fi
 
-if echo "$(cat "$TOP_WORKDIR/.uw4_out")" | grep -q "DRY-RUN"; then
+if grep -q "DRY-RUN" "$TOP_WORKDIR/.uw4_out"; then
   pass "Case 4: --dry-run prints its planned actions"
 else
   fail "Case 4: --dry-run produced no DRY-RUN preview output: $(cat "$TOP_WORKDIR/.uw4_out")"

@@ -335,6 +335,8 @@ fi
 # `del(...)` when the pre-image field was absent (rather than assigning an empty string), so a
 # task that never had a session_id/last_updated before this dispatch is restored to that exact
 # absent shape, not a spurious empty-string field.
+# shellcheck disable=SC2016 # single-quoted deliberately: these are jq's own $-bindings, passed
+# via --arg/--argjson below, never meant to be shell-expanded.
 restore_filter='(.active_projects[] | select(.project_number == $num)) |= (
   .status = $status
   | (if $lu == "" then del(.last_updated) else .last_updated = $lu end)
