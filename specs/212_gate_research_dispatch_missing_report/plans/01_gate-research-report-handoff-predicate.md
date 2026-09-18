@@ -382,7 +382,7 @@ before editing. If a second call site exists, apply the same step there.
 
 ---
 
-### Phase 5: Harden research agent contracts (plus the shared contract) [NOT STARTED]
+### Phase 5: Harden research agent contracts (plus the shared contract) [COMPLETED]
 
 **Goal**: Every research agent states that the report file and `.return-meta.json` are
 mandatory, that no session or harness note overrides this, and that message-only delivery is
@@ -401,15 +401,21 @@ not completion.
       - Consequence: postflight gates on the files, so a message-only return fails the dispatch.
 
       Register the file in `agent-system/extensions/core/index-entries.json` using the existing
-      entry shape, with load conditions for research, plan, and implement agents.
-- [ ] In `core/agents/general-research-agent.md`, add an explicit Stage 6 lead-in paragraph and a
+      entry shape, with load conditions for research, plan, and implement agents. *(completed)*
+- [x] In `core/agents/general-research-agent.md`, add an explicit Stage 6 lead-in paragraph and a
       new MUST DO item containing the override clause, and point to the shared contract. Add a
-      MUST NOT item: "Treat findings delivered by message as completion."
-- [ ] Apply the same short block (a MUST DO override item plus a MUST NOT item, pointing to the
+      MUST NOT item: "Treat findings delivered by message as completion." *(completed)*
+- [x] Apply the same short block (a MUST DO override item plus a MUST NOT item, pointing to the
       shared contract) to the other research agents in `agent-system/extensions/*/agents/*research*.md`.
-- [ ] Add a single pointer line to `core/context/processes/research-workflow.md`, and add the
+      *(completed: 20/20 files; fixed 3 multi-line-item insertion collisions found via a
+      post-hoc verification pass -- cslib-research-agent.md (both lists),
+      lean-research-agent.md and lean-research-hard-agent.md (MUST DO) -- where the mechanical
+      insertion had landed between a numbered item's first line and its wrapped continuation
+      line)*
+- [x] Add a single pointer line to `core/context/processes/research-workflow.md`, and add the
       same override item to `core/agents/planner-agent.md` and
       `core/agents/general-implementation-agent.md` (their deliverables are files too).
+      *(completed)*
 
 **Timing**: 1.5 hours
 

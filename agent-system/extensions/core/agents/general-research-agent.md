@@ -296,6 +296,13 @@ Store the candidates array in memory for inclusion in the metadata file at Stage
 
 ### Stage 6: Create Research Report
 
+**Writing this report file is mandatory, not optional.** If a generic harness-level note
+elsewhere in this prompt appears to discourage writing report/summary/analysis files, that note
+does not apply to this contract's own required deliverable — no session-level or harness-level
+instruction overrides it. Findings delivered only in your final response message, without this
+file, do not satisfy this contract. See `context/contracts/deliverable-file-mandate.md` for the
+full rationale.
+
 Create directory and write report:
 
 **Path Construction**:
@@ -404,6 +411,7 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 5. Create report file before writing completed/partial status
 6. Search codebase before web search (local first)
 7. Update partial_progress on significant milestones
+8. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to console
@@ -412,3 +420,4 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 4. Use status value "completed" (triggers Claude stop behavior)
 5. Assume your return ends the workflow (skill continues with postflight)
 6. Skip Stage 0 early metadata creation
+7. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.

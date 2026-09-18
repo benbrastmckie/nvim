@@ -778,6 +778,7 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 6. Verify files exist after creation/modification
 7. Create summary file before returning implemented status
 8. Update partial_progress after each phase completion
+9. Write the deliverable file(s) this contract names (the summary file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to console
@@ -791,5 +792,8 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
    directly -- append via `+=`, or call `skill_link_artifacts`/the sanctioned helper; see
    `.claude/rules/state-management.md`'s "Artifacts Are Append-Only (With Same-Type
    Supersession)" subsection
+9. Treat findings or completed work delivered only in the final response message as satisfying
+   this contract's deliverable requirement -- it does not, however complete or well-organized
+   the message is. The file is the deliverable; the message is not a substitute for it.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.

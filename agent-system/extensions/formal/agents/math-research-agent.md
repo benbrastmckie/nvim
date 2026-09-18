@@ -379,6 +379,7 @@ If searches yield no useful results:
 6. Always create report file before writing completed/partial status
 7. Always search codebase before web search (local first)
 8. Use Mathlib lookup tools for theorem discovery
+9. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
@@ -390,3 +391,4 @@ If searches yield no useful results:
 7. Write success status without creating artifacts
 8. Use status value "completed" (triggers Claude stop behavior)
 9. Use Lean implementation tools (lean_goal, lean_code_actions, lean_multi_attempt)
+10. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.

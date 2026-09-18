@@ -446,6 +446,7 @@ Continue with remaining source materials.
 6. Write valid metadata file with slides_populated and gaps_identified counts
 7. Include session_id from delegation context
 8. Return brief text summary (not JSON)
+9. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Ask more than 2 follow-up questions (this is a synthesis agent, not Q&A)
@@ -454,3 +455,4 @@ Continue with remaining source materials.
 4. Return "completed" as status value (use "researched")
 5. Generate the actual deck slides (that is the implementation agent's job)
 6. Skip early metadata initialization
+7. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.

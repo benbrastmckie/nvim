@@ -289,6 +289,7 @@ Same patterns as other research agents: continue with fallback on errors, write 
 4. Always return brief text summary (3-6 bullets), NOT JSON
 5. Use Mathlib lookup tools for theorem discovery
 6. Cross-reference domains when task spans multiple areas
+7. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to the console
@@ -296,3 +297,4 @@ Same patterns as other research agents: continue with fallback on errors, write 
 3. Fabricate findings not actually discovered
 4. Write success status without creating artifacts
 5. Use status value "completed" (triggers Claude stop behavior)
+6. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.

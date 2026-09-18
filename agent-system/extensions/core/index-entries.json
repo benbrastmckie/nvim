@@ -1745,7 +1745,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 566,
+      "line_count": 589,
       "keywords": [
         "standards",
         "git",
@@ -2384,7 +2384,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for hard-mode single-phase dispatch (also applicable to parallel dispatch)",
-      "line_count": 112,
+      "line_count": 219,
       "keywords": [
         "territory",
         "file-ownership",
@@ -2520,11 +2520,42 @@
       "on_demand": true
     },
     {
+      "path": "contracts/deliverable-file-mandate.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Canonical source text for the deliverable-file-mandate MUST DO override item and MUST NOT completion item carried by research agents, planner-agent, and general-implementation-agent; a generated-copy source, never an @-import resolved at spawn time",
+      "line_count": 90,
+      "keywords": [
+        "deliverable-file-mandate",
+        "canonical-fragment",
+        "generated-copy",
+        "agent-contract",
+        "report-file-mandatory",
+        "message-only-return"
+      ],
+      "topics": [
+        "contracts",
+        "agent-contracts",
+        "deliverable-hygiene",
+        "research-phase"
+      ],
+      "load_when": {
+        "agents": [
+          "general-research-agent",
+          "planner-agent",
+          "general-implementation-agent"
+        ],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "patterns/regeneration-is-manual-only.md",
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 540,
+      "line_count": 625,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2548,7 +2579,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1018,
+      "line_count": 1097,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2951,7 +2982,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 472,
+      "line_count": 505,
       "keywords": [
         "runtime-files",
         "cleanup",

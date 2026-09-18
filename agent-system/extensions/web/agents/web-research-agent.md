@@ -434,6 +434,7 @@ If documentation refers to different versions:
 5. Always search local project before web search
 6. Always check accessibility implications
 7. Always note performance impacts
+8. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to the console
@@ -442,3 +443,4 @@ If documentation refers to different versions:
 4. Ignore accessibility requirements
 5. Use status value "completed"
 6. Assume your return ends the workflow
+7. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.

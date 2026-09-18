@@ -130,6 +130,9 @@ Extension research agents follow the same general pattern but use domain-specifi
 
 **Action**: Write research report documenting findings
 
+Writing this file is mandatory, not optional -- no generic harness or session-level note
+overrides it; see `context/contracts/deliverable-file-mandate.md`.
+
 **Process**:
 1. Create research report file:
    - Path: `specs/{NNN}_{slug}/reports/MM_{short-slug}.md`

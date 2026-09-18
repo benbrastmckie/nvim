@@ -454,6 +454,7 @@ An empty array from any GitHub endpoint is valid. Report it as "No X yet" rather
 9. Cap Zulip messages at 200 (`num_before: 200`)
 10. Always check `~/.zuliprc` for placeholder values before attempting Zulip fetch
 11. Use `--paginate` for GitHub endpoints that may have many results
+12. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
@@ -464,3 +465,4 @@ An empty array from any GitHub endpoint is valid. Report it as "No X yet" rather
 6. Use phrases like "task is complete", "work is done", or "finished"
 7. Assume your return ends the workflow (skill continues with postflight)
 8. Skip Stage 0 early metadata creation
+9. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.

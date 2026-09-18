@@ -159,9 +159,11 @@ shape, never a bare path string.
 3. Return brief text summary, NOT JSON
 4. Search codebase before web search
 5. Create report file before writing metadata
+6. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:
 1. Return JSON to console
 2. Skip codebase exploration
 3. Create empty report files
 4. Fabricate findings
+5. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.
