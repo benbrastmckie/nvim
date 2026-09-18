@@ -121,6 +121,7 @@ next_project_number: 236
 - **Dependencies**: None
 - **Research**: [234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md]
 - **Plan**: [234_fix_state_write_spill_name_collision/plans/01_spill-name-allocation-fix.md]
+- **Summary**: [234_fix_state_write_spill_name_collision/summaries/01_spill-name-allocation-fix-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

@@ -1311,9 +1311,15 @@
           "path": "specs/234_fix_state_write_spill_name_collision/plans/01_spill-name-allocation-fix.md",
           "type": "plan",
           "summary": "5-phase plan fixing state-write.sh spill-name allocation via a shared explicit counter plus a duplicate-NAME hard error, with a RED-first fixture-rooted regression suite, redeploy verification, and caller audit."
+        },
+        {
+          "path": "specs/234_fix_state_write_spill_name_collision/summaries/01_spill-name-allocation-fix-summary.md",
+          "type": "summary",
+          "summary": "Fixed the shared spill-name-allocation counter in state-write.sh (both --argjson auto-spill and --argjson-file branches now advance one explicit SPILL_SEQ), added a loud duplicate-NAME hard error, landed a fixture-rooted regression suite demonstrated RED then GREEN, redeployed and verified the deployed copy, and confirmed via caller audit that no live caller could have hit either defect shape."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed state-write.sh's spill-name collision (both --argjson-file bindings and mixed --argjson-file/--argjson calls silently corrupted to the first spilled value) via a shared SPILL_SEQ counter and a duplicate-NAME hard error, backed by a fixture-rooted regression suite demonstrated RED-then-GREEN, redeployed and verified in .claude/scripts/, with a caller audit confirming no live caller ever triggered either defect shape."
     }
   ],
   "completed_projects": [],
