@@ -590,6 +590,91 @@ fi
 build_fixture
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 12: <deploy-freshness-context> injection -- present for a stale fixture extension, absent
+# (byte-identical to a clean build) when nothing is stale. Reuses the SAME
+# skill_deploy_freshness_stale_names helper skill-base.sh's skill_preflight_update calls (see
+# that function's own Group 4b coverage in test-skill-base-lifecycle.sh); this suite is under
+# test for the SEPARATE injection/gating logic in orchestrate-build-dispatch.sh's own Stage 3.5,
+# not the underlying comparison algorithm again.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 12: <deploy-freshness-context> injection (stale vs. clean)"
+
+# build_stale_extensions_json <fixture_root>: fabricates a `.claude-extensions.json` at the
+# fixture root recording a "fixtureext" entry whose source_dir/source_git_head pair is
+# genuinely STALE (a throwaway one-file scratch git repo advanced past the recorded head) --
+# same shape as test-deploy-freshness.sh's own STALE case, reimplemented locally here.
+build_stale_extensions_json() {
+  local fixture_root="$1"
+  local src_repo="$WORKDIR/g12-source-repo"
+  rm -rf "$src_repo"
+  mkdir -p "$src_repo"
+  git init -q "$src_repo"
+  git -C "$src_repo" config user.email "test@example.com"
+  git -C "$src_repo" config user.name "Test"
+  echo "v1" > "$src_repo/f.txt"
+  git -C "$src_repo" add f.txt
+  git -C "$src_repo" commit -q -m "initial"
+  local head_v1
+  head_v1="$(git -C "$src_repo" log -1 --format=%H -- f.txt)"
+  cat > "$fixture_root/.claude-extensions.json" <<EOF
+{"version":"1.0.0","extensions":{"fixtureext":{"version":"1.0.0","source_dir":"${src_repo}","source_git_head":"${head_v1}"}}}
+EOF
+  echo "v2" > "$src_repo/f.txt"
+  git -C "$src_repo" add f.txt
+  git -C "$src_repo" commit -q -m "v2 -- makes the recorded head stale"
+}
+
+# Case A: a stale extension present -> block appears, names the extension, states the
+# partial-staleness caveat and the redeploy-not-hand-patch remedy.
+build_stale_extensions_json "$FIXTURE"
+run_sut implement --clean --seq 12
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "<deploy-freshness-context>" "stale fixture: <deploy-freshness-context> block present"
+  assert_contains "$content" "fixtureext" "stale fixture: block names the stale extension"
+  assert_contains "$content" "does NOT mean the tree is current" "stale fixture: partial-staleness caveat present"
+  assert_contains "$content" "Do NOT hand-patch" "stale fixture: hand-patch prohibition present"
+  assert_contains "$content" "deploy-headless.sh" "stale fixture: redeploy remedy present"
+else
+  fail "Group 12 stale case: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+# Snapshot the CONTENT to a separate file -- both run_sut calls in this group use the same
+# task/seq, so the dispatch file path itself is reused and overwritten by the next call; only a
+# copy of the bytes survives the second run_sut invocation below.
+STALE_DISPATCH_FILE="$WORKDIR/g12-stale-dispatch.md"
+cp "$LAST_DISPATCH_FILE" "$STALE_DISPATCH_FILE"
+
+# Case B: no .claude-extensions.json at all -> block absent, and the rest of the dispatch file is
+# byte-identical to the stale-case build modulo exactly the freshness block (proves the injection
+# is a pure addition, not a reformatting of anything else).
+rm -f "$FIXTURE/.claude-extensions.json"
+run_sut implement --clean --seq 12
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "<deploy-freshness-context>" "clean fixture: <deploy-freshness-context> block absent"
+  if diff -q \
+      <(sed -E 's/dispatch_seq: [0-9]+//' "$STALE_DISPATCH_FILE") \
+      <(sed -E 's/dispatch_seq: [0-9]+//' "$LAST_DISPATCH_FILE") \
+      >/dev/null 2>&1; then
+    fail "clean fixture: dispatch file unexpectedly byte-identical to the stale one (the block never rendered any content in either case -- fixture broken)"
+  else
+    diff_line_count=$(diff <(sed -E 's/dispatch_seq: [0-9]+//' "$STALE_DISPATCH_FILE") <(sed -E 's/dispatch_seq: [0-9]+//' "$LAST_DISPATCH_FILE") | grep -c '^[<>]')
+    if [ "$diff_line_count" -eq 7 ]; then
+      pass "clean fixture: differs from the stale build by EXACTLY the 6-line injected block plus its blank-line separator (7 changed lines), nothing else"
+    else
+      fail "clean fixture: expected exactly 7 changed lines vs. the stale build (the block + separator), got $diff_line_count -- see $STALE_DISPATCH_FILE vs $LAST_DISPATCH_FILE"
+    fi
+  fi
+else
+  fail "Group 12 clean case: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Restore the original single-report fixture state (no .claude-extensions.json) for any suite
+# appended after this one, and clean up the scratch source repo.
+rm -rf "$WORKDIR/g12-source-repo"
+build_fixture
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

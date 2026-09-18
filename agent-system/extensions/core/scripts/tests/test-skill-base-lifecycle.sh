@@ -445,6 +445,135 @@ fi
 cd "$ORIG_PWD" || true
 
 # =====================================================================
+# Group 4b: per-dispatch deploy-freshness surface inside skill_preflight_update (see
+# skill-base.sh's own deploy-freshness-lib.sh sourcing block and skill_deploy_freshness_stale_names
+# helper). Three cases: WARN-and-parity (stale extension present, everything else on the same
+# call still runs), silence (no .claude-extensions.json at all -- the CANNOTVERIFY shape must
+# never read as an alarm), and no-abort-on-missing-library (a fresh bash -c subprocess, since the
+# library is already defined process-wide in THIS suite's own shell from the top-of-file source
+# and removing a fixture's on-disk copy cannot undefine an already-defined shell function).
+# =====================================================================
+info "=== skill_preflight_update (deploy-freshness surface) ==="
+
+# --- Case: WARN present, naming the stale extension, AND the rest of the call still runs
+# (status write + reaches the same trailing lifecycle-event code as the clean path) ------------
+FRESHNESS_WARN_ROOT="$WORKDIR/freshness-warn-fixture"
+build_fixture_repo "$FRESHNESS_WARN_ROOT"
+build_deploy_gate_source_repo "$FRESHNESS_WARN_ROOT"
+
+# NOTE: SKILL_REPO_ROOT is exported ONCE, process-wide, when skill-base.sh was sourced at the
+# top of this file (its own BASH_SOURCE-derived default) and is NOT updated by a bare `cd` --
+# only the hardcoded-relative-path calls inside skill_preflight_update (documented at this
+# suite's own top) resolve via cwd. skill_deploy_freshness_stale_names deliberately reads
+# $SKILL_REPO_ROOT (never a relative path, by skill-base.sh's own design), so it must be
+# overridden per-call here exactly like Group 3's skill_link_artifacts calls above -- omitting
+# this override would silently check the REAL repo's own .claude-extensions.json instead of the
+# fixture's fabricated one.
+cd "$FRESHNESS_WARN_ROOT" || fail "could not cd into freshness-warn fixture repo"
+SKILL_REPO_ROOT="$FRESHNESS_WARN_ROOT" skill_preflight_update 1 "plan" "sess_test_freshness_warn" 2>"$WORKDIR/freshness-warn-stderr.log"
+FRESHNESS_WARN_EXIT=$?
+FRESHNESS_WARN_STDERR="$(cat "$WORKDIR/freshness-warn-stderr.log")"
+cd "$ORIG_PWD" || true
+
+if [[ "$FRESHNESS_WARN_EXIT" -eq 0 ]]; then
+  pass "skill_preflight_update (stale 'core' extension): still returns 0"
+else
+  fail "skill_preflight_update (stale 'core' extension): unexpectedly exited $FRESHNESS_WARN_EXIT"
+fi
+if printf '%s' "$FRESHNESS_WARN_STDERR" | grep -qi "deployed .claude/ tree is STALE.*extension(s): core"; then
+  pass "skill_preflight_update (stale 'core' extension): emits the named WARN block on stderr"
+else
+  fail "skill_preflight_update (stale 'core' extension): expected a WARN naming 'core', got: $FRESHNESS_WARN_STDERR"
+fi
+FRESHNESS_WARN_STATUS="$(jq -r '.active_projects[0].status' "$FRESHNESS_WARN_ROOT/specs/state.json" 2>/dev/null)"
+if [[ "$FRESHNESS_WARN_STATUS" == "planning" ]]; then
+  pass "skill_preflight_update (stale 'core' extension): status write still ran (researched -> planning) alongside the WARN"
+else
+  fail "skill_preflight_update (stale 'core' extension): expected status write to still reach 'planning', got '$FRESHNESS_WARN_STATUS'"
+fi
+# _events_append_observable's own stderr WARNING is one-time-per-process (a module-level
+# _EVENTS_APPEND_OBSERVABLE_WARNED guard -- see skill-base.sh's own comment on that function), so
+# it will already have fired silently-once during the EARLIER Group 4 preflight/postflight cases
+# in this same suite process; asserting on stderr text here would false-negative. Its
+# unconditional sentinel-log append (gated only on "kind" being non-empty, never on the
+# one-time-warned flag) is the reliable proxy that execution actually reached this trailing call.
+if [[ -f "$FRESHNESS_WARN_ROOT/.claude/tmp/events-append-observable.log" ]]; then
+  pass "skill_preflight_update (stale 'core' extension): execution still reaches the trailing lifecycle-event call (same as the clean path)"
+else
+  fail "skill_preflight_update (stale 'core' extension): did not reach the trailing lifecycle-event call -- the WARN may have short-circuited the rest of the function"
+fi
+
+# --- Case: silence when there is no .claude-extensions.json at all (CANNOTVERIFY must never
+# read as an alarm) -------------------------------------------------------------------------
+FRESHNESS_NOEXT_ROOT="$WORKDIR/freshness-noext-fixture"
+build_fixture_repo "$FRESHNESS_NOEXT_ROOT"
+# build_fixture_repo deliberately never writes a .claude-extensions.json; confirm that hypothesis
+# rather than assuming it, since a silent future change to that helper would invalidate this case.
+if [[ -f "$FRESHNESS_NOEXT_ROOT/.claude-extensions.json" ]]; then
+  fail "freshness silence case: fixture setup assumption broken -- build_fixture_repo now writes .claude-extensions.json"
+fi
+
+cd "$FRESHNESS_NOEXT_ROOT" || fail "could not cd into freshness-noext fixture repo"
+SKILL_REPO_ROOT="$FRESHNESS_NOEXT_ROOT" skill_preflight_update 1 "plan" "sess_test_freshness_noext" 2>"$WORKDIR/freshness-noext-stderr.log"
+FRESHNESS_NOEXT_EXIT=$?
+FRESHNESS_NOEXT_STDERR="$(cat "$WORKDIR/freshness-noext-stderr.log")"
+cd "$ORIG_PWD" || true
+
+if [[ "$FRESHNESS_NOEXT_EXIT" -eq 0 ]] && ! printf '%s' "$FRESHNESS_NOEXT_STDERR" | grep -qi "deployed .claude/ tree is STALE"; then
+  pass "skill_preflight_update (no .claude-extensions.json): silent on the freshness surface, still returns 0 (CANNOTVERIFY never reads as an alarm)"
+else
+  fail "skill_preflight_update (no .claude-extensions.json): expected silence and exit 0, got rc=$FRESHNESS_NOEXT_EXIT stderr=$FRESHNESS_NOEXT_STDERR"
+fi
+
+# --- Case: no-abort when the library is not resolvable at either candidate path. Must run in a
+# FRESH bash -c subprocess: this suite's own top-of-file `. "$SKILL_BASE"` already defined
+# deploy_freshness_stale_names process-wide, so removing a fixture's on-disk copy cannot
+# undefine it within the SAME shell. -----------------------------------------------------------
+FRESHNESS_NOLIB_ROOT="$WORKDIR/freshness-nolib-fixture"
+mkdir -p "$FRESHNESS_NOLIB_ROOT/.claude/scripts" "$FRESHNESS_NOLIB_ROOT/specs"
+cp "$SKILL_BASE" "$FRESHNESS_NOLIB_ROOT/.claude/scripts/skill-base.sh"
+echo '{"active_projects": []}' > "$FRESHNESS_NOLIB_ROOT/specs/state.json"
+# Deliberately no .claude/scripts/lib/ directory at all -- both of skill-base.sh's own candidate
+# paths (SKILL_REPO_ROOT-qualified and BASH_SOURCE-relative) resolve underneath this same fixture
+# root, so omitting lib/ entirely fails both, reproducing "library not resolvable at either
+# candidate path."
+
+NOLIB_STDOUT_FILE="$WORKDIR/freshness-nolib-stdout.log"
+if SKILL_REPO_ROOT="$FRESHNESS_NOLIB_ROOT" bash -c '
+  set -euo pipefail
+  cd "$SKILL_REPO_ROOT"
+  # shellcheck disable=SC1091
+  source "$SKILL_REPO_ROOT/.claude/scripts/skill-base.sh"
+  skill_preflight_update 9999 research sess_test_nolib
+  echo "SUBPROCESS_REACHED_END"
+' >"$NOLIB_STDOUT_FILE" 2>"$WORKDIR/freshness-nolib-stderr.log"; then
+  NOLIB_RC=0
+else
+  NOLIB_RC=$?
+fi
+if [[ "$NOLIB_RC" -eq 0 ]] && grep -q "SUBPROCESS_REACHED_END" "$NOLIB_STDOUT_FILE"; then
+  pass "skill_preflight_update under set -e with the freshness library unresolvable at either candidate path: does not abort the caller"
+else
+  fail "skill_preflight_update under set -e with the freshness library unresolvable: caller aborted (rc=$NOLIB_RC); see $WORKDIR/freshness-nolib-stderr.log"
+fi
+
+# --- Assert no code path added for this surface writes specs/.freshness-warn-streak.json (that
+# counter is a consecutive-COMMAND-invocation count owned exclusively by check-deploy-freshness.sh;
+# skill_preflight_update must never touch it). Checked across every fixture root used in this
+# group, including the WARN case (which is the one most likely to accidentally touch it). ------
+STREAK_TOUCHED=false
+for _fr in "$FRESHNESS_WARN_ROOT" "$FRESHNESS_NOEXT_ROOT" "$FRESHNESS_NOLIB_ROOT"; do
+  if [[ -f "$_fr/specs/.freshness-warn-streak.json" ]]; then
+    STREAK_TOUCHED=true
+  fi
+done
+if [[ "$STREAK_TOUCHED" == "false" ]]; then
+  pass "skill_preflight_update's deploy-freshness surface never writes specs/.freshness-warn-streak.json"
+else
+  fail "skill_preflight_update's deploy-freshness surface unexpectedly wrote specs/.freshness-warn-streak.json in at least one fixture"
+fi
+
+# =====================================================================
 # Group 4 (exit-6 deploy-pending annotation): skill_postflight_update's task_dir_override
 # parameter (this task's own fix) must reach the exit-6 deploy-pending annotation block without
 # relying on the ambient TASK_DIR variable, which /orchestrate's own postflight call sites never

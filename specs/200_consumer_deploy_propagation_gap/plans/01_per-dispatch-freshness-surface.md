@@ -359,26 +359,33 @@ the deviation.
 
 ---
 
-### Phase 5: Wiring regression tests [NOT STARTED]
+### Phase 5: Wiring regression tests [COMPLETED]
 
 **Goal**: Pin the two new behaviors and their failure modes so a future edit cannot silently
 un-wire them, the way the original signal was silently un-actioned.
 
 **Tasks**:
-- [ ] Extend `scripts/tests/test-skill-base-lifecycle.sh` with a case asserting that
+- [x] Extend `scripts/tests/test-skill-base-lifecycle.sh` with a case asserting that
       `skill_preflight_update` emits the named WARN block to stderr when the fixture repo has a
-      stale extension.
-- [ ] Add a case asserting silence (no WARN, no abort, return 0) when the fixture has no
+      stale extension. *(completed: Group 4b, reuses the existing build_deploy_gate_source_repo
+      fixture helper)*
+- [x] Add a case asserting silence (no WARN, no abort, return 0) when the fixture has no
       `.claude-extensions.json` at all — the `CANNOTVERIFY` path must never read as an alarm.
-- [ ] Add a case asserting the caller is not aborted when the freshness library is absent from
-      both candidate paths.
-- [ ] Assert `skill_preflight_update` still performs its status write, extension hook, and
-      lifecycle event on the stale path exactly as on the clean path.
-- [ ] Extend `scripts/tests/test-orchestrate-build-dispatch.sh` with a case asserting the
+      *(completed)*
+- [x] Add a case asserting the caller is not aborted when the freshness library is absent from
+      both candidate paths. *(completed: fresh `bash -c` subprocess, since the library is already
+      defined process-wide in this suite's own shell from the top-of-file source)*
+- [x] Assert `skill_preflight_update` still performs its status write, extension hook, and
+      lifecycle event on the stale path exactly as on the clean path. *(completed: status write
+      via state.json; lifecycle-event reach via _events_append_observable's unconditional
+      sentinel-log append, since its own stderr WARNING is one-time-per-process and had already
+      fired in an earlier group)*
+- [x] Extend `scripts/tests/test-orchestrate-build-dispatch.sh` with a case asserting the
       `<deploy-freshness-context>` block appears for a stale fixture and is absent for a clean
-      one.
-- [ ] Assert that no code path added in Phases 3 or 4 writes to
-      `specs/.freshness-warn-streak.json`.
+      one. *(completed: Group 12, also asserts the clean build differs from the stale build by
+      exactly the injected block's 7 lines)*
+- [x] Assert that no code path added in Phases 3 or 4 writes to
+      `specs/.freshness-warn-streak.json`. *(completed, folded into Group 4b)*
 
 **Timing**: 1.5 hours
 
