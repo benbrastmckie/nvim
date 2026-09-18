@@ -142,14 +142,14 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Resolve commands/orchestrate.md Ceiling [NOT STARTED]
+### Phase 3: Resolve commands/orchestrate.md Ceiling [COMPLETED]
 
 **Goal**: Make `commands/orchestrate.md` pass sub-check C, trimming restated flag prose where territory allows, then fixing the final size the ceiling is derived from.
 
 **Tasks**:
-- [ ] **Branch TRIM-ALLOWED only** (per Phase 1): re-read the file; in the `## Options` table, shorten the `--fast`, `--research`, `--plan`, `--implement` rows (and the forced-phase bullet under `## Constraints`) to one-line summaries pointing to `docs/architecture/orchestrate-state-machine.md` (forced-phase / `needs_research` sections) -- first confirm by grep that each dropped fact (terminal/archived admission, canonical ordering, artifact-keyed admission, reviser-vs-planner dispatch, STOP-after-last-phase) is present there; relocate any fact that is not. Do NOT touch `merge-sources/claudemd.md`. Commit only own hunks.
-- [ ] **Branch CEILING-ONLY**: make no edit to `commands/orchestrate.md`; note in the summary that the restatement trim is deferred to after the sibling's work lands.
-- [ ] Record the file's final `wc -c` for Phase 4 (both branches).
+- [ ] **Branch TRIM-ALLOWED only** (per Phase 1): re-read the file; in the `## Options` table, shorten the `--fast`, `--research`, `--plan`, `--implement` rows (and the forced-phase bullet under `## Constraints`) to one-line summaries pointing to `docs/architecture/orchestrate-state-machine.md` (forced-phase / `needs_research` sections) -- first confirm by grep that each dropped fact (terminal/archived admission, canonical ordering, artifact-keyed admission, reviser-vs-planner dispatch, STOP-after-last-phase) is present there; relocate any fact that is not. Do NOT touch `merge-sources/claudemd.md`. Commit only own hunks. *(deviation: skipped — branch is CEILING-ONLY, see below)*
+- [x] **Branch CEILING-ONLY**: make no edit to `commands/orchestrate.md`; note in the summary that the restatement trim is deferred to after the sibling's work lands. *(completed: sibling 228 still status=implementing in specs/state.json at Phase 3 execution time (its own plan file shows all 3 phases [COMPLETED], but postflight status-write had not yet landed) — branch = CEILING-ONLY per Phase 1's decision rule. No edit made to commands/orchestrate.md; the Options-table/forced-phase restatement trim is deferred to a future task once 228's work is fully settled and no other sibling is concurrently claiming the file.)*
+- [x] Record the file's final `wc -c` for Phase 4 (both branches). *(completed: 20228 B, up from 19967 B at dispatch-context time and 15812 B at the last recorded ceiling snapshot (2026-09-07), due to sibling 228's landed phase 1/2 commits)*
 
 **Timing**: 0.75 hours
 
