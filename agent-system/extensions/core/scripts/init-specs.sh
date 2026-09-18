@@ -159,5 +159,61 @@ else
   echo "APPENDED managed block to existing specs/.gitignore"
 fi
 
+
+# ── Step 6: untrack already-tracked runtime-class files ────────────────────
+# Finds any file under specs/ that git already tracks and that matches the ephemeral
+# runtime-file class (RUNTIME_FILE_B_REGEX, the same regex list check-runtime-file-tracking.sh's
+# Check B scans with), and untracks it with `git rm --cached` / `git rm -r --cached` -- NEVER a
+# plain `rm`, and NEVER deleting the working-tree copy. Only ever STAGES the removal; it is left
+# for the caller's own scoped commit, exactly like every other write this script makes. Skips
+# gracefully (named notice, no error) when the working directory is not inside a git repository.
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+  echo "SKIP untrack sweep: not inside a git repository"
+else
+  untracked_any=0
+  tracked_files="$(git ls-files -- specs/ 2> /dev/null || true)"
+  for pattern in "${RUNTIME_FILE_B_REGEX[@]}"; do
+    hits="$(printf '%s\n' "$tracked_files" | grep -E "$pattern" || true)"
+    [[ -z "$hits" ]] && continue
+    while IFS= read -r hit; do
+      [[ -z "$hit" ]] && continue
+      hit_base="$(basename "$hit")"
+      # Belt-and-braces skip: durable provenance must never be untracked. Neither name can
+      # actually match any RUNTIME_FILE_B_REGEX entry by construction (see the class definitions
+      # in lib/runtime-file-patterns.sh), but this guard stays as a second, independent check.
+      if [[ "$hit_base" == ".orchestrator-handoff.json" || "$hit_base" == ".return-meta.json" ]]; then
+        continue
+      fi
+      dir_basename="$(runtime_file_dir_basename_for_hit "$hit" || true)"
+      if [[ -n "$dir_basename" ]]; then
+        dir_path="${hit%/"$dir_basename"/*}/${dir_basename}"
+        if git rm -r --cached "$dir_path" > /dev/null 2>&1; then
+          if [[ ! -d "$dir_path" ]]; then
+            echo "ERROR: $dir_path vanished from disk after git rm -r --cached -- must never happen" >&2
+            exit 1
+          fi
+          echo "UNTRACKED (dir) $dir_path"
+          untracked_any=1
+        fi
+      else
+        if git rm --cached "$hit" > /dev/null 2>&1; then
+          if [[ ! -e "$hit" ]]; then
+            echo "ERROR: $hit vanished from disk after git rm --cached -- must never happen" >&2
+            exit 1
+          fi
+          echo "UNTRACKED $hit"
+          untracked_any=1
+        fi
+      fi
+    done <<< "$hits"
+  done
+  if [[ "$untracked_any" -eq 1 ]]; then
+    echo "NOTE: the untrack(s) above are staged (index only, working-tree copies untouched)."
+    echo "      init-specs.sh never commits -- fold this into your own scoped commit."
+  else
+    echo "SKIP untrack sweep: no already-tracked runtime-class file found under specs/"
+  fi
+fi
+
 echo ""
 echo "init-specs: bootstrap complete"

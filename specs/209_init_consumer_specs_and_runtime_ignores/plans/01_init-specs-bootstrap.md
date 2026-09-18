@@ -261,28 +261,32 @@ writes a managed-block `specs/.gitignore`, overwriting nothing that already exis
 
 ---
 
-### Phase 3: Untrack sweep for already-tracked runtime files [NOT STARTED]
+### Phase 3: Untrack sweep for already-tracked runtime files [COMPLETED]
 
 **Goal**: `init-specs.sh` finds runtime-class files under `specs/` that git already tracks and
 untracks them with `git rm --cached` (never deleting the working copy), leaving the change
 staged and reported for the caller's own scoped commit.
 
 **Tasks**:
-- [ ] Add an untrack step to `init-specs.sh` that loops `RUNTIME_FILE_B_REGEX` against
+- [x] Add an untrack step to `init-specs.sh` that loops `RUNTIME_FILE_B_REGEX` against
       `git ls-files -- specs/`, adapting Check B's existing print-only remediation loop into an
       executing form (`git rm -r --cached "<dir>"` for directory-class hits resolved via
-      `runtime_file_dir_basename_for_hit()`, `git rm --cached "<file>"` otherwise).
-- [ ] Add an explicit belt-and-braces skip for any hit whose basename is
+      `runtime_file_dir_basename_for_hit()`, `git rm --cached "<file>"` otherwise). *(completed)*
+- [x] Add an explicit belt-and-braces skip for any hit whose basename is
       `.orchestrator-handoff.json` or `.return-meta.json`, even though neither can match any
       `RUNTIME_FILE_B_REGEX` entry by construction. Comment why the redundant guard exists.
-- [ ] Never run plain `rm`; assert the working copy still exists after each `git rm --cached`.
-- [ ] Do **not** commit. Print each untracked path and a closing line telling the caller the
-      changes are staged and belong in its own scoped commit.
-- [ ] Make the step a clean no-op (silent, exit 0) when no tracked runtime files are found, so
-      repeated runs stay idempotent.
-- [ ] Skip the step gracefully with a named notice when the working directory is not inside a
-      git repository.
-- [ ] `shellcheck` clean.
+      *(completed)*
+- [x] Never run plain `rm`; assert the working copy still exists after each `git rm --cached`.
+      *(completed)*
+- [x] Do **not** commit. Print each untracked path and a closing line telling the caller the
+      changes are staged and belong in its own scoped commit. *(completed)*
+- [x] Make the step a clean no-op (silent, exit 0) when no tracked runtime files are found, so
+      repeated runs stay idempotent. *(completed: "silent" read as "stages nothing, exit 0" --
+      it still prints one SKIP line for symmetry with every other step's summary line, verified
+      idempotent via a real second-run test)*
+- [x] Skip the step gracefully with a named notice when the working directory is not inside a
+      git repository. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 1 hour
 
