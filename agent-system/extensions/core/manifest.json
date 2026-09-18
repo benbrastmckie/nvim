@@ -99,6 +99,7 @@
       "generate-todo.sh",
       "git-commit-scoped.sh",
       "git-snapshot.sh",
+      "init-specs.sh",
       "install-aliases.sh",
       "install-extension.sh",
       "install-systemd-timer.sh",

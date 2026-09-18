@@ -194,40 +194,40 @@ before editing; if a seventh array exists, extend it too.
 
 ---
 
-### Phase 2: Create init-specs.sh (state bootstrap + managed specs/.gitignore) [NOT STARTED]
+### Phase 2: Create init-specs.sh (state bootstrap + managed specs/.gitignore) [COMPLETED]
 
 **Goal**: A new idempotent `scripts/init-specs.sh` that creates the `specs/` state trio and
 writes a managed-block `specs/.gitignore`, overwriting nothing that already exists.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/init-specs.sh` with strict mode per
+- [x] Create `agent-system/extensions/core/scripts/init-specs.sh` with strict mode per
       `context/standards/shell-strict-mode.md`, a usage/`--help` header describing the contract
       (idempotent, non-destructive, never commits), and the same deploy-tree-first /
       source-store-fallback lib resolution `check-runtime-file-tracking.sh` uses
-      (`SCRIPT_DIR`-relative `lib/runtime-file-patterns.sh`).
-- [ ] `mkdir -p specs specs/archive`.
-- [ ] If `specs/state.json` is absent, write
+      (`SCRIPT_DIR`-relative `lib/runtime-file-patterns.sh`). *(completed)*
+- [x] `mkdir -p specs specs/archive`. *(completed)*
+- [x] If `specs/state.json` is absent, write
       `{"next_project_number": 1, "active_projects": [], "active_topics": []}` **directly** via
       mktemp + atomic `mv`. Do **not** route through `state-write.sh` — its `--init` mode
-      unconditionally refuses the default live state path by design.
-- [ ] If `specs/archive/state.json` is absent, write it directly too (same mktemp+mv idiom, for
+      unconditionally refuses the default live state path by design. *(completed)*
+- [x] If `specs/archive/state.json` is absent, write it directly too (same mktemp+mv idiom, for
       symmetry with the line above and to avoid depending on `--init`'s silent-overwrite
       behavior). Confirm the minimal key set against its live readers (`task.md --recover`,
       `/todo`'s archival writer) before fixing it; the observed live shape is
-      `{"archived_projects": [], "completed_projects": []}`.
-- [ ] If `specs/TODO.md` is absent, generate it by calling `generate-todo.sh` rather than
-      hand-writing the format.
-- [ ] Write/refresh `specs/.gitignore` from `runtime_specs_ignore_block()` inside sentinels
+      `{"archived_projects": [], "completed_projects": []}`. *(completed)*
+- [x] If `specs/TODO.md` is absent, generate it by calling `generate-todo.sh` rather than
+      hand-writing the format. *(completed)*
+- [x] Write/refresh `specs/.gitignore` from `runtime_specs_ignore_block()` inside sentinels
       `# BEGIN managed block: runtime-file-patterns.sh` / `# END managed block:
       runtime-file-patterns.sh`. If the file exists with the sentinels, replace only the region
       between them; if it exists without them, append the block; if absent, create it. Preserve
-      all content outside the sentinels byte-for-byte.
-- [ ] Emit a per-action summary on stdout (created / already present / refreshed) and exit 0 on
-      a full no-op.
-- [ ] Register `init-specs.sh` in `agent-system/extensions/core/manifest.json` under
+      all content outside the sentinels byte-for-byte. *(completed)*
+- [x] Emit a per-action summary on stdout (created / already present / refreshed) and exit 0 on
+      a full no-op. *(completed)*
+- [x] Register `init-specs.sh` in `agent-system/extensions/core/manifest.json` under
       `provides.scripts` (alphabetical position) and add an entry to
-      `docs/reference/utility-scripts-inventory.md`.
-- [ ] `shellcheck` clean.
+      `docs/reference/utility-scripts-inventory.md`. *(completed)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 1.5 hours
 
