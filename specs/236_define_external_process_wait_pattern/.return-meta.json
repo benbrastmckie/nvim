@@ -1,11 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md",
+      "summary": "Authored external-process-wait.md pattern file with the defect class and six wait rules, added an index-entries.json entry, and added a one-line anti-stop-patterns.md pointer."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/patterns/external-process-wait.md",
+      "summary": "New core context pattern file defining the bounded external-process-wait discipline for a dispatched subagent."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Authored agent-system/extensions/core/context/patterns/external-process-wait.md (129 lines) stating the observed external-process-wait defect class once and defining the six mandatory wait rules (bounded blocking wait with 540<600 arithmetic, no no-op filler, no run_in_background/Monitor for CI waits in a subagent, state-change-only Monitor emission, independent local work first, 45-minute total-wait cap with handoff+partial), added a discoverable on-demand index-entries.json entry, and added a one-line anti-stop-patterns.md pointer without restating the rules."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/external-process-wait.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/context/patterns/anti-stop-patterns.md",
+    "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When editing a core context/patterns/*.md file that is also indexed in index-entries.json, re-measure wc -l after the edit and correct that file's own line_count entry in the same commit -- even a small pointer-line addition (e.g. +3 lines) can desync the index and trip check-extension-docs.sh's Rule R line_count-mismatch gate. Catching and fixing self-introduced drift in the same commit is cheaper than a later dedicated gate discovering it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "line_count", "check-extension-docs.sh", "drift", "context-index"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1789772261_c29003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }

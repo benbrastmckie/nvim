@@ -1,13 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Plan written: 2 phases, ~2h. Phase 1 authors agent-system/extensions/core/context/patterns/external-process-wait.md; Phase 2 adds on-demand index-entries.json entry, one-line anti-stop-patterns.md pointer, and validation.",
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "phase": "implement",
+  "summary": "Authored external-process-wait.md (129 lines) with the four-part defect statement and six mandatory wait rules, added a discoverable index-entries.json entry, and added a one-line anti-stop-patterns.md pointer.",
   "artifacts": [
-    {"type": "plan", "path": "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md", "summary": "2-phase implementation plan for the external-process-wait pattern."}
+    {
+      "type": "summary",
+      "path": "specs/236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md",
+      "summary": "Implementation summary for the external-process-wait pattern task."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/context/patterns/external-process-wait.md",
+      "summary": "New core context pattern file defining the bounded external-process-wait discipline."
+    }
   ],
-  "phases_completed": 0,
+  "phases_completed": 2,
   "phases_total": 2,
   "blockers": [],
-  "next_action_hint": "implement",
-  "dispatch_seq": 6
+  "plan_markers_verified": true
 }
