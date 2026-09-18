@@ -11,7 +11,7 @@ next_project_number: 236
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,172,177,184,185,193,200,202,207,210,212,215,223,224,227,228,235 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,172,177,184,185,193,202,207,210,212,215,223,224,227,228,235 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,136,140,165,170,173,174,182,199,208 | 29,139,162,163,166,167,172,193,207,210,215 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,190,217,221 | 74,165,173,174 | core-agent-system, extensions |
 
@@ -38,7 +38,6 @@ next_project_number: 236
 193 [NOT STARTED] — Carry concurrent-sibling territory in base-mode dispatch...
   └─ 182 [NOT STARTED] — Add a durable redeploy ledger with content-hash and recency...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-200 [IMPLEMENTING] — Close the consumer-repo deploy propagation gap that leaves...
 210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 212 [NOT STARTED] — Postflight honesty: gate research on a report file and derive...
@@ -1241,7 +1240,7 @@ second should make sure all three entries read as a coherent set.
 ---
 
 ### 200. Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 188, Task 194, Task 206, Task 209, Task 213, Task 226, Task 234

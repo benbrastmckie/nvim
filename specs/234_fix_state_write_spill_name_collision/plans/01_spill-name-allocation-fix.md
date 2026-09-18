@@ -1,7 +1,7 @@
 # Implementation Plan: Task #234
 
 - **Task**: 234 - Fix state-write.sh spill name collision
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/234_fix_state_write_spill_name_collision/reports/01_spill-name-collision.md
