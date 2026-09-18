@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 9,
+  "summary": "Researched the durable redeploy-ledger design for the /orchestrate inter-cycle redeploy checkpoint: mapped the checkpoint's exact trigger/insertion points, identified two reusable existing precedents (.claude-extensions.json's source_git_head + deploy-freshness-lib.sh, and deploy-baseline-lib.sh's verify-outcome vocabulary), corrected a mis-citation in the dispatch text (the 'its own task' quote belongs to a different, sibling guardrails-doc section about trigger-predicate widening, not this task's ledger scope), and laid out concrete recommendations for the hash scope, self-modifying-task recency/attribution handling, ledger file placement/tracking disposition, and Group 11 test coverage additions.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md",
+      "summary": "Design research for the durable redeploy ledger and its hash/recency skip mechanism."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "Run /plan 182 to turn the report's recommendations (ledger placement/tracking disposition, hash scope, self-modifying-task attribution mechanism, Group 11 test additions, guardrails.md doc update) into a phased implementation plan."
+}

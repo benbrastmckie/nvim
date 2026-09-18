@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md",
+      "summary": "Design research for a durable, cross-invocation redeploy ledger (content hash + recency/attribution skip) for the /orchestrate inter-cycle redeploy checkpoint, including a correction of the dispatch's guardrails-doc citation and two concrete design options (extend .claude-extensions.json vs. a new gitignored durable ledger file)."
+    }
+  ],
+  "next_steps": "Run /plan 182 to create an implementation plan",
+  "metadata": {
+    "session_id": "sess_1789759023_044f43_182",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "The repo already has a durable, git-tracked, tested content-hash-freshness mechanism at scripts/lib/deploy-freshness-lib.sh (deploy_freshness_status), keyed against .claude-extensions.json's per-extension source_git_head field. Before building a new durable content-hash ledger for orchestrator source-store state, check whether this existing mechanism can be reused or extended rather than duplicated -- it already answers 'has agent-system/extensions/<ext> changed since the last recorded deploy' with a fail-safe CANNOTVERIFY/STALE/FRESH three-way result.",
+      "category": "PATTERN",
+      "source_artifact": "specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-freshness-lib", "source_git_head", "content-hash", "durable-ledger", "orchestrate-checkpoint"]
+    },
+    {
+      "content": "In context/patterns/batch-orchestration-guardrails.md, the guardrails doc has two sibling ### sections both discussing deployed_critical_paths: 'The Inter-Cycle Redeploy Checkpoint' (its own idempotence guard, within-invocation) and 'The Postflight Completion-Deploy Gate' (a residual D6 note about widening the trigger predicate, which also mentions deployed_critical_paths and says widening it 'is its own task'). These are easy to conflate when a task description points at 'the deployed_critical_paths idempotence backing store... its own task' quote -- verify which section a quote actually lives in before assuming it names the current task's scope.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["batch-orchestration-guardrails", "deployed_critical_paths", "redeploy-checkpoint", "task-scope-verification"]
+    }
+  ],
+  "dispatch_seq": 9
+}
