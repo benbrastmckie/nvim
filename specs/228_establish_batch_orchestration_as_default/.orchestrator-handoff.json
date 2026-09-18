@@ -1,16 +1,17 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
-  "phases_completed": 0,
-  "phases_total": 0,
+  "status": "planned",
+  "summary": "Created 3-phase documentation-only plan; canonical batch-selection home is batch-orchestration-guardrails.md. Plan fixes three research-draft defects (mixed-shape contradiction, non-rule topic-vs-width answer, missing MAX_TASKS=8 trim rule). index-entries.json line_count update is conditional because that file is in a concurrent sibling scope.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
-      "summary": "Recommends batch-orchestration-guardrails.md as the canonical home for batch-selection guidance, with a fully drafted section (dominance rule: territory > topic > graph shape) and three pointer-site edits."
+      "type": "plan",
+      "path": "specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md",
+      "summary": "3-phase documentation-only plan; canonical home is batch-orchestration-guardrails.md."
     }
   ],
-  "session_id": "sess_1789772261_c29003_228",
-  "task_number": 228,
-  "next_steps": "Run /orchestrate 228 --plan to create implementation plan"
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": [],
+  "dispatch_seq": 4,
+  "phase": "plan",
+  "next_action_hint": "implement"
 }

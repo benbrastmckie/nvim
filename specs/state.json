@@ -69,12 +69,12 @@
     {
       "project_number": 236,
       "project_name": "define_external_process_wait_pattern",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Define a canonical \"waiting on external processes\" pattern for dispatched subagents",
       "created": "2026-09-18T19:00:37Z",
-      "last_updated": "2026-09-18T23:08:52Z",
+      "last_updated": "2026-09-18T23:09:09Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/patterns/external-process-wait.md",
@@ -83,7 +83,7 @@
       ],
       "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE. A new core context pattern file, context/patterns/external-process-wait.md, stating the defect class once and canonically, and defining the sanctioned wait discipline for a subagent blocked on a long external process (GitHub Actions runs first; phrase it generally enough to cover other remote jobs). Mandatory rules:\n  (1) BOUNDED BLOCKING WAIT: `timeout 540 gh run watch ID --interval 60 --exit-status >/dev/null; gh run view ID --json status,conclusion`, issued with the Bash tool timeout set to 600000, and repeated ONLY while the reported status is in_progress/queued. Explain why 540 < 600 (the inner timeout must fire before the harness backgrounds the call).\n  (2) NO NO-OP FILLER: no `:`, `true`, `date`, `echo waiting`-style Bash calls and no status-only text turns to keep a turn alive.\n  (3) NO run_in_background AND NO Monitor for CI waits inside a subagent (a background completion or Monitor event wakes an agent that has nothing to do, and ending the turn terminates the subagent).\n  (4) Where Monitor IS legitimately used (e.g. by a top-level session), its loop must emit ONLY on a state change, never on every poll.\n  (5) DO INDEPENDENT LOCAL WORK FIRST: finish every task step that does not depend on the external result before entering the wait.\n  (6) TOTAL-WAIT CAP of about 45 minutes; on reaching it the agent writes a handoff containing a concrete continuation (run ID, the exact resume command, what remains) and returns status partial rather than continuing to wait.\nAlso add an index-entries.json entry so the pattern is discoverable to implementation and research agents, and a one-line pointer from anti-stop-patterns.md (do not restate the rules there; follow the single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md).\n\nRELATED TASK (cross-reference, NOT a dependency): task 172 (\"Define a canonical bounded-wait idiom for detached builds\", planned file context/patterns/bounded-build-waiter.md) covers the LOCAL detached-build case (writer-liveness via kill -0, one-waiter-per-log). This task covers REMOTE/external processes that have no local writer to probe. The two files should cross-reference each other by filename; whichever lands second adds the reciprocal pointer. Do not edit bounded-build-waiter.md's substance here.\n\nOUT OF SCOPE: agent contract edits, orchestrate-build-dispatch.sh, and any hook -- those are separate dependent tasks.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "effort": "1.5 hours",
-      "session_id": "sess_1789772261_c29003",
+      "session_id": "sess_1789772261_c29003_236",
       "artifacts": [
         {
           "path": "specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md",
@@ -96,13 +96,13 @@
     {
       "project_number": 235,
       "project_name": "rebaseline_or_reduce_eager_context_budget",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Re-baseline or reduce the eager-context budget: verify-deploy.sh Gate 20 sub-check B is red on every deploy because the live eager-load TOTAL (65198 B, measured 2026-09-18 via REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check) exceeds eager_load.baseline_bytes=64450 in agent-system/extensions/core/context/config/orchestrator-context-budget.json (measured_bytes 64394 on 2026-09-09, so +804 B of drift in nine days). Current channel breakdown: parent_chain 3815 B, predicted assembled .claude/CLAUDE.md 32862 B, eager rules 28521 B (8 rules files; git-workflow.md alone is 8828 B). Every deploy-headless.sh run now exits 3 (RESULT=landed_verify_red) even when the deploy itself landed cleanly, which trips the completion-deploy gate in orchestrate postflight and was independently flagged by three concurrent implementation dispatches on 2026-09-17/18 as pre-existing and unrelated to their own edits. WORK: (1) attribute the +804 B to specific merge-sources/**, rules/**, and CLAUDE.md commits since 2026-09-09 (git log -p on those paths, diffed against the per-channel numbers); (2) decide per the config note's own rule -- baseline_bytes is a deliberately recorded ceiling that must never be silently re-derived -- whether to trim the growth back under 64450 (preferred where the growth is restatement or prose that belongs in lazily-loaded context files) or to move the baseline with a reviewed justification recorded in the config note and measured_at/measured_bytes updated; (3) separately address the sub-check C per-file ceiling: commands/orchestrate.md is roughly 2x its configured ceiling_bytes and ORCHESTRATOR_BUDGET_GATE_MODE stays in warn mode until it is under ceiling -- either shrink the command file (its flag table and forced-phase prose duplicate merge-sources/claudemd.md and docs/architecture/orchestrate-state-machine.md) or record why the ceiling should move; (4) make deploy-headless.sh's exit status distinguish a landed-but-budget-red deploy from a failed deploy in a way the postflight completion-deploy gate does not misread as stale, OR confirm the gate already ignores exit 3 and document that. ACCEPTANCE: deploy-headless.sh exits 0 on an unchanged tree; verify-deploy.sh Gate 20 sub-checks B and C both pass; the baseline value in orchestrator-context-budget.json either is unchanged or carries a dated justification; scripts/tests/test-verify-deploy-context-budget.sh still passes; shellcheck clean per context/standards/shell-strict-mode.md for any shell file touched. EDIT TARGET: agent-system/extensions/core/** (source store), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**",
       "topic": "core-agent-system",
       "created": "2026-09-18T04:32:06Z",
-      "last_updated": "2026-09-18T23:08:46Z",
-      "session_id": "sess_1789772261_c29003",
+      "last_updated": "2026-09-18T23:09:06Z",
+      "session_id": "sess_1789772261_c29003_235",
       "artifacts": [
         {
           "path": "specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md",
@@ -1018,12 +1018,12 @@
     {
       "project_number": 228,
       "project_name": "establish_batch_orchestration_as_default",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule",
       "created": "2026-09-17T20:27:14Z",
-      "last_updated": "2026-09-18T23:08:40Z",
+      "last_updated": "2026-09-18T23:27:59Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/patterns/multi-task-operations.md",
@@ -1038,6 +1038,11 @@
           "path": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
           "type": "report",
           "summary": "Recommends batch-orchestration-guardrails.md as the canonical home for batch-selection guidance, with a fully drafted section (dominance rule: territory > topic > graph shape) and three pointer-site edits."
+        },
+        {
+          "path": "specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md",
+          "type": "plan",
+          "summary": "3-phase documentation-only plan; canonical home is batch-orchestration-guardrails.md."
         }
       ],
       "next_artifact_number": 2

@@ -1,36 +1,22 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
-      "summary": "Recommends batch-orchestration-guardrails.md as the canonical home for batch-selection guidance, with a fully drafted section (dominance rule: territory > topic > graph shape) and three pointer-site edits."
+      "type": "plan",
+      "path": "specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md",
+      "summary": "3-phase documentation plan: canonical batch-selection section in batch-orchestration-guardrails.md (with fixes to three defects in the research draft), pointer edits in orchestrate.md/claudemd.md/multi-task-operations.md, and cross-file verification with safe index line_count handling."
     }
   ],
-  "next_steps": "Run /orchestrate 228 --plan to create implementation plan",
-  "dispatch_seq": 1,
+  "next_steps": "Run /implement 228 to execute the plan",
+  "dispatch_seq": 4,
+  "phase_count": 3,
+  "estimated_hours": 3,
+  "dependency_waves": 3,
   "metadata": {
     "session_id": "sess_1789772261_c29003_228",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 1800,
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "In this agent system's context/patterns/ corpus, files split into two registers: 'principle' documents (normative rules, cross-reference mechanisms by path, e.g. batch-orchestration-guardrails.md's own 'states principles only' self-description) and 'mechanism' documents (algorithms/pseudocode for command implementers, e.g. multi-task-operations.md's stated audience 'command developers'). When deciding where new guidance belongs, match its register to an existing file's stated audience/voice before creating a new file — a task's own declared file_scope at creation time (which existing files it lists, and whether it lists a new file at all) is itself a useful signal for this decision.",
-      "category": "PATTERN",
-      "source_artifact": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["context-patterns", "canonical-home", "documentation-register", "file_scope-signal", "batch-orchestration"]
-    },
-    {
-      "content": "For multi-criteria selection rules with pairwise conflicts, a useful drafting technique is a strict dominance order (A > B > C) plus an explicit worked table naming the winner and reason for each of the three pairwise conflicts, followed by one worked example applying the rule end-to-end. This makes the guidance mechanically followable rather than a list of considerations a reader must weigh themselves.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["dominance-rule", "conflict-resolution", "guidance-drafting", "worked-example"]
-    }
-  ]
+  "memory_candidates": []
 }
