@@ -262,9 +262,15 @@
           "path": "specs/206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md",
           "type": "plan",
           "summary": "5-phase plan fixing the missing task-lookup-lib.sh fixture entry, the lint check_emit_perline variable-redirect false positive, new lint regression coverage, two dormant audit-gap fixtures, and full shellcheck/redeploy verification."
+        },
+        {
+          "path": "specs/206_fix_test_fixtures_missing_task_lookup_lib/summaries/01_fix-red-fixture-and-lint-predicate-summary.md",
+          "type": "summary",
+          "summary": "Fixed the missing task-lookup-lib.sh fixture entry and the lint predicate variable-redirect false positive on the two remaining red core shell suites, added permanent regression coverage, and closed two dormant instances of the same missing-lib gap found by a full item (d) audit."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed test-postflight-deploy-gate.sh's missing task-lookup-lib.sh REQUIRED_LIBS entry and lint-json-channel-discipline.sh's check_emit_perline() variable-redirect false positive, both now green from source store and deployed copy with 0 real-corpus lint violations; added a permanent regression fixture case; audited 22 sibling fixtures and defensively closed two dormant instances of the same missing-lib gap (test-handoff-dispatch-identity.sh, test-git-commit-scoped.sh)."
     },
     {
       "project_number": 188,

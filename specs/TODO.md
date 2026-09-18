@@ -1060,6 +1060,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md]
 - **Plan**: [206_fix_test_fixtures_missing_task_lookup_lib/plans/01_fix-red-fixture-and-lint-predicate.md]
+- **Summary**: [206_fix_test_fixtures_missing_task_lookup_lib/summaries/01_fix-red-fixture-and-lint-predicate-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
