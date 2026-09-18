@@ -157,13 +157,13 @@ the measured value feeds Phase 2's `line_count`.
 
 ---
 
-### Phase 2: Index entry, anti-stop pointer, and validation [NOT STARTED]
+### Phase 2: Index entry, anti-stop pointer, and validation [COMPLETED]
 
 **Goal**: Make the pattern discoverable and link to it from `anti-stop-patterns.md` without
 restating the rules.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/index-entries.json` just before editing (sibling
+- [x] Re-read `agent-system/extensions/core/index-entries.json` just before editing (sibling
   territory). Insert a `patterns/external-process-wait.md` entry in path-sorted position among
   the `patterns/*` entries, copying the key order of the `early-metadata-pattern.md` entry:
   - `domain: "core"`, `subdomain: "patterns"`
@@ -173,22 +173,26 @@ restating the rules.
   - keywords such as `external-process`, `bounded-wait`, `gh-run-watch`, `ci-wait`, `monitor`,
     `no-op-filler`, `timeout`
   - topics `["workflow", "orchestration"]`
-  - empty `load_when` arrays and `"on_demand": true`
-- [ ] Re-read `agent-system/extensions/core/context/patterns/anti-stop-patterns.md`. Add exactly
+  - empty `load_when` arrays and `"on_demand": true` *(completed)*
+- [x] Re-read `agent-system/extensions/core/context/patterns/anti-stop-patterns.md`. Add exactly
   one pointer line under `## Background References` > `### Internal Documentation` (or as a
   one-sentence note just before it). Suggested wording: "A distinct failure mode, filling a
   legitimate external-process wait with no-op Bash calls or status-only turns, is covered in
   `context/patterns/external-process-wait.md`; see that file rather than restating it here."
-  Do not restate any rule.
-- [ ] Validate: `jq empty agent-system/extensions/core/index-entries.json`, and confirm the new
-  entry's `line_count` equals `wc -l` of the file
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` over the three
-  touched files
-- [ ] If available against the source store, run `check-extension-docs.sh` and
+  Do not restate any rule. *(completed)*
+- [x] Validate: `jq empty agent-system/extensions/core/index-entries.json`, and confirm the new
+  entry's `line_count` equals `wc -l` of the file *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` over the three
+  touched files *(completed)*
+- [x] If available against the source store, run `check-extension-docs.sh` and
   `validate-context-index.sh`. They mainly target the deployed index, so only a regression they
   attribute to this entry counts as a failure. Do not deploy or regenerate `.claude/`.
-- [ ] Stage the three explicit paths only (no directory or glob add) and commit as
-  `task 236 phase 2: ...` (Phase 1 commits separately with its own message)
+  *(completed: check-extension-docs.sh flagged this edit's own anti-stop-patterns.md line_count
+  drift (174 -> 177 after the +3-line pointer), fixed in this entry; the remaining core FAIL
+  (batch-orchestration-guardrails.md) is sibling task 228's in-flight territory, not this task's
+  regression. validate-context-index.sh passed with 0 errors)*
+- [x] Stage the three explicit paths only (no directory or glob add) and commit as
+  `task 236 phase 2: ...` (Phase 1 commits separately with its own message) *(completed)*
 
 **Timing**: 0.75 hours
 

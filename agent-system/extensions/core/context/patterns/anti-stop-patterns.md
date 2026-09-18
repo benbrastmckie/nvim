@@ -162,6 +162,9 @@ fi
 
 - Research report: `specs/480_investigate_workflow_delegation_early_stop/reports/01_workflow-delegation-research.md`
 - Implementation plan: `specs/480_investigate_workflow_delegation_early_stop/plans/01_anti-stop-plan.md`
+- A distinct failure mode, filling a legitimate external-process wait with no-op Bash calls or
+  status-only turns, is covered in `context/patterns/external-process-wait.md`; see that file
+  rather than restating it here.
 
 ## Creating New Agents/Skills
 

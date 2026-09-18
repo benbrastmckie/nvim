@@ -807,7 +807,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Patterns to avoid premature task stopping",
-      "line_count": 174,
+      "line_count": 177,
       "keywords": [
         "patterns",
         "anti-stop"
@@ -902,6 +902,32 @@
       ],
       "topics": [
         "recovery"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "patterns/external-process-wait.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Bounded-wait discipline for a subagent blocked on a long external process (CI runs, remote jobs)",
+      "line_count": 129,
+      "keywords": [
+        "external-process",
+        "bounded-wait",
+        "gh-run-watch",
+        "ci-wait",
+        "monitor",
+        "no-op-filler",
+        "timeout"
+      ],
+      "topics": [
+        "workflow",
+        "orchestration"
       ],
       "load_when": {
         "agents": [],
