@@ -1437,6 +1437,7 @@ ACCEPTANCE. Every agent reachable via a dispatch[] row carries an explicit, cons
 - **Dependencies**: Task 197, Task 213
 - **Research**: [193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md]
 - **Plan**: [193_carry_territory_in_base_mode_dispatch_briefs/plans/01_base-mode-territory-briefs.md]
+- **Summary**: [193_carry_territory_in_base_mode_dispatch_briefs/summaries/01_base-mode-territory-briefs-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

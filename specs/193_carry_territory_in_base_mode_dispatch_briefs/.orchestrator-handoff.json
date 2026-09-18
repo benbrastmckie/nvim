@@ -1,15 +1,18 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
-  "phases_total": 4,
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "phase": "implement",
+  "summary": "All 4 plan phases completed: base-mode --territory payload (concurrent_siblings with explicit granularity), territory.md pointer in base-mode briefs, a mixed-granularity batch-shape fixture, and full contract documentation.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/plans/01_base-mode-territory-briefs.md",
-      "summary": "4-phase plan for base-mode sibling territory in dispatch briefs."
+      "type": "summary",
+      "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/summaries/01_base-mode-territory-briefs-summary.md",
+      "summary": "Base-mode sibling territory now carried into every multi-task dispatch brief (all 4 phases completed)."
     }
   ],
-  "summary": "Plan written: 4 phases, 5 hours, waves [[1,2],[3],[4]].",
-  "blockers": []
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null
 }

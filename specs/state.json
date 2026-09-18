@@ -1068,9 +1068,15 @@
           "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/plans/01_base-mode-territory-briefs.md",
           "type": "plan",
           "summary": "4-phase plan for base-mode sibling territory in dispatch briefs."
+        },
+        {
+          "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/summaries/01_base-mode-territory-briefs-summary.md",
+          "type": "summary",
+          "summary": "Base-mode sibling territory now carried into every multi-task dispatch brief (all 4 phases completed)."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Populated --territory in every mode (not just hard mode) with a concurrent_siblings payload built from every other task scheduled the same cycle, classified by explicit file/coarse/undeclared file-scope granularity; added the territory.md contract pointer to base-mode dispatch briefs; added a fixture reproducing the observed mixed-granularity batch shape; documented the new Cross-Task Territory contract and fixed one stale hard-mode-only claim."
     },
     {
       "project_number": 194,
