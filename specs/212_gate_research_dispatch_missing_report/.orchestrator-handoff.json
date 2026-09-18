@@ -1,16 +1,16 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 212,
   "session_id": "sess_1789751903_ddeac8_212",
-  "dispatch_seq": 3,
+  "dispatch_seq": 6,
   "phases_completed": 0,
-  "phases_total": 0,
-  "summary": "Research complete: confirmed root cause of missing-report defect (harness-injected generic subagent Notes block contradicts general-research-agent.md's mandatory report requirement, observed verbatim in this dispatch's own system prompt); documented current postflight behavior (verdict already resolves to failed/defer without falsely advancing status, but no defect is recorded and message-borne findings are discarded for non-allowlisted agents); showed the absorbed former-task-195 handoff-writer-predicate defect and this task's own detection gap share one root fix (generalize is_contractual_handoff_writer()).",
+  "phases_total": 6,
+  "summary": "Plan created: 6 phases, 8.5h, 4 waves. Predicate derived from dispatch via --handoff-expected (default true), research report gate (ARTIFACTS_MISSING_ON_SUCCESS + report_missing), recovery helper for message-borne findings wired at Move 3 under a named boundary exception, research agent contract hardening, full gates + redeploy.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md",
-      "summary": "Research report covering both absorbed defects: missing research-report gate and the handoff-writer predicate."
+      "type": "plan",
+      "path": "specs/212_gate_research_dispatch_missing_report/plans/01_gate-research-report-handoff-predicate.md",
+      "summary": "6-phase implementation plan for the research report gate and dispatch-derived handoff-writer predicate."
     }
   ]
 }
