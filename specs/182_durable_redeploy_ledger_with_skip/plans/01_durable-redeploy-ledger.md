@@ -1,7 +1,7 @@
 # Implementation Plan: Task #182
 
 - **Task**: 182 - Add a durable redeploy ledger with content-hash and recency skip to the checkpoint
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 181 (gate-depth / verdict-logic unification — completed), 193, 213 (completed)
 - **Research Inputs**: specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md
@@ -147,13 +147,13 @@ No ROADMAP.md consulted (no roadmap_path in dispatch).
 Phases within the same wave can execute in parallel. (Phase 4 touches no file Phase 2 touches;
 Phase 3 and Phase 5 touch disjoint files.)
 
-### Phase 1: Ledger library and unit tests [NOT STARTED]
+### Phase 1: Ledger library and unit tests [COMPLETED]
 
 **Goal**: Build `scripts/lib/deploy-ledger-lib.sh` as a pure, testable library with no checkpoint
 wiring yet.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh` (header style
+- [x] Create `agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh` (header style
   mirroring `deploy-baseline-lib.sh` / `deploy-freshness-lib.sh`; `set -u`-safe; no top-level
   side effects) exporting:
   - `deploy_ledger_path <project_root>` → `${DEPLOY_LEDGER_FILE:-<root>/specs/.orchestrator-deploy-ledger.json}`
@@ -174,7 +174,7 @@ wiring yet.
   - Constants `DEPLOY_LEDGER_RECENT_SEC=${DEPLOY_LEDGER_RECENT_SEC:-1800}`,
     `DEPLOY_LEDGER_MAX_AGE_SEC=${DEPLOY_LEDGER_MAX_AGE_SEC:-86400}`, `DEPLOY_LEDGER_SKIP`
     (`0` forces `run`); `DEPLOY_LEDGER_ELIGIBLE_OUTCOMES` = `clean pre_existing filtered`
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh`, modeled on
+- [x] Create `agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh`, modeled on
   `test-deploy-baseline-lib.sh`, covering: hash determinism and MISSING handling; CANNOTVERIFY
   on absent root; read rejects malformed or missing files; decide returns `skip_hash` (equal
   hash, in cap), `run` (equal hash, past cap), `skip_attributed` (changed hash, in window,
