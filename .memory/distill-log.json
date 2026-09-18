@@ -24,14 +24,38 @@
       },
       "affected_memories": [],
       "notes": "Health report. validate-on-read regenerated memory-index.json (added MEM-insight-context-loading-by-at-reference; 18 -> 19 entries)"
+    },
+    {
+      "id": "distill_20260918223248",
+      "timestamp": "2026-09-18T22:32:48Z",
+      "type": "report",
+      "session_id": "sess_1789770334_43361c",
+      "pre_metrics": {
+        "total_memories": 19,
+        "total_tokens": 2990,
+        "health_score": 84,
+        "purge_candidates": 2,
+        "merge_candidates": 2,
+        "compress_candidates": 0
+      },
+      "post_metrics": {
+        "total_memories": 19,
+        "total_tokens": 2990,
+        "health_score": 84,
+        "purge_candidates": 2,
+        "merge_candidates": 2,
+        "compress_candidates": 0
+      },
+      "affected_memories": [],
+      "notes": "Health report: 2 purge, 2 merge (opencode-agent-frontmatter pair), 0 compress, 9 review candidates; 11/19 never retrieved"
     }
   ],
   "summary": {
-    "total_operations": 1,
+    "total_operations": 2,
     "total_purged": 0,
     "total_merged": 0,
     "total_compressed": 0,
     "total_refined": 0,
-    "last_operation": "2026-09-17T23:24:07Z"
+    "last_operation": "2026-09-18T22:32:48Z"
   }
 }
