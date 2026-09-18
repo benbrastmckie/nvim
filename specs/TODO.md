@@ -421,6 +421,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: Task 213
 - **Research**: [215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md]
 - **Plan**: [215_unwind_unconsumed_orchestrate_dispatch/plans/01_unwind-unconsumed-dispatch.md]
+- **Summary**: [215_unwind_unconsumed_orchestrate_dispatch/summaries/01_unwind-unconsumed-dispatch-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

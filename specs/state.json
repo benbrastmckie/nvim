@@ -126,9 +126,15 @@
           "path": "specs/215_unwind_unconsumed_orchestrate_dispatch/plans/01_unwind-unconsumed-dispatch.md",
           "type": "plan",
           "summary": "5-phase plan: capture pre-dispatch image in pending_dispatch, new orchestrate-unwind-dispatch.sh, fixture test, docs (by-hand-only decision), shellcheck + redeploy."
+        },
+        {
+          "path": "specs/215_unwind_unconsumed_orchestrate_dispatch/summaries/01_unwind-unconsumed-dispatch-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary for all 5 phases."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added orchestrate-unwind-dispatch.sh, the sanctioned by-hand recovery path for a /orchestrate dispatch prepared but never issued: it restores state.json status/last_updated/session_id, the durable dispatch_seq_counter, releases the lock, deletes the dispatch file, and clears pending_dispatch, or refuses cleanly. Widened orchestrate-cycle-plan.sh's pending_dispatch record with the prior_* pre-image the recovery script needs, documented the script across the state-machine doc, git-safety.md, and SKILL.md, and verified with a real end-to-end fixture test, shellcheck, and a clean redeploy."
     },
     {
       "project_number": 213,

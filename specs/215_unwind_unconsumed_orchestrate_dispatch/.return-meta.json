@@ -30,29 +30,52 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/215_unwind_unconsumed_orchestrate_dispatch/summaries/01_unwind-unconsumed-dispatch-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["pre-image-capture", "durable-state", "orchestrator-loop-guard", "ordering-hazard", "jq"]
+      "suggested_keywords": [
+        "pre-image-capture",
+        "durable-state",
+        "orchestrator-loop-guard",
+        "ordering-hazard",
+        "jq"
+      ]
     },
     {
       "content": "A recovery/undo script that must release a lock 'only if this session holds it' should delegate that check to the existing acquire/release helper's own built-in holder-identity comparison (e.g. task-lock.sh release already WARNs and no-ops on a session mismatch) rather than re-implementing a parallel check-then-release sequence. Fewer duplicated identity checks means one less place for the two copies to drift out of sync.",
       "category": "PATTERN",
       "source_artifact": "specs/215_unwind_unconsumed_orchestrate_dispatch/summaries/01_unwind-unconsumed-dispatch-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["lock-release", "identity-check", "reuse-existing-helper", "task-lock"]
+      "suggested_keywords": [
+        "lock-release",
+        "identity-check",
+        "reuse-existing-helper",
+        "task-lock"
+      ]
     },
     {
       "content": "For a fixture test proving a new script correctly reverses another script's mutations, prefer running the REAL upstream script to prepare fixture state over hand-constructing the intermediate JSON by hand. A hand-built fixture can pass even when the two scripts' actual field-population contract has drifted; running the real upstream script end-to-end catches that class of bug (caught here: the fixture's first draft used the wrong CLI invocation for the upstream script, which only surfaced because it was actually invoked rather than assumed).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/215_unwind_unconsumed_orchestrate_dispatch/summaries/01_unwind-unconsumed-dispatch-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["integration-test", "fixture-design", "end-to-end", "real-collaborator", "shell-testing"]
+      "suggested_keywords": [
+        "integration-test",
+        "fixture-design",
+        "end-to-end",
+        "real-collaborator",
+        "shell-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789751903_ddeac8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
