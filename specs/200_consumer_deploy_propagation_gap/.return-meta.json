@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/200_consumer_deploy_propagation_gap/plans/01_per-dispatch-freshness-surface.md",
-      "summary": "7-phase plan closing the consumer deploy propagation gap by moving the existing per-extension freshness check to per-dispatch granularity and injecting the signal into the dispatch brief."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1789687584_deac58_200",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 8,
-    "dependency_waves": [[1, 2], [3], [4], [5, 6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When an existing detector fails to prevent the defect it detects, check placement and granularity before concluding the detector is missing. In the agent-system deploy-freshness case, a pull-side staleness check already existed and already fired non-blockingly, but only once per top-level command and only onto the orchestrating session's stderr -- never into the context of the spawned subagent that actually read the stale file. The fix was to re-fire the same unchanged comparison at per-dispatch granularity (skill_preflight_update) and inject the result into the dispatch brief the agent reads, not to build a new detection mechanism. Generalizable rule: a signal's value is determined by whether it lands in the context that acts on it, at a moment when it can still change behavior. Cost note: a pull-side check (each repo checks only itself, only when used) scales with the checking repo's own size, while a push-side fleet scan scales with the consumer count -- the two differ by orders of magnitude and should never be traded off as if equivalent.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/200_consumer_deploy_propagation_gap/plans/01_per-dispatch-freshness-surface.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["detector-placement", "signal-granularity", "pull-side-check", "deploy-freshness", "dispatch-context-injection", "non-blocking-warning"]
-    }
-  ],
-  "dispatch_seq": 13
+    "session_id": "sess_1789706595_9484a9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

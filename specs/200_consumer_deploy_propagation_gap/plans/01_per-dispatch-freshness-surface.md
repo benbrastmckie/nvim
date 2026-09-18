@@ -1,7 +1,7 @@
 # Implementation Plan: Task #200
 
 - **Task**: 200 - Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md
@@ -127,28 +127,31 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Confirm premises and record the cost baseline [NOT STARTED]
+### Phase 1: Confirm premises and record the cost baseline [COMPLETED]
 
 **Goal**: Establish, by measurement rather than assertion, the two numbers the acceptance
 criterion depends on, and confirm the source store needs no lean-doc fix.
 
 **Tasks**:
-- [ ] Confirm the lean extension's four cited call sites are already correct at source: diff
+- [x] Confirm the lean extension's four cited call sites are already correct at source: diff
       `agent-system/extensions/lean/agents/lean-implementation-agent.md`,
       `.../lean-implementation-hard-agent.md`, `.../rules/lean4.md`, and
       `.../skills/skill-lake-repair/SKILL.md` against `~/Projects/BimodalLogic/.claude/`'s
       corresponding deployed files. Record the result. Make NO edit to any lean source file
-      regardless of the outcome.
-- [ ] Measure single-invocation cost: run `time bash .claude/scripts/check-deploy-freshness.sh .`
+      regardless of the outcome. *(completed: all four match; the agent file's non-cited
+      orchestrator-handoff section differs, itself a live partial-staleness example)*
+- [x] Measure single-invocation cost: run `time bash .claude/scripts/check-deploy-freshness.sh .`
       in this repo and in `~/Projects/BimodalLogic`, at least 5 runs each, and record min/median.
-- [ ] Count the extensions actually deployed in each repo (`jq '.extensions | keys | length'` on
+      *(completed: 115-122ms this repo, 144-149ms BimodalLogic)*
+- [x] Count the extensions actually deployed in each repo (`jq '.extensions | keys | length'` on
       each `.claude-extensions.json`) so the per-extension cost is derivable, not just the total.
-- [ ] Record the registered-consumer count from
+      *(completed: 6 and 7 respectively)*
+- [x] Record the registered-consumer count from
       `agent-system/extensions/core/context/reference/known-consumer-repos.json` for the
-      cost-contrast argument.
-- [ ] Write all measurements to `specs/200_consumer_deploy_propagation_gap/measurements.md` with
+      cost-contrast argument. *(completed: 5 consumers)*
+- [x] Write all measurements to `specs/200_consumer_deploy_propagation_gap/measurements.md` with
       the exact commands used, so Phase 6 can compare against a recorded baseline rather than a
-      remembered one.
+      remembered one. *(completed)*
 
 **Timing**: 0.75 hours
 
