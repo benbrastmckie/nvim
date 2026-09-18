@@ -234,6 +234,94 @@ fi
 # =====================================================================
 
 # =====================================================================
+# PARTIAL STALENESS: reproduces the observed incident shape directly -- ONE extension with an
+# untouched file plus a changed file (STALE), alongside a SECOND, wholly-untouched extension in
+# the SAME consumer tree (FRESH) -- proving a spot-check of the fresh extension would have
+# concluded "the deploy is current" while a different extension in the identical tree was
+# already stale. This is the exact reasoning trap named in the task motivating this suite
+# extension: partial staleness, not whole-tree staleness, is what a single-file or
+# single-extension spot-check misses.
+# =====================================================================
+PARTIAL_SOURCE_REPO="$WORKDIR/partial-source-repo"
+mkdir -p "$PARTIAL_SOURCE_REPO/extA" "$PARTIAL_SOURCE_REPO/extB"
+git init -q "$PARTIAL_SOURCE_REPO"
+git -C "$PARTIAL_SOURCE_REPO" config user.email "test@example.com"
+git -C "$PARTIAL_SOURCE_REPO" config user.name "Test"
+echo "extA file1 v1" > "$PARTIAL_SOURCE_REPO/extA/file1.txt"
+echo "extA file2 v1" > "$PARTIAL_SOURCE_REPO/extA/file2.txt"
+echo "extB fileB v1" > "$PARTIAL_SOURCE_REPO/extB/fileB.txt"
+git -C "$PARTIAL_SOURCE_REPO" add extA/file1.txt extA/file2.txt extB/fileB.txt
+git -C "$PARTIAL_SOURCE_REPO" commit -q -m "initial extA + extB"
+EXTA_DIR="$PARTIAL_SOURCE_REPO/extA"
+EXTB_DIR="$PARTIAL_SOURCE_REPO/extB"
+EXTA_HEAD_V1="$(git -C "$PARTIAL_SOURCE_REPO" log -1 --format=%H -- "$EXTA_DIR")"
+EXTB_HEAD_V1="$(git -C "$PARTIAL_SOURCE_REPO" log -1 --format=%H -- "$EXTB_DIR")"
+EXTA_FILE2_HASH_BEFORE="$(git -C "$PARTIAL_SOURCE_REPO" hash-object "$EXTA_DIR/file2.txt")"
+
+# Commit a change to exactly ONE of extA's two files. extB and extA/file2.txt are untouched.
+echo "extA file1 v2" > "$PARTIAL_SOURCE_REPO/extA/file1.txt"
+git -C "$PARTIAL_SOURCE_REPO" add extA/file1.txt
+git -C "$PARTIAL_SOURCE_REPO" commit -q -m "change extA/file1.txt only"
+EXTA_FILE2_HASH_AFTER="$(git -C "$PARTIAL_SOURCE_REPO" hash-object "$EXTA_DIR/file2.txt")"
+
+CONSUMER_PARTIAL="$WORKDIR/consumer-partial"
+mkdir -p "$CONSUMER_PARTIAL"
+cat > "$CONSUMER_PARTIAL/.claude-extensions.json" << EOF
+{"version":"1.0.0","extensions":{"extA":{"version":"1.0.0","source_dir":"${EXTA_DIR}","source_git_head":"${EXTA_HEAD_V1}"},"extB":{"version":"1.0.0","source_dir":"${EXTB_DIR}","source_git_head":"${EXTB_HEAD_V1}"}}}
+EOF
+
+(
+  # shellcheck disable=SC1090
+  . "$WORKDIR/bin/lib/deploy-freshness-lib.sh"
+
+  if [[ "$EXTA_FILE2_HASH_BEFORE" == "$EXTA_FILE2_HASH_AFTER" ]]; then
+    echo "LIBPASS partial: extA/file2.txt is byte-identical across both commits (independently confirmed, not just 'a hash moved')"
+  else
+    echo "LIBFAIL partial: extA/file2.txt hash changed unexpectedly (before=$EXTA_FILE2_HASH_BEFORE after=$EXTA_FILE2_HASH_AFTER) -- fixture is broken"
+  fi
+
+  status_partial_a="$(deploy_freshness_status "$CONSUMER_PARTIAL" extA)"
+  if [[ "$status_partial_a" == "STALE" ]]; then
+    echo "LIBPASS partial: extA (one changed file among two) -> STALE"
+  else
+    echo "LIBFAIL partial: extA expected STALE got '$status_partial_a'"
+  fi
+
+  status_partial_b="$(deploy_freshness_status "$CONSUMER_PARTIAL" extB)"
+  if [[ "$status_partial_b" == "FRESH" ]]; then
+    echo "LIBPASS partial: extB (wholly untouched, same consumer tree) -> FRESH"
+  else
+    echo "LIBFAIL partial: extB expected FRESH got '$status_partial_b'"
+  fi
+
+  names_partial="$(deploy_freshness_stale_names "$CONSUMER_PARTIAL" | sort)"
+  if [[ "$names_partial" == "extA" ]]; then
+    echo "LIBPASS partial: stale_names lists extA and omits extB (one fresh, one stale, same tree)"
+  else
+    echo "LIBFAIL partial: stale_names expected exactly 'extA' got '<<<$names_partial>>>'"
+  fi
+) > "$WORKDIR/partial-lib-direct.out"
+
+while IFS= read -r line; do
+  case "$line" in
+    LIBPASS*) pass "${line#LIBPASS }" ;;
+    LIBFAIL*) fail "${line#LIBFAIL }" ;;
+    *) : ;;
+  esac
+done < "$WORKDIR/partial-lib-direct.out"
+
+# Checker-level confirmation of the same partial-staleness shape (subprocess path, not just the
+# library-direct path exercised above).
+OUT_PARTIAL="$(run_checker "$CONSUMER_PARTIAL" 2>&1)"
+RC_PARTIAL=$?
+WARN_COUNT_PARTIAL=$(printf '%s\n' "$OUT_PARTIAL" | grep -c '^WARN:')
+if [[ "$RC_PARTIAL" -eq 0 && "$WARN_COUNT_PARTIAL" -eq 1 && "$OUT_PARTIAL" == *"'extA'"* && "$OUT_PARTIAL" != *"'extB'"* ]]; then
+  pass "partial (checker subprocess): exactly one WARN naming 'extA', no mention of 'extB', exit 0"
+else
+  fail "partial (checker subprocess): expected exactly one WARN naming 'extA' only, got rc=$RC_PARTIAL warn_count=$WARN_COUNT_PARTIAL output=<<<$OUT_PARTIAL>>>"
+fi
+
+# =====================================================================
 # Library-direct cases: source deploy-freshness-lib.sh in a scratch shell and exercise its two
 # exported functions against the SAME fixture consumers created above, pinning the
 # STALE/FRESH/CANNOTVERIFY three-way distinction the blocking backstop (Phase 3) depends on --

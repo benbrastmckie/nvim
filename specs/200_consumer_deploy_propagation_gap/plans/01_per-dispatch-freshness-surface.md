@@ -177,29 +177,33 @@ carry it forward instead of the research figure.
 
 ---
 
-### Phase 2: Pin partial staleness with a fixture [NOT STARTED]
+### Phase 2: Pin partial staleness with a fixture [COMPLETED]
 
 **Goal**: Prove — with a regression test, not an argument — that the existing per-extension
 path-scoped comparison already catches a single stale file inside an otherwise-untouched tree,
 which is the claim option (b) would otherwise be built to satisfy.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` in full and
+- [x] Read `agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` in full and
       extend it in its existing idiom (`pass`/`fail`/`info` helpers, PASSED/FAILED counters,
-      trap-based scratch `WORKDIR`, exit 0/1/2 contract, Class B `set -uo pipefail`).
-- [ ] Add a fixture case reproducing the observed shape: a scratch source repo with an extension
+      trap-based scratch `WORKDIR`, exit 0/1/2 contract, Class B `set -uo pipefail`). *(completed)*
+- [x] Add a fixture case reproducing the observed shape: a scratch source repo with an extension
       directory containing TWO committed files; a consumer `.claude-extensions.json` recording
       `source_git_head` at that commit; then commit a change to exactly ONE of the two files,
-      leaving the other byte-identical.
-- [ ] Assert `deploy_freshness_status <consumer> <ext>` returns `STALE` for that extension while
+      leaving the other byte-identical. *(completed: extA/file1.txt changed, extA/file2.txt
+      untouched)*
+- [x] Assert `deploy_freshness_status <consumer> <ext>` returns `STALE` for that extension while
       the untouched file's byte-identity is independently confirmed in the fixture (so the test
       documents *why* this is the partial-staleness case, not just that a hash moved).
-- [ ] Add a second extension to the same consumer fixture whose source directory received no
+      *(completed: git hash-object comparison before/after)*
+- [x] Add a second extension to the same consumer fixture whose source directory received no
       commit, and assert it returns `FRESH` in the same run — reproducing "one fresh, one stale
       in the same tree" and proving a spot-check of the fresh one would have concluded wrongly.
-- [ ] Assert `deploy_freshness_stale_names <consumer>` lists the stale extension and omits the
-      fresh one.
-- [ ] Run the suite; confirm all existing cases still pass alongside the new ones.
+      *(completed: extB)*
+- [x] Assert `deploy_freshness_stale_names <consumer>` lists the stale extension and omits the
+      fresh one. *(completed)*
+- [x] Run the suite; confirm all existing cases still pass alongside the new ones. *(completed:
+      26 passed, 0 failed)*
 
 **Timing**: 1.0 hours
 

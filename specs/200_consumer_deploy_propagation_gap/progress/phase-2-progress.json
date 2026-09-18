@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Pin partial staleness with a fixture",
+  "started_at": "2026-09-18T07:25:00Z",
+  "last_updated": "2026-09-18T07:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read test-deploy-freshness.sh and extend it in its existing idiom", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add fixture: two-extension consumer, one file changed in extA leaving other byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 3, "description": "Assert deploy_freshness_status returns STALE for extA, confirm byte-identity of untouched file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 4, "description": "Assert extB (untouched extension) returns FRESH in same run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 5, "description": "Assert deploy_freshness_stale_names lists extA and omits extB", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh"]},
+    {"id": 6, "description": "Run the suite; confirm all existing cases still pass alongside new ones", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
