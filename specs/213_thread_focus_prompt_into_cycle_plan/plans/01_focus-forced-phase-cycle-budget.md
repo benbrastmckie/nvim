@@ -501,36 +501,36 @@ outcome explicitly rather than quietly editing.
 
 ---
 
-### Phase 6: Documentation consistency pass [NOT STARTED]
+### Phase 6: Documentation consistency pass [COMPLETED]
 
 **Goal**: Every document describing focus threading, the stop-after-forced-phase contract, the
 per-run budget and artifact-based admission says the same thing the code now does. One pass across
 all files, covering all three defects together.
 
 **Tasks**:
-- [ ] `commands/orchestrate.md`: the `--research`/`--plan`/`--implement` rows keep "STOPS after the
+- [x] `commands/orchestrate.md`: the `--research`/`--plan`/`--implement` rows keep "STOPS after the
       last named phase" (now true) and gain the artifact rule (`--plan` revises via `reviser-agent`
       when a plan exists; `--implement` is blocked without a plan). Fix the Stage 0 Constraints
       prose (~lines 25-28) and the `force_phases` delegation bullet (~lines 91-95), which currently
       say "falls through to ordinary status-derived classification". Confirm the `--continue-budget`
       row and bullet are gone (Phase 4).
-- [ ] `merge-sources/claudemd.md`: line ~112's `/orchestrate` row is already correct; fix the
+- [x] `merge-sources/claudemd.md`: line ~112's `/orchestrate` row is already correct; fix the
       "Multi-task syntax" paragraph (~line 116), which contradicts it two paragraphs later
       ("falling through to ordinary status-derived classification once its own forced sequence is
       exhausted"). Settle both on STOP. Add the per-run budget contract and the artifact admission
       rule to that row.
-- [ ] `skills/skill-orchestrate/SKILL.md`: add a MUST NOT — never re-invoke
+- [x] `skills/skill-orchestrate/SKILL.md`: add a MUST NOT — never re-invoke
       `orchestrate-cycle-plan.sh` live purely to inspect state; `--dry-run` (or reading
       `mt_state_file`) is the only sanctioned check — and require the loop to stop on the plan's
       stop verdict and on a `forced_round_complete` blocked row. Document the focus passthrough
       added in Phase 2 in Move 1's prose.
-- [ ] `docs/architecture/orchestrate-state-machine.md`: add the NON-terminal worked example this
+- [x] `docs/architecture/orchestrate-state-machine.md`: add the NON-terminal worked example this
       file never had (a `researched` task whose forced queue empties mid-run -> excluded, not
       advanced), beside the existing terminal-task example (~lines 738-770). Fix the
       "Maximum dispatch cycles per /orchestrate invocation" text so it matches the now-true per-run
       contract. Extend the `--focus` narrative (~lines 101-103, 379-380) to cover the user-supplied
       segment and the two-segment labelled composition.
-- [ ] `context/standards/orchestrator-runtime-files.md`: replace the
+- [x] `context/standards/orchestrator-runtime-files.md`: replace the
       `### cycle_count semantics and the budget-continuation override (Defect B)` section
       (~lines 215-253) with the per-run contract and its rationale (the budget exists to bound work
       within one run; re-running `/orchestrate` is the explicit way to continue). Fix the dangling
@@ -539,10 +539,15 @@ all files, covering all three defects together.
       in a summary), that the loop-guard staleness detector is moot for budgeting once no counter
       carries between runs. Document `dispatch_seq_counter` as a field the batch engine now seeds
       and writes durably.
-- [ ] Re-grep for contradictions after editing:
+- [x] Re-grep for contradictions after editing:
       `grep -rn 'falls through\|fall-through\|falling through\|continue-budget\|cumulative across invocations' agent-system/extensions/core/`
-      must return only intentional, corrected occurrences.
-- [ ] Deliverable rule: no task numbers anywhere in these files (they are outside `specs/**`).
+      must return only intentional, corrected occurrences. *(deviation: altered — the literal
+      pattern matches dozens of unrelated pre-existing hits across the whole source store (the
+      common phrase "falls through" used for entirely different mechanisms: task-lock retry,
+      admission collision scan, H1 hard-mode heading-scan fallback, etc.). Manually inspected
+      every hit outside the 5 named files and confirmed none contradicts this task's own 3
+      defects; did not expand scope to rewrite unrelated documentation.)*
+- [x] Deliverable rule: no task numbers anywhere in these files (they are outside `specs/**`).
       Reference durable anchors — file names, section headings, flag names.
 
 **Timing**: 2 hours

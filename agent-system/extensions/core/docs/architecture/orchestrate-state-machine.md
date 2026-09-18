@@ -98,10 +98,16 @@ research-first default's own direct dispatch, reusing the existing
 Questions Field). The NEXT cycle's classifier therefore routes the task to `research` exactly as
 it would for the research-first default's own `not_started`-turned-`researching` task;
 `orchestrate-cycle-plan.sh` reads the persisted `research_questions`, joins them into a single
-string, and passes it as `--focus` to `orchestrate-build-dispatch.sh` (an already-built, already
-phase-gated flag — no change needed inside that script), so the research agent's dispatch file
-carries a `User focus:` block naming exactly what to answer. Once research completes
-(`researched`), the task proceeds to `plan` as normal.
+string, and composes it with any user-typed `focus_prompt` (the `$2+` text from the
+`/orchestrate` command line — see `commands/orchestrate.md`) into ONE `--focus` value passed to
+`orchestrate-build-dispatch.sh` (an already-built, already phase-gated flag — no change needed
+inside that script): when `focus_prompt` is non-empty, the composed value is two labelled
+segments joined by a newline — `From the user: <focus_prompt>` first, then
+`Research questions: <joined research_questions>` — so neither source silently replaces the
+other; when `focus_prompt` is empty, the composed value is the bare joined
+`research_questions` string with no label (byte-for-byte identical to the no-user-focus case).
+Either way the research agent's dispatch file carries a `User focus:` block naming exactly what
+to answer. Once research completes (`researched`), the task proceeds to `plan` as normal.
 
 The `needs_research` verdict is NOT unreachable on the research-first default path either: a
 plan dispatch with no research artifact still arises from a forced `--plan`/`--force-phases plan`
@@ -216,8 +222,17 @@ missing/stale-handoff recovery event, are read back with a jq default, and never
 any cap or status transition.
 
 The loop guard file is created at the start of an `/orchestrate` invocation and updated after each
-dispatch cycle. It persists between conversational turns so a resumed `/orchestrate` invocation
-sees the accumulated cycle count.
+dispatch cycle, and the file itself persists between conversational turns. `cycle_count`
+(the work-cycle budget) is now PER-RUN, not cumulative: it resets to 0 at the start of every
+`/orchestrate` invocation regardless of what a prior run left in the durable file (that prior
+value is inert historical data, never read or written for budgeting by the batch engine any
+more), and the bound (`MAX_CYCLES` base, `MAX_CYCLES`×2.6≈13 under `--hard`) is enforced strictly
+WITHIN that one run. There is no override flag to continue past an exhausted per-run budget --
+re-invoking `/orchestrate` (a fresh run, hence a fresh zero-valued count) is the ordinary,
+explicit way to continue. What DOES genuinely persist and accumulate across invocations is
+`dispatch_seq_counter` (never `cycle_count`): a dispatch_seq value must never repeat within a
+task across separate runs, so it is durably seeded and flushed on every dispatch regardless of
+the per-run budget's own reset.
 
 **On cycle limit**: The task is left in `partial` state. The orchestrator reports: "Task {N} reached
 MAX_CYCLES limit. Run `/orchestrate {N}` again to continue, or `/implement {N}` to resume manually."
@@ -377,7 +392,10 @@ Cycle 1: status=not_started → dispatch plan (--fast: research-first default sk
 
 Cycle 2: status=researching → dispatch research
          dispatch file carries "User focus: Does library X expose a streaming API?; ..."
-         (research_questions joined via --focus, see "The needs_research Fork" above)
+         (research_questions joined via --focus, see "The needs_research Fork" above; if a user
+         also typed a $2+ focus string on this /orchestrate invocation, the block instead reads
+         two labelled lines -- "From the user: <text>" then "Research questions: <joined>" --
+         composed, never replacing one with the other)
          handoff: {status: "researched", summary: "Confirmed X's streaming API..."}
          state.json: status → researched
 
@@ -767,6 +785,52 @@ All-terminal check: N is terminal AND has no pending forced phase -> all_done st
                     for a batch of just N
 EXIT: stop_reason="all_terminal" -- exactly the un-forced behavior, now that the one
       requested forced round has already run to completion.
+```
+
+Note: "Cycle 2" above is a genuinely SEPARATE `/orchestrate` invocation (a fresh `session_id`,
+hence a fresh, empty `mt_state_file`) -- `force_phases_remaining`/`forced_round_seeded` live
+only in that ephemeral per-session state, never in the durable guard file, so a new invocation
+never sees the prior run's queue at all and the ordinary All-terminal check is the correct exit
+path. This is a DIFFERENT scenario from the NON-terminal worked example immediately below, where
+"cycle 2" means a second cycle of the SAME run (same `session_id`, same `mt_state_file`) -- the
+scenario the stop-after-last-forced-phase fix (below) exists for.
+
+**Worked example** (NON-terminal task, forced, SAME run -- the observed live incident this fix
+closes): a task whose forced round completes mid-run must be EXCLUDED for the rest of that run,
+never advanced by falling through to ordinary status-derived classification.
+
+```
+Task #M: status=not_started (a live, active_projects task -- terminal-ness is not the point here)
+
+$ /orchestrate M --research
+
+Cycle 1 (of this ONE run; same session_id throughout):
+Refresh: M=not_started
+task_has_forced_phase(M): TRUE (--research supplied this invocation; force_phases_remaining[M]
+                           seeded to ["research"], forced_round_seeded[M] set to true)
+Classify: effective_group[M] overridden to "research" by the forced queue (status-derived
+          classification would have said "research" too here, but forcing still wins the tie)
+Dispatch: research M -- writes .dispatch/{seq}.md; force_phases_remaining[M] popped to []
+After agent completes: report written; postflight resolves M's status to "researched"
+
+Cycle 2 (SAME run -- e.g. the orchestrating loop's own next iteration, or a "let me just check"
+re-invocation of orchestrate-cycle-plan.sh against the SAME mt_state_file/session_id):
+Refresh: M=researched
+Section (f) three-way branch: force_phases_remaining[M] is now [] (popped in cycle 1) AND
+                               forced_round_seeded[M] is true (seeded THIS run) -->
+                               effective_group[M] = "forced_round_complete"
+                               (the OLD, defective code instead fell through here to
+                               triage_group[M], which would have classified "researched" as
+                               "plan" and dispatched it -- silently advancing the task with no
+                               explicit --plan flag ever given this run)
+Bucketing: M is excluded via a blocked[] row, reason "forced round complete: every phase named
+           by this run's --research/--plan/--implement flag has been dispatched; this task is
+           terminal for this run. Re-invoke /orchestrate to continue." -- BEFORE the lock probe,
+           dispatch_seq mint, preflight write, or orchestrate-build-dispatch.sh call
+Result: no dispatch row, no dispatch file, no lock taken, no status write, no cycle charged.
+        M's status stays "researched" until a genuinely NEW /orchestrate invocation (a fresh
+        session_id) advances it via ordinary status-derived classification, or an explicit
+        --plan/--force-phases plan is given.
 ```
 
 ### Commit Granularity

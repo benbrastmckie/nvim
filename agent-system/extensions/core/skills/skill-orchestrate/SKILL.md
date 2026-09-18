@@ -56,11 +56,14 @@ done
 
 One call. Status refresh, all-terminal check, eligibility, classification, admission (the four
 defer gates and their overrides), the self-modification tie-breaker, the convergence guard, the
-idle cross-batch overlap advisory, `force_phases` consumption, task-directory creation, the
-lock probe, budget accounting, the inter-cycle redeploy checkpoint, and dispatch-file composition
-(via `orchestrate-build-dispatch.sh`, including any `## Prior Decisions` section from a task's
-`.decisions.json`) all happen inside this one script call — full contract in its own header
-comment and in `orchestrate-state-machine.md`.
+idle cross-batch overlap advisory, `force_phases` consumption (STOP, never fall-through, once a
+task's own forced round completes for this run), artifact-keyed forced-plan/forced-implement
+admission, task-directory creation, the lock probe, the PER-RUN work-cycle budget (resets every
+invocation; no `--continue-budget` override), the inter-cycle redeploy checkpoint, and
+dispatch-file composition (via `orchestrate-build-dispatch.sh`, including any `## Prior
+Decisions` section from a task's `.decisions.json` and, when `focus_prompt` is non-empty, a
+`User focus:` block composed with the task's own `research_questions`) all happen inside this
+one script call — full contract in its own header comment and in `orchestrate-state-machine.md`.
 
 `focus_prompt` is free-form user text (may contain spaces and embedded double quotes), so it is
 NOT threaded through the `$( [ -n ... ] && echo --flag "$v" )` idiom the other flags below use —
@@ -92,6 +95,21 @@ mt_state_file="specs/.orchestrator-multi-state-${session_id}.json"
 If `stop_json` is non-null: log `.reason`/`.message`, skip to Move 4 (`all_terminal` is a success
 exit; `max_cycles`/`no_eligible_stuck`/`max_infra_failures`/`convergence_guard` are partial
 exits). Otherwise continue with this cycle's `plan_json.dispatch[]`/`plan_json.aux_dispatch[]`.
+A task whose forced round has completed for this run (every phase its own
+`--research`/`--plan`/`--implement` flag named has already been dispatched) appears in
+`plan_json.blocked[]` with a `"forced round complete"` reason instead — this is that task's own
+terminal-for-this-run verdict, not a batch-wide `stop`; the loop must treat it exactly like any
+other `blocked[]` row (log and move on) and never re-attempt dispatching it this run, whether or
+not a later cycle's caller repeats the forcing flag.
+
+**MUST NOT**: never re-invoke `orchestrate-cycle-plan.sh` LIVE purely to inspect state (a "check
+where things stand" call outside the normal per-cycle Move 1 loop). A live call mutates: it can
+take a task lock, mint a dispatch_seq, write a preflight status, and build a real dispatch file —
+none of which a mere inspection should ever risk. `--dry-run` (which mutates nothing; see
+`commands/orchestrate.md`'s dry-run short-circuit) or reading `mt_state_file` directly are the
+only sanctioned ways to check status mid-run. This loop stops on the plan's own stop verdict (or
+a per-task `forced_round_complete` blocked row) — it does not get a second, unsanctioned way to
+decide the run is done.
 
 **Hard-mode burnout gate (`--hard` only, every cycle, before Move 2)**: the same three
 self-checks single-task mode used to run (re-reading a path with no new dispatch since, a second
