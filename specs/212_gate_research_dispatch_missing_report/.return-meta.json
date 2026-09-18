@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 212,
+  "session_id": "sess_1789751903_ddeac8_212",
+  "dispatch_seq": 3,
+  "findings_count": 9,
+  "next_steps": "Run /plan 212 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md",
+      "summary": "Confirms the harness's own generic subagent 'Notes:' boilerplate directly contradicts general-research-agent.md's mandatory report-file requirement (observed verbatim in this dispatch's own system prompt); documents postflight's current verdict=failed handling for a missing-report dispatch (status is never falsely advanced, but no defect is recorded and message-borne findings are discarded); and shows the absorbed former-task-195 handoff-writer-predicate defect shares a single root fix with this task's own detection gap."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "The Claude Code harness appends a generic, subagent-type-independent 'Notes:' block to Agent-tool subagent system prompts (e.g. 'Do NOT Write report/summary/findings/analysis .md files. Return findings directly as your final assistant message'). This can directly contradict an agent contract whose sole deliverable is a file (e.g. general-research-agent's mandatory report + .return-meta.json). It is not present in the source-store agent file, the deployed agent file, or settings.json -- it originates from the harness itself, outside agent-system/**. Agent contracts whose only product is a file should include an explicit override statement naming this class of conflict, not just a positive MUST DO, since a plain MUST DO evidently loses a probabilistic priority contest against a later generic contradicting instruction in the same prompt.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["harness-boilerplate", "agent-contract", "report-file", "subagent-prompt", "general-research-agent"]
+    },
+    {
+      "content": "In orchestrate-cycle-postflight.sh, is_contractual_handoff_writer()'s agent-name allowlist is consulted only in the double-miss branch (handoff absent AND .return-meta.json recovery declined). Because skill-orchestrate/SKILL.md's Move 2 supplies handoff_path only to dispatch[] rows and Move 3 loops only over dispatch[] rows (aux_dispatch[] never reaches postflight), every agent that reaches this script today was, by construction, expected to be able to write a handoff-equivalent outcome. A hardcoded two-name allowlist here is drift-prone; deriving writer-expectation from dispatch-row shape (or simply 'reached postflight at all') closes detection gaps for every non-allowlisted lifecycle agent at once, since the predicate's false branch currently only WARNs and never records a defect.",
+      "category": "PATTERN",
+      "source_artifact": "specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "handoff-writer-predicate", "defect-recording", "dispatch-row", "skill-orchestrate"]
+    },
+    {
+      "content": "context/contracts/recovery.md is exclusively about git fix-forward/rollback discipline (the three-rung Recovery Ladder for RED build states) -- it does not define [PARTIAL] task-status semantics for a dispatch outcome. A task description or dispatch that cites recovery.md for '[PARTIAL] status marking after a missing deliverable' is citing the wrong file; use context/standards/status-markers.md instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["recovery.md", "status-markers", "PARTIAL", "documentation-gap"]
+    }
+  ]
+}
