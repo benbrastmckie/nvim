@@ -278,6 +278,12 @@ If "Yes" selected, ask for free text.
 
 #### 5.1: Read Current State
 
+Bootstrap `specs/` first if this is the first task in this repo (idempotent; see
+`context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup"):
+```bash
+bash .claude/scripts/init-specs.sh
+```
+
 ```bash
 next_num=$(jq -r '.next_project_number' specs/state.json)
 ```

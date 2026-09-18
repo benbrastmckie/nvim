@@ -43,6 +43,13 @@ When $ARGUMENTS contains a description (no flags).
 
 ### Steps
 
+0. **Bootstrap `specs/` if this is the first task in this repo** (idempotent; creates nothing
+   that already exists — see `context/standards/orchestrator-runtime-files.md`'s "Consumer Repo
+   Setup"):
+   ```bash
+   bash .claude/scripts/init-specs.sh
+   ```
+
 1. **Read next_project_number via jq**:
    ```bash
    next_num=$(jq -r '.next_project_number' specs/state.json)

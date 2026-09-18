@@ -257,6 +257,13 @@ fi
 
 ### Stage 8: Get Next Task Numbers
 
+Bootstrap `specs/` first (belt-and-braces; `/spawn` requires a pre-existing parent task, so
+`specs/` should already exist, but the call is idempotent and cheap — see
+`context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup"):
+```bash
+bash .claude/scripts/init-specs.sh
+```
+
 Get the next available task numbers from state.json:
 
 ```bash

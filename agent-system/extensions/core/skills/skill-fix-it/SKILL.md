@@ -249,6 +249,12 @@ For each selected task type, create the task. **Important**: When NOTE: tags exi
 
 #### 8.1: Get Next Task Number
 
+Bootstrap `specs/` first if this is the first task in this repo (idempotent; see
+`context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup"):
+```bash
+bash .claude/scripts/init-specs.sh
+```
+
 ```bash
 next_num=$(jq -r '.next_project_number' specs/state.json)
 ```

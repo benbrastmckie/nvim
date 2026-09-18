@@ -580,6 +580,12 @@ Review issue from {scope} review on {DATE}:
 
 #### 5.6.3. State Updates
 
+**0. Bootstrap `specs/` if this is the first task in this repo** (idempotent; see
+`context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup"):
+```bash
+bash .claude/scripts/init-specs.sh
+```
+
 **1. Read current state:**
 ```bash
 next_num=$(jq -r '.next_project_number' specs/state.json)

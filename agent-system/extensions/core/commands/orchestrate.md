@@ -70,6 +70,13 @@ source .claude/scripts/parse-command-args.sh "$ARGUMENTS"
 focus_prompt="${FOCUS_PROMPT:-}"
 ```
 
+Belt-and-braces `specs/` bootstrap (idempotent; see `context/standards/orchestrator-runtime-files.md`'s
+"Consumer Repo Setup"). `/orchestrate` requires a pre-existing task number and cannot realistically
+be a first-touch site, but the call is cheap and never destructive:
+```bash
+bash .claude/scripts/init-specs.sh
+```
+
 Each parsed flag becomes a delegation-context key, threaded unchanged into the single Skill
 invocation below — there is only one dispatch path now, used identically whether `TASK_NUMBERS`
 names one task or many (see `docs/architecture/orchestrate-state-machine.md`, "The Orchestration

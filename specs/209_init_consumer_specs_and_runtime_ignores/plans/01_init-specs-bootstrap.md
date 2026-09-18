@@ -318,14 +318,14 @@ asserting the directory-class ones return their basename and the file-class ones
 
 ---
 
-### Phase 4: Wire init-specs.sh into every first-touch call site [NOT STARTED]
+### Phase 4: Wire init-specs.sh into every first-touch call site [COMPLETED]
 
 **Goal**: Every command, skill, and agent that can be the first thing to touch `specs/` in a
 fresh consumer repo calls `init-specs.sh` before reading `specs/state.json`, and the deploy
 question is decided and recorded.
 
 **Tasks**:
-- [ ] Insert a call to `init-specs.sh` immediately before the `next_project_number` read in each
+- [x] Insert a call to `init-specs.sh` immediately before the `next_project_number` read in each
       site, using the deployed path (`bash .claude/scripts/init-specs.sh`) with the same
       invocation form neighboring script calls already use in that file:
       - `agent-system/extensions/core/commands/task.md` - Create Task Mode, before Step 1
@@ -335,19 +335,25 @@ question is decided and recorded.
       - `agent-system/extensions/core/skills/skill-spawn/SKILL.md` - "Get the next available
         task numbers" step
       - `agent-system/extensions/core/agents/meta-builder-agent.md` - task-creation step
-- [ ] Add the same defensive call at `/orchestrate`'s entry
+      *(completed)*
+- [x] Add the same defensive call at `/orchestrate`'s entry
       (`agent-system/extensions/core/commands/orchestrate.md`), noting inline that it is
       belt-and-braces: `/orchestrate` requires a pre-existing task number and cannot realistically
-      be a first-touch site, but the call is idempotent and cheap.
-- [ ] **Decide and record: deploy does not call `init-specs.sh`.** Record the rationale (deploy
+      be a first-touch site, but the call is idempotent and cheap. *(completed)*
+- [x] **Decide and record: deploy does not call `init-specs.sh`.** Record the rationale (deploy
       is strictly `.claude/`-scoped today; `specs/` bootstrap is a task-lifecycle concern, not a
       deploy concern; `.syncprotect`'s documented scope is hand-edited `.claude/**`/root files
       and has no defined relationship to `specs/`) in `orchestrator-runtime-files.md`'s decision
-      record (written in Phase 5), so a future reader does not re-litigate it.
-- [ ] Confirm `command-gate-in.sh` is **not** wired: by the time it runs a task already exists,
-      so it is not a viable choke point. Note this in the same decision record.
-- [ ] Verify no task-number references leak into any deliverable outside `specs/**`
-      (`.claude/rules/no-task-references-in-deliverables.md`).
+      record (written in Phase 5), so a future reader does not re-litigate it. *(completed: the
+      decision itself is made here -- deploy-headless.sh is untouched by this phase -- the
+      written record lands in Phase 5 as planned)*
+- [x] Confirm `command-gate-in.sh` is **not** wired: by the time it runs a task already exists,
+      so it is not a viable choke point. Note this in the same decision record. *(completed:
+      confirmed via `grep -c next_project_number command-gate-in.sh` = 0; it only reads
+      specs/state.json to look up an EXISTING task)*
+- [x] Verify no task-number references leak into any deliverable outside `specs/**`
+      (`.claude/rules/no-task-references-in-deliverables.md`). *(completed: verified in the
+      deployed tree after redeploy, per Phase 4's own Verification list below)*
 
 **Timing**: 1 hour
 
@@ -380,7 +386,7 @@ before editing; wire any site the grep finds that this list omits, and say so in
 
 ---
 
-### Phase 5: Update standards doc and lint messaging [NOT STARTED]
+### Phase 5: Update standards doc and lint messaging [COMPLETED]
 
 **Goal**: `orchestrator-runtime-files.md`'s "Consumer Repo Setup" states plainly that `specs/`
 ignore rules are now installed automatically and names precisely what remains manual;
@@ -388,26 +394,33 @@ ignore rules are now installed automatically and names precisely what remains ma
 `.gitignore` is the only remedy.
 
 **Tasks**:
-- [ ] Rewrite "Consumer Repo Setup" in
+- [x] Rewrite "Consumer Repo Setup" in
       `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`: the
       `specs/`-scoped rules are installed automatically by `init-specs.sh` (called from the
       sites wired in Phase 4); the retained fenced root-`.gitignore` block is now the optional
       belt-and-braces/legacy path; state any genuinely remaining manual step precisely rather
       than leaving the whole section as "paste this by hand". Keep the fenced block itself
-      byte-identical to `runtime_ignore_block()` (the Case 3 pin).
-- [ ] Add the Phase 4 decision record to the same file: deploy does not call `init-specs.sh`
+      byte-identical to `runtime_ignore_block()` (the Case 3 pin). *(completed: also discovered
+      and documented, with a live check, that specs/.gitignore's own `**/.sessions/` pattern
+      already covers specs/.sessions/ -- the automatic path needs NO remaining manual step at
+      all for a repo using only the wired call sites)*
+- [x] Add the Phase 4 decision record to the same file: deploy does not call `init-specs.sh`
       (with rationale), `command-gate-in.sh` is not a viable choke point (with rationale), and a
       coordination note that whichever of this work and the session-state-relocation work lands
       second must re-check the generated `specs/.gitignore` covers the relocated paths.
-- [ ] Reword Check A's failure message in
+      *(completed: "Automatic-wiring decision record" subsection)*
+- [x] Reword Check A's failure message in
       `agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` to name
       `init-specs.sh` / `specs/.gitignore` as the primary remediation and the root `.gitignore`
       as the alternative. **No logic change** — `git check-ignore -q` already honors
-      `specs/.gitignore` at any depth.
-- [ ] Confirm (do not reimplement) that Check B already FAILs on tracked ephemeral files
+      `specs/.gitignore` at any depth. *(completed: message text only, verified no logic diff)*
+- [x] Confirm (do not reimplement) that Check B already FAILs on tracked ephemeral files
       independent of ignore coverage; record the confirmation in the phase's commit message so
-      the fixture in Phase 6 is understood as a regression pin, not new behavior.
-- [ ] `shellcheck` clean.
+      the fixture in Phase 6 is understood as a regression pin, not new behavior. *(completed:
+      confirmed live via the Phase 3 scratch-repo test -- Check B failed on tracked
+      specs/.commit-lock/*, specs/.events.lock, etc. even before any ignore coverage was
+      involved; recorded in this phase's commit message)*
+- [x] `shellcheck` clean. *(completed)*
 
 **Timing**: 1 hour
 

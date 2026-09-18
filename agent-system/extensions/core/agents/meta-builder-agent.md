@@ -717,6 +717,12 @@ if len(sorted_indices) != n:
 
 **Dependency Resolution**:
 
+Bootstrap `specs/` first if this is the first task in this repo (idempotent; see
+`context/standards/orchestrator-runtime-files.md`'s "Consumer Repo Setup"):
+```bash
+bash .claude/scripts/init-specs.sh
+```
+
 Before creating tasks, build a mapping from task indices to assigned task numbers (using sorted order):
 ```
 # Task index -> assigned task number
