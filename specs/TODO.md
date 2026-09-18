@@ -11,7 +11,7 @@ next_project_number: 240
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,182,184,185,199,202,207,210,212,223,224,227,228,235,236 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,184,185,199,202,207,210,212,223,224,227,228,235,236 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,136,140,165,173,174,208,237,238,239 | 29,139,162,163,166,167,172,207,210,236 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,190,217,221 | 74,165,173,174 | core-agent-system, extensions |
 
@@ -34,7 +34,6 @@ next_project_number: 240
     └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:...
   └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
     └─ 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-182 [IMPLEMENTING] — Add a durable redeploy ledger with content-hash and recency...
 184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
@@ -1661,7 +1660,7 @@ ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a 
 
 ### 182. Add a durable redeploy ledger with content-hash and recency skip to the checkpoint
 - **Effort**: 4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 181, Task 193, Task 213

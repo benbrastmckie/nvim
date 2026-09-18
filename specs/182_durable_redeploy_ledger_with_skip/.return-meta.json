@@ -1,6 +1,6 @@
 {
   "status": "implemented",
-  "dispatch_seq": 11,
+  "dispatch_seq": 12,
   "artifacts": [
     {
       "type": "summary",
@@ -9,73 +9,16 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "Added a durable, gitignored, machine-local redeploy ledger (scripts/lib/deploy-ledger-lib.sh) with a content-hash skip and an attributed-recency skip to the Inter-Cycle Redeploy Checkpoint, closing the repeated full-redeploy defect for both the ordinary cross-invocation case and the self-modifying-task class (deploy_pending override preserved as a backstop). Added 27 new unit tests and 7 new Group 11 end-to-end cases (including the named self-modifying-task acceptance criterion proving total deploy count stays 1 across 3 invocations), registered the ledger as an 18th gitignored runtime-file class member, and rewrote the guardrails contract documentation (Idempotence guard scope correction + new Durable redeploy ledger paragraph + D6 residual clause fix)."
+    "completion_summary": "Confirmed all 5 plan phases (already implemented and committed by the prior dispatch) remain closed after the inter-cycle redeploy checkpoint's deploy landed cleanly. Re-ran the task-specific suites -- test-deploy-ledger-lib.sh (27/27), test-orchestrate-cycle-plan.sh (238/238), test-runtime-file-tracking.sh (9/9), test-deploy-orphans.sh (5/5), test-deploy-propagation.sh (4/4), test-deploy-baseline-lib.sh (7/7) -- all green. specs/.orchestrator-deploy-ledger.json confirms the current deploy already incorporates task 182's changes (task_numbers includes 182, verify_outcome \"filtered\"), so the prior dispatch's deploy_pending block is resolved and no further redeploy is required."
   },
-  "modified_files": [
-    ".gitignore",
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh",
-    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a task's own file_scope IS the source it redeploys/reverifies (a self-modifying-task class), a content-hash-based skip rule can never fire for it, because the task's own edits change the hash on every cycle by construction. Pair the hash rule with a second, attributed-recency rule: recent + shares an identity (task/session number) with the last successful run + every changed path is explained by that same run's own modified-files list. Shipping only the hash rule leaves the self-modifying class hitting the full (expensive) path on every single cycle.",
-      "category": "PATTERN",
-      "source_artifact": "specs/182_durable_redeploy_ledger_with_skip/summaries/01_durable-redeploy-ledger-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "idempotence",
-        "self-modifying-task",
-        "redeploy",
-        "skip-rule",
-        "content-hash"
-      ]
-    },
-    {
-      "content": "check-extension-docs.sh (doc-lint) fails loudly when a new script file exists on disk under an extension's scripts/ tree but is absent from that extension's manifest.json provides.scripts array. Any task adding a new lib/ or tests/ script file under agent-system/extensions/<ext>/scripts/ must register it in manifest.json in the SAME change, or the next verify-deploy.sh run (fast gate, doc-lint check) fails even though the source code itself is correct.",
-      "category": "CONFIG",
-      "source_artifact": "specs/182_durable_redeploy_ledger_with_skip/summaries/01_durable-redeploy-ledger-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "manifest.json",
-        "doc-lint",
-        "check-extension-docs",
-        "provides.scripts",
-        "verify-deploy"
-      ]
-    },
-    {
-      "content": "A sourced bash library needing a fixed companion data file (e.g. a JSON reference file living at a known relative path beside the library) can resolve that path via its own BASH_SOURCE rather than requiring the caller to pass it as a function argument. This makes the library work identically whether it is sourced from the real deployed tree or copied into a test fixture that mirrors the same relative directory layout, with zero extra plumbing at call sites.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/182_durable_redeploy_ledger_with_skip/summaries/01_durable-redeploy-ledger-summary.md",
-      "confidence": 0.75,
-      "suggested_keywords": [
-        "bash",
-        "BASH_SOURCE",
-        "library-design",
-        "test-fixture",
-        "relative-path"
-      ]
-    }
-  ],
+  "modified_files": [],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1789759023_044f43",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "phases_completed": 5,
     "phases_total": 5
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }

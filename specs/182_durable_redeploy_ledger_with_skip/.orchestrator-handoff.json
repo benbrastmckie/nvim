@@ -1,8 +1,8 @@
 {
   "status": "implemented",
   "phase": "implement",
-  "dispatch_seq": 11,
-  "summary": "Implemented all 5 plan phases: a durable, gitignored, machine-local redeploy ledger (scripts/lib/deploy-ledger-lib.sh, default specs/.orchestrator-deploy-ledger.json) consulted by the Inter-Cycle Redeploy Checkpoint before its first expensive call, with a content-hash skip (ordinary case) and an attributed-recency skip (self-modifying-task class, where the hash changes on every cycle by construction). deploy_pending override and deploy_failed/blocking negative records preserve the completion-deploy gate's backstop. Added 27 new deploy-ledger-lib unit tests and 7 new Group 11 end-to-end cases (l-r), including the NAMED self-modifying-task acceptance criterion (total deploy count stays 1 across 3 invocations; a hash-only counterfactual redeploys 3/3 times). Registered the ledger as an 18th gitignored runtime-file class member and rewrote the guardrails contract documentation (Idempotence guard scope correction, new Durable redeploy ledger paragraph, D6 residual clause fix, not resolved).",
+  "dispatch_seq": 12,
+  "summary": "All 5 plan phases were already implemented and committed by the prior dispatch (seq 11): a durable, gitignored, machine-local redeploy ledger (scripts/lib/deploy-ledger-lib.sh, default specs/.orchestrator-deploy-ledger.json) consulted by the Inter-Cycle Redeploy Checkpoint before its first expensive call, with a content-hash skip (ordinary case) and an attributed-recency skip (self-modifying-task class). That dispatch's postflight was refused only because the core deploy was stale at the time (deploy_pending: true); the inter-cycle checkpoint has since redeployed cleanly -- specs/.orchestrator-deploy-ledger.json now records verify_outcome \"filtered\" with task_numbers including 182 for this session. This dispatch (seq 12) re-confirmed all 6 task-specific test suites remain green with no code changes needed: test-deploy-ledger-lib.sh (27/27), test-orchestrate-cycle-plan.sh (238/238), test-runtime-file-tracking.sh (9/9), test-deploy-orphans.sh (5/5), test-deploy-propagation.sh (4/4), test-deploy-baseline-lib.sh (7/7).",
   "artifacts": [
     {
       "type": "summary",
@@ -12,11 +12,11 @@
     {
       "type": "plan",
       "path": "specs/182_durable_redeploy_ledger_with_skip/plans/01_durable-redeploy-ledger.md",
-      "summary": "5-phase plan, all phases now marked [COMPLETED]."
+      "summary": "5-phase plan, all phases marked [COMPLETED]."
     }
   ],
   "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "All 5 phases complete and committed. Task-specific test suites all green (test-deploy-ledger-lib.sh 27/27, test-orchestrate-cycle-plan.sh 238/238, test-runtime-file-tracking.sh 9/9, test-deploy-orphans.sh 5/5, test-deploy-propagation.sh 4/4, test-deploy-baseline-lib.sh 7/7). deploy-headless.sh redeploy landed clean (33/33 fast checks, landed_verify_clean) after fixing a manifest.json registration gap doc-lint caught. A full verify-deploy.sh run (including the slow Gate 8 full shell test suite) was kicked off to confirm the whole-repo gate; if its result is not yet visible, safe to treat this task as ready for postflight/completion -- the specific suites exercising this change are already independently green."
+  "next_action_hint": "All 5 phases complete and committed; deploy is current (deploy ledger confirms task 182 is incorporated in the last verified deploy, verify_outcome \"filtered\"). Task-specific suites all green as of this dispatch. Ready for postflight/completion. A full whole-repo verify-deploy.sh Gate 8 run was deliberately not started per this dispatch's instructions -- if the orchestrator wants that whole-suite confirmation it should be scheduled separately, not blocking this task's completion."
 }

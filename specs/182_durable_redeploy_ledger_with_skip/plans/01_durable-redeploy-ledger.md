@@ -1,7 +1,7 @@
 # Implementation Plan: Task #182
 
 - **Task**: 182 - Add a durable redeploy ledger with content-hash and recency skip to the checkpoint
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: 181 (gate-depth / verdict-logic unification — completed), 193, 213 (completed)
 - **Research Inputs**: specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md
