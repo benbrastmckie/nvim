@@ -140,10 +140,13 @@ fi
 # (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md against
 # context/config/orchestrator-context-budget.json). Mirrors the SCHEMA_CONFORMANCE_GATE_MODE /
 # STRICT_CORE_DEPLOY precedent (check-extension-docs.sh): one env-var default a maintainer flips
-# in a follow-up commit, not a persisted auto-promotion counter. Defaults to "warn" because
-# commands/orchestrate.md is currently ~2x over its configured ceiling -- promote to "hard" only
-# once that file is at or under its ceiling. Does NOT gate the eager-load regression check or the
-# volatile-file check, both of which have their own fixed severity (see gate20 below).
+# in a follow-up commit, not a persisted auto-promotion counter. Defaults to "warn" as of
+# 2026-09-18: both tracked files are currently at or under their configured ceiling, but
+# commands/orchestrate.md is concurrently being edited by another in-flight task this cycle --
+# promoting to "hard" now would turn any of that task's growth into a hard deploy failure.
+# Promote once that concurrent edit settles and the file's ceiling margin is confirmed stable.
+# Does NOT gate the eager-load regression check or the volatile-file check, both of which have
+# their own fixed severity (see gate20 below).
 ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"
 
 FAILURES=0

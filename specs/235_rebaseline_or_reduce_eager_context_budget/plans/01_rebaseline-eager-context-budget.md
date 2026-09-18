@@ -169,18 +169,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Refresh Budget Config and Gate Comment [NOT STARTED]
+### Phase 4: Refresh Budget Config and Gate Comment [COMPLETED]
 
 **Goal**: Record the per-file resolutions with dated justifications and remove stale snapshot text.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/config/orchestrator-context-budget.json` immediately before editing.
-- [ ] `files["skills/skill-orchestrate/SKILL.md"]`: keep `ceiling_bytes: 20000`; refresh `measured_bytes`/`measured_at`; rewrite `derivation` to record the 2026-09-18 overage (D4 message-recovery documentation, +~2.3 KB) and its resolution by restatement trim.
-- [ ] `files["commands/orchestrate.md"]`: set `ceiling_bytes` = Phase 3 final size + 500 B rounded up to the next 500 B; refresh `measured_bytes`/`measured_at`; rewrite `derivation` as a dated, reviewed justification: original 8000 B PATH.md target, growth history (15,812 B on 2026-09-07 -> 19,967 B on 2026-09-18 from forced-phase/cycle-budget/focus documentation), trim applied (or deferred, per branch), and why 8000 B is not reachable without relocating the STAGE 0 executable block.
-- [ ] Update top-level `_comment`: drop "intentionally recorded as currently OVER its ceiling"; state both files are now under ceiling and that promoting `ORCHESTRATOR_BUDGET_GATE_MODE` to `hard` is a recorded follow-up once concurrent edits to `commands/orchestrate.md` settle.
-- [ ] `eager_load`: refresh `measured_bytes`/`measured_at` only. Leave `baseline_bytes` and the existing `note` unchanged. **Conditional** (only if Phase 1/5 finds B red from non-sibling growth): prefer trimming the growth into a lazily-loaded context file; if a baseline move is unavoidable, append a dated justification to `note` following the existing precedent.
-- [ ] Update `verify-deploy.sh`'s `ORCHESTRATOR_BUDGET_GATE_MODE` header comment (~lines 140-147) that says `commands/orchestrate.md` "is currently ~2x over its configured ceiling" to reflect the new state (comment-only edit); run `shellcheck` on it.
-- [ ] Validate JSON: `jq . orchestrator-context-budget.json >/dev/null`.
+- [x] Re-read `agent-system/extensions/core/context/config/orchestrator-context-budget.json` immediately before editing. *(completed)*
+- [x] `files["skills/skill-orchestrate/SKILL.md"]`: keep `ceiling_bytes: 20000`; refresh `measured_bytes`/`measured_at`; rewrite `derivation` to record the 2026-09-18 overage (D4 message-recovery documentation, +~2.3 KB) and its resolution by restatement trim. *(completed: measured_bytes 19535, measured_at 2026-09-18)*
+- [x] `files["commands/orchestrate.md"]`: set `ceiling_bytes` = Phase 3 final size + 500 B rounded up to the next 500 B; refresh `measured_bytes`/`measured_at`; rewrite `derivation` as a dated, reviewed justification: original 8000 B PATH.md target, growth history (15,812 B on 2026-09-07 -> 19,967 B on 2026-09-18 from forced-phase/cycle-budget/focus documentation), trim applied (or deferred, per branch), and why 8000 B is not reachable without relocating the STAGE 0 executable block. *(completed: ceiling_bytes 21000 (20228 + 500, rounded up to next 500), measured_bytes 20228, measured_at 2026-09-18; derivation records full growth history and the deferred CEILING-ONLY branch)*
+- [x] Update top-level `_comment`: drop "intentionally recorded as currently OVER its ceiling"; state both files are now under ceiling and that promoting `ORCHESTRATOR_BUDGET_GATE_MODE` to `hard` is a recorded follow-up once concurrent edits to `commands/orchestrate.md` settle. *(completed)*
+- [x] `eager_load`: refresh `measured_bytes`/`measured_at` only. Leave `baseline_bytes` and the existing `note` unchanged. **Conditional** (only if Phase 1/5 finds B red from non-sibling growth): prefer trimming the growth into a lazily-loaded context file; if a baseline move is unavoidable, append a dated justification to `note` following the existing precedent. *(completed: baseline_bytes left at 65950, unchanged, since Phase 1 attributed the red state to sibling growth, not non-sibling -- the conditional trim/re-baseline branch does not apply)* *(deviation: altered — appended a short "KNOWN as of 2026-09-18" paragraph to the existing `note` (rather than leaving `note` byte-for-byte unchanged) documenting that sub-check B is currently red due to sibling task growth, per the Stage 3.6 Observation Duty to report rather than silently leave an unexplained red state undocumented; the pre-existing note text was preserved verbatim, only appended to)*
+- [x] Update `verify-deploy.sh`'s `ORCHESTRATOR_BUDGET_GATE_MODE` header comment (~lines 140-147) that says `commands/orchestrate.md` "is currently ~2x over its configured ceiling" to reflect the new state (comment-only edit); run `shellcheck` on it. *(completed: shellcheck clean, rc=0)*
+- [x] Validate JSON: `jq . orchestrator-context-budget.json >/dev/null`. *(completed: valid)*
 
 **Timing**: 0.5 hours
 
