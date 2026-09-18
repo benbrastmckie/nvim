@@ -1,34 +1,13 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1789751903_ddeac8_193",
-  "task_number": 193,
-  "dispatch_seq": 2,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md",
-      "summary": "Confirms the base-mode territory gap exactly (two independent gates: h1_territory population and hard-mode-only territory.md contract pull-in), locates the exact insertion points in orchestrate-cycle-plan.sh (probed_dispatch_post_h1 as the sibling set) and orchestrate-build-dispatch.sh (the existing ungated '## Territory' block), rules out reusing orchestrate-batch-admit.sh's admission jq for the payload, and recommends an explicit absent/coarse-scope sentinel coordinated with task 165 rather than duplicating its admission-posture ruling."
-    }
+    {"type": "plan", "path": "specs/193_carry_territory_in_base_mode_dispatch_briefs/plans/01_base-mode-territory-briefs.md", "summary": "4-phase plan (5h): sibling territory payload in cycle-plan (all modes, granularity + undeclared sentinel), territory.md pointer in build-dispatch, batch-shape fixture, contract docs + full gate."}
   ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's /orchestrate multi-task engine, orchestrate-cycle-plan.sh's `probed_dispatch_post_h1` array (built after H1 refusals are filtered, before the live-dispatch loop) is the canonical 'concurrently-dispatched siblings this cycle' set -- already computed once, shared by dry-run and live paths. Any future feature needing 'who else is being dispatched right now' should read from this array rather than re-deriving it from orchestrate-batch-admit.sh's admit/defer verdicts, which only expose collision facts (not a full sibling roster) and are a deliberately separate admission-decision concern.",
-      "category": "PATTERN",
-      "source_artifact": "specs/193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-cycle-plan", "probed_dispatch_post_h1", "batch dispatch", "territory", "sibling tasks"]
-    },
-    {
-      "content": "orchestrate-batch-admit.sh's file_scope collision gate uses an asymmetric in-batch tie-break: for two same-batch tasks whose file_scope overlaps, only the HIGHER task_number sees the collision (scope_kind == in_batch filtered by other_num < c) and is deferred; the lower-numbered one is admitted with zero signal about the collision or the colliding sibling. Also confirmed: file_scope // [] | length == 0 short-circuits to unconditional admit with no collision check at all -- an absent scope is invisible to this gate by construction, not by omission bug.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrate-batch-admit", "file_scope_collision", "admission gate", "asymmetric tie-break", "undeclared scope"]
-    }
-  ],
-  "next_steps": "Run /plan 193 to create implementation plan",
-  "user_decision": null
+  "next_steps": "Run /implement 193 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 5,
+  "dependency_waves": [[1, 2], [3], [4]],
+  "memory_candidates": [],
+  "metadata": {"session_id": "sess_1789751903_ddeac8_193", "agent_type": "planner-agent", "delegation_depth": 1, "delegation_path": ["orchestrator", "plan", "planner-agent"]},
+  "dispatch_seq": 5
 }
