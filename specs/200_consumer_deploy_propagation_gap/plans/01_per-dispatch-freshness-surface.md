@@ -231,34 +231,48 @@ needed" recommendation.
 
 ---
 
-### Phase 3: Per-dispatch freshness surface in skill-base.sh [NOT STARTED]
+### Phase 3: Per-dispatch freshness surface in skill-base.sh [COMPLETED]
 
 **Goal**: Make the existing comparison fire once per skill/agent dispatch — the granularity at
 which a stale instruction file is actually read — without adding anything to a blocking path.
 
 **Tasks**:
-- [ ] Confirm the placement hypothesis before editing: verify `skill_preflight_update` is invoked
+- [x] Confirm the placement hypothesis before editing: verify `skill_preflight_update` is invoked
       once per dispatch by `orchestrate-cycle-plan.sh`'s per-task live-dispatch loop, and that
       `command-gate-in.sh`'s CHECKPOINT 1 fires only once per top-level command. Record the
-      confirmation.
-- [ ] Source `scripts/lib/deploy-freshness-lib.sh` in `skill-base.sh` using the same
+      confirmation. *(completed: confirmed at orchestrate-cycle-plan.sh:1863, once per task per
+      cycle; command-gate-in.sh's CHECKPOINT 1 has no skill_preflight_update call, confirming the
+      two are distinct, differently-scoped call sites. Also confirmed skill_preflight_update is
+      called from several non-orchestrate sites -- skill-cslib-implementation-hard/SKILL.md,
+      nix-preflight.sh, skill-web-research/implementation SKILL.md, skill-spawn/SKILL.md,
+      orchestrate-triage-classify.sh, orchestrate-predispatch-review.sh,
+      orchestrate-recover-outcome.sh -- so a single sourcing point at skill-base.sh's own
+      definition covers every one of them without a second call site.)*
+- [x] Source `scripts/lib/deploy-freshness-lib.sh` in `skill-base.sh` using the same
       two-candidate resolution order the file already uses for `common.sh` and
       `task-lookup-lib.sh` (deployed path first, source-store-relative fallback second).
-- [ ] Add a small function that computes the stale-extension list via
+      *(completed)*
+- [x] Add a small function that computes the stale-extension list via
       `deploy_freshness_stale_names "$SKILL_REPO_ROOT"` and exports it for the dispatch builder
-      to reuse, so Phase 4 does not re-derive the call.
-- [ ] Call it from `skill_preflight_update` and, when the list is non-empty, emit a loud,
+      to reuse, so Phase 4 does not re-derive the call. *(completed:
+      skill_deploy_freshness_stale_names; orchestrate-build-dispatch.sh already sources
+      skill-base.sh at its own line 154, so this function is directly reusable in Phase 4)*
+- [x] Call it from `skill_preflight_update` and, when the list is non-empty, emit a loud,
       explicitly-named WARN block to stderr: the stale extension names, the statement that the
       deployed `.claude/` tree for those extensions no longer matches the source store, and the
-      redeploy remedy. Never hand-patch guidance.
-- [ ] Guarantee the no-abort contract: a missing library, missing `jq`/`git`, an absent or
+      redeploy remedy. Never hand-patch guidance. *(completed)*
+- [x] Guarantee the no-abort contract: a missing library, missing `jq`/`git`, an absent or
       unparseable `.claude-extensions.json`, or an empty result each degrade to a silent no-op.
       `skill_preflight_update` must still always return 0 and must still run its extension hook
-      and lifecycle event exactly as before on every path.
-- [ ] Do NOT touch the `specs/.freshness-warn-streak.json` streak counter from this call site —
+      and lifecycle event exactly as before on every path. *(completed: manually confirmed under
+      `set -euo pipefail` with a fixture missing both the library and .claude-extensions.json --
+      skill_preflight_update returned 0, no abort)*
+- [x] Do NOT touch the `specs/.freshness-warn-streak.json` streak counter from this call site —
       that counter is a consecutive-COMMAND-invocation count owned by `check-deploy-freshness.sh`,
-      and incrementing it per dispatch would corrupt its documented meaning.
-- [ ] Keep `skill-base.sh` Class C (sourced; sets no shell options) — add no `set` line.
+      and incrementing it per dispatch would corrupt its documented meaning. *(completed: the new
+      code never references that path)*
+- [x] Keep `skill-base.sh` Class C (sourced; sets no shell options) — add no `set` line.
+      *(completed: confirmed zero `^set ` lines in the file)*
 
 **Timing**: 1.5 hours
 
@@ -288,30 +302,34 @@ function, record it and decide explicitly rather than assuming one site suffices
 
 ---
 
-### Phase 4: Inject the freshness signal into the dispatch brief [NOT STARTED]
+### Phase 4: Inject the freshness signal into the dispatch brief [COMPLETED]
 
 **Goal**: Put the detected signal where the spawned agent will actually read it — inside the
 dispatch file — following the existing optional-block precedent, so a dispatch with nothing stale
 stays byte-identical to one built before this feature existed.
 
 **Tasks**:
-- [ ] Read `orchestrate-build-dispatch.sh`'s Stage 3.5 output section and the final block-writing
+- [x] Read `orchestrate-build-dispatch.sh`'s Stage 3.5 output section and the final block-writing
       brace group to confirm the established optional-block pattern (build a variable; emit only
-      when non-empty).
-- [ ] Add a Stage 3.5 output that computes the stale-extension list, reusing the helper added in
+      when non-empty). *(completed)*
+- [x] Add a Stage 3.5 output that computes the stale-extension list, reusing the helper added in
       Phase 3 rather than re-deriving the library call, and degrading to an empty string on every
-      failure mode.
-- [ ] Emit a `<deploy-freshness-context>` block into the dispatch file when the list is
+      failure mode. *(completed: deploy_freshness_context, reuses skill_deploy_freshness_stale_names)*
+- [x] Emit a `<deploy-freshness-context>` block into the dispatch file when the list is
       non-empty, placed alongside the other injected context blocks. Content: the stale extension
       names, an explicit statement that documented commands and instructions sourced from those
       extensions' deployed files may be out of date, the instruction to verify against the source
-      store before relying on such a command, and the redeploy remedy.
-- [ ] State inside the block that a fresh-looking file elsewhere in the same tree does NOT imply
+      store before relying on such a command, and the redeploy remedy. *(completed)*
+- [x] State inside the block that a fresh-looking file elsewhere in the same tree does NOT imply
       the tree is current — the partial-staleness trap that caused the observed incident.
-- [ ] Explicitly forbid, in the block text, hand-patching the deployed `.claude/**` file as a
-      remedy.
-- [ ] Confirm by inspection that a build with an empty list produces a dispatch file
-      byte-identical to the pre-change output.
+      *(completed)*
+- [x] Explicitly forbid, in the block text, hand-patching the deployed `.claude/**` file as a
+      remedy. *(completed)*
+- [x] Confirm by inspection that a build with an empty list produces a dispatch file
+      byte-identical to the pre-change output. *(completed: manual fixture test with a genuinely
+      stale extension vs. no `.claude-extensions.json` -- the only diff between the two generated
+      dispatch files, modulo dispatch_seq, is exactly the injected `<deploy-freshness-context>`
+      block)*
 
 **Timing**: 1.0 hours
 

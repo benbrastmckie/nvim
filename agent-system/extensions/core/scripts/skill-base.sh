@@ -79,6 +79,39 @@ if ! declare -F task_lookup_entry >/dev/null 2>&1; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
+# SHARED LIBRARY: scripts/lib/deploy-freshness-lib.sh (per-extension, path-scoped comparison of
+# a repo's deployed .claude/ tree against the source store it was regenerated from -- see that
+# file's own header for the STALE/FRESH/CANNOTVERIFY algorithm). Same two-candidate resolution
+# order as common.sh and task-lookup-lib.sh above. This is the PER-DISPATCH surface: the same
+# unchanged comparison check-deploy-freshness.sh already runs once per top-level command
+# (command-gate-in.sh's CHECKPOINT 1), re-fired here at the finer per-skill/agent-dispatch
+# granularity so a stale extension is named in the context of the dispatch that is actually
+# about to read from it, not only on the orchestrating session's own stderr. See
+# `context/patterns/regeneration-is-manual-only.md`'s "Detecting When You're Stale" section for
+# the full tier writeup.
+if [ -f "${SKILL_REPO_ROOT}/.claude/scripts/lib/deploy-freshness-lib.sh" ]; then
+  source "${SKILL_REPO_ROOT}/.claude/scripts/lib/deploy-freshness-lib.sh"
+elif [ -f "$(dirname "${BASH_SOURCE[0]}")/lib/deploy-freshness-lib.sh" ]; then
+  source "$(dirname "${BASH_SOURCE[0]}")/lib/deploy-freshness-lib.sh"
+fi
+
+# skill_deploy_freshness_stale_names: thin, always-safe wrapper around
+# deploy_freshness_stale_names for the per-dispatch call site below (and reused unchanged by
+# orchestrate-build-dispatch.sh's dispatch-brief injection, so the library call is derived in
+# exactly one place). Prints one stale extension name per line against $SKILL_REPO_ROOT, or
+# nothing at all on ANY failure mode: the library itself not resolvable (deploy-first stale-copy
+# hazard), no .claude-extensions.json, missing jq/git, or a genuinely clean tree. Never aborts,
+# always returns 0 -- mirroring check-deploy-freshness.sh's own always-exit-0 contract so a
+# caller under `set -e` is never at risk from this call.
+skill_deploy_freshness_stale_names() {
+  if ! declare -F deploy_freshness_stale_names >/dev/null 2>&1; then
+    return 0
+  fi
+  deploy_freshness_stale_names "$SKILL_REPO_ROOT" 2>/dev/null || true
+  return 0
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # EXTENSION HOOKS: Lifecycle hook invocation for loaded extensions.
 #
 # Extensions may declare hook scripts in manifest.json under a top-level
@@ -331,6 +364,24 @@ skill_preflight_update() {
   if [[ "$_skip_write" != "true" ]]; then
     bash .claude/scripts/update-task-status.sh preflight "$task_number" "$operation" "$session_id"
   fi
+
+  # PER-DISPATCH DEPLOY-FRESHNESS SURFACE (see the deploy-freshness-lib.sh sourcing block near
+  # the top of this file). Runs unconditionally -- independent of the archive-/clamp-skip guard
+  # above -- exactly once per skill/agent dispatch, at the moment a stale instruction file is
+  # actually about to be read. Non-blocking: a stale result is a loud stderr WARN, never a
+  # refusal, and every failure mode (library not resolvable, no .claude-extensions.json, missing
+  # jq/git, or a genuinely clean tree) degrades to silence. Deliberately does NOT touch
+  # specs/.freshness-warn-streak.json -- that counter is a consecutive-COMMAND-invocation count
+  # owned exclusively by check-deploy-freshness.sh; incrementing it per dispatch here would
+  # corrupt its documented meaning.
+  local _stale_extensions
+  _stale_extensions="$(skill_deploy_freshness_stale_names)"
+  if [[ -n "$_stale_extensions" ]]; then
+    echo "WARN: [skill-base] deployed .claude/ tree is STALE relative to the source store for extension(s): $(echo "$_stale_extensions" | tr '\n' ' ' | sed 's/ *$//')" >&2
+    echo "WARN: [skill-base] documented commands/instructions sourced from those extensions' deployed files may be out of date. A fresh-looking file elsewhere in the SAME tree does not mean the tree is current -- staleness here is per-extension, not whole-tree." >&2
+    echo "WARN: [skill-base] verify against the source store (agent-system/extensions/<name>/) before relying on a command from a stale extension's deployed copy. Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh' -- never hand-patch the deployed .claude/** file, which would mask this divergence instead of fixing it." >&2
+  fi
+
   # Extension hook: preflight (runs after status update) -- unconditional, exactly as before this
   # change, regardless of whether the write above ran or was clamp-/archive-skipped.
   skill_run_extension_hook "preflight" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
