@@ -193,24 +193,27 @@ block.
 
 ---
 
-### Phase 2: Reference territory.md from base-mode briefs in orchestrate-build-dispatch.sh [NOT STARTED]
+### Phase 2: Reference territory.md from base-mode briefs in orchestrate-build-dispatch.sh [COMPLETED]
 
 **Goal**: Pull in the territory contract whenever `$territory` is set, without routing base mode
 through the hard-mode contract machinery.
 
 **Tasks**:
-- [ ] Inside the existing `if [ -n "$territory" ]` block that renders `## Territory`, add a
+- [x] Inside the existing `if [ -n "$territory" ]` block that renders `## Territory`, add a
       pointer line ("Read context/contracts/territory.md (Cross-Task Territory section) before
       editing any file.") when the contract is not already listed by `core_contracts`. That
-      means not (`hard_mode = true` and `phase = implement`).
-- [ ] Add a header contract block next to the existing `--territory`/`--phase-number` comments.
+      means not (`hard_mode = true` and `phase = implement`). *(completed)*
+- [x] Add a header contract block next to the existing `--territory`/`--phase-number` comments.
       It must state that `--territory` is now populated in base mode by the cycle planner for
       multi-task cycles, what the payload contains, and that the section and pointer render
-      phase-agnostically.
-- [ ] Add a test group to `tests/test-orchestrate-build-dispatch.sh`, following Groups 5-6. With
+      phase-agnostically. *(completed)*
+- [x] Add a test group to `tests/test-orchestrate-build-dispatch.sh`, following Groups 5-6. With
       a base-mode `--territory` payload: `## Territory` is present, the `territory.md` pointer is
       present, and `<hard-mode-contracts>` is absent. Without `--territory`: the output is
-      byte-identical to before (no pointer).
+      byte-identical to before (no pointer). *(completed: Group 13, Cases A-D, plus hard-mode
+      research and hard-mode-implement no-duplicate-pointer cases; required inverting this test
+      file's SUT resolution to source-store-first, since it was previously validating the stale
+      deployed `.claude/scripts/` copy against this exact source-store edit)*
 
 **Timing**: 1 hour
 

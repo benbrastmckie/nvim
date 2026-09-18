@@ -49,6 +49,23 @@
 # same named-field read the caller's own heading-scan already performs). Optional and absent from
 # every base-mode call.
 #
+# --territory "<json>" (the task that carries concurrent-sibling territory into base-mode
+# dispatch briefs): NO LONGER hard-mode-only. `orchestrate-cycle-plan.sh`'s per-cycle planner now
+# populates this flag for EVERY dispatch a multi-task cycle builds, in EVERY mode, whenever the
+# cycle schedules more than one task this same cycle -- carrying a `concurrent_siblings` payload
+# (each sibling's task number, phase, declared `file_scope`, an explicit `file`/`coarse`/
+# `undeclared` granularity classification, and a generic re-read-before-editing/stage-your-own-
+# hunks/no-reverting-snapshot procedural note) alongside, or merged into, whatever hard-mode H1/H7
+# owned-files literal that same task may also carry. This script itself only ever renders whatever
+# JSON it is given, unchanged, under "## Territory" below -- it never computes or validates the
+# payload's shape. The one behavior this script DOES own: the `context/contracts/territory.md`
+# pointer is emitted directly inside the "## Territory" block for every case except
+# hard_mode=true+phase=implement (the one case where hard_contracts_block's own core_contracts
+# list already pulls that same contract in via `<hard-mode-contracts>`), so a base-mode dispatch --
+# which never renders `<hard-mode-contracts>` at all -- still gets pointed at the contract that
+# governs the JSON it just received. See `## Territory` below and
+# `context/contracts/territory.md`'s "Cross-Task Territory (Base Mode)" section.
+#
 # where <phase> is one of: research | plan | implement
 #
 # Caller-owned, never generated here (per this task's Non-Goals -- see the plan this script
@@ -444,6 +461,21 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "${territory}"
     echo '```'
     echo ""
+    # Base-mode / non-implement-hard-mode contract pointer (the task that carries
+    # concurrent-sibling territory into base-mode dispatch briefs): the ONLY case where the
+    # territory contract is already pulled in elsewhere is hard_mode=true AND phase=implement --
+    # the sole combination where hard_contracts_block's core_contracts list below conditionally
+    # appends territory.md (see the `[ -n "$territory" ] && core_contracts+=(territory.md)` line
+    # in the implement branch below). Every other case that reaches this block (base mode in any
+    # phase, or hard mode's research/plan phases) never sees <hard-mode-contracts> at all, so
+    # without this pointer a base-mode agent would receive the "## Territory" JSON with no
+    # instruction to read the contract governing it. This is a separate branch, never a reuse of
+    # core_contracts/<hard-mode-contracts> -- base mode must not be routed through hard mode's
+    # contract machinery just to receive this one pointer line.
+    if ! { [ "$hard_mode" = "true" ] && [ "$phase" = "implement" ]; }; then
+      echo "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file."
+      echo ""
+    fi
   fi
   if [ -n "$memory_context" ]; then
     echo "$memory_context"

@@ -7,8 +7,10 @@
 #
 # Structural model: test-skill-base-lifecycle.sh / test-validate-return-meta.sh (mktemp -d
 # WORKDIR with an EXIT-trap cleanup, deploy-tree-first / source-store-fallback candidate
-# resolution, pass()/fail()/info() helpers with integer counters, exit 0 all-pass / 1 any-fail /
-# 2 environment error).
+# resolution for TRIAGE_CLASSIFY/CONT_LIB, pass()/fail()/info() helpers with integer counters,
+# exit 0 all-pass / 1 any-fail / 2 environment error). The SUT itself uses an INVERTED
+# source-store-first resolution -- see the CANDIDATE-RESOLUTION INVERSION comment at its own
+# resolve_candidate call below for why.
 #
 # ISOLATION CONTRACT (never touches the real specs/ tree or real state.json): the SUT
 # (orchestrate-build-dispatch.sh) is invoked as a subprocess with SKILL_REPO_ROOT exported to a
@@ -52,9 +54,18 @@ resolve_candidate() {
   return 1
 }
 
+# CANDIDATE-RESOLUTION INVERSION for the SUT only (deliberate -- same rationale as
+# test-force-phases.sh's own documented inversion): this suite's Group 13 tests a PRE-DEPLOY
+# SOURCE-STORE EDIT to orchestrate-build-dispatch.sh itself (the task that carries
+# concurrent-sibling territory into base-mode dispatch briefs). Resolving deploy-tree-first here
+# would silently validate the OLD, undeployed-against `.claude/scripts/` copy and report a false
+# green on a source-store regression in the exact file under test. So, for the SUT only,
+# resolution is inverted: agent-system/extensions/core/ FIRST, `.claude/scripts/` fallback only if
+# the source-store copy is absent. TRIAGE_CLASSIFY and CONT_LIB below are NOT under test by this
+# task and keep the ordinary deploy-tree-first / source-store-fallback order.
 SUT="$(resolve_candidate "orchestrate-build-dispatch.sh" \
-  "$REPO_ROOT/.claude/scripts/orchestrate-build-dispatch.sh" \
-  "$SCRIPT_DIR/../orchestrate-build-dispatch.sh")" || exit 2
+  "$SCRIPT_DIR/../orchestrate-build-dispatch.sh" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-build-dispatch.sh")" || exit 2
 TRIAGE_CLASSIFY="$(resolve_candidate "orchestrate-triage-classify.sh" \
   "$REPO_ROOT/.claude/scripts/orchestrate-triage-classify.sh" \
   "$SCRIPT_DIR/../orchestrate-triage-classify.sh")" || exit 2
@@ -673,6 +684,69 @@ fi
 # appended after this one, and clean up the scratch source repo.
 rm -rf "$WORKDIR/g12-source-repo"
 build_fixture
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 13: base-mode --territory pointer (the task that carries concurrent-sibling territory
+# into base-mode dispatch briefs) -- ## Territory + the territory.md pointer render in base mode
+# (which never sees <hard-mode-contracts> at all), the pointer is likewise present for a hard-mode
+# NON-implement phase (research/plan), the pointer is ABSENT for the one case where the contract
+# is already pulled in elsewhere (hard_mode=true AND phase=implement), and a call with no
+# --territory at all stays byte-identical to a pre-this-feature build (no pointer, no section).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 13: base-mode --territory pointer to context/contracts/territory.md"
+
+sibling_territory_json='{"concurrent_siblings":[{"task_number":42,"phase":"implement","file_scope":null,"scope_declared":false,"scope_granularity":"undeclared","entries":[],"note":"No file_scope declared for this task -- it may touch any file in the repository."}],"concurrency_note":"test sibling note"}'
+
+# Case A: base mode (no --hard), --territory set -- ## Territory present, pointer present,
+# <hard-mode-contracts> absent (base mode never renders it, --hard was not passed at all).
+run_sut implement --seq 13a --clean --territory "$sibling_territory_json"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Territory" "Case A (base mode, --territory): territory section present"
+  assert_contains "$content" '"concurrent_siblings"' "Case A: sibling payload carried through opaque"
+  assert_contains "$content" "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file." "Case A: territory.md pointer present"
+  assert_not_contains "$content" "<hard-mode-contracts>" "Case A: <hard-mode-contracts> absent in base mode"
+else
+  fail "Case A: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case B: hard mode, research phase, --territory set -- hard_contracts_block IS rendered (research
+# has its own core_contracts list) but that list never includes territory.md (only the implement
+# branch conditionally appends it), so the pointer must still appear here.
+run_sut research --seq 13b --clean --hard --territory "$sibling_territory_json"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Territory" "Case B (hard mode, research, --territory): territory section present"
+  assert_contains "$content" "<hard-mode-contracts>" "Case B: hard-contracts block present (research's own core_contracts)"
+  assert_contains "$content" "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file." "Case B: pointer present (research's core_contracts never lists territory.md)"
+else
+  fail "Case B: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case C: hard mode, implement phase, --territory set -- the ONE case where territory.md is
+# already pulled in via core_contracts/<hard-mode-contracts>; the standalone pointer sentence must
+# be absent (never duplicated).
+run_sut implement --seq 13c --clean --hard --territory "$sibling_territory_json"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Territory" "Case C (hard mode, implement, --territory): territory section present"
+  assert_contains "$content" "<hard-mode-contracts>" "Case C: hard-contracts block present"
+  assert_contains "$content" "context/contracts/territory.md" "Case C: territory.md listed via core_contracts"
+  assert_not_contains "$content" "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file." "Case C: standalone pointer sentence absent (already covered by core_contracts)"
+else
+  fail "Case C: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case D (regression guard): no --territory at all -- byte-identical to Group 5's no-territory
+# case; neither the section nor the pointer ever appears.
+run_sut implement --seq 13d --clean
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "## Territory" "Case D (no --territory): territory section absent"
+  assert_not_contains "$content" "context/contracts/territory.md" "Case D (no --territory): no territory.md reference anywhere"
+else
+  fail "Case D: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
