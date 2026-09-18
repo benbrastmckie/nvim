@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 1,
+  "summary": "Traced all six orchestrate-cycle-plan.sh Move-1 mutation sites to their current implementations; confirmed the per-run cycle-budget amendment is already live; identified that orchestrate-loop-guard-init.sh's --flush-seq/--clear-pending and task-lock.sh's session-safe release already suffice for rollback with no new verbs needed, leaving one real gap (capturing the pre-dispatch status/last_updated/session_id triple into the pending_dispatch record) and one session-identity subtlety (lock release must use task-lock.sh check's own holder session, not the stray state.json session_id) for the plan phase to resolve.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md",
+      "summary": "Research report tracing all six dispatch mutation sites, confirming reusable existing verbs, identifying the pre-image capture gap, the lock session-identity subtlety, and documentation-placement findings."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}

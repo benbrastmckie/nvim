@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 215,
+  "session_id": "sess_1789751903_ddeac8_215",
+  "dispatch_seq": 1,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md",
+      "summary": "Research report tracing all six dispatch mutation sites, confirming reusable existing verbs (--flush-seq, --clear-pending, task-lock.sh release, state-write.sh), identifying the pre-image capture gap, the lock session-identity subtlety, and documentation-placement findings for docs/architecture/orchestrate-state-machine.md, context/standards/git-safety.md, and SKILL.md Move 1."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core, orchestrate-loop-guard-init.sh's --record-pending verb accepts an arbitrary JSON object verbatim (it does not construct the pending_dispatch shape itself) -- widening the pending_dispatch record's fields only ever requires a caller-side change in orchestrate-cycle-plan.sh, never a change to orchestrate-loop-guard-init.sh itself.",
+      "category": "PATTERN",
+      "source_artifact": "specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-loop-guard-init", "pending_dispatch", "record-pending", "orchestrate-cycle-plan"]
+    },
+    {
+      "content": "In agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh, task-lock.sh acquire/check/heartbeat always use the BARE session_id, but skill_preflight_update's session_id argument (and hence the value written into state.json) is SUFFIXED (${session_id}_${t}) for research/plan phases and bare only for implement. Any recovery/inspection tool that needs to release a lock or match a session recorded in state.json must not assume these two values are interchangeable -- read the lock's own holder session via `task-lock.sh check` instead of deriving it from state.json.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["task-lock.sh", "session_id", "bare-vs-suffixed", "orchestrate-cycle-plan", "lock release"]
+    },
+    {
+      "content": "In agent-system/extensions/core, .orchestrator-loop-guard, .lock/, .dispatch/, and .orchestrator-multi-state*.json are all covered by specs/.gitignore's managed runtime-file-patterns.sh block. A recovery/cleanup script touching only these plus specs/state.json and specs/TODO.md never needs to worry about git status leftovers beyond those last two tracked files.",
+      "category": "PATTERN",
+      "source_artifact": "specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gitignore", "orchestrator-loop-guard", "specs/.gitignore", "runtime-file-patterns"]
+    }
+  ],
+  "next_steps": "Run /plan 215 to create implementation plan"
+}
