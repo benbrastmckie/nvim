@@ -1,13 +1,20 @@
 # Territory Contract (H7)
 
-This contract implements H7: Territory Contracts for Parallel Dispatch. Its shipped consumer
-today is `skill-orchestrate`'s hard-mode single-phase dispatch (H1, the merged successor to the
-now-deleted standalone hard-mode engine), where it governs file ownership and commit coordination
-for the one agent currently working a phase, plus the STOP-and-report duty on any foreign work
-that agent observes. Parallel-wave dispatch is currently disabled (see
+This contract implements H7: Territory Contracts for Parallel Dispatch. It has two shipped
+consumers today. The first is `skill-orchestrate`'s hard-mode single-phase dispatch (H1, the
+merged successor to the now-deleted standalone hard-mode engine), where it governs file ownership
+and commit coordination for the one agent currently working a phase, plus the STOP-and-report duty
+on any foreign work that agent observes. Parallel-wave dispatch is currently disabled (see
 `skill-orchestrate/SKILL.md`'s "Parallel Wave Dispatch: DISABLED" section), but the contract
 remains fully applicable to multiple agents dispatched simultaneously to work on different phases
-of the same plan should parallel dispatch be re-enabled.
+of the same plan should parallel dispatch be re-enabled. The second consumer is the multi-task
+cycle planner (`orchestrate-cycle-plan.sh`), which populates a DIFFERENT fact under the same
+`--territory` flag and the same `## Territory` dispatch-file section in EVERY mode, not only hard
+mode: which OTHER tasks are scheduled for dispatch this same cycle, on this same shared working
+tree, and their declared file scope. See "Cross-Task Territory (Base Mode)" below for that half of
+the contract — it is a different fact from the within-task H7 territory above and the two are
+never conflated, though a single hard-mode implement dispatch can legitimately carry both at once
+(its own H1 `owned_files` literal merged with its `concurrent_siblings` list).
 
 ## File Territory
 
@@ -30,6 +37,106 @@ explicit file territory in its dispatch context:
 - Agent MUST NOT touch files in `forbidden_files`
 - If a needed file is not in territory, request a territory extension via handoff
   (do not unilaterally expand territory)
+
+## Cross-Task Territory (Base Mode)
+
+Unlike the within-task File Territory above (H7/H1, one plan's phases), this section covers a
+DIFFERENT fact: which OTHER, independent tasks are scheduled for dispatch this SAME
+`/orchestrate` cycle, on this SAME shared working tree, and what file scope each one declared.
+`orchestrate-cycle-plan.sh` (the multi-task cycle planner) builds this payload for EVERY dispatch
+a cycle builds, in EVERY mode — base mode included, not only hard mode — whenever the cycle
+schedules more than one task. This closes a gap where a dispatched agent had no way to know a
+concurrent sibling existed at all: two dispatches ran on one tree, one absorbed the other's
+uncommitted work on a shared commit, one ran `git-snapshot.sh` in its reverting default mode and
+discarded the other's in-flight edits, and one reported the other for a `file_scope` breach that
+had never happened. A dispatch file is the ONLY channel that reaches a running dispatch — a
+message sent mid-flight does not arrive until after the dispatch has already finished and
+committed (see `context/patterns/dispatch-report-not-termination.md`) — so any fact knowable at
+dispatch time belongs here, not in a later message.
+
+**Payload shape** (opaque JSON, passed via the same `--territory` flag and rendered under the
+same `## Territory` section `orchestrate-build-dispatch.sh` already renders for H7 above):
+
+```json
+{
+  "concurrent_siblings": [
+    {
+      "task_number": 542,
+      "phase": "implement",
+      "file_scope": ["FormalSystem/Metalogic/Soundness.lean"],
+      "scope_declared": true,
+      "scope_granularity": "file",
+      "entries": [
+        {"path": "FormalSystem/Metalogic/Soundness.lean", "granularity": "file"}
+      ],
+      "note": null
+    },
+    {
+      "task_number": 562,
+      "phase": "implement",
+      "file_scope": null,
+      "scope_declared": false,
+      "scope_granularity": "undeclared",
+      "entries": [],
+      "note": "No file_scope declared for this task -- it may touch any file in the repository."
+    }
+  ],
+  "concurrency_note": "..."
+}
+```
+
+When this same task is ALSO a hard-mode H1 implement candidate, `concurrent_siblings` is merged
+into that same JSON object alongside `owned_files`/`read_only_files`/`forbidden_files` rather than
+replacing them — hard mode gains this cross-task fact too, instead of it staying a base-mode-only
+feature under another name.
+
+**Granularity labels and the undeclared sentinel** — stated plainly, because this is the part a
+dispatched agent must act on, not just read: a `file_scope` entry is classified `file` (a literal
+path), `directory` (a trailing `/`, or an existing directory relative to the repo root), or `glob`
+(contains `*`, `?`, or `[`). A sibling's own roll-up `scope_granularity` is `file` only when EVERY
+entry is `file`; any directory or glob entry makes the whole sibling `coarse`; and a `file_scope`
+that is absent, `null`, or `[]` makes the sibling `undeclared` — rendered explicitly, NEVER
+dropped from the list, because an invisible sibling is exactly the failure mode this section
+exists to close. **A `coarse` or `undeclared` sibling may touch ANY file** — within its declared
+directory/glob for `coarse`, or anywhere in the repository at all for `undeclared` — and its
+`note` field says so. Do not read a narrow `file` classification on every OTHER sibling as proof
+your own files are safe from a `coarse` or `undeclared` one.
+
+**Agent obligations** when `concurrent_siblings` is non-empty, adapted from the H1
+`concurrency_note` above:
+1. Re-read a file immediately before editing it and again immediately before committing it, in
+   case a sibling has changed it since you last read it.
+2. Stage and commit only THIS task's own hunks — never a directory or glob `git add`, which would
+   sweep in a sibling's uncommitted work.
+3. Never run `git-snapshot.sh` in its reverting default mode; it can discard a sibling's in-flight
+   edits along with your own rollback target.
+4. Treat an unexpected build failure in a file outside your own `file_scope` as possibly a
+   sibling's in-flight edit, not necessarily your own regression.
+5. If you observe a foreign commit, a foreign uncommitted modification, or a running build you did
+   not start, STOP and report it — after checking `git log` to confirm the work is not your own —
+   rather than proceeding or dismissing it as noise (see
+   `context/patterns/dispatch-report-not-termination.md`).
+
+**Over-inclusion is intentional, not a bug**: a dispatch file is built before later same-cycle
+siblings acquire their own locks, so a sibling later deferred by the live loop may still be named
+here. The wording says "scheduled concurrently this cycle", never "running" — a named-but-deferred
+sibling is a false positive an agent can dismiss with one `git log` check; silently omitting a
+sibling that IS running is the failure mode this section exists to close.
+
+**Relationship to three separate, adjacent concerns — read this before assuming this section
+covers more than it does**:
+- **H7 within-task territory (above)**: a DIFFERENT fact (which files THIS task's own plan
+  assigns to THIS phase), not cross-task concurrency. The two can coexist on one dispatch (see the
+  merge note above) but are never conflated.
+- **The absent/coarse-`file_scope` ADMISSION posture**: whether an absent or coarse `file_scope`
+  should defer a task's admission into a concurrent batch in the first place is a decision owned
+  entirely by `orchestrate-batch-admit.sh`'s own admission gate, a separate piece of work. This
+  section only REPRESENTS the absence/coarseness so a dispatched agent can see and react to it —
+  it never decides whether that same task should have been admitted at all.
+- **Working-tree or build isolation** between concurrent dispatches (e.g. separate worktrees, or
+  serialized builds) is a distinct, unimplemented remedy owned elsewhere. This payload is a
+  necessary but partial mitigation: it informs agents sharing one tree, it does not give them
+  separate trees.
 
 ## Plan-Section Territory
 

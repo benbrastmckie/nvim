@@ -281,12 +281,12 @@ through the hard-mode contract machinery.
 
 ---
 
-### Phase 4: Contract documentation and final gate [NOT STARTED]
+### Phase 4: Contract documentation and final gate [COMPLETED]
 
 **Goal**: Document the cross-task payload in the territory contract and run the full gate.
 
 **Tasks**:
-- [ ] Add a `## Cross-Task Territory (Base Mode)` section to `territory.md`, mirroring the
+- [x] Add a `## Cross-Task Territory (Base Mode)` section to `territory.md`, mirroring the
       structure of `## File Territory`. It covers:
       - payload shape, with an example;
       - granularity labels and the undeclared sentinel, stated plainly: a coarse or undeclared
@@ -294,16 +294,29 @@ through the hard-mode contract machinery.
       - agent obligations (the Decision 5 procedure);
       - its relationship to H7 within-task territory, to the absent-file_scope admission posture
         owned by `orchestrate-batch-admit.sh`, and to the separate working-tree isolation
-        concern.
-- [ ] Update the contract's opening paragraph so it names both consumers (hard-mode H1 and the
+        concern. *(completed)*
+- [x] Update the contract's opening paragraph so it names both consumers (hard-mode H1 and the
       multi-task cycle planner in every mode). Keep the "Explicit removal note" intact.
-- [ ] Grep the source store for docs that claim territory is hard-mode-only (for example
+      *(completed)*
+- [x] Grep the source store for docs that claim territory is hard-mode-only (for example
       `grep -rn "territory" agent-system/extensions/core/skills/skill-orchestrate/
       agent-system/extensions/core/docs/`) and correct any stale claim found. Record findings;
-      no edits are required if nothing is stale.
-- [ ] Run the task-reference lint (`check-task-references.sh`) over the touched deliverables.
-- [ ] Full gate: `shellcheck` on both scripts and both test files, per
-      `context/standards/shell-strict-mode.md`, and both test suites in full.
+      no edits are required if nothing is stale. *(completed: the two named directories had zero
+      hits; a broader `grep -rln territory agent-system/extensions/core/` surfaced one genuinely
+      stale claim outside them --
+      `agent-system/extensions/core/agents/general-implementation-agent.md`'s Stage 3.6 Observation
+      Duty asserted "base mode sends none" for the `territory` delegation-context parameter, which
+      this task makes false for a multi-task cycle with a concurrent sibling. Fixed in place. No
+      other stale claim was found among the sixteen files referencing "territory".)*
+- [x] Run the task-reference lint (`check-task-references.sh`) over the touched deliverables.
+      *(completed: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh
+      agent-system/extensions/core` -- PASS, 0 unexempted occurrences)*
+- [x] Full gate: `shellcheck` on both scripts and both test files, per
+      `context/standards/shell-strict-mode.md`, and both test suites in full. *(completed: all
+      four files shellcheck clean at `-S warning` relative to the pre-existing baseline --
+      `orchestrate-cycle-plan.sh` carries the same two pre-existing SC2154 info/warning notices it
+      had before this task, unrelated to this task's edits; both test suites pass in full, 221 and
+      92 respectively)*
 
 **Timing**: 1 hour
 
@@ -324,16 +337,17 @@ grep task confirms or refutes this. Any additional stale doc it finds is fixed i
 
 ## Testing & Validation
 
-- [ ] `shellcheck` is clean on `orchestrate-cycle-plan.sh`, `orchestrate-build-dispatch.sh`, and
+- [x] `shellcheck` is clean on `orchestrate-cycle-plan.sh`, `orchestrate-build-dispatch.sh`, and
       both test files.
-- [ ] `tests/test-orchestrate-cycle-plan.sh` passes in full, including the new batch-shape group
-      (narrow + undeclared, coarse, single-task regression, hard-mode merge).
-- [ ] `tests/test-orchestrate-build-dispatch.sh` passes in full, including the new base-mode
-      pointer group.
-- [ ] A base-mode multi-task brief names its siblings, their scopes and granularity, and
+- [x] `tests/test-orchestrate-cycle-plan.sh` passes in full, including the new batch-shape group
+      (narrow + undeclared, coarse, single-task regression, hard-mode merge). *(221 passed, 0
+      failed)*
+- [x] `tests/test-orchestrate-build-dispatch.sh` passes in full, including the new base-mode
+      pointer group. *(92 passed, 0 failed)*
+- [x] A base-mode multi-task brief names its siblings, their scopes and granularity, and
       references `territory.md`.
-- [ ] A single-task brief is unchanged.
-- [ ] `check-task-references.sh` is clean on the touched files.
+- [x] A single-task brief is unchanged.
+- [x] `check-task-references.sh` is clean on the touched files.
 
 ## Artifacts & Outputs
 

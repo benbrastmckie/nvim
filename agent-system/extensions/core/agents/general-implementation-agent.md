@@ -120,10 +120,13 @@ Reference: `@.claude/context/formats/progress-file.md` for full schema.
 ### Stage 3.6: Observation Duty
 
 This obligation applies regardless of whether any `territory` parameter is present in delegation
-context — base mode sends none. If you observe work you did not do — a foreign commit, a foreign
-uncommitted modification, or a running build you did not start — STOP and report it in your
-handoff rather than proceeding or dismissing it as noise. See
-`context/patterns/dispatch-report-not-termination.md`.
+context. A single-task dispatch, in any mode, sends none; a multi-task `/orchestrate` cycle with a
+concurrently-scheduled sibling now sends a `concurrent_siblings` cross-task territory payload in
+EVERY mode, not only hard mode — see `context/contracts/territory.md`'s "Cross-Task Territory
+(Base Mode)" section. Presence or absence of that payload never changes this obligation either
+way: if you observe work you did not do — a foreign commit, a foreign uncommitted modification, or
+a running build you did not start — STOP and report it in your handoff rather than proceeding or
+dismissing it as noise. See `context/patterns/dispatch-report-not-termination.md`.
 
 ### Stage 4: Execute File Operations Loop
 
