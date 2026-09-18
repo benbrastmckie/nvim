@@ -60,7 +60,21 @@
 
 Verified: current live state of `agent-system/extensions/core/context/config/orchestrator-context-budget.json`, live byte counts of the two tracked per-file targets, the eager-load total via `measure-eager-context.sh --check`, `verify-deploy.sh` Gate 20's exact comparison logic (read directly, lines 880-989), `deploy-headless.sh`'s exit-code contract, and `command-gate-out.sh`'s consumption of that contract. Git history since 2026-09-08/09 was inspected via `git log`/`git show` on the specific paths named in the task description plus the two ceiling-tracked files.
 
-Not independently re-verified in this pass: a full `verify-deploy.sh` (all 20 gates) run and a full `test-verify-deploy-context-budget.sh` run were both started but did not complete within this research session's time budget (the full-repo 20-gate scan takes several minutes per invocation, compounded by concurrent sibling tasks in this same `/orchestrate` cycle running their own verify/redeploy activity on the same tree — observed via `ps aux`, additional `verify-deploy.sh` and fixture-based `verify-deploy.sh --skip-slow` processes not started by this dispatch). The Gate 20 sub-check A/B/C outcomes reported above were instead derived by directly re-implementing the gate's own comparison logic (same commands: `measure-eager-context.sh --check`, `wc -c` against `.files[path].ceiling_bytes`), which is exact and sufficient for this research report's purpose but should be confirmed with a full gate run before the task is marked complete.
+A full `verify-deploy.sh` (all 34 checks across 20 gates) run was started early in this session and initially did not complete within the session's active time budget (compounded by concurrent sibling tasks in this same `/orchestrate` cycle running their own verify/redeploy activity on the same tree — observed via `ps aux`, additional `verify-deploy.sh` and fixture-based `verify-deploy.sh --skip-slow` processes not started by this dispatch). It finished in the background after the Gate 20 sub-check A/B/C outcomes below had already been derived by directly re-implementing the gate's own comparison logic (same commands: `measure-eager-context.sh --check`, `wc -c` against `.files[path].ceiling_bytes`); the completed run's actual Gate 20 output **exactly matches** that direct derivation:
+
+```
+20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
+  [PASS] measure-eager-context.sh --check: no volatile-file hits
+  [PASS] eager-load total (65889 B) within baseline (65950 B)
+  [WARN] commands/orchestrate.md (19967 B) exceeds its configured ceiling (8000 B)
+  [WARN] skills/skill-orchestrate/SKILL.md (21318 B) exceeds its configured ceiling (20000 B)
+
+[verify-deploy] FAIL -- 1 of 34 check(s) failed
+```
+
+Note the overall run reports 1 failure among 34 total checks, but Gate 20 itself contributed 0 failures (2 PASS, 2 WARN — WARN never increments `FAILURES`, see Findings below). The one failing check therefore belongs to a different, unrelated gate (1-19) and is out of scope for this task; it was not investigated further here since it does not affect Gate 20's own state.
+
+`test-verify-deploy-context-budget.sh` was also started but was killed by its own 300s external `timeout` wrapper before completing, again due to the same concurrent-sibling contention (its fixture-based `verify-deploy.sh --skip-slow --findings --quiet` sub-invocations were each independently slow). Its actual pass/fail result on the "at most 1 pre-existing gate20 WARN" baseline assertion (see Findings below) was **not** captured in this session and remains an open confirmation item for the next phase.
 
 ## Findings
 
@@ -159,12 +173,13 @@ dependencies or third-party documentation.
   legitimately and with a recorded justification before this dispatch began its work. Verified
   this directly against the live config file and a live `measure-eager-context.sh --check` run
   rather than assuming the task description's snapshot was still accurate.
-- Did not wait for the full `verify-deploy.sh` / `test-verify-deploy-context-budget.sh` runs to
-  complete (still running in the background at report-writing time, slowed by concurrent sibling
-  task activity on the same working tree per this cycle's territory note) — instead derived the
-  same sub-check A/B/C outcomes by directly re-running the same underlying commands the gate
-  itself uses. Recorded this as an open confirmation item for the next phase rather than blocking
-  the report on it.
+- Did not block on the full `verify-deploy.sh` / `test-verify-deploy-context-budget.sh` runs
+  (both slowed by concurrent sibling task activity on the same working tree per this cycle's
+  territory note) — instead derived the same sub-check A/B/C outcomes by directly re-running the
+  same underlying commands the gate itself uses, then let the full runs finish in the background.
+  The full `verify-deploy.sh` run has since completed and its Gate 20 output exactly matches the
+  direct derivation (see Context & Scope); `test-verify-deploy-context-budget.sh` was killed by
+  its own 300s timeout before finishing and remains an open confirmation item for the next phase.
 
 ## Risks & Mitigations
 

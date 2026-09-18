@@ -1,15 +1,15 @@
 {
-  "status": "researched",
-  "dispatch_seq": 2,
-  "summary": "Confirmed the task's original premise (Gate 20 sub-check B red) is already resolved by an earlier, unrelated task's deliberate baseline bump; discovered a NEW post-dating regression (SKILL.md now over its own per-file ceiling) and confirmed deploy-headless.sh's exit-3 handling needs no code change.",
+  "status": "planned",
+  "dispatch_seq": 5,
+  "summary": "Plan written: 5 phases, 3.5h. Planning-time verify-deploy --skip-slow already rc 0 (deploy-headless exits 0 today); remaining defect is Gate 20 sub-check C WARNs on SKILL.md and commands/orchestrate.md. commands/orchestrate.md edits are conditional on sibling 228 not implementing it.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md",
-      "summary": "Research findings: sub-check B now passes (65889 B measured vs 65950 B baseline); SKILL.md newly exceeds its 20000 B ceiling (21318 B) due to an unrelated concurrent commit; commands/orchestrate.md remains over ceiling and worse than recorded; deploy-headless.sh's exit-3 (landed_verify_red) semantics are already correctly consumed by command-gate-out.sh, no code change needed."
+      "type": "plan",
+      "path": "specs/235_rebaseline_or_reduce_eager_context_budget/plans/01_rebaseline-eager-context-budget.md",
+      "summary": "5-phase plan resolving Gate 20 per-file ceiling WARNs, refreshing budget config, and verifying acceptance gates."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 5,
   "blockers": []
 }
