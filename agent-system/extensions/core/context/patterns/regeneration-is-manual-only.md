@@ -414,6 +414,91 @@ distinction. This escalation remains **exit-0 and non-blocking** -- tier 2 alrea
 blocking backstop for this repo's own commits, and a cross-repo blocking mechanism would have no
 enforcement lever anyway (this repo cannot compel a consumer's own commands to run).
 
+### Tier 1, refined: the per-dispatch surface and dispatch-brief injection
+
+**The gap this closes.** Tier 1 above already detects staleness non-blockingly, but only once
+per top-level command (`command-gate-in.sh`'s CHECKPOINT 1) and only onto the orchestrating
+session's own stderr. A stale extension can therefore be WARNed about at the top of a session
+and then, several dispatches later, a spawned agent still reads the stale documented behavior of
+that extension's deployed files -- the WARN never reached the context that actually acts on the
+stale content. This is a placement/granularity gap in an existing, correctly-designed detector,
+not a missing detector: no new comparison algorithm was needed, and none was added.
+
+**The fix: re-fire the SAME comparison at per-dispatch granularity.** `core/scripts/skill-base.sh`
+sources `scripts/lib/deploy-freshness-lib.sh` (the same two-candidate resolution order it already
+uses for `common.sh` and `task-lookup-lib.sh`) and exposes a thin wrapper,
+`skill_deploy_freshness_stale_names`, around that library's existing `deploy_freshness_stale_names`
+function. `skill_preflight_update` -- the function every research/plan/implement dispatch calls
+once per skill/agent dispatch, confirmed live at `orchestrate-cycle-plan.sh`'s per-task
+live-dispatch loop and at every direct (non-orchestrate) skill call site that reaches
+`skill_preflight_update` -- calls this wrapper unconditionally and, when the result is
+non-empty, emits a loud, named WARN block to stderr: the stale extension names, the statement
+that a fresh-looking file elsewhere in the SAME deployed tree does not mean the tree is current
+(the partial-staleness trap -- see below), and the `deploy-headless.sh` redeploy remedy, never a
+hand-patch instruction. Every failure mode -- library not resolvable at either candidate path, no
+`.claude-extensions.json`, missing `jq`/`git`, or a genuinely fresh tree -- degrades to silence
+and `skill_preflight_update` always returns 0, exactly mirroring `check-deploy-freshness.sh`'s
+own always-exit-0 contract. This call site deliberately never touches
+`specs/.freshness-warn-streak.json`: that counter is a consecutive-COMMAND-invocation count owned
+exclusively by `check-deploy-freshness.sh`, and a per-dispatch call site incrementing it would
+corrupt its documented meaning.
+
+**The orchestrate-mode enhancement layered on top: dispatch-brief injection.** Because a WARN on
+the orchestrating session's own stderr still never reaches a SPAWNED agent's own context,
+`orchestrate-build-dispatch.sh`'s Stage 3.5 (the same stage that already computes
+`memory_context`, `lit_context`, and `hard_contracts_block`) reuses the identical
+`skill_deploy_freshness_stale_names` call -- never re-deriving the library call a second time --
+and, when the list is non-empty, emits a `<deploy-freshness-context>` block into the generated
+dispatch file, following the exact same "build a variable, emit only when non-empty" pattern
+those other blocks already use. A dispatch built when nothing is stale is byte-identical to one
+built before this feature existed. This is a orchestrate-mode-ONLY enhancement on top of the
+per-dispatch base layer above, not a replacement for it: a directly-invoked skill run (outside
+`/orchestrate`) still gets the `skill_preflight_update` stderr WARN, but never the injected
+dispatch-file block, since only `orchestrate-build-dispatch.sh` builds a dispatch file at all.
+
+**The partial-staleness trap, named explicitly in both surfaces.** The incident motivating this
+refinement involved a deployed tree where one file (`git-snapshot.sh`) was byte-identical to
+source while a different file in the SAME tree
+(`lean-implementation-agent.md`) was months stale -- an operator who spot-checked the first file
+correctly concluded "this repo's deploy is fresh" and, from that true premise about ONE file,
+wrongly generalized to the whole tree. Both the stderr WARN and the injected dispatch-file block
+say this in words: a fresh-looking file elsewhere in the same deployed tree does not imply the
+tree is current, because staleness here is computed **per extension**, not per whole-tree.
+
+**Rejected alternatives, and why.**
+- **A new whole-tree content-hash or manifest-digest fingerprint.** Rejected as redundant: the
+  existing per-extension, path-scoped `source_git_head` comparison (`git log -1 --format=%H --
+  <source_dir>`) already operates at extension-directory granularity, so a single changed file
+  inside an otherwise-untouched extension already moves the recomputed revision for that
+  extension. A dedicated regression fixture (a two-file extension with only one file changed,
+  alongside a second, wholly-untouched extension in the same consumer tree) pins this directly:
+  the changed-file extension reads `STALE`, the untouched one reads `FRESH`, and
+  `deploy_freshness_stale_names` lists exactly the former. Building a second whole-tree
+  fingerprint mechanism would duplicate detection work the library already does, for no
+  additional coverage.
+- **Hard-blocking or refusing a dispatch on a `STALE` result.** Rejected for now: this would
+  recreate the same class of cost/unactionability problem the tier-3 fleet walk's removal from
+  the blocking path was meant to solve, and would additionally require preserving the
+  `STALE`-vs-`CANNOTVERIFY` distinction carefully at a blocking call site (tier 2's postflight
+  gate already does this correctly for this repo's own commits; a preflight block would need the
+  same care). Recorded as a deliberately-rejected-for-now alternative, not implemented. If a
+  future need justifies it, tier 2's own gate is the nearer precedent to extend, not a new
+  mechanism at this call site.
+- **Restoring the tier-3 fleet-wide walk to a blocking path.** Explicitly out of scope; the
+  opt-in `--consumer-report` design (see above) stays exactly as it is. The per-dispatch surface
+  in this section answers a different question ("is THIS repo's OWN deploy stale, at the moment a
+  dispatch is about to read from it") than tier 3 ("which OTHER repos in the known-consumer
+  fleet have fallen behind"), and the two are not substitutes for each other.
+
+**Why this is not just another warning nobody acts on.** The tier-1 consecutive-ignore
+escalation above remains the sanctioned model for a louder default if the per-dispatch WARN
+itself turns out to be insufficiently actionable over time; no second, competing escalation
+mechanism was introduced here. The distinguishing feature of this refinement is placement, not
+volume: the signal now lands inside the SAME context the dispatched agent reads to decide what
+to do next, at the moment that context is being assembled -- which is the specific gap that
+allowed a previously-fixed, previously-closed defect to remain live and misleading in a
+consumer's deployed tree indefinitely.
+
 ## Merge Semantics That Regeneration Cannot Fix
 
 Two deploy behaviors are structural and survive any number of regenerations:

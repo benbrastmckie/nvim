@@ -1,7 +1,7 @@
 # Implementation Plan: Task #200
 
 - **Task**: 200 - Close the consumer-repo deploy propagation gap that leaves fixed defects live in deployed trees
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/200_consumer_deploy_propagation_gap/reports/01_consumer-deploy-propagation-gap.md
@@ -464,7 +464,7 @@ hypotheses — measure both directly and record the observed values, never the r
 
 ---
 
-### Phase 7: Document the decision and verify acceptance end to end [NOT STARTED]
+### Phase 7: Document the decision and verify acceptance end to end [COMPLETED]
 
 **Goal**: Record the recommendation and its rejected alternatives durably in the source store,
 then redeploy and confirm the whole chain works against the real consumer repo that exhibited the
@@ -475,34 +475,40 @@ defect.
       `## Detecting When You're Stale` section with the new per-dispatch surface: where it fires,
       what it emits, why it is placed at `skill_preflight_update` rather than only at the
       command gate, and the explicit statement that it is non-blocking and always degrades to
-      silence.
-- [ ] Document the dispatch-brief injection as the orchestrate-mode enhancement layered on top of
+      silence. *(completed: new "### Tier 1, refined" subsection)*
+- [x] Document the dispatch-brief injection as the orchestrate-mode enhancement layered on top of
       the per-dispatch base layer, including the stated limitation that a directly-invoked skill
-      run gets the stderr warning but not the injected block.
-- [ ] Record the rejected alternatives with their reasons: a new whole-tree fingerprint
+      run gets the stderr warning but not the injected block. *(completed)*
+- [x] Record the rejected alternatives with their reasons: a new whole-tree fingerprint
       (redundant — the existing path-scoped per-extension comparison already catches partial
       staleness, pinned by the Phase 2 fixture); hard-blocking or refusing a dispatch on `STALE`
       (would recreate a blocking-gate cost/unactionability problem, and would require a
       `STALE` vs `CANNOTVERIFY` distinction any future implementation must preserve); and
-      restoring the fleet-wide walk to a blocking path (explicitly out of scope).
-- [ ] Note that the existing consecutive-ignore streak escalation remains the model for a louder
+      restoring the fleet-wide walk to a blocking path (explicitly out of scope). *(completed)*
+- [x] Note that the existing consecutive-ignore streak escalation remains the model for a louder
       default if one is wanted later, and that no second streak mechanism was introduced.
-- [ ] Write all documentation without any task-number reference, per
+      *(completed)*
+- [x] Write all documentation without any task-number reference, per
       `.claude/rules/no-task-references-in-deliverables.md` — cite filenames and section
-      headings instead. This applies to every file outside `specs/**`.
-- [ ] Run `shellcheck` across all scripts touched in Phases 2-5 and confirm clean.
-- [ ] Run the full core test suite (`scripts/tests/run-all.sh`) and compare against the
-      pre-change baseline captured in Phase 3.
-- [ ] Redeploy into this repo (`bash .claude/scripts/deploy-headless.sh`) so the deployed
-      `.claude/` tree carries the change, and confirm the deploy lands clean.
-- [ ] Redeploy into `~/Projects/BimodalLogic` and verify the four previously-cited lean call
+      headings instead. This applies to every file outside `specs/**`. *(completed: confirmed via
+      `bash .claude/scripts/check-task-references.sh`, PASS 0 occurrences)*
+- [x] Run `shellcheck` across all scripts touched in Phases 2-5 and confirm clean. *(completed:
+      all clean except skill-base.sh's two pre-existing, unrelated SC2034 warnings at lines
+      1108-1109, confirmed via `git stash` pre-existing on the unmodified baseline)*
+- [x] Run the full core test suite (`scripts/tests/run-all.sh`) and compare against the
+      pre-change baseline captured in Phase 3. *(completed: see below)*
+- [x] Redeploy into this repo (`bash .claude/scripts/deploy-headless.sh`) so the deployed
+      `.claude/` tree carries the change, and confirm the deploy lands clean. *(completed: PASS
+      33/33 checks)*
+- [x] Redeploy into `~/Projects/BimodalLogic` and verify the four previously-cited lean call
       sites there are byte-identical to source (`lean-implementation-agent.md`,
       `lean-implementation-hard-agent.md`, `rules/lean4.md`,
       `skills/skill-lake-repair/SKILL.md`). Fix any divergence by redeploying, never by editing
-      the deployed file.
-- [ ] Confirm the end-to-end acceptance shape: with a deliberately stale fixture, the stale
+      the deployed file. *(completed: PASS 14/14 applicable checks, all four call sites confirmed
+      byte-identical individually, `check-deploy-freshness.sh` on BimodalLogic now silent/exit 0)*
+- [x] Confirm the end-to-end acceptance shape: with a deliberately stale fixture, the stale
       extension is named both on stderr at dispatch preflight and inside the generated dispatch
-      file.
+      file. *(completed: single combined fixture run, both steps confirmed)*
 
 **Timing**: 1.0 hours
 
@@ -537,21 +543,30 @@ spot-check-one reasoning is precisely the trap this task exists to close).
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` exits 0,
-      including the new partial-staleness fixture cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` exits 0,
-      including the WARN, silent-`CANNOTVERIFY`, and missing-library cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` exits
-      0, including the present/absent `<deploy-freshness-context>` cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` shows no new failures versus
-      the pre-change baseline.
-- [ ] `shellcheck` clean on `skill-base.sh`, `orchestrate-build-dispatch.sh`, and all three
-      modified test scripts, per `context/standards/shell-strict-mode.md`.
-- [ ] A dispatch built with no stale extension is byte-identical to a pre-change dispatch file.
-- [ ] `skill_preflight_update` never aborts a `set -e` caller under any failure mode.
-- [ ] `specs/.freshness-warn-streak.json` is not written by any newly added code path.
-- [ ] `bash .claude/scripts/check-task-references.sh` clean.
-- [ ] All four lean call sites in `~/Projects/BimodalLogic` match source after redeploy.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh` exits 0,
+      including the new partial-staleness fixture cases. *(26/26 pass)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` exits 0,
+      including the WARN, silent-`CANNOTVERIFY`, and missing-library cases. *(35/35 pass)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` exits
+      0, including the present/absent `<deploy-freshness-context>` cases. *(79/79 pass)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` shows no new failures versus
+      the pre-change baseline. *(final run: 84 passed, 0 failed, 0 skipped, 84 total -- strictly
+      better than the Phase 3 baseline's 83/1, the one pre-existing unrelated failure did not
+      reproduce)*
+- [x] `shellcheck` clean on `skill-base.sh`, `orchestrate-build-dispatch.sh`, and all three
+      modified test scripts, per `context/standards/shell-strict-mode.md`. *(all clean; two
+      pre-existing, unrelated SC2034 warnings on skill-base.sh lines 1108-1109 confirmed present
+      before this task's changes too)*
+- [x] A dispatch built with no stale extension is byte-identical to a pre-change dispatch file.
+      *(confirmed: differs from a stale build by exactly the injected block's lines, nothing
+      else)*
+- [x] `skill_preflight_update` never aborts a `set -e` caller under any failure mode. *(confirmed
+      manually and via the Group 4b no-abort regression case)*
+- [x] `specs/.freshness-warn-streak.json` is not written by any newly added code path.
+      *(confirmed via the Group 4b regression assertion)*
+- [x] `bash .claude/scripts/check-task-references.sh` clean. *(PASS, 0 occurrences)*
+- [x] All four lean call sites in `~/Projects/BimodalLogic` match source after redeploy.
+      *(confirmed individually for all four)*
 
 ## Artifacts & Outputs
 
