@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Author external-process-wait.md",
+  "started_at": "2026-09-18T00:00:00Z",
+  "last_updated": "2026-09-18T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read checkpoint-before-overflow.md and dispatch-report-not-termination.md for conventions", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write external-process-wait.md: header, defect, six rules, generalization, local-vs-remote, related docs", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/external-process-wait.md"]},
+    {"id": 3, "description": "Verify content and link targets", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

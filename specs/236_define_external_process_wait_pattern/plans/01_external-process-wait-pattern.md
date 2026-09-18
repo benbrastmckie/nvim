@@ -1,7 +1,7 @@
 # Implementation Plan: Task #236
 
 - **Task**: 236 - Define external process wait pattern
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (task 172 / `bounded-build-waiter.md` is a cross-reference, not a dependency)
 - **Research Inputs**: specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md
@@ -82,17 +82,17 @@ No roadmap context provided for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author external-process-wait.md [NOT STARTED]
+### Phase 1: Author external-process-wait.md [COMPLETED]
 
 **Goal**: Create the canonical pattern file with all required content.
 
 **Tasks**:
-- [ ] Read `checkpoint-before-overflow.md` for the header block and closing-section conventions,
+- [x] Read `checkpoint-before-overflow.md` for the header block and closing-section conventions,
   and `dispatch-report-not-termination.md` for the "Tear Down Watchers/Monitors Before Reporting"
-  section heading to cite
-- [ ] Write the header: `**Created**: 2026-09-18`, `**Purpose**`, `**Audience**` (any dispatched
-  subagent blocked on a long external process, phrased generally), `**Related**`
-- [ ] "The Defect" section: state the four-part incident once and concretely:
+  section heading to cite *(completed)*
+- [x] Write the header: `**Created**: 2026-09-18`, `**Purpose**`, `**Audience**` (any dispatched
+  subagent blocked on a long external process, phrased generally), `**Related**` *(completed)*
+- [x] "The Defect" section: state the four-part incident once and concretely: *(completed)*
   1. The harness blocks a foreground `sleep`.
   2. An unbounded `gh run watch` exceeds the 600s Bash-tool timeout and is auto-backgrounded.
   3. A Monitor loop that echoes on every 20-90s poll wakes the agent on every unchanged status.
@@ -100,7 +100,7 @@ Phases within the same wave can execute in parallel.
      no-op Bash calls and status-only text turns until it is stopped manually.
 
   Do not cite any task number.
-- [ ] "Required Rules" section, one subsection per rule:
+- [x] "Required Rules" section, one subsection per rule: *(completed)*
   1. Bounded blocking wait. Give the exact command
      `timeout 540 gh run watch ID --interval 60 --exit-status >/dev/null; gh run view ID --json status,conclusion`,
      issued with the Bash tool `timeout` set to 600000, and repeated only while the status is
@@ -118,19 +118,20 @@ Phases within the same wave can execute in parallel.
      resume command, and what remains, then return `status: "partial"`. Point at
      `../formats/handoff-artifact.md` and the orchestrator handoff contract instead of inventing
      a schema, and note that `anti-stop-patterns.md` forbids `completed`.
-- [ ] "Generalizing Beyond GitHub Actions" paragraph: any remote job that is polled through a
+- [x] "Generalizing Beyond GitHub Actions" paragraph: any remote job that is polled through a
   CLI or API status call and has no local PID to `kill -0` uses the same shape: a bounded inner
-  timeout below the tool ceiling, a status re-check, and a total cap.
-- [ ] "Local vs. Remote Waits" paragraph with a forward pointer to `bounded-build-waiter.md` by
+  timeout below the tool ceiling, a status re-check, and a total cap. *(completed)*
+- [x] "Local vs. Remote Waits" paragraph with a forward pointer to `bounded-build-waiter.md` by
   filename. That file covers the local detached-build case (writer-liveness via `kill -0`, one
   waiter per log); this file covers the case with no local writer. Note that the reciprocal
-  pointer lands with that file.
-- [ ] "Related Documentation" bullets: `dispatch-report-not-termination.md`,
+  pointer lands with that file. *(completed)*
+- [x] "Related Documentation" bullets: `dispatch-report-not-termination.md`,
   `../contracts/wrap-up.md` (the teardown-before-handoff rule, cited rather than restated),
   `checkpoint-before-overflow.md`, `anti-stop-patterns.md`, `../formats/handoff-artifact.md`,
-  `bounded-build-waiter.md`
-- [ ] Confirm that the relative link targets exist, except `bounded-build-waiter.md`, which is a
-  deliberate forward reference
+  `bounded-build-waiter.md` *(completed)*
+- [x] Confirm that the relative link targets exist, except `bounded-build-waiter.md`, which is a
+  deliberate forward reference *(completed: verified all five non-forward-reference targets exist
+  under context/patterns/, context/contracts/, and context/formats/)*
 
 **Timing**: 1.25 hours
 

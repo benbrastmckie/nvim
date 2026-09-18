@@ -1,19 +1,11 @@
 {
-  "status": "planned",
-  "summary": "2-phase plan (2h): author context/patterns/external-process-wait.md with incident + six rules; add on-demand index-entries.json entry and one-line anti-stop-patterns.md pointer.",
-  "artifacts": [
-    {"type": "plan", "path": "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md", "summary": "2-phase plan: author external-process-wait.md pattern, then index entry + anti-stop pointer + validation."}
-  ],
-  "next_steps": "Run /implement 236 to execute the plan",
-  "phase_count": 2,
-  "estimated_hours": 2,
-  "dependency_waves": 2,
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 9,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1789772261_c29003_236",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 6
+    "session_id": "sess_1789772261_c29003",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

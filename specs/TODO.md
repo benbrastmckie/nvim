@@ -41,9 +41,9 @@ next_project_number: 240
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-228 [PLANNED] — Establish batch orchestration as the documented default, with...
-235 [PLANNED] — Re-baseline or reduce the eager-context budget:...
-236 [PLANNED] — Define a canonical "waiting on external processes" pattern...
+228 [IMPLEMENTING] — Establish batch orchestration as the documented default, with...
+235 [IMPLEMENTING] — Re-baseline or reduce the eager-context budget:...
+236 [IMPLEMENTING] — Define a canonical "waiting on external processes" pattern...
   └─ 237 [NOT STARTED] — Wire the external-process wait pattern into the general...
   └─ 238 [NOT STARTED] — Carry an external-process wait-discipline pointer in every...
   └─ 239 [NOT STARTED] — Add an advisory PostToolUse hook that detects repeated no-op...
@@ -141,7 +141,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 236. Define a canonical "waiting on external processes" pattern for dispatched subagents
 - **Effort**: 1.5 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -170,7 +170,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 235. Rebaseline or reduce eager context budget
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -182,7 +182,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 228. Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

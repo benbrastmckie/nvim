@@ -69,12 +69,12 @@
     {
       "project_number": 236,
       "project_name": "define_external_process_wait_pattern",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Define a canonical \"waiting on external processes\" pattern for dispatched subagents",
       "created": "2026-09-18T19:00:37Z",
-      "last_updated": "2026-09-18T23:28:09Z",
+      "last_updated": "2026-09-18T23:28:26Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/patterns/external-process-wait.md",
@@ -101,12 +101,12 @@
     {
       "project_number": 235,
       "project_name": "rebaseline_or_reduce_eager_context_budget",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Re-baseline or reduce the eager-context budget: verify-deploy.sh Gate 20 sub-check B is red on every deploy because the live eager-load TOTAL (65198 B, measured 2026-09-18 via REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check) exceeds eager_load.baseline_bytes=64450 in agent-system/extensions/core/context/config/orchestrator-context-budget.json (measured_bytes 64394 on 2026-09-09, so +804 B of drift in nine days). Current channel breakdown: parent_chain 3815 B, predicted assembled .claude/CLAUDE.md 32862 B, eager rules 28521 B (8 rules files; git-workflow.md alone is 8828 B). Every deploy-headless.sh run now exits 3 (RESULT=landed_verify_red) even when the deploy itself landed cleanly, which trips the completion-deploy gate in orchestrate postflight and was independently flagged by three concurrent implementation dispatches on 2026-09-17/18 as pre-existing and unrelated to their own edits. WORK: (1) attribute the +804 B to specific merge-sources/**, rules/**, and CLAUDE.md commits since 2026-09-09 (git log -p on those paths, diffed against the per-channel numbers); (2) decide per the config note's own rule -- baseline_bytes is a deliberately recorded ceiling that must never be silently re-derived -- whether to trim the growth back under 64450 (preferred where the growth is restatement or prose that belongs in lazily-loaded context files) or to move the baseline with a reviewed justification recorded in the config note and measured_at/measured_bytes updated; (3) separately address the sub-check C per-file ceiling: commands/orchestrate.md is roughly 2x its configured ceiling_bytes and ORCHESTRATOR_BUDGET_GATE_MODE stays in warn mode until it is under ceiling -- either shrink the command file (its flag table and forced-phase prose duplicate merge-sources/claudemd.md and docs/architecture/orchestrate-state-machine.md) or record why the ceiling should move; (4) make deploy-headless.sh's exit status distinguish a landed-but-budget-red deploy from a failed deploy in a way the postflight completion-deploy gate does not misread as stale, OR confirm the gate already ignores exit 3 and document that. ACCEPTANCE: deploy-headless.sh exits 0 on an unchanged tree; verify-deploy.sh Gate 20 sub-checks B and C both pass; the baseline value in orchestrator-context-budget.json either is unchanged or carries a dated justification; scripts/tests/test-verify-deploy-context-budget.sh still passes; shellcheck clean per context/standards/shell-strict-mode.md for any shell file touched. EDIT TARGET: agent-system/extensions/core/** (source store), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**",
       "topic": "core-agent-system",
       "created": "2026-09-18T04:32:06Z",
-      "last_updated": "2026-09-18T23:28:04Z",
+      "last_updated": "2026-09-18T23:28:23Z",
       "session_id": "sess_1789772261_c29003",
       "artifacts": [
         {
@@ -1028,12 +1028,12 @@
     {
       "project_number": 228,
       "project_name": "establish_batch_orchestration_as_default",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule",
       "created": "2026-09-17T20:27:14Z",
-      "last_updated": "2026-09-18T23:27:59Z",
+      "last_updated": "2026-09-18T23:28:20Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/patterns/multi-task-operations.md",
