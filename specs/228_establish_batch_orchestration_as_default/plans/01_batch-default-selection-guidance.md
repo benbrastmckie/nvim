@@ -160,7 +160,7 @@ after editing; a diff touching any other file in this phase is a scope error.
 
 ---
 
-### Phase 2: Pointer edits and multi-task-operations.md Overview reframe [IN PROGRESS]
+### Phase 2: Pointer edits and multi-task-operations.md Overview reframe [COMPLETED]
 
 **Goal**: Point the two entry-point files at the canonical section and remove the contradicting
 "common case" framing.
@@ -181,7 +181,8 @@ after editing; a diff touching any other file in this phase is a scope error.
       - Reframe the Overview's first sentence ("traditionally accept a single task number") so it
         does not present single-task as the norm, and add one pointer sentence to the canonical
         section for batch-selection guidance. Keep it to the Overview only. *(completed)*
-- [ ] Commit with explicit paths: `task 228 phase 2: point entry docs at batch selection guidance`.
+- [x] Commit with explicit paths: `task 228 phase 2: point entry docs at batch selection guidance`.
+      *(completed: commit ea849d410)*
 
 **Timing**: 0.75 hours
 
