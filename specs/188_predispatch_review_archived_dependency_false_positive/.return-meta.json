@@ -1,6 +1,6 @@
 {
   "status": "implemented",
-  "dispatch_seq": 16,
+  "dispatch_seq": 21,
   "artifacts": [
     {
       "type": "summary",
@@ -9,7 +9,7 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "Fixed orchestrate-predispatch-review.sh's Class A false positive: dependencies satisfied by an archived task now classify as archived_satisfied (informational) instead of the loud nonexistent verdict. Added a task-lookup-lib-based archive merge, split Class A report rendering into primary/archived-satisfied lists, added 3 new test scenarios (21/21 passing), and synced the guardrail documentation's bucket enumeration. Verified live: 24 real archived-satisfied edges across this repo's active_projects[], 0 false nonexistent findings, reproduced from the deployed .claude/ copy."
+    "completion_summary": "All 5 plan phases were already [COMPLETED] and committed from a prior implement dispatch (seq 16); that dispatch's postflight transition was refused by the completion-deploy gate (exit 6) because other concurrent tasks landed further commits under agent-system/extensions/core/** after this task's own Phase 5 redeploy, leaving .claude-extensions.json's recorded source_git_head behind HEAD again. Re-verified this dispatch: bash -n clean, exactly one trap, full suite 21/21 passing, and the deployed .claude/ copy still byte-identical to the source store for all three edited files. No new source edits were needed; the deploy gate's own sanctioned single-task redeploy-and-retry (command-gate-out.sh rc==6 branch) is expected to resolve the residual staleness at this dispatch's postflight."
   },
   "modified_files": [
     "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
@@ -19,33 +19,7 @@
     "specs/188_predispatch_review_archived_dependency_false_positive/plans/01_archive-aware-dependency-classifier.md",
     "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md"
   ],
-  "memory_candidates": [
-    {
-      "content": "When a script that resolves task numbers against specs/state.json needs archive-awareness (a dependency, predecessor, or collision target may have been moved to specs/archive/state.json by /todo), source scripts/lib/task-lookup-lib.sh rather than hand-rolling a second archive lookup. Stage the flattened archive array to a mktemp file with a `trap 'rm -f ...' EXIT` and pass it to jq via `--slurpfile`, never `--argjson` -- a long-lived archive/state.json can exceed the OS argv/environment size limit (~960KB observed triggering exit 126 'Argument list too long'). Merge as `(active + archived) as $all`, active-first, to preserve an active-wins lookup contract when a number somehow appears in both.",
-      "category": "PATTERN",
-      "source_artifact": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "task-lookup-lib",
-        "archive-aware",
-        "slurpfile",
-        "argv-limit",
-        "state.json"
-      ]
-    },
-    {
-      "content": "When splitting a report section's findings into a demoted-but-still-visible sub-list (never suppress, only demote volume/wording), reuse an existing two-part Deferred/Admitted-style convention already present elsewhere in the same script rather than inventing a new top-level section header. Give each sub-list its own accurate '0 findings' negative so no negative message falsely implies the absence of items that only moved to the other list.",
-      "category": "PATTERN",
-      "source_artifact": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
-      "confidence": 0.7,
-      "suggested_keywords": [
-        "report-rendering",
-        "never-silent",
-        "demotion",
-        "two-part-list"
-      ]
-    }
-  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1789687584_deac58",
     "agent_type": "general-implementation-agent",
@@ -57,7 +31,5 @@
     ],
     "phases_completed": 5,
     "phases_total": 5
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }

@@ -277,7 +277,7 @@ fixing any gap found) and report the revised count rather than deferring to the 
 
 ---
 
-### Phase 5: Full gate — shellcheck, redeploy, re-run from the deployed copy [NOT STARTED]
+### Phase 5: Full gate — shellcheck, redeploy, re-run from the deployed copy [IN PROGRESS]
 
 **Goal**: satisfy the acceptance criteria end to end.
 

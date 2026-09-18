@@ -1,5 +1,5 @@
 ---
-next_project_number: 235
+next_project_number: 236
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 235
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,45,51,89,127,129,167,172,177,184,185,188,194,202,206,207,210,213,223,224,227,228,234 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,45,51,89,127,129,167,172,177,184,185,188,194,202,206,207,210,213,223,224,227,228,234,235 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,43,44,74,139,162,163,166,173,174,193,208,212,215,226 | 29,167,172,188,194,206,207,210,213 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,136,140,165,170,182,199,200,217,221 | 74,139,162,163,166,173,174,188,193,194,206,213,215,226,234 | core-agent-system, extensions, file-scope-lifecycle |
 | 4 | 190 | 165 | core-agent-system |
@@ -62,6 +62,7 @@ next_project_number: 235
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
 234 [IMPLEMENTING] — Fix the state-write.sh spill-name collision that silently...
   └─ 200 [PLANNED] — Close the consumer-repo deploy propagation gap that leaves... (see above)
+235 [NOT STARTED] — Re-baseline or reduce the eager-context budget:...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -102,6 +103,16 @@ next_project_number: 235
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 235. Rebaseline or reduce eager context budget
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Re-baseline or reduce the eager-context budget: verify-deploy.sh Gate 20 sub-check B is red on every deploy because the live eager-load TOTAL (65198 B, measured 2026-09-18 via REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check) exceeds eager_load.baseline_bytes=64450 in agent-system/extensions/core/context/config/orchestrator-context-budget.json (measured_bytes 64394 on 2026-09-09, so +804 B of drift in nine days). Current channel breakdown: parent_chain 3815 B, predicted assembled .claude/CLAUDE.md 32862 B, eager rules 28521 B (8 rules files; git-workflow.md alone is 8828 B). Every deploy-headless.sh run now exits 3 (RESULT=landed_verify_red) even when the deploy itself landed cleanly, which trips the completion-deploy gate in orchestrate postflight and was independently flagged by three concurrent implementation dispatches on 2026-09-17/18 as pre-existing and unrelated to their own edits. WORK: (1) attribute the +804 B to specific merge-sources/**, rules/**, and CLAUDE.md commits since 2026-09-09 (git log -p on those paths, diffed against the per-channel numbers); (2) decide per the config note's own rule -- baseline_bytes is a deliberately recorded ceiling that must never be silently re-derived -- whether to trim the growth back under 64450 (preferred where the growth is restatement or prose that belongs in lazily-loaded context files) or to move the baseline with a reviewed justification recorded in the config note and measured_at/measured_bytes updated; (3) separately address the sub-check C per-file ceiling: commands/orchestrate.md is roughly 2x its configured ceiling_bytes and ORCHESTRATOR_BUDGET_GATE_MODE stays in warn mode until it is under ceiling -- either shrink the command file (its flag table and forced-phase prose duplicate merge-sources/claudemd.md and docs/architecture/orchestrate-state-machine.md) or record why the ceiling should move; (4) make deploy-headless.sh's exit status distinguish a landed-but-budget-red deploy from a failed deploy in a way the postflight completion-deploy gate does not misread as stale, OR confirm the gate already ignores exit 3 and document that. ACCEPTANCE: deploy-headless.sh exits 0 on an unchanged tree; verify-deploy.sh Gate 20 sub-checks B and C both pass; the baseline value in orchestrator-context-budget.json either is unchanged or carries a dated justification; scripts/tests/test-verify-deploy-context-budget.sh still passes; shellcheck clean per context/standards/shell-strict-mode.md for any shell file touched. EDIT TARGET: agent-system/extensions/core/** (source store), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**
+
+---
 
 ### 234. Fix the state-write.sh spill-name collision that silently discards every --argjson-file binding after the first
 - **Status**: [IMPLEMENTING]

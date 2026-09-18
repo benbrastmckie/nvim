@@ -229,7 +229,8 @@ Not committed: `specs/state.json`, `specs/TODO.md` and this file carry the chang
 
 ```
 # Batch A: writers, forced phases, build verdict, bootstrap. Critical-path members: 213, 200, 212.
-/orchestrate 234, 226, 206, 213, 200, 194, 209, 188, 173, 172, 174, 184, 223, 177, 227
+/orchestrate 234, 226, 206, 213, 200, 194, 209, 188, 173
+/orchestrate 172, 174, 184, 223, 177, 227
 #   wave 1: 234, 226, 206, 194, 209, 188(plan), 172, 174, 184, 223(plan), 177, 227  + 213, 200 (critical)
 #   wave 2: 173 (after 172)                                                        + 212 (after 194, 213)
 
