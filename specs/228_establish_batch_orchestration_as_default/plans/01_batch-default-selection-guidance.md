@@ -1,7 +1,7 @@
 # Implementation Plan: Task #228
 
 - **Task**: 228 - Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md
@@ -102,17 +102,17 @@ No roadmap consulted (no roadmap_path in dispatch).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Write canonical selection section in batch-orchestration-guardrails.md [NOT STARTED]
+### Phase 1: Write canonical selection section in batch-orchestration-guardrails.md [IN PROGRESS]
 
 **Goal**: Add the single canonical statement of the batch-as-default posture and selection rule.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
-      immediately before editing (concurrent siblings share this tree).
-- [ ] Widen the opening paragraph by one clause so the file's stated scope covers batch
+- [x] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
+      immediately before editing (concurrent siblings share this tree). *(completed)*
+- [x] Widen the opening paragraph by one clause so the file's stated scope covers batch
       composition (which tasks to propose together) as well as admission; keep "defines no new
-      behavior".
-- [ ] Insert a new `## Batching Is the Default: Selection Criteria and Conflict Resolution`
+      behavior". *(completed)*
+- [x] Insert a new `## Batching Is the Default: Selection Criteria and Conflict Resolution`
       section after the opening paragraph and before `## The Three Existing Admission Layers`,
       based on the report's drafted text, with these required subsections:
       posture statement (batch-of-one is the same mechanism, unpenalized); "Why batch-as-default"
@@ -120,19 +120,20 @@ Phases within the same wave can execute in parallel.
       wave-split check, the lock protocol -- compare only tasks they can see together; two related
       tasks in separate sessions are mutually invisible); the three criteria; the dominance rule;
       the pairwise-conflict table (three rows, each with a definite winner); the batch-size-cap
-      rule; the territory-is-human-judgment scope note; the worked example.
-- [ ] Apply the three research-draft fixes from this plan's Research Integration section
+      rule; the territory-is-human-judgment scope note; the worked example. *(completed)*
+- [x] Apply the three research-draft fixes from this plan's Research Integration section
       (remove "avoid mixed shape"; replace "Situational" with "topic beats width" as a crisp rule;
       add the `MAX_TASKS=8` trim/ordering rule citing `orchestrate-state-machine.md`'s
-      `### Batch Size Cap (MAX_TASKS)`).
-- [ ] Make the worked example deterministic: five open same-topic tasks `A`..`E`, state each
+      `### Batch Size Cap (MAX_TASKS)`). *(completed)*
+- [x] Make the worked example deterministic: five open same-topic tasks `A`..`E`, state each
       inclusion with the rule that admits it, give the exact invocation (`/orchestrate A,B,C,D,E`
       with territory-mandatory members listed first) and the resulting wave shape. Add a second
       one-line variant showing an off-topic task that shares territory with `A` being pulled in
       (territory beats topic) so the example exercises every conflict rule at least once.
-- [ ] Verify cited anchors exist: `multi-task-creation-standard.md` `### 4a.`,
+      *(completed: added task `F` variant)*
+- [x] Verify cited anchors exist: `multi-task-creation-standard.md` `### 4a.`,
       `orchestrate-state-machine.md` `### Batch Size Cap (MAX_TASKS)`,
-      `scripts/orchestrate-batch-admit.sh`, `task-lock.md`.
+      `scripts/orchestrate-batch-admit.sh`, `task-lock.md`. *(completed: all four confirmed present)*
 - [ ] Commit (explicit path only): `task 228 phase 1: add canonical batch selection section`.
 
 **Timing**: 1.5 hours

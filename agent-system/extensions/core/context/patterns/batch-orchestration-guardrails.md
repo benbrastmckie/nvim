@@ -1,11 +1,127 @@
 # Batch Orchestration Guardrails
 
-This file documents the *principles* that govern admission control for batched `/orchestrate`
-invocations — when a guardrail must block dispatch, when it may merely warn, and how both answers
-should change (or not change) as batch size grows. The *mechanisms* that implement these
+This file documents the *principles* that govern admission control and batch composition for
+batched `/orchestrate` invocations — when a guardrail must block dispatch, when it may merely
+warn, how both answers should change (or not change) as batch size grows, and which open tasks
+belong together in one batch in the first place. The *mechanisms* that implement these
 principles already exist and are documented elsewhere; this file cross-references them by path
 rather than restating their algorithms. This file defines no new behavior and changes no
 skill, command, script, or agent file.
+
+## Batching Is the Default: Selection Criteria and Conflict Resolution
+
+`/orchestrate N[,N-N]` performs dependency-aware wave dispatch uniformly for a batch of one task
+or many (see `commands/orchestrate.md`'s Constraints section). Because the mechanism is already
+uniform, batching related open tasks into ONE `/orchestrate` invocation is the normal way to work
+this system, not a specialized throughput optimization reserved for large backlogs. A single-task
+invocation remains fully correct and unpenalized — it is simply the batch-of-one case of the same
+mechanism, not a separate default posture.
+
+### Why batch-as-default, not batch-as-optimization
+
+The strongest argument for batching is not throughput — it is collision visibility. The three
+admission layers documented below (creation-time overlap, runtime wave/cycle-split, lock
+acquisition) can only compare tasks they can see together, within one invocation's candidate set
+or the currently-held-lock set. Two related tasks dispatched from two separate `/orchestrate`
+invocations are mutually invisible to every in-batch check — nothing retroactively notices they
+should have been serialized. Batching is therefore the mechanism by which a real collision becomes
+checkable at all; running related tasks apart does not avoid the collision, it only removes the
+machinery's ability to see it.
+
+### The three selection criteria
+
+Three criteria inform which open tasks belong in one batch, and they do not always agree:
+
+- **Shared file territory** — tasks whose declared `file_scope` (or otherwise known intent)
+  overlaps in the files they touch.
+- **Topic cohesion** — tasks sharing a `topic` field in `specs/state.json`, so one agent's
+  research or implementation context warms the next.
+- **Graph shape** — the shape of the batch's intra-batch dependency graph: a single connected
+  component drains cleanly wave-by-wave, while a set of mutually independent tasks maximizes
+  wave-1 width and therefore concurrency.
+
+### The dominance rule
+
+**Shared file territory > topic cohesion > graph shape (width).** Apply in this order:
+
+1. **Shared file territory is mandatory, never optional.** If two open, non-terminal candidate
+   tasks touch overlapping files, batch them together whenever both are realistic candidates for
+   this invocation — even when doing so collapses the batch to width 1 (full serialization) and
+   gains nothing from parallel dispatch except collision visibility. That visibility is a
+   correctness property, not a throughput optimization, so it outranks width every time the two
+   disagree.
+2. **Topic cohesion beats width when filling remaining slots.** Once every territory-mandatory
+   member is included, fill any open slots (subject to the batch-size cap below) with
+   dispatch-safe same-topic candidates BEFORE adding any off-topic candidate. "Dispatch-safe"
+   means non-terminal and not already blocked or held by a foreign lock. An off-topic candidate
+   with no territory link to the batch may be added only as filler, once every dispatch-safe
+   same-topic candidate is already in — this is a rule, not a judgment call: topic beats width.
+   (An off-topic candidate that DOES share territory with a batch member is not filler — rule 1
+   already made it mandatory, regardless of topic.)
+3. **Graph shape is the residual tie-breaker**, applied only among candidates rules 1-2 already
+   selected or left as ties. Prefer whichever addition widens wave 1 (adds a task with no
+   in-batch dependency edge) over one that only extends an existing chain — but always include a
+   dependent task whose sole prerequisite is already in the batch, since apart from that
+   invocation the dependent cannot make progress at all. Wave dispatch handles a mixed graph
+   (part chain, part independent singletons) correctly on its own; graph shape is a preference
+   between otherwise-equal candidates, never a reason to exclude one.
+
+**Worked resolution of the three pairwise conflicts:**
+
+| Conflict | Winner | Why |
+|---|---|---|
+| Shared file territory vs. graph shape (width) | Territory | A collision left unbatched is invisible to every admission layer; width is a throughput preference, territory-driven serialization is a correctness requirement. |
+| Shared file territory vs. topic cohesion | Territory (rarely actually conflicts) | Topic-cohesive tasks that also share territory were already going to be forced together by territory alone (or by the creation-time auto-`dependencies[]` edge — see `docs/reference/standards/multi-task-creation-standard.md`'s `### 4a. File Footprint Capture and Overlap Detection (Automatic)`); topic cohesion never has a reason to exclude a territory-mandatory task, since excluding it would only lose the visibility gain for no benefit. |
+| Topic cohesion vs. graph shape (width) | Topic | Fill open slots with dispatch-safe same-topic candidates before any off-topic filler (rule 2 above). Width only decides ordering *among* the topic-cohesive candidates that pass the fill rule, or among off-topic filler once same-topic candidates are exhausted. |
+
+### The batch-size cap (MAX_TASKS)
+
+A batch is trimmed to its first 8 tasks (`MAX_TASKS=8`; see
+`docs/architecture/orchestrate-state-machine.md`'s `### Batch Size Cap (MAX_TASKS)`) before
+dispatch. Selection must respect this:
+
+- Keep a proposed batch at 8 or fewer tasks.
+- List territory-mandatory members (rule 1) first in the invocation's task-number list, so a trim
+  to 8 can never split a territory-mandatory group off the end.
+- If a single territory-mandatory group alone exceeds 8 tasks, it cannot be admitted as one
+  invocation. Run it as consecutive batches in dependency order instead, and accept — explicitly,
+  not silently — that cross-batch collision visibility is lost for the portion split across
+  invocations; that loss is the same blind spot the "Why batch-as-default" argument above
+  describes for any two tasks run apart.
+
+### Territory is a human judgment, not a machine derivation (scope note)
+
+This document's admission layers (below) derive collisions mechanically from `file_scope`; the
+selection criterion here is different — it asks a human proposing a batch to recognize likely
+shared territory *before* creation-time auto-edges or runtime admission ever run, since neither
+mechanism exists to choose which tasks a human types into one `/orchestrate` invocation in the
+first place. This section does not specify or depend on any machine derivation of "shared
+territory" as a selection input — `file_scope` declaration granularity, backfill, and
+absent-scope admission posture are owned by the file-scope-lifecycle topic and are out of scope
+here. Where `file_scope` is undeclared or coarse, apply this criterion as ordinary human judgment
+about which tasks are likely to touch the same code, not as a lookup against a machine-computed
+set.
+
+### Worked example
+
+Five open tasks share `topic: "x"`: `A`, `B`, `C`, `D`, `E`. Two of them (`A`, `B`) declare
+overlapping `file_scope`; a third (`C`) depends on `A`; `D` and `E` are unrelated to any of the
+other four and to each other. Applying the rule above: `A` and `B` are mandatory together
+(territory, rule 1) and listed first. `C` joins next — topic-cohesive, and its dependency edge to
+`A` means it cannot dispatch usefully apart from the same invocation that resolves `A` (rule 3's
+"always include a dependent whose prerequisite is already in the batch"). `D` and `E` are optional
+adds — topic-cohesive and territory-clean, so batching them costs nothing and both widen wave 1
+(rule 2's fill order, then rule 3's width preference). The batch stays at 5, under the cap. The
+resulting invocation is `/orchestrate A,B,C,D,E`, whose intra-batch dependency graph is
+`{A: [], B: [], C: [A], D: [], E: []}` — wave 1 dispatches `A, B, D, E`, wave 2 dispatches `C` —
+and every territory-sharing pair (`A`, `B`) is visible to the admission layers because they were
+batched together.
+
+**Variant — territory beats topic.** Suppose a sixth task, `F`, shares no topic with `A`-`E` but
+declares a `file_scope` overlapping `A`'s. Rule 1 is unconditional on topic: `F` is mandatory
+alongside `A` regardless of the topic mismatch, giving `/orchestrate A,F,B,C,D,E` (territory-
+mandatory members `A`, `F`, `B` listed first). `F` is not filler — it was never competing with `D`
+or `E` for a slot; it was forced in by rule 1 before rule 2's fill order is even reached.
 
 ## The Three Existing Admission Layers
 
