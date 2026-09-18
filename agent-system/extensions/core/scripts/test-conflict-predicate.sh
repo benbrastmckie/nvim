@@ -41,7 +41,7 @@ info() {
 }
 
 # --- Locate the real scripts this suite copies byte-for-byte ---
-for req in task-lock.sh orchestrate-batch-admit.sh deploy-root-guard.sh lib/file-scope-overlap.sh lib/common.sh; do
+for req in task-lock.sh orchestrate-batch-admit.sh deploy-root-guard.sh lib/file-scope-overlap.sh lib/common.sh lib/task-lookup-lib.sh; do
   if [ ! -f "$SCRIPT_DIR/$req" ]; then
     echo "ERROR: expected $req alongside this script in $SCRIPT_DIR" >&2
     exit 1
@@ -64,6 +64,7 @@ cp "$SCRIPT_DIR/orchestrate-batch-admit.sh" "$TMPROOT/.claude/scripts/orchestrat
 cp "$SCRIPT_DIR/deploy-root-guard.sh" "$TMPROOT/.claude/scripts/deploy-root-guard.sh"
 cp "$SCRIPT_DIR/lib/file-scope-overlap.sh" "$TMPROOT/.claude/scripts/lib/file-scope-overlap.sh"
 cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
+cp "$SCRIPT_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-lookup-lib.sh"
 chmod +x "$TMPROOT/.claude/scripts/task-lock.sh" "$TMPROOT/.claude/scripts/orchestrate-batch-admit.sh"
 if [ -f "$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json" ]; then
   cp "$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json" "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json"
