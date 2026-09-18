@@ -38,7 +38,7 @@ fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh)
+REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -72,8 +72,9 @@ build_repo() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    # lib/common.sh is sourced, never executed -- matches the other scripts/lib/*.sh files.
-    [ "$f" = "lib/common.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    # lib/common.sh and lib/task-lookup-lib.sh are sourced, never executed -- matches the other
+    # scripts/lib/*.sh files.
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "covered" ]; then

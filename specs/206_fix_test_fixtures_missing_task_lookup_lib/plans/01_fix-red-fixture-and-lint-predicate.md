@@ -220,31 +220,36 @@ stdout write; the real corpus runs clean.
 
 ---
 
-### Phase 4: Close the two dormant audit-gap fixtures and record the audit [NOT STARTED]
+### Phase 4: Close the two dormant audit-gap fixtures and record the audit [COMPLETED]
 
 **Goal**: every fixture under `core/scripts/tests/` that copies `task-lock.sh`, `skill-base.sh`, or
 `update-task-status.sh` via an explicit lib list carries `task-lookup-lib.sh`; the audit result is
 written down.
 
 **Tasks**:
-- [ ] Re-run the audit sweep over `agent-system/extensions/core/scripts/tests/`: list every suite
+- [x] Re-run the audit sweep over `agent-system/extensions/core/scripts/tests/`: list every suite
       referencing `task-lock.sh`, `skill-base.sh`, or `update-task-status.sh`, and classify each as
       wholesale-copy / explicit-list-already-complete / no-fixture-copy / static-analysis-only /
       genuine-gap. Use a multi-line-tolerant grep — the research report notes several lib lists span
-      continuation lines and are missed by a naive single-line grep.
-- [ ] Add `task-lookup-lib.sh` to BOTH explicit lib loops in
+      continuation lines and are missed by a naive single-line grep. *(completed: 22 audit
+      candidates classified (excluding test-postflight-deploy-gate.sh, the Phase 1 primary target)
+      -- see progress file phase-4 notes.audit_result)*
+- [x] Add `task-lookup-lib.sh` to BOTH explicit lib loops in
       `test-handoff-dispatch-identity.sh` (the `require_file` preflight loop and the
-      `setup_sandbox()` copy loop — they must stay in sync).
-- [ ] Add `lib/task-lookup-lib.sh` to `REQUIRED_SCRIPTS` in `test-git-commit-scoped.sh`, and check
+      `setup_sandbox()` copy loop — they must stay in sync). *(completed)*
+- [x] Add `lib/task-lookup-lib.sh` to `REQUIRED_SCRIPTS` in `test-git-commit-scoped.sh`, and check
       the `chmod +x` skip-guard that currently keys off `lib/common.sh` so the new lib entry gets
-      the same non-executable treatment.
-- [ ] Re-run both suites and confirm they remain green (they are dormant gaps, so the expected
-      result is unchanged-green, not red-to-green).
-- [ ] Record the audit result — suites checked, bucket classification, gaps found, fixes made — in
-      notes for the implementation summary.
-- [ ] Extend `file_scope` for this task in `specs/state.json` to include
+      the same non-executable treatment. *(completed: added a second OR-clause to the existing
+      skip-guard, matching its minimal-diff style)*
+- [x] Re-run both suites and confirm they remain green (they are dormant gaps, so the expected
+      result is unchanged-green, not red-to-green). *(completed: test-handoff-dispatch-identity.sh
+      8/0, test-git-commit-scoped.sh 7/0, both unchanged-green)*
+- [x] Record the audit result — suites checked, bucket classification, gaps found, fixes made — in
+      notes for the implementation summary. *(completed: see progress file phase-4 notes)*
+- [x] Extend `file_scope` for this task in `specs/state.json` to include
       `test-handoff-dispatch-identity.sh` and `test-git-commit-scoped.sh` (append only; do not
-      replace the array), and note the deviation in the summary.
+      replace the array), and note the deviation in the summary. *(completed via jq `+=`,
+      confirmed the rest of the task entry unchanged)*
 
 **Timing**: 0.5 hours
 

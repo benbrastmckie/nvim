@@ -1,0 +1,41 @@
+{
+  "phase": 4,
+  "phase_name": "Close the two dormant audit-gap fixtures and record the audit",
+  "started_at": "2026-09-17T01:00:00Z",
+  "last_updated": "2026-09-17T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run audit sweep over core/scripts/tests/, classify each suite", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add task-lookup-lib.sh to both explicit lib loops in test-handoff-dispatch-identity.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh"]},
+    {"id": 3, "description": "Add lib/task-lookup-lib.sh to REQUIRED_SCRIPTS in test-git-commit-scoped.sh + chmod skip-guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 4, "description": "Re-run both suites, confirm remain green", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record audit result for summary", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Extend file_scope in specs/state.json", "status": "done", "files_touched": ["specs/state.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "audit_sweep_method": "grep -lE 'task-lock\\.sh|skill-base\\.sh|update-task-status\\.sh' over agent-system/extensions/core/scripts/tests/*.sh, then manual multi-line-tolerant inspection (grep -n against REQUIRED_LIBS/REQUIRED_SCRIPTS/cp/source patterns, then Read of each hit's surrounding lines) of every candidate to classify it.",
+    "candidates_found": 23,
+    "candidates_found_note": "23 files match the grep, one of which (test-postflight-deploy-gate.sh) is the Phase 1 primary target rather than an item-(d) audit find; excluding it gives 22 audit candidates, matching the research report's predicted count exactly.",
+    "audit_result": {
+      "wholesale_copy_safe": ["test-force-phases.sh", "test-gate-out-repair-reporting.sh", "test-roadmap-items-producer.sh", "test-skill-base-lifecycle.sh", "test-update-task-status.sh", "test-reconcile-handoff-status.sh"],
+      "explicit_list_already_complete": ["test-loop-guard-budget-override.sh", "test-orchestrate-churn.sh", "test-orchestrate-context-growth.sh", "test-orchestrate-cycle-plan.sh", "test-orchestrate-cycle-postflight.sh", "test-phase-heartbeat.sh"],
+      "no_fixture_copy": ["test-corroborate-phase-counts.sh", "test-mint-dispatch-seq.sh", "test-orchestrate-build-aux-dispatch.sh", "test-orchestrate-build-dispatch.sh", "test-postflight-marker-schema.sh"],
+      "static_analysis_only": ["test-lint-lifecycle-status-var.sh", "test-lint-task-lookup-adoption.sh", "test-resume-scan-nonconformance.sh"],
+      "genuine_gap_fixed": ["test-git-commit-scoped.sh", "test-handoff-dispatch-identity.sh"],
+      "phase_1_primary_target_excluded_from_audit_count": ["test-postflight-deploy-gate.sh"]
+    },
+    "bucket_definitions": {
+      "wholesale_copy_safe": "Fixture copies lib/*.sh wholesale (or the whole scripts/ tree via cp -r) from the source-store/deploy tree -- immune by construction to a new unconditional source in task-lock.sh.",
+      "explicit_list_already_complete": "Fixture builds an explicit lib list that already includes task-lookup-lib.sh.",
+      "no_fixture_copy": "Suite sources the real skill-base.sh (or equivalent) directly from its real location (source store or deployed tree) with no synthetic minimal script tree built, so no explicit lib list exists to be missing an entry.",
+      "static_analysis_only": "Suite never executes the real task-lock.sh/skill-base.sh/update-task-status.sh chain -- it either builds a synthetic fixture file purely for lint-predicate testing, or checks via bash -n / structural grep only, per the suite's own header comment.",
+      "genuine_gap_fixed": "Fixture built an explicit lib list omitting task-lookup-lib.sh, while also copying task-lock.sh -- the same latent gap as the Phase 1 target. Both were dormant (still green pre-fix), not red, matching the research report's finding."
+    },
+    "gaps_found": 2,
+    "gaps_fixed": 2,
+    "verification": "Both test-handoff-dispatch-identity.sh (8 passed, 0 failed) and test-git-commit-scoped.sh (7 passed, 0 failed) remained green after the fix -- confirming the gaps were dormant, not red, as research predicted.",
+    "file_scope_deviation": "test-handoff-dispatch-identity.sh and test-git-commit-scoped.sh were outside this task's original file_scope (declared at task creation before the item-(d) audit ran). Per the dispatch's item (d) instruction to fix any gap found, and per state-management.md (file_scope is descriptive, not filesystem-validated), both paths were appended to specs/state.json's file_scope array for task 206 via jq (append, not replacement)."
+  }
+}
