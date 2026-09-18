@@ -457,6 +457,7 @@ AMENDMENT (2026-09-14). A follow-on task (this task now depends on it) makes the
 - **Dependencies**: Task 209
 - **Research**: [213_thread_focus_prompt_into_cycle_plan/reports/01_focus-prompt-forced-phase-cycle-plan.md]
 - **Plan**: [213_thread_focus_prompt_into_cycle_plan/plans/01_focus-forced-phase-cycle-budget.md]
+- **Summary**: [213_thread_focus_prompt_into_cycle_plan/summaries/01_focus-forced-phase-cycle-budget-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

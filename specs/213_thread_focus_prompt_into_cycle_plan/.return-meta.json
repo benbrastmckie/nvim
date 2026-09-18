@@ -38,29 +38,52 @@
       "category": "PATTERN",
       "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/summaries/01_focus-forced-phase-cycle-budget-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["jq", "state-machine", "empty-vs-absent", "marker-map", "three-way-branch"]
+      "suggested_keywords": [
+        "jq",
+        "state-machine",
+        "empty-vs-absent",
+        "marker-map",
+        "three-way-branch"
+      ]
     },
     {
       "content": "When a durable per-task guard file's counter must stop being cumulative-across-invocations (a per-run reset) while a DIFFERENT field on the SAME file must still durably persist across invocations (e.g. a monotonic sequence number), do not conflate the two: keep the existing --flush form untouched for the retiring field (other callers may still legitimately want it) and add a NEW, narrowly-scoped --flush-seq-style form for the field that must keep persisting, called at every one of its own mint sites even if those sites run before a shared helper library is sourced.",
       "category": "PATTERN",
       "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/summaries/01_focus-forced-phase-cycle-budget-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["durable-state", "per-run-reset", "dispatch-sequence", "loop-guard", "budget"]
+      "suggested_keywords": [
+        "durable-state",
+        "per-run-reset",
+        "dispatch-sequence",
+        "loop-guard",
+        "budget"
+      ]
     },
     {
       "content": "When a test suite documents itself as resolving its subject-under-test deploy-tree-first (validating 'what actually runs in production'), a source-store-only edit will show as a genuine test failure until redeployed -- this is not a bug in the edit. Verify correctness before redeploying by temporarily copying the source-store file over the deployed copy, running the suite, then reverting the deployed copy to its exact prior byte content (never leaving a lasting hand-edit under a disposable deploy-artifact directory).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/summaries/01_focus-forced-phase-cycle-budget-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deploy-first-resolution", "test-verification", "source-store", "temporary-sync"]
+      "suggested_keywords": [
+        "deploy-first-resolution",
+        "test-verification",
+        "source-store",
+        "temporary-sync"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789706595_9484a9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

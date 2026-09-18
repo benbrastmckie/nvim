@@ -150,9 +150,15 @@
           "path": "specs/213_thread_focus_prompt_into_cycle_plan/plans/01_focus-forced-phase-cycle-budget.md",
           "type": "plan",
           "summary": "7-phase plan covering all three absorbed defects (focus-prompt threading, stop-after-forced-phase, per-run cycle budget with artifact-based admission) as one serialized change to the batch orchestrator engine plus a single documentation pass."
+        },
+        {
+          "path": "specs/213_thread_focus_prompt_into_cycle_plan/summaries/01_focus-forced-phase-cycle-budget-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 3 fixed defects, plan deviations, verification, and consumer-repo confirmation evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed three coupled defects in the batch /orchestrate engine: user focus prompts now thread into dispatch files, a forced-phase round now genuinely stops for the rest of a run instead of falling through to status-derived dispatch, and the per-task work-cycle budget now resets every run (with --continue-budget removed) while forced plan/implement admission is now keyed on artifact presence rather than status. Redeployed and confirmed live in a real, separate consumer repository."
     },
     {
       "project_number": 212,
