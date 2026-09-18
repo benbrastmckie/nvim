@@ -394,33 +394,39 @@ agents carry pre-existing `handoff` text. Confirm the pre-existing-text subset w
 
 ---
 
-### Phase 7: Completeness Sweep and Record [NOT STARTED]
+### Phase 7: Completeness Sweep and Record [COMPLETED]
 
 **Goal**: Prove coverage across the full reachable set, prove the MUST NOTs held, and record the
 enumerated set plus derivation method so a future reader can re-verify without re-deriving.
 
 **Tasks**:
-- [ ] Re-run the reachable-set derivation from the manifests (command in the Appendix) and confirm
-      it still yields 64 names; report any change.
-- [ ] Assert every one of the 64 has a nonzero `.orchestrator-handoff.json` mention count.
-- [ ] Assert no reachable agent retains prohibition language:
+- [x] Re-run the reachable-set derivation from the manifests (command in the Appendix) and confirm
+      it still yields 64 names; report any change. *(confirmed: 64, no change)*
+- [x] Assert every one of the 64 has a nonzero `.orchestrator-handoff.json` mention count. *(confirmed: 0 zero-count)*
+- [x] Assert no reachable agent retains prohibition language:
       `grep -rn "non-writer by design\|MUST NOT write .orchestrator-handoff\|never writes a handoff"`
-      across `agent-system/extensions/*/agents/` returns nothing for reachable agents.
-- [ ] Assert wording consistency: for each of the 61 edited files, diff the inserted block against
+      across `agent-system/extensions/*/agents/` returns nothing for reachable agents. *(confirmed clean)*
+- [x] Assert wording consistency: for each of the 61 edited files, diff the inserted block against
       the Appendix text; only the variant-specific status enum and phase-count sentence may differ.
-- [ ] Assert the aux-dispatch asymmetry: every inserted block is conditioned on
-      `orchestrator_mode: true` and none restates the `aux_dispatch[]` contract.
-- [ ] Assert MUST NOTs: `git diff --stat` for the whole task shows no change to
+      *(confirmed: all 62 edited files — see deviation note on the 61 vs. 62 count below — contain
+      the frozen core+mid sentences byte-identical modulo variant)*
+- [x] Assert the aux-dispatch asymmetry: every inserted block is conditioned on
+      `orchestrator_mode: true` and none restates the `aux_dispatch[]` contract. *(confirmed: all 62
+      edited files condition on `orchestrator_mode: true`; the 2 untouched hard-mode agents predate
+      this task and were out of scope; zero files restate the `aux_dispatch[]` contract)*
+- [x] Assert MUST NOTs: `git diff --stat` for the whole task shows no change to
       `orchestrate-cycle-postflight.sh`, no change under `.claude/**`, and no change to the 2
-      already-correct hard-mode agents.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` (or the repo's current equivalent) and
-      confirm no task-number reference was introduced into any agent contract.
-- [ ] Write the implementation summary recording: the 64-name enumerated set, the exact derivation
+      already-correct hard-mode agents. *(confirmed: all three assertions pass, zero-diff)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` (or the repo's current equivalent) and
+      confirm no task-number reference was introduced into any agent contract. *(PASS: 0 unexempted
+      occurrences across all 4 scanned trees)*
+- [x] Write the implementation summary recording: the 64-name enumerated set, the exact derivation
       command, the 55/6/3 edit breakdown as actually applied, and the follow-up need to update
       `docs/architecture/handoff-schema.md`'s "Handoff Writers" table, D1 allowlist, and its
       "Open question, not decided here" paragraph — all now stale and outside this task's file scope.
-- [ ] Note in the summary that the obligation takes runtime effect only after the source store is
-      redeployed to `.claude/` by the sanctioned deploy process, which is the user's step.
+      *(written; actual breakdown reconciled to 56/6/2 — see summary for the deviation explanation)*
+- [x] Note in the summary that the obligation takes runtime effect only after the source store is
+      redeployed to `.claude/` by the sanctioned deploy process, which is the user's step. *(noted)*
 
 **Timing**: 0.75 hours
 
