@@ -300,7 +300,7 @@
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
       ],
-      "completion_summary": "Fixed orchestrate-predispatch-review.sh's Class A false positive: dependencies satisfied by an archived task now classify as archived_satisfied (informational) instead of the loud nonexistent verdict. Added a task-lookup-lib-based archive merge, split Class A report rendering into primary/archived-satisfied lists, added 3 new test scenarios (21/21 passing), and synced the guardrail documentation's bucket enumeration. Verified live: 24 real archived-satisfied edges across this repo's active_projects[], 0 false nonexistent findings, reproduced from the deployed .claude/ copy."
+      "completion_summary": "All 5 plan phases were already [COMPLETED] and committed from a prior implement dispatch (seq 16); that dispatch's postflight transition was refused by the completion-deploy gate (exit 6) because other concurrent tasks landed further commits under agent-system/extensions/core/** after this task's own Phase 5 redeploy, leaving .claude-extensions.json's recorded source_git_head behind HEAD again. Re-verified this dispatch: bash -n clean, exactly one trap, full suite 21/21 passing, and the deployed .claude/ copy still byte-identical to the source store for all three edited files. No new source edits were needed; the deploy gate's own sanctioned single-task redeploy-and-retry (command-gate-out.sh rc==6 branch) is expected to resolve the residual staleness at this dispatch's postflight."
     },
     {
       "project_number": 185,

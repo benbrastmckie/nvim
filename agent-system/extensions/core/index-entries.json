@@ -2951,7 +2951,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 405,
+      "line_count": 462,
       "keywords": [
         "runtime-files",
         "cleanup",
