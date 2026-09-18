@@ -267,29 +267,30 @@ fixture setup by creating the files, never by weakening the gate. Record the cou
 
 ---
 
-### Phase 3: Message-findings recovery helper [NOT STARTED]
+### Phase 3: Message-findings recovery helper [COMPLETED]
 
 **Goal**: A mechanical, idempotent script that saves an agent's message-borne findings into the
 task's report directory without passing them off as a completed report.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh`
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh`
       (strict mode per `shell-strict-mode.md`) with usage:
       `--task-dir DIR --dispatch-seq N --message-file F --agent NAME --session SID [--dry-run]`.
-- [ ] Read `${TASK_DIR}/.dispatch/${N}.md`'s `## Artifact Round` section for `artifact_padded`
+      *(completed)*
+- [x] Read `${TASK_DIR}/.dispatch/${N}.md`'s `## Artifact Round` section for `artifact_padded`
       and `output_dir`, falling back to `reports/` and `01` with a named WARN. Target:
       `{output_dir}/{NN}_recovered-agent-message.md`. If that exists and is non-empty, use
-      `-2`, `-3`... suffixes. Never overwrite.
-- [ ] Write a header block: title "Recovered Research Findings (from agent message)", a bold
+      `-2`, `-3`... suffixes. Never overwrite. *(completed)*
+- [x] Write a header block: title "Recovered Research Findings (from agent message)", a bold
       banner saying this is NOT a completed research report and was saved verbatim from the
       dispatched agent's final message because the agent did not write its report file, plus
       provenance lines (agent, session, dispatch_seq, UTC timestamp). Follow it with the message
-      text verbatim in a separate section.
-- [ ] If the message file is missing or empty (whitespace only), write nothing and emit
+      text verbatim in a separate section. *(completed)*
+- [x] If the message file is missing or empty (whitespace only), write nothing and emit
       `{"recovered": false, "reason": "EMPTY_MESSAGE"}`. On success emit
       `{"recovered": true, "path": "..."}`. Always exit 0 (non-fatal to the loop). Never touch
-      `state.json`, `.return-meta.json`, or the handoff.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh`:
+      `state.json`, `.return-meta.json`, or the handoff. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh`:
       success path (banner + verbatim body present); never-clobber (second run creates `-2`);
       empty message (no file created); missing dispatch file (fallback + WARN); `--dry-run` (no
       write); and an **acceptance end-to-end** fixture. The end-to-end fixture reuses the
@@ -297,7 +298,10 @@ task's report directory without passing them off as a completed report.
       handoff runs postflight, which gives `report_missing=true` and `verdict=failed`. The
       helper then writes the recovered file. Assert that the findings text is in `reports/`,
       that `state.json` status is still not `researched`, and that a defect row exists.
-- [ ] shellcheck both new files and make them executable.
+      *(completed: 23/23 pass, including the end-to-end fixture)*
+- [x] shellcheck both new files and make them executable. *(completed: both clean; the new
+      script carries only the same info-level SC1091 finding every other core script's
+      `source lib/common.sh` line already carries)*
 
 **Timing**: 2 hours
 
