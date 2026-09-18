@@ -249,26 +249,43 @@ the dispatch's OUT OF SCOPE list — stop and re-scope.
 
 ---
 
-### Phase 3: Verify GREEN, regression-check siblings, shellcheck [NOT STARTED]
+### Phase 3: Verify GREEN, regression-check siblings, shellcheck [COMPLETED]
 
 **Goal**: The new suite passes, no existing behavior regressed, and the script is shellcheck clean.
 
 **Tasks**:
-- [ ] Re-run `test-state-write-spill-names.sh` against the fixed source-store script: Cases A-D all
+- [x] Re-run `test-state-write-spill-names.sh` against the fixed source-store script: Cases A-D all
       PASS. Diff the before/after run logs to show the same suite moved RED to GREEN with no test
-      edits in between.
-- [ ] Run the three existing suites — `test-state-write-concurrency.sh`,
+      edits in between. *(completed: 2 passed/3 failed -> 5 passed/0 failed; `diff` of the two run
+      logs shows only the PASS/FAIL lines and captured values changed, no test-code changes)*
+- [x] Run the three existing suites — `test-state-write-concurrency.sh`,
       `test-state-write-regen-timing.sh`, `test-state-write-large-payload.sh` — and confirm no
-      regression. If `test-state-write-large-payload.sh` fails on the known missing
-      `lib/task-lookup-lib.sh` copy-list gap, record that as a pre-existing, out-of-scope failure
-      rather than silently fixing or ignoring it.
-- [ ] Sanity-check a representative live caller shape end-to-end in the fixture (one small `--arg`
+      regression. *(completed: all three show IDENTICAL pass/fail counts and failure messages
+      against a pre-fix baseline copy (4/5, 1/2, 2/5 respectively — mutex-timeout and
+      concurrency-timing related, unrelated to the spill-name defect) and against the fixed
+      script. Deviation from the plan's anticipated cause: research's specific
+      `lib/task-lookup-lib.sh`-gap hypothesis for `test-state-write-large-payload.sh` did not
+      reproduce — that suite's fixture already includes the file via this task's own Phase 1
+      dependency list; failures are pre-existing `specs/.scope-lock` mutex-timeout/concurrency
+      flakiness, confirmed identical pre- and post-fix, out of scope for this task.)*
+- [x] Sanity-check a representative live caller shape end-to-end in the fixture (one small `--arg`
       plus one large `--argjson`, as `orchestrator-postflight.sh` Stage 7c passes) and confirm
-      identical output to the pre-fix script for that non-colliding case.
-- [ ] Run shellcheck on both changed files (`nix shell nixpkgs#shellcheck --command shellcheck`
-      if not on `$PATH`) per `context/standards/shell-strict-mode.md`. If shellcheck cannot be
-      obtained, say so explicitly in the summary — do not report "clean" unverified.
-- [ ] Confirm `git status --porcelain -- specs/state.json` is clean after all test runs.
+      identical output to the pre-fix script for that non-colliding case. *(completed: Stage 7c's
+      `--argjson num $task_number` + `--argjson new $memory_candidates` shape, replayed with a
+      125,031-byte in-range payload, produces an identical 1,855-element result pre- and post-fix)*
+- [x] Run shellcheck on both changed files (`nix shell nixpkgs#shellcheck --command shellcheck`
+      if not on `$PATH`) per `context/standards/shell-strict-mode.md`. *(completed: the new suite
+      is fully clean, 0 findings. `state-write.sh` carries 3 pre-existing info-level findings (2x
+      SC1091 on its `source`/`.` lines, 1x SC2329 on `cleanup()`, both false-positive-shaped and
+      unrelated to this defect) confirmed byte-identical before and after this fix — no new
+      finding was introduced by the Phase 2 diff, and these three are outside the plan's declared
+      scope region so left untouched rather than opportunistically "fixed")*
+- [x] Confirm `git status --porcelain -- specs/state.json` is clean after all test runs.
+      *(completed with a caveat: the real `specs/state.json` carries a pre-existing, unrelated
+      modification present since before this task's dispatch began (other concurrent sessions'
+      work) — its content is CONFIRMED UNCHANGED by every test run in this phase, verified by the
+      new suite's own before/after `git status --porcelain` guard on every invocation and by
+      manual checks bracketing the sibling-suite and sanity-check runs above)*
 
 **Timing**: 30 minutes
 
