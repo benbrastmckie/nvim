@@ -52,6 +52,14 @@
 **/.scope-lock/
 **/.sessions/
 **/.freshness-warn-streak.json
+# Durable redeploy ledger (specs/.orchestrator-deploy-ledger.json by default): a machine-local,
+# cross-invocation record, distinct in KIND from every other pattern in this block above. It is
+# gitignored not because it is disposable per-cycle scratch, but because it describes THIS
+# machine's own .claude/ deploy state and would mislead if committed and read on another clone.
+# Every read is hash-gated (see agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh),
+# so a stale or git-restored copy can only ever trigger an extra redeploy, never a wrong skip.
+# See .claude/context/standards/orchestrator-runtime-files.md's Class Table for the full note.
+**/.orchestrator-deploy-ledger.json
 # Note: specs/events.jsonl and specs/errors.json are deliberately NOT ignored — they are
 # durable stores (see .claude/context/formats/events-format.md and errors-format.md). Do not
 # add either here.

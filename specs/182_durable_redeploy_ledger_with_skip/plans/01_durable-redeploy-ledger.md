@@ -315,24 +315,24 @@ there. If it does not, export `DEPLOY_LEDGER_FILE` explicitly in the Group 11 se
 
 ---
 
-### Phase 4: Register the ledger as a gitignored runtime file [NOT STARTED]
+### Phase 4: Register the ledger as a gitignored runtime file [COMPLETED]
 
 **Goal**: The ledger is never committed, and the runtime-file policy documents its distinct
 tracking disposition.
 
 **Tasks**:
-- [ ] Add a member for `.orchestrator-deploy-ledger.json` to
+- [x] Add a member for `.orchestrator-deploy-ledger.json` to
   `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh` (all parallel arrays in
   lockstep; update the header's member count and the enumeration comment).
-- [ ] Update `context/standards/orchestrator-runtime-files.md`: a new Class Table row (writer:
+- [x] Update `context/standards/orchestrator-runtime-files.md`: a new Class Table row (writer:
   the orchestrate-cycle-plan.sh checkpoint; reader: the same checkpoint on later invocations;
   cleanup: never, since it is a single rolling record overwritten in place; disposition:
   **Durable, machine-local (gitignored)**, hash-gated on read). Add a short subsection explaining
   that a gitignored file here does not mean ephemeral semantics. Update the pinned "Consumer Repo
   Setup" fenced block so it stays byte-identical to `runtime_ignore_block()`.
-- [ ] Add the pattern to the repo-root `/home/benjamin/.config/nvim/.gitignore` ephemeral block
+- [x] Add the pattern to the repo-root `/home/benjamin/.config/nvim/.gitignore` ephemeral block
   (this is a hand-maintained repo file, not a `.claude/**` deploy artifact).
-- [ ] Update `scripts/tests/test-runtime-file-tracking.sh` Case 5's member count and message.
+- [x] Update `scripts/tests/test-runtime-file-tracking.sh` Case 5's member count and message.
 
 **Timing**: 1 hour
 

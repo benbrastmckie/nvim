@@ -53,6 +53,25 @@ Every runtime file falls into exactly one of two classes:
 | `specs/.commit-lock/` (directory) | `task-lock.sh`'s `acquire_commit_mutex`/`cmd_commit_acquire`, called from `scripts/git-commit-scoped.sh` to serialize the `git add` + `git commit` pair around scoped commits — a DISTINCT mutex from `.scope-lock/` above (distinct reentrancy flag, distinct staleness/budget: 30s/15000ms vs 10s/5000ms, sized for up to `MAX_TASKS=8` concurrent committers) | Same script's own acquire loop | `release_commit_mutex` (`rm -rf`) at the end of the held critical section, or reclaimed by a waiter past the holder-declared `stale_sec` (default 30s) | **Ephemeral** (directory class, like `.lock/`) |
 | `specs/.errors.lock` | `scripts/errors-append.sh` (`flock -x` guard around both its `append` and read-modify-write subcommands, held across the entire read → merge/transform → validate → write) | Itself, for the duration of a single invocation | Released by `flock` at the end of the invocation | **Ephemeral** — structurally identical to `specs/.events.lock` above |
 | `specs/tmp/` (directory, e.g. `claude-tts-notify.log`) | `hooks/tts-notify.sh` and `scripts/lifecycle-notify.sh` (append-only notification log, `LOG_FILE="specs/tmp/claude-tts-notify.log"`); `scripts/state-write.sh` also stages its own private `mktemp` write-ahead and spill files here (`TMP_DIR="$PROJECT_ROOT/specs/tmp"`) | The notify hooks read their own log only to append; `state-write.sh`'s staging files are read once by the same process that wrote them, immediately before `mv` | The notify log is append-only and never cleaned up by this policy (an operator's own concern); `state-write.sh`'s staging/spill files are removed by its own `mv`/cleanup trap within the same invocation | **Ephemeral** (directory class, like `.lock/`; deliberately root-scoped — `/specs/tmp/` — rather than `**/`-prefixed, since every writer targets the `specs/` top level only, never a per-task directory) |
+| `specs/.orchestrator-deploy-ledger.json` | `scripts/orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint, via `scripts/lib/deploy-ledger-lib.sh`'s `deploy_ledger_write` (one of the checkpoint's five outcome branches: `clean`, `pre_existing`, `filtered`, `deploy_failed`, `blocking`) | The same checkpoint, on every LATER `/orchestrate` invocation (`deploy_ledger_read` + `deploy_ledger_decide`, consulted before the checkpoint's first expensive call) | Never — a single rolling record, overwritten in place (atomic tmp+`mv`) on every write; no cleanup site removes it | **Durable, machine-local (gitignored), hash-gated on read** — see the note immediately below; this is a THIRD disposition, distinct from both Ephemeral and (tracked) Durable provenance above |
+
+### A third disposition: durable, machine-local, and gitignored
+
+`specs/.orchestrator-deploy-ledger.json` does not fit either of the two classes in "The Two-Class
+Split" above. It is not **Ephemeral**: unlike every other row in this table, it is deliberately
+DURABLE cross-invocation memory — the whole point of the durable redeploy ledger is that it
+survives between separate `/orchestrate` runs, which is the opposite of per-cycle scratch state.
+It is also not (tracked) **Durable provenance**: it is gitignored, not committed. The reason it is
+gitignored despite being durable is that it describes THIS machine's own local `.claude/` deploy
+state — content-hashing the source-store tree currently sitting on disk here — which would be
+actively misleading if committed and read back on a different clone or a different machine's
+checkout. A gitignored file here does NOT mean ephemeral, freshness-blind semantics: every read
+is hash-gated (`deploy_ledger_decide` compares the ledger's recorded aggregate/per-path hashes
+against a freshly recomputed `deploy_ledger_hash_state`), so a stale, git-restored, or
+hand-edited copy can only ever cause an extra, unnecessary redeploy — never a false skip. See
+`context/patterns/batch-orchestration-guardrails.md`'s "Durable redeploy ledger" paragraph for the
+full skip-rule contract, and `scripts/lib/deploy-ledger-lib.sh`'s own header for the function-level
+contract.
 
 **Not classified here (reviewed and deliberately excluded)**: `.stray-handoff-{timestamp}.json`,
 and, for the identical reason, `.stale-loop-guard-{ts}.json` / `.stale-churn-state-{ts}.json`.
@@ -74,7 +93,7 @@ purpose is later human diffing across two points in time. It is never a control-
 does not fit the ephemeral rationale, and it is not a per-dispatch audit trail either, so it is
 not durable provenance — same "preserve the evidence, do not gitignore it" class as the
 stray-handoff/stale-guard trio above. It is deliberately left out of both classes and out of the
-lib's 17-member enumeration.
+lib's 18-member enumeration.
 
 ### The bare-vs-suffixed `.return-meta.json` distinction
 
@@ -362,6 +381,7 @@ repo's **own root** `/.gitignore` **by hand**:
 **/.commit-lock/
 **/.errors.lock
 /specs/tmp/
+**/.orchestrator-deploy-ledger.json
 ```
 
 Run `check-runtime-file-tracking.sh` afterward to confirm coverage (see "Verification" below).
@@ -399,7 +419,7 @@ reader does not re-litigate them:
 This block, `scripts/check-runtime-file-tracking.sh`'s two internal lists (Check A's probe array
 and Check B's tracked-file-regex array), and both deploy-harness test fixtures
 (`scripts/tests/test-deploy-orphans.sh`, `scripts/tests/test-deploy-propagation.sh`) are five
-sites that must agree on the same 17-member class. Before this decision, they were three
+sites that must agree on the same 18-member class. Before this decision, they were three
 hand-maintained enumerations plus two fixtures claiming (falsely, by the time this was audited)
 to "mirror" this markdown block by hand — the exact shape that let `.deploy-lock/`,
 `.scope-lock/`, `.commit-lock/`, `.errors.lock`, and `.dispatch/` drift out of sync across the
@@ -429,7 +449,7 @@ does not replace it. A repo with full coverage above is protected purely by giti
 of what any automated `git add` stages.
 
 **A sixth site, added by the consumer-bootstrap work**: `scripts/lib/runtime-file-patterns.sh`
-also exports `runtime_specs_ignore_block()`, a `specs/`-relative rewrite of the same 17-member
+also exports `runtime_specs_ignore_block()`, a `specs/`-relative rewrite of the same 18-member
 class (root-scoped patterns converted from repo-root form to `specs/`-relative form; `**/`-prefixed
 patterns pass through unchanged). Its sole writer is `scripts/init-specs.sh`, which uses it to
 populate the managed block of a fresh consumer repo's `specs/.gitignore` — see "Consumer Repo

@@ -4,7 +4,7 @@
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
 #
-# Exports one canonical record per class member (17 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (18 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -24,15 +24,22 @@
 # RUNTIME_FILE_IDS -- index i's id, pattern, probe, regex, and dir flag/basename all describe the
 # SAME class member) or call the three accessor functions below.
 
-# ─── Canonical class membership (17 members) ───────────────────────────────────────────────────
+# ─── Canonical class membership (18 members) ───────────────────────────────────────────────────
 # One entry per array, per member, in the exact order the "Consumer Repo Setup" gitignore block
 # emits them: the 11 members already covered before this lib existed, then `.dispatch/` (already
 # gitignored and already probed by the pre-existing Check A, but missing from the pre-existing
 # Check B list and the standards block -- a live divergence this lib closes), then the four
 # further gaps found by this task's sweep (`.deploy-lock/`, `.scope-lock/`, `.commit-lock/`,
 # `.errors.lock`), then `tmp` (specs/init-consumer-specs task): the TTS/lifecycle notify hooks'
-# log directory, and also where state-write.sh stages its own mktemp write-ahead files. Do not
-# reorder without also re-checking runtime_ignore_block() callers that assume this is the
+# log directory, and also where state-write.sh stages its own mktemp write-ahead files. Then
+# `deploy-ledger` (the durable redeploy ledger task, `lib/deploy-ledger-lib.sh`'s
+# `deploy_ledger_path` default `specs/.orchestrator-deploy-ledger.json`): unlike every other
+# member here, this one is DURABLE, MACHINE-LOCAL cross-invocation state, not per-cycle scratch
+# -- it is gitignored not because it is disposable, but because it describes THIS machine's own
+# `.claude/` deploy state and would mislead on another clone; every read is hash-gated so a
+# stale or git-restored copy can only ever cause an extra redeploy, never a wrong skip. See
+# context/standards/orchestrator-runtime-files.md's Class Table for the full disposition note.
+# Do not reorder without also re-checking runtime_ignore_block() callers that assume this is the
 # documented block's order.
 #
 # `tmp` is deliberately ROOT-SCOPED (`/specs/tmp/`), not the `**/`-prefixed form every other
@@ -61,6 +68,7 @@ declare -a RUNTIME_FILE_IDS=(
   "commit-lock"
   "errors-lock"
   "tmp"
+  "deploy-ledger"
 )
 
 # Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
@@ -82,6 +90,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.commit-lock/"
   "**/.errors.lock"
   "/specs/tmp/"
+  "**/.orchestrator-deploy-ledger.json"
 )
 
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
@@ -105,6 +114,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/.commit-lock/owner"
   "specs/.errors.lock"
   "specs/tmp/claude-tts-notify.log"
+  "specs/.orchestrator-deploy-ledger.json"
 )
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
@@ -127,16 +137,17 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '/\.commit-lock/'
   '\.errors\.lock$'
   '^specs/tmp/'
+  '\.orchestrator-deploy-ledger\.json$'
 )
 
 # Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "1"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "1" "0"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "tmp"
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "tmp" ""
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
@@ -175,11 +186,12 @@ runtime_ignore_block() {
 **/.commit-lock/
 **/.errors.lock
 /specs/tmp/
+**/.orchestrator-deploy-ledger.json
 BLOCK_EOF
 }
 
 # runtime_specs_ignore_block
-# Emits the same 17-member class as runtime_ignore_block() above, but with every pattern
+# Emits the same 18-member class as runtime_ignore_block() above, but with every pattern
 # rewritten relative to `specs/` instead of the repo root, for a `specs/.gitignore` file (whose
 # patterns are matched relative to the directory the .gitignore file lives in, not the repo
 # root). MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS -- never a second hand-written literal
