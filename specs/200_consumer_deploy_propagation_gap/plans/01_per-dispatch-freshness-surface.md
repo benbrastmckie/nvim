@@ -412,27 +412,34 @@ another rather than padding the count.
 
 ---
 
-### Phase 6: Measure the per-dispatch cost against the baseline [NOT STARTED]
+### Phase 6: Measure the per-dispatch cost against the baseline [COMPLETED]
 
 **Goal**: Satisfy the acceptance requirement that the chosen remedy's wall-clock cost is measured
 and shown not to reintroduce the regression that removing the fleet walk from the blocking path
 resolved.
 
 **Tasks**:
-- [ ] Measure the added per-dispatch cost directly: time `skill_preflight_update` with and
-      without the new surface, over at least 5 runs each, and record the delta.
-- [ ] Measure a realistic multi-dispatch session: count the dispatches a representative
+- [x] Measure the added per-dispatch cost directly: time `skill_preflight_update` with and
+      without the new surface, over at least 5 runs each, and record the delta. *(completed: 10
+      runs each; ~106ms added, worst-case-shaped fixture forcing every extension to genuinely
+      recompute `git log -1`)*
+- [x] Measure a realistic multi-dispatch session: count the dispatches a representative
       `/orchestrate` cycle performs and multiply by the measured per-dispatch delta to get a
-      session-level total. Record the dispatch count used and how it was obtained.
-- [ ] Contrast the session-level total against the recorded cost profile of the fleet-wide
+      session-level total. Record the dispatch count used and how it was obtained. *(completed:
+      13 dispatches, sourced from CLAUDE.md's own Hard Mode section rather than invented; also
+      recorded the 3-dispatch minimal-round case)*
+- [x] Contrast the session-level total against the recorded cost profile of the fleet-wide
       consumer walk (~10 minutes across the registered consumer repos) and state the ratio
-      explicitly.
-- [ ] State the scaling argument with the Phase 1 numbers: cost scales with the checking repo's
-      own extension count, never with the registered-consumer count.
-- [ ] Append all of this to `specs/200_consumer_deploy_propagation_gap/measurements.md` under a
+      explicitly. *(completed: ~435x and ~1,875x cheaper respectively)*
+- [x] State the scaling argument with the Phase 1 numbers: cost scales with the checking repo's
+      own extension count, never with the registered-consumer count. *(completed)*
+- [x] Append all of this to `specs/200_consumer_deploy_propagation_gap/measurements.md` under a
       clearly separated section, keeping the Phase 1 baseline intact and comparable.
-- [ ] If the measured session-level total exceeds a stated ceiling the implementer records up
+      *(completed)*
+- [x] If the measured session-level total exceeds a stated ceiling the implementer records up
       front, record the overrun explicitly and flag it rather than accepting it silently.
+      *(completed: 5-second ceiling stated up front; both measured totals, 1.38s and 0.32s, are
+      well under it -- no overrun)*
 
 **Timing**: 1.0 hours
 

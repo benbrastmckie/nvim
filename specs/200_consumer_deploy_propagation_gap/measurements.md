@@ -93,3 +93,65 @@ Result: **5 registered consumers** (`.dotfiles`, `BimodalLogic`, `ModelChecker`,
   --consumer-report`) costs **~10 minutes** walking the registered consumer set — currently 5
   repos, but the cost driver is the fleet size, categorically different from the per-repo,
   per-dispatch cost above.
+
+## Phase 6: Per-dispatch cost vs. the fleet-walk regression it must not reintroduce
+
+### 1. Added per-dispatch cost: `skill_preflight_update` with vs. without the new surface
+
+Method: a fixture repo (isolated, real deployed `update-task-status.sh` dependency chain copied
+in) using THIS repo's own real `.claude-extensions.json` shape (6 extensions), with every
+`source_dir` repointed at this repo's real `agent-system/extensions/<name>` directories and
+`source_git_head` deliberately bogus, so every extension is STALE and the comparison walks real
+git history exactly as it would in live use (not a trivial 0-extension or already-cached case).
+10 runs each, `date +%s%N` deltas around the function call.
+
+- **`skill_deploy_freshness_stale_names` alone** (10 runs): 102, 101, 107, 110, 104, 100, 101,
+  100, 101, 104 ms -> min 100ms, median 101.5ms.
+- **`skill_preflight_update` WITH the surface** (10 runs): 254, 263, 262, 279, 274, 255, 257,
+  263, 254, 240 ms -> median 259.5ms.
+- **`skill_preflight_update` WITHOUT the surface** (10 runs, the helper shadowed with a no-op
+  function defined AFTER sourcing -- no file on disk edited, source-store or deployed): 154,
+  147, 144, 149, 159, 157, 148, 153, 166, 155 ms -> median 153.5ms.
+- **Added per-dispatch delta: ~106ms** (259.5 - 153.5), consistent with the ~101.5ms isolated
+  measurement above (the small difference is call overhead/variance, not a second cost driver).
+
+This is higher than Phase 1's ~115-149ms for the WHOLE `check-deploy-freshness.sh` process
+because this fixture forces every extension to recompute `git log -1` against a real,
+non-trivially-sized `agent-system/extensions/<name>` history (worst-case-shaped), whereas Phase
+1's number is this repo's actual current (mostly-fresh, smaller-diff) state. Both are "the same
+class" (double-digit-to-low-triple-digit milliseconds), not orders of magnitude apart.
+
+### 2. Session-level total
+
+Dispatch count: rather than inventing a number, reusing the one already recorded in this
+project's own documentation (`CLAUDE.md`'s Hard Mode section) for a real, completed
+high-complexity task: **13 dispatches** (the BimodalLogic per-phase-dispatch baseline, 9
+H-techniques, 0 lines -> 2,400+ lines). A minimal single-round task (research + plan + one
+implement phase) is **3 dispatches**.
+
+- 13-dispatch session: 13 x 106ms = **1.38 seconds** total added cost.
+- 3-dispatch minimal session: 3 x 106ms = **0.32 seconds** total added cost.
+
+**Stated ceiling** (recorded before comparing, per this phase's own task list): a per-session
+total under **5 seconds** counts as "cheap" for a pull-side check that fires only on this
+session's own live dispatches. Both figures above (1.38s and 0.32s) are well under this ceiling
+-- **no overrun**.
+
+### 3. Contrast against the fleet-wide walk this change must not reintroduce
+
+The previously-removed `--consumer-report` fleet walk costs **~10 minutes (600,000ms)** across
+the registered consumer set (5 repos today; historically described as up to ~50 in the
+dispatch's own framing).
+
+- 600,000ms / 1,380ms (13-dispatch session) = **~435x cheaper**.
+- 600,000ms / 320ms (3-dispatch minimal session) = **~1,875x cheaper**.
+
+### 4. Scaling argument (restated from Phase 1, now with the per-dispatch number folded in)
+
+The added cost scales with **the checking repo's own extension count** (6 in this repo, 7 in
+`~/Projects/BimodalLogic`) multiplied by **the number of dispatches in this session** -- it
+NEVER scales with the size of the registered-consumer fleet (5 today). This is the categorical
+difference between a pull-side check (each repo checks only itself, only when it is actually
+being used) and the push-side fleet scan Task 180 correctly removed from the blocking path: the
+pull-side cost is bounded by a quantity under THIS session's own control, while the push-side
+cost grows with a quantity that is not.
