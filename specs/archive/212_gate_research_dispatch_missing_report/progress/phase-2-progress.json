@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Research report-file gate and report_missing output",
+  "started_at": "2026-09-18T21:20:00Z",
+  "last_updated": "2026-09-18T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add report/return-meta existence gate before researched transition, record ARTIFACTS_MISSING_ON_SUCCESS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Skip artifact link/round advance/commit when research_gate_failed; verdict=failed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Compute and emit report_missing output field; update header/docs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md"]},
+    {"id": 4, "description": "Update system-defect-discrimination.md detector row", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 5, "description": "Add fixtures D-G", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Run test file and shellcheck", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

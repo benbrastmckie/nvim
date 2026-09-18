@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Author the regression suite and demonstrate RED",
+  "started_at": "2026-09-17T00:00:00Z",
+  "last_updated": "2026-09-17T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-state-write-spill-names.sh with fixture-rooted setup (Cases A-D)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-state-write-spill-names.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Run suite against unmodified script and capture RED output for Cases A, B, C",
+      "status": "done",
+      "files_touched": [],
+      "note": "Cases A, B, C fail as expected (2 passed, 3 failed). Case A: both --argjson-file bindings resolve to FIRST file's value. Case B: mixed call corrupts .spilled (NOTARRAY instead of the auto-spilled array). Case C: duplicate NAME silently exits 0 with no diagnostic. Case D and the real-tree guard pass (invariants, not defect probes)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Inject the freshness signal into the dispatch brief",
+  "started_at": "2026-09-18T08:05:00Z",
+  "last_updated": "2026-09-18T08:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read Stage 3.5 output section and final block-writing brace group to confirm the optional-block pattern", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Stage 3.5 output computing stale-extension list via Phase 3 helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Emit <deploy-freshness-context> block when list non-empty, alongside other injected blocks", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "State partial-staleness trap inside the block text", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Forbid hand-patching in the block text", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Confirm empty-list build is byte-identical to pre-change output", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Requires redeploying this repo's core extension before the existing deployed-first-resolution test suites (test-skill-base-lifecycle.sh, test-orchestrate-build-dispatch.sh) actually exercise the new source-store code -- deployed .claude/ tree is stale relative to source until redeployed (expected, per plan's Risk table). Deferred redeploy to right after Phase 4 lands, before Phase 5 regression tests are written, so Phase 5 tests pin real behavior rather than a stale copy."
+}

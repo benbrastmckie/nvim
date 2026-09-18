@@ -1,0 +1,36 @@
+{
+  "phase": 5,
+  "phase_name": "Update standards doc and lint messaging",
+  "started_at": "2026-09-18T00:40:00Z",
+  "last_updated": "2026-09-18T00:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Rewrite Consumer Repo Setup section: automatic path, specs/.sessions/ coverage finding, retained legacy manual block",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add Automatic-wiring decision record (deploy, gate-in, coordination note)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    },
+    {
+      "id": 3,
+      "description": "Reword check-runtime-file-tracking.sh Check A failure message (no logic change)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-runtime-file-tracking.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Confirm Check B already fails on tracked ephemeral files independent of ignore coverage (regression pin, not new behavior); shellcheck clean; Case 3 byte-identity re-verified",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

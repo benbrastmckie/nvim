@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Per-dispatch freshness surface in skill-base.sh",
+  "started_at": "2026-09-18T07:40:00Z",
+  "last_updated": "2026-09-18T08:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm skill_preflight_update is the per-dispatch site (grep call sites)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Source deploy-freshness-lib.sh in skill-base.sh via two-candidate resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "Add skill_deploy_freshness_stale_names helper, exported for Phase 4 reuse", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 4, "description": "Call from skill_preflight_update, emit loud WARN block on non-empty list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 5, "description": "Confirm no-abort contract under set -e for missing library/no-extensions-json", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm streak-counter file untouched; skill-base.sh stays Class C (no set line)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run full core test suite (run-all.sh) baseline for Phase 3 full verification tier; redeploy this repo so deployed-first test resolution exercises new code", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Ran regression suites before redeploying", "result": "gave false pass (tested stale deployed copy, not new source-store code)", "reason": "test suites resolve deployed-tree-first; redeployed via deploy-headless.sh, then re-ran and got real signal"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Redeployed this repo (bash .claude/scripts/deploy-headless.sh, default non-destructive resync) mid-phase so subsequent regression suites (deployed-first resolution) exercise the new source-store code rather than a stale copy. verify-deploy PASS 33/33. Confirmed core extension no longer reads STALE after redeploy. test-skill-base-lifecycle.sh: 28/28 pass. test-deploy-freshness.sh: 26/26 pass. Full run-all.sh: 83 passed, 1 failed, 0 skipped, 84 total. The one failure is test-verify-deploy-context-budget.sh's case4 (byte-count drift on commands/orchestrate.md exceeding its configured ceiling) -- confirmed PRE-EXISTING and unrelated to this task: orchestrate.md was last modified by an unrelated task (per git log) with zero uncommitted diff on it now, and measure-eager-context.sh's tracked file set (CLAUDE.md/rules/commands) never includes scripts/skill-base.sh or scripts/orchestrate-build-dispatch.sh, the only two files this phase touched. No new failures introduced."
+}

@@ -1,0 +1,56 @@
+{
+  "phase": 1,
+  "phase_name": "Extend runtime-file-patterns.sh with specs/tmp and a specs-relative emitter",
+  "started_at": "2026-09-18T00:00:00Z",
+  "last_updated": "2026-09-18T00:01:36Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add 17th member (tmp) to every parallel array in runtime-file-patterns.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Update lib header comment (16 -> 17 members, tmp root-scoping rationale)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add runtime_specs_ignore_block() derived mechanically from RUNTIME_FILE_PATTERNS",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Regenerate fenced markdown block in orchestrator-runtime-files.md Consumer Repo Setup",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    },
+    {
+      "id": 5,
+      "description": "Update Single source of truth decision record (16 -> 17, sixth-site note, Class Table row)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    },
+    {
+      "id": 6,
+      "description": "shellcheck the lib",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.x",
+      "description": "test-runtime-file-tracking.sh Case 5 hardcoded the class count as 16",
+      "type": "altered",
+      "reason": "Not in the plan's Files to modify list for Phase 1, but the hardcoded count would fail after the 17th member is added, breaking Phase 1's own stated verification (test-runtime-file-tracking.sh must pass). Updated the hardcoded 16 -> 17 and its two adjacent messages.",
+      "annotation": "N/A (companion test file, not a plan checklist item)"
+    }
+  ]
+}

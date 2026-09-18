@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "Contract documentation and final gate",
+  "started_at": "2026-09-18T18:35:00Z",
+  "last_updated": "2026-09-18T18:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add ## Cross-Task Territory (Base Mode) section to territory.md and update the opening paragraph to name both consumers",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/territory.md"]
+    },
+    {
+      "id": 2,
+      "description": "Grep source store for stale hard-mode-only territory claims; fix any found",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]
+    },
+    {
+      "id": 3,
+      "description": "Run check-task-references.sh over touched deliverables; full shellcheck + both test suites",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "check-task-references.sh takes one PATH_SCOPE argument (not a file list); ran REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh agent-system/extensions/core -- PASS, 0 occurrences.",
+    "Found and fixed one genuinely stale claim outside the two directories the plan's grep example named: general-implementation-agent.md's Stage 3.6 said territory 'base mode sends none', now false for a multi-task cycle with a concurrent sibling."
+  ]
+}

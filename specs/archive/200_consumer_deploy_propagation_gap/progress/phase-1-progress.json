@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Confirm premises and record the cost baseline",
+  "started_at": "2026-09-18T07:13:52Z",
+  "last_updated": "2026-09-18T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm the four lean call sites already match source (diff source vs BimodalLogic deployed)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Measure single-invocation cost of check-deploy-freshness.sh in this repo and BimodalLogic (>=5 runs each)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Count extensions deployed in each repo via .claude-extensions.json", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record registered-consumer count from known-consumer-repos.json", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write all measurements to measurements.md", "status": "done", "files_touched": ["specs/200_consumer_deploy_propagation_gap/measurements.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

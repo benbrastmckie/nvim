@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "task_number": 212,
+  "dispatch_seq": 13,
+  "session_id": "sess_1789759023_044f43",
+  "phases_completed": 6,
+  "phases_total": 6,
+  "summary": "6-phase implementation closing both postflight defects: dispatch-derived --handoff-expected predicate replacing the agent-name allowlist, a research report-file gate with report_missing output, a message-findings recovery helper wired into Move 3 under a named Postflight Boundary exception, and hardened deliverable-file-mandate contracts across all 21 research agents plus planner-agent and general-implementation-agent. 447 tests pass across 5 suites, shellcheck clean, redeployed and confirmed.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/212_gate_research_dispatch_missing_report/summaries/01_gate-research-report-handoff-predicate-summary.md",
+      "summary": "Full implementation summary covering all 6 phases, decisions, deviations, and verification evidence."
+    }
+  ]
+}

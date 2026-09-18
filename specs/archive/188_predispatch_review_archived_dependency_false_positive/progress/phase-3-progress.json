@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Class A dependency test fixtures",
+  "started_at": "2026-09-17T00:30:00Z",
+  "last_updated": "2026-09-17T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add lib/task-lookup-lib.sh to setup_sandbox copy list and require_file preflight", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 2, "description": "Add write_archive_state helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 3, "description": "Scenario 5: archived dependency resolves as archived_satisfied", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 4, "description": "Scenario 6: genuinely absent dependency still nonexistent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 5, "description": "Scenario 7: no archive/state.json present at all", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 6, "description": "Run full suite, confirm 0 failures and PASS count increased", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Temporarily reverted Phase 1's archived_satisfied bucket branch to `elif false then ...`", "result": "used as fixture-validity check, not a failed approach", "reason": "confirmed scenario 5 FAILs without the fix (1 FAIL, 20 PASS), then restored the real branch and re-confirmed 21 PASS / 0 FAIL"}
+  ],
+  "handoff_count": 0
+}

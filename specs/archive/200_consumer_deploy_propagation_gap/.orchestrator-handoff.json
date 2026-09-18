@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "summary": "Closed the consumer-deploy-propagation gap by re-firing the existing per-extension freshness comparison once per skill/agent dispatch (skill_preflight_update) and injecting the result into the generated dispatch file's new <deploy-freshness-context> block; verified end-to-end by redeploying this repo and ~/Projects/BimodalLogic, both clean.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/200_consumer_deploy_propagation_gap/summaries/01_per-dispatch-freshness-surface-summary.md",
+      "summary": "7-phase implementation summary covering the per-dispatch freshness surface, dispatch-brief injection, wiring tests, cost measurement, and end-to-end verification."
+    }
+  ],
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "continuation_path": null
+}

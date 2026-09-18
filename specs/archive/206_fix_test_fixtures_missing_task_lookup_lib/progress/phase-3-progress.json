@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Add permanent regression coverage for the redirect shape",
+  "started_at": "2026-09-17T00:35:00Z",
+  "last_updated": "2026-09-17T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add new EMIT per-line case for var-redirect + one legitimate emit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh"]},
+    {"id": 2, "description": "Verify new case FAILS against pre-fix predicate", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run whole suite, confirm no regression", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": {
+    "regression_verification": "Temporarily replaced both the source-store and deployed copies of lint-json-channel-discipline.sh with the pre-Phase-2 content (git show bef2e8904:...), re-ran the suite, and confirmed EMIT case 3 fails (exit=1, VIOLATION reported) against the pre-fix predicate. Restored both files byte-for-byte (diff confirmed empty against the fixed content) before re-running the full suite, which returned to 12 passed, 0 failed.",
+    "shellcheck": "All three shellcheck findings observed across the touched files (SC2329 trap-invoked cleanup() false-positive in both test-postflight-deploy-gate.sh and test-lint-json-channel-discipline.sh; SC2034 unused YELLOW and SC2016 single-quote note in lint-json-channel-discipline.sh) are pre-existing, confirmed by shellcheck runs against the pre-task committed content (bef2e8904 / 339493253) -- identical findings, same line numbers, unaffected by this task's edits. Every line added by this task introduces zero new shellcheck findings."
+  }
+}

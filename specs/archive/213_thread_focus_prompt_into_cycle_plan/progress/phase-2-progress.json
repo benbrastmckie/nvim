@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Caller wiring - SKILL.md Move 1 and the command's dry-run short-circuit",
+  "started_at": "2026-09-18T05:15:00Z",
+  "last_updated": "2026-09-18T05:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "SKILL.md Setup list add focus_prompt", "status": "not_started", "files_touched": []},
+    {"id": 2, "description": "SKILL.md Move 1 focus_args array wiring", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "commands/orchestrate.md delegation-context bullet", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "commands/orchestrate.md dry-run short-circuit forwarding", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "commands/orchestrate.md dry-run options-table note + force-phases gap note", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

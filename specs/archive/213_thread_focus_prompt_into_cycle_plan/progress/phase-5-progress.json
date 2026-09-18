@@ -1,0 +1,34 @@
+{
+  "phase": 5,
+  "phase_name": "Artifact-based admission for forced plan and implement",
+  "started_at": "2026-09-18T07:20:00Z",
+  "last_updated": "2026-09-18T08:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "state precedence: Phase 3 exclusion evaluated first", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "forced implement with no plan -> blocked row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "plan admission: reviser vs planner based on plan presence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "orchestrate-build-dispatch.sh plan branch: existing_plan_path/revision_reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "confirm command-route-agent.sh not consulted for plan phase", "status": "done", "files_touched": []},
+    {"id": 6, "description": "admission tests in test-orchestrate-cycle-plan.sh (Group 23) + Group 21 Case E fix", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "newest-report pin test + existing_plan_path rendering test in test-orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.verification-build-dispatch-suite",
+      "description": "Verification bullet: bash scripts/tests/test-orchestrate-cycle-plan.sh and bash scripts/tests/test-orchestrate-build-dispatch.sh pass.",
+      "type": "altered",
+      "reason": "test-orchestrate-build-dispatch.sh resolves its SUT deploy-tree-first by documented design (validates production behavior). Against the pre-Phase-7-redeploy deployed copy, the 2 new Group 11 assertions (existing_plan_path/revision_reason) fail (70/72) because that deployed file predates this phase's source-store edit. Verified correctness by temporarily syncing the source-store file over the deployed copy (all 72 pass), then reverting the deployed copy to its exact original state (no lasting .claude/** change). Will read green with no manual step once Phase 7 redeploys.",
+      "annotation": "*(deviation: altered — see plan bullet for full reasoning; resolved by Phase 7's redeploy)*"
+    },
+    {
+      "task_id": "5.group21-case-e-fix",
+      "description": "Group 21 Case E (--force-phases implement on a completed task dispatches) broke under the new artifact-based admission rule since its fixture task had no plan artifact.",
+      "type": "altered",
+      "reason": "Phase 5's no-plan-blocks-forced-implement rule correctly caught this pre-existing fixture gap (task 2104 had no plans/ directory). Fixed by giving the fixture task a plan artifact, preserving the case's original intent (forced implement admits a terminal task) while satisfying the new artifact rule -- not a weakening of either assertion.",
+      "annotation": "*(deviation: altered — Group 21 Case E fixture now includes a plan artifact so both the terminal-admission and artifact-based rules hold simultaneously)*"
+    }
+  ],
+  "handoff_count": 0
+}

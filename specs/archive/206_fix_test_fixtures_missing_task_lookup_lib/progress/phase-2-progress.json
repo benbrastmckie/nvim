@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the lint predicate's variable-named redirect false positive",
+  "started_at": "2026-09-17T00:10:00Z",
+  "last_updated": "2026-09-17T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run lint-json-channel-discipline.sh and record red baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append exclusion stage to check_emit_perline() pipeline", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh"]},
+    {"id": 3, "description": "Add explanatory comment above new stage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh"]},
+    {"id": 4, "description": "Re-run real corpus and confirm 0 violations", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run test-lint-json-channel-discipline.sh, confirm both cases pass", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write suite (2) decision into notes for summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Re-ran fixture suite immediately after source-store edit without redeploying", "result": "failed", "reason": "test-lint-json-channel-discipline.sh's resolve_candidate is deploy-tree-first: it picked up the stale .claude/ deployed copy, not the source-store fix. Ran bash .claude/scripts/deploy-headless.sh (non-destructive default mode) to sync, then the suite reflected the fix and passed 11/0."}
+  ],
+  "handoff_count": 0,
+  "notes": {
+    "suite_2_decision": "Fixed the check_emit_perline() predicate (not an allowlist entry, not a code change to orchestrate-triage-classify.sh). Rationale: (1) the write at line 225 is correct as written -- it must land in a real file because the caller consumes it via --slurpfile, so redirecting it to stdout would be wrong; (2) an allowlist entry naming this one line is narrower than the actual defect class -- any future `> \"$var\"` file-redirect write in any EMIT_PERLINE_FILES script would hit the same false positive, so allowlisting only this line leaves the predicate wrong; (3) fixing the predicate is the general fix and is verified not to over-suppress: the pre-existing EMIT case 2 (two genuine unredirected writes) and both negative controls remain unchanged after the fix (Phase 3 will add a dedicated regression case for this exact redirect shape)."
+  }
+}

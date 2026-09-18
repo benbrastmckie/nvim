@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Red-first regression tests for the three acceptance shapes",
+  "started_at": "2026-09-17T00:00:00Z",
+  "last_updated": "2026-09-18T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read test-git-commit-scoped.sh in full; reuse build_repo/run_commit/pass/fail/info patterns", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add T8 - deletion-only scoped commit case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "Add T9 - deletion mixed with modification case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 4, "description": "Add T10 - in-scope rename case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 5, "description": "Run suite against unpatched script, capture red evidence for T8/T9/T10", "status": "done", "files_touched": [], "note": "T1-T7 PASS, T8/T9/T10 FAIL as predicted: T8 hits V3 post-filter refusal (rc=2, zero positive pathspecs after filtering); T9 commits only the modification (deletion dropped, WARN emitted, D file.txt left staged, status not clean); T10 commits only the add half of the rename (WARN dropping the delete-half pathspec, D file.txt left staged)."},
+    {"id": 6, "description": "shellcheck the test file", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"], "note": "Two pre-existing SC2329 false-positive warnings on info()/cleanup() (unused-in-file / trap-invoked) fixed with disable directives + rationale comments so the file is fully shellcheck-clean; unrelated to the T8-T10 additions themselves, which introduced zero new warnings."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

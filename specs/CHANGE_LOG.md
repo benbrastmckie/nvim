@@ -12,6 +12,151 @@ Each entry includes:
 
 ---
 
+### 2026-09-18
+
+**Task 234: fix_state_write_spill_name_collision**
+- Status: completed
+- Type: meta
+- Summary: Fixed state-write.sh's spill-name collision (both --argjson-file bindings and mixed
+  --argjson-file/--argjson calls silently corrupted to the first spilled value) via a shared
+  SPILL_SEQ counter and a duplicate-NAME hard error, backed by a fixture-rooted regression suite
+  demonstrated RED-then-GREEN, redeployed and verified in .claude/scripts/, with a caller audit
+  confirming no live caller ever triggered either defect shape.
+- Artifacts: specs/archive/234_fix_state_write_spill_name_collision/{reports,plans,summaries}/01_spill-name-*.md
+
+**Task 226: fix_scoped_commit_dropping_staged_deletions**
+- Status: completed
+- Type: meta
+- Summary: Fixed git-commit-scoped.sh's V2 safety gate to classify already-staged deletions as a
+  third outcome (committed but not re-added), closing the defect where a scoped commit silently
+  dropped staged deletions/renames. Added red-first regression tests T8/T9/T10, updated header
+  documentation, and refreshed the deployed .claude/ tree to byte-identical parity.
+- Artifacts: specs/archive/226_fix_scoped_commit_dropping_staged_deletions/{reports,plans,summaries}/01_scoped-commit-staged-deletions*.md
+
+**Task 215: unwind_unconsumed_orchestrate_dispatch**
+- Status: completed
+- Type: meta
+- Summary: Added orchestrate-unwind-dispatch.sh, the sanctioned by-hand recovery path for a
+  /orchestrate dispatch prepared but never issued: it restores state.json status/last_updated/
+  session_id, the durable dispatch_seq_counter, releases the lock, deletes the dispatch file, and
+  clears pending_dispatch, or refuses cleanly. Widened orchestrate-cycle-plan.sh's
+  pending_dispatch record with the prior_* pre-image the recovery script needs, documented the
+  script across the state-machine doc, git-safety.md, and SKILL.md, and verified with a real
+  end-to-end fixture test, shellcheck, and a clean redeploy.
+- Artifacts: specs/archive/215_unwind_unconsumed_orchestrate_dispatch/{reports,plans,summaries}/01_unwind-unconsumed-dispatch*.md
+
+**Task 213: thread_focus_prompt_into_cycle_plan**
+- Status: completed
+- Type: meta
+- Summary: Fixed three coupled defects in the batch /orchestrate engine: user focus prompts now
+  thread into dispatch files, a forced-phase round now genuinely stops for the rest of a run
+  instead of falling through to status-derived dispatch, and the per-task work-cycle budget now
+  resets every run (with --continue-budget removed) while forced plan/implement admission is now
+  keyed on artifact presence rather than status. Redeployed and confirmed live in a real, separate
+  consumer repository.
+- Artifacts: specs/archive/213_thread_focus_prompt_into_cycle_plan/{reports,plans,summaries}/01_focus-*.md
+
+**Task 212: gate_research_dispatch_missing_report**
+- Status: completed
+- Type: meta
+- Summary: Replaced the two-agent handoff-writer allowlist with a dispatch-derived
+  --handoff-expected predicate (default true), added a research report-file existence gate plus
+  report_missing output and a message-findings recovery helper wired into skill-orchestrate Move
+  3, and hardened all 21 research agent contracts (plus planner-agent and
+  general-implementation-agent) against message-only delivery. 447 tests pass across 5 suites,
+  shellcheck clean, redeployed and confirmed.
+- Artifacts: specs/archive/212_gate_research_dispatch_missing_report/{reports,plans,summaries}/01_gate-research-report-handoff-predicate*.md
+
+**Task 209: init_consumer_specs_and_runtime_ignores**
+- Status: completed
+- Type: meta
+- Summary: Added an idempotent init-specs.sh bootstrap for a fresh consumer repo's specs/ state
+  (state trio + managed specs/.gitignore + untrack sweep for already-tracked runtime files), wired
+  it into all six first-touch task-creation sites plus a defensive /orchestrate call, extended
+  runtime-file-patterns.sh with the missing specs/tmp/ class member, rewrote the Consumer Repo
+  Setup standards documentation, and added an 8-case fixture suite (23 assertions) pinning every
+  acceptance criterion.
+- Artifacts: specs/archive/209_init_consumer_specs_and_runtime_ignores/{reports,plans,summaries}/01_init*.md
+
+**Task 206: fix_test_fixtures_missing_task_lookup_lib**
+- Status: completed
+- Type: general
+- Summary: Fixed test-postflight-deploy-gate.sh's missing task-lookup-lib.sh REQUIRED_LIBS entry
+  and lint-json-channel-discipline.sh's check_emit_perline() variable-redirect false positive,
+  both now green from source store and deployed copy with 0 real-corpus lint violations; added a
+  permanent regression fixture case; audited 22 sibling fixtures and defensively closed two
+  dormant instances of the same missing-lib gap (test-handoff-dispatch-identity.sh,
+  test-git-commit-scoped.sh).
+- Artifacts: specs/archive/206_fix_test_fixtures_missing_task_lookup_lib/{reports,plans,summaries}/01_fix*.md
+
+**Task 200: consumer_deploy_propagation_gap**
+- Status: completed
+- Type: meta
+- Summary: Closed the consumer-deploy-propagation gap by re-firing the existing per-extension,
+  path-scoped freshness comparison once per skill/agent dispatch (skill_preflight_update in
+  skill-base.sh) and injecting the result into the generated dispatch file
+  (orchestrate-build-dispatch.sh's <deploy-freshness-context> block), rather than building a new
+  detector. Pinned partial-staleness detection with a fixture, measured the added per-dispatch
+  cost (~106ms, ~435-1875x cheaper than the removed fleet walk), documented the decision and three
+  rejected alternatives, and verified end-to-end by redeploying both this repo and
+  ~/Projects/BimodalLogic (all four previously-cited lean call sites now confirmed byte-identical
+  to source).
+- Artifacts: specs/archive/200_consumer_deploy_propagation_gap/{reports,plans,summaries}/01_per-dispatch-freshness-surface*.md
+
+**Task 194: align_lifecycle_agent_handoff_contracts**
+- Status: completed
+- Type: meta
+- Summary: Rolled out a frozen canonical .orchestrator-handoff.json obligation block across all 64
+  dispatch[]-reachable agent contracts under agent-system/extensions/*/agents/: 6 prohibition
+  statements reversed, 56 files received an additive obligation subsection (including combined
+  research+implement variants for 10 dual-role agents and disambiguation clauses for the 9 agents
+  carrying the unrelated context-pressure handoff mechanism), and the 2 already-correct hard-mode
+  agents were verified unchanged. A full completeness sweep confirmed all 64 agents have nonzero
+  mention counts, zero surviving prohibition language, wording consistency against the frozen
+  Appendix text, the aux-dispatch orchestrator_mode:true asymmetry held everywhere, no changes to
+  orchestrate-cycle-postflight.sh or .claude/**, and a clean task-reference lint.
+- Artifacts: specs/archive/194_align_lifecycle_agent_handoff_contracts/{reports,plans,summaries}/01_handoff-obligation*.md
+
+**Task 193: carry_territory_in_base_mode_dispatch_briefs**
+- Status: completed
+- Type: meta
+- Summary: Populated --territory in every mode (not just hard mode) with a concurrent_siblings
+  payload built from every other task scheduled the same cycle, classified by explicit
+  file/coarse/undeclared file-scope granularity; added the territory.md contract pointer to
+  base-mode dispatch briefs; added a fixture reproducing the observed mixed-granularity batch
+  shape; documented the new Cross-Task Territory contract and fixed one stale hard-mode-only
+  claim.
+- Artifacts: specs/archive/193_carry_territory_in_base_mode_dispatch_briefs/{reports,plans,summaries}/01_base-mode-territory*.md
+
+**Task 188: predispatch_review_archived_dependency_false_positive**
+- Status: completed
+- Type: meta
+- Summary: All 5 plan phases were already [COMPLETED] and committed from a prior implement
+  dispatch (seq 16); that dispatch's postflight transition was refused by the completion-deploy
+  gate (exit 6) because other concurrent tasks landed further commits under
+  agent-system/extensions/core/** after this task's own Phase 5 redeploy, leaving
+  .claude-extensions.json's recorded source_git_head behind HEAD again. Re-verified this dispatch:
+  bash -n clean, exactly one trap, full suite 21/21 passing, and the deployed .claude/ copy still
+  byte-identical to the source store for all three edited files. No new source edits were needed;
+  the deploy gate's own sanctioned single-task redeploy-and-retry (command-gate-out.sh rc==6
+  branch) is expected to resolve the residual staleness at this dispatch's postflight.
+- Artifacts: specs/archive/188_predispatch_review_archived_dependency_false_positive/{reports,plans,summaries}/01_archive*.md
+
+**Task 182: durable_redeploy_ledger_with_skip**
+- Status: completed
+- Type: meta
+- Summary: Confirmed all 5 plan phases (already implemented and committed by the prior dispatch)
+  remain closed after the inter-cycle redeploy checkpoint's deploy landed cleanly. Re-ran the
+  task-specific suites -- test-deploy-ledger-lib.sh (27/27), test-orchestrate-cycle-plan.sh
+  (238/238), test-runtime-file-tracking.sh (9/9), test-deploy-orphans.sh (5/5),
+  test-deploy-propagation.sh (4/4), test-deploy-baseline-lib.sh (7/7) -- all green.
+  specs/.orchestrator-deploy-ledger.json confirms the current deploy already incorporates task
+  182's changes (task_numbers includes 182, verify_outcome "filtered"), so the prior dispatch's
+  deploy_pending block is resolved and no further redeploy is required.
+- Artifacts: specs/archive/182_durable_redeploy_ledger_with_skip/{reports,plans,summaries}/01_durable-redeploy-ledger*.md
+
+---
+
 ### 2026-09-07
 
 **Task 154: lean_challenge_statement_snapshot**

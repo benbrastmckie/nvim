@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Message-findings recovery helper",
+  "started_at": "2026-09-18T22:10:00Z",
+  "last_updated": "2026-09-18T22:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create orchestrate-recover-message-findings.sh with usage/flag parsing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh"]},
+    {"id": 2, "description": "Naming: read Artifact Round section, fallback, never-clobber", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh"]},
+    {"id": 3, "description": "Header block, banner, provenance, verbatim body", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh"]},
+    {"id": 4, "description": "Empty-message and success JSON output contract, always exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh"]},
+    {"id": 5, "description": "Create test file with all required fixtures incl. end-to-end", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh"]},
+    {"id": 6, "description": "shellcheck both new files, chmod +x, register in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "shellcheck both new files and make them executable",
+      "type": "altered",
+      "reason": "Also registered both new files in agent-system/extensions/core/manifest.json's scripts/tests arrays -- new scripts under the source store are deployed only when manifest-listed, and this was needed for Phase 6's redeploy-and-confirm step to actually place the new script under .claude/scripts/.",
+      "annotation": "*(deviation: altered -- also registered both files in manifest.json)*"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 21,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md",
+      "summary": "Class A dependency classifier now distinguishes archived-satisfied dependencies (informational) from genuinely nonexistent ones (loud), with new test coverage and synced guardrail docs."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "All 5 plan phases were already [COMPLETED] and committed from a prior implement dispatch (seq 16); that dispatch's postflight transition was refused by the completion-deploy gate (exit 6) because other concurrent tasks landed further commits under agent-system/extensions/core/** after this task's own Phase 5 redeploy, leaving .claude-extensions.json's recorded source_git_head behind HEAD again. Re-verified this dispatch: bash -n clean, exactly one trap, full suite 21/21 passing, and the deployed .claude/ copy still byte-identical to the source store for all three edited files. No new source edits were needed; the deploy gate's own sanctioned single-task redeploy-and-retry (command-gate-out.sh rc==6 branch) is expected to resolve the residual staleness at this dispatch's postflight."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/188_predispatch_review_archived_dependency_false_positive/plans/01_archive-aware-dependency-classifier.md",
+    "specs/188_predispatch_review_archived_dependency_false_positive/summaries/01_archive-aware-dependency-classifier-summary.md"
+  ],
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1789687584_deac58",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+}

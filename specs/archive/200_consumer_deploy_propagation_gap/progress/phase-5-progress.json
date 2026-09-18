@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Wiring regression tests",
+  "started_at": "2026-09-18T09:00:00Z",
+  "last_updated": "2026-09-18T09:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend test-skill-base-lifecycle.sh with WARN-on-stale case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 2, "description": "Add silence case for no .claude-extensions.json (CANNOTVERIFY)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 3, "description": "Add no-abort case for missing library at both candidate paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 4, "description": "Assert status write / extension hook / lifecycle event still run on stale path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 5, "description": "Extend test-orchestrate-build-dispatch.sh with stale/clean <deploy-freshness-context> cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Assert no code path writes specs/.freshness-warn-streak.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Asserted the events-append.sh stderr WARNING text as the lifecycle-event proxy", "result": "failed", "reason": "that warning is one-time-per-process (_EVENTS_APPEND_OBSERVABLE_WARNED guard) and had already fired in an earlier group in the same suite process; switched to asserting the unconditional .claude/tmp/events-append-observable.log sentinel append instead"},
+    {"approach": "Called skill_preflight_update after a bare `cd` into the fixture without overriding SKILL_REPO_ROOT", "result": "failed", "reason": "SKILL_REPO_ROOT is exported once, process-wide, at this suite's top-of-file source and is not updated by `cd`; the freshness helper read the REAL repo's own (accidentally-stale, mid-implementation) .claude-extensions.json instead of the fixture's fabricated one -- fixed by prefixing each call with SKILL_REPO_ROOT=\"$FIXTURE_ROOT\", matching Group 3's existing skill_link_artifacts idiom"},
+    {"approach": "Reused the same --seq value for both the stale and clean orchestrate-build-dispatch.sh fixture runs and diffed the dispatch file PATH captured from each", "result": "failed", "reason": "both calls resolve to the identical dispatch file path (keyed by task+seq), so the second run overwrote the first before the diff read it; fixed by snapshotting the stale run's content to a separate WORKDIR file immediately after that call"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Deliberate-break verification (Phase 5 verification bullet 3) done via an isolated ad hoc probe sourcing the SOURCE-STORE skill-base.sh directly (never touching .claude/**), confirming WARN_ABSENT when broken and WARN_PRESENT after restoring the source-store file byte-identical. test-skill-base-lifecycle.sh: 35/35 pass, shellcheck clean. test-orchestrate-build-dispatch.sh: 79/79 pass, shellcheck clean."
+}
