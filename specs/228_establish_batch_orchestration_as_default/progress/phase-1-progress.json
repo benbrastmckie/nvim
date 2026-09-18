@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Write canonical selection section in batch-orchestration-guardrails.md",
   "started_at": "2026-09-18T23:28:45Z",
-  "last_updated": "2026-09-18T23:45:00Z",
+  "last_updated": "2026-09-18T23:50:00Z",
   "objectives": [
     {"id": 1, "description": "Re-read guardrails.md immediately before editing", "status": "done", "files_touched": []},
     {"id": 2, "description": "Widen opening paragraph scope clause", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
@@ -10,9 +10,10 @@
     {"id": 4, "description": "Apply three research-draft fixes (mixed-shape, Situational, MAX_TASKS)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
     {"id": 5, "description": "Deterministic worked example with letter placeholders", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
     {"id": 6, "description": "Verify cited anchors exist", "status": "done", "files_touched": []},
-    {"id": 7, "description": "Commit phase 1", "status": "in_progress", "files_touched": []}
+    {"id": 7, "description": "Commit phase 1", "status": "done", "files_touched": ["specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md", "specs/228_establish_batch_orchestration_as_default/.return-meta.json"]}
   ],
   "current_objective": 7,
   "approaches_tried": [],
-  "handoff_count": 0
+  "handoff_count": 0,
+  "deviations": []
 }

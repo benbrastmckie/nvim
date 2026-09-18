@@ -102,7 +102,7 @@ No roadmap consulted (no roadmap_path in dispatch).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Write canonical selection section in batch-orchestration-guardrails.md [IN PROGRESS]
+### Phase 1: Write canonical selection section in batch-orchestration-guardrails.md [COMPLETED]
 
 **Goal**: Add the single canonical statement of the batch-as-default posture and selection rule.
 
@@ -134,7 +134,8 @@ Phases within the same wave can execute in parallel.
 - [x] Verify cited anchors exist: `multi-task-creation-standard.md` `### 4a.`,
       `orchestrate-state-machine.md` `### Batch Size Cap (MAX_TASKS)`,
       `scripts/orchestrate-batch-admit.sh`, `task-lock.md`. *(completed: all four confirmed present)*
-- [ ] Commit (explicit path only): `task 228 phase 1: add canonical batch selection section`.
+- [x] Commit (explicit path only): `task 228 phase 1: add canonical batch selection section`.
+      *(completed: commit 625afda1f)*
 
 **Timing**: 1.5 hours
 
