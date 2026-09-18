@@ -310,6 +310,29 @@ if [ "$hard_mode" = "true" ]; then
   hard_contracts_block+="</hard-mode-contracts>"
 fi
 
+# ─── Stage 3.5 output 5: deploy_freshness_context — surfaces the SAME per-extension, path-scoped
+# staleness signal skill-base.sh's skill_preflight_update already emits to stderr at dispatch
+# preflight (see that function's own comment block), but placed where the SPAWNED agent actually
+# reads it: inside the dispatch file itself. Reuses skill_deploy_freshness_stale_names (defined
+# by skill-base.sh, already sourced above at this script's own top) rather than re-deriving the
+# deploy-freshness-lib.sh call a second time. Degrades to an empty string on every failure mode
+# (library not resolvable, no .claude-extensions.json, missing jq/git, or a genuinely clean
+# tree) exactly like that function's own contract, so a build with nothing stale produces a
+# dispatch file byte-identical to one built before this feature existed — no block is emitted
+# for an empty list, matching the memory_context/lit_context/hard_contracts_block precedent
+# immediately above.
+deploy_freshness_context=""
+_stale_ext_names="$(skill_deploy_freshness_stale_names 2>/dev/null || true)"
+if [ -n "$_stale_ext_names" ]; then
+  _stale_ext_names_line="$(echo "$_stale_ext_names" | tr '\n' ' ' | sed 's/ *$//')"
+  deploy_freshness_context="<deploy-freshness-context>"$'\n'
+  deploy_freshness_context+="This repo's deployed .claude/ tree is STALE relative to the source store (agent-system/extensions/) for the following extension(s): ${_stale_ext_names_line}."$'\n'
+  deploy_freshness_context+="Documented commands and instructions sourced from those extensions' deployed files may be out of date. Verify against the source store before relying on a command or instruction from a stale extension's deployed copy."$'\n'
+  deploy_freshness_context+="A fresh-looking file elsewhere in this SAME deployed tree does NOT mean the tree is current — staleness here is per-extension, not whole-tree; a different extension can be stale even when the one you happened to check is not."$'\n'
+  deploy_freshness_context+="Remedy: redeploy via 'bash .claude/scripts/deploy-headless.sh'. Do NOT hand-patch any file under .claude/** as a substitute — that would mask this divergence instead of fixing it."$'\n'
+  deploy_freshness_context+="</deploy-freshness-context>"
+fi
+
 # ─── model resolution: pass-through, empty (never "null") when unset ───────────────────────────
 model="$model_flag"
 
@@ -436,6 +459,10 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   fi
   if [ -n "$hard_contracts_block" ]; then
     echo "$hard_contracts_block"
+    echo ""
+  fi
+  if [ -n "$deploy_freshness_context" ]; then
+    echo "$deploy_freshness_context"
     echo ""
   fi
   if [ -n "$prior_decisions_block" ]; then
