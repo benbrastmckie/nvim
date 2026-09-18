@@ -24,9 +24,11 @@
 #       dispatch_seq identity gate.
 #   (b) Return-meta recovery via orchestrate-recover-outcome.sh (now dispatch_seq-aware, D2).
 #   (c) Phase-count corroboration via skill_corroborate_phase_counts (count-only greps).
-#   (d) Writer-contract-aware recording (D1): an absent handoff from a contractual non-writer
-#       records no defect; a present-but-stale/mismatched handoff always records, regardless of
-#       writer contract.
+#   (d) Dispatch-derived handoff-expectation recording (D1): an absent handoff records
+#       HANDOFF_STALE_OR_ABSENT whenever this dispatch expected one (the default — every caller
+#       today is a `dispatch[]` row per skill-orchestrate Move 2/3), unless the caller passed
+#       `--handoff-expected false`; a present-but-stale/mismatched handoff always records,
+#       regardless of expectation.
 #   (e) user_decision relay: verdict=ask_user, payload relayed verbatim, status left as-is. This
 #       script NEVER asks and NEVER writes .decisions.json.
 #   (f) Status transition via skill_postflight_update, with the monotonic-max clamp for forced
@@ -84,7 +86,8 @@
 #     --task-dir DIR --task-type TYPE --agent NAME \
 #     [--plan-path PATH] [--cycle-count N] [--transport-error true|false] \
 #     [--force-invoked true|false] [--loop-guard-file PATH] [--dispatch-seq N] \
-#     [--dispatch-start-ts N] [--command-suffix SUFFIX] [--hard] [--dry-run]
+#     [--dispatch-start-ts N] [--command-suffix SUFFIX] [--handoff-expected true|false] \
+#     [--hard] [--dry-run]
 #
 # Output: one compact JSON line on stdout:
 #   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, halt,
@@ -139,7 +142,8 @@ Usage: orchestrate-cycle-postflight.sh <task_number> --session SID --state-file 
          --task-dir DIR --task-type TYPE --agent NAME \
          [--plan-path PATH] [--cycle-count N] [--transport-error true|false] \
          [--force-invoked true|false] [--loop-guard-file PATH] [--dispatch-seq N] \
-         [--dispatch-start-ts N] [--command-suffix SUFFIX] [--hard] [--dry-run]
+         [--dispatch-start-ts N] [--command-suffix SUFFIX] [--handoff-expected true|false] \
+         [--hard] [--dry-run]
 USAGE
 }
 
@@ -161,6 +165,7 @@ dispatch_start_ts_flag=""
 command_suffix=""
 hard_mode="false"
 dry_run="false"
+handoff_expected="true"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -178,6 +183,7 @@ while [ "$#" -gt 0 ]; do
     --dispatch-seq) dispatch_seq_flag="${2:-}"; shift 2 ;;
     --dispatch-start-ts) dispatch_start_ts_flag="${2:-}"; shift 2 ;;
     --command-suffix) command_suffix="${2:-}"; shift 2 ;;
+    --handoff-expected) handoff_expected="${2:-true}"; shift 2 ;;
     --hard) hard_mode="true"; shift ;;
     --dry-run) dry_run="true"; shift ;;
     --help|-h) usage; exit 0 ;;
@@ -217,6 +223,14 @@ case "$phase" in
   research|plan|implement) ;;
   *)
     echo "ERROR: orchestrate-cycle-postflight.sh: --phase must be one of research|plan|implement, got '$phase'." >&2
+    exit 2
+    ;;
+esac
+
+case "$handoff_expected" in
+  true|false) ;;
+  *)
+    echo "ERROR: orchestrate-cycle-postflight.sh: --handoff-expected must be 'true' or 'false', got '$handoff_expected'." >&2
     exit 2
     ;;
 esac
@@ -413,17 +427,15 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
   fi
 fi
 
-# ─── D1: writer-contract allowlist (single site) ───────────────────────────────────────────────
-# The complete, closed set of contractual `.orchestrator-handoff.json` writers today — verified by
-# reading every core/extension agent's own contract (grep 'formally hard-mode-implement-only').
-# An agent name absent from this list is a NON-writer: an absent handoff from it records no
-# defect. Widening this list is a one-line edit, here, when a new hard-mode writer is added.
-is_contractual_handoff_writer() {
-  case "$1" in
-    cslib-implementation-hard-agent|lean-implementation-hard-agent) return 0 ;;
-    *) return 1 ;;
-  esac
-}
+# ─── D1: dispatch-derived handoff expectation (no agent-name list) ─────────────────────────────
+# Writer expectation is derived from the DISPATCH, not from an agent-name allowlist. The default
+# is `--handoff-expected true`: every caller of this script today is a `dispatch[]` row (never an
+# `aux_dispatch[]` row — skill-orchestrate/SKILL.md Move 3 loops `dispatch[]` only), and Move 2
+# supplies `handoff_path` to every such row, so every dispatch that reaches this script is, by
+# construction, handoff-expected. `--handoff-expected false` is the explicit, narrow opt-out for
+# a caller that knows its dispatch is not one (e.g. a future aux path that starts reaching
+# postflight). There is no agent-name list to widen or fall behind the agent roster — this
+# predicate is self-maintaining as agents and extensions are added.
 
 have_outcome=false
 recovered=false
@@ -547,31 +559,44 @@ else
       fi
     fi
   else
-    # ─── WORK (d): writer-contract-aware recording for an ABSENT handoff ─────────────────────────
+    # ─── WORK (d): dispatch-derived handoff-expectation recording for an ABSENT handoff ──────────
     # Only reachable here when the handoff was genuinely ABSENT (never for a present-but-stale or
     # present-but-mismatched handoff — those already recorded unconditionally above, before this
     # branch is ever reached, per D1's narrowing).
+    #
+    # meta_touched is HOISTED here from the infra-failure discrimination block further below
+    # (same computation, same value, only moved earlier) so the absent-handoff defect message can
+    # carry it alongside transport_error, per D2. The later block reuses this same variable rather
+    # than recomputing it.
+    meta_file="${TASK_DIR}/.return-meta.json"
+    meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
+    if [ "$meta_mtime" -ge "$dispatch_start_ts" ]; then
+      meta_touched=true
+    else
+      meta_touched=false
+    fi
+
     if [ ! -f "$handoff_file" ]; then
-      if is_contractual_handoff_writer "$agent_name"; then
-        echo "${notice_prefix} ERROR: Skill did not write orchestrator handoff (agent '${agent_name}' is a contractual handoff writer)." >&2
+      if [ "$handoff_expected" = "true" ]; then
+        echo "${notice_prefix} ERROR: Skill did not write orchestrator handoff (agent '${agent_name}', dispatch expected a handoff)." >&2
         if is_live; then
           record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
             --defect-class HANDOFF_STALE_OR_ABSENT \
-            --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
+            --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-expected-writer" \
             --task "$task_number" --session "$session_id" \
-            --message "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
+            --message "agent '${agent_name}' produced no handoff and return-meta recovery also declined (transport_error=${transport_error:-false}, meta_touched=${meta_touched})" \
             --attributed-path "$attributed_path" \
             2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
           skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
             "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
-            "${detecting_site_prefix}:cycle-postflight-absent-contractual-writer" \
-            "agent '${agent_name}' is a contractual handoff writer but produced no handoff, and return-meta recovery also declined" \
+            "${detecting_site_prefix}:cycle-postflight-absent-expected-writer" \
+            "agent '${agent_name}' produced no handoff and return-meta recovery also declined (transport_error=${transport_error:-false}, meta_touched=${meta_touched})" \
             "$record_result"
         else
-          echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (absent, contractual writer) — no write performed." >&2
+          echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (absent, handoff expected) — no write performed." >&2
         fi
       else
-        echo "${notice_prefix} WARN: agent name '${agent_name}' is not on the contractual handoff-writer allowlist — treated as a non-writer, no defect recorded for the absent handoff. If '${agent_name}' is a genuine new hard-mode writer, add it to is_contractual_handoff_writer() in this script." >&2
+        echo "${notice_prefix} handoff not expected for this dispatch (--handoff-expected false); no defect recorded." >&2
       fi
     fi
 
@@ -596,14 +621,8 @@ else
     fi
 
     # ── Infra-failure discrimination (single-task: scalar; multi-task: per-task map) ─────────────
-    meta_file="${TASK_DIR}/.return-meta.json"
-    meta_mtime=$(stat -c %Y "$meta_file" 2>/dev/null || stat -f %m "$meta_file" 2>/dev/null || echo 0)
-    if [ "$meta_mtime" -ge "$dispatch_start_ts" ]; then
-      meta_touched=true
-    else
-      meta_touched=false
-    fi
-
+    # meta_file/meta_mtime/meta_touched already computed above (hoisted for the absent-handoff
+    # defect message) — reused here unchanged.
     if [ "${transport_error:-false}" = "true" ] && [ "$meta_touched" = "false" ]; then
       if is_live; then
         if [ -n "$loop_guard_file" ]; then

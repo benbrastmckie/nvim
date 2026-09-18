@@ -409,48 +409,40 @@ case" paragraph covering exactly that scenario; those paragraphs are the fallbac
 this categorical decision, and they pin the `artifacts[]` element shape (see `### artifacts
 (required)` above) alongside their `dispatch_seq` echo instruction rather than restating it.
 
-### Writer-Contract Determination (D1) — where a future writer registers
+### Writer-Contract Determination (D1) — dispatch-derived, not agent-name-derived
 
 `orchestrate-cycle-postflight.sh` must decide, for every dispatch it postflights, whether "no
-handoff" means "this dispatch's writer never produces one" (no defect) or "a contractual writer
-silently failed to write one" (a genuine defect). The mechanism, recorded here as the single
-place a future hard-mode writer registers itself:
+handoff" is a genuine defect. This used to be answered by testing the dispatch's `--agent` name
+against a small, single-site allowlist (`is_contractual_handoff_writer()`), naming exactly the two
+hard-mode agents in the Handoff Writers table above. That allowlist has been **deleted**: it
+necessarily drifted behind the agent roster (a live incident recorded an absent-handoff miss from
+`general-implementation-agent` — a base-mode agent, never on the list — going completely
+unrecorded), and every non-listed agent's absent handoff was silently excused regardless of
+whether `.return-meta.json` recovery also failed.
 
-**Recorded-agent-name allowlist.** The script resolves the question by reading the agent name the
-dispatch composer already recorded for this task this cycle (the caller's own `--agent` value —
-`research_agents[$t]` / `implement_agents[$t]` on the multi-state file for multi-task callers, the
-literal `planner-agent` for the plan phase, or the dispatch's own recorded agent for single-task
-callers) and testing it against a **small, single-site allowlist** of contractual handoff
-writers, implemented as `is_contractual_handoff_writer()` inside
-`orchestrate-cycle-postflight.sh` itself. Today that allowlist holds exactly the two entries the
-table above names as active writers: `cslib-implementation-hard-agent` and
-`lean-implementation-hard-agent`. Combined with `dispatch_seq` (the dispatch-identity gate above),
-that pair *is* this dispatch's identity — the writer-contract check is keyed on dispatch identity,
-not on phase alone.
+**Current mechanism: `--handoff-expected true|false` (default `true`).** The predicate is derived
+from the dispatch itself, not from the agent's name. Every caller of this script is a
+`dispatch[]` row — `skill-orchestrate/SKILL.md` Move 3 loops `dispatch[]` only, never
+`aux_dispatch[]`, and Move 2 supplies `handoff_path` to every `dispatch[]` row — so by
+construction every dispatch reaching this script expects a handoff. The flag exists as the
+explicit, narrow opt-out for a caller that knows otherwise (e.g. a future aux path that starts
+reaching postflight); nothing calls it with `false` today.
 
-**Direction of the staleness hazard.** An agent name **absent** from the allowlist is treated as a
-**non-writer** — no defect is recorded for an absent handoff from it — and the script emits a
-loud, named `WARN` identifying the unrecognized agent. Rationale: base mode is the overwhelming
-default and every core agent is a non-writer, so recording a defect on an unrecognized name would
-reproduce exactly the spurious-defect bug this mechanism exists to fix; the WARN keeps a genuinely
-new, unregistered hard-mode writer visible rather than silently swallowed. **This suppression
-narrows only the absent-handoff case.** A handoff that IS present but fails the mtime or
-`dispatch_seq` gate above still records `HANDOFF_STALE_OR_ABSENT` unconditionally, regardless of
-the dispatched agent's writer-contract status — the writer-contract check is consulted only when
-deciding whether a genuinely missing file is expected or suspicious.
+**Where the defect is actually recorded.** WORK (d) (the absent-handoff branch) is reached only
+when BOTH the handoff is genuinely absent (never for a present-but-stale or
+present-but-mismatched handoff, which already record unconditionally under the mtime/`dispatch_seq`
+gates above) AND `.return-meta.json` recovery also declined. This is why the default `true` is
+safe for base-mode research/plan/implement agents too: when such an agent writes a valid
+`.return-meta.json` (the documented, expected case — see the Handoff Writers table), recovery
+succeeds and WORK (d) is never reached at all. WORK (d) only fires on a genuine double miss —
+exactly the observed `general-implementation-agent` case — and records
+`HANDOFF_STALE_OR_ABSENT` with detecting site `cycle-postflight-absent-expected-writer`, a message
+naming the agent, and `transport_error=`/`meta_touched=` annotations (D2) so triage can
+distinguish an infra failure from a genuine writer miss. `--handoff-expected false` instead emits
+a neutral INFO line and records nothing.
 
-**Registering a new writer**: add its agent name to the `case` statement inside
-`is_contractual_handoff_writer()` in `orchestrate-cycle-postflight.sh`, and add a row to the
-Handoff Writers table above. Both edits belong together in the same commit — an agent added to
-one without the other leaves the two records disagreeing about which agents are active writers.
-
-**Open question, not decided here**: live delegation contexts have been observed supplying a
-`handoff_path` and an instruction to write to a base-mode research agent, contradicting the
-categorical "research agents never write a handoff" claim stated above. This document does not
-reconcile that contradiction — it only records it, with the Defensive case paragraphs serving as
-the interim safety net. Resolving it is a maintainer-level decision between two candidates: (a)
-stop instructing research agents to write the file, restoring the documented invariant as
-written, or (b) expand the documented writer set above to match observed practice.
+**Registering a new writer**: add a row to the Handoff Writers table above. No script-side
+registration step exists any more — the predicate no longer depends on the agent's name.
 
 **No consumer-side dual-shape tolerance exists for this file today.** The direct handoff-artifact
 read in `skill-orchestrate/SKILL.md` (both effort modes, one engine) is a raw, unguarded

@@ -158,9 +158,9 @@ plan file at all, so the ~450-tokens-per-cycle flatness invariant is unaffected 
 ## Writer-Contract Determination (D1) and dispatch_seq Recovery (D2)
 
 See `handoff-schema.md`'s own "Writer-Contract Determination (D1)" section (immediately following
-the "Handoff Writers" table) for the closed, single-site allowlist
-(`is_contractual_handoff_writer()` inside the script) and the D2 rationale for threading
-`dispatch_seq` through `.return-meta.json` recovery too, not just the live handoff gate.
+the "Handoff Writers" table) for the dispatch-derived `--handoff-expected true|false` predicate
+(default `true`, no agent-name allowlist) and the D2 rationale for threading `dispatch_seq`
+through `.return-meta.json` recovery too, not just the live handoff gate.
 
 ## The `halt` / `infra_exempt_cycle` Output Fields
 

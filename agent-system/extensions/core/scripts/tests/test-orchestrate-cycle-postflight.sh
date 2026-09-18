@@ -549,6 +549,122 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (A): the observed live incident -- general-implementation-agent (base-mode, never on
+# the old agent-name allowlist) writes NEITHER .orchestrator-handoff.json NOR .return-meta.json
+# (a context-exhaustion death mid-implement). Under D1's dispatch-derived predicate
+# (--handoff-expected defaults to true), this now records HANDOFF_STALE_OR_ABSENT -- the exact
+# gap the old allowlist left silently unrecorded.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (A): general-implementation-agent double-miss (no handoff, no return-meta) now records a defect"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/910_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 910, "project_name": "candidate", "task_type": "meta", "status": "implementing", "description": "candidate #910 -- double-miss fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/910_candidate --session sess_910 --phase implement --task-type meta \
+  --agent general-implementation-agent --loop-guard-file specs/910_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 910
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (A): verdict=failed for the double-miss"
+else
+  fail "fixture (A): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+a_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
+  "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$a_defect_count" = "1" ]; then
+  pass "fixture (A): exactly one HANDOFF_STALE_OR_ABSENT defect row recorded"
+else
+  fail "fixture (A): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $a_defect_count"
+fi
+if echo "$LAST_STDERR" | grep -q "not on the contractual handoff-writer allowlist"; then
+  fail "fixture (A): stale allowlist WARN text still present on stderr"
+else
+  pass "fixture (A): no allowlist WARN text on stderr (the removed mechanism's wording is gone)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (B): the explicit opt-out. Same double-miss, but the caller passes
+# --handoff-expected false -- the aux-dispatch-equivalent case. No defect is recorded.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (B): --handoff-expected false double-miss records zero defects"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/911_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 911, "project_name": "candidate", "task_type": "meta", "status": "implementing", "description": "candidate #911 -- opt-out fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/911_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/911_candidate --session sess_911 --phase implement --task-type meta \
+  --agent general-implementation-agent --loop-guard-file specs/911_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" --handoff-expected false 911
+
+b_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/911_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$b_defect_count" = "0" ]; then
+  pass "fixture (B): --handoff-expected false records zero defects for the same double-miss"
+else
+  fail "fixture (B): expected 0 detected_defects, got $b_defect_count"
+fi
+if echo "$LAST_STDERR" | grep -q "handoff not expected for this dispatch"; then
+  pass "fixture (B): neutral INFO line present for the explicit opt-out"
+else
+  fail "fixture (B): expected the neutral opt-out INFO line on stderr, got: $LAST_STDERR"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (C): the same double-miss shape, but on the research phase with
+# general-research-agent -- the task's own OBSERVED incident (5 of 7 research subagents wrote
+# neither file). Asserts verdict=failed, one defect, and task status unchanged (never
+# "researched").
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (C): general-research-agent double-miss (research phase) records a defect and never advances to researched"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/912_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 912, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #912 -- research double-miss fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/912_candidate --session sess_912 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/912_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 912
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (C): verdict=failed for the research-phase double-miss"
+else
+  fail "fixture (C): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+c_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
+  "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$c_defect_count" = "1" ]; then
+  pass "fixture (C): exactly one HANDOFF_STALE_OR_ABSENT defect row recorded"
+else
+  fail "fixture (C): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $c_defect_count"
+fi
+new_status_912=$(jq -r --argjson n 912 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_912" = "researching" ]; then
+  pass "fixture (C): task status unchanged (still researching, never advanced to researched)"
+else
+  fail "fixture (C): expected status to remain researching, got: $new_status_912"
+fi
+# report_missing is Phase 2's own output field (not yet emitted by this phase's code) -- Phase 2
+# adds a strict assertion for it here (per this task's own plan, fixture G).
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the 9999999999 sentinel is literal and shared across the two gate scripts
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Invariant: 9999999999 fail-closed sentinel is the same literal in both scripts"

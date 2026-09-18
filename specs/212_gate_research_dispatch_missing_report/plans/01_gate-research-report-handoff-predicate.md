@@ -1,7 +1,7 @@
 # Implementation Plan: Task #212
 
 - **Task**: 212 - Postflight honesty: gate research on a report file and derive the handoff-writer predicate from the dispatch row
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: 194 (completed), 213 (completed)
 - **Research Inputs**: specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md
@@ -140,36 +140,41 @@ No roadmap consultation requested for this dispatch.
 Phases within the same wave can execute in parallel (1 and 3 touch disjoint files; 5 touches only
 agent/context markdown).
 
-### Phase 1: Derive the handoff-writer predicate from the dispatch [NOT STARTED]
+### Phase 1: Derive the handoff-writer predicate from the dispatch [COMPLETED]
 
 **Goal**: Remove the drift-prone agent-name allowlist so that every expected-handoff dispatch
 with a double miss records `HANDOFF_STALE_OR_ABSENT`.
 
 **Tasks**:
-- [ ] Add `--handoff-expected true|false` (default `true`) to the arg parser, next to
+- [x] Add `--handoff-expected true|false` (default `true`) to the arg parser, next to
       `--force-invoked`. Reject values other than `true`/`false` with the script's existing
-      usage-error idiom.
-- [ ] Delete `is_contractual_handoff_writer()` and replace the D1 header comment block. The new
+      usage-error idiom. *(completed)*
+- [x] Delete `is_contractual_handoff_writer()` and replace the D1 header comment block. The new
       text states that writer expectation comes from the dispatch (default true, since every
       caller is a `dispatch[]` row that received `handoff_path`, per skill-orchestrate Move 2/3),
       that `--handoff-expected false` is the explicit opt-out, and that no agent-name list exists.
-- [ ] Rewrite the WORK (d) absent-handoff branch. When `handoff_expected=true`, always record
+      *(completed)*
+- [x] Rewrite the WORK (d) absent-handoff branch. When `handoff_expected=true`, always record
       (live) or dry-run-note, using detecting-site suffix
       `cycle-postflight-absent-expected-writer` and a message naming the agent, `transport_error`,
       and `meta_touched` (per D2). `meta_touched` is currently computed later, so hoist that
       computation above the branch without changing its value or later use. When
       `handoff_expected=false`, emit a neutral INFO line ("handoff not expected for this dispatch
       (--handoff-expected false); no defect recorded"). Remove the old WARN that told readers to
-      edit the allowlist.
-- [ ] Update the header's WORK (d) summary line and the `Usage:` block to match.
-- [ ] Add fixtures to `scripts/tests/test-orchestrate-cycle-postflight.sh`:
+      edit the allowlist. *(completed)*
+- [x] Update the header's WORK (d) summary line and the `Usage:` block to match.
+      *(completed: also updated docs/architecture/handoff-schema.md's "Writer-Contract
+      Determination (D1)" section and orchestrate-cycle-postflight.md's pointer to it, which
+      documented the now-deleted allowlist as canonical)*
+- [x] Add fixtures to `scripts/tests/test-orchestrate-cycle-postflight.sh`:
       (A) `--agent general-implementation-agent --phase implement` with neither handoff nor
       return-meta, which reproduces the observed case. Assert `verdict=failed`, exactly one
       `HANDOFF_STALE_OR_ABSENT` defect row, and no allowlist WARN text on stderr.
       (B) Same setup with `--handoff-expected false`. Assert zero defect rows.
       (C) Same as (A) with `--agent general-research-agent --phase research`. Assert
-      `verdict=failed`, one defect, and task status unchanged.
-- [ ] Run the test file and shellcheck on both touched scripts.
+      `verdict=failed`, one defect, and task status unchanged. *(completed)*
+- [x] Run the test file and shellcheck on both touched scripts. *(completed: 73/73 tests pass;
+      shellcheck output identical to the pre-change baseline on both files -- no new findings)*
 
 **Timing**: 1.5 hours
 
