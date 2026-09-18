@@ -233,26 +233,31 @@ dispatch.
 
 ---
 
-### Phase 3: Fixture test [NOT STARTED]
+### Phase 3: Fixture test [COMPLETED]
 
 **Goal**: `scripts/tests/test-orchestrate-unwind-dispatch.sh` proves the acceptance criteria.
 
 **Tasks**:
-- [ ] Build a temp git repo fixture (reuse setup idioms from `test-orchestrate-cycle-plan.sh`
+- [x] Build a temp git repo fixture (reuse setup idioms from `test-orchestrate-cycle-plan.sh`
   and `test-git-commit-scoped.sh`) with a RESEARCHED task, commit it clean, and snapshot the
-  state.json entry and the guard file's `pending_dispatch`/`dispatch_seq_counter`.
-- [ ] Case 1 (happy path): run `orchestrate-cycle-plan.sh` live for a plan dispatch, then the
+  state.json entry and the guard file's `pending_dispatch`/`dispatch_seq_counter`. *(completed:
+  `build_repo`/`prepare_dispatch` helpers; runs the REAL `orchestrate-cycle-plan.sh` end-to-end
+  rather than hand-building `pending_dispatch`, so Phase 1's pre-image capture is exercised
+  genuinely, not just asserted against a fixture)*
+- [x] Case 1 (happy path): run `orchestrate-cycle-plan.sh` live for a plan dispatch, then the
   unwind script with `--commit`. Assert: state entry `status`/`last_updated`/`session_id` equal
   the snapshot exactly; TODO.md regenerated (matches `generate-todo.sh` output for the restored
   state); lock gone; dispatch file gone; `pending_dispatch` and `dispatch_seq_counter` equal the
-  snapshot; `git status --porcelain -- specs/` empty.
-- [ ] Case 2 (consumed): prepare a dispatch, run `--clear-pending` (what postflight does first),
-  run the unwind; assert exit 2 and no file changed.
-- [ ] Case 3 (agent started): prepare a dispatch, touch a newer `.return-meta.json`; assert
-  refusal.
-- [ ] Case 4 (`--dry-run`): assert no writes.
-- [ ] Case 5 (foreign fresh lock): assert refusal and the lock untouched.
-- [ ] Confirm `run-all.sh` discovers the new file by its name pattern.
+  snapshot; `git status --porcelain -- specs/` empty. *(completed, all assertions pass)*
+- [x] Case 2 (consumed): prepare a dispatch, run `--clear-pending` (what postflight does first),
+  run the unwind; assert exit 2 and no file changed. *(completed)*
+- [x] Case 3 (agent started): prepare a dispatch, touch a newer `.return-meta.json`; assert
+  refusal. *(completed)*
+- [x] Case 4 (`--dry-run`): assert no writes. *(completed; checksummed state.json/guard
+  file/dispatch file plus lock presence)*
+- [x] Case 5 (foreign fresh lock): assert refusal and the lock untouched. *(completed)*
+- [x] Confirm `run-all.sh` discovers the new file by its name pattern. *(completed: matches the
+  `scripts/tests/test-*.sh` glob run-all.sh already scans; no separate registration needed)*
 
 **Timing**: 2 hours
 

@@ -1,0 +1,67 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture test",
+  "started_at": "2026-09-18T18:30:00Z",
+  "last_updated": "2026-09-18T18:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Build fixture harness (temp git repo, RESEARCHED task, snapshot)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Case 1 happy path with --commit",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Case 2 consumed refusal",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Case 3 agent-started refusal",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Case 4 dry-run no writes",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Case 5 foreign fresh lock refusal",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Confirm run-all.sh discovers the new test",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
