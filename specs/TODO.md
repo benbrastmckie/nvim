@@ -1,5 +1,5 @@
 ---
-next_project_number: 236
+next_project_number: 240
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 236
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,172,177,184,185,193,202,207,210,212,215,223,224,227,228,235 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,74,136,140,165,170,173,174,182,199,208 | 29,139,162,163,166,167,172,193,207,210,215 | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,172,177,184,185,193,202,207,210,212,215,223,224,227,228,235,236 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,74,136,140,165,170,173,174,182,199,208,237,238,239 | 29,139,162,163,166,167,172,193,207,210,215,236 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,190,217,221 | 74,165,173,174 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -48,6 +48,10 @@ next_project_number: 236
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 228 [NOT STARTED] — Establish batch orchestration as the documented default, with...
 235 [NOT STARTED] — Re-baseline or reduce the eager-context budget:...
+236 [NOT STARTED] — Define a canonical "waiting on external processes" pattern...
+  └─ 237 [NOT STARTED] — Wire the external-process wait pattern into the general...
+  └─ 238 [NOT STARTED] — Carry an external-process wait-discipline pointer in every...
+  └─ 239 [NOT STARTED] — Add an advisory PostToolUse hook that detects repeated no-op...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -88,6 +92,85 @@ next_project_number: 236
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 239. Add an advisory PostToolUse hook that detects repeated no-op Bash calls
+- **Effort**: 2.5 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 236
+
+**Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
+
+DELIVERABLE (optional hardening). A new hooks/detect-noop-bash.sh PostToolUse hook on Bash that classifies trivial no-op commands (`:`, `true`, bare `date`/`date -u`, `echo <literal>` with no side effects, `sleep` fragments) and tracks consecutive occurrences per session (state under a session-scoped temp/runtime path, never under specs/). After a small threshold (about 3 in a row) it injects an additionalContext corrective message naming context/patterns/external-process-wait.md and the bounded-wait idiom. It must be advisory only (never block), fail open on any internal error, reset the counter on any non-trivial command, and avoid false positives on legitimate one-off echo/date use. Register it in merge-sources/settings-hooks.json and the manifest.json hooks list following validate-meta-write.sh's precedent. Add a test covering classification, threshold, and reset. shellcheck clean.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 238. Carry an external-process wait-discipline pointer in every orchestrate dispatch file
+- **Effort**: 1.5 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 236
+
+**Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
+
+DELIVERABLE. Make scripts/orchestrate-build-dispatch.sh emit a short, always-present pointer to context/patterns/external-process-wait.md in every dispatch file it composes -- base mode as well as --hard, for research, plan and implement phases -- so that a dispatched agent receives the wait discipline regardless of which agent contract it loads. Follow the script's existing single-owned-behavior conventions (see its header note on the territory.md pointer for base-mode dispatches, which is the closest precedent). Add or extend a test under scripts/tests/ asserting the pointer is present in base-mode and hard-mode dispatch output. Keep the injected text to a pointer plus one-line summary; do not inline the pattern. shellcheck clean per context/standards/shell-strict-mode.md.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 237. Wire the external-process wait pattern into the general implementation and research agent contracts
+- **Effort**: 1 hour
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 236
+
+**Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
+
+DELIVERABLE. Reference context/patterns/external-process-wait.md (defined by the dependency task) from agents/general-implementation-agent.md and agents/general-research-agent.md: add concise MUST / MUST NOT bullets (bounded blocking wait; no no-op filler calls or status-only turns; no run_in_background or Monitor for CI waits inside a subagent; independent local work before waiting; ~45 min cap then handoff + partial return) that POINT to the pattern file rather than restating its mechanics, and a load-on-demand context reference. Place them near the existing Context Exhaustion Monitoring stage where the anti-stop and handoff discipline already lives. Consider (and note in the research report) whether extension implementation agents need the same pointer; do not edit them here unless trivially in scope.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 236. Define a canonical "waiting on external processes" pattern for dispatched subagents
+- **Effort**: 1.5 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
+
+DELIVERABLE. A new core context pattern file, context/patterns/external-process-wait.md, stating the defect class once and canonically, and defining the sanctioned wait discipline for a subagent blocked on a long external process (GitHub Actions runs first; phrase it generally enough to cover other remote jobs). Mandatory rules:
+  (1) BOUNDED BLOCKING WAIT: `timeout 540 gh run watch ID --interval 60 --exit-status >/dev/null; gh run view ID --json status,conclusion`, issued with the Bash tool timeout set to 600000, and repeated ONLY while the reported status is in_progress/queued. Explain why 540 < 600 (the inner timeout must fire before the harness backgrounds the call).
+  (2) NO NO-OP FILLER: no `:`, `true`, `date`, `echo waiting`-style Bash calls and no status-only text turns to keep a turn alive.
+  (3) NO run_in_background AND NO Monitor for CI waits inside a subagent (a background completion or Monitor event wakes an agent that has nothing to do, and ending the turn terminates the subagent).
+  (4) Where Monitor IS legitimately used (e.g. by a top-level session), its loop must emit ONLY on a state change, never on every poll.
+  (5) DO INDEPENDENT LOCAL WORK FIRST: finish every task step that does not depend on the external result before entering the wait.
+  (6) TOTAL-WAIT CAP of about 45 minutes; on reaching it the agent writes a handoff containing a concrete continuation (run ID, the exact resume command, what remains) and returns status partial rather than continuing to wait.
+Also add an index-entries.json entry so the pattern is discoverable to implementation and research agents, and a one-line pointer from anti-stop-patterns.md (do not restate the rules there; follow the single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md).
+
+RELATED TASK (cross-reference, NOT a dependency): task 172 ("Define a canonical bounded-wait idiom for detached builds", planned file context/patterns/bounded-build-waiter.md) covers the LOCAL detached-build case (writer-liveness via kill -0, one-waiter-per-log). This task covers REMOTE/external processes that have no local writer to probe. The two files should cross-reference each other by filename; whichever lands second adds the reciprocal pointer. Do not edit bounded-build-waiter.md's substance here.
+
+OUT OF SCOPE: agent contract edits, orchestrate-build-dispatch.sh, and any hook -- those are separate dependent tasks.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 235. Rebaseline or reduce eager context budget
 - **Status**: [NOT STARTED]
