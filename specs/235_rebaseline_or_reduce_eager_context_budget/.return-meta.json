@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/235_rebaseline_or_reduce_eager_context_budget/plans/01_rebaseline-eager-context-budget.md",
-      "summary": "5-phase plan (3.5h): re-measure and sibling check, trim SKILL.md under its 20000 B ceiling via D4 restatement pointers, conditional restatement trim plus dated ceiling move for commands/orchestrate.md, config/comment refresh, and acceptance-gate verification; baseline_bytes left unchanged and exit-3 handling confirmed with no code change."
-    }
-  ],
-  "next_steps": "Run /implement 235 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1789772261_c29003_235",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.5,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [],
-  "dispatch_seq": 5
+    "session_id": "sess_1789772261_c29003",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

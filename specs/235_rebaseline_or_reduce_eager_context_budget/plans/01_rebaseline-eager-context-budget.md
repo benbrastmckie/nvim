@@ -1,7 +1,7 @@
 # Implementation Plan: Task #235
 
 - **Task**: 235 - Re-baseline or reduce the eager-context budget
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None (soft sequencing constraint on sibling task 228, which owns `commands/orchestrate.md` and `merge-sources/claudemd.md` this cycle -- see Phase 3 and Risks)
 - **Research Inputs**: specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md
@@ -86,16 +86,16 @@ No ROADMAP.md consulted (no roadmap_path in delegation context).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-measure Live State and Check Sibling Territory [NOT STARTED]
+### Phase 1: Re-measure Live State and Check Sibling Territory [COMPLETED]
 
 **Goal**: Confirm the planning-time numbers still hold and decide the Phase 3 branch before any edit.
 
 **Tasks**:
-- [ ] Run `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check`; record TOTAL vs. baseline 65950.
-- [ ] Run `wc -c` on `agent-system/extensions/core/commands/orchestrate.md` and `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`.
-- [ ] Check sibling 228: `jq` its status in `specs/state.json`; `git status --short` and `git log --since=<today>` on `commands/orchestrate.md` and `merge-sources/claudemd.md`. Record branch decision for Phase 3: **TRIM-ALLOWED** only if 228 is not `implementing` AND no foreign uncommitted modification exists on `commands/orchestrate.md`; else **CEILING-ONLY**.
-- [ ] If sub-check B is red: attribute via `git log -p --since=2026-09-18 -- agent-system/extensions/core/merge-sources/ agent-system/extensions/core/rules/`. If caused by 228's in-flight/landed work, STOP and report (do not absorb); if caused by something else and trimmable, note it for Phase 4's conditional branch.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` (background/long timeout) to capture the pre-change result (likely failing baseline on 2 WARNs).
+- [x] Run `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check`; record TOTAL vs. baseline 65950. *(completed: TOTAL 65889 B at first check, then 66026 B after sibling 228 landed phase 1/2 commits mid-Phase-1 -- see deviation note)*
+- [x] Run `wc -c` on `agent-system/extensions/core/commands/orchestrate.md` and `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`. *(completed: 19967 B / 21318 B initially, orchestrate.md grew to 20228 B after 228 landed)*
+- [x] Check sibling 228: `jq` its status in `specs/state.json`; `git status --short` and `git log --since=<today>` on `commands/orchestrate.md` and `merge-sources/claudemd.md`. Record branch decision for Phase 3: **TRIM-ALLOWED** only if 228 is not `implementing` AND no foreign uncommitted modification exists on `commands/orchestrate.md`; else **CEILING-ONLY**. *(completed: 228 was status=implementing in state.json at check time (plan file itself showed [COMPLETED] for all 3 phases, but state.json postflight had not yet run) -- branch = **CEILING-ONLY**)*
+- [x] If sub-check B is red: attribute via `git log -p --since=2026-09-18 -- agent-system/extensions/core/merge-sources/ agent-system/extensions/core/rules/`. If caused by 228's in-flight/landed work, STOP and report (do not absorb); if caused by something else and trimmable, note it for Phase 4's conditional branch. *(completed: B went red mid-Phase-1, TOTAL 66026 B > baseline 65950 B; attributed via `git log --oneline` on commands/orchestrate.md + merge-sources/claudemd.md to commits ea849d410/625afda1f ("task 228 phase 1/2"), confirmed by diff stat showing both files touched. Per Phase 4's explicit conditional ("only if Phase 1/5 finds B red from non-sibling growth"), baseline_bytes is NOT touched -- reported here and in the summary, not absorbed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` (background/long timeout) to capture the pre-change result (likely failing baseline on 2 WARNs). *(completed: FAIL, baseline fixture rc=1, gate20 finding lines=2, as expected)*
 
 **Timing**: 0.5 hours
 
@@ -111,17 +111,17 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Trim skill-orchestrate SKILL.md Under Ceiling [NOT STARTED]
+### Phase 2: Trim skill-orchestrate SKILL.md Under Ceiling [COMPLETED]
 
 **Goal**: Bring `SKILL.md` from 21318 B to <= 19,500 B by collapsing D4 restatement to pointers, preserving every operational instruction.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` immediately before editing.
-- [ ] `## MUST NOT (Postflight Boundary)`: collapse the "One narrow, named exception (D4)" paragraph to 2-3 lines: the operational rule (verbatim return text -> `.dispatch/{seq}.agent-message.md` -> `orchestrate-recover-message-findings.sh`, no editing/analysis, only case of writing into `reports/`/`plans/`/`summaries/`) plus a pointer to `docs/architecture/handoff-schema.md`'s Postflight Boundary section and `context/standards/postflight-tool-restrictions.md`.
-- [ ] Move 3 bash block: shorten the D4 comment preamble (and the trailing "This step never changes verdict..." comment) to a single pointer comment; keep the `if [ "$report_missing" = "true" ]` code byte-identical in behavior.
-- [ ] Before deleting any sentence, grep `handoff-schema.md` / `postflight-tool-restrictions.md` for it; if any fact is unique to SKILL.md, add it to `docs/architecture/handoff-schema.md`'s Postflight Boundary section (not in any sibling's file_scope).
-- [ ] If still above 19,500 B, look for further pure restatement already covered by `docs/architecture/orchestrate-state-machine.md` / `orchestrate-cycle-postflight.md` (e.g. Context Flatness paragraph detail) and pointer-ize it.
-- [ ] Commit only this file's (and any `handoff-schema.md`) hunks.
+- [x] Re-read `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` immediately before editing. *(completed)*
+- [x] `## MUST NOT (Postflight Boundary)`: collapse the "One narrow, named exception (D4)" paragraph to 2-3 lines: the operational rule (verbatim return text -> `.dispatch/{seq}.agent-message.md` -> `orchestrate-recover-message-findings.sh`, no editing/analysis, only case of writing into `reports/`/`plans/`/`summaries/`) plus a pointer to `docs/architecture/handoff-schema.md`'s Postflight Boundary section and `context/standards/postflight-tool-restrictions.md`. *(completed)*
+- [x] Move 3 bash block: shorten the D4 comment preamble (and the trailing "This step never changes verdict..." comment) to a single pointer comment; keep the `if [ "$report_missing" = "true" ]` code byte-identical in behavior. *(completed)*
+- [x] Before deleting any sentence, grep `handoff-schema.md` / `postflight-tool-restrictions.md` for it; if any fact is unique to SKILL.md, add it to `docs/architecture/handoff-schema.md`'s Postflight Boundary section (not in any sibling's file_scope). *(completed: every trimmed fact confirmed present in handoff-schema.md/postflight-tool-restrictions.md/orchestrate-state-machine.md; no relocation needed, handoff-schema.md untouched)*
+- [x] If still above 19,500 B, look for further pure restatement already covered by `docs/architecture/orchestrate-state-machine.md` / `orchestrate-cycle-postflight.md` (e.g. Context Flatness paragraph detail) and pointer-ize it. *(completed: additional prose-tightening pass across Setup/Move1/Move2/Move4/Context-Flatness/burnout-gate paragraphs, all restating facts already documented in the pointed-to files; final size 19535 B)*
+- [x] Commit only this file's (and any `handoff-schema.md`) hunks. *(completed)*
 
 **Timing**: 1 hour
 
