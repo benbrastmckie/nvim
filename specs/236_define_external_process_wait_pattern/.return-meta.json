@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 236,
+  "session_id": "sess_1789772261_c29003_236",
+  "dispatch_seq": 3,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md",
+      "summary": "Research for a new core context pattern file (external-process-wait.md) covering bounded CI/remote-process waits, no-op-filler prohibition, index-entries.json entry shape, and the anti-stop-patterns.md pointer convention."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 236 to create implementation plan"
+}
