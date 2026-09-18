@@ -587,13 +587,89 @@ given in Baseline mechanism above; recorded here so a later pass cannot rediscov
 can occupy, unconditionally and inside the same per-task loop iteration. Committed-then-redeployed,
 in that order, is guaranteed by existing step ordering and is stated here, not built.
 
-**Idempotence guard**: the checkpoint fires only when this cycle's overlap set contains at least
-one critical path not already recorded in `mt_state_file.deployed_critical_paths`. Without it, a
-task sitting in `implementing` across several cycles would re-report the same `modified_files`
+**Idempotence guard (WITHIN-invocation only)**: the checkpoint fires only when this cycle's
+overlap set contains at least one critical path not already recorded in
+`mt_state_file.deployed_critical_paths`. Without it, a task sitting in `implementing` across
+several cycles OF THE SAME `/orchestrate` INVOCATION would re-report the same `modified_files`
 and re-fire the checkpoint every cycle, at unbounded redundant deploy/verify cost and with the
-mid-run script-swap window maximized rather than minimized. (`deployed_critical_paths` is its own
-accumulating set, distinct from — and unaffected by — the same-cycle narrowing of
-`deferred_self_modifying` described above; the two are not the same convergence mechanism.)
+mid-run script-swap window maximized rather than minimized. `deployed_critical_paths` lives in
+the SESSION-SUFFIXED `specs/.orchestrator-multi-state-{session_id}.json` (see the Class Table in
+`context/standards/orchestrator-runtime-files.md`), which is minted fresh on every `/orchestrate`
+invocation — it therefore has NO memory that lasts BETWEEN invocations. It is written only on the
+checkpoint's three success branches (clean, branch (c), the filtered (c)-equivalent) and is never
+written on defer (branch (a)/(b)) or on a durable-ledger skip (see "Durable redeploy ledger"
+immediately below). This within-invocation scope and its accumulating-set behavior are unchanged
+by the durable ledger below: it is its own, distinct, same-cycle deduplication mechanism, not the
+same convergence mechanism as the same-cycle narrowing of `deferred_self_modifying` described
+above, and not a substitute for cross-invocation memory.
+
+**Durable redeploy ledger (cross-invocation memory)**: `deployed_critical_paths` above cannot, by
+construction, tell a NEW `/orchestrate` invocation that a critical path it is about to redeploy
+was already verified a moment ago by a PRIOR invocation — every invocation starts that field at
+`[]`. A task sitting in `implementing` across separate invocations (the ordinary case) or a task
+whose own `file_scope` IS the orchestrator source store (the self-modifying-task class, where the
+content hash changes on every cycle BY CONSTRUCTION, since the task's own edits are what change
+it) therefore re-triggered a full deploy+verify on every single invocation before this mechanism
+existed, at real observed cost (single-digit minutes per firing) and, for the self-modifying
+class, with 100% certainty on every cycle. This is closed by a durable, gitignored,
+machine-local ledger — `lib/deploy-ledger-lib.sh`, default path
+`specs/.orchestrator-deploy-ledger.json` (overridable via `DEPLOY_LEDGER_FILE`) — consulted BEFORE
+the checkpoint's first expensive call (`deploy_findings_snapshot`, immediately after the existing
+banner). See `context/standards/orchestrator-runtime-files.md`'s Class Table for why a gitignored
+file here does NOT mean ephemeral, freshness-blind semantics: every read is hash-gated.
+
+- **Record shape**: one rolling `deploy-ledger-v1` record — an aggregate sha256 and a per-path
+  sha256 map over EVERY `critical_paths[].path` entry in
+  `context/reference/orchestrator-critical-paths.json` (a missing file hashes to the literal
+  `MISSING`), resolved ONLY against the `agent-system/extensions/core` scope root (the other two
+  scope roots, `.claude` and `.opencode`, are deploy MIRRORS of it, never the source of truth for
+  this hash) — plus `verified_at` (epoch seconds), `verify_outcome`, and the writing batch's
+  `task_numbers`.
+- **Verify-outcome vocabulary**: three SKIP-ELIGIBLE outcomes mirroring this subsection's own
+  branches — `clean` (the success branch above), `pre_existing` (branch (c)), `filtered` (the
+  filtered (c)-equivalent sub-branch) — plus two NON-eligible NEGATIVE records, `deploy_failed`
+  (branch (a)) and `blocking` (branch (b)), written so an earlier clean record can never vouch for
+  a tree a later failed or blocking deploy has since overwritten.
+- **Two skip rules, not one, because they cover two DIFFERENT failure modes**:
+  - **`skip_hash`** (the ordinary case): the current aggregate hash equals the ledger's aggregate
+    AND the ledger is within `DEPLOY_LEDGER_MAX_AGE_SEC` (default 86400s / 24h) of `verified_at`.
+  - **`skip_attributed`** (the self-modifying-task case): the ledger is within
+    `DEPLOY_LEDGER_RECENT_SEC` (default 1800s / 30min) of `verified_at`, the ledger's
+    `task_numbers` intersects the current batch's own `task_numbers` ("the deploy that just
+    landed was mine"), AND every critical path whose per-path hash differs from the ledger is
+    covered by the current cycle's own `cycle_modified_files` (the same directory-prefix overlap
+    predicate this document uses throughout, checked with each changed path expanded across all
+    three `scope_roots`). **The hash rule cannot help the self-modifying class at all**: that
+    class changes the hash on every single cycle by construction, so `skip_hash` never fires for
+    it — only the attributed rule, which recognizes "this batch's own edit", closes that case.
+    Shipping only the hash skip would leave the self-modifying-task failure mode fully intact;
+    the two rules are complementary, not redundant alternatives.
+  - Both rules additionally require a skip-eligible `verify_outcome` and are OVERRIDDEN — forced
+    to `run` — whenever any batch task's own `.return-meta.json` carries `deploy_pending: true`,
+    so a skip can never starve the postflight completion-deploy gate's backstop (a task refused as
+    stale must never be able to stay stuck behind a repeating skip).
+- **Fail-safe read**: a missing, malformed, or schema-invalid ledger file, and a CANNOTVERIFY
+  current hash state (missing `agent-system/extensions/core` root, missing `sha256sum`, or a jq
+  failure), both degrade to "no evidence" and therefore to `run` — never to a skip. Absence of
+  evidence can never justify skipping.
+- **Env knobs**: `DEPLOY_LEDGER_RECENT_SEC`, `DEPLOY_LEDGER_MAX_AGE_SEC`, `DEPLOY_LEDGER_FILE`
+  (test/operator override of the ledger path), and `DEPLOY_LEDGER_SKIP` (`0` forces every
+  decision to `run` — an operational kill switch that needs no code revert).
+- **Observability**: every skip decision is announced in a loud stderr banner naming the decision,
+  the short aggregate hash, the prior verify outcome, the age, and the attributing task numbers
+  (for `skip_attributed`), and is recorded in a new `mt_state_file.redeploy_skip_notices[]` entry
+  (`{cycle, decision, reason, age_sec, ledger_outcome, changed_paths, attributing_tasks}`) —
+  mirroring this document's own "never abort, never silently continue" posture for the checkpoint
+  as a whole.
+- **Rejected alternative: a bare recency window (no hash rule)** — rejected. A recency-only rule
+  would skip a redeploy shortly after ANY prior deploy regardless of what changed since, which is
+  strictly weaker evidence than a matching content hash; the hash rule is what lets an ordinary
+  (non-self-modifying) task skip safely for up to a full day, not just a half hour.
+- **Rejected alternative: a bare content-hash rule (no attributed rule)** — rejected. This is the
+  precise scenario named in the "What to build" motivation above: a hash-only rule can NEVER skip
+  the self-modifying-task class, since that class's own edits change the hash on every cycle by
+  construction. Shipping only this rule leaves the observed failure mode (single-digit minutes of
+  wall clock per firing, on every cycle, with certainty) fully intact.
 
 **Concurrency**: the whole-tree overwrite is serialized by a fail-open `specs/.deploy-lock/`
 mutex inside `scripts/deploy-headless.sh`, the same acquire/warn-and-proceed shape as the
@@ -703,7 +779,10 @@ Inter-Cycle Redeploy Checkpoint mechanism documented earlier in this file. A ref
 7's trigger predicate from `orchestrator-critical-paths.json`'s critical-path keying to a broader
 `agent-system/extensions/**` predicate is the proper fix and is named here as explicit follow-up
 work, not attempted by this mechanism — it would change the meaning of a heavily cross-referenced
-mechanism and its `deployed_critical_paths` idempotence backing store, which is its own task.
+mechanism. (The cross-invocation durable ledger this predicate's *skip* decision now consults —
+see "Durable redeploy ledger" above — already exists; widening WHICH cycles fire the checkpoint at
+all remains the open, separate residual named here. This D6 residual is NOT resolved by the
+ledger's existence.)
 **Explicitly re-considered and re-confirmed split-out** while this same subsection's own
 confirmation/attribution filters and Gate depth statement were added above: that work changed the
 checkpoint's *verdict* logic (which candidate new findings may defer a batch, and how the

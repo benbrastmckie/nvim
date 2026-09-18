@@ -362,18 +362,18 @@ and `grep -rn "runtime_ignore_block\|RUNTIME_FILE_IDS" agent-system/extensions/`
 
 ---
 
-### Phase 5: Guardrails contract documentation [NOT STARTED]
+### Phase 5: Guardrails contract documentation [COMPLETED]
 
 **Goal**: Replace the deferred-work note with the real contract, and correct the description of
 `deployed_critical_paths`.
 
 **Tasks**:
-- [ ] In `context/patterns/batch-orchestration-guardrails.md` "### The Inter-Cycle Redeploy
+- [x] In `context/patterns/batch-orchestration-guardrails.md` "### The Inter-Cycle Redeploy
   Checkpoint": rewrite the **Idempotence guard** paragraph to state explicitly that
   `deployed_critical_paths` lives in the session-suffixed `mt_state_file`. It is a
   WITHIN-invocation re-deploy suppressor that is written only on the success branches and never
   on defer or skip. Its semantics are unchanged.
-- [ ] Add a **Durable redeploy ledger** paragraph block covering: file and schema; the hash scope
+- [x] Add a **Durable redeploy ledger** paragraph block covering: file and schema; the hash scope
   (source-store root only, full critical-path list); the skip-eligible and negative outcome
   vocabulary; the two skip rules and why both are needed (the hash rule cannot help the
   self-modifying class because that class changes the hash by construction); the
@@ -381,11 +381,11 @@ and `grep -rn "runtime_ignore_block\|RUNTIME_FILE_IDS" agent-system/extensions/`
   the env knobs (`DEPLOY_LEDGER_RECENT_SEC`, `DEPLOY_LEDGER_MAX_AGE_SEC`, `DEPLOY_LEDGER_SKIP`,
   `DEPLOY_LEDGER_FILE`); `redeploy_skip_notices`; and a "Rejected alternative: bare recency
   window" note.
-- [ ] In "### The Postflight Completion-Deploy Gate" D6 residual: edit only the clause "its
+- [x] In "### The Postflight Completion-Deploy Gate" D6 residual: edit only the clause "its
   `deployed_critical_paths` idempotence backing store, which is its own task". It should now say
   that the cross-invocation durable ledger exists (with a pointer to the subsection above) and
   that widening the trigger predicate remains open follow-up work. Do NOT mark D6 resolved.
-- [ ] Check the whole file for other stale mentions (`grep -n "deployed_critical_paths\|ledger"`).
+- [x] Check the whole file for other stale mentions (`grep -n "deployed_critical_paths\|ledger"`).
   Use no task numbers (run the task-reference lint).
 
 **Timing**: 1 hour
