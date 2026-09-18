@@ -204,34 +204,34 @@ sorted `find -type f` listing.
 
 ---
 
-### Phase 2: Wire the ledger into the inter-cycle redeploy checkpoint [NOT STARTED]
+### Phase 2: Wire the ledger into the inter-cycle redeploy checkpoint [COMPLETED]
 
 **Goal**: Consult the ledger before any expensive checkpoint work, skip on evidence, and write
 positive or negative records on every deploy outcome.
 
 **Tasks**:
-- [ ] Source `lib/deploy-ledger-lib.sh` beside the existing `deploy-baseline-lib.sh` source
+- [x] Source `lib/deploy-ledger-lib.sh` beside the existing `deploy-baseline-lib.sh` source
   (same loud-failure pattern, lines ~244-252).
-- [ ] Inside `if [ "$matched_count" -gt 0 ] && [ "$dry_run" != "true" ]`, after the existing
+- [x] Inside `if [ "$matched_count" -gt 0 ] && [ "$dry_run" != "true" ]`, after the existing
   banner and BEFORE `pre_findings=$(deploy_findings_snapshot ...)`:
   compute `hash_state` (CANNOTVERIFY → treat as `run`), read the ledger, compute
   `deploy_pending_any` by reading each batch task's `.return-meta.json` (resolve the task dir via
   the already-sourced `task-lookup-lib.sh`; an unreadable file counts as not pending), then call
   `deploy_ledger_decide`.
-- [ ] On `skip_*`: print `[orchestrate] REDEPLOY CHECKPOINT: skipped (<decision>) -- ledger shows
+- [x] On `skip_*`: print `[orchestrate] REDEPLOY CHECKPOINT: skipped (<decision>) -- ledger shows
   aggregate <short-hash> verified <outcome> <age>s ago by task(s) <list>; <reason>` to stderr.
   Append an entry `{cycle, decision, reason, age_sec, ledger_outcome, changed_paths,
   attributing_tasks}` to `mt_state_file.redeploy_skip_notices` (initialize with `// []`). Do NOT
   touch `deployed_critical_paths`. Bypass the whole deploy/verify body with an if/else wrapper,
   not an early exit, so the trailing `cycle_modified_files = []` reset and `mt_save` still run.
-- [ ] On the three success branches (clean, branch (c), filtered (c)-equivalent), right next to
+- [x] On the three success branches (clean, branch (c), filtered (c)-equivalent), right next to
   each existing `deployed_critical_paths` `mt_set`, call `deploy_ledger_write` with outcome
   `clean` / `pre_existing` / `filtered`, using the `hash_state` computed BEFORE the deploy (the
   content that was actually deployed). Skip the write if `hash_state` was CANNOTVERIFY.
-- [ ] On branch (a) write outcome `deploy_failed`; on branch (b) write outcome `blocking`
+- [x] On branch (a) write outcome `deploy_failed`; on branch (b) write outcome `blocking`
   (negative records, never skip-eligible).
-- [ ] Ledger-write failure → one stderr WARNING, never fatal, never changes the branch outcome.
-- [ ] Extend the `(k, part 2)` header comment block with a short "Durable redeploy ledger"
+- [x] Ledger-write failure → one stderr WARNING, never fatal, never changes the branch outcome.
+- [x] Extend the `(k, part 2)` header comment block with a short "Durable redeploy ledger"
   paragraph pointing at the guardrails subsection (no task numbers).
 
 **Timing**: 1.5 hours

@@ -252,6 +252,10 @@ if ! . "${SCRIPT_DIR}/lib/task-lookup-lib.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/task-lookup-lib.sh." >&2
   exit 2
 fi
+if ! . "${SCRIPT_DIR}/lib/deploy-ledger-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/deploy-ledger-lib.sh." >&2
+  exit 2
+fi
 
 MAX_INFRA_FAILURES=3
 # Decision 2 (Phase 5) — aux_dispatch[] escalation caps, ported verbatim from single-task Stage
@@ -500,6 +504,7 @@ mt_json=$(jq -c \
   | .deferred_self_modifying //= []
   | .deferred_deploy_checkpoint //= []
   | .deployed_critical_paths //= []
+  | .redeploy_skip_notices //= []
   | .consecutive_no_dispatch_cycles //= 0
   | .verify_deploy_baseline_notices //= []
   | .defer_ledger //= []
@@ -696,6 +701,15 @@ emit_and_exit() {
 # (see the header note on re-siting). orchestrate-cycle-postflight.sh DOES populate
 # cycle_modified_files (the composer landed); this checkpoint is live, not a no-op. ─────────────
 #
+# Durable redeploy ledger: before the first expensive call below, this checkpoint now consults a
+# cross-invocation ledger (lib/deploy-ledger-lib.sh, specs/.orchestrator-deploy-ledger.json by
+# default) and can skip the whole deploy+verify body on positive evidence -- a hash skip for the
+# ordinary unchanged-content case, or an attributed-recency skip for a task whose own file_scope
+# is the orchestrator source store (the hash always changes for that class, by construction). See
+# context/patterns/batch-orchestration-guardrails.md's "Durable redeploy ledger" paragraph for the
+# full contract; `deployed_critical_paths` below keeps its own, narrower within-invocation role
+# unchanged.
+#
 # Failure contract (the same three-branch (a)/(b)/(c) contract
 # context/patterns/batch-orchestration-guardrails.md's "### The Inter-Cycle Redeploy Checkpoint"
 # subsection documents, and command-gate-out.sh's rc==6 handler already implements, EXTENDED by
@@ -745,6 +759,39 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
   if [ "$matched_count" -gt 0 ] && [ "$dry_run" != "true" ]; then
     echo "[orchestrate] REDEPLOY CHECKPOINT: this cycle's modified files touched $matched_count orchestrator-critical path(s):" >&2
     echo "$matched_json" | jq -r '.[] | "  - \(.path) (\(.label))"' >&2
+
+    # ── Durable redeploy ledger consult (Decisions 4-5) ─────────────────────────────────────────
+    # Consulted BEFORE the first expensive call (deploy_findings_snapshot below). Fail-safe
+    # throughout: a CANNOTVERIFY hash state or an unreadable ledger both degrade to a "run"
+    # decision inside deploy_ledger_decide, never to a false skip. See
+    # context/patterns/batch-orchestration-guardrails.md's "Durable redeploy ledger" paragraph.
+    ledger_file="$(deploy_ledger_path "$PROJECT_ROOT")"
+    hash_state_json="$(deploy_ledger_hash_state "$PROJECT_ROOT" "$CRITICAL_PATHS_FILE" 2>/dev/null)" || hash_state_json=""
+    ledger_json="$(deploy_ledger_read "$ledger_file" 2>/dev/null)" || ledger_json=""
+
+    # deploy_pending override (Decision 5): any batch task whose OWN .return-meta.json carries
+    # deploy_pending:true forces the decision to `run`, so a skip can never starve the postflight
+    # completion-deploy gate's backstop.
+    deploy_pending_any="false"
+    for _dp_t in $(mt_get_json '.task_numbers' | jq -r '.[]' 2>/dev/null || true); do
+      _dp_entry="$(lookup_project "$_dp_t" 2>/dev/null || true)"
+      if [ -n "$_dp_entry" ] && [ "$_dp_entry" != "null" ]; then
+        _dp_pname="$(echo "$_dp_entry" | jq -r '.project_name // ""' 2>/dev/null || true)"
+        if [ -n "$_dp_pname" ]; then
+          _dp_dir="${PROJECT_ROOT}/$(task_lookup_dir "$_dp_t" "$_dp_pname" "$PROJECT_ROOT")"
+          _dp_meta="${_dp_dir}/.return-meta.json"
+          if [ -f "$_dp_meta" ]; then
+            _dp_flag="$(jq -r '.deploy_pending // false' "$_dp_meta" 2>/dev/null || true)"
+            [ "$_dp_flag" = "true" ] && deploy_pending_any="true"
+          fi
+        fi
+      fi
+    done
+
+    ledger_decision_json="$(deploy_ledger_decide "$ledger_json" "$hash_state_json" "$(date +%s)" "$cycle_modified_files_json" "$(mt_get_json '.task_numbers')" "$deploy_pending_any")"
+    ledger_decision="$(echo "$ledger_decision_json" | jq -r '.decision')"
+
+    if [ "$ledger_decision" = "run" ]; then
     pre_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
 
     deploy_exit=0
@@ -757,6 +804,10 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
       mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
         .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
       mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson e "$deploy_exit" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("deploy-headless.sh exit " + ($e|tostring))}')" '.defer_ledger += [$entry]'
+      if [ -n "$hash_state_json" ]; then
+        deploy_ledger_write "$ledger_file" "$hash_state_json" "deploy_failed" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
+          || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
+      fi
     else
       # Deploy landed (exit 0 or 3) -- reachable from exit 3 for the first time. A fresh,
       # FULL (non-`--skip-slow`) post-redeploy findings snapshot is taken independently of
@@ -787,6 +838,10 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
         post_exit=0
         mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
         echo "[orchestrate] REDEPLOY CHECKPOINT: deploy-headless.sh succeeded; verify-deploy.sh clean." >&2
+        if [ -n "$hash_state_json" ]; then
+          deploy_ledger_write "$ledger_file" "$hash_state_json" "clean" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
+            || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
+        fi
       else
         post_exit=1
         printf '%s\n' "$post_findings" | grep -q '\[SENTINEL\]' && post_exit=2
@@ -800,6 +855,10 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           echo "<!-- verify-deploy-baseline pre=$(echo "$pre_findings" | grep -c .) post=$(echo "$post_findings" | grep -c .) new=0 proceeded=true -->" >&2
           mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
           mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe, filtered:false}')" '.verify_deploy_baseline_notices += [$entry]'
+          if [ -n "$hash_state_json" ]; then
+            deploy_ledger_write "$ledger_file" "$hash_state_json" "pre_existing" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
+              || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
+          fi
         else
           # At least one CANDIDATE new finding relative to the pre-redeploy baseline. DEFECT C:
           # before this candidate is allowed to defer the whole batch, run it through the
@@ -837,6 +896,10 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
               --arg unrelated "$unrelated_findings" \
               --argjson unrelatedc "$(printf '%s\n' "$unrelated_findings" | grep -c .)" \
               '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:$nfc, post_exit:$pe, filtered:true, flaky_count:$flakyc, flaky_findings:$flaky, unrelated_count:$unrelatedc, unrelated_findings:$unrelated, blocking_count:0}')" '.verify_deploy_baseline_notices += [$entry]'
+            if [ -n "$hash_state_json" ]; then
+              deploy_ledger_write "$ledger_file" "$hash_state_json" "filtered" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
+                || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
+            fi
           else
             # Branch (b): at least one CONFIRMED, ATTRIBUTABLE finding relative to the
             # pre-redeploy baseline -- defer, do not re-attempt. Name the specific blocking
@@ -858,10 +921,37 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
             mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
               .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'
             mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --arg nf "$blocking" --argjson nfc "$(printf '%s\n' "$blocking" | grep -c .)" --argjson dd "$depth_disagreement" '{task:null, defer_reason:"deploy_checkpoint", collision_scope:null, cycle:$c, detail:("verify-deploy.sh new findings vs. pre-redeploy baseline (" + ($nfc|tostring) + ", confirmed+attributable): " + $nf), depth_disagreement:$dd}')" '.defer_ledger += [$entry]'
+            if [ -n "$hash_state_json" ]; then
+              deploy_ledger_write "$ledger_file" "$hash_state_json" "blocking" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
+                || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
+            fi
           fi
         fi
       fi
     fi
+  else
+    # Durable redeploy ledger: skip_hash or skip_attributed -- positive ledger evidence says this
+    # exact content (or, for skip_attributed, this batch's own edits to it) was already verified
+    # recently enough. Bypass the whole deploy/verify body via this if/else wrapper (never an
+    # early exit), so the trailing cycle_modified_files reset and mt_save below still run. See
+    # context/patterns/batch-orchestration-guardrails.md's "Durable redeploy ledger" paragraph.
+    ledger_reason="$(echo "$ledger_decision_json" | jq -r '.reason')"
+    ledger_age="$(echo "$ledger_decision_json" | jq -r '.age_sec')"
+    ledger_prev_outcome="$(echo "$ledger_json" | jq -r '.verify_outcome // "unknown"')"
+    ledger_agg_short="$(echo "$ledger_json" | jq -r '(.aggregate // "unknown") | .[0:12]')"
+    ledger_attributing_json="$(echo "$ledger_decision_json" | jq -c '.attributing_tasks')"
+    echo "[orchestrate] REDEPLOY CHECKPOINT: skipped (${ledger_decision}) -- ledger shows aggregate ${ledger_agg_short} verified ${ledger_prev_outcome} ${ledger_age}s ago by task(s) ${ledger_attributing_json}; ${ledger_reason}" >&2
+    mt_set --argjson entry "$(jq -n -c \
+      --argjson c "$cycle_count" \
+      --arg d "$ledger_decision" \
+      --arg r "$ledger_reason" \
+      --argjson age "$ledger_age" \
+      --arg o "$ledger_prev_outcome" \
+      --argjson changed "$(echo "$ledger_decision_json" | jq -c '.changed_paths')" \
+      --argjson attributing "$ledger_attributing_json" \
+      '{cycle:$c, decision:$d, reason:$r, age_sec:$age, ledger_outcome:$o, changed_paths:$changed, attributing_tasks:$attributing}')" \
+      '.redeploy_skip_notices += [$entry]'
+  fi
   fi
 fi
 # Reset for the cycle now starting — the future postflight composer accumulates fresh entries

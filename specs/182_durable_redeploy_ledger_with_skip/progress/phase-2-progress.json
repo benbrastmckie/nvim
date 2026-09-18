@@ -1,0 +1,13 @@
+{
+  "phase": 2,
+  "phase_name": "Wire the ledger into the inter-cycle redeploy checkpoint",
+  "started_at": "2026-09-18T00:10:00Z",
+  "last_updated": "2026-09-18T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source deploy-ledger-lib.sh and add ledger consult/decide/skip/write wiring", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Update test-orchestrate-cycle-plan.sh fixture copy list for the new lib; full suite green", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

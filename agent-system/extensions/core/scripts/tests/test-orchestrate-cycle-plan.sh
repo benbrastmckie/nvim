@@ -55,7 +55,7 @@ for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh 
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
-         lib/task-lookup-lib.sh; do
+         lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh; do
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
@@ -76,7 +76,7 @@ for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-         phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh; do
+         phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
