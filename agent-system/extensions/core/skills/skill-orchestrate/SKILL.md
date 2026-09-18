@@ -18,6 +18,9 @@ diagram, and design rationale: `docs/architecture/orchestrate-state-machine.md`.
 - `.claude/scripts/orchestrate-build-dispatch.sh` — Move 1's dispatch-file writer (called
   internally by `orchestrate-cycle-plan.sh` for every row)
 - `.claude/scripts/orchestrate-cycle-postflight.sh` — Move 3: the shared per-task postflight body
+- `.claude/scripts/orchestrate-recover-message-findings.sh` — Move 3's `report_missing=true`
+  branch: saves a research dispatch's message-borne findings as a clearly-tagged recovered
+  artifact (D4)
 - `.claude/docs/architecture/orchestrate-state-machine.md` — state table, loop diagram,
   `mt_state_file` field reference, exit-status resolution, and `handoff-schema.md` cross-reference
 
@@ -191,7 +194,25 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   verdict=$(echo "$postflight_json" | jq -r '.verdict')
   halt=$(echo "$postflight_json" | jq -r '.halt')
   infra_exempt_cycle=$(echo "$postflight_json" | jq -r '.infra_exempt_cycle')
+  report_missing=$(echo "$postflight_json" | jq -r '.report_missing // false')
   echo "[orchestrate] Task #${t}: dispatch result: $dispatch_status (verdict=$verdict)" >&2
+
+  # D4 message-findings recovery (research phase only): report_missing=true means this row's
+  # research dispatch reported no usable report file and no outcome was recovered — the agent's
+  # findings, if any, exist only in the text it returned to THIS Move. Before running the block
+  # below, the lead writes that row's own Agent-tool return text VERBATIM (no summarizing, no
+  # editing, no analysis — see the Postflight Boundary exception below) to
+  # "${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md", then runs:
+  if [ "$report_missing" = "true" ]; then
+    dispatch_seq_for_row=$(jq -r --arg t "$t" '.dispatch_seq[$t] // empty' "$mt_state_file")
+    recover_json=$(bash .claude/scripts/orchestrate-recover-message-findings.sh \
+      --task-dir "$task_dir_rel" --dispatch-seq "$dispatch_seq_for_row" \
+      --message-file "${task_dir_rel}/.dispatch/${dispatch_seq_for_row}.agent-message.md" \
+      --agent "$agent" --session "$session_id")
+    echo "[orchestrate] Task #${t}: message-findings recovery: $recover_json" >&2
+  fi
+  # This step never changes verdict, dispatch_status, or failed_tasks handling below — it is
+  # purely a best-effort save of findings that would otherwise be lost, per D4.
 
   # ask_user verdicts accumulate for Move 4's batched relay — never asked here, never per-task.
   if [ "$verdict" = "ask_user" ]; then
@@ -281,6 +302,17 @@ this skill MUST NOT: edit source files, run build/test commands, use MCP/WebSear
 analyze or grep source, or write reports/plans/summaries — that is dispatched-agent work. This
 skill only reads the handoff, drives the state transition, and cleans up temp/marker files.
 Reference: `context/standards/postflight-tool-restrictions.md`.
+
+**One narrow, named exception (D4)**: when `postflight_json.report_missing` is `true` for a
+`dispatch[]` row, the lead writes THAT row's own Agent-tool return text **verbatim** (no
+summarizing, no editing, no analysis) to
+`${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md`, then calls
+`orchestrate-recover-message-findings.sh` (see Move 3 above) to persist it into the task's
+`reports/` directory under a clearly-tagged "recovered from agent message" banner. This is
+preservation of a dispatched agent's own already-produced text, not authorship of new report
+content — the lead adds nothing and edits nothing. It does not change `verdict`, `dispatch_status`,
+or `failed_tasks` handling, and it is the ONLY case in which this skill writes into a task's
+`reports/`, `plans/`, or `summaries/` directory.
 
 Also: never hardcode a phase order (the loop dispatches whatever phase `orchestrate-cycle-plan.sh`
 names); never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only, per

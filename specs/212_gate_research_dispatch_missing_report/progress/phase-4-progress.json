@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Wire recovery into skill-orchestrate Move 3 and amend the Postflight Boundary",
+  "started_at": "2026-09-18T22:40:00Z",
+  "last_updated": "2026-09-18T23:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire report_missing/message-capture/helper call into Move 3", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Amend SKILL.md and handoff-schema.md Postflight Boundary item 5, mirror in postflight-tool-restrictions.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/docs/architecture/handoff-schema.md", "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md"]},
+    {"id": 3, "description": "Decide utility-scripts-inventory.md entry (left out, documented)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run lint-postflight-boundary.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

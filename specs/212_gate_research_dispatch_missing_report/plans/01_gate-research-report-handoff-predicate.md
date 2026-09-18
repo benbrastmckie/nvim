@@ -320,31 +320,41 @@ task's report directory without passing them off as a completed report.
 
 ---
 
-### Phase 4: Wire recovery into skill-orchestrate Move 3 and amend the Postflight Boundary [NOT STARTED]
+### Phase 4: Wire recovery into skill-orchestrate Move 3 and amend the Postflight Boundary [COMPLETED]
 
 **Goal**: The lead saves message-only findings on every `report_missing=true` research dispatch
 under an explicit, documented boundary exception.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md` Move 3, read `report_missing` from
+- [x] In `skills/skill-orchestrate/SKILL.md` Move 3, read `report_missing` from
       `postflight_json`. When it is `true` (research phase), the lead writes THIS task's Agent
       return text **verbatim** (no summarizing, no editing) to
       `${task_dir}/.dispatch/${dispatch_seq}.agent-message.md`, then runs
       `bash .claude/scripts/orchestrate-recover-message-findings.sh --task-dir ... --dispatch-seq
       ... --message-file ... --agent "$agent" --session "$session_id"` and logs its JSON result.
-      This does not change verdict or `failed_tasks` handling.
-- [ ] Amend SKILL.md's `## MUST NOT (Postflight Boundary)` section and
+      This does not change verdict or `failed_tasks` handling. *(completed)*
+- [x] Amend SKILL.md's `## MUST NOT (Postflight Boundary)` section and
       `docs/architecture/handoff-schema.md`'s `## Postflight Boundary` item 5 with one narrow,
       named exception. Verbatim preservation of a dispatched agent's own returned text through
       `orchestrate-recover-message-findings.sh`, only when postflight reports
       `report_missing=true`, is preservation, not artifact authorship. The lead adds no analysis
       and does not edit the text. Mirror the same exception in
       `context/standards/postflight-tool-restrictions.md`'s boundary section if it lists the
-      items separately.
-- [ ] Add a one-line entry for the new helper to
+      items separately. *(completed: postflight-tool-restrictions.md does list the items
+      separately (a numbered 1-5 template plus a table), so added a scoped "## Exceptions"
+      section naming this as skill-orchestrate-only, not a template addition other skills
+      inherit)*
+- [x] Add a one-line entry for the new helper to
       `docs/reference/utility-scripts-inventory.md` only if that inventory covers
-      orchestrate-cycle scripts. Otherwise leave it out and note the decision.
-- [ ] Run `lint-postflight-boundary.sh` (it locates the boundary heading).
+      orchestrate-cycle scripts. Otherwise leave it out and note the decision. *(completed:
+      left out -- grepped the inventory for "orchestrate-cycle"/"orchestrate-recover" and found
+      no matches; that inventory is documented as covering only scripts OUTSIDE the normal
+      research/plan/implement/postflight lifecycle, which this script is squarely inside)*
+- [x] Run `lint-postflight-boundary.sh` (it locates the boundary heading). *(completed: run via
+      the deployed `.claude/scripts/lint/lint-postflight-boundary.sh` copy since the source-store
+      copy's PROJECT_ROOT resolution assumes a `.claude/` deploy layout -- 23 files checked, 0
+      violations, heading still located; re-run after Phase 6's redeploy picks up this phase's
+      actual content changes)*
 
 **Timing**: 1 hour
 

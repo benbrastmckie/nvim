@@ -899,9 +899,20 @@ This is distinct from, and additive to, the Context Flatness Constraint (`docs/a
 2. **Run build/test commands** — verification is done by the dispatched skill/agent.
 3. **Use MCP/WebSearch/domain tools** — domain tools are for the dispatched skill/agent's use only.
 4. **Analyze or grep source** — analysis is dispatched-skill work.
-5. **Write reports/plans/summaries** — artifact creation is dispatched-skill work.
+5. **Write reports/plans/summaries** — artifact creation is dispatched-skill work. **One narrow,
+   named exception (D4)**: when `orchestrate-cycle-postflight.sh` reports `report_missing: true`
+   for a research-phase dispatch (its report file or `.return-meta.json` was missing or empty,
+   and no outcome was recovered), the lead writes that dispatch's own Agent-tool return text
+   **verbatim** — no summarizing, no editing, no analysis — to a local capture file, then calls
+   `orchestrate-recover-message-findings.sh` (a mechanical, narrowly-scoped script, not the
+   lead's own judgment) to persist it into the task's `reports/` directory under a
+   clearly-tagged "recovered from agent message" banner that states plainly it is not a
+   completed report. Persisting a subagent's own already-produced text verbatim is
+   preservation, not authorship: the lead adds no new content and edits nothing. This exception
+   is scoped exclusively to this one script-mediated path — it does not license the lead to
+   write, edit, or synthesize report/plan/summary content by any other means.
 
-The per-dispatch postflight phase is limited to: reading the dispatch's `.orchestrator-handoff.json` (or the bounded return-meta/phase-marker recovery exceptions the Context Flatness doc names), driving the state-machine transition to the next stage, and cleanup of temp/marker files. `orchestrate-cycle-postflight.sh` is the sole implementation of this boundary for every task in a batch (including a batch of one) — there is no second, inline copy of this logic in `skill-orchestrate/SKILL.md` to keep in sync. `lint-postflight-boundary.sh` enforces that `skill-orchestrate/SKILL.md` carries a heading its heuristic can locate as this boundary's home; see that script's own header for the current heading pattern it matches.
+The per-dispatch postflight phase is limited to: reading the dispatch's `.orchestrator-handoff.json` (or the bounded return-meta/phase-marker recovery exceptions the Context Flatness doc names), driving the state-machine transition to the next stage, cleanup of temp/marker files, and the one named exception in item 5 above. `orchestrate-cycle-postflight.sh` is the sole implementation of this boundary for every task in a batch (including a batch of one) — there is no second, inline copy of this logic in `skill-orchestrate/SKILL.md` to keep in sync. `lint-postflight-boundary.sh` enforces that `skill-orchestrate/SKILL.md` carries a heading its heuristic can locate as this boundary's home; see that script's own header for the current heading pattern it matches.
 
 Reference: `context/standards/postflight-tool-restrictions.md`.
 

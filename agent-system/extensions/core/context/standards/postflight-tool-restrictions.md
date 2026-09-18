@@ -87,6 +87,24 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 
 ---
 
+## Exceptions
+
+**`skill-orchestrate` only, D4 message-findings recovery**: when
+`orchestrate-cycle-postflight.sh` reports `report_missing: true` for a research-phase dispatch
+(its report file or `.return-meta.json` was missing or empty, and no outcome was recovered), the
+orchestrate lead writes that dispatch's own Agent-tool return text **verbatim** to a local
+capture file and calls `orchestrate-recover-message-findings.sh` — a mechanical, narrowly-scoped
+script, not the lead's own judgment — to persist it into the task's `reports/` directory under a
+clearly-tagged "recovered from agent message" banner. This is preservation of a dispatched
+agent's own already-produced text, not authorship of new report content, and it is the ONLY
+sanctioned exception to the "Write to summaries" / "Write reports/plans/summaries" prohibitions
+above. It is scoped exclusively to `skill-orchestrate`'s own Move 3 and this one script-mediated
+path; no other skill's postflight gains a corresponding exception by analogy. Full accounting:
+`docs/architecture/handoff-schema.md`'s "Postflight Boundary" section (item 5) and
+`skills/skill-orchestrate/SKILL.md`'s own "MUST NOT (Postflight Boundary)" section.
+
+---
+
 ## Examples
 
 ### Correct Postflight (collapsed-shape domain skill pattern)
