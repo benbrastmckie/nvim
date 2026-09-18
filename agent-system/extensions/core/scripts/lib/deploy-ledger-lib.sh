@@ -187,6 +187,14 @@ deploy_ledger_decide() {
     jq -n -c '{decision:"run", reason:"no ledger evidence (missing, malformed, or unreadable)", age_sec:0, changed_paths:[], attributing_tasks:[]}'
     return 0
   fi
+  if [ -z "$hash_state_json" ] || [ "$hash_state_json" = "null" ]; then
+    # CANNOTVERIFY current hash state (missing scope root, missing sha256sum, or a jq failure).
+    # Fail-safe toward "run" -- an unavailable CURRENT hash must never be treated as "everything
+    # changed" and fed into the skip_attributed coverage check below, which could otherwise
+    # manufacture a false skip out of the absence of evidence.
+    jq -n -c '{decision:"run", reason:"current hash state is CANNOTVERIFY (missing scope root, sha256sum, or critical-paths file)", age_sec:0, changed_paths:[], attributing_tasks:[]}'
+    return 0
+  fi
 
   local jqdefs="${FILE_SCOPE_OVERLAP_JQ_DEFS:-}"
   if [ -z "$jqdefs" ]; then
