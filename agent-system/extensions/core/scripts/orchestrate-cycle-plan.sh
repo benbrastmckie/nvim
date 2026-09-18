@@ -930,7 +930,17 @@ fi
 # Consumed at the charge site below, in the live per-task dispatch loop. UNCHANGED by the per-run
 # cycle-budget contract above -- this ledger's own durability is orthogonal to the cycle-count
 # budget.
+#
+# Unwind-support capture (`orchestrate-unwind-dispatch.sh`'s Phase 1 pre-image): also seeds
+# `pd_prior_dsc[$t]`, the durable `dispatch_seq_counter` value as it stood BEFORE this run's own
+# `--flush-seq` calls (both this task's own, at the live per-task charge site below, and any
+# earlier aux-dispatch-emission flush for the SAME task, which runs between this loop and the live
+# per-task loop). This loop is the earliest point in the whole script that reads a task's durable
+# guard file, so capturing here — rather than re-reading `--seed` again immediately before the
+# live charge site's own `--flush-seq` call — is what "move the read to before the earliest
+# durable write" means in practice for this script.
 declare -A pending_dispatch_seed=()
+declare -A pd_prior_dsc=()
 for t in "${task_args[@]}"; do
   [ -z "${project_names[$t]:-}" ] && continue
   _task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "${project_names[$t]}" "$PROJECT_ROOT")"
@@ -938,6 +948,7 @@ for t in "${task_args[@]}"; do
   _seeded_dsc=$(printf '%s' "$_seed_out" | jq -r '.dispatch_seq_counter // 0' 2>/dev/null) || _seeded_dsc=0
   case "$_seeded_dsc" in ''|*[!0-9]*) _seeded_dsc=0 ;; esac
   mt_set --argjson d "$_seeded_dsc" '.dispatch_seq_counter = ([.dispatch_seq_counter, $d] | max)'
+  pd_prior_dsc[$t]="$_seeded_dsc"
   _seed_pending=$(printf '%s' "$_seed_out" | jq -c '.pending_dispatch // null' 2>/dev/null) || _seed_pending="null"
   [ "$_seed_pending" != "null" ] && pending_dispatch_seed[$t]="$_seed_pending"
 done
@@ -1648,6 +1659,146 @@ compose_focus() {
   fi
 }
 
+# ── Sibling territory (base mode AND hard mode; the task that carries concurrent-sibling
+# territory into base-mode dispatch briefs) — a dispatch file is the ONLY channel that reaches a
+# dispatched agent once it is running: a message sent to a live dispatch does not arrive until
+# after it finishes (see context/patterns/dispatch-report-not-termination.md). Before this task,
+# `--territory` was populated ONLY for a hard-mode implement candidate's own H1/H7 "which files do
+# I own within my own plan" fact — cross-TASK concurrency within one batch (two DIFFERENT tasks
+# dispatched the same cycle, onto the SAME shared working tree) was invisible to every dispatch,
+# in every mode, because nothing computed or carried it. This section closes that gap: it builds a
+# `concurrent_siblings` payload for EVERY dispatch this cycle builds, in EVERY mode, whenever the
+# cycle schedules more than one task. A single-task cycle schedules no siblings, so
+# `build_sibling_territory` returns the empty string and the resulting dispatch file is
+# byte-identical to one built before this feature existed (the Phase 3 fixture's regression case).
+#
+# Payload shape (passed opaquely to orchestrate-build-dispatch.sh's own --territory flag, which
+# already renders whatever JSON it is given under "## Territory" — see that script's own header;
+# this script never re-implements that rendering):
+#   {"concurrent_siblings": [{"task_number": N, "phase": "research"|"plan"|"implement",
+#     "file_scope": [...]|null, "scope_declared": true|false,
+#     "scope_granularity": "file"|"coarse"|"undeclared",
+#     "entries": [{"path": "...", "granularity": "file"|"directory"|"glob"}, ...],
+#     "note": "..."|null}, ...],
+#    "concurrency_note": "..."}
+#
+# Granularity (Decision 3 of the originating plan): a `file_scope` entry is "directory" when it
+# ends in "/" or already names an existing directory relative to the repo root, "glob" when it
+# contains `*`, `?`, or `[`, else "file". A sibling's roll-up `scope_granularity` is "file" only
+# when every entry is "file"; any directory/glob entry makes it "coarse"; an absent, null, or
+# empty `file_scope` makes it "undeclared" — rendered explicitly, never dropped from the list, per
+# Decision 3: a sibling with no declared scope is exactly the failure mode both incidents in this
+# task's own description trace back to. A "coarse" or "undeclared" sibling's `note` field warns
+# that it may touch any file (within its declared directory/glob, or anywhere at all when
+# undeclared); a "file"-granularity sibling's `note` is `null`.
+#
+# Absent-file_scope ADMISSION POSTURE is explicitly NOT decided here (Decision 4): whether an
+# absent or coarse `file_scope` should defer admission in the first place belongs to the separate,
+# already-filed work scoped to `orchestrate-batch-admit.sh`'s own admission gate. This payload only
+# REPRESENTS the absence/coarseness so a dispatched agent can see and react to it; this task
+# consumes whatever that separate work rules and does not edit `orchestrate-batch-admit.sh`.
+#
+# aux_dispatch[] rows (built earlier, above, by orchestrate-build-aux-dispatch.sh — see the AUX
+# EMISSION section) are DELIBERATELY EXCLUDED from `concurrent_siblings`, confirmed rather than
+# assumed: that builder has no `--territory` plumbing at all, and every aux kind
+# (blocker-research, drift-inspection, plan-revision, divergence-audit) is a short, single-purpose
+# research/revision call that never loops over a task's own `file_scope` editing files the way an
+# implement dispatch does — the file-collision risk this payload guards against does not apply to
+# it. A future task may extend `--territory` plumbing to that builder; this one does not.
+#
+# Sequencing rationale (Decision 5) is deliberately GENERIC, never per-pair: nothing in this
+# codebase computes non-idempotence between two specific tasks, so `concurrency_note` carries one
+# fixed procedural instruction (re-read a shared file immediately before editing it, stage only
+# this task's own hunks, never run a reverting git-snapshot.sh, treat a foreign-scope build
+# failure as possibly a sibling's in-flight edit rather than your own regression, and STOP-and-
+# report on foreign work only after a `git log` self-check) instead of a fabricated claim about
+# which specific pair of tasks will actually collide.
+#
+# Over-inclusion is intentional (Decision 6): a dispatch file is built before later same-cycle
+# siblings acquire their own locks, so a sibling later deferred by this same live loop may still
+# be named here. The wording says "scheduled concurrently this cycle", never "running" — naming a
+# sibling that ends up deferred is a false positive an agent can dismiss with one `git log` check;
+# silently omitting one that IS running is the failure mode this whole task exists to close.
+_sibling_territory_classify_entry() {
+  # <path> -> echoes "file" | "directory" | "glob" (Decision 3's granularity vocabulary).
+  local path="$1"
+  case "$path" in
+    */) echo "directory"; return ;;
+    *[*?\[]*) echo "glob"; return ;;
+  esac
+  if [ -d "${PROJECT_ROOT}/${path}" ]; then
+    echo "directory"
+  else
+    echo "file"
+  fi
+}
+
+build_sibling_territory() {
+  # build_sibling_territory <self_task> <sibling_task_number>...
+  # Echoes the compact JSON object described in the header block above, or the empty string when
+  # the sibling list is empty (caller skips the --territory flag entirely in that case — the
+  # empty-value-skips-flag convention this script already uses everywhere else). Reuses
+  # `lookup_project` (this script's own active+archive task lookup, defined above) rather than a
+  # second hand-written jq query against $STATE_FILE — Finding 2/Rec 2 of the originating report:
+  # no new discovery mechanism is needed.
+  local self_t="$1"; shift
+  local -a siblings=("$@")
+  [ "${#siblings[@]}" -eq 0 ] && { printf ''; return 0; }
+
+  local -a sibling_rows=()
+  local s sib_phase sib_entry sib_scope_json sib_declared sib_gran sib_note path gran entries_json entry_json
+  for s in "${siblings[@]}"; do
+    # Defense in depth: every live call site already excludes $self_t from the list it builds,
+    # but a self-referential entry here would be a confusing "you are your own sibling" payload,
+    # so skip it defensively rather than trust every future call site to get the exclusion right.
+    [ "$s" = "$self_t" ] && continue
+    sib_phase="${effective_group[$s]:-unknown}"
+    sib_entry=$(lookup_project "$s") || sib_entry=""
+    if [ -z "$sib_entry" ] || [ "$sib_entry" = "null" ]; then
+      sib_scope_json="null"
+    else
+      sib_scope_json=$(echo "$sib_entry" | jq -c '.file_scope // null')
+    fi
+
+    local -a sib_entries=()
+    if [ "$sib_scope_json" = "null" ] || [ "$sib_scope_json" = "[]" ]; then
+      sib_declared="false"
+      sib_gran="undeclared"
+      sib_note="No file_scope declared for this task -- it may touch any file in the repository."
+    else
+      sib_declared="true"
+      sib_gran="file"
+      while IFS= read -r path; do
+        [ -z "$path" ] && continue
+        gran=$(_sibling_territory_classify_entry "$path")
+        [ "$gran" != "file" ] && sib_gran="coarse"
+        sib_entries+=("$(jq -n -c --arg p "$path" --arg g "$gran" '{path: $p, granularity: $g}')")
+      done < <(echo "$sib_scope_json" | jq -r '.[]')
+      if [ "$sib_gran" = "coarse" ]; then
+        sib_note="Declared file_scope includes a directory or glob entry -- this task may touch any file within it."
+      else
+        sib_note=""
+      fi
+    fi
+
+    entries_json="[]"
+    [ "${#sib_entries[@]}" -gt 0 ] && entries_json="[$(IFS=,; echo "${sib_entries[*]}")]"
+
+    entry_json=$(jq -n -c --argjson t "$s" --arg p "$sib_phase" --argjson fs "$sib_scope_json" \
+      --argjson decl "$([ "$sib_declared" = "true" ] && echo true || echo false)" \
+      --arg g "$sib_gran" --argjson e "$entries_json" --arg note "$sib_note" \
+      '{task_number: $t, phase: $p, file_scope: $fs, scope_declared: $decl, scope_granularity: $g,
+        entries: $e, note: (if $note == "" then null else $note end)}')
+    sibling_rows+=("$entry_json")
+  done
+
+  local siblings_json
+  siblings_json="[$(IFS=,; echo "${sibling_rows[*]}")]"
+  local note
+  note='One or more sibling tasks are scheduled for dispatch THIS SAME /orchestrate cycle, on this same shared working tree. Before editing or committing any file: (1) re-read it immediately beforehand, in case a sibling has already changed it; (2) stage and commit only this task'"'"'s own hunks, never a directory or glob add; (3) never run git-snapshot.sh in its reverting default mode; (4) treat an unexpected build failure in a file outside your own file_scope as possibly a sibling'"'"'s in-flight edit, not necessarily your own regression; (5) if you observe a foreign commit, a foreign uncommitted modification, or a running build you did not start, STOP and report it -- after checking git log to confirm the work is not your own -- rather than proceeding or dismissing it as noise. See context/contracts/territory.md (Cross-Task Territory section) and context/patterns/dispatch-report-not-termination.md.'
+  jq -n -c --argjson sibs "$siblings_json" --arg note "$note" '{concurrent_siblings: $sibs, concurrency_note: $note}'
+}
+
 # ── H1: hard-mode per-phase dispatch selection (Phase 4 of the task that ported single-task
 # features into the batch engine) — one blocking phase per task per cycle, selected by the SAME
 # shared heading-scan machinery single-task Stage 4's H1 branch uses. Runs ONCE, here, in the
@@ -1852,6 +2003,18 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   dispatch_session="${session_id}_${t}"
   [ "$g" = "implement" ] && dispatch_session="$session_id"
 
+  # Unwind-support capture (`orchestrate-unwind-dispatch.sh`'s Phase 1 pre-image): the LAST
+  # read of this task's state.json entry before the preflight write below overwrites
+  # status/last_updated/session_id. Empty string when the entry or field is absent (mirrors the
+  # rest of this script's `// ""` convention). This is deliberately a fresh `lookup_project` call
+  # rather than a reuse of the early `current_statuses[$t]` capture near the top of this script:
+  # only this call site also has `last_updated`/`session_id` in scope, and nothing durably writes
+  # this task's own state.json entry between here and `skill_preflight_update` below.
+  _pd_prior_entry=$(lookup_project "$t") || _pd_prior_entry=""
+  _pd_prior_status=$(printf '%s' "$_pd_prior_entry" | jq -r '.status // ""' 2>/dev/null) || _pd_prior_status=""
+  _pd_prior_last_updated=$(printf '%s' "$_pd_prior_entry" | jq -r '.last_updated // ""' 2>/dev/null) || _pd_prior_last_updated=""
+  _pd_prior_session_id=$(printf '%s' "$_pd_prior_entry" | jq -r '.session_id // ""' 2>/dev/null) || _pd_prior_session_id=""
+
   # (j) Preflight status write. update-task-status.sh confirms on stdout; the entry-point
   # `exec 3>&1 1>&2` redirect above already routes fd 1 (this call's stdout) to the diagnostic
   # stream structurally, so no per-call-site `>&2` is needed here any more.
@@ -1875,12 +2038,39 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # skips-flag, same convention as every other flag above: an ordinary (unforced) dispatch never
   # sets forced_this_cycle[$t], so this never appends for it.
   [ "${forced_this_cycle[$t]:-false}" = "true" ] && build_args+=(--allow-terminal)
-  # H1 (Phase 4): only ever set for a hard-mode implement candidate whose heading-scan selected
-  # a phase this cycle — absent from every base-mode call and from a hard-mode implement candidate
-  # that fell through to ordinary status-derived dispatch (no open heading found, not inconclusive).
-  if [ -n "${h1_next_phase[$t]:-}" ]; then
-    build_args+=(--phase-number "${h1_next_phase[$t]}" --territory "${h1_territory[$t]}")
+  # --phase-number (H1, Phase 4): only ever set for a hard-mode implement candidate whose
+  # heading-scan selected a phase this cycle — absent from every base-mode call and from a
+  # hard-mode implement candidate that fell through to ordinary status-derived dispatch (no open
+  # heading found, not inconclusive). Unlike --territory immediately below, --phase-number stays
+  # hard-mode-implement-only: it names a within-plan phase number that base mode's ordinary
+  # status-derived dispatch has no equivalent of.
+  [ -n "${h1_next_phase[$t]:-}" ] && build_args+=(--phase-number "${h1_next_phase[$t]}")
+  # --territory: NO LONGER hard-mode-only (see the "Sibling territory" header block above this
+  # loop for the full contract). Built fresh for THIS task from every OTHER task
+  # `probed_dispatch_post_h1` schedules this same cycle, in every mode. When this task is also a
+  # hard-mode implement candidate with its own H1/H7 owned-files literal, the sibling payload is
+  # MERGED into that same JSON object under a `concurrent_siblings` key (Decision 1) rather than
+  # replacing it, so hard mode gains this cross-task fact too instead of it staying a base-mode-only
+  # feature by another name. Empty-value-skips-flag: a single-task cycle (no siblings) and no H1
+  # territory together produce no --territory flag at all, byte-identical to a build before this
+  # feature existed.
+  declare -a _sibling_tasks=()
+  for _sib_t in "${probed_dispatch_post_h1[@]}"; do
+    [ "$_sib_t" != "$t" ] && _sibling_tasks+=("$_sib_t")
+  done
+  sibling_territory_json=$(build_sibling_territory "$t" "${_sibling_tasks[@]}")
+  territory_arg=""
+  if [ -n "${h1_territory[$t]:-}" ]; then
+    if [ -n "$sibling_territory_json" ]; then
+      territory_arg=$(jq -n -c --argjson base "${h1_territory[$t]}" --argjson sibs "$sibling_territory_json" \
+        '$base + {concurrent_siblings: $sibs.concurrent_siblings}')
+    else
+      territory_arg="${h1_territory[$t]}"
+    fi
+  else
+    territory_arg="$sibling_territory_json"
   fi
+  [ -n "$territory_arg" ] && build_args+=(--territory "$territory_arg")
   # --focus wiring (Phase 1): compose the user's own --focus text (any phase, from
   # orchestrate-cycle-plan.sh's own --focus flag) with the task's research_questions
   # (research phase only, unchanged source field) via the shared compose_focus() helper --
@@ -1960,10 +2150,24 @@ for t in "${probed_dispatch_post_h1[@]}"; do
     # (incremented) at section (i) above, at exactly `task_dispatch_seq`; persist that same value
     # now via --flush-seq so a LATER run's own (a2) seeding sees it and never mints a repeat.
     bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --flush-seq "$task_dir_abs" "$task_dispatch_seq" >/dev/null 2>&1 || true
+    # Unwind-support pre-image (`orchestrate-unwind-dispatch.sh`'s Phase 1): the four `prior_*`
+    # fields below are the ONLY input the unwind script needs beyond what pending_dispatch already
+    # carried -- the pre-dispatch status triple (captured just above, immediately before
+    # skill_preflight_update overwrote it) and the durable dispatch_seq_counter as it stood before
+    # THIS charge's own --flush-seq call just above (captured earlier still, in the (a2)-adjacent
+    # seed loop at the top of this script -- the earliest point that reads this task's durable
+    # guard file this run). Recorded only on this non-replay path: a replay branch (above) reuses
+    # an existing pending_dispatch record verbatim and must never overwrite its pre-image with the
+    # CURRENT (already in-flight) status.
+    _pd_prior_seq_counter="${pd_prior_dsc[$t]:-0}"
     _pd_record_json=$(jq -n -c --argjson seq "$task_dispatch_seq" --arg phase "$g" \
       --argjson forced "$_pd_forced_this_cycle" --arg df "$dispatch_file" \
       --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-      '{seq: $seq, phase: $phase, forced: $forced, dispatch_file: $df, recorded_at: $ts}')
+      --arg prior_status "$_pd_prior_status" --arg prior_last_updated "$_pd_prior_last_updated" \
+      --arg prior_session_id "$_pd_prior_session_id" --argjson prior_dsc "$_pd_prior_seq_counter" \
+      '{seq: $seq, phase: $phase, forced: $forced, dispatch_file: $df, recorded_at: $ts,
+        prior_status: $prior_status, prior_last_updated: $prior_last_updated,
+        prior_session_id: $prior_session_id, prior_dispatch_seq_counter: $prior_dsc}')
     bash "$SCRIPT_DIR/orchestrate-loop-guard-init.sh" --record-pending "$task_dir_abs" "$_pd_record_json" >/dev/null 2>&1 || true
   fi
 
