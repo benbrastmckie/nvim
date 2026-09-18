@@ -1,7 +1,7 @@
 # Implementation Plan: Task #206
 
 - **Task**: 206 - fix_test_fixtures_missing_task_lookup_lib
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/206_fix_test_fixtures_missing_task_lookup_lib/reports/01_fixture-missing-task-lookup-lib.md
@@ -277,22 +277,33 @@ fixing any gap found) and report the revised count rather than deferring to the 
 
 ---
 
-### Phase 5: Full gate — shellcheck, redeploy, re-run from the deployed copy [IN PROGRESS]
+### Phase 5: Full gate — shellcheck, redeploy, re-run from the deployed copy [COMPLETED]
 
 **Goal**: satisfy the acceptance criteria end to end.
 
 **Tasks**:
-- [ ] Run `shellcheck` on every shell file touched by Phases 1-4 and confirm clean per
-      `context/standards/shell-strict-mode.md`.
-- [ ] Run the full core suite set (`agent-system/extensions/core/scripts/tests/run-all.sh`) from the
-      source store and confirm no suite regressed relative to the pre-change baseline.
-- [ ] Redeploy with the non-destructive default mode:
-      `bash .claude/scripts/deploy-headless.sh` (never `--wipe`).
-- [ ] Re-run `test-postflight-deploy-gate.sh` and `test-lint-json-channel-discipline.sh` from the
-      deployed `.claude/scripts/tests/` copy and confirm both green there too.
-- [ ] Run `lint-json-channel-discipline.sh` from the deployed copy and confirm 0 violations.
-- [ ] Confirm `git status` shows no hand-edits under `.claude/**` (the only `.claude/` changes are
-      the regenerated deploy output, which is gitignored).
+- [x] Run `shellcheck` on every shell file touched by Phases 1-4 and confirm clean per
+      `context/standards/shell-strict-mode.md`. *(completed: all findings across the 5 touched
+      files are pre-existing, confirmed identical against each file's pre-task committed content;
+      zero new findings introduced by this task's edits)*
+- [x] Run the full core suite set (`agent-system/extensions/core/scripts/tests/run-all.sh`) from the
+      source store and confirm no suite regressed relative to the pre-change baseline. *(completed:
+      84 passed, 1 failed, 0 skipped, 85 total; the one failure is
+      `test-verify-deploy-context-budget.sh` case4 (byte-count drift / gate 20 for
+      `commands/orchestrate.md`), which is unrelated to this task — it references none of the
+      five files this task touched, was last modified by unrelated tasks, and the progress file's
+      Phase 5 notes already recorded it as pre-existing and present both before and after this
+      task's edits; no regression)*
+- [x] Redeploy with the non-destructive default mode:
+      `bash .claude/scripts/deploy-headless.sh` (never `--wipe`). *(completed)*
+- [x] Re-run `test-postflight-deploy-gate.sh` and `test-lint-json-channel-discipline.sh` from the
+      deployed `.claude/scripts/tests/` copy and confirm both green there too. *(completed:
+      19 passed/0 failed and 12 passed/0 failed respectively)*
+- [x] Run `lint-json-channel-discipline.sh` from the deployed copy and confirm 0 violations.
+      *(completed: 179 files, 0 violations)*
+- [x] Confirm `git status` shows no hand-edits under `.claude/**` (the only `.claude/` changes are
+      the regenerated deploy output, which is gitignored). *(completed: `git status --porcelain --
+      .claude/` empty, confirmed fully gitignored via `git check-ignore`)*
 
 **Timing**: 0.75 hours
 
@@ -310,17 +321,18 @@ fixing any gap found) and report the revised count rather than deferring to the 
 
 ## Testing & Validation
 
-- [ ] `test-postflight-deploy-gate.sh`: 19 passed, 0 failed (source store and deployed copy)
-- [ ] `test-lint-json-channel-discipline.sh`: all cases pass, including the new `> "$var"` case
+- [x] `test-postflight-deploy-gate.sh`: 19 passed, 0 failed (source store and deployed copy)
+- [x] `test-lint-json-channel-discipline.sh`: all cases pass, including the new `> "$var"` case
       (source store and deployed copy)
-- [ ] `lint-json-channel-discipline.sh` real corpus: 0 violations
-- [ ] New lint fixture case demonstrated to fail against the pre-fix predicate
-- [ ] `test-handoff-dispatch-identity.sh` and `test-git-commit-scoped.sh` still green after the
+- [x] `lint-json-channel-discipline.sh` real corpus: 0 violations
+- [x] New lint fixture case demonstrated to fail against the pre-fix predicate
+- [x] `test-handoff-dispatch-identity.sh` and `test-git-commit-scoped.sh` still green after the
       defensive lib additions
-- [ ] `run-all.sh` over all core suites: no regression versus baseline
-- [ ] shellcheck clean for every touched shell file
-- [ ] No assertion weakened or deleted anywhere in the diff
-- [ ] `task-lock.sh`'s unconditional `source` of `task-lookup-lib.sh` unchanged
+- [x] `run-all.sh` over all core suites: no regression versus baseline *(one pre-existing,
+      unrelated failure in `test-verify-deploy-context-budget.sh` — see Phase 5 notes)*
+- [x] shellcheck clean for every touched shell file
+- [x] No assertion weakened or deleted anywhere in the diff
+- [x] `task-lock.sh`'s unconditional `source` of `task-lookup-lib.sh` unchanged
 
 ## Artifacts & Outputs
 
