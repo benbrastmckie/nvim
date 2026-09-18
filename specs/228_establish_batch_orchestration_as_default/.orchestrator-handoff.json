@@ -1,17 +1,18 @@
 {
-  "status": "planned",
-  "summary": "Created 3-phase documentation-only plan; canonical batch-selection home is batch-orchestration-guardrails.md. Plan fixes three research-draft defects (mixed-shape contradiction, non-rule topic-vs-width answer, missing MAX_TASKS=8 trim rule). index-entries.json line_count update is conditional because that file is in a concurrent sibling scope.",
+  "status": "implemented",
+  "summary": "Added the canonical 'Batching Is the Default' selection-criteria section to batch-orchestration-guardrails.md (posture, collision-visibility argument, dominance rule with a definite winner for each of the three pairwise conflicts, MAX_TASKS=8 cap rule, worked example), pointed orchestrate.md/claudemd.md/multi-task-operations.md at it, and removed the contradicting 'common case' framing from multi-task-operations.md's Overview.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md",
-      "summary": "3-phase documentation-only plan; canonical home is batch-orchestration-guardrails.md."
+      "type": "summary",
+      "path": "specs/228_establish_batch_orchestration_as_default/summaries/01_batch-default-selection-guidance-summary.md",
+      "summary": "3-phase documentation-only implementation: canonical batch-selection section, pointer edits, and cross-file verification with index-entries.json line_count deferred to avoid colliding with a concurrent sibling's declared scope."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 3,
   "blockers": [],
-  "dispatch_seq": 4,
-  "phase": "plan",
-  "next_action_hint": "implement"
+  "dispatch_seq": 7,
+  "phase": "implement",
+  "next_action_hint": "Task is complete. Optional follow-up: run generate-context-line-counts.sh --write for batch-orchestration-guardrails.md once index-entries.json is free of sibling task 236's in-flight changes.",
+  "plan_markers_verified": true
 }
