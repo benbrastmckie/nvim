@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture reproducing the observed batch shape",
+  "started_at": "2026-09-18T18:10:00Z",
+  "last_updated": "2026-09-18T18:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Append Group 25 to test-orchestrate-cycle-plan.sh: Cases A-E covering narrow/undeclared/coarse/empty-array granularity, single-task regression, and hard-mode H1 merge",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "Case F (only if aux rows were included in Phase 1): an aux-dispatched sibling appears with its aux: phase label",
+      "type": "skipped",
+      "reason": "Condition is false -- Phase 1 deliberately excluded aux_dispatch[] rows from concurrent_siblings (orchestrate-build-aux-dispatch.sh has no --territory plumbing; aux kinds are short single-purpose research/revision calls, not file-editing implement dispatches).",
+      "annotation": "*(deviation: skipped — condition is false...)*"
+    }
+  ]
+}

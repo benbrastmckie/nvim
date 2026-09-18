@@ -2767,6 +2767,163 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 25: Base-mode sibling territory fixture (the task that carries concurrent-sibling
+# territory into base-mode dispatch briefs) -- reproduces the observed batch shape: concurrent
+# implement dispatches with mixed declared-scope granularity, one with a narrow file scope, one
+# with no declared scope at all, and one with a coarse (directory) scope. orchestrate-build-dispatch.sh
+# is stubbed to just echo its argv (this suite's own convention -- Group 9 Case C tests --territory
+# the same way), so assertions inspect the exact --territory JSON string the SUT builds and passes,
+# rather than a rendered dispatch file (that half -- ## Territory + the territory.md pointer --
+# is Group 13 of test-orchestrate-build-dispatch.sh's job, not this suite's).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 25: base-mode sibling territory (mixed granularity, single-task regression, hard-mode merge)"
+
+G25_ARGV_LOG="$WORKDIR/g25-build-dispatch-argv.log"
+: > "$G25_ARGV_LOG"
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$G25_ARGV_LOG"
+proj_num="\$1"; phase="\$2"
+jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+# Cases A-C: three concurrently-scheduled `planned` tasks (all resolve to the implement group).
+# 2501 declares a narrow, single-file scope (the observed two-file proof-tactic sweep). 2502
+# OMITS the file_scope key entirely (the observed tree-wide rename that declared no scope at all).
+# 2503 declares a directory-granularity scope (the RECURRED four-task batch's coarse-declaration
+# shape) plus an explicitly empty array (2504), proving `[]` renders identically to absent.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2501, "project_name": "g25_narrow", "task_type": "general", "status": "planned", "description": "narrow single-file scope", "dependencies": [], "file_scope": ["FormalSystem/Metalogic/Soundness.lean"]},
+    {"project_number": 2502, "project_name": "g25_undeclared", "task_type": "general", "status": "planned", "description": "no file_scope key at all (tree-wide rename case)"},
+    {"project_number": 2503, "project_name": "g25_coarse", "task_type": "general", "status": "planned", "description": "directory-granularity scope", "dependencies": [], "file_scope": ["docs/"]},
+    {"project_number": 2504, "project_name": "g25_empty_array", "task_type": "general", "status": "planned", "description": "explicitly empty file_scope array", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+: > "$G25_ARGV_LOG"
+run_sut --session g25_sess -- 2501 2502 2503 2504
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 25 (Cases A-C): SUT exits 0"
+else
+  fail "Group 25 (Cases A-C): SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.dispatch | length')" = "4" ]; then
+  pass "Group 25 (Cases A-C): all four siblings dispatch this cycle"
+else
+  fail "Group 25 (Cases A-C): expected 4 dispatch rows; got: $LAST_STDOUT"
+fi
+
+# Case A: #2501's own --territory names #2502 (undeclared) and shows the undeclared sentinel.
+g25_2501_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
+if echo "$g25_2501_argv" | grep -q -- "--territory"; then
+  pass "Case A: #2501 receives --territory"
+else
+  fail "Case A: --territory missing from #2501's argv ('$g25_2501_argv')"
+fi
+if echo "$g25_2501_argv" | grep -q '"task_number":2502' && \
+   echo "$g25_2501_argv" | grep -q '"scope_declared":false' && \
+   echo "$g25_2501_argv" | grep -q '"scope_granularity":"undeclared"'; then
+  pass "Case A: #2501's territory names sibling #2502 as undeclared (scope_declared=false)"
+else
+  fail "Case A: #2501's territory missing the undeclared #2502 entry (argv: '$g25_2501_argv')"
+fi
+if echo "$g25_2501_argv" | grep -q "context/contracts/territory.md"; then
+  pass "Case A: #2501's concurrency_note cites context/contracts/territory.md"
+else
+  fail "Case A: territory.md citation missing from #2501's concurrency_note"
+fi
+
+# Case B: #2502's own --territory names #2501 with its exact file and granularity=file.
+g25_2502_argv=$(grep '^2502 implement' "$G25_ARGV_LOG" || true)
+if echo "$g25_2502_argv" | grep -q '"task_number":2501' && \
+   echo "$g25_2502_argv" | grep -q "FormalSystem/Metalogic/Soundness.lean" && \
+   echo "$g25_2502_argv" | grep -q '"granularity":"file"'; then
+  pass "Case B: #2502's territory names sibling #2501 with its exact file and granularity=file"
+else
+  fail "Case B: #2502's territory missing the file-granularity #2501 entry (argv: '$g25_2502_argv')"
+fi
+
+# Case C: #2501's territory also names #2503 as coarse/directory, and #2504 (empty array) as
+# undeclared -- identical rendering to #2502's absent-key case.
+if echo "$g25_2501_argv" | grep -q '"task_number":2503' && \
+   echo "$g25_2501_argv" | grep -q '"granularity":"directory"' && \
+   echo "$g25_2501_argv" | grep -q '"scope_granularity":"coarse"'; then
+  pass "Case C: #2501's territory names sibling #2503 as coarse/directory"
+else
+  fail "Case C: #2501's territory missing the coarse #2503 entry (argv: '$g25_2501_argv')"
+fi
+if echo "$g25_2501_argv" | grep -q '"task_number":2504' && \
+   echo "$g25_2501_argv" | grep -q '"scope_granularity":"undeclared"'; then
+  pass "Case C: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)"
+else
+  fail "Case C: #2501's territory did not render #2504 as undeclared (argv: '$g25_2501_argv')"
+fi
+
+# Case D (regression guard): a single-task cycle (same state.json, but only #2501 named on the
+# command line) never receives --territory at all -- no siblings are scheduled this cycle.
+reset_lock_dirs
+: > "$G25_ARGV_LOG"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g25_solo.json"
+run_sut --session g25_solo -- 2501
+g25_solo_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
+if [ -n "$g25_solo_argv" ] && ! echo "$g25_solo_argv" | grep -q -- "--territory"; then
+  pass "Case D: a single-task cycle never receives --territory (no siblings scheduled)"
+else
+  fail "Case D: expected no --territory in a single-task cycle (argv: '$g25_solo_argv')"
+fi
+
+# Case E: hard mode -- an H1 implement candidate (#2601, its own plan has an open phase) keeps its
+# H1 owned_files literal AND gains concurrent_siblings for #2602 (scheduled the same cycle).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2601, "project_name": "g25_hard_h1", "task_type": "general", "status": "implementing", "description": "H1 candidate with a sibling", "dependencies": [], "file_scope": ["a.lean"]},
+    {"project_number": 2602, "project_name": "g25_hard_sibling", "task_type": "general", "status": "planned", "description": "sibling scheduled the same cycle", "dependencies": [], "file_scope": ["b.lean"]}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/2601_g25_hard_h1/plans"
+cat > "$WORKDIR/specs/2601_g25_hard_h1/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [NOT STARTED]
+EOF
+cat > "$WORKDIR/specs/2601_g25_hard_h1/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 1, "phases_total": 2}
+EOF
+: > "$G25_ARGV_LOG"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g25_hard.json"
+run_sut --session g25_hard --hard -- 2601 2602
+g25_hard_argv=$(grep '^2601 implement' "$G25_ARGV_LOG" || true)
+if echo "$g25_hard_argv" | grep -q -- "--phase-number 2"; then
+  pass "Case E: #2601 still receives --phase-number 2 (H1 unaffected by the sibling merge)"
+else
+  fail "Case E: --phase-number 2 missing from #2601's argv ('$g25_hard_argv')"
+fi
+if echo "$g25_hard_argv" | grep -q "owned_files" && echo "$g25_hard_argv" | grep -q '"concurrent_siblings"'; then
+  pass "Case E: #2601's --territory carries BOTH the H1 owned_files literal AND concurrent_siblings"
+else
+  fail "Case E: #2601's --territory missing owned_files or concurrent_siblings (argv: '$g25_hard_argv')"
+fi
+if echo "$g25_hard_argv" | grep -q '"task_number":2602'; then
+  pass "Case E: #2601's concurrent_siblings names sibling #2602"
+else
+  fail "Case E: #2601's concurrent_siblings missing sibling #2602 (argv: '$g25_hard_argv')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

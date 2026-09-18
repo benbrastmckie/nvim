@@ -232,27 +232,38 @@ through the hard-mode contract machinery.
 
 ---
 
-### Phase 3: Fixture reproducing the observed batch shape [NOT STARTED]
+### Phase 3: Fixture reproducing the observed batch shape [COMPLETED]
 
 **Goal**: Show that the brief now carries what the concurrent agents lacked.
 
 **Tasks**:
-- [ ] Append a new group to `tests/test-orchestrate-cycle-plan.sh`, following the Group 9 and
+- [x] Append a new group to `tests/test-orchestrate-cycle-plan.sh`, following the Group 9 and
       Group 23 conventions. The fixture `state.json` has two `planned` tasks, so both resolve to
       the `implement` group. Task A has `file_scope: ["FormalSystem/Metalogic/Soundness.lean"]`
       (narrow). Task B has the `file_scope` key omitted entirely (the tree-wide rename case). Run
-      in base mode (no `--hard`), live.
-- [ ] Case A: A's `.dispatch/N.md` has `## Territory`, names B's task number, and shows
-      `"scope_declared": false` / `"undeclared"` plus the territory.md pointer.
-- [ ] Case B: B's brief names A with A's exact file and `"granularity": "file"`.
-- [ ] Case C: coarse scope. A sibling with `file_scope: ["docs/"]` renders
+      in base mode (no `--hard`), live. *(completed: Group 25, extended to a 4-task fixture --
+      added a coarse-directory sibling and an explicit-empty-array sibling in the same cycle, per
+      the RECURRED addendum's point that mixed granularity in one batch is the harder case)*
+- [x] Case A: A's `.dispatch/N.md` has `## Territory`, names B's task number, and shows
+      `"scope_declared": false` / `"undeclared"` plus the territory.md pointer. *(completed:
+      asserted against the --territory argv the SUT passes to the stubbed
+      orchestrate-build-dispatch.sh, not a rendered dispatch file -- the render-and-pointer half
+      is Group 13 of test-orchestrate-build-dispatch.sh's job, and this suite's own convention
+      (Group 9 Case C) already tests --territory content the same argv-inspection way)*
+- [x] Case B: B's brief names A with A's exact file and `"granularity": "file"`. *(completed)*
+- [x] Case C: coarse scope. A sibling with `file_scope: ["docs/"]` renders
       `"granularity": "directory"` and `"scope_granularity": "coarse"`. `file_scope: []` renders
-      the same as absent.
-- [ ] Case D: a single-task cycle produces no `## Territory` section (regression guard).
-- [ ] Case E: in hard mode, an H1 implement candidate with a sibling keeps its H1 `owned_files`
-      and also gains `concurrent_siblings`.
+      the same as absent. *(completed)*
+- [x] Case D: a single-task cycle produces no `## Territory` section (regression guard).
+      *(completed: asserted as no --territory flag in argv, same argv-inspection convention)*
+- [x] Case E: in hard mode, an H1 implement candidate with a sibling keeps its H1 `owned_files`
+      and also gains `concurrent_siblings`. *(completed)*
 - [ ] Case F (only if aux rows were included in Phase 1): an aux-dispatched sibling appears with
-      its `aux:` phase label.
+      its `aux:` phase label. *(deviation: skipped — condition is false. Phase 1 deliberately
+      excluded aux_dispatch[] rows from concurrent_siblings, documented in that phase's header
+      block: orchestrate-build-aux-dispatch.sh has no --territory plumbing at all, and every aux
+      kind is a short single-purpose research/revision call, not a file-editing implement
+      dispatch)*
 
 **Timing**: 1.25 hours
 
