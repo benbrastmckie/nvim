@@ -1,7 +1,7 @@
 # Implementation Plan: Task #193
 
 - **Task**: 193 - Carry concurrent-sibling territory in base-mode dispatch briefs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (197 and 213 already landed; 165 is a coordination target, not a blocker)
 - **Research Inputs**: specs/193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md
@@ -134,35 +134,40 @@ No roadmap context was provided for this dispatch.
 
 Phases within the same wave can execute in parallel. Phases 1 and 2 touch different files.
 
-### Phase 1: Build the sibling territory payload in orchestrate-cycle-plan.sh [NOT STARTED]
+### Phase 1: Build the sibling territory payload in orchestrate-cycle-plan.sh [COMPLETED]
 
 **Goal**: Populate `--territory` for every dispatch in a cycle with at least one concurrent
 sibling, in every mode.
 
 **Tasks**:
-- [ ] Add a local helper `build_sibling_territory <t> <sibling-task>...`. For each sibling other
+- [x] Add a local helper `build_sibling_territory <t> <sibling-task>...`. For each sibling other
       than `<t>`, it reads `file_scope` from `$STATE_FILE` with one jq call, or one batched call
       keyed by the sibling list, following the `compose_focus()` style. It classifies each entry
       and emits a compact JSON object:
       `{"concurrent_siblings": [{"task_number", "phase", "file_scope", "scope_declared",
       "scope_granularity", "entries": [{"path", "granularity"}]}], "concurrency_note": "..."}`
-      (the field list is final; the key order is the implementer's choice).
-- [ ] Write the `concurrency_note` and the per-sibling coarse/undeclared note (Decision 3/5
+      (the field list is final; the key order is the implementer's choice). *(completed: reuses
+      `lookup_project` instead of a second hand-written jq query, per Finding 2/Rec 2)*
+- [x] Write the `concurrency_note` and the per-sibling coarse/undeclared note (Decision 3/5
       wording), adapted from the H1 note at `h1_territory`. Cite `context/contracts/territory.md`
-      and `context/patterns/dispatch-report-not-termination.md`.
-- [ ] In the live per-task loop, compute the sibling list: `probed_dispatch_post_h1` minus `$t`,
+      and `context/patterns/dispatch-report-not-termination.md`. *(completed)*
+- [x] In the live per-task loop, compute the sibling list: `probed_dispatch_post_h1` minus `$t`,
       each tagged with `effective_group`, plus aux rows if confirmed (see Scope Hypothesis). When
-      the list is non-empty, set `sibling_territory`.
-- [ ] Rework the `--territory` append. If `h1_next_phase[$t]` is set, merge `sibling_territory`
+      the list is non-empty, set `sibling_territory`. *(completed: aux rows deliberately excluded,
+      documented in the header block -- see Scope Hypothesis note below)*
+- [x] Rework the `--territory` append. If `h1_next_phase[$t]` is set, merge `sibling_territory`
       into `h1_territory[$t]` via jq before passing it. Otherwise pass `sibling_territory` alone
-      when it is non-empty (empty value skips the flag).
-- [ ] Replace the stale comment ("absent from every base-mode call") with an accurate one.
-- [ ] Add a header contract block describing the base-mode territory payload, the granularity
+      when it is non-empty (empty value skips the flag). *(completed)*
+- [x] Replace the stale comment ("absent from every base-mode call") with an accurate one.
+      *(completed)*
+- [x] Add a header contract block describing the base-mode territory payload, the granularity
       labels, the undeclared sentinel, the phase-agnostic emission, and the explicit deferral to
       the absent-file_scope admission posture in `orchestrate-batch-admit.sh`. Name that script
-      and its concern, never a task number.
+      and its concern, never a task number. *(completed)*
 - [ ] Optionally surface a `territory_siblings` count on `--dry-run` rows only if trivial; not
-      required.
+      required. *(deviation: skipped — optional per plan text; --dry-run rows do not build
+      dispatch files and adding a count would require duplicating the sibling-list computation
+      into the dry-run branch for no consumer benefit)*
 
 **Timing**: 1.75 hours
 
