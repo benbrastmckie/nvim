@@ -1005,7 +1005,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 485,
+      "line_count": 487,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1251,7 +1251,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Research phase workflow details",
-      "line_count": 563,
+      "line_count": 566,
       "keywords": [
         "process",
         "research",
@@ -1790,7 +1790,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 218,
+      "line_count": 236,
       "keywords": [
         "standards",
         "postflight",

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #212
 
 - **Task**: 212 - Postflight honesty: gate research on a report file and derive the handoff-writer predicate from the dispatch row
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.5 hours
 - **Dependencies**: 194 (completed), 213 (completed)
 - **Research Inputs**: specs/212_gate_research_dispatch_missing_report/reports/01_gate-research-report-handoff-predicate.md
@@ -445,29 +445,46 @@ beside its report-writing stage instead.
 
 ---
 
-### Phase 6: Full gates, redeploy, confirm, record reproduction outcome [NOT STARTED]
+### Phase 6: Full gates, redeploy, confirm, record reproduction outcome [COMPLETED]
 
 **Goal**: Close with the full gate set, deploy to `.claude/`, and confirm that the deployed tree
 carries every change.
 
 **Tasks**:
-- [ ] Run shellcheck on every touched or new `.sh` file
-      (`nix run nixpkgs#shellcheck -- <files>` if shellcheck is not on PATH).
-- [ ] Run the full postflight test file, the new helper test file, and the adjacent orchestrate
+- [x] Run shellcheck on every touched or new `.sh` file
+      (`nix run nixpkgs#shellcheck -- <files>` if shellcheck is not on PATH). *(completed: 0
+      new findings on any of the 4 touched/new .sh files; identical to each file's pre-change
+      shellcheck baseline)*
+- [x] Run the full postflight test file, the new helper test file, and the adjacent orchestrate
       suites: `test-orchestrate-recover-outcome.sh`, `test-orchestrate-cycle-plan.sh`,
-      `test-orchestrate-build-dispatch.sh`.
-- [ ] Run the repo lints: `check-task-references.sh` (no task numbers in deliverables),
+      `test-orchestrate-build-dispatch.sh`. *(completed: 87 + 23 + 7 + 238 + 92 = 447 passed, 0
+      failed across all five suites)*
+- [x] Run the repo lints: `check-task-references.sh` (no task numbers in deliverables),
       `lint-postflight-boundary.sh`, and any contract/doc lint that covers `index-entries.json`.
-- [ ] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default
+      *(completed: check-task-references.sh reports 0 occurrences across all 4 trees;
+      lint-postflight-boundary.sh reports 0 violations across 23 files (re-run post-redeploy
+      against real content); validate-index.sh reports "Validation PASSED" with no missing
+      files/duplicates and the new deliverable-file-mandate.md entry counted)*
+- [x] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default
       non-destructive mode). Then confirm:
       - `.claude/scripts/orchestrate-recover-message-findings.sh` exists.
       - `grep -c is_contractual_handoff_writer .claude/scripts/orchestrate-cycle-postflight.sh`
         returns 0.
       - `.claude/agents/general-research-agent.md` contains the override clause.
       - `.claude/context/contracts/deliverable-file-mandate.md` exists.
-- [ ] Record in the implementation summary the WORK (a) finding and the D5 reproduction outcome:
+      *(completed: deploy-headless.sh reported "PASS -- 33 check(s), 0 failure(s)" and
+      RESULT=landed_verify_clean; all four confirmations verified true; a byte-for-byte diff of
+      every source/deploy pair for every file this phase touched shows MATCH; the deploy
+      process also self-corrected three stale `line_count` index-entries.json fields for files
+      this task edited (system-defect-discrimination.md, research-workflow.md,
+      postflight-tool-restrictions.md) -- folded into this phase's commit. One pre-existing,
+      warn-mode-only budget gate (`ORCHESTRATOR_BUDGET_GATE_MODE=warn`) now flags
+      `skills/skill-orchestrate/SKILL.md` (21318 B vs its 20000 B ceiling) after this task's
+      Move 3 and Postflight Boundary additions; non-blocking, and trimming SKILL.md is outside
+      this task's declared scope -- recorded as a follow-up in the summary)*
+- [x] Record in the implementation summary the WORK (a) finding and the D5 reproduction outcome:
       confirmed by direct observation of the harness "Notes:" block, with no live multi-agent
-      reproduction attempted, and why.
+      reproduction attempted, and why. *(completed -- see summary)*
 
 **Timing**: 1 hour
 
