@@ -1,18 +1,19 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 236,
-  "session_id": "sess_1789772261_c29003_236",
-  "dispatch_seq": 3,
-  "findings_count": 7,
+  "status": "planned",
+  "summary": "2-phase plan (2h): author context/patterns/external-process-wait.md with incident + six rules; add on-demand index-entries.json entry and one-line anti-stop-patterns.md pointer.",
   "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md",
-      "summary": "Research for a new core context pattern file (external-process-wait.md) covering bounded CI/remote-process waits, no-op-filler prohibition, index-entries.json entry shape, and the anti-stop-patterns.md pointer convention."
-    }
+    {"type": "plan", "path": "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md", "summary": "2-phase plan: author external-process-wait.md pattern, then index entry + anti-stop pointer + validation."}
   ],
+  "next_steps": "Run /implement 236 to execute the plan",
+  "phase_count": 2,
+  "estimated_hours": 2,
+  "dependency_waves": 2,
   "memory_candidates": [],
-  "next_steps": "Run /plan 236 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1789772261_c29003_236",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
 }

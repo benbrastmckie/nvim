@@ -1,18 +1,13 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 3,
-  "summary": "Researched the new core pattern context/patterns/external-process-wait.md: located the six-rule content gap, the index-entries.json Tier-4 on_demand entry shape, the anti-stop-patterns.md single-line pointer convention (mirroring dispatch-report-not-termination.md), and confirmed task 172's bounded-build-waiter.md does not exist yet so this task adds the forward filename pointer.",
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Plan written: 2 phases, ~2h. Phase 1 authors agent-system/extensions/core/context/patterns/external-process-wait.md; Phase 2 adds on-demand index-entries.json entry, one-line anti-stop-patterns.md pointer, and validation.",
   "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md",
-      "summary": "Findings and recommendations for creating external-process-wait.md, its index entry, and the anti-stop-patterns.md pointer."
-    }
+    {"type": "plan", "path": "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md", "summary": "2-phase implementation plan for the external-process-wait pattern."}
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 2,
   "blockers": [],
-  "continuation_path": null,
-  "next_action_hint": "Run /plan 236 to create the implementation plan for external-process-wait.md, its index-entries.json entry, and the anti-stop-patterns.md pointer line."
+  "next_action_hint": "implement",
+  "dispatch_seq": 6
 }
