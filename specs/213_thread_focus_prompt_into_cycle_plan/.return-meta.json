@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/213_thread_focus_prompt_into_cycle_plan/plans/01_focus-forced-phase-cycle-budget.md",
-      "summary": "7-phase plan covering all three absorbed defects (focus-prompt threading, stop-after-forced-phase, per-run cycle budget with artifact-based admission) as one serialized change to the batch orchestrator engine plus a single documentation pass."
-    }
-  ],
-  "next_steps": "Run /implement 213 to execute the plan",
-  "dispatch_seq": 12,
-  "phase_count": 7,
-  "estimated_hours": 12,
-  "dependency_waves": 6,
+  "status": "in_progress",
+  "dispatch_seq": 2,
   "metadata": {
-    "session_id": "sess_1789687584_deac58_213",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a bash+jq orchestrator must distinguish 'this key was never seeded' from 'this key was seeded and its queue has since been consumed to []', jq's `// default` cannot do it (it fires on null/false, not on an empty array). The durable fix is a sibling boolean marker map seeded with the same `//=` idempotence as the queue itself (e.g. `.forced_round_seeded[$t] //= true` beside `.force_phases_remaining[$t] //= $q`), then a three-way branch: queue non-empty / queue empty-and-marked / unmarked. The two-way `if length > 0 ... else fall through` shape silently conflates the last two.",
-      "category": "PATTERN",
-      "source_artifact": "specs/213_thread_focus_prompt_into_cycle_plan/plans/01_focus-forced-phase-cycle-budget.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["jq", "state-machine", "empty-array-vs-absent", "forced-phase", "orchestrate-cycle-plan", "marker-map"]
-    }
-  ]
+    "session_id": "sess_1789706595_9484a9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

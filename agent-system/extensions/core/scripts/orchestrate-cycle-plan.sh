@@ -10,6 +10,11 @@
 # job — that is a separate, not-yet-built postflight composer. This script only ever DECIDES and
 # PREPARES a dispatch plan; it never invokes the Agent or Skill tool itself.
 #
+# --focus "<text>" carries the user's own free-form "$2+" text typed on the /orchestrate command
+# line (see commands/orchestrate.md); it is composed with any task's research_questions field
+# (neither silently replaces the other — see section (l)) and threaded into every dispatched
+# phase's dispatch file as a "User focus:" block, and surfaced per row under --dry-run.
+#
 # Two-function structure (mandated design, see the originating plan's Phase 1): a single decision
 # pass computes the WHOLE cycle's plan with no live side effects beyond a read-only lock PROBE;
 # a second, live-only pass applies side effects (directory creation, real lock acquire,
@@ -254,15 +259,21 @@ MAX_DRIFT_INSPECTIONS=1
 usage() {
   cat <<'USAGE'
 Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
-         [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
-         [--model M] [--allow-self-modifying] [--allow-scope-collision] [--continue-budget]
-         [--dry-run] [--no-plan-cache] <task_number> [<task_number> ...]
+         [--force-phases "research,plan,implement"] [--focus "<text>"] [--clean] [--lit]
+         [--compare] [--hard] [--fast] [--model M] [--allow-self-modifying]
+         [--allow-scope-collision] [--continue-budget] [--dry-run] [--no-plan-cache]
+         <task_number> [<task_number> ...]
 
 --state-file is always required. --session is required EXCEPT under --dry-run, where an
 internal, never-persisted identity is synthesized when omitted. --no-plan-cache disables the
 in-session plan-cache replay (both the read and the write) for this invocation; every
 composition re-evaluates fresh and charges normally. Intended for debugging and for this
 script's own test suite's non-cache groups -- not needed in ordinary /orchestrate use.
+--focus is the user's free-form "$2+" text typed after the task number(s) on the /orchestrate
+command line (see commands/orchestrate.md). It is composed with any task-level
+research_questions (neither silently replaces the other) and threaded into every dispatched
+phase's dispatch file as a labelled "User focus:" block; a --dry-run report also surfaces it per
+row so it can be checked before a live run.
 USAGE
 }
 
@@ -271,6 +282,7 @@ session_id=""
 state_file_arg=""
 invocation_count_override=""
 force_phases_arg=""
+focus_prompt=""
 clean_flag="false"
 lit_flag="false"
 compare_flag="false"
@@ -290,6 +302,7 @@ while [ "$#" -gt 0 ]; do
     --state-file) state_file_arg="${2:-}"; shift 2 ;;
     --invocation-count) invocation_count_override="${2:-}"; shift 2 ;;
     --force-phases) force_phases_arg="${2:-}"; shift 2 ;;
+    --focus) focus_prompt="${2:-}"; shift 2 ;;
     --clean) clean_flag="true"; shift ;;
     --lit) lit_flag="true"; shift ;;
     --compare) compare_flag="true"; shift ;;
@@ -611,6 +624,13 @@ emit_and_exit() {
   # composition (every row-charging site above already minted/advanced it), so a subsequent
   # invocation's pre-composition read of the SAME still-unchanged value is proof nothing was
   # dispatched since -- see the replay check near the top of this script for the read side.
+  #
+  # Decision (D3), Phase 1 (--focus): the cache key stays dispatch_seq_counter ALONE, with no
+  # --focus component added to it. --dry-run bypasses both the cache read and this write
+  # entirely (see the `[ "$dry_run" != "true" ]` guard immediately below), and in a live run
+  # --focus is fixed for the whole invocation (parsed once, into the read-only $focus_prompt
+  # variable, at the top of this script) -- so a cache replay can only ever replay the same
+  # composition, built with the same focus value, it was originally cached with.
   if [ "$dry_run" != "true" ] && [ "$no_plan_cache" != "true" ] && \
      { [ "${#out_dispatch_rows[@]}" -gt 0 ] || [ "${#out_aux_dispatch_rows[@]}" -gt 0 ]; }; then
     mt_set --argjson plan "$plan_json" \
@@ -631,7 +651,7 @@ emit_and_exit() {
       if [ "$(echo "$plan_json" | jq '.dispatch | length')" -eq 0 ]; then
         echo "0 dispatched."
       else
-        echo "$plan_json" | jq -r '.dispatch[] | "#\(.task)  phase=\(.phase)  agent=\(.agent)"'
+        echo "$plan_json" | jq -r '.dispatch[] | "#\(.task)  phase=\(.phase)  agent=\(.agent)\(if .focus == "" then "" else "  focus=\(.focus)" end)"'
       fi
       echo ""
       echo "-- Aux Dispatch --"
@@ -1526,6 +1546,41 @@ resolve_agent() {
   echo "$AGENT_NAME"
 }
 
+# ── Phase 1 (focus-prompt threading): compose ONE --focus value from up to two labelled
+# segments, shared verbatim by both the --dry-run row builder below and section (l)'s live
+# build_args composition, so there is exactly one computation of this value, never two
+# independently-maintained ones. Order: "From the user: <focus_prompt>" (any phase, whenever
+# --focus was non-empty) then "Research questions: <joined research_questions>" (research phase
+# only). The "Research questions:" label is added ONLY when the user segment is also present —
+# with no --focus given, a research task's own research_questions renders as the bare joined
+# string, byte-for-byte identical to the pre-Phase-1 output (see Decision D1/D2 in the plan).
+compose_focus() {
+  local task_num="$1" phase="$2"
+  local user_seg="" research_seg="" rq=""
+  if [ -n "$focus_prompt" ]; then
+    user_seg="From the user: ${focus_prompt}"
+  fi
+  if [ "$phase" = "research" ]; then
+    rq=$(jq -r --argjson num "$task_num" \
+      '.active_projects[] | select(.project_number == $num) | .research_questions // [] | if (type == "array") then . else [] end | join("; ")' \
+      "$STATE_FILE" 2>/dev/null) || rq=""
+    if [ -n "$rq" ]; then
+      if [ -n "$user_seg" ]; then
+        research_seg="Research questions: ${rq}"
+      else
+        research_seg="$rq"
+      fi
+    fi
+  fi
+  if [ -n "$user_seg" ] && [ -n "$research_seg" ]; then
+    printf '%s\n%s' "$user_seg" "$research_seg"
+  elif [ -n "$user_seg" ]; then
+    printf '%s' "$user_seg"
+  else
+    printf '%s' "$research_seg"
+  fi
+}
+
 # ── H1: hard-mode per-phase dispatch selection (Phase 4 of the task that ported single-task
 # features into the batch engine) — one blocking phase per task per cycle, selected by the SAME
 # shared heading-scan machinery single-task Stage 4's H1 branch uses. Runs ONCE, here, in the
@@ -1663,8 +1718,9 @@ if [ "$dry_run" = "true" ]; then
     g="${effective_group[$t]}"
     agent=$(resolve_agent "$g" "${task_types[$t]}")
     dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
-    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" \
-      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force}')")
+    dry_focus=$(compose_focus "$t" "$g")
+    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" \
+      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus}')")
   done
   emit_and_exit "$cycle_count"
 fi
@@ -1758,22 +1814,20 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   if [ -n "${h1_next_phase[$t]:-}" ]; then
     build_args+=(--phase-number "${h1_next_phase[$t]}" --territory "${h1_territory[$t]}")
   fi
-  # research_questions --focus wiring (Stage A.8, research on demand): only when building a
-  # research-phase dispatch. Read the task's own research_questions (written by a planner's
-  # needs_research verdict, see context/reference/state-management-schema.md's Research
-  # Questions Field section), join into a single string, and pass as --focus so
-  # orchestrate-build-dispatch.sh's already-built, already phase-gated --focus flag renders it
-  # into the dispatch file's "User focus:" block. No code change inside that script is needed. A
-  # task with no research_questions (an ordinary not_started->research dispatch, or one forced by
-  # --research) passes no --focus flag at all -- byte-for-byte no-op, same empty-value-skips-flag
-  # convention --file-scope-add and --research-questions already use.
-  if [ "$g" = "research" ]; then
-    task_research_questions=$(jq -r --argjson num "$t" \
-      '.active_projects[] | select(.project_number == $num) | .research_questions // [] | if (type == "array") then . else [] end | join("; ")' \
-      "$STATE_FILE" 2>/dev/null) || task_research_questions=""
-    if [ -n "$task_research_questions" ]; then
-      build_args+=(--focus "$task_research_questions")
-    fi
+  # --focus wiring (Phase 1): compose the user's own --focus text (any phase, from
+  # orchestrate-cycle-plan.sh's own --focus flag) with the task's research_questions
+  # (research phase only, unchanged source field) via the shared compose_focus() helper --
+  # exactly one computation of this value, reused by the --dry-run row builder above. Pass
+  # --focus only when the composed value is non-empty (empty-value-skips-flag, the same
+  # convention every other flag in this block already uses); orchestrate-build-dispatch.sh's
+  # already-built, already phase-gated --focus flag renders it into the dispatch file's
+  # "User focus:" block -- no code change inside that script is needed. A task with neither a
+  # user focus string nor research_questions (an ordinary not_started->research dispatch, or a
+  # non-research phase with no --focus given) passes no --focus flag at all -- byte-for-byte
+  # no-op, matching the pre-Phase-1 behavior exactly.
+  task_composed_focus=$(compose_focus "$t" "$g")
+  if [ -n "$task_composed_focus" ]; then
+    build_args+=(--focus "$task_composed_focus")
   fi
   if run_capture_stdout dispatch_json bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}"; then
     build_exit=0
@@ -1849,8 +1903,8 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # Threading it through the row (rather than recomputing it downstream) is the same shape as
   # every other per-task field this row already carries.
   force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && force_json="true"
-  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" \
-    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force}')")
+  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" \
+    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus}')")
 done
 
 mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'

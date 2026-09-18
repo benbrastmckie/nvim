@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "--focus through orchestrate-cycle-plan.sh",
+  "started_at": "2026-09-18T04:43:58Z",
+  "last_updated": "2026-09-18T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --focus flag parser default+case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "usage() heredoc + header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "section (l) focus composition rewrite (compose_focus shared helper)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "verify no-user-focus byte-for-byte path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "focus field in both dispatch-row builders", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "dry-run human table focus column", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "plan_cache D3 decision comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "new test group (Group 22) in test-orchestrate-cycle-plan.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

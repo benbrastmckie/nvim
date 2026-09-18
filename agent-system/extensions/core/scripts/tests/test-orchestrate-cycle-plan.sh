@@ -2281,6 +2281,136 @@ fi
 # to accommodate the forced-phase exemption predicate, matching the Verification note above). ────
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 22: --focus threading (Phase 1 of the focus/forced-phase/cycle-budget task) -- the user's
+# own free-form --focus text reaches the LIVE dispatch file's "User focus:" block, composed with
+# any task-level research_questions without either silently replacing the other, and surfaced
+# under --dry-run before any live run. Reuses Group 21's already-installed REAL
+# orchestrate-build-dispatch.sh/update-task-status.sh/state-write.sh/generate-todo.sh (no stub
+# involvement here -- the whole point is the file actually written to disk). Fixture style
+# borrowed from Group 14 (research_questions wiring) and Group 21 Case D (real-collaborator LIVE
+# forced round).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 22: --focus threading into the live dispatch file's User focus: block"
+
+# ── Case A: --focus alone (no research_questions) -- forced research dispatch ───────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2201, "project_name": "g22a_focus_only", "task_type": "meta", "status": "not_started", "description": "focus text alone, no research_questions", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+rm -rf "$WORKDIR/specs/2201_g22a_focus_only"
+mkdir -p "$WORKDIR/specs/2201_g22a_focus_only/reports"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22a.json"
+run_sut --session g22a --force-phases research --focus "Q1? Q2?" -- 2201
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 22 Case A: SUT exits 0"
+else
+  fail "Group 22 Case A: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+g22a_dispatch_file=$(jqf '.dispatch | map(select(.task == 2201)) | .[0].dispatch_file // ""')
+if [ -n "$g22a_dispatch_file" ] && [ -f "$g22a_dispatch_file" ] && \
+   grep -qF "User focus: From the user: Q1? Q2?" "$g22a_dispatch_file"; then
+  pass "Group 22 Case A: dispatch file carries a User focus: block with the --focus text"
+else
+  fail "Group 22 Case A: expected 'User focus: From the user: Q1? Q2?' in '$g22a_dispatch_file' (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 2201)) | .[0].focus // ""')" = "From the user: Q1? Q2?" ]; then
+  pass "Group 22 Case A: the composed .dispatch[].focus row field matches"
+else
+  fail "Group 22 Case A: unexpected .dispatch[].focus: $(jqf '.dispatch')"
+fi
+
+# ── Case B: --focus AND research_questions both present -- both labelled segments appear ───────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2202, "project_name": "g22b_focus_and_rq", "task_type": "meta", "status": "researching", "description": "focus text plus research_questions", "dependencies": [], "file_scope": [], "research_questions": ["Does X exist?", "Is Y true?"]}
+  ]
+}
+EOF
+rm -rf "$WORKDIR/specs/2202_g22b_focus_and_rq"
+mkdir -p "$WORKDIR/specs/2202_g22b_focus_and_rq/reports"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22b.json"
+run_sut --session g22b --force-phases research --focus "Extra context here" -- 2202
+g22b_dispatch_file=$(jqf '.dispatch | map(select(.task == 2202)) | .[0].dispatch_file // ""')
+if [ -n "$g22b_dispatch_file" ] && [ -f "$g22b_dispatch_file" ] && \
+   grep -qF "From the user: Extra context here" "$g22b_dispatch_file" && \
+   grep -qF "Research questions: Does X exist?; Is Y true?" "$g22b_dispatch_file"; then
+  pass "Group 22 Case B: dispatch file carries BOTH labelled segments; neither replaced the other"
+else
+  fail "Group 22 Case B: expected both labelled segments in '$g22b_dispatch_file' (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case C: no --focus, research_questions present -- byte-for-byte identical to Group 14's
+#    pre-existing (bare, unlabelled) output; this is the Non-Goal regression guard ──────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2203, "project_name": "g22c_rq_only_no_focus", "task_type": "meta", "status": "researching", "description": "research_questions only, no user focus text", "dependencies": [], "file_scope": [], "research_questions": ["Only RQ present"]}
+  ]
+}
+EOF
+rm -rf "$WORKDIR/specs/2203_g22c_rq_only_no_focus"
+mkdir -p "$WORKDIR/specs/2203_g22c_rq_only_no_focus/reports"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22c.json"
+run_sut --session g22c --force-phases research -- 2203
+g22c_dispatch_file=$(jqf '.dispatch | map(select(.task == 2203)) | .[0].dispatch_file // ""')
+if [ -n "$g22c_dispatch_file" ] && [ -f "$g22c_dispatch_file" ] && \
+   grep -qxF "User focus: Only RQ present" "$g22c_dispatch_file"; then
+  pass "Group 22 Case C: no --focus -> bare research_questions line, no label (byte-for-byte unchanged)"
+else
+  fail "Group 22 Case C: expected exact line 'User focus: Only RQ present' with no label in '$g22c_dispatch_file' (stdout: $LAST_STDOUT)"
+fi
+if ! grep -qF "From the user:" "$g22c_dispatch_file" 2>/dev/null && ! grep -qF "Research questions:" "$g22c_dispatch_file" 2>/dev/null; then
+  pass "Group 22 Case C: neither label string appears anywhere in the dispatch file"
+else
+  fail "Group 22 Case C: an unexpected label string leaked into the dispatch file"
+fi
+
+# ── Case D: a --focus value containing spaces AND an embedded double quote survives intact ──────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2204, "project_name": "g22d_focus_quotes_spaces", "task_type": "meta", "status": "not_started", "description": "focus text with spaces and an embedded double quote", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+rm -rf "$WORKDIR/specs/2204_g22d_focus_quotes_spaces"
+mkdir -p "$WORKDIR/specs/2204_g22d_focus_quotes_spaces/reports"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22d.json"
+run_sut --session g22d --force-phases research --focus 'has "quoted" words and spaces' -- 2204
+g22d_dispatch_file=$(jqf '.dispatch | map(select(.task == 2204)) | .[0].dispatch_file // ""')
+if [ -n "$g22d_dispatch_file" ] && [ -f "$g22d_dispatch_file" ] && \
+   grep -qF 'User focus: From the user: has "quoted" words and spaces' "$g22d_dispatch_file"; then
+  pass "Group 22 Case D: a focus value with spaces and an embedded double quote survives intact"
+else
+  fail "Group 22 Case D: expected the quoted/spaced focus text intact in '$g22d_dispatch_file' (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case E: --dry-run with --focus surfaces a non-empty .dispatch[].focus before any live run ───
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2205, "project_name": "g22e_dry_run_focus", "task_type": "meta", "status": "not_started", "description": "dry-run focus surfacing", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22e.json"
+run_sut --session g22e --dry-run --force-phases research --focus "dry run focus text" -- 2205
+if [ "$(jqf '.dispatch | map(select(.task == 2205)) | .[0].focus // ""')" = "From the user: dry run focus text" ]; then
+  pass "Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text"
+else
+  fail "Group 22 Case E: expected a non-empty .dispatch[].focus under --dry-run, got: $(jqf '.dispatch')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

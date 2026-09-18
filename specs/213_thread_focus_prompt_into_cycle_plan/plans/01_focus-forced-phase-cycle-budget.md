@@ -1,7 +1,7 @@
 # Implementation Plan: Task #213
 
 - **Task**: 213 - Thread focus prompt into cycle plan (absorbed former tasks 214 and 216)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/213_thread_focus_prompt_into_cycle_plan/reports/01_focus-prompt-forced-phase-cycle-plan.md
@@ -118,19 +118,19 @@ Phases within the same wave can execute in parallel. Phases 1, 3, 4 and 5 all ed
 `scripts/orchestrate-cycle-plan.sh` and are serialized for that reason; Phase 2 runs beside Phase 3
 only because it touches no `.sh` file.
 
-### Phase 1: `--focus` through orchestrate-cycle-plan.sh [NOT STARTED]
+### Phase 1: `--focus` through orchestrate-cycle-plan.sh [COMPLETED]
 
 **Goal**: The engine accepts a user focus string, merges it with any `research_questions` without
 either silently replacing the other, passes it to every phase's dispatch build, and surfaces it in
 `--dry-run`.
 
 **Tasks**:
-- [ ] Add `--focus` to the flag parser (`scripts/orchestrate-cycle-plan.sh` ~line 269-319):
+- [x] Add `--focus` to the flag parser (`scripts/orchestrate-cycle-plan.sh` ~line 269-319):
       `focus_prompt=""` default beside the other defaults, `--focus) focus_prompt="${2:-}"; shift 2 ;;`
       in the `case`, mirroring `--model`'s shape exactly.
-- [ ] Add `[--focus "<text>"]` to the `usage()` heredoc (~line 254) and one sentence to the
+- [x] Add `[--focus "<text>"]` to the `usage()` heredoc (~line 254) and one sentence to the
       header comment block describing it as the user's `$2+` text from `/orchestrate`.
-- [ ] Rewrite section (l)'s focus block (~lines 1761-1777) to compose ONE value from up to two
+- [x] Rewrite section (l)'s focus block (~lines 1761-1777) to compose ONE value from up to two
       labelled segments, in this order, joined by a newline:
       - `From the user: <focus_prompt>` (whenever `--focus` was non-empty, for ANY phase)
       - `Research questions: <joined research_questions>` (research phase only, unchanged join
@@ -140,23 +140,23 @@ either silently replacing the other, passes it to every phase's dispatch build, 
       `commands/orchestrate.md`'s `$2+` contract ("Applies to all tasks in multi-task mode") and
       the fact that `orchestrate-build-dispatch.sh` renders the block phase-agnostically;
       `research_questions` stays research-only exactly as today.
-- [ ] Verify the no-user-focus research path is byte-for-byte unchanged: with `--focus` absent and
+- [x] Verify the no-user-focus research path is byte-for-byte unchanged: with `--focus` absent and
       `research_questions` present, the composed value must be the bare joined string with NO
       `Research questions:` label and no leading newline (i.e. the label is added only when the
       user segment is also present). Capture a before/after dispatch file and diff them.
-- [ ] Add a `focus` field to BOTH dispatch-row builders so dry-run and live keep identical shape:
+- [x] Add a `focus` field to BOTH dispatch-row builders so dry-run and live keep identical shape:
       the dry-run builder (~line 1666) and the live builder (~line 1852) each gain
       `--arg focus "<composed or empty>"` rendering `focus: $focus` (empty string when none).
-- [ ] Add one line to the `--dry-run` human table in `emit_and_exit()` (~line 630-636): render the
+- [x] Add one line to the `--dry-run` human table in `emit_and_exit()` (~line 630-636): render the
       focus alongside phase/agent, e.g.
       `.dispatch[] | "#\(.task)  phase=\(.phase)  agent=\(.agent)\(if .focus == "" then "" else "  focus=\(.focus)" end)"`.
       Keep the rule that the table is a pure `jq` projection of the already-emitted `plan_json` —
       never a second computation.
-- [ ] Record (as a code comment at the `plan_cache` write site, ~line 607-619) the **Decision (D3)**
+- [x] Record (as a code comment at the `plan_cache` write site, ~line 607-619) the **Decision (D3)**
       that the cache key stays `dispatch_seq_counter` alone: `--dry-run` bypasses both the cache
       read and write, and in a live run `--focus` is fixed for the whole invocation, so a replay
       can only ever replay the same focus value it was built with.
-- [ ] Add a new test group to `scripts/tests/test-orchestrate-cycle-plan.sh` (append after the
+- [x] Add a new test group to `scripts/tests/test-orchestrate-cycle-plan.sh` (append after the
       existing Group 21, reusing Group 14's fixture style — Group 14 already covers the
       `research_questions` wiring): (i) `--focus "Q1? Q2?"` on a forced research cycle produces a
       dispatch file containing a `User focus:` block with that text; (ii) focus + `research_questions`
