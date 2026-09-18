@@ -26,22 +26,40 @@
       "category": "INSIGHT",
       "source_artifact": "specs/200_consumer_deploy_propagation_gap/summaries/01_per-dispatch-freshness-surface-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["detector-placement", "signal-granularity", "pull-side-check", "deploy-freshness", "deployed-tree-first-resolution", "dispatch-context-injection"]
+      "suggested_keywords": [
+        "detector-placement",
+        "signal-granularity",
+        "pull-side-check",
+        "deploy-freshness",
+        "deployed-tree-first-resolution",
+        "dispatch-context-injection"
+      ]
     },
     {
       "content": "In a bash test fixture that overrides SKILL_REPO_ROOT to isolate a function call from the real repo, a bare `cd` into the fixture is NOT sufficient when the code under test reads $SKILL_REPO_ROOT directly (as opposed to a bare relative path resolved via cwd) -- SKILL_REPO_ROOT is typically exported once, process-wide, when the library was first sourced, and a later `cd` never updates it. Must explicitly prefix the call: `SKILL_REPO_ROOT=\"$FIXTURE_ROOT\" some_function args...`. Omitting this silently falls through to checking the REAL repo's own state instead of the fixture's fabricated one -- a false pass if the real repo happens to be in the expected state, and a confusing false fail otherwise.",
       "category": "PATTERN",
       "source_artifact": "specs/200_consumer_deploy_propagation_gap/summaries/01_per-dispatch-freshness-surface-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["bash-test-fixture", "SKILL_REPO_ROOT", "environment-variable-scoping", "test-isolation"]
+      "suggested_keywords": [
+        "bash-test-fixture",
+        "SKILL_REPO_ROOT",
+        "environment-variable-scoping",
+        "test-isolation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789706595_9484a9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
