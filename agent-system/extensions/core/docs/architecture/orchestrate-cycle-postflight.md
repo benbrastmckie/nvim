@@ -162,11 +162,11 @@ the "Handoff Writers" table) for the dispatch-derived `--handoff-expected true|f
 (default `true`, no agent-name allowlist) and the D2 rationale for threading `dispatch_seq`
 through `.return-meta.json` recovery too, not just the live handoff gate.
 
-## The `halt` / `infra_exempt_cycle` Output Fields
+## The `halt` / `infra_exempt_cycle` / `report_missing` Output Fields
 
 The script's compact JSON output (`{task, phase, status, phases_completed, phases_total, verdict,
-user_decision?, halt, infra_exempt_cycle, note}`) carries two boolean fields a bare `verdict`
-string cannot express unambiguously:
+user_decision?, halt, infra_exempt_cycle, aux_signal, report_missing, note}`) carries fields a
+bare `verdict` string cannot express unambiguously:
 
 - **`halt`**: true only when `dispatch_status` was off-schema (garbage/unrecognized) — the ONE
   case that still means "stop the whole `/orchestrate` invocation," mirroring the single-task
@@ -180,6 +180,35 @@ string cannot express unambiguously:
   `context/patterns/infra-failure-discrimination.md`). Every other `verdict="defer"` (a partial
   dispatch, or an `implemented` outcome with the completion-claim gate refused) charges a cycle
   normally.
+- **`report_missing`**: true only when `phase="research"` AND (no outcome was ever recovered, or
+  the research report gate below refused a claimed `researched` transition) AND no non-empty
+  report file exists for the round this dispatch was expected to produce. It never changes
+  `verdict`/`halt` on its own (a research report gate refusal already resolves `verdict="failed"`
+  directly) — it exists purely so the lead (`skill-orchestrate/SKILL.md` Move 3) knows whether to
+  run `orchestrate-recover-message-findings.sh` against this dispatch's own returned message
+  text, saving any findings the agent sent by message instead of writing its report file. See
+  "Research Report-File Gate" below for the gate itself.
+
+## Research Report-File Gate
+
+A `dispatch_status="researched"` outcome is trusted only when BOTH (i) `artifact_path` is
+non-empty and resolves (relative to the repo root, the same convention `TASK_DIR`/`STATE_FILE`
+resolve against) to an existing, non-empty file, and (ii) `.return-meta.json` itself exists and
+is non-empty. Both checks are existence/size probes only (`[ -s ... ]`) — never a prose read,
+preserving the Context Flatness constraint. A refusal sets `research_gate_failed=true`, which:
+
+- Records `ARTIFACTS_MISSING_ON_SUCCESS` (detecting site
+  `cycle-postflight-research-report-gate`) instead of transitioning the task status.
+- Skips WORK (g)'s artifact link and artifact-round advance, and skips WORK (i)'s per-task
+  commit entirely (nothing legitimately advanced this cycle).
+- Resolves `verdict="failed"` unconditionally in the verdict ladder — never `"ok"` or `"defer"`.
+  `halt` stays `false`: this is an in-vocabulary `dispatch_status`, not an off-schema one.
+
+This closes the gap where a research dispatch could report `researched` while its report file
+(or `.return-meta.json`) was missing or empty, and postflight still moved the task forward on the
+strength of the claimed status alone. See `context/patterns/system-defect-discrimination.md`'s
+`ARTIFACTS_MISSING_ON_SUCCESS` row for how this detector relates to the (still uncovered for
+plan/implement) missing-artifacts-field sub-case.
 
 ## Stray-Handoff Sweep (Phase 7 Addition)
 

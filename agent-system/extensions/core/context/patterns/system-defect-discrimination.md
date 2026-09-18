@@ -84,7 +84,7 @@ decision, not silently done by a detection site):
 | `ARTIFACTS_SHAPE_MISMATCH` — an artifacts array that is non-empty but yields no `.path` | `scripts/orchestrate-recover-outcome.sh:205` |
 | `HANDOFF_MISLOCATED` — a handoff written outside its task directory | the stray-handoff sweep, see registry below |
 | `META_MISSING_AFTER_NARRATION` — a `.return-meta.json` missing or unparseable after a dispatch that produced subagent-authored narration (i.e., not the infra-failure case — see [infra-failure-discrimination.md](infra-failure-discrimination.md) for that adjacent, already-solved discrimination) | the completion-claim gate, see registry below |
-| `ARTIFACTS_MISSING_ON_SUCCESS` — a `null`, absent, or empty `artifacts` field accompanying a success status (`researched\|planned\|implemented`), where both owning schemas mark the field required ([return-metadata-file.md](../formats/return-metadata-file.md)'s `### artifacts (required)` section and [handoff-schema.md](../../docs/architecture/handoff-schema.md)'s `### \`artifacts\` (required)` section) | **not currently computed anywhere** — see the detection hole recorded under Class (b) below |
+| `ARTIFACTS_MISSING_ON_SUCCESS` — a `null`, absent, or empty `artifacts` field accompanying a success status (`researched\|planned\|implemented`), where both owning schemas mark the field required ([return-metadata-file.md](../formats/return-metadata-file.md)'s `### artifacts (required)` section and [handoff-schema.md](../../docs/architecture/handoff-schema.md)'s `### \`artifacts\` (required)` section); ALSO fires when `artifacts[0].path` is populated but the file it names does not exist, or exists empty, on disk — the field is present but the artifact it promises was never actually produced | `orchestrate-cycle-postflight.sh`'s research report gate (`researched)` case, detecting site `cycle-postflight-research-report-gate`) — phase=research only; plan and implement are still **not currently computed anywhere** for this instance |
 | `HANDOFF_STALE_OR_ABSENT` — a handoff whose mtime predates the dispatch window (or is otherwise absent when expected), as detected by the stale-handoff gate | the stale-handoff gate, see registry below |
 | `SOURCE_STORE_BOUNDARY_VIOLATION` — a direct write under `.claude/**` instead of the source store (`agent-system/extensions/**`) | `hooks/validate-meta-write.sh` |
 | `TASK_REFERENCE_IN_DELIVERABLE` — a task-number citation in a deliverable outside `specs/**` | `hooks/validate-no-task-references.sh` |
@@ -96,9 +96,11 @@ decision, not silently done by a detection site):
 | `AMBIENT_BINDING_MISMATCH` — a downstream guard keyed to an ambient/global shell variable that only some callers populate, so the guard's condition silently evaluates false instead of erroring, and the guarded behavior is skipped without any signal | **not currently computed anywhere** |
 
 Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
-it defines what counts as a violation of this kind, not what currently fires. Building a detector
-for it is downstream work; adding it here does not widen this task's scope boundary (no recorder,
-no wiring, no command change).
+it defines what counts as a violation of this kind, not what currently fires everywhere it could.
+A detector now exists for the research-phase, file-missing-on-disk sub-case (the row above); the
+`null`/absent/empty-field sub-case, and plan/implement phase coverage generally, remain downstream
+work — adding a detector for one sub-case does not widen this task's scope to cover the others (no
+recorder, no wiring, no command change beyond what the row above already names).
 
 **Empirical finding motivating the row above**: the existing `ARTIFACTS_SHAPE_MISMATCH` detector
 (`scripts/orchestrate-recover-outcome.sh:205`, comment at lines 92-93 above) has exactly two firing

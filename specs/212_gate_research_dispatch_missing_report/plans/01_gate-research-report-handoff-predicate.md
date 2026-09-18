@@ -201,41 +201,46 @@ and adjust only those assertions, recording each one.
 
 ---
 
-### Phase 2: Research report-file gate and `report_missing` output [NOT STARTED]
+### Phase 2: Research report-file gate and `report_missing` output [COMPLETED]
 
 **Goal**: A research dispatch never advances to `researched` without a non-empty report file
 and a non-empty `.return-meta.json`. Postflight tells the lead when findings need recovering.
 
 **Tasks**:
-- [ ] In the `researched)` status-transition branch, before `skill_postflight_update`, check:
+- [x] In the `researched)` status-transition branch, before `skill_postflight_update`, check:
       (i) `artifact_path` is non-empty and resolves to an existing, non-empty file (`-s`),
       resolved against the repo root like the WORK (g) artifact-link step; (ii)
       `${TASK_DIR}/.return-meta.json` exists and is non-empty. If either fails, skip the
       transition and the artifact link, set a `research_gate_failed=true` flag, record
       `ARTIFACTS_MISSING_ON_SUCCESS` (live) with detecting site
       `cycle-postflight-research-report-gate`, and append it to the detected-defect store the
-      same way as the other defect sites.
-- [ ] Make sure WORK (g) artifact linking, the artifact-round advance, and the WORK (i) commit
+      same way as the other defect sites. *(completed)*
+- [x] Make sure WORK (g) artifact linking, the artifact-round advance, and the WORK (i) commit
       are all skipped when `research_gate_failed=true`. Set `have_outcome=false` at the gate, or
       guard those blocks explicitly, whichever the code structure makes clearer. Resolve
       `verdict=failed` in the verdict ladder when `research_gate_failed=true`, even if a
-      transport-exempt path would otherwise give `defer`. Leave `halt` false.
-- [ ] Compute `report_missing` (bool). It is true when `phase=research` AND (no outcome was
+      transport-exempt path would otherwise give `defer`. Leave `halt` false. *(completed:
+      guarded WORK (g)/(i) explicitly with `research_gate_failed != true` rather than forcing
+      `have_outcome=false`, since `have_outcome` is also read by the churn/aux-signal block)*
+- [x] Compute `report_missing` (bool). It is true when `phase=research` AND (no outcome was
       recovered, OR `research_gate_failed=true`) AND no non-empty report exists for this round.
       Emit it in both final `jq -n -c` output shapes. Update the header's `Output:` block and
       `docs/architecture/orchestrate-cycle-postflight.md` (if it documents the output shape) to
-      list the new field.
-- [ ] Update `context/patterns/system-defect-discrimination.md`: change the
+      list the new field. *(completed: round-number-keyed existence probe against
+      state.json's next_artifact_number, never a prose read)*
+- [x] Update `context/patterns/system-defect-discrimination.md`: change the
       `ARTIFACTS_MISSING_ON_SUCCESS` row from "not currently computed anywhere" to name the new
       research-phase detector, and note that plan and implement are still not covered by it.
-- [ ] Add fixtures:
+      *(completed)*
+- [x] Add fixtures:
       (D) handoff `status=researched` pointing to a nonexistent report: `verdict=failed`, status
       not `researched`, one `ARTIFACTS_MISSING_ON_SUCCESS`, `report_missing=true`.
       (E) Same, but the report exists and is empty: same assertions.
       (F) Report exists and is non-empty, `.return-meta.json` present: `verdict=ok`, status
       `researched`, `report_missing=false` (regression guard).
-      (G) Fixture C from Phase 1 also asserts `report_missing=true`.
-- [ ] Run the test file and shellcheck.
+      (G) Fixture C from Phase 1 also asserts `report_missing=true`. *(completed)*
+- [x] Run the test file and shellcheck. *(completed: 87/87 tests pass; shellcheck output
+      identical to the pre-change baseline -- no new findings)*
 
 **Timing**: 1.5 hours
 

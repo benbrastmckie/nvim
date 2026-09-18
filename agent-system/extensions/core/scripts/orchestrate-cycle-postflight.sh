@@ -32,9 +32,13 @@
 #   (e) user_decision relay: verdict=ask_user, payload relayed verbatim, status left as-is. This
 #       script NEVER asks and NEVER writes .decisions.json.
 #   (f) Status transition via skill_postflight_update, with the monotonic-max clamp for forced
-#       phases threaded from --force-invoked.
+#       phases threaded from --force-invoked. A "researched" dispatch_status additionally passes
+#       a report-file gate first (report_missing/ARTIFACTS_MISSING_ON_SUCCESS, D3): a missing or
+#       empty report file or .return-meta.json refuses the transition (research_gate_failed=true,
+#       verdict="failed") instead of trusting the claimed success.
 #   (g) Artifact link (same-type supersession) and the artifact-round advance (unconditional on
 #       researched; additionally on a forced planned/implemented) — closing the multi-task gap.
+#       Both skipped when the research report gate in (f) refused the transition.
 #   (h) modified_files vs file_scope excursion advisory — detection only, never a gate.
 #   (i) Per-task scoped commit via git-commit-scoped.sh (never a batch commit).
 #   (j) Multi-state update and per-task lock release.
@@ -91,7 +95,7 @@
 #
 # Output: one compact JSON line on stdout:
 #   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, halt,
-#    infra_exempt_cycle, aux_signal, note}
+#    infra_exempt_cycle, aux_signal, report_missing, note}
 #   verdict ∈ ok|defer|blocked|failed|ask_user|needs_research
 #   halt: true only when dispatch_status was off-schema (garbage/unrecognized) — the ONE case
 #     that still means "stop the whole /orchestrate invocation" (mirrors the single-task engine's
@@ -109,6 +113,14 @@
 #     {kind: "drift-inspection"} | {kind: "blocker-research", blocker_desc}. Never changes
 #     verdict/halt/infra_exempt_cycle; the NEXT cycle's orchestrate-cycle-plan.sh is what actually
 #     turns a recorded aux_pending entry into a dispatch.
+#   report_missing: true only when phase="research" AND (no outcome was ever recovered, OR the
+#     research report gate refused a claimed "researched" transition) AND no non-empty report
+#     file exists for the round this dispatch was expected to produce. The lead
+#     (skill-orchestrate/SKILL.md Move 3) reads this to decide whether to run
+#     orchestrate-recover-message-findings.sh against this dispatch's own returned message text,
+#     saving any findings the agent sent by message instead of writing its report file. Never
+#     changes verdict/halt — a research report gate refusal already resolves verdict="failed" on
+#     its own (see the research report gate above); this field only carries the recovery signal.
 #
 # Exit codes: 0 — a decision was printed on the process's original stdout (fd 3 from this
 # script's own perspective after its entry-point `exec 3>&1 1>&2` — see that redirect's own
@@ -684,15 +696,55 @@ else
   clamp_mode=""
 fi
 
+research_gate_failed=false
 if [ "$have_outcome" = "true" ]; then
   case "$dispatch_status" in
     researched)
-      if is_live; then
-        # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
-        # this call's stdout to the diagnostic stream structurally.
-        skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+      # ─── Research report-file gate ────────────────────────────────────────────────────────────
+      # A "researched" dispatch_status is trusted only when BOTH (i) artifact_path is non-empty
+      # and resolves to an existing, non-empty file, resolved against the repo root the same way
+      # TASK_DIR/STATE_FILE are resolved at the top of this script (relative paths are the
+      # documented convention for artifacts[0].path), and (ii) .return-meta.json itself exists
+      # and is non-empty. Neither check ever reads report/return-meta PROSE — both are existence
+      # and non-emptiness probes only, preserving the Context Flatness constraint.
+      report_gate_ok=false
+      resolved_report_path=""
+      if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
+        case "$artifact_path" in
+          /*) resolved_report_path="$artifact_path" ;;
+          *)  resolved_report_path="${PROJECT_ROOT}/${artifact_path}" ;;
+        esac
+        if [ -s "$resolved_report_path" ] && [ -s "${TASK_DIR}/.return-meta.json" ]; then
+          report_gate_ok=true
+        fi
+      fi
+      if [ "$report_gate_ok" = "true" ]; then
+        if is_live; then
+          # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
+          # this call's stdout to the diagnostic stream structurally.
+          skill_postflight_update "$task_number" "research" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+        else
+          echo "${notice_prefix} [dry-run] would transition task ${task_number} to researched — no write performed." >&2
+        fi
       else
-        echo "${notice_prefix} [dry-run] would transition task ${task_number} to researched — no write performed." >&2
+        research_gate_failed=true
+        echo "${notice_prefix} ERROR: research dispatch reported status=researched but the report file or .return-meta.json is missing or empty (artifact_path='${artifact_path:-<empty>}', resolved='${resolved_report_path:-<none>}') — refusing the researched transition; task status is left unchanged." >&2
+        if is_live; then
+          record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+            --defect-class ARTIFACTS_MISSING_ON_SUCCESS \
+            --detecting-site "${detecting_site_prefix}:cycle-postflight-research-report-gate" \
+            --task "$task_number" --session "$session_id" \
+            --message "researched dispatch reported success but report file or .return-meta.json is missing or empty (artifact_path='${artifact_path:-<empty>}')" \
+            --attributed-path "$attributed_path" \
+            2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+          skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+            "ARTIFACTS_MISSING_ON_SUCCESS" "$attributed_path" \
+            "${detecting_site_prefix}:cycle-postflight-research-report-gate" \
+            "researched dispatch reported success but report file or .return-meta.json is missing or empty (artifact_path='${artifact_path:-<empty>}')" \
+            "$record_result"
+        else
+          echo "${notice_prefix} [dry-run] would record ARTIFACTS_MISSING_ON_SUCCESS (research report gate) — no write performed." >&2
+        fi
       fi
       ;;
     planned)
@@ -789,8 +841,11 @@ if [ "$have_outcome" = "true" ]; then
 fi
 
 # ─── WORK (g): artifact link + artifact-round advance ──────────────────────────────────────────
+# Both skipped when the research report gate refused the transition (research_gate_failed=true):
+# linking a report/return-meta pair the gate itself just judged missing-or-empty, or advancing
+# the artifact round on the strength of that same refused outcome, would contradict the refusal.
 artifact_linked=false
-if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
+if [ "$research_gate_failed" != "true" ] && [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
   case "$artifact_type" in
     report)  field_name='**Research**'; next_field='**Plan**' ;;
     plan)    field_name='**Plan**';     next_field='**Description**' ;;
@@ -809,7 +864,7 @@ if [ -n "$artifact_path" ] && [ "$artifact_path" != "null" ]; then
 fi
 
 do_artifact_round_advance=false
-if [ "$dispatch_status" = "researched" ]; then
+if [ "$dispatch_status" = "researched" ] && [ "$research_gate_failed" != "true" ]; then
   do_artifact_round_advance=true
 elif [ "$force_invoked" = "true" ] && { [ "$dispatch_status" = "planned" ] || [ "$dispatch_status" = "implemented" ]; }; then
   do_artifact_round_advance=true
@@ -875,7 +930,14 @@ elif [ "$offschema_dispatch_status" = "true" ]; then
   verdict="failed"
 elif [ "$have_outcome" = "true" ]; then
   case "$dispatch_status" in
-    researched|planned) verdict="ok" ;;
+    researched)
+      # The research report gate (above) always wins here — a refused researched transition is
+      # verdict=failed unconditionally, never "defer" or "ok", regardless of what any other
+      # signal (e.g. a transport-exempt path) might otherwise suggest. halt stays false: this is
+      # an in-vocabulary dispatch_status, not an off-schema one.
+      if [ "$research_gate_failed" = "true" ]; then verdict="failed"; else verdict="ok"; fi
+      ;;
+    planned) verdict="ok" ;;
     implemented)
       if [ "$implemented_gate_passed" = "true" ]; then verdict="ok"; else verdict="defer"; fi
       ;;
@@ -966,7 +1028,11 @@ if [ "$verdict" = "blocked" ]; then
 fi
 
 # ─── WORK (i): per-task scoped commit ───────────────────────────────────────────────────────────
-if is_live; then
+# Skipped entirely when the research report gate refused the transition (research_gate_failed) --
+# nothing legitimately advanced this cycle (no status transition, no artifact link, no round
+# advance), so there is nothing green to commit; the defect-store write is picked up by whichever
+# cycle's commit runs next.
+if is_live && [ "$research_gate_failed" != "true" ]; then
   stage_paths=("${TASK_DIR}/" "$(dirname "$STATE_FILE")/TODO.md" "$STATE_FILE")
   [ -n "${plan_path:-}" ] && [ "$phase" = "implement" ] && stage_paths+=("$plan_path")
   meta_file="${TASK_DIR}/.return-meta.json"
@@ -1009,6 +1075,8 @@ if is_live; then
     --honest-index-rows "$task_number" \
     -- "${stage_paths[@]}" \
     || echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
+elif [ "$research_gate_failed" = "true" ]; then
+  echo "${notice_prefix} Research report gate refused this cycle's transition — skipping the per-task commit (nothing advanced)." >&2
 else
   echo "${notice_prefix} [dry-run] would commit task ${task_number}'s changes — no commit performed." >&2
 fi
@@ -1062,6 +1130,31 @@ if [ -z "$loop_guard_file" ]; then
   fi
 fi
 
+# ─── report_missing: message-recovery signal for the research phase (D4) ───────────────────────
+# True exactly when: this is a research-phase dispatch, AND either no outcome was ever recovered
+# (the WORK (d) double-miss branch) or the research report gate above refused a claimed
+# "researched" transition, AND no non-empty report file exists for the round THIS dispatch was
+# expected to produce (state.json's next_artifact_number, not yet advanced in either failure
+# case above). The round-number check (rather than "any file under reports/") is deliberate: a
+# leftover file from an earlier, already-succeeded round must never mask a genuine miss on the
+# CURRENT round. This is an existence/size probe only (`find -size +0c`), never a prose read —
+# Context Flatness is preserved. The lead (skill-orchestrate Move 3) reads this field to decide
+# whether to run orchestrate-recover-message-findings.sh against this dispatch's own returned
+# message text.
+report_missing=false
+if [ "$phase" = "research" ] && { [ "$have_outcome" != "true" ] || [ "$research_gate_failed" = "true" ]; }; then
+  expected_artifact_num=$(jq -r --argjson num "$task_number" \
+    '.active_projects[] | select(.project_number == $num) | .next_artifact_number // 1' \
+    "$STATE_FILE" 2>/dev/null)
+  expected_padded=$(printf "%02d" "${expected_artifact_num:-1}" 2>/dev/null) || expected_padded="01"
+  report_present=false
+  if [ -d "${TASK_DIR}/reports" ] && \
+     find "${TASK_DIR}/reports" -maxdepth 1 -type f -name "${expected_padded}_*" -size +0c 2>/dev/null | grep -q .; then
+    report_present=true
+  fi
+  [ "$report_present" != "true" ] && report_missing=true
+fi
+
 # ─── Final output ────────────────────────────────────────────────────────────────────────────────
 # `halt` and `infra_exempt_cycle` are caller-side loop-control signals a bare `verdict` string
 # cannot carry unambiguously: verdict="failed" is produced BOTH by a genuine in-vocabulary
@@ -1085,10 +1178,12 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson halt "$offschema_dispatch_status" \
     --argjson infra_exempt_cycle "$infra_exempt_cycle" \
     --argjson aux_signal "$aux_signal_json" \
+    --argjson report_missing "$report_missing" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
       phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision,
-      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}' >&3
+      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
+      report_missing: $report_missing, note: $note}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -1100,10 +1195,12 @@ else
     --argjson halt "$offschema_dispatch_status" \
     --argjson infra_exempt_cycle "$infra_exempt_cycle" \
     --argjson aux_signal "$aux_signal_json" \
+    --argjson report_missing "$report_missing" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
       phases_total: $phases_total, verdict: $verdict, halt: $halt,
-      infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal, note: $note}' >&3
+      infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
+      report_missing: $report_missing, note: $note}' >&3
 fi
 
 exit 0

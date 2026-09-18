@@ -661,8 +661,161 @@ if [ "$new_status_912" = "researching" ]; then
 else
   fail "fixture (C): expected status to remain researching, got: $new_status_912"
 fi
-# report_missing is Phase 2's own output field (not yet emitted by this phase's code) -- Phase 2
-# adds a strict assertion for it here (per this task's own plan, fixture G).
+if [ "$(jqf '.report_missing')" = "true" ]; then
+  pass "fixture (G): fixture C's double-miss also surfaces report_missing=true for the message-recovery consumer"
+else
+  fail "fixture (G): expected report_missing=true for fixture C's double-miss, got: $(jqf '.report_missing') ($LAST_STDOUT)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (D): a "researched" outcome whose claimed report artifact does not exist on disk.
+# verdict=failed, task status never advances to researched, one ARTIFACTS_MISSING_ON_SUCCESS
+# defect, report_missing=true.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (D): researched outcome with a nonexistent report file is refused"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/920_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 920, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #920 -- nonexistent report fixture", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/920_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/920_candidate/.return-meta.json" <<'EOF'
+{"status":"researched","dispatch_seq":1,"artifacts":[{"type":"report","path":"specs/920_candidate/reports/01_x-report.md","summary":"y"}],"metadata":{}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/920_candidate --session sess_920 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/920_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 920
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (D): verdict=failed for a nonexistent report file"
+else
+  fail "fixture (D): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+new_status_920=$(jq -r --argjson n 920 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_920" = "researching" ]; then
+  pass "fixture (D): task status never advanced to researched"
+else
+  fail "fixture (D): expected status to remain researching, got: $new_status_920"
+fi
+d_defect_count=$(jq '.detected_defects | map(select(.defect_class == "ARTIFACTS_MISSING_ON_SUCCESS")) | length' \
+  "$WORKDIR/specs/920_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$d_defect_count" = "1" ]; then
+  pass "fixture (D): exactly one ARTIFACTS_MISSING_ON_SUCCESS defect recorded"
+else
+  fail "fixture (D): expected exactly 1 ARTIFACTS_MISSING_ON_SUCCESS defect, got $d_defect_count"
+fi
+if [ "$(jqf '.report_missing')" = "true" ]; then
+  pass "fixture (D): report_missing=true"
+else
+  fail "fixture (D): expected report_missing=true, got: $(jqf '.report_missing')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (E): a "researched" outcome whose claimed report artifact exists but is EMPTY (0
+# bytes). Same assertions as (D) -- an empty file is not a usable report.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (E): researched outcome with an empty report file is refused"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/921_candidate/reports"
+: > "$WORKDIR/specs/921_candidate/reports/01_x-report.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 921, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #921 -- empty report fixture", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/921_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/921_candidate/.return-meta.json" <<'EOF'
+{"status":"researched","dispatch_seq":1,"artifacts":[{"type":"report","path":"specs/921_candidate/reports/01_x-report.md","summary":"y"}],"metadata":{}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/921_candidate --session sess_921 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/921_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 921
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (E): verdict=failed for an empty report file"
+else
+  fail "fixture (E): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+new_status_921=$(jq -r --argjson n 921 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_921" = "researching" ]; then
+  pass "fixture (E): task status never advanced to researched"
+else
+  fail "fixture (E): expected status to remain researching, got: $new_status_921"
+fi
+e_defect_count=$(jq '.detected_defects | map(select(.defect_class == "ARTIFACTS_MISSING_ON_SUCCESS")) | length' \
+  "$WORKDIR/specs/921_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$e_defect_count" = "1" ]; then
+  pass "fixture (E): exactly one ARTIFACTS_MISSING_ON_SUCCESS defect recorded"
+else
+  fail "fixture (E): expected exactly 1 ARTIFACTS_MISSING_ON_SUCCESS defect, got $e_defect_count"
+fi
+if [ "$(jqf '.report_missing')" = "true" ]; then
+  pass "fixture (E): report_missing=true"
+else
+  fail "fixture (E): expected report_missing=true, got: $(jqf '.report_missing')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (F): regression guard -- a genuine, non-empty report file plus a valid
+# .return-meta.json still yields verdict=ok, status->researched, report_missing=false, and the
+# artifact gets linked.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (F): a real non-empty report still transitions to researched (regression guard)"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/922_candidate/reports"
+echo "real findings" > "$WORKDIR/specs/922_candidate/reports/01_x-report.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 922, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #922 -- regression guard fixture", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/922_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/922_candidate/.return-meta.json" <<'EOF'
+{"status":"researched","dispatch_seq":1,"artifacts":[{"type":"report","path":"specs/922_candidate/reports/01_x-report.md","summary":"real findings"}],"metadata":{}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/922_candidate --session sess_922 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/922_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 922
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "fixture (F): verdict=ok for a genuine non-empty report"
+else
+  fail "fixture (F): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+new_status_922=$(jq -r --argjson n 922 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_922" = "researched" ]; then
+  pass "fixture (F): task status advanced to researched"
+else
+  fail "fixture (F): expected status=researched, got: $new_status_922"
+fi
+f_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/922_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$f_defect_count" = "0" ]; then
+  pass "fixture (F): zero defects recorded for a genuine success"
+else
+  fail "fixture (F): expected 0 detected_defects, got $f_defect_count"
+fi
+if [ "$(jqf '.report_missing')" = "false" ]; then
+  pass "fixture (F): report_missing=false"
+else
+  fail "fixture (F): expected report_missing=false, got: $(jqf '.report_missing')"
+fi
+linked_report_922=$(jq -r --argjson n 922 '.active_projects[] | select(.project_number == $n) | .artifacts // [] | map(select(.type == "report")) | .[0].path // ""' "$WORKDIR/specs/state.json")
+if [ "$linked_report_922" = "specs/922_candidate/reports/01_x-report.md" ]; then
+  pass "fixture (F): the report was linked into state.json's artifacts"
+else
+  fail "fixture (F): expected the report linked, got: $linked_report_922"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the 9999999999 sentinel is literal and shared across the two gate scripts
