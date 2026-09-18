@@ -1410,6 +1410,7 @@ re-deciding declaration granularity here.
 - **Dependencies**: None
 - **Research**: [194_align_lifecycle_agent_handoff_contracts/reports/01_handoff-obligation-audit.md]
 - **Plan**: [194_align_lifecycle_agent_handoff_contracts/plans/01_handoff-obligation-contract-rollout.md]
+- **Summary**: [194_align_lifecycle_agent_handoff_contracts/summaries/01_handoff-obligation-contract-rollout-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/agents/ (never .claude/**, a disposable deploy tree regenerated from the source store; hand edits there are silently wiped).
 

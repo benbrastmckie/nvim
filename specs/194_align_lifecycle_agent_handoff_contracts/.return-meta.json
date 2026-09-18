@@ -79,7 +79,7 @@
   ],
   "memory_candidates": [
     {
-      "content": "In this agent-system, a dispatch[]-reachable agent's contract file can serve as the routing target for BOTH the research and implement phase of the same routing entry (10 such dual-role agents exist across the present and filetypes extensions, e.g. budget-agent, grant-agent, filetypes-router-agent). When authoring a per-agent obligation block meant to vary by phase (e.g. a status-enum sentence that differs between research/plan/implement), check whether the target agent is dual-role via the manifest's routing_agents.research/.implement values before assuming a single variant applies \u2014 a dual-role file needs a combined variant that conditions its phase-specific sentences on which dispatch it is currently serving, not one of the three single-phase variants.",
+      "content": "In this agent-system, a dispatch[]-reachable agent's contract file can serve as the routing target for BOTH the research and implement phase of the same routing entry (10 such dual-role agents exist across the present and filetypes extensions, e.g. budget-agent, grant-agent, filetypes-router-agent). When authoring a per-agent obligation block meant to vary by phase (e.g. a status-enum sentence that differs between research/plan/implement), check whether the target agent is dual-role via the manifest's routing_agents.research/.implement values before assuming a single variant applies — a dual-role file needs a combined variant that conditions its phase-specific sentences on which dispatch it is currently serving, not one of the three single-phase variants.",
       "category": "INSIGHT",
       "source_artifact": "specs/194_align_lifecycle_agent_handoff_contracts/summaries/01_handoff-obligation-contract-rollout-summary.md",
       "confidence": 0.85,
@@ -117,5 +117,7 @@
     ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

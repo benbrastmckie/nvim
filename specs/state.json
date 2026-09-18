@@ -1046,9 +1046,15 @@
           "path": "specs/194_align_lifecycle_agent_handoff_contracts/plans/01_handoff-obligation-contract-rollout.md",
           "type": "plan",
           "summary": "7-phase rollout of a frozen canonical .orchestrator-handoff.json obligation block across 61 of the 64 dispatch[]-reachable agent contracts (55 additive, 6 prohibition reversals, 2 verify-only)."
+        },
+        {
+          "path": "specs/194_align_lifecycle_agent_handoff_contracts/summaries/01_handoff-obligation-contract-rollout-summary.md",
+          "type": "summary",
+          "summary": "All 7 plan phases complete: 62 of 64 dispatch[]-reachable agent contracts now carry a consistently-worded .orchestrator-handoff.json obligation (6 prohibition reversals + 56 additions), 2 already-correct hard-mode agents verified unchanged."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Rolled out a frozen canonical .orchestrator-handoff.json obligation block across all 64 dispatch[]-reachable agent contracts under agent-system/extensions/*/agents/: 6 prohibition statements reversed, 56 files received an additive obligation subsection (including combined research+implement variants for 10 dual-role agents and disambiguation clauses for the 9 agents carrying the unrelated context-pressure handoff mechanism), and the 2 already-correct hard-mode agents were verified unchanged. A full completeness sweep confirmed all 64 agents have nonzero mention counts, zero surviving prohibition language, wording consistency against the frozen Appendix text, the aux-dispatch orchestrator_mode:true asymmetry held everywhere, no changes to orchestrate-cycle-postflight.sh or .claude/**, and a clean task-reference lint."
     },
     {
       "project_number": 199,
