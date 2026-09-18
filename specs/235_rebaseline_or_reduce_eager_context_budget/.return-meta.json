@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md",
+      "summary": "Confirms the task's premise is now stale (an earlier task already re-baselined eager_load.baseline_bytes to 65950, currently passing at 65889 measured); identifies a NEW post-dating regression (skills/skill-orchestrate/SKILL.md now 21318 B over its 20000 B ceiling, caused by an unrelated concurrently-landed commit); confirms deploy-headless.sh's exit-3 semantics are already correctly consumed by command-gate-out.sh (no code change needed for that item); and flags that commands/orchestrate.md remains over ceiling by more than previously recorded."
+    }
+  ],
+  "next_steps": "Run /plan 235 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1789772261_c29003_235",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "orchestrator-context-budget.json's eager_load.note field is used as living, dated justification text (not just data) when baseline_bytes is deliberately re-derived -- e.g. 'Deliberately bumped from X to Y (date, reason)'. This pattern makes a later research pass able to confirm a re-baseline was already deliberate/reviewed just by reading the config, instead of needing to re-derive the decision. Worth reusing for any other config file that records a deliberately-moved ceiling.",
+      "category": "PATTERN",
+      "source_artifact": "specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["orchestrator-context-budget", "baseline_bytes", "config-note", "dated-justification", "verify-deploy"]
+    },
+    {
+      "content": "deploy-headless.sh distinguishes a landed-but-verify-red deploy (RESULT=landed_verify_red, exit 3) from a not-landed deploy (exit 1/2) so that command-gate-out.sh's postflight completion-deploy gate can run a baseline-relative pre-existing-vs-new-findings comparison (deploy_findings_snapshot / deploy_baseline_new_findings) instead of treating every gate-20-red deploy as a failure. When investigating 'deploy always exits non-zero' reports, check this exit-code contract before assuming a bug -- it is often already correctly handled by the consumer.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-headless", "exit-3", "landed_verify_red", "command-gate-out", "baseline-relative-findings"]
+    }
+  ],
+  "dispatch_seq": 2
+}
