@@ -351,20 +351,31 @@ hand-editing.
 
 ---
 
-### Phase 5: Confirm and record the caller audit [IN PROGRESS]
+### Phase 5: Confirm and record the caller audit [COMPLETED]
 
 **Goal**: The ACCEPTANCE requirement that existing callers be audited and any already-corrupted
 data identified is satisfied with a reproducible, recorded finding.
 
 **Tasks**:
-- [ ] Re-run the enumeration the research report used:
+- [x] Re-run the enumeration the research report used:
       `grep -rn "argjson-file" agent-system/extensions/ --include="*.sh" --include="*.md"` and
       `grep -rln "state-write.sh" agent-system/extensions/ --include="*.sh" --include="*.md"`.
-- [ ] For each call site with 2+ `--argjson` bindings in one invocation, confirm at most one
-      binding can exceed `SPILL_THRESHOLD` (100,000 bytes).
-- [ ] Record the finding in the implementation summary: which call sites were checked, why each is
+      *(completed: zero live `--argjson-file` call sites outside `state-write.sh` itself and its
+      own two test suites (`test-state-write-large-payload.sh`,
+      `test-state-write-spill-names.sh`). ~110 files reference `state-write.sh`.)*
+- [x] For each call site with 2+ `--argjson` bindings in one invocation, confirm at most one
+      binding can exceed `SPILL_THRESHOLD` (100,000 bytes). *(completed: every multi-`--argjson`
+      live call site found pairs at most one potentially-large payload (`memory_candidates`,
+      `roadmap_items`, `reflection`) with one or two task-number/counter integers
+      (`$num`/`$next`/`$cur`/`$old`/`$new_next`/`$vault_num`) that can never approach 100,000
+      bytes. Checked directly: `orchestrator-postflight.sh` (memory_candidates, reflection),
+      `skill-base.sh` (memory_candidates, roadmap_items, completion_summary), the lean/present
+      extensions' `next_artifact_number` increments, and `deprecated/vault-operation.sh`'s two
+      integer-only calls. No call site pairs two independently-large bindings.)*
+- [x] Record the finding in the implementation summary: which call sites were checked, why each is
       safe by construction, and the conclusion that no corrupted `specs/state.json` data exists or
-      is suspected from this defect.
+      is suspected from this defect. *(completed: see the implementation summary's Caller Audit
+      section)*
 
 **Timing**: 30 minutes
 
