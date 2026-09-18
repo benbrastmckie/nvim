@@ -6,10 +6,10 @@ allowed-tools: Agent, Bash, Read, Edit, AskUserQuestion
 
 # Orchestrate Skill
 
-Fire-and-forget autonomous loop implementing the task lifecycle state machine. One engine drives
-every invocation — a single task number is a batch of size one through the SAME four-move loop a
-many-task batch uses; there is no separate single-task code path. Full state table, transition
-diagram, and design rationale: `docs/architecture/orchestrate-state-machine.md`.
+Fire-and-forget autonomous loop implementing the task lifecycle state machine — one engine drives
+every invocation; a single task number is a batch of size one through the SAME four-move loop, no
+separate single-task code path. Full state table, transition diagram, design rationale:
+`docs/architecture/orchestrate-state-machine.md`.
 
 ## Context References
 
@@ -34,19 +34,17 @@ diagram, and design rationale: `docs/architecture/orchestrate-state-machine.md`.
 for every per-task dispatch), `compare_flag`,
 `allow_self_modifying`, `allow_scope_collision`, `clean_flag`, `effort_flag`, `model_flag`,
 `hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`,
-`focus_prompt` (the user's own free-form `$2+` text typed after the task number(s) on the
-`/orchestrate` command line — see `commands/orchestrate.md`; passed through to Move 1 below,
-applied to every task in the batch). Register the batch's in-flight session (best-effort,
-non-blocking):
+`focus_prompt` (free-form `$2+` text after the task number(s) on the `/orchestrate` command line
+— see `commands/orchestrate.md`; passed to Move 1 below, applied to every task in the batch).
+Register the batch's in-flight session (best-effort, non-blocking):
 
 ```bash
 bash .claude/scripts/task-lock.sh session-register "$session_id" "/orchestrate" \
   "$(IFS=,; echo "${task_numbers[*]}")" 2>/dev/null || true
 ```
 
-For each task in `task_numbers`, run the entry reconcile ONCE (never per-cycle — this loop below
-runs it again next cycle only for a task that is still eligible then, which is a fresh call, not
-a repeat):
+For each task in `task_numbers`, run the entry reconcile ONCE (never per-cycle — a later cycle's
+call for a still-eligible task is fresh, not a repeat):
 
 ```bash
 for task_number in "${task_numbers[@]}"; do
@@ -59,21 +57,20 @@ done
 
 One call. Status refresh, all-terminal check, eligibility, classification, admission (the four
 defer gates and their overrides), the self-modification tie-breaker, the convergence guard, the
-idle cross-batch overlap advisory, `force_phases` consumption (STOP, never fall-through, once a
+idle cross-batch overlap advisory, `force_phases` consumption (STOP-not-fall-through once a
 task's own forced round completes for this run), artifact-keyed forced-plan/forced-implement
 admission, task-directory creation, the lock probe, the PER-RUN work-cycle budget (resets every
 invocation; no `--continue-budget` override), the inter-cycle redeploy checkpoint, and
-dispatch-file composition (via `orchestrate-build-dispatch.sh`, including any `## Prior
-Decisions` section from a task's `.decisions.json` and, when `focus_prompt` is non-empty, a
-`User focus:` block composed with the task's own `research_questions`) all happen inside this
-one script call — full contract in its own header comment and in `orchestrate-state-machine.md`.
+dispatch-file composition (via `orchestrate-build-dispatch.sh`, incl. a `## Prior Decisions`
+section from `.decisions.json` and, when `focus_prompt` is non-empty, a `User focus:` block
+composed with `research_questions`) all happen inside this one script call — full contract in
+its own header comment and in `orchestrate-state-machine.md`.
 
-`focus_prompt` is free-form user text (may contain spaces and embedded double quotes), so it is
-NOT threaded through the `$( [ -n ... ] && echo --flag "$v" )` idiom the other flags below use —
-that idiom re-splits on whitespace via the surrounding unquoted command substitution, which is
-safe only for single-token flag values. Build it as an explicit array immediately above the call
-instead, and splice it in with the `${arr[@]+"${arr[@]}"}` form (safe under `set -u` when the
-array is empty):
+`focus_prompt` is free-form text (may contain spaces/quotes), so it is NOT threaded through the
+`$( [ -n ... ] && echo --flag "$v" )` idiom below — that re-splits on whitespace via the
+surrounding unquoted command substitution, safe only for single-token values. Build it as an
+explicit array above the call, splicing with `${arr[@]+"${arr[@]}"}` (safe under `set -u` when
+empty):
 
 ```bash
 focus_args=()
@@ -100,40 +97,34 @@ exit; `max_cycles`/`no_eligible_stuck`/`max_infra_failures`/`convergence_guard` 
 exits). Otherwise continue with this cycle's `plan_json.dispatch[]`/`plan_json.aux_dispatch[]`.
 A task whose forced round has completed for this run (every phase its own
 `--research`/`--plan`/`--implement` flag named has already been dispatched) appears in
-`plan_json.blocked[]` with a `"forced round complete"` reason instead — this is that task's own
-terminal-for-this-run verdict, not a batch-wide `stop`; the loop must treat it exactly like any
-other `blocked[]` row (log and move on) and never re-attempt dispatching it this run, whether or
-not a later cycle's caller repeats the forcing flag.
+`plan_json.blocked[]` with a `"forced round complete"` reason instead — this task's own
+terminal-for-this-run verdict (not a batch-wide `stop`), treated like any other `blocked[]` row:
+log and move on, never re-attempted this run even if a later cycle repeats the forcing flag.
 
 **A prepared row that will never be issued** (this cycle's own dispatch[] row, once Move 1 just
 built it, is abandoned before Move 2 ever calls it — e.g. the operator asks to stop after seeing
 the plan, or this process is about to be killed): `scripts/orchestrate-unwind-dispatch.sh
-<task_number> --session SID [--dry-run] [--commit]` is the sanctioned way to reverse that one
-task's Move 1 mutations (preflight status write, lock, dispatch file, durable loop-guard
-bookkeeping) by hand. It is never called automatically from this loop — see
-`docs/architecture/orchestrate-state-machine.md`'s "Unwinding an Unconsumed Dispatch" subsection
-for the refusal gate and the by-hand-only rationale.
+<task_number> --session SID [--dry-run] [--commit]` is the sanctioned hand-recovery path, never
+called automatically from this loop — see `docs/architecture/orchestrate-state-machine.md`'s
+"Unwinding an Unconsumed Dispatch" subsection for what it reverses, the refusal gate, and the
+by-hand-only rationale.
 
-**MUST NOT**: never re-invoke `orchestrate-cycle-plan.sh` LIVE purely to inspect state (a "check
-where things stand" call outside the normal per-cycle Move 1 loop). A live call mutates: it can
-take a task lock, mint a dispatch_seq, write a preflight status, and build a real dispatch file —
-none of which a mere inspection should ever risk. `--dry-run` (which mutates nothing; see
-`commands/orchestrate.md`'s dry-run short-circuit) or reading `mt_state_file` directly are the
-only sanctioned ways to check status mid-run. This loop stops on the plan's own stop verdict (or
-a per-task `forced_round_complete` blocked row) — it does not get a second, unsanctioned way to
-decide the run is done.
+**MUST NOT**: never re-invoke `orchestrate-cycle-plan.sh` LIVE just to inspect state — a live
+call mutates (task lock, `dispatch_seq`, preflight status, a real dispatch file). `--dry-run`
+(mutates nothing; see `commands/orchestrate.md`'s dry-run short-circuit) or reading
+`mt_state_file` directly are the only sanctioned ways to check status mid-run. This loop stops
+only on the plan's own stop verdict or a per-task `forced_round_complete` blocked row.
 
-**Hard-mode burnout gate (`--hard` only, every cycle, before Move 2)**: the same three
-self-checks single-task mode used to run (re-reading a path with no new dispatch since, a second
-consecutive no-dispatch reasoning turn, reversing a decision without a fresh finding) — on any
-signal, call `bash .claude/scripts/orchestrate-churn.sh --burnout-signal "$task_dir_abs"` for the
-task the signal fired on. See `context/contracts/orchestrator-discipline.md` for the full
-self-check text.
+**Hard-mode burnout gate (`--hard` only, every cycle, before Move 2)**: on any of the three
+self-check signals (re-reading a path with no new dispatch, a second consecutive no-dispatch
+turn, reversing a decision without a fresh finding), call `bash
+.claude/scripts/orchestrate-churn.sh --burnout-signal "$task_dir_abs"` for the task the signal
+fired on. Full self-check text: `context/contracts/orchestrator-discipline.md`.
 
 ### Move 2: Dispatch
 
-Issue every Agent call named by `dispatch[]` AND `aux_dispatch[]` in **one message** (concurrent
-execution — multiple messages force sequential execution). Each row already carries every field
+Issue every Agent call named by `dispatch[]` AND `aux_dispatch[]` in **one message** (multiple
+messages force sequential execution). Each row already carries every field
 `orchestrate-build-dispatch.sh` (or its aux counterpart) resolved; the prompt is a fixed pointer.
 
 ```bash
@@ -160,19 +151,18 @@ echo "$plan_json" | jq -c '.aux_dispatch[]' | while IFS= read -r row; do
 done
 ```
 
-**MUST NOT**: an `aux_dispatch[]` row never reaches Move 3 and never contributes to
-`failed_tasks` — its only effect is a written file or a revised plan a later cycle picks up.
-`agent` for an aux row is FIXED by `kind` (`fork`/`fork`/`reviser-agent`/the task's own resolved
-research agent), never task-type-routed — see `orchestrate-cycle-plan.sh`'s header (Decision 2).
+**MUST NOT**: an `aux_dispatch[]` row never reaches Move 3 or contributes to `failed_tasks` —
+its only effect is a written file or a revised plan a later cycle picks up. `agent` is FIXED by
+`kind` (`fork`/`fork`/`reviser-agent`/the resolved research agent), never task-type-routed — see
+`orchestrate-cycle-plan.sh`'s header (Decision 2).
 
-Log every `plan_json.deferred[]`/`plan_json.blocked[]` row's `reason` verbatim — informational
-only; a deferred task becomes eligible again on a later cycle.
+Log every `plan_json.deferred[]`/`plan_json.blocked[]` row's `reason` verbatim — informational;
+deferred tasks become eligible again later.
 
 ### Move 3: Postflight
 
 **After ALL Agent calls from Move 2 complete** (never interleaved with dispatch), run this once
-per `dispatch[]` row — the single shared implementation for every task, every phase, every effort
-mode:
+per `dispatch[]` row — the one shared implementation for every task/phase/effort mode:
 
 ```bash
 echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
@@ -197,11 +187,9 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   report_missing=$(echo "$postflight_json" | jq -r '.report_missing // false')
   echo "[orchestrate] Task #${t}: dispatch result: $dispatch_status (verdict=$verdict)" >&2
 
-  # D4 message-findings recovery (research phase only): report_missing=true means this row's
-  # research dispatch reported no usable report file and no outcome was recovered — the agent's
-  # findings, if any, exist only in the text it returned to THIS Move. Before running the block
-  # below, the lead writes that row's own Agent-tool return text VERBATIM (no summarizing, no
-  # editing, no analysis — see the Postflight Boundary exception below) to
+  # D4 message-findings recovery (research phase only; full rationale in "MUST NOT (Postflight
+  # Boundary)" below): report_missing=true means no usable report file/outcome was recovered, so
+  # the lead writes this row's own Agent-tool return text VERBATIM to
   # "${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md", then runs:
   if [ "$report_missing" = "true" ]; then
     dispatch_seq_for_row=$(jq -r --arg t "$t" '.dispatch_seq[$t] // empty' "$mt_state_file")
@@ -211,8 +199,7 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
       --agent "$agent" --session "$session_id")
     echo "[orchestrate] Task #${t}: message-findings recovery: $recover_json" >&2
   fi
-  # This step never changes verdict, dispatch_status, or failed_tasks handling below — it is
-  # purely a best-effort save of findings that would otherwise be lost, per D4.
+  # Never changes verdict/dispatch_status/failed_tasks — best-effort save only, per D4.
 
   # ask_user verdicts accumulate for Move 4's batched relay — never asked here, never per-task.
   if [ "$verdict" = "ask_user" ]; then
@@ -238,10 +225,10 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
 done
 ```
 
-`MAX_CYCLES_MT` increments once per wave regardless of any task's outcome; a task can be
-infra-deferred at most `MAX_INFRA_FAILURES` times before landing in `failed_tasks`. Per-task
-commits (inside the script's own postflight) serialize naturally in program order; the
-`specs/.commit-lock/` mutex guards only against a concurrent, separate dispatch.
+`MAX_CYCLES_MT` increments once per wave regardless of outcome; a task can be infra-deferred at
+most `MAX_INFRA_FAILURES` times before landing in `failed_tasks`. Per-task commits (inside the
+script's own postflight) serialize in program order; `specs/.commit-lock/` guards only against a
+concurrent, separate dispatch.
 
 ### Move 4: Branch
 
@@ -265,59 +252,53 @@ failed_count=$(jq -r '.failed_tasks // [] | length' "$mt_state_file")
 **Batched `AskUserQuestion` relay (after every task's Move 3 has run this cycle)**: if
 `mt_state_file`'s `pending_ask_user[]` is non-empty, call `AskUserQuestion` once per entry
 (question/options/recommended from `.decision`), batched together — never mid-cycle, never one
-call per task. For each answer, append `{question, answer, cycle, timestamp}` to that task's
-`specs/{padded}_{project}/.decisions.json` (schema:
-`orchestrate-state-machine.md`'s "See Also" -> `handoff-schema.md`'s "Decisions File Schema"
-section) and clear `pending_ask_user` for that task. A non-blocking decision proceeds on the
-agent's own recommendation instead of asking, and is surfaced in the consolidated output. This
-mechanism is UNRELATED to `detected_defects` (accumulate-and-render only, never prompted).
+call per task. Append each answer to that task's `specs/{padded}_{project}/.decisions.json` per
+`handoff-schema.md`'s "Decisions File Schema" section, and clear `pending_ask_user` for that
+task. A non-blocking decision proceeds on the agent's own recommendation instead of asking, and
+is surfaced in the consolidated output. Unrelated to `detected_defects` (accumulate-and-render
+only, never prompted).
 
 Then: emit the consolidated output (read `context/patterns/orchestrate-batch-results-template.md`
-and render exactly), run the non-blocking residue check (`git status --porcelain -- specs/` —
-warn only, never commits), release the session registry
-(`task-lock.sh session-release "$session_id"`), remove `.dispatch/` for every task in
+and render exactly), run the residue check (`git status --porcelain -- specs/` — warn only,
+never commits), release the session registry (`task-lock.sh session-release "$session_id"`),
+remove `.dispatch/` for every task in
 `completed_tasks` only, and write `specs/.return-meta-multi-${session_id}.json` with `status`,
 `session_id`, and `metadata` (`tasks_completed`, `tasks_failed`, the two deferred arrays,
 `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`,
-`verify_deploy_baseline_notices`, `cycles_used`) — the exact `jq -n` shape is unchanged from
-before this rewrite and is documented in `context/formats/return-metadata-file.md`.
+`verify_deploy_baseline_notices`, `cycles_used`) — `jq -n` shape documented in
+`context/formats/return-metadata-file.md`.
 
 ---
 
 ## MUST NOT (Context Flatness Constraint)
 
 Full accounting: `docs/architecture/orchestrate-cycle-postflight.md`. Never read `reports/*.md`,
-`plans/*.md`, `summaries/*.md`, or `handoffs/*.md` content during the loop —
-`orchestrate-cycle-postflight.sh` performs every sanctioned read (the handoff, gated by mtime and
-`dispatch_seq`; the bounded `.return-meta.json`/phase-marker recovery fallbacks). Context grows by
-a measured 871 B (~218 tokens) per cycle per task, regardless of artifact complexity — see
-`docs/architecture/orchestrate-state-machine.md`'s `## Context Flatness Guarantee` for the
-re-runnable measurement (`scripts/tests/test-orchestrate-context-growth.sh`).
+`plans/*.md`, `summaries/*.md`, or `handoffs/*.md` during the loop —
+`orchestrate-cycle-postflight.sh` performs every sanctioned read (the handoff, gated by
+mtime/`dispatch_seq`; the bounded `.return-meta.json`/phase-marker recovery fallbacks). Context
+grows a measured 871 B (~218 tokens) per cycle per task, regardless of artifact complexity — see
+`orchestrate-state-machine.md`'s `## Context Flatness Guarantee` for the re-runnable measurement
+(`scripts/tests/test-orchestrate-context-growth.sh`).
 
 ## MUST NOT (Postflight Boundary)
 
-Full accounting: `docs/architecture/handoff-schema.md`'s "Postflight Boundary" section. This
-section is additive to the Context Flatness Constraint above. After a dispatch returns (Move 3),
-this skill MUST NOT: edit source files, run build/test commands, use MCP/WebSearch/domain tools,
-analyze or grep source, or write reports/plans/summaries — that is dispatched-agent work. This
-skill only reads the handoff, drives the state transition, and cleans up temp/marker files.
-Reference: `context/standards/postflight-tool-restrictions.md`.
+Full accounting: `docs/architecture/handoff-schema.md`'s "Postflight Boundary" section and
+`context/standards/postflight-tool-restrictions.md` (additive to the Context Flatness Constraint
+above). After a dispatch returns (Move 3), this skill MUST NOT edit source, run build/test
+commands, use MCP/WebSearch/domain tools, analyze or grep source, or write reports/plans/
+summaries — that is dispatched-agent work. This skill only reads the handoff, drives the state
+transition, and cleans up temp/marker files.
 
-**One narrow, named exception (D4)**: when `postflight_json.report_missing` is `true` for a
-`dispatch[]` row, the lead writes THAT row's own Agent-tool return text **verbatim** (no
-summarizing, no editing, no analysis) to
-`${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md`, then calls
-`orchestrate-recover-message-findings.sh` (see Move 3 above) to persist it into the task's
-`reports/` directory under a clearly-tagged "recovered from agent message" banner. This is
-preservation of a dispatched agent's own already-produced text, not authorship of new report
-content — the lead adds nothing and edits nothing. It does not change `verdict`, `dispatch_status`,
-or `failed_tasks` handling, and it is the ONLY case in which this skill writes into a task's
-`reports/`, `plans/`, or `summaries/` directory.
+**D4 exception, operational only** (rationale: the two references above): when
+`postflight_json.report_missing` is `true`, the lead writes that row's own Agent-tool return
+text **verbatim** to `${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md`, then calls
+`orchestrate-recover-message-findings.sh` (Move 3 above) to persist it into `reports/` — the
+ONLY case this skill writes into `reports/`, `plans/`, or `summaries/`.
 
-Also: never hardcode a phase order (the loop dispatches whatever phase `orchestrate-cycle-plan.sh`
-names); never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only, per
-`orchestrate-state-machine.md`'s `mt_state_file` field reference); never let an `aux_dispatch[]`
-row reach Move 3.
+Also: never hardcode a phase order (dispatch whatever phase `orchestrate-cycle-plan.sh` names);
+never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only, per
+`orchestrate-state-machine.md`'s `mt_state_file` field reference); never let `aux_dispatch[]`
+reach Move 3.
 
 ## Skill-to-Agent Mapping
 

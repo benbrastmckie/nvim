@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Trim skill-orchestrate SKILL.md Under Ceiling",
+  "started_at": "2026-09-18T23:45:00Z",
+  "last_updated": "2026-09-18T23:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read SKILL.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Collapse D4 exception paragraph in MUST NOT (Postflight Boundary)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Shorten Move 3 bash block D4 comments, keep code byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Grep-verify each dropped fact exists in handoff-schema.md/postflight-tool-restrictions.md", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Additional restatement pointer-izing pass to reach <=19500 B target", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 6, "description": "Commit own hunks only", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": [
+    "Final size: 19535 B (target <=19500 B, ceiling 20000 B). Reduced from 21318 B (1783 B saved) via: (1) MUST NOT (Postflight Boundary) D4 paragraph collapse; (2) Move 3 bash comment shortening (behavior byte-identical); (3) restatement trim of the orchestrate-unwind-dispatch.sh mutation list (fully covered by orchestrate-state-machine.md's 'Unwinding an Unconsumed Dispatch' section); (4) restatement trim of the .decisions.json {question,answer,cycle,timestamp} shape (fully covered by handoff-schema.md's 'Decisions File Schema' section); (5) prose-tightening pass across Setup/Move1/Move2/Move4/Context-Flatness/burnout-gate paragraphs -- wording economy only, no facts, code, or operational instructions removed.",
+    "Verified via grep that the operational D4 instruction (write verbatim to .dispatch/{seq}.agent-message.md, then call orchestrate-recover-message-findings.sh) and the Move 3 report_missing code path remain intact.",
+    "check-task-references.sh --quiet: PASS, 0 occurrences.",
+    "No content was unique to SKILL.md requiring relocation to handoff-schema.md -- every trimmed fact was already fully stated in the pointed-to reference docs.",
+    "handoff-schema.md was NOT touched (not needed, and it is not in this task's file_scope)."
+  ]
+}
