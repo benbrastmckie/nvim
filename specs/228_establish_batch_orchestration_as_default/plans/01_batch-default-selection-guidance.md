@@ -1,7 +1,7 @@
 # Implementation Plan: Task #228
 
 - **Task**: 228 - Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md
@@ -207,7 +207,7 @@ after editing; a diff touching any other file in this phase is a scope error.
 
 ---
 
-### Phase 3: Cross-file verification and index line_count handling [IN PROGRESS]
+### Phase 3: Cross-file verification and index line_count handling [COMPLETED]
 
 **Goal**: Confirm the acceptance criteria end to end and handle the index metadata drift safely.
 
@@ -257,13 +257,13 @@ after editing; a diff touching any other file in this phase is a scope error.
 
 ## Testing & Validation
 
-- [ ] Exactly one file contains the posture, criteria, and conflict rules.
-- [ ] Each pairwise conflict (territory/topic, territory/width, topic/width) has a definite winner.
-- [ ] Collision-visibility argument names the admission gates and the separate-sessions blind spot.
-- [ ] Territory criterion labelled human judgment, citing declaration granularity under revision.
-- [ ] Pointers in `orchestrate.md` and `claudemd.md`, no restated criteria.
-- [ ] `multi-task-operations.md` Overview no longer says "common case".
-- [ ] No script, predicate, or dispatch path modified; no task numbers in deliverables.
+- [x] Exactly one file contains the posture, criteria, and conflict rules.
+- [x] Each pairwise conflict (territory/topic, territory/width, topic/width) has a definite winner.
+- [x] Collision-visibility argument names the admission gates and the separate-sessions blind spot.
+- [x] Territory criterion labelled human judgment, citing declaration granularity under revision.
+- [x] Pointers in `orchestrate.md` and `claudemd.md`, no restated criteria.
+- [x] `multi-task-operations.md` Overview no longer says "common case".
+- [x] No script, predicate, or dispatch path modified; no task numbers in deliverables.
 
 ## Artifacts & Outputs
 
