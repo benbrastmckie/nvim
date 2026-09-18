@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-09-17",
+  "generated_at": "2026-09-18",
   "entry_count": 19,
-  "total_tokens": 2990,
+  "total_tokens": 3082,
   "entries": [
     {
       "id": "MEM-plan-delegation-required",
@@ -21,8 +21,8 @@
       "token_count": 302,
       "created": "2026-04-13",
       "modified": "2026-04-13",
-      "last_retrieved": "2026-09-08",
-      "retrieval_count": 68
+      "last_retrieved": "2026-09-18",
+      "retrieval_count": 72
     },
     {
       "id": "MEM-config-nextcord-discord-nixos",
@@ -147,8 +147,8 @@
       "token_count": 90,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-09-16",
-      "retrieval_count": 57
+      "last_retrieved": "2026-09-18",
+      "retrieval_count": 63
     },
     {
       "id": "MEM-technique-validate-context-budgets-budget",
@@ -333,7 +333,10 @@
       "created": "2026-06-08",
       "modified": "2026-06-08",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "merged_into:MEM-pattern-opencode-agent-frontmatter"
     },
     {
       "id": "MEM-pattern-opencode-agent-frontmatter",
@@ -343,18 +346,20 @@
       "topic": "task-opencode",
       "category": "PATTERN",
       "keywords": [
-        "opencode",
         "agent-frontmatter",
-        "port-pattern",
-        "model-field",
         "allowed-tools",
-        "synthesis-agent"
+        "model-field",
+        "opencode",
+        "port-pattern",
+        "synthesis-agent",
+        "validation"
       ],
-      "token_count": 197,
+      "token_count": 289,
       "created": "2026-06-08",
-      "modified": "2026-06-08",
+      "modified": "2026-09-18",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "active"
     },
     {
       "id": "MEM-workflow-opencode-smoke-test",

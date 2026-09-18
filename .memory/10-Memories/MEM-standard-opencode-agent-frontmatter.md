@@ -14,6 +14,9 @@ keywords:
   - port-pattern
   - validation
 summary: "OpenCode agent frontmatter must NOT include the 'model:' field"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "merged_into:MEM-pattern-opencode-agent-frontmatter"
 token_count: 182
 ---
 

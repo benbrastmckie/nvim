@@ -1028,11 +1028,11 @@
     "phantom_paths": 0
   },
   "memory_health": {
-    "last_distilled": "2026-09-18T22:32:48Z",
-    "distill_count": 1,
-    "total_memories": 19,
-    "never_retrieved": 11,
-    "health_score": 84,
+    "last_distilled": "2026-09-18T22:52:41Z",
+    "distill_count": 2,
+    "total_memories": 18,
+    "never_retrieved": 10,
+    "health_score": 100,
     "status": "healthy"
   },
   "active_topics": [
