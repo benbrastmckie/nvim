@@ -192,16 +192,16 @@ rather than silently editing a third file.
 
 ---
 
-### Phase 2: Caller wiring — SKILL.md Move 1 and the command's dry-run short-circuit [NOT STARTED]
+### Phase 2: Caller wiring — SKILL.md Move 1 and the command's dry-run short-circuit [COMPLETED]
 
 **Goal**: The focus text the command already parses actually reaches the engine, with quoting that
 survives spaces and embedded quotes.
 
 **Tasks**:
-- [ ] `skills/skill-orchestrate/SKILL.md`, "Setup" list (~lines 28-33): add `focus_prompt` to the
+- [x] `skills/skill-orchestrate/SKILL.md`, "Setup" list (~lines 28-33): add `focus_prompt` to the
       enumerated delegation-context inputs (it is absent today even though
       `commands/orchestrate.md` already passes it).
-- [ ] `skills/skill-orchestrate/SKILL.md`, Move 1's `orchestrate-cycle-plan.sh` call (~lines 63-75):
+- [x] `skills/skill-orchestrate/SKILL.md`, Move 1's `orchestrate-cycle-plan.sh` call (~lines 63-75):
       do NOT extend the `$( [ -n ... ] && echo --flag "$v" )` idiom for this value — that idiom
       word-splits, and a focus prompt is free-form text. Instead, immediately above the call add:
       ```bash
@@ -210,20 +210,20 @@ survives spaces and embedded quotes.
       ```
       and insert `${focus_args[@]+"${focus_args[@]}"}` into the argument list (the `+` form keeps
       it safe under `set -u` with an empty array). Leave every other flag line untouched.
-- [ ] `commands/orchestrate.md`: add `focus_prompt` to the "Each parsed flag becomes a
+- [x] `commands/orchestrate.md`: add `focus_prompt` to the "Each parsed flag becomes a
       delegation-context key" bullet list (~lines 88-95) with a one-line contract — the user's
       `$2+` text, applied to every task in the batch, rendered as the dispatch file's
       `User focus:` block for research, plan and implement dispatches.
-- [ ] `commands/orchestrate.md`: extend the dry-run short-circuit (~lines 107-112) to forward the
+- [x] `commands/orchestrate.md`: extend the dry-run short-circuit (~lines 107-112) to forward the
       focus, using the same array shape:
       ```bash
       focus_args=(); [ -n "${focus_prompt:-}" ] && focus_args=(--focus "$focus_prompt")
       bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --session "${SESSION_ID:-}" \
         --state-file specs/state.json ${focus_args[@]+"${focus_args[@]}"} $TASK_NUMBERS
       ```
-- [ ] `commands/orchestrate.md`: note in the `--dry-run` options-table row that the report now
+- [x] `commands/orchestrate.md`: note in the `--dry-run` options-table row that the report now
       shows the focus text it received.
-- [ ] Add a note under the dry-run short-circuit recording that `--force-phases` is deliberately
+- [x] Add a note under the dry-run short-circuit recording that `--force-phases` is deliberately
       still NOT forwarded there (a known, separate gap — named, not fixed here).
 
 **Timing**: 1 hour

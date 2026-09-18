@@ -37,7 +37,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 |------|-------------|---------|
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based tasks | false |
 | `--compare` | Advisory-only, lean-implementation-scoped: pass compare_flag=true so the implement-phase dispatch runs the Comparator gate against the snapshot Challenge and the implemented Solution. Never blocks completion or downgrades status. Composable with `--hard` and the model flags; meaningless for research/plan dispatches, so it never reaches them | false |
-| `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing | false |
+| `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing. The report also shows any `$2+` focus text this invocation received (a `focus=` column per row), so it can be checked before a live run | false |
 | `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
 | `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
 | `--continue-budget` | Authorization to continue past an exhausted `MAX_CYCLES` budget. **Never inferred automatically** (not from `session_id`, not from mtime) — without it, refuses with an honest message. See `orchestrator-runtime-files.md`'s budget-continuation-override section | false |
@@ -100,6 +100,12 @@ Loop (Batch-of-One and Multi-Task)"). All are **consumer-side-only** — never f
   `force_phases_remaining` queue from this value and pops one forced phase per cycle until
   exhausted, then falls through to ordinary status-derived classification for that task (see that
   script's header, Section (f)).
+- `focus_prompt` (default `""`) — the user's own `$2+` text (Arguments section above), applied to
+  every task in a multi-task batch. `orchestrate-cycle-plan.sh` composes it with a task's own
+  `research_questions` field (neither silently replaces the other) and threads the result into
+  every dispatched phase's dispatch file — research, plan AND implement — as a labelled
+  `User focus:` block; see that script's `--focus` flag and its header comment for the exact
+  composition rule.
 
 **Dry-run short-circuit** (before the dispatch block below runs): `SESSION_ID` is not yet minted
 at this point (there is no separate gate-in step any more — see below). This is not a problem:
@@ -110,10 +116,21 @@ internal, never-persisted identity under `--dry-run`).
 
 ```bash
 if [ "${DRY_RUN_FLAG:-false}" = "true" ]; then
-  bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --session "${SESSION_ID:-}" --state-file specs/state.json $TASK_NUMBERS
+  focus_args=(); [ -n "${focus_prompt:-}" ] && focus_args=(--focus "$focus_prompt")
+  bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --session "${SESSION_ID:-}" \
+    --state-file specs/state.json ${focus_args[@]+"${focus_args[@]}"} $TASK_NUMBERS
   # STOP HERE.
 fi
 ```
+
+The report's `-- Dispatch --` table now shows the focus text this invocation received (a
+`focus=` suffix on each dispatched row whenever `--focus` composed to a non-empty value) — check
+it here before committing to a live run.
+
+Note: `--force-phases`/`force_phases` is deliberately still NOT forwarded to this dry-run call
+(a known, pre-existing, separate gap — not fixed by this addition). This means a dry-run report
+against a forced round does not itself reflect the forcing flag; only `focus_prompt` is
+threaded through here.
 
 `orchestrate-cycle-plan.sh --dry-run` runs the IDENTICAL read-only decision pass the live
 cycle uses (the same call to `scripts/orchestrate-batch-admit.sh` and

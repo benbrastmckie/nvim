@@ -30,8 +30,11 @@ diagram, and design rationale: `docs/architecture/orchestrate-state-machine.md`.
 `context/patterns/lit-stage4a-flow.md`'s resolver directives inside `orchestrate-build-dispatch.sh`
 for every per-task dispatch), `compare_flag`,
 `allow_self_modifying`, `allow_scope_collision`, `clean_flag`, `effort_flag`, `model_flag`,
-`hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`, `continue_budget`. Register the
-batch's in-flight session (best-effort, non-blocking):
+`hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`, `continue_budget`,
+`focus_prompt` (the user's own free-form `$2+` text typed after the task number(s) on the
+`/orchestrate` command line — see `commands/orchestrate.md`; passed through to Move 1 below,
+applied to every task in the batch). Register the batch's in-flight session (best-effort,
+non-blocking):
 
 ```bash
 bash .claude/scripts/task-lock.sh session-register "$session_id" "/orchestrate" \
@@ -59,7 +62,16 @@ lock probe, budget accounting, the inter-cycle redeploy checkpoint, and dispatch
 `.decisions.json`) all happen inside this one script call — full contract in its own header
 comment and in `orchestrate-state-machine.md`.
 
+`focus_prompt` is free-form user text (may contain spaces and embedded double quotes), so it is
+NOT threaded through the `$( [ -n ... ] && echo --flag "$v" )` idiom the other flags below use —
+that idiom re-splits on whitespace via the surrounding unquoted command substitution, which is
+safe only for single-token flag values. Build it as an explicit array immediately above the call
+instead, and splice it in with the `${arr[@]+"${arr[@]}"}` form (safe under `set -u` when the
+array is empty):
+
 ```bash
+focus_args=()
+[ -n "${focus_prompt:-}" ] && focus_args=(--focus "$focus_prompt")
 plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   --session "$session_id" --state-file specs/state.json \
   $( [ -n "${force_phases:-}" ] && echo --force-phases "$force_phases" ) \
@@ -72,6 +84,7 @@ plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   $( [ "${allow_self_modifying:-false}" = "true" ] && echo --allow-self-modifying ) \
   $( [ "${allow_scope_collision:-false}" = "true" ] && echo --allow-scope-collision ) \
   $( [ "${continue_budget:-false}" = "true" ] && echo --continue-budget ) \
+  "${focus_args[@]+"${focus_args[@]}"}" \
   "${task_numbers[@]}")
 stop_json=$(echo "$plan_json" | jq -c '.stop')
 mt_state_file="specs/.orchestrator-multi-state-${session_id}.json"
