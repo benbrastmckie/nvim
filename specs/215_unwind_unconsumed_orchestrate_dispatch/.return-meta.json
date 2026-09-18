@@ -1,26 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/215_unwind_unconsumed_orchestrate_dispatch/plans/01_unwind-unconsumed-dispatch.md",
-      "summary": "5-phase plan: capture pre-dispatch image in pending_dispatch, new orchestrate-unwind-dispatch.sh, fixture test, docs (by-hand-only decision), shellcheck + redeploy."
-    }
-  ],
-  "next_steps": "Run /implement 215 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 7,
-  "dependency_waves": 4,
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1789751903_ddeac8_215",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ]
-  },
-  "dispatch_seq": 4
+    "session_id": "sess_1789751903_ddeac8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

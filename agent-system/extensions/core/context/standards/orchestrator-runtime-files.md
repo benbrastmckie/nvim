@@ -266,7 +266,8 @@ whatever else a future single-task resume needs from it — not per-task cycle b
 ### `pending_dispatch`: the durable, cross-invocation half of "do not charge for a read"
 
 `pending_dispatch` — `{seq: int, phase: string, forced: bool, dispatch_file: string,
-recorded_at: string}` or absent — is a field on this same guard file, written by
+recorded_at: string, prior_status: string, prior_last_updated: string, prior_session_id: string,
+prior_dispatch_seq_counter: int}` or absent — is a field on this same guard file, written by
 `orchestrate-loop-guard-init.sh --record-pending` at the same charge site that durably flushes
 `dispatch_seq_counter` (via the NEW `--flush-seq` form; see above — this site no longer touches
 durable `cycle_count` at all, per the per-run cycle-budget contract), and cleared by
@@ -291,6 +292,18 @@ guard file, not the ephemeral multi-state file, is this mechanism's source of tr
 IN-SESSION counterpart — replaying an unconsumed COMPOSITION (the whole plan, not one task's
 row) within the same `mt_state_file` — is `plan_cache`, a separate field on the multi-state file
 itself; see `orchestrate-cycle-plan.sh`'s own header for that mechanism's full contract.
+
+**The four `prior_*` fields** are the pre-dispatch pre-image captured at record time (never on a
+replay — a replay reuses the existing record verbatim, since the current status is now the
+in-flight one, not the pre-dispatch one): `prior_status`/`prior_last_updated`/`prior_session_id`
+are this task's state.json entry as read immediately before the preflight status write that
+overwrote them; `prior_dispatch_seq_counter` is the durable `dispatch_seq_counter` as it stood
+before this charge's own `--flush-seq` call. They exist solely so
+`scripts/orchestrate-unwind-dispatch.sh` (see `docs/architecture/orchestrate-state-machine.md`'s
+"Unwinding an Unconsumed Dispatch" subsection) can restore a task to its exact pre-dispatch state
+when a prepared dispatch is never issued (no agent call, no postflight). A `pending_dispatch`
+record written before this task existed lacks these fields; the unwind script refuses to act on
+such a legacy record rather than guessing.
 
 ## Consumer Repo Setup
 

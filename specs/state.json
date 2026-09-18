@@ -100,7 +100,7 @@
       "project_name": "unwind_unconsumed_orchestrate_dispatch",
       "title": "Add a sanctioned undo for a prepared but never-run orchestrate dispatch",
       "task_type": "meta",
-      "status": "planned",
+      "status": "implementing",
       "topic": "core-agent-system",
       "dependencies": [
         213
@@ -114,7 +114,7 @@
       ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nGAP. There is no supported way to undo a dispatch that orchestrate-cycle-plan.sh prepared but that was never run (no Agent call, no postflight). The live pass changes six things before any agent runs: the preflight status write (status, last_updated, session_id), the task lock, the .dispatch/{seq}.md file, the dispatch_seq counter, the per-task cycle count in .orchestrator-loop-guard (with its pending_dispatch record), and the multi-state file. When such a dispatch is unwanted, the user has to reverse all of it by hand. guard-destructive-git.sh correctly blocks git-based undo on a dirty tree, so hand edits are the only option today.\n\nOBSERVED LIVE (2026-09-14, ~/Projects/Logos/Verification). A stray plan dispatch was prepared on a RESEARCHED task. The user restored the status, rebuilt TODO.md, and deleted the dispatch file, lock and cycle count by hand. The stray last_updated and session_id stayed in specs/state.json and were never committed or reverted, and the deleted lock file was left as an uncommitted deletion.\n\nEXISTING PIECES TO REUSE. orchestrate-cycle-plan.sh already records `pending_dispatch` {seq, phase, forced, dispatch_file, recorded_at} through `orchestrate-loop-guard-init.sh --record-pending`, and already detects an \"UNCONSUMED DISPATCH REPLAY\" by checking that the recorded dispatch_file still exists. task-lock.sh has `release`. update-task-status.sh and state-write.sh are the sanctioned state writers. git-commit-scoped.sh is the sanctioned path-scoped committer.\n\nWORK.\n(a) Add scripts/orchestrate-unwind-dispatch.sh <task_number> --session SID [--dry-run]. It refuses unless a pending_dispatch exists whose dispatch_file is still on disk and no postflight has consumed it. It then restores the earlier status and the earlier last_updated/session_id (record them at preflight if they are not recorded yet; decide where, e.g. in the pending_dispatch record), releases the lock only if this session holds it, deletes the dispatch file, rolls back the cycle count and clears pending_dispatch, fixes the multi-state file if it is present, regenerates TODO.md, and optionally commits only the paths it touched with git-commit-scoped.sh. It must not use destructive git.\n(b) Document it as the sanctioned recovery path in docs/architecture/orchestrate-state-machine.md and context/standards/git-safety.md (next to the guard-destructive-git.sh explanation), and point to it from the SKILL.md \"Move 1\" stop handling.\n(c) Decide whether the orchestrating session should call it automatically when a prepared dispatch row is never issued (e.g. a crash between Move 1 and Move 2, or a plan that is intentionally abandoned), or only by hand. Justify the choice.\n\nMUST NOT. Do not add an exemption to guard-destructive-git.sh. Do not unwind a dispatch that an agent has started or that postflight has consumed. Do not edit .claude/**.\n\nACCEPTANCE. A fixture test prepares a live plan dispatch on a RESEARCHED task, runs the unwind script, and asserts state.json matches the pre-dispatch entry exactly (status, last_updated, session_id), TODO.md is regenerated, the lock is released, the dispatch file is gone, the loop-guard cycle count and pending_dispatch match their earlier values, and `git status --porcelain -- specs/` shows no leftovers after the scoped commit. A second case asserts it refuses once postflight has consumed the dispatch. shellcheck clean. Redeploy and confirm.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\n\nAMENDMENT (2026-09-14). A follow-on task (this task now depends on it) makes the cycle counter reset on each run: cycle_counts lives only in the run's multi-state file, and the saved guard file no longer carries cycle_count. So DROP \"rolls back the cycle count\" from WORK (a), and change ACCEPTANCE from \"the loop-guard cycle count and pending_dispatch match their earlier values\" to \"pending_dispatch and dispatch_seq_counter in the loop-guard file match their earlier values\". Everything else stands.\n",
       "created": "2026-09-14T20:44:03Z",
-      "last_updated": "2026-09-18T17:31:27Z",
+      "last_updated": "2026-09-18T17:32:06Z",
       "session_id": "sess_1789751903_ddeac8",
       "artifacts": [
         {
@@ -1035,12 +1035,12 @@
     {
       "project_number": 193,
       "project_name": "carry_territory_in_base_mode_dispatch_briefs",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Carry concurrent-sibling territory in base-mode dispatch briefs, the only channel that reaches a running dispatch",
       "created": "2026-09-08T23:55:12Z",
-      "last_updated": "2026-09-18T17:31:36Z",
+      "last_updated": "2026-09-18T17:32:13Z",
       "dependencies": [
         197,
         213

@@ -97,7 +97,12 @@
 #     `mt_state_file`, unlike `--seed`/`--flush`'s in-session `plan_cache` counterpart) can tell
 #     "was this exact charge ever consumed" even after the charging session is long gone.
 #     Shape written: `{seq: int, phase: string, forced: bool, dispatch_file: string,
-#     recorded_at: string}`. Output: `{"pending_dispatch": <object just written>}`.
+#     recorded_at: string, prior_status: string, prior_last_updated: string,
+#     prior_session_id: string, prior_dispatch_seq_counter: int}` (this form writes the caller's
+#     JSON verbatim -- the four `prior_*` fields are constructed by the caller, not by this
+#     script; see `orchestrate-cycle-plan.sh`'s `_pd_record_json` and
+#     `context/standards/orchestrator-runtime-files.md`'s `pending_dispatch` subsection for what
+#     they mean and why they exist). Output: `{"pending_dispatch": <object just written>}`.
 #
 #   orchestrate-loop-guard-init.sh --clear-pending <task_dir_abs>
 #     Read-modify-write: `del(.pending_dispatch)`, preserving every other field. Reaching

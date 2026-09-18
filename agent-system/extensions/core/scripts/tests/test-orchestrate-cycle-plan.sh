@@ -2676,6 +2676,97 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 24: orchestrate-unwind-dispatch.sh pre-image capture -- `pending_dispatch` gains the four
+# `prior_*` fields (prior_status, prior_last_updated, prior_session_id, prior_dispatch_seq_counter)
+# on a genuine (non-replay) live charge, captured from the task's state.json entry and durable
+# guard file BEFORE this cycle's own preflight write / --flush-seq overwrite them. A replay of an
+# already-charged, never-consumed dispatch must leave the existing record -- pre-image included --
+# completely untouched (Risk table's #1 concern: a replay must never record the CURRENT, already
+# in-flight status as if it were the pre-dispatch one). REAL orchestrate-build-dispatch.sh,
+# update-task-status.sh, state-write.sh, and generate-todo.sh are already installed by Group 21
+# above and never re-stubbed since -- this group relies on that real end-to-end write path.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 24: pending_dispatch pre-image capture (prior_* fields) and replay non-overwrite"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2401, "project_name": "g24_prior_image", "task_type": "general", "status": "researched", "description": "pre-image capture fixture", "dependencies": [], "file_scope": [], "last_updated": "2020-01-01T00:00:00Z", "session_id": "sess_before_case1"}
+  ]
+}
+EOF
+rm -rf "$WORKDIR/specs/2401_g24_prior_image"
+mkdir -p "$WORKDIR/specs/2401_g24_prior_image"
+jq -n '{dispatch_seq_counter: 7}' > "$WORKDIR/specs/2401_g24_prior_image/.orchestrator-loop-guard"
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g24_case1.json"
+
+run_sut --session g24_case1 --force-phases plan -- 2401
+g24_guard_file="$WORKDIR/specs/2401_g24_prior_image/.orchestrator-loop-guard"
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 24 case 1: LIVE forced plan round exits 0"
+else
+  fail "Group 24 case 1: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if [ "$(jq -r '.pending_dispatch.prior_status // ""' "$g24_guard_file" 2>/dev/null)" = "researched" ]; then
+  pass "Group 24 case 1: pending_dispatch.prior_status captures the pre-dispatch status ('researched')"
+else
+  fail "Group 24 case 1: expected prior_status='researched'; got: $(cat "$g24_guard_file" 2>/dev/null)"
+fi
+if [ "$(jq -r '.pending_dispatch.prior_last_updated // ""' "$g24_guard_file" 2>/dev/null)" = "2020-01-01T00:00:00Z" ]; then
+  pass "Group 24 case 1: pending_dispatch.prior_last_updated captures the pre-dispatch last_updated"
+else
+  fail "Group 24 case 1: expected prior_last_updated='2020-01-01T00:00:00Z'; got: $(cat "$g24_guard_file" 2>/dev/null)"
+fi
+if [ "$(jq -r '.pending_dispatch.prior_session_id // ""' "$g24_guard_file" 2>/dev/null)" = "sess_before_case1" ]; then
+  pass "Group 24 case 1: pending_dispatch.prior_session_id captures the pre-dispatch session_id"
+else
+  fail "Group 24 case 1: expected prior_session_id='sess_before_case1'; got: $(cat "$g24_guard_file" 2>/dev/null)"
+fi
+if [ "$(jq -r '.pending_dispatch.prior_dispatch_seq_counter // -1' "$g24_guard_file" 2>/dev/null)" = "7" ]; then
+  pass "Group 24 case 1: pending_dispatch.prior_dispatch_seq_counter captures the pre-charge durable counter (7)"
+else
+  fail "Group 24 case 1: expected prior_dispatch_seq_counter=7; got: $(cat "$g24_guard_file" 2>/dev/null)"
+fi
+if [ "$(jq -r '.dispatch_seq_counter' "$g24_guard_file" 2>/dev/null)" = "8" ]; then
+  pass "Group 24 case 1: the durable dispatch_seq_counter itself advances normally (7 -> 8) alongside the pre-image"
+else
+  fail "Group 24 case 1: expected dispatch_seq_counter=8 after the charge; got: $(cat "$g24_guard_file" 2>/dev/null)"
+fi
+g24_status_after_case1=$(jq -r '.active_projects[] | select(.project_number == 2401) | .status' "$WORKDIR/specs/state.json")
+if [ "$g24_status_after_case1" != "researched" ]; then
+  pass "Group 24 case 1: state.json status actually changed away from the captured pre-image ('$g24_status_after_case1')"
+else
+  fail "Group 24 case 1: expected state.json status to change from 'researched'; still researched"
+fi
+
+# Snapshot the full pending_dispatch record before the replay run, to prove it is byte-for-byte
+# untouched afterward (not merely that the four prior_* fields individually still read the same).
+g24_pending_before_case2="$(jq -c '.pending_dispatch' "$g24_guard_file" 2>/dev/null)"
+
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g24_case2.json"
+run_sut --session g24_case2 --force-phases plan -- 2401
+
+if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
+  pass "Group 24 case 2: a same-phase, file-present re-dispatch replays instead of re-charging"
+else
+  fail "Group 24 case 2: expected an UNCONSUMED DISPATCH REPLAY notice; got stderr: $LAST_STDERR"
+fi
+g24_pending_after_case2="$(jq -c '.pending_dispatch' "$g24_guard_file" 2>/dev/null)"
+if [ "$g24_pending_after_case2" = "$g24_pending_before_case2" ]; then
+  pass "Group 24 case 2: the replay leaves the ENTIRE pending_dispatch record (pre-image included) byte-for-byte untouched"
+else
+  fail "Group 24 case 2: replay unexpectedly mutated pending_dispatch -- before: $g24_pending_before_case2 -- after: $g24_pending_after_case2"
+fi
+if [ "$(jq -r '.dispatch_seq_counter' "$g24_guard_file" 2>/dev/null)" = "8" ]; then
+  pass "Group 24 case 2: the durable dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)"
+else
+  fail "Group 24 case 2: expected dispatch_seq_counter unchanged at 8 after a replay; got: $(cat "$g24_guard_file" 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

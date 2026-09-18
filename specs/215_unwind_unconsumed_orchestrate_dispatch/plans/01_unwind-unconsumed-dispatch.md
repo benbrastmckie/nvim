@@ -1,7 +1,7 @@
 # Implementation Plan: Task #215
 
 - **Task**: 215 - Unwind an unconsumed /orchestrate dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 213 (per-run cycle-budget change; confirmed already live by research)
 - **Research Inputs**: specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md
@@ -140,28 +140,33 @@ Not consulted (no roadmap_path in dispatch).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Capture the pre-dispatch image in pending_dispatch [NOT STARTED]
+### Phase 1: Capture the pre-dispatch image in pending_dispatch [COMPLETED]
 
 **Goal**: `orchestrate-cycle-plan.sh` records `prior_status`, `prior_last_updated`,
 `prior_session_id`, `prior_dispatch_seq_counter` in `pending_dispatch` on every non-replay live
 dispatch.
 
 **Tasks**:
-- [ ] Immediately before `skill_preflight_update` (section (j), ~line 1863), read the task's
+- [x] Immediately before `skill_preflight_update` (section (j), ~line 1863), read the task's
   current entry (`lookup_project`/`task_lookup_entry`, whichever the file already uses) into
   `_pd_prior_status`, `_pd_prior_last_updated`, `_pd_prior_session_id` (empty string when a field
-  is absent).
-- [ ] Before the `--flush-seq` call in the `else` branch (~line 1961), read the durable counter
+  is absent). *(completed)*
+- [x] Before the `--flush-seq` call in the `else` branch (~line 1961), read the durable counter
   via `orchestrate-loop-guard-init.sh --seed "$task_dir_abs"` into `_pd_prior_seq_counter`
   (confirm the `--seed` output shape first; default 0 when absent). If `--flush-seq` runs earlier
   than this point for the same cycle, move the read to before the earliest durable write.
-- [ ] Extend the `_pd_record_json` jq construction with the four `prior_*` fields. Leave the
-  replay branch untouched.
-- [ ] Update the header comment block and `context/standards/orchestrator-runtime-files.md`'s
-  `pending_dispatch` schema description with the new fields.
-- [ ] Add a test group to `scripts/tests/test-orchestrate-cycle-plan.sh` (follow Group 19's
+  *(completed: captured in the existing top-of-script seed loop into a new `pd_prior_dsc[$t]`
+  array, which is the earliest durable read this run -- not a second `--seed` call at the
+  `--flush-seq` site, since an earlier aux-dispatch-emission flush for the same task could
+  otherwise corrupt a re-read at that later point)*
+- [x] Extend the `_pd_record_json` jq construction with the four `prior_*` fields. Leave the
+  replay branch untouched. *(completed)*
+- [x] Update the header comment block and `context/standards/orchestrator-runtime-files.md`'s
+  `pending_dispatch` schema description with the new fields. *(completed)*
+- [x] Add a test group to `scripts/tests/test-orchestrate-cycle-plan.sh` (follow Group 19's
   idiom): a live dispatch records the four fields with the pre-dispatch values; a second
-  same-phase invocation (replay) leaves them unchanged.
+  same-phase invocation (replay) leaves them unchanged. *(completed: Group 24, 2 cases, appended
+  after Group 23)*
 
 **Timing**: 1.5 hours
 
@@ -184,25 +189,30 @@ dispatch.
 
 ---
 
-### Phase 2: Write orchestrate-unwind-dispatch.sh [NOT STARTED]
+### Phase 2: Write orchestrate-unwind-dispatch.sh [COMPLETED]
 
 **Goal**: a script that performs the unwind described in Decisions 2-6, with `--dry-run`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh` with strict
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh` with strict
   mode per `context/standards/shell-strict-mode.md`, a usage header, and args
-  `<task_number> --session SID [--dry-run] [--commit] [--mt-state FILE]`.
-- [ ] Resolve the task dir via the existing lookup helpers (sourced lib, not hand-built paths).
-- [ ] Read `pending_dispatch` with `orchestrate-loop-guard-init.sh --seed`; apply the refusal
+  `<task_number> --session SID [--dry-run] [--commit] [--mt-state FILE]`. *(completed)*
+- [x] Resolve the task dir via the existing lookup helpers (sourced lib, not hand-built paths).
+  *(completed: `task_lookup_entry`/`task_lookup_dir` from `lib/task-lookup-lib.sh`)*
+- [x] Read `pending_dispatch` with `orchestrate-loop-guard-init.sh --seed`; apply the refusal
   gate from Decision 3 and the legacy-record refusal from Decision 2. Each refusal prints the
-  reason and, where relevant, "run this before any manual cleanup".
-- [ ] `--dry-run`: print each action it would take and exit 0 with no writes.
-- [ ] Unwind, in this order: (1) restore the state.json entry's `status`/`last_updated`/
+  reason and, where relevant, "run this before any manual cleanup". *(completed)*
+- [x] `--dry-run`: print each action it would take and exit 0 with no writes. *(completed;
+  manually verified against a hand-built fixture -- no state.json/guard-file/dispatch-file
+  mutation occurred)*
+- [x] Unwind, in this order: (1) restore the state.json entry's `status`/`last_updated`/
   `session_id` via `state-write.sh` with `--regen-todo` (check its header for exact flags);
   (2) `--flush-seq` to `prior_dispatch_seq_counter` (fallback `seq - 1`); (3) `--clear-pending`;
   (4) delete the dispatch file; (5) patch the multi-state file per Decision 5; (6) release the
   lock per Decision 4; (7) with `--commit`, call `git-commit-scoped.sh` on the two tracked paths.
-- [ ] Print a one-line summary of what was restored; exit codes: 0 success, 1 usage, 2 refused.
+  *(completed; manually verified end-to-end including --commit against a real git fixture repo)*
+- [x] Print a one-line summary of what was restored; exit codes: 0 success, 1 usage, 2 refused.
+  *(completed)*
 
 **Timing**: 2 hours
 
