@@ -4,7 +4,7 @@
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
 #
-# Exports one canonical record per class member (16 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (17 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -22,16 +22,26 @@
 #
 # Usage: `source` this file, then read the parallel arrays directly (all indexed in lockstep by
 # RUNTIME_FILE_IDS -- index i's id, pattern, probe, regex, and dir flag/basename all describe the
-# SAME class member) or call the two accessor functions below.
+# SAME class member) or call the three accessor functions below.
 
-# ─── Canonical class membership (16 members) ───────────────────────────────────────────────────
+# ─── Canonical class membership (17 members) ───────────────────────────────────────────────────
 # One entry per array, per member, in the exact order the "Consumer Repo Setup" gitignore block
 # emits them: the 11 members already covered before this lib existed, then `.dispatch/` (already
 # gitignored and already probed by the pre-existing Check A, but missing from the pre-existing
 # Check B list and the standards block -- a live divergence this lib closes), then the four
 # further gaps found by this task's sweep (`.deploy-lock/`, `.scope-lock/`, `.commit-lock/`,
-# `.errors.lock`). Do not reorder without also re-checking runtime_ignore_block() callers that
-# assume this is the documented block's order.
+# `.errors.lock`), then `tmp` (specs/init-consumer-specs task): the TTS/lifecycle notify hooks'
+# log directory, and also where state-write.sh stages its own mktemp write-ahead files. Do not
+# reorder without also re-checking runtime_ignore_block() callers that assume this is the
+# documented block's order.
+#
+# `tmp` is deliberately ROOT-SCOPED (`/specs/tmp/`), not the `**/`-prefixed form every other
+# member uses: its only writers (`hooks/tts-notify.sh`, `scripts/lifecycle-notify.sh`, and
+# `scripts/state-write.sh`'s own staging/spill files) always write to the `specs/` top level,
+# never to a per-task directory, so a `**/tmp/` pattern would be strictly wider than needed and
+# would silently swallow a legitimate per-task `tmp/` some consumer repo might create for its
+# own purposes. This repo's own root `.gitignore` already carries the root-relative `/specs/tmp`
+# form as precedent.
 
 declare -a RUNTIME_FILE_IDS=(
   "lock"
@@ -50,6 +60,7 @@ declare -a RUNTIME_FILE_IDS=(
   "scope-lock"
   "commit-lock"
   "errors-lock"
+  "tmp"
 )
 
 # Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
@@ -70,6 +81,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.scope-lock/"
   "**/.commit-lock/"
   "**/.errors.lock"
+  "/specs/tmp/"
 )
 
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
@@ -92,6 +104,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/.scope-lock/owner"
   "specs/.commit-lock/owner"
   "specs/.errors.lock"
+  "specs/tmp/claude-tts-notify.log"
 )
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
@@ -113,22 +126,23 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '/\.scope-lock/'
   '/\.commit-lock/'
   '\.errors\.lock$'
+  '^specs/tmp/'
 )
 
 # Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "1"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" ""
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "tmp"
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
 
 # runtime_ignore_block
-# Emits the exact fenced gitignore body (comment header + all 16 patterns, in the order above)
+# Emits the exact fenced gitignore body (comment header + all 17 patterns, in the order above)
 # that context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" block and both
 # deploy-harness test fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) must carry
 # verbatim. Callers write this to a `.gitignore` file or embed it in a fenced markdown block --
@@ -160,7 +174,43 @@ runtime_ignore_block() {
 **/.scope-lock/
 **/.commit-lock/
 **/.errors.lock
+/specs/tmp/
 BLOCK_EOF
+}
+
+# runtime_specs_ignore_block
+# Emits the same 17-member class as runtime_ignore_block() above, but with every pattern
+# rewritten relative to `specs/` instead of the repo root, for a `specs/.gitignore` file (whose
+# patterns are matched relative to the directory the .gitignore file lives in, not the repo
+# root). MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS -- never a second hand-written literal
+# list. The `**/`-prefixed members pass through unchanged (a `**/` pattern matches at any depth
+# regardless of which directory its .gitignore lives in); the one root-scoped member
+# (`/specs/tmp/`) has its leading `specs/` path segment dropped, becoming `/tmp/`. Canonical
+# writer: scripts/init-specs.sh, which writes this block into a managed section of
+# `specs/.gitignore`.
+runtime_specs_ignore_block() {
+  cat <<'HEADER_EOF'
+# Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
+# guards. Ignored because these have no freshness gate on read — a git-restored copy would
+# silently corrupt in-flight cycle/churn state. See
+# agent-system/extensions/core/context/standards/orchestrator-runtime-files.md for the full
+# two-class policy and rationale. Deliberately does NOT include .orchestrator-handoff.json or
+# .return-meta.json — those are durable, freshness-gated provenance and MUST stay tracked.
+# Canonical source: agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh
+# (runtime_specs_ignore_block()) -- this block is generated by scripts/init-specs.sh from that
+# lib; do not hand-edit the pattern list here.
+HEADER_EOF
+  local pattern
+  for pattern in "${RUNTIME_FILE_PATTERNS[@]}"; do
+    case "$pattern" in
+      /specs/*)
+        echo "/${pattern#/specs/}"
+        ;;
+      *)
+        echo "$pattern"
+        ;;
+    esac
+  done
 }
 
 # runtime_file_dir_basename_for_hit <tracked-file-path>

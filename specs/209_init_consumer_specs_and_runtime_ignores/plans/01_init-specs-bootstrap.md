@@ -1,7 +1,7 @@
 # Implementation Plan: Task #209
 
 - **Task**: 209 - Set up a fresh repo specs/ state and runtime-file ignore rules automatically
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/209_init_consumer_specs_and_runtime_ignores/reports/01_init_consumer_specs.md
@@ -125,7 +125,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Extend runtime-file-patterns.sh with specs/tmp and a specs-relative emitter [NOT STARTED]
+### Phase 1: Extend runtime-file-patterns.sh with specs/tmp and a specs-relative emitter [COMPLETED]
 
 **Goal**: The canonical pattern library gains the missing `specs/tmp/` class member and a second
 block emitter producing `specs/`-relative patterns, so `init-specs.sh` can generate
@@ -133,25 +133,33 @@ block emitter producing `specs/`-relative patterns, so `init-specs.sh` can gener
 lockstep.
 
 **Tasks**:
-- [ ] Add a 17th member to every parallel array in
+- [x] Add a 17th member to every parallel array in
       `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh`: id `"tmp"`; root-form
       pattern `/specs/tmp/` (root-scoped, **not** `**/tmp/`); probe
       `specs/tmp/claude-tts-notify.log`; Check B regex `^specs/tmp/`; `IS_DIR="1"`;
-      `DIR_BASENAME="tmp"`.
-- [ ] Update the lib's header comment: member count 16 -> 17, and note that `tmp` is
+      `DIR_BASENAME="tmp"`. *(completed)*
+- [x] Update the lib's header comment: member count 16 -> 17, and note that `tmp` is
       deliberately root-scoped because its only writers (`hooks/tts-notify.sh`,
-      `scripts/lifecycle-notify.sh`) always write to the `specs/` top level.
-- [ ] Add `runtime_specs_ignore_block()` emitting the same class as patterns relative to
+      `scripts/lifecycle-notify.sh`) always write to the `specs/` top level. *(completed: also
+      noted state-write.sh's own staging/spill files as a third writer, found live during
+      implementation)*
+- [x] Add `runtime_specs_ignore_block()` emitting the same class as patterns relative to
       `specs/` (drop the leading `specs/` segment for root-scoped members: `/specs/tmp/` ->
       `/tmp/`; `**/`-prefixed members are unchanged), with its own comment header naming
       `init-specs.sh` as the writer and this lib as the canonical source. Derive it from the
-      arrays, do not hand-write a second literal list.
-- [ ] Regenerate the fenced block in
+      arrays, do not hand-write a second literal list. *(completed: loop over
+      RUNTIME_FILE_PATTERNS, not a second heredoc)*
+- [x] Regenerate the fenced block in
       `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`'s "Consumer
       Repo Setup" section from `runtime_ignore_block()` output so the byte-identity pin holds.
-- [ ] Update the "Single source of truth" decision record in that standards file: 16-member ->
-      17-member class, and the site count if the new emitter adds one.
-- [ ] `shellcheck` the lib per `context/standards/shell-strict-mode.md`.
+      *(completed)*
+- [x] Update the "Single source of truth" decision record in that standards file: 16-member ->
+      17-member class, and the site count if the new emitter adds one. *(completed: added a
+      "sixth site" paragraph plus a new Class Table row for specs/tmp/)*
+- [x] `shellcheck` the lib per `context/standards/shell-strict-mode.md`. *(completed: clean
+      except two pre-existing SC2034 warnings on RUNTIME_FILE_PROBES/RUNTIME_FILE_B_REGEX that
+      predate this task -- confirmed via `git show HEAD` diff; this edit's own new array
+      reference actually silenced a third, RUNTIME_FILE_PATTERNS, by giving it a consumer)*
 
 **Timing**: 1 hour
 

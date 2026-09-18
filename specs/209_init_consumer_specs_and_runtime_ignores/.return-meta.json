@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/209_init_consumer_specs_and_runtime_ignores/plans/01_init-specs-bootstrap.md",
-      "summary": "7-phase plan to add an idempotent init-specs.sh bootstrap (specs/ state trio, managed specs/.gitignore, untrack sweep), extend runtime-file-patterns.sh with specs/tmp, wire six-plus-one first-touch call sites, update the standards doc and lint messaging, and pin every acceptance criterion with a scratch-repo fixture suite."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a canonical bash pattern library is pinned to a markdown doc by a byte-identity test (extract fenced block, diff against the lib's emitter function), any phase that adds a class member to the lib MUST regenerate the pinned markdown block in the SAME phase, or the pin test fails at phase close. Plan the lib edit and the doc regeneration as one phase, never as two, and give that phase an `interface` verification tier because the lib has multiple mechanical consumers (lint script, deploy test fixtures, doc block).",
-      "category": "PATTERN",
-      "source_artifact": "specs/209_init_consumer_specs_and_runtime_ignores/plans/01_init-specs-bootstrap.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["single-source-of-truth", "byte-identity-pin", "phase-decomposition", "pattern-library", "generated-doc-block"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1789687584_deac58_209",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 209,
-    "phase_count": 7,
-    "estimated_hours": 8,
-    "dependency_waves": [[1], [2], [3, 5], [4], [6], [7]]
-  },
-  "next_steps": "Run /implement 209 to execute the plan",
-  "dispatch_seq": 15
+    "session_id": "sess_1789687584_deac58",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
