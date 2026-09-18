@@ -284,15 +284,33 @@ itself; see `orchestrate-cycle-plan.sh`'s own header for that mechanism's full c
 
 ## Consumer Repo Setup
 
-There is no automatic way for the source store to deliver a repo-root `.gitignore` contribution —
-`copy_category("root_files", ...)` deploys `root-files/` into the consumer's `.claude/` directory,
-not the repo root (see `context/guides/loader-reference.md`), so a `specs/*/` pattern placed there would
-resolve to `.claude/specs/*/` and silently match nothing. This is exactly why
-`specs/.sessions/` (the in-flight session registry's storage directory — see the Class Table row
-above) is covered ONLY by the consumer repo's own root `/.gitignore`, never by
-`root-files/.gitignore`: a `specs/`-rooted pattern placed in the latter would deploy to
-`.claude/.gitignore` and resolve to `.claude/specs/.sessions/`, matching nothing real. Add the
-following block to the consumer repo's **own root** `/.gitignore` **by hand, once**:
+**This is now automatic.** `scripts/init-specs.sh` — called from every command/skill/agent that
+can be the first thing to touch `specs/` in a fresh consumer repo (`/task` create mode, `/review`
+follow-up task creation, `skill-fix-it`, `skill-project-overview`, `skill-spawn`,
+`meta-builder-agent`, and defensively at `/orchestrate`'s entry) — writes a managed, sentinel-
+delimited block into that repo's `specs/.gitignore` on its first run, generated from
+`runtime_specs_ignore_block()` (see "A sixth site" below). Because `specs/.gitignore`'s patterns
+are matched relative to `specs/` itself, this single file gives FULL ephemeral-class coverage —
+including `specs/.sessions/` (a `**/`-prefixed pattern matches at its own `.gitignore`'s root
+too, not only at deeper nesting; verified live: `**/.sessions/` inside `specs/.gitignore` ignores
+`specs/.sessions/*` directly). This supersedes an earlier limitation: `specs/.sessions/` used to
+require the repo-root `.gitignore` specifically, because the only *other* delivery mechanism at
+the time — `copy_category("root_files", ...)`, which deploys `root-files/` into the consumer's
+`.claude/` directory, not the repo root (see `context/guides/loader-reference.md`) — could not
+reach a `specs/`-rooted pattern (it would resolve to `.claude/specs/.sessions/`, matching
+nothing real). `init-specs.sh` sidesteps that limitation entirely by writing `specs/.gitignore`
+directly, a path `root_files` could never reach.
+
+`init-specs.sh` also untracks (`git rm --cached`, never a working-tree delete) any ephemeral-class
+file git already tracks under `specs/`, staging the removal for the caller's own scoped commit —
+see "Untracking Already-Committed Ephemeral Files" below.
+
+**No manual step is required** for a repo that only ever creates tasks through the wired call
+sites above. The repo-root `.gitignore` block below is retained as an optional
+belt-and-braces/legacy path — useful if a consumer repo wants ephemeral-class patterns visible at
+the repo root too, or if `specs/` was bootstrapped some other way before this policy existed — not
+because anything still depends on it. To add it anyway, place the following block in the consumer
+repo's **own root** `/.gitignore` **by hand**:
 
 ```gitignore
 # Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
@@ -324,6 +342,34 @@ following block to the consumer repo's **own root** `/.gitignore` **by hand, onc
 ```
 
 Run `check-runtime-file-tracking.sh` afterward to confirm coverage (see "Verification" below).
+
+### Automatic-wiring decision record
+
+Three decisions made while wiring `init-specs.sh` into the codebase, recorded here so a future
+reader does not re-litigate them:
+
+- **Deploy does NOT call `init-specs.sh`.** `deploy-headless.sh` and the extension loader's
+  `manager.resync_all`/`manager.load` are strictly `.claude/`-scoped today — they never touch
+  `specs/` at all. `specs/` bootstrap is a task-lifecycle concern (triggered by the first attempt
+  to create a task), not a deploy concern (triggered by a redeploy, which can happen with zero
+  tasks ever created, or many times across a repo's life with no relationship to when `specs/`
+  should be initialized). `.syncprotect`'s documented scope is hand-edited `.claude/**`/root
+  files being skipped during a resync — it has no defined relationship to `specs/` either way,
+  so calling `init-specs.sh` from deploy would be introducing a new, undocumented scope-crossing
+  rather than extending an existing one. The six command/skill/agent call sites (plus the
+  defensive `/orchestrate` site) already cover every documented first-touch path without deploy's
+  involvement.
+- **`command-gate-in.sh` is NOT wired.** It reads `specs/state.json` to look up an **existing**
+  task by number (confirmed live: `grep -c next_project_number command-gate-in.sh` is `0` — it
+  never reads that field at all). By the time any command reaches gate-in, a task already exists,
+  so `specs/` is already bootstrapped by construction; gate-in is not a viable first-touch choke
+  point.
+- **Coordination with `move_session_state_files_out_of_specs_root`**: that task (if/when
+  undertaken) will relocate some of today's `specs/`-root session-state files elsewhere, editing
+  the same `scripts/lib/runtime-file-patterns.sh` and this standards file. Whichever of the two
+  efforts lands second must re-check that the generated `specs/.gitignore` (via
+  `runtime_specs_ignore_block()`) still covers every relocated path — a stale pattern list would
+  silently stop ignoring a file it used to cover.
 
 ### Single source of truth (scope decision record)
 

@@ -77,8 +77,10 @@ for probe in "${EPHEMERAL_PROBES[@]}"; do
 done
 if [ "$a_failed" -eq 1 ]; then
   FAILURES=1
-  echo -e "${RED}Check A FAILED${NC} — add the missing pattern(s) to the repo root .gitignore. See"
-  echo "  context/standards/orchestrator-runtime-files.md 'Consumer Repo Setup' for the exact block."
+  echo -e "${RED}Check A FAILED${NC} — run \`bash .claude/scripts/init-specs.sh\` to (re)write"
+  echo "  specs/.gitignore's managed block, or add the missing pattern(s) to the repo root"
+  echo "  .gitignore by hand. See context/standards/orchestrator-runtime-files.md 'Consumer Repo"
+  echo "  Setup' for the exact block either way."
 else
   echo -e "${GREEN}Check A passed${NC}"
 fi
