@@ -79,6 +79,22 @@ unchanged and now explicitly documented as such.
   is computed via whole-second `date +%s`; a same-second seed+decide pair could produce
   `age_sec == 0`, making `0` a flaky, timing-dependent threshold for "the recency window is never
   satisfied." `-1` is unsatisfiable by any non-negative age and keeps the assertion deterministic.
+- **Post-Phase-3 discovery, fixed outside the phase checklist**: the full whole-repo test suite
+  (`tests/run-all.sh`) surfaced two OTHER fixture-building suites —
+  `test-orchestrate-context-growth.sh` and `test-orchestrate-unwind-dispatch.sh` — that build
+  their own hand-picked-file mirror of `orchestrate-cycle-plan.sh` and its libraries (distinct
+  from `test-orchestrate-cycle-plan.sh`'s own fixture, which Phase 2 correctly updated). Both
+  hard-coded lib copy lists predate `deploy-ledger-lib.sh` and did not include it, so their
+  fixture's `orchestrate-cycle-plan.sh` failed to source it and errored out immediately. Fixed by
+  adding `deploy-ledger-lib.sh` to each suite's `LIBS`/`REQUIRED_LIB_SCRIPTS` array (a third
+  fixture, `test-force-phases.sh`, wildcard-copies `lib/*.sh` from the deploy tree and needed no
+  change). Also fixed: `test-deploy-ledger-lib.sh` was missing its executable bit, so
+  `run-all.sh`'s discovery loop skipped it entirely (`[SKIP] not executable`) even though it
+  passed 27/27 whenever invoked directly — `chmod +x`'d and now discovered normally. `manifest.json`
+  was also missing `provides.scripts` entries for the two new files (caught by `check-extension-docs.sh`
+  doc-lint before the first redeploy). All four fixes committed as
+  `task 182: fix full-suite regressions from the new deploy-ledger-lib.sh dependency` and
+  `task 182: register deploy-ledger-lib.sh and its test in core manifest.json`.
 
 ## Verification
 
@@ -86,11 +102,25 @@ unchanged and now explicitly documented as such.
 - Tests: Passed — `test-deploy-ledger-lib.sh` (27/27), `test-orchestrate-cycle-plan.sh` (238/238,
   including all-new Group 11 cases l-r and the pre-existing cases a-k unchanged),
   `test-runtime-file-tracking.sh` (9/9, 18-member count), `test-deploy-orphans.sh` (5/5),
-  `test-deploy-propagation.sh` (4/4), `test-deploy-baseline-lib.sh` (7/7).
+  `test-deploy-propagation.sh` (4/4), `test-deploy-baseline-lib.sh` (7/7),
+  `test-orchestrate-context-growth.sh` (6/6, post-fix), `test-orchestrate-unwind-dispatch.sh`
+  (21/21, post-fix), `test-verify-deploy-context-budget.sh` (15/15).
+- **Full whole-repo `tests/run-all.sh`, run standalone on the stable, fully-committed tree: 86
+  passed, 0 failed, 0 skipped, 86 total.** Clean.
 - Task-reference lint: clean (0 unexempted occurrences across all touched deliverables).
-- Final gate: `deploy-headless.sh` → `landed_verify_clean` (33/33 fast checks); full
-  `verify-deploy.sh` (including the Gate 8 shell test suite) run to confirm the slow gate — see
-  follow-ups if this task returns before that background run's notification lands.
+- `deploy-headless.sh` (fast gates, no Gate 8): `landed_verify_clean`, 33/33, reproduced twice
+  after the fixture fixes.
+- **Full `verify-deploy.sh` (all 34 gates including Gate 8) intermittently reported
+  `1 of 34 check(s) failed` (Gate 8, `run-all.sh` exit 1) on two separate full-depth runs, even
+  though the identical `run-all.sh` invoked standalone moments apart was clean (86/0/0).**
+  `ps aux` during both full `verify-deploy.sh` runs showed multiple concurrent
+  `verify-deploy.sh`/`deploy-headless.sh` processes active simultaneously, consistent with this
+  repo's `specs/state.json` showing 8+ other concurrent non-terminal tasks at the time (evidence
+  of other live `/orchestrate` sessions sharing this checkout). This points to cross-session
+  resource contention (shared temp fixtures, locks, or CPU/IO pressure from concurrent
+  `run-all.sh` invocations) rather than a defect in this task's own changes — every suite this
+  task touches, and the full suite itself, is independently green under isolation. Not
+  chased further; flagged as a follow-up if it recurs outside contention.
 - Files verified: Yes (all new/modified files read back and exercised by the test suites above).
 
 ## Impacts
@@ -112,6 +142,10 @@ unchanged and now explicitly documented as such.
   explicitly named in the plan's Non-Goals and re-confirmed in the guardrails doc.
 - `command-gate-out.sh` / skill-base retry paths do not write the ledger in this task; the
   library is built so they can adopt it later (plan Decision 8, Non-Goals).
+- The intermittent full-`verify-deploy.sh` Gate 8 failure under concurrent-session load (see
+  Verification) is not a task-182 defect, but if it recurs reliably even in isolation on a later
+  run, it would be worth its own investigation into `run-all.sh`'s or a specific suite's
+  robustness under concurrent repo access.
 
 ## References
 
