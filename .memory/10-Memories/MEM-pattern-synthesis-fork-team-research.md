@@ -14,6 +14,9 @@ keywords:
   - anonymous-fork
   - lead-agent
 summary: "Synthesis fork pattern for team research: The lead should NOT read all teammate "
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 130
 ---
 

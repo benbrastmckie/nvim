@@ -14,6 +14,9 @@ keywords:
   - skill-orchestrate
   - dependency-driven
 summary: "When porting the orchestrator system from .claude/ to .opencode/, the dependency"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 166
 ---
 

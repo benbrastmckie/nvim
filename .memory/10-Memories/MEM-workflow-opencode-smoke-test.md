@@ -14,6 +14,9 @@ keywords:
   - port-verification
   - static-validation
 summary: "OpenCode static structural smoke test pattern for agent files: when live Task to"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 194
 ---
 

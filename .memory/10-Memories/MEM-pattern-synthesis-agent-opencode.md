@@ -15,6 +15,9 @@ keywords:
   - port-pattern
   - team-research
 summary: "OpenCode's synthesis-agent pattern differs from .claude/: (1) The .claude/ team-"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 193
 ---
 

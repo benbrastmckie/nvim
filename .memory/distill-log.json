@@ -85,14 +85,49 @@
         }
       ],
       "notes": "Merged 1 pair across 1 cluster (task-opencode). Secondary tombstoned (file kept, 7-day GC grace). No cross-references to update. Index updated in place rather than regenerated from frontmatter, to preserve index-only retrieval counts."
+    },
+    {
+      "id": "distill_20260918225546",
+      "timestamp": "2026-09-18T22:55:46Z",
+      "type": "purge",
+      "session_id": "sess_1789770334_43361c",
+      "pre_metrics": {
+        "total_memories": 19,
+        "total_tokens": 3082,
+        "health_score": 100,
+        "purge_candidates": 0,
+        "merge_candidates": 0,
+        "compress_candidates": 0
+      },
+      "post_metrics": {
+        "total_memories": 19,
+        "total_tokens": 3082,
+        "health_score": 100,
+        "purge_candidates": 0,
+        "merge_candidates": 0,
+        "compress_candidates": 0
+      },
+      "affected_memories": [
+        "MEM-pattern-synthesis-agent-team-research",
+        "MEM-pattern-synthesis-fork-team-research",
+        "MEM-pattern-gate-out-defensive-check",
+        "MEM-pattern-synthesis-agent-opencode",
+        "MEM-pattern-opencode-agent-frontmatter",
+        "MEM-pattern-script-porting-dual-system",
+        "MEM-pattern-orchestrator-porting",
+        "MEM-workflow-opencode-smoke-test",
+        "MEM-pattern-orchestrator-system-skill-orchestrate",
+        "MEM-insight-context-loading-by-at-reference"
+      ],
+      "notes": "Tombstoned 10 memories (all never-retrieved; 9 stale porting/team-research notes plus one 40-day-old insight, user-selected). 8 active remain. Link-scan warnings: none"
     }
   ],
   "summary": {
-    "total_operations": 3,
-    "total_purged": 0,
+    "total_operations": 4,
+    "total_purged": 10,
     "total_merged": 1,
     "total_compressed": 0,
     "total_refined": 0,
-    "last_operation": "2026-09-18T22:52:41Z"
+    "last_operation": "2026-09-18T22:55:46Z"
   }
 }

@@ -14,6 +14,9 @@ keywords:
   - index-entries.json
   - agent-prompt
 summary: "A file under context/contracts/ is loaded only if an explicit @-reference bullet appears in the consuming agent's '## Context References' section. Placing a file in a directory does nothing on its own."
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 374
 ---
 

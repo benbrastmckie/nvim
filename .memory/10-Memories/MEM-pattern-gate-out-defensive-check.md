@@ -14,6 +14,9 @@ keywords:
   - command-file
   - state-json
 summary: "The inline GATE OUT defensive check blocks in research.md and plan.md (~38 lines"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 92
 ---
 

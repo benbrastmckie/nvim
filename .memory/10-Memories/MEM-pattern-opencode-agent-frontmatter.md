@@ -16,6 +16,9 @@ keywords:
   - synthesis-agent
   - validation
 summary: "OpenCode agent frontmatter pattern: Only `name` and `description` fields are sup"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 289
 ---
 

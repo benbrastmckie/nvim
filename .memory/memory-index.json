@@ -127,7 +127,10 @@
       "created": "2026-05-22",
       "modified": "2026-05-22",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-insight-index-json-tier",
@@ -210,7 +213,10 @@
       "created": "2026-05-25",
       "modified": "2026-05-25",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-pattern-synthesis-agent-team-research",
@@ -231,7 +237,10 @@
       "created": "2026-05-25",
       "modified": "2026-05-25",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-pattern-script-porting-dual-system",
@@ -251,7 +260,10 @@
       "created": "2026-06-08",
       "modified": "2026-06-08",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-pattern-orchestrator-system-skill-orchestrate",
@@ -272,7 +284,10 @@
       "created": "2026-06-08",
       "modified": "2026-06-08",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-pattern-orchestrator-porting",
@@ -292,7 +307,10 @@
       "created": "2026-06-08",
       "modified": "2026-06-08",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-pattern-synthesis-agent-opencode",
@@ -313,7 +331,10 @@
       "created": "2026-06-08",
       "modified": "2026-06-08",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-standard-opencode-agent-frontmatter",
@@ -359,7 +380,9 @@
       "modified": "2026-09-18",
       "last_retrieved": null,
       "retrieval_count": 0,
-      "status": "active"
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-workflow-opencode-smoke-test",
@@ -379,7 +402,10 @@
       "created": "2026-06-08",
       "modified": "2026-06-08",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     },
     {
       "id": "MEM-insight-context-loading-by-at-reference",
@@ -399,7 +425,10 @@
       "created": "2026-08-09",
       "modified": "2026-08-09",
       "last_retrieved": null,
-      "retrieval_count": 0
+      "retrieval_count": 0,
+      "status": "tombstoned",
+      "tombstoned_at": "2026-09-18",
+      "tombstone_reason": "purge"
     }
   ]
 }

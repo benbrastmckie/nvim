@@ -15,6 +15,9 @@ keywords:
   - teammate-synthesis
   - skill-team-research
 summary: "When team skills (skill-team-research, skill-team-plan) need to synthesize outpu"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 150
 ---
 

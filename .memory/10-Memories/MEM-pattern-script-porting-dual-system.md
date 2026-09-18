@@ -14,6 +14,9 @@ keywords:
   - path-substitution
   - claude-opencode
 summary: "When porting scripts between dual-system architectures (.claude/ and .opencode/)"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 261
 ---
 

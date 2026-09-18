@@ -15,6 +15,9 @@ keywords:
   - routing-skill
   - dual-system
 summary: "The .claude/ agent system has TWO distinct orchestrator concepts: (1) skill-orch"
+status: tombstoned
+tombstoned_at: 2026-09-18
+tombstone_reason: "purge"
 token_count: 178
 ---
 

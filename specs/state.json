@@ -1028,10 +1028,10 @@
     "phantom_paths": 0
   },
   "memory_health": {
-    "last_distilled": "2026-09-18T22:52:41Z",
-    "distill_count": 2,
-    "total_memories": 18,
-    "never_retrieved": 10,
+    "last_distilled": "2026-09-18T22:55:46Z",
+    "distill_count": 3,
+    "total_memories": 8,
+    "never_retrieved": 0,
     "health_score": 100,
     "status": "healthy"
   },
