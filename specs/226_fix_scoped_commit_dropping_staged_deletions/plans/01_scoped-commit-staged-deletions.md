@@ -144,33 +144,34 @@ scope, but it MUST be additive so T1-T7 keep passing unchanged.
 
 ---
 
-### Phase 2: Three-way V2 classification and decoupled `git add` set [NOT STARTED]
+### Phase 2: Three-way V2 classification and decoupled `git add` set [COMPLETED]
 
 **Goal**: Make the V2 gate classify each positive pathspec into matched / already-staged-deletion /
 unmatched, and pass only the first class (plus exclude entries) to `git add` while `git commit --`
 keeps the full matched set.
 
 **Tasks**:
-- [ ] In the V2 loop (`agent-system/extensions/core/scripts/git-commit-scoped.sh:174-188`), build a
-      second array `add_pathspecs` alongside `filtered_pathspecs`.
-- [ ] `:(exclude)...` entries: append to BOTH arrays, unchanged (the loop already `continue`s past
-      them explicitly; they are not subject to classification).
-- [ ] Case 1 — `[ -e "$p" ]` or `git ls-files --error-unmatch -- "$p"` succeeds: append to BOTH
-      arrays (current behavior preserved byte-for-byte).
-- [ ] Case 2 — neither holds, but HEAD resolves (`git rev-parse --verify -q HEAD`) AND
+- [x] In the V2 loop (`agent-system/extensions/core/scripts/git-commit-scoped.sh:174-188`), build a
+      second array `add_pathspecs` alongside `filtered_pathspecs`. *(completed)*
+- [x] `:(exclude)...` entries: append to BOTH arrays, unchanged (the loop already `continue`s past
+      them explicitly; they are not subject to classification). *(completed)*
+- [x] Case 1 — `[ -e "$p" ]` or `git ls-files --error-unmatch -- "$p"` succeeds: append to BOTH
+      arrays (current behavior preserved byte-for-byte). *(completed)*
+- [x] Case 2 — neither holds, but HEAD resolves (`git rev-parse --verify -q HEAD`) AND
       `git cat-file -e "HEAD:$p"` succeeds: append to `filtered_pathspecs` ONLY. This is an
       already-staged deletion: it is fully reflected in the index and needs no `git add`; handing
-      it to `git add` aborts the entire single-invocation add (verified exit 128).
-- [ ] Case 3 — neither: drop with the existing `WARN` message, unchanged.
-- [ ] Change `git add "${pathspecs[@]}"` (line 228) to use the `add_pathspecs` array. Handle the
+      it to `git add` aborts the entire single-invocation add (verified exit 128). *(completed)*
+- [x] Case 3 — neither: drop with the existing `WARN` message, unchanged. *(completed)*
+- [x] Change `git add "${pathspecs[@]}"` (line 228) to use the `add_pathspecs` array. Handle the
       case where `add_pathspecs` has zero positive entries (a deletion-only commit): skip the
       `git add` call entirely rather than invoking `git add` with an empty or exclude-only list.
-- [ ] Leave both `git commit -m "$full_message" -- "${pathspecs[@]}"` invocations (lines 283, 293)
-      unchanged — they must keep receiving the full matched set.
-- [ ] Leave the V3 post-filter gate operating on `filtered_pathspecs` (a deletion-only commit now
-      legitimately has one positive entry, so V3 must not fire on it).
-- [ ] Add a short inline comment at the case-2 branch stating why the path is deliberately absent
-      from the `git add` set, so a future editor does not "fix" it back.
+      *(completed: guarded with has_positive_pathspec)*
+- [x] Leave both `git commit -m "$full_message" -- "${pathspecs[@]}"` invocations (lines 283, 293)
+      unchanged — they must keep receiving the full matched set. *(completed: unchanged, verified)*
+- [x] Leave the V3 post-filter gate operating on `filtered_pathspecs` (a deletion-only commit now
+      legitimately has one positive entry, so V3 must not fire on it). *(completed)*
+- [x] Add a short inline comment at the case-2 branch stating why the path is deliberately absent
+      from the `git add` set, so a future editor does not "fix" it back. *(completed)*
 
 **Timing**: 0.75 hours
 

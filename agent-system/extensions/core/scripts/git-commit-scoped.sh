@@ -167,20 +167,45 @@ for p in "${pathspecs[@]}"; do
 done
 pathspecs=("${expanded_pathspecs[@]}")
 
-# --- V2 safety gate: validate each positive pathspec, drop unmatched entries with a warning ---
-# Exclude pathspecs pass through unvalidated (git itself never resolves them against the working
-# tree the way it does a positive entry, and validating them would require reimplementing git's
-# own pathspec-exclusion matching).
+# --- V2 safety gate: classify each positive pathspec into one of THREE outcomes, not two ---
+# Exclude pathspecs pass through unvalidated into BOTH arrays below (git itself never resolves
+# them against the working tree the way it does a positive entry, and validating them would
+# require reimplementing git's own pathspec-exclusion matching).
+#
+# filtered_pathspecs is the set handed to `git commit --` (must include every already-staged
+# deletion, or the deletion silently never reaches the commit). add_pathspecs is the set handed
+# to `git add` (must EXCLUDE an already-staged deletion — see case 2 below). The two sets are
+# identical except for case 2, which is exactly why they must be two separate arrays rather than
+# one shared `pathspecs` array as before.
 filtered_pathspecs=()
+add_pathspecs=()
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
       filtered_pathspecs+=("$p")
+      add_pathspecs+=("$p")
       ;;
     *)
       if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+        # Case 1 — matched: present on disk, or already tracked. Unchanged behavior: goes to
+        # both the add set and the commit set.
+        filtered_pathspecs+=("$p")
+        add_pathspecs+=("$p")
+      elif git rev-parse --verify -q HEAD >/dev/null 2>&1 && git cat-file -e "HEAD:$p" 2>/dev/null; then
+        # Case 2 — already-staged deletion: absent from BOTH the working tree and the index (so
+        # case 1 above did not match), but present in HEAD, meaning a `git rm` or the delete half
+        # of a `git mv` already removed it from the index. It is fully reflected in the index
+        # already, so it belongs in the commit's pathspec set (filtered_pathspecs) but must be
+        # kept OUT of add_pathspecs: `git add` on a path absent from both disk and index exits
+        # 128, and because `git add "${add_pathspecs[@]}"` below is a single all-or-nothing
+        # invocation, that one bad entry would abort staging for every other path in the same
+        # call — silently converting today's "deletion dropped" bug into a louder "whole commit
+        # aborted" bug for any mixed add+delete path set. Do NOT "fix" this by adding the path to
+        # add_pathspecs; that reintroduces the exact failure this branch exists to avoid.
         filtered_pathspecs+=("$p")
       else
+        # Case 3 — genuinely unmatched: neither on disk, nor tracked, nor in HEAD. Drop with the
+        # existing WARN message, unchanged behavior.
         echo "WARN: git-commit-scoped.sh dropping unmatched pathspec '${p}' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." >&2
       fi
       ;;
@@ -188,6 +213,10 @@ for p in "${pathspecs[@]}"; do
 done
 
 # --- V3 safety gate (post-filter): filtering itself can produce a degenerate list ---
+# Evaluated against filtered_pathspecs (the commit set), not add_pathspecs: a deletion-only
+# commit legitimately has zero entries in add_pathspecs (nothing to add) while still having one
+# positive entry in filtered_pathspecs (the deletion itself), and that is a valid, non-degenerate
+# commit, not a V3 refusal case.
 if ! has_positive_pathspec "${filtered_pathspecs[@]}"; then
   echo "ERROR: git-commit-scoped.sh refuses to commit — after dropping unmatched paths, zero positive pathspec entries remain (would degenerate into an exclude-only commit, Verified Finding V3). No git add or git commit was attempted." >&2
   exit 2
@@ -225,9 +254,17 @@ else
 fi
 
 # --- git add (guarded; a failure here aborts before any commit is attempted) ---
-if ! git add "${pathspecs[@]}"; then
-  echo "WARNING: git add failed for one or more staged paths (non-blocking); no commit was attempted." >&2
-  exit 2
+# Uses add_pathspecs (the case-2-excluded set from the V2 gate above), never the full pathspecs
+# array used for the commit below. Skipped entirely when add_pathspecs carries no positive
+# entries — a deletion-only commit, where every positive pathspec landed in the already-staged-
+# deletion case above and there is nothing left to add; invoking `git add` with an empty or
+# exclude-only list is unnecessary and, for the exclude-only shape, exactly the V3 hazard this
+# script guards against elsewhere.
+if has_positive_pathspec "${add_pathspecs[@]}"; then
+  if ! git add "${add_pathspecs[@]}"; then
+    echo "WARNING: git add failed for one or more staged paths (non-blocking); no commit was attempted." >&2
+    exit 2
+  fi
 fi
 
 # --- Optional honest-index-rows addendum (moved verbatim from
