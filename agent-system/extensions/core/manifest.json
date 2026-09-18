@@ -163,6 +163,7 @@
       "test-state-write-concurrency.sh",
       "test-state-write-large-payload.sh",
       "test-state-write-regen-timing.sh",
+      "test-state-write-spill-names.sh",
       "test-task-lock-reap.sh",
       "tests/run-all.sh",
       "tests/test-assess-repo-health.sh",

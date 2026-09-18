@@ -307,18 +307,31 @@ the dispatch's OUT OF SCOPE list — stop and re-scope.
 
 ---
 
-### Phase 4: Redeploy and verify the deployed copy [NOT STARTED]
+### Phase 4: Redeploy and verify the deployed copy [COMPLETED]
 
 **Goal**: The gitignored `.claude/scripts/state-write.sh` carries the fix by regeneration, not by
 hand-editing.
 
 **Tasks**:
-- [ ] Regenerate the deploy tree from the source store using the repository's normal deploy path.
-- [ ] Confirm `.claude/scripts/state-write.sh` contains the `SPILL_SEQ` allocation and the
-      duplicate-NAME guard, and no longer contains `__spill_${#SPILL_FILES[@]}`.
-- [ ] Confirm `.claude/scripts/test-state-write-spill-names.sh` was deployed alongside its siblings
+- [x] Regenerate the deploy tree from the source store using the repository's normal deploy path.
+      *(completed: `bash .claude/scripts/deploy-headless.sh`. Deviation: the first run showed
+      `test-state-write-spill-names.sh` was NOT copied to `.claude/scripts/` — the deploy engine
+      is manifest-driven (`agent-system/extensions/core/manifest.json`'s `provides.scripts` list)
+      and the new file had not been registered there. Added
+      `"test-state-write-spill-names.sh"` to that list, alphabetically between
+      `test-state-write-regen-timing.sh` and `test-task-lock-reap.sh`, and re-ran the deploy.
+      `state-write.sh` itself deployed correctly on the first run since it is already a
+      manifest-declared entry, unaffected by this gap.)*
+- [x] Confirm `.claude/scripts/state-write.sh` contains the `SPILL_SEQ` allocation and the
+      duplicate-NAME guard, and no longer contains `__spill_${#SPILL_FILES[@]}`. *(completed:
+      `grep -n '__spill_' .claude/scripts/state-write.sh` shows only the new
+      `private_name="__spill_${SPILL_SEQ}"` allocation form (two call sites) plus explanatory
+      comments; the old `__spill_${#SPILL_FILES[@]}` form is gone.)*
+- [x] Confirm `.claude/scripts/test-state-write-spill-names.sh` was deployed alongside its siblings
       and passes when run from the deployed location (it is fixture-rooted, so it still never
       touches the real `specs/state.json` — re-verify with `git status --porcelain` regardless).
+      *(completed: present after the second deploy run; 5 passed, 0 failed from the deployed
+      location; `git status --porcelain -- specs/state.json` unchanged before/after)*
 
 **Timing**: 30 minutes
 
@@ -338,7 +351,7 @@ hand-editing.
 
 ---
 
-### Phase 5: Confirm and record the caller audit [NOT STARTED]
+### Phase 5: Confirm and record the caller audit [IN PROGRESS]
 
 **Goal**: The ACCEPTANCE requirement that existing callers be audited and any already-corrupted
 data identified is satisfied with a reproducible, recorded finding.
