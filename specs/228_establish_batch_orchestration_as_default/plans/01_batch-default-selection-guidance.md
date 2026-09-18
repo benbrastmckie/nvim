@@ -160,27 +160,27 @@ after editing; a diff touching any other file in this phase is a scope error.
 
 ---
 
-### Phase 2: Pointer edits and multi-task-operations.md Overview reframe [NOT STARTED]
+### Phase 2: Pointer edits and multi-task-operations.md Overview reframe [IN PROGRESS]
 
 **Goal**: Point the two entry-point files at the canonical section and remove the contradicting
 "common case" framing.
 
 **Tasks**:
-- [ ] Re-read each file immediately before editing.
-- [ ] `commands/orchestrate.md` Constraints (currently line 24, "uniformly for a batch of one task
+- [x] Re-read each file immediately before editing. *(completed)*
+- [x] `commands/orchestrate.md` Constraints (currently line 24, "uniformly for a batch of one task
       or many"): append a pointer sentence -- batching related tasks is the default; see
       `context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" section for
-      which tasks to batch. No criteria restated.
-- [ ] `merge-sources/claudemd.md` "Multi-task syntax" paragraph (currently line 116): append one
+      which tasks to batch. No criteria restated. *(completed)*
+- [x] `merge-sources/claudemd.md` "Multi-task syntax" paragraph (currently line 116): append one
       pointer sentence to the same section. No criteria restated. Do NOT edit `.claude/CLAUDE.md`
-      (regenerated from this merge source).
-- [ ] `context/patterns/multi-task-operations.md` Overview:
+      (regenerated from this merge source). *(completed)*
+- [x] `context/patterns/multi-task-operations.md` Overview:
       - Replace the design-principle bullet "(zero overhead for common case)" with wording that
         keeps the technical claim but drops the framing (e.g. "no special-casing overhead for a
         batch of one").
       - Reframe the Overview's first sentence ("traditionally accept a single task number") so it
         does not present single-task as the norm, and add one pointer sentence to the canonical
-        section for batch-selection guidance. Keep it to the Overview only.
+        section for batch-selection guidance. Keep it to the Overview only. *(completed)*
 - [ ] Commit with explicit paths: `task 228 phase 2: point entry docs at batch selection guidance`.
 
 **Timing**: 0.75 hours

@@ -8,10 +8,10 @@
 
 ## Overview
 
-Workflow commands (`/research`, `/plan`, `/implement`) traditionally accept a single task number. This pattern extends them to accept multiple task numbers using the same range syntax already used by `/task --recover` and `/task --abandon`. When multiple tasks are specified, the command spawns one agent per task in parallel, collects results, and produces a batch commit with consolidated output.
+Workflow commands accept task numbers using the same range syntax already used by `/task --recover` and `/task --abandon`; a batch of one task and a batch of many use the same dependency-aware dispatch mechanism, not two separate code paths. This pattern extends single-task commands to accept multiple task numbers as the default way to work this system, not a special mode layered on top of single-task use. When multiple tasks are specified, the command spawns one agent per task in parallel, collects results, and produces a batch commit with consolidated output. See `batch-orchestration-guardrails.md`'s "Batching Is the Default" section for which tasks to batch together.
 
 **Design principles**:
-- Single-task input falls through to existing flow unchanged (zero overhead for common case)
+- Single-task input falls through to existing flow unchanged (no special-casing overhead for a batch of one)
 - Multi-task spawns independent agents with per-task isolation
 - Failure of one task never blocks or rolls back other tasks
 - Flags apply uniformly to all tasks in the batch

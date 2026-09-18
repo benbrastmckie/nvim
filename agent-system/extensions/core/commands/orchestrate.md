@@ -22,6 +22,9 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 ## Constraints
 
 - The loop uses dependency-aware wave dispatch, uniformly for a batch of one task or many.
+  Batching related open tasks into one invocation is the default way to work this system, not a
+  throughput-only optimization — see `context/patterns/batch-orchestration-guardrails.md`'s
+  "Batching Is the Default" section for which tasks to batch together.
 - `--research`/`--plan`/`--implement` (phase-forcing flags): honored uniformly across every
   task_number in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`
   — each task tracks its own remaining-forced-phases position independently, and STOPS (never

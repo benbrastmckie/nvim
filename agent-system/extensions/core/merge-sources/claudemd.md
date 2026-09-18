@@ -113,7 +113,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 
-**Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`). Each task is processed through the full lifecycle using dependency-aware wave dispatch. Flags like `--research`/`--plan`/`--implement` apply uniformly to every task_number in the batch — each task tracks its own remaining-forced-phases position independently via `scripts/orchestrate-cycle-plan.sh`'s `force_phases_remaining`, STOPPING (excluded via a `blocked[]` row, never routed by status) once its own forced sequence is exhausted, for the rest of that run. See `.claude/context/patterns/multi-task-operations.md` for the full specification.
+**Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`). Each task is processed through the full lifecycle using dependency-aware wave dispatch. Flags like `--research`/`--plan`/`--implement` apply uniformly to every task_number in the batch — each task tracks its own remaining-forced-phases position independently via `scripts/orchestrate-cycle-plan.sh`'s `force_phases_remaining`, STOPPING (excluded via a `blocked[]` row, never routed by status) once its own forced sequence is exhausted, for the rest of that run. See `.claude/context/patterns/multi-task-operations.md` for the full specification. For which tasks to batch together, see `.claude/context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" section.
 
 ### Utility Scripts
 
