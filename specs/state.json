@@ -232,7 +232,8 @@
           "summary": "Idempotent init-specs.sh bootstrap (specs/ state trio, managed specs/.gitignore, untrack sweep), wired into all first-touch task-creation sites; 17th runtime-file class member (specs/tmp/); standards doc rewrite; 8-case fixture suite (23 assertions passing)."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added an idempotent init-specs.sh bootstrap for a fresh consumer repo's specs/ state (state trio + managed specs/.gitignore + untrack sweep for already-tracked runtime files), wired it into all six first-touch task-creation sites plus a defensive /orchestrate call, extended runtime-file-patterns.sh with the missing specs/tmp/ class member, rewrote the Consumer Repo Setup standards documentation, and added an 8-case fixture suite (23 assertions) pinning every acceptance criterion."
     },
     {
       "project_number": 206,
