@@ -201,22 +201,23 @@ re-examined against the research report's verified reproduction.
 
 ---
 
-### Phase 3: Header documentation and recorded out-of-scope ruling [NOT STARTED]
+### Phase 3: Header documentation and recorded out-of-scope ruling [COMPLETED]
 
 **Goal**: Bring the script's own V2 documentation in line with the three-way behavior and record
 the out-of-scope-deletion decision where a future reader will find it.
 
 **Tasks**:
-- [ ] Update the `V2` bullet in the header safety-gate comment block
+- [x] Update the `V2` bullet in the header safety-gate comment block
       (`git-commit-scoped.sh:45-48`), which currently documents only two-way match/drop, to
       describe the three outcomes and to state that an already-staged deletion is committed
-      without being re-added.
-- [ ] Add one sentence to the same block recording the ruling: a staged change (deletion included)
+      without being re-added. *(completed)*
+- [x] Add one sentence to the same block recording the ruling: a staged change (deletion included)
       for a path NOT named in the caller's pathspec list is silently left out of the commit,
       uniformly with every other out-of-scope change type, per
       `context/standards/git-staging-scope.md`'s "under-stage, never over-stage" fail-safe
-      direction. No refuse logic is added.
-- [ ] Do not restate the reasoning in `git-staging-scope.md`; reference it.
+      direction. No refuse logic is added. *(completed)*
+- [x] Do not restate the reasoning in `git-staging-scope.md`; reference it. *(completed: header
+      references it by path rather than restating)*
 
 **Timing**: 0.25 hours
 

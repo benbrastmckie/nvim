@@ -44,8 +44,19 @@
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
-#        script instead validates each positive pathspec and DROPS unmatched entries with a loud
-#        warning, never passing them through to git add/git commit.
+#        script instead classifies each positive pathspec into THREE outcomes: (1) matched --
+#        present on disk or already tracked, added and committed as before; (2) an
+#        already-staged deletion -- absent from both the working tree and the index but present
+#        in HEAD (a `git rm`, or the delete half of a `git mv`), which is committed via
+#        `git commit --` but deliberately withheld from `git add` (a single all-or-nothing call
+#        that would otherwise exit 128 and abort staging for every other path in the same
+#        pathspec set); or (3) genuinely unmatched -- neither on disk, tracked, nor in HEAD --
+#        DROPPED with a loud warning exactly as before, never passed through to git add/git
+#        commit. A staged deletion whose path is NOT named in the caller's pathspec list at all
+#        (out-of-scope) is left out of the commit silently, uniformly with every other
+#        out-of-scope change type -- see context/standards/git-staging-scope.md's
+#        "under-stage, never over-stage" fail-safe direction; no refuse logic is added for this
+#        case.
 #   V3 - an exclude-only pathspec list commits EVERYTHING except the excluded paths — wider than
 #        a bare commit, not narrower. This script refuses outright (no git add, no commit) if the
 #        pathspec list contains zero positive entries, both before and after V2 filtering (since
