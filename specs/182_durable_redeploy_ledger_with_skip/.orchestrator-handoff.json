@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 9,
-  "summary": "Researched the durable redeploy-ledger design for the /orchestrate inter-cycle redeploy checkpoint: mapped the checkpoint's exact trigger/insertion points, identified two reusable existing precedents (.claude-extensions.json's source_git_head + deploy-freshness-lib.sh, and deploy-baseline-lib.sh's verify-outcome vocabulary), corrected a mis-citation in the dispatch text (the 'its own task' quote belongs to a different, sibling guardrails-doc section about trigger-predicate widening, not this task's ledger scope), and laid out concrete recommendations for the hash scope, self-modifying-task recency/attribution handling, ledger file placement/tracking disposition, and Group 11 test coverage additions.",
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 10,
+  "summary": "Created a 5-phase plan (6.5h) for the durable redeploy ledger: new gitignored specs/.orchestrator-deploy-ledger.json managed by scripts/lib/deploy-ledger-lib.sh (sha256 over source-store critical paths, verify outcome, timestamp, batch task numbers); checkpoint consults it before any expensive call with a hash skip (ordinary case, max-age cap) and an attributed-recency skip (self-modifying class: recent, shared task, delta within own cycle_modified_files), overridden by any deploy_pending batch task; deployed_critical_paths retained unchanged for its within-invocation role; Group 11 cases incl. a named self-modifying acceptance test; runtime-file registration; guardrails contract rewrite.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/182_durable_redeploy_ledger_with_skip/reports/01_durable-redeploy-ledger-design.md",
-      "summary": "Design research for the durable redeploy ledger and its hash/recency skip mechanism."
+      "type": "plan",
+      "path": "specs/182_durable_redeploy_ledger_with_skip/plans/01_durable-redeploy-ledger.md",
+      "summary": "5-phase implementation plan for the durable redeploy ledger with hash and attributed-recency skips."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Run /plan 182 to turn the report's recommendations (ledger placement/tracking disposition, hash scope, self-modifying-task attribution mechanism, Group 11 test additions, guardrails.md doc update) into a phased implementation plan."
+  "next_action_hint": "Run /implement 182; waves [1], [2,4], [3,5]."
 }
