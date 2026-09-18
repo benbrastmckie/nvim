@@ -36,6 +36,29 @@ Create safety commits before:
 
 ---
 
+## Recovering an Unconsumed Dispatch
+
+`guard-destructive-git.sh` (a PreToolUse Bash hook) blocks `git reset --hard`,
+`git checkout -- <path>`, `git clean -fd`, and the other discard-uncommitted-work commands listed
+in `context/standards/git-staging-scope.md` whenever the working tree is dirty and no fresh
+snapshot was just taken. This is deliberate: on a dirty tree shared with a concurrently
+dispatched task, git-based undo cannot distinguish "revert my own stray write" from "discard
+someone else's in-flight work," so the guard refuses both alike. See
+`context/standards/git-staging-scope.md` for the guard's full command list and the
+snapshot-exemption mechanics.
+
+When the thing to undo is a `/orchestrate` dispatch that was prepared (Move 1: a preflight status
+write, a task lock, a `.dispatch/{seq}.md` file, and durable loop-guard bookkeeping) but never
+issued (no agent call, no postflight), the sanctioned non-git recovery path is
+`scripts/orchestrate-unwind-dispatch.sh <task_number> --session SID [--dry-run] [--commit]` — it
+reverses exactly those Move 1 mutations via the normal sanctioned writers
+(`state-write.sh`, `orchestrate-loop-guard-init.sh`, `task-lock.sh release`,
+`git-commit-scoped.sh`), or refuses cleanly if the dispatch may already be in progress or
+consumed. See `docs/architecture/orchestrate-state-machine.md`'s "Unwinding an Unconsumed
+Dispatch" subsection for the full refusal-gate contract and the by-hand-only rationale.
+
+---
+
 ## Git Safety Pattern
 
 ### Standard Pattern

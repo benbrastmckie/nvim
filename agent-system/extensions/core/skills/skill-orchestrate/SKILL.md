@@ -102,6 +102,15 @@ terminal-for-this-run verdict, not a batch-wide `stop`; the loop must treat it e
 other `blocked[]` row (log and move on) and never re-attempt dispatching it this run, whether or
 not a later cycle's caller repeats the forcing flag.
 
+**A prepared row that will never be issued** (this cycle's own dispatch[] row, once Move 1 just
+built it, is abandoned before Move 2 ever calls it — e.g. the operator asks to stop after seeing
+the plan, or this process is about to be killed): `scripts/orchestrate-unwind-dispatch.sh
+<task_number> --session SID [--dry-run] [--commit]` is the sanctioned way to reverse that one
+task's Move 1 mutations (preflight status write, lock, dispatch file, durable loop-guard
+bookkeeping) by hand. It is never called automatically from this loop — see
+`docs/architecture/orchestrate-state-machine.md`'s "Unwinding an Unconsumed Dispatch" subsection
+for the refusal gate and the by-hand-only rationale.
+
 **MUST NOT**: never re-invoke `orchestrate-cycle-plan.sh` LIVE purely to inspect state (a "check
 where things stand" call outside the normal per-cycle Move 1 loop). A live call mutates: it can
 take a task lock, mint a dispatch_seq, write a preflight status, and build a real dispatch file —

@@ -274,22 +274,26 @@ dispatch.
 
 ---
 
-### Phase 4: Documentation and the WORK (c) decision [NOT STARTED]
+### Phase 4: Documentation and the WORK (c) decision [COMPLETED]
 
 **Goal**: document the script as the sanctioned recovery path and record the by-hand decision.
 
 **Tasks**:
-- [ ] `docs/architecture/orchestrate-state-machine.md`: new subsection "Unwinding an Unconsumed
+- [x] `docs/architecture/orchestrate-state-machine.md`: new subsection "Unwinding an Unconsumed
   Dispatch" after the MAX_CYCLES / loop-guard block: what Move 1 mutates, the script's refusal
   gate, "run it before any manual cleanup", by-hand-only rationale (Decision 7), and how it
-  differs from `reconcile-task-status.sh`'s stale-status demotion.
-- [ ] `context/standards/git-safety.md`: subsection per Decision 8.
-- [ ] `skills/skill-orchestrate/SKILL.md` Move 1: one or two sentences after the `stop_json`
-  handling pointing to the script for a prepared row that will not be issued.
-- [ ] `docs/reference/utility-scripts-inventory.md`: add an entry.
-- [ ] `context/standards/orchestrator-runtime-files.md`: cross-reference from the
-  `pending_dispatch` subsection.
-- [ ] No task numbers in any of these files; run the repo's task-reference lint on them.
+  differs from `reconcile-task-status.sh`'s stale-status demotion. *(completed)*
+- [x] `context/standards/git-safety.md`: subsection per Decision 8. *(completed: "Recovering an
+  Unconsumed Dispatch" subsection placed right after "When to Use Git Safety")*
+- [x] `skills/skill-orchestrate/SKILL.md` Move 1: one or two sentences after the `stop_json`
+  handling pointing to the script for a prepared row that will not be issued. *(completed)*
+- [x] `docs/reference/utility-scripts-inventory.md`: add an entry. *(completed)*
+- [x] `context/standards/orchestrator-runtime-files.md`: cross-reference from the
+  `pending_dispatch` subsection. *(completed in Phase 1's edit, when the `prior_*` fields were
+  documented there)*
+- [x] No task numbers in any of these files; run the repo's task-reference lint on them.
+  *(completed: `bash .claude/scripts/check-task-references.sh` exits 0, no findings in any edited
+  file)*
 
 **Timing**: 1 hour
 

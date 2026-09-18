@@ -252,6 +252,59 @@ apart from "ran out of work budget."
 
 ---
 
+## Unwinding an Unconsumed Dispatch
+
+Move 1 of the lifecycle-cycling loop (see "The Orchestration Loop" below) mutates six things for
+one task before any agent ever runs: the preflight `status`/`last_updated`/`session_id` write in
+`specs/state.json`, the task lock, the `.dispatch/{seq}.md` file, the durable
+`dispatch_seq_counter` and `pending_dispatch` record in `.orchestrator-loop-guard`, and the run's
+ephemeral multi-state file. When Move 2 (the Agent call) never runs against that prepared
+dispatch — a crash between Move 1 and Move 2, or an operator deciding the prepared round is
+unwanted — all six mutations are stranded. `guard-destructive-git.sh` correctly refuses to let
+git undo them on a dirty tree (see `context/standards/git-safety.md`'s "Recovering an Unconsumed
+Dispatch" subsection), so hand-editing `specs/state.json` used to be the only option.
+
+**`scripts/orchestrate-unwind-dispatch.sh <task_number> --session SID [--dry-run] [--commit]
+[--mt-state FILE]`** is the sanctioned recovery path. It reads the task's `pending_dispatch`
+record (see `context/standards/orchestrator-runtime-files.md`'s `pending_dispatch` subsection for
+the full field list, including the `prior_*` pre-image `orchestrate-cycle-plan.sh` records at
+charge time) and either restores every Move 1 mutation exactly, or refuses and touches nothing.
+
+**Refusal gate** (all must hold, or the script exits 2 without touching anything):
+- `pending_dispatch` exists and carries the `prior_*` pre-image (a record predating that pre-image
+  is a LEGACY record the script refuses to guess at — hand recovery only, no override flag).
+- The record's `dispatch_file` is still on disk (the same proof-of-non-consumption
+  `orchestrate-cycle-plan.sh`'s own UNCONSUMED DISPATCH REPLAY check uses).
+- Neither `.return-meta.json` nor `.orchestrator-handoff.json` is newer than the dispatch file (an
+  agent's Stage 0 writes one of these as its first act, so a newer one proves an agent started).
+- The state.json entry's CURRENT `session_id` is one this exact dispatch could have written (bare
+  `SID` or `SID_<task_number>`) — a different current value means a later run already advanced
+  past this dispatch.
+- The task lock is absent, stale, or held by `SID` — a FRESH lock held by a different session
+  means another run is live right now.
+
+**Run it BEFORE any manual cleanup.** Once the dispatch file is deleted by hand, the script's own
+proof-of-non-consumption gate can no longer confirm the dispatch was never issued, and it refuses.
+
+**By-hand only, never automatic.** The orchestrate loop never calls this script itself. Three
+reasons: (1) the existing UNCONSUMED DISPATCH REPLAY mechanism already gives the automatic answer
+to "a prepared dispatch was never consumed" — resume it without re-charging — and an automatic
+unwind would act on the identical signal in the opposite (discarding) direction; (2) no liveness
+signal distinguishes "the prior session is gone and the dispatch is unwanted" from "the prior
+session is about to reach Move 2" beyond lock staleness, which already backs the resume
+interpretation instead; (3) discarding a prepared dispatch is the destructive direction and
+should stay an explicit operator choice. `skills/skill-orchestrate/SKILL.md`'s Move 1 section
+points an operator (or an orchestrating session deliberately abandoning a prepared row at the
+user's request) here.
+
+**Distinct from `reconcile-task-status.sh`**: that script demotes a task whose STATUS has gone
+stale relative to its own artifacts (a status/artifact mismatch discovered independently of any
+particular dispatch). `orchestrate-unwind-dispatch.sh` instead reverses one SPECIFIC prepared
+dispatch's own recorded mutations, keyed by its `pending_dispatch` record — it never inspects or
+infers from artifact staleness.
+
+---
+
 ## Blocker Escalation: 5-Step Sequence
 
 When a dispatch returns with non-empty `blockers` in the orchestrator handoff:
