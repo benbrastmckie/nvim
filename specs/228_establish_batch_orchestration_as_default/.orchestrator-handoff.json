@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "phases_completed": 0,
+  "phases_total": 0,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
+      "summary": "Recommends batch-orchestration-guardrails.md as the canonical home for batch-selection guidance, with a fully drafted section (dominance rule: territory > topic > graph shape) and three pointer-site edits."
+    }
+  ],
+  "session_id": "sess_1789772261_c29003_228",
+  "task_number": 228,
+  "next_steps": "Run /orchestrate 228 --plan to create implementation plan"
+}
