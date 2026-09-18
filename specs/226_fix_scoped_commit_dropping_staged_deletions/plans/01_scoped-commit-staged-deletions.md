@@ -237,24 +237,27 @@ the out-of-scope-deletion decision where a future reader will find it.
 
 ---
 
-### Phase 4: Refresh the deployed tree and close the gates [NOT STARTED]
+### Phase 4: Refresh the deployed tree and close the gates [COMPLETED]
 
 **Goal**: Regenerate this repo's `.claude/` deploy tree so the live pipeline copy carries the fix,
 and confirm parity with the source store.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive
-      resync mode; do NOT use `--wipe`).
-- [ ] Verify parity: `diff agent-system/extensions/core/scripts/git-commit-scoped.sh
-      .claude/scripts/git-commit-scoped.sh` produces no output.
-- [ ] Confirm `.claude/` is still gitignored and untracked (`git check-ignore -v
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive
+      resync mode; do NOT use `--wipe`). *(completed: RESULT=landed_verify_clean, 33 checks, 0
+      failures)*
+- [x] Verify parity: `diff agent-system/extensions/core/scripts/git-commit-scoped.sh
+      .claude/scripts/git-commit-scoped.sh` produces no output. *(completed: confirmed empty diff)*
+- [x] Confirm `.claude/` is still gitignored and untracked (`git check-ignore -v
       .claude/scripts/git-commit-scoped.sh`), so the refresh contributes nothing to any commit and
-      no `.claude/**` path is ever staged.
+      no `.claude/**` path is ever staged. *(completed: matched .gitignore:6:/.claude/; git status
+      --short shows zero .claude/** entries)*
 - [ ] If `deploy-headless.sh` cannot run in this environment, mark the phase `[BLOCKED]` and report
       it. Do NOT hand-copy or hand-edit any file under `.claude/**`
-      (`rules/source-store-deploy-boundary.md`).
-- [ ] Re-run the full test suite once more against the refreshed tree and record the final
-      all-PASS result.
+      (`rules/source-store-deploy-boundary.md`). *(deviation: skipped — not applicable,
+      deploy-headless.sh ran successfully in this environment)*
+- [x] Re-run the full test suite once more against the refreshed tree and record the final
+      all-PASS result. *(completed: 10 passed, 0 failed)*
 
 **Timing**: 0.25 hours
 
@@ -277,15 +280,19 @@ and confirm parity with the source store.
 
 ## Testing & Validation
 
-- [ ] T8 (deletion-only scoped commit) fails before Phase 2 and passes after.
-- [ ] T9 (deletion mixed with additions/modifications in one path set) fails before Phase 2 and
+- [x] T8 (deletion-only scoped commit) fails before Phase 2 and passes after. *(completed)*
+- [x] T9 (deletion mixed with additions/modifications in one path set) fails before Phase 2 and
       passes after, with both paths in a single commit and a clean `git status --short` afterwards.
-- [ ] T10 (rename with both halves in scope) fails before Phase 2 and passes after, with the
-      delete half present in the commit.
-- [ ] T1-T7 pass unchanged throughout; T7 in particular still drops a genuinely nonexistent
-      pathspec with `WARN`.
-- [ ] `shellcheck` clean on both modified shell files.
-- [ ] Deployed `.claude/scripts/git-commit-scoped.sh` is byte-identical to the source-store copy.
+      *(completed)*
+- [x] T10 (rename with both halves in scope) fails before Phase 2 and passes after, with the
+      delete half present in the commit. *(completed)*
+- [x] T1-T7 pass unchanged throughout; T7 in particular still drops a genuinely nonexistent
+      pathspec with `WARN`. *(completed)*
+- [x] `shellcheck` clean on both modified shell files. *(completed: test file fully clean;
+      git-commit-scoped.sh introduces zero new findings versus its pre-existing baseline — see
+      progress/phase-2-progress.json objective 10)*
+- [x] Deployed `.claude/scripts/git-commit-scoped.sh` is byte-identical to the source-store copy.
+      *(completed)*
 
 ## Artifacts & Outputs
 

@@ -1,11 +1,27 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/226_fix_scoped_commit_dropping_staged_deletions/summaries/01_scoped-commit-staged-deletions-summary.md",
+      "summary": "Fixed git-commit-scoped.sh's V2 gate to three-way classify pathspecs so already-staged deletions and in-scope renames commit correctly; red-first T8/T9/T10 regression tests added, deployed tree refreshed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed git-commit-scoped.sh's V2 safety gate to classify already-staged deletions as a third outcome (committed but not re-added), closing the defect where a scoped commit silently dropped staged deletions/renames. Added red-first regression tests T8/T9/T10, updated header documentation, and refreshed the deployed .claude/ tree to byte-identical parity."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1789706595_9484a9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
