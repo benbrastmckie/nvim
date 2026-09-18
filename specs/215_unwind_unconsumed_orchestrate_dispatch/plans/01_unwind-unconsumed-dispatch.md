@@ -1,7 +1,7 @@
 # Implementation Plan: Task #215
 
 - **Task**: 215 - Unwind an unconsumed /orchestrate dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 213 (per-run cycle-budget change; confirmed already live by research)
 - **Research Inputs**: specs/215_unwind_unconsumed_orchestrate_dispatch/reports/01_unwind-unconsumed-dispatch.md

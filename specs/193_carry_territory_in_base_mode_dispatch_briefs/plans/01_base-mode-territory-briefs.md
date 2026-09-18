@@ -1,7 +1,7 @@
 # Implementation Plan: Task #193
 
 - **Task**: 193 - Carry concurrent-sibling territory in base-mode dispatch briefs
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (197 and 213 already landed; 165 is a coordination target, not a blocker)
 - **Research Inputs**: specs/193_carry_territory_in_base_mode_dispatch_briefs/reports/01_base-mode-territory-population.md
