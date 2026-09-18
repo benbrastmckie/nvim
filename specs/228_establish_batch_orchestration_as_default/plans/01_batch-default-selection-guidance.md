@@ -207,27 +207,38 @@ after editing; a diff touching any other file in this phase is a scope error.
 
 ---
 
-### Phase 3: Cross-file verification and index line_count handling [NOT STARTED]
+### Phase 3: Cross-file verification and index line_count handling [IN PROGRESS]
 
 **Goal**: Confirm the acceptance criteria end to end and handle the index metadata drift safely.
 
 **Tasks**:
-- [ ] Acceptance walk: read the new section as a user with five open same-topic tasks and confirm
+- [x] Acceptance walk: read the new section as a user with five open same-topic tasks and confirm
       it yields one specific invocation with no interpretation required; confirm each of the
-      three pairwise conflicts has a stated winner.
-- [ ] Confirm no file outside the four in `file_scope` was modified by this task
+      three pairwise conflicts has a stated winner. *(completed: worked example resolves to
+      `/orchestrate A,B,C,D,E`; all three conflict-table rows have a definite winner -- Territory,
+      Territory, Topic)*
+- [x] Confirm no file outside the four in `file_scope` was modified by this task
       (`git log --stat` over this task's commits), and no script/predicate/dispatch file changed.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and
+      *(completed: git log --stat over commits 625afda1f, 89c221ea7, ea849d410, 5f5b69efa shows
+      only the four `file_scope` files plus this task's own `specs/228_...` artifacts)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and
       `bash agent-system/extensions/core/scripts/check-extension-docs.sh` (if runnable in this
-      repo); fix any new finding in the four touched files.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`.
+      repo); fix any new finding in the four touched files. *(completed: 0 unexempted
+      task-reference occurrences in all four touched files; check-extension-docs.sh's only [core]
+      FAIL is the expected `line_count` drift addressed by the next task, not a new finding)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`.
       If the guardrails entry's `line_count` is stale: check whether
       `agent-system/extensions/core/index-entries.json` has uncommitted changes or is claimed by an
       in-flight sibling (its `file_scope`/lock). If clean and unclaimed, update ONLY that entry's
       `line_count` (and optionally add `selection`/`batch-composition` keywords) as a single
       hunk and commit it with an explicit path. Otherwise do not touch it; record the drift in the
       implementation summary as a follow-up for `generate-context-line-counts.sh --write`.
-- [ ] Commit any fixes with explicit paths.
+      *(completed: `line_count` is stale (declared 1097, actual 1213) but
+      `index-entries.json` is currently dirty with concurrent sibling task 236's own declared-scope
+      changes -- left untouched per the plan's deviation rule; recorded as a follow-up in the
+      implementation summary)*
+- [x] Commit any fixes with explicit paths. *(completed: no fixes needed beyond the verification
+      walk itself -- nothing to commit for this task)*
 
 **Timing**: 0.75 hours
 
