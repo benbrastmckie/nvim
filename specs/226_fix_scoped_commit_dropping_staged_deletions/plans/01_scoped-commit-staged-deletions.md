@@ -1,7 +1,7 @@
 # Implementation Plan: Fix scoped commit dropping staged deletions
 
 - **Task**: 226 - Fix scoped commit dropping staged deletions
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md
@@ -87,32 +87,37 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Red-first regression tests for the three acceptance shapes [NOT STARTED]
+### Phase 1: Red-first regression tests for the three acceptance shapes [COMPLETED]
 
 **Goal**: Extend `test-git-commit-scoped.sh` with T8/T9/T10 covering the three ACCEPTANCE shapes,
 and record that each fails against the unpatched script.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` in full; reuse
+- [x] Read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` in full; reuse
       its `build_repo covered` / `run_commit` / `git show --name-status --format=""` pattern and
       its `pass()`/`fail()`/`info()` counter idiom (Class B `set -uo pipefail`; do NOT add `-e`).
-- [ ] T8 — deletion only: in a `covered` repo, `git rm specs/999_probe/file.txt`, invoke with
+      *(completed)*
+- [x] T8 — deletion only: in a `covered` repo, `git rm specs/999_probe/file.txt`, invoke with
       `specs/999_probe/file.txt` as the sole positive pathspec. Assert a commit landed and
       `git show --name-status` reports `D specs/999_probe/file.txt`. Record the current-script
       outcome in the failure message (research predicts the V3 post-filter refusal, exit 2, since
       filtering leaves zero positive entries) rather than asserting on exit code alone.
-- [ ] T9 — deletion mixed with a modification: add a second tracked file to the probe repo (or
+      *(completed)*
+- [x] T9 — deletion mixed with a modification: add a second tracked file to the probe repo (or
       create+commit `keep.txt` inside the test case), `git rm` one and modify the other, pass both
       paths as positive pathspecs. Assert ONE commit carries both `D` and `M`, and that
       `git status --short` is clean for both paths afterwards. This is the case that catches a
-      wrongly-scoped `git add` array — it must not be reduced to an exit-code check.
-- [ ] T10 — in-scope rename: `git mv old.txt new.txt` with both paths passed as positive
+      wrongly-scoped `git add` array — it must not be reduced to an exit-code check. *(completed)*
+- [x] T10 — in-scope rename: `git mv old.txt new.txt` with both paths passed as positive
       pathspecs. Assert the commit carries the delete half and the add half (accept either
       `D`+`A` or a detected `R100` in `git show --name-status`), and `git status --short` is clean
-      afterwards.
-- [ ] Run the suite against the unpatched script and capture the output showing T1-T7 green and
-      T8/T9/T10 red. Paste that evidence into the phase's completion note.
-- [ ] `shellcheck` the test file.
+      afterwards. *(completed)*
+- [x] Run the suite against the unpatched script and capture the output showing T1-T7 green and
+      T8/T9/T10 red. Paste that evidence into the phase's completion note. *(completed: T8 rc=2 V3
+      post-filter refusal; T9 commits only M keep.txt, D file.txt left staged; T10 commits only A
+      renamed.txt, D file.txt left staged — see progress/phase-1-progress.json objective 5)*
+- [x] `shellcheck` the test file. *(completed: also fixed two pre-existing SC2329 false positives
+      on info()/cleanup() with disable directives, unrelated to the T8-T10 additions)*
 
 **Timing**: 0.75 hours
 

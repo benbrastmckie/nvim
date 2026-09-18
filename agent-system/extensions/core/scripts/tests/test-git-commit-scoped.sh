@@ -35,6 +35,9 @@ FAILED=0
 
 pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
 fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
+# info() is part of the shared pass/fail/info() counter idiom (shell-script-testing.md);
+# unused in this file's current case set, hence never invoked.
+# shellcheck disable=SC2329
 info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
@@ -49,6 +52,8 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 TOP_WORKDIR="$(mktemp -d)"
+# cleanup() is invoked indirectly via `trap cleanup EXIT` below.
+# shellcheck disable=SC2329
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
 trap cleanup EXIT
 
@@ -265,6 +270,89 @@ if [ "$rc_t7" -eq 0 ] && [ "$after_t7" -eq $((before_t7 + 1)) ] \
   pass "T7: V2 unmatched-pathspec drop intact -- commit still lands with the valid path, WARN names the dropped pathspec"
 else
   fail "T7: expected rc=0, commit landed with file.txt, WARN naming nonexistent.txt; got rc=$rc_t7 before=$before_t7 after=$after_t7 show='$show_t7' output=$out_t7"
+fi
+
+# =====================================================================
+# T8: V2 gate — deletion-only scoped commit. A staged deletion (git rm) is absent from BOTH the
+# working tree and the index, which is exactly the shape the V2 gate currently treats as
+# "unmatched" and drops. Research predicts the current script hits the V3 post-filter refusal
+# (exit 2) since filtering the sole positive pathspec down to zero leaves a degenerate list, so
+# this asserts on the actual commit/status outcome, not on exit code alone, to stay meaningful
+# whichever way the current script fails.
+# =====================================================================
+
+repo_t8="$(build_repo covered)"
+git -C "$repo_t8" rm -q specs/999_probe/file.txt
+before_t8=$(git -C "$repo_t8" rev-list --count HEAD)
+out_t8="$(run_commit "$repo_t8" --message "T8 probe commit" --session "sess_t8" -- "specs/999_probe/file.txt" 2>&1)"
+rc_t8=$?
+after_t8=$(git -C "$repo_t8" rev-list --count HEAD 2>/dev/null || echo "$before_t8")
+show_t8="$(git -C "$repo_t8" show --name-status --format="" HEAD 2>/dev/null)"
+
+if [ "$after_t8" -eq $((before_t8 + 1)) ] && echo "$show_t8" | grep -qE '^D[[:space:]]+specs/999_probe/file\.txt$'; then
+  pass "T8: deletion-only scoped commit lands with D specs/999_probe/file.txt in HEAD"
+else
+  fail "T8: expected a new commit carrying 'D specs/999_probe/file.txt'; got rc=$rc_t8 before=$before_t8 after=$after_t8 show='$show_t8' output=$out_t8"
+fi
+
+# =====================================================================
+# T9: V2 gate — a staged deletion mixed with a modification in the SAME path set. This is the
+# case that catches a wrongly-scoped `git add` array: if the deletion's path were left in the
+# `git add` pathspec list, the single all-or-nothing `git add` invocation aborts (verified exit
+# 128), which would ALSO drop the modification from the commit even though its own path is
+# perfectly valid. Assert ONE commit carries both D and M, and that git status is clean for both
+# paths afterwards — not an exit-code check alone.
+# =====================================================================
+
+repo_t9="$(build_repo covered)"
+echo "keep1" > "$repo_t9/specs/999_probe/keep.txt"
+git -C "$repo_t9" add specs/999_probe/keep.txt
+git -C "$repo_t9" commit -q -m "add keep.txt"
+git -C "$repo_t9" rm -q specs/999_probe/file.txt
+echo "keep2" >> "$repo_t9/specs/999_probe/keep.txt"
+before_t9=$(git -C "$repo_t9" rev-list --count HEAD)
+out_t9="$(run_commit "$repo_t9" --message "T9 probe commit" --session "sess_t9" -- "specs/999_probe/file.txt" "specs/999_probe/keep.txt" 2>&1)"
+rc_t9=$?
+after_t9=$(git -C "$repo_t9" rev-list --count HEAD 2>/dev/null || echo "$before_t9")
+show_t9="$(git -C "$repo_t9" show --name-status --format="" HEAD 2>/dev/null)"
+status_t9="$(git -C "$repo_t9" status --short -- specs/999_probe/file.txt specs/999_probe/keep.txt 2>/dev/null)"
+
+if [ "$after_t9" -eq $((before_t9 + 1)) ] \
+  && echo "$show_t9" | grep -qE '^D[[:space:]]+specs/999_probe/file\.txt$' \
+  && echo "$show_t9" | grep -qE '^M[[:space:]]+specs/999_probe/keep\.txt$' \
+  && [ -z "$status_t9" ]; then
+  pass "T9: one commit carries both D specs/999_probe/file.txt and M specs/999_probe/keep.txt; git status clean afterwards"
+else
+  fail "T9: expected one commit with D file.txt + M keep.txt and clean status; got rc=$rc_t9 before=$before_t9 after=$after_t9 show='$show_t9' status='$status_t9' output=$out_t9"
+fi
+
+# =====================================================================
+# T10: V2 gate — in-scope rename. git records a rename as a delete plus an add; both halves are
+# passed as positive pathspecs. Accept either the raw D+A shape or a detected R100 rename in
+# `git show --name-status`, and assert git status is clean afterwards for both paths.
+# =====================================================================
+
+repo_t10="$(build_repo covered)"
+git -C "$repo_t10" mv specs/999_probe/file.txt specs/999_probe/renamed.txt
+before_t10=$(git -C "$repo_t10" rev-list --count HEAD)
+out_t10="$(run_commit "$repo_t10" --message "T10 probe commit" --session "sess_t10" -- "specs/999_probe/file.txt" "specs/999_probe/renamed.txt" 2>&1)"
+rc_t10=$?
+after_t10=$(git -C "$repo_t10" rev-list --count HEAD 2>/dev/null || echo "$before_t10")
+show_t10="$(git -C "$repo_t10" show --name-status --format="" HEAD 2>/dev/null)"
+status_t10="$(git -C "$repo_t10" status --short -- specs/999_probe/file.txt specs/999_probe/renamed.txt 2>/dev/null)"
+
+rename_ok=false
+if echo "$show_t10" | grep -qE '^R100[[:space:]]+specs/999_probe/file\.txt[[:space:]]+specs/999_probe/renamed\.txt$'; then
+  rename_ok=true
+elif echo "$show_t10" | grep -qE '^D[[:space:]]+specs/999_probe/file\.txt$' \
+  && echo "$show_t10" | grep -qE '^A[[:space:]]+specs/999_probe/renamed\.txt$'; then
+  rename_ok=true
+fi
+
+if [ "$after_t10" -eq $((before_t10 + 1)) ] && [ "$rename_ok" = "true" ] && [ -z "$status_t10" ]; then
+  pass "T10: in-scope rename commits both halves (D+A or R100); git status clean afterwards"
+else
+  fail "T10: expected one commit carrying both rename halves and clean status; got rc=$rc_t10 before=$before_t10 after=$after_t10 show='$show_t10' status='$status_t10' output=$out_t10"
 fi
 
 # =====================================================================
