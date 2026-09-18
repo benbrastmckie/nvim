@@ -40,6 +40,7 @@ REQUIRED_CORE_SCRIPTS=(
 REQUIRED_LIB_SCRIPTS=(
   common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh
   phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh status-vocabulary.sh
+  deploy-ledger-lib.sh
 )
 
 missing=()
