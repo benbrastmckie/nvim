@@ -343,6 +343,182 @@ else
 fi
 
 # =====================================================================
+# Stop-after-the-last-forced-phase (observed live incident regression): a task whose forced-phase
+# queue was seeded and exhausted THIS RUN must be excluded from dispatch for the rest of the run
+# -- never routed by status -- whether or not a later call in the same run repeats the flag.
+# Exercises orchestrate-cycle-plan.sh, the BATCH multi-task engine -- a FIFTH file this task's own
+# plan edits alongside the four resolved above, so it is resolved with the SAME source-store-first
+# inversion (never silently testing the stale deploy copy); every genuinely non-task-edited
+# batch-engine collaborator below keeps this suite's existing deploy-tree provenance.
+# =====================================================================
+info "=== stop-after-last-forced-phase (orchestrate-cycle-plan.sh, observed live incident) ==="
+
+CYCLE_PLAN="$(resolve_inverted "orchestrate-cycle-plan.sh" "orchestrate-cycle-plan.sh")" || exit 2
+echo "[INFO] resolved orchestrate-cycle-plan.sh -> $CYCLE_PLAN"
+case "$CYCLE_PLAN" in
+  "$SOURCE_STORE_SCRIPTS"/*)
+    pass "orchestrate-cycle-plan.sh resolved under agent-system/extensions/core/ (source-store copy)"
+    ;;
+  *)
+    echo "ERROR: orchestrate-cycle-plan.sh resolved to a non-source-store path ($CYCLE_PLAN) -- this suite would silently test the wrong copy. Refusing to continue." >&2
+    exit 2
+    ;;
+esac
+
+cp "$CYCLE_PLAN" "$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh"
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh"
+# Non-task-edited batch-engine collaborators: existing deploy-tree provenance, unchanged.
+for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh orchestrate-build-dispatch.sh \
+         orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh command-route-agent.sh; do
+  cp "$DEPLOY_SCRIPTS_SRC/$f" "$WORKDIR/.claude/scripts/$f"
+  chmod +x "$WORKDIR/.claude/scripts/$f"
+done
+mkdir -p "$WORKDIR/.claude/context/reference"
+cp "$REPO_ROOT/.claude/context/reference/orchestrator-critical-paths.json" \
+   "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json"
+
+CYCLE_PLAN_SUT="$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh"
+run_cycle_plan() {
+  bash "$CYCLE_PLAN_SUT" "$@" --state-file "$WORKDIR/specs/state.json"
+}
+
+# A fresh candidate (#2), independent of #1's mutations above, starting at "planned" so that an
+# ORDINARY (unforced) classification would route it to "implement" -- distinguishing the
+# exclusion below from an ordinary status-derived dispatch.
+"$WORKDIR/.claude/scripts/state-write.sh" \
+  '.active_projects += [{"project_number": 2, "project_name": "fixture_task_fphase", "status": "planned", "task_type": "general", "dependencies": [], "file_scope": [], "next_artifact_number": 1}] | .next_project_number = 3' \
+  --session-id "sess_test_fphase_setup"
+mkdir -p "$WORKDIR/specs/002_fixture_task_fphase/reports"
+
+FPHASE_SESSION="sess_test_fphase"
+FPHASE_MT_STATE="$WORKDIR/specs/.orchestrator-multi-state-${FPHASE_SESSION}.json"
+rm -f "$FPHASE_MT_STATE"
+find "$WORKDIR/specs" -maxdepth 2 -type d -name '.lock' -exec rm -rf {} + 2>/dev/null || true
+
+# Cycle 1: forced research dispatches (LIVE). "research dispatched and postflighted" is
+# simulated by directly writing the post-postflight status (researched) once the dispatch itself
+# is confirmed below -- this suite's domain is the batch engine's OWN persistence
+# (force_phases_remaining/forced_round_seeded/dispatch bookkeeping), not
+# orchestrate-cycle-postflight.sh's separate artifact/status-write mechanics, out of scope here.
+fphase_cycle1_out=$(run_cycle_plan --session "$FPHASE_SESSION" --no-plan-cache --force-phases research 2)
+fphase_cycle1_exit=$?
+if [ "$fphase_cycle1_exit" -eq 0 ] && \
+   [ "$(echo "$fphase_cycle1_out" | jq -r '.dispatch | map(select(.task == 2 and .phase == "research")) | length')" = "1" ]; then
+  pass "cycle 1: forced research round dispatches candidate #2 (exit 0)"
+else
+  fail "cycle 1: expected a forced research dispatch for candidate #2 (exit $fphase_cycle1_exit): $fphase_cycle1_out"
+fi
+fphase_dispatch_files_before=$(find "$WORKDIR/specs/002_fixture_task_fphase/.dispatch" -type f 2>/dev/null | wc -l | tr -d ' ')
+
+"$WORKDIR/.claude/scripts/state-write.sh" \
+  '(.active_projects[] | select(.project_number == 2) | .status) = "researched"' \
+  --session-id "sess_test_fphase_postflight"
+
+fphase_cycle_before=$(jq -r --arg t "2" '.cycle_counts[$t] // 0' "$FPHASE_MT_STATE" 2>/dev/null)
+
+# Case (1): a SECOND live call, SAME session, WITH the flag repeated.
+fphase_cycle2_out=$(run_cycle_plan --session "$FPHASE_SESSION" --no-plan-cache --force-phases research 2)
+fphase_cycle2_exit=$?
+fphase_status_after_2=$(jq -r '.active_projects[] | select(.project_number == 2) | .status' "$WORKDIR/specs/state.json")
+fphase_cycle_after_2=$(jq -r --arg t "2" '.cycle_counts[$t] // 0' "$FPHASE_MT_STATE" 2>/dev/null)
+fphase_dispatch_files_after_2=$(find "$WORKDIR/specs/002_fixture_task_fphase/.dispatch" -type f 2>/dev/null | wc -l | tr -d ' ')
+if [ "$fphase_cycle2_exit" -eq 0 ] && \
+   [ "$(echo "$fphase_cycle2_out" | jq -r '.dispatch | map(select(.task == 2)) | length')" = "0" ]; then
+  pass "case 1 (repeated flag): zero dispatch rows for candidate #2"
+else
+  fail "case 1 (repeated flag): expected zero dispatch rows (exit $fphase_cycle2_exit): $fphase_cycle2_out"
+fi
+if [ "$fphase_status_after_2" = "researched" ]; then
+  pass "case 1: status stays 'researched' (no regression)"
+else
+  fail "case 1: status changed to '$fphase_status_after_2'"
+fi
+if [ "$fphase_dispatch_files_after_2" = "$fphase_dispatch_files_before" ]; then
+  pass "case 1: no new dispatch file written"
+else
+  fail "case 1: dispatch file count changed ($fphase_dispatch_files_before -> $fphase_dispatch_files_after_2)"
+fi
+if [ "$fphase_cycle_after_2" = "$fphase_cycle_before" ]; then
+  pass "case 1: cycle_counts unchanged ($fphase_cycle_after_2)"
+else
+  fail "case 1: cycle_counts changed ($fphase_cycle_before -> $fphase_cycle_after_2)"
+fi
+
+# Case (2): a live call WITHOUT the flag -- must ALSO be excluded (proves the exclusion is
+# driven by the persisted forced_round_seeded marker for THIS run, not by the flag's own
+# presence/absence on any individual call).
+fphase_cycle3_out=$(run_cycle_plan --session "$FPHASE_SESSION" --no-plan-cache 2)
+fphase_cycle3_exit=$?
+fphase_status_after_3=$(jq -r '.active_projects[] | select(.project_number == 2) | .status' "$WORKDIR/specs/state.json")
+fphase_cycle_after_3=$(jq -r --arg t "2" '.cycle_counts[$t] // 0' "$FPHASE_MT_STATE" 2>/dev/null)
+fphase_dispatch_files_after_3=$(find "$WORKDIR/specs/002_fixture_task_fphase/.dispatch" -type f 2>/dev/null | wc -l | tr -d ' ')
+if [ "$fphase_cycle3_exit" -eq 0 ] && \
+   [ "$(echo "$fphase_cycle3_out" | jq -r '.dispatch | map(select(.task == 2)) | length')" = "0" ]; then
+  pass "case 2 (flag omitted): zero dispatch rows for candidate #2"
+else
+  fail "case 2 (flag omitted): expected zero dispatch rows (exit $fphase_cycle3_exit): $fphase_cycle3_out"
+fi
+if [ "$fphase_status_after_3" = "researched" ]; then
+  pass "case 2: status stays 'researched' (no regression)"
+else
+  fail "case 2: status changed to '$fphase_status_after_3'"
+fi
+if [ "$fphase_dispatch_files_after_3" = "$fphase_dispatch_files_before" ]; then
+  pass "case 2: no new dispatch file written"
+else
+  fail "case 2: dispatch file count changed ($fphase_dispatch_files_before -> $fphase_dispatch_files_after_3)"
+fi
+if [ "$fphase_cycle_after_3" = "$fphase_cycle_before" ]; then
+  pass "case 2: cycle_counts unchanged ($fphase_cycle_after_3)"
+else
+  fail "case 2: cycle_counts changed ($fphase_cycle_before -> $fphase_cycle_after_3)"
+fi
+if [ "$(echo "$fphase_cycle3_out" | jq -r '.blocked | map(select(.task == 2 and (.reason | contains("forced round complete")))) | length')" = "1" ]; then
+  pass "case 2: a forced_round_complete blocked[] row is present"
+else
+  fail "case 2: expected a forced_round_complete blocked[] row, got: $fphase_cycle3_out"
+fi
+
+# Counter-case: an UNFORCED multi-phase session still advances research -> plan -> implement
+# (this fix must never touch ordinary, unforced routing).
+"$WORKDIR/.claude/scripts/state-write.sh" \
+  '.active_projects += [{"project_number": 3, "project_name": "fixture_task_unforced", "status": "not_started", "task_type": "general", "dependencies": [], "file_scope": [], "next_artifact_number": 1}] | .next_project_number = 4' \
+  --session-id "sess_test_unforced_setup"
+mkdir -p "$WORKDIR/specs/003_fixture_task_unforced/reports"
+UNFORCED_SESSION="sess_test_unforced"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-${UNFORCED_SESSION}.json"
+
+unforced_cycle1_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
+unforced_phase_1=$(echo "$unforced_cycle1_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')
+if [ "$unforced_phase_1" = "research" ]; then
+  pass "unforced counter-case: cycle 1 (not_started) advances to research"
+else
+  fail "unforced counter-case: cycle 1 expected phase=research, got '$unforced_phase_1': $unforced_cycle1_out"
+fi
+
+"$WORKDIR/.claude/scripts/state-write.sh" \
+  '(.active_projects[] | select(.project_number == 3) | .status) = "researched"' \
+  --session-id "sess_test_unforced_postflight_1"
+unforced_cycle2_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
+unforced_phase_2=$(echo "$unforced_cycle2_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')
+if [ "$unforced_phase_2" = "plan" ]; then
+  pass "unforced counter-case: cycle 2 (researched) advances to plan"
+else
+  fail "unforced counter-case: cycle 2 expected phase=plan, got '$unforced_phase_2': $unforced_cycle2_out"
+fi
+
+"$WORKDIR/.claude/scripts/state-write.sh" \
+  '(.active_projects[] | select(.project_number == 3) | .status) = "planned"' \
+  --session-id "sess_test_unforced_postflight_2"
+unforced_cycle3_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
+unforced_phase_3=$(echo "$unforced_cycle3_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')
+if [ "$unforced_phase_3" = "implement" ]; then
+  pass "unforced counter-case: cycle 3 (planned) advances to implement"
+else
+  fail "unforced counter-case: cycle 3 expected phase=implement, got '$unforced_phase_3': $unforced_cycle3_out"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

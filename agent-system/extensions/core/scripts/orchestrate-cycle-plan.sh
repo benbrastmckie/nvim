@@ -33,10 +33,14 @@
 #   dispatch_start_ts, dispatch_seq_counter, dispatch_seq, deferred_self_modifying,
 #   deferred_deploy_checkpoint, deployed_critical_paths, consecutive_no_dispatch_cycles,
 #   verify_deploy_baseline_notices, defer_ledger, detected_defects, forward_progress_violated,
-#   idle_overlap_ledger, cycle_modified_files. PLUS ONE genuinely NEW field this script introduces
+#   idle_overlap_ledger, cycle_modified_files. PLUS TWO genuinely NEW fields this script introduces
 #   (per-task force_phases consumption, a feature gap no prior stage closed):
 #   force_phases_remaining (map task_number(string) -> ordered array of not-yet-dispatched forced
-#   phases, canonical research/plan/implement order, popped as each forced phase is dispatched).
+#   phases, canonical research/plan/implement order, popped as each forced phase is dispatched);
+#   forced_round_seeded (map task_number(string) -> true, once `force_phases_remaining[t]` has ever
+#   been seeded for t THIS run — the marker `//` alone cannot supply, since it cannot distinguish
+#   "never forced this run" from "forced this run, queue since popped to []": see section (f)'s
+#   three-way branch, the "stop after the last forced phase" fix).
 # PLUS THREE MORE new fields (Phase 5's Decision 2 aux_dispatch[] emission): aux_pending (map
 #   task_number(string) -> {kind, ...} | absent — written by orchestrate-cycle-postflight.sh,
 #   read and cleared here), blocker_escalation_count and drift_inspection_count (maps
@@ -506,6 +510,7 @@ mt_json=$(jq -c \
   | .idle_overlap_ledger //= []
   | .cycle_modified_files //= []
   | .force_phases_remaining //= {}
+  | .forced_round_seeded //= {}
   | .aux_pending //= {}
   | .blocker_escalation_count //= {}
   | .drift_inspection_count //= {}
@@ -1363,7 +1368,8 @@ fi
 # (possibly now-shorter) queue from a prior cycle is never reseeded.
 if [ "$(echo "$canonical_force_phases_json" | jq 'length')" -gt 0 ]; then
   for t in "${eligible_tasks[@]}"; do
-    mt_set --arg t "$t" --argjson q "$canonical_force_phases_json" '.force_phases_remaining[$t] //= $q'
+    mt_set --arg t "$t" --argjson q "$canonical_force_phases_json" \
+      '.force_phases_remaining[$t] //= $q | .forced_round_seeded[$t] //= true'
   done
 fi
 
@@ -1372,11 +1378,23 @@ declare -A forced_this_cycle=()
 for t in "${eligible_tasks[@]}"; do
   remaining=$(echo "$mt_json" | jq -c --arg t "$t" '.force_phases_remaining[$t] // []')
   remaining_len=$(echo "$remaining" | jq 'length')
+  seeded_this_run=$(echo "$mt_json" | jq -r --arg t "$t" '.forced_round_seeded[$t] // false')
   if [ "$remaining_len" -gt 0 ]; then
+    # Queue non-empty -- today's behavior, unchanged.
     forced_phase=$(echo "$remaining" | jq -r '.[0]')
     effective_group[$t]="$forced_phase"
     forced_this_cycle[$t]="true"
+  elif [ "$seeded_this_run" = "true" ]; then
+    # Queue empty AND this run itself seeded it (as opposed to a task that was simply never
+    # forced this run) -- every phase this run's --research/--plan/--implement flag named has
+    # already been dispatched. This is THE fix: stop, do not fall through to triage_group[$t]'s
+    # ordinary status-derived routing. See the bucketing step below for the blocked[] row this
+    # verdict produces.
+    effective_group[$t]="forced_round_complete"
+    forced_this_cycle[$t]="false"
   else
+    # Never forced this run (no --force-phases flag was given, or this task was not named by
+    # it) -- ordinary status-derived routing, byte-for-byte unchanged from before this fix.
     effective_group[$t]="${triage_group[$t]:-skip}"
     forced_this_cycle[$t]="false"
   fi
@@ -1472,6 +1490,21 @@ for t in "${eligible_tasks[@]}"; do
     needs_human)
       mt_set --arg t "$t" '.failed_tasks = ((.failed_tasks + [($t|tonumber)]) | unique)'
       out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg r "${triage_reason[$t]:-handoff-triage needs_human}" '{task:$t, reason:$r}')")
+      continue
+      ;;
+    forced_round_complete)
+      # Phase 3 (stop after the last forced phase): this run's --force-phases queue for this task
+      # was seeded THIS run and has since been emptied by dispatching every phase it named --
+      # never routed by status. Sits here in the bucketing step, strictly BEFORE the lock probe,
+      # dispatch_seq mint, skill_preflight_update, orchestrate-build-dispatch.sh and the cycle
+      # charge below -- so no lock, no dispatch file, no status write and no cycle charge happen
+      # for this task this cycle, by construction (this `continue` exits the loop before any of
+      # them run). Decision (D4): blocked[], not a new top-level excluded[] array -- blocked[]
+      # already carries no-defect-just-a-rule reasons (see MAX_CYCLES above) and needs no schema
+      # change in orchestrate-cycle-postflight.sh or SKILL.md Moves 2-4 (both already treat any
+      # blocked[] row as an inert, non-fatal per-task terminal-for-this-cycle outcome).
+      out_blocked_rows+=("$(jq -n -c --argjson t "$t" \
+        '{task: $t, reason: "forced round complete: every phase named by this run'"'"'s --research/--plan/--implement flag has been dispatched; this task is terminal for this run. Re-invoke /orchestrate to continue."}')")
       continue
       ;;
     skip|terminal|exit_partial|"")

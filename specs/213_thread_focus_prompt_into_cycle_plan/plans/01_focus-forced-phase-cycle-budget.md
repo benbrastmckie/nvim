@@ -246,26 +246,26 @@ survives spaces and embedded quotes.
 
 ---
 
-### Phase 3: Stop after the last forced phase [NOT STARTED]
+### Phase 3: Stop after the last forced phase [COMPLETED]
 
 **Goal**: Within one run, a task whose forced-phase queue has been fully consumed is excluded from
 dispatch for the rest of that run, with a clear reason — never routed by status.
 
 **Tasks**:
-- [ ] Add `.forced_round_seeded //= {}` to the `mt_json` defaults block
+- [x] Add `.forced_round_seeded //= {}` to the `mt_json` defaults block
       (`scripts/orchestrate-cycle-plan.sh` ~lines 468-500). This is the marker `//` cannot supply:
       jq's `//` cannot distinguish a never-seeded key from a queue popped down to `[]`.
-- [ ] In section (f)'s seeding loop (~lines 1344-1348), alongside
+- [x] In section (f)'s seeding loop (~lines 1344-1348), alongside
       `.force_phases_remaining[$t] //= $q`, set `.forced_round_seeded[$t] //= true` (same `//=`
       idempotence, so a later cycle in the same run never re-seeds).
-- [ ] In section (f)'s resolution loop (~lines 1350-1363), replace the bare `else` fall-through
+- [x] In section (f)'s resolution loop (~lines 1350-1363), replace the bare `else` fall-through
       with a three-way branch:
       - queue non-empty -> today's behavior, unchanged (`effective_group`, `forced_this_cycle=true`);
       - queue empty AND `.forced_round_seeded[$t] == true` -> `effective_group[$t]="forced_round_complete"`,
         `forced_this_cycle[$t]="false"`;
       - otherwise -> today's `triage_group[$t]` fall-through, unchanged (this is the "never forced
         this run" path, and runs with no forcing flag must keep behaving exactly as today).
-- [ ] In the bucketing step (~lines 1447-1470), handle `forced_round_complete` in the same `case`
+- [x] In the bucketing step (~lines 1447-1470), handle `forced_round_complete` in the same `case`
       that already handles `needs_human`/`skip`/`terminal`: emit an `out_blocked_rows` entry with
       reason `"forced round complete: every phase named by this run's --research/--plan/--implement
       flag has been dispatched; this task is terminal for this run. Re-invoke /orchestrate to
@@ -273,18 +273,18 @@ dispatch for the rest of that run, with a clear reason — never routed by statu
       array — `blocked[]` already carries no-defect-just-a-rule reasons (MAX_CYCLES) and needs no
       schema change in `orchestrate-cycle-postflight.sh` or SKILL.md Moves 2-4. Confirm that claim
       by grepping those two consumers for `.blocked` before relying on it.
-- [ ] Confirm by reading the control flow (no code needed) that this exclusion, sitting in the
+- [x] Confirm by reading the control flow (no code needed) that this exclusion, sitting in the
       bucketing step, runs BEFORE the lock probe, before `dispatch_seq` minting, before
       `skill_preflight_update`, before `orchestrate-build-dispatch.sh` and before the cycle charge
       — so the "no lock, no dispatch file, no status write, no cycle charge" acceptance clauses all
       hold by construction. Record that finding as a comment at the new branch.
-- [ ] Invert the existing assertion that codifies the defect:
+- [x] Invert the existing assertion that codifies the defect:
       `scripts/tests/test-orchestrate-cycle-plan.sh` Group 2 (~lines 154-194) and the Group 4/5
       continuation (~lines 348-391) — the block named "stop-after-last-named ... fall-through",
       whose cycle-2 assertions expect `phase == "implement"` / `force == "false"`. Cycle 2 must now
       assert: zero `dispatch[]` rows for that task, one `blocked[]` row carrying the new reason,
       status unchanged, `cycle_counts` unchanged.
-- [ ] Add the observed-incident regression cases to the EXISTING
+- [x] Add the observed-incident regression cases to the EXISTING
       `scripts/tests/test-force-phases.sh` (reusing its source-store-first `resolve_inverted`
       harness): a RESEARCHED task with `--force-phases research`, research dispatched and
       postflighted, then (1) a second live call WITH the flag and (2) a live call WITHOUT it. Both
@@ -319,7 +319,13 @@ in scope after all and the phase's step list grows.
   now asserting exclusion.
 - `shellcheck scripts/orchestrate-cycle-plan.sh scripts/tests/test-force-phases.sh` clean.
 - Manual: after a forced round completes, a `--dry-run` re-check shows the task under `-- Blocked --`
-  with the new reason.
+  with the new reason. *(deviation: altered — confirmed by reading orchestrate-cycle-plan.sh
+  (~line 468) that `--dry-run` unconditionally never reads the persisted `mt_state_file`
+  regardless of `--session`, a pre-existing design already documented by Group 21 Case C's own
+  comment; a `--dry-run` re-check therefore cannot literally observe `forced_round_seeded` state
+  left by a prior LIVE call. Verified manually via a second LIVE call instead, which does show
+  the `blocked[]` row -- exhaustively covered by the LIVE-to-LIVE fixture cases already added
+  above and in test-force-phases.sh.)*
 
 ---
 

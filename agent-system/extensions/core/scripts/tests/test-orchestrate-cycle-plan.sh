@@ -186,10 +186,11 @@ if [ "$(jqf '.dispatch | map(select(.task == 202)) | .[0].force')" = "false" ]; 
 else
   fail "forced-phases: expected .dispatch[].force=false for candidate #202, got: $LAST_STDOUT"
 fi
-# Stop-after-last-named fall-through -- exercised on the LIVE path (Group 4/5's stubbed
-# build-dispatch/update-task-status fixture, below), since --dry-run never persists
-# force_phases_remaining across invocations by design (matches its "mutates nothing" contract);
-# there is nothing to fall through FROM in a single, non-persisting dry-run call. See the
+# Stop-after-the-last-forced-phase (Phase 3 fix; this task no longer "falls through" once its
+# queue empties) is exercised on the LIVE path (Group 4/5's stubbed build-dispatch/
+# update-task-status fixture, below), since --dry-run never persists force_phases_remaining or
+# forced_round_seeded across invocations by design (matches its "mutates nothing" contract);
+# there is nothing to stop-after FROM in a single, non-persisting dry-run call. See the
 # "stop-after-last-named" assertions inside Group 4/5.
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -345,11 +346,11 @@ else
   fail "session-id invariant: mt_state_file not written for live dispatch"
 fi
 
-info "Group 4/5 (continued): per-candidate forced-phase stop-after-last-named fall-through (LIVE)"
+info "Group 4/5 (continued): per-candidate forced-phase stop-after-last-named (LIVE)"
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 501, "project_name": "g5_fallthrough", "task_type": "general", "status": "implementing", "description": "single-item forced queue; must fall through to status-derived (implement) once exhausted", "dependencies": [], "file_scope": []}
+    {"project_number": 501, "project_name": "g5_fallthrough", "task_type": "general", "status": "implementing", "description": "single-item forced queue; must STOP (never fall through to status-derived implement) once exhausted", "dependencies": [], "file_scope": []}
   ]
 }
 EOF
@@ -374,21 +375,38 @@ else
 fi
 # Cycle 2, same session (mt_state_file persists live state across separate invocations, mirroring
 # how the thin lead's loop calls this script once per cycle): the one-item queue popped in cycle 1
-# is now empty, so this cycle must fall through to ORDINARY status-derived classification
-# (status is still "implementing" in state.json -- unaffected by dispatch -- which routes to
-# implement), never re-force research. No --force-phases is passed this time, proving the
-# fall-through is driven by the persisted (now-empty) queue, not by the flag's absence alone.
+# is now empty AND this run itself seeded it (forced_round_seeded[501]=true) -- Phase 3's fix
+# means this task is now excluded, terminal for the REST OF THIS RUN: zero dispatch rows, one
+# blocked[] row carrying the "forced round complete" reason, status unchanged, cycle_counts
+# unchanged. This inverts the OLD (defective) expectation that cycle 2 would fall through to
+# ORDINARY status-derived classification (implement) -- it must NOT any more. No --force-phases
+# is passed this time, proving the exclusion is driven by the persisted forced_round_seeded
+# marker, not by the flag's absence alone.
+g5_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g5_fallthrough_sess.json"
+g5_status_before=$(jq -r '.active_projects[] | select(.project_number == 501) | .status' "$STATE_FILE")
+g5_cycle_before=$(jq -r --arg t "501" '.cycle_counts[$t] // 0' "$g5_mt_state" 2>/dev/null)
 run_sut --session g5_fallthrough_sess --no-plan-cache -- 501
-cycle2_phase=$(jqf '.dispatch | map(select(.task == 501)) | .[0].phase')
-if [ "$cycle2_phase" = "implement" ]; then
-  pass "stop-after-last-named: cycle 2 falls through to status-derived classification (implement) once the forced queue is exhausted"
+g5_status_after=$(jq -r '.active_projects[] | select(.project_number == 501) | .status' "$STATE_FILE")
+g5_cycle_after=$(jq -r --arg t "501" '.cycle_counts[$t] // 0' "$g5_mt_state" 2>/dev/null)
+if [ "$(jqf '.dispatch | map(select(.task == 501)) | length')" = "0" ]; then
+  pass "stop-after-last-named: cycle 2 dispatches nothing once the forced queue this run seeded is exhausted (stop, not fall-through)"
 else
-  fail "stop-after-last-named: cycle 2 did not fall through (got '$cycle2_phase', stdout: $LAST_STDOUT)"
+  fail "stop-after-last-named: expected zero dispatch rows for candidate #501 on cycle 2, got: $LAST_STDOUT"
 fi
-if [ "$(jqf '.dispatch | map(select(.task == 501)) | .[0].force')" = "false" ]; then
-  pass "stop-after-last-named: cycle 2's dispatch row carries force=false (queue exhausted, ordinary dispatch)"
+if [ "$(jqf '.blocked | map(select(.task == 501 and (.reason | contains("forced round complete")))) | length')" = "1" ]; then
+  pass "stop-after-last-named: cycle 2 emits exactly one blocked[] row carrying the forced-round-complete reason"
 else
-  fail "stop-after-last-named: expected .dispatch[].force=false on cycle 2, got: $LAST_STDOUT"
+  fail "stop-after-last-named: expected one blocked[] row with the forced-round-complete reason, got: $LAST_STDOUT"
+fi
+if [ "$g5_status_before" = "$g5_status_after" ]; then
+  pass "stop-after-last-named: status unchanged across the exclusion cycle ($g5_status_after)"
+else
+  fail "stop-after-last-named: status changed -- before='$g5_status_before' after='$g5_status_after'"
+fi
+if [ "$g5_cycle_before" = "$g5_cycle_after" ]; then
+  pass "stop-after-last-named: cycle_counts unchanged across the exclusion cycle ($g5_cycle_after)"
+else
+  fail "stop-after-last-named: cycle_counts changed -- before='$g5_cycle_before' after='$g5_cycle_after'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
