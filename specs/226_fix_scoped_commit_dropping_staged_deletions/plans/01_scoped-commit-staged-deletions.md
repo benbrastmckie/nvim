@@ -1,7 +1,7 @@
 # Implementation Plan: Fix scoped commit dropping staged deletions
 
 - **Task**: 226 - Fix scoped commit dropping staged deletions
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/226_fix_scoped_commit_dropping_staged_deletions/reports/01_scoped-commit-staged-deletions.md
