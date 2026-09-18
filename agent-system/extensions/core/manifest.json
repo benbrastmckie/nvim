@@ -199,7 +199,6 @@
       "tests/test-lint-scoped-commit-boundary.sh",
       "tests/test-lint-state-writer-boundary.sh",
       "tests/test-lint-task-lookup-adoption.sh",
-      "tests/test-loop-guard-budget-override.sh",
       "tests/test-mint-dispatch-seq.sh",
       "tests/test-orchestrate-build-aux-dispatch.sh",
       "tests/test-orchestrate-build-dispatch.sh",
