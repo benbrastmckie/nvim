@@ -1,7 +1,7 @@
 # Implementation Plan: Task #236
 
 - **Task**: 236 - Define external process wait pattern
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (task 172 / `bounded-build-waiter.md` is a cross-reference, not a dependency)
 - **Research Inputs**: specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md

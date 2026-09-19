@@ -69,12 +69,12 @@
     {
       "project_number": 236,
       "project_name": "define_external_process_wait_pattern",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Define a canonical \"waiting on external processes\" pattern for dispatched subagents",
       "created": "2026-09-18T19:00:37Z",
-      "last_updated": "2026-09-18T23:28:26Z",
+      "last_updated": "2026-09-19T00:34:01Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/patterns/external-process-wait.md",
