@@ -30,6 +30,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/patterns/subagent-continuation-loop.md` - When continuing from handoffs
 - `@.claude/context/patterns/context-exhaustion-detection.md` - For context pressure monitoring
 - `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 4C git-checkpoint step)
+- `@.claude/context/patterns/external-process-wait.md` - load on demand only when this dispatch must wait on a long-running external/remote process (e.g. a CI run); see External Process Wait Discipline under Stage 4.5
 - For meta tasks: `@.claude/CLAUDE.md`, `@.claude/context/index.json`, existing skill/agent files
 - For code tasks: project-specific style guides and similar implementations
 
@@ -140,6 +141,26 @@ Throughout execution, monitor for signs of context pressure:
 - **If you find yourself re-reading files you already read**, this is a signal of context pressure — consider writing a handoff before continuing
 - **Before starting any operation that reads 3+ files**, check if a handoff would be safer
 - **If tool calls exceed ~50** and the phase is not nearly complete, proactively write a handoff
+
+**External Process Wait Discipline**: if this dispatch must wait on a long-running external or
+remote process (e.g. a CI run polled via `gh run watch`/`gh run view`), the wait itself is a
+distinct discipline from the context-pressure monitoring above -- see
+`@.claude/context/patterns/external-process-wait.md` for the full mechanics and worked example;
+the bullets below point to it rather than restating it.
+
+**MUST**:
+- Use a bounded, foreground, blocking wait (inner timeout below the harness's Bash-tool ceiling,
+  re-checked only while status is in-progress) -- external-process-wait.md Rule 1.
+- Finish all independent local work before entering any such wait -- Rule 5.
+- Cap cumulative waiting on one external process at ~45 minutes; on reaching the cap, stop
+  waiting and write a handoff (Stage 4C below) with the concrete resume command, returning
+  `status: "partial"` -- Rule 6.
+
+**MUST NOT**:
+- Issue no-op filler Bash calls (`:`, `true`, `date`, `echo waiting`) or status-only text turns to
+  keep a turn alive between polls -- Rule 2.
+- Use `run_in_background` or arm a Monitor to watch a CI/remote wait from within this dispatched
+  subagent -- Rule 3.
 
 **Derive `project_name` and `task_number` before first use**: delegation context supplies
 `plan_path` (`specs/{NNN}_{SLUG}/plans/...`). Derive `project_name` as the `{SLUG}` portion of

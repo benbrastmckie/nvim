@@ -121,24 +121,24 @@ the research agent contract.
 
 ---
 
-### Phase 2: Wire pointer into general-implementation-agent.md [NOT STARTED]
+### Phase 2: Wire pointer into general-implementation-agent.md [COMPLETED]
 
 **Goal**: Add the context reference line and the External Process Wait Discipline block inside
 Stage 4.5 of the implementation agent contract.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` right before
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` right before
       editing, and confirm the `#### Context Exhaustion Monitoring (Stage 4.5)` bullet list and
-      the following "**Derive `project_name` and `task_number` before first use**" paragraph.
-- [ ] Insert the report's Context References line immediately after the
+      the following "**Derive `project_name` and `task_number` before first use**" paragraph. *(completed)*
+- [x] Insert the report's Context References line immediately after the
       `checkpoint-before-overflow.md` line (the one mentioning Stage 4C). It points to "External
-      Process Wait Discipline under Stage 4.5".
-- [ ] Insert the report's bold-label block (`**External Process Wait Discipline**:` followed by
+      Process Wait Discipline under Stage 4.5". *(completed)*
+- [x] Insert the report's bold-label block (`**External Process Wait Discipline**:` followed by
       `**MUST**:` / `**MUST NOT**:` bullet lists) after the Stage 4.5 bullet list and before the
-      "Derive `project_name`" paragraph. Rule 6's bullet names "Stage 4C below".
-- [ ] Confirm that no task numbers appear in the added text and that lines stay at about 100
-      characters or less.
-- [ ] Commit only this file with `git add -- agent-system/extensions/core/agents/general-implementation-agent.md`.
+      "Derive `project_name`" paragraph. Rule 6's bullet names "Stage 4C below". *(completed)*
+- [x] Confirm that no task numbers appear in the added text and that lines stay at about 100
+      characters or less. *(completed)*
+- [x] Commit only this file with `git add -- agent-system/extensions/core/agents/general-implementation-agent.md`. *(completed)*
 
 **Timing**: 15 minutes
 
