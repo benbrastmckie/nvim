@@ -1,40 +1,8 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1789772261_c29003_239",
-  "task_number": 239,
-  "dispatch_seq": 12,
-  "findings_count": 9,
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
-      "summary": "Research on adding hooks/detect-noop-bash.sh: precedent-mapped structure (validate-meta-write.sh advisory shape, claude-stop-notify.sh per-session .claude/tmp state, guard-destructive-git.sh command-parsing technique, test-guard-destructive-git.sh test shape), classification rules, threshold/reset design options, and manifest/settings-hooks.json registration points."
-    }
-  ],
-  "next_steps": "Run /plan 239 to create implementation plan",
-  "memory_candidates": [
-    {
-      "content": "This repo's per-session hook state convention (never under specs/) is `.claude/tmp/<purpose>-<CC_SESSION_ID>`, keyed off the hook stdin JSON's `.session_id` field, created via `mkdir -p \"$SCRIPT_DIR/../tmp\" 2>/dev/null || true`. Precedent: hooks/claude-stop-notify.sh, hooks/events-log-lifecycle.sh, hooks/wezterm-preflight-status.sh. Do not confuse with the separate specs/tmp/-based GLOBAL (non-session-scoped) cooldown pattern used by hooks/memory-nudge.sh and hooks/tts-notify.sh, which is inside specs/ and not per-session.",
-      "category": "PATTERN",
-      "source_artifact": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hooks", "session-state", "claude-tmp", "advisory-hook", "postToolUse"]
-    },
-    {
-      "content": "hooks/guard-destructive-git.sh's technique for safely pattern-matching a Bash tool_input.command string: strip quoted spans with `sed -z 's/\"[^\"]*\"/\"\"/g' ... \"s/'[^']*'/''/g\"` (slurp mode so multi-line quotes are handled), then strip bash comments with a second line-mode sed pass, then split on `;`/`&`/`|` into segments before regex-matching each segment. This is the reusable, reviewed way to avoid false positives from tokens embedded in quoted strings/comments or from one non-trivial segment of an otherwise-trivial compound command.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["bash-parsing", "shellcheck", "command-classification", "guard-destructive-git", "quote-stripping"]
-    },
-    {
-      "content": "A hooks/*.sh script's regression test lives at scripts/tests/test-<script-under-test>.sh even when the script under test is in hooks/ not scripts/ (precedent: scripts/tests/test-guard-destructive-git.sh tests hooks/guard-destructive-git.sh). Both the new hook and its test must be registered in manifest.json: the hook in provides.hooks (alphabetical), the test in provides.scripts as \"tests/test-<name>.sh\".",
-      "category": "PATTERN",
-      "source_artifact": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["testing", "manifest-registration", "hooks", "shell-script-testing"]
-    }
-  ]
+  "status": "planned",
+  "artifacts": [{"type": "plan", "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md", "summary": "3-phase plan: advisory detect-noop-bash.sh PostToolUse hook, test suite, and settings/manifest registration."}],
+  "next_steps": "Run /implement 239 to execute the plan",
+  "metadata": {"session_id": "sess_1789772261_c29003_239", "agent_type": "planner-agent", "delegation_depth": 1, "delegation_path": ["orchestrator", "plan", "planner-agent"], "phase_count": 3, "estimated_hours": 2.5, "dependency_waves": [[1],[2],[3]]},
+  "memory_candidates": [],
+  "dispatch_seq": 15
 }

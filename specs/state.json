@@ -5,12 +5,12 @@
     {
       "project_number": 239,
       "project_name": "add_noop_bash_detection_hook",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Add an advisory PostToolUse hook that detects repeated no-op Bash calls",
       "created": "2026-09-18T19:00:37Z",
-      "last_updated": "2026-09-19T01:23:02Z",
+      "last_updated": "2026-09-19T01:25:05Z",
       "dependencies": [
         236
       ],
@@ -21,12 +21,17 @@
       ],
       "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE (optional hardening). A new hooks/detect-noop-bash.sh PostToolUse hook on Bash that classifies trivial no-op commands (`:`, `true`, bare `date`/`date -u`, `echo <literal>` with no side effects, `sleep` fragments) and tracks consecutive occurrences per session (state under a session-scoped temp/runtime path, never under specs/). After a small threshold (about 3 in a row) it injects an additionalContext corrective message naming context/patterns/external-process-wait.md and the bounded-wait idiom. It must be advisory only (never block), fail open on any internal error, reset the counter on any non-trivial command, and avoid false positives on legitimate one-off echo/date use. Register it in merge-sources/settings-hooks.json and the manifest.json hooks list following validate-meta-write.sh's precedent. Add a test covering classification, threshold, and reset. shellcheck clean.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "effort": "2.5 hours",
-      "session_id": "sess_1789772261_c29003_239",
+      "session_id": "sess_1789772261_c29003",
       "artifacts": [
         {
           "path": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
           "type": "report",
           "summary": "Research report with precedent mapping, classification design, threshold/reset options, manifest/settings-hooks.json registration points, and territory risk note (task 238 shares scripts/tests/ directory scope)."
+        },
+        {
+          "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md",
+          "type": "plan",
+          "summary": "3-phase plan for detect-noop-bash.sh hook, test, and registration."
         }
       ],
       "next_artifact_number": 2

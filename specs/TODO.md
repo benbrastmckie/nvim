@@ -43,7 +43,7 @@ next_project_number: 240
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 237 [PLANNED] — Wire the external-process wait pattern into the general...
 238 [PLANNED] — Carry an external-process wait-discipline pointer in every...
-239 [PLANNING] — Add an advisory PostToolUse hook that detects repeated no-op...
+239 [PLANNED] — Add an advisory PostToolUse hook that detects repeated no-op...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -87,11 +87,12 @@ next_project_number: 240
 
 ### 239. Add an advisory PostToolUse hook that detects repeated no-op Bash calls
 - **Effort**: 2.5 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
 - **Research**: [239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md]
+- **Plan**: [239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md]
 
 **Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
 

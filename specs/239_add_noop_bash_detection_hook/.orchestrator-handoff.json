@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 12,
-  "summary": "Researched hooks/detect-noop-bash.sh: mapped to existing precedents (validate-meta-write.sh advisory shape, claude-stop-notify.sh per-session .claude/tmp state, guard-destructive-git.sh quote/segment-aware command parsing, test-guard-destructive-git.sh test shape) and produced concrete classification, threshold, reset, and registration recommendations.",
+  "phase": "plan",
+  "status": "planned",
+  "dispatch_seq": 15,
+  "phases_completed": 0,
+  "phases_total": 3,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
-      "summary": "Research report with precedent mapping, classification design, threshold/reset options, manifest/settings-hooks.json registration points, and territory risk note (task 238 shares scripts/tests/ directory scope)."
+      "type": "plan",
+      "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md",
+      "summary": "3-phase plan for detect-noop-bash.sh hook, test, and registration."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
+  "summary": "Plan written: hook (1h), test suite (1h), settings/manifest registration (0.5h). Threshold rule decided: fire at 3, 6, 9...; NOOP_BASH_STATE_DIR override required for tests since core/tmp is not gitignored.",
   "blockers": [],
-  "next_action_hint": "Run /plan 239 to create the implementation plan for hooks/detect-noop-bash.sh."
+  "next_action_hint": "implement"
 }
