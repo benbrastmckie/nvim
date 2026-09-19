@@ -1,8 +1,44 @@
 {
-  "status": "planned",
-  "artifacts": [{"type": "plan", "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md", "summary": "3-phase plan: advisory detect-noop-bash.sh PostToolUse hook, test suite, and settings/manifest registration."}],
-  "next_steps": "Run /implement 239 to execute the plan",
-  "metadata": {"session_id": "sess_1789772261_c29003_239", "agent_type": "planner-agent", "delegation_depth": 1, "delegation_path": ["orchestrator", "plan", "planner-agent"], "phase_count": 3, "estimated_hours": 2.5, "dependency_waves": [[1],[2],[3]]},
-  "memory_candidates": [],
-  "dispatch_seq": 15
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/239_add_noop_bash_detection_hook/summaries/01_noop-bash-detection-hook-summary.md",
+      "summary": "Implemented and wired the advisory detect-noop-bash.sh PostToolUse hook plus its 40-assertion test suite; all 3 plan phases completed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added hooks/detect-noop-bash.sh, an advisory-only PostToolUse hook that detects streaks of 3+ consecutive trivial no-op Bash commands per session and surfaces the bounded-wait idiom from context/patterns/external-process-wait.md, with a 40-assertion fixture-driven test suite and full settings-hooks.json/manifest.json registration."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/hooks/detect-noop-bash.sh",
+    "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash gotcha: `while IFS= read -r line; do ...; done < <(printf '%s' \"$str\" | some_transform)` silently skips the body for the LAST (or only) line whenever the piped output lacks a trailing newline, because `read` returns nonzero on that final partial read even though it populates the variable. Fix: use `printf '%s\\n' \"$str\"` (note the explicit \\n) before piping into any line-based consumer (`tr`, `read` loops, etc.). This produced a real defect during implementation: a hook's segment-classification loop never executed its body at all, so every command was vacuously classified as trivial.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/239_add_noop_bash_detection_hook/summaries/01_noop-bash-detection-hook-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "while read", "trailing newline", "process substitution", "shell scripting gotcha"]
+    },
+    {
+      "content": "When writing a Bash-command-classifying hook (e.g. detecting trivial/no-op commands), do NOT reuse guard-destructive-git.sh's quote-blanking technique verbatim if the classification depends on content INSIDE quotes (e.g. whether an echo argument contains $/backtick for expansion). Quote-blanking is correct only when quoted content is inherently safe free text to ignore (e.g. commit messages); for a command whose quoted arguments are the actual executed/printed content, scan the raw (non-blanked) text for danger characters instead, and treat segment-splitting-only quote-safety as a separate, smaller concern with its own accepted (safe-direction) blind spot.",
+      "category": "PATTERN",
+      "source_artifact": "specs/239_add_noop_bash_detection_hook/summaries/01_noop-bash-detection-hook-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["hook design", "shell command classification", "quote stripping", "PostToolUse", "false positive avoidance"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1789772261_c29003",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
 }

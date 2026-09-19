@@ -1,17 +1,20 @@
 {
-  "phase": "plan",
-  "status": "planned",
-  "dispatch_seq": 15,
-  "phases_completed": 0,
-  "phases_total": 3,
+  "phase": "implement",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "summary": "Implemented and wired the advisory detect-noop-bash.sh PostToolUse hook (classification, per-session threshold counter, fail-open) plus a 40-assertion test suite; all 3 plan phases completed and verified.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md",
-      "summary": "3-phase plan for detect-noop-bash.sh hook, test, and registration."
+      "type": "summary",
+      "path": "specs/239_add_noop_bash_detection_hook/summaries/01_noop-bash-detection-hook-summary.md",
+      "summary": "Implementation summary for the detect-noop-bash.sh hook, its test suite, and manifest/settings wiring."
     }
   ],
-  "summary": "Plan written: hook (1h), test suite (1h), settings/manifest registration (0.5h). Threshold rule decided: fire at 3, 6, 9...; NOOP_BASH_STATE_DIR override required for tests since core/tmp is not gitignored.",
+  "phases_completed": 3,
+  "phases_total": 3,
   "blockers": [],
-  "next_action_hint": "implement"
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete; no further action required.",
+  "git_checkpoint": "0cdc4315b"
 }
