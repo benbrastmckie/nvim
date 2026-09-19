@@ -159,24 +159,29 @@ Stage 4.5 of the implementation agent contract.
 
 ---
 
-### Phase 3: Validate contracts and deliverable rules [NOT STARTED]
+### Phase 3: Validate contracts and deliverable rules [COMPLETED]
 
 **Goal**: Run the repo's contract and task-reference checks over both edited files and fix any
 findings.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh`, or its
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh`, or its
       per-file mode if it has one, and confirm neither edited file introduces a finding.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`. Also run
+      *(completed: ran scoped to agent-system/extensions/core/agents, 0 occurrences)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`. Also run
       `lint-contract-compliance.sh` if it applies to agent files. Confirm there are no new
       failures attributable to these edits. Compare against a pre-edit baseline if the lint was
-      already red.
-- [ ] Confirm that the referenced path `context/patterns/external-process-wait.md` exists in the
+      already red. *(completed: lint-agent-contracts.sh passed 104/104 checks, 0 failures;
+      lint-contract-compliance.sh is scoped to hard-mode contract wiring and does not apply to
+      these two non-hard agent files)*
+- [x] Confirm that the referenced path `context/patterns/external-process-wait.md` exists in the
       source store and that both blocks cite Rules 1, 2, 3, 5, 6 with numbers matching the
-      pattern file's `### N.` headings.
-- [ ] Confirm that `git status` shows no stray edits to `.claude/**`, extension agents, or
-      sibling-territory files from this task.
-- [ ] If a fix is needed, edit only the two target files and commit them by explicit path.
+      pattern file's `### N.` headings. *(completed: confirmed via grep, headings 1-6 match)*
+- [x] Confirm that `git status` shows no stray edits to `.claude/**`, extension agents, or
+      sibling-territory files from this task. *(completed: only this task's own plan file was
+      uncommitted; the two agent files were already committed by phase)*
+- [x] If a fix is needed, edit only the two target files and commit them by explicit path.
+      *(completed: no fix was needed)*
 
 **Timing**: 20 minutes
 
