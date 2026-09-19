@@ -1,7 +1,7 @@
 # Implementation Plan: Task #239
 
 - **Task**: 239 - Add no-op Bash detection hook
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md

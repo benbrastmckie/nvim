@@ -5,12 +5,12 @@
     {
       "project_number": 239,
       "project_name": "add_noop_bash_detection_hook",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Add an advisory PostToolUse hook that detects repeated no-op Bash calls",
       "created": "2026-09-18T19:00:37Z",
-      "last_updated": "2026-09-19T01:25:15Z",
+      "last_updated": "2026-09-19T01:48:51Z",
       "dependencies": [
         236
       ],
@@ -32,9 +32,15 @@
           "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md",
           "type": "plan",
           "summary": "3-phase plan for detect-noop-bash.sh hook, test, and registration."
+        },
+        {
+          "path": "specs/239_add_noop_bash_detection_hook/summaries/01_noop-bash-detection-hook-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the detect-noop-bash.sh hook, its test suite, and manifest/settings wiring."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added hooks/detect-noop-bash.sh, an advisory-only PostToolUse hook that detects streaks of 3+ consecutive trivial no-op Bash commands per session and surfaces the bounded-wait idiom from context/patterns/external-process-wait.md, with a 40-assertion fixture-driven test suite and full settings-hooks.json/manifest.json registration."
     },
     {
       "project_number": 238,
