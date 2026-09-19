@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "dispatch_seq": 10,
+  "phase": "research",
+  "summary": "Researched exact insertion points and MUST/MUST NOT bullet text for pointing general-research-agent.md and general-implementation-agent.md at external-process-wait.md, without editing the source files (research phase is report-only). Recommends deferring extension agent wiring to a follow-up task.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md",
+      "summary": "Documents exact MUST/MUST NOT pointer text and insertion points for referencing context/patterns/external-process-wait.md in both core agent contracts."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}

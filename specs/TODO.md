@@ -41,9 +41,9 @@ next_project_number: 240
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-237 [NOT STARTED] — Wire the external-process wait pattern into the general...
-238 [NOT STARTED] — Carry an external-process wait-discipline pointer in every...
-239 [NOT STARTED] — Add an advisory PostToolUse hook that detects repeated no-op...
+237 [RESEARCHED] — Wire the external-process wait pattern into the general...
+238 [RESEARCHING] — Carry an external-process wait-discipline pointer in every...
+239 [RESEARCHING] — Add an advisory PostToolUse hook that detects repeated no-op...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -87,7 +87,7 @@ next_project_number: 240
 
 ### 239. Add an advisory PostToolUse hook that detects repeated no-op Bash calls
 - **Effort**: 2.5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
@@ -104,7 +104,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 238. Carry an external-process wait-discipline pointer in every orchestrate dispatch file
 - **Effort**: 1.5 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
@@ -121,10 +121,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 237. Wire the external-process wait pattern into the general implementation and research agent contracts
 - **Effort**: 1 hour
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
+- **Research**: [237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md]
 
 **Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
 
