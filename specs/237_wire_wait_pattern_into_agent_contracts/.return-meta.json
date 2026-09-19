@@ -1,10 +1,29 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/237_wire_wait_pattern_into_agent_contracts/summaries/01_wire-wait-pattern-pointer-summary.md",
+      "summary": "Wired the external-process-wait.md pointer (MUST Rules 1/5/6, MUST NOT Rules 2/3, on-demand Context References line) into general-research-agent.md and general-implementation-agent.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an External Process Wait Discipline pointer block and on-demand Context References line to general-research-agent.md (between Stage 3.5 and Stage 3.6) and general-implementation-agent.md (inside Stage 4.5), citing external-process-wait.md's Rules 1, 2, 3, 5, and 6 by reference. Lints and task-reference checks pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "specs/237_wire_wait_pattern_into_agent_contracts/plans/01_wire-wait-pattern-pointer.md",
+    "specs/237_wire_wait_pattern_into_agent_contracts/summaries/01_wire-wait-pattern-pointer-summary.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1789772261_c29003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "dispatch_seq": 13,
-  "phase": "plan",
-  "summary": "Created 3-phase plan (~1h): wire external-process-wait.md pointer (MUST Rules 1/5/6, MUST NOT Rules 2/3, on-demand context reference) into general-research-agent.md (after Stage 3.5) and general-implementation-agent.md (inside Stage 4.5) in the source store, then run task-reference and agent-contract lints.",
+  "status": "implemented",
+  "dispatch_seq": 16,
+  "phase": "implement",
+  "summary": "Wired the external-process-wait.md pointer (MUST Rules 1/5/6, MUST NOT Rules 2/3, on-demand Context References line) into general-research-agent.md (between Stage 3.5 and Stage 3.6) and general-implementation-agent.md (inside Stage 4.5), each per phase 1/2. Phase 3 ran check-task-references.sh (0 findings) and lint-agent-contracts.sh (104/104 pass) with no new failures.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/237_wire_wait_pattern_into_agent_contracts/plans/01_wire-wait-pattern-pointer.md",
-      "summary": "3-phase plan wiring the external-process wait pattern pointer into both core agent contracts."
+      "type": "summary",
+      "path": "specs/237_wire_wait_pattern_into_agent_contracts/summaries/01_wire-wait-pattern-pointer-summary.md",
+      "summary": "Implementation summary for wiring the external-process wait pattern pointer into both core agent contracts."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 3,
   "blockers": []
 }
