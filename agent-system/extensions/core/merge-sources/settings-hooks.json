@@ -50,6 +50,12 @@
           { "type": "command", "command": "bash .claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'" },
           { "type": "command", "command": "bash .claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'" }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'" }
+        ]
       }
     ]
   }

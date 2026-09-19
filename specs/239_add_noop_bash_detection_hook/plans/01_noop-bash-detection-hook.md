@@ -222,25 +222,33 @@ by the suite's final PASSED count.
 
 ---
 
-### Phase 3: Register hook in settings-hooks.json and manifest.json [NOT STARTED]
+### Phase 3: Register hook in settings-hooks.json and manifest.json [COMPLETED]
 
 **Goal**: Wire the hook into the deploy so it fires on every Bash PostToolUse, and register both
 new files in the manifest.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/merge-sources/settings-hooks.json` and
+- [x] Re-read `agent-system/extensions/core/merge-sources/settings-hooks.json` and
       `agent-system/extensions/core/manifest.json` immediately before editing (shared files)
-- [ ] Append a second element to the `PostToolUse` array:
+      *(completed: confirmed no sibling-task changes since the earlier read this dispatch)*
+- [x] Append a second element to the `PostToolUse` array:
       `{"matcher": "Bash", "hooks": [{"type": "command", "command": "bash .claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'"}]}`
-- [ ] Add `"detect-noop-bash.sh"` to `provides.hooks` between `claude-stop-notify.sh` and
-      `events-log-artifact.sh`
-- [ ] Add `"tests/test-detect-noop-bash.sh"` to `provides.scripts` in the sorted position near
-      the other `tests/test-*` entries
-- [ ] Validate both files parse: `jq empty` on each
-- [ ] Locate and run any existing manifest/settings consistency test in `scripts/tests/` (e.g.
+      *(completed)*
+- [x] Add `"detect-noop-bash.sh"` to `provides.hooks` between `claude-stop-notify.sh` and
+      `events-log-artifact.sh` *(completed)*
+- [x] Add `"tests/test-detect-noop-bash.sh"` to `provides.scripts` in the sorted position near
+      the other `tests/test-*` entries *(completed: inserted between
+      `tests/test-deploy-verify-wiring.sh` and `tests/test-double-loading-check.sh`,
+      alphabetically correct)*
+- [x] Validate both files parse: `jq empty` on each *(completed)*
+- [x] Locate and run any existing manifest/settings consistency test in `scripts/tests/` (e.g.
       grep for `provides.hooks` or `settings-hooks.json` in test files) and confirm it passes
-- [ ] Commit with explicit file paths only (`git add -- <each file>`), message
-      `task 239 phase 3: register detect-noop-bash hook`
+      *(completed: no dedicated `provides.hooks`/`settings-hooks.json` grep hit under
+      `scripts/tests/`; ran the closest wiring-adjacent suites,
+      `test-deploy-verify-wiring.sh` (20/20) and `test-double-loading-check.sh` (16/16), both
+      pass)*
+- [x] Commit with explicit file paths only (`git add -- <each file>`), message
+      `task 239 phase 3: register detect-noop-bash hook` *(completed)*
 
 **Timing**: 0.5 hours
 
