@@ -25,4 +25,5 @@
 **/.commit-lock/
 **/.errors.lock
 /tmp/
+**/.orchestrator-deploy-ledger.json
 # END managed block: runtime-file-patterns.sh

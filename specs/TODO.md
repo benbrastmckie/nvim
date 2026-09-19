@@ -1,5 +1,5 @@
 ---
-next_project_number: 240
+next_project_number: 241
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 240
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,184,185,199,202,207,210,223,224,227 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,74,136,140,165,173,174,208 | 29,139,162,163,166,167,172,207,210 | core-agent-system, extensions, literature, ... |
-| 3 | 75,76,190,217,221 | 74,165,173,174 | core-agent-system, extensions |
+| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,74,139,165,173,174,208,224,227 | 29,162,163,167,172,207,210,240 | core-agent-system, extensions, literature, ... |
+| 3 | 75,76,136,140,190,217,221 | 74,139,165,166,173,174 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -23,11 +23,8 @@ next_project_number: 240
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
 129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
-139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
-  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
-  └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
-  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
+  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 172 [NOT STARTED] — Define a canonical bounded-wait idiom for detached builds
   └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
@@ -39,8 +36,12 @@ next_project_number: 240
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
-224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
-227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+240 [NOT STARTED] — Restore verify-deploy.sh to green by fixing its two remaining...
+  └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
+    └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
+    └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
+  └─ 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
+  └─ 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -81,6 +82,16 @@ next_project_number: 240
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 240. Restore verify deploy green
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Restore verify-deploy.sh to green by fixing its two remaining check failures. Only edit agent-system/extensions/core/** (never .claude/). (1) GATE 20 SUB-CHECK B: the eager-load total (measured by the deployed .claude/scripts/measure-eager-context.sh --check) is 66026 B against eager_load.baseline_bytes 65950 B in agent-system/extensions/core/context/config/orchestrator-context-budget.json, 76 B over. The growth came from the one-line batch-selection pointer added to agent-system/extensions/core/merge-sources/claudemd.md's Multi-task syntax paragraph (plus any other eager-set growth since the last re-baseline). Preferred fix: trim at least 76 B, ideally leaving a few hundred bytes of headroom, from the eager set (assembled CLAUDE.md merge sources + core rules/*.md) by collapsing restatement into pointers, without removing operational content. Fallback only if a trim is not reasonable: raise baseline_bytes with a dated, justified note in the config. Do not silently absorb growth. (2) GATE 17 SCOPED-COMMIT BOUNDARY LINT: agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose reports one violation at agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152, where the string 'git commit -m "true"' is a classifier test fixture (a non-trivial command the no-op Bash hook must not count), not a real commit call site. Fix by rewording the fixture so it no longer matches the lint pattern while still testing the same classification (preferred), or by adding a narrowly-scoped, documented line-level exemption per the lint's own allowlist convention. Keep all 40 assertions of test-detect-noop-bash.sh passing. VERIFY: run bash .claude/scripts/deploy-headless.sh and confirm RESULT is landed (exit 0), with 0 failed checks in verify-deploy.sh. ORDERING: tasks 224, 227, 139 and 140 edit eager-loaded files (merge-sources/claudemd.md, rules/pr-prohibition.md, rules/source-store-deploy-boundary.md, rules/git-workflow.md) and depend on this task so the headroom it restores is measured first.
+
+---
 
 ### 239. Add an advisory PostToolUse hook that detects repeated no-op Bash calls
 - **Effort**: 2.5 hours
@@ -223,7 +234,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 240
 - **Research**: [227_resolve_source_store_target_in_deployed_trees/reports/01_source-store-rule-has-no-target.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/rules/source-store-deploy-boundary.md and whatever deploy step is chosen to parameterize it (never .claude/**).
@@ -254,7 +265,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 240
 
 **Description**: Add a tamper-resistant single-use /please grant mechanism, a new git push guard, and grant checks in the destructive-git guard. Only agent-system/extensions/core/ is edited (hooks/, scripts/tests/, root-files/settings.json and/or merge-sources/settings-hooks.json, context/standards/git-safety.md), never .claude/.
 
@@ -1700,7 +1711,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 139, Task 215
+- **Dependencies**: Task 139, Task 215, Task 240
 
 **Description**: Give agent-system/extensions/core/hooks/guard-destructive-git.sh a SECOND, INDEPENDENT predicate that blocks or loudly warns on history rewrites (`git commit --amend`, `git reset` without `--hard`) when evidence of a concurrent writer exists. This is the enforcement half of the policy its predecessor task establishes in the rules and agent contracts.
 
@@ -1743,7 +1754,7 @@ DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 146, Task 194
+- **Dependencies**: Task 146, Task 194, Task 240
 
 **Description**: Bare git history rewrites (`git commit --amend`, `git reset` without `--hard`) are forbidden nowhere in the agent system, and the one place that looks like a prohibition is scoped so that it structurally cannot fire on the hazard that actually occurred. Add the prohibition to the rules and to the agent contracts, and correct the existing mis-scoped bullet rather than merely adding alongside it.
 
