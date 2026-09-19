@@ -1,28 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 11,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md",
-      "summary": "Identifies the unconditional-block placement (mirroring the always-rendered User-Decision Contract section, not the conditional Territory pointer) for a new wait-discipline pointer in orchestrate-build-dispatch.sh, exact pointer text, and the test additions needed across the base/hard x research/plan/implement matrix."
+      "type": "plan",
+      "path": "specs/238_carry_wait_pointer_in_dispatch_files/plans/01_wait-pointer-dispatch-plan.md",
+      "summary": "2-phase plan: add an unconditional Wait Discipline pointer section to orchestrate-build-dispatch.sh (before User-Decision Contract) with header note, then a new test group covering base/hard x research/plan/implement."
     }
   ],
-  "next_steps": "Run /plan 238 to create implementation plan",
+  "dispatch_seq": 14,
+  "next_steps": "Run /implement 238 to execute the plan",
+  "phase_count": 2,
+  "estimated_hours": 1.25,
+  "dependency_waves": 2,
   "metadata": {
     "session_id": "sess_1789772261_c29003_238",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "In orchestrate-build-dispatch.sh, every optional dispatch-file block (memory_context, lit_context, hard_contracts_block, deploy_freshness_context, the Territory pointer, prior_decisions_block) is rendered conditionally to preserve 'byte-identical when the feature is inactive.' The ONE existing exception is the trailing '## User-Decision Contract' block, which is echoed unconditionally with no surrounding if. When a task asks for an 'always-present' addition to this script's output, the User-Decision Contract block -- not the Territory pointer -- is the correct structural template to copy, even if the task description cites the Territory pointer's header-note as the naming/documentation precedent.",
-      "category": "PATTERN",
-      "source_artifact": "specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-build-dispatch", "dispatch-file", "unconditional-block", "byte-identical-invariant", "user-decision-contract"]
-    }
-  ]
+  "memory_candidates": []
 }
