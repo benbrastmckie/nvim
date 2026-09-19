@@ -6,7 +6,7 @@ next_project_number: 240
 
 ## Task Order
 
-*Updated 2026-09-18. Generated from state.json dependency graph.*
+*Updated 2026-09-19. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -188,6 +188,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md]
 - **Plan**: [228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md]
+- **Summary**: [228_establish_batch_orchestration_as_default/summaries/01_batch-default-selection-guidance-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

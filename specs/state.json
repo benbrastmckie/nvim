@@ -1053,9 +1053,15 @@
           "path": "specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md",
           "type": "plan",
           "summary": "3-phase documentation-only plan; canonical home is batch-orchestration-guardrails.md."
+        },
+        {
+          "path": "specs/228_establish_batch_orchestration_as_default/summaries/01_batch-default-selection-guidance-summary.md",
+          "type": "summary",
+          "summary": "3-phase documentation-only implementation: canonical batch-selection section, pointer edits, and cross-file verification with index-entries.json line_count deferred to avoid colliding with a concurrent sibling's declared scope."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added the canonical 'Batching Is the Default: Selection Criteria and Conflict Resolution' section to batch-orchestration-guardrails.md (posture, collision-visibility argument, three selection criteria, dominance rule with a definite winner for each pairwise conflict, MAX_TASKS=8 cap rule, and a deterministic worked example), pointed orchestrate.md/claudemd.md/multi-task-operations.md at it, and removed the contradicting 'common case' framing from multi-task-operations.md's Overview."
     }
   ],
   "completed_projects": [],

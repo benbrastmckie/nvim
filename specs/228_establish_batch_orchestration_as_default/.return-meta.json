@@ -25,22 +25,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/228_establish_batch_orchestration_as_default/summaries/01_batch-default-selection-guidance-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-task-references", "check-extension-docs", "REPO_ROOT", "source-store", "deploy-boundary"]
+      "suggested_keywords": [
+        "check-task-references",
+        "check-extension-docs",
+        "REPO_ROOT",
+        "source-store",
+        "deploy-boundary"
+      ]
     },
     {
       "content": "When a task requires ruling on N pairwise conflicts among competing selection/priority criteria, write them as a literal N-row table with one definite 'Winner' column value per row (never 'Situational' or 'it depends'). This is a concrete grep target a plan or reviewer can check to confirm the requirement was actually met as a rule, not just discussed as a consideration.",
       "category": "PATTERN",
       "source_artifact": "specs/228_establish_batch_orchestration_as_default/summaries/01_batch-default-selection-guidance-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["conflict-resolution", "dominance-rule", "plan-verification", "pairwise-conflict-table"]
+      "suggested_keywords": [
+        "conflict-resolution",
+        "dominance-rule",
+        "plan-verification",
+        "pairwise-conflict-table"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789772261_c29003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
