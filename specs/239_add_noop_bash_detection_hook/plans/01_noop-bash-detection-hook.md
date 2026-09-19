@@ -1,7 +1,7 @@
 # Implementation Plan: Task #239
 
 - **Task**: 239 - Add no-op Bash detection hook
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md
@@ -101,39 +101,50 @@ No roadmap context provided for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Implement detect-noop-bash.sh hook [NOT STARTED]
+### Phase 1: Implement detect-noop-bash.sh hook [COMPLETED]
 
 **Goal**: Create the advisory PostToolUse hook with classification, per-session counter,
 threshold message, and fail-open behavior.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/hooks/validate-meta-write.sh` and the
-      quote/comment-strip + segment-split section of `hooks/guard-destructive-git.sh`
-- [ ] Create `agent-system/extensions/core/hooks/detect-noop-bash.sh` (executable) with a header
+- [x] Re-read `agent-system/extensions/core/hooks/validate-meta-write.sh` and the
+      quote/comment-strip + segment-split section of `hooks/guard-destructive-git.sh` *(completed)*
+- [x] Create `agent-system/extensions/core/hooks/detect-noop-bash.sh` (executable) with a header
       comment describing purpose, advisory-only contract, state location, env overrides
-- [ ] Read stdin once (`INPUT=$(cat) || true`); extract `.tool_name`, `.tool_input.command`,
+      *(completed)*
+- [x] Read stdin once (`INPUT=$(cat) || true`); extract `.tool_name`, `.tool_input.command`,
       `.session_id` via guarded `jq`; if `jq` missing, tool is not `Bash`, command empty, or
-      session id empty/unsafe (restrict to `[A-Za-z0-9_-]`), print `{}` and exit 0
-- [ ] Implement `is_trivial_command`: strip quoted spans and comments (guard-destructive-git
+      session id empty/unsafe (restrict to `[A-Za-z0-9_-]`), print `{}` and exit 0 *(completed)*
+- [x] Implement `is_trivial_command`: strip quoted spans and comments (guard-destructive-git
       technique), reject if any `$`, backtick, `>`, `<`, `(`, or here-doc marker remains, split on
       `&&`, `||`, `;`, `|`, `&`, trim each segment, and require every non-empty segment to match
       one of: `:`, `true`, `date`, `date -u`, `sleep <N>[smh]?`, `echo`/`echo -n` followed only by
       literal words; a pipe into anything is non-trivial (only pipes between trivial segments are
       tolerated, and a pipe whose right side is non-trivial fails the all-trivial rule anyway)
-- [ ] Counter: state file `${NOOP_BASH_STATE_DIR:-$SCRIPT_DIR/../tmp}/noop-bash-count-<sid>`;
+      *(completed: the `$`/backtick/`>`/`<`/`(` reject scan runs on the raw, non-quote-blanked
+      text -- deliberately, since e.g. `echo "$SECONDS"` must be rejected even though the `$` sits
+      inside quotes; only segment splitting uses a simple, documented non-quote-aware split, whose
+      only failure mode is an extra, safe-direction "non-trivial" verdict)*
+- [x] Counter: state file `${NOOP_BASH_STATE_DIR:-$SCRIPT_DIR/../tmp}/noop-bash-count-<sid>`;
       `mkdir -p` guarded; on trivial, read integer (non-integer treated as 0), increment, write via
-      temp file + `mv`; on non-trivial, `rm -f` the state file and print `{}`
-- [ ] Threshold: `NOOP_BASH_THRESHOLD` (positive integer, default 3); when
+      temp file + `mv`; on non-trivial, `rm -f` the state file and print `{}` *(completed)*
+- [x] Threshold: `NOOP_BASH_THRESHOLD` (positive integer, default 3); when
       `count >= T && (count - T) % T == 0`, emit a single JSON object (built with `jq -n --arg`
       so the count is interpolated safely) whose `hookSpecificOutput.additionalContext` (match the
       exact output key shape `validate-meta-write.sh` uses) states: N consecutive no-op Bash calls
       detected; see `context/patterns/external-process-wait.md`; use a single bounded blocking
       wait (`timeout` below the Bash-tool ceiling paired with a status re-check), do independent
       work first, never fill waits with `:`/`true`/`date`/`echo` filler, never background/Monitor a
-      CI wait from inside a subagent; "This is advisory only and does not block."
-- [ ] Wrap all logic so any failure path prints `{}` and exits 0 (use `set -uo pipefail`
-      without `-e`, or `-e` with every risky step guarded, matching precedent)
-- [ ] Run `shellcheck` on the new hook; fix all findings without blanket disables
+      CI wait from inside a subagent; "This is advisory only and does not block." *(completed:
+      used the flat top-level `additionalContext` key, matching validate-meta-write.sh's own
+      exact output shape, per the parenthetical instruction to match that precedent)*
+- [x] Wrap all logic so any failure path prints `{}` and exits 0 (use `set -uo pipefail`
+      without `-e`, or `-e` with every risky step guarded, matching precedent) *(completed: used
+      `set -euo pipefail` with every risky command guarded via `|| true`/`|| fallback`, matching
+      validate-meta-write.sh/guard-destructive-git.sh precedent)*
+- [x] Run `shellcheck` on the new hook; fix all findings without blanket disables *(completed:
+      one SC2034 unused-variable finding fixed by removing the unused declaration; zero
+      disables used)*
 
 **Timing**: 1 hour
 
