@@ -1,20 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 10,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md",
-      "summary": "Documents exact MUST/MUST NOT pointer text and insertion points (near Stage 3.5 in general-research-agent.md, Stage 4.5 in general-implementation-agent.md) for referencing context/patterns/external-process-wait.md, plus a decision to defer extension agent wiring to a follow-up task."
+      "type": "plan",
+      "path": "specs/237_wire_wait_pattern_into_agent_contracts/plans/01_wire-wait-pattern-pointer.md",
+      "summary": "3-phase plan: add external-process-wait.md pointer blocks and on-demand context references to the core research and implementation agent contracts, then lint/validate."
     }
   ],
-  "findings_count": 6,
+  "next_steps": "Run /implement 237 to execute the plan",
+  "phase_count": 3,
+  "estimated_hours": 1,
+  "dependency_waves": [[1, 2], [3]],
   "memory_candidates": [],
-  "next_steps": "Run /plan 237 to create implementation plan",
   "metadata": {
     "session_id": "sess_1789772261_c29003_237",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  }
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 13
 }
