@@ -2,24 +2,27 @@
   "phase": 5,
   "phase_name": "Test Fixture Comment, Exit-3 Confirmation, and Acceptance Gates",
   "started_at": "2026-09-19T00:25:00Z",
-  "last_updated": "2026-09-19T01:10:00Z",
+  "last_updated": "2026-09-19T01:30:00Z",
   "objectives": [
     {"id": 1, "description": "Update fixture test baseline comment/pass message, keep -le 1 tolerance, shellcheck", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"]},
     {"id": 2, "description": "WORK item (4) confirmation against regeneration-is-manual-only.md", "status": "done", "files_touched": []},
     {"id": 3, "description": "Run verify-deploy.sh --skip-slow, expect Gate 20 A/B/C pass", "status": "done", "files_touched": []},
     {"id": 4, "description": "Run test-verify-deploy-context-budget.sh with long timeout/background", "status": "done", "files_touched": []},
-    {"id": 5, "description": "Deploy check: run deploy-headless.sh if no sibling deploy/verify process running", "status": "in_progress", "files_touched": []},
-    {"id": 6, "description": "Final re-measure eager total vs baseline", "status": "not_started", "files_touched": []}
+    {"id": 5, "description": "Deploy check: run deploy-headless.sh if no sibling deploy/verify process running", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Final re-measure eager total vs baseline", "status": "done", "files_touched": []}
   ],
-  "current_objective": 5,
+  "current_objective": 6,
   "approaches_tried": [
     {"approach": "Run fixture test with 150s foreground timeout", "result": "failed", "reason": "Suite takes longer than 150s against current repo size (~4 verify-deploy.sh invocations); killed by timeout mid-run, producing truncated 1-line output."},
-    {"approach": "Run fixture test with 8-minute background timeout via run_in_background", "result": "success", "reason": "Completed: 14 passed, 1 failed."}
+    {"approach": "Run fixture test with 8-minute background timeout via run_in_background", "result": "success", "reason": "Pre-deploy: 14 passed, 1 failed (baseline sanity check tripped by pre-deploy source/deployed drift, unrelated to Gate 20). Post-deploy: 15 passed, 0 failed."}
   ],
   "handoff_count": 0,
+  "deviations": [],
   "notes": [
-    "verify-deploy.sh --skip-slow on real repo: rc=1, 3 of 33 checks failed. Gate 20 sub-check A [PASS], sub-check C both files [PASS] (orchestrate.md 20228/21000, SKILL.md 19535/20000). Sub-check B [FAIL] (eager total 66026 > baseline 65950), attributed to sibling task 228's landed growth (Phase 1 finding), not absorbed per plan Non-Goals. The other 2 failing gates (doc-lint gate3, manifest-verification gate5) are pre-existing/expected mid-cycle drift: 'deployed != source' findings for files this task and siblings 228/236 edited in the source store but have not yet redeployed, plus one index-entries.json line_count mismatch owned by sibling 228's own Phase 3. None of these are defects introduced by this task.",
-    "test-verify-deploy-context-budget.sh: 14/15 passed. The one failure is the 'baseline fixture is not clean' sanity check, tripped by the same gate3/gate5 pre-deploy-drift findings above (gate20 finding lines=0 for this check, confirming Gate 20 itself is not implicated). All 5 Gate-20-specific case assertions (case1/2/3/4/5, covering exactly what this task's config/file changes affect) PASS cleanly.",
-    "Next: run deploy-headless.sh (no sibling deploy/verify process was running per ps aux check) to resync source store -> deployed tree, which should clear the gate3/gate5 drift findings; then re-run the fixture test to confirm a fully clean pass."
+    "verify-deploy.sh --skip-slow, pre-deploy: rc=1, 3 of 33 checks failed (doc-lint gate3, manifest-verification gate5 -- both pre-deploy source/deployed drift for files this task and siblings 228/236 edited but had not yet redeployed; Gate 20 sub-check B). Gate 20 sub-check A [PASS], sub-check C both files [PASS] (orchestrate.md 20228/21000 B, SKILL.md 19535/20000 B).",
+    "Ran deploy-headless.sh (no sibling deploy/verify process was running per ps aux check). Result: RESULT=landed_verify_red, exit 3. Post-deploy verify-deploy.sh --skip-slow: rc=1, 2 of 33 checks failed -- doc-lint/manifest-verification drift cleared (confirmed resynced); Gate 20 sub-check B still [FAIL] (66026 B > 65950 B baseline, attributed to sibling 228's landed growth, not absorbed per plan Non-Goals); a new, unrelated finding appeared -- validate-state.sh --deep: 'TODO.md is OUT OF SYNC with specs/state.json' -- a pre-existing/concurrent condition outside this task's file_scope, not caused by this task's edits (confirmed absent from the pre-deploy run minutes earlier; a concurrent sibling's own state.json commit landed in between).",
+    "test-verify-deploy-context-budget.sh post-deploy: 15 passed, 0 failed (fully clean).",
+    "Final re-measure: measure-eager-context.sh --check TOTAL 66026 B, still 76 B over baseline 65950 B, unchanged from the mid-Phase-1 measurement -- confirms the sibling-attributable state is stable, not a new or growing defect.",
+    "Phase closed as [COMPLETED WITH EXCLUSIONS]: two Testing & Validation criteria (verify-deploy.sh --skip-slow exit 0; deploy-headless.sh RESULT=landed_verify_clean) are not literally met, for two enumerated, reasoned, evidenced causes recorded in the plan's Phase 5 '#### Reasoned Exclusions' table -- sibling task 228's own landed growth (Gate 20 sub-check B), and an unrelated pre-existing TODO.md/state.json sync drift outside this task's scope. Both are outside this task's file_scope/control and not fixable within this dispatch; nothing remains for this task's own future dispatch to pick up."
   ]
 }

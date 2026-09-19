@@ -199,7 +199,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Test Fixture Comment, Exit-3 Confirmation, and Acceptance Gates [IN PROGRESS]
+### Phase 5: Test Fixture Comment, Exit-3 Confirmation, and Acceptance Gates [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Align the fixture test's commentary with the new zero-WARN baseline, record WORK item (4)'s confirmation, and verify every acceptance criterion.
 
@@ -208,8 +208,8 @@ Phases within the same wave can execute in parallel.
 - [x] WORK item (4): re-read `context/patterns/regeneration-is-manual-only.md`'s `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection against `deploy-headless.sh:88-169` and `command-gate-out.sh`'s `gate_out_rc=6` branch; if it does not already state that the completion-deploy gate treats exit 3 as a landed-but-red, baseline-relative pass-through (never stale/failed), add one short paragraph saying so. Otherwise record "confirmed, no change" in the summary. *(completed: confirmed, no change -- the subsection's own "Stage MT-3 step 7 collision -- DONE" paragraph already states orchestrate-cycle-plan.sh's inter-cycle redeploy checkpoint captures deploy-headless.sh's exit code explicitly, excludes ONLY exit 1/2 from baseline comparison, and falls through to it for exit 0 AND exit 3 alike)*
 - [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow`: expect rc 0 and Gate 20 lines `[PASS]` for eager-load total and both per-file ceilings (no `[WARN]`). *(completed with a known exception: Gate 20 sub-check A and sub-check C (both per-file ceilings) now [PASS]; sub-check B (eager-load total, 66026 B > 65950 B baseline) remains [FAIL], attributed in Phase 1 to sibling task 228's landed growth this same cycle -- per this plan's own Non-Goals/Risk-mitigation, NOT absorbed via a baseline move. Overall rc=1 because of this plus two pre-existing, unrelated gates: doc-lint (gate 3) and manifest-driven verification (gate 5) both report "content differs from source" / drift for files this task and its siblings edited in the source store but have not yet redeployed -- expected pre-deploy drift, resolved by deploy-headless.sh's own resync, not a defect)*
 - [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` (long timeout / background): expect pass. *(completed: initial 150s timeouts were too short for this suite's ~4 verify-deploy.sh invocations against the current repo size; re-run with an 8-minute background timeout -- see result below)*
-- [ ] Deploy check: if no sibling deploy/verify process is running (`ps aux | grep -E 'deploy-headless|verify-deploy'`), run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`, exit 0; otherwise record that `verify-deploy.sh --skip-slow` rc 0 is the equivalent inline gate set and defer the live deploy to orchestrate postflight.
-- [ ] Final re-measure: `measure-eager-context.sh --check` TOTAL <= baseline.
+- [x] Deploy check: if no sibling deploy/verify process is running (`ps aux | grep -E 'deploy-headless|verify-deploy'`), run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`, exit 0; otherwise record that `verify-deploy.sh --skip-slow` rc 0 is the equivalent inline gate set and defer the live deploy to orchestrate postflight. *(completed: no sibling deploy/verify process was running; ran deploy-headless.sh. Result: `RESULT=landed_verify_red`, exit 3 -- NOT landed_verify_clean, because 2 checks still fail post-deploy (Gate 20 sub-check B, attributed to sibling 228 above; and `validate-state.sh --deep`'s pre-existing "TODO.md is OUT OF SYNC with specs/state.json" finding, unrelated to this task and outside its file_scope). Per WORK item (4)'s confirmed contract this exit-3 is a landed-but-red pass-through, not a stale/failed misread, so the deploy is not blocked on it. The deploy DID clear the earlier doc-lint/manifest-verification drift findings (both were pre-deploy source-vs-deployed drift, now resynced) -- confirmed by re-running the fixture test post-deploy, which now passes 15/15 (see below).)*
+- [x] Final re-measure: `measure-eager-context.sh --check` TOTAL <= baseline. *(completed with the same known exception: TOTAL 66026 B, still 76 B over baseline 65950 B, unchanged from Phase 1 -- attributed to sibling task 228's landed growth, not this task's to absorb)*
 
 **Timing**: 0.75 hours
 
@@ -224,14 +224,21 @@ Phases within the same wave can execute in parallel.
 **Verification**:
 - All acceptance criteria below green; shellcheck clean on every touched shell file.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh --skip-slow` exiting 0 / Gate 20 sub-check B `[PASS]` | Sub-check B (eager-load total vs. `eager_load.baseline_bytes`) is red solely because sibling task 228 landed two commits to `merge-sources/claudemd.md` and `commands/orchestrate.md` this same cycle, growing the eager-loaded total. This plan's own Non-Goals ("Moving `eager_load.baseline_bytes` (unless Phase 1 finds sub-check B red -- conditional branch only)") and Risk-mitigation table ("If B is red and the growth is attributable to 228's own in-flight work, STOP and report it ... rather than bumping the baseline to absorb an unreviewed change") explicitly forbid absorbing this here; it is 228's regression to own, not this task's. | `git log --oneline` on `commands/orchestrate.md`/`merge-sources/claudemd.md` shows commits `625afda1f`/`ea849d410` ("task 228 phase 1/2"); `measure-eager-context.sh --check` TOTAL 66026 B vs. baseline 65950 B (76 B over); `git show ea849d410 --stat` confirms both files touched by that commit. |
+| `deploy-headless.sh` printing `RESULT=landed_verify_clean` | Blocked by the same sub-check B above, plus one unrelated pre-existing finding: `validate-state.sh --deep` reports "TODO.md is OUT OF SYNC with specs/state.json", a state/TODO regeneration drift outside this task's `agent-system/extensions/core/**` file_scope and unrelated to the eager-context-budget defect this task targets; per state-management.md, TODO.md is regenerated via `generate-todo.sh`, never hand-edited, and doing so here would touch files this task does not own amid concurrent sibling activity. | `bash .claude/scripts/validate-state.sh --deep specs/state.json` output: `[FAIL] TODO.md is OUT OF SYNC with specs/state.json (regenerated content differs)`; this finding was absent from the pre-deploy `verify-deploy.sh --skip-slow` run minutes earlier (a concurrent sibling's state.json commit landed in between), confirming it is unrelated to this task's own edits. |
+
 ## Testing & Validation
 
-- [ ] `verify-deploy.sh --skip-slow` exits 0; Gate 20 sub-checks A, B, C all `[PASS]` (no WARN lines).
-- [ ] `deploy-headless.sh` on an unchanged tree prints `RESULT=landed_verify_clean` / exit 0 (or the equivalence note, if a sibling deploy is in flight).
-- [ ] `test-verify-deploy-context-budget.sh` passes.
-- [ ] `eager_load.baseline_bytes` unchanged at 65950, or carries a new dated justification.
-- [ ] `shellcheck` clean for `verify-deploy.sh` and `test-verify-deploy-context-budget.sh`.
-- [ ] `check-task-references.sh --quiet` reports no findings; all edits are under `agent-system/extensions/core/**`, none under `.claude/**`.
+- [x] `verify-deploy.sh --skip-slow` exits 0; Gate 20 sub-checks A, B, C all `[PASS]` (no WARN lines). *(exclusion: sub-check A and C both [PASS]; sub-check B [FAIL], see Reasoned Exclusions above -- not fixable within this task's scope)*
+- [x] `deploy-headless.sh` on an unchanged tree prints `RESULT=landed_verify_clean` / exit 0 (or the equivalence note, if a sibling deploy is in flight). *(exclusion: prints `RESULT=landed_verify_red` / exit 3, see Reasoned Exclusions above; WORK item (4) confirms this is a correctly-handled landed-but-red pass-through, not a stale/failed misread)*
+- [x] `test-verify-deploy-context-budget.sh` passes. *(completed: 15 passed, 0 failed, post-deploy)*
+- [x] `eager_load.baseline_bytes` unchanged at 65950, or carries a new dated justification. *(completed: unchanged at 65950; the conditional re-baseline branch did not fire since the red state is attributable to sibling growth, not non-sibling growth)*
+- [x] `shellcheck` clean for `verify-deploy.sh` and `test-verify-deploy-context-budget.sh`. *(completed: both clean -- 0 new findings vs. before for verify-deploy.sh; 10 pre-existing info-level findings unchanged for test-verify-deploy-context-budget.sh)*
+- [x] `check-task-references.sh --quiet` reports no findings; all edits are under `agent-system/extensions/core/**`, none under `.claude/**`. *(completed: PASS, 0 occurrences; all edits under agent-system/extensions/core/**)*
 
 ## Artifacts & Outputs
 
