@@ -11,7 +11,7 @@ next_project_number: 240
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,184,185,199,202,207,210,223,224,227,228,235,236 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,184,185,199,202,207,210,223,224,227,235,236 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,136,140,165,173,174,208,237,238,239 | 29,139,162,163,166,167,172,207,210,236 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,190,217,221 | 74,165,173,174 | core-agent-system, extensions |
 
@@ -41,7 +41,6 @@ next_project_number: 240
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-228 [IMPLEMENTING] — Establish batch orchestration as the documented default, with...
 235 [IMPLEMENTING] — Re-baseline or reduce the eager-context budget:...
 236 [IMPLEMENTING] — Define a canonical "waiting on external processes" pattern...
   └─ 237 [NOT STARTED] — Wire the external-process wait pattern into the general...
@@ -184,7 +183,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 228. Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

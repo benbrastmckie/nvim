@@ -1040,12 +1040,12 @@
     {
       "project_number": 228,
       "project_name": "establish_batch_orchestration_as_default",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule",
       "created": "2026-09-17T20:27:14Z",
-      "last_updated": "2026-09-18T23:28:20Z",
+      "last_updated": "2026-09-19T00:33:47Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/patterns/multi-task-operations.md",
