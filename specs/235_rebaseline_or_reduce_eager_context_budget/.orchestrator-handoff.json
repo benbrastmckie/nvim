@@ -1,15 +1,21 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "summary": "Plan written: 5 phases, 3.5h. Planning-time verify-deploy --skip-slow already rc 0 (deploy-headless exits 0 today); remaining defect is Gate 20 sub-check C WARNs on SKILL.md and commands/orchestrate.md. commands/orchestrate.md edits are conditional on sibling 228 not implementing it.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 8,
+  "summary": "All 5 plan phases closed (Phase 5 as COMPLETED WITH EXCLUSIONS). Trimmed SKILL.md under its ceiling, moved commands/orchestrate.md's ceiling with a dated justification, refreshed budget config, confirmed exit-3 pass-through semantics need no code change. Gate 20 sub-check B remains red, attributed entirely to sibling task 228's own landed growth this cycle -- deliberately not absorbed.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/235_rebaseline_or_reduce_eager_context_budget/summaries/01_rebaseline-eager-context-budget-summary.md",
+      "summary": "Trimmed SKILL.md and moved commands/orchestrate.md's ceiling to resolve Gate 20 sub-check C; refreshed budget config; confirmed exit-3 semantics; closed Phase 5 with two reasoned, sibling/unrelated exclusions."
+    },
     {
       "type": "plan",
       "path": "specs/235_rebaseline_or_reduce_eager_context_budget/plans/01_rebaseline-eager-context-budget.md",
-      "summary": "5-phase plan resolving Gate 20 per-file ceiling WARNs, refreshing budget config, and verifying acceptance gates."
+      "summary": "5-phase plan, all phases COMPLETED (Phase 5 COMPLETED WITH EXCLUSIONS with a Reasoned Exclusions table)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": []
 }
