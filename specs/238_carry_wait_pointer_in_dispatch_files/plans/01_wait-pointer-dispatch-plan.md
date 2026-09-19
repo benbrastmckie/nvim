@@ -1,7 +1,7 @@
 # Implementation Plan: Task #238
 
 - **Task**: 238 - Carry an external-process wait-discipline pointer in every orchestrate dispatch file
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.25 hours
 - **Dependencies**: 236 (authored `context/patterns/external-process-wait.md`; complete, committed)
 - **Research Inputs**: specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md
