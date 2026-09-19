@@ -1,7 +1,7 @@
 # Implementation Plan: Task #237
 
 - **Task**: 237 - Wire the external-process wait pattern into the general implementation and research agent contracts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: 236 (created `context/patterns/external-process-wait.md`)
 - **Research Inputs**: specs/237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md

@@ -11,7 +11,7 @@ next_project_number: 240
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,184,185,199,202,207,210,223,224,227,237,238,239 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,172,177,184,185,199,202,207,210,223,224,227,238,239 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,136,140,165,173,174,208 | 29,139,162,163,166,167,172,207,210 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,190,217,221 | 74,165,173,174 | core-agent-system, extensions |
 
@@ -41,9 +41,8 @@ next_project_number: 240
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-237 [PLANNED] — Wire the external-process wait pattern into the general...
-238 [PLANNED] — Carry an external-process wait-discipline pointer in every...
-239 [PLANNED] — Add an advisory PostToolUse hook that detects repeated no-op...
+238 [IMPLEMENTING] — Carry an external-process wait-discipline pointer in every...
+239 [IMPLEMENTING] — Add an advisory PostToolUse hook that detects repeated no-op...
 190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
 
 ### Extensions
@@ -87,7 +86,7 @@ next_project_number: 240
 
 ### 239. Add an advisory PostToolUse hook that detects repeated no-op Bash calls
 - **Effort**: 2.5 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
@@ -106,7 +105,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 238. Carry an external-process wait-discipline pointer in every orchestrate dispatch file
 - **Effort**: 1.5 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
@@ -125,12 +124,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 237. Wire the external-process wait pattern into the general implementation and research agent contracts
 - **Effort**: 1 hour
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 236
 - **Research**: [237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md]
 - **Plan**: [237_wire_wait_pattern_into_agent_contracts/plans/01_wire-wait-pattern-pointer.md]
+- **Summary**: [237_wire_wait_pattern_into_agent_contracts/summaries/01_wire-wait-pattern-pointer-summary.md]
 
 **Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
 
