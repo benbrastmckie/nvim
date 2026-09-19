@@ -749,6 +749,91 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 14: wait-discipline pointer present in every dispatch -- the "## Wait Discipline" section
+# (pointing at context/patterns/external-process-wait.md) is UNCONDITIONAL, like "## User-Decision
+# Contract": it must appear across the full base/--hard x research/plan/implement matrix, exactly
+# once per dispatch file, and ahead of "## User-Decision Contract".
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 14: wait-discipline pointer present in every dispatch"
+
+# Base mode: research, plan, implement.
+run_sut research --clean --seq 14a
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Wait Discipline" "base research: Wait Discipline section present"
+  assert_contains "$content" "context/patterns/external-process-wait.md" "base research: pointer to external-process-wait.md present"
+else
+  fail "base research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut plan --clean --seq 14b
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Wait Discipline" "base plan: Wait Discipline section present"
+  assert_contains "$content" "context/patterns/external-process-wait.md" "base plan: pointer to external-process-wait.md present"
+else
+  fail "base plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut implement --clean --seq 14c
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Wait Discipline" "base implement: Wait Discipline section present"
+  assert_contains "$content" "context/patterns/external-process-wait.md" "base implement: pointer to external-process-wait.md present"
+else
+  fail "base implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Hard mode: research, plan, implement.
+run_sut research --clean --hard --seq 14d
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Wait Discipline" "hard research: Wait Discipline section present"
+  assert_contains "$content" "context/patterns/external-process-wait.md" "hard research: pointer to external-process-wait.md present"
+else
+  fail "hard research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut plan --clean --hard --seq 14e
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Wait Discipline" "hard plan: Wait Discipline section present"
+  assert_contains "$content" "context/patterns/external-process-wait.md" "hard plan: pointer to external-process-wait.md present"
+else
+  fail "hard plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut implement --clean --hard --seq 14f
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Wait Discipline" "hard implement: Wait Discipline section present"
+  assert_contains "$content" "context/patterns/external-process-wait.md" "hard implement: pointer to external-process-wait.md present"
+
+  # Single-occurrence guard: the pointer must never be double-emitted (e.g. via a future
+  # hard_contracts_block addition), even in the one mode/phase combination with the richest set
+  # of conditionally-rendered sections.
+  occurrence_count="$(grep -c "context/patterns/external-process-wait.md" "$LAST_DISPATCH_FILE")"
+  if [ "$occurrence_count" -eq 1 ]; then
+    pass "hard implement: external-process-wait.md pointer appears exactly once"
+  else
+    fail "hard implement: expected exactly 1 occurrence of the pointer, got $occurrence_count"
+  fi
+
+  # Ordering guard: "## Wait Discipline" precedes "## User-Decision Contract" (both are
+  # unconditional; Wait Discipline is written immediately before User-Decision Contract in the
+  # SUT's write block).
+  wait_line="$(grep -n "^## Wait Discipline$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
+  decision_line="$(grep -n "^## User-Decision Contract$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
+  if [ -n "$wait_line" ] && [ -n "$decision_line" ] && [ "$wait_line" -lt "$decision_line" ]; then
+    pass "hard implement: Wait Discipline section precedes User-Decision Contract"
+  else
+    fail "hard implement: expected Wait Discipline ($wait_line) before User-Decision Contract ($decision_line)"
+  fi
+else
+  fail "hard implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

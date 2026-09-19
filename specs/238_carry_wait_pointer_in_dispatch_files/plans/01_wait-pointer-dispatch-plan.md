@@ -126,15 +126,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Test coverage across the phase x mode matrix [NOT STARTED]
+### Phase 2: Test coverage across the phase x mode matrix [COMPLETED]
 
 **Goal**: A new test group asserts the pointer is present in base-mode and hard-mode dispatch
 output for research, plan and implement.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`
-  immediately before editing.
-- [ ] Add `Group 14: wait-discipline pointer present in every dispatch` before the Summary block,
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`
+  immediately before editing. *(completed)*
+- [x] Add `Group 14: wait-discipline pointer present in every dispatch` before the Summary block,
   using existing `run_sut` / `assert_contains` helpers, with six cases (distinct `--seq` values,
   e.g. 14a-14f):
   - base research (`research --clean`), base plan (`plan --clean`), base implement
@@ -143,18 +143,21 @@ output for research, plan and implement.
     (`implement --clean --hard`)
   - each asserts `assert_contains "$content" "context/patterns/external-process-wait.md"` and
     `assert_contains "$content" "## Wait Discipline"`; each fails loudly if the SUT did not
-    exit 0, following Group 13's pattern.
-- [ ] One additional assertion that the pointer appears exactly once per file
+    exit 0, following Group 13's pattern. *(completed)*
+- [x] One additional assertion that the pointer appears exactly once per file
   (`grep -c "context/patterns/external-process-wait.md"` equals 1) in at least the hard implement
-  case, guarding against a future double-emit via `hard_contracts_block`.
-- [ ] Optional: one ordering assertion that `## Wait Discipline` precedes
-  `## User-Decision Contract` (line-number comparison via `grep -n`).
-- [ ] Group header comment describes the behavior by durable anchor (script name, section name),
-  with no task numbers.
-- [ ] `shellcheck` the test file -- no new findings.
-- [ ] Run the full suite:
+  case, guarding against a future double-emit via `hard_contracts_block`. *(completed)*
+- [x] Optional: one ordering assertion that `## Wait Discipline` precedes
+  `## User-Decision Contract` (line-number comparison via `grep -n`). *(completed)*
+- [x] Group header comment describes the behavior by durable anchor (script name, section name),
+  with no task numbers. *(completed)*
+- [x] `shellcheck` the test file -- no new findings. *(completed: pre-existing SC2329 info-level
+  finding on the unrelated `cleanup()` function only)*
+- [x] Run the full suite:
   `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`
-  -- all groups pass, including pre-existing Groups 9, 10, 12 exact-diff checks.
+  -- all groups pass, including pre-existing Groups 9, 10, 12 exact-diff checks. *(completed:
+  106 passed, 0 failed; also confirmed the negative control -- temporarily reverting Phase 1's
+  echo lines made Group 14 fail with 14 failures, then restored to the clean 106/0 state)*
 
 **Timing**: 0.75 hours
 
