@@ -19,8 +19,11 @@
 # `.claude/` itself is symlinked wholesale -- gates 1/2 only stat/jq specific paths inside it,
 # never `find`-discover its contents, so a symlink resolves transparently there.
 #
-# This gives a clean baseline (verified empirically at implementation time: exit 0, exactly one
-# pre-existing WARN for commands/orchestrate.md already being over its ceiling in the real repo)
+# This gives a clean baseline (as of 2026-09-18, both commands/orchestrate.md and
+# skills/skill-orchestrate/SKILL.md are at or under their configured ceilings in the real repo,
+# so the baseline check below expects 0 gate20 finding lines; its `-le 1` tolerance is
+# deliberately kept, not tightened to `-eq 0`, since a concurrently-landing sibling task's
+# documentation growth could reintroduce a single pre-existing WARN before this suite next runs)
 # that every case below builds on by mutating ONLY the specific file(s) each case needs, so a
 # failing case points unambiguously at Gate 20 logic rather than fixture noise.
 #
@@ -110,14 +113,16 @@ run_gate20() {
 
 # =====================================================================
 # Baseline: confirm the fixture itself is clean before any case mutates it, so a later case's
-# failure cannot be blamed on fixture noise. The one expected WARN is the pre-existing
-# over-ceiling state of the real commands/orchestrate.md this fixture was copied from.
+# failure cannot be blamed on fixture noise. Both tracked files are at or under their configured
+# ceiling as of 2026-09-18, so 0 gate20 finding lines is the expected count; the `-le 1`
+# tolerance below is deliberately kept (not tightened) to absorb a single pre-existing WARN a
+# concurrently-landing sibling task's growth could reintroduce before this suite next runs.
 # =====================================================================
 baseline_out="$(run_gate20 warn)"
 baseline_rc=$?
 baseline_gate20_lines="$(printf '%s\n' "$baseline_out" | grep -c '^FINDING gate20 ')"
 if [ "$baseline_rc" -eq 0 ] && [ "$baseline_gate20_lines" -le 1 ]; then
-  pass "baseline fixture is clean (exit 0, at most the pre-existing commands/orchestrate.md WARN)"
+  pass "baseline fixture is clean (exit 0, at most one pre-existing per-file ceiling WARN)"
 else
   fail "baseline fixture is not clean (rc=$baseline_rc, gate20 finding lines=$baseline_gate20_lines) -- fixture setup is broken; later cases are unreliable" \
        "$(printf '%s\n' "$baseline_out" | tail -20)"
