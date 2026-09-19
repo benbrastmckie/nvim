@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 12,
+  "summary": "Researched hooks/detect-noop-bash.sh: mapped to existing precedents (validate-meta-write.sh advisory shape, claude-stop-notify.sh per-session .claude/tmp state, guard-destructive-git.sh quote/segment-aware command parsing, test-guard-destructive-git.sh test shape) and produced concrete classification, threshold, reset, and registration recommendations.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
+      "summary": "Research report with precedent mapping, classification design, threshold/reset options, manifest/settings-hooks.json registration points, and territory risk note (task 238 shares scripts/tests/ directory scope)."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "Run /plan 239 to create the implementation plan for hooks/detect-noop-bash.sh."
+}
