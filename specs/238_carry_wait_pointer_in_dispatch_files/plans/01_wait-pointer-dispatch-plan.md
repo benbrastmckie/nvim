@@ -1,7 +1,7 @@
 # Implementation Plan: Task #238
 
 - **Task**: 238 - Carry an external-process wait-discipline pointer in every orchestrate dispatch file
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.25 hours
 - **Dependencies**: 236 (authored `context/patterns/external-process-wait.md`; complete, committed)
 - **Research Inputs**: specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md
@@ -81,14 +81,14 @@ Not consulted (no roadmap_path in dispatch).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Emit the unconditional wait-discipline pointer [NOT STARTED]
+### Phase 1: Emit the unconditional wait-discipline pointer [COMPLETED]
 
 **Goal**: The dispatch builder writes a `## Wait Discipline` section into every dispatch file.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` immediately
-  before editing (concurrency note).
-- [ ] In the `{ ... } > "$dispatch_file"` block, immediately before `echo "## User-Decision Contract"`
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` immediately
+  before editing (concurrency note). *(completed)*
+- [x] In the `{ ... } > "$dispatch_file"` block, immediately before `echo "## User-Decision Contract"`
   and outside every `if`, add:
   ```bash
     echo "## Wait Discipline"
@@ -100,15 +100,15 @@ Phases within the same wave can execute in parallel.
   ```
   (One pointer sentence plus summary; line-wrapped to the file's ~100-column style. Exact wording
   may be tuned, but it MUST contain the literal path `context/patterns/external-process-wait.md`
-  and MUST NOT restate the pattern's numbered rules or numeric constants.)
-- [ ] Add a header comment paragraph (next to the `--territory` / Prior Decisions notes) stating:
+  and MUST NOT restate the pattern's numbered rules or numeric constants.) *(completed)*
+- [x] Add a header comment paragraph (next to the `--territory` / Prior Decisions notes) stating:
   the script unconditionally appends a `## Wait Discipline` pointer to every dispatch file it
   writes, in every phase and mode, so a dispatched agent receives the external-process wait
   discipline independent of which agent contract or `hard_contracts` routing it loads; this block
   and `## User-Decision Contract` are the two deliberate exceptions to the byte-identical-when-
-  inactive invariant and must not be gated. No task numbers in the comment.
-- [ ] `shellcheck agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` -- no new
-  findings.
+  inactive invariant and must not be gated. No task numbers in the comment. *(completed)*
+- [x] `shellcheck agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` -- no new
+  findings. *(completed: pre-existing SC2153/SC2012 info-level findings only, unrelated to new lines)*
 
 **Timing**: 0.5 hours
 

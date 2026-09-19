@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/238_carry_wait_pointer_in_dispatch_files/plans/01_wait-pointer-dispatch-plan.md",
-      "summary": "2-phase plan: add an unconditional Wait Discipline pointer section to orchestrate-build-dispatch.sh (before User-Decision Contract) with header note, then a new test group covering base/hard x research/plan/implement."
-    }
-  ],
-  "dispatch_seq": 14,
-  "next_steps": "Run /implement 238 to execute the plan",
-  "phase_count": 2,
-  "estimated_hours": 1.25,
-  "dependency_waves": 2,
+  "status": "in_progress",
+  "dispatch_seq": 17,
   "metadata": {
-    "session_id": "sess_1789772261_c29003_238",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": []
+    "session_id": "sess_1789772261_c29003",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

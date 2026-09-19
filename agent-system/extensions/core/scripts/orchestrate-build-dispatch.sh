@@ -49,6 +49,15 @@
 # same named-field read the caller's own heading-scan already performs). Optional and absent from
 # every base-mode call.
 #
+# Wait Discipline (external-process-wait pointer): this script unconditionally appends a
+# "## Wait Discipline" pointer to every dispatch file it writes, in every phase (research, plan,
+# implement) and mode (base and --hard) -- so a dispatched agent receives the external-process
+# wait discipline (bounded polling; never an unbounded watch, no-op filler calls, or a
+# Monitor/background wait that wakes on every unchanged poll) independent of which agent contract
+# or `hard_contracts` routing it happens to load. This block and "## User-Decision Contract" are
+# the two deliberate, permanent exceptions to the byte-identical-when-inactive invariant every
+# other section in this file follows -- neither is gated behind an `if`, and neither should be.
+#
 # --territory "<json>" (the task that carries concurrent-sibling territory into base-mode
 # dispatch briefs): NO LONGER hard-mode-only. `orchestrate-cycle-plan.sh`'s per-cycle planner now
 # populates this flag for EVERY dispatch a multi-task cycle builds, in EVERY mode, whenever the
@@ -507,6 +516,12 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "$prior_decisions_block"
     echo ""
   fi
+  echo "## Wait Discipline"
+  echo ""
+  echo "Read context/patterns/external-process-wait.md before waiting on any long-running external"
+  echo "or remote process (e.g. a CI run) — bounded polling only; never an unbounded watch, no-op"
+  echo "filler calls, or a Monitor/background wait that wakes you on every unchanged poll."
+  echo ""
   echo "## User-Decision Contract"
   echo ""
   echo "See \`context/standards/user-decision-contract.md\` for the full contract — when to set"
