@@ -147,6 +147,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md]
 - **Plan**: [236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md]
+- **Summary**: [236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md]
 
 **Description**: OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.
 

@@ -94,9 +94,15 @@
           "path": "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md",
           "type": "plan",
           "summary": "2-phase implementation plan for the external-process-wait pattern."
+        },
+        {
+          "path": "specs/236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the external-process-wait pattern task."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Authored agent-system/extensions/core/context/patterns/external-process-wait.md (129 lines) stating the observed external-process-wait defect class once and defining the six mandatory wait rules (bounded blocking wait with 540<600 arithmetic, no no-op filler, no run_in_background/Monitor for CI waits in a subagent, state-change-only Monitor emission, independent local work first, 45-minute total-wait cap with handoff+partial), added a discoverable on-demand index-entries.json entry, and added a one-line anti-stop-patterns.md pointer without restating the rules."
     },
     {
       "project_number": 235,

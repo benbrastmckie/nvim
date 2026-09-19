@@ -28,15 +28,27 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["index-entries.json", "line_count", "check-extension-docs.sh", "drift", "context-index"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "check-extension-docs.sh",
+        "drift",
+        "context-index"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789772261_c29003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
