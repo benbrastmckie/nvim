@@ -163,36 +163,43 @@ threshold message, and fail-open behavior.
 
 ---
 
-### Phase 2: Add test suite test-detect-noop-bash.sh [NOT STARTED]
+### Phase 2: Add test suite test-detect-noop-bash.sh [COMPLETED]
 
 **Goal**: Fixture-driven test covering classification, threshold, reset, and fail-open, driving
 the hook as a real subprocess.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh` header
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh` header
       and `context/standards/shell-script-testing.md`; re-list `scripts/tests/` (sibling territory)
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` (executable):
+      *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` (executable):
       `set -uo pipefail`, `SCRIPT_DIR`, `HOOK="$SCRIPT_DIR/../../hooks/detect-noop-bash.sh"`,
       `pass`/`fail`/`info` helpers, `mktemp -d` workdir + `trap cleanup EXIT`, export
       `NOOP_BASH_STATE_DIR` to the workdir, `run_hook <session> <command>` helper building the
-      payload with `jq -n --arg`
-- [ ] Classification positives (each in a fresh session, count file == 1 afterward): `:`,
+      payload with `jq -n --arg` *(completed)*
+- [x] Classification positives (each in a fresh session, count file == 1 afterward): `:`,
       `true`, `date`, `date -u`, `echo waiting`, `echo "waiting for CI"`, `sleep 30`,
-      `sleep 5 && echo waiting`, `true; date -u`
-- [ ] Classification negatives (count file absent afterward): `echo "Elapsed: $SECONDS"`,
+      `sleep 5 && echo waiting`, `true; date -u` *(completed)*
+- [x] Classification negatives (count file absent afterward): `echo "Elapsed: $SECONDS"`,
       `echo $(gh run view 1)`, `echo done > log.txt`, `date >> log`, `date +%s`,
       `sleep 5 && gh run view 1`, `echo x | tee f`, `git status`, `true && make test`,
-      a command whose quoted string contains `true` (e.g. `git commit -m "true"`)
-- [ ] Threshold: 2 trivial calls -> stdout is `{}` both times; 3rd -> stdout contains
+      a command whose quoted string contains `true` (e.g. `git commit -m "true"`) *(completed)*
+- [x] Threshold: 2 trivial calls -> stdout is `{}` both times; 3rd -> stdout contains
       `external-process-wait.md` and is valid JSON (`jq -e .`); 4th and 5th -> `{}`; 6th -> message
-- [ ] Reset: 2 trivial, 1 non-trivial (state file removed), then 1 trivial -> count == 1 and
-      no message on the next 2nd call
-- [ ] Session isolation: streak in session A does not affect session B's count
-- [ ] Fail-open: empty stdin, non-JSON stdin, non-Bash `tool_name`, missing `session_id`,
-      unwritable state dir -> exit 0 and stdout `{}`
-- [ ] `NOOP_BASH_THRESHOLD=2` override fires on the 2nd call; invalid value falls back to 3
-- [ ] Assert `agent-system/extensions/core/tmp` was not created by the run
-- [ ] Exit 0 iff `FAILED == 0`; run `shellcheck` on the test file
+      *(completed)*
+- [x] Reset: 2 trivial, 1 non-trivial (state file removed), then 1 trivial -> count == 1 and
+      no message on the next 2nd call *(completed)*
+- [x] Session isolation: streak in session A does not affect session B's count *(completed)*
+- [x] Fail-open: empty stdin, non-JSON stdin, non-Bash `tool_name`, missing `session_id`,
+      unwritable state dir -> exit 0 and stdout `{}` *(completed)*
+- [x] `NOOP_BASH_THRESHOLD=2` override fires on the 2nd call; invalid value falls back to 3
+      *(completed: also added a `NOOP_BASH_THRESHOLD=0` case beyond the plan's hypothesis, to
+      confirm the fallback covers the zero/negative edge, not just non-numeric strings)*
+- [x] Assert `agent-system/extensions/core/tmp` was not created by the run *(completed)*
+- [x] Exit 0 iff `FAILED == 0`; run `shellcheck` on the test file *(completed: fixed two SC2016
+      info findings with narrowly-scoped, justified disables for intentionally-literal
+      single-quoted test data, and converted four `&&`/`||` one-liners flagged by SC2015 to
+      explicit if/then/else, matching test-guard-destructive-git.sh's own style)*
 
 **Timing**: 1 hour
 

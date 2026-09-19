@@ -1,0 +1,48 @@
+{
+  "phase": 2,
+  "phase_name": "Add test suite test-detect-noop-bash.sh",
+  "started_at": "2026-09-19T01:40:00Z",
+  "last_updated": "2026-09-19T01:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read test-guard-destructive-git.sh and shell-script-testing.md conventions",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Create test-detect-noop-bash.sh with classification, threshold, reset, session isolation, and fail-open cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "shellcheck clean and full suite pass (40/40)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "fresh_session() incrementing a plain shell variable SESSION_SEQ, called via command substitution",
+      "result": "failed",
+      "reason": "command substitution forks a subshell; the increment never persisted to the parent shell or across calls, so every 'fresh' session id was identical -- fixed by keeping the counter in a file under the mktemp workdir instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.7",
+      "description": "NOOP_BASH_THRESHOLD=2 override fires on the 2nd call; invalid value falls back to 3",
+      "type": "altered",
+      "reason": "Added an extra NOOP_BASH_THRESHOLD=0 case beyond the plan's literal wording, to also confirm the zero/negative edge falls back correctly (not just non-numeric strings).",
+      "annotation": "*(completed: also added a NOOP_BASH_THRESHOLD=0 case beyond the plan's hypothesis)*"
+    }
+  ]
+}
