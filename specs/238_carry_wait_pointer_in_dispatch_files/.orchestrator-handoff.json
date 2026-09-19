@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 14,
-  "summary": "Plan written: 2 phases, 1.25h. Unconditional Wait Discipline pointer section in orchestrate-build-dispatch.sh plus a matrix test group; edit targets disjoint from sibling territories.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 17,
+  "summary": "Both plan phases completed: orchestrate-build-dispatch.sh now unconditionally emits a '## Wait Discipline' pointer section (to context/patterns/external-process-wait.md) across base/--hard mode and research/plan/implement phases; Group 14 test coverage added and passing (106/0, including pre-existing exact-diff groups).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/238_carry_wait_pointer_in_dispatch_files/plans/01_wait-pointer-dispatch-plan.md",
-      "summary": "2-phase plan: unconditional Wait Discipline pointer in orchestrate-build-dispatch.sh plus matrix test group."
+      "type": "summary",
+      "path": "specs/238_carry_wait_pointer_in_dispatch_files/summaries/01_wait-pointer-dispatch-summary.md",
+      "summary": "Implementation summary for the wait-discipline dispatch pointer and its test coverage."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 2,
   "phases_total": 2,
   "blockers": [],
-  "next_action_hint": "Run /implement 238"
+  "next_action_hint": "Task complete; ready for postflight."
 }

@@ -1,10 +1,35 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/238_carry_wait_pointer_in_dispatch_files/summaries/01_wait-pointer-dispatch-summary.md",
+      "summary": "Both plan phases completed: orchestrate-build-dispatch.sh now unconditionally emits a Wait Discipline pointer section, and a new Group 14 test asserts presence/uniqueness/ordering across base and hard mode for all three phases."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an unconditional '## Wait Discipline' pointer section (to context/patterns/external-process-wait.md) to every dispatch file orchestrate-build-dispatch.sh writes, across base/--hard mode and research/plan/implement phases, plus a header comment documenting it as a deliberate exception; added Group 14 test coverage (presence, single-occurrence guard, ordering) that passes 106/0 including all pre-existing exact-diff groups."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a script writes a single { ... } > \"$file\" block with several conditionally-gated sections, an UNCONDITIONAL addition (one that must appear regardless of any flag) should be placed as a plain echo sequence immediately adjacent to an existing unconditional section (not inside any if), with a header-comment note naming both blocks as deliberate, permanent exceptions to the file's own byte-identical-when-inactive invariant. This keeps future contributors from 'fixing' the block into a gated one. Verify with a negative control: temporarily remove the new echo lines, confirm the new test fails, then restore.",
+      "category": "PATTERN",
+      "source_artifact": "specs/238_carry_wait_pointer_in_dispatch_files/summaries/01_wait-pointer-dispatch-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["dispatch-file", "unconditional-block", "byte-identical-invariant", "shellcheck", "negative-control-test"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1789772261_c29003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }
