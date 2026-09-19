@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 11,
+  "summary": "Research complete: recommends an unconditional Wait Discipline block in orchestrate-build-dispatch.sh (mirroring the always-rendered User-Decision Contract section, not the conditional Territory pointer) pointing every dispatch at context/patterns/external-process-wait.md, plus test additions covering the base/hard x research/plan/implement matrix.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md",
+      "summary": "Analysis of orchestrate-build-dispatch.sh's conditional-vs-unconditional block conventions, recommended placement/content for the new wait-discipline pointer, and test-suite additions."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}

@@ -27,12 +27,12 @@
     {
       "project_number": 238,
       "project_name": "carry_wait_pointer_in_dispatch_files",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Carry an external-process wait-discipline pointer in every orchestrate dispatch file",
       "created": "2026-09-18T19:00:37Z",
-      "last_updated": "2026-09-19T01:16:59Z",
+      "last_updated": "2026-09-19T01:22:42Z",
       "dependencies": [
         236
       ],
@@ -42,8 +42,15 @@
       ],
       "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE. Make scripts/orchestrate-build-dispatch.sh emit a short, always-present pointer to context/patterns/external-process-wait.md in every dispatch file it composes -- base mode as well as --hard, for research, plan and implement phases -- so that a dispatched agent receives the wait discipline regardless of which agent contract it loads. Follow the script's existing single-owned-behavior conventions (see its header note on the territory.md pointer for base-mode dispatches, which is the closest precedent). Add or extend a test under scripts/tests/ asserting the pointer is present in base-mode and hard-mode dispatch output. Keep the injected text to a pointer plus one-line summary; do not inline the pattern. shellcheck clean per context/standards/shell-strict-mode.md.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "effort": "1.5 hours",
-      "session_id": "sess_1789772261_c29003_238",
-      "artifacts": []
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md",
+          "type": "report",
+          "summary": "Analysis of orchestrate-build-dispatch.sh's conditional-vs-unconditional block conventions, recommended placement/content for the new wait-discipline pointer, and test-suite additions."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 237,
