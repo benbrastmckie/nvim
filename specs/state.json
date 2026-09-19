@@ -118,9 +118,15 @@
           "path": "specs/235_rebaseline_or_reduce_eager_context_budget/plans/01_rebaseline-eager-context-budget.md",
           "type": "plan",
           "summary": "5-phase plan resolving Gate 20 per-file ceiling WARNs, refreshing budget config, and verifying acceptance gates."
+        },
+        {
+          "path": "specs/235_rebaseline_or_reduce_eager_context_budget/summaries/01_rebaseline-eager-context-budget-summary.md",
+          "type": "summary",
+          "summary": "Trimmed SKILL.md and moved commands/orchestrate.md's ceiling to resolve Gate 20 sub-check C; refreshed budget config; confirmed exit-3 semantics; closed Phase 5 with two reasoned, sibling/unrelated exclusions."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Resolved Gate 20 sub-check C by trimming skills/skill-orchestrate/SKILL.md under its 20000 B ceiling (21318 B -> 19535 B, no operational content lost) and moving commands/orchestrate.md's ceiling to 21000 B with a dated, reviewed justification; refreshed the budget config snapshots/derivations and verify-deploy.sh's stale gate-mode comment; confirmed WORK item (4)'s exit-3 pass-through contract needs no code change. Gate 20 sub-check B remains red, attributed and evidenced as sibling task 228's own landed growth this cycle, deliberately not absorbed per the plan's own Non-Goals."
     },
     {
       "project_number": 227,

@@ -24,29 +24,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/235_rebaseline_or_reduce_eager_context_budget/summaries/01_rebaseline-eager-context-budget-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["context-budget", "restatement-trim", "byte-ceiling", "pointer-ize", "SKILL.md"]
+      "suggested_keywords": [
+        "context-budget",
+        "restatement-trim",
+        "byte-ceiling",
+        "pointer-ize",
+        "SKILL.md"
+      ]
     },
     {
       "content": "In a multi-task /orchestrate batch, a shared eager-loaded file (e.g. merge-sources/claudemd.md feeding predicted CLAUDE.md, or a shared command file) can go from measured-under-baseline to measured-over-baseline mid-dispatch because a concurrently-dispatched sibling task lands its own commits to that file. Attribute via `git log --oneline` / `git show <sha> --stat` on the specific paths before touching any shared config value (like a regression baseline). If the growth is the sibling's own declared file_scope work, do not silently absorb it by moving the baseline/ceiling in your own task -- document the attribution with evidence and leave it for the sibling's own scope or a dedicated follow-up.",
       "category": "PATTERN",
       "source_artifact": "specs/235_rebaseline_or_reduce_eager_context_budget/summaries/01_rebaseline-eager-context-budget-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["concurrent-siblings", "eager-context-budget", "attribution", "baseline", "orchestrate-batch"]
+      "suggested_keywords": [
+        "concurrent-siblings",
+        "eager-context-budget",
+        "attribution",
+        "baseline",
+        "orchestrate-batch"
+      ]
     },
     {
       "content": "A verify-deploy.sh-based fixture test suite that spins up its own fixture and invokes verify-deploy.sh --skip-slow multiple times (e.g. test-verify-deploy-context-budget.sh) can easily exceed 150s in foreground; use the Bash tool's run_in_background with an 8+ minute timeout and poll the redirected log file for a sentinel line (e.g. an explicit 'EXITCODE=' appended after the command) rather than relying on a short foreground timeout, which truncates output mid-run and produces a misleadingly short 1-line log.",
       "category": "CONFIG",
       "source_artifact": "specs/235_rebaseline_or_reduce_eager_context_budget/summaries/01_rebaseline-eager-context-budget-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["long-running-test", "run_in_background", "timeout", "verify-deploy", "fixture-test"]
+      "suggested_keywords": [
+        "long-running-test",
+        "run_in_background",
+        "timeout",
+        "verify-deploy",
+        "fixture-test"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1789772261_c29003",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
