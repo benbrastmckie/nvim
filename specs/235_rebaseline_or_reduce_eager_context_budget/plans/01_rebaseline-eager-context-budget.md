@@ -1,7 +1,7 @@
 # Implementation Plan: Task #235
 
 - **Task**: 235 - Re-baseline or reduce the eager-context budget
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None (soft sequencing constraint on sibling task 228, which owns `commands/orchestrate.md` and `merge-sources/claudemd.md` this cycle -- see Phase 3 and Risks)
 - **Research Inputs**: specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md
