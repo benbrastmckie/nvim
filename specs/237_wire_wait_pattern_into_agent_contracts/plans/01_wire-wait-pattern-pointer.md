@@ -1,7 +1,7 @@
 # Implementation Plan: Task #237
 
 - **Task**: 237 - Wire the external-process wait pattern into the general implementation and research agent contracts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: 236 (created `context/patterns/external-process-wait.md`)
 - **Research Inputs**: specs/237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md
@@ -83,25 +83,25 @@ No roadmap context was provided for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Wire pointer into general-research-agent.md [NOT STARTED]
+### Phase 1: Wire pointer into general-research-agent.md [COMPLETED]
 
 **Goal**: Add the context reference line and the External Process Wait Discipline subsection to
 the research agent contract.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/general-research-agent.md` right before
+- [x] Re-read `agent-system/extensions/core/agents/general-research-agent.md` right before
       editing, and confirm the `### Stage 3.5` / `### Stage 3.6` headings and the
-      `checkpoint-before-overflow.md` Context References line are present.
-- [ ] Insert the research report's Context References line immediately after the
+      `checkpoint-before-overflow.md` Context References line are present. *(completed)*
+- [x] Insert the research report's Context References line immediately after the
       `checkpoint-before-overflow.md` line: `@.claude/context/patterns/external-process-wait.md`,
-      loaded on demand only when a long-running external/remote wait occurs.
-- [ ] Insert the report's `### External Process Wait Discipline` subsection after the Stage 3.5
+      loaded on demand only when a long-running external/remote wait occurs. *(completed)*
+- [x] Insert the report's `### External Process Wait Discipline` subsection after the Stage 3.5
       closing line ("If pressure is detected, ... proceed to Stage 3.6.") and before `### Stage
       3.6`. Use the report's exact MUST (Rules 1, 5, 6; Rule 6 names "Stage 3.6 above") and
-      MUST NOT (Rules 2, 3) bullets.
-- [ ] Confirm that no task numbers appear in the added text and that lines stay at about 100
-      characters or less.
-- [ ] Commit only this file with `git add -- agent-system/extensions/core/agents/general-research-agent.md`.
+      MUST NOT (Rules 2, 3) bullets. *(completed)*
+- [x] Confirm that no task numbers appear in the added text and that lines stay at about 100
+      characters or less. *(completed)*
+- [x] Commit only this file with `git add -- agent-system/extensions/core/agents/general-research-agent.md`. *(completed)*
 
 **Timing**: 15 minutes
 

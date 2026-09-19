@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/237_wire_wait_pattern_into_agent_contracts/plans/01_wire-wait-pattern-pointer.md",
-      "summary": "3-phase plan: add external-process-wait.md pointer blocks and on-demand context references to the core research and implementation agent contracts, then lint/validate."
-    }
-  ],
-  "next_steps": "Run /implement 237 to execute the plan",
-  "phase_count": 3,
-  "estimated_hours": 1,
-  "dependency_waves": [[1, 2], [3]],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 16,
   "metadata": {
-    "session_id": "sess_1789772261_c29003_237",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 13
+    "session_id": "sess_1789772261_c29003",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

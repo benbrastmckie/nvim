@@ -27,6 +27,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/roadmap-format.md` - Roadmap structure (when roadmap_path provided)
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure detection signals and handoff-writing protocol
 - `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 3.6 git-checkpoint step)
+- `@.claude/context/patterns/external-process-wait.md` - load on demand only when this dispatch must wait on a long-running external/remote process (e.g. a CI run); see External Process Wait Discipline below
 
 ## Research Strategy Decision Tree
 
@@ -167,6 +168,27 @@ research work. Throughout Stage 3 (and before starting any further search step),
   sources in one step, check whether a handoff would be safer first.
 
 If pressure is detected, do NOT start additional searches — proceed to Stage 3.6.
+
+### External Process Wait Discipline
+
+If this dispatch must wait on a long-running external or remote process (e.g. a CI run polled
+via `gh run watch`/`gh run view`), the wait itself is a distinct discipline from the context-
+pressure monitoring above -- see `@.claude/context/patterns/external-process-wait.md` for the full
+mechanics and worked example; the bullets below point to it rather than restating it.
+
+**MUST**:
+- Use a bounded, foreground, blocking wait (inner timeout below the harness's Bash-tool ceiling,
+  re-checked only while status is in-progress) -- external-process-wait.md Rule 1.
+- Finish all independent local work before entering any such wait -- Rule 5.
+- Cap cumulative waiting on one external process at ~45 minutes; on reaching the cap, stop
+  waiting and write a handoff (Stage 3.6 above) with the concrete resume command, returning
+  `status: "partial"` -- Rule 6.
+
+**MUST NOT**:
+- Issue no-op filler Bash calls (`:`, `true`, `date`, `echo waiting`) or status-only text turns to
+  keep a turn alive between polls -- Rule 2.
+- Use `run_in_background` or arm a Monitor to watch a CI/remote wait from within this dispatched
+  subagent -- Rule 3.
 
 ### Stage 3.6: Handoff on Context Pressure
 
