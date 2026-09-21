@@ -1,7 +1,7 @@
 # Implementation Plan: Task #172
 
 - **Task**: 172 - Define a canonical bounded-wait idiom for detached builds
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md
@@ -99,18 +99,18 @@ No roadmap consultation requested for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author bounded-build-waiter.md [NOT STARTED]
+### Phase 1: Author bounded-build-waiter.md [COMPLETED]
 
 **Goal**: Write the canonical pattern file, mirroring `external-process-wait.md`'s structure.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/context/patterns/external-process-wait.md` in full, plus
+- [x] Read `agent-system/extensions/core/context/patterns/external-process-wait.md` in full, plus
       `lake-build-guard.sh`'s header and `print_help()` kill -0 / pgrep passages, as templates
-- [ ] Header block: Created (ISO date), Purpose, Audience ("any dispatched agent that detaches a
+- [x] Header block: Created (ISO date), Purpose, Audience ("any dispatched agent that detaches a
       local command and must block on it within the same dispatch", explicitly not Lean-only),
       Related (`external-process-wait.md`, `dispatch-report-not-termination.md`,
       `anti-stop-patterns.md`, `../contracts/wrap-up.md`, the Lean `long-builds.md`)
-- [ ] "## The Defect": the defect class stated once ("a poll loop whose exit condition is a
+- [x] "## The Defect": the defect class stated once ("a poll loop whose exit condition is a
       sentinel written by a process that may die first has no bounded termination"; "a liveness
       test keyed on a process name is self-referential whenever the polling shell's argv
       contains the pattern"), then three incidents named by repository and symptom only:
@@ -118,11 +118,11 @@ Phases within the same wave can execute in parallel.
       guarded build was superseded); the turn-ending stop ("waiting for lake build", "Monitor is
       already watching"); the `ps aux | grep "[b]ash ..."` self-match (five hangs; the bracket
       trick protects grep from itself, not from the launching shell's own argv)
-- [ ] "## Two Symptoms, One Missing Affordance": detach-without-a-blocking-idiom forces a choice
+- [x] "## Two Symptoms, One Missing Affordance": detach-without-a-blocking-idiom forces a choice
       between polling forever and ending the turn; this file is the missing affordance; the MUST
       NOT against ending a turn on a background wait is deferred to the agent-contract layer (no
       task numbers)
-- [ ] "## Required Rules", numbered:
+- [x] "## Required Rules", numbered:
       1. Hard timeout (`timeout N`) so the waiter cannot outlive its writer; N is a wait-duration
          bound sized to the command's expected run time, distinct from `lake-build-guard.sh
          --timeout` (a lock-wait bound); keep it within whatever the calling tool allows
@@ -135,18 +135,19 @@ Phases within the same wave can execute in parallel.
          no second independent loop) or fails loudly naming the existing waiter; never silently
          stop and hand back the turn; a superseded build's waiter is reaped before a replacement
          is spawned
-- [ ] "## The Canonical Idiom": the sanctioned shape, e.g.
+- [x] "## The Canonical Idiom": the sanctioned shape, e.g.
       `cmd >log 2>&1 & pid=$!` then
       `timeout 3000 bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"`,
       with the simpler foreground-under-`timeout` form preferred when the command fits the Bash
       tool's limit; note how to read the exit status afterwards (`wait "$pid"` in the same shell,
       or an exit line the writer appends, read after liveness ends, never polled for); state the
       shape as the recognizable process signature a reaper can match
-- [ ] "## Conforming Examples": `lake-build-guard.sh`'s own `kill -0 "$holder_pid"` idiom
+- [x] "## Conforming Examples": `lake-build-guard.sh`'s own `kill -0 "$holder_pid"` idiom
       (prior art, lacking only the timeout wrapper); a generic gate-script example
-- [ ] "## Local vs. Remote Waits": reciprocal of `external-process-wait.md`'s section
-- [ ] "## Related Documentation": one line per cross-reference
-- [ ] Keep lines at roughly 100 characters; no emoji; no task-number references
+- [x] "## Local vs. Remote Waits": reciprocal of `external-process-wait.md`'s section
+- [x] "## Related Documentation": one line per cross-reference
+- [x] Keep lines at roughly 100 characters; no emoji; no task-number references *(completed: all
+      Phase 1 tasks done; file written at 120 lines, no lines over 100 chars, task-ref lint clean)*
 
 **Timing**: 1.25 hours
 
