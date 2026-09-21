@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 1,
+  "summary": "Confirmed the sort/comm locale-collation-split defect in lean-challenge-snapshot.sh via live reproduction; audited all 5 sort/comm/uniq/join sites in the script; recommends pinning LC_ALL=C at both the goals-list sort (line 347) and the comm comparison site (lines 447-448), no change at lines 145/434/602, plus a new mixed-case suite case.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md",
+      "summary": "Confirms the sort/comm collation-split defect via live reproduction and lays out the fix, test-fixture, and deploy recommendations for the planner."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}

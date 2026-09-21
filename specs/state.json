@@ -1252,7 +1252,7 @@
       "project_name": "snapshot_locale_independent_identifier_comparison",
       "title": "Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)",
       "task_type": "meta",
-      "status": "not_started",
+      "status": "researched",
       "topic": "neovim",
       "dependencies": [],
       "effort": "2 hours",
@@ -1261,10 +1261,18 @@
         "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
       ],
       "priority": "high",
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md",
+          "type": "report",
+          "summary": "Confirms the sort/comm collation-split defect via live reproduction and lays out the fix, test-fixture, and deploy recommendations for the planner."
+        }
+      ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).\n\nDEFECT. `lean-challenge-snapshot.sh --dry-run` reports a false identifier mismatch, exits 71, and lists the SAME names on both the \"only in goals\" and \"only in declared\" sides, because its two identifier lists are sorted in two different collations and then compared with `comm`, which requires both inputs sorted identically.\n\nVERIFIED SITES (line numbers confirmed against the current source store, 2026-09-21; re-derive rather than trust them if the file has moved since):\n  - line 347 -- the Goals identifier list is built with a shell pipeline ending in `sort -u`, i.e. the AMBIENT locale's collation. Under en_US.UTF-8 that is case-insensitive-ish dictionary order.\n  - line 434 -- the declared-identifier list is written from Python `sorted(set(declared_names))`, i.e. strict code-point order, which is what `LC_ALL=C` would give the shell side.\n  - lines 447-448 -- `comm -23 \"$goals_file\" \"$declared_file\"` and `comm -13 ...` compare the two. With mixed-case identifiers the two orderings diverge and `comm` reports spurious set differences in both directions.\n\nOBSERVED LIVE, TWICE, in one seven-task /orchestrate run against ~/Projects/BimodalLogic (2026-09-21), each time worked around by hand rather than fixed:\n  - One planner took the reported mismatch at face value and RENAMED three challenge identifiers to dodge it (hnOpenMirror, hnStabMirror, hnStab_refuted_sinkFrame). The renames were unnecessary; the identifiers were never actually mismatched. A broken instrument silently rewrote the artifact it was supposed to be checking.\n  - A second planner, with 50 identifiers of which twelve were falsely reported as mismatched, correctly diagnosed the collation split and confirmed by direct experiment that `LC_ALL=C` in front of the SAME invocation makes it exit 0 with all 50 names intact.\n\nWHY THIS IS THE DANGEROUS DIRECTION OF FAILURE. The check fails LOUD here (exit 71), which is survivable. But the same collation split can also silently PASS -- two genuinely different sets can compare equal under `comm` when both sides are mis-sorted -- so the fix is not merely a nuisance fix.\n\nWORK.\n(a) Make both sides use ONE collation. Prefer pinning the shell side to byte order so it matches Python's `sorted()`: set `LC_ALL=C` (or at minimum `LC_COLLATE=C`) scoped to the sort/`comm` pipeline rather than exporting it process-wide, so no other behaviour of the script (message text, number formatting, any regex class) changes as a side effect. Alternatively sort BOTH sides in the same tool. State in a short comment at the `comm` site WHY the collation is pinned, so a future edit cannot quietly unpin it.\n(b) AUDIT THE OTHER SITES in the same script for the same hazard before concluding: line 602 writes another `sorted(names)` list from Python, and line 145 uses `sort -V` for plan-file selection (version sort -- different concern, check but probably fine). Any other `sort`/`comm`/`uniq`/`join` site that feeds a cross-tool comparison is in scope; a `sort` whose output is only ever read by a human is not.\n(c) ADD A SUITE CASE to agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh: a fixture whose challenge identifiers are deliberately MIXED-CASE (the real-world trigger -- e.g. hnOpenMirror alongside hn_stab, names that order differently in dictionary vs code-point collation), run under an explicitly set UTF-8 locale, asserting exit 0 and an empty mismatch list. Follow the suite's existing case conventions. Include the customary mutation-kill note: state which mutation of the fix the new case actually kills (reverting the collation pin must turn the new case RED -- verify this by hand, do not assert it untested).\n\nMUST NOT. Change what the script considers an identifier, or loosen the mismatch check itself -- the check is correct, only its input ordering is wrong. Export LC_ALL process-wide if a narrower scope suffices. Touch lake-build-guard.sh or any file outside this script and its test suite.\n\nACCEPTANCE. `--dry-run` produces byte-identical results under `LC_ALL=en_US.UTF-8` and `LC_ALL=C` for a mixed-case identifier set; the new suite case is red against the unfixed script and green against the fixed one; every cross-tool sort/compare site in the script is either collation-pinned or documented as not needing it; the lean extension is redeployed and the regenerated .claude/** copy in a consuming repo carries the fix (a source-store fix that never reaches the consuming repo changes nothing for a running agent).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "created": "2026-09-21T21:51:17Z",
-      "last_updated": "2026-09-21T21:51:17Z"
+      "last_updated": "2026-09-21T22:14:26Z",
+      "session_id": "sess_1790028477_1288e3",
+      "next_artifact_number": 2
     },
     {
       "project_number": 247,
