@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 242,
+  "next_project_number": 246,
   "active_projects": [
     {
       "project_number": 241,
@@ -1155,6 +1155,87 @@
       ],
       "next_artifact_number": 2,
       "completion_summary": "Added the canonical 'Batching Is the Default: Selection Criteria and Conflict Resolution' section to batch-orchestration-guardrails.md (posture, collision-visibility argument, three selection criteria, dominance rule with a definite winner for each pairwise conflict, MAX_TASKS=8 cap rule, and a deterministic worked example), pointed orchestrate.md/claudemd.md/multi-task-operations.md at it, and removed the contradicting 'common case' framing from multi-task-operations.md's Overview."
+    },
+    {
+      "project_number": 242,
+      "project_name": "orchestrate_partial_with_blocker_stops_redispatch",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Orchestrate postflight: treat a partial handoff carrying a populated blocker[] as blocked/stopped, not a retryable partial",
+      "created": "2026-09-21T21:03:29Z",
+      "last_updated": "2026-09-21T21:03:29Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/agents/general-implementation-agent.md"
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).\n\nDEFECT. An implementer returned `.orchestrator-handoff.json` with status \"partial\", phases 3/4, and a fully-populated `blocker[]` entry (phase 3; why_it_failed: the upstream Aeneas release lacks the aeneas-macos-aarch64 asset -- an external availability gap, verified against the GitHub API). scripts/orchestrate-cycle-postflight.sh maps partial -> verdict \"defer\" (~line 944), leaves state.json status at \"implementing\" (not partial/blocked), and ignores blocker[] entirely. A dry-run of the next cycle's scripts/orchestrate-cycle-plan.sh confirmed it would re-dispatch implement immediately -- futile, re-hitting the same external wall every cycle until MAX_CYCLES. The operator had to stop the loop by hand and run `update-task-status.sh postflight <N> blocked`.\n\nDELIVERABLE.\n1. Decide and implement how postflight treats partial + non-empty blocker[]. Candidates (decide in research, do not pre-commit): (a) resolve to blocked and emit the existing blocker-research aux path (see scripts/orchestrate-build-aux-dispatch.sh / orchestrator-postflight.sh / skill-spawn for existing blocker handling); (b) at minimum stop re-dispatch for this task in the current run and persist [PARTIAL] or [BLOCKED] with the blocker text recorded in state.json. Distinguish external/unrecoverable blockers from ordinary in-progress partials (empty blocker[]), whose current defer behaviour must be preserved.\n2. Ensure orchestrate-cycle-plan.sh does not route a task in the resulting state back into implement within the same run.\n3. Matching agent-contract guidance in agents/general-implementation-agent.md (and any sibling implementer contracts that share the handoff contract) on when an implementer should return \"blocked\" vs \"partial\" -- e.g. an external availability gap that no further implementation effort can close is \"blocked\", even if earlier phases completed.\n4. Regression test in scripts/tests/test-orchestrate-cycle-postflight.sh: partial+populated blocker[] yields the new verdict/status; partial+empty blocker[] still yields defer.\n\nCOORDINATION. If the blocked-vs-partial rule also needs stating in docs/architecture/handoff-schema.md, note that a sibling task (research-phase handoff contract) edits that file; sequence accordingly or widen file_scope.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
+      "session_id": "sess_1790009936_0a5e95",
+      "artifacts": [],
+      "next_artifact_number": 1
+    },
+    {
+      "project_number": 243,
+      "project_name": "reconcile_research_handoff_writer_contract",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Reconcile contradictory contract for research-phase .orchestrator-handoff.json (agent file vs handoff-schema.md vs dispatch template)",
+      "created": "2026-09-21T21:03:29Z",
+      "last_updated": "2026-09-21T21:03:29Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).\n\nDEFECT. agents/general-research-agent.md (~lines 228-241, section \"`.orchestrator-handoff.json` (orchestrator-mode dispatches)\") instructs the research agent to write the handoff before returning in orchestrator mode, while docs/architecture/handoff-schema.md (~lines 390 and 405, \"Handoff Writers\" table) states research agents never write one (\"Research is explicitly prohibited from writing one ... Stage 3.6 Scoping Decision\"). Observed: in one batch, 7 of 8 research dispatches wrote the handoff and 1 cited the schema and refused -- nondeterministic behaviour caused by a documentation conflict. Postflight recovered via .return-meta.json either way, so the harm is inconsistency, not failure.\n\nDELIVERABLE. Pick ONE rule (research writes the handoff in orchestrator mode, or research never writes it) based on what postflight actually consumes, and make agents/general-research-agent.md, docs/architecture/handoff-schema.md, and any dispatch template text emitted by scripts/orchestrate-build-dispatch.sh agree. Also sweep other research-agent contracts (extension research agents that copy the general-research-agent section) for the same conflict and list any found (fixing extension copies may need their own source dirs added to scope). Acceptance: a grep for the handoff-writer rule across the three named files yields one consistent statement.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
+      "session_id": "sess_1790009936_0a5e95",
+      "artifacts": [],
+      "next_artifact_number": 1
+    },
+    {
+      "project_number": 244,
+      "project_name": "check_task_references_repo_appropriate_roots",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "check-task-references.sh: scan repo-appropriate roots instead of a hard-coded nvim-repo TREE_ROOTS list",
+      "created": "2026-09-21T21:03:29Z",
+      "last_updated": "2026-09-21T21:03:29Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/check-task-references.sh",
+        "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+        "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+        "agent-system/extensions/core/scripts/tests/test-check-task-references.sh"
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).\n\nDEFECT. scripts/check-task-references.sh only scans a hard-coded TREE_ROOTS=(agent-system/extensions .opencode lua .memory) (~line 102) -- the nvim repo's own layout. In a consumer repo (e.g. Verification: docs/, README.md, framed_channel/, nix/, .github/) the rule no-task-references-in-deliverables.md applies repo-wide except specs/**, but the lint scans nothing relevant; an implementer had to hand-run the pattern library against docs/ manually. Additionally, a PATH_SCOPE argument outside TREE_ROOTS exits 2 instead of scanning it.\n\nDELIVERABLE. Make the scanned roots repo-appropriate: e.g. default to the whole repository minus specs/, .git, .claude and generated/vendored dirs (respecting .gitignore via `git ls-files` is one option), or a per-repo config file, or detection of the nvim source-store layout -- decide in research. Requirements: (1) the nvim repo's scan result is equivalent to today's (same files flagged); (2) a consumer repo like Verification gets its docs/, README.md and source dirs scanned; (3) an explicit PATH_SCOPE anywhere in the repo (outside the exempt trees) is scanned rather than exiting 2; (4) exemption logic stays sourced from scripts/lib/task-reference-patterns.sh; (5) update context/standards/task-reference-exemptions.md if the enforcement narrative describes the roots; (6) add or extend a test covering a consumer-repo-shaped fixture.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
+      "session_id": "sess_1790009936_0a5e95",
+      "artifacts": [],
+      "next_artifact_number": 1
+    },
+    {
+      "project_number": 245,
+      "project_name": "batch_admit_defer_against_admitted_set_only",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle",
+      "created": "2026-09-21T21:03:29Z",
+      "last_updated": "2026-09-21T21:03:29Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).\n\nDEFECT. scripts/orchestrate-batch-admit.sh's in_batch rule defers a candidate against ANY lower-numbered in-batch task with overlapping file_scope, regardless of whether that lower-numbered task is itself admitted this cycle. Observed: one cycle admitted two tasks; a third deferred on the first (overlap on docs/ci.md) -- correct -- but a fourth, independent of both admitted tasks, then deferred on the third (overlap on docs/README.md) even though the third was not dispatching, waiting an extra cycle. The same pattern recurred two cycles later. Safe but wasteful: the 8-task batch took 6 implement cycles, of which ~2 could have been saved.\n\nDELIVERABLE. Compute in-batch deferral against the set of tasks actually admitted this cycle: iterate candidates greedily in ascending project_number, admitting a candidate iff its scope does not overlap any ALREADY-ADMITTED task's scope (plus all existing gates). Preserve determinism (same input -> same admitted set) and existing cross_batch semantics unchanged. Keep deferral reasons naming the admitted task that blocked the candidate. Add a regression test (new scripts/tests/test-orchestrate-batch-admit.sh or extend an existing admit test) reproducing the chain A admitted, C deferred on A, D overlapping only C -> D admitted.\n\nOUT OF SCOPE. Empty/absent file_scope admission posture (owned by the file-scope-lifecycle topic tasks).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
+      "session_id": "sess_1790009936_0a5e95",
+      "artifacts": [],
+      "next_artifact_number": 1
     }
   ],
   "completed_projects": [],
