@@ -6,7 +6,7 @@ next_project_number: 242
 
 ## Task Order
 
-*Updated 2026-09-19. Generated from state.json dependency graph.*
+*Updated 2026-09-21. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -1235,6 +1235,42 @@ belong in the agent-contract and guard tasks that depend on this one -- consiste
 task's existing instruction not to touch agent files. This task still owns only the canonical
 pattern file and the long-builds.md pointer; it should now state the turn-ending case alongside
 the unbounded-poll case so the dependents have one anchor to cite for both.
+
+=== ADDITIONAL EVIDENCE (2026-09-21, ~/Projects/Logos/Verification) ===
+A THIRD SHAPE OF THE SAME GAP, OUTSIDE LEAN: a general-implementation-agent under a multi-task
+/orchestrate run (a 9-phase gate-script refactor, task_type general) hung FIVE times on an
+agent-improvised name-based liveness poll. Each phase launched the gate and waited in ONE Bash call:
+
+  nohup timeout 3000 nix develop .#extraction --command bash framed_channel/check.sh > log 2>&1 &
+  disown; ...; until ! ps aux | grep -q "[b]ash framed_channel/check.sh"; do sleep 8; done
+
+The `[b]` bracket trick only stops grep matching ITSELF. The waiting shell's own command line
+still contains the literal text `bash framed_channel/check.sh` (it is the shell that launched the
+gate), so the poll matched its own shell forever. The gate finished (check.sh: PASS) and the agent
+sat idle ~13 minutes until the operator killed the waiter by hand; the same shape recurred in 4
+later phases and was cleared each time by an operator-side watcher. The pure-waiter variant (a
+separate Bash call that did not launch the command) did NOT self-match -- but the agent also ran
+TWO such waiters on one run, violating the one-waiter-per-log property.
+
+WHAT THIS ADDS TO THE DELIVERABLE:
+- A fourth mandatory property, or an explicit sharpening of (2): writer liveness MUST be tested by
+  captured PID (`pid=$!` then `kill -0 "$pid"`), NEVER by process-NAME matching (`ps | grep`,
+  `pgrep -f`). Name matching is self-referential whenever the searching shell's argv contains the
+  pattern -- the same bug class as the pgrep reaper self-kill recorded in the reaper task, now on
+  the waiter side. State it once here; the reaper task already consumes it.
+- Scope is NOT Lean-only. The pattern file must be framed generically ("a detached local
+  command"), and its pointer must reach general-implementation-agent too -- not only
+  lean4/operations/long-builds.md. The existing always-present dispatch-file wait pointer
+  (orchestrate-build-dispatch.sh -> context/patterns/external-process-wait.md) is the cheapest
+  carrier: that file already names bounded-build-waiter.md as its local-case sibling, but the
+  sibling file was never written, so the pointer currently dead-ends.
+- Minimal sanctioned idiom that would have prevented all five hangs:
+    cmd >log 2>&1 & pid=$!
+    timeout 3000 bash -c "while kill -0 $pid 2>/dev/null; do sleep 10; done"
+  (or simply run the command in the foreground under `timeout`, when it fits the Bash limit).
+- Operator-side observation: once dispatched implementers were told this idiom in their prompt,
+  the next two implementers in the same batch had zero hangs -- a one-paragraph instruction was
+  sufficient, supporting the low-complexity single-pattern-file approach.
 
 ---
 
