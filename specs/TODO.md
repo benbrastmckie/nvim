@@ -1,5 +1,5 @@
 ---
-next_project_number: 246
+next_project_number: 248
 ---
 
 # TODO
@@ -11,9 +11,10 @@ next_project_number: 246
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240,241,242,243,244,245,246 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,139,165,173,174,208,224,227 | 29,162,163,167,172,207,210,240 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,136,140,190,217,221 | 74,139,165,166,173,174 | core-agent-system, extensions |
+| 4 | 247 | 221 | lean-extension |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -85,8 +86,114 @@ next_project_number: 246
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
+246 [NOT STARTED] — Make lean-challenge-snapshot.sh identifier comparison...
+247 [NOT STARTED] — Fix two taught lean-extension snippets that silently no-op:...
 
 ## Tasks
+
+### 247. Fix two taught lean-extension snippets that silently no-op: the guard invocation missing its lake subcommand, and the hardcoded Theories/ source root
+- **Effort**: 3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 221
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
+
+DEFECT CLASS. Two independent taught snippets in the lean extension instruct agents to run a command that does not do what the surrounding prose says it does, and whose failure to do it is invisible. Both were hit repeatedly, by several different dispatched agents, in one seven-task /orchestrate run against ~/Projects/BimodalLogic (2026-09-21), and both were worked around by hand every single time rather than fixed. They are filed together because they share an edit target (lean-implementation-hard-agent.md) and would collide if split.
+
+=== HALF 1 -- the taught guard invocation omits the lake subcommand and exits 77 without building ===
+
+`lake-build-guard.sh`'s LAKE_SUBCOMMANDS allowlist requires the lake SUBCOMMAND immediately after `--`. The working shape is `-- build Module.Name`. Several taught sites instead put the module name directly after `--`, so the guard exits 77 ("build mode requires a lake subcommand") before any build launches.
+
+VERIFIED SITES (confirmed against the current source store, 2026-09-21; re-derive by grep rather than trusting these line numbers):
+  - agent-system/extensions/lean/rules/lean4.md line 48 -- `... build --timeout 1800 -- Module.Name`. BROKEN. (Line 51's `-- build` on the very next line is already correct, which is exactly what makes the broken one so easy to copy without noticing.)
+  - agent-system/extensions/lean/agents/lean-implementation-hard-agent.md line 237 -- `... build --timeout 1800 -- ModuleName 2>&1`. BROKEN. (Line 392 in the same file is already correct.)
+  - agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md line 79 -- `build_output=$(... build --timeout 1800 -- "$module" 2>&1)`. BROKEN, and NOT in the original defect report -- found by grep during task creation. Line 81 immediately below it is already correct. Confirm and fix.
+  - agent-system/extensions/lean/rules/lean4.md line 71 and agent-system/extensions/lean/context/project/lean4/operations/long-builds.md line 75 both teach the PLACEHOLDER form `-- <lake args>`. Judge these: a reader who expands `<lake args>` to a bare module name reproduces the defect. Either make the placeholder self-documenting (`-- <lake subcommand> [args]`, or show `-- build Module.Name` concretely) or leave with a one-line note -- decide and record the decision, do not silently skip them.
+
+WHAT IS ALREADY DONE, DO NOT RE-DO IT. An archived task already corrected the FULL-BUILD variant of this bug -- the EMPTY argument vector (`-- 2>&1`, `--` with nothing after it) at five sites across four files. That work is complete and its sites now read `-- build`. This task covers the DIFFERENT, still-live variant: a MODULE NAME after `--` with no subcommand. Grep the whole lean extension (rules, agents, skills, context, and any plan template a planner copies from) for `lake-build-guard.sh` and check every `--` argument vector; fix each one whose first post-`--` token is not a lake subcommand.
+
+OBSERVED CONSEQUENCES. Three separate dispatches hit this in the one run. Planners copied the broken shape verbatim into their plans, so implementers then had to correct the plan mid-run -- the defect propagated through an artifact and cost time at two lifecycle stages, not one. Worst instance: piped through `tail`, the exit-77 no-op read as exit 0 and was caught only because a human read the output text.
+
+BOUNDARY WITH OTHER OPEN WORK -- READ BEFORE STARTING. That pipe-masked-exit-code failure mode and the whole build-verdict evidence hierarchy are owned by the dependency task (#221, consumer-side) and by #173 (guard-side: the `result` subcommand, the STATUS line, the terminal record). Do NOT restate the exit-code-capture contract here -- point at its anchor. Do NOT change the LAKE_SUBCOMMANDS allowlist or exit 77 itself; #173's PRESERVE list explicitly keeps that behaviour. The dependency on #221 exists because it edits lean4.md, lean-implementation-agent.md, lean-implementation-hard-agent.md and long-builds.md, which this task also edits: they must serialize, not collide. Re-derive the line numbers above AFTER #221 has landed.
+
+OPTIONAL, IF CHEAP. Consider making the guard's own exit-77 message name the expected shape (`-- build Module.Name`) rather than only stating that a subcommand is required -- but that file (agent-system/extensions/core/scripts/lake-build-guard.sh, NOT in the lean extension; verify the path) belongs to #173. If the message change is wanted, surface it to #173 rather than editing the guard here.
+
+=== HALF 2 -- final-verification snippets hardcode a `Theories/` source root that does not exist in consuming repos ===
+
+The prescribed sorry/vacuous-definition/axiom scans name a literal `Theories/` directory. In ~/Projects/BimodalLogic the library root is `FormalSystem/` with tests under `Tests/`; in cslib it is `Cslib/`. Where `Theories/` does not exist, the greps scan NOTHING and return a clean result BY CONSTRUCTION. This is a verification instrument that cannot report failure -- the same defect class as the first half, and strictly more dangerous, because it fails silently in the PASSING direction.
+
+VERIFIED SITES (2026-09-21). Executable snippet uses, all in scope:
+  - agents/lean-implementation-agent.md lines 270, 276, 282, 310-311, 313, 321, 389, 400
+  - agents/lean-implementation-hard-agent.md lines 306, 369, 380, 386, 454, 465
+  - skills/skill-lean-implementation/SKILL.md line 304 (`-- "Theories/"`)
+  - skills/skill-lean-implementation-hard/SKILL.md line 447 (`-- "Theories/"`)
+  - scripts/lean-sorry-census.sh line 26 (usage text: `lean-sorry-census.sh Theories/ --cross-check`)
+  - context/project/lean4/domain/challenge-snapshot.md line 20 (describes the compliance check as a grep over `Theories/`)
+Prose/illustrative uses -- JUDGE EACH, they may be fine as generic examples rather than instructions:
+  - context/contracts/context-hygiene.md lines 34, 69 ("whole-file read of a `Theories/`/`Cslib/` file")
+  - context/contracts/anti-analysis.md line 57 (an example phase-scope string)
+  - agents/lean-research-hard-agent.md line 135, agents/lean-implementation-hard-agent.md line 117 (same read-budget phrasing)
+EXPLICITLY OUT OF SCOPE: uses under agent-system/extensions/lean/scripts/tests/ are test FIXTURES. They are legitimate and must be left alone. Distinguish fixture uses from taught-snippet uses before editing anything.
+
+OBSERVED CONSEQUENCES. Every implementer in the run noticed the wrong root and re-pointed the snippets by hand. That is the good case. The bad case -- a less attentive dispatch -- reports zero sorries over an empty scan and records a clean final verification that verified nothing.
+
+WORK FOR HALF 2.
+(a) RESOLVE the source roots from the CONSUMING repo instead of hardcoding a literal. Preferred source of truth: the repo's `lakefile.toml`/`lakefile.lean` `lean_lib` entries (their `srcDir`, and `roots`/`globs` where present) -- this is derived, always correct, and needs no per-repo configuration. Acceptable fallback if lakefile parsing proves fragile: ONE documented config value in a single named place. Do NOT introduce a second, competing convention, and do NOT have each snippet re-derive the roots its own way.
+(b) ROUTE EVERY SNIPPET THROUGH ONE HELPER. The snippets should call a single resolver rather than each embedding its own path logic -- the whole point is that there is exactly one place that can be wrong. Decide during planning whether that helper is a new script, a function inside lean-sorry-census.sh, or a documented `$LEAN_SRC_ROOTS`-style variable the snippets consume; record the decision and the reason.
+(c) MAKE AN EMPTY OR MISSING SCAN ROOT A LOUD FAILURE, NOT A CLEAN PASS. This is the load-bearing acceptance criterion and must hold independently of (a) and (b): a scan whose root does not exist, or which examines zero `.lean` files, MUST exit non-zero with a message naming the root it tried. "Zero sorries found" and "nothing was scanned" must never be indistinguishable outputs.
+(d) Update lean-sorry-census.sh's usage text and challenge-snapshot.md's description to match whatever (a)/(b) decide.
+
+=== SHARED ===
+
+MUST NOT. Edit .claude/** (deploy artifact). Edit agent-system/extensions/core/scripts/lake-build-guard.sh or its test suite (#173 owns it). Restate the build-verdict evidence hierarchy or the un-piped exit-code capture contract (#221 owns it) -- point at its anchor. Change LAKE_SUBCOMMANDS or exit 77. Touch test fixtures under scripts/tests/ that legitimately use `Theories/`.
+
+ACCEPTANCE.
+  1. No file in the lean extension teaches a `lake-build-guard.sh` invocation whose post-`--` vector would exit 77 -- demonstrated by grepping every guard invocation in the extension and checking each one's first post-`--` token against the allowlist, not by spot-check.
+  2. No taught verification snippet names a literal source root; each resolves it from the consuming repo through the single helper.
+  3. A scan over a nonexistent or empty root exits non-zero with a message naming the root -- demonstrated by actually running it against a repo with no such directory, not asserted.
+  4. The same taught snippets, run unmodified in ~/Projects/BimodalLogic (library root FormalSystem/, tests under Tests/), scan the real sources and would report a real sorry if one existed -- verify by planting one temporarily.
+  5. The lean extension is redeployed and the regenerated .claude/** copies in a consuming repo carry both halves. A source-store fix that never reaches the consuming repo changes nothing for a running agent.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 246. Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)
+- **Effort**: 2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
+
+DEFECT. `lean-challenge-snapshot.sh --dry-run` reports a false identifier mismatch, exits 71, and lists the SAME names on both the "only in goals" and "only in declared" sides, because its two identifier lists are sorted in two different collations and then compared with `comm`, which requires both inputs sorted identically.
+
+VERIFIED SITES (line numbers confirmed against the current source store, 2026-09-21; re-derive rather than trust them if the file has moved since):
+  - line 347 -- the Goals identifier list is built with a shell pipeline ending in `sort -u`, i.e. the AMBIENT locale's collation. Under en_US.UTF-8 that is case-insensitive-ish dictionary order.
+  - line 434 -- the declared-identifier list is written from Python `sorted(set(declared_names))`, i.e. strict code-point order, which is what `LC_ALL=C` would give the shell side.
+  - lines 447-448 -- `comm -23 "$goals_file" "$declared_file"` and `comm -13 ...` compare the two. With mixed-case identifiers the two orderings diverge and `comm` reports spurious set differences in both directions.
+
+OBSERVED LIVE, TWICE, in one seven-task /orchestrate run against ~/Projects/BimodalLogic (2026-09-21), each time worked around by hand rather than fixed:
+  - One planner took the reported mismatch at face value and RENAMED three challenge identifiers to dodge it (hnOpenMirror, hnStabMirror, hnStab_refuted_sinkFrame). The renames were unnecessary; the identifiers were never actually mismatched. A broken instrument silently rewrote the artifact it was supposed to be checking.
+  - A second planner, with 50 identifiers of which twelve were falsely reported as mismatched, correctly diagnosed the collation split and confirmed by direct experiment that `LC_ALL=C` in front of the SAME invocation makes it exit 0 with all 50 names intact.
+
+WHY THIS IS THE DANGEROUS DIRECTION OF FAILURE. The check fails LOUD here (exit 71), which is survivable. But the same collation split can also silently PASS -- two genuinely different sets can compare equal under `comm` when both sides are mis-sorted -- so the fix is not merely a nuisance fix.
+
+WORK.
+(a) Make both sides use ONE collation. Prefer pinning the shell side to byte order so it matches Python's `sorted()`: set `LC_ALL=C` (or at minimum `LC_COLLATE=C`) scoped to the sort/`comm` pipeline rather than exporting it process-wide, so no other behaviour of the script (message text, number formatting, any regex class) changes as a side effect. Alternatively sort BOTH sides in the same tool. State in a short comment at the `comm` site WHY the collation is pinned, so a future edit cannot quietly unpin it.
+(b) AUDIT THE OTHER SITES in the same script for the same hazard before concluding: line 602 writes another `sorted(names)` list from Python, and line 145 uses `sort -V` for plan-file selection (version sort -- different concern, check but probably fine). Any other `sort`/`comm`/`uniq`/`join` site that feeds a cross-tool comparison is in scope; a `sort` whose output is only ever read by a human is not.
+(c) ADD A SUITE CASE to agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh: a fixture whose challenge identifiers are deliberately MIXED-CASE (the real-world trigger -- e.g. hnOpenMirror alongside hn_stab, names that order differently in dictionary vs code-point collation), run under an explicitly set UTF-8 locale, asserting exit 0 and an empty mismatch list. Follow the suite's existing case conventions. Include the customary mutation-kill note: state which mutation of the fix the new case actually kills (reverting the collation pin must turn the new case RED -- verify this by hand, do not assert it untested).
+
+MUST NOT. Change what the script considers an identifier, or loosen the mismatch check itself -- the check is correct, only its input ordering is wrong. Export LC_ALL process-wide if a narrower scope suffices. Touch lake-build-guard.sh or any file outside this script and its test suite.
+
+ACCEPTANCE. `--dry-run` produces byte-identical results under `LC_ALL=en_US.UTF-8` and `LC_ALL=C` for a mixed-case identifier set; the new suite case is red against the unfixed script and green against the fixed one; every cross-tool sort/compare site in the script is either collation-pinned or documented as not needing it; the lean extension is redeployed and the regenerated .claude/** copy in a consuming repo carries the fix (a source-store fix that never reaches the consuming repo changes nothing for a running agent).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
 - **Status**: [NOT STARTED]
