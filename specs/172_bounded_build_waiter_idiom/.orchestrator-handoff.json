@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "summary": "Research confirms the dead-end bounded-build-waiter.md pointer already present in external-process-wait.md, generalizes lake-build-guard.sh's existing kill -0 idiom, and specifies four mandatory waiter properties (hard timeout, PID-only writer-liveness, one-waiter-per-log with attach-or-fail-loudly, dead-writer-terminates-immediately) plus a long-builds.md pointer wired per the single-statement-plus-pointer convention.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md",
+      "summary": "Research report defining the recommended structure and content for the new bounded-build-waiter.md pattern file and its long-builds.md pointer."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "Run /plan 172 to create the implementation plan for writing agent-system/extensions/core/context/patterns/bounded-build-waiter.md and wiring its pointer into long-builds.md."
+}

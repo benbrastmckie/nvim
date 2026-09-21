@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 172,
+  "session_id": "sess_1790030538_1b6143_172",
+  "dispatch_seq": 1,
+  "findings_count": 6,
+  "next_steps": "Run /plan 172 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md",
+      "summary": "Research on the missing bounded local-detached-command waiter idiom: confirms the dead-end pointer in external-process-wait.md, generalizes lake-build-guard.sh's existing kill -0 idiom, sharpens writer-liveness to PID-only (never process-name matching), and recommends four mandatory properties plus a long-builds.md pointer wired per the single-statement-plus-pointer convention."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this source store, a new core context pattern file's forward-reference may already exist in a sibling file before the new file is written (e.g. external-process-wait.md named bounded-build-waiter.md in its Related/cross-reference sections before that file existed). When researching a 'write new pattern file' task, grep existing sibling pattern files for a premature pointer to the target filename first -- it often pre-confirms the expected structure, properties, and audience without further investigation.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["context-patterns", "forward-reference", "dead-end-pointer", "research-technique", "index-entries"]
+    },
+    {
+      "content": "Process-liveness polling in this codebase must key on a captured PID (pid=$!; kill -0 \"$pid\") and never on process-name/argv matching (ps aux | grep, pgrep -f) -- a polling shell whose own argv contains the search pattern (e.g. because it launched the very command it is polling for, or because the pattern names the polling script itself) self-matches and the loop never terminates. This bug class recurred independently in lake-build-guard.sh's own documented pitfall, a BimodalLogic reaper self-kill, and a Logos/Verification 5x hang on `ps aux | grep -q \"[b]ash script.sh\"` where the bracket trick failed to protect against the LAUNCHING shell's own argv.",
+      "category": "PATTERN",
+      "source_artifact": "specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["pgrep-self-match", "kill-0", "writer-liveness", "process-polling", "bounded-wait"]
+    }
+  ]
+}
