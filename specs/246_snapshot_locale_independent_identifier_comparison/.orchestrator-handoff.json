@@ -1,16 +1,19 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 1,
-  "summary": "Confirmed the sort/comm locale-collation-split defect in lean-challenge-snapshot.sh via live reproduction; audited all 5 sort/comm/uniq/join sites in the script; recommends pinning LC_ALL=C at both the goals-list sort (line 347) and the comm comparison site (lines 447-448), no change at lines 145/434/602, plus a new mixed-case suite case.",
+  "task_number": 246,
+  "phase": "plan",
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 3,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md",
-      "summary": "Confirms the sort/comm collation-split defect via live reproduction and lays out the fix, test-fixture, and deploy recommendations for the planner."
+      "type": "plan",
+      "path": "specs/246_snapshot_locale_independent_identifier_comparison/plans/01_locale-independent-identifier-comparison.md",
+      "summary": "3-phase plan for locale-independent identifier comparison fix plus redeploy."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
+  "session_id": "sess_1790028477_1288e3_246",
+  "dispatch_seq": 2,
+  "next_action": "implement",
+  "summary": "Plan written: 3 phases, 2h. RED mixed-case case R5, inline LC_ALL=C pins at goals sort -u and both comm calls, redeploy lean extension into ~/Projects/BimodalLogic (this repo does not load lean).",
   "blockers": []
 }

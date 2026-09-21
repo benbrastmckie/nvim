@@ -70,7 +70,7 @@ next_project_number: 249
 
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task...
 202 [NOT STARTED] — Make the picker's Reload All] and Regenerate] entries honest...
-246 [RESEARCHED] — Make lean-challenge-snapshot.sh identifier comparison...
+246 [PLANNED] — Make lean-challenge-snapshot.sh identifier comparison...
 248 [NOT STARTED] — Research and revise the Typst document viewing commands...
 
 ### Opencode
@@ -173,11 +173,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 246. Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)
 - **Effort**: 2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md]
+- **Plan**: [246_snapshot_locale_independent_identifier_comparison/plans/01_locale-independent-identifier-comparison.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
 
