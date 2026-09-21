@@ -1,9 +1,9 @@
 {
   "version": "1.1.0",
-  "next_project_number": 247,
+  "next_project_number": 249,
   "active_projects": [
     {
-      "project_number": 246,
+      "project_number": 248,
       "project_name": "revise_typst_viewing_commands",
       "status": "not_started",
       "task_type": "neovim",

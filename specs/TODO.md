@@ -160,7 +160,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
-### 246. Revise typst viewing commands
+### 248. Revise typst viewing commands
 - **Status**: [NOT STARTED]
 - **Task Type**: neovim
 - **Topic**: neovim
