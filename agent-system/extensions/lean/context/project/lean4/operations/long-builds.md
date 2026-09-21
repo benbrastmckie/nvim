@@ -120,7 +120,16 @@ All four checks prove **liveness**, never **termination**. A process burning CPU
 growing RSS can still be stuck in a divergent tactic search that will never finish on its own.
 These checks are for interim observability between the start of a detached build and its
 completion notification — they are not a substitute for waiting on that notification, and they
-must never be used to declare a build "probably done" in its absence.
+must never be used to declare a build "probably done" in its absence. See "Blocking on a detached
+build" below for the distinct, bounded case where the dispatch must actually block rather than
+merely observe.
+
+## Blocking on a detached build
+
+When a dispatch must block on a detached build within the same turn, rather than merely observe
+it, the sanctioned bounded, PID-liveness, one-waiter-per-log idiom is defined once, canonically,
+in core's `context/patterns/bounded-build-waiter.md`. Consult that file instead of improvising a
+poll loop or ending the turn.
 
 ## Completion discipline
 

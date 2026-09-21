@@ -168,25 +168,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Wire long-builds.md pointer and index registration [NOT STARTED]
+### Phase 2: Wire long-builds.md pointer and index registration [COMPLETED]
 
 **Goal**: Add the Lean-side pointer and register the new file in the context index.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md`, add a new
+- [x] In `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md`, add a new
       section `## Blocking on a detached build` between "Passive progress checks" and "Completion
       discipline": one or two sentences saying that when a dispatch must block on a detached build
       within the same turn, the sanctioned idiom (hard timeout, PID-captured writer liveness,
       one waiter per log) is in `core` `context/patterns/bounded-build-waiter.md`. Do not restate
       the model. Match the citation style used for `dispatch-report-not-termination.md` elsewhere
-- [ ] Optionally add one clause to "The liveness caveat" pointing at the new section, so that
-      liveness checks and blocking waits are told apart (one sentence at most)
-- [ ] Add a `patterns/bounded-build-waiter.md` entry to
+      *(completed)*
+- [x] Optionally add one clause to "The liveness caveat" pointing at the new section, so that
+      liveness checks and blocking waits are told apart (one sentence at most) *(completed)*
+- [x] Add a `patterns/bounded-build-waiter.md` entry to
       `agent-system/extensions/core/index-entries.json`, copied from the
       `patterns/external-process-wait.md` entry shape: summary, accurate `line_count`
       (`wc -l`), keywords (`bounded-wait`, `kill-0`, `writer-liveness`, `detached-build`,
       `one-waiter-per-log`, `timeout`, `poll-loop`), topics `workflow`/`orchestration`, empty
-      `load_when` arrays, `on_demand: true`
+      `load_when` arrays, `on_demand: true` *(completed)*
 
 **Timing**: 0.5 hours
 

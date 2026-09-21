@@ -937,6 +937,32 @@
       "on_demand": true
     },
     {
+      "path": "patterns/bounded-build-waiter.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
+      "line_count": 120,
+      "keywords": [
+        "bounded-wait",
+        "kill-0",
+        "writer-liveness",
+        "detached-build",
+        "one-waiter-per-log",
+        "timeout",
+        "poll-loop"
+      ],
+      "topics": [
+        "workflow",
+        "orchestration"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "patterns/file-metadata-exchange.md",
       "domain": "core",
       "subdomain": "patterns",

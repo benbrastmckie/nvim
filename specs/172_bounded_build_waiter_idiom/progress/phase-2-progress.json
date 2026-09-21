@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Wire long-builds.md pointer and index registration",
+  "started_at": "2026-09-21T00:15:00Z",
+  "last_updated": "2026-09-21T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Blocking on a detached build section to long-builds.md", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/operations/long-builds.md"]},
+    {"id": 2, "description": "Register bounded-build-waiter.md entry in core index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
