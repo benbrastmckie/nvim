@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/246_snapshot_locale_independent_identifier_comparison/summaries/01_locale-independent-identifier-comparison-summary.md",
+      "summary": "Pinned LC_ALL=C on the goals-side sort -u and both comm calls in lean-challenge-snapshot.sh to fix a false identifier-set mismatch under dictionary-collation locales; added a RED/GREEN mixed-case suite case (R5) with a hand-verified mutation kill; redeployed to the one consuming repo (~/Projects/BimodalLogic) that loads the lean extension."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the locale-dependent false identifier-mismatch defect in lean-challenge-snapshot.sh by pinning LC_ALL=C on the goals-side sort and both comm comparison calls, added a mixed-case RED/GREEN regression case (R5) with a verified mutation kill, audited all cross-tool sort/compare sites, and redeployed the fix into the ~/Projects/BimodalLogic consuming repo (verified byte-identical, 14/14 suite passing there)."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_mixed_case.md",
+    "agent-system/extensions/lean/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When comparing two identifier lists across tools with `comm`, both inputs must be sorted under the SAME collation. A shell `sort -u` running under an ambient dictionary-collation locale (e.g. en_US.UTF-8) orders mixed-case identifiers differently than a Python `sorted()` (code-point order), so a mixed and unpinned pairing produces spurious `comm` mismatches (or, worse, silently misses real ones when both sides happen to mis-sort into apparent agreement). Fix: pin `LC_ALL=C` inline, scoped to just the sort/comm pipeline (never exported process-wide), on whichever side doesn't already use code-point order, and pin `comm` itself too as defense-in-depth. A regression fixture needs mixed-case names that provably reorder between dictionary and code-point collation (e.g. hnOpenMirror/hnStabMirror/hn_stab) to actually exercise the bug.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/246_snapshot_locale_independent_identifier_comparison/summaries/01_locale-independent-identifier-comparison-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["comm", "sort", "LC_ALL", "collation", "locale", "bash", "cross-tool comparison"]
+    },
+    {
+      "content": "When adding a new test fixture file to an agent-system extension, remember to also add it to that extension's manifest.json file list -- fixtures under scripts/tests/fixtures/** are declared individually by filename, not deployed via a directory glob. A fixture missing from the manifest deploys the fixed script and test suite but silently omits the fixture itself, so a deployed-suite run can fail even though the source-store suite passes. Diff the deployed fixtures directory against the source store during redeploy verification to catch this.",
+      "category": "PATTERN",
+      "source_artifact": "specs/246_snapshot_locale_independent_identifier_comparison/summaries/01_locale-independent-identifier-comparison-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest.json", "extension", "deploy", "fixture", "deploy-headless"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790028477_1288e3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

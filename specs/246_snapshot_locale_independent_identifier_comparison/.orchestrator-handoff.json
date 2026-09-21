@@ -1,19 +1,20 @@
 {
   "task_number": 246,
-  "phase": "plan",
-  "status": "planned",
-  "phases_completed": 0,
+  "phase": "implement",
+  "status": "implemented",
+  "phases_completed": 3,
   "phases_total": 3,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/246_snapshot_locale_independent_identifier_comparison/plans/01_locale-independent-identifier-comparison.md",
-      "summary": "3-phase plan for locale-independent identifier comparison fix plus redeploy."
+      "type": "summary",
+      "path": "specs/246_snapshot_locale_independent_identifier_comparison/summaries/01_locale-independent-identifier-comparison-summary.md",
+      "summary": "Pinned LC_ALL=C on the goals-side sort -u and both comm calls in lean-challenge-snapshot.sh to fix a false identifier-set mismatch under dictionary-collation locales; added a RED/GREEN mixed-case suite case (R5) with a hand-verified mutation kill; redeployed to the one consuming repo (~/Projects/BimodalLogic) that loads the lean extension."
     }
   ],
-  "session_id": "sess_1790028477_1288e3_246",
-  "dispatch_seq": 2,
-  "next_action": "implement",
-  "summary": "Plan written: 3 phases, 2h. RED mixed-case case R5, inline LC_ALL=C pins at goals sort -u and both comm calls, redeploy lean extension into ~/Projects/BimodalLogic (this repo does not load lean).",
-  "blockers": []
+  "session_id": "sess_1790028477_1288e3",
+  "dispatch_seq": 3,
+  "next_action": "complete",
+  "summary": "All 3 plan phases complete: RED mixed-case case R5 added and confirmed RED, LC_ALL=C pinned at the goals-side sort -u and both comm calls (with WHY comments), all other sort/sorted sites audited (already code-point order or never cross-tool compared), suite is 14/14 GREEN with a hand-verified mutation kill, and the fix was redeployed into ~/Projects/BimodalLogic (byte-identical, 14/14 passing there too). One deviation: plan_mixed_case.md needed a manifest.json entry to actually deploy, added and re-verified.",
+  "blockers": [],
+  "plan_markers_verified": true
 }
