@@ -126,32 +126,37 @@ script.
 
 ---
 
-### Phase 2: Pin collation at the producer and comparison sites [NOT STARTED]
+### Phase 2: Pin collation at the producer and comparison sites [COMPLETED]
 
 **Goal**: Fix the ordering mismatch with the narrowest possible scope, and document every sort
 site.
 
 **Tasks**:
-- [ ] Re-derive the line numbers with
+- [x] Re-derive the line numbers with
   `grep -n "sort\b\|comm \|uniq\|join " agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh`.
-- [ ] In `extract_goal_names()`, change the trailing `sort -u` to `LC_ALL=C sort -u`. Add a
+  *(completed: confirmed 145 sort -V, 347 sort -u, 447-448 comm -23/-13 -- matched research)*
+- [x] In `extract_goal_names()`, change the trailing `sort -u` to `LC_ALL=C sort -u`. Add a
   one-line comment saying it matches the code-point order of Python `sorted()` in the R1/R2
-  extractors, which `comm` needs.
-- [ ] In `cross_validate_identifiers()`, prefix both `comm -23`/`comm -13` calls with `LC_ALL=C`.
+  extractors, which `comm` needs. *(completed)*
+- [x] In `cross_validate_identifiers()`, prefix both `comm -23`/`comm -13` calls with `LC_ALL=C`.
   Add a short comment at that site: `comm` checks sortedness and merges under its own locale, so
   both inputs must share one collation, and unpinning either site brings back false (or silently
-  missed) mismatches.
-- [ ] Do not add `export LC_ALL` anywhere. Do not change the regex, the mismatch logic, or the
-  messages.
-- [ ] Audit the other sites and leave them unchanged: the Python `sorted(set(declared_names))`
+  missed) mismatches. *(completed)*
+- [x] Do not add `export LC_ALL` anywhere. Do not change the regex, the mismatch logic, or the
+  messages. *(completed: verified via grep, no export added)*
+- [x] Audit the other sites and leave them unchanged: the Python `sorted(set(declared_names))`
   (R1) and `sorted(names)` (R2) are already code-point order, and the `sort -V` used for plan-file
   selection is never compared across tools. Optionally add a one-line comment at the Python sites
-  noting that they match the pinned shell side.
-- [ ] Re-run the suite and confirm R5 is GREEN and every case passes.
-- [ ] Mutation check by hand: temporarily remove only the `sort -u` pin, confirm R5 goes RED,
-  then restore it. Record the result.
-- [ ] Byte-identity check: run the new fixture under `LC_ALL=en_US.UTF-8` and under `LC_ALL=C`
-  with `--dry-run` and `diff` the outputs (they must be empty).
+  noting that they match the pinned shell side. *(completed: comments added at both Python sites;
+  sort -V at line 145 left unchanged and uncommented since it is never compared cross-tool)*
+- [x] Re-run the suite and confirm R5 is GREEN and every case passes. *(completed: 14 passed,
+  0 failed, 0 skipped)*
+- [x] Mutation check by hand: temporarily remove only the `sort -u` pin, confirm R5 goes RED,
+  then restore it. Record the result. *(completed: removing the pin turned R5 RED with rc=71
+  "comm: file 1 is not in sorted order"; 13 passed, 1 failed; restored, suite back to 14/0)*
+- [x] Byte-identity check: run the new fixture under `LC_ALL=en_US.UTF-8` and under `LC_ALL=C`
+  with `--dry-run` and `diff` the outputs (they must be empty). *(completed: diff empty, outputs
+  byte-identical)*
 
 **Timing**: 45 minutes
 

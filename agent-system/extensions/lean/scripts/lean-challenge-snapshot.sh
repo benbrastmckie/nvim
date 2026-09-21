@@ -343,8 +343,14 @@ fi
 # Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented).
 # ---------------------------------------------------------------------------
 extract_goal_names() {
+  # LC_ALL=C pins this sort to byte/code-point order, scoped to this one pipeline only (never
+  # exported) -- it must match Python's sorted() in the R1/R2 extractors below, since
+  # cross_validate_identifiers() compares this list against theirs with `comm`, which requires
+  # both inputs sorted in the SAME collation. An ambient dictionary-collation locale (e.g.
+  # en_US.UTF-8) orders mixed-case identifiers differently from code-point order, which makes
+  # `comm` report false mismatches (or, in the worse direction, silently miss real ones).
   sed -n '/^\*\*Goals\*\*:/,/^\*\*[^G]/p' "$PLAN_FILE" \
-    | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' | sort -u
+    | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' | LC_ALL=C sort -u
 }
 
 # ---------------------------------------------------------------------------
@@ -431,6 +437,8 @@ if matches:
 with open(module_out, "w", encoding="utf-8") as f:
     f.write(module_body)
 with open(names_out, "w", encoding="utf-8") as f:
+    # sorted() is Python's code-point order, already matching the LC_ALL=C-pinned shell-side
+    # sort -u in extract_goal_names() -- no change needed here.
     f.write("\n".join(sorted(set(declared_names))) + ("\n" if declared_names else ""))
 sys.exit(0)
 PYEOF
@@ -444,8 +452,14 @@ PYEOF
 cross_validate_identifiers() {
   local goals_file="$1" declared_file="$2"
   local only_in_goals only_in_declared
-  only_in_goals=$(comm -23 "$goals_file" "$declared_file")
-  only_in_declared=$(comm -13 "$goals_file" "$declared_file")
+  # comm checks sortedness of, and merges, its two inputs under its OWN active collation, so both
+  # files must already share one collation before reaching here. Pinning LC_ALL=C here as well
+  # (in addition to the sort -u pin in extract_goal_names()) is defense-in-depth: unpinning either
+  # site alone brings back false mismatches (or a silently missed real one) whenever a caller's
+  # ambient locale differs from code-point order. Do not unpin this without re-verifying the
+  # mixed-case suite case stays green.
+  only_in_goals=$(LC_ALL=C comm -23 "$goals_file" "$declared_file")
+  only_in_declared=$(LC_ALL=C comm -13 "$goals_file" "$declared_file")
   if [ -n "$only_in_goals" ] || [ -n "$only_in_declared" ]; then
     echo "ERROR: identifier-set mismatch between **Goals**: and the Challenge declarations." >&2
     if [ -n "$only_in_goals" ]; then
@@ -599,6 +613,8 @@ module_body += "\n".join(decl_texts)
 with open(module_out, "w", encoding="utf-8") as f:
     f.write(module_body)
 with open(names_out, "w", encoding="utf-8") as f:
+    # sorted() is Python's code-point order, already matching the LC_ALL=C-pinned shell-side
+    # sort -u in extract_goal_names() -- no change needed here.
     f.write("\n".join(sorted(names)) + "\n")
 sys.exit(0)
 PYEOF
