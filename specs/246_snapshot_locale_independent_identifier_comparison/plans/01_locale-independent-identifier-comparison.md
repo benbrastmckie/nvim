@@ -1,7 +1,7 @@
 # Implementation Plan: Task #246
 
 - **Task**: 246 - Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md

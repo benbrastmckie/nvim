@@ -11,7 +11,7 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240,241,242,243,244,245,246,248 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240,241,242,243,244,245,248 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,139,165,173,174,208,224,227 | 29,162,163,167,172,207,210,240 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,136,140,190,217,221 | 74,139,165,166,173,174 | core-agent-system, extensions |
 | 4 | 247 | 221 | lean-extension |
@@ -70,7 +70,6 @@ next_project_number: 249
 
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task...
 202 [NOT STARTED] — Make the picker's Reload All] and Regenerate] entries honest...
-246 [PLANNED] — Make lean-challenge-snapshot.sh identifier comparison...
 248 [NOT STARTED] — Research and revise the Typst document viewing commands...
 
 ### Opencode
@@ -173,12 +172,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 246. Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)
 - **Effort**: 2 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md]
 - **Plan**: [246_snapshot_locale_independent_identifier_comparison/plans/01_locale-independent-identifier-comparison.md]
+- **Summary**: [246_snapshot_locale_independent_identifier_comparison/summaries/01_locale-independent-identifier-comparison-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
 
