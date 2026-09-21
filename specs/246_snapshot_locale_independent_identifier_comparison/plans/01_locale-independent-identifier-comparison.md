@@ -174,24 +174,32 @@ site.
 
 ---
 
-### Phase 3: Redeploy to the consuming repo and verify [NOT STARTED]
+### Phase 3: Redeploy to the consuming repo and verify [COMPLETED]
 
 **Goal**: Get the source-store fix into a running agent's `.claude/**` copy.
 
 **Tasks**:
-- [ ] Confirm which repos load the lean extension. This repo does not (its
+- [x] Confirm which repos load the lean extension. This repo does not (its
   `.claude-extensions.json` lists core, email, literature, memory, nix and nvim).
-  `~/Projects/BimodalLogic` does.
-- [ ] Run `agent-system/extensions/core/scripts/deploy-headless.sh --dry-run ~/Projects/BimodalLogic`,
+  `~/Projects/BimodalLogic` does. *(completed: confirmed via `.claude-extensions.json` keys on
+  both repos)*
+- [x] Run `agent-system/extensions/core/scripts/deploy-headless.sh --dry-run ~/Projects/BimodalLogic`,
   then run the default non-destructive resync, `deploy-headless.sh ~/Projects/BimodalLogic`. Never
-  use `--wipe`.
-- [ ] Verify with
+  use `--wipe`. *(completed: dry-run then resync both ran; RESULT=landed_verify_clean, 14
+  verify-deploy checks passed)*
+- [x] Verify with
   `diff agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh ~/Projects/BimodalLogic/.claude/scripts/lean-challenge-snapshot.sh`
   (it must be empty, or show only deploy-time substitutions), and grep the deployed copy for the
-  `LC_ALL=C sort -u` and `LC_ALL=C comm` pins.
-- [ ] Optionally run the deployed suite from the consuming repo if it is deployed there.
-- [ ] Record in the summary the audit disposition of all five sites (pinned or not needed, with
-  the reason).
+  `LC_ALL=C sort -u` and `LC_ALL=C comm` pins. *(completed: diff empty; both pins present in the
+  deployed copy)*
+- [x] Optionally run the deployed suite from the consuming repo if it is deployed there.
+  *(completed: 14 passed, 0 failed, 0 skipped, including R5)*
+- [x] Record in the summary the audit disposition of all five sites (pinned or not needed, with
+  the reason). *(completed, see summary)*
+- [x] *(deviation: altered — the fixture `plan_mixed_case.md` added in Phase 1 was not yet
+  declared in `agent-system/extensions/lean/manifest.json`'s file list, so it did not deploy on
+  the first resync. Added the one missing manifest line and re-ran the resync; not anticipated by
+  the plan, discovered during this phase's verification step.)*
 
 **Timing**: 30 minutes
 
@@ -213,14 +221,14 @@ deploy fails for environmental reasons, report partial with the exact error inst
 
 ## Testing & Validation
 
-- [ ] R5 is RED against the unfixed script and GREEN against the fixed script
-- [ ] Removing the `sort -u` pin by hand turns R5 RED
-- [ ] `--dry-run` output is byte-identical under `LC_ALL=en_US.UTF-8` and `LC_ALL=C` for the
+- [x] R5 is RED against the unfixed script and GREEN against the fixed script
+- [x] Removing the `sort -u` pin by hand turns R5 RED
+- [x] `--dry-run` output is byte-identical under `LC_ALL=en_US.UTF-8` and `LC_ALL=C` for the
   mixed-case fixture
-- [ ] The full `test-lean-challenge-snapshot.sh` suite passes, including the AV1 guard
-- [ ] No process-wide `export LC_ALL`/`LC_COLLATE` in the script
-- [ ] No task-number references in the modified deliverable files
-- [ ] The consuming repo's deployed copy carries the fix
+- [x] The full `test-lean-challenge-snapshot.sh` suite passes, including the AV1 guard
+- [x] No process-wide `export LC_ALL`/`LC_COLLATE` in the script
+- [x] No task-number references in the modified deliverable files
+- [x] The consuming repo's deployed copy carries the fix
 
 ## Artifacts & Outputs
 

@@ -58,6 +58,7 @@
       "tests/fixtures/challenge/plan_r1.md",
       "tests/fixtures/challenge/plan_legacy.md",
       "tests/fixtures/challenge/plan_mismatched.md",
+      "tests/fixtures/challenge/plan_mixed_case.md",
       "tests/fixtures/challenge/solution_honest.lean",
       "tests/fixtures/challenge/solution_weakened.lean",
       "tests/fixtures/challenge/solution_cosmetic.lean",

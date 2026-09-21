@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Redeploy to the consuming repo and verify",
+  "started_at": "2026-09-21T00:35:00Z",
+  "last_updated": "2026-09-21T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm which repos load the lean extension", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Dry-run then resync deploy-headless.sh into BimodalLogic", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Verify deployed copy matches source and carries both pins", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run deployed suite in consuming repo", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record audit disposition of all five sites", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "plan_mixed_case.md fixture deploys to consuming repo",
+      "type": "altered",
+      "reason": "Fixture was not declared in agent-system/extensions/lean/manifest.json's file list, so the first resync did not deploy it; added the missing manifest entry and re-ran the resync.",
+      "annotation": "*(deviation: altered — the fixture plan_mixed_case.md added in Phase 1 was not yet declared in agent-system/extensions/lean/manifest.json's file list, so it did not deploy on the first resync. Added the one missing manifest line and re-ran the resync; not anticipated by the plan, discovered during this phase's verification step.)*"
+    }
+  ],
+  "handoff_count": 0
+}
