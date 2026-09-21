@@ -1800,6 +1800,38 @@ ACCEPTANCE: the ruling and its reasoning are recorded in the script's header con
 
 CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+
+=== ADDITIONAL EVIDENCE (2026-09-21, ~/Projects/Logos/Verification, session sess_1790009936_0a5e95) ===
+A SECOND, LARGER INSTANCE OF THE MOTIVATING HARM -- IN-BATCH, NOT CROSS-SESSION. `/orchestrate
+66,70,72,76,77,81,84,85` (8 tasks, all task_type general, all created without file_scope) reached
+the implement phase with every task planned. `orchestrate-cycle-plan.sh --dry-run` reported:
+Dispatch = all 8, Deferred = 0, Blocked = 0 -- i.e. it would have run 8 implementers concurrently
+in ONE working tree. The plans themselves showed heavy real overlap, found only by an operator
+reading them:
+  - framed_channel/check.sh edited by 3 tasks (one a 9-phase refactor of it);
+  - .github/workflows/verify.yml: one task edited the comparator-arm job while another DELETED it;
+  - docs/ci.md edited by 4 tasks;
+  - 4 tasks ran the full local verification gate, which regenerates the committed certificate --
+    concurrent gate runs over a tree other agents are mid-edit would have produced wrong results.
+The collision guard did not fail; as in the BimodalLogic case it was never consulted, because
+every candidate's file_scope was absent.
+
+OPERATOR REMEDY THAT WORKED (and what it implies for the ruling): the operator hand-populated
+file_scope for all 8 tasks from each plan's "Files to modify" lists and re-ran the dry-run. The
+existing in_batch predicate then serialized correctly (cycle 3: 2 admitted, 6 deferred with
+accurate overlap reasons), and the batch completed across 6 implement cycles with zero
+cross-task clobbers, all eight committing cleanly. Two implications:
+  1. The information needed was already on disk at plan time (every plan listed its files) --
+     direct support for harvesting file_scope from plans (the formalize/harvest task) as the
+     primary fix, with this task's posture as the backstop.
+  2. For the in_batch case specifically, the "defer on absence" posture is cheap: an absent-scope
+     task in a multi-task batch has no evidence it is disjoint from its siblings, and the cost of
+     wrongly serializing is extra cycles, while the cost of wrongly parallelizing was (here)
+     concurrent edits to the same gate script and concurrent certificate-regenerating gate runs.
+     Consider ruling separately for in_batch (strict: absent scope => serialize against every
+     sibling, or refuse admission until scope is declared) vs cross_batch (the tradeoff already
+     stated above).
+
 ---
 
 ### 163. Surface missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh
