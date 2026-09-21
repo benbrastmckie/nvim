@@ -49,12 +49,14 @@
 # same named-field read the caller's own heading-scan already performs). Optional and absent from
 # every base-mode call.
 #
-# Wait Discipline (external-process-wait pointer): this script unconditionally appends a
-# "## Wait Discipline" pointer to every dispatch file it writes, in every phase (research, plan,
-# implement) and mode (base and --hard) -- so a dispatched agent receives the external-process
-# wait discipline (bounded polling; never an unbounded watch, no-op filler calls, or a
-# Monitor/background wait that wakes on every unchanged poll) independent of which agent contract
-# or `hard_contracts` routing it happens to load. This block and "## User-Decision Contract" are
+# Wait Discipline (external-process-wait + bounded-build-waiter pointers): this script
+# unconditionally appends a "## Wait Discipline" pointer to every dispatch file it writes, in
+# every phase (research, plan, implement) and mode (base and --hard) -- so a dispatched agent
+# receives both the external-process wait discipline (bounded polling; never an unbounded watch,
+# no-op filler calls, or a Monitor/background wait that wakes on every unchanged poll) AND the
+# local-detached-command bounded-waiter discipline (hard timeout, `kill -0` on a captured PID,
+# never `ps | grep`/`pgrep -f`, one waiter per log) independent of which agent contract or
+# `hard_contracts` routing it happens to load. This block and "## User-Decision Contract" are
 # the two deliberate, permanent exceptions to the byte-identical-when-inactive invariant every
 # other section in this file follows -- neither is gated behind an `if`, and neither should be.
 #
@@ -521,6 +523,10 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   echo "Read context/patterns/external-process-wait.md before waiting on any long-running external"
   echo "or remote process (e.g. a CI run) — bounded polling only; never an unbounded watch, no-op"
   echo "filler calls, or a Monitor/background wait that wakes you on every unchanged poll."
+  echo ""
+  echo "For a detached local command instead (a build, gate, or test run you backgrounded), read"
+  echo "context/patterns/bounded-build-waiter.md: a hard timeout, writer liveness via \`kill -0\`"
+  echo "on the captured PID, never \`ps | grep\` or \`pgrep -f\`, and one waiter per log."
   echo ""
   echo "## User-Decision Contract"
   echo ""

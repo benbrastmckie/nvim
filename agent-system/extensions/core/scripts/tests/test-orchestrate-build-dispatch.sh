@@ -750,7 +750,8 @@ fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 14: wait-discipline pointer present in every dispatch -- the "## Wait Discipline" section
-# (pointing at context/patterns/external-process-wait.md) is UNCONDITIONAL, like "## User-Decision
+# (pointing at both context/patterns/external-process-wait.md and
+# context/patterns/bounded-build-waiter.md) is UNCONDITIONAL, like "## User-Decision
 # Contract": it must appear across the full base/--hard x research/plan/implement matrix, exactly
 # once per dispatch file, and ahead of "## User-Decision Contract".
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -762,6 +763,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "## Wait Discipline" "base research: Wait Discipline section present"
   assert_contains "$content" "context/patterns/external-process-wait.md" "base research: pointer to external-process-wait.md present"
+  assert_contains "$content" "context/patterns/bounded-build-waiter.md" "base research: pointer to bounded-build-waiter.md present"
 else
   fail "base research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -771,6 +773,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "## Wait Discipline" "base plan: Wait Discipline section present"
   assert_contains "$content" "context/patterns/external-process-wait.md" "base plan: pointer to external-process-wait.md present"
+  assert_contains "$content" "context/patterns/bounded-build-waiter.md" "base plan: pointer to bounded-build-waiter.md present"
 else
   fail "base plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -780,6 +783,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "## Wait Discipline" "base implement: Wait Discipline section present"
   assert_contains "$content" "context/patterns/external-process-wait.md" "base implement: pointer to external-process-wait.md present"
+  assert_contains "$content" "context/patterns/bounded-build-waiter.md" "base implement: pointer to bounded-build-waiter.md present"
 else
   fail "base implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -790,6 +794,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "## Wait Discipline" "hard research: Wait Discipline section present"
   assert_contains "$content" "context/patterns/external-process-wait.md" "hard research: pointer to external-process-wait.md present"
+  assert_contains "$content" "context/patterns/bounded-build-waiter.md" "hard research: pointer to bounded-build-waiter.md present"
 else
   fail "hard research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -799,6 +804,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "## Wait Discipline" "hard plan: Wait Discipline section present"
   assert_contains "$content" "context/patterns/external-process-wait.md" "hard plan: pointer to external-process-wait.md present"
+  assert_contains "$content" "context/patterns/bounded-build-waiter.md" "hard plan: pointer to bounded-build-waiter.md present"
 else
   fail "hard plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -808,6 +814,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "## Wait Discipline" "hard implement: Wait Discipline section present"
   assert_contains "$content" "context/patterns/external-process-wait.md" "hard implement: pointer to external-process-wait.md present"
+  assert_contains "$content" "context/patterns/bounded-build-waiter.md" "hard implement: pointer to bounded-build-waiter.md present"
 
   # Single-occurrence guard: the pointer must never be double-emitted (e.g. via a future
   # hard_contracts_block addition), even in the one mode/phase combination with the richest set
@@ -817,6 +824,13 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
     pass "hard implement: external-process-wait.md pointer appears exactly once"
   else
     fail "hard implement: expected exactly 1 occurrence of the pointer, got $occurrence_count"
+  fi
+
+  bbw_occurrence_count="$(grep -c "context/patterns/bounded-build-waiter.md" "$LAST_DISPATCH_FILE")"
+  if [ "$bbw_occurrence_count" -eq 1 ]; then
+    pass "hard implement: bounded-build-waiter.md pointer appears exactly once"
+  else
+    fail "hard implement: expected exactly 1 occurrence of the pointer, got $bbw_occurrence_count"
   fi
 
   # Ordering guard: "## Wait Discipline" precedes "## User-Decision Contract" (both are

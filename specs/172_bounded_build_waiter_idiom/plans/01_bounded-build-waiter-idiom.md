@@ -208,22 +208,24 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Dispatch-file Wait Discipline carrier [NOT STARTED]
+### Phase 3: Dispatch-file Wait Discipline carrier [COMPLETED]
 
 **Goal**: Make the always-present dispatch-file wait pointer reach the local-case anchor, so
 general-implementation-agent (and every other dispatched agent) sees it.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`'s unconditional
+- [x] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`'s unconditional
       `## Wait Discipline` echo block, add a line or two: for a detached local command (a build,
       gate, or test run you backgrounded), read `context/patterns/bounded-build-waiter.md`
       instead: timeout-bounded, `kill -0 "$pid"` on the captured PID, never `ps | grep` or
-      `pgrep -f`, one waiter per log
-- [ ] Update the script's header comment describing the Wait Discipline block so it names both
-      anchors
-- [ ] Add matching `assert_contains ... "context/patterns/bounded-build-waiter.md"` assertions to
+      `pgrep -f`, one waiter per log *(completed)*
+- [x] Update the script's header comment describing the Wait Discipline block so it names both
+      anchors *(completed)*
+- [x] Add matching `assert_contains ... "context/patterns/bounded-build-waiter.md"` assertions to
       Group 14 in `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`
-      (base and hard, every phase already covered)
+      (base and hard, every phase already covered) *(completed: also added a matching
+      single-occurrence guard for the new pointer, mirroring the existing
+      external-process-wait.md guard)*
 
 **Timing**: 0.5 hours
 
