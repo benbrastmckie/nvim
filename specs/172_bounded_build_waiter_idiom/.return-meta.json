@@ -25,22 +25,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/172_bounded_build_waiter_idiom/summaries/01_bounded-build-waiter-idiom-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["context-index", "cross-extension-reference", "deploy-relative-path", "source-store", "index-entries.json"]
+      "suggested_keywords": [
+        "context-index",
+        "cross-extension-reference",
+        "deploy-relative-path",
+        "source-store",
+        "index-entries.json"
+      ]
     },
     {
       "content": "check-task-references.sh and check-extension-docs.sh both refuse to run directly from the agent-system source store scripts/ directory (a deploy-root-guard fires) and must instead be invoked via the deployed copy at .claude/scripts/<name>.sh, or with an explicit REPO_ROOT=$(pwd) override for check-extension-docs.sh's source-store mode. A source-store-only edit (never redeployed) will show up as expected 'deployed script content drift' in check-extension-docs.sh's core extension report -- this is not a content defect, just deploy staleness inherent to the source-store/deploy boundary.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/172_bounded_build_waiter_idiom/summaries/01_bounded-build-waiter-idiom-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["check-task-references.sh", "check-extension-docs.sh", "deploy-root-guard", "source-store", "drift-check"]
+      "suggested_keywords": [
+        "check-task-references.sh",
+        "check-extension-docs.sh",
+        "deploy-root-guard",
+        "source-store",
+        "drift-check"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790030538_1b6143",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
