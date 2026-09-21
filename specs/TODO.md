@@ -1,5 +1,5 @@
 ---
-next_project_number: 248
+next_project_number: 247
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 248
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240,241,242,243,244,245,246 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,172,177,184,185,199,202,207,210,223,240,241,242,243,244,245,246,246 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,139,165,173,174,208,224,227 | 29,162,163,167,172,207,210,240 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,136,140,190,217,221 | 74,139,165,166,173,174 | core-agent-system, extensions |
 | 4 | 247 | 221 | lean-extension |
@@ -157,6 +157,16 @@ ACCEPTANCE.
   5. The lean extension is redeployed and the regenerated .claude/** copies in a consuming repo carry both halves. A source-store fix that never reaches the consuming repo changes nothing for a running agent.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 246. Revise typst viewing commands
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication
 
 ---
 

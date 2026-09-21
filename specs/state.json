@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 248,
+  "next_project_number": 247,
   "active_projects": [
+    {
+      "project_number": 246,
+      "project_name": "revise_typst_viewing_commands",
+      "status": "not_started",
+      "task_type": "neovim",
+      "description": "Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication",
+      "topic": "neovim",
+      "created": "2026-09-21T21:54:04Z",
+      "last_updated": "2026-09-21T21:54:04Z"
+    },
     {
       "project_number": 241,
       "project_name": "reconcile_mcp_registration_surfaces",
@@ -1243,7 +1253,7 @@
       "title": "Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)",
       "task_type": "meta",
       "status": "not_started",
-      "topic": "lean-extension",
+      "topic": "neovim",
       "dependencies": [],
       "effort": "2 hours",
       "file_scope": [
