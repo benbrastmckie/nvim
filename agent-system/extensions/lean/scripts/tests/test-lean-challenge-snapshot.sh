@@ -191,6 +191,46 @@ else
 fi
 
 # ===========================================================================
+# Case R5: mixed-case identifiers -- ambient-locale dictionary sort on the goals side vs.
+# code-point sort on the declared side must not produce a false identifier-set mismatch.
+#
+# Mutation this case kills: removing the `LC_ALL=C` pin from the goals-side `sort -u` in
+# extract_goal_names() (with or without also removing the `comm` pins) turns this case RED --
+# under a UTF-8 dictionary-collation locale the goals list sorts as
+# hnOpenMirror, hn_stab, hnStabMirror while the declared list (Python sorted(), code-point order)
+# is hnOpenMirror, hnStabMirror, hn_stab. `comm` assumes both inputs share one collation, so the
+# unpinned run exits 71 naming 'hn_stab'/'hnStabMirror' as spuriously mismatched on both sides.
+# ===========================================================================
+r5_locale=""
+for candidate in en_US.UTF-8 en_US.utf8; do
+  if locale -a 2>/dev/null | grep -qix "$candidate"; then
+    r5_locale="$candidate"
+    break
+  fi
+done
+if [ -z "$r5_locale" ]; then
+  skip "R5: no UTF-8 dictionary-collation locale (en_US.UTF-8/en_US.utf8) available on this system"
+else
+  repo=$(make_repo "r5" 908 plan_mixed_case.md)
+  out=$(cd "$repo" && LC_ALL="$r5_locale" bash "$TOOL_SRC" 908 "$repo" --dry-run 2>&1)
+  rc=$?
+  out_c=$(cd "$repo" && LC_ALL=C bash "$TOOL_SRC" 908 "$repo" --dry-run 2>&1)
+  rc_c=$?
+  if [ "$rc" -eq 0 ] \
+    && ! echo "$out" | grep -q "identifier-set mismatch" \
+    && ! echo "$out" | grep -qi "^comm:" \
+    && echo "$out" | grep -q "theorem_names:.*hnOpenMirror" \
+    && echo "$out" | grep -q "theorem_names:.*hnStabMirror" \
+    && echo "$out" | grep -q "theorem_names:.*hn_stab" \
+    && [ "$rc_c" -eq 0 ] \
+    && [ "$out" = "$out_c" ]; then
+    pass "R5: mixed-case identifiers under a dictionary-collation locale exit 0 with all three names present, byte-identical to the LC_ALL=C run"
+  else
+    fail "R5: expected exit 0 with all three mixed-case names under $r5_locale, byte-identical to LC_ALL=C, got rc=$rc rc_c=$rc_c: $out"
+  fi
+fi
+
+# ===========================================================================
 # Case M1: commit + manifest + SHA round-trip
 # ===========================================================================
 repo=$(make_repo "m1" 905 plan_r1.md)

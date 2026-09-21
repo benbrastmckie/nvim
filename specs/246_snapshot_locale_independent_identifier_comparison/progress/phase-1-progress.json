@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Add RED mixed-case suite case and fixture",
+  "started_at": "2026-09-21T00:00:00Z",
+  "last_updated": "2026-09-21T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create plan_mixed_case.md fixture", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_mixed_case.md"]},
+    {"id": 2, "description": "Add case R5 to test-lean-challenge-snapshot.sh", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"]},
+    {"id": 3, "description": "Run suite against unfixed script, confirm R5 fails and others pass", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

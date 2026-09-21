@@ -1,7 +1,7 @@
 # Implementation Plan: Task #246
 
 - **Task**: 246 - Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md
@@ -81,17 +81,17 @@ No roadmap consultation requested for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add RED mixed-case suite case and fixture [NOT STARTED]
+### Phase 1: Add RED mixed-case suite case and fixture [COMPLETED]
 
 **Goal**: Add the regression case first, and show it goes RED against the current, unfixed
 script.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_mixed_case.md`,
+- [x] Create `agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_mixed_case.md`,
   modeled on `plan_r1.md`/`plan_mismatched.md`. Its `**Goals**:` line and its
   `## Lean Challenge Statements` block both name the SAME set: `hnOpenMirror`, `hnStabMirror`,
-  `hn_stab`. Use `{N}` where existing fixtures do.
-- [ ] Add case `R5` to `test-lean-challenge-snapshot.sh` after `R4` and before the `M1` block,
+  `hn_stab`. Use `{N}` where existing fixtures do. *(completed)*
+- [x] Add case `R5` to `test-lean-challenge-snapshot.sh` after `R4` and before the `M1` block,
   following the file's per-case comment-block and `pass`/`fail` conventions:
   - Find a UTF-8 dictionary-collation locale via `locale -a` (prefer `en_US.UTF-8` or
     `en_US.utf8`). If none exists, `skip` with a message.
@@ -103,9 +103,12 @@ script.
     (the acceptance criterion).
   - In the comment block, state the mutation this case kills: removing the `LC_ALL=C` pin from
     the goals-side `sort -u` (with or without the `comm` pins) turns it RED with exit 71 and
-    `hn_stab` on both sides.
-- [ ] Run the suite against the UNFIXED script and confirm R5 fails and every other case still
-  passes. Record the observed output for the summary.
+    `hn_stab` on both sides. *(completed)*
+- [x] Run the suite against the UNFIXED script and confirm R5 fails and every other case still
+  passes. Record the observed output for the summary. *(completed: R5 FAIL rc=71,
+  "named in **Goals**: but not declared: hn_stab" / "declared but not named in **Goals**:
+  hn_stab" on both sides — same-names-both-sides symptom reproduced exactly; 13 passed, 1
+  failed, 0 skipped)*
 
 **Timing**: 45 minutes
 
