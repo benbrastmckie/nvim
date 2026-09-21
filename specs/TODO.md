@@ -27,7 +27,7 @@ next_project_number: 249
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-172 [RESEARCHED] — Define a canonical bounded-wait idiom for detached builds
+172 [PLANNED] — Define a canonical bounded-wait idiom for detached builds
   └─ 173 [NOT STARTED] — Guarantee lake-build-guard.sh writes a terminal record on...
     └─ 221 [NOT STARTED] — Correct the lean implementation-agent contracts:...
   └─ 174 [NOT STARTED] — Add a self-excluding orphaned-build-waiter reaper pass to...
@@ -1408,11 +1408,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 172. Define a canonical bounded-wait idiom for detached builds
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md]
+- **Plan**: [172_bounded_build_waiter_idiom/plans/01_bounded-build-waiter-idiom.md]
 
 **Description**: Close the taught-pattern gap that produced 22 unreapable poll loops during a multi-task /orchestrate run in ~/Projects/BimodalLogic. Investigation finding: the observed waiter shape `until grep -q "^EXIT=" <log>; do sleep ...; done` appears NOWHERE in this source store -- it is agent-improvised. Two forces create it: (a) the harness's own Bash guidance blocks foreground `sleep` and points agents at a Monitor until-loop to wait on a condition, and (b) extensions/lean/context/project/lean4/operations/long-builds.md mandates `Bash(run_in_background: true)` detachment for every `lake build` but offers no sanctioned way to BLOCK on a detached build -- its only stated discipline is 'wait for the harness completion notification', with four Passive progress checks explicitly labeled liveness-only. An agent that needs to block therefore invents an unbounded sentinel poll. The defect class: a poll loop whose exit condition is a sentinel written by a process that may die first has no bounded termination. In the observed run the agent-side wrapper was of the form `cmd > b2b.log 2>&1; echo "EXIT=$?" >> b2b.log`; when the guarded build was cancelled/superseded by lock contention with a concurrent session, the `echo` never ran, so the sentinel became unwritable by construction. 22 loops watched the same b2b.log (2 more watched b9b.log), aged 24-55 minutes, at 0% CPU -- the cost is background-shell-slot exhaustion and operator confusion, not throughput. Deliverable: a new core context pattern file (suggested agent-system/extensions/core/context/patterns/bounded-build-waiter.md) stating the defect class once, canonically, and defining a safe waiter with three mandatory properties -- (1) a hard timeout so the waiter cannot outlive its writer, (2) a writer-liveness check (`kill -0 <pid>`) rather than sentinel-polling alone, so a dead writer terminates the wait immediately, and (3) one-waiter-per-log enforcement, so a superseded build's waiter is reaped before a replacement waiter is spawned. Wire the new anchor into long-builds.md with a one-line pointer under a new section covering the blocking case (do NOT restate the model there -- follow the existing single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md). This task is foundational: it settles the waiter/writer contract that the guard-side, reaper-side, and agent-contract tasks all consume. Do not modify lake-build-guard.sh, claude-refresh.sh, or any agent file here -- those are separate dependent tasks.
 

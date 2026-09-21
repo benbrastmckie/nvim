@@ -1,16 +1,11 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
-  "summary": "Research confirms the dead-end bounded-build-waiter.md pointer already present in external-process-wait.md, generalizes lake-build-guard.sh's existing kill -0 idiom, and specifies four mandatory waiter properties (hard timeout, PID-only writer-liveness, one-waiter-per-log with attach-or-fail-loudly, dead-writer-terminates-immediately) plus a long-builds.md pointer wired per the single-statement-plus-pointer convention.",
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md",
-      "summary": "Research report defining the recommended structure and content for the new bounded-build-waiter.md pattern file and its long-builds.md pointer."
-    }
-  ],
+  "status": "planned",
+  "summary": "Wrote a 4-phase plan (3h): author bounded-build-waiter.md; wire the long-builds.md pointer and index entry; add the dispatch-file Wait Discipline carrier; final gate. Phase 3 widens file_scope and can be dropped on its own.",
+  "artifacts": [{"type":"plan","path":"specs/172_bounded_build_waiter_idiom/plans/01_bounded-build-waiter-idiom.md","summary":"4-phase plan for the bounded-build-waiter pattern and its pointers."}],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 4,
   "blockers": [],
-  "next_action_hint": "Run /plan 172 to create the implementation plan for writing agent-system/extensions/core/context/patterns/bounded-build-waiter.md and wiring its pointer into long-builds.md."
+  "phase": "plan",
+  "next_action_hint": "implement",
+  "dispatch_seq": 2
 }
