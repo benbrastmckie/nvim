@@ -1,11 +1,24 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 4-phase plan (3h): author bounded-build-waiter.md; wire the long-builds.md pointer and index entry; add the dispatch-file Wait Discipline carrier; final gate. Phase 3 widens file_scope and can be dropped on its own.",
-  "artifacts": [{"type":"plan","path":"specs/172_bounded_build_waiter_idiom/plans/01_bounded-build-waiter-idiom.md","summary":"4-phase plan for the bounded-build-waiter pattern and its pointers."}],
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "summary": "Authored the canonical bounded-build-waiter.md pattern file and wired pointers into long-builds.md, core index-entries.json, and the always-present dispatch-file Wait Discipline block; all four plan phases complete and verified.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/172_bounded_build_waiter_idiom/summaries/01_bounded-build-waiter-idiom-summary.md",
+      "summary": "Implementation summary for the bounded-build-waiter idiom task"
+    },
+    {
+      "type": "pattern",
+      "path": "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+      "summary": "New canonical anchor: bounded, PID-liveness, one-waiter-per-log idiom for detached local commands"
+    }
+  ],
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "phase": "plan",
-  "next_action_hint": "implement",
-  "dispatch_seq": 2
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Implementation complete; ready for postflight status promotion to completed."
 }

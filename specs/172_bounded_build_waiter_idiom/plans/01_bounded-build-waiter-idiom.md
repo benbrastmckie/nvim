@@ -1,7 +1,7 @@
 # Implementation Plan: Task #172
 
 - **Task**: 172 - Define a canonical bounded-wait idiom for detached builds
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md
@@ -248,21 +248,26 @@ if a golden file or another emitter exists, update it in this phase too.
 
 ---
 
-### Phase 4: Final gate [NOT STARTED]
+### Phase 4: Final gate [COMPLETED]
 
 **Goal**: Run the full relevant gate set over every touched file.
 
 **Tasks**:
-- [ ] Run the repo task-reference lint (`check-task-references.sh` in core scripts) over all
-      touched deliverables; fix any hit
-- [ ] Re-run Phases 2 and 3 test commands together
-- [ ] `grep -rn "bounded-build-waiter.md" agent-system/extensions` and confirm every inbound
+- [x] Run the repo task-reference lint (`check-task-references.sh` in core scripts) over all
+      touched deliverables; fix any hit *(completed: 0 occurrences across all 5 touched files)*
+- [x] Re-run Phases 2 and 3 test commands together *(completed: jq empty OK; test-index-entries
+      -schema.sh 9/9 pass; validate-context-index.sh 222 entries, 0 errors/warnings;
+      test-orchestrate-build-dispatch.sh 113/113 pass; bash -n OK)*
+- [x] `grep -rn "bounded-build-waiter.md" agent-system/extensions` and confirm every inbound
       pointer (`external-process-wait.md` x2, `long-builds.md`, `index-entries.json`, the
-      dispatch script) resolves to the now-existing file
-- [ ] Confirm `git status` shows no edits under `.claude/` and no edits to `lake-build-guard.sh`,
-      `claude-refresh.sh`, or `agents/*.md`
-- [ ] Optionally run `check-extension-docs.sh` if it covers context files, and fix new findings
-      in touched files only
+      dispatch script) resolves to the now-existing file *(completed)*
+- [x] Confirm `git status` shows no edits under `.claude/` and no edits to `lake-build-guard.sh`,
+      `claude-refresh.sh`, or `agents/*.md` *(completed)*
+- [x] Optionally run `check-extension-docs.sh` if it covers context files, and fix new findings
+      in touched files only *(completed: `core` reports script-content drift against the
+      deployed `.claude/` copy, which is expected and out of scope — the source-store-deploy
+      boundary means `.claude/` is a disposable deploy artifact this task deliberately does not
+      redeploy; no context-file findings were reported)*
 
 **Timing**: 0.5 hours
 
@@ -278,12 +283,12 @@ if a golden file or another emitter exists, update it in this phase too.
 
 ## Testing & Validation
 
-- [ ] `test-orchestrate-build-dispatch.sh` passes, including new Group 14 assertions
-- [ ] `test-index-entries-schema.sh` passes; `index-entries.json` is valid JSON
-- [ ] Task-reference lint is clean for all touched deliverables
-- [ ] Every `bounded-build-waiter.md` pointer resolves; `external-process-wait.md`'s sibling
+- [x] `test-orchestrate-build-dispatch.sh` passes, including new Group 14 assertions
+- [x] `test-index-entries-schema.sh` passes; `index-entries.json` is valid JSON
+- [x] Task-reference lint is clean for all touched deliverables
+- [x] Every `bounded-build-waiter.md` pointer resolves; `external-process-wait.md`'s sibling
       description matches the written file
-- [ ] No writes under `.claude/`, none to the three forbidden files, none to any agent file
+- [x] No writes under `.claude/`, none to the three forbidden files, none to any agent file
 
 ## Artifacts & Outputs
 
