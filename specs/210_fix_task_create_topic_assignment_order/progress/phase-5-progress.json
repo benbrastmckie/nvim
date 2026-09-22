@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "Extract task-type detection into a sourceable library",
+  "started_at": "2026-09-22T01:00:00Z",
+  "last_updated": "2026-09-22T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create task-type-detect.sh exporting detect_task_type", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-type-detect.sh"]},
+    {"id": 2, "description": "Implement resolution ladder in D6 order", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Define named arrays/constants", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Carry 4b/4c/4e unchanged", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Whole-word matching for weak signals", "status": "done", "files_touched": []},
+    {"id": 6, "description": "select(...|not) jq idiom", "status": "done", "files_touched": []},
+    {"id": 7, "description": "File-header comment block", "status": "done", "files_touched": []},
+    {"id": 8, "description": "shellcheck resolve findings", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

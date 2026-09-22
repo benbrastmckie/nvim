@@ -370,31 +370,34 @@ phase rather than leaving it unfixed.
 
 ---
 
-### Phase 5: Extract task-type detection into a sourceable library [NOT STARTED]
+### Phase 5: Extract task-type detection into a sourceable library [COMPLETED]
 
 **Goal**: One shared, testable definition of the whole step-4 detection sequence, implementing
 D6's strong-anchor + weak-threshold rule.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/task-type-detect.sh` exporting
+- [x] Create `agent-system/extensions/core/scripts/lib/task-type-detect.sh` exporting
       `detect_task_type "<description>" [state_file] [extensions_dir]`, echoing the resolved
       task_type on stdout. Follow the sourceable-library conventions of
       `scripts/lib/manifest-routing-lib.sh` (the precedent for centralizing previously-prose
-      routing logic) — no side effects on source, no `set -e` imposed on the caller.
-- [ ] Implement the resolution ladder in D6 order: strong anchors, extension `keyword_overrides`,
-      project default, weak-signal scoring, alias remapping.
-- [ ] Define the strong-anchor sets and the weak-signal sets as named arrays/constants near the
+      routing logic) — no side effects on source, no `set -e` imposed on the caller. *(completed)*
+- [x] Implement the resolution ladder in D6 order: strong anchors, extension `keyword_overrides`,
+      project default, weak-signal scoring, alias remapping. *(completed)*
+- [x] Define the strong-anchor sets and the weak-signal sets as named arrays/constants near the
       top of the file, and the threshold as one named constant, so the rule is retunable without
-      restructuring.
-- [ ] Carry today's 4b, 4c, and 4e logic across **unchanged in behavior** (including the
+      restructuring. *(completed: `DTD_WEAK_SIGNAL_TABLE` and `DTD_WEAK_THRESHOLD`; strong
+      anchors are literal lists inside `_dtd_strong_anchor_meta`/`_dtd_strong_anchor_lean4`)*
+- [x] Carry today's 4b, 4c, and 4e logic across **unchanged in behavior** (including the
       alphabetical first-match-wins manifest scan order and the rule that 4b matches are final and
-      not alias-remapped) — only 4a and 4d change.
-- [ ] Preserve whole-word, case-insensitive matching (`\b<keyword>\b`) for weak signals; strong
-      anchors match as literal substrings or the stated compound patterns.
-- [ ] Use the `select(... | not)` jq idiom rather than `!=` throughout (Claude Code Issue #1132).
-- [ ] Add a file-header comment block documenting the rule, its consumers, and a pointer to this
-      plan's D6 table.
-- [ ] Run `shellcheck` and resolve every finding.
+      not alias-remapped) — only 4a and 4d change. *(completed)*
+- [x] Preserve whole-word, case-insensitive matching (`\b<keyword>\b`) for weak signals; strong
+      anchors match as literal substrings or the stated compound patterns. *(completed)*
+- [x] Use the `select(... | not)` jq idiom rather than `!=` throughout (Claude Code Issue #1132).
+      *(completed: no `!=` used anywhere in the new library's jq calls — only `==` and
+      `select(...)` with no negation, so the idiom does not arise)*
+- [x] Add a file-header comment block documenting the rule, its consumers, and a pointer to this
+      plan's D6 table. *(completed)*
+- [x] Run `shellcheck` and resolve every finding. *(completed: clean, zero findings)*
 
 **Timing**: 2 hours
 
