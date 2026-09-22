@@ -44,7 +44,7 @@ This design ensures users always see what was found before any tasks are created
 
 **todo-task**: One task per selected TODO: tag (or grouped by topic). Preserves original text as task description. Language detected from source file type.
 
-**research-task**: One task per selected QUESTION: tag (or grouped by topic). Creates research tasks to answer embedded questions. **Language is detected from question content** (not source file type) using keyword matching: extension-specific keywords are matched by loaded extensions, meta keywords (.claude, command, agent, etc.) -> "meta", formatting/tooling keywords (bibtex, compile error, etc.) -> "latex", content keywords (theorem, proof, lemma, etc.) -> "lean4", otherwise -> "general".
+**research-task**: One task per selected QUESTION: tag (or grouped by topic). Creates research tasks to answer embedded questions. **Language is detected from question content** (not source file type) via the same shared `detect_task_type` library `commands/task.md` step 4 calls (`.claude/scripts/lib/task-type-detect.sh`) — see that file's header for the full strong-anchor + weak-signal-threshold resolution ladder, so this sentence and step 4's cannot drift apart.
 
 ### TODO Topic Grouping
 

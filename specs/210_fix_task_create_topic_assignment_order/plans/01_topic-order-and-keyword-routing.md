@@ -420,26 +420,33 @@ prose versions in Phase 6.
 
 ---
 
-### Phase 6: Rewire task.md step 4 and the drifting prose summaries [NOT STARTED]
+### Phase 6: Rewire task.md step 4 and the drifting prose summaries [COMPLETED]
 
 **Goal**: `commands/task.md` step 4 delegates to the library instead of restating the rule, and
 every other prose restatement either points at the library or is documented as out of scope.
 
 **Tasks**:
-- [ ] Re-read `commands/task.md` immediately before editing (Phase 1 already modified it).
-- [ ] Replace step 4's 4a-4e prose and reference jq snippets with a call to the library:
+- [x] Re-read `commands/task.md` immediately before editing (Phase 1 already modified it).
+      *(completed)*
+- [x] Replace step 4's 4a-4e prose and reference jq snippets with a call to the library:
       source `scripts/lib/task-type-detect.sh` and assign `task_type=$(detect_task_type ...)`.
       Retain a **short** prose summary of the resolution ladder (anchors, overrides, default,
       scoring, aliases) for the reader, explicitly naming the library as the authority.
-- [ ] Update `commands/fix-it.md`'s research-task language-detection sentence to reference the
+      *(completed)*
+- [x] Update `commands/fix-it.md`'s research-task language-detection sentence to reference the
       same library rather than restating a first-match keyword list, so the two cannot drift.
-- [ ] Check whether `merge-sources/claudemd.md`'s `keyword_overrides` sentence (the
+      *(completed)*
+- [x] Check whether `merge-sources/claudemd.md`'s `keyword_overrides` sentence (the
       Task-Type-Based Routing section) still describes the behavior accurately after D5 and D6. It
       currently says extensions "automatically detect their task type from keywords" — which
       stays true — so amend only if a concrete inaccuracy is found; record either way.
-- [ ] Leave `agents/meta-builder-agent.md` untouched (D8) and add no cross-reference to it.
-- [ ] Confirm `commands/review.md` needs no change (file-extension majority vote, a different
-      mechanism).
+      *(completed: checked — the sentence remains accurate; keyword_overrides still functions
+      identically from the extension-manifest side, only its consulted-from location moved into
+      the library. No inaccuracy found; left unchanged.)*
+- [x] Leave `agents/meta-builder-agent.md` untouched (D8) and add no cross-reference to it.
+      *(completed: confirmed via `git diff --stat` — no entry)*
+- [x] Confirm `commands/review.md` needs no change (file-extension majority vote, a different
+      mechanism). *(completed: confirmed unmodified, no entry in `git diff --stat`)*
 
 **Timing**: 1 hour
 
