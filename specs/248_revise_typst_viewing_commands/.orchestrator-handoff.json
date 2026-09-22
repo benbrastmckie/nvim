@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 3,
-  "summary": "Audited the Typst <leader>l command group and found duplicated/disagreeing main-file and root detection across three files, two concrete preview-unreliability mechanisms (dual PDF writers, toggle/registry desync), and a pin-state drift bug using a deprecated LSP API. Full findings and recommendations written to the research report.",
+  "status": "planned",
+  "summary": "Created 5-phase implementation plan for revising Typst viewing commands.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md",
-      "summary": "Audit of the Typst <leader>l command group: duplicated/disagreeing main-file and root detection, deprecated pin API, pin-state drift bug, and two concrete preview-unreliability mechanisms, with consolidation and simplification recommendations."
+      "type": "plan",
+      "path": "specs/248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md",
+      "summary": "5-phase Typst viewing-commands revision plan."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Run /plan 248 to turn the audit's recommendations (shared lua/neotex/util/typst.lua helper, content-aware main-file detection, pin-state fix, dropping <leader>lw) into a phased implementation plan."
+  "phase": "plan",
+  "dispatch_seq": 6,
+  "next_action_hint": "implement"
 }
