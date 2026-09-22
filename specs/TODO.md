@@ -31,18 +31,18 @@ next_project_number: 249
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-210 [RESEARCHED] — Fix /task create: topic assignment order and registration,...
+210 [PLANNING] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-227 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
-242 [RESEARCHED] — Orchestrate postflight: treat a partial handoff carrying a...
+227 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+242 [PLANNED] — Orchestrate postflight: treat a partial handoff carrying a...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-243 [RESEARCHED] — Reconcile contradictory contract for research-phase...
+243 [PLANNING] — Reconcile contradictory contract for research-phase...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-245 [RESEARCHED] — orchestrate-batch-admit.sh: compute in-batch filescope...
+245 [PLANNING] — orchestrate-batch-admit.sh: compute in-batch filescope...
 
 ### Extensions
 
@@ -79,7 +79,7 @@ next_project_number: 249
 ## Tasks
 
 ### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -118,7 +118,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 243. Reconcile contradictory contract for research-phase .orchestrator-handoff.json (agent file vs handoff-schema.md vs dispatch template)
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -137,11 +137,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 242. Orchestrate postflight: treat a partial handoff carrying a populated blocker[] as blocked/stopped, not a retryable partial
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [242_orchestrate_partial_with_blocker_stops_redispatch/reports/01_orchestrate_partial_blocker_stops_redispatch.md]
+- **Plan**: [242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -224,7 +225,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 227. Resolve source store target in deployed trees
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 240
@@ -378,7 +379,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 210. Fix /task create: topic assignment order and registration, and task-type keyword false positives
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 209

@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 1,
-  "summary": "Root cause found: orchestrate-cycle-postflight.sh never writes state.json status=\"partial\" on a partial dispatch outcome, so orchestrate-triage-classify.sh's already-existing partial+blockers->needs_human routing rule never fires. Fix: call the already-wired postflight:partial transition unconditionally on dispatch_status=partial; needs zero orchestrate-cycle-plan.sh changes. Rejects status=blocked (falls into a silent dependency-discharge skip bucket).",
+  "status": "planned",
+  "summary": "Authored a 5-phase implementation plan: gate a state.json status=partial write on a non-empty handoff blockers[] in orchestrate-cycle-postflight.sh, widen the blocker-research aux gate, add blocked-vs-partial guidance to wrap-up.md, and add postflight plus cycle-plan regression tests.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/reports/01_orchestrate_partial_blocker_stops_redispatch.md",
-      "summary": "Research report deciding the postflight fix approach for partial+blocker[] redispatch."
+      "type": "plan",
+      "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md",
+      "summary": "5-phase plan making a blocker-bearing partial handoff stop futile implement redispatch."
     }
   ],
+  "skeleton": false,
   "phases_completed": 0,
-  "phases_total": 0,
-  "blockers": [],
-  "next_action_hint": "Run /plan 242 to create implementation plan"
+  "phases_total": 5,
+  "dispatch_seq": 6,
+  "sorry_inventory": [],
+  "blockers": []
 }
