@@ -1,17 +1,21 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 245,
-  "phase": "plan",
-  "session_id": "sess_1790091707_e274be_245",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
-  "phases_total": 4,
+  "phase": "implement",
+  "session_id": "sess_1790103287_bfa65b",
+  "dispatch_seq": 19,
+  "summary": "Narrowed orchestrate-batch-admit.sh's in_batch deferral rule to compare a candidate only against peers already admitted this cycle (a reduce over ascending-project_number-sorted candidates), added a regression suite reproducing the observed wasted-cycle chain, and synced the schema doc and header comment. Full gate run clean of any batch-admit-related failure (one pre-existing, unrelated deploy-budget-gate failure observed).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md",
-      "summary": "Four-phase plan converting orchestrate-batch-admit.sh's in_batch collision predicate to a reduce-based greedy ascending walk that defers only against already-admitted peers, with a red-baseline-first regression suite, schema-doc sync, and a full gate run."
+      "type": "summary",
+      "path": "specs/245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md",
+      "summary": "Implementation summary for the admitted-set-only in_batch defer narrowing, its regression suite, and the doc sync."
     }
   ],
-  "next_steps": "Run /implement 245 to execute the plan"
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. .claude/scripts/orchestrate-batch-admit.sh is a regenerated deploy artifact -- redeploy (bash .claude/scripts/deploy-headless.sh) for the fix to take effect on live /orchestrate runs."
 }

@@ -1,10 +1,39 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md",
+      "summary": "Narrowed orchestrate-batch-admit.sh's in_batch deferral rule to compare a candidate only against peers already admitted this cycle; added a regression suite reproducing the observed A/C/D wasted-cycle chain; brought the schema doc and header comment into sync; full gate run clean of any batch-admit-related failure."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Converted orchestrate-batch-admit.sh's in_batch collision jq generator into a reduce over ascending-project_number-sorted candidates threading a running admitted-set lookup, so a lower-numbered peer only blocks a candidate when that peer itself admits this cycle; added a new regression suite (test-orchestrate-batch-admit.sh, 3 cases) and updated batch-admit-schema.md plus the script's header comment to match."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "specs/245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md",
+    "specs/245_batch_admit_defer_against_admitted_set_only/progress/phase-4-progress.json",
+    "specs/245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When converting an order-independent jq top-level generator (`$cands[] as $c | ...`) into a sequential admitted-set-aware fold, use `reduce ($cands | sort)[] as $c ({results: {}}; ...)` to compute decisions in a required dependency order, but re-emit output by iterating the ORIGINAL (unsorted) input array against the fold's `.results` map -- this decouples decision order from emission order and preserves any caller-argument-order output contract without re-sorting the emission pass.",
+      "category": "PATTERN",
+      "source_artifact": "specs/245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "reduce", "fold", "order-independence", "greedy-admission"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790103287_bfa65b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 19
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
