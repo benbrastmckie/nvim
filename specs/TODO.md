@@ -11,8 +11,8 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,174,177,184,185,199,202,207,210,221,223,240,241,242,243,244,245,248 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,74,139,165,208,217,224,227,247 | 29,162,163,167,174,207,210,221,240 | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,174,177,184,185,199,202,207,210,223,240,241,242,243,244,245,247,248 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 30,44,74,139,165,208,217,224,227 | 29,162,163,167,174,207,210,240 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,136,140,190 | 74,139,165,166 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -33,7 +33,6 @@ next_project_number: 249
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
-221 [IMPLEMENTING] — Correct the lean implementation-agent contracts:...
 240 [NOT STARTED] — Restore verify-deploy.sh to green by fixing its two remaining...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
@@ -581,7 +580,7 @@ ORIGIN: moved from the ~/Projects/Logos/Verification task list, where it was res
 
 ### 221. Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot
 - **Effort**: 3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 172, Task 173, Task 194

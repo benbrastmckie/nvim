@@ -1,7 +1,7 @@
 # Implementation Plan: Task #221
 
 - **Task**: 221 - Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: 172, 173, 194 (all completed)
 - **Research Inputs**: specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md

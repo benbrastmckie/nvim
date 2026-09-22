@@ -1086,7 +1086,7 @@
       "project_name": "lean_build_verdict_evidence_contracts",
       "title": "Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot",
       "task_type": "meta",
-      "status": "implementing",
+      "status": "completed",
       "topic": "core-agent-system",
       "dependencies": [
         172,
@@ -1120,7 +1120,7 @@
         }
       ],
       "created": "2026-09-16T06:18:20Z",
-      "last_updated": "2026-09-22T00:57:18Z",
+      "last_updated": "2026-09-22T01:11:56Z",
       "priority": "high",
       "session_id": "sess_1790030538_1b6143",
       "next_artifact_number": 2,
