@@ -1,13 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {"type": "plan", "path": "specs/173_guard_terminal_record_every_exit/plans/01_guard-terminal-record-result.md", "summary": "5-phase plan: trap-driven aborted record, result subcommand with enumerated exit band, expect-pid/scope assertions, STATUS line + docs, final gate."}
-  ],
-  "next_steps": "Run /implement 173 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 6.5,
-  "dependency_waves": 5,
-  "memory_candidates": [],
-  "metadata": {"session_id": "sess_1790030538_1b6143_173", "agent_type": "planner-agent", "delegation_depth": 1, "delegation_path": ["orchestrator", "plan", "planner-agent"]},
-  "dispatch_seq": 5
+  "status": "in_progress",
+  "dispatch_seq": 6,
+  "metadata": {
+    "session_id": "sess_1790030538_1b6143",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # test-lake-build-guard.sh - Toolchain-free regression suite for lake-build-guard.sh.
 #
-# Covers 22 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
+# Covers 24 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
 # fixes: subcommand validation, scope-keyed sharing, the REPLAY marker, and the --help wait
-# idiom, plus 1 for positive-direction memory-pressure detection), plus a non-vacuousness
-# (mutation) section spanning mutations A-F. Running the suite reports 29 [PASS] lines: the 22
-# numbered cases (case 12 splits into 12a/12b, so 23 case-level passes) plus the 6 mutation
-# checks. The script under test is invoked as a REAL
+# idiom, 1 for positive-direction memory-pressure detection, and 2 for the killed-holder terminal-
+# record guarantee), plus a non-vacuousness (mutation) section spanning mutations A-H. Running the
+# suite reports 33 [PASS] lines: the 24 numbered cases (case 12 splits into 12a/12b, so 25
+# case-level passes) plus the 8 mutation checks. The script under test is invoked as a REAL
 # SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
 # process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
 # `systemd-run`), none of which are meaningfully testable by calling functions directly in-process
@@ -168,6 +168,31 @@ run_guard() {
   local root="$1" mode="$2"
   shift 2
   PATH="$root/bin:$PATH" "$GUARD" "$mode" --dir "$root" "$@"
+}
+
+# Read one key=value field out of a build-guard.result-shaped file. Reimplemented here (never
+# sourced from the script under test, per this suite's real-subprocess convention) purely as a
+# test-side reader; it has no bearing on the guard's own get_record_field().
+read_result_field() {
+  local field="$1" file="$2"
+  [ -f "$file" ] || return 1
+  grep "^${field}=" "$file" 2>/dev/null | tail -n 1 | cut -d= -f2-
+}
+
+# Bounded wait: poll a condition (a command string, eval'd each iteration) every 0.1s up to
+# max_iters times. Per context/patterns/bounded-build-waiter.md, every wait in this suite is
+# either a `kill -0`-keyed liveness check or a hard-bounded poll -- never an unbounded loop.
+wait_until() {
+  local max_iters="$1" cond="$2"
+  local i=0
+  while [ "$i" -lt "$max_iters" ]; do
+    if eval "$cond"; then
+      return 0
+    fi
+    sleep 0.1
+    i=$((i + 1))
+  done
+  return 1
 }
 
 # =====================================================================================
@@ -641,6 +666,73 @@ EOF
 fi
 
 # =====================================================================================
+# Case 23: a holder killed (SIGTERM to its own process group) leaves a TERMINAL aborted record,
+# never a permanently-stuck in_flight one (the killed-holder defect this task fixes)
+# =====================================================================================
+# Launched under `setsid` so the guard process becomes its own session/process-group leader --
+# required so a single `kill -TERM -- -$pgid` reaches both the guard shell (to fire its trap) and
+# the fake-lake child it launched in the foreground (to actually end bash's wait() on it; see the
+# script's own TERMINAL RECORD GUARANTEE header note on trap-delivery deferral). The PGID used is
+# read back from the record's own holder_pid field -- NOT bash's "$!" -- because setsid may or may
+# not fork depending on whether its caller is already a process group leader, so "$!" is not a
+# reliable handle on the real running guard PID; holder_pid is (it is `$$` from inside the guard
+# itself, always accurate regardless of any exec chain). This follows
+# context/patterns/bounded-build-waiter.md throughout: bounded polls only, liveness via `kill -0`
+# on a captured PID, never `pgrep -f`.
+CASE23_ROOT="$WORKDIR/case23"
+build_fixture "$CASE23_ROOT"
+CASE23_RESULT="$CASE23_ROOT/.lake/build-guard.result"
+
+setsid env FAKE_LAKE_SLEEP=30 PATH="$CASE23_ROOT/bin:$PATH" \
+  "$GUARD" build --dir "$CASE23_ROOT" build \
+  > "$WORKDIR/c23.out" 2> "$WORKDIR/c23.err" &
+disown 2>/dev/null || true
+
+CASE23_HOLDER_PID=""
+if wait_until 50 '[ -f "$CASE23_RESULT" ] && grep -q "^state=in_flight" "$CASE23_RESULT" 2>/dev/null'; then
+  CASE23_HOLDER_PID="$(read_result_field holder_pid "$CASE23_RESULT")"
+fi
+
+CASE23_OK=false
+if [ -n "$CASE23_HOLDER_PID" ] && kill -0 "$CASE23_HOLDER_PID" 2>/dev/null; then
+  # Negative PID targets the whole process group (holder_pid doubles as its own pgid, see above).
+  kill -TERM -- "-$CASE23_HOLDER_PID" 2>/dev/null || true
+  if wait_until 100 '! kill -0 "$CASE23_HOLDER_PID" 2>/dev/null'; then
+    CASE23_OK=true
+  fi
+fi
+
+CASE23_STATE="$(read_result_field state "$CASE23_RESULT" 2>/dev/null || true)"
+CASE23_EXIT_STATUS="$(read_result_field exit_status "$CASE23_RESULT" 2>/dev/null || true)"
+CASE23_ABORT_REASON="$(read_result_field abort_reason "$CASE23_RESULT" 2>/dev/null || true)"
+
+if [ "$CASE23_OK" = "true" ] && [ "$CASE23_STATE" = "aborted" ] && [ -n "$CASE23_EXIT_STATUS" ] \
+   && [ "$CASE23_ABORT_REASON" = "TERM" ]; then
+  pass "case 23: a holder killed with SIGTERM (to its own process group) leaves a terminal aborted record (state=aborted, exit_status=$CASE23_EXIT_STATUS, abort_reason=TERM) rather than a permanently-stuck in_flight one"
+else
+  fail "case 23: expected a terminal aborted record after SIGTERM; ok=$CASE23_OK state=$CASE23_STATE exit_status=[$CASE23_EXIT_STATUS] abort_reason=[$CASE23_ABORT_REASON] holder_pid=[$CASE23_HOLDER_PID]"
+fi
+
+# =====================================================================================
+# Case 24: after case 23's kill, a second build on the SAME root does not block behind the dead
+# holder and runs a REAL build (never shares the aborted record) -- proves the lock is free and
+# the aborted state is correctly excluded from decide_sharing()'s state==complete condition
+# =====================================================================================
+CASE24_COUNTER="$WORKDIR/case24_counter"
+: > "$CASE24_COUNTER"
+
+CASE24_RC=0
+CASE24_ERR="$(FAKE_LAKE_COUNTER="$CASE24_COUNTER" run_guard "$CASE23_ROOT" build build --timeout 20 2>&1 1>/dev/null)" || CASE24_RC=$?
+CASE24_INVOCATIONS="$(wc -l < "$CASE24_COUNTER" | tr -d ' ')"
+
+if [ "$CASE24_RC" = "0" ] && [ "$CASE24_INVOCATIONS" = "1" ] \
+   && ! printf '%s' "$CASE24_ERR" | grep -q 'lake-build-guard: REPLAY:'; then
+  pass "case 24: a build against the same root after case 23's kill does not block and runs a real build (1 fake-lake invocation, no REPLAY marker) -- an aborted record is never shared"
+else
+  fail "case 24: expected exit 0, exactly 1 real invocation, and no REPLAY marker; rc=$CASE24_RC invocations=$CASE24_INVOCATIONS err=[$CASE24_ERR]"
+fi
+
+# =====================================================================================
 # Non-vacuousness (mutation) checks
 # =====================================================================================
 # Per context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes", and
@@ -814,6 +906,68 @@ else
   else
     fail "mutation F: expected preflight exit 0 with no output against the neutered guard; got rc=$MUTANTF_RC err=[$MUTANTF_ERR] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
   fi
+fi
+
+# --- Mutation G (terminal record guarantee): remove the three trap-install lines from
+# run_as_holder() (same line-deletion trick as removing a whole guard clause) -> case 23's
+# assertion must go RED: with no trap installed, a SIGTERM to the process group kills the guard
+# outright with no chance to finalize, and the record stays permanently at state=in_flight.
+MUTANT_NOTRAP="$MUTANT_DIR/no-trap.sh"
+sed '/^  trap .*_abort_record_trap/d' "$GUARD" > "$MUTANT_NOTRAP"
+chmod +x "$MUTANT_NOTRAP"
+
+MUTANTG_ROOT="$WORKDIR/mutant_notrap_fixture"
+build_fixture "$MUTANTG_ROOT"
+MUTANTG_RESULT="$MUTANTG_ROOT/.lake/build-guard.result"
+
+setsid env FAKE_LAKE_SLEEP=30 PATH="$MUTANTG_ROOT/bin:$PATH" \
+  "$MUTANT_NOTRAP" build --dir "$MUTANTG_ROOT" build \
+  > /dev/null 2> /dev/null &
+disown 2>/dev/null || true
+
+MUTANTG_HOLDER_PID=""
+if wait_until 50 '[ -f "$MUTANTG_RESULT" ] && grep -q "^state=in_flight" "$MUTANTG_RESULT" 2>/dev/null'; then
+  MUTANTG_HOLDER_PID="$(read_result_field holder_pid "$MUTANTG_RESULT")"
+fi
+
+if [ -n "$MUTANTG_HOLDER_PID" ] && kill -0 "$MUTANTG_HOLDER_PID" 2>/dev/null; then
+  kill -TERM -- "-$MUTANTG_HOLDER_PID" 2>/dev/null || true
+  wait_until 100 '! kill -0 "$MUTANTG_HOLDER_PID" 2>/dev/null' || true
+fi
+MUTANTG_STATE="$(read_result_field state "$MUTANTG_RESULT" 2>/dev/null || true)"
+
+if [ "$MUTANTG_STATE" = "in_flight" ]; then
+  pass "mutation G: removing the trap-install lines from run_as_holder() leaves a killed holder's record permanently at state=in_flight -- confirms case 23's terminal-record assertion is load-bearing, not vacuous"
+else
+  fail "mutation G: expected the record to stay in_flight after removing the trap install; got state=[$MUTANTG_STATE] -- inconclusive (sed pattern did not match, or holder pid was never captured), recorded rather than silently skipped"
+fi
+
+# --- Mutation H (idempotency guard): neutralize the _RECORD_FINALIZED=true / trap-clear pair that
+# run_as_holder() runs immediately after a NORMAL finalize_record() call -> an ordinary
+# exit-code-passthrough build must now end with state=aborted, because the still-armed EXIT trap
+# fires on the process's own final `exit "$rc"` and _abort_record_trap() no longer sees the flag
+# set, so it re-finalizes (overwriting the good complete record) instead of returning as a no-op.
+MUTANT_NOIDEMPOTENT="$MUTANT_DIR/no-idempotent.sh"
+sed '/^  _RECORD_FINALIZED=true$/,+1d' "$GUARD" > "$MUTANT_NOIDEMPOTENT"
+chmod +x "$MUTANT_NOIDEMPOTENT"
+
+MUTANTH_ROOT="$WORKDIR/mutant_noidempotent_fixture"
+build_fixture "$MUTANTH_ROOT"
+MUTANTH_RESULT="$MUTANTH_ROOT/.lake/build-guard.result"
+MUTANTH_RC=0
+PATH="$MUTANTH_ROOT/bin:$PATH" "$MUTANT_NOIDEMPOTENT" build --dir "$MUTANTH_ROOT" build \
+  > /dev/null 2>&1 || MUTANTH_RC=$?
+MUTANTH_STATE="$(read_result_field state "$MUTANTH_RESULT" 2>/dev/null || true)"
+
+# With the idempotency guard gone, the still-armed EXIT trap re-fires on the process's own final
+# `exit 0` and _abort_record_trap()'s bare-EXIT branch forces a zero pending "$?" to 1 (per
+# Decision 1: exit_status is never left empty/zero on a terminal record it writes) -- so the
+# mutation corrupts BOTH the record (state=aborted instead of complete) AND the guard's own exit
+# code (1 instead of the original build's 0), a strictly stronger signal that the guard is broken.
+if [ "$MUTANTH_RC" = "1" ] && [ "$MUTANTH_STATE" = "aborted" ]; then
+  pass "mutation H: neutralizing the _RECORD_FINALIZED idempotency guard turns an ordinary successful (exit 0) build into state=aborted with a corrupted exit code (rc=1) -- the still-armed EXIT trap re-finalizes on the process's own normal exit -- confirms the idempotency guard is load-bearing, not vacuous"
+else
+  fail "mutation H: expected rc=1 with state=aborted after neutralizing the idempotency guard; got rc=$MUTANTH_RC state=[$MUTANTH_STATE] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not

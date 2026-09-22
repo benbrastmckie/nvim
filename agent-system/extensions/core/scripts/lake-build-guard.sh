@@ -87,6 +87,24 @@
 #   immediately above cmd_status() below); `kill -0` on the recorded holder PID is the only
 #   idiom that does not carry it.
 #
+# TERMINAL RECORD GUARANTEE: run_as_holder() installs an EXIT/INT/TERM trap immediately after
+# writing the in-flight record, so every TRAPPABLE exit path out of it -- a normal return, an
+# internal `set -e` abort, SIGINT, or SIGTERM -- finalizes the record to a TERMINAL state before
+# the process disappears: state=complete on the normal path, state=aborted (with an
+# abort_reason=INT|TERM|EXIT field and a forced non-zero exit_status) on any of the others. A
+# waiter or `result` caller therefore never observes an in_flight record whose holder_pid is dead
+# from a trappable cause. PROCESS-GROUP DELIVERY NUANCE: bash defers running a trap until the
+# current foreground child returns, so a caller that wants prompt finalization on kill must send
+# the signal to the guard's own PROCESS GROUP, not merely to holder_pid alone -- the guard process
+# is its own process group leader once launched under `setsid` (holder_pid then also names that
+# pgid), and killing only the shell while its `lake` child is still running leaves bash blocked in
+# wait() until that child dies on its own. SIGKILL LIMITATION: SIGKILL cannot be trapped, so a
+# holder killed with -9 still leaves an untouched in_flight record; this is an accepted gap, not
+# an oversight -- see `result`'s orphan detection (state=orphaned, reported when a record is
+# in_flight but the lock file itself is free) for how a caller distinguishes that case without
+# scanning the process table. `holder_pid` remains the documented liveness handle either way:
+# `kill -0 "$holder_pid"`.
+#
 # EXIT CODES:
 #   build mode:     0 and any code the underlying `lake` returns are passed through untouched, for
 #                   a recognized lake subcommand (see LAKE SUBCOMMAND ALLOWLIST above). Guard-
@@ -115,10 +133,13 @@
 #   waiting on a concurrent holder -- may REPLAY a prior build's result (stdout, stderr, exit
 #   status) instead of running its own, but only when ALL of the following hold -- failing ANY
 #   one falls through to running a real build, which is always safe:
-#     1. state == complete.  An `in_flight` record with no matching `complete` state means its
-#        holder died before finishing -- an ABANDONED LOCK. `flock` releases automatically on
-#        process exit, so the lock itself becomes acquirable with no PID bookkeeping required;
-#        the tell is the record's own unterminated state, and such a record is NEVER shared.
+#     1. state == complete.  An `in_flight` OR `aborted` record means its holder never reached a
+#        normal, successful finish -- `in_flight` means it died before any trap could run (e.g.
+#        SIGKILL, see the TERMINAL RECORD GUARANTEE above), `aborted` means a trap caught a
+#        terminating signal or shell exit and finalized the record itself. Either way this is an
+#        ABANDONED LOCK. `flock` releases automatically on process exit, so the lock itself
+#        becomes acquirable with no PID bookkeeping required; the tell is the record's own
+#        non-`complete` state, and such a record is NEVER shared.
 #     2. The record's POST-build fingerprint equals the WAITER's CURRENT fingerprint -- i.e. the
 #        tree has not moved since that build finished. This is the "result predates the waiter's
 #        own edits" guard.
@@ -375,14 +396,19 @@ write_inflight_record() {
   } > "$RESULT_PATH"
 }
 
+# $3 (state, default "complete") and $4 (abort_reason) let the terminal-record trap (see
+# _abort_record_trap() below) reuse this same writer for a non-normal terminal state instead of
+# duplicating the record shape in a second function -- see the TERMINAL RECORD GUARANTEE header
+# note. abort_reason is written only when state != complete, so an ordinary completed record's
+# shape is byte-for-byte unchanged from before this field existed.
 finalize_record() {
-  local exit_status="$1" post_fp="$2"
+  local exit_status="$1" post_fp="$2" state="${3:-complete}" abort_reason="${4:-}"
   local start_epoch pre_fp scope_key
   start_epoch="$(get_record_field start_epoch "$RESULT_PATH" || true)"
   pre_fp="$(get_record_field pre_fingerprint "$RESULT_PATH" || true)"
   scope_key="$(get_record_field scope_key "$RESULT_PATH" || true)"
   {
-    echo "state=complete"
+    echo "state=$state"
     echo "holder_pid=$$"
     echo "start_epoch=$start_epoch"
     echo "end_epoch=$(date +%s)"
@@ -392,7 +418,58 @@ finalize_record() {
     echo "lake_bin=$LAKE_BIN"
     echo "exit_status=$exit_status"
     echo "log_path=$LOG_PATH"
+    if [ "$state" != "complete" ]; then
+      echo "abort_reason=$abort_reason"
+    fi
   } > "$RESULT_PATH"
+}
+
+# --- Terminal-record trap (TERMINAL RECORD GUARANTEE, see header) -------------------------------
+# _RECORD_FINALIZED is a GLOBAL (never `local`) so it is visible to _abort_record_trap() no matter
+# which call frame is active when a trap fires -- a `local` here would be dynamically scoped to
+# run_as_holder()'s own extent, which is fragile to rely on across a signal-delivery boundary.
+_RECORD_FINALIZED=false
+
+# Finalizes the in-flight record as state=aborted on any trappable exit path that reaches here
+# before the normal, successful finalize_record() call in run_as_holder() has run. Idempotent via
+# the _RECORD_FINALIZED flag: a normal completion sets it true (see run_as_holder()) so this
+# handler is a no-op on the exit that follows. Signal codes:
+#   INT  -> exit_status=130 (128+2), the conventional SIGINT code
+#   TERM -> exit_status=143 (128+15), the conventional SIGTERM code
+#   EXIT (bare, e.g. a `set -e` abort) -> the shell's own pending "$?", forced to 1 if it was 0 --
+#     exit_status is NEVER left empty on a terminal record (see the plan's Decision 1).
+# Uses `|| true` / `${var:-}` defaults throughout: this runs with `set -u` still active and must
+# never itself fail or reference an unset variable mid-signal-handling.
+_abort_record_trap() {
+  local sig="$1" pending_rc="${2:-1}"
+
+  if [ "${_RECORD_FINALIZED:-false}" = "true" ]; then
+    return 0
+  fi
+  _RECORD_FINALIZED=true
+  trap - EXIT INT TERM
+
+  local exit_status
+  case "$sig" in
+    INT)  exit_status=130 ;;
+    TERM) exit_status=143 ;;
+    *)
+      exit_status="${pending_rc:-1}"
+      if [ -z "$exit_status" ] || { [ "$exit_status" -eq 0 ] 2>/dev/null; }; then
+        exit_status=1
+      fi
+      ;;
+  esac
+
+  local post_fp
+  post_fp="$(compute_fingerprint "${ROOT:-.}" 2>/dev/null || true)"
+  finalize_record "$exit_status" "$post_fp" aborted "$sig" || true
+
+  case "$sig" in
+    INT)  exit 130 ;;
+    TERM) exit 143 ;;
+    *)    exit "$exit_status" ;;
+  esac
 }
 
 # --- Sharing decision (waiter path) --------------------------------------------------------------
@@ -664,6 +741,15 @@ run_as_holder() {
   scope_key="$(compute_scope_key "$@")"
   write_inflight_record "$pre_fp" "$scope_key"
 
+  # TERMINAL RECORD GUARANTEE (see header): install the trap immediately after the in-flight
+  # record exists, so every trappable exit from here on finalizes it. The EXIT trap captures "$?"
+  # at trap-fire time (deferred expansion inside the single-quoted string), which is the shell's
+  # pending exit status for a bare, non-signal exit (e.g. a `set -e` abort).
+  _RECORD_FINALIZED=false
+  trap '_abort_record_trap EXIT $?' EXIT
+  trap '_abort_record_trap INT' INT
+  trap '_abort_record_trap TERM' TERM
+
   set +e
   run_lake_foreground "$@"
   local rc=$?
@@ -672,6 +758,9 @@ run_as_holder() {
   local post_fp
   post_fp="$(compute_fingerprint "$ROOT")"
   finalize_record "$rc" "$post_fp"
+  _RECORD_FINALIZED=true
+  trap - EXIT INT TERM
+
   return "$rc"
 }
 

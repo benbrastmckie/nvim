@@ -1,7 +1,7 @@
 # Implementation Plan: Task #173
 
 - **Task**: 173 - Guarantee lake-build-guard.sh writes a terminal record on every exit path and exposes the build verdict through a result subcommand
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None outstanding (bounded-build-waiter idiom task already COMPLETED)
 - **Research Inputs**: specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md
@@ -124,32 +124,35 @@ These are planning judgment calls, recorded here so the implementer does not rel
 
 All phases edit the same two files, so they are serialized (no parallel waves).
 
-### Phase 1: Trap-driven terminal record in run_as_holder [NOT STARTED]
+### Phase 1: Trap-driven terminal record in run_as_holder [COMPLETED]
 
 **Goal**: No trappable exit path out of `run_as_holder()` leaves `state=in_flight`.
 
 **Tasks**:
-- [ ] Add optional `state` parameter to `finalize_record()` (default `complete`) and an optional
-      `abort_reason` field written only for non-complete states.
-- [ ] Add `_RECORD_FINALIZED` global and an `_abort_record_trap` handler (per Decisions 1-2);
+- [x] Add optional `state` parameter to `finalize_record()` (default `complete`) and an optional
+      `abort_reason` field written only for non-complete states. *(completed)*
+- [x] Add `_RECORD_FINALIZED` global and an `_abort_record_trap` handler (per Decisions 1-2);
       install `trap ... EXIT`, `INT`, `TERM` immediately after `write_inflight_record`; set the
-      flag and clear the traps after the normal `finalize_record`.
-- [ ] Header: update staleness condition 1 wording to name `aborted` alongside `in_flight` as
+      flag and clear the traps after the normal `finalize_record`. *(completed)*
+- [x] Header: update staleness condition 1 wording to name `aborted` alongside `in_flight` as
       never-shared (policy itself unchanged); add a short "TERMINAL RECORD GUARANTEE" note
       covering the trap, the process-group delivery nuance, and the SIGKILL limitation pointing
-      at `holder_pid` + `kill -0` and at `result`'s orphan detection.
-- [ ] New case 23: killed holder -- fresh fixture, `FAKE_LAKE_SLEEP` long, launch guard under
+      at `holder_pid` + `kill -0` and at `result`'s orphan detection. *(completed)*
+- [x] New case 23: killed holder -- fresh fixture, `FAKE_LAKE_SLEEP` long, launch guard under
       `setsid` in background, wait (bounded) until record shows `state=in_flight`, `kill -TERM
       -- -$pgid`, bounded-wait for guard PID exit via `kill -0`; assert record `state=aborted`,
-      non-empty `exit_status`, `abort_reason=TERM`.
-- [ ] New case 24: after case 23's kill, a second `build` on the same root does not block
+      non-empty `exit_status`, `abort_reason=TERM`. *(completed: holder_pid read from the record
+      itself, not bash's "$!", used as the pgid handle for kill -TERM)*
+- [x] New case 24: after case 23's kill, a second `build` on the same root does not block
       (completes well under its `--timeout`) and runs a real build (fake-lake invocation count
-      increments; no REPLAY marker) -- proves aborted is not shared and the lock is free.
-- [ ] Mutation G: neutralize the trap install line via `sed` on a scratch copy; case 23's
-      assertion must go RED (record stays `in_flight`).
-- [ ] Mutation H: neutralize the `_RECORD_FINALIZED=true` guard; an ordinary exit-code
+      increments; no REPLAY marker) -- proves aborted is not shared and the lock is free. *(completed)*
+- [x] Mutation G: neutralize the trap install line via `sed` on a scratch copy; case 23's
+      assertion must go RED (record stays `in_flight`). *(completed)*
+- [x] Mutation H: neutralize the `_RECORD_FINALIZED=true` guard; an ordinary exit-code
       passthrough build must now end with `state=aborted` (proves idempotency guard load-bearing).
-- [ ] Update the suite header's pass-count sentence and mutation-reasoning notes.
+      *(completed: also corrupts the guard's own exit code to 1, per the bare-EXIT branch's
+      never-leave-exit_status-zero rule -- test asserts rc=1, state=aborted)*
+- [x] Update the suite header's pass-count sentence and mutation-reasoning notes. *(completed)*
 
 **Timing**: 1.75 hours
 

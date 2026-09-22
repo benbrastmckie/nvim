@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Trap-driven terminal record in run_as_holder",
+  "started_at": "2026-09-22T00:10:00Z",
+  "last_updated": "2026-09-22T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add optional state/abort_reason params to finalize_record()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 2, "description": "Add _RECORD_FINALIZED global and _abort_record_trap handler; install/clear traps in run_as_holder()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 3, "description": "Header: staleness condition 1 names aborted; add TERMINAL RECORD GUARANTEE note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 4, "description": "New case 23: killed holder leaves state=aborted", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 5, "description": "New case 24: second build after kill runs real build, no block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 6, "description": "Mutation G: neutralize trap install, case 23 goes RED", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 7, "description": "Mutation H: neutralize idempotency guard, passthrough build ends state=aborted", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 8, "description": "Update suite header pass-count sentence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
