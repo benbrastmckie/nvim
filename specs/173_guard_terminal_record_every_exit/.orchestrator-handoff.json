@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 4,
+  "summary": "Researched task 173: confirmed finalize_record() is unreached on a killed holder (no trap), while decide_sharing()/flock already prevent unsafe sharing/blocking; recommended a trap-based terminal 'aborted' state plus the absorbed result-subcommand design, with bash deferred-trap and SIGKILL limits documented as risks.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md",
+      "summary": "Findings and recommendations for the trap-based terminal record fix and the absorbed result-subcommand/--expect-pid/--expect-scope/STATUS-line feature."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}

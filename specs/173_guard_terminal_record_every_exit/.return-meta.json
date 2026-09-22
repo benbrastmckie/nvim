@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790030538_1b6143_173",
+  "task_number": 173,
+  "dispatch_seq": 4,
+  "findings_count": 12,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md",
+      "summary": "Confirms lake-build-guard.sh's finalize_record() is unreached on a killed/cancelled holder path (no trap), while decide_sharing() and flock's own release-on-exit semantics already correctly prevent an in_flight/dead-holder record from being shared or blocking a waiter. Recommends a trap-based terminal 'aborted' state (idempotency-guarded), documents the SIGKILL and bash deferred-trap-execution limits affecting both the fix and its test, and lays out the absorbed result-subcommand/--expect-pid/--expect-scope/STATUS-line design that depends on the new terminal state."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "bash defers execution of an EXIT/INT/TERM trap until the current foreground command returns. A script that runs a wrapped command in the foreground (e.g. lake-build-guard.sh's run_lake_foreground()) will not have its trap fire promptly if only the top-level script PID is signalled while the wrapped child keeps running -- the signal must reach the whole process group/cgroup (as Ctrl-C or a systemd scope kill naturally does) for the child to die first and the trap to then run. Relevant to any trap-based cleanup/finalization design and to writing a test that kills a holder process mid-work.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "trap", "signal-handling", "flock", "process-group", "SIGTERM"]
+    },
+    {
+      "content": "flock(2) advisory locks are released when the last file descriptor referencing the open file description closes, across all processes, including on SIGKILL of the holding process -- no explicit unlock or PID bookkeeping is needed for a waiter to unblock after a holder dies. This means a waiter blocked on `flock -w` never needs a separate holder-liveness check to avoid hanging; only a DIRECT reader of an on-disk state record (bypassing the lock) needs a terminal-state guarantee.",
+      "category": "PATTERN",
+      "source_artifact": "specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["flock", "advisory-lock", "process-death", "lock-release", "concurrency"]
+    }
+  ],
+  "next_steps": "Run /plan 173 to create implementation plan"
+}
