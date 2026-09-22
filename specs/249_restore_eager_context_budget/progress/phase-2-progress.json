@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Trim the eager rule to pointer form",
+  "started_at": "2026-09-22T00:15:00Z",
+  "last_updated": "2026-09-22T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Truncate file before ## Correct Edit Target, preserving byte-identical head", "status": "done", "files_touched": ["agent-system/extensions/core/rules/source-store-deploy-boundary.md"]},
+    {"id": 2, "description": "Append new condensed ## Correct Edit Target with one-line instruction + pointer sentence", "status": "done", "files_touched": ["agent-system/extensions/core/rules/source-store-deploy-boundary.md"]},
+    {"id": 3, "description": "Write pointer as plain backticked path, never @-import", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm retained head byte-identical to original first 1180 B", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

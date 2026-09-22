@@ -146,25 +146,28 @@ retyped rather than extracted.
 
 ---
 
-### Phase 2: Trim the eager rule to pointer form [NOT STARTED]
+### Phase 2: Trim the eager rule to pointer form [COMPLETED]
 
 **Goal**: Reduce `rules/source-store-deploy-boundary.md` from 4,443 B to roughly 1,610 B,
 keeping the first 1,180 B byte-identical and replacing everything from `## Correct Edit Target`
 onward with a one-line resolution instruction plus a plain backticked pointer.
 
 **Tasks**:
-- [ ] Truncate the file immediately before `## Correct Edit Target`, preserving the title, the
+- [x] Truncate the file immediately before `## Correct Edit Target`, preserving the title, the
       HTML "why eager" comment, `## Path Pattern`, and `## Principle` **byte-for-byte unchanged**.
-- [ ] Append a new `## Correct Edit Target` holding exactly two things: the one-line instruction
+      *(completed)*
+- [x] Append a new `## Correct Edit Target` holding exactly two things: the one-line instruction
       ("Read `source_dir` from `<project-root>/.claude-extensions.json` and edit under it, at the
       path mirroring the deployed one — never hand-author under `.claude/**` directly.") and one
       pointer sentence naming what moved (resolution procedure, unreachable-source-store
-      fallback, worked example, Exceptions, Enforcement).
-- [ ] Write the pointer as a plain backticked path —
+      fallback, worked example, Exceptions, Enforcement). *(completed)*
+- [x] Write the pointer as a plain backticked path —
       `` `context/standards/source-store-deploy-boundary-narrative.md` `` — matching both
-      existing precedents. Never `@`-import it.
-- [ ] Confirm the retained head is unchanged: the first 1,180 B of the new file must be
-      identical to the first 1,180 B of the original.
+      existing precedents. Never `@`-import it. *(completed: verified `grep -n '@'` finds no
+      matches in the trimmed rule)*
+- [x] Confirm the retained head is unchanged: the first 1,180 B of the new file must be
+      identical to the first 1,180 B of the original. *(completed: `diff` on `head -c 1180`
+      confirms identical)*
 
 **Timing**: 0.3 hours
 
