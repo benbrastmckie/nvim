@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # test-lake-build-guard.sh - Toolchain-free regression suite for lake-build-guard.sh.
 #
-# Covers 32 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
+# Covers 34 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
 # fixes: subcommand validation, scope-keyed sharing, the REPLAY marker, and the --help wait
 # idiom, 1 for positive-direction memory-pressure detection, 2 for the killed-holder terminal-
-# record guarantee, 5 for the `result` subcommand's verdict/orphan reporting, and 3 for the
-# --expect-pid/--expect-scope ownership assertions), plus a non-vacuousness (mutation) section
-# spanning mutations A-J. Running the suite reports 44 [PASS] lines: the 32 numbered cases (case
-# 12 splits into 12a/12b and case 27 into 27a/27b, so 34 case-level passes) plus the 10 mutation
-# checks. The script under test is invoked as a REAL
+# record guarantee, 5 for the `result` subcommand's verdict/orphan reporting, 3 for the
+# --expect-pid/--expect-scope ownership assertions, and 2 for the STATUS line and its
+# documentation), plus a non-vacuousness (mutation) section spanning mutations A-K. Running the
+# suite reports 47 [PASS] lines: the 34 numbered cases (case 12 splits into 12a/12b and case 27
+# into 27a/27b, so 36 case-level passes) plus the 11 mutation checks. The script under test is
+# invoked as a REAL
 # SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
 # process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
 # `systemd-run`), none of which are meaningfully testable by calling functions directly in-process
@@ -209,14 +210,22 @@ PATH="$CASE1_ROOT/bin:$PATH" "$CASE1_ROOT/bin/lake" build > "$WORKDIR/c1_direct.
 GUARD_RC=0
 run_guard "$CASE1_ROOT" build build > "$WORKDIR/c1_guard.out" 2> "$WORKDIR/c1_guard.err" || GUARD_RC=$?
 
+# The one documented, deliberate exception to "zero guard-emitted bytes": the belt-and-braces
+# `lake-build-guard: STATUS: exit_status=N` line (see case 33) is stripped before comparing, since
+# it is guard-emitted BY DESIGN on every real build, on the guard's own raw stderr -- never inside
+# STDOUT_CAPTURE_PATH/STDERR_CAPTURE_PATH, and never on the REPLAY path (case 33 asserts the
+# capture-file and no-status-on-replay halves of that contract). Everything else on this path
+# stays byte-for-byte identical to the direct fake-lake invocation.
+grep -v '^lake-build-guard: STATUS:' "$WORKDIR/c1_guard.err" > "$WORKDIR/c1_guard_stripped.err"
+
 if diff -q "$WORKDIR/c1_direct.out" "$WORKDIR/c1_guard.out" >/dev/null \
-   && diff -q "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard.err" >/dev/null \
+   && diff -q "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard_stripped.err" >/dev/null \
    && [ "$DIRECT_RC" = "$GUARD_RC" ] && [ "$GUARD_RC" = "0" ]; then
-  pass "case 1: silent and transparent when clean (stdout/stderr/exit byte-identical to direct fake lake, zero guard-emitted bytes)"
+  pass "case 1: silent and transparent when clean (stdout/stderr/exit byte-identical to direct fake lake, modulo the one documented STATUS line)"
 else
   fail "case 1: clean-path transparency mismatch (direct_rc=$DIRECT_RC guard_rc=$GUARD_RC)"
   info "diff stdout: $(diff "$WORKDIR/c1_direct.out" "$WORKDIR/c1_guard.out" 2>&1)"
-  info "diff stderr: $(diff "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard.err" 2>&1)"
+  info "diff stderr: $(diff "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard_stripped.err" 2>&1)"
 fi
 
 # =====================================================================================
@@ -240,11 +249,13 @@ CASE3_ROOT="$WORKDIR/case3"
 build_fixture "$CASE3_ROOT"
 
 DIRECT_COMBINED="$(PATH="$CASE3_ROOT/bin:$PATH" "$CASE3_ROOT/bin/lake" build 2>&1)"
-GUARD_COMBINED="$(run_guard "$CASE3_ROOT" build build 2>&1)"
+GUARD_COMBINED_RAW="$(run_guard "$CASE3_ROOT" build build 2>&1)"
 GUARD_RC=$?
+# Same documented STATUS-line carve-out as case 1 (see its comment): stripped before comparing.
+GUARD_COMBINED="$(printf '%s\n' "$GUARD_COMBINED_RAW" | grep -v '^lake-build-guard: STATUS:')"
 
 if [ "$DIRECT_COMBINED" = "$GUARD_COMBINED" ] && [ "$GUARD_RC" = "0" ]; then
-  pass "case 3: command substitution (\$(guard build 2>&1) equals \$(fake_lake 2>&1), matching \$?)"
+  pass "case 3: command substitution (\$(guard build 2>&1) equals \$(fake_lake 2>&1) modulo the one documented STATUS line, matching \$?)"
 else
   fail "case 3: command-substitution mismatch (guard_rc=$GUARD_RC)"
   info "direct=[$DIRECT_COMBINED] guard=[$GUARD_COMBINED]"
@@ -938,6 +949,62 @@ else
 fi
 
 # =====================================================================================
+# Case 33: the STATUS line appears exactly once on a fresh build's stderr, never inside the
+# capture files, and a subsequent replay's captured output stays byte-identical with no STATUS
+# line of its own (cases 1/3's byte-equality guarantee, now exercised across a replay too)
+# =====================================================================================
+CASE33_ROOT="$WORKDIR/case33"
+build_fixture "$CASE33_ROOT"
+
+FRESH_ERR33="$(run_guard "$CASE33_ROOT" build build 2>&1 1>/dev/null)"
+FRESH_OUT33_COUNT="$(printf '%s' "$FRESH_ERR33" | grep -c '^lake-build-guard: STATUS: exit_status=0$' || true)"
+
+CASE33_STDOUT_CAPTURE="$CASE33_ROOT/.lake/build-guard.stdout"
+CASE33_STDERR_CAPTURE="$CASE33_ROOT/.lake/build-guard.stderr"
+CASE33_CAPTURE_STATUS_COUNT=0
+if [ -f "$CASE33_STDOUT_CAPTURE" ]; then
+  CASE33_CAPTURE_STATUS_COUNT=$((CASE33_CAPTURE_STATUS_COUNT + $(grep -c 'STATUS:' "$CASE33_STDOUT_CAPTURE" || true)))
+fi
+if [ -f "$CASE33_STDERR_CAPTURE" ]; then
+  CASE33_CAPTURE_STATUS_COUNT=$((CASE33_CAPTURE_STATUS_COUNT + $(grep -c 'STATUS:' "$CASE33_STDERR_CAPTURE" || true)))
+fi
+
+# Snapshot the fresh capture bytes, then replay and confirm byte-equality plus no STATUS line.
+cp "$CASE33_STDOUT_CAPTURE" "$WORKDIR/c33_fresh.stdout" 2>/dev/null || true
+cp "$CASE33_STDERR_CAPTURE" "$WORKDIR/c33_fresh.stderr" 2>/dev/null || true
+
+run_guard "$CASE33_ROOT" build build > /dev/null 2>"$WORKDIR/c33_replay.err"
+REPLAY_ERR33="$(cat "$WORKDIR/c33_replay.err")"
+REPLAY_STATUS_COUNT33="$(printf '%s' "$REPLAY_ERR33" | grep -c 'STATUS:' || true)"
+
+if [ "$FRESH_OUT33_COUNT" = "1" ] && [ "$CASE33_CAPTURE_STATUS_COUNT" = "0" ] \
+   && diff -q "$WORKDIR/c33_fresh.stdout" "$CASE33_STDOUT_CAPTURE" >/dev/null 2>&1 \
+   && diff -q "$WORKDIR/c33_fresh.stderr" "$CASE33_STDERR_CAPTURE" >/dev/null 2>&1 \
+   && [ "$REPLAY_STATUS_COUNT33" = "0" ]; then
+  pass "case 33: fresh build stderr contains exactly one lake-build-guard: STATUS: exit_status=0 line; capture files contain no STATUS:; a subsequent replay's captured output stays byte-identical and its own stderr has no STATUS: line"
+else
+  fail "case 33: expected exactly 1 fresh STATUS line, 0 in capture files, 0 on replay, and byte-identical replayed captures; fresh_count=$FRESH_OUT33_COUNT capture_count=$CASE33_CAPTURE_STATUS_COUNT replay_count=$REPLAY_STATUS_COUNT33"
+fi
+
+# =====================================================================================
+# Case 34: --help documents all four capture paths, the result mode, --expect-pid/--expect-scope,
+# and the never-a-pipeline rule (case-21-style grep-based inspection)
+# =====================================================================================
+HELP_OUT34="$("$GUARD" --help 2>&1)"
+if printf '%s' "$HELP_OUT34" | grep -q 'build-guard.result' \
+   && printf '%s' "$HELP_OUT34" | grep -q 'build-guard.stdout' \
+   && printf '%s' "$HELP_OUT34" | grep -q 'build-guard.stderr' \
+   && printf '%s' "$HELP_OUT34" | grep -q 'build-guard.log' \
+   && printf '%s' "$HELP_OUT34" | grep -q 'lake-build-guard.sh result' \
+   && printf '%s' "$HELP_OUT34" | grep -q -- '--expect-pid' \
+   && printf '%s' "$HELP_OUT34" | grep -q -- '--expect-scope' \
+   && printf '%s' "$HELP_OUT34" | grep -qi 'pipeline'; then
+  pass "case 34: --help documents all four capture paths, the result mode, --expect-pid/--expect-scope, and the never-a-pipeline rule"
+else
+  fail "case 34: expected --help output to name build-guard.result/.stdout/.stderr/.log, the result mode, --expect-pid, --expect-scope, and 'pipeline'; got=[$HELP_OUT34]"
+fi
+
+# =====================================================================================
 # Non-vacuousness (mutation) checks
 # =====================================================================================
 # Per context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes", and
@@ -1216,6 +1283,22 @@ if [ "$MUTANTJ_RC" = "0" ]; then
   pass "mutation J: neutralizing cmd_result()'s --expect-scope comparison makes a differently-scoped vector (build Foo.Bar against a record built with 'build') wrongly report a match (exit 0) instead of refusing -- confirms case 31's mismatch-refusal assertion is load-bearing, not vacuous"
 else
   fail "mutation J: expected the neutered comparison to always report a match (exit 0); got rc=$MUTANTJ_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+fi
+
+# --- Mutation K (STATUS line): remove the STATUS emission line from run_as_holder() -> case 33's
+# "exactly one STATUS line" assertion must go RED (a fresh build's stderr has zero).
+MUTANT_NOSTATUS="$MUTANT_DIR/no-status.sh"
+sed '/^  echo "lake-build-guard: STATUS: exit_status=\$rc" >&2$/d' "$GUARD" > "$MUTANT_NOSTATUS"
+chmod +x "$MUTANT_NOSTATUS"
+
+MUTANTK_ROOT="$WORKDIR/mutant_nostatus_fixture"
+build_fixture "$MUTANTK_ROOT"
+MUTANTK_ERR="$(PATH="$MUTANTK_ROOT/bin:$PATH" "$MUTANT_NOSTATUS" build --dir "$MUTANTK_ROOT" build 2>&1 1>/dev/null)"
+
+if ! printf '%s' "$MUTANTK_ERR" | grep -q 'lake-build-guard: STATUS:'; then
+  pass "mutation K: removing the STATUS emission line silences a fresh build's status token entirely -- confirms case 33's assertion is load-bearing, not vacuous"
+else
+  fail "mutation K: the STATUS line still appeared after removing its emission lines -- inconclusive (sed pattern did not match both call sites), recorded rather than silently skipped"
 fi
 
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not

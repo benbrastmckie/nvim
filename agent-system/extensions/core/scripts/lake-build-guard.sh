@@ -17,7 +17,13 @@
 #     wiring is separate, dependent work.
 #   - It does not touch LEAN_NUM_THREADS (see "Recorded dead ends" below).
 #   - It does not coordinate across machines, run as a daemon, or persist any state beyond the
-#     lock/result/log/capture files under the resolved project's own .lake/ directory.
+#     lock/result/log/capture files under the resolved project's own .lake/ directory -- by name:
+#       <root>/.lake/build-guard.lock    the flock() serialization lock
+#       <root>/.lake/build-guard.result  the machine-readable verdict record (read via `result`)
+#       <root>/.lake/build-guard.log     a combined "=== stdout ===\n...\n=== stderr ===\n..." log
+#       <root>/.lake/build-guard.stdout  the wrapped build's raw captured stdout (for REPLAY)
+#       <root>/.lake/build-guard.stderr  the wrapped build's raw captured stderr (for REPLAY)
+#     See READING THE VERDICT below for how a consumer should read these instead of a pipeline.
 #
 # FAMILY CONVENTIONS (for a future latex-build-guard.sh or similar sibling): this script sets,
 # but does not itself instantiate, a shared shape for a family of build guards --
@@ -75,6 +81,8 @@
 #   lake-build-guard.sh build     [--dir DIR] [--timeout SECS] [--memory-bound]
 #                                 [--memory-high VAL] [--memory-max VAL] [--defer-on-pressure]
 #                                 [--no-share] [--verbose] [--] [LAKE ARGS...]
+#   lake-build-guard.sh result    [--dir DIR] [--verbose] [--expect-pid PID] [--expect-scope]
+#                                 [-- LAKE ARGS...]
 #   lake-build-guard.sh --help
 #
 # WAITING ON AN IN-FLIGHT GUARDED BUILD: read `holder_pid` from the result record (or from
@@ -123,6 +131,31 @@
 #                   10  an in-flight guarded build was detected (one-line report on stdout)
 #   preflight mode: 0   no memory pressure detected (no output)
 #                   11  memory pressure detected (report on stderr)
+#   result mode:    0   terminal, state=complete, recorded exit_status=0 (build passed)
+#                   20  terminal, state=complete, recorded exit_status NON-zero (build failed;
+#                       the real recorded exit_status is printed on stdout, never on the guard's
+#                       OWN exit code, which stays in this small enumerated band -- see READING
+#                       THE VERDICT below for why the exit code itself is never lake's raw code)
+#                   21  non-terminal: state=in_flight AND the build lock is currently held (a
+#                       build is genuinely still running)
+#                   22  terminal, state=aborted (a trapped kill, see the TERMINAL RECORD
+#                       GUARANTEE above), OR orphaned: state=in_flight but the lock is free (the
+#                       holder died untrappably, e.g. SIGKILL) -- reported as state=orphaned on
+#                       stdout in that case, never trusted as a live build
+#                   23  no record present at all
+#                   24  --expect-pid or --expect-scope did not match the record's own holder_pid
+#                       / scope_key (refusal, explanation on stderr, no verdict lines on stdout)
+#                   77  usage error (bad flags, including a non-numeric --expect-pid or a bare
+#                       --expect-scope with no lake argument vector after --)
+#
+# READING THE VERDICT: a consumer MUST read a guarded build's pass/fail verdict either via
+#   `result`'s own exit code (see the result-mode band above) or via an UN-PIPED "$?" checked
+#   immediately after `lake-build-guard.sh build ...`, and MUST NEVER read it from the exit status
+#   of a pipeline's LAST STAGE (e.g. `lake-build-guard.sh build ... | tail -60`, whose "$?" is
+#   tail's own exit code, not the guard's) -- this is the defect this mode exists to close: a
+#   broken build reported as "exit 0" because the only thing a caller could check was a pipeline
+#   stage that always exits 0. `--expect-pid`/`--expect-scope` (see below) let a caller also prove
+#   the record it read describes ITS OWN build, not a concurrent sibling's.
 #
 # STALENESS POLICY (result sharing -- see compute_fingerprint()/compute_scope_key()/
 # decide_sharing() below for the implementation; this is the authoritative statement of the
@@ -153,6 +186,14 @@
 #   A replayed result announces itself: cmd_build() emits one `lake-build-guard: REPLAY:` line on
 #   stderr, naming the holder pid, the result's age, and the recorded exit status, immediately
 #   before replaying -- see the FAMILY CONVENTIONS silent-when-no-conflict qualification above.
+#   STATUS LINE (belt-and-braces, distinct from REPLAY): a REAL (non-replayed) build additionally
+#   emits exactly one `lake-build-guard: STATUS: exit_status=N` line on stderr, AFTER the wrapped
+#   build's own captured stdout/stderr have fully closed -- so a consumer that ignores `result`
+#   and pipes this invocation anyway (see READING THE VERDICT above) still sees an unambiguous
+#   status token inside its own captured text. It follows the same stable `lake-build-guard:`
+#   prefix as REPLAY, is NEVER written into STDOUT_CAPTURE_PATH/STDERR_CAPTURE_PATH (so it can
+#   never corrupt a later replay's byte-for-byte equality), and NEVER appears on the REPLAY path
+#   itself (a replay's own REPLAY: line already carries the recorded status).
 #   Fingerprint asymmetry is deliberate and conservative in only one direction: the check must
 #   NEVER report "unchanged" when content actually changed (a real content write always moves
 #   mtime, so default `stat` mode never misses a real change except the narrow edge noted below);
@@ -221,6 +262,8 @@ Usage:
   lake-build-guard.sh build     [--dir DIR] [--timeout SECS] [--memory-bound]
                                 [--memory-high VAL] [--memory-max VAL] [--defer-on-pressure]
                                 [--no-share] [--verbose] [--] [LAKE ARGS...]
+  lake-build-guard.sh result    [--dir DIR] [--verbose] [--expect-pid PID] [--expect-scope]
+                                [-- LAKE ARGS...]
   lake-build-guard.sh --help
 
 Global options:
@@ -233,6 +276,11 @@ Global options:
   --defer-on-pressure    (build only) Exit 76 without launching if memory pressure is detected,
                           instead of the default warn-and-proceed behavior.
   --no-share             (build only) Never replay a prior result; always run a real build.
+  --expect-pid PID       (result only) Refuse (exit 24) unless the record's own holder_pid
+                          equals PID -- proves the record describes YOUR build, not a sibling's.
+  --expect-scope         (result only) Refuse (exit 24) unless the record's own scope_key matches
+                          the lake argument vector given after `--` on this same invocation.
+                          Requires a vector after `--`; omitting one is a 77 usage error.
   --verbose              Emit diagnostic detail on stderr.
   --help, -h             Show this message.
 
@@ -249,6 +297,29 @@ Result sharing and the REPLAY marker:
   and its recorded exit status. To assert that a genuine build ran rather than a replay: grep
   stderr for the absence of that marker, or pass --no-share to force a real build.
 
+The STATUS line (belt-and-braces, distinct from REPLAY):
+  A REAL (non-replayed) build additionally emits exactly one
+  `lake-build-guard: STATUS: exit_status=N` line on stderr after its own output has fully closed,
+  so even a caller that pipes the invocation still sees an unambiguous status token in its own
+  captured text. It never appears in the .stdout/.stderr capture files and never appears on a
+  replay (whose own REPLAY: line already carries the recorded status).
+
+Reading the verdict -- capture files and the `result` subcommand:
+  Every guarded build writes these files under <root>/.lake/, named explicitly so a consumer
+  knows what to read instead of scraping a pipeline:
+    build-guard.result  machine-readable verdict record (state, exit_status, holder_pid, ...)
+    build-guard.stdout  the wrapped build's raw captured stdout (used for REPLAY)
+    build-guard.stderr  the wrapped build's raw captured stderr (used for REPLAY)
+    build-guard.log     a combined "=== stdout ===" / "=== stderr ===" log of the same content
+  `result` reads build-guard.result and reports state/exit_status/holder_pid/start_epoch/
+  end_epoch/scope_key/abort_reason plus the four absolute paths above, mapping the verdict to its
+  own small exit-code band (see Exit codes below) -- 0 for a passing build, 20 for a failing one,
+  with the real recorded exit_status always printed on stdout. A consumer MUST read a build's
+  pass/fail verdict via `result`'s exit code or via an UN-PIPED "$?" immediately after `build`,
+  and MUST NEVER read it from the exit status of a pipeline's last stage (e.g.
+  `lake-build-guard.sh build ... | tail -60`, whose "$?" is tail's, not the guard's) -- that is
+  the exact false-pass shape this subcommand exists to close.
+
 Waiting on an in-flight guarded build:
   Read `holder_pid` from the result record (or from `status --verbose`), then poll it directly:
     while kill -0 "$holder_pid" 2>/dev/null; do sleep 1; done
@@ -262,9 +333,14 @@ Exit codes:
                    capability missing.
   status mode:    0 no in-flight build (no output); 10 in-flight build detected (report on stdout).
   preflight mode: 0 no pressure (no output); 11 pressure detected (report on stderr).
+  result mode:    0 terminal complete, build passed; 20 terminal complete, build FAILED (real
+                   code on stdout); 21 non-terminal, a build is genuinely still running; 22
+                   terminal aborted (a trapped kill) or orphaned (holder died untrappably, e.g.
+                   SIGKILL -- state=orphaned on stdout); 23 no record present; 24 --expect-pid /
+                   --expect-scope mismatch; 77 usage error.
 
-See the header comment in this file for the full staleness policy, dead-end record, and test-seam
-documentation.
+See the header comment in this file for the full staleness policy, dead-end record, terminal
+record guarantee, and test-seam documentation.
 EOF
 }
 
@@ -772,6 +848,13 @@ run_as_holder() {
   _RECORD_FINALIZED=true
   trap - EXIT INT TERM
 
+  # Belt-and-braces status token (see the header's READING THE VERDICT note): a consumer that
+  # ignores `result` and pipes this invocation still sees an unambiguous, stably-prefixed status
+  # line inside its own captured stderr. Emitted only AFTER run_lake_foreground()'s tee captures
+  # have closed, so it never appears inside STDOUT_CAPTURE_PATH/STDERR_CAPTURE_PATH themselves and
+  # never disturbs the REPLAY path's byte-equality guarantee (a replay never reaches this line).
+  echo "lake-build-guard: STATUS: exit_status=$rc" >&2
+
   return "$rc"
 }
 
@@ -806,6 +889,7 @@ cmd_build() {
     run_lake_foreground "${args[@]}"
     local rc=$?
     set -e
+    echo "lake-build-guard: STATUS: exit_status=$rc" >&2
     exit "$rc"
   fi
 

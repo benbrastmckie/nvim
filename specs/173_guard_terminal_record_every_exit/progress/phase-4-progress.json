@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "STATUS line and documentation",
+  "started_at": "2026-09-22T01:45:00Z",
+  "last_updated": "2026-09-22T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Emit STATUS line on holder and no-flock paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 2, "description": "Header documentation: capture paths, USAGE, EXIT CODES, READING THE VERDICT", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 3, "description": "print_help() documentation update", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 4, "description": "Cases 33-34, mutation K, header count update", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Cases 1 and 3's byte-equality assertions needed updating to strip the one documented STATUS line before comparing, since it is genuinely emitted on the guard's own raw stderr on every real build",
+      "type": "altered",
+      "reason": "The STATUS line is emitted unconditionally on the real-build path per Decision 5, which is in direct tension with cases 1/3's original zero-guard-emitted-bytes assertion; updated the assertions to strip the one documented line rather than weaken the STATUS line's own unconditional-emission contract",
+      "annotation": "*(deviation: altered -- cases 1/3 updated to strip the documented STATUS line before their byte-equality comparison)*"
+    }
+  ]
+}

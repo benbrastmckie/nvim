@@ -252,28 +252,33 @@ add an env-driven exit override to the fixture only (inside the test file).
 
 ---
 
-### Phase 4: STATUS line and documentation [NOT STARTED]
+### Phase 4: STATUS line and documentation [COMPLETED]
 
 **Goal**: Belt-and-braces status token in piped output; every capture path and mode documented.
 
 **Tasks**:
-- [ ] Emit `lake-build-guard: STATUS: exit_status=$rc` on stderr in `run_as_holder()` after
-      finalize, and in the no-flock unserialized path; not on the REPLAY branch.
-- [ ] Header: name `.lake/build-guard.result`, `.lake/build-guard.stdout`,
+- [x] Emit `lake-build-guard: STATUS: exit_status=$rc` on stderr in `run_as_holder()` after
+      finalize, and in the no-flock unserialized path; not on the REPLAY branch. *(completed)*
+- [x] Header: name `.lake/build-guard.result`, `.lake/build-guard.stdout`,
       `.lake/build-guard.stderr`, and the log path in the non-goals/state-files text; add the
       `result` row to USAGE and a `result` band to EXIT CODES; add a single "READING THE
       VERDICT" paragraph stating a consumer MUST use `result` or an un-piped `$?`, never a
       pipeline's last stage; document the STATUS line under the REPLAY/marker conventions.
-- [ ] `print_help()`: same four paths, `result` usage line with `--expect-pid`/`--expect-scope`,
-      the exit band, the MUST-read-verdict rule.
-- [ ] New case 33: fresh build stderr contains exactly one `lake-build-guard: STATUS:
+      *(completed)*
+- [x] `print_help()`: same four paths, `result` usage line with `--expect-pid`/`--expect-scope`,
+      the exit band, the MUST-read-verdict rule. *(completed)*
+- [x] New case 33: fresh build stderr contains exactly one `lake-build-guard: STATUS:
       exit_status=0`; capture files contain no `STATUS:`; a subsequent replay's stdout is
       byte-identical to the original capture and its stderr has no `STATUS:` line (cases 1/3
-      still pass unchanged).
-- [ ] New case 34 (case-21 style): `--help` greps for all four paths, the `result` mode,
-      `--expect-pid`, `--expect-scope`, and the never-a-pipeline rule.
-- [ ] Mutation K: remove the STATUS emission; case 33 must go RED.
-- [ ] Update suite header counts and the by-inspection mutation-reasoning list for cases 23-34.
+      still pass unchanged). *(completed: cases 1/3 themselves needed a small update to strip
+      the one documented STATUS line before their byte-equality comparison, since it is now
+      genuinely guard-emitted on every real build's raw stderr -- their core "real lake output is
+      byte-identical, modulo the one documented line" guarantee is preserved)*
+- [x] New case 34 (case-21 style): `--help` greps for all four paths, the `result` mode,
+      `--expect-pid`, `--expect-scope`, and the never-a-pipeline rule. *(completed)*
+- [x] Mutation K: remove the STATUS emission; case 33 must go RED. *(completed)*
+- [x] Update suite header counts and the by-inspection mutation-reasoning list for cases 23-34.
+      *(completed)*
 
 **Timing**: 1.25 hours
 
