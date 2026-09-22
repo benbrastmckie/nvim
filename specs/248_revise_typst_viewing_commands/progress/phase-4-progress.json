@@ -1,0 +1,11 @@
+{
+  "phase": 4,
+  "phase_name": "Minimal command surface and preview reliability",
+  "started_at": "2026-09-22T06:53:00Z",
+  "last_updated": "2026-09-22T06:53:00Z",
+  "objectives": [
+    {"id": 1, "description": "Minimal command surface and preview reliability — file changes", "status": "completed", "files_touched": ["after/ftplugin/typst.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

@@ -127,42 +127,6 @@ local function typst_compile()
   })
 end
 
-local function typst_watch()
-  -- Toggle: stop if running
-  local entry = process.find_by_name("typst-watch")
-  if entry then
-    process.stop(entry.id)
-    return
-  end
-
-  local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
-  local main_filename = vim.fn.fnamemodify(main_file, ":t")
-  local root = typst.project_root(main_file)
-
-  local cmd = { "typst", "watch", "--root", root, main_file }
-
-  local root_info = " (root: " .. vim.fn.fnamemodify(root, ":t") .. ")"
-  vim.notify("Starting watch on " .. main_filename .. root_info .. "...", vim.log.levels.INFO)
-  process.start({
-    name = "typst-watch",
-    cmd = cmd,
-    cwd = root,
-    on_stdout = function(data)
-      if data and #data > 0 then
-        local msg = table.concat(data, "\n")
-        if msg:match("compiled successfully") then
-          vim.notify("Compiled successfully", vim.log.levels.INFO)
-        end
-      end
-    end,
-    on_exit = function(exit_code)
-      if exit_code ~= 0 and exit_code ~= 143 then -- 143 is SIGTERM (normal stop)
-        vim.notify("Watch stopped (exit code: " .. exit_code .. ")", vim.log.levels.WARN)
-      end
-    end,
-  })
-end
-
 local function typst_view_pdf()
   local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
   local pdf = typst.pdf_path(main_file)
@@ -187,6 +151,54 @@ local function show_compilation_errors()
   vim.cmd("copen")
 end
 
+-- Whether any typst-preview server is live, checked against the plugin's own server
+-- registry rather than our flat `process` entry, so a server that outlives (or never
+-- reaches) that entry -- e.g. after the main file changes -- is still detected.
+local function preview_running()
+  local ok, manager = pcall(require, "typst-preview.servers.manager")
+  if ok then
+    return next(manager.get_all()) ~= nil
+  end
+  return process.find_by_name("typst-preview") ~= nil
+end
+
+-- TypstPreview wrappers with process registry tracking. The registry entry is kept only
+-- so the global process picker can list the preview; liveness is always decided by
+-- preview_running() against the plugin's own registry, never by the entry's presence.
+local function typst_preview_start()
+  vim.cmd("TypstPreview")
+  process.register_external({ name = "typst-preview", cmd = "tinymist preview", type = "browser" })
+end
+
+local function typst_preview_stop()
+  local ok, manager = pcall(require, "typst-preview.servers.manager")
+  if ok then
+    manager.remove_all()
+  else
+    pcall(vim.cmd, "TypstPreviewStop")
+  end
+  process.deregister("typst-preview")
+end
+
+local function typst_preview_toggle()
+  if preview_running() then
+    typst_preview_stop()
+  else
+    typst_preview_start()
+  end
+end
+
+-- <leader>lx: stop the preview if one is running. `typst watch` is gone (Phase 4), so the
+-- preview is the only long-running process left to stop.
+local function typst_stop_all()
+  if preview_running() then
+    typst_preview_stop()
+    vim.notify("Stopped preview", vim.log.levels.INFO)
+  else
+    vim.notify("Nothing running", vim.log.levels.WARN)
+  end
+end
+
 local function tinymist_clear_cache()
   -- Delete stale compiled artifacts (same base name as main .typ file)
   local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
@@ -201,8 +213,7 @@ local function tinymist_clear_cache()
     end
   end
 
-  pcall(vim.cmd, "TypstPreviewStop")
-  process.deregister("typst-preview")
+  typst_preview_stop()
   vim.cmd("LspRestart tinymist")
 
   local msg = "tinymist cache cleared"
@@ -212,53 +223,11 @@ local function tinymist_clear_cache()
   vim.notify(msg .. " | run <leader>ll to reopen", vim.log.levels.INFO)
 end
 
--- TypstPreview wrappers with process registry tracking
-local function typst_preview_start()
-  vim.cmd("TypstPreview")
-  process.register_external({ name = "typst-preview", cmd = "tinymist preview", type = "browser" })
-end
-
-local function typst_preview_stop()
-  vim.cmd("TypstPreviewStop")
-  process.deregister("typst-preview")
-end
-
-local function typst_preview_toggle()
-  local entry = process.find_by_name("typst-preview")
-  if entry then
-    typst_preview_stop()
-  else
-    typst_preview_start()
-  end
-end
-
--- Stop every background process this document owns. Typst runs two independent ones
--- (a `typst watch` compiler and the tinymist web preview); <leader>lx stops whichever
--- are live, so the shared "stop" verb does not need the caller to know which is which.
-local function typst_stop_all()
-  local stopped = {}
-
-  local watch = process.find_by_name("typst-watch")
-  if watch then
-    process.stop(watch.id)
-    table.insert(stopped, "watch")
-  end
-
-  if process.find_by_name("typst-preview") then
-    typst_preview_stop()
-    table.insert(stopped, "preview")
-  end
-
-  if #stopped == 0 then
-    vim.notify("Nothing running for this document", vim.log.levels.WARN)
-  else
-    vim.notify("Stopped " .. table.concat(stopped, " + "), vim.log.levels.INFO)
-  end
-end
-
 -- Register which-key bindings for Typst (uses <leader>l like LaTeX)
 -- NOTE: Sync features (forward/backward) only work with the web preview (<leader>ll)
 --       PDF viewer (<leader>lv) does not support sync (similar to LaTeX without SyncTeX)
+-- tinymist's exportPdf=onSave keeps the main document's PDF current on every save, so
+-- there is no separate "watch" verb: <leader>lb covers an on-demand rebuild.
 local ok_wk, wk = pcall(require, "which-key")
 if ok_wk then
   wk.add({
@@ -271,10 +240,9 @@ if ok_wk then
     { "<leader>le", show_diagnostics, desc = "errors (LSP)", icon = "", buffer = 0 },
     { "<leader>lf", typst_format, desc = "format", icon = "", buffer = 0 },
     { "<leader>lk", tinymist_clear_cache, desc = "clean artifacts", icon = "󰃢", buffer = 0 },
-    { "<leader>lx", typst_stop_all, desc = "stop (watch + preview)", icon = "󰅚", buffer = 0 },
+    { "<leader>lx", typst_stop_all, desc = "stop preview", icon = "󰅚", buffer = 0 },
 
     -- Typst-specific extras
-    { "<leader>lw", typst_watch, desc = "watch (toggle)", icon = "", buffer = 0 },
     { "<leader>lq", show_compilation_errors, desc = "quickfix (compile)", icon = "", buffer = 0 },
     { "<leader>ls", "<cmd>TypstPreviewSyncCursor<CR>", desc = "sync cursor (web)", icon = "", buffer = 0 },
     { "<leader>lp", pin_main_file, desc = "pin main file", icon = "", buffer = 0 },

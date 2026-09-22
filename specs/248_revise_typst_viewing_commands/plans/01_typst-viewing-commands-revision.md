@@ -265,30 +265,35 @@ which should return only helper/spec hits and the pin code handled in Phase 3.
 
 ---
 
-### Phase 4: Minimal command surface and preview reliability [NOT STARTED]
+### Phase 4: Minimal command surface and preview reliability [COMPLETED]
 
 **Goal**: Remove `<leader>lw`, make the preview toggle/stop authoritative against the
 plugin's own server registry, and simplify `<leader>lx`.
 
 **Tasks**:
-- [ ] Delete `typst_watch` and the `<leader>lw` which-key entry.
-- [ ] Add `preview_running()`: `pcall(require, "typst-preview.servers.manager")`, then
+- [x] Delete `typst_watch` and the `<leader>lw` which-key entry.
+- [x] Add `preview_running()`: `pcall(require, "typst-preview.servers.manager")`, then
       `next(manager.get_all()) ~= nil`. On `pcall` failure, fall back to
       `process.find_by_name("typst-preview")`.
-- [ ] `typst_preview_toggle`: decide from `preview_running()`, not the flat registry entry.
+- [x] `typst_preview_toggle`: decide from `preview_running()`, not the flat registry entry.
       Start = `:TypstPreview` + `process.register_external` (kept for the process picker).
       Stop = `typst_preview_stop()`.
-- [ ] `typst_preview_stop`: stop every server (`manager.remove_all()` under `pcall`, else
+- [x] `typst_preview_stop`: stop every server (`manager.remove_all()` under `pcall`, else
       `:TypstPreviewStop`), then `process.deregister("typst-preview")`. This means a changed
-      main file can no longer leave an orphaned server.
-- [ ] `typst_stop_all` (`<leader>lx`): only the preview remains, so make it call
+      main file can no longer leave an orphaned server. *(also moved this function group,
+      unchanged in content, ahead of `tinymist_clear_cache` in file order, since
+      `tinymist_clear_cache` now calls `typst_preview_stop()` and Lua locals must be
+      declared before a sibling function can close over them)*
+- [x] `typst_stop_all` (`<leader>lx`): only the preview remains, so make it call
       `typst_preview_stop()` when `preview_running()`, else warn "Nothing running". Update
       its description to "stop preview".
-- [ ] `tinymist_clear_cache`: use `typst_preview_stop()` instead of the raw
+- [x] `tinymist_clear_cache`: use `typst_preview_stop()` instead of the raw
       `TypstPreviewStop` + deregister.
-- [ ] Final keymap set: `ll` preview, `lb` build once, `lv` view pdf, `le` errors, `lf`
+- [x] Final keymap set: `ll` preview, `lb` build once, `lv` view pdf, `le` errors, `lf`
       format, `lk` clean, `lx` stop preview, `lq` quickfix, `ls` sync cursor (web), `lp` pin,
       `lu` unpin. That is 11 bindings. Update the which-key header comment to match.
+      *(verified: `grep -c '"<leader>l' after/ftplugin/typst.lua` is 12 — the group entry
+      plus exactly these 11 bindings)*
 
 **Timing**: 1.5 hours
 
