@@ -1,7 +1,7 @@
 # Implementation Plan: Task #249
 
 - **Task**: 249 - Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md

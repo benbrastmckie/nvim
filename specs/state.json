@@ -57,12 +57,12 @@
     {
       "project_number": 249,
       "project_name": "restore_eager_context_budget",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining",
       "created": "2026-09-22T18:54:55Z",
-      "last_updated": "2026-09-22T19:24:30Z",
+      "last_updated": "2026-09-22T21:38:50Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
