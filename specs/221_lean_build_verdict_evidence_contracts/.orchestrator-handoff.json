@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 7,
+  "summary": "Confirmed guard-side (result mode, exit-code discipline, pgrep-self-match prohibition) and bounded-waiter infrastructure already exist; identified the four unmethoded build-verdict/PID-source gaps, the waiter-teardown wiring gap, and the git-snapshot --no-revert gap, with pointer-based edit recommendations for each of the five in-scope files.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md",
+      "summary": "Research report identifying all edit sites and recommended pointer-based fixes for the build-verdict evidence hierarchy, waiter-teardown wiring, and git-snapshot --no-revert mandate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "continuation_path": null
+}
