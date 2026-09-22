@@ -27,26 +27,38 @@ Type=oneshot
 # available as a deliberate opt-in via manual invocation or a hand-edited unit.
 #
 # New-passes ruling (confirmed at code level, not merely asserted): as of this
-# writing, claude-refresh.sh's main() calls exactly four pass functions --
-# run_claude_pass, run_lean_pass, run_zombie_pass, run_mcp_fanout_pass -- all
-# unconditionally, in one fixed sequence, all threading the single $FORCE/
-# $DRY_RUN pair this ExecStart line supplies. No pass added since this unit was
-# first authored has required, or requires, its own flag or ExecStart line: the
-# zombie and MCP-fan-out passes never terminate anything under any flag (they
-# have no --force branch at all), and the Lean LSP pass terminates only under
-# --force, which this unit never passes. A future pass follows the same rule
-# as long as it, too, is wired into main()'s unconditional sequence rather than
-# given its own gating -- if a future pass is instead independently gated (its
-# own flag, its own ExecStart), re-derive this ruling rather than assuming it
-# still holds. This reasoning is recorded here so a future reader does not
-# reopen it; see SKILL.md/refresh.md for the full per-pass inventory.
+# writing, claude-refresh.sh's main() calls exactly five pass functions --
+# run_claude_pass, run_lean_pass, run_build_waiter_pass, run_zombie_pass,
+# run_mcp_fanout_pass -- all unconditionally, in one fixed sequence, all
+# threading the single $FORCE/$DRY_RUN pair this ExecStart line supplies.
+# Four of the five stay non-destructive under this unit for the ORIGINAL
+# reason: the zombie and MCP-fan-out passes never terminate anything under any
+# flag (they have no --force branch at all), and the Lean LSP pass terminates
+# only under --force, which this unit never passes.
+#
+# The fifth, run_build_waiter_pass, is DIFFERENT and was re-derived rather than
+# assumed safe: its destructive trigger is the absence of --dry-run, not the
+# presence of --force -- it is the first pass in claude-refresh.sh whose
+# termination is not gated by $FORCE at all (see SKILL.md/refresh.md's Process
+# Safety sections for the full rationale). This unit stays non-destructive for
+# this pass too, but via a DIFFERENT mechanism than the other four: because
+# ExecStart below always passes --dry-run, and --dry-run is this pass's own
+# sole non-destructive gate, an hourly run always takes this pass's report-only
+# branch. A future pass follows the four-pass-era rule (needs no flag/ExecStart
+# of its own) only if it is wired into main()'s unconditional sequence AND is
+# gated by --dry-run/--force the same way the existing five are; if a future
+# pass is instead independently gated (its own flag, its own ExecStart, or a
+# destructive trigger this ExecStart line does not already supply), re-derive
+# this ruling rather than assuming it still holds. This reasoning is recorded
+# here so a future reader does not reopen it; see SKILL.md/refresh.md for the
+# full per-pass inventory.
 #
 # Scope note: the file/spec cleanup passes (orphaned postflight markers, stale
 # task locks, stale session-scoped orchestration files, stale session registry
 # entries, stale .backup files, and the ~/.claude/ directory cleanup) are
 # /refresh-only -- this unit's ExecStart never reaches any of them. The ruling
-# above is scoped to claude-refresh.sh's four internal passes, not to the full
-# ten-item surface-level inventory.
+# above is scoped to claude-refresh.sh's five internal passes, not to the full
+# eleven-item surface-level inventory.
 ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --dry-run
 # Alternatively, if installed system-wide:
 # ExecStart=/usr/local/bin/claude-refresh.sh --dry-run

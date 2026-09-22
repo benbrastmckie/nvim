@@ -1,0 +1,45 @@
+{
+  "phase": 3,
+  "phase_name": "Update both pass inventories, the owning subsection, and the systemd ruling",
+  "started_at": "2026-09-22T06:28:00Z",
+  "last_updated": "2026-09-22T06:32:44Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert row 5 in both pass-inventory tables (refresh.md, SKILL.md), renumber old rows 5-10 to 6-11, update lead-in paragraphs",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/refresh.md",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add refresh.md's Orphaned Build Waiters subsection, Process Protection bullet, and --force Options row update",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/refresh.md"]
+    },
+    {
+      "id": 3,
+      "description": "Add SKILL.md's Process Safety bullet and Step 2 confirmation-scoping note",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-refresh/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "Re-derive the systemd unit's new-passes ruling comment for the fifth pass's different (non-$FORCE) destructive gate",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.service"]
+    },
+    {
+      "id": 5,
+      "description": "Optional one-sentence pointer in bounded-build-waiter.md naming the new pass",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/bounded-build-waiter.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

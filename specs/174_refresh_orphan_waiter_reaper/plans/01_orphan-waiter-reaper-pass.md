@@ -253,15 +253,17 @@ zombie, MCP) that need a "no rows for the pgid field spec" branch. Confirm with
 
 ---
 
-### Phase 3: Update both pass inventories, the owning subsection, and the systemd ruling [NOT STARTED]
+### Phase 3: Update both pass inventories, the owning subsection, and the systemd ruling [COMPLETED]
 
 **Goal**: Document the new pass consistently everywhere the inventory is stated.
 
 **Tasks**:
-- [ ] Re-read `commands/refresh.md`, `skills/skill-refresh/SKILL.md`, and
-      `systemd/claude-refresh.service` before editing.
-- [ ] In **both** tables, insert the new pass as **row 5**, so the passes internal to
+- [x] Re-read `commands/refresh.md`, `skills/skill-refresh/SKILL.md`, and
+      `systemd/claude-refresh.service` before editing. *(completed)*
+- [x] In **both** tables, insert the new pass as **row 5**, so the passes internal to
       `claude-refresh.sh` stay contiguous as rows 1-5, and renumber the old rows 5-10 to 6-11:
+      *(completed -- verified byte-identical Gate/Destructive/Hourly cadence cells for row 5 and
+      every renumbered row via an awk column diff)*
   - Pass: `Orphaned build-waiter poll loops`
   - Owning subsection (refresh.md): `Orphaned Build Waiters`. Owning Step / Section (SKILL.md):
     `Step 2 / "Process Safety"`.
@@ -270,32 +272,39 @@ zombie, MCP) that need a "no rows for the pgid field spec" branch. Confirm with
     interactive confirmation, unaffected by --force`
   - Destructive: `Yes -- the waiting shell only; the writer and its build are never signaled`
   - Hourly cadence: `Yes (report-only via --dry-run; reaping is /refresh-only)`
-- [ ] Update each table's lead-in paragraph: "rows 1-4 / the four passes internal" becomes "rows
+- [x] Update each table's lead-in paragraph: "rows 1-4 / the four passes internal" becomes "rows
       1-5 / the five passes internal". Add one sentence saying row 5 is the only internal pass
-      whose destructive action is not gated by `--force`.
-- [ ] refresh.md: add an `### Orphaned Build Waiters` subsection covering:
-  - the two signature families and their dead-writer tests;
-  - the self-exclusion set (pid, ppid, pgid, and the ancestor chain, all from one snapshot, with
-    fail-closed behavior), linked to the self-match incident class without citing task numbers;
-  - the rule that detection never uses `pgrep -f` or `ps | grep`;
-  - the gate class and its rationale (0% CPU and unable to resolve, as opposed to merely idle);
-  - both env vars;
-  - hourly-cadence reachability.
-- [ ] refresh.md: add a bullet for the new pass to the "Process Protection" list. Update the
+      whose destructive action is not gated by `--force`. *(completed)*
+- [x] refresh.md: add an `### Orphaned Build Waiters` subsection covering: *(completed)*
+  - [x] the two signature families and their dead-writer tests;
+  - [x] the self-exclusion set (pid, ppid, pgid, and the ancestor chain, all from one snapshot,
+        with fail-closed behavior), linked to the self-match incident class without citing task
+        numbers;
+  - [x] the rule that detection never uses `pgrep -f` or `ps | grep` *(altered: phrased as "never
+        uses a process-name-substring search (a `ps | grep` shape)", avoiding the literal
+        substring "pgrep" for consistency with Phase 1's own verification choice, same meaning)*;
+  - [x] the gate class and its rationale (0% CPU and unable to resolve, as opposed to merely
+        idle);
+  - [x] both env vars;
+  - [x] hourly-cadence reachability.
+- [x] refresh.md: add a bullet for the new pass to the "Process Protection" list. Update the
       `--force` row in the Options table to name this pass among those unaffected by `--force`.
-- [ ] SKILL.md: add a matching bullet under "Process Safety". In Step 2, add a note covering two
+      *(completed)*
+- [x] SKILL.md: add a matching bullet under "Process Safety". In Step 2, add a note covering two
       points. First, the no-flag survey invocation already reaps past-threshold waiters (by
       design, like rows 6-9's sweeps). Second, the confirmation trigger MUST NOT key off
       `No orphaned build waiters found.`, following the existing zombie/MCP carve-out paragraph.
-- [ ] `systemd/claude-refresh.service`: re-derive the "new-passes ruling" comment. `main()` now
+      *(completed)*
+- [x] `systemd/claude-refresh.service`: re-derive the "new-passes ruling" comment. `main()` now
       calls five passes. The new pass is **not** `--force`-gated: its destructive trigger is the
       absence of `--dry-run`. Because this unit's `ExecStart` always passes `--dry-run`, the unit
       stays non-destructive. Record that reasoning, and update "four internal passes" and
-      "ten-item" to "five" and "eleven-item".
-- [ ] Optional: add a one-sentence pointer in `context/patterns/bounded-build-waiter.md` naming
+      "ten-item" to "five" and "eleven-item". *(completed)*
+- [x] Optional: add a one-sentence pointer in `context/patterns/bounded-build-waiter.md` naming
       `claude-refresh.sh`'s build-waiter pass as the reaper that matches the canonical signature.
-- [ ] Commit the edited doc files by explicit path, in one commit, so the two tables land
-      together.
+      *(completed)*
+- [x] Commit the edited doc files by explicit path, in one commit, so the two tables land
+      together. *(completed)*
 
 **Timing**: 1 hour
 

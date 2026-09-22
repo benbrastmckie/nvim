@@ -19,17 +19,18 @@ Comprehensive cleanup of Claude Code resources - terminate orphaned processes an
 | Flag | Description |
 |------|-------------|
 | `--dry-run` | Preview every pass without making changes: process cleanup shows the same orphan report as the no-flag path, labeled with an explicit `[DRY RUN]` banner; the spec-directory sweeps (postflight markers, task locks, session-scoped orchestration files, session registry entries) and stale-backup-file cleanup list what they would delete; directory cleanup shows the 8-hour preview. |
-| `--force` | Skip confirmation and execute immediately (age-threshold-only spec-directory sweeps and stale-backup-file cleanup are unaffected by this flag -- they already act unconditionally past their own threshold whenever `--dry-run` is not set; 8-hour default for directory cleanup) |
+| `--force` | Skip confirmation and execute immediately (the orphaned build-waiter pass, the age-threshold-only spec-directory sweeps, and stale-backup-file cleanup are all unaffected by this flag -- they already act unconditionally past their own threshold whenever `--dry-run` is not set; 8-hour default for directory cleanup) |
 | (no flags) | Interactive mode with process cleanup and age threshold selection |
 
 ## What It Cleans
 
 The single canonical list of every pass `/refresh` runs, each with its owning subsection below (a
 thin pointer -- see that subsection for the full behavior, not restated here), its gate, whether
-it is destructive, and whether the hourly `claude-refresh.timer` cadence reaches it. Only rows 1-4
-(the four passes internal to `claude-refresh.sh`) are reached by that cadence; the remaining six
-run only on explicit `/refresh` invocation. This table agrees row-for-row on gate and
-destructiveness with `skill-refresh/SKILL.md`'s own Pass Inventory table.
+it is destructive, and whether the hourly `claude-refresh.timer` cadence reaches it. Only rows 1-5
+(the five passes internal to `claude-refresh.sh`) are reached by that cadence; the remaining six
+run only on explicit `/refresh` invocation. Row 5 is the only one of those five whose destructive
+action is not gated by `--force`. This table agrees row-for-row on gate and destructiveness with
+`skill-refresh/SKILL.md`'s own Pass Inventory table.
 
 | # | Pass | Owning subsection | Gate | Destructive | Hourly cadence |
 |---|------|--------------------|------|--------------|-----------------|
@@ -37,12 +38,13 @@ destructiveness with `skill-refresh/SKILL.md`'s own Pass Inventory table.
 | 2 | Lean LSP process-tree reclamation | Process Protection | interactive-confirm (same combined prompt as row 1) / `--dry-run` preview / `--force` terminates immediately | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
 | 3 | Zombie (unreaped-child) reporting | Process Protection | report-only-always (no `--force` branch exists) | No | Yes |
 | 4 | MCP server fan-out reporting | Process Protection | report-only-always (never terminates or reconfigures) | No | Yes |
-| 5 | Orphaned postflight markers | Orphaned Postflight Markers | age-threshold-only (60 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 6 | Stale task `.lock` dirs | Stale Task Locks | age-threshold-only (`TASK_LOCK_REAP_MIN`, default 120 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 7 | Stale session-scoped orchestration files | Stale Session-Scoped Orchestration Files | age-threshold-only (`ORCHESTRATOR_SESSION_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 8 | Stale session registry entries | Stale Session Registry Entries | age-threshold-only (`SESSION_REGISTRY_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 9 | Stale `.backup` files | Stale Backup Files | `--dry-run` preview / unconditional delete otherwise (no age threshold, no confirmation) | Yes | No (`/refresh`-only) |
-| 10 | `~/.claude/` directory cleanup | Directory Cleanup | interactive-confirm (age-threshold selection) / `--dry-run` preview / `--force` immediate (8h default) | Yes -- protected filenames and the 1-hour safety margin (see "Safety" below) are exempted | No (`/refresh`-only) |
+| 5 | Orphaned build-waiter poll loops | Orphaned Build Waiters | age-threshold-only (`BUILD_WAITER_REAP_MIN`, default 60 min; canonical-shape waiters also need a dead embedded writer PID or `BUILD_WAITER_CEILING_MIN`, default 240 min), no interactive confirmation, unaffected by `--force` | Yes -- the waiting shell only; the writer and its build are never signaled | Yes (report-only via `--dry-run`; reaping is `/refresh`-only) |
+| 6 | Orphaned postflight markers | Orphaned Postflight Markers | age-threshold-only (60 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 7 | Stale task `.lock` dirs | Stale Task Locks | age-threshold-only (`TASK_LOCK_REAP_MIN`, default 120 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 8 | Stale session-scoped orchestration files | Stale Session-Scoped Orchestration Files | age-threshold-only (`ORCHESTRATOR_SESSION_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 9 | Stale session registry entries | Stale Session Registry Entries | age-threshold-only (`SESSION_REGISTRY_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 10 | Stale `.backup` files | Stale Backup Files | `--dry-run` preview / unconditional delete otherwise (no age threshold, no confirmation) | Yes | No (`/refresh`-only) |
+| 11 | `~/.claude/` directory cleanup | Directory Cleanup | interactive-confirm (age-threshold selection) / `--dry-run` preview / `--force` immediate (8h default) | Yes -- protected filenames and the 1-hour safety margin (see "Safety" below) are exempted | No (`/refresh`-only) |
 
 ### Process Cleanup
 
@@ -63,6 +65,54 @@ Cleans accumulated files in ~/.claude/:
 | shell-snapshots/ | Shell state |
 | plugins/cache/ | Old plugin versions |
 | cache/ | General cache |
+
+### Orphaned Build Waiters
+
+`/refresh` also reaps orphaned build-waiter poll loops via `claude-refresh.sh`'s fifth internal
+pass. This pass exists because an ad-hoc, name-matching cleanup command searching for its own
+poll-loop pattern matched its own command line and killed its own shell -- the same self-match
+defect class the Process Protection predicates below already guard the Claude/Lean passes
+against, now closed for this waiter shape too.
+
+Two signature families are detected, matching `context/patterns/bounded-build-waiter.md`'s
+canonical idiom and the legacy shape it replaces:
+
+- **Family A (canonical)**: `timeout N bash -c 'while kill -0 "$1" ...; do sleep N; done' _
+  "$pid"`. The embedded trailing PID is the writer being watched. A waiter in this family is a
+  candidate once idle past `BUILD_WAITER_REAP_MIN` AND either its embedded writer PID is
+  confirmed dead, or its age has passed `BUILD_WAITER_CEILING_MIN` -- a PID-reuse backstop for the
+  case where a dead writer's PID has since been reassigned to an unrelated live process.
+- **Family B (legacy/name-match)**: `until grep -q ...` sentinel polls and `until ! ps aux | grep
+  -q ...` self-match polls -- the incident class this pass exists to reap. These carry no writer
+  PID to check, so a waiter in this family is a candidate once idle past `BUILD_WAITER_REAP_MIN`
+  alone.
+
+**Self-exclusion is widened, not merely reused.** Every predicate this pass shares with the Claude
+pass above (system-slice cgroup exclusion, invoking-UID ownership) is reused unmodified, but the
+zero-query self-exclusion is widened from pid/ppid to pid, ppid, **process group**, and the
+**full ancestor chain up to PID 1** -- all read from this pass's own single, frozen `ps -eo`
+snapshot, with no second query. A reaper for a poll-loop idiom specifically must exclude any
+caller that itself matches the shape being reaped, not just its own immediate pid/ppid. If this
+pass's own row is missing from its snapshot, it fails closed: it prints one warning and reaps
+nothing for that invocation, rather than guessing. Detection never uses a process-name-substring
+search (a `ps | grep` shape) at any point -- only structured `ps -eo` columns -- which is what
+makes this pass immune to the self-match defect it was written to close.
+
+**Gate class: age-threshold-only, and unaffected by `--force`.** This is the first pass internal
+to `claude-refresh.sh` whose destructive action is not gated by `$FORCE` at all: it reaps
+whenever `--dry-run` is not set, exactly like the age-threshold-only spec-directory sweeps (rows
+7-9 below), never via an interactive confirmation like rows 1-2. `$FORCE` is accepted by this
+pass's implementation only for call-site symmetry with the other four internal passes and is
+never branched on.
+
+**Environment overrides**: `BUILD_WAITER_REAP_MIN` (idle-reclamation threshold in minutes,
+default 60) and `BUILD_WAITER_CEILING_MIN` (the PID-reuse backstop ceiling in minutes, default
+240). See `claude-refresh.sh --help`.
+
+**Hourly cadence**: reached in report-only form, same as rows 1-4 -- `claude-refresh.timer`'s
+shipped `ExecStart` always passes `--dry-run`, so the unattended hourly run reports orphaned
+build waiters to the systemd journal without reaping them. A live reap only happens on an
+explicit `/refresh` (or direct `claude-refresh.sh`) invocation without `--dry-run`.
 
 ### Orphaned Postflight Markers
 
@@ -215,13 +265,19 @@ preferable to ever terminating a live system daemon or another live session's pr
 - **`LEAN_LSP_IDLE_THRESHOLD_MIN`**: the Lean pass's idle-reclamation threshold in minutes
   (default: 240, matching this repo's existing reap-threshold precedent, deliberately
   conservative). Override via the environment variable; see `claude-refresh.sh --help`.
-- **Unreaped-child (zombie) reporting pass (report-only)**: a third, independently-gated pass
+- **Orphaned build-waiter poll-loop pass (self-excluding, age-threshold-only)**: a third,
+  independently-gated pass reaps orphaned build-waiter poll loops -- see the "Orphaned Build
+  Waiters" section above for the two detected signature families, the widened self-exclusion
+  (pid, ppid, process group, and the full ancestor chain of the reaper's own pid), and the
+  fail-closed behavior when the reaper's own row is missing from its snapshot. Unlike every other
+  pass in this list, its destructive action is gated purely by age, never by `--force`.
+- **Unreaped-child (zombie) reporting pass (report-only)**: a fourth, independently-gated pass
   detects `<defunct>` (zombie) child processes by `stat` state and reports them grouped by
   parent, with each child's age. It never terminates anything under any flag combination -- there
   is no recoverability question because there is no action taken: a zombie can only be reaped by
   its own parent calling `wait()`, never by an external signal, so this pass exists purely to
   surface the symptom (a parent daemon leaking zombies over time) for a human to act on.
-- **MCP server fan-out reporting pass (report-only)**: a fourth, independently-gated pass reports
+- **MCP server fan-out reporting pass (report-only)**: a fifth, independently-gated pass reports
   live per-session process/memory fan-out for every MCP server registered in user scope
   (`~/.claude.json`'s `mcpServers`) -- every session inherits every user-scope server
   unconditionally, so this cost is real and unavoidable, not a bug. It flags a server showing no

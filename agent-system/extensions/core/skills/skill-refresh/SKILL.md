@@ -6,11 +6,11 @@ allowed-tools: Bash, AskUserQuestion
 
 # Refresh Skill (Direct Execution)
 
-Direct execution skill for managing Claude Code resources. Runs ten distinct passes across three
-areas, each with its own gate and destructiveness -- see the Pass Inventory table below for the
-complete, authoritative list:
-1. **Process cleanup**: orphaned Claude processes, idle Lean LSP process trees, unreaped-child
-   (zombie) reporting, and MCP server fan-out reporting.
+Direct execution skill for managing Claude Code resources. Runs eleven distinct passes across
+three areas, each with its own gate and destructiveness -- see the Pass Inventory table below for
+the complete, authoritative list:
+1. **Process cleanup**: orphaned Claude processes, idle Lean LSP process trees, orphaned
+   build-waiter poll loops, unreaped-child (zombie) reporting, and MCP server fan-out reporting.
 2. **Spec-directory cleanup**: orphaned postflight markers, stale task `.lock` dirs, stale
    session-scoped orchestration files, and stale session registry entries.
 3. **File cleanup**: stale `.backup` files and `~/.claude/` directory age-threshold cleanup.
@@ -22,8 +22,9 @@ This skill executes inline without spawning a subagent.
 The single canonical list of every pass this skill runs, each with its owning Step/section (a
 thin pointer -- see that Step for the full behavior, not restated here), its gate, whether it is
 destructive, and whether the hourly `claude-refresh.timer` cadence reaches it. Only
-`claude-refresh.sh`'s four internal passes (rows 1-4) are reached by that cadence; the remaining
-six are `/refresh`-only.
+`claude-refresh.sh`'s five internal passes (rows 1-5) are reached by that cadence; the remaining
+six are `/refresh`-only. Row 5 is the only one of those five whose destructive action is not
+gated by `--force`.
 
 | # | Pass | Owning Step / Section | Gate | Destructive | Hourly cadence |
 |---|------|------------------------|------|--------------|-----------------|
@@ -31,12 +32,13 @@ six are `/refresh`-only.
 | 2 | Lean LSP process-tree reclamation | Step 2 / "Process Safety" | interactive-confirm (same combined prompt as row 1) / `--dry-run` preview / `--force` terminates immediately | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
 | 3 | Zombie (unreaped-child) reporting | "Process Safety" | report-only-always (no `--force` branch exists) | No | Yes |
 | 4 | MCP server fan-out reporting | "Process Safety" | report-only-always (never terminates or reconfigures) | No | Yes |
-| 5 | Orphaned postflight markers | Step 3 | age-threshold-only (60 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 6 | Stale task `.lock` dirs | Step 4 | age-threshold-only (`TASK_LOCK_REAP_MIN`, default 120 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 7 | Stale session-scoped orchestration files | Step 4.5 | age-threshold-only (`ORCHESTRATOR_SESSION_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 8 | Stale session registry entries | Step 4.6 | age-threshold-only (`SESSION_REGISTRY_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
-| 9 | Stale `.backup` files | Step 5 | `--dry-run` preview / unconditional delete otherwise (no age threshold, no confirmation) | Yes | No (`/refresh`-only) |
-| 10 | `~/.claude/` directory cleanup | Steps 6-7 | interactive-confirm (age-threshold selection) / `--dry-run` preview / `--force` immediate (8h default) | Yes -- protected filenames and the 1-hour safety margin (see "Safety Measures" below) are exempted | No (`/refresh`-only) |
+| 5 | Orphaned build-waiter poll loops | Step 2 / "Process Safety" | age-threshold-only (`BUILD_WAITER_REAP_MIN`, default 60 min; canonical-shape waiters also need a dead embedded writer PID or `BUILD_WAITER_CEILING_MIN`, default 240 min), no interactive confirmation, unaffected by `--force` | Yes -- the waiting shell only; the writer and its build are never signaled | Yes (report-only via `--dry-run`; reaping is `/refresh`-only) |
+| 6 | Orphaned postflight markers | Step 3 | age-threshold-only (60 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 7 | Stale task `.lock` dirs | Step 4 | age-threshold-only (`TASK_LOCK_REAP_MIN`, default 120 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 8 | Stale session-scoped orchestration files | Step 4.5 | age-threshold-only (`ORCHESTRATOR_SESSION_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 9 | Stale session registry entries | Step 4.6 | age-threshold-only (`SESSION_REGISTRY_REAP_MIN`, default 240 min), no interactive confirmation | Yes | No (`/refresh`-only) |
+| 10 | Stale `.backup` files | Step 5 | `--dry-run` preview / unconditional delete otherwise (no age threshold, no confirmation) | Yes | No (`/refresh`-only) |
+| 11 | `~/.claude/` directory cleanup | Steps 6-7 | interactive-confirm (age-threshold selection) / `--dry-run` preview / `--force` immediate (8h default) | Yes -- protected filenames and the 1-hour safety margin (see "Safety Measures" below) are exempted | No (`/refresh`-only) |
 
 ## Execution
 
@@ -106,6 +108,16 @@ action to confirm -- both are report-only, with no `--force` branch of their own
 absence-of-both-no-findings-lines check above MUST NOT be extended to key off either new pass's
 own no-findings line ("No unreaped child processes found." / a server-table with no flagged
 rows); doing so would prompt the user for a confirmation that has nothing to confirm.
+
+**The SAME invocation above also runs the orphaned build-waiter poll-loop pass, and its
+destructive behavior is different from every other pass in this step.** Two points follow from
+its age-threshold-only gate (see "Process Safety" below): first, this Step 2 no-flag survey
+invocation ALREADY reaps any build waiter past its age threshold -- by design, the identical
+posture Steps 4-4.6's spec-directory sweeps already take, not a bug specific to this step.
+Second, the confirmation-trigger check above MUST NOT be extended to key off this pass's own
+no-findings line ("No orphaned build waiters found."), for the same reason the zombie/MCP
+carve-out paragraph above applies: this pass has no terminate action left to confirm by the time
+this step's prompt would fire, since a past-threshold waiter is already gone.
 
 If the user selects "Yes, terminate", re-run with `--force` and replace the stored output:
 
@@ -539,13 +551,39 @@ system daemon or another live session's process (false positive).
   is set well below that to reclaim well before it while still avoiding reclaiming a tree the
   user is about to reuse. Override via the environment variable for a different posture; see
   `--help`.
-- **Unreaped-child (zombie) reporting pass (report-only)**: a third, independently-gated pass
+- **Orphaned build-waiter poll-loop pass (self-excluding, age-threshold-only)**: a third,
+  independently-gated pass reaps orphaned build-waiter poll loops matching
+  `context/patterns/bounded-build-waiter.md`'s canonical idiom, plus the legacy self-match shape
+  it replaces -- an ad-hoc, name-matching cleanup command searching for its own poll-loop pattern
+  once matched its own command line and killed its own shell, and this pass exists to reap that
+  exact leak class going forward, correctly this time. It takes its own `ps -eo` snapshot (adding
+  a `pgid` column no other pass reads) and detects two signature families: **Family A**
+  (canonical) `timeout N bash -c 'while kill -0 "$1" ...; do sleep N; done' _ "$pid"`, a candidate
+  once idle past `BUILD_WAITER_REAP_MIN` AND either its embedded writer PID is confirmed dead or
+  its age has passed `BUILD_WAITER_CEILING_MIN` (a PID-reuse backstop); and **Family B**
+  (legacy/name-match) `until grep -q ...` sentinel polls and `until ! ps aux | grep -q ...`
+  self-match polls, a candidate on idle-past-threshold alone. Self-exclusion is widened beyond
+  pid/ppid to also cover this script's own **process group** and its **full ancestor chain up to
+  PID 1**, all read from the same one frozen snapshot with no second query -- a reaper for a
+  poll-loop idiom specifically must exclude any caller that itself matches the shape being reaped.
+  If this pass's own row is missing from its snapshot, it fails closed (one warning, nothing
+  reaped) rather than guessing. Detection never uses a process-name-substring search (a
+  `ps | grep` shape) -- structured `ps -eo` columns only -- which is what makes this pass immune
+  to the very defect it exists to reap.
+- **`BUILD_WAITER_REAP_MIN` / `BUILD_WAITER_CEILING_MIN`**: the build-waiter pass's
+  idle-reclamation threshold (default: 60 minutes) and its PID-reuse-backstop ceiling (default:
+  240 minutes), both in minutes. Override via the environment; see `--help`. **Unlike every other
+  pass above, this pass's destructive action is gated purely by age, never by `--force`** -- it
+  reaps whenever `--dry-run` is not set, matching Steps 3-4.6's spec-directory sweeps rather than
+  rows 1-2's interactive-confirm process passes. `--force` is accepted by this pass's
+  implementation only for call-site symmetry and is never branched on.
+- **Unreaped-child (zombie) reporting pass (report-only)**: a fourth, independently-gated pass
   detects `<defunct>` (zombie) child processes by `stat` state and reports them grouped by
   parent, with each child's age. It never terminates anything under any flag combination -- there
   is no recoverability question because there is no action taken: a zombie can only be reaped by
   its own parent calling `wait()`, never by an external signal, so this pass exists purely to
   surface the symptom (a parent daemon leaking zombies over time) for a human to act on.
-- **MCP server fan-out reporting pass (report-only)**: a fourth, independently-gated pass reports
+- **MCP server fan-out reporting pass (report-only)**: a fifth, independently-gated pass reports
   live per-session process/memory fan-out for every MCP server registered in user scope
   (`~/.claude.json`'s `mcpServers`) -- every session inherits every user-scope server
   unconditionally, so this cost is real and unavoidable, not a bug. It flags a server showing no

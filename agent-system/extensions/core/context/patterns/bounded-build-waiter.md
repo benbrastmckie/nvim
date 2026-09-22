@@ -85,7 +85,11 @@ To read the outcome once the wait ends, either `wait "$pid"` in the same shell t
 `pid` (if still live), or read an exit-status line the writer itself appended to the log — read
 it *after* liveness ends, never polled for during the wait. This idiom's shape (a captured `pid`,
 a `kill -0` loop, an outer `timeout`) is the recognizable process signature a reaper can match
-against when cleaning up stale waiters.
+against when cleaning up stale waiters. `claude-refresh.sh`'s orphaned build-waiter poll-loop
+pass (`run_build_waiter_pass`) is exactly such a reaper, matching this canonical idiom's signature
+(its "Family A") as well as the legacy self-match shape it replaced (its "Family B") — see
+`commands/refresh.md`'s "Orphaned Build Waiters" section for the full detection and
+self-exclusion contract.
 
 ## Conforming Examples
 
