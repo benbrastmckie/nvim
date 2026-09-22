@@ -240,7 +240,7 @@ Core rules (auto-applied by file path):
 - `.claude/rules/workflows.md` - Command lifecycle (.claude/**)
 - `.claude/rules/plan-format-enforcement.md` - Plan format checklist (specs/**)
 - `.claude/rules/no-task-references-in-deliverables.md` - No task-number citations outside specs/**
-- `.claude/rules/source-store-deploy-boundary.md` - .claude/** is a disposable deploy artifact; edit agent-system/extensions/** instead
+- `.claude/rules/source-store-deploy-boundary.md` - .claude/** is a disposable deploy artifact; resolve the source store via .claude-extensions.json's source_dir and edit there instead
 
 **Extension Rules**: When extensions are loaded, additional rules are added (e.g., {domain}-rules.md for domain-specific development).
 

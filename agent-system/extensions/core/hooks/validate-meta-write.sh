@@ -93,7 +93,7 @@ bash "$SYSTEM_DEFECT_RECORD" \
 # Path matches a .claude/ system file - inject corrective context
 # This is ADVISORY only (additionalContext), not blocking
 cat << 'EOF'
-{"additionalContext": "WARNING: .claude/ under this repo is a gitignored, disposable deploy artifact regenerated from the source store at agent-system/extensions/**. This write will be silently wiped by the next regeneration. Edit the source store instead: agent-system/extensions/core/** for core system files, or agent-system/extensions/<ext>/** for extension-owned files. See .claude/rules/source-store-deploy-boundary.md for the full rule. This is advisory only and does not block the write."}
+{"additionalContext": "WARNING: .claude/ under this repo is a gitignored, disposable deploy artifact regenerated from a source store. This write will be silently wiped by the next regeneration. Edit the source store instead: read <project-root>/.claude-extensions.json, select the entry under extensions for the owning extension (core for core system files, the extension's own name for extension-owned files), and edit under that entry's source_dir instead. See .claude/rules/source-store-deploy-boundary.md for the full resolution procedure and the unreachable-source-store fallback. This is advisory only and does not block the write."}
 EOF
 
 exit 0

@@ -258,28 +258,30 @@ behave as written when the field is absent.
 
 ---
 
-### Phase 3: Align the deployed restatements of the target [NOT STARTED]
+### Phase 3: Align the deployed restatements of the target [COMPLETED]
 
 **Goal**: the two other places a consumer tree is told where the source store is — the advisory
 hook's corrective message and the generated `CLAUDE.md`'s rules-list line — agree with the
 rewritten rule instead of contradicting it with a hard-coded path.
 
 **Tasks**:
-- [ ] Re-read both files immediately before editing (concurrent siblings share this tree).
-- [ ] In `agent-system/extensions/core/hooks/validate-meta-write.sh`, rewrite the
+- [x] Re-read both files immediately before editing (concurrent siblings share this tree). *(completed)*
+- [x] In `agent-system/extensions/core/hooks/validate-meta-write.sh`, rewrite the
       `additionalContext` JSON string so it (a) keeps the warning that the write will be wiped,
       (b) points at the resolution procedure — read `.claude-extensions.json`'s
       `extensions.<name>.source_dir` — instead of naming `agent-system/extensions/core/**`
       literally, and (c) keeps its existing pointer to
       `.claude/rules/source-store-deploy-boundary.md` and its "advisory only, does not block"
-      closing clause.
-- [ ] Preserve the surrounding shell mechanics exactly: the quoted `<< 'EOF'` heredoc (no
+      closing clause. *(completed)*
+- [x] Preserve the surrounding shell mechanics exactly: the quoted `<< 'EOF'` heredoc (no
       variable expansion), single-line valid JSON, and `exit 0`. Do not alter the path-matching
-      `case` block, the `specs/*` skip, or the `system-defect-record.sh` call.
-- [ ] In `agent-system/extensions/core/merge-sources/claudemd.md`, rewrite the
+      `case` block, the `specs/*` skip, or the `system-defect-record.sh` call. *(completed)*
+- [x] In `agent-system/extensions/core/merge-sources/claudemd.md`, rewrite the
       `source-store-deploy-boundary.md` line in the "Rules References" list so its one-line
-      description does not restate the hard-coded target; point at the rule instead.
-- [ ] Do not touch any other file that references the rule.
+      description does not restate the hard-coded target; point at the rule instead. *(completed)*
+- [x] Do not touch any other file that references the rule. *(completed: the two
+      out-of-scope occurrences named by the Scope Hypothesis — `detect-noop-bash.sh:28` and
+      `claudemd.md:229`, both unrelated to this rule's target — were left untouched)*
 
 **Timing**: 0.5 hours
 
