@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 1,
+  "summary": "GATE 17 scoped-commit lint is a genuine false positive at test-detect-noop-bash.sh:152 (fix: reword fixture to avoid the literal 'git commit -m' substring); GATE 20 SUB-CHECK B eager-load regression is currently PASSING (65257 B vs 65950 B baseline), contradicting the dispatch's stated 66026 B figure, which traces to a stale config note rather than a live regression.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
+      "summary": "Root-cause and fix recommendation for GATE 17 (reword test fixture); finds GATE 20 already green and recommends against a speculative trim."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "next_action_hint": "Run /plan 240 to create an implementation plan: reword agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152 from 'git commit -m \"true\"' to 'git commit --message \"true\"', re-run the lint and the 40-assertion test suite, optionally correct the stale eager_load.measured_bytes/note in orchestrator-context-budget.json, then run deploy-headless.sh to confirm 0 failed checks."
+}

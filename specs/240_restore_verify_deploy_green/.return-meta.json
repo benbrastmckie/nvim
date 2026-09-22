@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 240,
+  "session_id": "sess_1790055369_87ec14_240",
+  "dispatch_seq": 1,
+  "findings_count": 2,
+  "next_steps": "Run /plan 240 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
+      "summary": "Confirms GATE 17 scoped-commit lint false positive at test-detect-noop-bash.sh:152 (fix: reword fixture to 'git commit --message \"true\"'); finds GATE 20 SUB-CHECK B eager-load regression is currently PASSING (65257 B vs 65950 B baseline, 693 B headroom), contradicting the dispatch's stated 66026 B figure -- traced as a stale config note, not a live regression. Recommends against a speculative trim and documents re-verification steps."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "lint-scoped-commit-boundary.sh's CANDIDATE_PATTERN='git commit -m' is a plain substring match (grep -F), so any new test fixture file under agent-system/extensions/ that embeds the literal text 'git commit -m' as inert string data (e.g. testing a classifier hook against realistic command strings) will trip this lint unless it ends in a trailing '-- <pathspec>' or is added to the file-level EXCLUDED_FILES allowlist. Prefer rewording the fixture (e.g. 'git commit -m' -> 'git commit --message', git's documented long-form equivalent) over allowlisting the whole file, when the fixture's test intent does not depend on the exact '-m' spelling.",
+      "category": "PATTERN",
+      "source_artifact": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-scoped-commit-boundary", "test-fixture", "false-positive", "git-commit-m", "verify-deploy"]
+    },
+    {
+      "content": "orchestrator-context-budget.json's eager_load.measured_bytes/measured_at/note fields are purely informational -- verify-deploy.sh's Gate 20 Sub-check B reads only eager_load.baseline_bytes via jq. A recorded measured_bytes figure in that config's note can go stale or be wrong at the moment it was written (verified case: a commit's own note claimed 66026 B but a git-archive re-run of measure-eager-context.sh --check against that exact commit reproduced 65257 B instead). Before trusting a task description's stated eager-load byte figures, re-run 'REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check' fresh rather than assuming a config note's recorded number is still accurate.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["eager-load", "context-budget", "measure-eager-context", "stale-measurement", "gate20"]
+    }
+  ]
+}
