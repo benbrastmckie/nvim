@@ -37,6 +37,8 @@
     "scripts": [
       "lean-sorry-census.sh",
       "tests/test-lean-sorry-census.sh",
+      "lean-src-roots.sh",
+      "tests/test-lean-src-roots.sh",
       "lean-comparator-run.sh",
       "tests/test-lean-comparator-run.sh",
       "tests/fixtures/comparator/README.md",

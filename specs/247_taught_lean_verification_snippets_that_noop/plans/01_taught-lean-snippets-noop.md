@@ -166,26 +166,26 @@ research). Confirm by the audit grep; fix any extra site it surfaces.
 
 ---
 
-### Phase 2: Half 2 -- `lean-src-roots.sh` resolver with tests [NOT STARTED]
+### Phase 2: Half 2 -- `lean-src-roots.sh` resolver with tests [COMPLETED]
 
 **Goal**: One resolver that emits the consuming repo's Lean source roots and fails loudly.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/lean-src-roots.sh`: bash wrapper plus an
+- [x] Create `agent-system/extensions/lean/scripts/lean-src-roots.sh`: bash wrapper plus an
       embedded `python3` `tomllib` reader. Resolve the repo root (`git rev-parse --show-toplevel`,
-      or CWD). Apply D3/D4 rules. Output one existing path per line, relative to the repo root
-- [ ] Loud-failure behavior per D5, with distinct documented exit codes and stderr messages that
-      name the lakefile path and every root tried
-- [ ] Header comment: purpose, precedence (lakefile.toml > LEAN_SRC_ROOTS), exit codes, and the
-      taught consumption shape (capture with `||` guard, then `mapfile -t`)
-- [ ] Create `scripts/tests/test-lean-src-roots.sh`, following the `test-lean-sorry-census.sh`
+      or CWD). Apply D3/D4 rules. Output one existing path per line, relative to the repo root *(completed)*
+- [x] Loud-failure behavior per D5, with distinct documented exit codes and stderr messages that
+      name the lakefile path and every root tried *(completed: exit 64 usage, 65 no lakefile/no env, 66 unparseable/no python3, 67 zero lean_lib entries, 68 zero existing roots, 69 zero .lean files)*
+- [x] Header comment: purpose, precedence (lakefile.toml > LEAN_SRC_ROOTS), exit codes, and the
+      taught consumption shape (capture with `||` guard, then `mapfile -t`) *(completed)*
+- [x] Create `scripts/tests/test-lean-src-roots.sh`, following the `test-lean-sorry-census.sh`
       conventions. Fixtures: BimodalLogic-shaped lakefile (`srcDir = "Tests"`, several libs);
       cslib-shaped (defaults only); `defaultTargets` flag; missing root dir -> non-zero exit
       naming it; roots that exist but hold zero `.lean` files -> non-zero; no lakefile plus
       `LEAN_SRC_ROOTS` set -> used; no lakefile and no env -> non-zero; lakefile present plus
       env -> env ignored with a notice; malformed TOML -> non-zero. Add a mutation check: at
-      least one fixture must fail if the empty-file check is removed
-- [ ] Register both files in `agent-system/extensions/lean/manifest.json` `provides.scripts`
+      least one fixture must fail if the empty-file check is removed *(completed: 10 fixtures A-I plus mutation-check reasoning documented on Fixture G, all passing)*
+- [x] Register both files in `agent-system/extensions/lean/manifest.json` `provides.scripts` *(completed)*
 
 **Timing**: 1.5 hours
 
