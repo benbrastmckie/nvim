@@ -1,22 +1,9 @@
 {
-  "status": "planned",
-  "dispatch_seq": 9,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/227_resolve_source_store_target_in_deployed_trees/plans/02_resolve-target-via-extensions-json.md",
-      "summary": "4-phase text-only plan replacing the boundary rule's hard-coded agent-system/extensions/** target with a .claude-extensions.json source_dir resolution procedure plus an explicit unreachable branch, verified against a real consumer repository, and aligning the hook advisory and CLAUDE.md rules-list restatements."
-    }
-  ],
-  "next_steps": "Run /implement 227 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1790091707_e274be_227",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "memory_candidates": []
+    "session_id": "sess_1790091707_e274be",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -8,30 +8,56 @@ do not add a `paths:` glob here without first moving enforcement to a pre-write 
 
 ## Path Pattern
 
-Applies to: any write whose target path is `.claude/**` in a repository whose source store is
-`agent-system/extensions/**`. This is a *target-path* rule, not a content-scanning rule.
+Applies to: any write whose target path is `.claude/**` in a repository whose `.claude/` tree was
+produced by a deploy — i.e. any tree carrying a `<project-root>/.claude-extensions.json`. This is
+a *target-path* rule, not a content-scanning rule, and it is repository-independent: it applies
+the same way in the repository that owns the source store and in every repository the system
+deploys into.
 
 ## Principle
 
-`.claude/` under this repo is a gitignored, disposable deploy artifact regenerated from the
-source store at `agent-system/extensions/**`. Hand-authored files landing in `.claude/` are
-silently wiped by the next regeneration — the edit appears to succeed but has no lasting effect.
+`.claude/` in a deployed tree is a gitignored, disposable deploy artifact regenerated from a
+source store. Hand-authored files landing in `.claude/` are silently wiped by the next
+regeneration — the edit appears to succeed but has no lasting effect.
 
 ## Correct Edit Target
 
-Edit the source store instead:
-- `agent-system/extensions/core/**` for core system files (commands, skills, agents, rules,
-  context, hooks, scripts, merge-sources).
-- `agent-system/extensions/<ext>/**` for extension-owned files.
+The source store's location is machine- and repository-specific, so it is resolved, not assumed.
+Follow this procedure:
+
+1. Read `<project-root>/.claude-extensions.json`.
+2. Under its `extensions` object, select the entry for the owning extension: `core` for core
+   system files (commands, skills, agents, rules, context, hooks, scripts, merge-sources), or the
+   extension's own name (e.g. `nix`, `lean`) for extension-owned files.
+3. Read that entry's `source_dir` field — an absolute path.
+4. Confirm `source_dir` exists on disk.
+5. Edit under `<source_dir>/**`, at the path mirroring the deployed one. For example, deployed
+   `.claude/hooks/validate-meta-write.sh` mirrors to `<source_dir>/hooks/validate-meta-write.sh`
+   (with `source_dir` resolved from the `core` entry).
+
+### If the source store is unreachable
+
+The source store is not reachable from this tree when any of the following holds:
+- `.claude-extensions.json` is missing or unparseable.
+- The `extensions` object has no entry for the relevant extension.
+- The entry has no `source_dir` field.
+- The recorded `source_dir` does not exist on disk on this machine.
+
+In any of these cases, do **not** hand-author `.claude/**` as a substitute — it is exactly the
+outcome this rule prevents. Instead, record the needed change as a task via `/task`, describing
+the deployed path, the intended change, and the reason it could not be made directly. Filing a
+task is the sanctioned outcome; a silent report or an in-place `.claude/**` edit is not.
 
 **Before** (observed anti-pattern, illustrative only):
 ```
 Write .claude/hooks/validate-meta-write.sh
 ```
 
-**After**:
+**After** (illustrating one machine's resolved value — read `source_dir` from
+`.claude-extensions.json` per the procedure above rather than typing this path directly):
 ```
-Write agent-system/extensions/core/hooks/validate-meta-write.sh
+Write <source_dir>/hooks/validate-meta-write.sh
+# e.g. /home/example/repo/agent-system/extensions/core/hooks/validate-meta-write.sh
 ```
 
 ## Exceptions

@@ -1,7 +1,7 @@
 # Implementation Plan: Resolve source store target in deployed trees
 
 - **Task**: 227 - Resolve source store target in deployed trees
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md` (primary); `specs/227_resolve_source_store_target_in_deployed_trees/reports/01_source-store-rule-has-no-target.md` (prior round evidence)
@@ -133,42 +133,43 @@ No `roadmap_path` supplied in this dispatch and no ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Rewrite the rule's target resolution [NOT STARTED]
+### Phase 1: Rewrite the rule's target resolution [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/rules/source-store-deploy-boundary.md` states a
 repository-independent procedure for locating the source store, with an explicit unreachable
 branch, and carries no hard-coded `agent-system/extensions/**` target assertion.
 
 **Tasks**:
-- [ ] Re-read the file immediately before editing (concurrent siblings share this working tree).
-- [ ] Rewrite **Path Pattern**: it currently scopes the rule to "a repository whose source store
+- [x] Re-read the file immediately before editing (concurrent siblings share this working tree). *(completed)*
+- [x] Rewrite **Path Pattern**: it currently scopes the rule to "a repository whose source store
       is `agent-system/extensions/**`", which makes the rule read as inapplicable in exactly the
       trees that need it. Restate as: any write whose target path is `.claude/**` in a repository
       whose `.claude/` tree was produced by a deploy — i.e. any tree carrying a
-      `.claude-extensions.json`.
-- [ ] Rewrite **Principle**: keep the substance ("`.claude/` is a gitignored, disposable deploy
+      `.claude-extensions.json`. *(completed)*
+- [x] Rewrite **Principle**: keep the substance ("`.claude/` is a gitignored, disposable deploy
       artifact regenerated from the source store; hand-authored files there are silently wiped"),
-      drop the `agent-system/extensions/**` literal from the sentence.
-- [ ] Rewrite **Correct Edit Target** as a numbered procedure: (1) read
+      drop the `agent-system/extensions/**` literal from the sentence. *(completed)*
+- [x] Rewrite **Correct Edit Target** as a numbered procedure: (1) read
       `<project-root>/.claude-extensions.json`; (2) select the entry under `extensions` for the
       owning extension — `core` for core system files (commands, skills, agents, rules, context,
       hooks, scripts, merge-sources), the extension's own name for extension-owned files; (3)
       read that entry's `source_dir`, an absolute path; (4) confirm it exists on disk; (5) edit
       under `<source_dir>/**`, at the path mirroring the deployed one (e.g. deployed
-      `.claude/hooks/validate-meta-write.sh` -> `<source_dir>/hooks/validate-meta-write.sh`).
-- [ ] Add the **unreachable branch** immediately after the procedure, naming the conditions in
+      `.claude/hooks/validate-meta-write.sh` -> `<source_dir>/hooks/validate-meta-write.sh`). *(completed)*
+- [x] Add the **unreachable branch** immediately after the procedure, naming the conditions in
       `check-deploy-freshness.sh`'s existing vocabulary: `.claude-extensions.json` missing or
       unparseable; no entry for the relevant extension; entry missing `source_dir`; recorded
       `source_dir` absent from disk on this machine. In any of these, the source store is not
       reachable from this tree: the agent MUST NOT hand-author `.claude/**`, and MUST instead
       record the needed change as a task via `/task`, describing the deployed path, the intended
-      change, and the reason it could not be made directly.
-- [ ] Replace the Before/After example pair so the "After" shows a resolved absolute path
+      change, and the reason it could not be made directly. *(completed)*
+- [x] Replace the Before/After example pair so the "After" shows a resolved absolute path
       (illustrated as `<source_dir>/hooks/validate-meta-write.sh`), not a repo-specific literal.
       Where a concrete path is shown for readability, mark it explicitly as an illustration of
-      one machine's resolved value, never as the target to type.
-- [ ] Leave the eager-loading HTML comment, **Exceptions**, and **Enforcement** sections
-      untouched except where Enforcement's wording presupposes the removed literal.
+      one machine's resolved value, never as the target to type. *(completed)*
+- [x] Leave the eager-loading HTML comment, **Exceptions**, and **Enforcement** sections
+      untouched except where Enforcement's wording presupposes the removed literal. *(completed:
+      Enforcement's wording did not presuppose the removed literal — no change needed there)*
 
 **Timing**: 0.75 hours
 

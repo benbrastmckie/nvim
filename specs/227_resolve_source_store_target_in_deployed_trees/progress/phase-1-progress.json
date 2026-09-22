@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "phase_name": "Rewrite the rule's target resolution",
+  "started_at": "2026-09-22T15:58:23Z",
+  "last_updated": "2026-09-22T16:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Path Pattern, Principle, Correct Edit Target, unreachable branch, Before/After example", "status": "done", "files_touched": ["agent-system/extensions/core/rules/source-store-deploy-boundary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
