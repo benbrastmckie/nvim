@@ -315,35 +315,26 @@ Research completed for task {N}:
 
 **DO NOT return JSON to the console**. The skill reads metadata from the file.
 
-### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
+### `.orchestrator-handoff.json` — research agents never write one
 
-On every dispatch whose delegation context carries `orchestrator_mode: true`, this agent MUST
-write `.orchestrator-handoff.json` before returning — on success and on a `partial` or `blocked`
-outcome alike.
+This agent MUST NOT write `.orchestrator-handoff.json`, in any mode. That includes a dispatch
+whose delegation context carries `orchestrator_mode: true` and supplies `handoff_path`: the
+`## Handoff` block of a dispatch file is phase-agnostic connectivity information given to every
+dispatch alike, never an instruction to write the file.
 
-Write to the ABSOLUTE path given in your delegation context as `handoff_path`. If that field is
-absent, use `{task_dir}/.orchestrator-handoff.json` with the absolute `task_dir` from your
-delegation context. If neither is present, STOP and say so in your final message rather than
-guessing. NEVER write a bare `.orchestrator-handoff.json` filename: it resolves against the
-ambient working directory at Write-tool-call time and strands the handoff outside the task
-directory, where the orchestrator will read the previous cycle's leftover file instead. See
-`context/contracts/wrap-up.md`, "Write location", for the full rule.
+`.orchestrator-handoff.json` is hard-mode-implement-only. This agent returns its outcome — on
+success and on a `partial` or `blocked` outcome alike — exclusively through `.return-meta.json`,
+which `orchestrate-recover-outcome.sh` reads on the orchestrator's behalf. An absent handoff
+after a research dispatch is the expected, non-defective case that
+`scripts/orchestrate-cycle-postflight.sh` is built around and logs as such; writing one is the
+defect this prohibition exists to prevent. See `docs/architecture/handoff-schema.md`'s
+"Handoff Writers — the settled decision, in one place" section for the rationale.
 
-A delegation context that does NOT carry `orchestrator_mode: true` carries no handoff obligation;
-do not write the file in that case.
-
-**Echo `dispatch_seq` unchanged.** If your delegation context carries a `dispatch_seq` field, copy
-its value into the handoff's own `dispatch_seq` field verbatim — never invent, increment, or
-recompute one; if it is absent, omit it from the handoff too. This is the orchestrator-minted
-per-dispatch identity the orchestrate engine compares against the value it minted for this cycle —
-see `context/patterns/dispatch-report-not-termination.md`.
-
-Use the shape defined by `context/schemas/orchestrator-handoff-schema.json` (prose companion:
-`docs/architecture/handoff-schema.md`). `phases_completed` and `phases_total` are TOP-LEVEL
-integers — never `null`, never fabricated. Set `phases_completed` and `phases_total` from the
-task's current plan when one exists, otherwise both to `0`. `status` is one of `researched`,
-`partial`, `blocked`. `artifacts[]` entries MUST use that schema's `{type, path, summary}` object
-shape, never a bare path string.
+**Echo `dispatch_seq` into `.return-meta.json`, not into a handoff.** If your delegation context
+carries a `dispatch_seq` field, copy its value verbatim into `.return-meta.json`'s top-level
+`dispatch_seq` key — never invent, increment, or recompute one; if it is absent, omit it. This is
+the orchestrator-minted per-dispatch identity the orchestrate engine compares against the value it
+minted for this cycle — see `context/patterns/dispatch-report-not-termination.md`.
 
 ## Error Handling
 

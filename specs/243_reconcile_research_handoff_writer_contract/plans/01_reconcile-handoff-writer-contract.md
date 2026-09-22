@@ -138,7 +138,7 @@ One documented deviation: in `lean/agents/lean-research-agent.md` the heading is
 
 ---
 
-### Phase 1: Author canonical text and fix the core contract [IN PROGRESS]
+### Phase 1: Author canonical text and fix the core contract [COMPLETED]
 
 **Goal**: Replace the handoff section in `general-research-agent.md` with the canonical
 prohibition, and correct the Stage 3.6 sentence that currently claims a handoff-writing
@@ -189,19 +189,19 @@ facts — locate both by their quoted text, not by line number, and confirm `gre
 
 ---
 
-### Phase 2: Apply canonical text to the 17 uniform extension copies [NOT STARTED]
+### Phase 2: Apply canonical text to the 17 uniform extension copies [IN PROGRESS]
 
 **Goal**: Replace the verbatim-identical handoff section in the 17 extension research-agent files
 whose only reference to the file is the section itself.
 
 **Tasks**:
-- [ ] Re-read each file immediately before editing it
-- [ ] Replace the handoff section in each of the 17 files with the Canonical Replacement Text,
-      preserving each file's existing `###` heading level
-- [ ] After each file, confirm `grep -c "orchestrator-handoff" <file>` matches the expected
-      post-edit count and that no "MUST write" phrasing remains
-- [ ] Commit per file (or per small, explicitly listed group) with targeted `git add -- <paths>`;
-      never a directory or glob pathspec
+- [x] Re-read each file immediately before editing it *(completed)*
+- [x] Replace the handoff section in each of the 17 files with the Canonical Replacement Text,
+      preserving each file's existing `###` heading level *(completed)*
+- [x] After each file, confirm `grep -c "orchestrator-handoff" <file>` matches the expected
+      post-edit count and that no "MUST write" phrasing remains *(completed)*
+- [x] Commit per file (or per small, explicitly listed group) with targeted `git add -- <paths>`;
+      never a directory or glob pathspec *(completed: single commit with explicit 17-path list)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,33 @@
+{
+  "phase": 2,
+  "phase_name": "Apply canonical text to the 17 uniform extension copies",
+  "started_at": "2026-09-22T17:40:00Z",
+  "last_updated": "2026-09-22T17:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each of the 17 files immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace handoff section in all 17 files with canonical text", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+      "agent-system/extensions/cslib/agents/pr-review-research-agent.md",
+      "agent-system/extensions/epidemiology/agents/epi-research-agent.md",
+      "agent-system/extensions/formal/agents/formal-research-agent.md",
+      "agent-system/extensions/formal/agents/logic-research-agent.md",
+      "agent-system/extensions/formal/agents/math-research-agent.md",
+      "agent-system/extensions/formal/agents/physics-research-agent.md",
+      "agent-system/extensions/founder/agents/deck-research-agent.md",
+      "agent-system/extensions/latex/agents/latex-research-agent.md",
+      "agent-system/extensions/nix/agents/nix-research-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-research-agent.md",
+      "agent-system/extensions/present/agents/slides-research-agent.md",
+      "agent-system/extensions/python/agents/python-research-agent.md",
+      "agent-system/extensions/rust/agents/rust-research-agent.md",
+      "agent-system/extensions/typst/agents/typst-research-agent.md",
+      "agent-system/extensions/web/agents/web-research-agent.md",
+      "agent-system/extensions/z3/agents/z3-research-agent.md"
+    ]},
+    {"id": 3, "description": "Verify grep counts and no MUST write phrasing remains", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Commit the 17 files with explicit targeted git add", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
