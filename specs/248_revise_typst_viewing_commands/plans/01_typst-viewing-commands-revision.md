@@ -210,30 +210,39 @@ which should return only helper/spec hits and the pin code handled in Phase 3.
 
 ---
 
-### Phase 3: Tinymist pinning: project-wide, modern API, auto-synced [NOT STARTED]
+### Phase 3: Tinymist pinning: project-wide, modern API, auto-synced [COMPLETED]
 
 **Goal**: Make `<leader>lp`/`<leader>lu` set and clear a project-wide pin, send it with
 `client:exec_cmd`, and keep tinymist pinned to the resolved main file at all times, so
 `exportPdf = "onSave"` exports the main document's PDF, including after `:LspRestart`.
 
 **Tasks**:
-- [ ] Before coding, check the live capability list:
+- [x] Before coding, check the live capability list:
       `:lua =vim.lsp.get_clients({name="tinymist"})[1].server_capabilities.executeCommandProvider`
-      and record whether `tinymist.pinMain` is advertised.
-- [ ] Add `sync_pin(bufnr)` to `lua/neotex/util/typst.lua`. It resolves `main_file` for the
+      and record whether `tinymist.pinMain` is advertised. *(confirmed advertised: verified
+      headless against a live BimodalLogic buffer — `tinymist.pinMain` is present in
+      `executeCommandProvider.commands` alongside 27 other commands)*
+- [x] Add `sync_pin(bufnr)` to `lua/neotex/util/typst.lua`. It resolves `main_file` for the
       buffer. For each attached `tinymist` client, it sends `tinymist.pinMain` with that main
       file only if it differs from `last_sent[client.id]`. Use `client:exec_cmd` when the
       command is advertised, else `client:request("workspace/executeCommand", ...)`. Wrap
-      the call in `pcall`.
-- [ ] Add `setup_autocmds()`, called once from the ftplugin behind a module guard. It creates
+      the call in `pcall`. *(implemented via `client:exec_cmd` alone, wrapped in `pcall`:
+      Neovim 0.12's `Client:exec_cmd` already checks `executeCommandProvider.commands` itself
+      and falls back to `self:request("workspace/executeCommand", ...)` internally when the
+      command is advertised, so a second, hand-rolled fallback branch would just duplicate
+      stdlib behavior)*
+- [x] Add `setup_autocmds()`, called once from the ftplugin behind a module guard. It creates
       augroup `NeotexTypstPin` (`clear = true`) with `LspAttach` (tinymist only; clear
       `last_sent[client.id]` then `sync_pin`) and `BufEnter` (`*.typ`, `sync_pin`). This is
-      what re-pins after `<leader>lk`'s `:LspRestart`.
-- [ ] Rewrite `pin_main_file` as `typst.pin(root, current_file)` followed by `sync_pin`.
+      what re-pins after `<leader>lk`'s `:LspRestart`. *(also added an explicit
+      `typst.sync_pin(0)` call right after `typst.setup_autocmds()` in the ftplugin, so the
+      buffer that is already open when the ftplugin first runs is synced immediately rather
+      than waiting for the next `BufEnter`/`LspAttach`)*
+- [x] Rewrite `pin_main_file` as `typst.pin(root, current_file)` followed by `sync_pin`.
       Rewrite `unpin_main_file` as `typst.unpin(root)` followed by `sync_pin`, which re-pins
       tinymist to the detected main rather than sending `null`, keeping the two in agreement.
       Update the notification text to name the project.
-- [ ] Remove every `vim.lsp.buf.execute_command` use.
+- [x] Remove every `vim.lsp.buf.execute_command` use.
 
 **Timing**: 1.5 hours
 

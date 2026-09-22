@@ -14,6 +14,14 @@ local SUBDIR_NAMES = { "chapters", "sections", "parts", "includes", "content" }
 -- Project-wide pin state, keyed by normalized project root.
 local pins = {}
 
+-- Last main-file value sent to each tinymist client via `pinMain`, keyed by client id.
+-- Avoids re-sending the same pin on every BufEnter.
+local last_sent = {}
+
+-- Guard so `setup_autocmds()` only creates the augroup once per Neovim session, even
+-- though the ftplugin file runs once per buffer.
+local autocmds_ready = false
+
 -- Per-(candidate path) cache of file content, invalidated on mtime change.
 local content_cache = {}
 
@@ -204,6 +212,66 @@ end
 ---@return string
 function M.pdf_path(main_file)
   return vim.fn.fnamemodify(main_file, ":r") .. ".pdf"
+end
+
+--- Resolve the main file for `bufnr` and send `tinymist.pinMain` to every attached
+--- `tinymist` client whose last-sent value differs, so tinymist is always pinned to the
+--- resolved main file -- whether that resolution came from an explicit `pin()` or from
+--- content-aware detection. Keeping tinymist pinned at all times (rather than only while
+--- explicitly pinned) is what makes `exportPdf = "onSave"` export the main document's PDF
+--- instead of a stray per-chapter one.
+---@param bufnr integer|nil defaults to the current buffer
+function M.sync_pin(bufnr)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  local file = vim.api.nvim_buf_get_name(bufnr)
+  if file == "" then
+    return
+  end
+
+  local main = M.main_file(file)
+
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, name = "tinymist" })) do
+    if last_sent[client.id] ~= main then
+      local ok = pcall(function()
+        client:exec_cmd({ command = "tinymist.pinMain", arguments = { main } }, { bufnr = bufnr })
+      end)
+      if ok then
+        last_sent[client.id] = main
+      end
+    end
+  end
+end
+
+--- Create the autocmds that keep tinymist's pin in sync: on `LspAttach` (so a fresh or
+--- restarted tinymist client, e.g. after `:LspRestart`, is immediately pinned) and on
+--- `BufEnter` of a `.typ` buffer (so switching chapters keeps the project-wide pin
+--- current). Idempotent: only the first call creates the augroup.
+function M.setup_autocmds()
+  if autocmds_ready then
+    return
+  end
+  autocmds_ready = true
+
+  local group = vim.api.nvim_create_augroup("NeotexTypstPin", { clear = true })
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = group,
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client and client.name == "tinymist" then
+        last_sent[client.id] = nil
+        M.sync_pin(args.buf)
+      end
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("BufEnter", {
+    group = group,
+    pattern = "*.typ",
+    callback = function(args)
+      M.sync_pin(args.buf)
+    end,
+  })
 end
 
 return M

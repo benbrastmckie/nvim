@@ -4,36 +4,36 @@
 local process = require("neotex.util.process")
 local typst = require("neotex.util.typst")
 
--- Pin current file as main file (for multi-file projects)
+-- Keep tinymist pinned to the resolved main file across LspAttach (including after
+-- :LspRestart) and BufEnter (switching chapters). Also sync immediately for this buffer,
+-- in case tinymist is already attached (e.g. a buffer reload).
+typst.setup_autocmds()
+typst.sync_pin(0)
+
+-- Pin current file as the project-wide main file (for multi-file projects). The pin lives
+-- in the shared helper, keyed by project root, so it applies from any chapter buffer and
+-- survives :LspRestart (re-sent on the next LspAttach via typst.setup_autocmds()).
 local function pin_main_file()
   local current_file = vim.api.nvim_buf_get_name(0)
-  vim.b.typst_main_file = current_file
+  local root = typst.project_root(current_file)
+  typst.pin(root, current_file)
+  typst.sync_pin(0)
 
-  -- Notify tinymist LSP about pinned main file
-  local clients = vim.lsp.get_clients({ bufnr = 0, name = "tinymist" })
-  for _, client in ipairs(clients) do
-    vim.lsp.buf.execute_command({
-      command = "tinymist.pinMain",
-      arguments = { current_file },
-    })
-  end
-
-  vim.notify("Pinned " .. vim.fn.fnamemodify(current_file, ":t") .. " as main file", vim.log.levels.INFO)
+  vim.notify(
+    "Pinned " .. vim.fn.fnamemodify(current_file, ":t") .. " as main file for "
+      .. vim.fn.fnamemodify(root, ":t"),
+    vim.log.levels.INFO
+  )
 end
 
--- Unpin main file
+-- Unpin the main file for this project. tinymist stays pinned -- to the detected main
+-- file, not to nothing -- so exportPdf=onSave keeps targeting a real document.
 local function unpin_main_file()
-  vim.b.typst_main_file = nil
+  local root = typst.project_root(vim.api.nvim_buf_get_name(0))
+  typst.unpin(root)
+  typst.sync_pin(0)
 
-  local clients = vim.lsp.get_clients({ bufnr = 0, name = "tinymist" })
-  for _, client in ipairs(clients) do
-    vim.lsp.buf.execute_command({
-      command = "tinymist.pinMain",
-      arguments = { vim.v.null },
-    })
-  end
-
-  vim.notify("Unpinned main file", vim.log.levels.INFO)
+  vim.notify("Unpinned main file for " .. vim.fn.fnamemodify(root, ":t"), vim.log.levels.INFO)
 end
 
 -- Parse typst short diagnostic format: file:line:col: level: message

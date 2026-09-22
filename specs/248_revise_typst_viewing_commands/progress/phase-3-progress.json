@@ -1,0 +1,11 @@
+{
+  "phase": 3,
+  "phase_name": "Tinymist pinning: project-wide, modern API, auto-synced",
+  "started_at": "2026-09-22T06:46:00Z",
+  "last_updated": "2026-09-22T06:46:00Z",
+  "objectives": [
+    {"id": 1, "description": "Tinymist pinning — file changes", "status": "completed", "files_touched": ["lua/neotex/util/typst.lua", "after/ftplugin/typst.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}
