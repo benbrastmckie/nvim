@@ -170,24 +170,36 @@ All phases edit the same two files, so they are serialized (no parallel waves).
 
 ---
 
-### Phase 2: `result` subcommand and exit band [NOT STARTED]
+### Phase 2: `result` subcommand and exit band [COMPLETED]
 
 **Goal**: A finished build's verdict is reachable from the guard's exit code.
 
 **Tasks**:
-- [ ] Add `result` to `main()`'s mode dispatch and option parsing (`--dir`, `--verbose`; reject
-      build-only options with 77, following existing unknown-option handling).
-- [ ] Implement `cmd_result()`: read `state`, `exit_status`, `holder_pid`, `start_epoch`,
+- [x] Add `result` to `main()`'s mode dispatch and option parsing (`--dir`, `--verbose`; reject
+      build-only options with 77, following existing unknown-option handling). *(completed:
+      `_reject_if_result_mode` helper gates --timeout/--memory-bound/--memory-high/--memory-max/
+      --defer-on-pressure/--no-share)*
+- [x] Implement `cmd_result()`: read `state`, `exit_status`, `holder_pid`, `start_epoch`,
       `end_epoch`, `scope_key`, `abort_reason` via `get_record_field()`; print `key=value`
       lines on stdout plus absolute `result_path`, `stdout_path`, `stderr_path`, `log_path`
       (from `init_guard_paths()`); map to the Decision 3 band. Orphan detection via non-blocking
-      `flock -n` on the lock file, reported as `state=orphaned`.
-- [ ] New cases 25-29: `result` against no record (23), hand-written `in_flight` with lock held
+      `flock -n` on the lock file, reported as `state=orphaned`. *(completed)*
+- [x] New cases 25-29: `result` against no record (23), hand-written `in_flight` with lock held
       by a background `flock` holder (21), `in_flight` with lock free (22, `state=orphaned`),
       real passing build (0), real failing build via fake-lake exit override (20, stdout shows
       the real code), aborted record from a phase-1-style kill or hand-written `state=aborted`
-      (22). Each on a fresh fixture.
-- [ ] Mutation I: force `cmd_result` to always return 0; the terminal-nonzero case must go RED.
+      (22). Each on a fresh fixture. *(completed: case 27 split into 27a orphaned / 27b aborted)*
+- [x] Mutation I: force `cmd_result` to always return 0; the terminal-nonzero case must go RED.
+      *(completed)*
+- [x] **Unplanned but in-scope fix discovered while writing case 29**: `run_lake_foreground()`'s
+      own internal `set -e` reactivation, immediately before its tail `return "$rc"`, triggered
+      errexit-driven premature script termination for ANY failing (nonzero-exit) build -- a
+      PRE-EXISTING defect (confirmed present before this task) that skipped `finalize_record()`
+      entirely, leaving `state=in_flight` forever on a normal failing build, no signal involved.
+      This is the same "terminal record on every exit path" defect Phase 1 targets, one exit path
+      wider than the plan named. Fixed by removing the internal `set -e` restore (callers already
+      bracket the call in their own `set +e`/`set -e`); confirmed via case 29 and by re-running
+      the full suite. *(completed)*
 
 **Timing**: 1.5 hours
 

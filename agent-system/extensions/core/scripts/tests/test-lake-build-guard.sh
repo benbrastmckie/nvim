@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # test-lake-build-guard.sh - Toolchain-free regression suite for lake-build-guard.sh.
 #
-# Covers 24 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
+# Covers 29 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
 # fixes: subcommand validation, scope-keyed sharing, the REPLAY marker, and the --help wait
-# idiom, 1 for positive-direction memory-pressure detection, and 2 for the killed-holder terminal-
-# record guarantee), plus a non-vacuousness (mutation) section spanning mutations A-H. Running the
-# suite reports 33 [PASS] lines: the 24 numbered cases (case 12 splits into 12a/12b, so 25
-# case-level passes) plus the 8 mutation checks. The script under test is invoked as a REAL
+# idiom, 1 for positive-direction memory-pressure detection, 2 for the killed-holder terminal-
+# record guarantee, and 5 for the `result` subcommand's verdict/orphan reporting), plus a
+# non-vacuousness (mutation) section spanning mutations A-I. Running the suite reports 40 [PASS]
+# lines: the 29 numbered cases (case 12 splits into 12a/12b and case 27 into 27a/27b, so 31
+# case-level passes) plus the 9 mutation checks. The script under test is invoked as a REAL
 # SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
 # process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
 # `systemd-run`), none of which are meaningfully testable by calling functions directly in-process
@@ -733,6 +734,158 @@ else
 fi
 
 # =====================================================================================
+# Case 25: `result` against a project with no record present exits 23
+# =====================================================================================
+CASE25_ROOT="$WORKDIR/case25"
+build_fixture "$CASE25_ROOT"
+
+CASE25_RC=0
+run_guard "$CASE25_ROOT" result > /dev/null 2>&1 || CASE25_RC=$?
+
+if [ "$CASE25_RC" = "23" ]; then
+  pass "case 25: result against a project with no record present exits 23 (no record)"
+else
+  fail "case 25: expected exit 23, got $CASE25_RC"
+fi
+
+# =====================================================================================
+# Case 26: `result` against an in_flight record whose lock is HELD (a build genuinely still
+# running) exits 21 and reports state=in_flight -- never scans the process table, only probes
+# the lock via the same non-blocking flock -n idiom cmd_status() already uses
+# =====================================================================================
+CASE26_ROOT="$WORKDIR/case26"
+build_fixture "$CASE26_ROOT"
+mkdir -p "$CASE26_ROOT/.lake"
+CASE26_LOCK="$CASE26_ROOT/.lake/build-guard.lock"
+cat > "$CASE26_ROOT/.lake/build-guard.result" <<EOF
+state=in_flight
+holder_pid=999999
+start_epoch=1
+end_epoch=
+pre_fingerprint=deadbeef
+post_fingerprint=
+scope_key=
+lake_bin=/nonexistent-lake
+exit_status=
+log_path=$CASE26_ROOT/.lake/build-guard.log
+EOF
+
+flock "$CASE26_LOCK" -c 'sleep 5' &
+CASE26_LOCKHOLDER_PID=$!
+wait_until 30 '! flock -n "$CASE26_LOCK" -c true 2>/dev/null'
+
+CASE26_RC=0
+CASE26_OUT="$(run_guard "$CASE26_ROOT" result 2>&1)" || CASE26_RC=$?
+kill "$CASE26_LOCKHOLDER_PID" 2>/dev/null || true
+wait "$CASE26_LOCKHOLDER_PID" 2>/dev/null || true
+
+if [ "$CASE26_RC" = "21" ] && printf '%s' "$CASE26_OUT" | grep -q '^state=in_flight'; then
+  pass "case 26: result against an in_flight record whose lock is currently held (a build genuinely still running) exits 21 and reports state=in_flight"
+else
+  fail "case 26: expected exit 21 with state=in_flight; got rc=$CASE26_RC out=[$CASE26_OUT]"
+fi
+
+# =====================================================================================
+# Case 27: orphan and aborted terminal reporting, both exit 22
+# =====================================================================================
+# 27a: an in_flight record whose lock is FREE means the holder died WITHOUT any trap firing
+# (e.g. SIGKILL) -- result must not trust the record's stale in_flight claim; it reports
+# state=orphaned instead (see cmd_result()'s orphan-detection comment).
+CASE27A_ROOT="$WORKDIR/case27a"
+build_fixture "$CASE27A_ROOT"
+mkdir -p "$CASE27A_ROOT/.lake"
+cat > "$CASE27A_ROOT/.lake/build-guard.result" <<EOF
+state=in_flight
+holder_pid=999999
+start_epoch=1
+end_epoch=
+pre_fingerprint=deadbeef
+post_fingerprint=
+scope_key=
+lake_bin=/nonexistent-lake
+exit_status=
+log_path=$CASE27A_ROOT/.lake/build-guard.log
+EOF
+
+CASE27A_RC=0
+CASE27A_OUT="$(run_guard "$CASE27A_ROOT" result 2>&1)" || CASE27A_RC=$?
+
+if [ "$CASE27A_RC" = "22" ] && printf '%s' "$CASE27A_OUT" | grep -q '^state=orphaned'; then
+  pass "case 27a: an in_flight record whose lock is free (holder died untrappably) is reported as state=orphaned and exits 22, never trusted as a live build"
+else
+  fail "case 27a: expected exit 22 with state=orphaned; got rc=$CASE27A_RC out=[$CASE27A_OUT]"
+fi
+
+# 27b: a hand-written state=aborted record (already terminal, from a trapped kill) exits 22 and
+# reports state=aborted verbatim -- no orphan probe applies since the state is not in_flight.
+CASE27B_ROOT="$WORKDIR/case27b"
+build_fixture "$CASE27B_ROOT"
+mkdir -p "$CASE27B_ROOT/.lake"
+cat > "$CASE27B_ROOT/.lake/build-guard.result" <<EOF
+state=aborted
+holder_pid=999999
+start_epoch=1
+end_epoch=2
+pre_fingerprint=deadbeef
+post_fingerprint=deadbeef
+scope_key=
+lake_bin=/nonexistent-lake
+exit_status=143
+log_path=$CASE27B_ROOT/.lake/build-guard.log
+abort_reason=TERM
+EOF
+
+CASE27B_RC=0
+CASE27B_OUT="$(run_guard "$CASE27B_ROOT" result 2>&1)" || CASE27B_RC=$?
+
+if [ "$CASE27B_RC" = "22" ] && printf '%s' "$CASE27B_OUT" | grep -q '^state=aborted' \
+   && printf '%s' "$CASE27B_OUT" | grep -q '^abort_reason=TERM'; then
+  pass "case 27b: a hand-written state=aborted record is reported verbatim (state=aborted, abort_reason=TERM) and exits 22"
+else
+  fail "case 27b: expected exit 22 with state=aborted and abort_reason=TERM; got rc=$CASE27B_RC out=[$CASE27B_OUT]"
+fi
+
+# =====================================================================================
+# Case 28: a real PASSING build's verdict is reachable from result's exit code alone (0), no
+# pipeline, no text parsing
+# =====================================================================================
+CASE28_ROOT="$WORKDIR/case28"
+build_fixture "$CASE28_ROOT"
+run_guard "$CASE28_ROOT" build build > /dev/null 2>&1
+
+CASE28_RC=0
+CASE28_OUT="$(run_guard "$CASE28_ROOT" result 2>&1)" || CASE28_RC=$?
+
+if [ "$CASE28_RC" = "0" ] && printf '%s' "$CASE28_OUT" | grep -q '^state=complete' \
+   && printf '%s' "$CASE28_OUT" | grep -q '^exit_status=0'; then
+  pass "case 28: a real passing build's verdict (state=complete, exit_status=0) is reachable via result's own exit code (0), with no pipeline and no text parsing"
+else
+  fail "case 28: expected exit 0 with state=complete and exit_status=0; got rc=$CASE28_RC out=[$CASE28_OUT]"
+fi
+
+# =====================================================================================
+# Case 29: a real FAILING build's verdict is reachable from result's exit code (20), with the
+# real recorded exit_status visible on stdout -- this is the acceptance-critical case: the
+# original defect this task's absorbed work exists to fix (a broken build looking "exit 0"
+# because a caller could only read a pipeline's last stage). Also confirms the run_lake_foreground
+# set -e fix: before it, a failing build never reached finalize_record() at all and state stayed
+# in_flight forever, which this case would have caught as a state!=complete mismatch.
+# =====================================================================================
+CASE29_ROOT="$WORKDIR/case29"
+build_fixture "$CASE29_ROOT"
+FAKE_LAKE_EXIT=5 run_guard "$CASE29_ROOT" build build > /dev/null 2>&1
+
+CASE29_RC=0
+CASE29_OUT="$(run_guard "$CASE29_ROOT" result 2>&1)" || CASE29_RC=$?
+
+if [ "$CASE29_RC" = "20" ] && printf '%s' "$CASE29_OUT" | grep -q '^state=complete' \
+   && printf '%s' "$CASE29_OUT" | grep -q '^exit_status=5'; then
+  pass "case 29: a real failing build's verdict (state=complete, exit_status=5) is reachable via result's own exit code (20), with the real exit code visible on stdout -- no pipeline, no text parsing"
+else
+  fail "case 29: expected exit 20 with state=complete and exit_status=5; got rc=$CASE29_RC out=[$CASE29_OUT]"
+fi
+
+# =====================================================================================
 # Non-vacuousness (mutation) checks
 # =====================================================================================
 # Per context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes", and
@@ -968,6 +1121,27 @@ if [ "$MUTANTH_RC" = "1" ] && [ "$MUTANTH_STATE" = "aborted" ]; then
   pass "mutation H: neutralizing the _RECORD_FINALIZED idempotency guard turns an ordinary successful (exit 0) build into state=aborted with a corrupted exit code (rc=1) -- the still-armed EXIT trap re-finalizes on the process's own normal exit -- confirms the idempotency guard is load-bearing, not vacuous"
 else
   fail "mutation H: expected rc=1 with state=aborted after neutralizing the idempotency guard; got rc=$MUTANTH_RC state=[$MUTANTH_STATE] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+fi
+
+# --- Mutation I (result verdict): force cmd_result() to always exit 0 (same function-shadowing
+# trick as mutations B/C/F) -> case 29's terminal-nonzero assertion must go RED (a failed build
+# would be reported as exit 0 -- the exact false-pass shape this subcommand exists to prevent).
+MUTANT_NORESULT="$MUTANT_DIR/no-result-verdict.sh"
+sed 's/^cmd_result() {/cmd_result() { echo "state=complete"; echo "exit_status=0"; exit 0; } ; _disabled_cmd_result() {/' "$GUARD" > "$MUTANT_NORESULT"
+chmod +x "$MUTANT_NORESULT"
+
+MUTANTI_ROOT="$WORKDIR/mutant_noresult_fixture"
+build_fixture "$MUTANTI_ROOT"
+FAKE_LAKE_EXIT=5 PATH="$MUTANTI_ROOT/bin:$PATH" "$MUTANT_NORESULT" build --dir "$MUTANTI_ROOT" build \
+  > /dev/null 2>&1
+
+MUTANTI_RC=0
+PATH="$MUTANTI_ROOT/bin:$PATH" "$MUTANT_NORESULT" result --dir "$MUTANTI_ROOT" > /dev/null 2>&1 || MUTANTI_RC=$?
+
+if [ "$MUTANTI_RC" = "0" ]; then
+  pass "mutation I: forcing cmd_result() to always report exit 0 turns case 29's real failing build (exit_status=5) into a false pass -- confirms case 29's terminal-nonzero assertion is load-bearing, not vacuous"
+else
+  fail "mutation I: expected the neutered cmd_result() to report exit 0 unconditionally; got rc=$MUTANTI_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not

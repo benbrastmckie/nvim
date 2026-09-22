@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "result subcommand and exit band",
+  "started_at": "2026-09-22T00:45:00Z",
+  "last_updated": "2026-09-22T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add result to main() mode dispatch and option parsing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 2, "description": "Implement cmd_result() with Decision 3 exit band and orphan detection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 3, "description": "New cases 25-29 (27 split a/b)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 4, "description": "Mutation I", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 5, "description": "Fix pre-existing run_lake_foreground set -e bug causing failing builds to skip finalize_record", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "run_lake_foreground()'s internal set -e reactivation before its own return \"$rc\" caused errexit-driven premature termination on any failing build, skipping finalize_record entirely (pre-existing defect, not named explicitly in the plan)",
+      "type": "altered",
+      "reason": "Discovered while validating case 29 manually; directly in-scope for the terminal-record-on-every-exit-path goal, one exit path wider than the plan named",
+      "annotation": "*(deviation: altered -- fixed a pre-existing set -e bug in run_lake_foreground beyond the plan's named scope)*"
+    }
+  ]
+}

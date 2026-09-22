@@ -717,13 +717,24 @@ run_lake_foreground() {
   : > "$STDOUT_CAPTURE_PATH"
   : > "$STDERR_CAPTURE_PATH"
 
+  # Deliberately does NOT restore `set -e` before returning (unlike the historical shape of this
+  # function): every caller already wraps this call in its own `set +e ... set -e` bracket (see
+  # run_as_holder() and the no-flock path in cmd_build()), and re-enabling errexit HERE, before
+  # this function's own tail `return "$rc"`, is a documented bash pitfall -- a `return` with a
+  # nonzero value, executed as a plain (non-conditional) statement while errexit is active,
+  # immediately terminates the whole script via errexit, in this function's own call frame, BEFORE
+  # control ever returns to the caller. For a failing (nonzero-exit) `lake` invocation, that used
+  # to skip run_as_holder()'s finalize_record() call entirely -- a real, confirmed defect on the
+  # NORMAL (non-killed) failing-build path, not merely the killed-holder path this task's own
+  # header names: `state` was left at `in_flight` forever whenever the wrapped build simply
+  # failed, no signal involved. Restoring errexit is the caller's job, done only after it has
+  # safely captured "$rc" from this call.
   set +e
   "${cmd[@]}" \
     > >(tee "$STDOUT_CAPTURE_PATH") \
     2> >(tee "$STDERR_CAPTURE_PATH" >&2)
   local rc=$?
   wait
-  set -e
 
   {
     echo "=== stdout ==="
@@ -880,6 +891,95 @@ validate_build_subcommand() {
   exit 77
 }
 
+# --- result mode: expose a finished build's verdict through the guard's OWN exit code -----------
+# READING THE VERDICT: a consumer MUST read a guarded build's pass/fail either via this `result`
+# subcommand's exit code, or via an UN-PIPED "$?" immediately after `lake-build-guard.sh build`,
+# and MUST NEVER read it from the last stage of a pipeline (that stage's own exit code, not the
+# guard's, is what a shell reports as "$?" for a pipeline -- see the header's non-goals for the
+# defect this closes). `result` never scans the process table (same discipline as cmd_status()):
+# orphan detection below reuses cmd_status()'s own non-blocking `flock -n` probe on the lock file.
+cmd_result() {
+  if [ ! -f "$RESULT_PATH" ]; then
+    echo "lake-build-guard: result: no record present at $RESULT_PATH" >&2
+    exit 23
+  fi
+
+  local state exit_status holder_pid start_epoch end_epoch scope_key abort_reason
+  state="$(get_record_field state "$RESULT_PATH" || true)"
+  exit_status="$(get_record_field exit_status "$RESULT_PATH" || true)"
+  holder_pid="$(get_record_field holder_pid "$RESULT_PATH" || true)"
+  start_epoch="$(get_record_field start_epoch "$RESULT_PATH" || true)"
+  end_epoch="$(get_record_field end_epoch "$RESULT_PATH" || true)"
+  scope_key="$(get_record_field scope_key "$RESULT_PATH" || true)"
+  abort_reason="$(get_record_field abort_reason "$RESULT_PATH" || true)"
+
+  # Ownership assertions (--expect-pid / --expect-scope): refuse before verdict mapping, so a
+  # sibling's verdict under concurrency is never reported as the caller's own. No record (exit 23
+  # above) still wins over a mismatch, per the option contract.
+  if [ -n "${EXPECT_PID:-}" ] && [ "$holder_pid" != "$EXPECT_PID" ]; then
+    echo "lake-build-guard: result: record belongs to holder pid ${holder_pid:-unknown}, not the expected pid $EXPECT_PID" >&2
+    exit 24
+  fi
+  if [ "${EXPECT_SCOPE:-false}" = "true" ]; then
+    local expected_scope_key
+    expected_scope_key="$(compute_scope_key "${lake_args[@]+"${lake_args[@]}"}")"
+    if [ -z "$scope_key" ] || [ "$scope_key" != "$expected_scope_key" ]; then
+      echo "lake-build-guard: result: record belongs to scope ${scope_key:-unknown}, not the expected scope (--expect-scope -- ${lake_args[*]+"${lake_args[*]}"})" >&2
+      exit 24
+    fi
+  fi
+
+  # Orphan detection: an in_flight record whose lock is actually free means the holder died
+  # WITHOUT any trap firing (e.g. SIGKILL -- see the TERMINAL RECORD GUARANTEE header note); the
+  # record's own claim of in_flight is then stale. Reported as state=orphaned rather than trusted
+  # verbatim. This is the SAME non-blocking probe cmd_status() already uses -- no process-table
+  # scan, no PID-reuse hazard (flock's kernel-tracked lock state, not a pid comparison).
+  local reported_state="$state"
+  if [ "$state" = "in_flight" ] && have_flock; then
+    local probe_fd
+    exec {probe_fd}<>"$LOCK_PATH"
+    if flock -n "$probe_fd"; then
+      reported_state="orphaned"
+      flock -u "$probe_fd" 2>/dev/null || true
+    fi
+    exec {probe_fd}>&- 2>/dev/null || true
+  fi
+
+  echo "state=$reported_state"
+  echo "exit_status=$exit_status"
+  echo "holder_pid=$holder_pid"
+  echo "start_epoch=$start_epoch"
+  echo "end_epoch=$end_epoch"
+  echo "scope_key=$scope_key"
+  if [ -n "$abort_reason" ]; then
+    echo "abort_reason=$abort_reason"
+  fi
+  echo "result_path=$RESULT_PATH"
+  echo "stdout_path=$STDOUT_CAPTURE_PATH"
+  echo "stderr_path=$STDERR_CAPTURE_PATH"
+  echo "log_path=$LOG_PATH"
+
+  case "$reported_state" in
+    complete)
+      if [ "$exit_status" = "0" ]; then
+        exit 0
+      fi
+      exit 20
+      ;;
+    in_flight)
+      exit 21
+      ;;
+    aborted|orphaned)
+      exit 22
+      ;;
+    *)
+      # An unrecognized/corrupt state value is treated the same as an ambiguous terminal state --
+      # never silently reported as a pass (exit 0).
+      exit 22
+      ;;
+  esac
+}
+
 # --- Argument parsing / dispatch --------------------------------------------------------------------
 
 main() {
@@ -894,7 +994,7 @@ main() {
       print_help
       exit 0
       ;;
-    status|preflight|build)
+    status|preflight|build|result)
       mode="$1"
       shift
       ;;
@@ -918,21 +1018,38 @@ main() {
   VERBOSE=false
   local -a lake_args=()
 
+  # Build-only options rejected in result mode: result mode's only recognized options are
+  # --dir/--verbose (plus --expect-pid/--expect-scope) -- a build-only option here is rejected
+  # with the same 77 usage code and message shape as a genuinely unknown option (the `--*)`
+  # catch-all below), never silently accepted and ignored.
+  _reject_if_result_mode() {
+    if [ "$mode" = "result" ]; then
+      echo "lake-build-guard: unknown option for result mode: $1" >&2
+      exit 77
+    fi
+  }
+
   while [ $# -gt 0 ]; do
     case "$1" in
       --dir|-d)
         dir="$2"; shift 2 ;;
       --timeout)
+        _reject_if_result_mode "$1"
         timeout="$2"; shift 2 ;;
       --memory-bound)
+        _reject_if_result_mode "$1"
         MEMORY_BOUND=true; shift ;;
       --memory-high)
+        _reject_if_result_mode "$1"
         MEMORY_HIGH="$2"; shift 2 ;;
       --memory-max)
+        _reject_if_result_mode "$1"
         MEMORY_MAX="$2"; shift 2 ;;
       --defer-on-pressure)
+        _reject_if_result_mode "$1"
         DEFER_ON_PRESSURE=true; shift ;;
       --no-share)
+        _reject_if_result_mode "$1"
         NO_SHARE=true; shift ;;
       --verbose)
         VERBOSE=true; shift ;;
@@ -985,6 +1102,9 @@ main() {
       ;;
     build)
       cmd_build "$timeout" "${lake_args[@]}"
+      ;;
+    result)
+      cmd_result
       ;;
   esac
 }
