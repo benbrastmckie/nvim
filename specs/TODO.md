@@ -11,7 +11,7 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,43,51,89,127,129,162,163,166,167,177,185,207,210,217,223,227,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,43,51,89,127,129,162,163,166,167,177,185,207,210,217,223,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,44,45,139,165,170,184,199,224 | 22,51,129,162,163,210,242,243,245 | core-agent-system, extensions, neovim, ... |
 | 3 | 136 | 139,166 | core-agent-system |
 
@@ -31,11 +31,10 @@ next_project_number: 249
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-210 [PLANNED] — Fix /task create: topic assignment order and registration,...
+210 [IMPLEMENTING] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-227 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-242 [PLANNED] — Orchestrate postflight: treat a partial handoff carrying a...
+242 [IMPLEMENTING] — Orchestrate postflight: treat a partial handoff carrying a...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 243 [PLANNED] — Reconcile contradictory contract for research-phase...
@@ -139,7 +138,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 242. Orchestrate postflight: treat a partial handoff carrying a populated blocker[] as blocked/stopped, not a retryable partial
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -227,12 +226,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 227. Resolve source store target in deployed trees
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 240
 - **Research**: [227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md]
 - **Plan**: [227_resolve_source_store_target_in_deployed_trees/plans/02_resolve-target-via-extensions-json.md]
+- **Summary**: [227_resolve_source_store_target_in_deployed_trees/summaries/02_resolve-target-via-extensions-json-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/rules/source-store-deploy-boundary.md and whatever deploy step is chosen to parameterize it (never .claude/**).
 
@@ -382,7 +382,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 210. Fix /task create: topic assignment order and registration, and task-type keyword false positives
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 209

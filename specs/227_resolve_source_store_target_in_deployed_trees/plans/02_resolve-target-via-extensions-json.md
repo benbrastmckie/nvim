@@ -1,7 +1,7 @@
 # Implementation Plan: Resolve source store target in deployed trees
 
 - **Task**: 227 - Resolve source store target in deployed trees
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md` (primary); `specs/227_resolve_source_store_target_in_deployed_trees/reports/01_source-store-rule-has-no-target.md` (prior round evidence)
@@ -313,29 +313,47 @@ editing them.
 
 ---
 
-### Phase 4: Final consistency and boundary self-check [NOT STARTED]
+### Phase 4: Final consistency and boundary self-check [COMPLETED]
 
 **Goal**: the change is internally consistent, respects the boundary it documents, and leaves no
 stray edit in a deployed or sibling-owned file.
 
 **Tasks**:
-- [ ] Confirm no file under `.claude/` was modified by this task: `git status --short` shows no
+- [x] Confirm no file under `.claude/` was modified by this task: `git status --short` shows no
       `.claude/` entry, and the deployed
       `.claude/rules/source-store-deploy-boundary.md` still matches its pre-change content
-      (it is gitignored here, so compare content, not git state).
-- [ ] Confirm no file in any concurrent sibling's declared `file_scope` was modified — in
-      particular `agent-system/extensions/core/agents/general-implementation-agent.md`.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` over the repo and
-      confirm no new violation from the three changed files.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the
+      (it is gitignored here, so compare content, not git state). *(completed: `git status
+      --short` shows zero `.claude/` entries; the deployed copy's mtime, 2026-09-21 23:39,
+      predates every commit this task made, and diffing it against the source-store copy shows
+      only the intended rewrite on the source-store side)*
+- [x] Confirm no file in any concurrent sibling's declared `file_scope` was modified — in
+      particular `agent-system/extensions/core/agents/general-implementation-agent.md`. *(completed:
+      confirmed via `git status --short`, not present)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` over the repo and
+      confirm no new violation from the three changed files. *(completed: PASS, 0 unexempted
+      occurrences across all 4 scanned trees)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the
       changed files introduce no new finding (rules files carry no `index-entries.json` entry, so
-      no `line_count` update is owed — confirm this rather than assume it).
-- [ ] Read the rewritten rule end-to-end once more as a consumer-tree agent would, with no
+      no `line_count` update is owed — confirm this rather than assume it). *(completed: confirmed
+      no `index-entries.json` entry exists for this rule file, so no `line_count` obligation
+      applies. The tool does report one new finding directly attributable to this task's own
+      change — "deployed rule content drift" for `rules/source-store-deploy-boundary.md" — which
+      is the expected, inherent consequence of a source-store-only edit with no deploy performed
+      (an explicit Non-Goal of this plan); it is not a defect introduced by the rewrite's content.
+      The other FAIL/line_count findings in the same run (`orchestrate-cycle-postflight.sh`,
+      `orchestrate-triage-classify.sh`, `skill-base.sh`, and the `extension-development.md` /
+      `topic-assignment-pattern.md` line_count mismatches) predate this task and belong to
+      concurrent sibling tasks' in-flight edits, confirmed via `git status --short` and this
+      task's own unmodified-file-scope check above)*
+- [x] Read the rewritten rule end-to-end once more as a consumer-tree agent would, with no
       knowledge of this repository, and confirm every instruction in it is executable from that
-      standing.
-- [ ] Enumerate the residue for the wrap-up: the agent-contract files that still restate the
+      standing. *(completed: the 5-step procedure and the unreachable branch are both directly
+      executable given only `.claude-extensions.json`, with no repository-specific knowledge
+      assumed)*
+- [x] Enumerate the residue for the wrap-up: the agent-contract files that still restate the
       hard-coded target, flagged as a recommended follow-up task (naming files, not task
-      numbers).
+      numbers). *(completed — see summary's Follow-ups section: 16 agent-contract files, 15
+      sharing one boilerplate MUST-NOT bullet plus `meta-builder-agent.md`'s own Rule 2 phrasing)*
 
 **Timing**: 0.5 hours
 
@@ -358,19 +376,23 @@ stray edit in a deployed or sibling-owned file.
 
 ## Testing & Validation
 
-- [ ] `grep -n "agent-system/extensions" agent-system/extensions/core/rules/source-store-deploy-boundary.md`
-      yields no target instruction (illustrative, explicitly-labelled example values only).
-- [ ] The rule names `.claude-extensions.json`, `extensions.<name>`, and `source_dir` in an
-      ordered, executable procedure.
-- [ ] The unreachable branch names all four degraded conditions and ends in "file a task", never
-      in a permitted `.claude/**` edit.
-- [ ] Procedure walkthrough against `~/Projects/BimodalLogic` resolves to an existing absolute
+- [x] `grep -n "agent-system/extensions" agent-system/extensions/core/rules/source-store-deploy-boundary.md`
+      yields no target instruction (illustrative, explicitly-labelled example values only). *(completed)*
+- [x] The rule names `.claude-extensions.json`, `extensions.<name>`, and `source_dir` in an
+      ordered, executable procedure. *(completed)*
+- [x] The unreachable branch names all four degraded conditions and ends in "file a task", never
+      in a permitted `.claude/**` edit. *(completed)*
+- [x] Procedure walkthrough against `~/Projects/BimodalLogic` resolves to an existing absolute
       path for both a `core` and a non-`core` extension entry, with that repository left
-      unmodified.
-- [ ] `bash -n` passes on the hook; a synthetic payload yields valid JSON with
-      `.additionalContext` and exit 0.
-- [ ] No `.claude/**` file modified; no sibling-owned file modified.
-- [ ] `check-task-references.sh` and `check-extension-docs.sh` report no new findings.
+      unmodified. *(completed)*
+- [x] `bash -n` passes on the hook; a synthetic payload yields valid JSON with
+      `.additionalContext` and exit 0. *(completed)*
+- [x] No `.claude/**` file modified; no sibling-owned file modified. *(completed)*
+- [x] `check-task-references.sh` and `check-extension-docs.sh` report no new findings.
+      *(completed with one documented, expected exception: `check-extension-docs.sh` flags
+      `rules/source-store-deploy-boundary.md` for deployed/source drift, the inherent and
+      unavoidable consequence of a source-store-only edit with no deploy performed — see Phase 4
+      task annotation and the deviation recorded in `progress/phase-4-progress.json`)*
 
 ## Artifacts & Outputs
 
