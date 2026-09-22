@@ -284,7 +284,7 @@ rather than leaving it unexamined.
 
 ---
 
-### Phase 3: Re-Arm the Inter-Cycle Redeploy Checkpoint — Widen Its Trigger Predicate [NOT STARTED]
+### Phase 3: Re-Arm the Inter-Cycle Redeploy Checkpoint — Widen Its Trigger Predicate [COMPLETED]
 
 **Goal**: The core of Part 1 under the deferred-convergence posture. Make `deploy_pending` reach
 the checkpoint's deploy body independently of the narrow `orchestrator-critical-paths.json`
@@ -292,33 +292,44 @@ allowlist match, so a `meta` task touching any file under `agent-system/extensio
 without operator intervention.
 
 **Tasks**:
-- [ ] Hoist the `deploy_pending_any` computation (~lines 763-780) **out** of the
+- [x] Hoist the `deploy_pending_any` computation (~lines 763-780) **out** of the
       `if [ "$matched_count" -gt 0 ]` branch so it is computed before the branch decision. It
       already reads each batch task's `.return-meta.json` for `deploy_pending: true`; only its
-      placement is wrong.
-- [ ] Widen the branch condition so the deploy body is reachable when
+      placement is wrong. *(completed)*
+- [x] Widen the branch condition so the deploy body is reachable when
       `matched_count -gt 0` **OR** `deploy_pending_any = true`. Keep `dry_run != true` as-is.
-- [ ] Adjust the checkpoint's announcement so the widened path names its own reason
+      *(completed)*
+- [x] Adjust the checkpoint's announcement so the widened path names its own reason
       (deploy-pending marker on task N) rather than printing a misleading
-      "touched 0 orchestrator-critical path(s)" line.
-- [ ] Route the widened path **through** `deploy_ledger_decide` and the `deployed_critical_paths`
+      "touched 0 orchestrator-critical path(s)" line. *(completed)*
+- [x] Route the widened path **through** `deploy_ledger_decide` and the `deployed_critical_paths`
       idempotence guard — never around them. `deploy_pending_any` already forces the ledger
-      decision to `run`; that interaction must be preserved exactly, not bypassed.
-- [ ] Reuse `deploy_findings_snapshot` / `deploy_baseline_new_findings` from
+      decision to `run`; that interaction must be preserved exactly, not bypassed. *(completed:
+      unchanged, structurally shared code path)*
+- [x] Reuse `deploy_findings_snapshot` / `deploy_baseline_new_findings` from
       `scripts/lib/deploy-baseline-lib.sh` exactly as the existing body already does. Add **no**
       third copy of the (a)/(b)/(c) failure contract — the library exists specifically to stop
-      these two call sites from drifting, and a third copy reintroduces that drift.
-- [ ] Preserve the unconditional `mt_set '.cycle_modified_files = []'` reset (~line 959) and its
-      wrapper structure — it deliberately runs whether or not the inner body fired.
-- [ ] Add an in-script comment recording the concurrency posture: why the redeploy lives here and
+      these two call sites from drifting, and a third copy reintroduces that drift. *(completed:
+      untouched; single home confirmed via grep)*
+- [x] Preserve the unconditional `mt_set '.cycle_modified_files = []'` reset (~line 959) and its
+      wrapper structure — it deliberately runs whether or not the inner body fired. *(completed:
+      untouched)*
+- [x] Add an in-script comment recording the concurrency posture: why the redeploy lives here and
       not in per-task postflight, naming the fail-open `specs/.deploy-lock` race and Move 2's
-      one-message parallel dispatch as the reasons.
-- [ ] Extend `scripts/tests/test-postflight-deploy-gate.sh` with the refusal-then-recovery path:
+      one-message parallel dispatch as the reasons. *(completed)*
+- [x] Extend `scripts/tests/test-postflight-deploy-gate.sh` with the refusal-then-recovery path:
       a task whose modified files are under `agent-system/extensions/**` but **outside** the
-      critical-path allowlist still trips the checkpoint via `deploy_pending_any`.
-- [ ] Confirm no edit to `orchestrate-cycle-plan.sh` outside the checkpoint block. If any change
+      critical-path allowlist still trips the checkpoint via `deploy_pending_any`. *(completed:
+      Case 8 (stale-then-fresh recovery sequence on update-task-status.sh's own gate) added to
+      test-postflight-deploy-gate.sh; the checkpoint's own widened-predicate mechanics (which live
+      in orchestrate-cycle-plan.sh, not update-task-status.sh) are covered by test-
+      orchestrate-cycle-plan.sh's Group 11 case (s) instead — the correct suite for that script,
+      per Acceptance #4's naming of test-orchestrate-cycle-postflight.sh and
+      test-postflight-deploy-gate.sh together with this phase's own Files-to-modify list)*
+- [x] Confirm no edit to `orchestrate-cycle-plan.sh` outside the checkpoint block. If any change
       appears to require touching its decomposition, stop and record it rather than proceeding —
-      that is another task's declared scope.
+      that is another task's declared scope. *(completed: diff confined to lines ~756-819, inside
+      the checkpoint block spanning ~695-961; verified via `git diff --stat` and reading the diff)*
 
 **Timing**: 2.5 hours
 

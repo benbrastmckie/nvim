@@ -1737,6 +1737,62 @@ rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/depl
 rm -rf "$G11_SOURCE_ROOT"
 rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
 
+# ── Case (s): WIDENED TRIGGER PREDICATE (this task's Part 1 core change) -- matched_count == 0
+# (cycle_modified_files touches a file under agent-system/extensions/** that is NOT one of the
+# curated orchestrator-critical-paths.json entries) but deploy_pending:true is set on candidate
+# 9101's own .return-meta.json (postflight's completion-deploy gate already refused a prior
+# cycle). Before this task's hoist, deploy_pending_any was computed ONLY INSIDE the
+# `matched_count -gt 0` branch, so this exact combination never reached the deploy body at all --
+# the D6 residual this phase retires. Distinct from case (p) above: case (p)'s default fixture
+# cycle_modified_files (`.claude/scripts/orchestrate-cycle-plan.sh`) already matches a curated
+# critical path, so matched_count is already >0 there and (p) only proves the LEDGER's own
+# deploy_pending override, never the widened OR-predicate itself. This is the refusal-then-
+# recovery path named in this task's own dispatch acceptance criterion #2. ──────────────────────
+g11_seed_state_and_mt "g11_s"
+g11_seed_source_store
+g11_set_cycle_modified_files "g11_s" '["agent-system/extensions/core/scripts/foo.sh"]'
+mkdir -p "$WORKDIR/specs/9101_g11_terminal"
+jq -n '{deploy_pending: true}' > "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g11_s -- 9101
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (s): the widened predicate reaches the deploy body when matched_count==0 but deploy_pending_any=true (a non-allowlisted agent-system/extensions/** path)"
+else
+  fail "checkpoint (s): expected the pipeline to run under the widened predicate, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+fi
+if echo "$LAST_STDERR" | grep -q "REDEPLOY CHECKPOINT: triggered by the deploy_pending marker" && \
+   echo "$LAST_STDERR" | grep -q '\[9101\]'; then
+  pass "checkpoint (s): the announcement names its own reason (deploy_pending marker naming the candidate), not a misleading 'touched 0 orchestrator-critical path(s)' line"
+else
+  fail "checkpoint (s): expected the deploy_pending-triggered announcement naming the candidate, got: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "touched 0 orchestrator-critical path(s)"; then
+  fail "checkpoint (s): the misleading 'touched 0 orchestrator-critical path(s)' line must not appear on the widened path"
+else
+  pass "checkpoint (s): no misleading 'touched 0 orchestrator-critical path(s)' line"
+fi
+mt_s="$WORKDIR/specs/.orchestrator-multi-state-g11_s.json"
+if [ "$(jq -r '.cycle_modified_files' "$mt_s" 2>/dev/null)" = "[]" ]; then
+  pass "checkpoint (s): cycle_modified_files is still reset to [] after the widened-path run (unconditional reset preserved)"
+else
+  fail "checkpoint (s): expected cycle_modified_files reset to [] after the run, got: $(cat "$mt_s" 2>/dev/null)"
+fi
+# Ledger-consult assertion (plan verification requirement): the widened path must still ROUTE
+# THROUGH deploy_ledger_decide and write the durable ledger on a clean outcome, never bypass it --
+# a written ledger record with verify_outcome=clean is only reachable via that consult+write path.
+ledger_file_s="$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+if [ -f "$ledger_file_s" ] && [ "$(jq -r '.verify_outcome' "$ledger_file_s" 2>/dev/null)" = "clean" ]; then
+  pass "checkpoint (s): the widened path still routes through deploy_ledger_decide (durable ledger written with verify_outcome=clean), not a bypass"
+else
+  fail "checkpoint (s): expected the durable ledger to be written with verify_outcome=clean on the widened path, got: $(cat "$ledger_file_s" 2>/dev/null || echo MISSING)"
+fi
+rm -f "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
+rmdir "$WORKDIR/specs/9101_g11_terminal" 2>/dev/null || true
+rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
+rm -rf "$G11_SOURCE_ROOT"
+rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 12: --compare forwarding -- an implement-phase candidate's build-dispatch argv gains
 # --compare; a plan-phase candidate's does not. The gate is scoped by THIS script (`$g = the

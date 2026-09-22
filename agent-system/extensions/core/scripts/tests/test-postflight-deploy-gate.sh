@@ -362,6 +362,60 @@ else
 fi
 
 # =====================================================================
+# Case 8: refusal-then-recovery -- the gate is NOT sticky. A first postflight call sees a stale
+# extension and refuses (exit 6, same as Case 1); the SAME task's .claude-extensions.json is then
+# updated to record the source repo's now-current HEAD (exactly what the Inter-Cycle Redeploy
+# Checkpoint's own deploy-headless.sh run does in production: land the redeploy, then record the
+# new source_git_head), and a SECOND postflight call for the identical task now succeeds and
+# applies the transition. This demonstrates the gate re-evaluates freshness on every call rather
+# than latching a refusal -- the property the widened checkpoint predicate (this task's own
+# orchestrate-cycle-plan.sh change) depends on to converge on the cycle AFTER a refusal.
+# =====================================================================
+info "=== Case 8: refusal-then-recovery -- a stale-then-fresh sequence on the same task ==="
+FIXTURE_ROOT="$WORKDIR/case8"
+build_fixture_repo "$FIXTURE_ROOT"
+build_source_and_extensions "$FIXTURE_ROOT"
+write_return_meta "$FIXTURE_ROOT" '["agent-system/extensions/core/scripts/foo.sh"]'
+echo "v2" > "$SRC_REPO/agent-system/extensions/core/scripts/foo.sh"
+git -C "$SRC_REPO" add agent-system/extensions/core/scripts/foo.sh
+git -C "$SRC_REPO" commit -q -m "v2"
+
+UTS postflight 1 implement sess_test_c8a >"$WORKDIR/c8a.out" 2>"$WORKDIR/c8a.err"
+C8A_EXIT=$?
+c8_status_after_refusal="$(task_status)"
+if [[ "$C8A_EXIT" -eq 6 ]]; then
+  pass "refusal-then-recovery: the first call refuses (exit 6), same as Case 1"
+else
+  fail "refusal-then-recovery: expected exit 6 on the first (stale) call, got $C8A_EXIT (see $WORKDIR/c8a.err)"
+fi
+if [[ "$c8_status_after_refusal" == "implementing" ]]; then
+  pass "refusal-then-recovery: state.json status unchanged (still implementing) after the refusal"
+else
+  fail "refusal-then-recovery: expected status 'implementing' after the refusal, got '$c8_status_after_refusal'"
+fi
+
+# Simulate the checkpoint's own redeploy landing: record the source repo's now-current HEAD in
+# .claude-extensions.json, exactly as the real deploy/state-write side does after a real redeploy.
+c8_new_head="$(git -C "$SRC_REPO" log -1 --format=%H -- agent-system/extensions/core/scripts/foo.sh)"
+jq --arg h "$c8_new_head" '.extensions.core.source_git_head = $h' \
+  "$FIXTURE_ROOT/.claude-extensions.json" > "$FIXTURE_ROOT/.claude-extensions.json.tmp" \
+  && mv "$FIXTURE_ROOT/.claude-extensions.json.tmp" "$FIXTURE_ROOT/.claude-extensions.json"
+
+UTS postflight 1 implement sess_test_c8b >"$WORKDIR/c8b.out" 2>"$WORKDIR/c8b.err"
+C8B_EXIT=$?
+c8_status_after_recovery="$(task_status)"
+if [[ "$C8B_EXIT" -eq 0 ]]; then
+  pass "refusal-then-recovery: the second call (after the recorded head is synced) exits 0"
+else
+  fail "refusal-then-recovery: expected exit 0 on the second (fresh) call, got $C8B_EXIT (see $WORKDIR/c8b.err)"
+fi
+if [[ "$c8_status_after_recovery" == "completed" ]]; then
+  pass "refusal-then-recovery: the transition applies on the second call -- the gate is not sticky"
+else
+  fail "refusal-then-recovery: expected status 'completed' after the second call, got '$c8_status_after_recovery'"
+fi
+
+# =====================================================================
 # Contract assertion: the backstop block in update-task-status.sh contains no literal
 # reference to the deploy/regeneration script name or the deploy-verification script name --
 # the mechanical enforcement of the check-only contract (research constraint 3), run as a test

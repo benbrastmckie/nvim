@@ -756,9 +756,69 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
       select(scopes_overlap_first([.path]; $mods) != null) ] | unique_by(.path)
   ' 2>/dev/null) || matched_json='[]'
   matched_count=$(echo "$matched_json" | jq 'length')
-  if [ "$matched_count" -gt 0 ] && [ "$dry_run" != "true" ]; then
-    echo "[orchestrate] REDEPLOY CHECKPOINT: this cycle's modified files touched $matched_count orchestrator-critical path(s):" >&2
-    echo "$matched_json" | jq -r '.[] | "  - \(.path) (\(.label))"' >&2
+
+  # deploy_pending override (Decision 5) — HOISTED out of the `matched_count -gt 0` branch below
+  # and computed unconditionally here, before that branch decision, so its own reach is NOT
+  # bounded by the narrow orchestrator-critical-paths.json allowlist matched_count measures.
+  # Before this hoist, a `meta` task whose modified_files touched some OTHER file under
+  # agent-system/extensions/** (i.e. postflight's completion-deploy gate already refused it and
+  # annotated its own .return-meta.json with deploy_pending:true — see
+  # orchestrate-cycle-postflight.sh's WORK (f)) never reached this override at all unless it ALSO
+  # happened to touch a curated critical path, leaving the D6 residual this hoist retires. Any
+  # batch task whose OWN .return-meta.json carries deploy_pending:true still forces the ledger
+  # decision to `run` exactly as before (see deploy_ledger_decide below); the only change is that
+  # this signal is no longer gated behind matched_count.
+  deploy_pending_any="false"
+  deploy_pending_tasks_json="[]"
+  for _dp_t in $(mt_get_json '.task_numbers' | jq -r '.[]' 2>/dev/null || true); do
+    _dp_entry="$(lookup_project "$_dp_t" 2>/dev/null || true)"
+    if [ -n "$_dp_entry" ] && [ "$_dp_entry" != "null" ]; then
+      _dp_pname="$(echo "$_dp_entry" | jq -r '.project_name // ""' 2>/dev/null || true)"
+      if [ -n "$_dp_pname" ]; then
+        _dp_dir="${PROJECT_ROOT}/$(task_lookup_dir "$_dp_t" "$_dp_pname" "$PROJECT_ROOT")"
+        _dp_meta="${_dp_dir}/.return-meta.json"
+        if [ -f "$_dp_meta" ]; then
+          _dp_flag="$(jq -r '.deploy_pending // false' "$_dp_meta" 2>/dev/null || true)"
+          if [ "$_dp_flag" = "true" ]; then
+            deploy_pending_any="true"
+            deploy_pending_tasks_json="$(jq -n -c --argjson prev "$deploy_pending_tasks_json" --argjson t "$_dp_t" '$prev + [$t]')"
+          fi
+        fi
+      fi
+    fi
+  done
+
+  # ── Widened trigger predicate (this task's core change): the deploy body is now reachable via
+  # EITHER matched_count -gt 0 (the pre-existing curated-allowlist match) OR deploy_pending_any
+  # (a batch task's own postflight completion-deploy gate refusal, independent of the allowlist).
+  # `dry_run != true` is preserved unchanged on both arms.
+  #
+  # CONCURRENCY POSTURE (recorded here per this task's plan -- see also
+  # context/patterns/batch-orchestration-guardrails.md's "### The Postflight Completion-Deploy
+  # Gate" subsection): this checkpoint, not per-task postflight, is deliberately where a
+  # deploy_pending-driven redeploy fires. orchestrate-cycle-postflight.sh's own `implemented)` arm
+  # never triggers a redeploy itself (see that script's own no-retry comment) precisely BECAUSE
+  # SKILL.md's Move 2 issues every dispatch[] row's Agent call in ONE message (genuinely
+  # simultaneous) -- a redeploy fired from inside per-task postflight would race the fail-open
+  # specs/.deploy-lock mutex against a sibling task's still-in-flight dispatch. This checkpoint
+  # runs at the START of each cycle in orchestrate-cycle-plan.sh, strictly BEFORE Move 2 issues
+  # this cycle's own dispatch batch -- the one point in the loop with no dispatch in flight -- so
+  # widening its predicate adds no new automated deploy-trigger site and does not disturb the
+  # "exactly two sanctioned sites" carve-out in context/patterns/regeneration-is-manual-only.md
+  # (this checkpoint was already one of the two). Cost: convergence for a deploy-pending refusal
+  # is deferred by one cycle (this checkpoint redeploys; the FOLLOWING cycle's postflight then
+  # succeeds) rather than resolved within the same postflight -- strictly preferable to an
+  # unserialized redeploy racing a live batch.
+  if { [ "$matched_count" -gt 0 ] || [ "$deploy_pending_any" = "true" ]; } && [ "$dry_run" != "true" ]; then
+    if [ "$matched_count" -gt 0 ]; then
+      echo "[orchestrate] REDEPLOY CHECKPOINT: this cycle's modified files touched $matched_count orchestrator-critical path(s):" >&2
+      echo "$matched_json" | jq -r '.[] | "  - \(.path) (\(.label))"' >&2
+    else
+      echo "[orchestrate] REDEPLOY CHECKPOINT: triggered by the deploy_pending marker on task(s) ${deploy_pending_tasks_json} (postflight's completion-deploy gate refused a prior cycle; 0 orchestrator-critical path(s) matched the curated allowlist)." >&2
+    fi
+    if [ "$matched_count" -gt 0 ] && [ "$deploy_pending_any" = "true" ]; then
+      echo "[orchestrate] REDEPLOY CHECKPOINT: ALSO triggered by the deploy_pending marker on task(s) ${deploy_pending_tasks_json}." >&2
+    fi
 
     # ── Durable redeploy ledger consult (Decisions 4-5) ─────────────────────────────────────────
     # Consulted BEFORE the first expensive call (deploy_findings_snapshot below). Fail-safe
@@ -768,25 +828,6 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
     ledger_file="$(deploy_ledger_path "$PROJECT_ROOT")"
     hash_state_json="$(deploy_ledger_hash_state "$PROJECT_ROOT" "$CRITICAL_PATHS_FILE" 2>/dev/null)" || hash_state_json=""
     ledger_json="$(deploy_ledger_read "$ledger_file" 2>/dev/null)" || ledger_json=""
-
-    # deploy_pending override (Decision 5): any batch task whose OWN .return-meta.json carries
-    # deploy_pending:true forces the decision to `run`, so a skip can never starve the postflight
-    # completion-deploy gate's backstop.
-    deploy_pending_any="false"
-    for _dp_t in $(mt_get_json '.task_numbers' | jq -r '.[]' 2>/dev/null || true); do
-      _dp_entry="$(lookup_project "$_dp_t" 2>/dev/null || true)"
-      if [ -n "$_dp_entry" ] && [ "$_dp_entry" != "null" ]; then
-        _dp_pname="$(echo "$_dp_entry" | jq -r '.project_name // ""' 2>/dev/null || true)"
-        if [ -n "$_dp_pname" ]; then
-          _dp_dir="${PROJECT_ROOT}/$(task_lookup_dir "$_dp_t" "$_dp_pname" "$PROJECT_ROOT")"
-          _dp_meta="${_dp_dir}/.return-meta.json"
-          if [ -f "$_dp_meta" ]; then
-            _dp_flag="$(jq -r '.deploy_pending // false' "$_dp_meta" 2>/dev/null || true)"
-            [ "$_dp_flag" = "true" ] && deploy_pending_any="true"
-          fi
-        fi
-      fi
-    done
 
     ledger_decision_json="$(deploy_ledger_decide "$ledger_json" "$hash_state_json" "$(date +%s)" "$cycle_modified_files_json" "$(mt_get_json '.task_numbers')" "$deploy_pending_any")"
     ledger_decision="$(echo "$ledger_decision_json" | jq -r '.decision')"
