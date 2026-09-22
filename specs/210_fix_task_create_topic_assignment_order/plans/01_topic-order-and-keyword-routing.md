@@ -1,7 +1,7 @@
 # Implementation Plan: Fix /task create topic assignment order, and task-type keyword false positives
 
 - **Task**: 210 - Fix /task create: topic assignment order and registration, and task-type keyword false positives
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None (task 209 is a state.json ordering dependency only, not content-related)
 - **Research Inputs**: specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md
