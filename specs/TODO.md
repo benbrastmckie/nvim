@@ -33,7 +33,7 @@ next_project_number: 249
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-243 [PLANNED] — Reconcile contradictory contract for research-phase...
+243 [IMPLEMENTING] — Reconcile contradictory contract for research-phase...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
@@ -114,12 +114,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 243. Reconcile contradictory contract for research-phase .orchestrator-handoff.json (agent file vs handoff-schema.md vs dispatch template)
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [243_reconcile_research_handoff_writer_contract/reports/01_reconcile-handoff-writer-contract.md]
 - **Plan**: [243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md]
+- **Summary**: [243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

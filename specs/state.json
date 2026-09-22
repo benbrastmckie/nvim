@@ -957,12 +957,12 @@
     {
       "project_number": 243,
       "project_name": "reconcile_research_handoff_writer_contract",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reconcile contradictory contract for research-phase .orchestrator-handoff.json (agent file vs handoff-schema.md vs dispatch template)",
       "created": "2026-09-21T21:03:29Z",
-      "last_updated": "2026-09-22T15:57:23Z",
+      "last_updated": "2026-09-22T17:34:03Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/agents/general-research-agent.md",
@@ -981,9 +981,15 @@
           "path": "specs/243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md",
           "type": "plan",
           "summary": "4-phase plan reconciling the research-agent handoff-writer contract across 21 agent files plus handoff-schema.md."
+        },
+        {
+          "path": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
+          "type": "summary",
+          "summary": "Reconciled the research-agent handoff-writer contract across 21 agent files and handoff-schema.md."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Replaced the unconditional 'write .orchestrator-handoff.json' section in all 21 research-agent contract files with a canonical 'research agents never write one' prohibition, fixed the three variant files' MUST DO/MUST NOT lists and stale cross-references, and corrected handoff-schema.md's misattributed citation. A repo-wide grep confirms one consistent statement across all files."
     },
     {
       "project_number": 244,

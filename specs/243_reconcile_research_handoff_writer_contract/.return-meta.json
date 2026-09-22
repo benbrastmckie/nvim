@@ -41,29 +41,51 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bulk-edit", "copy-templated", "exact-match-substitution", "agent-contracts", "verification"]
+      "suggested_keywords": [
+        "bulk-edit",
+        "copy-templated",
+        "exact-match-substitution",
+        "agent-contracts",
+        "verification"
+      ]
     },
     {
       "content": "When removing a section that carries the only instance of an otherwise-needed instruction (e.g. a dispatch_seq echo scoped to 'the handoff's own field'), redirect the instruction's target rather than deleting it outright. Silently dropping instructions when replacing a boilerplate section can regress unrelated behavior that depended on that boilerplate as its sole carrier.",
       "category": "INSIGHT",
       "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["redirect-not-delete", "boilerplate-section", "instruction-carrier", "regression-avoidance"]
+      "suggested_keywords": [
+        "redirect-not-delete",
+        "boilerplate-section",
+        "instruction-carrier",
+        "regression-avoidance"
+      ]
     },
     {
       "content": "For a template-copied instruction spread across N extension agent files, prove consistency with a repo-wide grep for both the removed old phrasing (expect zero hits) and the new canonical phrasing (expect N hits), rather than a three-file spot check. This is the reusable acceptance test that also catches future authors reintroducing the old template.",
       "category": "PATTERN",
       "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["acceptance-grep", "repo-wide-verification", "template-propagation", "consistency-check"]
+      "suggested_keywords": [
+        "acceptance-grep",
+        "repo-wide-verification",
+        "template-propagation",
+        "consistency-check"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790091707_e274be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
