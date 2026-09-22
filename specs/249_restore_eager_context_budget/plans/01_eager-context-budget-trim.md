@@ -193,21 +193,23 @@ of headroom under the 65,950 B baseline). Confirm with `wc -c` on the rule and a
 
 ---
 
-### Phase 3: Register the companion in the context index [NOT STARTED]
+### Phase 3: Register the companion in the context index [COMPLETED]
 
 **Goal**: Add an `index-entries.json` entry for the new companion so it is discoverable the
 same way `git-workflow-narrative.md` is, with an accurate `line_count`.
 
 **Tasks**:
-- [ ] Add one entry to `agent-system/extensions/core/index-entries.json` under `entries`,
+- [x] Add one entry to `agent-system/extensions/core/index-entries.json` under `entries`,
       modeled field-for-field on the existing `standards/git-workflow-narrative.md` entry:
       `path`, `domain` (`core`), `subdomain` (`standards`), `summary`, `line_count`,
-      `keywords`, `topics`, `load_when`.
-- [ ] Set `line_count` to the companion's actual `wc -l` value — the context-index validator
-      checks line-count accuracy and will warn on drift.
-- [ ] Choose `load_when` to reflect who actually needs the detail: implementation agents that
-      write into the source store, plus `/meta`.
-- [ ] Confirm the JSON still parses.
+      `keywords`, `topics`, `load_when`. *(completed: inserted immediately after the
+      git-workflow-narrative entry)*
+- [x] Set `line_count` to the companion's actual `wc -l` value — the context-index validator
+      checks line-count accuracy and will warn on drift. *(completed: 75, matching `wc -l`)*
+- [x] Choose `load_when` to reflect who actually needs the detail: implementation agents that
+      write into the source store, plus `/meta`. *(completed: agents
+      general-implementation-agent, meta-builder-agent; commands /meta)*
+- [x] Confirm the JSON still parses. *(completed)*
 
 **Timing**: 0.2 hours
 

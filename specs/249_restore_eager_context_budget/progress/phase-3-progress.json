@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Register the companion in the context index",
+  "started_at": "2026-09-22T00:30:00Z",
+  "last_updated": "2026-09-22T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add index-entries.json entry modeled on git-workflow-narrative precedent", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Set line_count to actual wc -l value", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Choose load_when reflecting implementation agents + /meta", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm JSON parses; run test-index-entries-schema.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

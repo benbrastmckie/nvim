@@ -495,7 +495,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 307,
+      "line_count": 319,
       "keywords": [
         "guide",
         "extension",
@@ -941,7 +941,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 120,
+      "line_count": 124,
       "keywords": [
         "bounded-wait",
         "kill-0",
@@ -2523,7 +2523,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 216,
+      "line_count": 231,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -2986,7 +2986,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Topic assignment pattern for classifying and grouping tasks by subject area",
-      "line_count": 266,
+      "line_count": 305,
       "keywords": [
         "topic",
         "classification",
@@ -3139,6 +3139,32 @@
         ],
         "commands": [
           "/orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "standards/source-store-deploy-boundary-narrative.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Full source-store/deploy-boundary resolution procedure, unreachable-source-store fallback, worked example, Exceptions, and Enforcement narrative",
+      "line_count": 75,
+      "keywords": [
+        "source-store",
+        "deploy-boundary",
+        "source-dir",
+        "claude-extensions",
+        "hand-authoring"
+      ],
+      "topics": [
+        "source-store-deploy-boundary"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "meta-builder-agent"
+        ],
+        "commands": [
+          "/meta"
         ]
       }
     },
