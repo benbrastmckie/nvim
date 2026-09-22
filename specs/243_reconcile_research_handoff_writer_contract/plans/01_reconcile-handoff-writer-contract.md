@@ -243,7 +243,7 @@ Phase 3, not here.
 
 ---
 
-### Phase 3: Apply canonical text to the 3 variant copies and their extra references [IN PROGRESS]
+### Phase 3: Apply canonical text to the 3 variant copies and their extra references [COMPLETED]
 
 **Goal**: Fix the three files that reference the handoff beyond the section itself — a MUST DO
 bullet, and in one case a MUST NOT bullet — plus the one file whose heading level differs.
@@ -292,28 +292,28 @@ command in Phase 2's Scope Hypothesis plus `grep -n "^##\+ \`\.orchestrator-hand
 
 ---
 
-### Phase 4: Correct the schema doc citation and prove consistency [NOT STARTED]
+### Phase 4: Correct the schema doc citation and prove consistency [IN PROGRESS]
 
 **Goal**: Fix `handoff-schema.md`'s misattributed citation, confirm
 `orchestrate-build-dispatch.sh` genuinely needs no change, and run the repo-wide acceptance grep.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/docs/architecture/handoff-schema.md` immediately
-      before editing
-- [ ] In the Handoff Writers table's base-mode row, replace the parenthetical citation `(Stage 3.6
+- [x] Re-read `agent-system/extensions/core/docs/architecture/handoff-schema.md` immediately
+      before editing *(completed)*
+- [x] In the Handoff Writers table's base-mode row, replace the parenthetical citation `(Stage 3.6
       "Scoping Decision" in the research agents)` — which points at a passage that does not state
       the prohibition — with a citation to the now-correct section: the
       `.orchestrator-handoff.json` — research agents never write one section in the research-agent
-      contracts. Leave the rule statement itself unchanged
-- [ ] Confirm `scripts/orchestrate-build-dispatch.sh`'s `## Handoff` block (~lines 461-465) emits
+      contracts. Leave the rule statement itself unchanged *(completed)*
+- [x] Confirm `scripts/orchestrate-build-dispatch.sh`'s `## Handoff` block (~lines 461-465) emits
       only `handoff_path`/`task_dir` with no writing obligation, and record that no edit was
-      needed (this file is named in the task's acceptance scope)
-- [ ] Run the acceptance grep across all 21 research-agent files plus `handoff-schema.md` and the
-      dispatch-builder script; confirm one consistent statement
-- [ ] Confirm no file under `.claude/**` was hand-edited during this task
-- [ ] Record the `planner-agent.md` / `general-implementation-agent.md` same-class defect as a
-      follow-up in the task summary (do not edit either file)
-- [ ] Commit `handoff-schema.md` with a targeted `git add -- <path>`
+      needed (this file is named in the task's acceptance scope) *(completed: confirmed lines 463-467 emit only handoff_path/task_dir, no edit needed)*
+- [x] Run the acceptance grep across all 21 research-agent files plus `handoff-schema.md` and the
+      dispatch-builder script; confirm one consistent statement *(completed: 21/21 hits for canonical statement, 0 hits for stale phrasing)*
+- [x] Confirm no file under `.claude/**` was hand-edited during this task *(completed: git status --short shows no .claude/ modifications)*
+- [x] Record the `planner-agent.md` / `general-implementation-agent.md` same-class defect as a
+      follow-up in the task summary (do not edit either file) *(completed: recorded in summary)*
+- [x] Commit `handoff-schema.md` with a targeted `git add -- <path>` *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -347,18 +347,18 @@ obligation, it moves into scope and this phase gains an edit.
 
 ## Testing & Validation
 
-- [ ] All 21 research-agent contract files carry the identical prohibition section (one hit each
-      for `research agents never write one`)
-- [ ] No research-agent contract file instructs writing `.orchestrator-handoff.json` under any
-      condition
-- [ ] All 21 files still carry a `dispatch_seq` echo instruction (now pointed at
-      `.return-meta.json`)
-- [ ] `handoff-schema.md`'s rule statement is unchanged; only its citation parenthetical differs
-- [ ] `orchestrate-build-dispatch.sh` is unmodified and confirmed obligation-free
-- [ ] No cross-reference anywhere in the 21 files points at the removed heading text
-- [ ] No file under `.claude/**` was modified
-- [ ] `git log --oneline` shows per-file (or explicitly-listed-group) commits, no directory or
-      glob `git add` pathspec used
+- [x] All 21 research-agent contract files carry the identical prohibition section (one hit each
+      for `research agents never write one`) *(completed)*
+- [x] No research-agent contract file instructs writing `.orchestrator-handoff.json` under any
+      condition *(completed)*
+- [x] All 21 files still carry a `dispatch_seq` echo instruction (now pointed at
+      `.return-meta.json`) *(completed)*
+- [x] `handoff-schema.md`'s rule statement is unchanged; only its citation parenthetical differs *(completed)*
+- [x] `orchestrate-build-dispatch.sh` is unmodified and confirmed obligation-free *(completed)*
+- [x] No cross-reference anywhere in the 21 files points at the removed heading text *(completed)*
+- [x] No file under `.claude/**` was modified *(completed)*
+- [x] `git log --oneline` shows per-file (or explicitly-listed-group) commits, no directory or
+      glob `git add` pathspec used *(completed)*
 
 ## Artifacts & Outputs
 
