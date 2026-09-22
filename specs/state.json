@@ -447,12 +447,18 @@
           "path": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md",
           "type": "plan",
           "summary": "4-phase plan (5h): self-excluding build-waiter reaper pass in claude-refresh.sh (own pgid-bearing snapshot, two signature families, age-threshold-only gate), tests with mutation checks, both inventory tables + systemd ruling."
+        },
+        {
+          "path": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: build-waiter reaper pass, test coverage, docs, and systemd ruling, all 4 phases complete."
         }
       ],
       "created": "2026-09-07T23:37:35Z",
       "last_updated": "2026-09-22T05:59:42Z",
       "session_id": "sess_1790055369_87ec14",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a fifth, age-threshold-only pass to claude-refresh.sh that reaps orphaned build-waiter poll loops (canonical and legacy self-match shapes), widening self-exclusion to pid/ppid/pgid/ancestor-chain from one frozen snapshot with fail-closed behavior. Full regression coverage (112 assertions, 2 mutation checks) and both pass-inventory docs plus the systemd unit's ruling comment were updated to match."
     },
     {
       "project_number": 45,

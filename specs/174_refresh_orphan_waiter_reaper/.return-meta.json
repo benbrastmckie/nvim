@@ -27,22 +27,43 @@
       "category": "PATTERN",
       "source_artifact": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "command substitution", "subshell", "global variable", "side effect", "function return value"]
+      "suggested_keywords": [
+        "bash",
+        "command substitution",
+        "subshell",
+        "global variable",
+        "side effect",
+        "function return value"
+      ]
     },
     {
       "content": "Reaper self-exclusion pattern for a poll-loop/waiter-shaped process: pid/ppid alone is not enough when the thing being reaped is itself a shape a CALLER might also match (e.g. an orchestrating shell awaiting the reaper). Widen to pid, ppid, process group (pgid), and the full ancestor chain up to PID 1, all computed from ONE already-captured ps -eo snapshot (add pgid to that pass's own field list rather than widening a shared snapshot other passes/tests depend on), and fail closed (warn, reap nothing) if the reaper's own row is missing from the snapshot rather than guessing or falling back to a second query. Detection must never use pgrep -f or ps | grep -- a process whose own command line contains the search pattern will self-match and can kill its own shell (observed real incident, exit 144, twice).",
       "category": "PATTERN",
       "source_artifact": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["reaper", "self-exclusion", "process group", "pgid", "ancestor chain", "ps snapshot", "pgrep self-match"]
+      "suggested_keywords": [
+        "reaper",
+        "self-exclusion",
+        "process group",
+        "pgid",
+        "ancestor chain",
+        "ps snapshot",
+        "pgrep self-match"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790055369_87ec14",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
