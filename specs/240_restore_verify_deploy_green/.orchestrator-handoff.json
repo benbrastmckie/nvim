@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 1,
-  "summary": "GATE 17 scoped-commit lint is a genuine false positive at test-detect-noop-bash.sh:152 (fix: reword fixture to avoid the literal 'git commit -m' substring); GATE 20 SUB-CHECK B eager-load regression is currently PASSING (65257 B vs 65950 B baseline), contradicting the dispatch's stated 66026 B figure, which traces to a stale config note rather than a live regression.",
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 4,
+  "summary": "3-phase plan (1.25h): Phase 1 rewords the GATE 17 fixture at test-detect-noop-bash.sh:152 to 'git commit --message \"true\"'; Phase 2 re-measures eager load (65257 B at plan time, under 65950 baseline) and corrects the stale measured_bytes/note fields, with conditional trim/rebaseline fallback if a sibling pushed it over; Phase 3 runs full deploy-headless.sh verification.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
-      "summary": "Root-cause and fix recommendation for GATE 17 (reword test fixture); finds GATE 20 already green and recommends against a speculative trim."
+      "type": "plan",
+      "path": "specs/240_restore_verify_deploy_green/plans/01_restore-verify-deploy-green.md",
+      "summary": "3-phase plan: fixture reword, eager-load re-measure and config correction, full deploy verification."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 3,
   "blockers": [],
-  "next_action_hint": "Run /plan 240 to create an implementation plan: reword agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152 from 'git commit -m \"true\"' to 'git commit --message \"true\"', re-run the lint and the 40-assertion test suite, optionally correct the stale eager_load.measured_bytes/note in orchestrator-context-budget.json, then run deploy-headless.sh to confirm 0 failed checks."
+  "next_action_hint": "Run /implement 240. Phases 1 and 2 are independent (wave 1); Phase 3 is full-tier verification."
 }

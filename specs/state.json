@@ -5,13 +5,13 @@
     {
       "project_number": 248,
       "project_name": "revise_typst_viewing_commands",
-      "status": "researched",
+      "status": "planning",
       "task_type": "neovim",
       "description": "Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication",
       "topic": "neovim",
       "created": "2026-09-21T21:54:04Z",
-      "last_updated": "2026-09-22T05:55:52Z",
-      "session_id": "sess_1790055369_87ec14",
+      "last_updated": "2026-09-22T05:56:10Z",
+      "session_id": "sess_1790055369_87ec14_248",
       "artifacts": [
         {
           "path": "specs/248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md",
@@ -34,18 +34,23 @@
     {
       "project_number": 240,
       "project_name": "restore_verify_deploy_green",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Restore verify-deploy.sh to green by fixing its two remaining check failures. Only edit agent-system/extensions/core/** (never .claude/). (1) GATE 20 SUB-CHECK B: the eager-load total (measured by the deployed .claude/scripts/measure-eager-context.sh --check) is 66026 B against eager_load.baseline_bytes 65950 B in agent-system/extensions/core/context/config/orchestrator-context-budget.json, 76 B over. The growth came from the one-line batch-selection pointer added to agent-system/extensions/core/merge-sources/claudemd.md's Multi-task syntax paragraph (plus any other eager-set growth since the last re-baseline). Preferred fix: trim at least 76 B, ideally leaving a few hundred bytes of headroom, from the eager set (assembled CLAUDE.md merge sources + core rules/*.md) by collapsing restatement into pointers, without removing operational content. Fallback only if a trim is not reasonable: raise baseline_bytes with a dated, justified note in the config. Do not silently absorb growth. (2) GATE 17 SCOPED-COMMIT BOUNDARY LINT: agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose reports one violation at agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152, where the string 'git commit -m \"true\"' is a classifier test fixture (a non-trivial command the no-op Bash hook must not count), not a real commit call site. Fix by rewording the fixture so it no longer matches the lint pattern while still testing the same classification (preferred), or by adding a narrowly-scoped, documented line-level exemption per the lint's own allowlist convention. Keep all 40 assertions of test-detect-noop-bash.sh passing. VERIFY: run bash .claude/scripts/deploy-headless.sh and confirm RESULT is landed (exit 0), with 0 failed checks in verify-deploy.sh. ORDERING: tasks 224, 227, 139 and 140 edit eager-loaded files (merge-sources/claudemd.md, rules/pr-prohibition.md, rules/source-store-deploy-boundary.md, rules/git-workflow.md) and depend on this task so the headroom it restores is measured first.",
       "topic": "core-agent-system",
       "created": "2026-09-19T03:16:57Z",
-      "last_updated": "2026-09-22T05:55:40Z",
+      "last_updated": "2026-09-22T05:59:14Z",
       "session_id": "sess_1790055369_87ec14",
       "artifacts": [
         {
           "path": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
           "type": "report",
           "summary": "Root-cause and fix recommendation for GATE 17 (reword test fixture); finds GATE 20 already green and recommends against a speculative trim."
+        },
+        {
+          "path": "specs/240_restore_verify_deploy_green/plans/01_restore-verify-deploy-green.md",
+          "type": "plan",
+          "summary": "3-phase plan: fixture reword, eager-load re-measure and config correction, full deploy verification."
         }
       ],
       "next_artifact_number": 2
@@ -406,7 +411,7 @@
     {
       "project_number": 174,
       "project_name": "refresh_orphan_waiter_reaper",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Add a self-excluding orphaned-build-waiter reaper pass to /refresh",
       "description": "Give the system a way to clean up waiters that already leaked, correct by construction against the self-match bug observed while cleaning up manually. Second observed defect, same bug class as the primary one: an ad-hoc cleanup command of the form `pgrep -f 'until grep' | ... kill` matched ITS OWN command line -- the command string contained the very pattern it was searching for -- and killed its own shell (exit 144). This happened twice. Any reaper for this must exclude itself and its own process group, or it kills the reaper. Investigation finding: agent-system/extensions/core/scripts/claude-refresh.sh already solves exactly this, and the fix should reuse its architecture rather than invent a new one. It takes a single atomic `ps -eo` snapshot per invocation (take_snapshot()) with every exclusion evaluated against that frozen snapshot, and it already implements what its own header calls zero-query self-exclusion -- `if [ \"$pid\" = \"$$\" ] || [ \"$ppid\" = \"$$\" ]; then` skip -- applied in both the Claude-process pass and the Lean-LSP pass. That idiom is known at parse time, needs no second query, and is race-free; it is the correct-by-construction answer to the pgrep self-match bug. Scope: add a new pass that identifies orphaned build-waiter poll loops (matching the process signature settled by the bounded-waiter contract) whose watched log has a dead or absent writer, reusing the existing snapshot and the existing self-exclusion, and extend the exclusion to the reaper's own process group as well as its pid/ppid. Decide and document the pass's gate class explicitly -- the existing passes are split between interactive-confirm (rows 1-2), report-only-always (rows 3-4), and age-threshold-only (rows 5-8); an age-threshold-only gate matching the stale-lock passes is the closest existing precedent, since these waiters are 0% CPU and provably unreapable rather than merely idle. Then update the pass inventory in BOTH places that must agree row-for-row on gate and destructiveness: agent-system/extensions/core/commands/refresh.md ('What It Cleans' table plus a new owning subsection) and agent-system/extensions/core/skills/skill-refresh/SKILL.md (its Pass Inventory table). State whether the new pass is reached by the hourly claude-refresh.timer cadence -- only the four passes internal to claude-refresh.sh currently are.",
@@ -429,8 +434,8 @@
         }
       ],
       "created": "2026-09-07T23:37:35Z",
-      "last_updated": "2026-09-22T05:55:46Z",
-      "session_id": "sess_1790055369_87ec14",
+      "last_updated": "2026-09-22T05:56:06Z",
+      "session_id": "sess_1790055369_87ec14_174",
       "next_artifact_number": 2
     },
     {
