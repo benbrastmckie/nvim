@@ -58,7 +58,8 @@
       "dependencies": [
         240
       ],
-      "session_id": "sess_1790091707_e274be"
+      "session_id": "sess_1790091707_e274be",
+      "completion_summary": "Replaced the source-store boundary rule's hard-coded agent-system/extensions/** target with a repository-independent resolution procedure against .claude-extensions.json's source_dir field, added an explicit unreachable-source-store fallback (file a task via /task), aligned the hook's advisory message and the generated CLAUDE.md rules-list line with the new procedure, and verified the procedure by hand-walking it against a real consumer repository (~/Projects/BimodalLogic) for both a core and a non-core extension entry, plus the unreachable branch on a scratch copy."
     },
     {
       "project_number": 217,

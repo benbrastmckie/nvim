@@ -1,9 +1,28 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/227_resolve_source_store_target_in_deployed_trees/summaries/02_resolve-target-via-extensions-json-summary.md",
+      "summary": "Rewrote the source-store boundary rule's target resolution as a repository-independent procedure against .claude-extensions.json's source_dir, with an unreachable fallback; aligned the hook advisory and CLAUDE.md rules-list restatements; verified against a real consumer repository."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the source-store boundary rule's hard-coded agent-system/extensions/** target with a repository-independent resolution procedure against .claude-extensions.json's source_dir field, added an explicit unreachable-source-store fallback (file a task via /task), aligned the hook's advisory message and the generated CLAUDE.md rules-list line with the new procedure, and verified the procedure by hand-walking it against a real consumer repository (~/Projects/BimodalLogic) for both a core and a non-core extension entry, plus the unreachable branch on a scratch copy."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
+    "agent-system/extensions/core/hooks/validate-meta-write.sh",
+    "agent-system/extensions/core/merge-sources/claudemd.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1790091707_e274be",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

@@ -1,20 +1,19 @@
 {
-  "status": "planned",
-  "dispatch_seq": 9,
-  "task_number": 227,
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Authored a 4-phase, text-only implementation plan. The boundary rule's hard-coded agent-system/extensions/** target is replaced by a resolution procedure against <project-root>/.claude-extensions.json's extensions.<name>.source_dir (already stamped per extension by the deploy engine, outside .claude/ so it survives a wipe), with an explicit unreachable branch (missing/unparseable file, missing entry, missing source_dir, path absent on disk) that files a task via /task rather than permitting a .claude/** edit. Phase 2 verifies the procedure by hand against ~/Projects/BimodalLogic; Phase 3 aligns the validate-meta-write.sh advisory message and the CLAUDE.md rules-list line; Phase 4 self-checks the boundary. No deploy-machinery change (dispatch option (b) rejected on evidence), no deployed-copy edit, and agents/general-implementation-agent.md is excluded as a concurrent sibling's declared territory.",
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "phase": "implement",
+  "summary": "Replaced the source-store boundary rule's hard-coded agent-system/extensions/** target with a repository-independent .claude-extensions.json source_dir resolution procedure and unreachable fallback, aligned the hook advisory and CLAUDE.md rules-list restatements, and verified against a real consumer repository (~/Projects/BimodalLogic).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/227_resolve_source_store_target_in_deployed_trees/plans/02_resolve-target-via-extensions-json.md",
-      "summary": "4-phase text-only plan: resolve the source-store target via .claude-extensions.json source_dir, with an unreachable branch and consumer-repo verification."
+      "type": "summary",
+      "path": "specs/227_resolve_source_store_target_in_deployed_trees/summaries/02_resolve-target-via-extensions-json-summary.md",
+      "summary": "Rewrote the source-store boundary rule's target resolution as a repository-independent procedure against .claude-extensions.json's source_dir, with an unreachable fallback; aligned the hook advisory and CLAUDE.md rules-list restatements; verified against a real consumer repository."
     }
   ],
+  "phases_completed": 4,
+  "phases_total": 4,
   "blockers": [],
-  "sorry_inventory": [],
+  "plan_markers_verified": true,
   "continuation_path": null,
-  "session_id": "sess_1790091707_e274be_227",
-  "next_steps": "Run /implement 227 to execute the plan"
+  "next_action_hint": "Task complete. Follow-up residue recorded in the summary's Follow-ups section: 16 agent-contract files still restate the hard-coded target in their own MUST-NOT bullets/Rule 2, out of this task's scope."
 }
