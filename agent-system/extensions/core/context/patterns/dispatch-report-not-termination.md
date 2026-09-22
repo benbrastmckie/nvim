@@ -56,7 +56,10 @@ both instances above, every agent that arms a watcher/monitor process during its
 MUST tear it down before reporting a terminal result. This reduces the wake path at its source
 rather than only tolerating its consequences downstream. An agent that reports while a
 watcher/monitor is still armed leaves exactly the conditions this pattern describes: a process
-that can wake, observe stale context, and act as though it is still the current dispatch.
+that can wake, observe stale context, and act as though it is still the current dispatch. The
+same obligation applies before the watched build itself is cancelled or superseded (for example,
+a re-run or a replacement build), not only before reporting — that transition is what orphans a
+waiter loop even when the dispatch that armed it never reports at all.
 
 ## Where This Is Referenced
 
@@ -68,3 +71,7 @@ they do not restate it:
 - `context/contracts/territory.md`'s Territory Declaration Template
 - `context/standards/orchestrator-runtime-files.md`'s `.orchestrator-handoff.json` tracking
   rationale entry
+- the lean extension's `agents/lean-implementation-agent.md`'s Final Verification Stage build
+  step ("Verify build passes")
+- the lean extension's `agents/lean-implementation-hard-agent.md`'s Stage 4 step D ("Verify Phase
+  Completion") and Stage 6 step 4 ("Verify build passes")

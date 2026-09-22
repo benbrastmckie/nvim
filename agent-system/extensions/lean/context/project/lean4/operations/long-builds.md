@@ -101,7 +101,9 @@ detachment or the guard obligation.
 ## Passive progress checks
 
 While a detached build runs, an agent can check on it without terminating it or racing its own
-completion notification:
+completion notification. Each check below needs a `<PID>`: get it from the guard's own
+`holder_pid` result-record field, or from `lake-build-guard.sh status --verbose` — never by
+inventing a process scan to fill the gap.
 
 - **Fresh `.olean` mtime frontier** — `find .lake/build -name '*.olean' -newer <marker> | wc -l`
   (or similar) shows how many modules have completed since the build started.
@@ -114,15 +116,45 @@ completion notification:
   (steady growth is normal during elaboration) and an early OOM warning (a sudden spike toward the
   machine's available memory).
 
+**Never `pgrep -f` for the guard, the watcher, or the wrapper script itself.** Any such pattern
+matches the polling shell's own argv (the pattern text appears in the command line of the shell
+running the wait) and can therefore never return empty while the watcher lives — see
+`context/patterns/bounded-build-waiter.md` and the guard's own header for the same self-match
+pitfall and the `kill -0 "$holder_pid"` idiom that avoids it. Where a real-worker match is
+genuinely needed, use a non-self-matching bracket-trick pattern instead, e.g.
+`pgrep -f '[b]in/lake build'` or `pgrep -f '[c]heck-module-invariants'`.
+
 ### The liveness caveat
 
 All four checks prove **liveness**, never **termination**. A process burning CPU with steadily
 growing RSS can still be stuck in a divergent tactic search that will never finish on its own.
 These checks are for interim observability between the start of a detached build and its
 completion notification — they are not a substitute for waiting on that notification, and they
-must never be used to declare a build "probably done" in its absence. See "Blocking on a detached
-build" below for the distinct, bounded case where the dispatch must actually block rather than
-merely observe.
+must never be used to declare a build "probably done" in its absence. A process count is never
+evidence of a build's OUTCOME, and a count that cannot go to zero — as a self-matching `pgrep -f`
+never can — is not evidence of anything at all. See "Reading the build's verdict" below for how a
+finished build's outcome is actually determined, and "Blocking on a detached build" for the
+distinct, bounded case where the dispatch must actually block rather than merely observe.
+
+## Reading the build's verdict
+
+Once a build has finished (or a consumer needs to determine whether it already has), its verdict
+— pass or fail — is read from evidence, strongest last, never from a process count:
+
+1. **The guard's own exit code, captured un-piped**, or the guard's `result` subcommand. See the
+   guard's own "READING THE VERDICT" header block and `--help` for the exit-code bands; this
+   anchor does not restate them.
+2. **The explicit `Build completed successfully (N jobs)` line in the guard's captured output**
+   together with `grep -c 'error:'` returning 0 over both captured stdout and captured stderr. See
+   the guard's own documented capture paths (`build-guard.stdout` / `.stderr`) rather than
+   restating them here.
+3. **Strongest: an `.olean`-newer-than-source check per touched module.** This proves the
+   module's PRESENCE in the build, not merely the absence of a complaint, and is therefore
+   stronger evidence than either tier above.
+
+**Never pipe the guard invocation into `tail`/`head`/`grep` and then read `$?`** — that is the
+pipe's exit code, not the guard's. Redirect to a log file and capture `GUARD_EXIT=$?` instead
+(e.g. `... > <log> 2>&1; GUARD_EXIT=$?`), or use the guard's `result` subcommand.
 
 ## Blocking on a detached build
 

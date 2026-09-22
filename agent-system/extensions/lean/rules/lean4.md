@@ -71,6 +71,14 @@ Canonical invocation shape:
 bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args>
 ```
 
+Un-piped capture form:
+```bash
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args> > <log> 2>&1; GUARD_EXIT=$?
+```
+or read the guard's own `result` subcommand. See
+`context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict" for the full
+evidence hierarchy and the pipe-exit-code prohibition; this section does not restate either.
+
 Prefer scoped: `-- Module.Name` | Full project: `-- build` (no module) | Clean: `lake clean` then the
 guarded build.
 

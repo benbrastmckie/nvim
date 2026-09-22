@@ -237,7 +237,14 @@ After completing each proof step, update sorry_inventory:
 bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- ModuleName 2>&1
 ```
 Run this via `Bash(run_in_background: true)` and wait for the harness's completion notification
-before recording the result.
+before recording the result. Because this invocation is never piped, that exit code is the
+guard's own. The phase passes on the scoped phase-end bar in
+`context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's own
+exit code (Tier 1) plus an `.olean`-newer-than-source check (Tier 3) for the phase's module or
+modules; Tier 2 is optional here. Any waiter armed on this build follows
+`context/patterns/bounded-build-waiter.md` and must be torn down before reporting or before this
+build is superseded, per `context/patterns/dispatch-report-not-termination.md`'s "Tear Down
+Watchers/Monitors Before Reporting".
 
 **E. Mark Phase Complete**: Edit plan file heading to `[COMPLETED]`.
 
@@ -346,6 +353,12 @@ On `implemented`: set `status: "implemented"`, empty `blockers`, null `continuat
   `blockers` instead of (or in addition to) `sorry_inventory`, and `status` cannot be
   `"implemented"`.
 
+**`git-snapshot.sh --no-revert` under `orchestrator_mode`**: under `orchestrator_mode: true`,
+`git-snapshot.sh` MUST be invoked with `--no-revert`, and `--no-revert` SHOULD be preferred
+generally whenever the agent intends to keep working after the snapshot — the default and
+`--branch` modes revert the working tree repo-globally (an unscoped `git stash push -u`), which
+will capture a concurrent sibling dispatch's in-flight edits.
+
 **Step 2: Final incremental commit**:
 
 Targeted, work-scoped staging per `.claude/context/standards/git-staging-scope.md` — never stage
@@ -394,7 +407,15 @@ Before writing final metadata, run the complete verification suite:
    Run via `Bash(run_in_background: true)` — see
    `context/project/lean4/operations/long-builds.md` for why both the detachment and the guard
    are mandatory together. Wait for the harness's completion notification before recording the
-   result.
+   result. Because this invocation is never piped, that exit code is the guard's own.
+   Determine `build_passed` from the terminal full-project bar in
+   `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's
+   own exit code (Tier 1), the success line plus a zero `error:` count over both captured streams
+   (Tier 2), and an `.olean`-newer-than-source check for every module this task touched (Tier 3).
+   Any waiter armed on this build follows `context/patterns/bounded-build-waiter.md` and must be
+   torn down before reporting or before this build is superseded, per
+   `context/patterns/dispatch-report-not-termination.md`'s "Tear Down Watchers/Monitors Before
+   Reporting".
    Record: `build_passed` (true/false)
 
 5. **Plan compliance spot-check**: Verify all named theorems/lemmas from plan exist in Theories/.

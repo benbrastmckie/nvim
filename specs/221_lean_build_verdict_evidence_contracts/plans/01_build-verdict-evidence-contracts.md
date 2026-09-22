@@ -1,7 +1,7 @@
 # Implementation Plan: Task #221
 
 - **Task**: 221 - Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: 172, 173, 194 (all completed)
 - **Research Inputs**: specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md
@@ -107,13 +107,13 @@ No roadmap consultation requested for this dispatch.
 
 Phases in the same wave can run in parallel. Phases 4 and 5 touch different files.
 
-### Phase 1: Verdict anchor and PID-source fix in long-builds.md [NOT STARTED]
+### Phase 1: Verdict anchor and PID-source fix in long-builds.md [COMPLETED]
 
 **Goal**: Add the single canonical verdict-evidence section and close the passive-progress PID
 vacuum, in `agent-system/extensions/lean/context/project/lean4/operations/long-builds.md`.
 
 **Tasks**:
-- [ ] Add a new `## Reading the build's verdict` section between "The liveness caveat" and
+- [x] Add a new `## Reading the build's verdict` section between "The liveness caveat" and *(completed)*
       "Blocking on a detached build". List the evidence strongest last:
       (1) the guard's own exit code, captured un-piped (`... > <log> 2>&1; GUARD_EXIT=$?`), or the
       guard's `result` subcommand. Point at the guard's "READING THE VERDICT" header block and
@@ -123,20 +123,20 @@ vacuum, in `agent-system/extensions/lean/context/project/lean4/operations/long-b
       files (`.lake/build-guard.stdout` / `.stderr`) by pointer to the guard's documented paths.
       (3) strongest: for each touched module, a check that its `.olean` is newer than its source,
       because this proves the module is present in the build, not merely that nothing complained.
-- [ ] State the prohibition once, in that section: never pipe the guard into
+- [x] State the prohibition once, in that section: never pipe the guard into *(completed)*
       `tail`/`head`/`grep` and then read `$?`, because that is the pipe's exit code, not the
       guard's. Redirect to a log and capture `GUARD_EXIT=$?` instead.
-- [ ] In "Passive progress checks", add a lead-in naming the PID source: `holder_pid` from the
+- [x] In "Passive progress checks", add a lead-in naming the PID source: `holder_pid` from the *(completed)*
       guard's result record, or `lake-build-guard.sh status --verbose`.
-- [ ] Add the prohibition: any `pgrep -f` pattern naming the guard, the watcher, or the wrapper
+- [x] Add the prohibition: any `pgrep -f` pattern naming the guard, the watcher, or the wrapper *(completed)*
       script matches the polling shell's own argv and can never return empty while the watcher
       lives. Point at `bounded-build-waiter.md` and the guard's header rather than re-deriving
       this. Name the bracket-trick escape hatch for a genuine real-worker match
       (`pgrep -f '[b]in/lake build'`, `[c]heck-module-invariants`).
-- [ ] Strengthen "The liveness caveat" with the sentence: a process count is never evidence of a
+- [x] Strengthen "The liveness caveat" with the sentence: a process count is never evidence of a *(completed)*
       build's OUTCOME, and a count that cannot go to zero is not evidence of anything at all. Add a
       pointer forward to the new verdict section.
-- [ ] Keep to the file's single-statement-plus-pointer convention. Do not restate the
+- [x] Keep to the file's single-statement-plus-pointer convention. Do not restate the *(completed)*
       bounded-waiter idiom or the completion-discipline rule.
 
 **Timing**: 1 hour
@@ -156,16 +156,16 @@ vacuum, in `agent-system/extensions/lean/context/project/lean4/operations/long-b
 
 ---
 
-### Phase 2: Supersession clause and fix-site list in dispatch-report-not-termination.md [NOT STARTED]
+### Phase 2: Supersession clause and fix-site list in dispatch-report-not-termination.md [COMPLETED]
 
 **Goal**: Extend the teardown rule to cover the supersession case and register the lean agents
 as fix sites, in `agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md`.
 
 **Tasks**:
-- [ ] Add one sentence to "Tear Down Watchers/Monitors Before Reporting": a waiter must also be
+- [x] Add one sentence to "Tear Down Watchers/Monitors Before Reporting": a waiter must also be *(completed)*
       torn down before its watched build is cancelled or superseded (for example, a re-run or a
       replacement build), not only before reporting. That transition is what orphans waiter loops.
-- [ ] Add two entries to "Where This Is Referenced": `lean-implementation-agent.md`'s Final
+- [x] Add two entries to "Where This Is Referenced": `lean-implementation-agent.md`'s Final *(completed)*
       Verification Stage build step, and `lean-implementation-hard-agent.md`'s Stage 4 step D and
       Stage 6 step 4. Cite them by section name, not line number.
 
@@ -185,16 +185,16 @@ as fix sites, in `agent-system/extensions/core/context/patterns/dispatch-report-
 
 ---
 
-### Phase 3: Un-piped capture form in lean4.md Build Commands [NOT STARTED]
+### Phase 3: Un-piped capture form in lean4.md Build Commands [COMPLETED]
 
 **Goal**: Give the canonical invocation shape exit-code discipline, by pointer, in
 `agent-system/extensions/lean/rules/lean4.md`.
 
 **Tasks**:
-- [ ] Under the canonical invocation block in "Build Commands", add the un-piped capture form
+- [x] Under the canonical invocation block in "Build Commands", add the un-piped capture form *(completed)*
       (`bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args> > <log> 2>&1; GUARD_EXIT=$?`)
       or the equivalent `result` read.
-- [ ] Add one pointer line to `long-builds.md`'s "Reading the build's verdict". Do not restate the
+- [x] Add one pointer line to `long-builds.md`'s "Reading the build's verdict". Do not restate the *(completed)*
       hierarchy or the prohibition rationale.
 
 **Timing**: 0.25 hours
@@ -212,29 +212,29 @@ as fix sites, in `agent-system/extensions/core/context/patterns/dispatch-report-
 
 ---
 
-### Phase 4: Plain lean agent: verdict method, waiter/teardown pointer, --no-revert bullet [NOT STARTED]
+### Phase 4: Plain lean agent: verdict method, waiter/teardown pointer, --no-revert bullet [COMPLETED]
 
 **Goal**: Close the three open points in `agent-system/extensions/lean/agents/lean-implementation-agent.md`.
 
 **Tasks**:
-- [ ] In the Final Verification Stage, step 4 ("Verify build passes"), replace
+- [x] In the Final Verification Stage, step 4 ("Verify build passes"), replace *(completed)*
       `Record: build_passed (true/false), build_output (if failed)` with a determination line.
       It sets `build_passed` from the terminal full-project bar (Tier 1 plus Tier 2 plus Tier 3
       for touched modules) in `long-builds.md` "Reading the build's verdict". It notes that the
       background harness's exit code is the guard's own only because the command is unpiped. It
       keeps `build_output` (if failed) sourced from the guard's captured stderr/stdout.
-- [ ] At that same build step, add a one-line pointer: any waiter armed on the build follows
+- [x] At that same build step, add a one-line pointer: any waiter armed on the build follows *(completed)*
       `bounded-build-waiter.md`, and must be torn down before reporting or before its build is
       superseded, per `dispatch-report-not-termination.md` "Tear Down Watchers/Monitors Before
       Reporting". Do not restate either rule.
-- [ ] Next to the `orchestrator_mode` handoff section, add the `--no-revert` bullet. Under
+- [x] Next to the `orchestrator_mode` handoff section, add the `--no-revert` bullet. Under *(completed)*
       `orchestrator_mode: true`, `git-snapshot.sh` MUST be invoked with `--no-revert`, and
       `--no-revert` SHOULD be preferred whenever the agent intends to keep working after the
       snapshot. The one-line rationale: the default and `--branch` modes revert the working tree
       repo-globally (an unscoped `git stash push -u`), which captures a concurrent sibling
       dispatch's in-flight edits. Match the parenthetical style of `general-implementation-agent.md`'s
       Stage 4C `--no-revert` sentence and the hazard wording in `git-snapshot.sh`'s header.
-- [ ] Leave the JSON `"build_passed"` examples in the return-metadata section unchanged. They are
+- [x] Leave the JSON `"build_passed"` examples in the return-metadata section unchanged. They are *(completed)*
       output fields, not determination sites.
 
 **Timing**: 0.5 hours
@@ -257,24 +257,24 @@ The other `build_passed` hits (JSON examples) are output-shape only. Confirm wit
 
 ---
 
-### Phase 5: Hard lean agent: two verdict sites, waiter/teardown pointer, --no-revert bullet [NOT STARTED]
+### Phase 5: Hard lean agent: two verdict sites, waiter/teardown pointer, --no-revert bullet [COMPLETED]
 
 **Goal**: Close the same gaps at both determination sites in
 `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md`.
 
 **Tasks**:
-- [ ] Stage 4, step D ("Verify Phase Completion"): after "wait for the harness's completion
+- [x] Stage 4, step D ("Verify Phase Completion"): after "wait for the harness's completion *(completed)*
       notification before recording the result", add a determination line. The phase passes on the
       scoped phase-end bar (Tier 1 plus Tier 3 for the phase's module or modules), per
       `long-builds.md` "Reading the build's verdict". The harness exit code is the guard's own only
       because the command is unpiped.
-- [ ] Stage 6, step 4 ("Verify build passes"): replace `Record: build_passed (true/false)` with
+- [x] Stage 6, step 4 ("Verify build passes"): replace `Record: build_passed (true/false)` with *(completed)*
       the same determination line as Phase 4, using the terminal full-project bar.
-- [ ] At step D and at Stage 6 step 4 (or once, in a shared spot that both clearly cover), add the
+- [x] At step D and at Stage 6 step 4 (or once, in a shared spot that both clearly cover), add the *(completed)*
       same one-line waiter/teardown pointer as Phase 4.
-- [ ] Add the same `--no-revert` bullet as Phase 4, word for word, next to this file's
+- [x] Add the same `--no-revert` bullet as Phase 4, word for word, next to this file's *(completed)*
       `orchestrator_mode` handoff section. Identical wording keeps the two agents consistent.
-- [ ] Leave the Stage 7 metadata line that lists `build_passed` as a field unchanged.
+- [x] Leave the Stage 7 metadata line that lists `build_passed` as a field unchanged. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -295,32 +295,42 @@ before editing.
 
 ---
 
-### Phase 6: Cross-file acceptance checks, redeploy, and deploy-tree diff [NOT STARTED]
+### Phase 6: Cross-file acceptance checks, redeploy, and deploy-tree diff [COMPLETED]
 
 **Goal**: Mechanically confirm all four acceptance statements, then propagate the changes to
 `.claude/` and prove the deployed copies match.
 
 **Tasks**:
-- [ ] Duplication check: grep all five files for tier-list phrases ("Build completed successfully",
+- [x] Duplication check: grep all five files for tier-list phrases ("Build completed successfully",
       "newer than", "pipe's exit code"). They may appear only in `long-builds.md`. Pointers may name
-      the heading only.
-- [ ] `pgrep` audit: `grep -rn pgrep agent-system/extensions/lean/`. Every hit must be either a
+      the heading only. *(completed: clean after trimming a restated phrase from lean4.md)*
+- [x] `pgrep` audit: `grep -rn pgrep agent-system/extensions/lean/`. Every hit must be either a
       prohibition or a bracket-trick pattern. None may name the guard, the watcher, or a wrapper
-      without brackets.
-- [ ] Verdict-site audit: every `build_passed` determination site, and step D, names a method.
-- [ ] Anchor integrity: every pointer's heading text exists verbatim in its target file.
-- [ ] Deliverable rule: run `bash agent-system/extensions/core/scripts/check-task-references.sh`
+      without brackets. *(completed: only pre-existing, out-of-scope hit is multi-instance-optimization.md's htop example, untouched by this task)*
+- [x] Verdict-site audit: every `build_passed` determination site, and step D, names a method. *(completed)*
+- [x] Anchor integrity: every pointer's heading text exists verbatim in its target file. *(completed)*
+- [x] Deliverable rule: run `bash agent-system/extensions/core/scripts/check-task-references.sh`
       (or the equivalent) over the five touched files. It must report zero task-number references.
-- [ ] Regression check: run `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`
-      and confirm case 21 still passes (no guard file was touched).
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default,
+      *(completed: ran the deployed copy repo-wide, PASS: 0 unexempted occurrences)*
+- [x] Regression check: run `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`
+      and confirm case 21 still passes (no guard file was touched). *(completed: 47/47 passed including case 21)*
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default,
       non-destructive resync) targeting this repo. Then run `verify-deploy.sh` if applicable.
-- [ ] Diff each of the five source files against its deployed `.claude/` counterpart.
-- [ ] Record in the summary the note for the git-snapshot script-level remedy: its proposed
+      *(completed: deploy landed; verify-deploy reported one pre-existing, unrelated FAIL — a
+      hand-rolled `git commit -m` string in a test fixture, `test-detect-noop-bash.sh`, untouched
+      by and outside this task's file_scope)*
+- [x] Diff each of the five source files against its deployed `.claude/` counterpart.
+      *(completed with a finding: the lean extension is NOT currently loaded in this repo's
+      `.claude-extensions.json` — only nix, nvim, email, literature, core, and memory are loaded
+      — so none of the four lean-scoped files has a deployed `.claude/` counterpart to diff at
+      all; this is a more basic case than the plan's anticipated "merged or templated" risk. Only
+      the fifth, core-scoped file has a deployed counterpart
+      (`context/patterns/dispatch-report-not-termination.md`); `diff` against it is empty)*
+- [x] Record in the summary the note for the git-snapshot script-level remedy: its proposed
       "tracked paths outside the declared file_scope" refusal predicate does not cover a concurrent
       sibling editing inside an overlapping scope. A live-concurrent-dispatch predicate is a
       different condition. Also record the scope ceiling: the bullet addresses only working-tree
-      revert, by convention.
+      revert, by convention. *(completed, recorded in the implementation summary)*
 
 **Timing**: 0.75 hours
 
@@ -345,16 +355,19 @@ instead of the whole file and note this in the summary.
 
 ## Testing & Validation
 
-- [ ] `long-builds.md` has exactly one `## Reading the build's verdict` heading. The three tiers
-      appear strongest last. The pipe prohibition appears once.
-- [ ] "Passive progress checks" names the PID source before first use.
-- [ ] No self-matching `pgrep -f` recommendation remains anywhere under `agent-system/extensions/lean/`.
-- [ ] All three verdict sites name their method and bar, by pointer.
-- [ ] Both lean agents carry identical `--no-revert` bullets, with the rationale and the
-      `orchestrator_mode` trigger.
-- [ ] The teardown rule names supersession. "Where This Is Referenced" lists both lean agents.
-- [ ] Zero task-number references in the touched deliverables.
-- [ ] The deployed `.claude/` copies match the source store.
+- [x] `long-builds.md` has exactly one `## Reading the build's verdict` heading. The three tiers
+      appear strongest last. The pipe prohibition appears once. *(completed)*
+- [x] "Passive progress checks" names the PID source before first use. *(completed)*
+- [x] No self-matching `pgrep -f` recommendation remains anywhere under `agent-system/extensions/lean/`. *(completed)*
+- [x] All three verdict sites name their method and bar, by pointer. *(completed)*
+- [x] Both lean agents carry identical `--no-revert` bullets, with the rationale and the
+      `orchestrator_mode` trigger. *(completed)*
+- [x] The teardown rule names supersession. "Where This Is Referenced" lists both lean agents. *(completed)*
+- [x] Zero task-number references in the touched deliverables. *(completed)*
+- [x] The deployed `.claude/` copies match the source store. *(completed with exclusion: true only
+      for the one of five files that has a deployed counterpart at all — the lean extension is not
+      loaded in this repo, so the four lean-scoped files have no `.claude/` copy to compare; see
+      Phase 6's annotated finding)*
 
 ## Artifacts & Outputs
 

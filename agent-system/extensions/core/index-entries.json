@@ -2791,7 +2791,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared root cause: a dispatched agent's report is not proof of termination; two named instances (late handoff write, unsound territory assertion)",
-      "line_count": 70,
+      "line_count": 77,
       "keywords": [
         "dispatch-seq",
         "handoff",

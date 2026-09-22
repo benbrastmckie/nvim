@@ -1,23 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 8,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
-      "summary": "6-phase, 3.5h plan: canonical verdict-evidence anchor and PID-source/pgrep fix in long-builds.md, supersession teardown clause, lean4.md un-piped capture pointer, verdict/teardown/--no-revert pointers in both lean agents, then acceptance greps, redeploy and deploy-tree diff."
-    }
-  ],
-  "next_steps": "Run /implement 221 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 3.5,
-  "dependency_waves": [[1, 2], [3, 4, 5], [6]],
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1790030538_1b6143_221",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [],
-  "errors": []
+    "session_id": "sess_1790030538_1b6143",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

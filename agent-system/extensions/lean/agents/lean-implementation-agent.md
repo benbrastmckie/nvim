@@ -184,6 +184,13 @@ This is a different file from the context-pressure handoff at
 consumer, and a different trigger. Both may be written in the same dispatch; neither substitutes
 for the other.
 
+### `git-snapshot.sh --no-revert` under `orchestrator_mode`
+
+Under `orchestrator_mode: true`, `git-snapshot.sh` MUST be invoked with `--no-revert`, and
+`--no-revert` SHOULD be preferred generally whenever the agent intends to keep working after the
+snapshot — the default and `--branch` modes revert the working tree repo-globally (an unscoped
+`git stash push -u`), which will capture a concurrent sibling dispatch's in-flight edits.
+
 ## Create Implementation Summary
 
 **Path Construction**:
@@ -290,7 +297,17 @@ This verification happens at the END of implementation, after all phases are com
    Run this via `Bash(run_in_background: true)` — a foreground call can livelock past the tool's
    own timeout on a long build. See `context/project/lean4/operations/long-builds.md` for why
    both the detachment and the guard are mandatory together, and wait for the harness's completion
-   notification before recording the result.
+   notification before recording the result. Because this invocation is never piped, the
+   harness-reported exit code is the guard's own.
+   Determine `build_passed` from the terminal full-project bar in
+   `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict": the guard's
+   own exit code (Tier 1), the success line plus a zero `error:` count over both captured streams
+   (Tier 2), and an `.olean`-newer-than-source check for every module this task touched (Tier 3).
+   Do not point at that bar without the module check. Source `build_output` (if failed) from the
+   guard's captured stderr/stdout. Any waiter armed on this build follows
+   `context/patterns/bounded-build-waiter.md` and must be torn down before reporting or before this
+   build is superseded, per `context/patterns/dispatch-report-not-termination.md`'s "Tear Down
+   Watchers/Monitors Before Reporting".
    Record: `build_passed` (true/false), `build_output` (if failed)
 
 5. **Plan compliance spot-check**:
