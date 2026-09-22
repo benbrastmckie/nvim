@@ -56,9 +56,15 @@
           "path": "specs/240_restore_verify_deploy_green/plans/01_restore-verify-deploy-green.md",
           "type": "plan",
           "summary": "3-phase plan: fixture reword, eager-load re-measure and config correction, full deploy verification."
+        },
+        {
+          "path": "specs/240_restore_verify_deploy_green/summaries/01_restore-verify-deploy-green-summary.md",
+          "type": "summary",
+          "summary": "Reworded the GATE 17 noop-bash test fixture and corrected GATE 20's stale eager-load budget snapshot; full deploy-headless.sh confirms both target gates PASS, with one unrelated Gate 5 failure attributed to a concurrent sibling task's in-flight uncommitted work."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed GATE 17's false-positive scoped-commit-boundary lint violation by rewording a test fixture, and corrected GATE 20's stale eager-load informational fields (measured_bytes/measured_at/note) after confirming the fresh total (65,257 B) is under baseline (65,950 B). Full deploy-headless.sh confirms both target gates PASS; a separate Gate 5 failure was attributed to a concurrently in-flight sibling task's own uncommitted edit and documented rather than fixed."
     },
     {
       "project_number": 239,
