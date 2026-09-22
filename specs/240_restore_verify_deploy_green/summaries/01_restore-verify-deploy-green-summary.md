@@ -69,10 +69,15 @@ own in-flight uncommitted edit, which is documented and left untouched per this 
 - `lint-scoped-commit-boundary.sh --verbose` — Total violations: 0
 - `measure-eager-context.sh --check` — TOTAL 65,257 B <= baseline_bytes 65,950 B
 - `jq . orchestrator-context-budget.json` — parses cleanly
-- `deploy-headless.sh` — RESULT `landed_verify_red` (not `landed`); Gate 17 PASS, Gate 20
-  PASS (both sub-checks); Gate 5 FAIL, attributed to sibling task `refresh_orphan_waiter_reaper`'s
-  in-flight uncommitted edit to `agent-system/extensions/core/scripts/claude-refresh.sh` (not
-  this task's edit)
+- `deploy-headless.sh` (first run, this task's own dispatch) — RESULT `landed_verify_red` (not
+  `landed`); Gate 17 PASS, Gate 20 PASS (both sub-checks); Gate 5 FAIL, attributed to sibling task
+  `refresh_orphan_waiter_reaper`'s in-flight uncommitted edit to
+  `agent-system/extensions/core/scripts/claude-refresh.sh` (not this task's edit)
+- **Deploy re-verification (later dispatch, same task)**: once the sibling task's edit to
+  `claude-refresh.sh` was committed, `deploy-headless.sh` was re-run and reported
+  `RESULT=landed_verify_clean` (33 checks, 0 failures). This dispatch independently re-ran
+  `verify-deploy.sh` directly and confirmed `PASS -- 34 check(s), 0 failure(s)`, with Gate 5, Gate
+  17, and Gate 20 all passing. The deploy is now fully clean; no residual Gate 5 finding remains.
 - Files verified: Yes
 
 ## Impacts
@@ -90,10 +95,9 @@ own in-flight uncommitted edit, which is documented and left untouched per this 
 
 ## Follow-ups
 
-- A full `deploy-headless.sh` re-run once the sibling task `refresh_orphan_waiter_reaper`
-  commits its in-flight edit to `agent-system/extensions/core/scripts/claude-refresh.sh` would be
-  expected to clear the remaining Gate 5 finding; that re-run is that sibling task's own
-  postflight responsibility, not a follow-up for this task.
+- None. The previously-flagged Gate 5 finding cleared once the sibling task's edit landed and the
+  deploy was regenerated; a fresh `deploy-headless.sh` and an independent `verify-deploy.sh` run
+  both confirm a fully clean deploy (see Verification).
 
 ## References
 

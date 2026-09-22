@@ -203,6 +203,13 @@ point.
 |------|--------|----------|
 | `deploy-headless.sh` overall RESULT `landed` with 0 failed checks | `verify-deploy.sh` Gate 5 (manifest-driven category parity + content-hash equality) reported 1 finding: "core: Content differs from source: scripts/claude-refresh.sh". `git status --short` shows `agent-system/extensions/core/scripts/claude-refresh.sh` modified and uncommitted; `git log` shows no commit for it from this task (task 240's own commits are `0f7c10087` and `68ed32a81`, unrelated files). This exact path is declared in the concurrent sibling task's (refresh_orphan_waiter_reaper) territory `file_scope` for this same orchestrate cycle, and `specs/state.json` shows that sibling's status as `implementing` (actively in flight). Per the plan's own risk mitigation and `context/contracts/territory.md`, an unexpected failure in a file outside this task's own scope, attributable to a live sibling's in-progress uncommitted edit, is reported rather than fixed. | `git status --short agent-system/extensions/core/scripts/claude-refresh.sh` -> ` M ...claude-refresh.sh`; `git log --oneline -3` shows no task-240 commit touching that file; `jq` on `specs/state.json` shows the sibling task's `status: "implementing"`; full `deploy-headless.sh` log (scratchpad) shows Gate 17 PASS, Gate 20 PASS, and Gate 5's single finding naming exactly that file. |
 
+**Resolution (2026-09-21, later dispatch)**: the sibling task's edit to `claude-refresh.sh` was
+subsequently committed and the deploy regenerated. A fresh `deploy-headless.sh` run reported
+`RESULT=landed_verify_clean` (33 checks, 0 failures), and an independent `verify-deploy.sh` run in
+this dispatch confirms `PASS -- 34 check(s), 0 failure(s)` including Gate 5. The exclusion
+recorded above is now resolved; it is left in place as the historical record of why Phase 3 closed
+`[COMPLETED WITH EXCLUSIONS]` rather than `[COMPLETED]` at the time.
+
 ## Testing & Validation
 
 - [x] `test-detect-noop-bash.sh`: 40 passed, 0 failed *(completed)*
