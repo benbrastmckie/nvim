@@ -1,26 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {"type": "plan", "path": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md", "summary": "4-phase plan (5h): self-excluding build-waiter reaper pass in claude-refresh.sh (own pgid-bearing snapshot, two signature families, age-threshold-only gate), tests with mutation checks, both inventory tables + systemd ruling."}
-  ],
-  "next_steps": "Run /implement 174 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 5,
-  "dependency_waves": 3,
-  "memory_candidates": [
-    {
-      "content": "In claude-refresh.sh, every non-Claude pass takes its OWN ps -eo snapshot with its own field list (LEAN_/ZOMBIE_/MCP_SNAPSHOT_PS_FIELDS). A new pass needing an extra column (e.g. pgid) should follow that precedent rather than widening SNAPSHOT_PS_FIELDS (which breaks fixed-position read sites and the fixture file); the reaper's own pgid/ancestors can be read from the 2070369 row of that same snapshot, keeping self-exclusion zero-query and race-free. Caveat: the test suite's fake ps binaries emit Claude-pass rows for any -eo spec, so new passes must validate numeric columns and the fakes need a branch for the new spec.",
-      "category": "PATTERN",
-      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["claude-refresh", "ps snapshot", "self-exclusion", "pgid", "fake ps", "reaper"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1790055369_87ec14_174",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 5
+    "session_id": "sess_1790055369_87ec14",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

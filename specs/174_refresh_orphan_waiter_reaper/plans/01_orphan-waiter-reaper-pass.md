@@ -1,7 +1,7 @@
 # Implementation Plan: Task #174
 
 - **Task**: 174 - Add a self-excluding orphaned-build-waiter reaper pass to /refresh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (the bounded-build-waiter contract it matches against is already merged)
 - **Research Inputs**: specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md
@@ -104,58 +104,64 @@ No ROADMAP.md consulted (no `roadmap_path` in this dispatch).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Implement run_build_waiter_pass in claude-refresh.sh [NOT STARTED]
+### Phase 1: Implement run_build_waiter_pass in claude-refresh.sh [COMPLETED]
 
 **Goal**: Land the pass, its predicates, the widened self-exclusion, and the `main()`/`--help`
 wiring in the source-store script.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/claude-refresh.sh` immediately before
-      editing. Sibling tasks are in flight on this tree.
-- [ ] Add a pass section in the same style as the zombie and MCP sections:
-  - [ ] Constants: `BUILD_WAITER_SNAPSHOT_PS_FIELDS='pid,ppid,pgid,uid,etimes,pcpu,cgroup:200,comm,args'`,
+- [x] Re-read `agent-system/extensions/core/scripts/claude-refresh.sh` immediately before
+      editing. Sibling tasks are in flight on this tree. *(completed)*
+- [x] Add a pass section in the same style as the zombie and MCP sections: *(completed)*
+  - [x] Constants: `BUILD_WAITER_SNAPSHOT_PS_FIELDS='pid,ppid,pgid,uid,etimes,pcpu,cgroup:200,comm,args'`,
         `BUILD_WAITER_REAP_MIN` (default 60), and `BUILD_WAITER_CEILING_MIN` (default 240). Both
         thresholds can be overridden from the environment, following the
-        `LEAN_LSP_IDLE_THRESHOLD_MIN` pattern.
-  - [ ] `take_build_waiter_snapshot()`: one `ps -eo "$BUILD_WAITER_SNAPSHOT_PS_FIELDS"
+        `LEAN_LSP_IDLE_THRESHOLD_MIN` pattern. *(completed)*
+  - [x] `take_build_waiter_snapshot()`: one `ps -eo "$BUILD_WAITER_SNAPSHOT_PS_FIELDS"
         --no-headers` call. On error it prints to stderr and returns non-zero, mirroring
-        `take_zombie_snapshot()`.
-  - [ ] `is_shell_comm()`: `comm` must be exactly `bash` or `sh`. This is the executable-identity
-        gate on `comm`, never on argv.
-  - [ ] `build_waiter_family()`: classifies argv as `A` (contains `kill -0` and `sleep`, and ends
+        `take_zombie_snapshot()`. *(completed)*
+  - [x] `is_shell_comm()`: `comm` must be exactly `bash` or `sh`. This is the executable-identity
+        gate on `comm`, never on argv. *(completed)*
+  - [x] `build_waiter_family()`: classifies argv as `A` (contains `kill -0` and `sleep`, and ends
         in a numeric token), `B` (contains `until` or `while` plus `grep -q`, and `sleep`), or
         empty. It extracts the trailing PID with a bash regex, as `is_live_inhibitor_target` does.
         A Family A-shaped argv whose trailing token does not parse as a PID returns empty, so the
-        row is excluded rather than reaped.
-  - [ ] `build_waiter_row_is_idle()`: integer-truncated `pcpu == 0` and `etimes >=` a threshold
+        row is excluded rather than reaped. *(completed)*
+  - [x] `build_waiter_row_is_idle()`: integer-truncated `pcpu == 0` and `etimes >=` a threshold
         passed in seconds. Reuse `lean_row_is_idle`'s truncation idiom, or call it directly if its
-        signature fits.
-  - [ ] `build_self_exclusion_set()`: from the snapshot rows, record the reaper's own pgid (the
+        signature fits. *(completed: written as its own function reusing the truncation idiom,
+        since the threshold is caller-supplied rather than the Lean pass's fixed env var)*
+  - [x] `build_self_exclusion_set()`: from the snapshot rows, record the reaper's own pgid (the
         row where `pid == $$`) and walk ppid links from `$$` up to PID 1 (with a hop cap) to
-        collect the ancestor pids. If the `$$` row is absent, return non-zero.
-- [ ] `run_build_waiter_pass FORCE DRY_RUN`:
-  - [ ] Take the snapshot. Parse each row with `read -r pid ppid pgid uid etimes pcpu cgroup comm
-        args` and skip any row with non-numeric numeric fields.
-  - [ ] Exclusions, in order: `pid == $$`, `ppid == $$`, `pgid == self_pgid`, pid in the ancestor
-        set, `is_system_slice_cgroup`, `! is_owned_by_current_uid`, `! is_shell_comm`.
-  - [ ] Family A is a candidate when it is idle past `BUILD_WAITER_REAP_MIN` AND
-        (`! _pid_is_alive embedded_pid` OR `etimes >= BUILD_WAITER_CEILING_MIN`).
-  - [ ] Family B is a candidate when it is idle past `BUILD_WAITER_REAP_MIN`.
-  - [ ] Print a report table (PID, family, age, reason, truncated command) and a stable
-        no-findings line: `No orphaned build waiters found.`
-  - [ ] When `$DRY_RUN` is set, print the `[DRY RUN]` banner and terminate nothing. Otherwise call
+        collect the ancestor pids. If the `$$` row is absent, return non-zero. *(completed)*
+- [x] `run_build_waiter_pass FORCE DRY_RUN`: *(completed)*
+  - [x] Take the snapshot. Parse each row with `read -r pid ppid pgid uid etimes pcpu cgroup comm
+        args` and skip any row with non-numeric numeric fields. *(completed)*
+  - [x] Exclusions, in order: `pid == $$`, `ppid == $$`, `pgid == self_pgid`, pid in the ancestor
+        set, `is_system_slice_cgroup`, `! is_owned_by_current_uid`, `! is_shell_comm`. *(completed)*
+  - [x] Family A is a candidate when it is idle past `BUILD_WAITER_REAP_MIN` AND
+        (`! _pid_is_alive embedded_pid` OR `etimes >= BUILD_WAITER_CEILING_MIN`). *(completed)*
+  - [x] Family B is a candidate when it is idle past `BUILD_WAITER_REAP_MIN`. *(completed)*
+  - [x] Print a report table (PID, family, age, reason, truncated command) and a stable
+        no-findings line: `No orphaned build waiters found.` *(completed)*
+  - [x] When `$DRY_RUN` is set, print the `[DRY RUN]` banner and terminate nothing. Otherwise call
         `terminate_pid` on each candidate from an `if` context (never as a bare statement, because
         of `set -e`), **whatever the value of `$FORCE`**. `$FORCE` is accepted only for call-site
         symmetry. Put a comment right there recording this deliberate divergence from rows 1-2.
-  - [ ] If the self-exclusion set is unavailable, print one warning and return 0 without reaping.
-- [ ] Call `run_build_waiter_pass "$FORCE" "$DRY_RUN"` from `main()`, after `run_lean_pass` so the
+        *(completed)*
+  - [x] If the self-exclusion set is unavailable, print one warning and return 0 without reaping.
+        *(completed: the warning text deliberately omits the literal `$$` value, since embedding
+        it broke the existing zombie-pass assertion's --dry-run/--force output-equality check --
+        each subprocess invocation has a different pid)*
+- [x] Call `run_build_waiter_pass "$FORCE" "$DRY_RUN"` from `main()`, after `run_lean_pass` so the
       destructive passes stay adjacent. Update the "Both passes always run" comment to cover five
-      passes.
-- [ ] Update `print_help()`: five passes, the new pass's gate, and the two env vars.
-- [ ] Update the script header's safety/predicate block to describe the pgid and ancestor-chain
+      passes. *(completed)*
+- [x] Update `print_help()`: five passes, the new pass's gate, and the two env vars. *(completed)*
+- [x] Update the script header's safety/predicate block to describe the pgid and ancestor-chain
       widening and the no-`pgrep` rule. State that the new pass takes its own snapshot and so
-      leaves `SNAPSHOT_PS_FIELDS` unchanged.
-- [ ] Commit only this file (explicit path, never a directory add).
+      leaves `SNAPSHOT_PS_FIELDS` unchanged. *(completed: worded to avoid the literal substring
+      "pgrep" anywhere near the new pass, per Phase 1's own verification grep)*
+- [x] Commit only this file (explicit path, never a directory add). *(completed)*
 
 **Timing**: 1.5 hours
 

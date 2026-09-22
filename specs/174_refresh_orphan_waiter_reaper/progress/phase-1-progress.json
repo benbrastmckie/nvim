@@ -1,0 +1,36 @@
+{
+  "phase": 1,
+  "phase_name": "Implement run_build_waiter_pass in claude-refresh.sh",
+  "started_at": "2026-09-22T06:00:00Z",
+  "last_updated": "2026-09-22T06:08:01Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add pass constants (BUILD_WAITER_SNAPSHOT_PS_FIELDS, BUILD_WAITER_REAP_MIN, BUILD_WAITER_CEILING_MIN), take_build_waiter_snapshot(), is_shell_comm(), build_waiter_family(), build_waiter_row_is_idle(), build_self_exclusion_set()",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]
+    },
+    {
+      "id": 2,
+      "description": "run_build_waiter_pass(FORCE, DRY_RUN) with ordered exclusions, family classification, candidate table, and unconditional-past-dry-run termination",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Wire into main() after run_lean_pass, update print_help() (five passes, gate, two env vars), update script header safety block",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "Embed $$ pid literal in the fail-closed warning message",
+      "result": "failed",
+      "reason": "Broke test-claude-refresh-matcher.sh's zombie-pass (h) --dry-run vs --force output-equality assertion: each subprocess invocation has a different pid, so the two captured outputs diverged on that line alone. Removed the pid from the warning text."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

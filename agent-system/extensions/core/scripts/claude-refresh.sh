@@ -44,6 +44,19 @@
 #   fails), this script refuses to run rather than silently falling back to the old,
 #   unsafe argv-substring behavior. See validate_cgroup_support() below.
 #
+#   Widened self-exclusion for the build-waiter reaper pass (run_build_waiter_pass, below): a
+#   reaper for the bounded-build-waiter poll-loop idiom must exclude not only its own pid/ppid
+#   (as above) but also its own process group and its full ancestor chain up to PID 1 -- a caller
+#   that itself matches the very poll-loop shape being reaped (an orchestrating shell awaiting
+#   this refresh invocation, for instance) must never be signaled. That pass takes its OWN
+#   `ps -eo` snapshot (its own field list, adding `pgid`) rather than widening SNAPSHOT_PS_FIELDS
+#   above -- see that pass's own header comment for the full rationale, matching the
+#   independent-snapshot precedent every non-Claude pass in this script already follows. Its
+#   detection, like every predicate in this file, reads structured `ps` columns only -- never a
+#   name-substring process search or `ps | grep` -- because a name-matching cleanup command is
+#   exactly the defect class this pass exists to reap (see that pass's header comment for the
+#   incident it fixes).
+#
 #   Invariant ruling -- VmSwap accounting and the single-snapshot argument above:
 #   get_vmswap_kb() performs a per-candidate read of /proc/PID/status, taken AFTER the
 #   snapshot above, which is the first thing in this script to touch a live PID rather
@@ -634,9 +647,11 @@ terminate_pid() {
 print_help() {
     echo "Usage: $0 [--force|--dry-run]"
     echo ""
-    echo "Runs four passes every invocation, in this fixed order: Claude-process reclamation,"
-    echo "Lean LSP process-tree reclamation, zombie (unreaped-child) reporting, and MCP server"
-    echo "fan-out reporting. Only the first two ever terminate anything, and only under --force."
+    echo "Runs five passes every invocation, in this fixed order: Claude-process reclamation,"
+    echo "Lean LSP process-tree reclamation, orphaned build-waiter poll-loop reaping, zombie"
+    echo "(unreaped-child) reporting, and MCP server fan-out reporting. The first two terminate"
+    echo "only under --force; the build-waiter pass terminates whenever --dry-run is not set,"
+    echo "unaffected by --force (age-threshold-only gate); the last two never terminate anything."
     echo ""
     echo "Options:"
     echo "  --force      Skip confirmation prompt and terminate immediately"
@@ -647,6 +662,10 @@ print_help() {
     echo "  LEAN_LSP_IDLE_THRESHOLD_MIN   Idle-reclamation threshold in minutes for the"
     echo "                                separately-gated Lean LSP process-tree pass"
     echo "                                (default: 240)"
+    echo "  BUILD_WAITER_REAP_MIN         Idle-reclamation threshold in minutes for the"
+    echo "                                orphaned build-waiter poll-loop pass (default: 60)"
+    echo "  BUILD_WAITER_CEILING_MIN      Secondary ceiling in minutes for a build-waiter whose"
+    echo "                                embedded writer PID may have been reused (default: 240)"
 }
 
 # Run the existing Claude-process orphan pass: report (default/--dry-run) or terminate
@@ -904,9 +923,376 @@ run_lean_pass() {
     echo "Memory reclaimed: ~$(format_memory "$total_mem_kb")"
 }
 
+# --- Orphaned build-waiter poll-loop reaper: independently-gated, own snapshot ---
+#
+# A third, independently-gated pass. Reaps orphaned build-waiter poll loops -- the bounded-
+# build-waiter idiom (context/patterns/bounded-build-waiter.md) once its writer PID is dead, plus
+# the legacy self-match name-poll shape that idiom replaces. This pass exists because of a second
+# observed instance of the exact defect class the header comment at the top of this script
+# documents for the Claude pass: an ad-hoc process-name-substring cleanup command (searching for
+# `until grep`, piped into a `kill`) matched ITS OWN command line (the pattern it searched for was
+# present in its own argv) and killed its own shell (exit 144) -- twice. This pass is the
+# correct-by-construction fix: it takes its OWN atomic `ps -eo` snapshot (never a name-substring
+# process search or `ps | grep`), and its self-exclusion set
+# covers not just pid/ppid (the Claude/Lean passes' zero-query idiom above) but also this script's
+# own process group and its full ancestor chain up to PID 1 -- all read from that one frozen
+# snapshot, with no second query. If this pass's own row ($$) is missing from the snapshot, it
+# fails closed: one warning, nothing reaped.
+#
+# Gate class: age-threshold-only (see BUILD_WAITER_REAP_MIN/BUILD_WAITER_CEILING_MIN below),
+# and this is the first pass in this script whose destructive action is NOT gated by $FORCE --
+# see run_build_waiter_pass()'s own termination-call-site comment for why that is deliberate, not
+# an oversight.
+#
+# Two signature families (never widened to a generic "any idle bash loop" heuristic):
+#   Family A (canonical): `timeout N bash -c 'while kill -0 "$1" ...; do sleep N; done' _ "$pid"`
+#     -- the bounded-build-waiter idiom itself. The embedded trailing PID is the writer; if that
+#     writer is dead (per the overridable `_pid_is_alive` seam above) OR the waiter has passed the
+#     secondary ceiling (BUILD_WAITER_CEILING_MIN, a PID-reuse backstop), it is a candidate once
+#     also idle past BUILD_WAITER_REAP_MIN.
+#   Family B (legacy/name-match): `until grep -q ...` sentinel polls and `until ! ps aux | grep
+#     -q ...` self-match polls -- the incident class this task fixes. These carry no writer PID,
+#     so they are candidates on idle+age alone, past BUILD_WAITER_REAP_MIN.
+#
+# Detection is from structured `ps -eo` columns only -- never a name-substring process search or
+# `ps | grep` -- so this pass cannot repeat the self-match defect it exists to reap.
+BUILD_WAITER_SNAPSHOT_PS_FIELDS='pid,ppid,pgid,uid,etimes,pcpu,cgroup:200,comm,args'
+
+# Idle-reclamation threshold (minutes): a Family B waiter (or a Family A waiter with a still-live
+# writer, below the ceiling) is a candidate once idle at/beyond this age. Default 60 minutes: the
+# observed orphans ran 24-55 minutes at 0% CPU, and a legitimate foreground wait is bounded by the
+# Bash tool's own cap while a canonical detached waiter is bounded by its own `timeout`, so this
+# clears legitimate waits with margin while still catching the leak class within an hour. Override
+# via the environment, following the LEAN_LSP_IDLE_THRESHOLD_MIN precedent.
+BUILD_WAITER_REAP_MIN="${BUILD_WAITER_REAP_MIN:-60}"
+
+# Secondary ceiling (minutes): a Family A waiter whose embedded writer PID has been reused by an
+# unrelated process (so `_pid_is_alive` reports "alive" for the wrong reason) is still reaped once
+# idle past this much higher bound, matching the Lean/session-reap precedent
+# (LEAN_LSP_IDLE_THRESHOLD_MIN/ORCHESTRATOR_SESSION_REAP_MIN default of 240). Override via the
+# environment.
+BUILD_WAITER_CEILING_MIN="${BUILD_WAITER_CEILING_MIN:-240}"
+
+# Take the build-waiter-scoped process snapshot -- its OWN `ps -eo` call with its OWN field list
+# (adding `pgid` to the columns every other pass already reads), following the Lean/zombie/MCP
+# passes' established precedent of never widening SNAPSHOT_PS_FIELDS for a new pass's extra
+# column. Fails loudly (non-zero exit, explicit message) rather than silently degrading if `ps`
+# itself fails, mirroring every other take_*_snapshot() above.
+take_build_waiter_snapshot() {
+    local out
+    if ! out=$(ps -eo "$BUILD_WAITER_SNAPSHOT_PS_FIELDS" --no-headers 2>&1); then
+        echo "ERROR: 'ps -eo $BUILD_WAITER_SNAPSHOT_PS_FIELDS' failed:" >&2
+        echo "$out" >&2
+        exit 1
+    fi
+    printf '%s\n' "$out"
+}
+
+# --- Shell-executable-identity gate ---
+# Returns 0 (true) only when `comm` is exactly `bash` or `sh` -- the executable-identity gate is
+# on `comm`, never on argv, mirroring is_claude_executable_comm's own comm-first discipline above.
+is_shell_comm() {
+    local comm="$1"
+    case "$comm" in
+        bash|sh)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# --- Build-waiter family classifier ---
+# Classifies a row's argv into Family A, Family B, or neither (see the pass header comment above
+# for both shapes). For Family A, extracts the trailing embedded writer PID with a bash regex --
+# the same is_live_inhibitor_target idiom used above, never a second live process-search query.
+# Sets the global BUILD_WAITER_EMBEDDED_PID as an additional output (always cleared first;
+# populated only on a Family A match). A Family A-shaped argv whose trailing token does not parse
+# as a PID is classified as neither (fails closed -- excluded, not misclassified as Family B).
+BUILD_WAITER_EMBEDDED_PID=""
+
+build_waiter_family() {
+    local args="$1"
+    BUILD_WAITER_EMBEDDED_PID=""
+
+    if [[ "$args" == *"kill -0"* && "$args" == *"sleep"* ]]; then
+        if [[ "$args" =~ ([0-9]+)[[:space:]]*$ ]]; then
+            BUILD_WAITER_EMBEDDED_PID="${BASH_REMATCH[1]}"
+            echo "A"
+        else
+            echo ""
+        fi
+        return 0
+    fi
+
+    if [[ ( "$args" == *"until"* || "$args" == *"while"* ) && "$args" == *"grep -q"* && "$args" == *"sleep"* ]]; then
+        echo "B"
+        return 0
+    fi
+
+    echo ""
+}
+
+# --- Row-level idle gate ---
+# Returns 0 (true) when a row is individually idle: `pcpu` truncated to its integer portion is 0,
+# AND `etimes` is at/beyond a caller-supplied threshold (in minutes). Reuses lean_row_is_idle's
+# integer-truncation idiom (see that function's own comment for the rationale) rather than calling
+# it directly, since this pass's threshold is independently configurable
+# (BUILD_WAITER_REAP_MIN/BUILD_WAITER_CEILING_MIN), not LEAN_LSP_IDLE_THRESHOLD_MIN.
+build_waiter_row_is_idle() {
+    local etimes="$1"
+    local pcpu="$2"
+    local threshold_min="$3"
+    local pcpu_int="${pcpu%%.*}"
+
+    [[ "$pcpu_int" =~ ^[0-9]+$ ]] || return 1
+    [[ "$etimes" =~ ^[0-9]+$ ]] || return 1
+
+    if [ "$pcpu_int" -gt 0 ]; then
+        return 1
+    fi
+
+    local threshold_seconds=$((threshold_min * 60))
+    [ "$etimes" -ge "$threshold_seconds" ]
+}
+
+# --- Self-exclusion set: own pgid + full ancestor chain, from ONE frozen snapshot ---
+# Widens self-exclusion from pid/ppid (the Claude/Lean passes' zero-query idiom above) to pid,
+# ppid, pgid, AND the full ancestor chain up to PID 1 -- because a reaper for a poll-loop idiom
+# specifically must not signal its own shell OR any shell in its own ancestor chain (a caller that
+# itself matches Family B's shape, for instance, such as an orchestrating shell awaiting this very
+# refresh invocation). Re-parses the same snapshot string the caller already has (cheap, one-time
+# cost per invocation) so this function stays self-contained and independently testable with a
+# synthetic snapshot string, matching every take_*_snapshot()/detect_*() function's own-parsing
+# style above. Populates two globals:
+#   BUILD_WAITER_SELF_PGID     -- this script's own pgid (from the row where pid == $$)
+#   BUILD_WAITER_ANCESTOR_PIDS -- space-separated pids from $$ up to (not including) PID 1
+# Returns non-zero, with both globals left empty, if the $$ row is not present in the snapshot --
+# the caller's contract is to fail closed (reap nothing, print one warning) in that case, never to
+# guess or fall back to a second query.
+BUILD_WAITER_SELF_PGID=""
+BUILD_WAITER_ANCESTOR_PIDS=""
+
+build_self_exclusion_set() {
+    local snapshot="$1"
+
+    BUILD_WAITER_SELF_PGID=""
+    BUILD_WAITER_ANCESTOR_PIDS=""
+
+    local -a all_pid=() all_ppid=() all_pgid=()
+    local line
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+        local pid ppid pgid uid etimes pcpu cgroup comm args
+        read -r pid ppid pgid uid etimes pcpu cgroup comm args <<< "$line"
+        all_pid+=("$pid"); all_ppid+=("$ppid"); all_pgid+=("$pgid")
+    done <<< "$snapshot"
+
+    local n="${#all_pid[@]}"
+    local i self_idx=-1
+    for ((i = 0; i < n; i++)); do
+        if [ "${all_pid[$i]}" = "$$" ]; then
+            self_idx=$i
+            break
+        fi
+    done
+
+    if [ "$self_idx" -lt 0 ]; then
+        return 1
+    fi
+
+    BUILD_WAITER_SELF_PGID="${all_pgid[$self_idx]}"
+
+    local cur_pid="$$"
+    local hops=0
+    local ancestors=""
+    while [ "$cur_pid" != "1" ] && [ "$hops" -lt 50 ]; do
+        local found=-1
+        for ((i = 0; i < n; i++)); do
+            if [ "${all_pid[$i]}" = "$cur_pid" ]; then
+                found=$i
+                break
+            fi
+        done
+        [ "$found" -ge 0 ] || break
+        ancestors="${ancestors:+$ancestors }$cur_pid"
+        cur_pid="${all_ppid[$found]}"
+        hops=$((hops + 1))
+    done
+
+    BUILD_WAITER_ANCESTOR_PIDS="$ancestors"
+    return 0
+}
+
+# Run the orphaned build-waiter poll-loop reaper. Always runs after run_lean_pass(), keeping the
+# two destructive passes adjacent in main()'s fixed sequence, before the report-only zombie/MCP
+# passes. Accepts the same ($FORCE, $DRY_RUN) calling convention as every other pass purely for
+# call-site symmetry -- see the termination call site below for why $FORCE is never branched on.
+run_build_waiter_pass() {
+    local FORCE="$1"
+    local DRY_RUN="$2"
+
+    local snapshot
+    snapshot=$(take_build_waiter_snapshot)
+
+    echo ""
+    echo -e "${GREEN}Orphaned Build-Waiter Poll Loops${NC}"
+    echo "================================="
+
+    if ! build_self_exclusion_set "$snapshot"; then
+        echo ""
+        echo "WARNING: this script's own process row was not found in the build-waiter snapshot" >&2
+        echo "-- refusing to reap anything this invocation (fail-closed)." >&2
+        return 0
+    fi
+
+    local -a ancestor_pids=()
+    read -r -a ancestor_pids <<< "$BUILD_WAITER_ANCESTOR_PIDS"
+
+    local -a candidate_pids=()
+    local -a candidate_details=()
+    local ceiling_seconds=$((BUILD_WAITER_CEILING_MIN * 60))
+
+    local line
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+
+        local pid ppid pgid uid etimes pcpu cgroup comm args
+        read -r pid ppid pgid uid etimes pcpu cgroup comm args <<< "$line"
+
+        # Numeric-column validation: skip a malformed row rather than misreading it (fail
+        # closed). Required because this suite's fake `ps` fixtures for OTHER passes may emit
+        # rows in the wrong column shape for an unrecognized `-eo` field spec (see Phase 2's
+        # scope hypothesis in the plan) -- this pass must never misinterpret such a row.
+        [[ "$pid" =~ ^[0-9]+$ ]] || continue
+        [[ "$ppid" =~ ^[0-9]+$ ]] || continue
+        [[ "$pgid" =~ ^[0-9]+$ ]] || continue
+        [[ "$uid" =~ ^[0-9]+$ ]] || continue
+        [[ "$etimes" =~ ^[0-9]+$ ]] || continue
+        [[ "$pcpu" =~ ^[0-9]+([.][0-9]+)?$ ]] || continue
+
+        # Exclusions, in order: pid == $$, ppid == $$, pgid == self_pgid, pid in the ancestor
+        # set, system-slice cgroup, foreign uid, non-shell comm.
+        if [ "$pid" = "$$" ] || [ "$ppid" = "$$" ]; then
+            continue
+        fi
+        if [ -n "$BUILD_WAITER_SELF_PGID" ] && [ "$pgid" = "$BUILD_WAITER_SELF_PGID" ]; then
+            continue
+        fi
+        local is_ancestor=false
+        local a
+        for a in "${ancestor_pids[@]}"; do
+            if [ "$pid" = "$a" ]; then
+                is_ancestor=true
+                break
+            fi
+        done
+        $is_ancestor && continue
+        is_system_slice_cgroup "$cgroup" && continue
+        is_owned_by_current_uid "$uid" || continue
+        is_shell_comm "$comm" || continue
+
+        local family
+        family=$(build_waiter_family "$args")
+        [ -n "$family" ] || continue
+        local embedded_pid="$BUILD_WAITER_EMBEDDED_PID"
+
+        local is_candidate=false
+        local reason=""
+        if [ "$family" = "A" ]; then
+            if build_waiter_row_is_idle "$etimes" "$pcpu" "$BUILD_WAITER_REAP_MIN"; then
+                if ! _pid_is_alive "$embedded_pid"; then
+                    is_candidate=true
+                    reason="dead writer (pid $embedded_pid)"
+                elif [ "$etimes" -ge "$ceiling_seconds" ]; then
+                    is_candidate=true
+                    reason="past ceiling (writer pid $embedded_pid still reports alive)"
+                fi
+            fi
+        elif [ "$family" = "B" ]; then
+            if build_waiter_row_is_idle "$etimes" "$pcpu" "$BUILD_WAITER_REAP_MIN"; then
+                is_candidate=true
+                reason="legacy name-match/sentinel poll, idle past threshold"
+            fi
+        fi
+
+        $is_candidate || continue
+
+        local age cmd_display
+        age=$(get_process_age "$etimes")
+        cmd_display=$(echo "$args" | cut -c1-50)
+
+        candidate_pids+=("$pid")
+        candidate_details+=("$pid|$family|$age|$reason|$cmd_display")
+    done <<< "$snapshot"
+
+    local n_candidates="${#candidate_pids[@]}"
+
+    if [ "$n_candidates" -eq 0 ]; then
+        echo ""
+        echo "No orphaned build waiters found."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        echo ""
+        echo -e "${BLUE}[DRY RUN]${NC} Preview only -- no processes will be terminated."
+    fi
+
+    echo ""
+    echo "Found $n_candidates orphaned build-waiter poll loop(s):"
+    echo ""
+    printf "%-8s %-8s %-10s %-45s %s\n" "PID" "Family" "Age" "Reason" "Command"
+    printf "%-8s %-8s %-10s %-45s %s\n" "-----" "------" "-------" "---------------------------------------------" "--------------------------------"
+
+    local detail
+    for detail in "${candidate_details[@]}"; do
+        local dpid dfamily dage dreason dcmd
+        IFS='|' read -r dpid dfamily dage dreason dcmd <<< "$detail"
+        printf "%-8s %-8s %-10s %-45s %s\n" "$dpid" "$dfamily" "$dage" "$dreason" "$dcmd"
+    done
+
+    if $DRY_RUN; then
+        return 0
+    fi
+
+    # Deliberate divergence from rows 1-2 (the interactive-confirm Claude/Lean process passes
+    # above): this pass's gate is age-threshold-only, matching the age-threshold-only
+    # spec-directory sweeps (rows 5-8 of the pass inventory), not the interactive-confirm process
+    # passes. Reaping happens unconditionally whenever $DRY_RUN is unset, WHATEVER the value of
+    # $FORCE -- $FORCE is accepted above only for call-site symmetry with
+    # run_claude_pass/run_lean_pass/run_zombie_pass/run_mcp_fanout_pass and is never branched on
+    # here. This is the first pass in this script whose destructive action is not gated by
+    # $FORCE; both pass-inventory docs (refresh.md, SKILL.md) say so explicitly.
+    echo ""
+    echo -e "${GREEN}Terminating orphaned build-waiter poll loops...${NC}"
+
+    local terminated=0
+    local failed=0
+
+    for pid in "${candidate_pids[@]}"; do
+        local rc
+        if terminate_pid "$pid"; then
+            rc=0
+        else
+            rc=$?
+        fi
+        case "$rc" in
+            0) terminated=$((terminated + 1)) ;;
+            1) failed=$((failed + 1)) ;;
+            2) ;; # already gone; not counted
+        esac
+    done
+
+    echo ""
+    echo "Terminated: $terminated processes"
+    echo "Failed:     $failed processes"
+}
+
 # --- Unreaped-child (zombie) reporting pass: independently-gated, report-only ---
 #
-# A third, independently-gated pass. Unlike run_claude_pass()/run_lean_pass() above, this pass
+# A fourth, independently-gated pass. Unlike run_claude_pass()/run_lean_pass() above, this pass
 # NEVER terminates anything under ANY flag combination -- there is no `$FORCE` branch at all,
 # because a zombie can only be reaped by its own parent calling wait(); no external signal can
 # reap one (sending a zombie a signal is a silent no-op -- it is already dead, only its exit
@@ -954,14 +1340,14 @@ zombie_row_is_defunct() {
     esac
 }
 
-# Run the unreaped-child (zombie) reporting pass. Always runs after run_lean_pass(), same
-# unconditional-sequence convention main() already uses for the Claude/Lean passes. Accepts the
-# same ($FORCE, $DRY_RUN) calling convention as the other two passes purely for call-site
+# Run the unreaped-child (zombie) reporting pass. Always runs after run_build_waiter_pass(), same
+# unconditional-sequence convention main() already uses for the Claude/Lean/build-waiter passes.
+# Accepts the same ($FORCE, $DRY_RUN) calling convention as the other passes purely for call-site
 # symmetry -- $FORCE is intentionally never branched on inside this function, since there is no
 # force-mode action for this pass to take (see the header comment above for why a zombie cannot
 # be reaped by an external signal at all). $DRY_RUN only gates the `[DRY RUN]` banner line, so
 # --dry-run and --force/no-flag output is identical apart from that one banner, exactly like the
-# other two passes' documented --dry-run/--force equivalence.
+# other passes' documented --dry-run/--force equivalence.
 run_zombie_pass() {
     local FORCE="$1"
     local DRY_RUN="$2"
@@ -1063,7 +1449,7 @@ run_zombie_pass() {
 
 # --- MCP server fan-out reporting pass: independently-gated, report-only ---
 #
-# A fourth, independently-gated pass. User-scope MCP servers declared in `~/.claude.json`'s
+# A fifth, independently-gated pass. User-scope MCP servers declared in `~/.claude.json`'s
 # top-level `mcpServers` object fan out into EVERY session unconditionally -- this is real,
 # unavoidable per-session process/memory cost, not a bug, and this pass reports it live rather
 # than guessing at it. It never terminates or reconfigures anything; there is no `$FORCE` branch
@@ -1342,12 +1728,16 @@ main() {
 
     validate_cgroup_support
 
-    # Both passes always run, in this order, regardless of what either one finds -- this is the
-    # structural fix that makes the Lean pass reachable at all. Restructured from the original
-    # main() (which had two early `exit 0` sites inside what is now run_claude_pass()) into two
-    # returning functions called unconditionally in sequence.
+    # All five passes always run, in this order, regardless of what any of them find -- this is
+    # the structural fix that makes the Lean pass (and every pass added since) reachable at all.
+    # Restructured from the original main() (which had two early `exit 0` sites inside what is now
+    # run_claude_pass()) into returning functions called unconditionally in sequence. The build-
+    # waiter pass runs immediately after run_lean_pass(), keeping the two destructive passes
+    # adjacent; it is the first pass here whose destructive action is not gated by $FORCE (see its
+    # own header comment).
     run_claude_pass "$FORCE" "$DRY_RUN"
     run_lean_pass "$FORCE" "$DRY_RUN"
+    run_build_waiter_pass "$FORCE" "$DRY_RUN"
     run_zombie_pass "$FORCE" "$DRY_RUN"
     run_mcp_fanout_pass "$FORCE" "$DRY_RUN"
 }
