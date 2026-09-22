@@ -298,7 +298,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Full gate run and consumer non-regression check [NOT STARTED]
+### Phase 4: Full gate run and consumer non-regression check [IN PROGRESS]
 
 - **Goal:** Run the complete repository test net and confirm no verdict consumer regressed.
 - **Tasks:**
