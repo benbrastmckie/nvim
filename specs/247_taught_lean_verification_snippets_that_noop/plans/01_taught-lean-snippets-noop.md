@@ -1,7 +1,7 @@
 # Implementation Plan: Task #247
 
 - **Task**: 247 - Taught Lean verification snippets that no-op
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: 221, 173 (both landed; re-derive every line number against the current tree)
 - **Research Inputs**: specs/247_taught_lean_verification_snippets_that_noop/reports/01_taught-lean-snippets-noop.md
@@ -128,21 +128,21 @@ Phases within the same wave can execute in parallel. Phase 1 and Phase 4 both ed
 parallel, the territory rule is that Phase 1 owns only the guard-invocation lines and Phase 4
 owns only the `Theories/` lines. Running them serially (1 before 4) is the safe default.
 
-### Phase 1: Half 1 -- fix guard invocation vectors [NOT STARTED]
+### Phase 1: Half 1 -- fix guard invocation vectors [COMPLETED]
 
 **Goal**: Every `lake-build-guard.sh` invocation in the lean extension has an allowlisted lake
 subcommand as its first post-`--` token.
 
 **Tasks**:
-- [ ] Re-derive sites: `grep -rn "lake-build-guard.sh\|build --timeout" agent-system/extensions/lean/`
-- [ ] `rules/lean4.md` (~48): `-- Module.Name` -> `-- build Module.Name`
-- [ ] `agents/lean-implementation-hard-agent.md` (~237): `-- ModuleName 2>&1` -> `-- build ModuleName 2>&1`
-- [ ] `skills/skill-lake-repair/SKILL.md` (~79): `-- "$module"` -> `-- build "$module"`
-- [ ] Placeholders per D1: `long-builds.md` (~75) canonical block and `rules/lean4.md` (~71, ~76)
-- [ ] Exhaustive audit: extract every post-`--` first token from every guard invocation in the
+- [x] Re-derive sites: `grep -rn "lake-build-guard.sh\|build --timeout" agent-system/extensions/lean/` *(completed)*
+- [x] `rules/lean4.md` (~48): `-- Module.Name` -> `-- build Module.Name` *(completed)*
+- [x] `agents/lean-implementation-hard-agent.md` (~237): `-- ModuleName 2>&1` -> `-- build ModuleName 2>&1` *(completed)*
+- [x] `skills/skill-lake-repair/SKILL.md` (~79): `-- "$module"` -> `-- build "$module"` *(completed)*
+- [x] Placeholders per D1: `long-builds.md` (~75) canonical block and `rules/lean4.md` (~71, ~76) *(completed: rewritten as `-- <lake-subcommand> [args]` with a `# e.g. -- build Module.Name` comment)*
+- [x] Exhaustive audit: extract every post-`--` first token from every guard invocation in the
       extension and check each against `LAKE_SUBCOMMANDS` (read it from the guard, don't copy
       it). Placeholders must read `<lake-subcommand>`. Keep the audit as a one-off command
-      recorded in the summary, not a new deliverable file
+      recorded in the summary, not a new deliverable file *(completed: grep -rn "lake-build-guard.sh.*-- " agent-system/extensions/lean/ shows only `env`, `build`, and `<lake-subcommand>` as first post-`--` tokens, all allowlisted or placeholder-conformant)*
 
 **Timing**: 45 minutes
 

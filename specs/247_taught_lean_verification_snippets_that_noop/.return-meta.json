@@ -1,21 +1,8 @@
 {
-  "status": "planned",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "session_id": "sess_1790030538_1b6143_247",
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1790030538_1b6143",
   "task_number": 247,
-  "dispatch_seq": 11,
-  "phase_count": 5,
-  "estimated_hours": 6,
-  "dependency_waves": 3,
-  "next_steps": "Run /implement 247 to execute the plan",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/247_taught_lean_verification_snippets_that_noop/plans/01_taught-lean-snippets-noop.md",
-      "summary": "5-phase plan: fix guard vectors missing a lake subcommand (Half 1), add lean-src-roots.sh lakefile.toml resolver with loud failure, make lean-sorry-census.sh fail on missing/empty targets, route all Theories/ snippets through the resolver, then verify in BimodalLogic and redeploy."
-    }
-  ],
-  "memory_candidates": [],
-  "metadata": {"session_id": "sess_1790030538_1b6143_247", "agent_type": "planner-agent", "delegation_depth": 1, "delegation_path": ["orchestrator", "plan", "planner-agent"]}
+  "dispatch_seq": 12
 }

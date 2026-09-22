@@ -83,7 +83,7 @@ next_project_number: 249
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
-247 [PLANNED] — Fix two taught lean-extension snippets that silently no-op:...
+247 [IMPLEMENTING] — Fix two taught lean-extension snippets that silently no-op:...
 
 ## Tasks
 
@@ -99,7 +99,7 @@ next_project_number: 249
 
 ### 247. Fix two taught lean-extension snippets that silently no-op: the guard invocation missing its lake subcommand, and the hardcoded Theories/ source root
 - **Effort**: 3 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 221

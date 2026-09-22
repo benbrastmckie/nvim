@@ -234,7 +234,7 @@ After completing each proof step, update sorry_inventory:
 # Scoped build for current module -- less work, not categorically safe; still guarded and
 # detached (a single module can already exceed the foreground cap on its own -- see
 # context/project/lean4/operations/long-builds.md)
-bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- ModuleName 2>&1
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build ModuleName 2>&1
 ```
 Run this via `Bash(run_in_background: true)` and wait for the harness's completion notification
 before recording the result. Because this invocation is never piped, that exit code is the

@@ -45,7 +45,7 @@ Use `lean_goal` + `lake build` instead (detached, guarded — see
 1. After finding name: `lean_local_search` -> verify, `lean_hover_info` -> signature
 2. During proof (inner loop): `lean_goal` constantly; `lean_multi_attempt` BEFORE editing; `lean_verify` for axiom/sorry check
 3. After editing a step: `lean_goal` to confirm; `lean_verify` if axiom safety needed
-4. Phase-end: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- Module.Name`
+4. Phase-end: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build Module.Name`
    (scoped), detached via `Bash(run_in_background: true)`; fall back to the unscoped form if
    module name unknown
 5. Final verification only: `bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- build`
@@ -68,12 +68,13 @@ restate it.
 
 Canonical invocation shape:
 ```bash
-bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args>
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake-subcommand> [args]
+# e.g. -- build Module.Name
 ```
 
 Un-piped capture form:
 ```bash
-bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args> > <log> 2>&1; GUARD_EXIT=$?
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake-subcommand> [args] > <log> 2>&1; GUARD_EXIT=$?
 ```
 or read the guard's own `result` subcommand. See
 `context/project/lean4/operations/long-builds.md`'s "Reading the build's verdict" for the full

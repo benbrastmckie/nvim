@@ -72,7 +72,8 @@ Every contract site in this extension copies this invocation shape verbatim, run
 `Bash(run_in_background: true)`:
 
 ```bash
-bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake args>
+bash .claude/scripts/lake-build-guard.sh build --timeout 1800 -- <lake-subcommand> [args]
+# e.g. -- build Module.Name
 ```
 
 `--timeout` bounds how long the guard waits to acquire the per-project build lock before giving

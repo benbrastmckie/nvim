@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Half 1 -- fix guard invocation vectors",
+  "started_at": "2026-09-22T01:25:00Z",
+  "last_updated": "2026-09-22T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive sites via grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fix rules/lean4.md:48 broken vector", "status": "done", "files_touched": ["agent-system/extensions/lean/rules/lean4.md"]},
+    {"id": 3, "description": "Fix lean-implementation-hard-agent.md:237 broken vector", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"]},
+    {"id": 4, "description": "Fix skill-lake-repair/SKILL.md:79 broken vector", "status": "done", "files_touched": ["agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md"]},
+    {"id": 5, "description": "Rewrite placeholders in long-builds.md and rules/lean4.md per D1", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/operations/long-builds.md", "agent-system/extensions/lean/rules/lean4.md"]},
+    {"id": 6, "description": "Exhaustive audit of every post-- token against LAKE_SUBCOMMANDS", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
