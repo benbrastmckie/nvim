@@ -44,12 +44,12 @@
     {
       "project_number": 240,
       "project_name": "restore_verify_deploy_green",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Restore verify-deploy.sh to green by fixing its two remaining check failures. Only edit agent-system/extensions/core/** (never .claude/). (1) GATE 20 SUB-CHECK B: the eager-load total (measured by the deployed .claude/scripts/measure-eager-context.sh --check) is 66026 B against eager_load.baseline_bytes 65950 B in agent-system/extensions/core/context/config/orchestrator-context-budget.json, 76 B over. The growth came from the one-line batch-selection pointer added to agent-system/extensions/core/merge-sources/claudemd.md's Multi-task syntax paragraph (plus any other eager-set growth since the last re-baseline). Preferred fix: trim at least 76 B, ideally leaving a few hundred bytes of headroom, from the eager set (assembled CLAUDE.md merge sources + core rules/*.md) by collapsing restatement into pointers, without removing operational content. Fallback only if a trim is not reasonable: raise baseline_bytes with a dated, justified note in the config. Do not silently absorb growth. (2) GATE 17 SCOPED-COMMIT BOUNDARY LINT: agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose reports one violation at agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152, where the string 'git commit -m \"true\"' is a classifier test fixture (a non-trivial command the no-op Bash hook must not count), not a real commit call site. Fix by rewording the fixture so it no longer matches the lint pattern while still testing the same classification (preferred), or by adding a narrowly-scoped, documented line-level exemption per the lint's own allowlist convention. Keep all 40 assertions of test-detect-noop-bash.sh passing. VERIFY: run bash .claude/scripts/deploy-headless.sh and confirm RESULT is landed (exit 0), with 0 failed checks in verify-deploy.sh. ORDERING: tasks 224, 227, 139 and 140 edit eager-loaded files (merge-sources/claudemd.md, rules/pr-prohibition.md, rules/source-store-deploy-boundary.md, rules/git-workflow.md) and depend on this task so the headroom it restores is measured first.",
       "topic": "core-agent-system",
       "created": "2026-09-19T03:16:57Z",
-      "last_updated": "2026-09-22T05:59:39Z",
+      "last_updated": "2026-09-22T07:01:05Z",
       "session_id": "sess_1790055369_87ec14",
       "artifacts": [
         {
@@ -65,11 +65,11 @@
         {
           "path": "specs/240_restore_verify_deploy_green/summaries/01_restore-verify-deploy-green-summary.md",
           "type": "summary",
-          "summary": "Reworded the GATE 17 noop-bash test fixture and corrected GATE 20's stale eager-load budget snapshot; full deploy-headless.sh confirms both target gates PASS, with one unrelated Gate 5 failure attributed to a concurrent sibling task's in-flight uncommitted work."
+          "summary": "Reworded the GATE 17 noop-bash test fixture and corrected GATE 20's stale eager-load budget snapshot; deploy-headless.sh now confirms a fully clean deploy (RESULT=landed_verify_clean, 33 checks, 0 failures), and an independent verify-deploy.sh run in this dispatch confirms PASS -- 34 check(s), 0 failure(s), including the previously-failing Gate 5."
         }
       ],
       "next_artifact_number": 2,
-      "completion_summary": "Fixed GATE 17's false-positive scoped-commit-boundary lint violation by rewording a test fixture, and corrected GATE 20's stale eager-load informational fields (measured_bytes/measured_at/note) after confirming the fresh total (65,257 B) is under baseline (65,950 B). Full deploy-headless.sh confirms both target gates PASS; a separate Gate 5 failure was attributed to a concurrently in-flight sibling task's own uncommitted edit and documented rather than fixed."
+      "completion_summary": "All 3 plan phases were already completed and committed in a prior dispatch. This dispatch verified the deploy independently: an earlier dispatch's postflight was refused only by the completion-deploy gate (stale deploy); the deploy has since been regenerated and this dispatch's own fresh verify-deploy.sh run confirms PASS -- 34 check(s), 0 failure(s), including Gate 5 (the previously-failing manifest content-hash check attributed to a concurrent sibling task's now-committed edit), Gate 17 (scoped-commit boundary lint), and Gate 20 Sub-check B (eager-load budget). No further implementation work was needed; the summary and plan were updated to record the clean re-verification."
     },
     {
       "project_number": 239,
