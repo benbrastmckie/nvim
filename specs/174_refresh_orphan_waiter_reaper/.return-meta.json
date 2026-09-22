@@ -1,41 +1,26 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 174,
-  "session_id": "sess_1790055369_87ec14_174",
-  "dispatch_seq": 2,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
-      "summary": "Investigates claude-refresh.sh's existing snapshot/self-exclusion architecture and bounded-build-waiter.md's canonical idiom; recommends a fifth in-script pass with two candidacy families (PID-checkable canonical idiom vs. age-only legacy/name-match shapes), names the pgid-widening self-exclusion cost, decides an age-threshold-only gate independent of --force, and states hourly-cadence report-only reachability."
-    }
+    {"type": "plan", "path": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md", "summary": "4-phase plan (5h): self-excluding build-waiter reaper pass in claude-refresh.sh (own pgid-bearing snapshot, two signature families, age-threshold-only gate), tests with mutation checks, both inventory tables + systemd ruling."}
   ],
+  "next_steps": "Run /implement 174 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 5,
+  "dependency_waves": 3,
   "memory_candidates": [
     {
-      "content": "claude-refresh.sh's is_live_inhibitor_target() extracts a target PID from a candidate's own argv via regex and checks kill -0 on it -- this is the reusable pattern for any future reaper pass that needs to verify liveness of a PID embedded in another process's command line (e.g. the bounded-build-waiter canonical idiom's trailing \"$pid\" argument), as opposed to matching on process name/argv substrings which risks self-match.",
+      "content": "In claude-refresh.sh, every non-Claude pass takes its OWN ps -eo snapshot with its own field list (LEAN_/ZOMBIE_/MCP_SNAPSHOT_PS_FIELDS). A new pass needing an extra column (e.g. pgid) should follow that precedent rather than widening SNAPSHOT_PS_FIELDS (which breaks fixed-position read sites and the fixture file); the reaper's own pgid/ancestors can be read from the 2070369 row of that same snapshot, keeping self-exclusion zero-query and race-free. Caveat: the test suite's fake ps binaries emit Claude-pass rows for any -eo spec, so new passes must validate numeric columns and the fakes need a branch for the new spec.",
       "category": "PATTERN",
-      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["claude-refresh", "pid-liveness", "kill -0", "reaper", "self-exclusion"]
-    },
-    {
-      "content": "In this repo's claude-refresh.sh, SNAPSHOT_PS_FIELDS is a fixed-position field list parsed via `read a b c ... <<< line` where the last variable slurps the remainder (args). Adding any new column requires inserting it immediately before args and updating every read call site plus the large test-claude-refresh-matcher.sh fixture file (~1046 lines of synthetic ps rows at a fixed column count) -- this is a non-trivial, cross-cutting cost, not a one-line change.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
+      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md",
       "confidence": 0.8,
-      "suggested_keywords": ["claude-refresh", "ps snapshot", "fixture-cost", "field-widening"]
-    },
-    {
-      "content": "Age+idle-CPU alone is not a safe reap gate for any process that legitimately polls a long-running task at 0% CPU (e.g. a bounded-build-waiter's kill -0 loop watching a multi-hour lake build) -- a live, correctly-behaving waiter looks identical to an orphaned one under that test. Precise liveness checks (kill -0 on an embedded PID) should be preferred wherever the candidate's argv makes one extractable; age+idle should be reserved for shapes where no such PID exists, or used only as a secondary/backstop floor.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["reaper-design", "age-threshold", "false-positive", "build-waiter"]
+      "suggested_keywords": ["claude-refresh", "ps snapshot", "self-exclusion", "pgid", "fake ps", "reaper"]
     }
   ],
-  "next_steps": "Run /plan 174 to create implementation plan",
-  "session_id_verified": true
+  "metadata": {
+    "session_id": "sess_1790055369_87ec14_174",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 5
 }
