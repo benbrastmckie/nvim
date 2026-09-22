@@ -53,21 +53,27 @@
     {
       "project_number": 249,
       "project_name": "restore_eager_context_budget",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining",
       "created": "2026-09-22T18:54:55Z",
-      "last_updated": "2026-09-22T18:54:55Z",
+      "last_updated": "2026-09-22T19:20:56Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
         "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
       ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE. Measured 2026-09-22. `bash .claude/scripts/verify-deploy.sh --skip-slow` FAILS with eager-load total 67,003 B against the recorded baseline_bytes 65,950 B in context/config/orchestrator-context-budget.json (+1,053 B over). The same breach is the sole red suite in `run-all.sh` (91 passed, 1 failed, 92 total): tests/test-verify-deploy-context-budget.sh fails two internal cases, \"baseline fixture is not clean (rc=1, gate20 finding lines=1)\" and \"could not compute a safe eager-load pad amount (current_eager='67003', baseline_bytes='65950')\". Both are deterministic consequences of the breach, not flakes. These are ONE defect with two symptoms, not two.\n\nATTRIBUTION IS EXACT. The eager total was 65,257 B on 2026-09-21 (per the CORRECTED note in orchestrator-context-budget.json). Byte-level diff of every eager contributor since that date:\n  core/rules/source-store-deploy-boundary.md   2,746 -> 4,443 B  (+1,697)\n  core/merge-sources/claudemd.md             19,435 -> 19,484 B  (+49)\n  total                                                  +1,746 B, i.e. 65,257 -> 67,003\nThe +1,697 B is a completed task's rewrite of the source-store rule, which grew an EAGERLY LOADED rule file by 62%. That task completed without the budget gate being run, so the breach landed silently.\n\nPREFERRED REMEDY: TRIM, DO NOT RE-BASELINE. rules/source-store-deploy-boundary.md now inlines a 5-step source_dir resolution procedure, an \"If the source store is unreachable\" branch, a Before/After example, an Exceptions list, and a two-layer Enforcement narrative with a Known-limitation paragraph. Only the path pattern, the principle, and the one-line resolution instruction (\"read source_dir from <project-root>/.claude-extensions.json and edit under it\") need to be eager -- roughly 1,200 B of the 4,443. Move the procedure detail, the example, and the Enforcement narrative into a lazily loaded context/standards/ file and point at it from the rule. This is the SAME rule->narrative split the codebase already uses twice: rules/git-workflow.md -> context/standards/git-workflow-narrative.md, and rules/state-management.md -> context/reference/state-management-schema.md. Follow those as the model.\n\nAIM FOR HEADROOM, NOT PAR. Two queued tasks add further eager bytes on top of an already-breached budget: 139 edits rules/git-workflow.md (8,828 B, the largest eager rule) and 224 edits both rules/pr-prohibition.md (2,574 B) and merge-sources/claudemd.md (predicted-assembled into CLAUDE.md, hence eager). Trimming back to exactly the baseline just moves the wall a few hundred bytes before those two hit it again. Target a margin that absorbs them.\n\nRE-BASELINING IS THE FALLBACK, AND IS GATED. baseline_bytes \"must never be silently re-derived from a fresh measurement -- only a deliberate, reviewed change should move it\" (its own note field). If research concludes the expanded rule content genuinely must be eager, then re-baselining is permitted ONLY with: (a) a written justification of why each retained paragraph must load on every session; (b) the bump recorded in the note field in the same commit, in the style of the existing 64450->65950 entry; (c) an explicit statement of the remaining headroom against 139 and 224.\n\nACCEPTANCE.\n 1. `bash .claude/scripts/measure-eager-context.sh --check` reports TOTAL at or under baseline_bytes.\n 2. `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` passes all 13 cases.\n 3. `bash .claude/scripts/verify-deploy.sh --skip-slow` gate 20 passes (note: gates for deployed-script drift and provides.scripts registration are task 245's, not this task's -- do not \"fix\" those here).\n 4. `run-all.sh` green; read the summary line and the exit code, and DO NOT pipe it through tail/head (that masks both).\n 5. No behavioral change to the source-store rule itself: the same prohibition, the same exceptions, the same correct edit target. This is a relocation of prose, not a weakening of a rule.\n 6. The lazily loaded destination file is reachable from the rule by a plain backticked path reference, never an @-import (eager-loading it again would defeat the change).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
-      "session_id": "sess_1790101300_c7f9a4",
-      "artifacts": [],
-      "next_artifact_number": 1
+      "session_id": "sess_1790104446_f9923b",
+      "artifacts": [
+        {
+          "path": "specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md",
+          "type": "report",
+          "summary": "Confirms the eager-load budget breach (67,003 B vs 65,950 B baseline), attributes it entirely to task 227's rewrite of the source-store rule's 'Correct Edit Target' section, and specifies a byte-measured rule/lazy-narrative split (rule trimmed to 1,496 B, new context/standards/source-store-deploy-boundary-narrative.md at 3,921 B) projected to land at 64,056 B TOTAL with 1,894 B headroom."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 241,
@@ -758,19 +764,19 @@
     {
       "project_number": 245,
       "project_name": "batch_admit_defer_against_admitted_set_only",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle",
       "created": "2026-09-21T21:03:29Z",
-      "last_updated": "2026-09-22T17:45:07Z",
+      "last_updated": "2026-09-22T19:14:14Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"
       ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).\n\nDEFECT. scripts/orchestrate-batch-admit.sh's in_batch rule defers a candidate against ANY lower-numbered in-batch task with overlapping file_scope, regardless of whether that lower-numbered task is itself admitted this cycle. Observed: one cycle admitted two tasks; a third deferred on the first (overlap on docs/ci.md) -- correct -- but a fourth, independent of both admitted tasks, then deferred on the third (overlap on docs/README.md) even though the third was not dispatching, waiting an extra cycle. The same pattern recurred two cycles later. Safe but wasteful: the 8-task batch took 6 implement cycles, of which ~2 could have been saved.\n\nDELIVERABLE. Compute in-batch deferral against the set of tasks actually admitted this cycle: iterate candidates greedily in ascending project_number, admitting a candidate iff its scope does not overlap any ALREADY-ADMITTED task's scope (plus all existing gates). Preserve determinism (same input -> same admitted set) and existing cross_batch semantics unchanged. Keep deferral reasons naming the admitted task that blocked the candidate. Add a regression test (new scripts/tests/test-orchestrate-batch-admit.sh or extend an existing admit test) reproducing the chain A admitted, C deferred on A, D overlapping only C -> D admitted.\n\nOUT OF SCOPE. Empty/absent file_scope admission posture (owned by the file-scope-lifecycle topic tasks).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
-      "session_id": "sess_1790091707_e274be",
+      "session_id": "sess_1790104446_f9923b",
       "artifacts": [
         {
           "path": "specs/245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md",
@@ -781,6 +787,11 @@
           "path": "specs/245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md",
           "type": "plan",
           "summary": "Four-phase plan converting orchestrate-batch-admit.sh's in_batch collision predicate to a reduce-based greedy ascending walk that defers only against already-admitted peers, with a red-baseline-first regression suite, schema-doc sync, and a full gate run."
+        },
+        {
+          "path": "specs/245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: 01_admitted-set-only-defer-summary.md"
         }
       ],
       "next_artifact_number": 2

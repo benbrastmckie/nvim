@@ -11,8 +11,8 @@ next_project_number: 252
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,245,249 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199,245,249 | core-agent-system, neovim, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,249 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199,249 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,9 +41,7 @@ next_project_number: 252
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-245 [IMPLEMENTING] — orchestrate-batch-admit.sh: compute in-batch filescope...
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then decompose the 2,279-line... (see above)
-249 [NOT STARTED] — Restore the eager-context budget: trim the source-store rule...
+249 [RESEARCHED] — Restore the eager-context budget: trim the source-store rule...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 
 ### Extensions
@@ -258,10 +256,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 249. Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -292,12 +291,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md]
 - **Plan**: [245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md]
+- **Summary**: [245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
