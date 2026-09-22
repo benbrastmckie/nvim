@@ -1,31 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 4,
+  "status": "planned",
+  "dispatch_seq": 9,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md",
-      "summary": "Recommends rewriting the rule's Correct Edit Target section to resolve the source store via .claude-extensions.json's extensions.<name>.source_dir field (already stamped by the deploy engine and already treated as authoritative by check-deploy-freshness.sh), verified against a real consumer repo (~/Projects/BimodalLogic), instead of the costlier deploy-step-rewrite option."
+      "type": "plan",
+      "path": "specs/227_resolve_source_store_target_in_deployed_trees/plans/02_resolve-target-via-extensions-json.md",
+      "summary": "4-phase text-only plan replacing the boundary rule's hard-coded agent-system/extensions/** target with a .claude-extensions.json source_dir resolution procedure plus an explicit unreachable branch, verified against a real consumer repository, and aligning the hook advisory and CLAUDE.md rules-list restatements."
     }
   ],
-  "next_steps": "Run /plan 227 to create an implementation plan for rewriting agent-system/extensions/core/rules/source-store-deploy-boundary.md's Correct Edit Target section per this report's recommendation.",
+  "next_steps": "Run /implement 227 to execute the plan",
   "metadata": {
     "session_id": "sess_1790091707_e274be_227",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "findings_count": 5,
-  "memory_candidates": [
-    {
-      "content": "In this repo's extension deploy system, the absolute path to the source store on the deploying machine is already stamped at deploy time into <project-root>/.claude-extensions.json under extensions.<name>.source_dir (plus source_git_head), for every loaded extension. This file lives outside .claude/ specifically so it survives a .claude wipe, and is already treated as authoritative-with-known-degraded-case by check-deploy-freshness.sh. Any rule or doc that needs to point an agent at the source-store location from inside a deployed tree should resolve it via this field rather than hard-coding a path, since the field is machine-local, always kept fresh by redeploys, and requires no new deploy-machinery to consume.",
-      "category": "PATTERN",
-      "source_artifact": "specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["source-store", "deploy", "extensions.json", "source_dir", "consumer-repo"]
-    }
-  ],
-  "modified_files": [
-    "specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md"
-  ]
+  "phase_count": 4,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "memory_candidates": []
 }

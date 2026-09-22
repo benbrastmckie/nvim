@@ -1,18 +1,20 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 4,
-  "summary": "Research recommends rewriting the source-store rule's Correct Edit Target section to resolve the source store via .claude-extensions.json's extensions.<name>.source_dir field, already stamped by the deploy engine, rather than a hard-coded path or new deploy-time templating machinery.",
+  "status": "planned",
+  "dispatch_seq": 9,
+  "task_number": 227,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Authored a 4-phase, text-only implementation plan. The boundary rule's hard-coded agent-system/extensions/** target is replaced by a resolution procedure against <project-root>/.claude-extensions.json's extensions.<name>.source_dir (already stamped per extension by the deploy engine, outside .claude/ so it survives a wipe), with an explicit unreachable branch (missing/unparseable file, missing entry, missing source_dir, path absent on disk) that files a task via /task rather than permitting a .claude/** edit. Phase 2 verifies the procedure by hand against ~/Projects/BimodalLogic; Phase 3 aligns the validate-meta-write.sh advisory message and the CLAUDE.md rules-list line; Phase 4 self-checks the boundary. No deploy-machinery change (dispatch option (b) rejected on evidence), no deployed-copy edit, and agents/general-implementation-agent.md is excluded as a concurrent sibling's declared territory.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md",
-      "summary": "Recommends resolving the source-store target via .claude-extensions.json's source_dir field, verified against a real consumer repo."
+      "type": "plan",
+      "path": "specs/227_resolve_source_store_target_in_deployed_trees/plans/02_resolve-target-via-extensions-json.md",
+      "summary": "4-phase text-only plan: resolve the source-store target via .claude-extensions.json source_dir, with an unreachable branch and consumer-repo verification."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
   "blockers": [],
+  "sorry_inventory": [],
   "continuation_path": null,
-  "next_action_hint": "Run /plan 227 to draft an implementation plan rewriting agent-system/extensions/core/rules/source-store-deploy-boundary.md's Correct Edit Target section per the report's recommendation."
+  "session_id": "sess_1790091707_e274be_227",
+  "next_steps": "Run /implement 227 to execute the plan"
 }
