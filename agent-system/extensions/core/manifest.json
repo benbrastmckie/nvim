@@ -206,6 +206,7 @@
       "tests/test-lint-state-writer-boundary.sh",
       "tests/test-lint-task-lookup-adoption.sh",
       "tests/test-mint-dispatch-seq.sh",
+      "tests/test-orchestrate-batch-admit.sh",
       "tests/test-orchestrate-build-aux-dispatch.sh",
       "tests/test-orchestrate-build-dispatch.sh",
       "tests/test-orchestrate-churn.sh",
