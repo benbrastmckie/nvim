@@ -202,30 +202,41 @@ rather than silently editing past the hypothesis.
 
 ---
 
-### Phase 2: Verify the procedure against a real consumer repository [NOT STARTED]
+### Phase 2: Verify the procedure against a real consumer repository [COMPLETED]
 
 **Goal**: the rewritten procedure, executed step-by-step by a reader standing in a consumer tree,
 yields an absolute path that exists and is editable — and the unreachable branch is confirmed to
 behave as written when the field is absent.
 
 **Tasks**:
-- [ ] Walk the procedure literally against `~/Projects/BimodalLogic` (a real consumer repo, not
+- [x] Walk the procedure literally against `~/Projects/BimodalLogic` (a real consumer repo, not
       this one): read its `.claude-extensions.json`, select the `core` entry, read `source_dir`,
       confirm the path exists on disk, and confirm the mirrored path for a concrete deployed file
       (e.g. its `.claude/rules/source-store-deploy-boundary.md` ->
-      `<source_dir>/rules/source-store-deploy-boundary.md`) resolves to a real file.
-- [ ] Repeat the selection step for one non-`core` extension entry in that same file, confirming
-      the "extension's own name" branch of step (2) resolves too.
-- [ ] Exercise the unreachable branch on a copy: against a scratch copy of that
+      `<source_dir>/rules/source-store-deploy-boundary.md`) resolves to a real file. *(completed:
+      `extensions.core.source_dir` =
+      `/home/benjamin/.config/nvim/agent-system/extensions/core`, exists on disk; mirrored
+      `.claude/rules/source-store-deploy-boundary.md` resolves to
+      `agent-system/extensions/core/rules/source-store-deploy-boundary.md`, a real file)*
+- [x] Repeat the selection step for one non-`core` extension entry in that same file, confirming
+      the "extension's own name" branch of step (2) resolves too. *(completed: `extensions.lean.source_dir`
+      = `/home/benjamin/.config/nvim/agent-system/extensions/lean`, exists on disk; mirrored
+      `.claude/agents/lean-research-agent.md` resolves to
+      `agent-system/extensions/lean/agents/lean-research-agent.md`, byte-identical size 19530)*
+- [x] Exercise the unreachable branch on a copy: against a scratch copy of that
       `.claude-extensions.json` with `source_dir` removed from the `core` entry (write the copy
       under the scratchpad directory, never into the consumer repo), confirm the procedure's
       step (3)/(4) text leads a reader unambiguously to the unreachable branch and not to a
-      guess.
-- [ ] Record the walkthrough result — the literal resolved paths and the branch outcomes — for
-      the implementation summary.
-- [ ] Apply any wording correction the walkthrough exposes (an ambiguous step, a missing
+      guess. *(completed: scratch copy written to the session scratchpad with
+      `.extensions.core.source_dir` deleted via `jq`; step (3) "read that entry's `source_dir`
+      field" has no field to read, unambiguously matching the unreachable branch's "entry has no
+      `source_dir` field" condition)*
+- [x] Record the walkthrough result — the literal resolved paths and the branch outcomes — for
+      the implementation summary. *(completed — see summary)*
+- [x] Apply any wording correction the walkthrough exposes (an ambiguous step, a missing
       pointer) directly to the rule file; this phase is expected to produce edits, not only a
-      finding.
+      finding. *(completed: no-op — the walkthrough surfaced no ambiguity; the rewritten procedure
+      was directly executable as written, so no further edit was made)*
 
 **Timing**: 0.5 hours
 
