@@ -1,7 +1,7 @@
 # Implementation Plan: Task #242
 
 - **Task**: 242 - orchestrate partial-with-blocker stops redispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/242_orchestrate_partial_with_blocker_stops_redispatch/reports/01_orchestrate_partial_blocker_stops_redispatch.md

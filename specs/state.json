@@ -919,12 +919,12 @@
     {
       "project_number": 242,
       "project_name": "orchestrate_partial_with_blocker_stops_redispatch",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Orchestrate postflight: treat a partial handoff carrying a populated blocker[] as blocked/stopped, not a retryable partial",
       "created": "2026-09-21T21:03:29Z",
-      "last_updated": "2026-09-22T15:57:50Z",
+      "last_updated": "2026-09-22T17:33:46Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",

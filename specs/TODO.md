@@ -11,8 +11,8 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,43,51,89,127,129,162,163,166,167,177,185,207,210,217,223,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,44,45,139,165,170,184,199,224 | 22,51,129,162,163,210,242,243,245 | core-agent-system, extensions, neovim, ... |
+| 1 | 22,39,43,51,89,127,129,162,163,166,167,177,185,207,210,217,223,241,243,244,245 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,44,45,139,165,170,184,199,224 | 22,51,129,162,163,210,243,245 | core-agent-system, extensions, neovim, ... |
 | 3 | 136 | 139,166 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -34,12 +34,9 @@ next_project_number: 249
 210 [IMPLEMENTING] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-242 [IMPLEMENTING] — Orchestrate postflight: treat a partial handoff carrying a...
+243 [PLANNED] — Reconcile contradictory contract for research-phase...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-243 [PLANNED] — Reconcile contradictory contract for research-phase...
-  └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
-  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 245 [PLANNED] — orchestrate-batch-admit.sh: compute in-batch filescope...
 
@@ -138,7 +135,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 242. Orchestrate postflight: treat a partial handoff carrying a populated blocker[] as blocked/stopped, not a retryable partial
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
