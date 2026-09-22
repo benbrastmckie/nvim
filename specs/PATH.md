@@ -19,7 +19,7 @@ every new task this month was filed from.
 
 | Measure | Value | Bearing on the plan |
 |---|---|---|
-| Open tasks | **29** (33 before; Batch A's 227, 210, 242, 243 completed and archived) | Batch A is down to its last task |
+| Open tasks | **32** (29 after archival, +3 filed 2026-09-22: the budget task and two corpus-review tasks) | Batch A is down to its last task |
 | Archived this pass | 12 (4 completed, 8 abandoned) | The phase-0 merges are now off the active list |
 | Test suites | **91 passed, 1 failed, 92 total** (`run-all.sh`) | Was 89/89. The red is `test-verify-deploy-context-budget.sh`, downstream of the budget row below — not a second defect |
 | `verify-deploy.sh --skip-slow` | **FAIL, 3 of 33** | Was PASS 33/33. Two failures are 245 in flight; the third is the context budget |
@@ -36,8 +36,9 @@ every new task this month was filed from.
 tied to an open task). They are filed by hand from defects hit live during `/orchestrate` runs in
 Logos/Verification, BimodalLogic and PossibleWorlds, under standing rule 1.
 
-**Every open task is accounted for below**: 245 (Before Batch B) + Batch B's 11 + Batch C's 14 +
-the picker lane's 3 = 29. If that sum stops matching `state.json`, this file has drifted.
+**Every open task is accounted for below**: Before Batch B's 2 (245, 249) + Batch B's 11 +
+Batch C's 14 + the picker lane's 3 + Batch D's 2 = 32. If that sum stops matching `state.json`,
+this file has drifted.
 
 ---
 
@@ -58,16 +59,21 @@ failing both `verify-deploy.sh` and one test suite. Do them in this order.
    ```
    /orchestrate 245
    ```
-2. **Rule on the eager-context breach.** 67,003 B against a 65,950 B baseline (+1,053 B). This
-   one fact is *both* remaining gate failures — the `verify-deploy.sh` eager-load FAIL and the
-   single red suite, which is `test-verify-deploy-context-budget.sh` (confirmed 2026-09-22; its
-   two internal failures are `baseline fixture is not clean` and `could not compute a safe
-   eager-load pad amount (current_eager='67003', baseline_bytes='65950')`, both downstream of the
-   breach). 245's own `test-orchestrate-batch-admit.sh` passes, so the red is not 245's.
+2. **249 — the eager-context breach.** Now a task, not a hand step. 67,003 B against a
+   65,950 B baseline (+1,053 B). This one fact is *both* remaining gate failures — the
+   `verify-deploy.sh` eager-load FAIL and the single red suite,
+   `test-verify-deploy-context-budget.sh` (confirmed 2026-09-22; its two internal failures are
+   `baseline fixture is not clean` and `could not compute a safe eager-load pad amount
+   (current_eager='67003', baseline_bytes='65950')`, both downstream of the breach). 245's own
+   `test-orchestrate-batch-admit.sh` passes, so the red is not 245's.
 
-   Decide whether the growth from completed Batch A work is deliberate; if it is, re-derive the
-   baseline in the same commit that justifies it, and say why. Do not silently re-derive. 89 and
-   44 are the two backlog tasks that would buy the headroom back.
+   Cause is attributed to the byte: `rules/source-store-deploy-boundary.md` grew 2,746 → 4,443 B
+   (+1,697) and `merge-sources/claudemd.md` +49 B, together the exact 65,257 → 67,003 delta. The
+   task prefers trimming the rule to a lazy narrative over re-baselining, and aims for headroom
+   because 139 and 224 both add eager bytes later.
+   ```
+   /orchestrate 249
+   ```
 3. `bash .claude/scripts/deploy-headless.sh` in each consumer before running anything there. Every
    registered consumer is STALE or CANNOTVERIFY, not just PossibleWorlds.
 4. One `.gitignore` line for `agent-system/extensions/literature/scripts/literature-pyenv/`
@@ -150,6 +156,36 @@ These edit `lua/neotex/plugins/ai/**`, not the agent system, and do not feed the
 `lua/neotex/plugins/ai/shared/extensions/merge.lua`, and 241 behind 29 on
 `agent-system/extensions/memory/manifest.json` — both are ordering edges the batch engine
 resolves in sequence, so the call above is correct as written.
+
+---
+
+## Batch D — systematic corpus review (2 tasks, gated behind B and C)
+
+Both exist because task intake here is defect-driven: it surfaces only what *broke*. Complexity
+and dead weight break nothing, so they are invisible to the filing process by construction. Each
+task is deliberately shaped as **build a mechanical probe, then act on its ranked output** — a
+"review everything" pass that emits prose and no diff is the analysis-paralysis failure mode the
+hard-mode contract (H2) already names.
+
+| Task | What lands | After |
+|---|---|---|
+| **250** | A standing script-inventory probe (lines, inbound callers, test coverage, cross-script duplicate blocks, `provides.scripts` drift), registered beside `assess-repo-health.sh`; then a behaviour-preserving decomposition of `orchestrate-cycle-plan.sh` into `lib/`, gated on byte-identical `--dry-run` output | 199, 245 |
+| **251** | A context-reachability probe that understands all three reference styles — filename, **directory**, `index.json` — plus eager/lazy classification reusing `measure-eager-context.sh`'s channel model; then telemetry cross-check and removal of what is genuinely dead | 249, 44, 127 |
+
+Measured 2026-09-22: 182 non-test scripts / 63,740 lines; the orchestrate engine is 8,207 lines
+across 14 scripts, of which `orchestrate-cycle-plan.sh` alone is **2,279 — 27.8% of the engine and
+6.5× its family's 351-line median**, in a tree that already has 14 extracted libs totalling 2,564
+lines. The context corpus is 523 files / 3.6 MB.
+
+**There are zero confirmed dead context files.** A naive basename check flagged 16; all 16 are
+present-extension slide templates referenced by *directory* (`talk/contents/title/`). The finding
+is that the check was inadequate and no adequate one exists — not that anything should be deleted.
+251 carries those 16 as its regression fixture: a correct probe reports all of them reachable.
+
+```
+/orchestrate 250
+/orchestrate 251
+```
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-next_project_number: 250
+next_project_number: 252
 ---
 
 # TODO
@@ -12,18 +12,21 @@ next_project_number: 250
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,245,249 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,170,224 | 22,51,129,162,163,245 | core-agent-system, neovim, file-scope-lifecycle |
-| 3 | 136 | 139,166 | core-agent-system |
+| 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199,245,249 | core-agent-system, neovim, file-scope-lifecycle |
+| 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
+  └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
+    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 51 [NOT STARTED] — Move session runtime files out of the specs root and make the...
-  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
+  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
+  └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites: rules and agent...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
@@ -34,10 +37,14 @@ next_project_number: 250
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then decompose the 2,279-line...
+    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 245 [IMPLEMENTING] — orchestrate-batch-admit.sh: compute in-batch filescope...
+  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then decompose the 2,279-line... (see above)
 249 [NOT STARTED] — Restore the eager-context budget: trim the source-store rule...
+  └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 
 ### Extensions
 
@@ -72,6 +79,183 @@ next_project_number: 250
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 251. Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 249, Task 44, Task 127
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+MOTIVATION. Same structural gap as the script-corpus task: defect-driven intake surfaces only
+what breaks, and an unreachable or redundant context file breaks nothing -- it just costs bytes,
+deploy time and reader attention. Existing tasks slim SPECIFIC oversized files (commands/task.md,
+the literature and distill skills) or collapse ONE mechanism (the routing ladder). Nothing
+reviews the corpus, and -- the sharper problem -- nothing in the repo can currently ANSWER what
+is reachable.
+
+MEASURED 2026-09-22 (re-measure before acting; standing rule 3).
+  - 523 .md files under agent-system/extensions/**/context/**, 3,583,550 B (~3.6 MB) total.
+  - A naive basename-grep reachability check over the whole source store returned: 39 files not
+    referenced from outside context/, of which 16 were referenced NOWHERE at all.
+  - ALL 16 WERE FALSE POSITIVES. Every one is a present-extension slide template under
+    context/project/present/talk/contents/**, referenced by DIRECTORY from the present agents
+    (`talk/contents/title/`, `talk/contents/methods/`, ...) rather than by filename.
+  - CONCLUSION, STATED PLAINLY SO NOBODY RE-DERIVES IT: there are ZERO confirmed dead context
+    files today. The finding is not "delete 16 files" -- it is that the naive check is INADEQUATE
+    and no adequate one exists. Do not open this task by deleting anything.
+
+THREE REFERENCE STYLES THE PROBE MUST UNDERSTAND (the naive check saw only the first):
+  1. by filename -- a backticked or plain path naming the file;
+  2. by directory -- a reference to the containing directory, which reaches every file under it
+     (the present templates; treat a directory reference as covering its whole subtree);
+  3. via index.json -- context indices that enumerate entries the loader resolves at runtime.
+A probe that misses any of these produces false orphans, and acting on false orphans deletes live
+content. Prove the probe against the present-templates cluster as a REGRESSION FIXTURE: a correct
+probe reports all 16 reachable.
+
+PHASE 1 -- THE PROBE (mechanical, becomes permanent).
+Add a standing reachability/inventory probe following the EXISTING convention of
+scripts/assess-repo-health.sh and scripts/measure-eager-context.sh (JSON to stdout, --check mode,
+no side effects, reads the SOURCE STORE not .claude/**). Per context file report:
+  - bytes; owning extension; reachable yes/no and by WHICH of the three styles;
+  - eager vs lazy -- whether it loads on every session (the eager channels measure-eager-context.sh
+    already models: parent chain, assembled CLAUDE.md, @-imports, path-matched rules) or only on
+    demand. Reuse that script's channel model; do not build a second, divergent one.
+  - inbound reference count, so single-referrer files that could be inlined are visible.
+Register it in docs/reference/utility-scripts-inventory.md alongside the other probes.
+
+PHASE 2 -- THE STRONGER EVIDENCE: TELEMETRY, NOT ONLY STATIC ANALYSIS.
+Static reachability answers "could this be loaded". The better question is "has any dispatch
+ACTUALLY loaded it". The repo already carries the data: specs/events.jsonl, the memory
+extension's history.jsonl, and the telemetry tiers the distill review mode queries. Determine
+whether load events are recorded at context-file granularity; if they are, cross the probe's
+static verdict against observed loads and report files that are statically reachable but never
+actually loaded. If they are NOT recorded at that granularity, say so explicitly in the summary
+and state what instrumentation would be needed -- that is a legitimate finding, not a failure.
+
+PHASE 3 -- ACT ON THE RANKING.
+Only after Phases 1-2 produce evidence: remove confirmed-dead files; merge pairs whose content
+substantially overlaps; and for files that are live but oversized, apply the established
+rule-or-command -> lazy-narrative split (rules/git-workflow.md -> context/standards/
+git-workflow-narrative.md is the worked example). Every removal cites the probe's verdict AND
+the telemetry verdict where available. A file that is reachable by any of the three styles is NOT
+dead, however unloved it looks.
+
+SCOPE DISCIPLINE -- READ BEFORE DECLARING file_scope.
+This task's INITIAL file_scope is the new probe, its test, and the inventory doc ONLY. Do NOT
+declare `context/` or any whole-directory or glob entry: coarse entries draw validate-state.sh
+warnings and defer unrelated tasks in the dry run -- a mistake already corrected once in this
+backlog by narrowing a task that had three whole-directory entries. Phase 3's actual edit targets
+MUST be named individually and ADDED to file_scope at plan time, after Phase 1 has ranked them.
+
+ACCEPTANCE.
+  1. The probe runs clean, is registered, and reports all 16 present-extension templates as
+     REACHABLE (the regression fixture above).
+  2. Its output is reproducible across two runs and does not read .claude/**.
+  3. The eager/lazy classification agrees with measure-eager-context.sh's totals -- two probes
+     must not disagree about what is eager.
+  4. Every file removed in Phase 3 has a recorded probe verdict and a stated reference-style check
+     against all three styles.
+  5. run-all.sh green -- read the summary line AND the exit code, and do NOT pipe it through
+     tail/head.
+  6. verify-deploy.sh --skip-slow no worse than at task start.
+
+DEPENDENCIES AND WHY.
+  - The eager-context budget task performs exactly the rule -> lazy-narrative split this task's
+    Phase 3 generalizes, and CREATES a new context/standards file. Measuring the corpus before it
+    lands measures a state about to change, and its split is the worked exemplar to follow.
+  - The task.md slimming task moves reference material into six new lazily loaded context/patterns
+    files. A corpus inventory taken before those exist is stale on arrival.
+  - The routing-ladder collapse removes a routing mechanism and may orphan its context; measuring
+    before it lands would miss exactly the kind of dead content this task exists to find.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
+
+---
+
+### 250. Script-corpus inventory probe, then decompose the 2,279-line orchestrate-cycle-plan.sh into lib/
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 199, Task 245
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+MOTIVATION -- A GAP IN THE INTAKE MECHANISM, NOT A SINGLE DEFECT. Tasks in this repo are filed by hand from defects hit live during /orchestrate runs. That intake only ever surfaces what BROKE. Needless complexity, duplicated logic and poor division of labor never break anything -- they only cost -- so they are invisible to the filing process by construction and will not self-correct. Every existing script-touching task is a point fix on one file. Nothing reviews the corpus. This task closes that gap with a standing probe, not a one-off reading pass.
+
+MEASURED 2026-09-22 (re-measure before acting; standing rule 3).
+  - 182 non-test .sh files under agent-system/extensions/**, 63,740 lines total.
+  - The orchestrate engine alone: 8,207 lines across 14 orchestrate-*.sh scripts.
+  - orchestrate-cycle-plan.sh: 2,279 lines -- 27.8% of the engine in ONE file, and 6.5x the
+    351-line median of its own 14-script family (next largest: cycle-postflight at 1,256).
+  - scripts/lib/ already holds 14 extracted libraries totalling 2,564 lines (common.sh,
+    file-scope-overlap.sh, manifest-routing-lib.sh, task-lookup-lib.sh, ...). The extraction
+    pattern is ESTABLISHED and working; it simply has never been applied to the largest file.
+
+ANTI-ANALYSIS CONSTRAINT -- READ THIS BEFORE PLANNING. A "review all 182 scripts" pass that
+emits a report and no diff is the failure mode this repo's own hard-mode contract names (H2:
+forbidden analysis-only outputs, analysis-paralysis signal). This task is therefore explicitly
+two-part: build a MECHANICAL probe, then act on its RANKED output. Any phase whose only artifact
+is prose is out of contract. The probe is the deliverable that outlives the task.
+
+PHASE 1 -- THE PROBE (mechanical, becomes permanent).
+Add a standing inventory probe following the EXISTING convention of scripts/assess-repo-health.sh
+and scripts/measure-eager-context.sh (JSON to stdout, --check mode, no side effects, reads the
+SOURCE STORE not .claude/**). Per non-test script it must report at minimum:
+  - line count and byte count;
+  - inbound caller count (how many skills, agents, commands, manifests, hooks and other scripts
+    reference it) -- a script with zero callers is a finding in itself;
+  - whether a test suite covers it (pair against scripts/tests/ and flat scripts/test-*.sh);
+  - duplicated-block detection ACROSS scripts, so copy-paste that belongs in lib/ is visible;
+  - whether it is registered in the owning manifest's provides.scripts (the same class of drift
+    check-extension-docs.sh already performs -- reuse, do not reimplement).
+Register it in docs/reference/utility-scripts-inventory.md alongside the other repo-health probes.
+Emit a stable ranked ordering so Phase 2+ targets are chosen by evidence, not by preference.
+
+PHASE 2+ -- ACT ON THE RANKING, HIGHEST FIRST.
+Decompose orchestrate-cycle-plan.sh into lib/ extractions, following the shape the 14 existing
+libs already demonstrate. This is a BEHAVIOR-PRESERVING refactor:
+  - the --dry-run JSON payload and the human table must be byte-identical before and after for a
+    representative multi-task invocation (capture the baseline FIRST, diff at the end);
+  - md5sum specs/state.json unchanged across a --dry-run call, as today;
+  - scripts/tests/test-orchestrate-cycle-plan.sh green throughout, and green after each extraction
+    rather than only at the end (commit-per-green-substep, per rules/git-workflow.md).
+Size each extraction to one agent run. Do NOT attempt the whole 2,279 lines in a single phase.
+
+SCOPE DISCIPLINE.
+  - Phase 2 targets orchestrate-cycle-plan.sh ONLY among the engine scripts. Do NOT edit
+    orchestrate-batch-admit.sh (owned by the admission tasks), orchestrate-predispatch-review.sh,
+    or orchestrate-cycle-postflight.sh in this task -- each is another open task's declared scope,
+    and editing them here reintroduces exactly the undeclared-overlap deferral the batch engine
+    exists to prevent.
+  - If Phase 1's ranking names further scripts worth decomposing, ADD them to file_scope at plan
+    time (the convention already used elsewhere in this backlog) or file them as separate tasks.
+    Do NOT declare a whole-directory or glob file_scope entry: coarse entries draw
+    validate-state.sh warnings and defer unrelated tasks in the dry run.
+  - Never weaken or delete a test to make a refactor pass.
+
+ACCEPTANCE.
+  1. The probe runs clean, is registered, and its output is reproducible across two runs.
+  2. Every script with zero inbound callers is either removed or justified in the summary.
+  3. orchestrate-cycle-plan.sh is materially smaller, with the extracted logic in lib/ and each
+     extraction covered by the existing suite.
+  4. Byte-identical --dry-run output vs. the captured pre-refactor baseline.
+  5. run-all.sh green -- read the summary line AND the exit code, and do NOT pipe it through
+     tail/head (that masks both; it is how a red run read as green on 2026-09-22).
+  6. verify-deploy.sh --skip-slow no worse than at task start.
+
+DEPENDENCIES AND WHY.
+  - 199 declares orchestrate-cycle-plan.sh in its own file_scope and decides the working-tree /
+    build isolation posture. Decomposing the file while another task is changing its behavior is
+    a guaranteed conflict; 199 lands first.
+  - The in-flight admission task rewrites orchestrate-batch-admit.sh, which cycle-plan calls.
+    Refactoring the caller across a changing callee contract is the same hazard.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
+
+---
 
 ### 249. Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
 - **Status**: [NOT STARTED]
@@ -723,7 +907,7 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 51, Task 129, Task 151, Task 169, Task 206, Task 215
+- **Dependencies**: Task 51, Task 129, Task 151, Task 169, Task 206, Task 215, Task 250, Task 251
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
@@ -929,6 +1113,9 @@ Place it so it composes with, not duplicates, what is already there.
 
 === SCOPE NARROWED 2026-09-22 (eighth-pass phase 0) ===
 The three whole-directory file_scope entries (core/scripts/tests/, lean/scripts/tests/, literature/scripts/) were removed: they deferred 207, 217, 223 and 244 in the dry run and drew two validate-state.sh coarse-scope warnings spanning 11 tasks. The named test-*.sh files, task-lock.sh and shell-script-testing.md stay. Research MUST name the specific suites the audit will edit and ADD them to file_scope before the implement dispatch (the convention the 224 narrowing followed on 2026-09-17). ORDERING: after 51 (task-lock.sh, test-session-runtime-files.sh) and 129 (test-session-runtime-files.sh, test-lake-build-guard.sh), recorded as dependency edges.
+
+=== DEPENDENCY ADDED 2026-09-22 (new suites enter the triage set) ===
+Two newly created tasks each add a standing repo-health probe WITH ITS OWN TEST SUITE (test-script-inventory.sh and test-context-reachability.sh). This task's acceptance criterion is that EVERY suite has a recorded triage verdict, so the audit must run after those suites exist or it certifies a set it no longer covers. Dependency edges recorded accordingly; the survey count above ("72 files match test*.sh") is the 2026-09-22 figure and MUST be re-derived at research time rather than trusted -- the corpus grows.
 
 ---
 
