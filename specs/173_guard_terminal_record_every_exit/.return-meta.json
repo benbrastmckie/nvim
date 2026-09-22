@@ -1,10 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/173_guard_terminal_record_every_exit/summaries/01_guard-terminal-record-result-summary.md",
+      "summary": "Trap-driven terminal record, result subcommand with expect-pid/expect-scope assertions, STATUS line, and full documentation; 47/47 suite passing."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Made lake-build-guard.sh's on-disk build record terminal on every trappable exit path (including a discovered pre-existing bug where any failing build skipped finalize_record entirely) and added a result subcommand exposing the build verdict through the guard's own exit code, with --expect-pid/--expect-scope ownership assertions and a belt-and-braces STATUS stderr line; test suite grew from 29 to 47 passing checks, shellcheck clean, no task-number references."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash pitfall found in lake-build-guard.sh: a function that reactivates `set -e` internally (e.g. `set +e; cmd; rc=$?; set -e`) before its own tail `return \"$rc\"` will trigger errexit-driven premature script termination whenever rc is nonzero, even though the CALLER already wrapped the call in its own `set +e ... set -e` bracket -- `set -e`/`set +e` are global shell options, not scoped per call frame, so a nested re-enable leaks back into that same function's own remaining statements including its own return. Fix: never reactivate `set -e` immediately before a `return` that might carry a nonzero value; let the caller restore it only after safely capturing the return value.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/173_guard_terminal_record_every_exit/summaries/01_guard-terminal-record-result-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "set -e", "errexit", "return", "trap", "shell-scripting"]
+    },
+    {
+      "content": "For a bash EXIT/INT/TERM trap meant to finalize idempotent cleanup state (e.g. a terminal record on a build guard), use a single GLOBAL (never `local`) idempotency flag checked/set at the very top of the trap handler, plus explicit `trap - EXIT INT TERM` after the normal cleanup path -- both together, since either alone is insufficient (a `local` flag is fragile across dynamic-scoping/signal-delivery boundaries; clearing the trap alone doesn't help if a later code path re-arms it). When testing a killed-holder path under `setsid`, read the process's own recorded PID from its own output/state (not bash's `$!`) as the process-group handle for `kill -TERM -- -$pgid`, since `setsid`'s fork behavior is ambiguous depending on the calling shell's own process-group/job-control state.",
+      "category": "PATTERN",
+      "source_artifact": "specs/173_guard_terminal_record_every_exit/summaries/01_guard-terminal-record-result-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash", "trap", "signal-handling", "idempotency", "setsid", "process-group"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790030538_1b6143",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

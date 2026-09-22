@@ -372,6 +372,11 @@
           "path": "specs/173_guard_terminal_record_every_exit/plans/01_guard-terminal-record-result.md",
           "type": "plan",
           "summary": "5-phase plan for terminal record trap and result subcommand."
+        },
+        {
+          "path": "specs/173_guard_terminal_record_every_exit/summaries/01_guard-terminal-record-result-summary.md",
+          "type": "summary",
+          "summary": "Trap-driven terminal record, result subcommand with expect-pid/expect-scope assertions, STATUS line, and full documentation; 47/47 suite passing."
         }
       ],
       "created": "2026-09-07T23:37:35Z",

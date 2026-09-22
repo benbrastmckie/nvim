@@ -1,7 +1,7 @@
 # Implementation Plan: Task #173
 
 - **Task**: 173 - Guarantee lake-build-guard.sh writes a terminal record on every exit path and exposes the build verdict through a result subcommand
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None outstanding (bounded-build-waiter idiom task already COMPLETED)
 - **Research Inputs**: specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md
@@ -295,19 +295,26 @@ add an env-driven exit override to the fixture only (inside the test file).
 
 ---
 
-### Phase 5: Final gate [NOT STARTED]
+### Phase 5: Final gate [COMPLETED]
 
 **Goal**: Acceptance criteria met on the final tree.
 
 **Tasks**:
-- [ ] Run full suite; record PASS/FAIL counts.
-- [ ] `nix shell nixpkgs#shellcheck -c shellcheck` on both files; fix all findings (or record
+- [x] Run full suite; record PASS/FAIL counts. *(completed: 47 PASS, 0 FAIL)*
+- [x] `nix shell nixpkgs#shellcheck -c shellcheck` on both files; fix all findings (or record
       explicitly if shellcheck cannot be obtained -- never claim clean without running it).
-- [ ] `bash .claude/scripts/check-task-references.sh` (or the source-store equivalent) on both
-      files: no task-number references.
-- [ ] Confirm `git diff --stat` touches only the two file_scope paths and nothing under `.claude/**`.
-- [ ] Acceptance demo: build a failing fixture, then `lake-build-guard.sh result --dir FIXTURE;
-      echo $?` returns 20 with no pipeline.
+      *(completed: shellcheck was directly on PATH in this environment, no nix shell needed; main
+      script 0 findings; test file 11 info-level SC2016/SC2329 findings, all matching the
+      pre-existing baseline pattern already present before this task -- one genuine SC2034
+      warning introduced while writing case 33 was found and fixed)*
+- [x] `bash .claude/scripts/check-task-references.sh` (or the source-store equivalent) on both
+      files: no task-number references. *(completed: 0 occurrences via the source-store
+      invocation, `agent-system/extensions/core/scripts/check-task-references.sh`)*
+- [x] Confirm `git diff --stat` touches only the two file_scope paths and nothing under `.claude/**`.
+      *(completed)*
+- [x] Acceptance demo: build a failing fixture, then `lake-build-guard.sh result --dir FIXTURE;
+      echo $?` returns 20 with no pipeline. *(completed: verified manually, exit 20, exit_status=1
+      shown on stdout)*
 
 **Timing**: 1 hour
 
@@ -323,12 +330,12 @@ add an env-driven exit override to the fixture only (inside the test file).
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` passes (existing 29 + new cases/mutations)
-- [ ] shellcheck clean on both files
-- [ ] `--help` names all four capture paths and the `result` mode
-- [ ] A finished build's pass/fail is readable from `result`'s exit code with no text parsing and no pipeline
-- [ ] Killed (TERM) holder leaves `state=aborted`; a later build does not block and does not share it
-- [ ] `decide_sharing()`, the 75-79 band, exit 77 allowlist behavior, REPLAY marker, and `--timeout` semantics unchanged
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` passes (existing 29 + new cases/mutations) *(47 PASS, 0 FAIL)*
+- [x] shellcheck clean on both files *(main script 0 findings; test file info-level only, matching baseline)*
+- [x] `--help` names all four capture paths and the `result` mode *(case 34)*
+- [x] A finished build's pass/fail is readable from `result`'s exit code with no text parsing and no pipeline *(cases 28/29, acceptance demo)*
+- [x] Killed (TERM) holder leaves `state=aborted`; a later build does not block and does not share it *(cases 23/24)*
+- [x] `decide_sharing()`, the 75-79 band, exit 77 allowlist behavior, REPLAY marker, and `--timeout` semantics unchanged *(byte-unchanged diffs confirmed in phase 1; cases 14-20 still green)*
 
 ## Artifacts & Outputs
 

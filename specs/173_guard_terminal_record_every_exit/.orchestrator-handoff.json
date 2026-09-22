@@ -1,18 +1,20 @@
 {
   "task_number": 173,
-  "phase": "plan",
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
+  "phase": "implement",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phases_completed": 5,
   "phases_total": 5,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/173_guard_terminal_record_every_exit/plans/01_guard-terminal-record-result.md",
-      "summary": "5-phase plan for terminal record trap and result subcommand."
+      "type": "summary",
+      "path": "specs/173_guard_terminal_record_every_exit/summaries/01_guard-terminal-record-result-summary.md",
+      "summary": "Trap-driven terminal record, result subcommand with expect-pid/expect-scope assertions, STATUS line, and full documentation; 47/47 suite passing."
     }
   ],
-  "summary": "Plan written: trap-based aborted record, result subcommand (exit band 0/20-24), ownership assertions, STATUS line, docs, final gate with shellcheck via nix shell.",
+  "summary": "All 5 plan phases implemented and verified: EXIT/INT/TERM trap with idempotency guard, result subcommand with enumerated exit band and orphan detection, --expect-pid/--expect-scope ownership assertions, STATUS stderr line, and full documentation. Suite grew from 29 to 47 passing checks (34 numbered cases, 11 mutations), shellcheck clean, no task-number references, git diff scoped to the two file_scope files only.",
   "blockers": [],
-  "next_action_hint": "implement"
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "postflight: mark task 173 completed"
 }
