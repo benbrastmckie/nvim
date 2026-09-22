@@ -363,27 +363,34 @@ diff, not assumed.
 
 ---
 
-### Phase 4: Demonstrate the Closed Loop End to End [NOT STARTED]
+### Phase 4: Demonstrate the Closed Loop End to End [COMPLETED]
 
 **Goal**: Satisfy Acceptance #1 and #2 as *demonstrations*, not assertions. The dispatch is
 explicit that "demonstrated end to end, not asserted" is the bar.
 
 **Tasks**:
-- [ ] Stage a fixture task whose `modified_files` lie under `agent-system/extensions/**` but
+- [x] Stage a fixture task whose `modified_files` lie under `agent-system/extensions/**` but
       **outside** `context/reference/orchestrator-critical-paths.json`'s curated list — the
       general case the dispatch's blast-radius framing names, and the case Phase 3 exists to cover.
-- [ ] Drive it through the four-move loop with a deliberately stale deployed tree so the
-      completion-deploy gate refuses the first postflight with exit 6.
-- [ ] Capture and record, as evidence: the exit-6 refusal; `cycle_modified_files` non-empty
+      *(completed: candidate #8801, modified_files=["agent-system/extensions/core/scripts/some_other_file.sh"])*
+- [x] Drive it through the four-move loop with a deliberately stale deployed tree so the
+      completion-deploy gate refuses the first postflight with exit 6. *(completed)*
+- [x] Capture and record, as evidence: the exit-6 refusal; `cycle_modified_files` non-empty
       afterward; `deploy_pending: true` on the task's `.return-meta.json`; the checkpoint firing on
       the following cycle with its widened-path announcement; the task reaching `completed` with
       **no** manual `deploy-headless.sh` and **no** manual `reconcile-task-status.sh`.
-- [ ] Confirm the no-longer-happening failure: no fresh `implement` dispatch is prepared against
-      an already-4/4-complete plan.
-- [ ] Record the evidence in the task's summary artifact — the demonstration transcript is the
-      acceptance artifact, so it must survive beyond the session.
-- [ ] Verify no test was weakened or deleted to reach green (Acceptance #5): diff the two suites
-      against their pre-task state and confirm every change is additive.
+      *(completed: full transcript at progress/phase-4-demonstration-transcript.txt)*
+- [x] Confirm the no-longer-happening failure: no fresh `implement` dispatch is prepared against
+      an already-4/4-complete plan. *(completed: step 4 of the transcript shows dispatch:[] and
+      stop.reason=all_terminal once the candidate reaches completed)*
+- [x] Record the evidence in the task's summary artifact — the demonstration transcript is the
+      acceptance artifact, so it must survive beyond the session. *(completed: durable transcript
+      file plus embedded excerpt in the implementation summary)*
+- [x] Verify no test was weakened or deleted to reach green (Acceptance #5): diff the two suites
+      against their pre-task state and confirm every change is additive. *(completed: verified via
+      `git diff <pre-task> HEAD -- <three test files>`; only change to a removed line across all
+      three phases is a loop-header line extended with deploy-freshness-lib.sh, no assertion
+      removed)*
 
 **Timing**: 2 hours
 

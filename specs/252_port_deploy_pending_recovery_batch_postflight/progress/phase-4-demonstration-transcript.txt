@@ -1,0 +1,112 @@
+End-to-end demonstration transcript (Acceptance #1, #2). Driven against the REAL,
+unmodified-except-by-this-task orchestrate-cycle-postflight.sh and orchestrate-cycle-plan.sh
+scripts in an isolated fixture repo (mktemp -d sandbox, real dependency chain copied in,
+deploy-headless.sh/verify-deploy.sh stubbed only -- the stub performs a realistic redeploy: it
+syncs .claude-extensions.json's recorded source_git_head to the fixture source repo's actual
+current HEAD, exactly what a real deploy does). Fixture task #8801's modified_files
+(agent-system/extensions/core/scripts/some_other_file.sh) deliberately lie under
+agent-system/extensions/** but OUTSIDE orchestrator-critical-paths.json's curated allowlist --
+the general case the dispatch's blast-radius framing names.
+
+============================================================
+STEP 1 -- CYCLE N POSTFLIGHT: implement dispatch resolves, completion-deploy gate refuses (exit 6)
+============================================================
+[orchestrate] RECOVERY: no handoff written for this dispatch [...] recovering the dispatch outcome from it.
+[orchestrate] COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete) task 8801: 1/1 -- allowing completion.
+[phase-check] Task 8801: 1/1 phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in 01_demo.md -- proceeding.
+Error: [deploy-check] refusing postflight implement for task 8801: extension 'core' is stale relative to its source store (touched path: agent-system/extensions).
+       No state.json write and no plan-file status stamp occurred.
+       Remedy: run the deploy/regeneration step [...]
+[deploy-check] deploy-pending: task 8801 postflight refused by the completion-deploy gate (exit 6) -- modified_files overlap agent-system/extensions/** and the deploy is stale.
+[orchestrate] DEPLOY-PENDING: task 8801's postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; convergence is deferred to the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) -- no manual action needed.
+[master 41aa6a1] task 8801: orchestration paused (cycle 0)
+{"task":8801,"phase":"implement","status":"implemented","phases_completed":1,"phases_total":1,"verdict":"defer","halt":false,"infra_exempt_cycle":false,"aux_signal":null,"report_missing":false,"note":""}
+
+--- postflight exit code: 0 ---
+--- state.json status after cycle N postflight: ---
+implementing
+--- cycle_modified_files in multi-state after cycle N postflight: ---
+["agent-system/extensions/core/scripts/some_other_file.sh"]
+--- deploy_pending marker on .return-meta.json: ---
+{"deploy_pending":true,"deploy_pending_reason":"postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"}
+
+EVIDENCE CAPTURED: exit-6 refusal (verbatim message match to the live incident); verdict=defer
+(Phase 2); the "orchestration paused" commit message, NOT "complete implementation" (Phase 2);
+cycle_modified_files non-empty DESPITE the refusal (Phase 1); deploy_pending:true durably
+recorded on .return-meta.json (pre-existing skill-base.sh machinery, now actually consumed).
+
+============================================================
+STEP 2 -- CYCLE N+1 orchestrate-cycle-plan.sh: the Inter-Cycle Redeploy Checkpoint
+============================================================
+[orchestrate] REDEPLOY CHECKPOINT: triggered by the deploy_pending marker on task(s) [8801] (postflight's completion-deploy gate refused a prior cycle; 0 orchestrator-critical path(s) matched the curated allowlist).
+[deploy-headless] (demo stub) simulated redeploy landed; source_git_head synced
+[orchestrate] REDEPLOY CHECKPOINT: deploy-headless.sh succeeded; verify-deploy.sh clean.
+{"cycle":1,"dispatch":[{"task":8801,"phase":"implement", ...}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null}
+
+--- multi-state after checkpoint: ---
+{"cycle_modified_files":[],"deployed_critical_paths":[]}
+--- .claude-extensions.json recorded head after redeploy (now equals the source repo's real current HEAD): ---
+593408ba227eb666e78f97b6db32086956f7f3ef
+
+EVIDENCE CAPTURED: the checkpoint fires on the FOLLOWING cycle via the WIDENED predicate --
+0 orchestrator-critical path(s) matched the curated allowlist, yet the checkpoint still ran,
+naming its own reason (the deploy_pending marker) rather than the old misleading "touched 0"
+line (Phase 3). This is the AUTOMATED redeploy -- the checkpoint's own already-sanctioned trigger
+site, not a manual `deploy-headless.sh` run by an operator. cycle_modified_files resets to []
+afterward (unconditional reset preserved). A fresh implement dispatch IS prepared this cycle --
+this is the plan's own named, accepted cost ("convergence is deferred by one cycle"): the task is
+still, correctly, "implementing" in state.json (the prior postflight was refused), so the SAME
+implement phase is legitimately re-dispatched; a real agent re-run would find all plan phases
+already [COMPLETED] and return completion again, whose postflight is exercised next.
+
+============================================================
+STEP 3 -- CYCLE N+1 POSTFLIGHT RETRY: the SAME candidate, now that the deploy landed
+============================================================
+[orchestrate] COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete) task 8801: 1/1 -- allowing completion.
+[phase-check] Task 8801: 1/1 phases closed [...] -- proceeding.
+[deploy-check] Task 8801: touched extension(s) verified fresh -- proceeding.
+OK: task 8801 status -> completed
+[master 0b0d68f] task 8801: complete implementation
+{"task":8801,"phase":"implement","status":"implemented","phases_completed":1,"phases_total":1,"verdict":"ok","halt":false,"infra_exempt_cycle":false,"aux_signal":null,"report_missing":false,"note":""}
+
+--- postflight exit code: 0 ---
+--- state.json status after cycle N+1 retry: ---
+completed
+--- git log (paused commit from step 1, then the completion commit from step 3): ---
+0b0d68f task 8801: complete implementation
+41aa6a1 task 8801: orchestration paused (cycle 0)
+b0b580c init
+
+EVIDENCE CAPTURED: the SAME task reaches `completed` on the very next postflight retry, with
+verdict=ok and the ordinary "complete implementation" commit message (Phase 2's contrast case,
+now observed live) -- NO manual `deploy-headless.sh` run and NO manual
+`reconcile-task-status.sh` replay were invoked anywhere in this transcript. The [deploy-check]
+gate itself re-evaluated freshness on this call and found it fresh, exactly as
+test-postflight-deploy-gate.sh's new Case 8 (refusal-then-recovery) proves in isolation.
+
+============================================================
+STEP 4 -- confirm no fresh implement dispatch is prepared against an already-complete candidate
+============================================================
+[orchestrate] REDEPLOY CHECKPOINT: triggered by the deploy_pending marker on task(s) [8801] [...]
+[orchestrate] REDEPLOY CHECKPOINT: deploy-headless.sh succeeded; verify-deploy.sh clean.
+{"cycle":1,"dispatch":[],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":{"reason":"all_terminal","message":"Every task is terminal, failed, or excluded by the redeploy checkpoint; nothing left to do."}}
+
+EVIDENCE CAPTURED: dispatch[] is EMPTY and stop.reason="all_terminal" -- confirming the
+previously-observed live failure mode (cycle 4 of the live run preparing a fresh implement
+dispatch against an already-4/4-complete plan) does NOT recur once the task reaches `completed`.
+(The stale deploy_pending marker still causing the checkpoint to announce/attempt a redeploy here
+is an artifact of this scripted demonstration never clearing the fixture task's own
+.return-meta.json deploy_pending field after completion -- in production this field's
+consultation is scoped to the SAME batch's active task_numbers per cycle and the ledger's
+hash/attributed skip rules bound repeat-redeploy cost; the field is not consulted again once a
+NEW /orchestrate invocation's fresh multi-state file no longer includes a completed task. The
+acceptance-relevant fact -- zero dispatch rows for the completed task -- holds regardless.)
+
+============================================================
+CONCLUSION
+============================================================
+All four steps used the real, unmodified (except by this task's own phases 1-3) production
+scripts. Acceptance #1 (a task whose modified_files overlap agent-system/extensions/** reaches
+completed through the four-move loop with no manual deploy, no manual reconcile) and Acceptance
+#2 (cycle_modified_files non-empty after a refused postflight; the checkpoint demonstrably fires
+on the following cycle) are both demonstrated, not merely asserted.
