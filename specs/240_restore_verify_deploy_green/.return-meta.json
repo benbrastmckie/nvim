@@ -1,10 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/240_restore_verify_deploy_green/summaries/01_restore-verify-deploy-green-summary.md",
+      "summary": "Reworded the GATE 17 noop-bash test fixture and corrected GATE 20's stale eager-load budget snapshot; full deploy-headless.sh confirms both target gates PASS, with one unrelated Gate 5 failure attributed to a concurrent sibling task's in-flight uncommitted work."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed GATE 17's false-positive scoped-commit-boundary lint violation by rewording a test fixture, and corrected GATE 20's stale eager-load informational fields (measured_bytes/measured_at/note) after confirming the fresh total (65,257 B) is under baseline (65,950 B). Full deploy-headless.sh confirms both target gates PASS; a separate Gate 5 failure was attributed to a concurrently in-flight sibling task's own uncommitted edit and documented rather than fixed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a full deploy-headless.sh/verify-deploy.sh run during a multi-task /orchestrate cycle surfaces a gate failure outside your own edited files, check `git status --short <path>` (uncommitted foreign modification), `git log --oneline` (no commit of yours touches it), and the suspect sibling task's status in specs/state.json (e.g. `implementing` = actively in flight). If all three point to a concurrent sibling, document the finding (plan Reasoned Exclusions + summary Plan Deviations) rather than fixing the foreign file -- it is that sibling's own in-progress work, not a regression from your edits.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/240_restore_verify_deploy_green/summaries/01_restore-verify-deploy-green-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "concurrent-siblings", "territory", "gate-attribution", "deploy-headless"]
+    },
+    {
+      "content": "In orchestrator-context-budget.json's eager_load block, only baseline_bytes gates verify-deploy.sh's Gate 20 Sub-check B; measured_bytes/measured_at/note are purely informational snapshots that may be refreshed freely without moving the ceiling. A stale or erroneous prior measured_bytes value (e.g. one that no longer reproduces even against its own recording commit) should be corrected as a snapshot refresh, not treated as a regression requiring a baseline bump.",
+      "category": "CONFIG",
+      "source_artifact": "specs/240_restore_verify_deploy_green/summaries/01_restore-verify-deploy-green-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["eager-load", "budget-config", "gate-20", "baseline-bytes", "measure-eager-context"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790055369_87ec14",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
