@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "task_number": 249,
+  "session_id": "sess_1790104446_f9923b_249",
+  "dispatch_seq": 20,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/249_restore_eager_context_budget/plans/01_eager-context-budget-trim.md",
+      "summary": "4-phase plan: create lazy narrative companion, trim eager rule, register index entry, full gate run."
+    }
+  ],
+  "next_steps": "Run /implement 249 to execute the plan"
+}

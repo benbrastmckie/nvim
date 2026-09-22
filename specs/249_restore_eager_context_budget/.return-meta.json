@@ -1,35 +1,22 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md",
-      "summary": "Confirms the eager-load budget breach (67,003 B vs 65,950 B baseline), attributes it entirely to task 227's rewrite of the source-store rule's 'Correct Edit Target' section, and specifies a byte-measured rule/lazy-narrative split (rule trimmed to 1,496 B, new context/standards/source-store-deploy-boundary-narrative.md at 3,921 B) projected to land at 64,056 B TOTAL with 1,894 B headroom."
+      "type": "plan",
+      "path": "specs/249_restore_eager_context_budget/plans/01_eager-context-budget-trim.md",
+      "summary": "4-phase plan to split the eagerly-loaded source-store rule into a trimmed eager core plus a lazily loaded context/standards narrative companion, restoring the eager-context budget with ~1,780 B of headroom instead of re-baselining."
     }
   ],
-  "next_steps": "Run /plan 249 to create implementation plan",
+  "next_steps": "Run /implement 249 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 1.5,
+  "dependency_waves": [[1], [2, 3], [4]],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1790104446_f9923b_249",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "findings_count": 5,
-  "memory_candidates": [
-    {
-      "content": "This codebase's rule-file byte-budget pattern: when an eagerly-loaded rules/X.md grows past its budget, split it into a small eager core (path pattern, principle, one-line pointer) plus a lazily-loaded context/standards/X-narrative.md companion, referenced only via a plain backticked path (never @-import, which would re-eager it). Two existing precedents: rules/git-workflow.md -> context/standards/git-workflow-narrative.md, rules/state-management.md -> context/reference/state-management-schema.md.",
-      "category": "PATTERN",
-      "source_artifact": "specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "rule-narrative-split", "measure-eager-context", "lazy-loading", "baseline_bytes"]
-    },
-    {
-      "content": "agent-system/extensions/core/scripts/measure-eager-context.sh --check sums four channels (parent_chain, claudemd predicted-assembled, at_import, rules) into a TOTAL compared against context/config/orchestrator-context-budget.json's eager_load.baseline_bytes by verify-deploy.sh gate 20. A rules/*.md file counts as eager only when it lacks a paths: frontmatter gate. Completing a task that edits such a file without re-running this check can silently breach the budget (as task 227 did, growing rules/source-store-deploy-boundary.md 62% with the budget gate never run).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["measure-eager-context.sh", "verify-deploy.sh gate 20", "eager-load-budget", "silent-regression", "paths-frontmatter"]
-    }
-  ],
-  "dispatch_seq": 19
+  "dispatch_seq": 20
 }

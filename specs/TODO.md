@@ -41,7 +41,7 @@ next_project_number: 252
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-249 [PLANNING] — Restore the eager-context budget: trim the source-store rule...
+249 [PLANNED] — Restore the eager-context budget: trim the source-store rule...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 
@@ -359,11 +359,12 @@ ACCEPTANCE ADDITIONS FOR THIS EXAMPLE.
 ---
 
 ### 249. Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md]
+- **Plan**: [249_restore_eager_context_budget/plans/01_eager-context-budget-trim.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
