@@ -28,29 +28,53 @@
       "category": "INSIGHT",
       "source_artifact": "specs/210_fix_task_create_topic_assignment_order/summaries/01_topic-order-and-keyword-routing-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["keyword_overrides", "routing_exempt", "manifest.json", "task_type resolution", "extension routing"]
+      "suggested_keywords": [
+        "keyword_overrides",
+        "routing_exempt",
+        "manifest.json",
+        "task_type resolution",
+        "extension routing"
+      ]
     },
     {
       "content": "For a shell script whose PROJECT_ROOT/SCRIPT_DIR resolution is relative to its OWN file location (not overridable by env var), a fixture-driven test suite must copy the real script (and its lib/ dependencies) into a mktemp -d scratch repo shaped like the real deploy target (.claude/scripts/{,lib/} + specs/state.json), then invoke the COPY -- never the live script pointed at a fixture path. See build_fixture_repo() in test-skill-base-lifecycle.sh (the canonical precedent) and its reuse in test-manage-topics-create-order.sh. This is required whenever the script under test resolves its own root via `cd \"$SCRIPT_DIR/../..\" && pwd` rather than accepting an override argument.",
       "category": "PATTERN",
       "source_artifact": "specs/210_fix_task_create_topic_assignment_order/summaries/01_topic-order-and-keyword-routing-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["fixture test", "build_fixture_repo", "SCRIPT_DIR", "PROJECT_ROOT", "shell testing"]
+      "suggested_keywords": [
+        "fixture test",
+        "build_fixture_repo",
+        "SCRIPT_DIR",
+        "PROJECT_ROOT",
+        "shell testing"
+      ]
     },
     {
       "content": "When replacing a first-keyword-match-wins routing table (prone to single-common-word false positives like \"agent\", \"proof\", \"lean\" appearing in passing), a strong-anchor + weak-signal-threshold rule is an effective middle ground: (1) a short list of high-confidence multi-word phrases or structural patterns (file paths, hyphenated compounds, leading slash-commands) resolves immediately; (2) everything else accumulates a per-candidate-type count of DISTINCT weak keyword matches and only resolves at a threshold (>=2 worked well here) with ties broken by declaration order. This is worth a dedicated fixture suite asserting both the false positives it fixes AND the true positives it must not break (the same description class that motivated the original single-keyword rule).",
       "category": "PATTERN",
       "source_artifact": "specs/210_fix_task_create_topic_assignment_order/summaries/01_topic-order-and-keyword-routing-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["keyword routing", "false positive", "weak-signal threshold", "strong anchor", "task-type-detect"]
+      "suggested_keywords": [
+        "keyword routing",
+        "false positive",
+        "weak-signal threshold",
+        "strong anchor",
+        "task-type-detect"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790091707_e274be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

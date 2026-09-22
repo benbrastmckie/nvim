@@ -389,6 +389,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: Task 209
 - **Research**: [210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md]
 - **Plan**: [210_fix_task_create_topic_assignment_order/plans/01_topic-order-and-keyword-routing.md]
+- **Summary**: [210_fix_task_create_topic_assignment_order/summaries/01_topic-order-and-keyword-routing-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

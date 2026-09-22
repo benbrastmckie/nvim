@@ -116,9 +116,15 @@
           "path": "specs/210_fix_task_create_topic_assignment_order/plans/01_topic-order-and-keyword-routing.md",
           "type": "plan",
           "summary": "8-phase plan across two defect clusters: create-mode topic assignment order/registration/zero-topics picker, and task-type keyword false positives via an extracted, tested detection library."
+        },
+        {
+          "path": "specs/210_fix_task_create_topic_assignment_order/summaries/01_topic-order-and-keyword-routing-summary.md",
+          "type": "summary",
+          "summary": "All 8 phases completed: fixed Create Mode's topic-assignment order and AskUserQuestion schema, and extracted task-type detection into a tested strong-anchor/weak-signal library, removing literature's erroneous keyword_overrides. Deployed and confirmed end-to-end."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed /task Create Mode's topic-assignment ordering defect (manage-topics.sh set now runs after the task exists, never before) and its AskUserQuestion schema, and replaced task-type detection's first-match-wins keyword table with a shared, tested strong-anchor + weak-signal-threshold library that also closes the literature-keyword-overrides false-positive. Both new fixture suites pass from the deployed copy; redeployed and verified end-to-end against a fresh scratch state.json."
     },
     {
       "project_number": 185,
