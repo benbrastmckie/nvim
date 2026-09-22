@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Fixture test for create-mode topic assignment",
+  "started_at": "2026-09-22T00:45:00Z",
+  "last_updated": "2026-09-22T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-manage-topics-create-order.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh"]},
+    {"id": 2, "description": "Case 1 zero topics", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Case 2 existing topics idempotent", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Case 3 exit-4 regression guard", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Case 4 text-order assertion", "status": "done", "files_touched": []},
+    {"id": 6, "description": "chmod +x", "status": "done", "files_touched": []},
+    {"id": 7, "description": "shellcheck resolve findings", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

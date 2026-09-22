@@ -276,32 +276,37 @@ defined, mandatory-preserving path when `active_topics` is empty.
 
 ---
 
-### Phase 3: Fixture test for create-mode topic assignment [NOT STARTED]
+### Phase 3: Fixture test for create-mode topic assignment [COMPLETED]
 
 **Goal**: A runnable suite asserting that create-mode topic assignment leaves both the task's
 `topic` and `active_topics` set, with no non-zero `manage-topics.sh` exit, on a state with zero
 topics and on a state with existing topics.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh`
       following `context/standards/shell-script-testing.md` conventions: `mktemp -d` scratch
-      repo, `pass()`/`fail()`/`info()` helpers, PASSED/FAILED counters, exit 0/1/2.
-- [ ] Case 1 (zero topics): seed a scratch `specs/state.json` with `active_projects: []` and
+      repo, `pass()`/`fail()`/`info()` helpers, PASSED/FAILED counters, exit 0/1/2. *(completed)*
+- [x] Case 1 (zero topics): seed a scratch `specs/state.json` with `active_projects: []` and
       `active_topics: []`; simulate Create Mode's corrected order (state write, then
       `manage-topics.sh set`); assert exit 0, assert the task's `topic` is set, assert
-      `active_topics` contains it.
-- [ ] Case 2 (existing topics): seed `active_topics` with two entries; run the same sequence with
+      `active_topics` contains it. *(completed)*
+- [x] Case 2 (existing topics): seed `active_topics` with two entries; run the same sequence with
       an existing topic; assert exit 0, topic set, and `active_topics` **unchanged in length**
-      (idempotent append, no duplicate).
-- [ ] Case 3 (regression guard for the original defect): call `manage-topics.sh set` against a
+      (idempotent append, no duplicate). *(completed)*
+- [x] Case 3 (regression guard for the original defect): call `manage-topics.sh set` against a
       task number absent from `active_projects` and assert exit **4** — pinning the exit-code
-      contract this task must not change.
-- [ ] Add a case asserting `commands/task.md`'s Create Mode text places its `manage-topics.sh set`
+      contract this task must not change. *(completed)*
+- [x] Add a case asserting `commands/task.md`'s Create Mode text places its `manage-topics.sh set`
       call after `state-write.sh` (a text-order assertion over the source file), so a future
       re-introduction of the defect fails the suite rather than only failing at runtime.
-- [ ] `chmod +x` the suite (`run-all.sh` reports a non-executable suite as a loud `[SKIP]`, and
-      auto-discovers it otherwise — no registration needed).
-- [ ] Run `shellcheck` on the new suite and resolve every finding.
+      *(completed)*
+- [x] `chmod +x` the suite (`run-all.sh` reports a non-executable suite as a loud `[SKIP]`, and
+      auto-discovers it otherwise — no registration needed). *(completed)*
+- [x] Run `shellcheck` on the new suite and resolve every finding. *(completed: one info-level
+      SC2329 "cleanup() never invoked" false positive remains, identical to the same finding on
+      every precedent suite's `trap ... EXIT`-invoked `cleanup()` function in this codebase
+      (`test-census-count.sh`, `test-skill-base-lifecycle.sh`, etc.) — this is the established,
+      accepted "shellcheck clean" bar this repo's test suites already meet, not a new finding)*
 
 **Timing**: 1.25 hours
 
