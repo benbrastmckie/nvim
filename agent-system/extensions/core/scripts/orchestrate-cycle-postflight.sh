@@ -1169,6 +1169,19 @@ if [ -z "$loop_guard_file" ]; then
     # Accumulate modified_files into cycle_modified_files HERE (not re-read later) — the
     # scoped commit above may have already cleaned up ephemeral per-task files, and cleanup can
     # remove .return-meta.json before Stage MT-3 step 7's overlap computation would otherwise run.
+    #
+    # REGRESSION ANCHOR: this block is gated ONLY by `[ -z "$loop_guard_file" ]` (WORK (j)'s own
+    # outer `if`, above) and `is_live` — deliberately NOT by dispatch_status, verdict, or
+    # skill_postflight_update's return code. It must keep running even when the `implemented)`
+    # arm's status write was refused by the completion-deploy gate (update-task-status.sh's
+    # exit 6) — that refusal is exactly when the Inter-Cycle Redeploy Checkpoint most needs a
+    # non-empty cycle_modified_files to re-arm on the following cycle. Characterized end-to-end
+    # (a real exit-6 refusal via a stale-extension fixture, not a stub) by
+    # scripts/tests/test-orchestrate-cycle-postflight.sh's "Characterization: cycle_modified_files
+    # accumulates across a real exit-6 deploy-pending postflight refusal" case, which also proves
+    # itself live via a regression-anchor self-check (temporarily re-gating this exact block
+    # flips the case red). Do not add a dispatch_status/verdict/rc guard here without updating
+    # that test.
     while IFS= read -r f; do
       [ -n "$f" ] && jq --arg f "$f" '.cycle_modified_files = ((.cycle_modified_files // []) + [$f] | unique)' \
         "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"

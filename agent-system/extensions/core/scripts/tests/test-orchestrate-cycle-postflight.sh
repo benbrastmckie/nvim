@@ -45,7 +45,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
   require_file "$CORE_DIR/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-         phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh; do
+         phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh; do
   require_file "$CORE_DIR/lib/$f"
 done
 
@@ -69,13 +69,36 @@ setup_sandbox() {
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-           phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh; do
+           phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
      "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json" 2>/dev/null || true
   chmod +x "$WORKDIR"/.claude/scripts/*.sh
   ( cd "$WORKDIR" && git init -q && git config user.email t@t.com && git config user.name T )
+}
+
+# ─── build_deploy_stale_fixture <candidate_num>: a throwaway source-store stand-in repo plus a
+# .claude-extensions.json whose recorded core `source_git_head` is one commit BEHIND the source
+# repo's actual HEAD -- the same overlap+stale shape test-postflight-deploy-gate.sh's Case 1
+# drives, reused here so update-task-status.sh's real PHASE 0.5 gate (not a stub) refuses the
+# postflight with exit 6 inside this suite's own sandbox. Requires setup_sandbox to have already
+# run. Writes .claude-extensions.json at $WORKDIR (PROJECT_ROOT, per common_repo_root's 2-levels-
+# up resolution from $WORKDIR/.claude/scripts). ─────────────────────────────────────────────────
+build_deploy_stale_fixture() {
+  local src_repo="$WORKDIR/source-repo"
+  mkdir -p "$src_repo/agent-system/extensions/core/scripts"
+  ( cd "$src_repo" && git init -q && git config user.email t@t.com && git config user.name T )
+  echo "v1" > "$src_repo/agent-system/extensions/core/scripts/foo.sh"
+  ( cd "$src_repo" && git add agent-system/extensions/core/scripts/foo.sh && git commit -q -m initial )
+  local head_v1
+  head_v1="$(git -C "$src_repo" log -1 --format=%H -- agent-system/extensions/core/scripts/foo.sh)"
+  cat > "$WORKDIR/.claude-extensions.json" <<EOF
+{"version":"1.0.0","extensions":{"core":{"version":"1.0.0","source_dir":"${src_repo}/agent-system/extensions/core","source_git_head":"${head_v1}"}}}
+EOF
+  # Advance the source repo without updating the recorded head -> STALE.
+  echo "v2" > "$src_repo/agent-system/extensions/core/scripts/foo.sh"
+  ( cd "$src_repo" && git add agent-system/extensions/core/scripts/foo.sh && git commit -q -m v2 )
 }
 
 SUT="$WORKDIR/.claude/scripts/orchestrate-cycle-postflight.sh"
@@ -1499,6 +1522,102 @@ if [ "$(jq -r '.cycle_count' "$pd_guard_file" 2>/dev/null)" = "3" ]; then
   pass "invariant (pending-dispatch): every other loop-guard field (cycle_count) is preserved"
 else
   fail "invariant (pending-dispatch): cycle_count was not preserved: $(cat "$pd_guard_file")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Characterization (Part 2 of this task's own dispatch): does the WORK (j) multi-state
+# `cycle_modified_files` accumulation block survive a REAL exit-6 deploy-pending postflight
+# refusal, within a single invocation? Drives the actual completion-deploy gate (not a stub) via
+# build_deploy_stale_fixture, exactly as test-postflight-deploy-gate.sh's Case 1 does. This is
+# the regression anchor named at the WORK (j) block's guard comment in
+# orchestrate-cycle-postflight.sh -- do not re-gate that block on dispatch_status/verdict/the
+# postflight rc without updating this case.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Characterization: cycle_modified_files accumulates across a real exit-6 deploy-pending postflight refusal"
+setup_sandbox
+dp_candidate_num=709
+mkdir -p "$WORKDIR/specs/${dp_candidate_num}_candidate"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${dp_candidate_num}, "project_name": "candidate", "task_type": "meta", "status": "implementing", "description": "candidate #${dp_candidate_num} -- deploy-pending refusal characterization", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+build_deploy_stale_fixture
+cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_709.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"709": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+cat > "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/foo.sh"]}
+EOF
+run_sut "specs/${dp_candidate_num}_candidate" --session sess_709 --phase implement --task-type meta \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$dp_candidate_num"
+
+if echo "$LAST_STDERR" | grep -q "extension 'core' is stale"; then
+  pass "characterization: the completion-deploy gate refused (exit-6 refusal message present on stderr)"
+else
+  fail "characterization: expected the deploy-check refusal message on stderr, got: $LAST_STDERR"
+fi
+dp_status_after="$(jq -r --argjson n "$dp_candidate_num" '.active_projects[] | select(.project_number==$n) | .status' "$STATE_FILE" 2>/dev/null)"
+if [ "$dp_status_after" = "implementing" ]; then
+  pass "characterization: state.json status unchanged (still implementing) after the refusal -- the refusal is real, not a false one"
+else
+  fail "characterization: expected status still 'implementing' after refusal, got: $dp_status_after"
+fi
+dp_mt_file="$WORKDIR/specs/.orchestrator-multi-state-sess_709.json"
+if jq -e '.cycle_modified_files == ["agent-system/extensions/core/scripts/foo.sh"]' "$dp_mt_file" >/dev/null 2>&1; then
+  pass "characterization: cycle_modified_files accumulated the refused task's modified_files despite the exit-6 refusal"
+else
+  fail "characterization: cycle_modified_files did not accumulate after the refusal: $(cat "$dp_mt_file" 2>/dev/null)"
+fi
+if jq -e '.deploy_pending == true' "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" >/dev/null 2>&1; then
+  pass "characterization: deploy_pending marker recorded on .return-meta.json (the durable cross-invocation signal the checkpoint widening consumes)"
+else
+  fail "characterization: deploy_pending marker missing from .return-meta.json: $(cat "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" 2>/dev/null)"
+fi
+
+# ─── Regression-anchor check: temporarily re-gate the WORK (j) accumulation block on a
+# deliberately-false condition, confirm the same fixture goes RED, then revert -- proves this
+# case actually exercises the block rather than passing vacuously. Operates on $CORE_DIR's own
+# source file via a backup/restore pair (setup_sandbox always re-copies FROM $CORE_DIR, so the
+# mutation must live there, not on the already-copied $SUT, to survive the next setup_sandbox
+# call) and is guaranteed to be reverted even on an early exit via the trap below. ───────────────
+info "Characterization: regression-anchor self-check (temporarily re-gating WORK (j) must flip this case red)"
+anchor_marker='# Accumulate modified_files into cycle_modified_files HERE (not re-read later)'
+ANCHOR_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
+if grep -qF "$anchor_marker" "$ANCHOR_SRC"; then
+  cp "$ANCHOR_SRC" "${ANCHOR_SRC}.anchor-bak"
+  anchor_restore() { [ -f "${ANCHOR_SRC}.anchor-bak" ] && mv -f "${ANCHOR_SRC}.anchor-bak" "$ANCHOR_SRC"; }
+  trap 'anchor_restore; cleanup' EXIT
+  # Wrap the accumulation loop's own `while` line in a deliberately-false condition.
+  sed -i "s/^    while IFS= read -r f; do\$/    while false \&\& IFS= read -r f; do/" "$ANCHOR_SRC"
+
+  setup_sandbox
+  mkdir -p "$WORKDIR/specs/${dp_candidate_num}_candidate"
+  write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${dp_candidate_num}, "project_name": "candidate", "task_type": "meta", "status": "implementing", "description": "candidate #${dp_candidate_num} -- deploy-pending refusal characterization (anchor check)", "dependencies": [], "file_scope": []}]}
+EOF
+  echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+  commit_fixture
+  build_deploy_stale_fixture
+  cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_709.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"709": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+  cat > "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/foo.sh"]}
+EOF
+  run_sut "specs/${dp_candidate_num}_candidate" --session sess_709 --phase implement --task-type meta \
+    --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$dp_candidate_num"
+
+  anchor_restore
+  trap cleanup EXIT
+
+  if jq -e '.cycle_modified_files == []' "$WORKDIR/specs/.orchestrator-multi-state-sess_709.json" >/dev/null 2>&1; then
+    pass "characterization: artificially re-gating the WORK (j) block flips this case red (anchor confirmed live)"
+  else
+    fail "characterization: artificially re-gating the WORK (j) block did NOT flip this case red -- the case is not exercising the block"
+  fi
+else
+  fail "characterization: WORK (j) accumulation block's anchor comment not found in $ANCHOR_SRC -- regression-anchor self-check cannot run"
 fi
 
 echo ""

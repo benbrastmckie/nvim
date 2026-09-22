@@ -1,7 +1,7 @@
 # Implementation Plan: Task #252
 
 - **Task**: 252 - Port the deploy-pending (exit 6) recovery into the batch postflight, and fix `cycle_modified_files` accumulation on a refused postflight
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md
@@ -164,33 +164,37 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Characterize and Guarantee `cycle_modified_files` Accumulation Across a Refused Postflight [NOT STARTED]
+### Phase 1: Characterize and Guarantee `cycle_modified_files` Accumulation Across a Refused Postflight [COMPLETED]
 
 **Goal**: Establish empirically — not by assumption — whether the WORK (j) accumulation block
 survives an exit-6 refusal within a single invocation, then guarantee it does. This is Part 2,
 the independently valuable, lower-risk half that introduces no new deploy-trigger site.
 
 **Tasks**:
-- [ ] Write a characterization case in `scripts/tests/test-orchestrate-cycle-postflight.sh` that
+- [x] Write a characterization case in `scripts/tests/test-orchestrate-cycle-postflight.sh` that
       drives a fixture task through `implemented)` with `update-task-status.sh` forced into its
       exit-6 branch (`modified_files` overlapping `agent-system/extensions/**` plus a stale
       deployed tree), then asserts the multi-state file's `cycle_modified_files` is non-empty
       afterward. Follow the suite's existing fixture and `pass()`/`fail()`/`info()` conventions.
-- [ ] Run it against **unmodified** code and record the result verbatim in the phase notes. This
+      *(completed: real exit-6 refusal via a stale-extension fixture, modelled on
+      test-postflight-deploy-gate.sh's Case 1)*
+- [x] Run it against **unmodified** code and record the result verbatim in the phase notes. This
       is the decision point: green means the block is already ungated (confirming the static
       reading) and the dispatch's mechanism hypothesis is wrong; red means a real intra-invocation
-      gap exists.
+      gap exists. *(completed: GREEN against unmodified code -- see phase-1-progress.json
+      phase_notes)*
 - [ ] If red: fix the gap so accumulation runs regardless of the status-write outcome, **without**
       disturbing the block's ordering. The existing comment explains it accumulates there rather
       than re-reading later because the scoped commit may already have removed
       `.return-meta.json`; the fix must preserve that ordering constraint, not hoist the read.
-- [ ] If green: do **not** port a redundant fix. Instead add a second assertion that the fixture's
+      *(deviation: skipped — characterization came back GREEN, not red; no gap existed)*
+- [x] If green: do **not** port a redundant fix. Instead add a second assertion that the fixture's
       `.return-meta.json` carries `deploy_pending: true` after the refusal (the durable marker
       Phase 3 consumes), and note in the phase record that Part 2's literal framing was already
-      satisfied structurally.
-- [ ] Add a guard comment at the accumulation block naming this test as its regression anchor, so
-      a later refactor cannot silently re-gate it.
-- [ ] Commit green on its own, independent of every later phase.
+      satisfied structurally. *(completed)*
+- [x] Add a guard comment at the accumulation block naming this test as its regression anchor, so
+      a later refactor cannot silently re-gate it. *(completed)*
+- [x] Commit green on its own, independent of every later phase. *(completed)*
 
 **Timing**: 2 hours
 
