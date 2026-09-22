@@ -86,15 +86,5 @@
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
     }
-  },
-  "keyword_overrides": {
-    "meta": {
-      "keywords": [
-        "literature",
-        "zotero",
-        "bibliography",
-        "citation"
-      ]
-    }
   }
 }

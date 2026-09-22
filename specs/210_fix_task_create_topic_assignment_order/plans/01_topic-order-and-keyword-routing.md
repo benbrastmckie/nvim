@@ -319,26 +319,28 @@ topics and on a state with existing topics.
 
 ---
 
-### Phase 4: Remove literature's keyword_overrides and correct the docs [NOT STARTED]
+### Phase 4: Remove literature's keyword_overrides and correct the docs [COMPLETED]
 
 **Goal**: No manifest maps keywords to a task_type it does not own, and the documentation that
 cites literature as a worked example no longer does.
 
 **Tasks**:
-- [ ] Remove the entire `keyword_overrides` block from
+- [x] Remove the entire `keyword_overrides` block from
       `agent-system/extensions/literature/manifest.json`. Verify the file remains valid JSON
-      (`jq . manifest.json`).
-- [ ] Sweep every other manifest for the same mistake:
+      (`jq . manifest.json`). *(completed)*
+- [x] Sweep every other manifest for the same mistake:
       `for m in agent-system/extensions/*/manifest.json; do jq -r '...' ; done` comparing each
       `keyword_overrides` key against that manifest's own `.name`/task_type. Research found
       cslib, email, latex, rust, typst all correct and literature the sole exception — confirm,
-      do not assume.
-- [ ] In `context/guides/extension-development.md`'s `keyword_overrides` section, drop
-      `literature` from the "Worked examples" list.
-- [ ] In the same section, add an explicit rule sentence: a `keyword_overrides` key **is** a
+      do not assume. *(completed: confirmed cslib (`cslib`, `pr` — both have real `.routing`
+      entries), email, latex, rust, typst all match their own task_types; literature was the
+      sole exception)*
+- [x] In `context/guides/extension-development.md`'s `keyword_overrides` section, drop
+      `literature` from the "Worked examples" list. *(completed)*
+- [x] In the same section, add an explicit rule sentence: a `keyword_overrides` key **is** a
       task_type, so an extension with `routing_exempt: true` and no `.routing` block must not
       declare `keyword_overrides` at all — with a one-line note on why remapping to a
-      routing-less task_type is worse than removal.
+      routing-less task_type is worse than removal. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -118,8 +118,20 @@ match in `/task` step 4's routing sequence:
 first match — first-match-wins is alphabetical, not intent-based. Scope new `keywords` phrases
 narrowly enough that this ordering doesn't matter.
 
-**Worked examples**: see the `email`, `cslib`, `literature`, `latex`, and `typst` manifests for
-the field in practice, rather than duplicating their `keywords`/`aliases` content here.
+**A `keyword_overrides` key IS a task_type**: the top-level key under `keyword_overrides`
+(`"<task_type>"` above) is used directly as the resolved `task_type` value — it is never
+remapped or validated against the extension's own routing table. An extension declaring
+`routing_exempt: true` with no `.routing` block therefore MUST NOT declare `keyword_overrides`
+at all: the key would resolve to a task_type no routing consumer (`command-route-skill.sh`,
+`command-route-agent.sh`) can dispatch, which is a worse failure than not matching early and
+falling through to the step 4d table or `general`. If an extension's vocabulary needs early
+detection, give it a real `.routing` block first.
+
+**Worked examples**: see the `email`, `cslib`, `latex`, and `typst` manifests for the field in
+practice, rather than duplicating their `keywords`/`aliases` content here. (The `literature`
+manifest previously appeared here too but was removed: it declares `routing_exempt: true` with
+no `.routing` block, so its `keyword_overrides.meta` mapped literature vocabulary — including
+the bare word "literature" — to the unrelated `meta` task type. See the rule above.)
 
 ## Merge Process
 

@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Remove literature's keyword_overrides and correct the docs",
+  "started_at": "2026-09-22T00:35:00Z",
+  "last_updated": "2026-09-22T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove keyword_overrides block from literature manifest.json", "status": "done", "files_touched": ["agent-system/extensions/literature/manifest.json"]},
+    {"id": 2, "description": "Sweep every other manifest for the same mistake", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Drop literature from worked examples list", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 4, "description": "Add explicit rule sentence about keyword_overrides key being a task_type", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
