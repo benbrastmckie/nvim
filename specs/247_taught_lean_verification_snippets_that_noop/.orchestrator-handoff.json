@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 11,
-  "summary": "Created 5-phase implementation plan (6h, 3 waves) covering Half 1 guard-vector fixes, a single lakefile.toml-derived lean-src-roots.sh resolver with loud failure, census empty/missing-target failure, snippet rerouting, and end-to-end verification plus redeploy.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 12,
+  "summary": "Implemented all 5 phases: fixed guard-invocation vectors missing a lake subcommand (Half 1), added lean-src-roots.sh (lakefile.toml-derived resolver with loud failure), made lean-sorry-census.sh fail loudly on missing/empty targets, routed every taught final-verification and commit-staging snippet through the resolver, and verified end-to-end in ~/Projects/BimodalLogic (planted and detected a real sorry) before redeploying into that consuming repo and this repo's own .claude/.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/247_taught_lean_verification_snippets_that_noop/plans/01_taught-lean-snippets-noop.md",
-      "summary": "5-phase plan for both taught-snippet defect halves with decisions D1-D7 recorded."
+      "type": "summary",
+      "path": "specs/247_taught_lean_verification_snippets_that_noop/summaries/01_taught-lean-snippets-noop-summary.md",
+      "summary": "Full implementation summary covering both defect halves, all 7 decisions (D1-D7), and all 5 acceptance criteria with recorded command output."
+    },
+    {
+      "type": "script",
+      "path": "agent-system/extensions/lean/scripts/lean-src-roots.sh",
+      "summary": "New resolver script deriving Lean source roots from lakefile.toml with loud non-zero-exit failure on missing/empty roots."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": []
 }

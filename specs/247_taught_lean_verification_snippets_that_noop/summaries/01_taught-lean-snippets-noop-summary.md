@@ -132,7 +132,15 @@ plus this repo's own `.claude/`.
    resync mode): `verify-deploy` reported PASS (14 checks, 0 failures). Confirmed
    `.claude/scripts/lean-src-roots.sh` exists there, `.claude/agents/lean-implementation-agent.md`
    has zero `Theories/` occurrences, and `.claude/rules/lean4.md` shows `-- build Module.Name`.
-   Also redeployed this repo's own `.claude/`.
+   Also redeployed this repo's own `.claude/` (the lean extension is not loaded in this repo's own
+   `.claude-extensions.json` — it is the source-store repo, not a lean consumer — so its own
+   `.claude/` carries no lean files to check). That redeploy's inline `verify-deploy --skip-slow`
+   reported one pre-existing, unrelated failure: gate 17 (scoped-commit boundary lint) flags a
+   bare `git commit -m "true"` at
+   `agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152`, a file this task
+   never touched, under `agent-system/extensions/core/`, which this task's MUST NOT list forbids
+   editing. Confirmed pre-existing via `git blame` (unrelated to any commit made in this task) and
+   reported here per the observation-duty contract rather than fixed out of scope.
 
 ## Impacts
 
@@ -148,6 +156,11 @@ plus this repo's own `.claude/`.
 
 - D6: consider making `lake-build-guard.sh`'s exit-77 message name the expected
   `-- <subcommand> [args]` shape explicitly (belongs to the guard's owning work, not this task).
+- Observed, unrelated, pre-existing: this repo's own `verify-deploy --skip-slow` fails gate 17
+  (scoped-commit boundary lint) on a bare `git commit -m "true"` at
+  `agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152`. Predates this task
+  (confirmed via `git blame`); out of scope here (this task's MUST NOT list forbids editing
+  `agent-system/extensions/core/`). Flagged for whoever owns that file next.
 
 ## References
 

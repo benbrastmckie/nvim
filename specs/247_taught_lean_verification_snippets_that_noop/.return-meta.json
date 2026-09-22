@@ -1,8 +1,53 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1790030538_1b6143",
-  "task_number": 247,
-  "dispatch_seq": 12
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/247_taught_lean_verification_snippets_that_noop/summaries/01_taught-lean-snippets-noop-summary.md",
+      "summary": "Fixed the guard-invocation and hardcoded-Theories/-root taught-snippet defects in agent-system/extensions/lean/, added lean-src-roots.sh with loud failure, made lean-sorry-census.sh fail loudly on missing/empty targets, routed every taught snippet through the resolver, and verified end-to-end in BimodalLogic with a planted-and-detected sorry, then redeployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed two independent taught-snippet defects in the lean extension: guard invocations missing a lake subcommand (exit 77 no-op) and a hardcoded Theories/ scan root that silently scans nothing in consuming repos. Added lean-src-roots.sh (lakefile.toml-derived, loud-failure resolver), made lean-sorry-census.sh fail loudly on missing/empty targets, routed all taught final-verification and commit-staging snippets through the resolver, verified end-to-end in ~/Projects/BimodalLogic (planted and detected a real sorry), and redeployed into that consuming repo."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/rules/lean4.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md",
+    "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
+    "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
+    "agent-system/extensions/lean/scripts/lean-src-roots.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-src-roots.sh",
+    "agent-system/extensions/lean/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a taught verification snippet must scan 'the project's source', never hardcode a literal directory name (e.g. Theories/) — different consuming repos use different library roots (FormalSystem/, Cslib/, etc.), and a nonexistent literal makes a grep/scan silently examine zero files and report a false-clean result. Instead, derive roots at runtime from the repo's own build manifest (e.g. lakefile.toml [[lean_lib]] entries, applying the build tool's own default rules for missing fields) via ONE shared resolver script that every snippet calls, and make the resolver (and any downstream consumer) exit non-zero naming the root(s) tried whenever nothing resolves or the resolved root holds zero relevant files. 'Scanned and clean' must always be distinguishable from 'scanned nothing.'",
+      "category": "PATTERN",
+      "source_artifact": "specs/247_taught_lean_verification_snippets_that_noop/summaries/01_taught-lean-snippets-noop-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["loud-failure", "resolver-pattern", "hardcoded-path", "verification-snippet", "silent-noop"]
+    },
+    {
+      "content": "When a CLI tool validates its first post-'--' argument against an allowlist of subcommands (e.g. a lake/make/cargo wrapper), a taught invocation example that places a bare argument (like a module/target name) directly after '--' with no subcommand will fail the allowlist check and no-op — and this is easy to copy-paste-propagate because a nearly-identical CORRECT example often sits right next to it. When auditing/fixing such taught snippets, do an EXHAUSTIVE grep across the whole codebase (not spot-checks) extracting every first post-'--' token and checking it against the tool's own allowlist (read from the tool's source, don't hand-copy it) — the same defect tends to recur at 3+ independent sites.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/247_taught_lean_verification_snippets_that_noop/summaries/01_taught-lean-snippets-noop-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["cli-allowlist", "exhaustive-audit", "taught-snippet", "copy-paste-defect", "guard-invocation"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790030538_1b6143",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
