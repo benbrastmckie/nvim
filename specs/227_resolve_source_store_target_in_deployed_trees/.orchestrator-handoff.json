@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 4,
+  "summary": "Research recommends rewriting the source-store rule's Correct Edit Target section to resolve the source store via .claude-extensions.json's extensions.<name>.source_dir field, already stamped by the deploy engine, rather than a hard-coded path or new deploy-time templating machinery.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/227_resolve_source_store_target_in_deployed_trees/reports/02_resolve-target-via-extensions-json.md",
+      "summary": "Recommends resolving the source-store target via .claude-extensions.json's source_dir field, verified against a real consumer repo."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 227 to draft an implementation plan rewriting agent-system/extensions/core/rules/source-store-deploy-boundary.md's Correct Edit Target section per the report's recommendation."
+}
