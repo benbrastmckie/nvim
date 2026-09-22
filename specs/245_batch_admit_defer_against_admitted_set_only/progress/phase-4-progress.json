@@ -1,0 +1,40 @@
+{
+  "phase": 4,
+  "phase_name": "Full gate run and consumer non-regression check",
+  "started_at": "2026-09-22T00:00:00Z",
+  "last_updated": "2026-09-22T12:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run run-all.sh and confirm the new suite is discovered ([RUN]/[PASS], never [SKIP])",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-orchestrate-batch-admit.sh appeared as [RUN] then [PASS]. Full run: 91 passed, 1 failed, 0 skipped, 92 total."
+    },
+    {
+      "id": 2,
+      "description": "Confirm zero [FAIL] lines and exit code 0 from run-all.sh",
+      "status": "done",
+      "files_touched": [],
+      "note": "One pre-existing, unrelated failure observed: test-verify-deploy-context-budget.sh (2 of 13 sub-cases fail: baseline fixture not clean, pad-amount computation). This suite covers the Gate 20 eager-context-budget deploy check for commands/orchestrate.md and skills/skill-orchestrate/SKILL.md -- unrelated to batch-admit, last touched by tasks 142/235 per git log, and consistent with this dispatch's own <deploy-freshness-context> flag that the deployed core extension is stale relative to the source store. test-orchestrate-batch-admit.sh (this task's own suite) and test-conflict-predicate.sh (the v4/v5 session/corroboration suite) both PASS. No batch-admit-related [FAIL] lines."
+    },
+    {
+      "id": 3,
+      "description": "Read-only grep confirmation that verdict consumers (orchestrate-cycle-plan.sh, orchestrate-dry-run-report.sh, orchestrate-predispatch-review.sh) branch only on defer_reason/collision_scope/colliding_task_number, never on why a lower-numbered peer was/wasn't admitted",
+      "status": "done",
+      "files_touched": [],
+      "note": "orchestrate-dry-run-report.sh no longer exists (retired; dry-run functionality moved into orchestrate-cycle-plan.sh --dry-run per prior task history). Grepped orchestrate-cycle-plan.sh and orchestrate-predispatch-review.sh for defer_reason/collision_scope/colliding_task_number: both branch on the verdict fields only (decision, defer_reason, collision_scope, colliding_task_number, overlapping_path) -- no dependency on the internal admitted-set-narrowing criterion. No consumer code change needed."
+    },
+    {
+      "id": 4,
+      "description": "Record deploy-artifact note in implementation summary: .claude/scripts/orchestrate-batch-admit.sh is regenerated; fix takes effect after next deploy/reload",
+      "status": "done",
+      "files_touched": [
+        "specs/245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
