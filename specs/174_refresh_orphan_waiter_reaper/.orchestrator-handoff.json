@@ -1,6 +1,8 @@
 {
   "status": "implemented",
-  "summary": "Implemented the self-excluding orphaned build-waiter reaper pass in claude-refresh.sh across all 4 plan phases: the pass itself (widened pid/ppid/pgid/ancestor-chain self-exclusion, two signature families, age-threshold-only gate, fail-closed), full regression coverage (112 assertions, 2 mutation checks proving the pgid/ancestor exclusions load-bearing), both pass-inventory docs, and the systemd unit's re-derived ruling comment.",
+  "dispatch_seq": 12,
+  "phase": "implement",
+  "summary": "Verified (did not redo) the self-excluding orphaned build-waiter reaper pass work committed in a prior dispatch: all 4 plan phases COMPLETED, deploy confirmed fresh (check-deploy-freshness.sh exits 0 after deploy-headless.sh), and full regression suite (112/112 assertions, 2 mutation checks) still passes.",
   "artifacts": [
     {
       "type": "summary",
@@ -11,9 +13,7 @@
   "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "dispatch_seq": 8,
-  "phase": "implement",
   "plan_markers_verified": true,
   "continuation_path": null,
-  "next_action_hint": "Task complete -- all 4 phases COMPLETED, final gate passed. No further action needed."
+  "next_action_hint": "Task complete -- all 4 phases COMPLETED, deploy freshness re-verified, test suite re-run green. No further action needed; postflight may proceed to close the task."
 }

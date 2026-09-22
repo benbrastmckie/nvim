@@ -1,69 +1,25 @@
 {
   "status": "implemented",
-  "dispatch_seq": 8,
+  "dispatch_seq": 12,
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
-      "summary": "Implemented the self-excluding orphaned build-waiter reaper pass across all 4 plan phases: the pass itself, full test coverage with mutation checks, both pass-inventory docs plus the systemd ruling, and a final cross-file consistency gate."
+      "summary": "Implemented the self-excluding orphaned build-waiter reaper pass across all 4 plan phases: the pass itself, full test coverage with mutation checks, both pass-inventory docs, and the systemd ruling."
     }
   ],
   "completion_data": {
     "completion_summary": "Added a fifth, age-threshold-only pass to claude-refresh.sh that reaps orphaned build-waiter poll loops (canonical and legacy self-match shapes), widening self-exclusion to pid/ppid/pgid/ancestor-chain from one frozen snapshot with fail-closed behavior. Full regression coverage (112 assertions, 2 mutation checks) and both pass-inventory docs plus the systemd unit's ruling comment were updated to match."
   },
-  "modified_files": [
-    "agent-system/extensions/core/scripts/claude-refresh.sh",
-    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
-    "agent-system/extensions/core/commands/refresh.md",
-    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
-    "agent-system/extensions/core/systemd/claude-refresh.service",
-    "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
-    "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md",
-    "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "Bash pitfall: a function that needs to hand back two values must never be called via $(func ...) command substitution if one of those values is set through a global-variable side effect -- command substitution always forks a subshell, so the side-effect global set inside is silently discarded when the subshell exits, and the caller reads a stale/empty value. Fix: have the function set two (or more) globals and call it as a plain statement in the SAME shell (func \"$arg\"; use \"$GLOBAL_ONE\" \"$GLOBAL_TWO\"), never via $(...). This is easy to miss because the function's PRIMARY classification result (echoed to stdout and captured) looks correct in isolation; only the secondary side-effect value silently breaks.",
-      "category": "PATTERN",
-      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "bash",
-        "command substitution",
-        "subshell",
-        "global variable",
-        "side effect",
-        "function return value"
-      ]
-    },
-    {
-      "content": "Reaper self-exclusion pattern for a poll-loop/waiter-shaped process: pid/ppid alone is not enough when the thing being reaped is itself a shape a CALLER might also match (e.g. an orchestrating shell awaiting the reaper). Widen to pid, ppid, process group (pgid), and the full ancestor chain up to PID 1, all computed from ONE already-captured ps -eo snapshot (add pgid to that pass's own field list rather than widening a shared snapshot other passes/tests depend on), and fail closed (warn, reap nothing) if the reaper's own row is missing from the snapshot rather than guessing or falling back to a second query. Detection must never use pgrep -f or ps | grep -- a process whose own command line contains the search pattern will self-match and can kill its own shell (observed real incident, exit 144, twice).",
-      "category": "PATTERN",
-      "source_artifact": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "reaper",
-        "self-exclusion",
-        "process group",
-        "pgid",
-        "ancestor chain",
-        "ps snapshot",
-        "pgrep self-match"
-      ]
-    }
-  ],
+  "modified_files": [],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1790055369_87ec14",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "phases_completed": 4,
     "phases_total": 4
   },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  "verification_note": "All 4 plan phases were already [COMPLETED] and committed in a prior dispatch (dispatch_seq 8). This dispatch (seq 12) re-verified rather than redid the work: bash .claude/scripts/check-deploy-freshness.sh exits 0 (deploy confirmed fresh after deploy-headless.sh RESULT=landed_verify_clean, 33 checks, 0 failures), bash agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh passes 112/112 assertions including both mutation checks, git status shows no uncommitted changes under this task's file_scope, and the deployed .claude/scripts/claude-refresh.sh matches the source store (grep -c run_build_waiter_pass equal on both sides). No new files were touched by this dispatch, so modified_files and memory_candidates are empty; the prior dispatch's memory_candidates were already recorded."
 }

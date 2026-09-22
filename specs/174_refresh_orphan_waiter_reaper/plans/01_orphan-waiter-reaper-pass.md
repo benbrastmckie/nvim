@@ -1,7 +1,7 @@
 # Implementation Plan: Task #174
 
 - **Task**: 174 - Add a self-excluding orphaned-build-waiter reaper pass to /refresh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (the bounded-build-waiter contract it matches against is already merged)
 - **Research Inputs**: specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md
