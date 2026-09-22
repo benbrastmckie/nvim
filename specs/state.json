@@ -398,7 +398,7 @@
     {
       "project_number": 174,
       "project_name": "refresh_orphan_waiter_reaper",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Add a self-excluding orphaned-build-waiter reaper pass to /refresh",
       "description": "Give the system a way to clean up waiters that already leaked, correct by construction against the self-match bug observed while cleaning up manually. Second observed defect, same bug class as the primary one: an ad-hoc cleanup command of the form `pgrep -f 'until grep' | ... kill` matched ITS OWN command line -- the command string contained the very pattern it was searching for -- and killed its own shell (exit 144). This happened twice. Any reaper for this must exclude itself and its own process group, or it kills the reaper. Investigation finding: agent-system/extensions/core/scripts/claude-refresh.sh already solves exactly this, and the fix should reuse its architecture rather than invent a new one. It takes a single atomic `ps -eo` snapshot per invocation (take_snapshot()) with every exclusion evaluated against that frozen snapshot, and it already implements what its own header calls zero-query self-exclusion -- `if [ \"$pid\" = \"$$\" ] || [ \"$ppid\" = \"$$\" ]; then` skip -- applied in both the Claude-process pass and the Lean-LSP pass. That idiom is known at parse time, needs no second query, and is race-free; it is the correct-by-construction answer to the pgrep self-match bug. Scope: add a new pass that identifies orphaned build-waiter poll loops (matching the process signature settled by the bounded-waiter contract) whose watched log has a dead or absent writer, reusing the existing snapshot and the existing self-exclusion, and extend the exclusion to the reaper's own process group as well as its pid/ppid. Decide and document the pass's gate class explicitly -- the existing passes are split between interactive-confirm (rows 1-2), report-only-always (rows 3-4), and age-threshold-only (rows 5-8); an age-threshold-only gate matching the stale-lock passes is the closest existing precedent, since these waiters are 0% CPU and provably unreapable rather than merely idle. Then update the pass inventory in BOTH places that must agree row-for-row on gate and destructiveness: agent-system/extensions/core/commands/refresh.md ('What It Cleans' table plus a new owning subsection) and agent-system/extensions/core/skills/skill-refresh/SKILL.md (its Pass Inventory table). State whether the new pass is reached by the hourly claude-refresh.timer cadence -- only the four passes internal to claude-refresh.sh currently are.",
@@ -413,10 +413,17 @@
         "agent-system/extensions/core/commands/refresh.md",
         "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
+          "type": "report",
+          "summary": "Design recommendations for the new reaper pass: two candidacy families, dead-writer semantics, pgid self-exclusion options, age-threshold-only gate decision, hourly-cadence reachability."
+        }
+      ],
       "created": "2026-09-07T23:37:35Z",
-      "last_updated": "2026-09-22T05:36:20Z",
-      "session_id": "sess_1790055369_87ec14_174"
+      "last_updated": "2026-09-22T05:55:46Z",
+      "session_id": "sess_1790055369_87ec14",
+      "next_artifact_number": 2
     },
     {
       "project_number": 45,

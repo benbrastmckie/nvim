@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 2,
+  "summary": "Researched the orphaned-build-waiter reaper: claude-refresh.sh's snapshot/self-exclusion architecture and bounded-build-waiter.md's canonical idiom give a precise PID-liveness check for post-172 waiters, while legacy/name-match shapes need an age+idle fallback; recommends an in-script fifth pass with age-threshold-only gating and names the pgid self-exclusion widening cost.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
+      "summary": "Design recommendations for the new reaper pass: two candidacy families, dead-writer semantics, pgid self-exclusion options, age-threshold-only gate decision, hourly-cadence reachability."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}
