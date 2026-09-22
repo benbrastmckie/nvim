@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 8,
-  "summary": "Created 6-phase plan (3.5h, 3 waves): verdict-evidence anchor in long-builds.md, supersession teardown clause, lean4.md capture pointer, per-site verdict bars plus waiter/teardown and --no-revert pointers in both lean agents, then acceptance audits and redeploy/diff.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "summary": "Completed all 6 plan phases: canonical build-verdict evidence hierarchy and pgrep-f self-match prohibition added to long-builds.md, both lean agents' build_passed sites point at it, teardown-rule supersession clause and lean fix sites wired in, --no-revert-under-orchestrator_mode bullet added to both lean agents. Guard test suite 47/47 passed; lean extension is not loaded in this repo so 4 of 5 files have no deployed .claude/ counterpart to diff (documented).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
-      "summary": "Implementation plan for build-verdict evidence, waiter teardown wiring, and --no-revert snapshot contracts."
+      "type": "summary",
+      "path": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+      "summary": "Implementation summary for the build-verdict evidence, waiter-teardown wiring, and --no-revert snapshot contracts."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
   "continuation_path": null

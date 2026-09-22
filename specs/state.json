@@ -1086,7 +1086,7 @@
       "project_name": "lean_build_verdict_evidence_contracts",
       "title": "Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot",
       "task_type": "meta",
-      "status": "planned",
+      "status": "implementing",
       "topic": "core-agent-system",
       "dependencies": [
         172,
@@ -1112,13 +1112,19 @@
           "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
           "type": "plan",
           "summary": "Implementation plan for build-verdict evidence, waiter teardown wiring, and --no-revert snapshot contracts."
+        },
+        {
+          "path": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the build-verdict evidence, waiter-teardown wiring, and --no-revert snapshot contracts."
         }
       ],
       "created": "2026-09-16T06:18:20Z",
-      "last_updated": "2026-09-22T00:57:12Z",
+      "last_updated": "2026-09-22T00:57:18Z",
       "priority": "high",
       "session_id": "sess_1790030538_1b6143",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the build-verdict evidence vacuum in the lean extension: added a single canonical evidence hierarchy (guard exit code / result, success-line plus zero error count, .olean-newer-than-source) to long-builds.md, banned self-matching pgrep -f patterns, pointed every build_passed determination site in both lean agents at the hierarchy, wired the dispatch-report-not-termination.md teardown rule's supersession case to the lean agents, and added a --no-revert-under-orchestrator_mode bullet to both lean agents."
     },
     {
       "project_number": 223,

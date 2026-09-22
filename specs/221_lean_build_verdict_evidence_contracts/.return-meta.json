@@ -1,10 +1,66 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+      "summary": "All 6 phases completed: canonical build-verdict evidence hierarchy and pgrep-f self-match prohibition added to long-builds.md, un-piped capture form added to lean4.md, both lean agents' build_passed sites point at the hierarchy and the waiter/teardown rule, teardown rule's supersession case and lean fix sites wired in, --no-revert-under-orchestrator_mode bullet added to both lean agents. Guard test suite 47/47 passed. Finding: lean extension is not loaded in this repo, so 4 of 5 touched files have no deployed .claude/ counterpart to diff (documented in the summary and plan)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the build-verdict evidence vacuum in the lean extension: added a single canonical evidence hierarchy (guard exit code / result, success-line plus zero error count, .olean-newer-than-source) to long-builds.md, banned self-matching pgrep -f patterns, pointed every build_passed determination site in both lean agents at the hierarchy, wired the dispatch-report-not-termination.md teardown rule's supersession case to the lean agents, and added a --no-revert-under-orchestrator_mode bullet to both lean agents."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md",
+    "agent-system/extensions/lean/rules/lean4.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
+    "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A source-store deploy verification (deploy-headless.sh / verify-deploy.sh) confirms a source-store edit reached .claude/ ONLY for extensions actually loaded in the target repo's .claude-extensions.json. Before claiming a 'deploy-tree diff' acceptance check as satisfied for an extension-scoped file, first check whether that extension is loaded in the current repo -- an edit to an unloaded extension's files has no deployed counterpart at all, which is a stronger condition than the templated/merged-transform risk that diff mismatches are usually attributed to.",
+      "category": "PATTERN",
+      "source_artifact": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-headless",
+        "extension-loaded",
+        "verify-deploy",
+        "source-store",
+        "acceptance-check"
+      ]
+    },
+    {
+      "content": "When multiple agent contracts each record a boolean verdict (e.g. build_passed) with no stated determination method, the vacuum invites an improvised, unreliable check (e.g. a process-count pgrep) at the first site an agent under pressure reaches. The durable fix is a single canonical evidence-hierarchy anchor (ordered weakest-to-strongest) that every determination site points at by heading reference, never restated -- this keeps N sites in sync from one edit and makes 'how is this verdict obtained' a answerable-by-grep question.",
+      "category": "PATTERN",
+      "source_artifact": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verdict-evidence",
+        "pgrep-self-match",
+        "single-statement-plus-pointer",
+        "build-guard",
+        "contract-hygiene"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790030538_1b6143",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
