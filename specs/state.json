@@ -5,13 +5,21 @@
     {
       "project_number": 248,
       "project_name": "revise_typst_viewing_commands",
-      "status": "researching",
+      "status": "researched",
       "task_type": "neovim",
       "description": "Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication",
       "topic": "neovim",
       "created": "2026-09-21T21:54:04Z",
-      "last_updated": "2026-09-22T05:36:23Z",
-      "session_id": "sess_1790055369_87ec14_248"
+      "last_updated": "2026-09-22T05:55:52Z",
+      "session_id": "sess_1790055369_87ec14",
+      "artifacts": [
+        {
+          "path": "specs/248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md",
+          "type": "report",
+          "summary": "Audit of the Typst <leader>l command group: duplicated/disagreeing main-file and root detection, deprecated pin API, pin-state drift bug, and two concrete preview-unreliability mechanisms, with consolidation and simplification recommendations."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 241,
