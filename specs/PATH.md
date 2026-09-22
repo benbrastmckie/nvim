@@ -1,11 +1,11 @@
 # Implementation Path
 
-*Rewritten 2026-09-22 as a forward-only plan: what remains, in what order, and the checks that
-gate each step. Everything finished is gone from this file. The eight survey passes (2026-09-02 to
-2026-09-22), the 2026-09-17 consolidation manifest, the Stage A thin-lead arc and the design
-narrative live in this file's git history; nothing from them is repeated here except the standing
-rules and the settled decisions at the end. Phase 0 of the eighth pass was applied to
-`state.json` the same day (see "Before Batch A").*
+*Rewritten 2026-09-22 (second pass, after `/todo`) as a forward-only plan: what remains, in what
+order, and the checks that gate each step. Everything finished is gone from this file. The eight
+survey passes (2026-09-02 to 2026-09-22), the 2026-09-17 consolidation manifest, the Stage A
+thin-lead arc, phase 0's merge/repair pass and all of Batch A but one task live in this file's git
+history; nothing from them is repeated here except the standing rules and the settled decisions at
+the end.*
 
 ## Goal
 
@@ -15,74 +15,66 @@ genuinely the user's. Both halves are met in shape and in measurement. What rema
 engine correct for the Lean and paper work that runs on it in the consumer repos, which is where
 every new task this month was filed from.
 
-## Where things stand (measured 2026-09-22)
+## Where things stand (re-measured 2026-09-22, after `/todo`)
 
 | Measure | Value | Bearing on the plan |
 |---|---|---|
-| Open tasks | **33** (41 before phase 0; 8 merged into siblings) | Five are live defects filed from one consumer-repo run; they go first |
-| Truly blocked | 10 wait on another open task; 23 dispatch now | Ordering is priority, not dependency, except inside Batch B |
-| Test suites | 89 / 89 green (`run-all.sh`, core + loaded extensions) | Nothing red to fix before dispatching |
-| `verify-deploy.sh --skip-slow` | PASS, 33 / 33 | Deploy is sound |
-| Dry run over all 33 | 23 admitted, 0 deferred, 0 blocked; `state.json` checksum unchanged | Every scope collision now has an explicit edge |
-| `skills/skill-orchestrate/SKILL.md` | 19,535 B / ceiling 20,000 B | **465 B of headroom.** Batch A edits the engine's neighbours; watch this gate |
-| `commands/orchestrate.md` | 20,228 B / ceiling 21,000 B | 772 B of headroom |
-| Eager context load | 65,257 B (~16.3k tokens) / baseline 65,950 B | Flat; not a constraint |
-| Stranded session files in `specs/` roots | 25 here, 36 BimodalLogic, 45 Verification, 0 Theory | 51 builds the reaper; a manual sweep is optional until then |
-| Consumer deploys | PossibleWorlds core STALE (13 files), lean STALE (9); Logos/Hardware typst CANNOTVERIFY | Redeploy in those repos before running batches there |
-| BimodalLogic `git stash list` | 52 entries (44 on 2026-09-09) | The snapshot-stash growth 199 is meant to end has not stopped |
+| Open tasks | **29** (33 before; Batch A's 227, 210, 242, 243 completed and archived) | Batch A is down to its last task |
+| Archived this pass | 12 (4 completed, 8 abandoned) | The phase-0 merges are now off the active list |
+| Test suites | **91 passed, 1 failed, 92 total** (`run-all.sh`) | Was 89/89. The red is `test-verify-deploy-context-budget.sh`, downstream of the budget row below — not a second defect |
+| `verify-deploy.sh --skip-slow` | **FAIL, 3 of 33** | Was PASS 33/33. Two failures are 245 in flight; the third is the context budget |
+| `validate-state.sh` | 10 pass, 0 warnings, 0 failures | Clean |
+| Dry run over all 29 | 20 admitted, 3 deferred, 0 blocked; `state.json` checksum unchanged | The three deferrals are ordering edges, not errors |
+| `skills/skill-orchestrate/SKILL.md` | 19,535 B / ceiling 20,000 B | 465 B of headroom. Unchanged |
+| `commands/orchestrate.md` | 20,228 B / ceiling 21,000 B | 772 B of headroom. Unchanged |
+| Eager context load | **67,003 B / baseline 65,950 B — over by 1,053 B** | Now a failing gate, not a flat measure |
+| Stranded session files in `specs/` root | **48 here** (was 25) | Growth has nearly doubled since 2026-09-08; 51 builds the reaper |
+| Consumer deploys | **Every registered consumer STALE or CANNOTVERIFY**; core is 109 behind in `.dotfiles`/Theory, 150 in ModelChecker, 33 in PossibleWorlds, 25 in BimodalLogic | Redeploy before running batches anywhere |
+| BimodalLogic `git stash list` | 52 entries (unchanged since 2026-09-22 first pass) | The snapshot-stash growth 199 is meant to end has not stopped |
 
 **Where new tasks come from.** Not `errors.json` (19 entries, none newer than 2026-09-03, none
 tied to an open task). They are filed by hand from defects hit live during `/orchestrate` runs in
-Logos/Verification, BimodalLogic and PossibleWorlds, under standing rule 1. Closing the five in
-Batch A is how the inflow slows.
+Logos/Verification, BimodalLogic and PossibleWorlds, under standing rule 1.
+
+**Every open task is accounted for below**: 245 (Before Batch B) + Batch B's 11 + Batch C's 14 +
+the picker lane's 3 = 29. If that sum stops matching `state.json`, this file has drifted.
 
 ---
 
-## Before Batch A
+## Before Batch B
 
-Done 2026-09-22 (phase 0), recorded here only because the abandoned entries are still visible
-until `/todo` runs:
+The first two are new since the last pass: 245 in flight, and a context-budget breach that is
+failing both `verify-deploy.sh` and one test suite. Do them in this order.
 
-- Merged, no work lost: 74, 75, 76 → **167** (rule first, guard mechanism conditional); 30 → **29**;
-  208 → **207**; 140 → **139**; 190 → **165**; 202 → **45**. Each survivor carries the absorbed text
-  under an `=== ABSORBED 2026-09-22 ===` header, the unioned `file_scope`, and a new title.
-- 22 repaired from an orphaned `researching` (no directory, no artifacts) to `not_started`.
-- 170's three whole-directory scope entries removed; 184 ruled and rescoped to one concrete
-  change; 241's nine-file scope filled; 163 gains the glob-entry addendum.
-- Ordering edges added for every shared file: 224←129, 139←129, 199←242/243, 165←245, 184←242/243,
-  29←210, 170←51/129, 45←22. `validate-state.sh`: 10 pass, 0 warnings, 0 failures.
+1. **Finish 245** (Phase 4 of 4, "Full gate run and consumer non-regression check"). Phases 1-3
+   are committed. Its in-flight state is what makes `verify-deploy.sh` fail today:
+   - `FAIL: deployed script content drift`: `scripts/orchestrate-batch-admit.sh` — source edited,
+     `.claude/` not resynced.
+   - `FAIL: script file on disk NOT in provides.scripts`:
+     `scripts/tests/test-orchestrate-batch-admit.sh` — the new regression suite is unregistered.
+   - The manifest-driven verification's 2 findings are the same two facts by a second route.
 
-Still to do by hand, in this order:
+   Resync `.claude/` and register the test in `provides.scripts`; those three checks then clear.
+   ```
+   /orchestrate 245
+   ```
+2. **Rule on the eager-context breach.** 67,003 B against a 65,950 B baseline (+1,053 B). This
+   one fact is *both* remaining gate failures — the `verify-deploy.sh` eager-load FAIL and the
+   single red suite, which is `test-verify-deploy-context-budget.sh` (confirmed 2026-09-22; its
+   two internal failures are `baseline fixture is not clean` and `could not compute a safe
+   eager-load pad amount (current_eager='67003', baseline_bytes='65950')`, both downstream of the
+   breach). 245's own `test-orchestrate-batch-admit.sh` passes, so the red is not 245's.
 
-1. `/todo` — archives the 8 abandoned entries (30, 74, 75, 76, 140, 190, 202, 208). Then re-run the
-   dry run once (standing rule 3).
-2. `bash .claude/scripts/deploy-headless.sh` in PossibleWorlds (core and lean are stale there).
-3. One `.gitignore` line for `agent-system/extensions/literature/scripts/literature-pyenv/`
-   (240 MB, untracked, un-ignored since August).
-4. In cslib's task list: abandon 595 (satisfied by `validate-state.sh` Check D3 once it redeploys)
-   and 608 (its evidence is in 129) with pointers here.
-
----
-
-## Batch A — live defects from consumer-repo runs (5 tasks, disjoint scopes)
-
-Each of these cost a Verification or BimodalLogic run cycles or a hand intervention in September.
-All are unblocked; the dry run admits all five with no deferral once 29 is not in the batch.
-
-| Task | What lands | Files |
-|---|---|---|
-| **242** | A `partial` handoff with a populated `blocker[]` stops re-dispatch: postflight persists `[PARTIAL]`/`[BLOCKED]` with the blocker text instead of mapping to `defer` and re-hitting the same wall until MAX_CYCLES | `orchestrate-cycle-postflight.sh`, `orchestrate-cycle-plan.sh`, its test, `general-implementation-agent.md` |
-| **243** | One rule for whether a research dispatch writes `.orchestrator-handoff.json`; agent contract, `handoff-schema.md` and the dispatch template agree; extension research agents swept | `general-research-agent.md`, `handoff-schema.md`, `orchestrate-build-dispatch.sh` |
-| **245** | In-batch deferral computed against the tasks actually admitted this cycle, greedy by number, deterministic; regression test for the A-admitted / C-deferred-on-A / D-deferred-on-C chain | `orchestrate-batch-admit.sh`, its test |
-| **227** | The source-store boundary rule states a repository-relative target, so it is followable in consumer repos instead of sending agents into `.claude/` | `rules/source-store-deploy-boundary.md` (+ the deploy step chosen) |
-| **210** | `/task` create: topic set after the state write, topic registered in `active_topics`, picker valid with fewer than two topics, task-type keyword false positives | `commands/task.md`, `extension-development.md`, `topic-assignment-pattern.md`, `literature/manifest.json` |
-
-```
-/orchestrate 242, 243, 245, 227, 210
-```
-
-Gate after Batch A: `SKILL.md` and `commands/orchestrate.md` under their ceilings
-(`verify-deploy.sh --skip-slow` prints both); `run-all.sh` green; dry run over the remainder clean.
+   Decide whether the growth from completed Batch A work is deliberate; if it is, re-derive the
+   baseline in the same commit that justifies it, and say why. Do not silently re-derive. 89 and
+   44 are the two backlog tasks that would buy the headroom back.
+3. `bash .claude/scripts/deploy-headless.sh` in each consumer before running anything there. Every
+   registered consumer is STALE or CANNOTVERIFY, not just PossibleWorlds.
+4. One `.gitignore` line for `agent-system/extensions/literature/scripts/literature-pyenv/`
+   (240 MB, untracked, un-ignored since August; confirmed still un-ignored today).
+5. In cslib's task list: abandon **595** (satisfied by `validate-state.sh` Check D3 once it
+   redeploys) and **608** (its evidence is in 129) with pointers here. Both are still
+   `not_started` there.
 
 ---
 
@@ -100,15 +92,17 @@ Serial where files are shared; the edges are declared, so one `/orchestrate` cal
 | 2 | **139** (+140) | History-rewrite prohibition (`--amend`, `reset` without `--hard`) in `git-workflow.md` and the implementation-agent contract; then a concurrency-gated predicate in `guard-destructive-git.sh` that does not consult tree dirtiness | 129 |
 | 2 | **224** | `/please`: tamper-resistant single-use grant hook, `guard-git-push.sh`, grant checks in the destructive-git guard, the user-only command, rule exception and docs | 129 |
 | 2 | **165** (+190) | Admission posture for an absent `file_scope` in `orchestrate-batch-admit.sh`; then cross-session visibility so two self-modifying candidates in separate sessions are not both admitted solo | 162, 163, 245 |
-| 2 | **184** (ruled) | When the final handoff carries `skeleton=true` with a non-empty `sorry_inventory[]`, postflight reports the `follow_up_task` entries and records them append-only on the task; no auto-created tasks; `status-markers.md` and `handoff-schema.md` say how a skeleton plan terminates now | 242, 243 |
-| 2 | **199** | Decide, then implement, whether concurrent same-repo dispatches share one working tree and `.lake` or each get an isolated one; a split verdict (worktrees for lean/cslib implement, shared tree plus hunk-scoped or refusing commits elsewhere) is acceptable if the selecting predicate is defined | 242, 243 |
+| 2 | **184** (ruled) | When the final handoff carries `skeleton=true` with a non-empty `sorry_inventory[]`, postflight reports the `follow_up_task` entries and records them append-only on the task; no auto-created tasks; `status-markers.md` and `handoff-schema.md` say how a skeleton plan terminates now | — (242, 243 now done) |
+| 2 | **199** | Decide, then implement, whether concurrent same-repo dispatches share one working tree and `.lake` or each get an isolated one; a split verdict (worktrees for lean/cslib implement, shared tree plus hunk-scoped or refusing commits elsewhere) is acceptable if the selecting predicate is defined | — (242, 243 now done) |
 | 3 | **136** | Plan-level `Status` field ownership in the implementation-agent contract and the validator; fan-out prohibition; marker/commit sync | 139, 166 |
 
 ```
 /orchestrate 129, 166, 162, 163, 244, 139, 224, 165, 184, 199, 136
 ```
 
-199 is the largest open decision. If it stalls, pull it out and run it alone with `--hard`.
+184 and 199 were gated on 242/243, which are now complete — both are free to run in wave 2 with
+no remaining predecessor. 199 is the largest open decision; if it stalls, pull it out and run it
+alone with `--hard`.
 
 ---
 
@@ -122,14 +116,14 @@ Serial where files are shared; the edges are declared, so one `/orchestrate` cal
 | 1 | **207** (+208) | `zotero-generate-export.sh` Path 1: the jq-argv accumulator truncation and a shrink guard; then explain the 481-item pagination stop or change the path-preference order | Data loss today |
 | 1 | **39** (planned → implement) | Zotero metadata resolution for web-discovered sources, the MCP question, quota-gated auto-attach, the Zotero 10 backend-swap note | Plan exists since August |
 | 1 | **43** | The email extension's five safety context pointers actually load | Live defect, extension-internal |
-| 1 | **241** | Drop the two redundant playwright grant lists and five dead `mcp_servers` manifest fields; correct `mcp-server-ownership.md` and the nix README; keep memory's `mcpServers` block for 29 | Re-verify the user-scope grant count is 9 first |
-| 2 | **51** | Session runtime files out of the `specs/` root and the reap path actually running (`reap-session-runtime-files.sh`, `task-lock.sh`, `/todo`) | Three repos are accumulating them |
+| 1 | **241** | Drop the two redundant playwright grant lists and five dead `mcp_servers` manifest fields; correct `mcp-server-ownership.md` and the nix README; keep memory's `mcpServers` block for 29 | Re-verify the user-scope grant count is 9 first. Dry run defers this behind 29 |
+| 2 | **51** | Session runtime files out of the `specs/` root and the reap path actually running (`reap-session-runtime-files.sh`, `task-lock.sh`, `/todo`) | **48 stranded here now, up from 25.** Also the designated self-modifying candidate the dry run orders 245 behind |
 | 2 | **217** | `/refresh` idle Lean LSP tree reclamation with PSS accounting and CPU-delta idleness; prompt, never a silent kill | |
-| 2 | **89** | Mode-gate the seven sections of `skill-literature/SKILL.md` (84 KB) and `skill-distill` so one mode's bash loads per invocation | |
-| 2 | **44** (planned) | Slim `commands/task.md` (37 KB per `/task` call) by moving reference material into lazily loaded files | After 210 |
+| 2 | **89** | Mode-gate the seven sections of `skill-literature/SKILL.md` (84 KB) and `skill-distill` so one mode's bash loads per invocation | Bears on the eager-context breach |
+| 2 | **44** (planned) | Slim `commands/task.md` (37 KB per `/task` call) by moving reference material into lazily loaded files | 210 is done; unblocked. Bears on the eager-context breach |
 | 2 | **185** | Retarget the ~120 remaining "Stage N" / "Stage MT-N" citations to the Move 1-4 vocabulary | Mechanical |
 | 2 | **127** | Collapse the four-block routing ladder to `routing_agents`; resolve present's colon-suffixed compound values; prune lean/cslib `routing_hard` keys | Manifest rewrite |
-| 3 | **170** | Isolate shell test suites from ambient host state (memory and timing axes); record the convention in `shell-script-testing.md`. Research must name the specific suites and add them to `file_scope` before implement | Last; after 51 and 129 |
+| 3 | **170** | Isolate shell test suites from ambient host state (memory and timing axes); record the convention in `shell-script-testing.md`. Research must name the specific suites and add them to `file_scope` before implement | Last; after 51 and 129. May absorb the red-suite finding from "Before Batch B" |
 
 ```
 /orchestrate 223, 177, 167, 207, 39, 43, 241
@@ -152,16 +146,22 @@ These edit `lua/neotex/plugins/ai/**`, not the agent system, and do not feed the
 /orchestrate 22, 45, 29
 ```
 
-29 waits on 210 (shared `extension-development.md`); run it after Batch A.
+29 is no longer gated on 210 (complete). The dry run defers 29 behind 22 on
+`lua/neotex/plugins/ai/shared/extensions/merge.lua`, and 241 behind 29 on
+`agent-system/extensions/memory/manifest.json` — both are ordering edges the batch engine
+resolves in sequence, so the call above is correct as written.
 
 ---
 
 ## Checks before and after every batch
 
 - `bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json <tasks>`
-  — admits what you expect, 0 blocked, and `md5sum specs/state.json` unchanged across the call.
+  — **space-separated task numbers, not comma-separated**; admits what you expect, and
+  `md5sum specs/state.json` unchanged across the call.
 - `bash .claude/scripts/validate-state.sh` — 0 failures, 0 warnings (the current baseline).
-- `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green.
+- `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green. **Do not pipe it through
+  `tail`/`head`**: that masks its exit code and truncates the failing suite's inline output, which
+  is how a red run read as green on 2026-09-22.
 - `bash .claude/scripts/verify-deploy.sh --skip-slow` — PASS, and both engine files under their
   ceilings. A self-modifying task is not finished until `.claude/` is resynced.
 - After any batch that ran in a consumer repo: `bash .claude/scripts/check-consumer-freshness.sh`
@@ -180,7 +180,7 @@ These edit `lua/neotex/plugins/ai/**`, not the agent system, and do not feed the
 4. **`--dry-run` prints the plan it would dispatch.** There is no separate dry-run report.
 5. **No fixed consumer validation gates.** The checks above are recommended, not blocking.
 6. **A linear chain of small tasks that serialize on one file is one task with phases.** Applied
-   twice now (2026-09-17, 2026-09-22); apply it at creation time from here on.
+   twice (2026-09-17, 2026-09-22); apply it at creation time from here on.
 7. **No analysis surface over `file_scope`** until the field is reliably populated (162, 163).
 8. **Rule before mechanism** for the vimtex hazard: 167's later phases are conditional on the
    rule proving insufficient.
@@ -199,13 +199,13 @@ These edit `lua/neotex/plugins/ai/**`, not the agent system, and do not feed the
 
 ## Unfiled observations (still open, none worth a task yet)
 
+- `test-verify-deploy-context-budget.sh` does not finish inside 240 s when run alone, so it cannot
+  be used as a quick local check while iterating on the budget. Worth a timing fix if step 2 of
+  "Before Batch B" turns into real work; 170 is the task that would own it.
 - The runtime wave-split check (`orchestrate-cycle-plan.sh` step 4.5) defers a cross-batch scope
   collision on every run and records nothing. Persisting that deferral as a `dependencies[]` edge
   is a one-line `state-write.sh` call, after 165 rules on absent scope.
 - The write-time task-reference hook fires on files in the session scratchpad (it blocked a
   throwaway jq filter on 2026-09-22). Its path filter could exempt `/tmp/**`.
-- `/todo` has archived 181 directories; `specs/archive/state.json` holds only the 33 abandoned
-  entries, so completed tasks' final state is recoverable from git history and summaries only.
-
-*Uncommitted: `specs/state.json`, `specs/TODO.md`, `specs/events.jsonl` and this file carry the
-phase-0 changes.*
+- `specs/archive/state.json` now holds 188 completed and 41 abandoned entries. Completed tasks'
+  final state before this pass is recoverable from git history and summaries only.
