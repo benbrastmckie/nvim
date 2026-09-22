@@ -16,6 +16,7 @@ util/
 ├── misc.lua           # Miscellaneous helper functions
 ├── optimize.lua       # Performance optimization utilities
 ├── process.lua        # Background process manager
+├── typst.lua          # Shared Typst project-root/main-file/pin helper
 ├── lectic_extras.lua  # Lectic AI integration helpers
 └── neotree-width.lua  # Neo-tree width management
 ```
@@ -31,6 +32,9 @@ util/
 - **misc.lua**: Miscellaneous helper functions
 - **optimize.lua**: Performance optimization utilities
 - **process.lua**: Background process manager with job registry, port auto-detection, and filetype launchers
+- **typst.lua**: Single source of truth for "which document is this" across the Typst
+  ftplugin, `typst-preview.nvim`, and the tinymist pin sync: project root, content-aware
+  main-file detection, and project-wide pin state
 - **lectic_extras.lua**: Lectic AI integration helpers
 - **neotree-width.lua**: Neo-tree width management
 
@@ -175,6 +179,41 @@ The process picker (`<leader>xp`) displays all tracked background processes with
 - **Preview**: Process metadata and recent stdout/stderr output
 - **Actions**: `<CR>` kill process, `<C-o>` open port in browser, `<C-j/k>` navigate
 - **Help**: `[Keyboard Shortcuts]` entry at bottom shows keybinding reference
+
+## Typst Helper
+
+`typst.lua` is the shared module for Typst project root, main-file detection and pin state.
+It is required by `after/ftplugin/typst.lua` (the `<leader>l` commands and tinymist pin sync)
+and by `lua/neotex/plugins/text/typst-preview.lua` (the web preview's `get_main_file`/`get_root`
+callbacks), so all three consumers agree on "which document is this". See
+[TYPST.md](../../../docs/TYPST.md#multi-file-projects) for the user-facing detection order and
+root rule.
+
+### API
+
+| Function | Description |
+|----------|-------------|
+| `project_root(path)` | Resolve the project root: `TYPST_ROOT` env, else nearest `typst.toml`/`.git`, else `path`'s directory. Always returns a string |
+| `main_file(current_file)` | Resolve the main `.typ` file: pin, then non-chapter self, then content-aware `#include`/`#import` scan, then name-based candidates, then alphabetical fallback |
+| `pin(root, file)` / `unpin(root)` / `pinned(root)` | Set, clear, and query the project-wide pin, keyed by normalized root |
+| `pdf_path(main_file)` | Expected PDF output path for a main file (`:r` + `.pdf`) |
+| `sync_pin(bufnr)` | Send `tinymist.pinMain` to every attached `tinymist` client for `bufnr`, only when the resolved main file differs from what was last sent |
+| `setup_autocmds()` | Idempotent; creates the `NeotexTypstPin` augroup (`LspAttach` + `BufEnter *.typ`) that keeps tinymist pinned automatically, including after `:LspRestart` |
+
+### Quick Usage
+
+```lua
+local typst = require("neotex.util.typst")
+
+local current = vim.api.nvim_buf_get_name(0)
+local main = typst.main_file(current)
+local root = typst.project_root(main)
+
+typst.pin(root, main)
+typst.sync_pin(0)
+```
+
+Tested by `lua/neotex/util/typst_spec.lua` (plenary busted).
 
 ## UI Selection and Confirmation System
 

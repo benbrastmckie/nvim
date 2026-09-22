@@ -249,7 +249,7 @@ the habit transfers between LaTeX, Typst and Slidev:
 | `<leader>le` | errors | VimtexErrors | LSP diagnostics | -- |
 | `<leader>lf` | format | latexindent | tinymist | -- |
 | `<leader>lk` | clean artifacts | aux + cache | artifacts | -- |
-| `<leader>lx` | stop background process | VimtexStop | watch + preview | dev server |
+| `<leader>lx` | stop background process | VimtexStop | preview | dev server |
 | `<leader>li` | index / outline | VimtexTocOpen | -- | -- |
 | `<leader>lc` | convert (pandoc) | prompts for format | -- | -- |
 
@@ -296,8 +296,7 @@ spending a key on each one.
 | `<leader>le` | Errors (LSP) | Show diagnostics for current line |
 | `<leader>lf` | Format | Format via tinymist LSP (using typstyle) |
 | `<leader>lk` | Clean artifacts | Delete compiled svg/pdf and restart tinymist |
-| `<leader>lx` | Stop (watch + preview) | Stop whichever background processes are live |
-| `<leader>lw` | Watch (toggle) | Continuous compilation on save |
+| `<leader>lx` | Stop preview | Stop the live preview if one is running |
 | `<leader>lq` | Quickfix (compile) | Open the compile-error quickfix list |
 | `<leader>ls` | Sync cursor (web) | Manually sync preview to cursor position |
 | `<leader>lp` | Pin main file | Pin current file as main (multi-file projects) |

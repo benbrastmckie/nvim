@@ -42,8 +42,7 @@ All Typst keybindings use the `<leader>l` prefix (same as LaTeX). Filetype isola
 | `<leader>le` | Errors | Show diagnostics for current line |
 | `<leader>lf` | Format | Format via tinymist LSP (using typstyle) |
 | `<leader>lk` | Clean artifacts | Delete compiled svg/pdf and restart tinymist |
-| `<leader>lx` | Stop (watch + preview) | Stop whichever background processes are live |
-| `<leader>lw` | Watch (toggle) | Continuous compilation on save |
+| `<leader>lx` | Stop preview | Stop the live preview if one is running |
 | `<leader>lq` | Quickfix (compile) | Open the compile-error quickfix list |
 | `<leader>ls` | Sync cursor (web) | Manually sync preview to cursor position |
 | `<leader>lp` | Pin main file | Pin current file as main (multi-file projects) |
@@ -54,46 +53,89 @@ the LaTeX and Slidev groups -- see [MAPPINGS.md](MAPPINGS.md#document-leaderl).
 
 **Note**: Sync features (forward/backward) only work with the web preview (`<leader>ll`), not with external PDF viewers.
 
+**No separate watch command**: tinymist's LSP config sets `exportPdf = "onSave"`, so every
+save of any file in a pinned/detected project already exports the main document's PDF. `<leader>lb`
+covers an on-demand rebuild (e.g. after a file changes on disk outside Neovim); there is no
+`<leader>lw`.
+
 ---
 
 ## Multi-File Projects
 
+All main-file and project-root logic lives in one shared module,
+`lua/neotex/util/typst.lua`, used by the `<leader>l` commands, the web preview
+(`typst-preview.nvim`), and the tinymist pin sync. Inspect it directly:
+
+```vim
+:lua print(require'neotex.util.typst'.main_file(vim.api.nvim_buf_get_name(0)))
+:lua print(require'neotex.util.typst'.project_root(vim.api.nvim_buf_get_name(0)))
+```
+
 ### Automatic Main File Detection
 
-When editing files in subdirectories (`chapters/`, `sections/`, `parts/`, `includes/`, `content/`), the configuration automatically detects the main file in the parent directory.
+When editing files in subdirectories (`chapters/`, `sections/`, `parts/`, `includes/`,
+`content/`), the configuration detects the main file in the parent directory. Detection is
+**content-aware**: it prefers whichever root-level file actually `#include`s or `#import`s the
+current chapter, rather than relying on file naming or alphabetical order.
 
-**Detection priority**:
-1. Common names: `main.typ`, `index.typ`, `document.typ`
-2. Directory-named file (e.g., `BimodalReference.typ` in `typst/` directory)
-3. Any `.typ` file in parent directory (alphabetically first)
-4. Current file (if not in subdirectory)
+**Detection order** (`neotex.util.typst.main_file`):
+1. **Project pin**, if one is set (`<leader>lp` below) -- always wins.
+2. If the current file is not inside a recognized subdirectory, the current file itself.
+3. **Content-aware scan**: among the `.typ` files one level up, the first (sorted) one whose
+   text contains `#include "<path-to-current-file>"` or `#import "<path-to-current-file>"`.
+4. Common names: `main.typ`, `index.typ`, `document.typ`, or a file named after the parent
+   directory (e.g. `BimodalReference.typ` inside a `BimodalReference/` or `typst/` directory).
+5. Any `.typ` file in the parent directory (alphabetically first), as a last-resort guess.
+6. The current file, if nothing above matched.
 
 **Example structure**:
 ```
 typst/
-├── BimodalReference.typ          # Main file (auto-detected)
+├── BimodalReference.typ          # #include's chapters/00-introduction.typ -> detected as main
 └── chapters/
     ├── 00-introduction.typ        # Subfile
     └── 01-foundations.typ         # Subfile
 ```
 
-When editing `chapters/00-introduction.typ`:
-- `<leader>lw` watches `BimodalReference.typ`
+When editing `chapters/00-introduction.typ`, step 3 finds that `BimodalReference.typ`
+`#include`s it, so:
+- `<leader>lb` builds `BimodalReference.typ`, saved as `BimodalReference.pdf`
 - `<leader>lv` opens `BimodalReference.pdf`
-- Preview shows the full document
+- Saving the chapter exports `BimodalReference.pdf` (tinymist's `exportPdf = "onSave"`),
+  never a stray `chapters/00-introduction.pdf`
+- The web preview (`<leader>ll`) shows the full document
+
+This is independent of alphabetical order: a root file named earlier in the alphabet that does
+*not* include the chapter is skipped in favor of the one that does.
+
+### Project Root Detection
+
+The `--root` flag (needed for cross-directory imports) and the root passed to tinymist and the
+web preview come from one rule, `neotex.util.typst.project_root`:
+1. The `TYPST_ROOT` environment variable, if set.
+2. The directory of the nearest `typst.toml` or `.git` found upward from the main file (a
+   `typst.toml` found at the same directory level as a `.git` wins).
+3. The main file's own directory, if neither marker is found.
+
+There is no special-cased `typst/` subdirectory rule; this one rule is shared by the CLI
+commands, `typst-preview.nvim`, and tinymist's `root_markers`.
 
 ### Manual Main File Pinning
 
-For non-standard structures or when auto-detection fails:
+For non-standard structures, or when auto-detection picks the wrong file:
 
-1. Open the main file (e.g., `BimodalReference.typ`)
-2. Press `<leader>lp` to pin it as main
-3. Notification confirms: "Pinned BimodalReference.typ as main file"
-4. Now editing any subfile will use the pinned main file
+1. Open the file that should be treated as main (e.g. `BimodalReference.typ`)
+2. Press `<leader>lp` to pin it
+3. Notification confirms: "Pinned BimodalReference.typ as main file for BimodalLogic"
+4. Editing *any* file under the same project root now resolves to the pinned main file
 
-**To unpin**: Press `<leader>lu` to return to auto-detection.
+**To unpin**: Press `<leader>lu` to return to automatic (content-aware) detection.
 
-**Note**: Pinned main file persists per-buffer. Notifies tinymist LSP for cross-file analysis.
+**Note**: The pin is **project-wide** (keyed by project root, not per-buffer), so it applies
+from any chapter buffer, and it survives `<leader>lk`'s `:LspRestart` -- tinymist is re-sent
+the pin automatically on the next `LspAttach`. tinymist is always kept pinned to the resolved
+main file, whether that came from an explicit pin or from detection, so
+`exportPdf = "onSave"` always targets the right document.
 
 ---
 
@@ -114,7 +156,6 @@ The web preview provides the best experience with instant bidirectional sync:
 
 **Commands**:
 - `<leader>ll` - Toggle preview (recommended for daily use)
-- `<leader>lp` - Open preview
 - `<leader>ls` - Sync cursor (when follow disabled)
 - `<leader>lx` - Stop preview
 
@@ -440,12 +481,14 @@ dependencies_bin = {
 **From subfile** (e.g., `chapters/00-introduction.typ`):
 
 1. Check subdirectory name is recognized: `chapters`, `sections`, `parts`, `includes`, `content`
-2. Verify main file exists in parent directory
+2. Verify a root-level file `#include`s or `#import`s the subfile, or that a
+   `main.typ`/`index.typ`/`document.typ`/directory-named file exists
 3. Manually pin: Open main file → `<leader>lp`
 
 **Check detection**:
 ```vim
-:lua print(vim.inspect(require'typst-helpers'.detect_main_file()))
+:lua print(require'neotex.util.typst'.main_file(vim.api.nvim_buf_get_name(0)))
+:lua print(require'neotex.util.typst'.project_root(vim.api.nvim_buf_get_name(0)))
 ```
 
 ### LSP not working
@@ -540,7 +583,7 @@ svg rect[fill="#ffffff"] {
 |---------|----------------|-------------------|
 | Keybindings | `<leader>l*` | `<leader>l*` (same prefix) |
 | Preview | VimTeX viewer + SyncTeX | Web preview + click-to-jump |
-| Compilation | `<leader>lc` (watch) | `<leader>lc` (watch) |
+| Compilation | `<leader>lb` (build once) | `<leader>lb` (build once) + `exportPdf=onSave` |
 | PDF viewer | Sioyek with sync | Sioyek without sync (static) |
 | Multi-file | `%!TEX root=` magic | Automatic detection + pinning |
 | Snippets | LuaSnip | SnipMate (~60 snippets) |

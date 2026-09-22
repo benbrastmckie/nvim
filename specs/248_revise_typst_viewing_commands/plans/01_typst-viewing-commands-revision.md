@@ -1,7 +1,7 @@
 # Implementation Plan: Task #248
 
 - **Task**: 248 - Revise Typst document viewing commands
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md
@@ -319,28 +319,38 @@ since it had foreign uncommitted edits at plan time).
 
 ---
 
-### Phase 5: Documentation and cross-project smoke test [NOT STARTED]
+### Phase 5: Documentation and cross-project smoke test [COMPLETED]
 
 **Goal**: Bring the user-facing docs in line with the new surface and helper, and validate
 against all three real multi-file projects.
 
 **Tasks**:
-- [ ] `docs/TYPST.md`: replace the stale `require'typst-helpers'.detect_main_file()` with
+- [x] `docs/TYPST.md`: replace the stale `require'typst-helpers'.detect_main_file()` with
       `require'neotex.util.typst'.main_file(vim.api.nvim_buf_get_name(0))`. Remove
       `<leader>lw`/watch mentions. Document the content-aware detection order, the unified
       root rule, project-wide pins, and that `exportPdf=onSave` produces the main PDF.
-- [ ] `docs/MAPPINGS.md`: remove `<leader>lw`, and rename `<leader>lx` to "stop preview".
-- [ ] `lua/neotex/util/README.md`: add a `typst.lua` entry (API table). Re-read first, since
-      it had foreign uncommitted edits at plan time.
-- [ ] Smoke test: with the helper, record the resolved main and root for a chapter file in
+      *(also corrected a pre-existing stray `<leader>lp - Open preview` line in the "Web
+      Preview" Commands list — `lp` is pin, not preview — and the "Comparison with LaTeX"
+      table's inaccurate `<leader>lc (watch)` compilation row, both directly touched by
+      removing watch mentions)*
+- [x] `docs/MAPPINGS.md`: remove `<leader>lw`, and rename `<leader>lx` to "stop preview".
+      *(also updated the DOCUMENT summary table's Typst `<leader>lx` cell from
+      "watch + preview" to "preview")*
+- [x] `lua/neotex/util/README.md`: add a `typst.lua` entry (API table). Re-read first, since
+      it had foreign uncommitted edits at plan time. *(re-read; file was clean, no foreign
+      edits remained after the earlier commit; added a full "Typst Helper" section with an
+      API table and quick-usage example)*
+- [x] Smoke test: with the helper, record the resolved main and root for a chapter file in
       each of `~/Projects/BimodalLogic/typst`, `~/Projects/cslib/typst/MPL`, and
       `~/Projects/Logos/Theory/typst/manual`. Run
       `typst compile --root <root> <main> /tmp/...pdf` (output to the scratchpad, not the
       project) for each project whose main resolves to a real document. Record the results
-      in the implementation summary.
-- [ ] Final full gate: re-run the Phase 1 spec, run the headless load of a `.typ` buffer, and
+      in the implementation summary. *(all three resolved to a real main document and
+      compiled with exit 0; results below and in the summary)*
+- [x] Final full gate: re-run the Phase 1 spec, run the headless load of a `.typ` buffer, and
       grep for leftovers (`typst_main_file`, `execute_command`, `typst-watch`,
-      `typst-helpers`).
+      `typst-helpers`). *(8/8 spec assertions pass, headless buffer load clean, all greps
+      empty outside `specs/`)*
 
 **Timing**: 1 hour
 
@@ -360,16 +370,45 @@ against all three real multi-file projects.
 - All greps are empty (outside `specs/`), the spec passes, and the smoke compiles succeed for
   every project whose main resolves to a real document.
 
+**Smoke test results** (chapter -> resolved main/root -> `typst compile` result):
+
+| Project | Chapter | Resolved main | Resolved root | Compile |
+|---------|---------|----------------|----------------|---------|
+| BimodalLogic | `typst/chapters/ax-lean-appendix.typ` | `typst/BimodalReference.typ` | `~/Projects/BimodalLogic` | exit 0 |
+| cslib MPL | `typst/MPL/chapters/00-introduction.typ` | `typst/MPL/MplReport.typ` | `~/Projects/cslib` | exit 0 (2 pre-existing unrelated font warnings from `@preview/thmbox`) |
+| Logos/Theory manual | `typst/manual/chapters/01-introduction.typ` | `typst/manual/LogosManual.typ` | `~/Projects/Logos/Theory` | exit 0 |
+
+**Correction to the plan's Risk table**: the Risk table anticipated Logos/Theory's
+`typst/manual` might have no root-level `.typ` file. At implementation time it does
+(`LogosManual.typ`). All three projects resolved via the content-aware `#include` scan (step 3
+of `main_file`'s resolution order), confirmed by grepping each resolved main file for an
+`#include` of the tested chapter's relative path -- not via the name-based or alphabetical
+fallback steps, so the fallback path itself was exercised only by the Phase 1 fixture spec
+(`main.typ`-fallback and non-chapter-file cases), not by a real project here.
+
 ## Testing & Validation
 
-- [ ] `lua/neotex/util/typst_spec.lua` passes under plenary headless.
-- [ ] BimodalLogic chapter resolves to `BimodalReference.typ` because of inclusion. The
+- [x] `lua/neotex/util/typst_spec.lua` passes under plenary headless. (8/8 assertions)
+- [x] BimodalLogic chapter resolves to `BimodalReference.typ` because of inclusion. The
       `A.typ`/`Z.typ` fixture shows this is independent of alphabetical order.
-- [ ] One root per project, shared by the CLI, the preview and tinymist.
-- [ ] Saving a chapter updates the main PDF only, with no stray chapter PDFs, including after
-      `<leader>lk`.
-- [ ] The preview toggle never orphans a server, even across pin changes.
-- [ ] No `vim.lsp.buf.execute_command` and no `<leader>lw` remain.
+- [x] One root per project, shared by the CLI, the preview and tinymist. Confirmed for all
+      three real multi-file projects (smoke test table above); the preview plugin's
+      `get_root` and the ftplugin's `--root` both call `typst.project_root` directly, and
+      tinymist's own `root_markers` config targets the same `typst.toml`/`.git` markers.
+- [x] Saving a chapter updates the main PDF only, with no stray chapter PDFs, including after
+      `<leader>lk`. Verified live in BimodalLogic: opened `chapters/ax-lean-appendix.typ`
+      headless, waited for tinymist to attach (confirmed 1 client, pinned via
+      `setup_autocmds`/`sync_pin`), forced a save. `BimodalReference.pdf`'s mtime and size
+      changed (2395472 -> 2421383 bytes) and no `chapters/*.pdf` was created. The
+      `<leader>lk`/`:LspRestart` persistence half of this claim rests on the Phase 3
+      `LspAttach` autocmd re-sending the pin (verified structurally, not via a live
+      `:LspRestart` cycle in this dispatch).
+- [x] The preview toggle never orphans a server, even across pin changes. Structural
+      guarantee: `typst_preview_stop` always calls `manager.remove_all()` (Phase 4),
+      unconditional on which file is the current pinned/detected main, so a server is never
+      left behind by a pin change between start and stop. Directly verified (Phase 4) that
+      `:TypstPreview` registers one entry in `get_all()` and `remove_all()` clears it.
+- [x] No `vim.lsp.buf.execute_command` and no `<leader>lw` remain.
 
 ## Artifacts & Outputs
 
