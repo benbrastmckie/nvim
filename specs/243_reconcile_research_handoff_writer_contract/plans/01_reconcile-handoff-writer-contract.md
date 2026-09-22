@@ -1,7 +1,7 @@
 # Implementation Plan: Task #243
 
 - **Task**: 243 - Reconcile research handoff writer contract
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/243_reconcile_research_handoff_writer_contract/reports/01_reconcile-handoff-writer-contract.md
@@ -138,28 +138,28 @@ One documented deviation: in `lean/agents/lean-research-agent.md` the heading is
 
 ---
 
-### Phase 1: Author canonical text and fix the core contract [NOT STARTED]
+### Phase 1: Author canonical text and fix the core contract [IN PROGRESS]
 
 **Goal**: Replace the handoff section in `general-research-agent.md` with the canonical
 prohibition, and correct the Stage 3.6 sentence that currently claims a handoff-writing
 obligation — the exact sentence `handoff-schema.md` misreads as a prohibition.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/general-research-agent.md` immediately before
-      editing (concurrent siblings are active on this working tree)
-- [ ] Replace the section at ~lines 234-261 (`### \`.orchestrator-handoff.json\`
+- [x] Re-read `agent-system/extensions/core/agents/general-research-agent.md` immediately before
+      editing (concurrent siblings are active on this working tree) *(completed)*
+- [x] Replace the section at ~lines 234-261 (`### \`.orchestrator-handoff.json\`
       (orchestrator-mode dispatches)` through the `Use the shape defined by ...` paragraph) with
-      the Canonical Replacement Text above
-- [ ] Rewrite the Stage 3.6 "Scoping Decision" cross-reference at ~line 228, replacing "See the
+      the Canonical Replacement Text above *(completed)*
+- [x] Rewrite the Stage 3.6 "Scoping Decision" cross-reference at ~line 228, replacing "See the
       `.orchestrator-handoff.json` (orchestrator-mode dispatches) subsection below for this
       agent's own handoff-writing obligation, which is a separate file, a separate consumer, and
       a separate trigger from the partial-report handoff artifact above." with a sentence that
       instead points at the prohibition — e.g. "The partial-report handoff artifact above is
       unrelated to `.orchestrator-handoff.json`, which this agent never writes; see the
-      `.orchestrator-handoff.json` — research agents never write one subsection below."
-- [ ] Confirm the file's separate `.return-meta.json` `dispatch_seq` instruction (~lines 405-410)
-      is intact and not duplicated in a contradictory way
-- [ ] Commit this file alone with a targeted `git add -- <path>`
+      `.orchestrator-handoff.json` — research agents never write one subsection below." *(completed)*
+- [x] Confirm the file's separate `.return-meta.json` `dispatch_seq` instruction (~lines 405-410)
+      is intact and not duplicated in a contradictory way *(completed: both instructions redirect to .return-meta.json, no contradiction)*
+- [x] Commit this file alone with a targeted `git add -- <path>` *(completed)*
 
 **Timing**: 0.5 hours
 

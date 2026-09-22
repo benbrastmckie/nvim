@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Author canonical text and fix the core contract",
+  "started_at": "2026-09-22T17:34:28Z",
+  "last_updated": "2026-09-22T17:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read general-research-agent.md immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace handoff section with canonical prohibition text", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 3, "description": "Rewrite Stage 3.6 cross-reference sentence", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 4, "description": "Confirm dispatch_seq instruction intact and not duplicated contradictorily", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Commit file alone with targeted git add", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md",
-      "summary": "4-phase plan replacing the unconditional handoff-write section in all 21 research-agent contract files with a single canonical prohibition, fixing 4 files' extra cross-references/bullets, correcting handoff-schema.md's misattributed citation, and closing with a repo-wide acceptance grep."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When deleting a copy-templated contract section from many agent files, first grep the section for instructions that exist ONLY inside it. Observed case: the .orchestrator-handoff.json section in 20 extension research-agent contracts was the sole carrier of the 'echo dispatch_seq verbatim' instruction; deleting the section wholesale would have silently dropped that instruction from all 20 files (core's copy was safe only because it separately repeated it for .return-meta.json). Redirect such orphaned instructions in the replacement text rather than losing them with the section.",
-      "category": "PATTERN",
-      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["template-deletion", "agent-contracts", "dispatch_seq", "orphaned-instruction", "bulk-edit", "sweep"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 16,
   "metadata": {
-    "session_id": "sess_1790091707_e274be_243",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 243,
-    "phase_count": 4,
-    "estimated_hours": 2.75,
-    "dependency_waves": 3
-  },
-  "next_steps": "Run /implement 243 to execute the plan",
-  "dispatch_seq": 7
+    "session_id": "sess_1790091707_e274be",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
