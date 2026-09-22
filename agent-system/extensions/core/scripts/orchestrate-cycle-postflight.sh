@@ -1030,13 +1030,42 @@ elif [ "$hard_mode" != "true" ] && [ "$dispatch_status" = "partial" ] && [ "$pha
   fi
 fi
 
-if [ "$verdict" = "blocked" ]; then
+# Widened gate (was `verdict = "blocked"` only): also admits a `partial` outcome whose handoff
+# carries a non-empty `blockers[]` -- the same blocker-bearing-partial case the `partial)` status-
+# transition arm above gates on (reuses that arm's `partial_blocker_count`, defaulting to 0 when
+# this dispatch_status never entered that arm at all, e.g. blocked/failed/researched/...). The two
+# admission paths are no longer disjoint by construction the way a literal `blocked` outcome was
+# with a literal `partial` one — both can independently admit here — so `blocker_desc` is derived
+# per-path below rather than assuming a single shared source.
+#
+# base-mode only, mirroring the drift-inspection `elif hard_mode != true` sibling immediately
+# above: hard mode already has its own escalation for a recurring blocker-bearing partial (the
+# WORK (k) churn/divergence-audit three-strikes mechanism, which consumes the same
+# dispatch_status=partial + blockers[] shape). Admitting this gate unconditionally would fight
+# that mechanism for the single-slot aux_pending write on every hard-mode cycle, masking the
+# churn counter's own signal.
+partial_with_blockers=false
+if [ "$hard_mode" != "true" ] && [ "$dispatch_status" = "partial" ] && [ "${partial_blocker_count:-0}" -gt 0 ]; then
+  partial_with_blockers=true
+fi
+if [ "$verdict" = "blocked" ] || [ "$partial_with_blockers" = "true" ]; then
   # Blocker-research aux signal: unconditional on hard_mode (single-task Stage 6's own Blocker
-  # Escalation handler applies in either mode) — naturally disjoint from both branches above since
-  # dispatch_status="blocked" can never also be "partial".
-  blocker_desc=$(jq -r --argjson num "$task_number" \
-    '.active_projects[] | select(.project_number == $num) | .blockers // "Unspecified blocker"' \
-    "$STATE_FILE" 2>/dev/null) || blocker_desc="Unspecified blocker"
+  # Escalation handler applies in either mode).
+  if [ "$verdict" = "blocked" ]; then
+    blocker_desc=$(jq -r --argjson num "$task_number" \
+      '.active_projects[] | select(.project_number == $num) | .blockers // "Unspecified blocker"' \
+      "$STATE_FILE" 2>/dev/null) || blocker_desc="Unspecified blocker"
+  else
+    # partial + blockers[]: `.active_projects[].blockers` is never written by any script (would
+    # degrade to "Unspecified blocker" every time) -- derive the description from the handoff's
+    # own blockers[0] instead: target, plus why_it_failed when present.
+    blocker_desc=$(echo "${handoff:-null}" | jq -r '
+      (.blockers[0] // {}) as $b
+      | if ($b.target // "") == "" then "Unspecified blocker"
+        elif ($b.why_it_failed // "") == "" then $b.target
+        else ($b.target + ": " + $b.why_it_failed)
+        end' 2>/dev/null) || blocker_desc="Unspecified blocker"
+  fi
   if is_live; then
     jq --arg t "$task_number" --arg d "$blocker_desc" \
       '.aux_pending[$t] = {kind: "blocker-research", blocker_desc: $d}' \

@@ -182,26 +182,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Widen the blocker-research aux gate to blocker-bearing partials [NOT STARTED]
+### Phase 2: Widen the blocker-research aux gate to blocker-bearing partials [COMPLETED]
 
 - **Goal:** Raise the existing `blocker-research` aux signal for a `partial` outcome with a
   populated `blockers[]`, so the operator gets the same "investigate this blocker" aux dispatch
   that a literal `blocked` outcome already produces.
 - **Tasks:**
-  - [ ] Re-read the `if [ "$verdict" = "blocked" ]` aux-signal block (currently line ~1012).
-  - [ ] Widen the gate to also admit `dispatch_status == "partial"` with a non-empty handoff
+  - [x] Re-read the `if [ "$verdict" = "blocked" ]` aux-signal block (currently line ~1012). *(completed)*
+  - [x] Widen the gate to also admit `dispatch_status == "partial"` with a non-empty handoff
         `blockers[]` (reuse the blocker count computed in Phase 1 rather than recomputing it, if
         it is still in scope at this point; otherwise recompute with the identical guarded
-        expression).
-  - [ ] For the partial path, build `blocker_desc` from the handoff's `blockers[0].target` plus
+        expression). *(deviation: altered — the widened admission is additionally gated on
+        `hard_mode != true`. Without that guard, the new gate overwrote the existing hard-mode
+        churn/divergence-audit aux signal for the identical dispatch_status=partial+blockers[]
+        shape on every hard-mode cycle, breaking 5 existing tests. Base mode has no equivalent
+        mechanism, mirroring the drift-inspection sibling branch's own `hard_mode != true` guard.)*
+  - [x] For the partial path, build `blocker_desc` from the handoff's `blockers[0].target` plus
         `why_it_failed` when present, instead of reading `.active_projects[].blockers` — that
         state.json string field is never written by any script and would degrade to
-        `"Unspecified blocker"`.
-  - [ ] Leave the existing `verdict = "blocked"` path's `blocker_desc` derivation untouched.
-  - [ ] Preserve the existing live/dry-run split and the single-slot `aux_pending[$t]` write shape.
-  - [ ] Update the block's leading comment, which currently asserts the two branches are
+        `"Unspecified blocker"`. *(completed)*
+  - [x] Leave the existing `verdict = "blocked"` path's `blocker_desc` derivation untouched. *(completed)*
+  - [x] Preserve the existing live/dry-run split and the single-slot `aux_pending[$t]` write shape. *(completed)*
+  - [x] Update the block's leading comment, which currently asserts the two branches are
         "naturally disjoint since dispatch_status='blocked' can never also be 'partial'" — that
-        reasoning no longer describes the widened gate.
+        reasoning no longer describes the widened gate. *(completed)*
 - **Timing:** 0.75 hours
 - **Depends on:** 1
 - **Verification Tier:** full
@@ -209,10 +213,13 @@ Phases within the same wave can execute in parallel.
   - `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` - widen the aux gate and
     add the handoff-derived description
 - **Verification:**
-  - `bash -n` passes.
-  - Existing test suite still green.
+  - `bash -n` passes. *(confirmed)*
+  - Existing test suite still green. *(confirmed: 87/87, after the hard_mode-guard fix above; failed
+    5/87 before it)*
   - A manual dry-run invocation over a partial+blockers fixture prints the
-    `[dry-run] would record a blocker-research aux signal` line.
+    `[dry-run] would record a blocker-research aux signal` line. *(confirmed via an ad hoc sandbox
+    dry-run: prints both "would transition task ... to partial (blocker-bearing)" and "would
+    record a blocker-research aux signal")*
 
 ---
 

@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Widen the blocker-research aux gate to blocker-bearing partials",
+  "started_at": "2026-09-22T00:15:00Z",
+  "last_updated": "2026-09-22T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the verdict=blocked aux-signal block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Widen gate to admit partial+blockers, per-path blocker_desc derivation, update stale comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Widen gate unconditionally on hard_mode", "result": "failed", "reason": "Broke 5 existing hard-mode churn tests (task 820/821 fixtures use partial+blockers to exercise the H5/H6 divergence-audit three-strikes mechanism); the new gate stomped aux_pending with a blocker-research signal on every cycle, masking the churn counter. Fixed by gating the widened admission on hard_mode != true, mirroring the base-mode-only drift-inspection sibling branch."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Gated the widened partial+blockers admission on `hard_mode != true` (base-mode only). Not stated explicitly in the plan's task text.",
+      "type": "altered",
+      "reason": "Required to avoid the widened gate overwriting the hard-mode churn/divergence-audit aux signal for the same dispatch_status=partial+blockers[] shape; confirmed by the existing test suite failing without this guard and passing with it.",
+      "annotation": "*(deviation: altered — widened gate scoped to base mode (hard_mode != true) to avoid conflicting with the existing hard-mode churn/divergence-audit aux mechanism, which already handles this case in hard mode)*"
+    }
+  ]
+}
