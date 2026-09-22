@@ -1,0 +1,20 @@
+{
+  "phase": 7,
+  "phase_name": "Fixture test for task-type detection",
+  "started_at": "2026-09-22T01:45:00Z",
+  "last_updated": "2026-09-22T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-task-type-detect.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-task-type-detect.sh"]},
+    {"id": 2, "description": "Assert six D6 cases", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add negative controls", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add literature-keyword regression case", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Scratch extensions_dir + real manifest case", "status": "done", "files_touched": []},
+    {"id": 6, "description": "chmod +x, shellcheck", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Initial Acceptance-3/Control-2 fixture wording accidentally used two distinct weak keywords each, crossing the 2-match threshold", "result": "failed", "reason": "reworded both fixtures to contain exactly one weak-signal keyword"}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}

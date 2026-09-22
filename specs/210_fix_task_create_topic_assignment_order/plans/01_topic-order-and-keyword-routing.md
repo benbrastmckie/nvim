@@ -468,27 +468,34 @@ every other prose restatement either points at the library or is documented as o
 
 ---
 
-### Phase 7: Fixture test for task-type detection [NOT STARTED]
+### Phase 7: Fixture test for task-type detection [COMPLETED]
 
 **Goal**: A runnable suite asserting all six D6 acceptance cases plus negative controls against
 the library.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-task-type-detect.sh` following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-task-type-detect.sh` following
       `context/standards/shell-script-testing.md` conventions, structured table-driven after
-      `test-routing-resolution.sh`.
-- [ ] Assert the six D6 cases: the two Verification false positives (`general`), the business-
+      `test-routing-resolution.sh`. *(completed)*
+- [x] Assert the six D6 cases: the two Verification false positives (`general`), the business-
       strategy "Logos proof theory" case (`general`), the lean4-formalization-with-"literature"
       case (`lean4`), "Update skill-orchestrate's dispatch to pass --lit" (`meta`), and
-      "Prove soundness lemma in Metalogic/Soundness.lean" (`lean4`).
-- [ ] Add negative controls that pin the threshold's intent: a short genuine agent-system
+      "Prove soundness lemma in Metalogic/Soundness.lean" (`lean4`). *(completed)*
+- [x] Add negative controls that pin the threshold's intent: a short genuine agent-system
       description that must still resolve `meta`, and a short description with one incidental
-      routing word that must resolve `general`.
-- [ ] Add a case asserting the literature-keyword regression stays closed: a description
-      containing "literature" alongside lean4 content resolves `lean4`, not `meta`.
-- [ ] Run the suite against a scratch `extensions_dir` fixture so it does not depend on the live
-      manifest set, plus one case against the real deployed manifests.
-- [ ] `chmod +x`, run `shellcheck`, resolve every finding.
+      routing word that must resolve `general`. *(completed)*
+- [x] Add a case asserting the literature-keyword regression stays closed: a description
+      containing "literature" alongside lean4 content resolves `lean4`, not `meta`. *(completed)*
+- [x] Run the suite against a scratch `extensions_dir` fixture so it does not depend on the live
+      manifest set, plus one case against the real deployed manifests. *(completed: the
+      "real manifests" case resolves relative to the suite's own location -- source store's
+      `agent-system/extensions` pre-deploy, or `.claude/extensions` when run as the deployed
+      copy in Phase 8 -- rather than an unconditional deployed-first preference, so it never
+      reads a stale not-yet-redeployed `.claude/extensions` while this suite still runs from
+      the source store)*
+- [x] `chmod +x`, run `shellcheck`, resolve every finding. *(completed: one info-level SC2329
+      "cleanup() never invoked" false positive remains, the same established, accepted finding
+      documented for Phase 3's suite)*
 
 **Timing**: 1.25 hours
 
