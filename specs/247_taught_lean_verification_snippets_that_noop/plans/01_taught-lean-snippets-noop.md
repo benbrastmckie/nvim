@@ -289,30 +289,30 @@ inventory). Confirm by the grep. The final grep must show only D7 prose sites an
 
 ---
 
-### Phase 5: End-to-end verification in consuming repos and redeploy [NOT STARTED]
+### Phase 5: End-to-end verification in consuming repos and redeploy [COMPLETED]
 
 **Goal**: Show acceptance criteria 1-5 by actually running things.
 
 **Tasks**:
-- [ ] Acceptance 1: re-run the Phase 1 exhaustive guard-vector audit over the final tree
-- [ ] Acceptance 3: in a scratch dir (scratchpad) with no lakefile and no `FormalSystem/`, run the
+- [x] Acceptance 1: re-run the Phase 1 exhaustive guard-vector audit over the final tree *(completed: all post-`--` tokens are `build`/`env`/`<lake-subcommand>`, all allowlisted or placeholder-conformant; core/ untouched)*
+- [x] Acceptance 3: in a scratch dir (scratchpad) with no lakefile and no `FormalSystem/`, run the
       resolver and the census against a nonexistent root and an empty root. Record the non-zero
-      exits and the stderr text that names the root
-- [ ] Acceptance 4: in `~/Projects/BimodalLogic`, note `git status --porcelain`. Run the
+      exits and the stderr text that names the root *(completed: resolver exits 68/69, census exits 65/66, all naming the offending root)*
+- [x] Acceptance 4: in `~/Projects/BimodalLogic`, note `git status --porcelain`. Run the
       rewritten snippets unmodified (resolver + census + axiom grep) and confirm they scan
       `FormalSystem/` and `Tests/`. Create a temp file `FormalSystem/ZzPlantedSorry.lean`
       containing `theorem zz_planted : True := by sorry`, re-run, and confirm the census reports
-      it. Delete the file and confirm `git status` matches the pre-test state
-- [ ] Run all lean extension test suites touched (`test-lean-src-roots.sh`,
-      `test-lean-sorry-census.sh`, `test-lean-challenge-snapshot.sh`)
-- [ ] Acceptance 5: read the `deploy-headless.sh` header, then redeploy into a consuming repo (for
+      it. Delete the file and confirm `git status` matches the pre-test state *(completed: census reported sorry_count 1 with the planted line; file removed; git status --porcelain matched the pre-test baseline exactly)*
+- [x] Run all lean extension test suites touched (`test-lean-src-roots.sh`,
+      `test-lean-sorry-census.sh`, `test-lean-challenge-snapshot.sh`) *(completed: 10/10, 17/17, 14/14 passing; also ran test-lean-comparator-run.sh as a sibling check, 22 passed/0 failed/1 pre-existing environment skip)*
+- [x] Acceptance 5: read the `deploy-headless.sh` header, then redeploy into a consuming repo (for
       example `~/Projects/BimodalLogic`). Confirm that `.claude/scripts/lean-src-roots.sh`
       exists there, that `.claude/agents/lean-implementation-agent.md` has no `Theories/`, and
       that `.claude/rules/lean4.md` shows `-- build Module.Name`. Redeploy this repo's
-      `.claude/` too if the deploy flow expects it
-- [ ] Deliverable-rule check: `grep -rnE "task [0-9]+|tasks [0-9]+" ` over the changed files
-      outside specs/ gives no new hits
-- [ ] Record D6 (the exit-77 message suggestion) in the implementation summary
+      `.claude/` too if the deploy flow expects it *(completed: BimodalLogic redeployed, verify-deploy PASS 14/14; all three confirmations verified; this repo's own .claude/ also redeployed)*
+- [x] Deliverable-rule check: `grep -rnE "task [0-9]+|tasks [0-9]+" ` over the changed files
+      outside specs/ gives no new hits *(completed: no hits)*
+- [x] Record D6 (the exit-77 message suggestion) in the implementation summary *(completed: see summary)*
 
 **Timing**: 1.25 hours
 
