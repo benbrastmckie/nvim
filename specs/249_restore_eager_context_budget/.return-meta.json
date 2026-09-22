@@ -22,29 +22,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/249_restore_eager_context_budget/summaries/01_eager-context-budget-trim-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "rule-to-narrative-split", "byte-range-extraction", "measure-eager-context", "lazy-loading"]
+      "suggested_keywords": [
+        "eager-context-budget",
+        "rule-to-narrative-split",
+        "byte-range-extraction",
+        "measure-eager-context",
+        "lazy-loading"
+      ]
     },
     {
       "content": "A source-store edit to agent-system/extensions/core/** (rules, context/standards, index-entries.json) that does not touch an orchestrator-critical path (see context/reference/orchestrator-critical-paths.json) will NOT trigger an automated redeploy under /orchestrate -- only Stage MT-3 step 7 (critical-path evidence-gated) and the postflight completion-deploy gate's two call sites (single-task /implement completion) are sanctioned automated deploy-headless.sh callers, and the postflight gate explicitly defers rather than redeploying under /orchestrate. This means verify-deploy.sh Gate 5 (manifest-driven content-hash equality) and doc-lint will show the source store diverging from the stale .claude/ deploy tree immediately after such an edit, until the next interactive <leader>al reload or a future critical-path-touching task. This is expected, not a defect in the just-completed work.",
       "category": "INSIGHT",
       "source_artifact": "specs/249_restore_eager_context_budget/summaries/01_eager-context-budget-trim-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-tree-drift", "regeneration-is-manual-only", "orchestrator-critical-paths", "gate-5", "source-store-deploy-boundary"]
+      "suggested_keywords": [
+        "deploy-tree-drift",
+        "regeneration-is-manual-only",
+        "orchestrator-critical-paths",
+        "gate-5",
+        "source-store-deploy-boundary"
+      ]
     },
     {
       "content": "When capturing a test/build command's real exit code for an acceptance gate, never pipe the live command through `tail -N` or `head -N` -- both mask the upstream command's exit status unless the shell has `pipefail` set, which is not guaranteed in every invocation context. Redirect stdout/stderr to a file with `> file 2>&1`, capture `$?` immediately afterward on its own line, and only then `tail`/read the saved file for a bounded preview. Discovered when a piped re-run of test-verify-deploy-context-budget.sh reported a misleading exit code 0 despite '1 failed' appearing in its own summary line.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/249_restore_eager_context_budget/summaries/01_eager-context-budget-trim-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["exit-code-masking", "pipefail", "tail-pipe-hazard", "verification-discipline", "run-all.sh"]
+      "suggested_keywords": [
+        "exit-code-masking",
+        "pipefail",
+        "tail-pipe-hazard",
+        "verification-discipline",
+        "run-all.sh"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790104446_f9923b",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -57,12 +57,12 @@
     {
       "project_number": 249,
       "project_name": "restore_eager_context_budget",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining",
       "created": "2026-09-22T18:54:55Z",
-      "last_updated": "2026-09-22T19:24:23Z",
+      "last_updated": "2026-09-22T19:24:30Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
@@ -80,9 +80,15 @@
           "path": "specs/249_restore_eager_context_budget/plans/01_eager-context-budget-trim.md",
           "type": "plan",
           "summary": "4-phase plan: create lazy narrative companion, trim eager rule, register index entry, full gate run."
+        },
+        {
+          "path": "specs/249_restore_eager_context_budget/summaries/01_eager-context-budget-trim-summary.md",
+          "type": "summary",
+          "summary": "Full verification detail for all 4 phases and all 6 acceptance criteria, including the two documented out-of-scope exceptions."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Split rules/source-store-deploy-boundary.md into a 1,588 B eager core and a new 3,854 B lazily-loaded companion (context/standards/source-store-deploy-boundary-narrative.md), registered in index-entries.json, restoring the eager-context TOTAL to 64,148 B (1,802 B headroom under the 65,950 B baseline). Gate 20 (orchestrator context budget lock) passes cleanly in verify-deploy.sh. Two residual red spots are documented and out of this task's scope: a deploy-tree content-hash drift (Gate 5, will clear on the next redeploy) and an unrelated pre-existing test-lake-build-guard.sh failure."
     },
     {
       "project_number": 241,
