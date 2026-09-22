@@ -1,10 +1,47 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
+      "summary": "All 5 plan phases complete: partial+blockers now writes status=partial, widened blocker-research aux gate, blocked-vs-partial contract guidance, and regression tests at both the postflight and end-to-end levels."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the orchestrate futile-redispatch defect: a partial dispatch outcome carrying a non-empty handoff blockers[] now writes status=partial to state.json (gated), which activates the existing needs_human classifier row and stops same-run redispatch, raises a widened blocker-research aux signal, documents the blocked-vs-partial decision rule in the shared H9 wrap-up contract, and is pinned by new regression tests in both test-orchestrate-cycle-postflight.sh (3 new fixtures, 99/99 total) and test-orchestrate-cycle-plan.sh (2 new fixtures, 243/243 total)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's orchestrator scripts, skill_postflight_update (scripts/skill-base.sh) has its own internal status-vocabulary case switch, separate from update-task-status.sh's target_status validation. Adding a new postflight-reachable status value (e.g. \"partial\") to a caller's dispatch_status case arm is not sufficient by itself -- skill_postflight_update's own switch must also gain a matching case arm, or the call silently no-ops (falls into its '*) Non-success status ... skipped' default) even though update-task-status.sh itself already accepts and validates that target_status. Always grep skill_postflight_update's case statement directly before assuming a new status value will actually write.",
+      "category": "PATTERN",
+      "source_artifact": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill_postflight_update", "skill-base.sh", "status-vocabulary", "postflight", "orchestrate"]
+    },
+    {
+      "content": "orchestrate-cycle-postflight.sh's single-slot aux_pending[$t] write means multiple aux-signal-eligible conditions (drift-inspection, blocker-research, divergence-audit) can fire in the same postflight run for the same dispatch_status shape (e.g. partial+blockers[] below the drift threshold); whichever write runs last wins. When widening an aux-signal gate to cover a new case, check whether hard_mode already has an equivalent escalation mechanism for that same dispatch_status/handoff shape (it usually does, via the WORK (k) churn detector) and scope the new gate to hard_mode != true if so, to avoid the new gate silently starving the existing mechanism's aux signal on every hard-mode cycle.",
+      "category": "PATTERN",
+      "source_artifact": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["aux_pending", "orchestrate-cycle-postflight", "hard_mode", "churn", "blocker-research"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790091707_e274be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

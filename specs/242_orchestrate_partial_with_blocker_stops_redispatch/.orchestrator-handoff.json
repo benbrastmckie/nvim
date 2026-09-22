@@ -1,17 +1,18 @@
 {
-  "status": "planned",
-  "summary": "Authored a 5-phase implementation plan: gate a state.json status=partial write on a non-empty handoff blockers[] in orchestrate-cycle-postflight.sh, widen the blocker-research aux gate, add blocked-vs-partial guidance to wrap-up.md, and add postflight plus cycle-plan regression tests.",
+  "status": "implemented",
+  "summary": "All 5 plan phases complete: orchestrate-cycle-postflight.sh's partial) arm now writes status=partial to state.json when the handoff carries a non-empty blockers[], activating orchestrate-triage-classify.sh's existing needs_human row and stopping same-run redispatch; the blocker-research aux gate was widened (base-mode only); the blocked-vs-partial decision rule was added to context/contracts/wrap-up.md; and both postflight-level and end-to-end regression tests were added and confirmed load-bearing.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md",
-      "summary": "5-phase plan making a blocker-bearing partial handoff stop futile implement redispatch."
+      "type": "summary",
+      "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
+      "summary": "Implementation summary covering all 5 phases, deviations, and verification evidence."
     }
   ],
   "skeleton": false,
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
-  "dispatch_seq": 6,
+  "dispatch_seq": 11,
   "sorry_inventory": [],
-  "blockers": []
+  "blockers": [],
+  "continuation_path": null
 }
