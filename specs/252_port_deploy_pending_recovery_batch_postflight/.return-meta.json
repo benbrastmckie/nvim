@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790118971_a4e2f8_252",
+  "task_number": 252,
+  "dispatch_seq": 1,
+  "findings_count": 12,
+  "next_steps": "Run /plan 252 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md",
+      "summary": "Locates the missing exit-6 recovery hook in orchestrate-cycle-postflight.sh's implemented) arm; surfaces the codebase's own already-documented D6 residual (regeneration-is-manual-only.md / batch-orchestration-guardrails.md) prescribing 'widen the Inter-Cycle Redeploy Checkpoint predicate' over adding a third automated deploy-trigger site; flags cycle_modified_files accumulation as structurally unconditional on static reading (recommends a regression test to pin the exact live-run mechanism); documents the reconcile-task-status.sh replay-path gap for Part 3; confirms test coverage gaps in both named test files."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core, the batch /orchestrate postflight completion-deploy gate (update-task-status.sh exit 6) already has its rc captured and annotated (deploy_pending:true in .return-meta.json) by skill_postflight_update in skill-base.sh -- but orchestrate-cycle-postflight.sh's implemented) case arm discards that return value entirely (no || rc=$? capture), so the annotation is written but never acted on inside the batch loop. Any fix belongs at that call site, not by re-deriving the rc elsewhere.",
+      "category": "PATTERN",
+      "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "skill_postflight_update", "deploy_pending", "exit 6", "completion-deploy gate"]
+    },
+    {
+      "content": "context/patterns/regeneration-is-manual-only.md and batch-orchestration-guardrails.md already document a 'D6 residual': /orchestrate tasks refused by the postflight completion-deploy gate rely entirely on the Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh Stage MT-3 step 7), and the docs explicitly prescribe widening that checkpoint's trigger predicate (currently keyed to the curated orchestrator-critical-paths.json allowlist, not full agent-system/extensions/** coverage) as the proper fix -- explicitly warning against adding a third automated deploy-headless.sh trigger site inside per-task postflight, since Move 2 dispatches run genuinely parallel and would race the fail-open specs/.deploy-lock mutex. Check these two docs before adding any new automated deploy trigger anywhere in this system.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless", "Inter-Cycle Redeploy Checkpoint", "orchestrator-critical-paths.json", "D6 residual", "concurrency"]
+    },
+    {
+      "content": "After a successful scripts/orchestrate-unwind-dispatch.sh run, re-running orchestrate-cycle-postflight.sh or /orchestrate directly opens a fresh dispatch window the existing .orchestrator-handoff.json predates, producing a false 'STALE HANDOFF' failure and a spurious HANDOFF_STALE_OR_ABSENT defect even when the underlying work was already complete. The correct replay path is reconcile-task-status.sh <task_number> <session_id>, which promotes a stuck in-flight status when the matching artifact (e.g. summaries/*.md) already exists on disk -- this was undocumented as of task 252's dispatch.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-unwind-dispatch", "reconcile-task-status", "stale handoff", "replay path"]
+    }
+  ]
+}
