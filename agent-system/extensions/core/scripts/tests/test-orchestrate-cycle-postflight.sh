@@ -1201,6 +1201,148 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Regression (base mode, non-hard-mode task): a `partial` outcome carrying a non-empty handoff
+# `blockers[]`, no continuation pointer, now writes status="partial" to state.json (making
+# orchestrate-triage-classify.sh's "partial + blockers, no continuation -> needs_human" row
+# reachable) AND raises the widened blocker-research aux signal, with its description derived
+# from the handoff (not the never-written state.json .active_projects[].blockers string).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Regression: partial + non-empty blockers[] writes status=partial and records a handoff-derived blocker-research aux signal"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/830_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 830, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #830", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/830_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/830_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4, "blockers": [{"target": "aeneas-macos-aarch64 asset", "verbatim_goal": "download the release asset", "why_it_failed": "upstream release lacks this asset"}]}
+EOF
+run_sut specs/830_candidate --session sess_830 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/830_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 830
+
+new_status_830=$(jq -r --argjson n 830 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_830" = "partial" ]; then
+  pass "regression (830): state.json status -> partial (blocker-bearing partial)"
+else
+  fail "regression (830): expected state.json status=partial, got: $new_status_830"
+fi
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "regression (830): verdict=defer (unchanged)"
+else
+  fail "regression (830): expected verdict=defer, got: $(jqf '.verdict')"
+fi
+if [ "$(jqf '.halt')" = "false" ]; then
+  pass "regression (830): halt=false"
+else
+  fail "regression (830): expected halt=false, got: $(jqf '.halt')"
+fi
+if [ "$(jqf '.aux_signal.kind')" = "blocker-research" ]; then
+  pass "regression (830): aux_signal.kind=blocker-research"
+else
+  fail "regression (830): expected aux_signal.kind=blocker-research, got: $LAST_STDOUT"
+fi
+blocker_desc_830=$(jqf '.aux_signal.blocker_desc')
+if [ "$blocker_desc_830" != "Unspecified blocker" ] \
+   && echo "$blocker_desc_830" | grep -q "aeneas-macos-aarch64 asset" \
+   && echo "$blocker_desc_830" | grep -q "upstream release lacks this asset"; then
+  pass "regression (830): blocker_desc derived from the handoff (target + why_it_failed), not the fallback"
+else
+  fail "regression (830): expected a handoff-derived blocker_desc, got: $blocker_desc_830"
+fi
+if jq -e '.aux_pending."830".kind == "blocker-research"' \
+     "$WORKDIR/specs/830_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "regression (830): aux_pending[830] persisted to the loop-guard file"
+else
+  fail "regression (830): aux_pending[830] not found in the loop-guard file"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Regression negative case: a `partial` outcome with EMPTY blockers[] must leave state.json
+# status UNCHANGED (still "implementing") -- the explicit "current defer behaviour must be
+# preserved" requirement -- and must record no blocker-research aux signal.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Regression: partial + empty blockers[] leaves state.json status unchanged and records no blocker-research aux signal"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/831_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 831, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #831", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/831_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/831_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4}
+EOF
+run_sut specs/831_candidate --session sess_831 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/831_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 831
+
+new_status_831=$(jq -r --argjson n 831 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_831" = "implementing" ]; then
+  pass "regression (831): state.json status unchanged (still implementing) for an empty-blockers partial"
+else
+  fail "regression (831): expected state.json status to remain implementing, got: $new_status_831"
+fi
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "regression (831): verdict=defer"
+else
+  fail "regression (831): expected verdict=defer, got: $(jqf '.verdict')"
+fi
+if [ "$(jqf '.aux_signal.kind')" != "blocker-research" ]; then
+  pass "regression (831): no blocker-research aux signal recorded (75% progress is also above the drift threshold)"
+else
+  fail "regression (831): unexpected blocker-research aux signal for an empty-blockers partial: $(jqf '.aux_signal')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Regression: partial + non-empty blockers[] + a user_decision payload -- the status write and
+# the ask_user verdict resolution are independent and both apply (Risk table interaction case).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Regression: partial + blockers[] + user_decision -- status write still happens, ask_user verdict still resolves"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/832_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 832, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #832", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/832_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/832_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4, "blockers": [{"target": "aeneas-macos-aarch64 asset", "verbatim_goal": "download the release asset", "why_it_failed": "upstream release lacks this asset"}], "user_decision": {"question": "Skip the macOS build or wait for upstream?", "options": ["skip", "wait"]}}
+EOF
+run_sut specs/832_candidate --session sess_832 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/832_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 832
+
+new_status_832=$(jq -r --argjson n 832 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_832" = "partial" ]; then
+  pass "regression (832): state.json status -> partial even alongside a user_decision payload"
+else
+  fail "regression (832): expected state.json status=partial, got: $new_status_832"
+fi
+if [ "$(jqf '.verdict')" = "ask_user" ]; then
+  pass "regression (832): verdict=ask_user (user_decision relay still resolves its own verdict)"
+else
+  fail "regression (832): expected verdict=ask_user, got: $(jqf '.verdict')"
+fi
+expected_ud_832='{"question":"Skip the macOS build or wait for upstream?","options":["skip","wait"]}'
+actual_ud_832=$(jqf '.user_decision')
+if [ "$(jq -c -n --argjson a "$expected_ud_832" '$a')" = "$(jq -c -n --argjson b "$actual_ud_832" '$b' 2>/dev/null)" ]; then
+  pass "regression (832): user_decision payload relayed verbatim alongside the status write"
+else
+  fail "regression (832): user_decision payload not relayed intact: got $actual_ud_832, expected $expected_ud_832"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the stray-handoff sweep (Phase 7 addition, absorbed from the single-task-only
 # orchestrate-stage5-gates.sh) fires for BOTH engines -- exercised here via the multi-task path
 # (no --loop-guard-file), since the single-task path already had this coverage historically.

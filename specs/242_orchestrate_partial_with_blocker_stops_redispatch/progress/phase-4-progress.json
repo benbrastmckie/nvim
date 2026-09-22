@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Postflight regression tests",
+  "started_at": "2026-09-22T01:00:00Z",
+  "last_updated": "2026-09-22T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fixture 830: partial+blockers -> status=partial, blocker-research aux signal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Fixture 831: partial+empty blockers -> status unchanged, no aux signal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Fixture 832: partial+blockers+user_decision interaction", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Load-bearing check: revert Phase 1/2 fix, confirm new cases fail, restore", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

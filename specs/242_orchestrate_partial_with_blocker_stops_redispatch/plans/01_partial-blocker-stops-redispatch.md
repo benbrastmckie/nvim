@@ -271,28 +271,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Postflight regression tests [NOT STARTED]
+### Phase 4: Postflight regression tests [COMPLETED]
 
 - **Goal:** Pin the new status write and the preservation of the empty-`blockers[]` behavior in
   `scripts/tests/test-orchestrate-cycle-postflight.sh`.
 - **Tasks:**
-  - [ ] Re-read the test harness, using the `acceptance (6)` case as the template — it already
+  - [x] Re-read the test harness, using the `acceptance (6)` case as the template — it already
         demonstrates the post-`run_sut` state.json read
-        (`jq ... "$WORKDIR/specs/state.json"`) that these assertions need.
-  - [ ] New case: `partial` + non-empty `blockers[]`, no continuation pointer. Assert
+        (`jq ... "$WORKDIR/specs/state.json"`) that these assertions need. *(completed)*
+  - [x] New case: `partial` + non-empty `blockers[]`, no continuation pointer. Assert
         `active_projects[].status == "partial"`, `verdict == "defer"` (unchanged), `halt == false`,
         and that `aux_pending[<task>].kind == "blocker-research"` with a `blocker_desc` derived
-        from the handoff (not `"Unspecified blocker"`).
-  - [ ] New case: `partial` + empty `blockers[]`. Assert `active_projects[].status` is **unchanged
+        from the handoff (not `"Unspecified blocker"`). *(completed: fixture 830)*
+  - [x] New case: `partial` + empty `blockers[]`. Assert `active_projects[].status` is **unchanged
         from its pre-run value** (`implementing`), `verdict == "defer"`, and that no
         `blocker-research` aux signal was recorded — this is the explicit
-        "current defer behaviour must be preserved" check.
-  - [ ] New case: `partial` + non-empty `blockers[]` + a `user_decision` payload. Assert the status
+        "current defer behaviour must be preserved" check. *(completed: fixture 831)*
+  - [x] New case: `partial` + non-empty `blockers[]` + a `user_decision` payload. Assert the status
         write still happens and the `user_decision` relay still resolves its own verdict, covering
-        the interaction risk above.
-  - [ ] Assert on state.json and the defect store, not on the stdout line that merely echoes
-        `dispatch_status` verbatim — that line is not evidence of a state write.
-  - [ ] Use fresh task numbers that do not collide with the existing fixtures.
+        the interaction risk above. *(completed: fixture 832)*
+  - [x] Assert on state.json and the defect store, not on the stdout line that merely echoes
+        `dispatch_status` verbatim — that line is not evidence of a state write. *(completed)*
+  - [x] Use fresh task numbers that do not collide with the existing fixtures. *(completed:
+        830/831/832, none previously used)*
 - **Timing:** 1.25 hours
 - **Depends on:** 1, 2
 - **Verification Tier:** local
@@ -301,9 +302,15 @@ Phases within the same wave can execute in parallel.
     cases
 - **Verification:**
   - `bash scripts/tests/test-orchestrate-cycle-postflight.sh` passes, with the three new cases
-    reporting `pass`.
+    reporting `pass`. *(confirmed: 99/99, up from 87/87 baseline — 12 new assertions across the
+    three new fixtures)*
   - Each new case fails when the Phase 1/2 edits are temporarily reverted (confirm at least the
-    first one this way, so the test is known to be load-bearing rather than vacuous).
+    first one this way, so the test is known to be load-bearing rather than vacuous). *(confirmed:
+    reverted orchestrate-cycle-postflight.sh to its pre-Phase-1 content and re-ran the suite —
+    fixtures 830 and 832 both failed as expected (830: 4 assertions failed; 832: 1 assertion
+    failed); fixture 831 has no positive assertion to break by construction (it pins the
+    unchanged-behavior negative case) and correctly kept passing. Restored the fix afterward;
+    suite is back to 99/99.)*
 
 ---
 
