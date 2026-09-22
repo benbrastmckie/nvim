@@ -189,7 +189,7 @@ facts — locate both by their quoted text, not by line number, and confirm `gre
 
 ---
 
-### Phase 2: Apply canonical text to the 17 uniform extension copies [IN PROGRESS]
+### Phase 2: Apply canonical text to the 17 uniform extension copies [COMPLETED]
 
 **Goal**: Replace the verbatim-identical handoff section in the 17 extension research-agent files
 whose only reference to the file is the section itself.
@@ -243,27 +243,27 @@ Phase 3, not here.
 
 ---
 
-### Phase 3: Apply canonical text to the 3 variant copies and their extra references [NOT STARTED]
+### Phase 3: Apply canonical text to the 3 variant copies and their extra references [IN PROGRESS]
 
 **Goal**: Fix the three files that reference the handoff beyond the section itself — a MUST DO
 bullet, and in one case a MUST NOT bullet — plus the one file whose heading level differs.
 
 **Tasks**:
-- [ ] Re-read each of the three files immediately before editing
-- [ ] `lean/agents/lean-research-agent.md`: replace the section (~line 340), preserving its `##`
+- [x] Re-read each of the three files immediately before editing *(completed)*
+- [x] `lean/agents/lean-research-agent.md`: replace the section (~line 340), preserving its `##`
       heading level; delete or rewrite the MUST DO bullet at ~lines 410-412 ("**Write
       `.orchestrator-handoff.json`** on every dispatch ... see the ... subsection above") so it no
       longer instructs a write — replace it with a MUST NOT bullet forbidding the write, or remove
-      it and renumber the surrounding list
-- [ ] `lean/agents/lean-research-hard-agent.md`: replace the section (~line 357); fix the MUST DO
-      bullet at ~lines 421-423 the same way
-- [ ] `cslib/agents/cslib-research-agent.md`: replace the section (~line 299); fix the MUST DO
+      it and renumber the surrounding list *(completed: removed MUST DO bullet, renumbered, added MUST NOT bullet 16)*
+- [x] `lean/agents/lean-research-hard-agent.md`: replace the section (~line 357); fix the MUST DO
+      bullet at ~lines 421-423 the same way *(completed: removed MUST DO bullet, renumbered, added MUST NOT bullet 9)*
+- [x] `cslib/agents/cslib-research-agent.md`: replace the section (~line 299); fix the MUST DO
       bullet at ~lines 371-373; rewrite the MUST NOT bullet at ~line 393 ("Write
       `.orchestrator-handoff.json` when the delegation context does NOT carry `orchestrator_mode:
-      true`") to the unconditional form ("Write `.orchestrator-handoff.json` at all, in any mode")
-- [ ] Renumber any list items disturbed by a bullet removal, and confirm no dangling references to
-      the removed/renamed section remain in each file
-- [ ] Commit per file with targeted `git add -- <path>`
+      true`") to the unconditional form ("Write `.orchestrator-handoff.json` at all, in any mode") *(completed)*
+- [x] Renumber any list items disturbed by a bullet removal, and confirm no dangling references to
+      the removed/renamed section remain in each file *(completed)*
+- [x] Commit per file with targeted `git add -- <path>` *(completed)*
 
 **Timing**: 0.75 hours
 

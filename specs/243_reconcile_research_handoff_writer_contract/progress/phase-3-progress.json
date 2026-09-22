@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Apply canonical text to the 3 variant copies and their extra references",
+  "started_at": "2026-09-22T17:46:00Z",
+  "last_updated": "2026-09-22T17:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each of the three files immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "lean-research-agent.md: section (## heading) + MUST DO bullet removal + MUST NOT bullet added", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-agent.md"]},
+    {"id": 3, "description": "lean-research-hard-agent.md: section + MUST DO bullet fix", "status": "done", "files_touched": ["agent-system/extensions/lean/agents/lean-research-hard-agent.md"]},
+    {"id": 4, "description": "cslib-research-agent.md: section + MUST DO bullet fix + MUST NOT bullet rewrite", "status": "done", "files_touched": ["agent-system/extensions/cslib/agents/cslib-research-agent.md"]},
+    {"id": 5, "description": "Renumber lists and confirm no dangling references", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Commit per file with targeted git add", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
