@@ -1,0 +1,59 @@
+{
+  "phase": 2,
+  "phase_name": "Extend test-claude-refresh-matcher.sh",
+  "started_at": "2026-09-22T06:09:00Z",
+  "last_updated": "2026-09-22T06:27:18Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Update the five existing fake ps fixtures (d-2, swap, Lean, zombie, MCP) to emit no rows for a pgid-bearing field spec",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Fix real bug found in Phase 1: build_waiter_family via $(...) command substitution forked a subshell, discarding BUILD_WAITER_EMBEDDED_PID -- redesigned to set two globals (BUILD_WAITER_FAMILY, BUILD_WAITER_EMBEDDED_PID) with a plain-statement call convention",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add unit-level assertions for is_shell_comm, build_waiter_family, build_waiter_row_is_idle, and both outcomes of build_self_exclusion_set",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add dedicated build-waiter fake ps (12 synthetic rows) and fake kill, with gate assertions (--dry-run/no-flag/--force) and fail-closed e2e",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Structural assertion (no pgrep/ps aux) and two per-clause mutation checks (pgid, ancestor-chain)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Add new function names to the pre-fix vacuousness check loop; update suite header's acceptance-bar list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "Ancestor-test synthetic row using a 2-hop grandparent pid (via a second REAL_PS_BIN lookup)",
+      "result": "failed",
+      "reason": "build_self_exclusion_set's ancestor walk only advances one hop per row present in the snapshot; the snapshot had no row for the 1-hop parent (self_ppid), so the walk stopped before ever reaching the 2-hop grandparent. Redesigned to use self_ppid (1 hop) directly as the ancestor-test row's pid, with ppid=1 to terminate the walk."
+    },
+    {
+      "description": "Self-pid discovery in the build-waiter fake ps via the (d-2) fixture's __SCRIPT_MARKER__ substitution (matching on $SCRIPT_UNDER_TEST's filename in argv)",
+      "result": "failed",
+      "reason": "The mutation-check runs execute a MUTANT COPY of the script at a different filename (mutant-buildwaiter-*.sh), so the marker substitution (tied to the original filename) never matched in argv for those runs, driving every mutant invocation into the fail-closed path instead of exercising the mutation. Replaced with a fixed literal marker string (BUILDWAITER_HARNESS_SELFMARK) embedded as the first line of every invocation's bash -c script body, independent of the sourced file's name."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

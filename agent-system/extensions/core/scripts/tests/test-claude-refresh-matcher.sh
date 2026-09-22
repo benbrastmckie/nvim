@@ -3,7 +3,14 @@
 # covering the four acceptance-bar assertions: (a) a process under /system.slice/ is never
 # selected, (b) a process that merely mentions "claude" in argv without being a Claude
 # executable is never selected, (c) an inhibitor whose held target is still alive is never
-# selected, and (d) the script's own subshells are never self-selected.
+# selected, and (d) the script's own subshells are never self-selected. Later phases added
+# assertions (e)-(j) for the VmSwap accounting, Lean LSP, zombie-reporting, and MCP fan-out
+# passes, and assertion (k) for the orphaned build-waiter poll-loop pass: detection (Family A/B
+# classification, idle+age gating, the PID-reuse ceiling backstop), the widened self-exclusion
+# (pid, ppid, pgid, and the full ancestor chain of $$, all from one frozen snapshot), the
+# fail-closed path when the $$ row is absent, the age-threshold-only gate (reaps without
+# --force, identically under --force), and per-clause mutation checks proving the pgid and
+# ancestor-chain exclusions are load-bearing.
 #
 # Structural model: pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d
 # workdir with a trap EXIT cleanup, loud-skip discipline (see context/standards/
@@ -213,14 +220,29 @@ if [ -n "$REAL_PS_BIN" ]; then
 #!/usr/bin/env bash
 # Fake ps used only by test-claude-refresh-matcher.sh's self-exclusion case (d-2).
 has_p_flag=false
+field_spec=""
+prev=""
 for a in "$@"; do
   if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
 done
 if $has_p_flag; then
   # validate_cgroup_support()'s self-check: return a plausible non-empty user-slice cgroup.
   echo "0::/user.slice/user-1000.slice/session.scope"
   exit 0
 fi
+case "$field_spec" in
+  *pgid*)
+    # The build-waiter pass's own field spec -- this fixture is scoped to the Claude pass's
+    # self-exclusion case only, so it emits no rows for the pgid-bearing spec (isolates this
+    # case from the separately-gated build-waiter pass, matching the Lean/zombie/MCP passes'
+    # existing independent-snapshot isolation).
+    exit 0
+    ;;
+esac
 
 # Walk our own ancestry with the REAL ps until argv stops naming the script under test. A
 # subshell forked (not exec'd) for a function's command substitution retains the SAME argv as
@@ -344,13 +366,26 @@ cat > "$SWAP_FAKE_BIN_DIR/ps" <<'FAKE_PS_SWAP_EOF'
 #!/usr/bin/env bash
 # Fake ps used only by test-claude-refresh-matcher.sh's VmSwap output-shape case (e).
 has_p_flag=false
+field_spec=""
+prev=""
 for a in "$@"; do
   if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
 done
 if $has_p_flag; then
   echo "0::/user.slice/user-1000.slice/session.scope"
   exit 0
 fi
+case "$field_spec" in
+  *pgid*)
+    # Isolate this case from the separately-gated build-waiter pass -- see the (d-2) fixture's
+    # matching branch for the full rationale.
+    exit 0
+    ;;
+esac
 cur_uid="$(id -u)"
 printf '%s 1 %s ? 100 2048 claude 0::/user.slice/user-1000.slice/session.scope claude --dangerously-skip-permissions\n' "__SWAP_ROW_PID__" "$cur_uid"
 FAKE_PS_SWAP_EOF
@@ -536,15 +571,28 @@ cat > "$LEAN_FAKE_BIN_DIR/ps" <<'FAKE_PS_LEAN_EOF'
 # Fake ps used only by test-claude-refresh-matcher.sh's Lean tree end-to-end case (g).
 has_p_flag=false
 has_c_flag=false
+field_spec=""
+prev=""
 for a in "$@"; do
   if [ "$a" = "-p" ]; then has_p_flag=true; fi
   if [ "$a" = "-C" ]; then has_c_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
 done
 if $has_p_flag; then
   # validate_cgroup_support()'s self-check.
   echo "0::/user.slice/user-1000.slice/session.scope"
   exit 0
 fi
+case "$field_spec" in
+  *pgid*)
+    # Isolate this case from the separately-gated build-waiter pass -- see the (d-2) fixture's
+    # matching branch for the full rationale.
+    exit 0
+    ;;
+esac
 
 cur_uid="$(id -u)"
 CG="0::/user.slice/user-1000.slice/session.scope"
@@ -751,6 +799,10 @@ case "$field_spec" in
     printf '%s %s %s %s %s\n' __PARENT2__ 1          S  20000 python3.13
     printf '%s %s %s %s %s\n' __CHILD3__  __PARENT2__ Z  60    "lake <defunct>"
     ;;
+  *pgid*)
+    # Isolate this case from the separately-gated build-waiter pass -- see the (d-2) fixture's
+    # matching branch for the full rationale.
+    ;;
   *)
     # Every other snapshot (Claude/Lean/MCP passes) sees an empty process table.
     ;;
@@ -864,6 +916,10 @@ case "$field_spec" in
     printf '%s %s %s %s\n' 920012 920011 2500 "node .../playwright-mcp --config x"
     printf '%s %s %s %s\n' 920021 920050 3000 ".../bin/lean-lsp-mcp --lean-project-path x"
     printf '%s %s %s %s\n' 920022 920060 3500 ".../bin/lean-lsp-mcp --lean-project-path x"
+    ;;
+  *pgid*)
+    # Isolate this case from the separately-gated build-waiter pass -- see the (d-2) fixture's
+    # matching branch for the full rationale.
     ;;
   *)
     ;;
@@ -983,6 +1039,462 @@ else
 fi
 
 # =====================================================================
+# Assertion (k): orphaned build-waiter poll-loop pass -- unit, end-to-end, and mutation checks
+# =====================================================================
+# Unit-level: is_shell_comm, build_waiter_family, build_waiter_row_is_idle, and both outcomes of
+# build_self_exclusion_set are called directly (no fake ps needed for these).
+if is_shell_comm "bash"; then
+  pass "is_shell_comm: accepts 'bash'"
+else
+  fail "is_shell_comm: rejected 'bash'"
+fi
+if is_shell_comm "sh"; then
+  pass "is_shell_comm: accepts 'sh'"
+else
+  fail "is_shell_comm: rejected 'sh'"
+fi
+if is_shell_comm "nvim"; then
+  fail "is_shell_comm: incorrectly accepted 'nvim'"
+else
+  pass "is_shell_comm: rejects 'nvim'"
+fi
+
+FAMILY_A_ARGS="timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ 555555"
+build_waiter_family "$FAMILY_A_ARGS"
+if [ "$BUILD_WAITER_FAMILY" = "A" ] && [ "$BUILD_WAITER_EMBEDDED_PID" = "555555" ]; then
+  pass "build_waiter_family: classifies the canonical bounded-build-waiter idiom as Family A and extracts the embedded pid"
+else
+  fail "build_waiter_family: did not classify the canonical idiom as Family A with embedded pid 555555 (got family='$BUILD_WAITER_FAMILY' pid='$BUILD_WAITER_EMBEDDED_PID')"
+fi
+
+FAMILY_A_BAD_TAIL_ARGS="timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ abc"
+build_waiter_family "$FAMILY_A_BAD_TAIL_ARGS"
+if [ -z "$BUILD_WAITER_FAMILY" ]; then
+  pass "build_waiter_family: a Family A-shaped argv with a non-numeric trailing token classifies as neither (fails closed)"
+else
+  fail "build_waiter_family: a non-numeric trailing token was misclassified as family '$BUILD_WAITER_FAMILY'"
+fi
+
+FAMILY_B_ARGS='until grep -q "^EXIT=" /tmp/somelog; do sleep 10; done'
+build_waiter_family "$FAMILY_B_ARGS"
+if [ "$BUILD_WAITER_FAMILY" = "B" ] && [ -z "$BUILD_WAITER_EMBEDDED_PID" ]; then
+  pass "build_waiter_family: classifies a legacy 'until grep -q' sentinel poll as Family B with no embedded pid"
+else
+  fail "build_waiter_family: did not classify the sentinel poll as Family B (got family='$BUILD_WAITER_FAMILY' pid='$BUILD_WAITER_EMBEDDED_PID')"
+fi
+
+FAMILY_B_SELFMATCH_ARGS='until ! ps aux | grep -q "[b]ash check.sh"; do sleep 8; done'
+build_waiter_family "$FAMILY_B_SELFMATCH_ARGS"
+if [ "$BUILD_WAITER_FAMILY" = "B" ]; then
+  pass "build_waiter_family: classifies the legacy self-match 'ps aux | grep' poll (the incident class this pass reaps) as Family B"
+else
+  fail "build_waiter_family: did not classify the legacy self-match poll as Family B (got family='$BUILD_WAITER_FAMILY')"
+fi
+
+NEITHER_ARGS='vim --headless -c "some unrelated command"'
+build_waiter_family "$NEITHER_ARGS"
+if [ -z "$BUILD_WAITER_FAMILY" ]; then
+  pass "build_waiter_family: an unrelated argv classifies as neither family"
+else
+  fail "build_waiter_family: an unrelated argv was misclassified as family '$BUILD_WAITER_FAMILY'"
+fi
+
+if build_waiter_row_is_idle 3600 "0.0" 60; then
+  pass "build_waiter_row_is_idle: idle (pcpu 0, etimes past a 60-minute threshold) is TRUE"
+else
+  fail "build_waiter_row_is_idle: an idle row (pcpu 0, etimes 3600s past a 60min threshold) was NOT reported idle"
+fi
+if build_waiter_row_is_idle 30 "0.0" 60; then
+  fail "build_waiter_row_is_idle: a row younger than the threshold was incorrectly reported idle"
+else
+  pass "build_waiter_row_is_idle: a row younger than the threshold is NOT idle"
+fi
+if build_waiter_row_is_idle 3600 "2.0" 60; then
+  fail "build_waiter_row_is_idle: a busy row (pcpu 2.0) was incorrectly reported idle"
+else
+  pass "build_waiter_row_is_idle: a busy row (pcpu 2.0) is NOT idle"
+fi
+
+# Fail-closed unit assertion: a snapshot string with no $$ row must make build_self_exclusion_set
+# return non-zero and leave both output globals empty.
+NO_SELF_SNAPSHOT="999001 1 999001 $CURRENT_UID 100 0.0 0::/user.slice/x bash foo"
+if build_self_exclusion_set "$NO_SELF_SNAPSHOT"; then
+  fail "build_self_exclusion_set: incorrectly succeeded against a snapshot with no \$\$ row"
+else
+  pass "build_self_exclusion_set: fails closed (returns non-zero) when the \$\$ row is absent"
+fi
+if [ -z "$BUILD_WAITER_SELF_PGID" ] && [ -z "$BUILD_WAITER_ANCESTOR_PIDS" ]; then
+  pass "build_self_exclusion_set: both output globals are left empty on the fail-closed path"
+else
+  fail "build_self_exclusion_set: an output global was populated despite the \$\$ row being absent"
+fi
+
+# Success-path unit assertion: a synthetic two-row snapshot ($$ and its fabricated parent) proves
+# the pgid capture and the ancestor-chain walk both work from data alone, with no fake ps needed.
+SELF_TEST_PARENT_PID=888888
+SELF_TEST_PGID=777777
+SELF_TEST_SNAPSHOT="$$ $SELF_TEST_PARENT_PID $SELF_TEST_PGID $CURRENT_UID 50 0.0 0::/user.slice/x bash self
+$SELF_TEST_PARENT_PID 1 $SELF_TEST_PARENT_PID $CURRENT_UID 500 0.0 0::/user.slice/x bash parent"
+if build_self_exclusion_set "$SELF_TEST_SNAPSHOT"; then
+  if [ "$BUILD_WAITER_SELF_PGID" = "$SELF_TEST_PGID" ] \
+     && [[ " $BUILD_WAITER_ANCESTOR_PIDS " == *" $$ "* ]] \
+     && [[ " $BUILD_WAITER_ANCESTOR_PIDS " == *" $SELF_TEST_PARENT_PID "* ]]; then
+    pass "build_self_exclusion_set: resolves its own pgid and walks the ancestor chain (\$\$ and its parent) from a synthetic snapshot"
+  else
+    fail "build_self_exclusion_set: pgid or ancestor chain incorrect (pgid='$BUILD_WAITER_SELF_PGID' ancestors='$BUILD_WAITER_ANCESTOR_PIDS')"
+  fi
+else
+  fail "build_self_exclusion_set: unexpectedly failed against a snapshot containing the \$\$ row"
+fi
+
+# =====================================================================
+# Assertion (k) continued: end-to-end via a dedicated build-waiter fake ps + fake kill
+# =====================================================================
+# The fake ps below reuses the (d-2) fixture's ancestry-walk technique verbatim to discover the
+# REAL pid/ppid/pgid the running script-under-test process will see as its own "$$" -- required
+# because the reaper's self-exclusion set (pid, pgid, ancestor chain) must line up with genuine
+# values for this end-to-end case to mean anything. Twelve synthetic non-self rows cover every
+# case the plan requires; only three are expected to be reaped (dead-writer Family A, past-ceiling
+# Family A, and idle-past-threshold Family B).
+BUILD_WAITER_FAKE_BIN_DIR="$WORKDIR/fakebin-buildwaiter"
+mkdir -p "$BUILD_WAITER_FAKE_BIN_DIR"
+cat > "$BUILD_WAITER_FAKE_BIN_DIR/ps" <<'FAKE_PS_BUILDWAITER_EOF'
+#!/usr/bin/env bash
+# Fake ps used only by test-claude-refresh-matcher.sh's build-waiter end-to-end case (k).
+has_p_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+
+case "$field_spec" in
+  *pgid*) : ;;
+  *) exit 0 ;;
+esac
+
+CG="0::/user.slice/user-1000.slice/session.scope"
+cur_uid="$(id -u)"
+
+find_self_pid() {
+  local check_pid="$PPID"
+  local best_match=""
+  local hops=0
+  while [ -n "$check_pid" ] && [ "$check_pid" != "1" ] && [ "$hops" -lt 25 ]; do
+    local row
+    row=$("$REAL_PS_BIN" -o args= -p "$check_pid" 2>/dev/null)
+    case "$row" in
+      *"BUILDWAITER_HARNESS_SELFMARK"*)
+        best_match="$check_pid"
+        ;;
+      *)
+        break
+        ;;
+    esac
+    check_pid=$("$REAL_PS_BIN" -o ppid= -p "$check_pid" 2>/dev/null | tr -d ' ')
+    hops=$((hops + 1))
+  done
+  echo "$best_match"
+}
+
+self_pid="$(find_self_pid)"
+if [ -z "$self_pid" ]; then
+  exit 0
+fi
+self_ppid="$("$REAL_PS_BIN" -o ppid= -p "$self_pid" 2>/dev/null | tr -d ' ')"
+self_pgid="$("$REAL_PS_BIN" -o pgid= -p "$self_pid" 2>/dev/null | tr -d ' ')"
+
+# Self row -- excluded by pid == $$ regardless of shape.
+printf '%s\n' "$self_pid $self_ppid $self_pgid $cur_uid 100 0.0 $CG bash self-row-marker"
+
+# 1. Family A, dead embedded writer, idle past threshold -- SELECTED.
+printf '%s\n' "931001 1 931001 $cur_uid 200 0.0 $CG bash timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ 555001"
+# 2. Family A, live embedded writer, idle past REAP_MIN but under the ceiling -- NOT selected.
+printf '%s\n' "931002 1 931002 $cur_uid 90 0.0 $CG bash timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ 555002"
+# 3. Family A, live embedded writer past the ceiling -- SELECTED (PID-reuse backstop).
+printf '%s\n' "931003 1 931003 $cur_uid 150 0.0 $CG bash timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ 555003"
+# 4. Family A-shaped argv, non-numeric trailing token -- NOT selected (fails closed).
+printf '%s\n' "931004 1 931004 $cur_uid 300 0.0 $CG bash timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ abc"
+# 5. Family B, idle past threshold -- SELECTED.
+printf '%s\n' "931005 1 931005 $cur_uid 300 0.0 $CG bash until grep -q \"^EXIT=\" /tmp/somelog.931005; do sleep 10; done"
+# 6. Family B, younger than the threshold -- NOT selected.
+printf '%s\n' "931006 1 931006 $cur_uid 30 0.0 $CG bash until grep -q \"^EXIT=\" /tmp/somelog.931006; do sleep 10; done"
+# 7. Family B, busy (pcpu 2.0) -- NOT selected.
+printf '%s\n' "931007 1 931007 $cur_uid 300 2.0 $CG bash until grep -q \"^EXIT=\" /tmp/somelog.931007; do sleep 10; done"
+# 8. Non-shell comm (nvim) with a Family-B-shaped argv -- NOT selected.
+printf '%s\n' "931008 1 931008 $cur_uid 300 0.0 $CG nvim until grep -q \"^EXIT=\" /tmp/somelog.931008; do sleep 10; done"
+# 9. pgid collision with the reaper's own pgid -- NOT selected.
+printf '%s\n' "931009 1 $self_pgid $cur_uid 300 0.0 $CG bash until grep -q \"^EXIT=\" /tmp/somelog.931009; do sleep 10; done"
+# 10. Ancestor of $$ (the reaper's own real parent pid, fabricated with a waiter shape) -- NOT selected.
+printf '%s\n' "$self_ppid 1 931010 $cur_uid 300 0.0 $CG bash until grep -q \"^EXIT=\" /tmp/somelog.ancestor; do sleep 10; done"
+# 11. Under /system.slice/ -- NOT selected.
+printf '%s\n' "931011 1 931011 $cur_uid 300 0.0 0::/system.slice/somedaemon.service bash until grep -q \"^EXIT=\" /tmp/somelog.931011; do sleep 10; done"
+# 12. Foreign uid -- NOT selected.
+printf '%s\n' "931012 1 931012 65534 300 0.0 $CG bash until grep -q \"^EXIT=\" /tmp/somelog.931012; do sleep 10; done"
+exit 0
+FAKE_PS_BUILDWAITER_EOF
+chmod +x "$BUILD_WAITER_FAKE_BIN_DIR/ps"
+
+# Fake kill: 555001's liveness probe reports dead (the Family A dead-writer case); every other
+# -0 probe (555002/555003, and terminate_pid's own liveness re-checks on the candidate pids
+# themselves) reports alive, driving terminate_pid's SIGTERM->SIGKILL "forced" branch for every
+# selected candidate -- matching the Lean ordering fixture's established convention. SIGTERM/
+# SIGKILL are logged to $KILL_LOG_FILE.
+BUILD_WAITER_FAKE_KILL_DIR="$WORKDIR/fakebin-buildwaiter-kill"
+mkdir -p "$BUILD_WAITER_FAKE_KILL_DIR"
+cat > "$BUILD_WAITER_FAKE_KILL_DIR/kill" <<'FAKE_KILL_BUILDWAITER_EOF'
+#!/usr/bin/env bash
+sig=""
+pid=""
+for a in "$@"; do
+  case "$a" in
+    -0|-15|-9) sig="$a" ;;
+    *) pid="$a" ;;
+  esac
+done
+if [ "$sig" = "-0" ]; then
+  case "$pid" in
+    555001) exit 1 ;;
+    *) exit 0 ;;
+  esac
+fi
+echo "${sig#-} ${pid}" >> "$KILL_LOG_FILE"
+exit 0
+FAKE_KILL_BUILDWAITER_EOF
+chmod +x "$BUILD_WAITER_FAKE_KILL_DIR/kill"
+
+BUILD_WAITER_KILL_LOG="$WORKDIR/build-waiter-kill.log"
+BUILD_WAITER_NOCLAUDE_JSON="$WORKDIR/nonexistent-claude.json"
+
+# --dry-run: detection runs (so _pid_is_alive IS exercised, hence the `enable -n kill` + source
+# pattern the Lean ordering assertion (g) established), but nothing is ever terminated.
+: > "$BUILD_WAITER_KILL_LOG"
+BUILD_WAITER_DRY_OUT="$(bash -c '
+  : BUILDWAITER_HARNESS_SELFMARK
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export BUILD_WAITER_REAP_MIN="$3"
+  export BUILD_WAITER_CEILING_MIN="$4"
+  export KILL_LOG_FILE="$5"
+  export CLAUDE_JSON_PATH="$7"
+  # shellcheck disable=SC1090
+  source "$6"
+  main --dry-run
+' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$BUILD_WAITER_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
+
+if echo "$BUILD_WAITER_DRY_OUT" | grep -q "WARNING: this script's own process row"; then
+  fail "Build-waiter pass (k): harness defect -- the fail-closed warning fired unexpectedly (self-pid resolution failed in the fixture)"
+  info "output was: $BUILD_WAITER_DRY_OUT"
+else
+  pass "Build-waiter pass (k): self-row resolution succeeded in the fixture (no spurious fail-closed warning)"
+fi
+
+if [ -s "$BUILD_WAITER_KILL_LOG" ]; then
+  fail "Build-waiter pass (k): --dry-run terminated something (fake-kill log non-empty)"
+  info "kill log was: $(cat "$BUILD_WAITER_KILL_LOG")"
+else
+  pass "Build-waiter pass (k): --dry-run terminates nothing (fake-kill log stays empty)"
+fi
+
+if echo "$BUILD_WAITER_DRY_OUT" | grep -q "Found 3 orphaned build-waiter poll loop(s):"; then
+  pass "Build-waiter pass (k): --dry-run reports exactly 3 candidates"
+else
+  fail "Build-waiter pass (k): --dry-run did not report exactly 3 candidates"
+  info "output was: $BUILD_WAITER_DRY_OUT"
+fi
+
+for expected_pid in 931001 931003 931005; do
+  if echo "$BUILD_WAITER_DRY_OUT" | grep -qE "^${expected_pid}[[:space:]]"; then
+    pass "Build-waiter pass (k): candidate $expected_pid appears in the --dry-run report"
+  else
+    fail "Build-waiter pass (k): candidate $expected_pid missing from the --dry-run report"
+    info "output was: $BUILD_WAITER_DRY_OUT"
+  fi
+done
+
+for excluded_pid in 931002 931004 931006 931007 931008 931009 931011 931012; do
+  if echo "$BUILD_WAITER_DRY_OUT" | grep -qE "^${excluded_pid}[[:space:]]"; then
+    fail "Build-waiter pass (k): excluded pid $excluded_pid incorrectly appeared as a candidate"
+    info "output was: $BUILD_WAITER_DRY_OUT"
+  else
+    pass "Build-waiter pass (k): excluded pid $excluded_pid correctly absent from the candidate report"
+  fi
+done
+
+# No-flag: the age-threshold-only gate reaps WITHOUT --force (unlike rows 1-2's interactive
+# process passes).
+: > "$BUILD_WAITER_KILL_LOG"
+BUILD_WAITER_NOFLAG_OUT="$(bash -c '
+  : BUILDWAITER_HARNESS_SELFMARK
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export BUILD_WAITER_REAP_MIN="$3"
+  export BUILD_WAITER_CEILING_MIN="$4"
+  export KILL_LOG_FILE="$5"
+  export CLAUDE_JSON_PATH="$7"
+  # shellcheck disable=SC1090
+  source "$6"
+  main
+' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$BUILD_WAITER_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
+
+NOFLAG_KILL_LOG_CONTENT="$(cat "$BUILD_WAITER_KILL_LOG")"
+NOFLAG_PIDS="$(echo "$NOFLAG_KILL_LOG_CONTENT" | grep -oE '[0-9]+$' | sort -u)"
+if echo "$NOFLAG_PIDS" | grep -qx 931001 && echo "$NOFLAG_PIDS" | grep -qx 931003 && echo "$NOFLAG_PIDS" | grep -qx 931005; then
+  pass "Build-waiter pass (k): no-flag invocation terminates all three expected candidates (age-threshold-only gate reaps without --force)"
+else
+  fail "Build-waiter pass (k): no-flag invocation did not terminate all three expected candidates"
+  info "kill log was: $NOFLAG_KILL_LOG_CONTENT"
+  info "no-flag output was: $BUILD_WAITER_NOFLAG_OUT"
+fi
+NOFLAG_UNEXPECTED="$(echo "$NOFLAG_PIDS" | grep -vE '^(931001|931003|931005)$' || true)"
+if [ -z "$NOFLAG_UNEXPECTED" ]; then
+  pass "Build-waiter pass (k): no-flag invocation signals exactly the three expected candidates, nothing else"
+else
+  fail "Build-waiter pass (k): no-flag invocation signaled unexpected pid(s): $NOFLAG_UNEXPECTED"
+fi
+
+# --force: the candidate set must be identical to the no-flag run (this pass ignores $FORCE
+# entirely -- it is accepted only for call-site symmetry).
+: > "$BUILD_WAITER_KILL_LOG"
+BUILD_WAITER_FORCE_OUT="$(bash -c '
+  : BUILDWAITER_HARNESS_SELFMARK
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export BUILD_WAITER_REAP_MIN="$3"
+  export BUILD_WAITER_CEILING_MIN="$4"
+  export KILL_LOG_FILE="$5"
+  export CLAUDE_JSON_PATH="$7"
+  # shellcheck disable=SC1090
+  source "$6"
+  main --force
+' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$BUILD_WAITER_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
+
+FORCE_PIDS="$(cat "$BUILD_WAITER_KILL_LOG" | grep -oE '[0-9]+$' | sort -u)"
+if [ "$FORCE_PIDS" = "$NOFLAG_PIDS" ] && [ -n "$FORCE_PIDS" ]; then
+  pass "Build-waiter pass (k): --force terminates the identical candidate set as the no-flag invocation"
+else
+  fail "Build-waiter pass (k): --force candidate set diverged from the no-flag candidate set"
+  info "no-flag pids: $NOFLAG_PIDS"
+  info "force pids: $FORCE_PIDS"
+  info "force output was: $BUILD_WAITER_FORCE_OUT"
+fi
+
+# Fail-closed end-to-end: a fake ps that never emits a $$ row for the build-waiter field spec.
+BUILD_WAITER_NOSELF_BIN_DIR="$WORKDIR/fakebin-buildwaiter-noself"
+mkdir -p "$BUILD_WAITER_NOSELF_BIN_DIR"
+cat > "$BUILD_WAITER_NOSELF_BIN_DIR/ps" <<'FAKE_PS_NOSELF_EOF'
+#!/usr/bin/env bash
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then
+    echo "0::/user.slice/user-1000.slice/session.scope"
+    exit 0
+  fi
+done
+exit 0
+FAKE_PS_NOSELF_EOF
+chmod +x "$BUILD_WAITER_NOSELF_BIN_DIR/ps"
+
+: > "$BUILD_WAITER_KILL_LOG"
+BUILD_WAITER_NOSELF_OUT="$(bash -c '
+  : BUILDWAITER_HARNESS_SELFMARK
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export BUILD_WAITER_REAP_MIN="$3"
+  export BUILD_WAITER_CEILING_MIN="$4"
+  export KILL_LOG_FILE="$5"
+  export CLAUDE_JSON_PATH="$7"
+  # shellcheck disable=SC1090
+  source "$6"
+  main --force
+' _ "$BUILD_WAITER_NOSELF_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$BUILD_WAITER_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
+
+if echo "$BUILD_WAITER_NOSELF_OUT" | grep -q "WARNING: this script's own process row was not found"; then
+  pass "Build-waiter pass (k): fail-closed -- a missing \$\$ row produces the warning line"
+else
+  fail "Build-waiter pass (k): the fail-closed warning did not appear when the \$\$ row is absent"
+  info "output was: $BUILD_WAITER_NOSELF_OUT"
+fi
+if [ -s "$BUILD_WAITER_KILL_LOG" ]; then
+  fail "Build-waiter pass (k): the fail-closed path unexpectedly signaled a process (kill log non-empty)"
+  info "kill log was: $(cat "$BUILD_WAITER_KILL_LOG")"
+else
+  pass "Build-waiter pass (k): the fail-closed path signals nothing (kill log empty), even under --force"
+fi
+
+# =====================================================================
+# Structural assertion (k): the build-waiter pass block contains no pgrep/ps-aux reference
+# =====================================================================
+BUILD_WAITER_BODY="$(sed -n '/^BUILD_WAITER_SNAPSHOT_PS_FIELDS=/,/^# --- Unreaped-child/p' "$WORKDIR/$SCRIPT_UNDER_TEST")"
+if echo "$BUILD_WAITER_BODY" | grep -qE 'pgrep|ps aux'; then
+  fail "Structural (k): build-waiter pass block contains a pgrep/ps-aux reference"
+  info "matched: $(echo "$BUILD_WAITER_BODY" | grep -E 'pgrep|ps aux')"
+else
+  pass "Structural (k): build-waiter pass block (constants, predicates, run_build_waiter_pass) contains no pgrep/ps-aux reference"
+fi
+
+# =====================================================================
+# Mutation checks (k): the pgid and ancestor-chain exclusions are load-bearing
+# =====================================================================
+# Per shell-script-testing.md's "Mutation checks for regex-shaped fixes": delete the clause, rerun
+# the SAME fixture against the mutant, and confirm the previously-excluded row is now (wrongly)
+# selected -- proving the deleted clause was doing real work, not merely present but redundant.
+BUILD_WAITER_MUTANT_PGID="$WORKDIR/mutant-buildwaiter-pgid.sh"
+# shellcheck disable=SC2016  # single-quoted deliberately: this is a literal sed address pattern,
+# not a shell expansion -- it must match the literal text "$BUILD_WAITER_SELF_PGID" in the source.
+sed '/if \[ -n "\$BUILD_WAITER_SELF_PGID" \]/,+2d' "$WORKDIR/$SCRIPT_UNDER_TEST" > "$BUILD_WAITER_MUTANT_PGID"
+
+BUILD_WAITER_MUTANT_PGID_OUT="$(bash -c '
+  : BUILDWAITER_HARNESS_SELFMARK
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export BUILD_WAITER_REAP_MIN="$3"
+  export BUILD_WAITER_CEILING_MIN="$4"
+  export KILL_LOG_FILE="$5"
+  export CLAUDE_JSON_PATH="$7"
+  # shellcheck disable=SC1090
+  source "$6"
+  main --dry-run
+' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$WORKDIR/mutant-pgid-kill.log" "$BUILD_WAITER_MUTANT_PGID" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
+
+if echo "$BUILD_WAITER_MUTANT_PGID_OUT" | grep -qE "^931009[[:space:]]"; then
+  pass "Mutation check (k): removing the pgid-exclusion clause makes the pgid-collision row 931009 wrongly selected (RED confirmed -- the clause is load-bearing)"
+else
+  fail "Mutation check (k): row 931009 was still excluded after removing the pgid-exclusion clause -- mutation had no observable effect"
+  info "output was: $BUILD_WAITER_MUTANT_PGID_OUT"
+fi
+
+BUILD_WAITER_MUTANT_ANCESTOR="$WORKDIR/mutant-buildwaiter-ancestor.sh"
+sed '/local is_ancestor=false/,+8d' "$WORKDIR/$SCRIPT_UNDER_TEST" > "$BUILD_WAITER_MUTANT_ANCESTOR"
+
+BUILD_WAITER_MUTANT_ANCESTOR_OUT="$(bash -c '
+  : BUILDWAITER_HARNESS_SELFMARK
+  enable -n kill
+  export PATH="$1:$2:$PATH"
+  export BUILD_WAITER_REAP_MIN="$3"
+  export BUILD_WAITER_CEILING_MIN="$4"
+  export KILL_LOG_FILE="$5"
+  export CLAUDE_JSON_PATH="$7"
+  # shellcheck disable=SC1090
+  source "$6"
+  main --dry-run
+' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$WORKDIR/mutant-ancestor-kill.log" "$BUILD_WAITER_MUTANT_ANCESTOR" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
+
+if echo "$BUILD_WAITER_MUTANT_ANCESTOR_OUT" | grep -q "Found 4 orphaned build-waiter poll loop(s):"; then
+  pass "Mutation check (k): removing the ancestor-chain exclusion makes the ancestor-of-\$\$ row wrongly selected (RED confirmed -- the clause is load-bearing)"
+else
+  fail "Mutation check (k): candidate count did not increase to 4 after removing the ancestor-chain exclusion -- mutation had no observable effect"
+  info "output was: $BUILD_WAITER_MUTANT_ANCESTOR_OUT"
+fi
+
+# =====================================================================
 # Mutation check: pre-fix script cannot run any of this suite's assertions
 # =====================================================================
 # NOTE: this deliberately pins the specific commit immediately BEFORE the matcher rewrite
@@ -1012,7 +1524,12 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   # mcp_lean_lsp_evidence_of_use, mcp_server_evidence_of_use, and run_mcp_fanout_pass are all
   # brand-NEW functions this change adds, so their absence from the same pinned pre-fix commit is
   # the identical non-vacuousness proof for assertions (h), (i), and (j) above.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass; do
+  #
+  # Further extended for the orphaned build-waiter poll-loop pass: take_build_waiter_snapshot,
+  # is_shell_comm, build_waiter_family, build_waiter_row_is_idle, build_self_exclusion_set, and
+  # run_build_waiter_pass are all brand-NEW functions this change adds, so their absence from the
+  # same pinned pre-fix commit is the identical non-vacuousness proof for assertion (k) above.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -1021,11 +1538,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 21 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 22 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the twenty-one predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 27 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 28 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the twenty-seven predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 22 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 28 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

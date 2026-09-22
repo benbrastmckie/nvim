@@ -1007,31 +1007,35 @@ is_shell_comm() {
 # Classifies a row's argv into Family A, Family B, or neither (see the pass header comment above
 # for both shapes). For Family A, extracts the trailing embedded writer PID with a bash regex --
 # the same is_live_inhibitor_target idiom used above, never a second live process-search query.
-# Sets the global BUILD_WAITER_EMBEDDED_PID as an additional output (always cleared first;
-# populated only on a Family A match). A Family A-shaped argv whose trailing token does not parse
-# as a PID is classified as neither (fails closed -- excluded, not misclassified as Family B).
+# Sets two globals as its output rather than echoing to stdout -- deliberately, NOT via
+# `$(build_waiter_family ...)`: a command substitution always forks a subshell, so a family
+# classifier that also needs to hand back a second value (the embedded pid) cannot use one
+# because any global it set would be lost when that subshell exits. The caller invokes this
+# function as a plain statement and reads both globals immediately afterward, in the SAME shell:
+#   BUILD_WAITER_FAMILY        -- "A", "B", or "" (neither), always set
+#   BUILD_WAITER_EMBEDDED_PID  -- the trailing writer pid, populated only on a Family A match
+# Both are always cleared first. A Family A-shaped argv whose trailing token does not parse as a
+# PID is classified as neither (fails closed -- excluded, not misclassified as Family B).
+BUILD_WAITER_FAMILY=""
 BUILD_WAITER_EMBEDDED_PID=""
 
 build_waiter_family() {
     local args="$1"
+    BUILD_WAITER_FAMILY=""
     BUILD_WAITER_EMBEDDED_PID=""
 
     if [[ "$args" == *"kill -0"* && "$args" == *"sleep"* ]]; then
         if [[ "$args" =~ ([0-9]+)[[:space:]]*$ ]]; then
             BUILD_WAITER_EMBEDDED_PID="${BASH_REMATCH[1]}"
-            echo "A"
-        else
-            echo ""
+            BUILD_WAITER_FAMILY="A"
         fi
         return 0
     fi
 
     if [[ ( "$args" == *"until"* || "$args" == *"while"* ) && "$args" == *"grep -q"* && "$args" == *"sleep"* ]]; then
-        echo "B"
+        BUILD_WAITER_FAMILY="B"
         return 0
     fi
-
-    echo ""
 }
 
 # --- Row-level idle gate ---
@@ -1193,8 +1197,8 @@ run_build_waiter_pass() {
         is_owned_by_current_uid "$uid" || continue
         is_shell_comm "$comm" || continue
 
-        local family
-        family=$(build_waiter_family "$args")
+        build_waiter_family "$args"
+        local family="$BUILD_WAITER_FAMILY"
         [ -n "$family" ] || continue
         local embedded_pid="$BUILD_WAITER_EMBEDDED_PID"
 

@@ -184,47 +184,53 @@ wiring in the source-store script.
 
 ---
 
-### Phase 2: Extend test-claude-refresh-matcher.sh [NOT STARTED]
+### Phase 2: Extend test-claude-refresh-matcher.sh [COMPLETED]
 
 **Goal**: Regression coverage for detection, self-exclusion (including pgid and ancestors), gate
 semantics, and a mutation check.
 
 **Tasks**:
-- [ ] Re-read the suite before editing. Update every existing fake `ps` (the self-exclusion (d-2),
+- [x] Re-read the suite before editing. Update every existing fake `ps` (the self-exclusion (d-2),
       swap, Lean, zombie, and MCP fakes) so that a `-eo` call whose field spec contains `pgid`
-      emits **no rows**. That keeps pre-existing cases independent of the new pass.
-- [ ] Add a dedicated fake `ps` for the build-waiter field spec. It emits synthetic rows for:
-  - a Family A waiter with a dead embedded PID, idle and past threshold, which is selected;
-  - a Family A waiter with a live embedded PID, idle, past `REAP_MIN` but under the ceiling, which
-    is not selected;
-  - a Family A waiter with a live embedded PID past the ceiling, which is selected (the PID-reuse
-    backstop);
-  - a Family A-shaped argv with a non-numeric trailing token, which is not selected;
-  - a Family B `until grep -q "^EXIT=" log` loop, idle and past threshold, which is selected;
-  - a Family B loop younger than the threshold, which is not selected;
-  - a Family B loop with `pcpu 2.0`, which is not selected;
-  - a non-shell `comm` (for example `nvim`) whose argv contains `until grep -q`, which is not
-    selected;
-  - a waiter-shaped row whose **pgid equals the reaper's pgid**, which is not selected;
-  - a waiter-shaped row that is an **ancestor** of `$$`, which is not selected;
-  - a row under `/system.slice/` and a row with a foreign uid, neither selected.
-- [ ] Drive the dead/live embedded-PID cases through the overridable `_pid_is_alive` seam, as
+      emits **no rows**. That keeps pre-existing cases independent of the new pass. *(completed)*
+- [x] Add a dedicated fake `ps` for the build-waiter field spec. It emits synthetic rows for:
+      *(completed: all 12 non-self cases implemented in the (k) fixture)*
+  - [x] a Family A waiter with a dead embedded PID, idle and past threshold, which is selected;
+  - [x] a Family A waiter with a live embedded PID, idle, past `REAP_MIN` but under the ceiling,
+        which is not selected;
+  - [x] a Family A waiter with a live embedded PID past the ceiling, which is selected (the
+        PID-reuse backstop);
+  - [x] a Family A-shaped argv with a non-numeric trailing token, which is not selected;
+  - [x] a Family B `until grep -q "^EXIT=" log` loop, idle and past threshold, which is selected;
+  - [x] a Family B loop younger than the threshold, which is not selected;
+  - [x] a Family B loop with `pcpu 2.0`, which is not selected;
+  - [x] a non-shell `comm` (for example `nvim`) whose argv contains `until grep -q`, which is not
+        selected;
+  - [x] a waiter-shaped row whose **pgid equals the reaper's pgid**, which is not selected;
+  - [x] a waiter-shaped row that is an **ancestor** of `$$`, which is not selected;
+  - [x] a row under `/system.slice/` and a row with a foreign uid, neither selected.
+- [x] Drive the dead/live embedded-PID cases through the overridable `_pid_is_alive` seam, as
       assertion (c) does. Never use real backgrounded processes, which the suite already measured
-      as flaky.
-- [ ] Gate assertions: with `--dry-run`, the fake `kill` log stays empty. With no flags, the kill
+      as flaky. *(completed: for this end-to-end case the seam is exercised via a fake `kill`
+      binary on `PATH` with the `kill` builtin disabled (`enable -n kill`), the same idiom
+      assertion (g)'s Lean ordering test already established for full-script subprocess runs --
+      `_pid_is_alive`'s production body, `kill -0 "$1"`, reaches that fake `kill` unmodified. No
+      real backgrounded process is spawned.)*
+- [x] Gate assertions: with `--dry-run`, the fake `kill` log stays empty. With no flags, the kill
       log contains exactly the selected pids (reaping without `--force`). With `--force`, the
       candidate set is identical. Use the `enable -n kill` plus fake-`kill` sourcing pattern the
-      Lean ordering assertion uses.
-- [ ] Fail-closed assertion: a fake snapshot that has no `$$` row produces the warning line and
-      an empty kill log.
-- [ ] Structural assertion: the new pass block (constants, predicates, and `run_build_waiter_pass`)
-      contains no `pgrep` and no `ps aux`.
-- [ ] Mutation check, per shell-script-testing.md: copy the script, delete the pgid-exclusion
+      Lean ordering assertion uses. *(completed)*
+- [x] Fail-closed assertion: a fake snapshot that has no `$$` row produces the warning line and
+      an empty kill log. *(completed: both a direct unit-level call and a full end-to-end run)*
+- [x] Structural assertion: the new pass block (constants, predicates, and `run_build_waiter_pass`)
+      contains no `pgrep` and no `ps aux`. *(completed)*
+- [x] Mutation check, per shell-script-testing.md: copy the script, delete the pgid-exclusion
       clause with `sed`, re-run the pgid case against the mutant, and assert that it now
-      **fails**. Repeat for the ancestor-chain clause.
-- [ ] Add the new function names to the defined-functions loop (around line 1015). Update the
-      suite header's list of acceptance-bar assertions.
-- [ ] Commit only this file.
+      **fails**. Repeat for the ancestor-chain clause. *(completed: both mutation checks pass,
+      confirming RED against the mutant)*
+- [x] Add the new function names to the defined-functions loop (around line 1015). Update the
+      suite header's list of acceptance-bar assertions. *(completed)*
+- [x] Commit only this file. *(completed)*
 
 **Timing**: 1.5 hours
 
