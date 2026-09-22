@@ -41,7 +41,7 @@ next_project_number: 253
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-252 [RESEARCHED] — Port the deploy-pending (exit 6) recovery into the batch...
+252 [PLANNED] — Port the deploy-pending (exit 6) recovery into the batch...
 
 ### Extensions
 
@@ -78,11 +78,12 @@ next_project_number: 253
 ## Tasks
 
 ### 252. Port deploy pending recovery batch postflight
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md]
+- **Plan**: [252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md]
 
 **Description**: Port the deploy-pending (exit 6) recovery into the batch postflight, and fix cycle_modified_files accumulation on a refused postflight
 

@@ -1,5 +1,10 @@
 {
+  "task_number": 252,
   "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "session_id": "sess_1790118971_a4e2f8_252",
+  "dispatch_seq": 2,
   "artifacts": [
     {
       "type": "plan",
@@ -7,16 +12,9 @@
       "summary": "6-phase plan closing the deploy-pending completion loop: honest exit-6 bookkeeping in the batch postflight, guaranteed cycle_modified_files accumulation, and a widened Inter-Cycle Redeploy Checkpoint predicate instead of a third automated deploy-trigger site."
     }
   ],
-  "next_steps": "Run /implement 252 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 10.5,
-  "dependency_waves": 4,
-  "memory_candidates": [],
-  "metadata": {
-    "session_id": "sess_1790118971_a4e2f8_252",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 2
+  "modified_files": [
+    "specs/252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md"
+  ],
+  "blockers": [],
+  "next_steps": "Run /implement 252 to execute the plan"
 }
