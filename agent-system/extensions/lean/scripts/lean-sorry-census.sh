@@ -21,9 +21,20 @@
 # Usage:
 #   lean-sorry-census.sh <dir-or-file> [<dir-or-file> ...] [--cross-check]
 #
+# Targets are almost never a literal directory name typed by hand: resolve them from the
+# consuming repo first via lean-src-roots.sh (see that script's header for its own precedence
+# and loud-failure contract), then pass its output through, guarded so its exit code is never
+# swallowed by a bare `< <(...)` process substitution:
+#
+#   lean_roots_raw="$(bash .claude/scripts/lean-src-roots.sh)" || {
+#     echo "lean-src-roots.sh failed (exit $?); aborting -- cannot census without real roots" >&2
+#     exit 1
+#   }
+#   mapfile -t lean_roots <<< "$lean_roots_raw"
+#   bash .claude/scripts/lean-sorry-census.sh "${lean_roots[@]}" --cross-check
+#
 # Examples:
 #   bash .claude/scripts/lean-sorry-census.sh Cslib/
-#   bash .claude/scripts/lean-sorry-census.sh Theories/ --cross-check
 #   bash .claude/scripts/lean-sorry-census.sh Cslib/Foo.lean Cslib/Bar.lean
 #
 # Output (always):
@@ -52,7 +63,10 @@
 #   siblings post-deploy.
 #
 # Exit codes: 0 on success (including sorry_count > 0 -- this is a census,
-# not a pass/fail gate); 64 on usage error.
+# not a pass/fail gate); 64 on usage error; 65 when a named target does not exist as a file or
+# directory (a missing target is now a fatal error, not a warn-and-skip -- "scanned and clean"
+# must never be indistinguishable from "scanned nothing" because a target silently vanished);
+# 66 when every given target exists but together they hold zero `.lean` files.
 
 set -uo pipefail
 
@@ -75,8 +89,12 @@ if [[ ${#TARGETS[@]} -eq 0 ]]; then
   exit 64
 fi
 
-# Collect .lean files from the targets (directories are scanned recursively).
+# Collect .lean files from the targets (directories are scanned recursively). A target that does
+# not exist is FATAL, not a warn-and-skip: a target that silently vanished (a stale path, a
+# resolver misconfiguration, a typo) must never be indistinguishable from a target that exists
+# and is merely clean.
 LEAN_FILES=()
+MISSING_TARGETS=()
 for target in "${TARGETS[@]}"; do
   if [[ -d "$target" ]]; then
     while IFS= read -r -d '' f; do
@@ -85,14 +103,20 @@ for target in "${TARGETS[@]}"; do
   elif [[ -f "$target" ]]; then
     LEAN_FILES+=("$target")
   else
-    echo "Warning: '$target' is not a file or directory, skipping" >&2
+    MISSING_TARGETS+=("$target")
   fi
 done
 
+if [[ ${#MISSING_TARGETS[@]} -gt 0 ]]; then
+  echo "lean-sorry-census.sh: target(s) do not exist as a file or directory:" >&2
+  printf '  %s\n' "${MISSING_TARGETS[@]}" >&2
+  exit 65
+fi
+
 if [[ ${#LEAN_FILES[@]} -eq 0 ]]; then
-  echo "sorry_count: 0"
-  echo "sorry_inventory:"
-  exit 0
+  echo "lean-sorry-census.sh: target(s) exist but contain zero .lean files -- refusing to report a clean census over nothing scanned. Targets:" >&2
+  printf '  %s\n' "${TARGETS[@]}" >&2
+  exit 66
 fi
 
 strip_and_scan() {

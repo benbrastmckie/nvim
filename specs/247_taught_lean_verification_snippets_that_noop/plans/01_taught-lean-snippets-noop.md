@@ -206,23 +206,23 @@ research). Confirm by the audit grep; fix any extra site it surfaces.
 
 ---
 
-### Phase 3: Half 2(c) -- `lean-sorry-census.sh` fails loudly on missing or empty targets [NOT STARTED]
+### Phase 3: Half 2(c) -- `lean-sorry-census.sh` fails loudly on missing or empty targets [COMPLETED]
 
 **Goal**: The census can no longer print `sorry_count: 0` when it scanned nothing.
 
 **Tasks**:
-- [ ] Run `scripts/tests/test-lean-sorry-census.sh` to get a baseline
-- [ ] Nonexistent target: error naming the target, then a non-zero exit (not warn-and-skip)
-- [ ] Zero `.lean` files collected: error naming all targets, then a non-zero exit (replaces the
-      exit-0 block at ~lines 92-95). Document the new exit code in the header
-- [ ] Update the usage comment (~line 26) to the resolver form, e.g.
+- [x] Run `scripts/tests/test-lean-sorry-census.sh` to get a baseline *(completed: 14/14 passing before changes)*
+- [x] Nonexistent target: error naming the target, then a non-zero exit (not warn-and-skip) *(completed: exit 65)*
+- [x] Zero `.lean` files collected: error naming all targets, then a non-zero exit (replaces the
+      exit-0 block at ~lines 92-95). Document the new exit code in the header *(completed: exit 66)*
+- [x] Update the usage comment (~line 26) to the resolver form, e.g.
       `bash .claude/scripts/lean-sorry-census.sh $(bash .claude/scripts/lean-src-roots.sh) --cross-check`
-      in its guarded shape, with no literal `Theories/`
-- [ ] Add fixtures to `test-lean-sorry-census.sh`: a nonexistent dir -> non-zero exit and stderr
+      in its guarded shape, with no literal `Theories/` *(completed: guarded capture + mapfile shape, no literal root)*
+- [x] Add fixtures to `test-lean-sorry-census.sh`: a nonexistent dir -> non-zero exit and stderr
       names it; an empty dir (no `.lean` files) -> non-zero; a clean dir with real `.lean`
       files and no sorry -> exit 0 `sorry_count: 0`, so "scanned and clean" stays distinct
-      from "scanned nothing"
-- [ ] Grep the extension for other census callers; adjust any that depended on skip behavior
+      from "scanned nothing" *(completed: Fixtures J, K, L; 17/17 passing, existing A-I unchanged)*
+- [x] Grep the extension for other census callers; adjust any that depended on skip behavior *(completed: only prose references and the sibling-suite regression check in test-lean-comparator-run.sh, which calls the TEST SUITE not the census directly with a possibly-missing target -- no caller depended on the old skip behavior)*
 
 **Timing**: 1 hour
 

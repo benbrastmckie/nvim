@@ -413,6 +413,71 @@ $OUT_I)"
 fi
 
 # =====================================================================
+# Fixture J: nonexistent target -- MUST be a fatal, non-zero exit naming the target on stderr,
+# never the old warn-and-skip behavior. This is the direct regression test for the defect this
+# task fixes: a target that silently vanished must never be indistinguishable from a target that
+# exists and is merely clean.
+# =====================================================================
+
+ERR_J_FILE="$WORKDIR/fixture_j.err"
+OUT_J="$(bash "$TOOL_SRC" "$WORKDIR/DoesNotExist" 2>"$ERR_J_FILE")"
+RC_J=$?
+ERR_J="$(cat "$ERR_J_FILE")"
+if [ $RC_J -ne 0 ] && [ -z "$OUT_J" ] && echo "$ERR_J" | grep -q "DoesNotExist"; then
+  pass "Fixture J (nonexistent target): non-zero exit ($RC_J), no stdout, stderr names the target"
+else
+  fail "Fixture J (nonexistent target): expected non-zero exit naming the target with no stdout; got exit $RC_J, stdout:
+$OUT_J
+stderr:
+$ERR_J"
+fi
+
+# =====================================================================
+# Fixture K: an existing target directory that holds zero .lean files -- also MUST be fatal, not
+# the old "sorry_count: 0 / exit 0" no-op-that-looks-clean behavior. This is the mutation-check
+# fixture: if the empty-file guard were removed, this fixture would (incorrectly) print
+# "sorry_count: 0" and exit 0, so its assertion below is exactly what that removal would flip.
+# =====================================================================
+
+EMPTY_DIR="$WORKDIR/empty_target_dir"
+mkdir -p "$EMPTY_DIR"
+touch "$EMPTY_DIR/not_a_lean_file.txt"
+
+ERR_K_FILE="$WORKDIR/fixture_k.err"
+OUT_K="$(bash "$TOOL_SRC" "$EMPTY_DIR" 2>"$ERR_K_FILE")"
+RC_K=$?
+ERR_K="$(cat "$ERR_K_FILE")"
+if [ $RC_K -ne 0 ] && [ -z "$OUT_K" ] && echo "$ERR_K" | grep -q "zero .lean files"; then
+  pass "Fixture K (existing target, zero .lean files -- mutation check): non-zero exit ($RC_K), stderr explains why"
+else
+  fail "Fixture K (existing target, zero .lean files -- mutation check): expected non-zero exit; got exit $RC_K, stdout:
+$OUT_K
+stderr:
+$ERR_K"
+fi
+
+# =====================================================================
+# Fixture L: an existing target directory with real .lean files and no sorry -- MUST stay exit 0
+# with sorry_count: 0, so "scanned and clean" remains distinct from "scanned nothing" (Fixture K).
+# =====================================================================
+
+CLEAN_DIR="$WORKDIR/clean_target_dir"
+mkdir -p "$CLEAN_DIR"
+cat > "$CLEAN_DIR/Clean.lean" <<'EOF'
+theorem clean_proof : True := trivial
+EOF
+
+OUT_L="$(bash "$TOOL_SRC" "$CLEAN_DIR")"
+RC_L=$?
+COUNT_L="$(get_count "$OUT_L")"
+if [ $RC_L -eq 0 ] && [ "$COUNT_L" = "0" ]; then
+  pass "Fixture L (existing target, real .lean files, no sorry): exit 0, sorry_count: 0 -- distinct from Fixture K's fatal empty-scan"
+else
+  fail "Fixture L (existing target, real .lean files, no sorry): expected exit 0 with sorry_count 0; got exit $RC_L, output:
+$OUT_L"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 
