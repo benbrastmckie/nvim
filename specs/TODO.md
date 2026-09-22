@@ -144,6 +144,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 - **Dependencies**: None
 - **Research**: [242_orchestrate_partial_with_blocker_stops_redispatch/reports/01_orchestrate_partial_blocker_stops_redispatch.md]
 - **Plan**: [242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md]
+- **Summary**: [242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

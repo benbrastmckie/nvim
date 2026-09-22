@@ -937,9 +937,15 @@
           "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md",
           "type": "plan",
           "summary": "5-phase plan making a blocker-bearing partial handoff stop futile implement redispatch."
+        },
+        {
+          "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 5 phases, deviations, and verification evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed the orchestrate futile-redispatch defect: a partial dispatch outcome carrying a non-empty handoff blockers[] now writes status=partial to state.json (gated), which activates the existing needs_human classifier row and stops same-run redispatch, raises a widened blocker-research aux signal, documents the blocked-vs-partial decision rule in the shared H9 wrap-up contract, and is pinned by new regression tests in both test-orchestrate-cycle-postflight.sh (3 new fixtures, 99/99 total) and test-orchestrate-cycle-plan.sh (2 new fixtures, 243/243 total)."
     },
     {
       "project_number": 243,

@@ -26,22 +26,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill_postflight_update", "skill-base.sh", "status-vocabulary", "postflight", "orchestrate"]
+      "suggested_keywords": [
+        "skill_postflight_update",
+        "skill-base.sh",
+        "status-vocabulary",
+        "postflight",
+        "orchestrate"
+      ]
     },
     {
       "content": "orchestrate-cycle-postflight.sh's single-slot aux_pending[$t] write means multiple aux-signal-eligible conditions (drift-inspection, blocker-research, divergence-audit) can fire in the same postflight run for the same dispatch_status shape (e.g. partial+blockers[] below the drift threshold); whichever write runs last wins. When widening an aux-signal gate to cover a new case, check whether hard_mode already has an equivalent escalation mechanism for that same dispatch_status/handoff shape (it usually does, via the WORK (k) churn detector) and scope the new gate to hard_mode != true if so, to avoid the new gate silently starving the existing mechanism's aux signal on every hard-mode cycle.",
       "category": "PATTERN",
       "source_artifact": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/summaries/01_partial-blocker-stops-redispatch-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["aux_pending", "orchestrate-cycle-postflight", "hard_mode", "churn", "blocker-research"]
+      "suggested_keywords": [
+        "aux_pending",
+        "orchestrate-cycle-postflight",
+        "hard_mode",
+        "churn",
+        "blocker-research"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790091707_e274be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
