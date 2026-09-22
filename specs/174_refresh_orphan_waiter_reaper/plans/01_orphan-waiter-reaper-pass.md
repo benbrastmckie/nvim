@@ -328,22 +328,36 @@ zombie, MCP) that need a "no rows for the pgid field spec" branch. Confirm with
 
 ---
 
-### Phase 4: Cross-file consistency and final gate [NOT STARTED]
+### Phase 4: Cross-file consistency and final gate [COMPLETED]
 
 **Goal**: Run the full gate set and confirm the two inventories agree.
 
 **Tasks**:
-- [ ] Extract columns 1, 4, 5, and 6 from both tables (with `awk -F'|'`) and `diff` them. Expect
-      no differences.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` in
-      full.
-- [ ] Run `shellcheck` on `claude-refresh.sh` and the test suite.
-- [ ] Run `agent-system/extensions/core/scripts/check-task-references.sh` over the edited files.
-- [ ] Live dry-run smoke test: `bash agent-system/extensions/core/scripts/claude-refresh.sh
+- [x] Extract columns 1, 4, 5, and 6 from both tables (with `awk -F'|'`) and `diff` them. Expect
+      no differences. *(deviation: altered -- a raw `awk -F'|'` split of an 8-pipe-delimited
+      markdown table row places Pass at $2 and Gate/Destructive/Hourly-cadence at $5/$6/$7 (field
+      1 is the empty string before the leading pipe), not $1/$4/$5/$6 as a literal 1-based
+      content-column count would suggest; used columns 2/5/6/7 to actually compare
+      Pass/Gate/Destructive/Hourly-cadence, the content both tables' lead-in paragraphs claim
+      agreement on. Result: one difference, at row 11, pre-existing (confirmed via `git show
+      HEAD~3` on both files, predates this task) and correct-as-is -- each file's row cites its
+      OWN actual section heading ("Safety" in refresh.md, "Safety Measures" in SKILL.md). Row 5
+      (the new pass) and every other renumbered row are byte-identical between the two tables.)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh` in
+      full. *(completed: 112/112 passing, run four times total across phases 1-4 with no
+      flakiness)*
+- [x] Run `shellcheck` on `claude-refresh.sh` and the test suite. *(completed: both match their
+      pre-edit baselines exactly -- 2 findings for claude-refresh.sh, 5 for the test suite, same
+      lines/types in both cases)*
+- [x] Run `agent-system/extensions/core/scripts/check-task-references.sh` over the edited files.
+      *(completed: 0 unexempted occurrences across agent-system/extensions/core)*
+- [x] Live dry-run smoke test: `bash agent-system/extensions/core/scripts/claude-refresh.sh
       --dry-run`. Confirm the new section renders and nothing is killed. Do NOT run it without
-      `--dry-run` against the live machine during implementation.
-- [ ] Confirm that nothing under `.claude/` was hand-edited. That tree is a deploy artifact
-      regenerated from the source store.
+      `--dry-run` against the live machine during implementation. *(completed: "Orphaned
+      Build-Waiter Poll Loops" section renders "No orphaned build waiters found.", nothing
+      terminated)*
+- [x] Confirm that nothing under `.claude/` was hand-edited. That tree is a deploy artifact
+      regenerated from the source store. *(completed: `git status --short .claude/` is empty)*
 
 **Timing**: 0.5 hours
 
@@ -359,13 +373,18 @@ zombie, MCP) that need a "no rows for the pgid field spec" branch. Confirm with
 
 ## Testing & Validation
 
-- [ ] `test-claude-refresh-matcher.sh` passes, including all new build-waiter cases, twice in a
-      row.
-- [ ] The mutation checks confirm that the pgid and ancestor exclusions are load-bearing.
-- [ ] The `--dry-run` path never invokes `kill`. The no-flag path reaps without `--force`.
-- [ ] If the `$$` row is missing, the pass fails closed.
-- [ ] The two inventory tables agree row for row, and the systemd ruling is re-derived.
-- [ ] shellcheck is clean, and the task-reference lint is clean.
+- [x] `test-claude-refresh-matcher.sh` passes, including all new build-waiter cases, twice in a
+      row. *(completed: run four times across phases 1-4, 112/112 every time)*
+- [x] The mutation checks confirm that the pgid and ancestor exclusions are load-bearing.
+      *(completed)*
+- [x] The `--dry-run` path never invokes `kill`. The no-flag path reaps without `--force`.
+      *(completed)*
+- [x] If the `$$` row is missing, the pass fails closed. *(completed)*
+- [x] The two inventory tables agree row for row, and the systemd ruling is re-derived.
+      *(completed: one pre-existing, correct, unrelated cross-reference-name difference at row
+      11 -- see Phase 4's task annotation)*
+- [x] shellcheck is clean, and the task-reference lint is clean. *(completed: both match their
+      pre-edit baselines exactly; task-reference lint reports 0 occurrences)*
 
 ## Artifacts & Outputs
 
