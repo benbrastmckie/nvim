@@ -11,70 +11,65 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,177,184,185,199,202,207,210,217,223,224,227,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 30,44,74,136,140,165,208 | 29,139,162,163,166,167,207,210 | core-agent-system, extensions, literature, ... |
-| 3 | 75,76,190 | 74,165 | core-agent-system, extensions |
+| 1 | 22,39,43,51,89,127,129,162,163,166,167,177,185,207,210,217,223,227,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,44,45,139,165,170,184,199,224 | 22,51,129,162,163,210,242,243,245 | core-agent-system, extensions, neovim, ... |
+| 3 | 136 | 139,166 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
-51 [NOT STARTED] — Stop session-scoped orchestration runtime files from...
+51 [NOT STARTED] — Move session runtime files out of the specs root and make the...
+  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
 129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
-139 [NOT STARTED] — Forbid concurrent-writer history rewrites in git rules and...
-  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
-  └─ 140 [NOT STARTED] — Add a concurrency-gated history-rewrite predicate to...
+  └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites: rules and agent...
+    └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
+  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
-170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-184 [NOT STARTED] — Decide the disposition of the Lean/formal skeleton-plan...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-210 [NOT STARTED] — Fix /task create: topic assignment order and registration,...
+210 [RESEARCHING] — Fix /task create: topic assignment order and registration,...
   └─ 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
-227 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-242 [NOT STARTED] — Orchestrate postflight: treat a partial handoff carrying a...
-243 [NOT STARTED] — Reconcile contradictory contract for research-phase...
+227 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
+242 [RESEARCHED] — Orchestrate postflight: treat a partial handoff carrying a...
+  └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+243 [RESEARCHING] — Reconcile contradictory contract for research-phase...
+  └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-245 [NOT STARTED] — orchestrate-batch-admit.sh: compute in-batch filescope...
-190 [NOT STARTED] — Fix cross-session admission blindness for self-modifying...
+245 [RESEARCHING] — orchestrate-batch-admit.sh: compute in-batch filescope...
 
 ### Extensions
 
-29 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced...
-  └─ 30 [NOT STARTED] — TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced...
 43 [NOT STARTED] — Decide and implement how email safety context actually...
-167 [NOT STARTED] — Make vimtex continuous-build safety always-in-effect via the...
-  └─ 74 [NOT STARTED] — Add shared LaTeX build-conflict guard script (detect...
-    └─ 75 [NOT STARTED] — Wire build guard into latex extension preflight hook and...
-    └─ 76 [NOT STARTED] — Close task-type-keyed hook gap for non-latex agents that...
-241 [NOT STARTED] — Reconcile the MCP registration/permission documentation and...
+167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
+241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
+29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Literature
 
 39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
-207 [NOT STARTED] — Fix silent truncation in zotero-generate-export.sh Path 1...
-  └─ 208 [NOT STARTED] — Explain Path 1 pagination shortfall or revisit Zotero export...
+207 [NOT STARTED] — Fix zotero-generate-export.sh Path 1: accumulator truncation...
 
 ### Neovim
 
-45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task...
-202 [NOT STARTED] — Make the picker's Reload All] and Regenerate] entries honest...
+45 [NOT STARTED] — Picker fixes: Global Update extension-repo registry, and...
 
 ### Opencode
 
-22 [RESEARCHING] — Freeze .opencode: silence fragment validation spam and record...
+22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
 
 ### File Scope Lifecycle
 
 162 [RESEARCHED] — Formalize Files to modify, harvest it into filescope at every...
-  └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent...
+  └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 163 [NOT STARTED] — Surface missing and empty filescope in validate-state.sh and...
-  └─ 165 [NOT STARTED] — Decide and implement the admission posture for an absent... (see above)
+  └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an... (see above)
 
 ### Lean Extension
 
@@ -84,7 +79,7 @@ next_project_number: 249
 ## Tasks
 
 ### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -122,7 +117,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 243. Reconcile contradictory contract for research-phase .orchestrator-handoff.json (agent file vs handoff-schema.md vs dispatch template)
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -140,10 +135,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 242. Orchestrate postflight: treat a partial handoff carrying a populated blocker[] as blocked/stopped, not a retryable partial
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [242_orchestrate_partial_with_blocker_stops_redispatch/reports/01_orchestrate_partial_blocker_stops_redispatch.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -163,7 +159,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 
 ---
 
-### 241. Reconcile mcp registration surfaces
+### 241. Reconcile MCP registration surfaces: redundant playwright grants, dead manifest mcp_servers fields, ownership doc and nix README
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
@@ -226,7 +222,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 227. Resolve source store target in deployed trees
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 240
@@ -260,7 +256,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 240
+- **Dependencies**: Task 129, Task 240
 
 **Description**: Add a tamper-resistant single-use /please grant mechanism, a new git push guard, and grant checks in the destructive-git guard. Only agent-system/extensions/core/ is edited (hooks/, scripts/tests/, root-files/settings.json and/or merge-sources/settings-hooks.json, context/standards/git-safety.md), never .claude/.
 
@@ -380,7 +376,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 210. Fix /task create: topic assignment order and registration, and task-type keyword false positives
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 209
@@ -493,12 +489,14 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 208. Explain Path 1 pagination shortfall or revisit Zotero export path-preference order
 - **Effort**: 2-4 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: Task 207
 
-**Description**: Explain the Path 1 pagination shortfall in zotero-generate-export.sh -- or, if Path 1 cannot reach parity with sqlite reconstruction, change the path-preference order with a documented rationale.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 207 (same script, second phase after the truncation fix); no work lost
+
+Explain the Path 1 pagination shortfall in zotero-generate-export.sh -- or, if Path 1 cannot reach parity with sqlite reconstruction, change the path-preference order with a documented rationale.
 
 === THE OPEN QUESTION (flagged as unknown, NOT guessed -- do not assume a cause) ===
 
@@ -576,7 +574,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
 ---
 
-### 207. Fix silent truncation in zotero-generate-export.sh Path 1 accumulator
+### 207. Fix zotero-generate-export.sh Path 1: accumulator truncation and shrink guard, then the pagination shortfall or path-preference order
 - **Effort**: 2-3 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -697,15 +695,96 @@ SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER
 .claude/** tree -- it is a gitignored, disposable deploy artifact wiped by the next regeneration.
 DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 
+
+=== ABSORBED 2026-09-22 from former task 208 (Explain Path 1 pagination shortfall or revisit Zotero export path-preference order); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Explain the Path 1 pagination shortfall in zotero-generate-export.sh -- or, if Path 1 cannot reach parity with sqlite reconstruction, change the path-preference order with a documented rationale.
+
+=== THE OPEN QUESTION (flagged as unknown, NOT guessed -- do not assume a cause) ===
+
+Even with the accumulator truncation fixed, Path 1 pagination terminates at 481 items: at start=400
+the API returns 81 items, which is < limit, so the loop treats it as end-of-pagination. But the same
+local API's own Total-Results header reports 4042 for the same library. Those two numbers disagree
+and the reason is UNKNOWN.
+
+Candidate directions to investigate (none verified, none preferred):
+  - csljson format filtering interacting with limit/start applied PRE-filter, so each page is
+    silently thinned after the window is computed;
+  - a local-API pagination quirk specific to the csljson format or to Zotero 7's local endpoint;
+  - attachment/note items inflating Total-Results (the library has 1473 PDF attachments and 62 notes,
+    while the bibliographic item count is 4049).
+
+Verify empirically against the live API. Do NOT settle this from reasoning alone, and do not treat
+any of the three candidates as the answer before measuring.
+
+=== PRECONDITION: REQUIRES ZOTERO RUNNING ===
+
+Path 1 exists only while Zotero is open -- the local API at localhost:23119 is served by the running
+application. A probe during task creation returned HTTP 000 (unreachable) because Zotero was
+deliberately quit so Path 3 could produce the complete export. WHOEVER PICKS THIS UP MUST OPEN ZOTERO
+FIRST, then confirm the API is reachable before starting. This is a setup step, not a blocker.
+
+=== REFERENCE POINT ===
+
+Path 3 (direct sqlite reconstruction, Zotero closed) produced a complete, verified 4049-item export
+matching `select count(*) from items` exactly. That export is the ground truth to compare Path 1
+against: /home/benjamin/Projects/Literature/zotero-library.json, 4049 items, source
+"sqlite-reconstruction" per its .zotero-library.meta.json stamp. Note $LITERATURE_DIR
+(/home/benjamin/Projects/Literature) is OUTSIDE this repo -- the export is never in the repo, and
+resolve_library_path() resolves it (tier 1 $ZOTERO_LIBRARY, then $LITERATURE_DIR).
+
+=== WORK ITEMS ===
+
+1. Measure the actual relationship between Total-Results, the csljson page contents, and the
+   bibliographic item count against the live API. Determine whether limit/start are applied before
+   or after format filtering, and whether attachments/notes are counted in Total-Results.
+
+2. Either (a) explain the 481-vs-4042 discrepancy and fix Path 1 so it reaches parity with Path 3,
+   or (b) if Path 1 provably cannot reach parity, change the Path 1 > Path 3 preference order in the
+   generation control flow and document why. Option (b) is a legitimate outcome, not a failure --
+   the current preference order was chosen on the assumption that a live API pull is more current
+   than a sqlite read, and that assumption is what this task tests.
+
+3. If the preference order changes, update the affected docs and the script's own header rationale
+   comments so the ordering and its justification stay discoverable. Verified doc touchpoints
+   (zotero-integration.md and tools/zotero-scripts.md do NOT mention this script -- zero grep hits):
+     context/project/literature/patterns/zotero-pdf-resolution.md
+     context/project/literature/domain/literature-index.md
+     context/project/literature/domain/corpus-directory-conventions.md
+     commands/literature.md
+
+=== ACCEPTANCE CRITERIA ===
+
+1. The 481-vs-4042 discrepancy is either explained with empirical evidence, or the path-preference
+   order is changed with a documented rationale.
+2. If Path 1 is fixed, a full export via Path 1 matches the sqlite-reconstruction item count.
+3. Whichever outcome, the resulting path-selection behavior is documented where a future reader will
+   find it, including the reason.
+
+=== DEPENDENCY RATIONALE ===
+
+Depends on the Path 1 accumulator fix. This is substantive, not bookkeeping: (a) both tasks modify
+fetch_path1 in the same file, and (b) pagination termination cannot be observed cleanly while the
+accumulator is still silently discarding pages and the error-swallowing fallback is masking failures.
+Measure only after the truncation fix is in place.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed
+.claude/** tree -- it is a gitignored, disposable deploy artifact wiped by the next regeneration.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
 ---
 
 ### 202. Make the picker's [Reload All] and [Regenerate] entries honest and self-documenting, and rule on their redundancy
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None
 
-**Description**: Fix the <leader>al picker's [Reload All] / [Regenerate] entries: a factually wrong one-line description, an absent Command Details preview for both, and an undecided redundancy question.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 45 (same picker Lua files, one dispatch); no work lost
+
+Fix the <leader>al picker's [Reload All] / [Regenerate] entries: a factually wrong one-line description, an absent Command Details preview for both, and an undecided redundancy question.
 
 EDIT TARGET: lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**. This is nvim-config Lua UI code, NOT agent-system/extensions/**; nothing here touches the deployed .claude/ tree.
 
@@ -814,7 +893,7 @@ second should make sure all three entries read as a coherent set.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 191, Task 192, Task 193, Task 213
+- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -916,12 +995,14 @@ re-deciding declaration granularity here.
 ---
 
 ### 190. Fix cross-session admission blindness for self-modifying candidates
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 165
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 165 (same admission script, second phase); no work lost
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
 DEFECT. Two SELF-MODIFYING tasks running in SEPARATE concurrent /orchestrate sessions are mutually invisible to every admission gate. Each is admitted solo; neither sees the other; they proceed to edit the same orchestrator-critical file concurrently.
 
@@ -978,13 +1059,18 @@ ACCEPTANCE: every citation that refers to a LIVE section names the correct Move;
 
 ---
 
-### 184. Decide lean skeleton plan completion routing
+### 184. Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 242, Task 243
 
-**Description**: Decide the disposition of the Lean/formal skeleton-plan completion routing lost with the single-task engine.
+**Description**: === RULED 2026-09-22 (eighth-pass phase 0) ===
+Disposition: option (a), narrowed to what was actually lost. The single-task engine's skeleton-exhaustion branch did three things: (1) routed the task to completion via the pr_ready target, (2) propagated a completion summary, (3) derived and reported follow-up tasks from sorry_inventory[].follow_up_task. Under the batch engine (1) is moot: pr_ready is a type=pr-only terminus, and every other task completes through orchestrate-cycle-postflight.sh's completion-claim gate, which a skeleton plan with all phases complete already reaches (orchestrate-cycle-plan.sh's 'no OPEN heading' fallthrough, ~line 2003, and the porting note at ~line 1921). (2) is owned by postflight generally. Only (3) is lost: a skeleton plan completes with its sorry_inventory silently dropped, so the strategic sorries never become tasks.
+
+SCOPE (now concrete; no further decision phase). In orchestrate-cycle-postflight.sh, when the final implement handoff carries skeleton=true and a non-empty sorry_inventory[]: (i) print the follow_up_task entries in the cycle's stderr report and include them in the task's completion summary section; (ii) record them on the state.json entry in an append-only field (research picks the field -- a skeleton_follow_ups array or reuse of the memory_candidates shape -- and state-management-schema.md documents it); (iii) do NOT auto-create tasks: the report is the handoff and the user files them with /task. Document in status-markers.md and handoff-schema.md how a skeleton plan terminates now (through the completion-claim gate, follow-ups reported). Regression test in scripts/tests/test-orchestrate-cycle-postflight.sh with a skeleton=true fixture whose sorry_inventory has two entries. Options (b) and (c) of the original text are closed by this ruling. ORDERING: after 242 (same postflight script and test) and 243 (handoff-schema.md), recorded as dependency edges. The original decision text follows for the record.
+
+Decide the disposition of the Lean/formal skeleton-plan completion routing lost with the single-task engine.
 
 CONTEXT. The deleted single-task /orchestrate engine carried a skeleton-exhaustion completion branch: when no incomplete phase heading remained AND the last handoff declared skeleton=true, it derived a follow-up task list from the handoff's sorry_inventory[].follow_up_task entries, routed the task to completion via update-task-status.sh postflight with the pr_ready target and --allow-pr-ready, and reported the pending follow-ups. The surviving batch engine has no equivalent branch.
 
@@ -1031,7 +1117,7 @@ ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 151, Task 169, Task 206, Task 215
+- **Dependencies**: Task 51, Task 129, Task 151, Task 169, Task 206, Task 215
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
@@ -1234,9 +1320,13 @@ Place it so it composes with, not duplicates, what is already there.
         but fails in the batch is still affected.
   Record the load-generation method used so the check is reproducible.
 
+
+=== SCOPE NARROWED 2026-09-22 (eighth-pass phase 0) ===
+The three whole-directory file_scope entries (core/scripts/tests/, lean/scripts/tests/, literature/scripts/) were removed: they deferred 207, 217, 223 and 244 in the dry run and drew two validate-state.sh coarse-scope warnings spanning 11 tasks. The named test-*.sh files, task-lock.sh and shell-script-testing.md stay. Research MUST name the specific suites the audit will edit and ADD them to file_scope before the implement dispatch (the convention the 224 narrowing followed on 2026-09-17). ORDERING: after 51 (task-lock.sh, test-session-runtime-files.sh) and 129 (test-session-runtime-files.sh, test-lake-build-guard.sh), recorded as dependency edges.
+
 ---
 
-### 167. Make vimtex continuous-build safety always-in-effect via the latex extension rule
+### 167. Guard LaTeX builds against the vimtex watcher: always-on rule first; shared guard script and lifecycle wiring only if the rule proves insufficient
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
@@ -1398,6 +1488,97 @@ anything under `.claude/**` -- that tree is a disposable deploy artifact regener
 confirming the regenerated `.claude/rules/latex.md` and the CLAUDE.md `extension_latex` section
 carry the new text.
 
+
+=== ABSORBED 2026-09-22 from former task 74 (Add shared LaTeX build-conflict guard script (detect competing vimtex latexmk -pvc)); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Build a shared, task-type-agnostic guard script that detects a user-owned LaTeX continuous-build watcher (`latexmk -pvc`, typically driven by nvim's vimtex plugin) competing for the same .tex target an agent is about to build, and that can report, stop, and restore it. This task delivers the MECHANISM only; wiring it into lifecycle stages is handled by the two dependent tasks.
+
+PROBLEM (observed live, not hypothetical). An agent ran `latexmk -pdf possible_worlds.tex` in a paper repo while the user's nvim vimtex continuous-mode compile was watching the same file. The two builds raced and corrupted aux files (null bytes, `^^@`). The failure mode is already documented in that repo's own CLAUDE.md under "Build Workflow: Preventing Aux File Corruption" -- but that documentation instructs a HUMAN to run `:VimtexStop` by hand. Nothing in the agent system detects, prevents, or even warns about it, so the user must notice and intervene manually every time an agent begins LaTeX work.
+
+WHY THE EXISTING DEBOUNCE DOES NOT COVER THIS. The paper repo carries a `.latexmkrc` with `$sleep_time = 5` and a `$compiling_cmd` that pre-scans `build/*.aux` for null bytes and unlinks corrupted files. NOTE TWO CORRECTIONS TO THE ORIGINATING PROMPT, both verified at task-creation time: the file is at `JPL/.latexmkrc`, NOT the repo root; and the value is `$sleep_time = 5`, NOT the `2` that repo's CLAUDE.md claims (that CLAUDE.md is stale on this point -- do not propagate the wrong number). More importantly, `$sleep_time` debounces the file watcher WITHIN a single latexmk instance. It provides no coordination whatsoever between two SEPARATE latexmk processes, which is precisely the race here. The `$compiling_cmd` null-byte sweep is a post-hoc corruption cleanup, not prevention. Neither existing mechanism can solve this; a new one is required.
+
+MECHANISM DECISION -- THIS IS THE CORE RESEARCH QUESTION. An agent cannot invoke a Vim command directly, so the shutdown path is non-obvious. Three candidates, to be evaluated and one (or a documented layering) chosen:
+
+  (a) PROCESS TERMINATION. Detect a running `latexmk -pvc` whose target resolves to the .tex file about to be built, and SIGTERM it. Most reliable, most destructive -- it kills a process the user owns, and vimtex's own state will not know its child died, potentially leaving the plugin's status display stale or its callback machinery confused.
+
+  (b) EDITOR REMOTE CONTROL. Use `nvim --server <socket> --remote-expr` (or `--remote-send`) against the live nvim instance to invoke VimtexStop. VERIFIED FEASIBLE IN THIS ENVIRONMENT: four live sockets were present at task-creation time under `/run/user/1000/` in the form `nvim.<PID>.0` (XDG_RUNTIME_DIR). This is the only option that leaves vimtex's internal state consistent, because vimtex itself performs the stop. Costs: it requires mapping socket -> the nvim instance that actually owns the target buffer (a socket exists per nvim instance, and most of them will be unrelated); `--remote-expr` executes arbitrary expressions in the user's editor, which is a real side effect deserving explicit justification; and it depends on vimtex being loaded in that instance.
+
+  (c) DETECT AND REFUSE. Detect the conflict and emit a clear, actionable message -- naming the PID, the target file, and the exact `:VimtexStop` remedy -- then either warn-and-continue or refuse to build. Zero side effects on user-owned processes and zero remote editor control. The user's explicit steer is to PREFER THE LEAST DESTRUCTIVE OPTION THAT RELIABLY PREVENTS THE RACE, and to weigh killing a user process or driving their editor remotely against simply refusing with a clear message. Research should take that steer seriously rather than defaulting to (a) because it is easiest to implement. A defensible outcome is (b) with (c) as fallback when no owning socket can be identified, or (c) alone.
+
+RESTORE-VS-REPORT DECISION. Also decide whether the agent restores continuous mode on exit or merely reports that it stopped it. The user's stated position: an agent that silently leaves the user's watch mode off is its own (smaller) annoyance. At minimum, whatever is stopped must be REPORTED. Restoration is materially easier under mechanism (b) (re-invoke VimtexCompile over the same socket) than under (a) (the script would have to reconstruct and relaunch a latexmk invocation it did not create -- generally a bad idea). Note that this decision is coupled to the mechanism decision and should not be made independently of it.
+
+REUSABLE PATTERN -- `agent-system/extensions/core/scripts/claude-refresh.sh`. That script already solves the hard parts of safe process handling and should be read before writing anything new. It takes a single atomic `ps -eo` snapshot per invocation rather than re-querying live; it applies exclusion regexes so the script can never target itself or its own ancestry; it gates destructive action behind an explicit `--force` (the calling skill handles confirmation separately); and it escalates SIGTERM (`kill -15`) -> liveness recheck (`kill -0`) -> SIGKILL (`kill -9`) rather than killing outright.
+
+SELF-MATCH HAZARD (verified concretely, do not skip). During task creation, a plain `pgrep -af latexmk` returned exactly one "match" -- the task-creating agent's OWN bash wrapper command, whose argv merely CONTAINED the string `latexmk`. A naive detector would therefore report a phantom conflict, and under mechanism (a) would attempt to kill the agent's own shell. Detection must match on the actual executable and its `-pvc` flag, resolve the build target, and exclude self/ancestry, exactly as claude-refresh.sh does. This is not a theoretical edge case; it fired on the first probe.
+
+DELIVERABLE. A new executable script under `agent-system/extensions/core/scripts/` (suggested name `latex-build-guard.sh`; final name to be fixed during planning). Placement in CORE, not in the latex extension, is DELIBERATE and load-bearing: the two dependent tasks show that non-latex-typed tasks also run LaTeX builds, so the mechanism cannot live behind the latex extension's task-type gate. Suggested subcommand shape (refine during planning): a `detect` mode that reports conflicts and exits non-zero, a `stop` mode implementing the chosen mechanism, and a `restore`/`report` mode for the exit path. Modes should be separable so callers can adopt detect-only first.
+
+The script must be registered in `agent-system/extensions/core/manifest.json` under `provides.scripts` alongside the ~124 existing entries so it is deployed.
+
+SOURCE-STORE RULE (binding): all edits target `agent-system/extensions/core/**`. Never edit a deployed `.claude/**` tree -- those are disposable artifacts regenerated on reload, so such an edit silently vanishes.
+DELIVERABLE RULE (binding): no task-number references in any file outside specs/.
+
+ACCEPTANCE: the script exists, is executable, and is registered in core's `provides.scripts`; the chosen mechanism is implemented and the rejected candidates are recorded WITH REASONS in the task's artifacts; detection correctly distinguishes a real `latexmk -pvc` on the target .tex from a process whose argv merely contains the string, and never matches itself or its own ancestry; the restore-vs-report decision is recorded and implemented; whatever the script stops is always reported to the user; the script is safe and silent (exit 0, no output) when no conflict exists, since it will run on every applicable build.
+
+
+=== ABSORBED 2026-09-22 from former task 75 (Wire build guard into latex extension preflight hook and agent contracts); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Wire the shared LaTeX build guard into the latex extension's lifecycle and contracts, so that `latex`-typed research and implementation dispatches detect (and, per the chosen mechanism, stop) a competing vimtex continuous build before the agent runs its own.
+
+DEPENDS ON the core guard script task: this task consumes the script and its chosen mechanism, and must not re-litigate the mechanism decision.
+
+HOOK MECHANISM (verified). `skill_run_extension_hook()` in `agent-system/extensions/core/scripts/skill-base.sh` (lines ~89-126) dispatches four lifecycle stages -- preflight, context_injection, verification, postflight -- to a script named in the extension's manifest under a TOP-LEVEL `hooks` object. This is distinct from `provides.hooks`, which is a file-copy target list; do not confuse the two. The preflight hook is invoked from `skill_preflight_update()` (line ~225) AFTER the status update. Hooks are non-blocking by design: a non-zero exit is caught and downgraded to a `[skill-base] WARNING` line, and execution continues. THIS IS A REAL CONSTRAINT ON THIS TASK -- if the chosen mechanism is "detect and refuse", a preflight hook CANNOT enforce the refusal on its own, because the harness ignores its exit code. In that case the refusal must additionally be carried in the agent contract text (the agent declines to build), with the hook serving as the detector and reporter. Resolve this explicitly rather than assuming a non-zero exit will stop anything.
+
+REFERENCE IMPLEMENTATION. `agent-system/extensions/nix/scripts/nix-preflight.sh` is the only existing preflight hook in the source store and shows the exact contract: five positional args (`task_number`, `task_type`, `task_dir`, `session_id`, `operation`), `set -euo pipefail`, warnings to stderr, and `exit 0` even when warnings fired. The nix manifest declares it as `"hooks": {"preflight": "scripts/nix-preflight.sh", "context_injection": "scripts/nix-context.sh"}`. Only two extensions (nix, nvim) declare top-level hooks today, so this is a lightly-trodden path -- read both before writing.
+
+DELIVERABLES.
+  1. A new `agent-system/extensions/latex/scripts/` directory (it does NOT exist yet -- latex's `provides.scripts` is currently an empty array) containing a preflight hook that calls the shared core guard. The hook should be a thin adapter, not a reimplementation.
+  2. `agent-system/extensions/latex/manifest.json`: add the top-level `hooks` object (preflight, and postflight if the restore/report decision requires it), and add the new script(s) to `provides.scripts`. Note the manifest currently has `"hooks": []` nested inside `provides` -- the new object is a SIBLING of `provides`, not a replacement for that field.
+  3. `agent-system/extensions/latex/agents/latex-implementation-agent.md`: the build guidance is concentrated at lines ~38-62 ("Build Tools (via Bash)", listing `pdflatex`, `latexmk -pdf`, `latexmk -c`, with worked multi-pass examples) and recurs at lines ~97, ~134, and ~175 as bare build instructions. Line numbers verified at task-creation time and may drift; locate by content. Add the guard obligation, and add a MUST NOT item against running a build without first invoking the guard -- MUST NOT is the strongest lever these contracts have, and advisory prose buried mid-file is what gets skipped.
+  4. `agent-system/extensions/latex/rules/latex.md`: the build-command block at lines ~74-93 presents `pdflatex`/`latexmk -pdf` with no concurrency caveat. Point it at the guard.
+  5. `agent-system/extensions/latex/context/project/latex/tools/compilation-guide.md`: add a build-coordination section. This file already has "Automated Build", "Using latexmk", and ".latexmkrc Configuration" sections (lines ~46-60) that discuss latexmk without mentioning the watcher conflict, so it is the natural anchor. Per this extension's convention, put the explanatory prose HERE ONCE and have the agent/rules files reference it by path rather than restating it.
+
+NO -HARD TWIN. Unlike the lean extension, latex declares no `routing_hard`/`routing_agents_hard` block and has no `-hard` agent variants, so there is no twin-file discipline burden here. `latex-research-agent.md` is a lighter touch -- research dispatches rarely build, but should not be silently exempt if the hook is manifest-level (the hook fires for ALL latex-typed operations, research included, since `operation` is only passed as an argument, not filtered on). Decide whether the hook self-filters on the `operation` argument.
+
+SCOPE BOUNDARY. This task covers `latex`-TYPED tasks only. Coverage for agents that build .tex files under other task types is a separate task and must not be absorbed here.
+
+SOURCE-STORE RULE (binding): all edits target `agent-system/extensions/latex/**`. Never edit a deployed `.claude/**` tree.
+DELIVERABLE RULE (binding): no task-number references in any file outside specs/.
+
+ACCEPTANCE: a latex preflight hook exists, is executable, is declared in the manifest's top-level `hooks` object, and is listed in `provides.scripts`; it delegates to the shared core guard rather than duplicating detection logic; the agent, rules, and compilation-guide files carry the obligation with prose stated once in compilation-guide.md and referenced elsewhere; the non-blocking-hook constraint is explicitly resolved (either the mechanism does not need enforcement, or the enforcement is carried in contract text); the operation-filtering decision is recorded; no `.claude/**` file is modified.
+
+
+=== ABSORBED 2026-09-22 from former task 76 (Close task-type-keyed hook gap for non-latex agents that compile .tex); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Close the coverage gap that the latex-extension wiring cannot reach: agents that compile .tex files under a task type OTHER than `latex` currently get no build-guard protection at all, because the extension hook mechanism is keyed on task_type.
+
+DEPENDS ON the core guard script task. This task is NOT redundant with the latex-extension wiring task -- it covers a disjoint set of dispatches, and skipping it would leave the exact incident that prompted this work uncovered.
+
+THE GAP, VERIFIED PRECISELY. `skill_run_extension_hook()` in `agent-system/extensions/core/scripts/skill-base.sh` resolves which extension's hooks to run by calling `skill_get_extension_dir "$task_type"`, which maps a task type to `.claude/extensions/<ext_name>`. It then reads `.hooks[<stage>]` from THAT extension's manifest. Consequence: a preflight hook declared in the latex manifest fires if and only if `task_type == "latex"`. It never fires for any other task type. Additionally, when no extension matches the task type, `skill_get_extension_dir` returns empty and the function returns 0 immediately -- so core-typed tasks (`general`, `meta`, `markdown`) run NO lifecycle hooks whatsoever, from any extension.
+
+WHY THIS MATTERS CONCRETELY. `agent-system/extensions/formal/manifest.json` routes ALL of `formal`, `formal:logic`, `formal:math`, and `formal:physics` implement operations to `skill-implementer` / `general-implementation-agent`. Philosophy and logic paper repositories are precisely where .tex files live, and `formal`-typed paper tasks are a normal, expected shape. The formal manifest declares NO top-level `hooks` object at all (verified: `.hooks` is null, `provides.scripts` is an empty array). So a `formal`-typed task that builds a .tex file receives zero protection from a latex-extension-only fix. The user flagged this explicitly: a latex-extension-only fix would not have covered the live incident that prompted this work. The same reasoning applies to `general`-typed tasks that happen to touch LaTeX.
+
+DECISION TO MAKE -- WHERE THE UNCONDITIONAL PATH LIVES. Two structurally different options; choose one and record why:
+
+  (i) AGENT-CONTRACT MANDATE. Add the guard obligation to `agent-system/extensions/core/agents/general-implementation-agent.md` and its twin `general-implementation-hard-agent.md`: before running any `pdflatex`/`latexmk` invocation, run the shared guard. Cheap, no harness change, and it composes with the "detect and refuse" mechanism (a contract can refuse; a non-blocking hook cannot). Weakness: it is instruction text an agent may skip, and it must be duplicated across the two twins.
+
+  (ii) CORE-LEVEL UNCONDITIONAL CHECK. Add a task-type-independent guard invocation into `skill-base.sh` itself, running regardless of extension. Strongest coverage, and it survives agents ignoring instructions. Weaknesses: it touches the shared lifecycle spine that every skill in every repository depends on; it would run for every task type including ones that never touch LaTeX (mitigated if the guard is cheap and silent when no .tex conflict exists -- an explicit acceptance requirement of the core guard task); and, because hook/preflight failures are deliberately non-blocking, it still cannot ENFORCE a refusal on its own.
+
+  A defensible outcome is BOTH: (ii) for detection and reporting, (i) for the refusal obligation. The user's framing invites exactly this ("the latex extension, a shared preflight hook, or both"). Do not silently pick the cheaper option without recording the tradeoff.
+
+  A third possibility worth evaluating and rejecting explicitly: giving the formal extension its own preflight hook that delegates to the shared guard. This closes the `formal` case specifically but leaves `general`/`meta`/`markdown` uncovered and does not generalize -- it invites one hook per extension forever.
+
+TWIN-FILE DISCIPLINE (binding). If option (i) is chosen, `general-implementation-agent.md` and `general-implementation-hard-agent.md` MUST be edited together in this task. A one-sided edit between engine twins is a known recurring defect class in this system. Do not assume the two files are line-symmetric; locate each site by content.
+
+BLAST-RADIUS WARNING. If option (ii) is chosen, `skill-base.sh` is the shared lifecycle spine sourced by essentially every skill and deployed to roughly ten repositories. Changes there must be additive, must not alter existing hook ordering or the existing non-blocking semantics, and must be exercised against `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`, which already covers the hook-invocation contract.
+
+FILE-SCOPE NOTE. This task's scope includes `agent-system/extensions/core/scripts/skill-base.sh`, which falls under the `agent-system/extensions/core/scripts/**` scope of the prerequisite core-guard task. That overlap is already serialized by the declared dependency, so no additional ordering constraint is needed -- but the two tasks must not be run concurrently.
+
+SOURCE-STORE RULE (binding): all edits target `agent-system/extensions/core/**` (and `agent-system/extensions/formal/**` only if the rejected third option is nonetheless adopted). Never edit a deployed `.claude/**` tree.
+DELIVERABLE RULE (binding): no task-number references in any file outside specs/.
+
+ACCEPTANCE: a task-type-independent path exists by which an agent about to compile a .tex file consults the shared guard, demonstrably covering `formal`-typed and `general`-typed tasks; the (i)/(ii)/both decision is recorded with reasons, and the rejected per-extension-hook option is explicitly rejected in writing; if agent contracts were edited, both twins carry equivalent obligations; if `skill-base.sh` was edited, the change is additive, preserves existing hook ordering and non-blocking semantics, and the lifecycle test suite passes; no `.claude/**` file is modified.
+
 ---
 
 ### 166. Stop research reports drifting from validate-artifact.sh's required section headings
@@ -1444,11 +1625,11 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 
 ---
 
-### 165. Decide and implement the admission posture for an absent file_scope in orchestrate-batch-admit.sh
+### 165. Admission gates in orchestrate-batch-admit.sh: posture for an absent file_scope, then cross-session visibility for self-modifying candidates
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 162, Task 163
+- **Dependencies**: Task 162, Task 163, Task 245
 
 **Description**: Settle whether an ABSENT `file_scope` should be admission-relevant in agent-system/extensions/core/scripts/orchestrate-batch-admit.sh, or remain purely advisory -- and implement the ruling.
 
@@ -1501,6 +1682,38 @@ cross-task clobbers, all eight committing cleanly. Two implications:
      sibling, or refuse admission until scope is declared) vs cross_batch (the tradeoff already
      stated above).
 
+
+=== ABSORBED 2026-09-22 from former task 190 (Fix cross-session admission blindness for self-modifying candidates); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEFECT. Two SELF-MODIFYING tasks running in SEPARATE concurrent /orchestrate sessions are mutually invisible to every admission gate. Each is admitted solo; neither sees the other; they proceed to edit the same orchestrator-critical file concurrently.
+
+OBSERVED LIVE (2026-09-08, this repository, not hypothetical). Two /orchestrate sessions ran concurrently under the same ancestor pid:
+  sess_1788883218_cb46bc  /orchestrate 180,181,182
+  sess_1788889066_9309df  /orchestrate 189
+Both batches claimed agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh. Three commits landed on that file from the 189 session while the other session was in cycle-6 planning for 182. No gate fired. The collision was caught only by a human reading a task notification. 182 had not yet dispatched, so no clobber occurred -- this was luck, not a gate.
+
+MEASURED EVIDENCE (direct probe, reproducible):
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <A> 182
+    -> {"decision":"admit","self_modifying":true}
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <B> 189
+    -> {"decision":"admit","self_modifying":true}
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <B> 182 189   # SAME batch
+    -> 182 admit; 189 DEFER, defer_reason self_modifying, full critical_path + ordering reason
+  bash .claude/scripts/orchestrate-batch-admit.sh --session-id <A> 157       # NOT self-modifying
+    -> admit + idle_overlap_advisory naming out-of-batch task 170, collision_scope cross_batch
+
+WHAT THIS ISOLATES. The in-batch tie-breaker works correctly. The cross-batch file_scope scan also works -- it fired for the NON-self-modifying candidate (157) against an out-of-batch task. But for a SELF-MODIFYING candidate dispatched solo, the verdict carries no cross-batch collision result and no session-registry result at all. The self-modification branch appears to admit early and short-circuit the file_scope_collision and session_active passes that would have caught the overlap. Confirm that reading against the script's own documented pass ordering (self-mod, then file_scope_collision, then session_active, the last two reached only when the prior finds no hit) before changing anything.
+
+CONTRIBUTING FACTOR, ALREADY REMEDIED, DO NOT RE-FILE. Task 189 carried no file_scope at all, so its session registered an empty covered scope. That was repaired by hand during the incident and is not the root cause: with all 11 paths populated AND the session registry re-registered to match, the solo verdicts above STILL admit. Absent metadata made it worse; it did not cause it.
+
+MUST NOT. Do not make the solo self-modifying candidate DEFER -- that would mean zero dispatch on every solo run of a self-modifying task, which is the exact regression the pre-existing tie-breaker design avoids. The admission DECISION is defensible; what is missing is that the verdict does not carry, and the caller cannot see, a live cross-session collision. Do not change the collision predicate or the verdict schema's existing fields in ways that break orchestrate-predispatch-review.sh, which is a consumer.
+
+ACCEPTANCE. With two live registered sessions whose covered scopes overlap on at least one path, a solo self-modifying candidate in one of them produces a verdict that names the overlap (defer, or admit carrying an explicit cross-session hazard field that orchestrate-predispatch-review.sh renders). A fixture test reproduces the two-session case above and fails against the current script.
+
+NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid with pid_source ancestor-claude, because two /orchestrate runs inside one Claude Code process share an ancestor. Any self-exclusion keyed on pid rather than session_id would treat a foreign session as self and silently disable cross-session detection for the most common case. Verify which key the exclusion actually uses; if it is pid, that alone may be the whole defect.
+
 ---
 
 ### 163. Surface missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh
@@ -1530,6 +1743,10 @@ MEASUREMENT VALUE: this task is what makes the problem measurable. Local coverag
 ACCEPTANCE: validate-state.sh reports the missing/empty count and exits 0 in default mode; the promotion criterion is written into the script header; predispatch-review surfaces absent file_scope with the class decision documented; `--repair` does not manufacture `[]` on absent keys; both scripts shellcheck clean per context/standards/shell-strict-mode.md; running against this repo's specs/state.json yields the expected 1-of-38 figure.
 
 CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+
+=== ADDENDUM 2026-09-22 (eighth-pass phase 0) ===
+Also reject GLOB entries in file_scope at both check sites. Observed 2026-09-14: a `*/agents/**` entry was admitted alongside three tasks editing agent files because lib/file-scope-overlap.sh does not expand globs, so a glob collides with nothing. Neither task creation nor validate-state.sh rejects the shape today (0 glob entries exist in the live file, so the class is latent, not fixed). Treat a glob entry as invisible-by-construction, the same family as an absent or empty field: WARN in validate-state.sh naming the entry, and surface it in orchestrate-predispatch-review.sh Class C.
 
 ---
 
@@ -1592,12 +1809,14 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 140. Add a concurrency-gated history-rewrite predicate to guard-destructive-git.sh
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139, Task 215, Task 240
 
-**Description**: Give agent-system/extensions/core/hooks/guard-destructive-git.sh a SECOND, INDEPENDENT predicate that blocks or loudly warns on history rewrites (`git commit --amend`, `git reset` without `--hard`) when evidence of a concurrent writer exists. This is the enforcement half of the policy its predecessor task establishes in the rules and agent contracts.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 139 (the enforcement half of the same policy, second phase); no work lost
+
+Give agent-system/extensions/core/hooks/guard-destructive-git.sh a SECOND, INDEPENDENT predicate that blocks or loudly warns on history rewrites (`git commit --amend`, `git reset` without `--hard`) when evidence of a concurrent writer exists. This is the enforcement half of the policy its predecessor task establishes in the rules and agent contracts.
 
 WHY A SECOND PREDICATE AND NOT AN EXTENSION OF THE FIRST. The hook's entire existing design is built around ONE hazard: discarding UNCOMMITTED working-tree changes. Its header states the premise directly -- "block destructive git commands when the working tree is dirty" (lines 3-5) -- and its first live check is the clean-tree exemption, "working tree is already clean (git status --porcelain is empty)" / "Clean tree -> nothing to lose" (lines 19-23, check at lines 61-64). The hazard this task addresses is a different class: rewriting ALREADY-COMMITTED history owned by a concurrent writer. Both commands involved are non-destructive to the working tree, so the clean-tree exemption would have ACTIVELY WAVED THEM THROUGH. Merely adding `--amend` to the existing dirty-tree predicate would still not fire. The new predicate must therefore not consult tree dirtiness at all. Verified: the file matches `amend` 0 times and `mixed` 0 times today.
 
@@ -1634,11 +1853,11 @@ DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task 
 
 ---
 
-### 139. Forbid concurrent-writer history rewrites in git rules and agent contracts
+### 139. Forbid concurrent-writer history rewrites: rules and agent contracts, then a concurrency-gated predicate in guard-destructive-git.sh
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 146, Task 194, Task 240
+- **Dependencies**: Task 129
 
 **Description**: Bare git history rewrites (`git commit --amend`, `git reset` without `--hard`) are forbidden nowhere in the agent system, and the one place that looks like a prohibition is scoped so that it structurally cannot fire on the hazard that actually occurred. Add the prohibition to the rules and to the agent contracts, and correct the existing mis-scoped bullet rather than merely adding alongside it.
 
@@ -1672,6 +1891,44 @@ ACCEPTANCE.
 SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Never edit .claude/ directly (it is a regenerated deploy artifact). Redeploy and confirm the change survives regeneration.
 
 RELATED, NOT DUPLICATE. Task 72 covers teammate .return-meta.json ownership and marker correlation -- a different concern entirely.
+
+
+=== ABSORBED 2026-09-22 from former task 140 (Add a concurrency-gated history-rewrite predicate to guard-destructive-git.sh); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Give agent-system/extensions/core/hooks/guard-destructive-git.sh a SECOND, INDEPENDENT predicate that blocks or loudly warns on history rewrites (`git commit --amend`, `git reset` without `--hard`) when evidence of a concurrent writer exists. This is the enforcement half of the policy its predecessor task establishes in the rules and agent contracts.
+
+WHY A SECOND PREDICATE AND NOT AN EXTENSION OF THE FIRST. The hook's entire existing design is built around ONE hazard: discarding UNCOMMITTED working-tree changes. Its header states the premise directly -- "block destructive git commands when the working tree is dirty" (lines 3-5) -- and its first live check is the clean-tree exemption, "working tree is already clean (git status --porcelain is empty)" / "Clean tree -> nothing to lose" (lines 19-23, check at lines 61-64). The hazard this task addresses is a different class: rewriting ALREADY-COMMITTED history owned by a concurrent writer. Both commands involved are non-destructive to the working tree, so the clean-tree exemption would have ACTIVELY WAVED THEM THROUGH. Merely adding `--amend` to the existing dirty-tree predicate would still not fire. The new predicate must therefore not consult tree dirtiness at all. Verified: the file matches `amend` 0 times and `mixed` 0 times today.
+
+MOTIVATING INCIDENT (real, observed 2026-09-02, multi-task /orchestrate run, five concurrent implementation agents committing to master). An agent ran bare `git commit --amend` intending its own commit; a sibling agent's commit had landed on top in the interim, so the amend rewrote the sibling's commit, preserving its file content but overwriting its message. A follow-up `git reset --mixed <own-sha>` rewound HEAD past three further legitimate commits and intermingled their changes in the working tree. Recovered via reflog: trees identical, zero content lost, residual damage exactly one mislabeled commit message. Reconstructible evidence: 539561c39 (correct), 9c5b790b6 (orphaned original), fd50fabfd (tree-identical to 9c5b790b6, wrong message).
+
+THE DESIGN TENSION TO RESOLVE, NOT PAPER OVER. The hook observes only the literal top-level tool_input.command string. It cannot see intent. An over-broad rule blocks legitimate solo interactive `--amend`, which is explicitly permitted. Research must select and justify a concurrency signal, weighing false-positive and false-negative cost. Candidate signals, none pre-committed:
+  - a live entry in specs/.task-locks/ held by a session other than the caller's;
+  - an in-flight session-registry entry belonging to a different session;
+  - HEAD having moved since the calling agent's own last commit (directly diagnostic of the incident, but requires per-session commit-sha state the hook does not currently keep).
+Also decide the response: hard refusal (exit 2 + stderr, matching the existing block mechanism -- note the header's warning that `permissionDecision: deny` is documented-buggy for allow-listed Bash(git:*) commands, GH #4669/#13214/#18312) versus a loud non-blocking warning. These may differ per signal strength.
+
+DESIGN CONSTRAINTS.
+  - The new predicate must be structurally independent of the clean-tree exemption; that exemption currently returns exit 0 before any detector runs, so predicate ordering is load-bearing.
+  - `git-commit-scoped.sh` must remain unblocked. Note the existing header's observation-boundary argument (lines 41-47): a git command run as a subprocess inside a wrapper script never appears in tool_input.command, so wrapper-internal git is structurally invisible to this hook. Follow that established pattern rather than special-casing.
+  - Reuse the file's existing argv-anchoring scan-string machinery (COMMAND_SCAN, quoted-span and comment stripping, lines 67+) so a commit message containing the text "--amend" cannot trigger a false positive.
+  - The refusal message must point at the rule section its predecessor task adds, so a blocked agent can read the rationale.
+
+WORK.
+(a) Implement the concurrency-gated history-rewrite predicate in hooks/guard-destructive-git.sh.
+(b) Update the hook's header comment block, which currently documents a single-hazard design and would otherwise misdescribe the file.
+(c) Update context/standards/git-safety.md for the new hazard class and the chosen signal.
+(d) Update rules/git-workflow.md's enumeration of what the hook enforces (its "enforced by" framing) so rules and implementation stay in agreement.
+(e) Verify with concrete cases: a bare `--amend` under a foreign task lock is refused; the same command with no concurrent writer is permitted; a git-commit-scoped.sh invocation is permitted; a commit message containing the literal string "--amend" does not trigger.
+
+NON-GOALS (explicit).
+  - Do NOT forbid `--amend` unconditionally for single-session interactive use.
+  - Do NOT attempt retroactive repair of the mislabeled commit fd50fabfd.
+
+ACCEPTANCE. A bare `git commit --amend` or `git reset` issued by a dispatched agent while another session holds a task lock is refused or loudly warned; the rationale is reachable from the message; compliant git-commit-scoped.sh use remains unblocked; solo use is unaffected.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Never edit .claude/ directly. Redeploy and confirm the hook survives regeneration and actually fires from the deployed copy.
+
+DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task settles the policy this one mechanizes and supplies the rationale text this hook's refusal message points at; and both tasks touch rules/git-workflow.md, so the file-footprint admission gate serializes them regardless.
 
 ---
 
@@ -1890,12 +2147,14 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 
 ### 76. Close task-type-keyed hook gap for non-latex agents that compile .tex
 - **Effort**: 3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 74, Task 146
+- **Dependencies**: Task 146, Task 167
 
-**Description**: Close the coverage gap that the latex-extension wiring cannot reach: agents that compile .tex files under a task type OTHER than `latex` currently get no build-guard protection at all, because the extension hook mechanism is keyed on task_type.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 167 (non-latex-typed .tex builder coverage, a conditional phase after the rule); no work lost
+
+Close the coverage gap that the latex-extension wiring cannot reach: agents that compile .tex files under a task type OTHER than `latex` currently get no build-guard protection at all, because the extension hook mechanism is keyed on task_type.
 
 DEPENDS ON the core guard script task. This task is NOT redundant with the latex-extension wiring task -- it covers a disjoint set of dispatches, and skipping it would leave the exact incident that prompted this work uncovered.
 
@@ -1928,12 +2187,14 @@ ACCEPTANCE: a task-type-independent path exists by which an agent about to compi
 
 ### 75. Wire build guard into latex extension preflight hook and agent contracts
 - **Effort**: 2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 74
+- **Dependencies**: Task 167
 
-**Description**: Wire the shared LaTeX build guard into the latex extension's lifecycle and contracts, so that `latex`-typed research and implementation dispatches detect (and, per the chosen mechanism, stop) a competing vimtex continuous build before the agent runs its own.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 167 (latex-lifecycle wiring of the guard, a conditional phase after the rule); no work lost
+
+Wire the shared LaTeX build guard into the latex extension's lifecycle and contracts, so that `latex`-typed research and implementation dispatches detect (and, per the chosen mechanism, stop) a competing vimtex continuous build before the agent runs its own.
 
 DEPENDS ON the core guard script task: this task consumes the script and its chosen mechanism, and must not re-litigate the mechanism decision.
 
@@ -1961,12 +2222,14 @@ ACCEPTANCE: a latex preflight hook exists, is executable, is declared in the man
 
 ### 74. Add shared LaTeX build-conflict guard script (detect competing vimtex latexmk -pvc)
 - **Effort**: 3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 130, Task 148, Task 167
 
-**Description**: Build a shared, task-type-agnostic guard script that detects a user-owned LaTeX continuous-build watcher (`latexmk -pvc`, typically driven by nvim's vimtex plugin) competing for the same .tex target an agent is about to build, and that can report, stop, and restore it. This task delivers the MECHANISM only; wiring it into lifecycle stages is handled by the two dependent tasks.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 167 (the always-on vimtex rule lands first; the shared guard script becomes a conditional later phase); no work lost
+
+Build a shared, task-type-agnostic guard script that detects a user-owned LaTeX continuous-build watcher (`latexmk -pvc`, typically driven by nvim's vimtex plugin) competing for the same .tex target an agent is about to build, and that can report, stop, and restore it. This task delivers the MECHANISM only; wiring it into lifecycle stages is handled by the two dependent tasks.
 
 PROBLEM (observed live, not hypothetical). An agent ran `latexmk -pdf possible_worlds.tex` in a paper repo while the user's nvim vimtex continuous-mode compile was watching the same file. The two builds raced and corrupted aux files (null bytes, `^^@`). The failure mode is already documented in that repo's own CLAUDE.md under "Build Workflow: Preventing Aux File Corruption" -- but that documentation instructs a HUMAN to run `:VimtexStop` by hand. Nothing in the agent system detects, prevents, or even warns about it, so the user must notice and intervene manually every time an agent begins LaTeX work.
 
@@ -1997,7 +2260,7 @@ ACCEPTANCE: the script exists, is executable, and is registered in core's `provi
 
 ---
 
-### 51. Move session state files out of specs root
+### 51. Move session runtime files out of the specs root and make the reap path run
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -2021,13 +2284,118 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 
 ---
 
-### 45. Global update extension repo registry
+### 45. Picker fixes: Global Update extension-repo registry, and honest [Reload All]/[Regenerate] entries
 - **Status**: [NOT STARTED]
 - **Task Type**: general
 - **Topic**: neovim
-- **Dependencies**: None
+- **Dependencies**: Task 22
 
 **Description**: TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carried topic core-agent-system, but its real scope (the <leader>al extension picker's 'Global Update' action) is nvim-config Lua UI code at lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**, NOT agent-system/extensions/** -- it is unrelated to the orchestrate-engine collapse. Re-topiced to neovim; file_scope backfilled from description evidence (was previously empty). Original description follows.\n\nImplement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
+
+=== ABSORBED 2026-09-22 from former task 202 (Make the picker's [Reload All] and [Regenerate] entries honest and self-documenting, and rule on their redundancy); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Fix the <leader>al picker's [Reload All] / [Regenerate] entries: a factually wrong one-line description, an absent Command Details preview for both, and an undecided redundancy question.
+
+EDIT TARGET: lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**. This is nvim-config Lua UI code, NOT agent-system/extensions/**; nothing here touches the deployed .claude/ tree.
+
+=== VERIFIED CURRENT BEHAVIOUR (read from source, not inferred) ===
+
+The two entries are DIFFERENT operations, and both act on the CURRENT REPO ONLY (cwd):
+
+[Reload All] (picker/init.lua:159-286) opens a vim.ui.select submenu with four choices --
+"Reload All", "Unload All", "Step Through", "Cancel". The "Reload All" choice calls
+exts.resync_all(), whose own doc comment at shared/extensions/init.lua:895-898 states: "Never
+unloads: each extension is re-loaded in place via manager.load(..., {force = true}), so there is
+no destructive intermediate 'everything unloaded' state." It force-resyncs every CURRENTLY LOADED
+extension in Kahn's-algorithm dependency order. Non-destructive. No confirmation prompt.
+("Step Through" is currently a no-op that just reopens the picker.)
+
+[Regenerate] (picker/init.lua:110-156) calls exts.wipe({project_dir = vim.fn.getcwd()}), which
+runs vim.fn.delete(target_dir, "rf") at shared/extensions/init.lua:1253 -- snapshot ->
+rm -rf base_dir -> regenerate from the surviving project-root extension manifest -> restore
+settings.local.json and .syncprotect-listed paths -> clear staging. Destructive. Confirmation
+required.
+
+=== DEFECT 1: THE [Reload All] ONE-LINER DESCRIBES [Regenerate], NOT ITSELF ===
+
+display/entries.lua:980-982 renders [Reload All] with the trailing text:
+
+    "Wipe and reload all loaded extensions"
+
+It does not wipe. resync_all never unloads and never deletes. The word "Wipe" belongs to
+[Regenerate], whose own one-liner at entries.lua:995-997 ("Wipe and rebuild from the extension
+manifest") is accurate. So the picker currently presents two adjacent entries whose visible
+descriptions both begin "Wipe and ...", one of which is false -- which is precisely the confusion
+that motivated this task: an operator reaching for a rebuild picked [Reload All] on the strength
+of that line.
+
+Note the contradiction is already internal to the codebase: display/previewer.lua:129-130
+describes the same entry correctly as "Force-resyncs every currently loaded extension in
+dependency order (non-destructive)." Two descriptions of one entry disagree.
+
+=== DEFECT 2: NEITHER ENTRY HAS A Command Details PREVIEW ===
+
+Both entries are created with entry_type = "special" plus a boolean flag (is_reload_all,
+is_regenerate) at entries.lua:974-999. The previewer's define_preview dispatch chain
+(previewer.lua:628-661) branches on is_heading, is_help, and then eleven entry_type values --
+skill, hook_event, lib, script, test, template, doc, command, extension, agent, root_file. There
+is NO branch for is_reload_all, is_regenerate, or entry_type == "special". Both therefore fall to
+the terminal else at previewer.lua:658-659, which writes the single line "Unknown entry type"
+into the "Command Details" pane.
+
+So the pane is not blank -- it renders a developer-facing error string for two entries that are
+working as designed. The real documentation for both operations exists, but it is buried inside
+preview_help (previewer.lua:129-135), reachable only by selecting the separate [Keyboard
+Shortcuts] entry.
+
+DECIDE, do not assume: whether to add a dedicated preview_special branch keyed on the two boolean
+flags, or to give special entries a shared preview keyed on entry_type == "special" that reads a
+per-entry description field. Either way, the terminal else branch should stop being reachable for
+entries the picker itself ships -- consider whether "Unknown entry type" is the right fallback at
+all, or whether it should name the offending entry so the next gap is diagnosable.
+
+=== DEFECT 3: THE REDUNDANCY QUESTION, UNDECIDED ===
+
+There is genuine partial overlap: [Regenerate]'s wipe-and-rebuild reloads the same extension set
+[Reload All] resyncs, so it subsumes the OUTCOME while differing in method, risk, and guarantees.
+Whether that justifies two entries is a real design call, not an obvious yes or no. Weigh at
+least: (a) keep both, with corrected descriptions that make the destructive/non-destructive
+distinction the FIRST thing each line says; (b) collapse [Regenerate] into the [Reload All]
+submenu as a fourth, confirmation-gated choice alongside Unload All, giving one entry point for
+all bulk extension operations; (c) keep both but rename them so neither reads as a synonym of the
+other. Record the ruling and its reasoning.
+
+While deciding (b), note the [Reload All] submenu already contains a dead choice: "Step Through"
+(init.lua:180-185) does nothing but reopen the picker. Decide its disposition too -- implement or
+remove; do not leave a menu item that silently no-ops.
+
+=== A CORRECTION TO THE OPERATOR'S MENTAL MODEL, WORTH RECORDING IN THE PREVIEW TEXT ===
+
+[Regenerate] is sometimes remembered as "run Reload All across every repo that has loaded the
+agent system, preserving each repo's own loaded extension set". It does NOT do that, and never
+has -- it is single-repo, scoped to vim.fn.getcwd(), exactly like [Reload All].
+
+That cross-repo capability is a DIFFERENT, already-filed, not-yet-started piece of work: the
+task titled "Implement <leader>al repo registration and 'Global Update' action" describes
+registering repos that <leader>al loads extensions into, and adding a 'Global Update' entry
+"similar to 'Reload All'" that reloads all extensions already loaded in each registered repo.
+Coordinate with it rather than implementing cross-repo behaviour here; this task's job is to make
+the two EXISTING single-repo entries honest and self-documenting. Whichever of the two lands
+second should make sure all three entries read as a coherent set.
+
+=== ACCEPTANCE ===
+
+- [Reload All]'s visible one-liner no longer claims it wipes, and states its non-destructive
+  force-resync nature; [Regenerate]'s continues to state its destructive nature. The two lines are
+  distinguishable at a glance.
+- Selecting either entry renders real content in the "Command Details" pane -- what it does, what
+  it touches, whether it is destructive, whether it prompts -- and "Unknown entry type" is no
+  longer reachable for any entry the picker ships.
+- The entries.lua one-liner and the previewer text for a given entry agree with each other and
+  with the implementation; a check or comment records that they must be kept in sync.
+- The redundancy ruling is recorded with reasoning, and "Step Through" is either implemented or
+  removed.
+- Verified by opening <leader>al and selecting each entry, not by reading the diff alone.
 
 ---
 
@@ -2091,12 +2459,14 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 30. Register obsidian memory mcp server
-- **Status**: [NOT STARTED]
+- **Status**: [ABANDONED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 29
 
-**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions, alongside its prerequisite (the .mcp.json generation mechanism). Unrelated to the orchestrate-engine collapse. Original description follows.Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
+**Description**: ABANDONED 2026-09-22 (eighth-pass consolidation): merged into task 29 (first consumer of the .mcp.json merge target, final phase); no work lost
+
+TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions, alongside its prerequisite (the .mcp.json generation mechanism). Unrelated to the orchestrate-engine collapse. Original description follows.Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
 
 CURRENT STATE: memory/settings-fragment.json carries a dead `mcpServers` block declaring obsidian-memory (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest, with env OBSIDIAN_WS_PORT). It registers nothing, because settings files are not a registration surface. The memory extension IS loaded in this repository, so unlike the five retired servers this one is wanted and should be made to work.
 
@@ -2108,11 +2478,11 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 
 ---
 
-### 29. Generate mcp json from extension manifests
+### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 210
 
 **Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 
@@ -2126,15 +2496,29 @@ IMPORTANT CONTEXT: a project-scoped .mcp.json server requires workspace-trust ap
 
 VERIFICATION: build a scratchpad fixture project, load an extension declaring a trivial stdio server, and confirm .mcp.json is generated correctly; confirm a second deploy is a no-op; confirm unloading removes the entry; confirm `claude mcp get <name>` in the fixture reports Scope: Project config. Do NOT deploy against this repository as part of verification. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
+=== ABSORBED 2026-09-22 from former task 30 (register_obsidian_memory_mcp_server); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions, alongside its prerequisite (the .mcp.json generation mechanism). Unrelated to the orchestrate-engine collapse. Original description follows.Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
+
+CURRENT STATE: memory/settings-fragment.json carries a dead `mcpServers` block declaring obsidian-memory (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest, with env OBSIDIAN_WS_PORT). It registers nothing, because settings files are not a registration surface. The memory extension IS loaded in this repository, so unlike the five retired servers this one is wanted and should be made to work.
+
+WORK: move the declaration to the new merge target so it lands in .mcp.json, with an explicit "type": "stdio". Then determine the server's ACTUAL tool names and add matching permission grants to the fragment, applying the grant-at-registration-scope rule. Do NOT guess the tool names and do NOT copy them from any existing documentation: enumerate them empirically by starting the server and issuing a tools/list request. This system has already shipped documentation instructing agents to call MCP tools that never existed, and a naming mismatch between a declared server name and its granted mcp__<name>__* prefix has already been found in another extension -- verify both the server name and every tool name against the running server.
+
+RUNTIME PREREQUISITE, DO NOT PAPER OVER: this server needs OBSIDIAN_WS_PORT set and a running Obsidian instance with the companion plugin. If that prerequisite cannot be satisfied in this environment, wire the declaration correctly, document the prerequisite plainly in the memory extension README, and report the tool-name enumeration as NOT VERIFIED rather than inventing plausible names. A truthful 'could not verify' is the correct outcome here; a fabricated tool list is not.
+
+VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on both edited files; doc-lint passes for the memory extension; every granted mcp__ tool name either matches a name observed from the running server or is explicitly marked unverified with the reason. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
 ---
 
 ### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
-- **Status**: [RESEARCHING]
+- **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: opencode
 - **Dependencies**: None
 
-**Description**: === REVISED 2026-09-01 (backlog streamline: .opencode declared FROZEN) ===
+**Description**: === STATUS REPAIRED 2026-09-22 (eighth-pass phase 0): researching -> not_started. No specs/022_* directory, no artifacts and no dispatch record exist in the live tree or the archive; the status was left by a dispatch that never wrote anything (last touched 2026-09-01). It deferred tasks 29 and 45 in every dry run via merge.lua. Nothing else changed. ===
+
+=== REVISED 2026-09-01 (backlog streamline: .opencode declared FROZEN) ===
 POLICY SETTLED BY USER DECISION: .opencode/ is FROZEN -- not maintained, not generated, not deleted. No sync mechanism will be built (the sibling sync-mechanism task is abandoned with a pointer here); the tree is preserved intact for possible future refactoring, exactly as this task's binding constraint already required. This settles the reframed design question below ("SHOULD opencode-agents.json fragments reference a per-project deploy tree at all?"): under a frozen mirror, no path corrections are owed and defect class (1) breakage is expected and tolerated -- the fix is to stop the noise and record the policy, not to repair paths that will drift again.
 
 REVISED SCOPE, absorbing the narrowed remainder of the abandoned sync-mechanism task:
