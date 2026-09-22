@@ -22,6 +22,11 @@
           "path": "specs/248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md",
           "type": "plan",
           "summary": "5-phase Typst viewing-commands revision plan."
+        },
+        {
+          "path": "lua/neotex/util/typst.lua",
+          "type": "implementation",
+          "summary": "New shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path"
         }
       ],
       "next_artifact_number": 2

@@ -93,6 +93,7 @@ next_project_number: 249
 - **Dependencies**: None
 - **Research**: [248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md]
 - **Plan**: [248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md]
+- **Summary**: [lua/neotex/util/typst.lua]
 
 **Description**: Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication
 

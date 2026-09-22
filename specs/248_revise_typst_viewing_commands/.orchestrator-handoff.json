@@ -1,17 +1,40 @@
 {
-  "status": "planned",
-  "summary": "Created 5-phase implementation plan for revising Typst viewing commands.",
+  "status": "partial",
+  "summary": "Phase 1 (shared lua/neotex/util/typst.lua helper + plenary spec) completed, verified, and committed (9e0c21812). Phase 2 is blocked by a pre-existing, unrelated, uncommitted keymap-renaming diff in the files Phase 2 must edit.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md",
-      "summary": "5-phase Typst viewing-commands revision plan."
+      "type": "implementation",
+      "path": "lua/neotex/util/typst.lua",
+      "summary": "New shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/util/typst_spec.lua",
+      "summary": "Plenary busted spec, 8 passing assertions"
+    },
+    {
+      "type": "handoff",
+      "path": "specs/248_revise_typst_viewing_commands/handoffs/phase-1-handoff-20260922T061400Z.md",
+      "summary": "Phase 1 completion handoff naming the Phase 2 blocker"
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 1,
   "phases_total": 5,
-  "blockers": [],
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "next_action_hint": "implement"
+  "blockers": [
+    "after/ftplugin/typst.lua, docs/TYPST.md, docs/MAPPINGS.md, and lua/neotex/util/README.md carry a substantial, unrelated, uncommitted keymap-renaming diff (continuation of task 519's <leader>al theme, plus an unrelated surround-vocabulary rewrite) that Phase 2-5 must edit on top of. Whole-file staging means proceeding would sweep that diff into task 248's commits, which the plan's own Risk table forbids ('Never commit them mixed in'). lua/neotex/plugins/text/typst-preview.lua and lspconfig.lua are clean and unaffected."
+  ],
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "next_action_hint": "resolve_user_decision_then_resume_implement_phase_2",
+  "user_decision": {
+    "question": "after/ftplugin/typst.lua, docs/TYPST.md, docs/MAPPINGS.md, and lua/neotex/util/README.md already carry a substantial, unrelated, uncommitted keymap-renaming diff (continuing task 519's <leader>al theme into typst/latex/slidev, plus an unrelated surround-vocabulary rewrite in docs/TYPST.md) that task 248's Phase 2-5 edits must land on top of. Since this repo's commit pipeline stages whole files (not hunks), how should that pre-existing diff be handled before task 248 continues, so its own commits are not swept into task 248's phase history?",
+    "options": [
+      "Commit the pre-existing diff first as its own separate, non-task-248 commit, then resume task 248 Phases 2-5 cleanly on top",
+      "Stash the pre-existing diff, implement Phases 2-5 against clean HEAD content, commit task 248's work, then pop the stash back (may need manual conflict resolution against overlapping functions)",
+      "Accept mixed commits for Phases 2-5 with an honest disclosure line in the commit body naming the carried unrelated diff, overriding the plan's 'never commit them mixed in' Risk mitigation",
+      "Discard the pre-existing uncommitted diff and implement Phases 2-5 from a clean file, accepting the loss of that in-progress renaming/surround work"
+    ],
+    "recommended": "Commit the pre-existing diff first as its own separate, non-task-248 commit, then resume task 248 Phases 2-5 cleanly on top",
+    "blocking": true
+  }
 }
