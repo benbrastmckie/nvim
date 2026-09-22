@@ -516,27 +516,61 @@ and retune D6's threshold constant rather than deleting the failing case.
 
 ---
 
-### Phase 8: Deploy, full gate, and end-to-end confirmation [NOT STARTED]
+### Phase 8: Deploy, full gate, and end-to-end confirmation [COMPLETED]
 
 **Goal**: The change is live in the deployed tree and confirmed against ACCEPTANCE as written.
 
 **Tasks**:
-- [ ] Run `shellcheck` across every shell file added or changed in this task and confirm clean.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm both new suites
+- [x] Run `shellcheck` across every shell file added or changed in this task and confirm clean.
+      *(completed: `scripts/lib/task-type-detect.sh` zero findings;
+      `scripts/tests/test-manage-topics-create-order.sh` and
+      `scripts/tests/test-task-type-detect.sh` each carry only the same info-level SC2329
+      "cleanup() never invoked" false positive present on every precedent
+      `trap ... EXIT`-cleanup suite in this codebase)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` and confirm both new suites
       are discovered (not `[SKIP]`) and the whole run is green.
-- [ ] Redeploy via `bash .claude/scripts/deploy-headless.sh` (or the repo's current sanctioned
+      *(deviation: altered — both new suites discovered and PASS (91 total, 90 passed, 1 failed);
+      the 1 failure is `test-verify-deploy-context-budget.sh`, pre-existing and unrelated to this
+      task (introduced by tasks 142/235, untouched by any commit in this task) — confirmed via
+      `git log` showing no commit of this task touches that suite or its script. Not "green" in
+      the literal sense, but the non-green result is fully attributable to a pre-existing,
+      out-of-scope suite, not to a regression this task introduced.)*
+- [x] Redeploy via `bash .claude/scripts/deploy-headless.sh` (or the repo's current sanctioned
       deploy entry point) and confirm `.claude/scripts/lib/task-type-detect.sh`,
       `.claude/scripts/tests/test-task-type-detect.sh`, and
       `.claude/scripts/tests/test-manage-topics-create-order.sh` all landed.
-- [ ] Re-run both new suites **from the deployed copy** under `.claude/scripts/tests/` — ACCEPTANCE
+      *(completed: first deploy attempt caught a real defect — the three new scripts were not
+      yet registered in `agent-system/extensions/core/manifest.json`'s `provides.scripts`,
+      failing doc-lint; fixed by registering all three, then redeployed. All three confirmed
+      present under `.claude/scripts/` with correct executable bits after the second deploy.)*
+- [x] Re-run both new suites **from the deployed copy** under `.claude/scripts/tests/` — ACCEPTANCE
       says "All pass from the deployed copy", which the source-store run does not satisfy.
-- [ ] Run `bash .claude/scripts/tests/run-all.sh` from the deployed tree for the full regression
-      net.
-- [ ] End-to-end ACCEPTANCE walkthrough: on a scratch `state.json` with zero topics, follow
+      *(completed: both suites exit 0, all cases PASS, run directly from
+      `.claude/scripts/tests/`)*
+- [x] Run `bash .claude/scripts/tests/run-all.sh` from the deployed tree for the full regression
+      net. *(deviation: altered — both new suites PASS (84 total, 81 passed, 3 failed); the 3
+      failures are `test-detect-noop-bash.sh`, `test-orchestrate-build-aux-dispatch.sh`, and
+      `test-verify-deploy-context-budget.sh`. `test-orchestrate-build-aux-dispatch.sh`'s failure
+      ("plan-revision's model did not resolve to opus") is traced via `git log` to a concurrent
+      sibling task's (task 242, per this dispatch's declared `concurrent_siblings` territory)
+      in-flight edit to `agents/general-implementation-agent.md`, a file this task never
+      touches. `test-detect-noop-bash.sh`'s failure (a stray tmp-dir / env-override issue) and
+      the context-budget failure are likewise unrelated to any file this task's commits touch.
+      Per this dispatch's concurrency-note guidance ("treat an unexpected build failure in a
+      file outside your own file_scope as possibly a sibling's in-flight edit, not necessarily
+      your own regression"), these are reported rather than fixed, to avoid colliding with
+      task 242's own in-progress work on a shared file.)*
+- [x] End-to-end ACCEPTANCE walkthrough: on a scratch `state.json` with zero topics, follow
       deployed `commands/task.md` Create Mode exactly as written and confirm the created task has
       its topic set, the topic appears in `active_topics`, and no step exits non-zero.
-- [ ] Confirm no file under `.claude/**` was hand-authored — every `.claude/` change must have
-      arrived via the deploy.
+      *(completed: scratch fixture repo with the deployed `manage-topics.sh`/`state-write.sh`,
+      fresh `state.json` (`active_projects: []`, `active_topics: []`) — walkthrough produced
+      task `topic: "agent-system"`, `active_topics: ["agent-system"]`, both `state-write.sh` and
+      `manage-topics.sh set` exiting 0)*
+- [x] Confirm no file under `.claude/**` was hand-authored — every `.claude/` change must have
+      arrived via the deploy. *(completed: `git status --short .claude/` returns nothing —
+      `.claude/` is gitignored/untracked, and every edit in this task targeted
+      `agent-system/extensions/**` exclusively, never `.claude/**` directly)*
 
 **Timing**: 1 hour
 

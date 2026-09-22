@@ -1,0 +1,36 @@
+{
+  "phase": 8,
+  "phase_name": "Deploy, full gate, and end-to-end confirmation",
+  "started_at": "2026-09-22T02:10:00Z",
+  "last_updated": "2026-09-22T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "shellcheck across every changed shell file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "run-all.sh from source store", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Redeploy and confirm files landed", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Re-run both new suites from deployed copy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "run-all.sh from deployed tree", "status": "done", "files_touched": []},
+    {"id": 6, "description": "End-to-end ACCEPTANCE walkthrough", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm no hand-authored .claude/** files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "First deploy attempt without registering new scripts in core manifest.json provides.scripts", "result": "failed", "reason": "doc-lint FAIL: script files on disk not in provides.scripts; fixed by registering all three new scripts and redeploying"}
+  ],
+  "deviations": [
+    {
+      "task_id": "8.2",
+      "description": "Run bash agent-system/extensions/core/scripts/tests/run-all.sh and confirm ... the whole run is green",
+      "type": "altered",
+      "reason": "1 of 91 suites fails (test-verify-deploy-context-budget.sh), pre-existing and unrelated to this task (from tasks 142/235, no commit of this task touches it).",
+      "annotation": "*(deviation: altered -- not literally green; failure confirmed pre-existing and out of scope)*"
+    },
+    {
+      "task_id": "8.5",
+      "description": "Run bash .claude/scripts/tests/run-all.sh from the deployed tree for the full regression net",
+      "type": "altered",
+      "reason": "3 of 84 suites fail in the deployed tree. test-orchestrate-build-aux-dispatch.sh's failure traced via git log to a concurrent sibling task (242)'s in-flight edit to agents/general-implementation-agent.md, a file this task never touches. test-detect-noop-bash.sh and test-verify-deploy-context-budget.sh are likewise unrelated to any file this task's commits touch.",
+      "annotation": "*(deviation: altered -- not literally green; failures confirmed either pre-existing or caused by a concurrent sibling task's in-flight edits, per this dispatch's concurrency-note guidance to report rather than fix)*"
+    }
+  ],
+  "handoff_count": 0
+}
