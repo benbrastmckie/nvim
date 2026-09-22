@@ -38,7 +38,7 @@ next_project_number: 249
 242 [RESEARCHED] — Orchestrate postflight: treat a partial handoff carrying a...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-243 [RESEARCHING] — Reconcile contradictory contract for research-phase...
+243 [RESEARCHED] — Reconcile contradictory contract for research-phase...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
@@ -117,10 +117,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 243. Reconcile contradictory contract for research-phase .orchestrator-handoff.json (agent file vs handoff-schema.md vs dispatch template)
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [243_reconcile_research_handoff_writer_contract/reports/01_reconcile-handoff-writer-contract.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
