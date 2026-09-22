@@ -314,20 +314,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: End-to-end no-redispatch test [NOT STARTED]
+### Phase 5: End-to-end no-redispatch test [COMPLETED]
 
 - **Goal:** Demonstrate deliverable point 2 directly — a task left at `status: "partial"` with a
   populated handoff `blockers[]` is not routed back into `implement` in the same run.
 - **Tasks:**
-  - [ ] Re-read `scripts/tests/test-orchestrate-cycle-plan.sh` and follow its existing fixture and
-        assertion conventions.
-  - [ ] Add a case whose state.json fixture has the task at `status: "partial"` with empty
+  - [x] Re-read `scripts/tests/test-orchestrate-cycle-plan.sh` and follow its existing fixture and
+        assertion conventions. *(completed; used Group 7's dry-run + `.blocked`/`.dispatch`
+        assertion template)*
+  - [x] Add a case whose state.json fixture has the task at `status: "partial"` with empty
         `dependencies[]`, and whose task directory carries an `.orchestrator-handoff.json` with a
-        populated `blockers[]` and no continuation pointer.
-  - [ ] Assert the task appears in `out_blocked_rows` (visible, not a silent `skip`) and is absent
-        from the dispatch rows / `eligible_tasks`.
-  - [ ] Add the companion negative case: the same fixture with an empty `blockers[]` is still
-        routed to `implement`.
+        populated `blockers[]` and no continuation pointer. *(completed: Group 26, candidate #2701)*
+  - [x] Assert the task appears in `out_blocked_rows` (visible, not a silent `skip`) and is absent
+        from the dispatch rows / `eligible_tasks`. *(completed: asserted via the SUT's own
+        `.blocked[]` output array, which is exactly what `out_blocked_rows` becomes in the
+        emitted plan JSON)*
+  - [x] Add the companion negative case: the same fixture with an empty `blockers[]` is still
+        routed to `implement`. *(completed: Group 26 negative, candidate #2702)*
 - **Timing:** 1 hour
 - **Depends on:** 1
 - **Verification Tier:** local
@@ -335,7 +338,8 @@ Phases within the same wave can execute in parallel.
   - `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` - two new cases
 - **Verification:**
   - `bash scripts/tests/test-orchestrate-cycle-plan.sh` passes with both new cases reporting
-    `pass`.
+    `pass`. *(confirmed: 243/243, up from 238/238 baseline — 5 new assertions across the two
+    fixtures)*
 
 ---
 

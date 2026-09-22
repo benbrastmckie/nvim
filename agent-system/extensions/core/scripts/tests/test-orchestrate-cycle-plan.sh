@@ -3242,6 +3242,75 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 26: end-to-end no-redispatch demonstration for a blocker-bearing `partial` outcome --
+# orchestrate-cycle-postflight.sh's `partial)` arm (Phase 1) writes status="partial" to
+# state.json when the handoff carries a non-empty blockers[]; this group demonstrates that
+# orchestrate-cycle-plan.sh, reading a state.json already at that status, never routes the task
+# back into `implement` for the rest of the run -- it lands in blocked[] (needs_human, visible),
+# never dispatch[] or eligible_tasks. Companion negative case: an empty-blockers[] partial is
+# still routed to `implement` unchanged.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 26: a partial+blockers task (status already written by postflight) is excluded from redispatch; an empty-blockers partial still dispatches"
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2701, "project_name": "g26_partial_blockers", "task_type": "general", "status": "partial", "description": "postflight already wrote status=partial for a blocker-bearing outcome", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/2701_g26_partial_blockers"
+cat > "$WORKDIR/specs/2701_g26_partial_blockers/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4, "blockers": [{"target": "aeneas-macos-aarch64 asset", "verbatim_goal": "download the release asset", "why_it_failed": "upstream release lacks this asset"}]}
+EOF
+run_sut --session g26_sess --dry-run -- 2701
+if [ "$(jqf '.blocked | map(select(.task == 2701)) | length')" = "1" ]; then
+  pass "Group 26: candidate #2701 (partial+blockers) lands in blocked[] -- visible, never a silent skip"
+else
+  fail "Group 26: candidate #2701 not found in blocked[] (stdout: $LAST_STDOUT)"
+fi
+g26_reason=$(jqf '.blocked | map(select(.task == 2701)) | .[0].reason // ""')
+if [[ "$g26_reason" == *"needs human"* ]] || [[ "$g26_reason" == *"unresolved blocker"* ]]; then
+  pass "Group 26: candidate #2701's blocked[] reason names the unresolved-blocker/needs-human cause"
+else
+  fail "Group 26: candidate #2701's blocked[] reason missing the expected text (got: '$g26_reason')"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 2701)) | length')" = "0" ] && \
+   [ "$(jqf '.deferred | map(select(.task == 2701)) | length')" = "0" ]; then
+  pass "Group 26: candidate #2701 is absent from dispatch[] and deferred[] -- not routed back to implement"
+else
+  fail "Group 26: candidate #2701 leaked into dispatch or deferred (stdout: $LAST_STDOUT)"
+fi
+
+# Companion negative case: the identical fixture shape, but with an empty blockers[] -- still
+# routed to `implement`, per the classifier's "partial, neither -> implement" row (Non-Goals: no
+# behavior change intended here; this pins that orchestrate-cycle-plan.sh needed no edit).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2702, "project_name": "g26_partial_no_blockers", "task_type": "general", "status": "partial", "description": "an ordinary in-progress partial, no blockers", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/2702_g26_partial_no_blockers"
+cat > "$WORKDIR/specs/2702_g26_partial_no_blockers/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4}
+EOF
+run_sut --session g26b_sess --dry-run -- 2702
+if [ "$(jqf '.dispatch | map(select(.task == 2702)) | length')" = "1" ] && \
+   [ "$(jqf '.dispatch | map(select(.task == 2702)) | .[0].phase')" = "implement" ]; then
+  pass "Group 26 (negative): candidate #2702 (partial, no blockers) still dispatches to implement"
+else
+  fail "Group 26 (negative): candidate #2702 did not dispatch to implement (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.blocked | map(select(.task == 2702)) | length')" = "0" ]; then
+  pass "Group 26 (negative): candidate #2702 is absent from blocked[]"
+else
+  fail "Group 26 (negative): candidate #2702 unexpectedly landed in blocked[] (stdout: $LAST_STDOUT)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then
