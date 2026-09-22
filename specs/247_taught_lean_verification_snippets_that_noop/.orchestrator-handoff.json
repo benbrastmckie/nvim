@@ -1,0 +1,16 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 10,
+  "summary": "Re-verified both taught-Lean-snippet defect halves (broken lake-build-guard.sh --module vectors at 3 sites; hardcoded Theories/ scan root that silently passes when missing/empty, mechanically confirmed in lean-sorry-census.sh) against the current tree post-task-221/173, with exact current line numbers and a resolver design grounded in real lakefile.toml evidence from BimodalLogic and cslib.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/247_taught_lean_verification_snippets_that_noop/reports/01_taught-lean-snippets-noop.md",
+      "summary": "Re-verified defect sites for both halves with current line numbers, mechanical confirmation of the silent-pass bug, and resolver design grounding."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": []
+}
