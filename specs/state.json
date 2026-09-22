@@ -981,24 +981,29 @@
     {
       "project_number": 245,
       "project_name": "batch_admit_defer_against_admitted_set_only",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle",
       "created": "2026-09-21T21:03:29Z",
-      "last_updated": "2026-09-22T15:50:54Z",
+      "last_updated": "2026-09-22T15:57:27Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"
       ],
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nEVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).\n\nDEFECT. scripts/orchestrate-batch-admit.sh's in_batch rule defers a candidate against ANY lower-numbered in-batch task with overlapping file_scope, regardless of whether that lower-numbered task is itself admitted this cycle. Observed: one cycle admitted two tasks; a third deferred on the first (overlap on docs/ci.md) -- correct -- but a fourth, independent of both admitted tasks, then deferred on the third (overlap on docs/README.md) even though the third was not dispatching, waiting an extra cycle. The same pattern recurred two cycles later. Safe but wasteful: the 8-task batch took 6 implement cycles, of which ~2 could have been saved.\n\nDELIVERABLE. Compute in-batch deferral against the set of tasks actually admitted this cycle: iterate candidates greedily in ascending project_number, admitting a candidate iff its scope does not overlap any ALREADY-ADMITTED task's scope (plus all existing gates). Preserve determinism (same input -> same admitted set) and existing cross_batch semantics unchanged. Keep deferral reasons naming the admitted task that blocked the candidate. Add a regression test (new scripts/tests/test-orchestrate-batch-admit.sh or extend an existing admit test) reproducing the chain A admitted, C deferred on A, D overlapping only C -> D admitted.\n\nOUT OF SCOPE. Empty/absent file_scope admission posture (owned by the file-scope-lifecycle topic tasks).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).",
-      "session_id": "sess_1790091707_e274be_245",
+      "session_id": "sess_1790091707_e274be",
       "artifacts": [
         {
           "path": "specs/245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md",
           "type": "report",
           "summary": "Locates the in_batch deferral defect in orchestrate-batch-admit.sh's jq collision scan (compares against raw batch membership instead of the set actually admitted this cycle), proposes a reduce-based greedy ascending-order fix that preserves input-order NDJSON output, argues no $schema version bump is needed (same class of change as the documented self-modification tie-breaker precedent), and specifies a regression test scenario (A admitted, C defers on A, D overlaps only C and should now admit) plus placement options."
+        },
+        {
+          "path": "specs/245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md",
+          "type": "plan",
+          "summary": "Four-phase plan converting orchestrate-batch-admit.sh's in_batch collision predicate to a reduce-based greedy ascending walk that defers only against already-admitted peers, with a red-baseline-first regression suite, schema-doc sync, and a full gate run."
         }
       ],
       "next_artifact_number": 2
