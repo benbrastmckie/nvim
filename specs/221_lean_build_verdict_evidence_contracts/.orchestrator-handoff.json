@@ -1,17 +1,17 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 7,
-  "summary": "Confirmed guard-side (result mode, exit-code discipline, pgrep-self-match prohibition) and bounded-waiter infrastructure already exist; identified the four unmethoded build-verdict/PID-source gaps, the waiter-teardown wiring gap, and the git-snapshot --no-revert gap, with pointer-based edit recommendations for each of the five in-scope files.",
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 8,
+  "summary": "Created 6-phase plan (3.5h, 3 waves): verdict-evidence anchor in long-builds.md, supersession teardown clause, lean4.md capture pointer, per-site verdict bars plus waiter/teardown and --no-revert pointers in both lean agents, then acceptance audits and redeploy/diff.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md",
-      "summary": "Research report identifying all edit sites and recommended pointer-based fixes for the build-verdict evidence hierarchy, waiter-teardown wiring, and git-snapshot --no-revert mandate."
+      "type": "plan",
+      "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
+      "summary": "Implementation plan for build-verdict evidence, waiter teardown wiring, and --no-revert snapshot contracts."
     }
   ],
   "phases_completed": 0,
-  "phases_total": 0,
+  "phases_total": 6,
   "blockers": [],
   "continuation_path": null
 }

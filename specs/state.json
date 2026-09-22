@@ -1086,7 +1086,7 @@
       "project_name": "lean_build_verdict_evidence_contracts",
       "title": "Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot",
       "task_type": "meta",
-      "status": "researched",
+      "status": "planned",
       "topic": "core-agent-system",
       "dependencies": [
         172,
@@ -1107,10 +1107,15 @@
           "path": "specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md",
           "type": "report",
           "summary": "Research report identifying all edit sites and recommended pointer-based fixes for the build-verdict evidence hierarchy, waiter-teardown wiring, and git-snapshot --no-revert mandate."
+        },
+        {
+          "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
+          "type": "plan",
+          "summary": "Implementation plan for build-verdict evidence, waiter teardown wiring, and --no-revert snapshot contracts."
         }
       ],
       "created": "2026-09-16T06:18:20Z",
-      "last_updated": "2026-09-22T00:54:53Z",
+      "last_updated": "2026-09-22T00:57:12Z",
       "priority": "high",
       "session_id": "sess_1790030538_1b6143",
       "next_artifact_number": 2

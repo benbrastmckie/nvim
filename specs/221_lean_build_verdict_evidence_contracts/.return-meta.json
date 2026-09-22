@@ -1,30 +1,23 @@
 {
-  "status": "researched",
-  "dispatch_seq": 7,
+  "status": "planned",
+  "dispatch_seq": 8,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md",
-      "summary": "Confirms guard-side (result mode, exit-code discipline, pgrep prohibition) and bounded-waiter infrastructure already exist; identifies the four unmethoded build_passed/verdict/PID-source gaps, the waiter-teardown wiring gap, and the git-snapshot --no-revert gap, with recommended pointer-based edits to each of the five in-scope files."
+      "type": "plan",
+      "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
+      "summary": "6-phase, 3.5h plan: canonical verdict-evidence anchor and PID-source/pgrep fix in long-builds.md, supersession teardown clause, lean4.md un-piped capture pointer, verdict/teardown/--no-revert pointers in both lean agents, then acceptance greps, redeploy and deploy-tree diff."
     }
   ],
-  "next_steps": "Run /plan 221 to create implementation plan",
+  "next_steps": "Run /implement 221 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 3.5,
+  "dependency_waves": [[1, 2], [3, 4, 5], [6]],
   "metadata": {
     "session_id": "sess_1790030538_1b6143_221",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "findings_count": 6,
-  "memory_candidates": [
-    {
-      "content": "Source-store convention: a build-verdict/process-liveness contract fix should be phrased as pointer-based additions to existing anchor files (e.g. long-builds.md's evidence hierarchy, bounded-build-waiter.md's waiter idiom, dispatch-report-not-termination.md's teardown rule) rather than restated per call site. Before writing new prose, grep the target files for the claimed gap (e.g. 'build_passed', 'pgrep', 'no-revert') to confirm what infrastructure is already present versus what a dispatch description merely asserts is missing -- an absorbed/merged task description can overstate or slightly mis-scope an existing sibling agent's coverage (e.g. claiming a general orchestrator_mode bullet exists when only a narrower context-pressure-gated instance does).",
-      "category": "PATTERN",
-      "source_artifact": "specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lake-build-guard", "build-verdict", "pgrep-self-match", "source-store-convention", "pointer-based-contract"]
-    }
-  ],
-  "modified_files": [],
+  "memory_candidates": [],
   "errors": []
 }
