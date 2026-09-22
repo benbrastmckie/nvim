@@ -149,7 +149,7 @@ assert_nontrivial "classify: echo piped into tee"               "echo x | tee f"
 assert_nontrivial "classify: unrelated git command"             "git status"
 assert_nontrivial "classify: true && non-trivial command"       "true && make test"
 assert_nontrivial "classify: trivial word inside unrelated quoted string" \
-  'git commit -m "true"'
+  'git commit --message "true"'
 
 # =====================================================================
 # Threshold: fires at 3, not at 4/5, fires again at 6 (default threshold)

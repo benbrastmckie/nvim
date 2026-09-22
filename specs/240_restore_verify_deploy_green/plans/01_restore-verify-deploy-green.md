@@ -1,7 +1,7 @@
 # Implementation Plan: Task #240
 
 - **Task**: 240 - Restore verify-deploy.sh to green
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md
@@ -84,21 +84,21 @@ No roadmap consultation requested for this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Reword GATE 17 fixture [NOT STARTED]
+### Phase 1: Reword GATE 17 fixture [COMPLETED]
 
 **Goal**: Remove the scoped-commit lint false positive without changing what the test covers.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` around line
-  152 to confirm the fixture is still `'git commit -m "true"'`.
-- [ ] Replace it with `'git commit --message "true"'`. Leave the assertion label and
-  `assert_nontrivial` unchanged.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` and confirm
-  `40 passed, 0 failed`.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose`
-  and confirm `Total violations: 0`.
-- [ ] Commit only this file with an explicit path (`task 240 phase 1: reword noop-bash commit
-  fixture`).
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` around line
+  152 to confirm the fixture is still `'git commit -m "true"'`. *(completed)*
+- [x] Replace it with `'git commit --message "true"'`. Leave the assertion label and
+  `assert_nontrivial` unchanged. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh` and confirm
+  `40 passed, 0 failed`. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose`
+  and confirm `Total violations: 0`. *(completed)*
+- [x] Commit only this file with an explicit path (`task 240 phase 1: reword noop-bash commit
+  fixture`). *(completed)*
 
 **Timing**: 0.25 hours
 

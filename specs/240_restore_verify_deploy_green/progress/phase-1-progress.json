@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Reword GATE 17 fixture",
+  "started_at": "2026-09-21T00:00:00Z",
+  "last_updated": "2026-09-21T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read fixture at line 152 to confirm current text", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace fixture with 'git commit --message \"true\"'", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh"]},
+    {"id": 3, "description": "Run test-detect-noop-bash.sh, confirm 40 passed 0 failed", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run lint-scoped-commit-boundary.sh --verbose, confirm 0 violations", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Commit phase 1 change", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

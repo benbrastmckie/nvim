@@ -1,18 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {"type": "plan", "path": "specs/240_restore_verify_deploy_green/plans/01_restore-verify-deploy-green.md", "summary": "3-phase plan: reword GATE 17 fixture, re-measure eager load and correct budget config (conditional trim), full deploy-headless verification."}
-  ],
-  "next_steps": "Run /implement 240 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1790055369_87ec14_240",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.25,
-    "dependency_waves": 2
-  },
-  "memory_candidates": [],
-  "dispatch_seq": 4
+    "session_id": "sess_1790055369_87ec14",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
