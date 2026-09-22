@@ -115,33 +115,33 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Re-measure eager load and correct budget config [NOT STARTED]
+### Phase 2: Re-measure eager load and correct budget config [COMPLETED]
 
 **Goal**: Confirm GATE 20 Sub-check B is green with a fresh measurement, and make the config's
 informational fields accurate.
 
 **Tasks**:
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
-  and record the `TOTAL: <bytes> B` value.
-- [ ] **If TOTAL <= 65950** (expected, since plan time measured 65257): re-read
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
+  and record the `TOTAL: <bytes> B` value. *(completed: TOTAL 65257 B)*
+- [x] **If TOTAL <= 65950** (expected, since plan time measured 65257): re-read
   `agent-system/extensions/core/context/config/orchestrator-context-budget.json` and update only
   `eager_load.measured_bytes` (to the fresh TOTAL), `eager_load.measured_at` (today's ISO date)
   and the tail of `eager_load.note`. Replace the "KNOWN as of 2026-09-18 ... 66,026 B" passage
   with a dated correction: the 66,026 B figure did not reproduce, not even against its own
   recording commit, which re-measures to 65,257 B; the live total is `<TOTAL>` B with
   `<65950-TOTAL>` B headroom. Keep the baseline-policy prose that precedes it. Leave
-  `baseline_bytes` unchanged.
+  `baseline_bytes` unchanged. *(completed: measured_bytes=65257, measured_at=2026-09-21, note tail replaced with a "CORRECTED 2026-09-21" passage, baseline_bytes untouched)*
 - [ ] **If TOTAL > 65950** (a sibling regression landed): find the file(s) that grew (use
   `git log` on the eager channels: the core and extension claudemd merge sources, and core
   `rules/*.md`). Preferred: trim at least the overage plus a few hundred bytes of headroom by
   collapsing restatement into pointers in `agent-system/extensions/core/**` eager files. Keep
   all operational content, and do not edit a file inside a live sibling's declared scope.
   Fallback: raise `baseline_bytes` with a dated, justified note that names the cause. Then update
-  `measured_bytes`, `measured_at` and `note` as above.
-- [ ] Validate JSON (`jq . <config> >/dev/null`). Re-run the measurement and confirm
-  `TOTAL <= baseline_bytes`.
-- [ ] Commit only the touched files with explicit paths (`task 240 phase 2: correct eager-load
-  budget snapshot`).
+  `measured_bytes`, `measured_at` and `note` as above. *(deviation: skipped — not applicable, TOTAL was under baseline)*
+- [x] Validate JSON (`jq . <config> >/dev/null`). Re-run the measurement and confirm
+  `TOTAL <= baseline_bytes`. *(completed: jq parses cleanly, re-measured TOTAL 65257 B <= 65950 B)*
+- [x] Commit only the touched files with explicit paths (`task 240 phase 2: correct eager-load
+  budget snapshot`). *(completed)*
 
 **Timing**: 0.5 hours
 
