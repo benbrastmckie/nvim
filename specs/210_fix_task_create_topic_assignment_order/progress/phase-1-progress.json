@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Fix Create Mode topic-assignment order in task.md",
+  "started_at": "2026-09-22T00:00:00Z",
+  "last_updated": "2026-09-22T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Move manage-topics.sh set call from step 4.5 to after step 6", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 3, "description": "Annotate step 6 topic clause with D2 comment", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 4, "description": "Fix bare-string options arrays in illustrative AskUserQuestion blocks", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"], "note": "Widened from 3 to 4 sites (Recover, Expand, Review follow-up, and Sync backfill) -- see deviations"},
+    {"id": 5, "description": "Audit-only caller sweep for order", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Fix the bare-string options arrays in the three illustrative AskUserQuestion blocks (Recover Mode, Expand Mode, Review Mode)",
+      "type": "altered",
+      "reason": "grep -n '\"options\"' commands/task.md found FOUR bare-string sites, not three: Recover (~379), Expand (~468), Review follow-up (~848), and also the /task --sync backfill picker (~607) which the plan's D7/Phase-1 task list did not name. Phase 1's own Verification criterion ('No \"options\": [ block in task.md contains a bare string element') is file-wide, so all four were fixed for internal consistency with that criterion rather than leaving the Sync picker as the sole remaining bare-string block.",
+      "annotation": "*(deviation: altered — widened from 3 to 4 picker sites; Sync backfill picker at ~line 607 also fixed to satisfy Phase 1's file-wide Verification criterion)*"
+    }
+  ],
+  "handoff_count": 0
+}

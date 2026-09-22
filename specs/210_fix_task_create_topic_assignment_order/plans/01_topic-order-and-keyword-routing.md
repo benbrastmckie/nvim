@@ -1,7 +1,7 @@
 # Implementation Plan: Fix /task create topic assignment order, and task-type keyword false positives
 
 - **Task**: 210 - Fix /task create: topic assignment order and registration, and task-type keyword false positives
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None (task 209 is a state.json ordering dependency only, not content-related)
 - **Research Inputs**: specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md
@@ -171,31 +171,40 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Fix Create Mode topic-assignment order in task.md [NOT STARTED]
+### Phase 1: Fix Create Mode topic-assignment order in task.md [COMPLETED]
 
 **Goal**: Create Task Mode assigns its topic after the task exists in `active_projects`, and
 `task.md`'s three illustrative pickers use the real `AskUserQuestion` option shape.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/commands/task.md` immediately before editing (shared
-      working tree, concurrent siblings).
-- [ ] In step 4.5, keep the Mode A picker reference and the `$topic` capture; **delete** the
+- [x] Re-read `agent-system/extensions/core/commands/task.md` immediately before editing (shared
+      working tree, concurrent siblings). *(completed)*
+- [x] In step 4.5, keep the Mode A picker reference and the `$topic` capture; **delete** the
       `bash .claude/scripts/manage-topics.sh set "$next_num" "$topic"` block that currently
       follows it, replacing it with a one-line note that state application happens after step 6.
-- [ ] Immediately after step 6's `state-write.sh` invocation, add the `manage-topics.sh set` call
+      *(completed)*
+- [x] Immediately after step 6's `state-write.sh` invocation, add the `manage-topics.sh set` call
       using the same `$session_id` generated in step 6, guarded per D3: on non-zero exit print a
       loud error naming the exit code and the exact remediation command, and treat it as a hard
-      error rather than the `|| echo "...non-fatal"` idiom used by Expand/Review.
-- [ ] Add a short inline comment at step 6's `"topic": ...` jq clause recording D2 (kept
-      deliberately; `manage-topics.sh set` re-asserts it and owns `active_topics`).
-- [ ] Fix the bare-string `options` arrays in the three illustrative `AskUserQuestion` blocks
+      error rather than the `|| echo "...non-fatal"` idiom used by Expand/Review. *(completed)*
+- [x] Add a short inline comment at step 6's `"topic": ...` jq clause recording D2 (kept
+      deliberately; `manage-topics.sh set` re-asserts it and owns `active_topics`). *(completed)*
+- [x] Fix the bare-string `options` arrays in the three illustrative `AskUserQuestion` blocks
       (Recover Mode ~353-361, Expand Mode ~442-450, Review Mode ~822-830) to
       `{label, description}` objects. Do not change their `question`/`header`/`multiSelect`
       values, which are already correct.
-- [ ] Audit-only caller sweep (no edits expected): confirm Expand (~462), Review follow-up
+      *(deviation: altered — a fourth bare-string site was also found and fixed, the `/task
+      --sync` backfill picker (~line 607); Phase 1's Verification criterion is file-wide
+      ("No `"options": [` block in `task.md` contains a bare string element"), so it was
+      included rather than left as the sole remaining bare-string block)*
+- [x] Audit-only caller sweep (no edits expected): confirm Expand (~462), Review follow-up
       (~868), and Recover (~384) still call `set`/`add` strictly after their state write, and
       confirm `/spawn`, `/fix-it`, `/review`, `/project-overview`, `/todo` backfill likewise.
       Record any caller found out of order as a new finding rather than silently fixing it.
+      *(completed: all callers confirmed in order — Recover, Expand, Review follow-up in
+      task.md; skill-spawn Stage 14a, skill-fix-it Step 9.3, skill-project-overview, and
+      skill-todo backfill all call `set`/`add` strictly after their state write. No
+      out-of-order caller found besides the original Create Mode defect.)*
 
 **Timing**: 1 hour
 

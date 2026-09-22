@@ -211,10 +211,9 @@ When $ARGUMENTS contains a description (no flags).
    Follow @.claude/context/patterns/topic-assignment-pattern.md (Mode A: Interactive).
    Capture the selected topic in `$topic`.
 
-   After topic selection:
-   ```bash
-   bash .claude/scripts/manage-topics.sh set "$next_num" "$topic"
-   ```
+   Note: `manage-topics.sh set` is NOT called here. `set` requires the task to already exist in
+   `active_projects` (it exits 4 otherwise — see `scripts/manage-topics.sh`), so state
+   application happens after Step 6's `state-write.sh` call below, not at selection time.
 
 5. **Create slug** from description:
    - Lowercase, replace spaces with underscores
@@ -234,6 +233,10 @@ When $ARGUMENTS contains a description (no flags).
    # by construction (Mode A has no Skip option). This jq guard remains defensive only.
    # Build topic from step 4.5 result
    # $improved_desc is the final description from step 3 text transformation
+   # NOTE (D2, deliberate): "topic" is also set here even though the manage-topics.sh set call
+   # below re-asserts it and is the sole owner of active_topics. Keeping this clause means
+   # state.json carries the correct topic value in the window between this write and the set
+   # call below, rather than depending entirely on that one later call succeeding.
    bash .claude/scripts/state-write.sh \
      '.next_project_number = {NEW_NUMBER} |
       .active_projects = [{
@@ -252,6 +255,23 @@ When $ARGUMENTS contains a description (no flags).
      --arg desc "$improved_desc" \
      --regen-todo
     ```
+
+   **Register the topic in active_topics** (must run after the write above — `manage-topics.sh
+   set` exits 4 if the task does not yet exist in `active_projects`, which is exactly the bug
+   this reordering fixes). Unlike Expand/Review/Recover's non-fatal `|| echo ... non-fatal`
+   idiom, this call is a **hard error** (D3): Create Mode's topic assignment is documented
+   mandatory, so a silent swallow would be wrong here. The task row written above is NOT rolled
+   back on failure — reverting a completed `state-write.sh` would be more destructive than
+   leaving a created task with a printed remediation line.
+   ```bash
+   if ! bash .claude/scripts/manage-topics.sh set "$next_num" "$topic"; then
+     exit_code=$?
+     echo "ERROR: manage-topics.sh set failed (exit $exit_code) for task #$next_num, topic" \
+       "'$topic'. Task #$next_num was created but is not registered in active_topics." >&2
+     echo "Remediation: bash .claude/scripts/manage-topics.sh set $next_num \"$topic\"" >&2
+     exit "$exit_code"
+   fi
+   ```
 
 6.5. **file_scope declaration-quality advisory** (WARN-only, never blocking). Runs the DEPLOYED
    `validate-state.sh` (base mode — no `--deep`, so no git-history round trip on this interactive
@@ -356,7 +376,11 @@ session_id="$(common_session_id)"
      "question": "Assign a topic to recovered task {task_number} (none found)?",
      "header": "Topic",
      "multiSelect": false,
-     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
+     "options": [
+       {"label": "<existing-topic-1>", "description": "Existing topic"},
+       {"label": "<existing-topic-2>", "description": "Existing topic"},
+       {"label": "New topic...", "description": "Free-text follow-up to name a new topic"}
+     ]
    }
    ```
 
@@ -445,7 +469,11 @@ Parse task number and optional prompt:
      "question": "Assign a topic to subtasks (parent has none)?",
      "header": "Topic",
      "multiSelect": false,
-     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
+     "options": [
+       {"label": "<existing-topic-1>", "description": "Existing topic"},
+       {"label": "<existing-topic-2>", "description": "Existing topic"},
+       {"label": "New topic...", "description": "Free-text follow-up to name a new topic"}
+     ]
    }
    ```
    - If user selects an existing topic → `parent_topic="$selected"`
@@ -584,7 +612,12 @@ state.json is the authoritative source of truth. Sync validates integrity and re
      "question": "Assign a topic to task {task_num} ({i} of {total})?",
      "header": "Topic Backfill",
      "multiSelect": false,
-     "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Defer (leave uncategorized for now)"]
+     "options": [
+       {"label": "<existing-topic-1>", "description": "Existing topic"},
+       {"label": "<existing-topic-2>", "description": "Existing topic"},
+       {"label": "New topic...", "description": "Free-text follow-up to name a new topic"},
+       {"label": "Defer (leave uncategorized for now)", "description": "The one exception to mandatory topic assignment: leaves this pre-existing task topicless for now"}
+     ]
    }
    ```
 
@@ -825,7 +858,11 @@ AskUserQuestion:
   "question": "Assign a topic to follow-up tasks (parent has none)?",
   "header": "Topic",
   "multiSelect": false,
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
+  "options": [
+    {"label": "<existing-topic-1>", "description": "Existing topic"},
+    {"label": "<existing-topic-2>", "description": "Existing topic"},
+    {"label": "New topic...", "description": "Free-text follow-up to name a new topic"}
+  ]
 }
 ```
 

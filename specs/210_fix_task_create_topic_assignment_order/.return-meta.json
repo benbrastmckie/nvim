@@ -1,58 +1,11 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 210,
-  "dispatch_seq": 10,
-  "phase_count": 8,
-  "estimated_hours": 9,
-  "dependency_waves": [
-    [
-      1,
-      2,
-      4
-    ],
-    [
-      3,
-      5
-    ],
-    [
-      6,
-      7
-    ],
-    [
-      8
-    ]
-  ],
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/210_fix_task_create_topic_assignment_order/plans/01_topic-order-and-keyword-routing.md",
-      "summary": "8-phase plan across two defect clusters: move create-mode topic assignment after the state write plus AskUserQuestion schema/zero-topics rewrite, and extract task-type detection into a tested strong-anchor/weak-threshold library with the literature keyword_overrides removed."
-    }
-  ],
-  "next_steps": "Run /implement 210 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a command's prose-described rule must satisfy a literal 'fixture test' acceptance criterion, the rule has to stop being prose. The precedent in this repo is scripts/lib/manifest-routing-lib.sh, which centralized a routing ladder previously restated in several consumers; the same extraction shape (one sourceable lib/*.sh function, one scripts/tests/test-*.sh table-driven suite auto-discovered by run-all.sh) is the standard way to make a /task or /orchestrate prose step assertable. Planning such a task means budgeting a whole phase for the extraction, not treating it as a side effect of the behavioral fix.",
-      "category": "PATTERN",
-      "source_artifact": "specs/210_fix_task_create_topic_assignment_order/plans/01_topic-order-and-keyword-routing.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "prose-to-script extraction",
-        "fixture test",
-        "manifest-routing-lib",
-        "run-all.sh",
-        "sourceable library"
-      ]
-    }
-  ],
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1790091707_e274be_210",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ]
+    "session_id": "sess_1790091707_e274be",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
