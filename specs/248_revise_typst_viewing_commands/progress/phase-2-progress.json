@@ -1,0 +1,11 @@
+{
+  "phase": 2,
+  "phase_name": "Route ftplugin and preview plugin through the helper",
+  "started_at": "2026-09-22T06:41:47Z",
+  "last_updated": "2026-09-22T06:41:47Z",
+  "objectives": [
+    {"id": 1, "description": "Route ftplugin and preview plugin through the helper — file changes", "status": "completed", "files_touched": ["after/ftplugin/typst.lua", "lua/neotex/plugins/text/typst-preview.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

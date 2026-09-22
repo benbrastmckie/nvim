@@ -2,92 +2,7 @@
 -- Keybindings use <leader>l (same as LaTeX) - filetype isolation prevents conflicts
 
 local process = require("neotex.util.process")
-
--- Buffer-local variable to store pinned main file
-vim.b.typst_main_file = vim.b.typst_main_file or nil
-
--- Detect project root for --root flag (needed for multi-file projects with cross-directory imports)
--- Priority: TYPST_ROOT env > typst.toml > typst/ subdir in git repo > nil
-local function detect_project_root(main_file)
-  -- 1. Check TYPST_ROOT environment variable (highest priority)
-  local env_root = os.getenv("TYPST_ROOT")
-  if env_root then
-    return env_root
-  end
-
-  -- 2. Search upward for project markers
-  local main_dir = vim.fn.fnamemodify(main_file, ":h")
-  local markers = vim.fs.find({ "typst.toml", ".git" }, { path = main_dir, upward = true })
-
-  if #markers > 0 then
-    local marker_dir = vim.fn.fnamemodify(markers[1], ":h")
-
-    -- Special case for Logos/Theory: if .git found and typst/ subdir exists, use that
-    if markers[1]:match("%.git$") then
-      local typst_subdir = marker_dir .. "/typst"
-      if vim.fn.isdirectory(typst_subdir) == 1 and main_file:find(typst_subdir, 1, true) then
-        return typst_subdir
-      end
-    end
-
-    -- For typst.toml, use its containing directory
-    if markers[1]:match("typst%.toml$") then
-      return marker_dir
-    end
-  end
-
-  -- 3. Fallback: no special root needed
-  return nil
-end
-
--- Auto-detect main file for multi-file projects
-local function detect_main_file()
-  if vim.b.typst_main_file then
-    return vim.b.typst_main_file
-  end
-
-  local current_file = vim.api.nvim_buf_get_name(0)
-  local current_dir = vim.fn.fnamemodify(current_file, ":h")
-
-  -- If current file is not in a subdirectory (no chapters/, includes/, etc.), use it
-  local parent_dir_name = vim.fn.fnamemodify(current_dir, ":t")
-  local common_subdirs = { "chapters", "sections", "parts", "includes", "content" }
-  local is_in_subdir = vim.tbl_contains(common_subdirs, parent_dir_name)
-
-  if not is_in_subdir then
-    return current_file
-  end
-
-  -- We're in a subdirectory, search for main file
-  local project_root = vim.fn.fnamemodify(current_dir, ":h") -- Go up one level
-
-  -- Look for main file candidates in project root
-  local main_candidates = {
-    -- Common main file names
-    project_root .. "/main.typ",
-    project_root .. "/index.typ",
-    project_root .. "/document.typ",
-    -- Check for directory-named file (e.g., BimodalReference.typ in typst/ dir)
-    project_root .. "/" .. vim.fn.fnamemodify(project_root, ":t") .. ".typ",
-  }
-
-  for _, candidate in ipairs(main_candidates) do
-    if vim.fn.filereadable(candidate) == 1 then
-      return candidate
-    end
-  end
-
-  -- Fallback: Find any .typ file in project root (not recursively)
-  local typ_files = vim.fn.glob(project_root .. "/*.typ", false, true)
-  if #typ_files > 0 then
-    -- Sort by name to get consistent behavior
-    table.sort(typ_files)
-    return typ_files[1]
-  end
-
-  -- Last resort: use current file
-  return current_file
-end
+local typst = require("neotex.util.typst")
 
 -- Pin current file as main file (for multi-file projects)
 local function pin_main_file()
@@ -147,18 +62,15 @@ end
 
 -- Helper functions for Typst operations
 local function typst_compile()
-  local main_file = detect_main_file()
+  local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
   local main_filename = vim.fn.fnamemodify(main_file, ":t")
-  local root = detect_project_root(main_file)
+  local root = typst.project_root(main_file)
 
-  local cmd = { "typst", "compile", "--diagnostic-format", "short" }
-  if root then
-    table.insert(cmd, "--root")
-    table.insert(cmd, root)
-  end
-  table.insert(cmd, main_file)
+  local cmd = {
+    "typst", "compile", "--diagnostic-format", "short", "--root", root, main_file,
+  }
 
-  local root_info = root and (" (root: " .. vim.fn.fnamemodify(root, ":t") .. ")") or ""
+  local root_info = " (root: " .. vim.fn.fnamemodify(root, ":t") .. ")"
   vim.notify("Compiling " .. main_filename .. root_info .. "...", vim.log.levels.INFO)
 
   local stderr_lines = {}
@@ -223,18 +135,13 @@ local function typst_watch()
     return
   end
 
-  local main_file = detect_main_file()
+  local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
   local main_filename = vim.fn.fnamemodify(main_file, ":t")
-  local root = detect_project_root(main_file)
+  local root = typst.project_root(main_file)
 
-  local cmd = { "typst", "watch" }
-  if root then
-    table.insert(cmd, "--root")
-    table.insert(cmd, root)
-  end
-  table.insert(cmd, main_file)
+  local cmd = { "typst", "watch", "--root", root, main_file }
 
-  local root_info = root and (" (root: " .. vim.fn.fnamemodify(root, ":t") .. ")") or ""
+  local root_info = " (root: " .. vim.fn.fnamemodify(root, ":t") .. ")"
   vim.notify("Starting watch on " .. main_filename .. root_info .. "...", vim.log.levels.INFO)
   process.start({
     name = "typst-watch",
@@ -257,8 +164,8 @@ local function typst_watch()
 end
 
 local function typst_view_pdf()
-  local main_file = detect_main_file()
-  local pdf = vim.fn.fnamemodify(main_file, ":r") .. ".pdf"
+  local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
+  local pdf = typst.pdf_path(main_file)
 
   if vim.fn.filereadable(pdf) == 1 then
     vim.fn.jobstart({ "sioyek", pdf }, { detach = true })
@@ -282,7 +189,7 @@ end
 
 local function tinymist_clear_cache()
   -- Delete stale compiled artifacts (same base name as main .typ file)
-  local main_file = vim.b.typst_main_file or vim.fn.expand("%:p")
+  local main_file = typst.main_file(vim.api.nvim_buf_get_name(0))
   local main_dir = vim.fn.fnamemodify(main_file, ":h")
   local main_base = vim.fn.fnamemodify(main_file, ":t:r")
   local deleted = {}

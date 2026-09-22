@@ -1,0 +1,8 @@
+[
+  {
+    "question": "after/ftplugin/typst.lua, docs/TYPST.md, docs/MAPPINGS.md, and lua/neotex/util/README.md already carry a substantial, unrelated, uncommitted keymap-renaming diff (continuing task 519's <leader>al theme into typst/latex/slidev, plus an unrelated surround-vocabulary rewrite in docs/TYPST.md) that task 248's Phase 2-5 edits must land on top of. Since this repo's commit pipeline stages whole files (not hunks), how should that pre-existing diff be handled before task 248 continues, so its own commits are not swept into task 248's phase history?",
+    "answer": "Commit the pre-existing diff first as its own separate, non-task-248 commit, then resume Phases 2-5 cleanly on top. DONE: user's diff committed as 5c7dc15dc; working tree for those files is now clean.",
+    "cycle": 3,
+    "timestamp": "2026-09-22T06:38:22Z"
+  }
+]

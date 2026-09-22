@@ -19,62 +19,13 @@ return {
       follow_cursor = true,
       -- Debug mode (logs to ~/.local/share/nvim/typst-preview/log.txt)
       debug = false,
-      -- Main file detection for multi-file projects
+      -- Main file detection and project root: delegate to the shared helper so the web
+      -- preview agrees with the CLI commands and tinymist about "which document is this".
       get_main_file = function(current_file)
-        -- Check for buffer-local pinned main file
-        if vim.b.typst_main_file then
-          return vim.b.typst_main_file
-        end
-
-        local current_dir = vim.fn.fnamemodify(current_file, ":h")
-
-        -- If current file is not in a subdirectory, use it
-        local parent_dir_name = vim.fn.fnamemodify(current_dir, ":t")
-        local common_subdirs = { "chapters", "sections", "parts", "includes", "content" }
-        local is_in_subdir = vim.tbl_contains(common_subdirs, parent_dir_name)
-
-        if not is_in_subdir then
-          return current_file
-        end
-
-        -- We're in a subdirectory, search for main file
-        local project_root = vim.fn.fnamemodify(current_dir, ":h")
-
-        -- Look for main file candidates in project root
-        local main_candidates = {
-          project_root .. "/main.typ",
-          project_root .. "/index.typ",
-          project_root .. "/document.typ",
-          project_root .. "/" .. vim.fn.fnamemodify(project_root, ":t") .. ".typ",
-        }
-
-        for _, candidate in ipairs(main_candidates) do
-          if vim.fn.filereadable(candidate) == 1 then
-            return candidate
-          end
-        end
-
-        -- Fallback: Find any .typ file in project root
-        local typ_files = vim.fn.glob(project_root .. "/*.typ", false, true)
-        if #typ_files > 0 then
-          table.sort(typ_files)
-          return typ_files[1]
-        end
-
-        return current_file
+        return require("neotex.util.typst").main_file(current_file)
       end,
-      -- Project root detection
       get_root = function(main_file)
-        local root = os.getenv("TYPST_ROOT")
-        if root then
-          return root
-        end
-        local main_dir = vim.fn.fnamemodify(main_file, ":h")
-        local found = vim.fs.find({ "typst.toml", ".git" }, { path = main_dir, upward = true })
-        if #found > 0 then
-          return vim.fn.fnamemodify(found[1], ":h")
-        end
-        return main_dir
+        return require("neotex.util.typst").project_root(main_file)
       end,
     })
   end,

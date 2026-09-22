@@ -163,24 +163,27 @@ and pin state, and test it with fixtures.
 
 ---
 
-### Phase 2: Route ftplugin and preview plugin through the helper [NOT STARTED]
+### Phase 2: Route ftplugin and preview plugin through the helper [COMPLETED]
 
 **Goal**: Delete both duplicated detection implementations and use the shared module in the
 CLI commands and in typst-preview.nvim.
 
 **Tasks**:
-- [ ] Territory check first: run `git diff --stat` and `git log -3` on
+- [x] Territory check first: run `git diff --stat` and `git log -3` on
       `after/ftplugin/typst.lua`. If foreign uncommitted hunks remain, STOP and report (see
-      Risks). Re-read the file immediately before editing.
-- [ ] In `after/ftplugin/typst.lua`: remove `detect_project_root` and `detect_main_file` and
+      Risks). Re-read the file immediately before editing. *(verified clean: prior blocker
+      resolved by user, committed as 5c7dc15dc; `git status --short` empty on all five files)*
+- [x] In `after/ftplugin/typst.lua`: remove `detect_project_root` and `detect_main_file` and
       the `vim.b.typst_main_file` initializer. Add `local typst = require("neotex.util.typst")`.
       `typst_compile` and `typst_view_pdf` use `typst.main_file(bufname)`,
       `typst.project_root(main)` and `typst.pdf_path(main)`.
-- [ ] `typst_compile`: always pass `--root <root>` (the root is now always a string) and
+- [x] `typst_compile`: always pass `--root <root>` (the root is now always a string) and
       `cwd = root`. Keep quickfix parsing unchanged (relative paths resolve against `root`).
-- [ ] `tinymist_clear_cache`: resolve the artifact base via `typst.main_file` instead of
+      *(also updated `typst_watch`, which shares the same detection call sites and would
+      otherwise call the now-deleted local functions; it is deleted outright in Phase 4)*
+- [x] `tinymist_clear_cache`: resolve the artifact base via `typst.main_file` instead of
       `vim.b.typst_main_file or expand("%:p")`.
-- [ ] In `lua/neotex/plugins/text/typst-preview.lua`: replace the `get_main_file` and
+- [x] In `lua/neotex/plugins/text/typst-preview.lua`: replace the `get_main_file` and
       `get_root` closures with
       `function(f) return require("neotex.util.typst").main_file(f) end` and
       `function(m) return require("neotex.util.typst").project_root(m) end`.

@@ -1,50 +1,15 @@
 {
-  "status": "partial",
-  "summary": "Phase 1 (shared lua/neotex/util/typst.lua helper + plenary spec) completed, verified, and committed. Phase 2 is blocked: after/ftplugin/typst.lua, docs/TYPST.md, docs/MAPPINGS.md, and lua/neotex/util/README.md already carry a substantial, unrelated, uncommitted keymap-renaming diff (a continuation of task 519's <leader>al theme, extended to typst/latex/slidev, plus an unrelated surround-vocabulary rewrite) that Phase 2-5 must edit on top of. This repo's commit pipeline stages whole files, not hunks, so proceeding would sweep that unrelated diff into task 248's own commits, which the plan's own Risk table explicitly forbids ('Never commit them mixed in').",
-  "artifacts": [
-    {
-      "type": "implementation",
-      "path": "lua/neotex/util/typst.lua",
-      "summary": "New shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path"
-    },
-    {
-      "type": "implementation",
-      "path": "lua/neotex/util/typst_spec.lua",
-      "summary": "Plenary busted spec, 8 passing assertions covering main-file resolution order and project_root marker precedence"
-    },
-    {
-      "type": "handoff",
-      "path": "specs/248_revise_typst_viewing_commands/handoffs/phase-1-handoff-20260922T061400Z.md",
-      "summary": "Phase 1 completion handoff, names the Phase 2 blocker and what not to try"
-    }
-  ],
+  "status": "in_progress",
+  "started_at": "2026-09-22T06:41:47Z",
+  "artifacts": [],
   "partial_progress": {
-    "stage": "phase_2_blocked",
-    "details": "Phase 1 complete and committed (9e0c21812). Phase 2 (route ftplugin and preview plugin through the helper) cannot proceed cleanly: after/ftplugin/typst.lua, docs/TYPST.md, docs/MAPPINGS.md and lua/neotex/util/README.md already carry a large, coherent, unrelated, still-uncommitted diff (git log shows the same repo's most recent commit on docs/MAPPINGS.md, task 519, is 'update docs and comments for <leader>al replacing <leader>ac/ao' -- this uncommitted diff is a continuation of that same theme, not task 248's work; lua/neotex/plugins/text/typst-preview.lua and lspconfig.lua are unaffected and clean). Verified via git diff/git log per the plan's own Risk table instruction and the dispatch's territory contract; stopped rather than mixing an unrelated commit into task 248's phase history or discarding someone else's in-progress edits.",
-    "handoff_path": "specs/248_revise_typst_viewing_commands/handoffs/phase-1-handoff-20260922T061400Z.md"
+    "stage": "phase_2_resuming",
+    "details": "Resuming at Phase 2 per orchestrator note. Phase 1 complete and committed (9e0c21812). Prior blocker (unrelated keymap-renaming diff) resolved by user: committed separately as 5c7dc15dc. Target files now clean."
   },
-  "user_decision": {
-    "question": "after/ftplugin/typst.lua, docs/TYPST.md, docs/MAPPINGS.md, and lua/neotex/util/README.md already carry a substantial, unrelated, uncommitted keymap-renaming diff (continuing task 519's <leader>al theme into typst/latex/slidev, plus an unrelated surround-vocabulary rewrite in docs/TYPST.md) that task 248's Phase 2-5 edits must land on top of. Since this repo's commit pipeline stages whole files (not hunks), how should that pre-existing diff be handled before task 248 continues, so its own commits are not swept into task 248's phase history?",
-    "options": [
-      "Commit the pre-existing diff first as its own separate, non-task-248 commit, then resume task 248 Phases 2-5 cleanly on top",
-      "Stash the pre-existing diff, implement Phases 2-5 against clean HEAD content, commit task 248's work, then pop the stash back (may need manual conflict resolution against overlapping functions)",
-      "Accept mixed commits for Phases 2-5 with an honest disclosure line in the commit body naming the carried unrelated diff, overriding the plan's 'never commit them mixed in' Risk mitigation",
-      "Discard the pre-existing uncommitted diff and implement Phases 2-5 from a clean file, accepting the loss of that in-progress renaming/surround work"
-    ],
-    "recommended": "Commit the pre-existing diff first as its own separate, non-task-248 commit, then resume task 248 Phases 2-5 cleanly on top",
-    "blocking": true
-  },
-  "modified_files": [
-    "lua/neotex/util/typst.lua",
-    "lua/neotex/util/typst_spec.lua"
-  ],
   "metadata": {
     "session_id": "sess_1790055369_87ec14",
     "agent_type": "neovim-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
-    "phases_completed": 1,
-    "phases_total": 5
-  },
-  "next_steps": "Resolve the user_decision above, then resume /implement 248 (or /orchestrate 248 --implement) from Phase 2. Phase 1 is committed and does not need to be redone."
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
+  }
 }
