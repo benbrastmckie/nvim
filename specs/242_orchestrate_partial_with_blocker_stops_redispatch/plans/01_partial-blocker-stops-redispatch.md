@@ -1,7 +1,7 @@
 # Implementation Plan: Task #242
 
 - **Task**: 242 - orchestrate partial-with-blocker stops redispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/242_orchestrate_partial_with_blocker_stops_redispatch/reports/01_orchestrate_partial_blocker_stops_redispatch.md
@@ -123,33 +123,36 @@ No `roadmap_path` provided in the dispatch context; no roadmap phases added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Write `status: "partial"` on a blocker-bearing partial outcome [NOT STARTED]
+### Phase 1: Write `status: "partial"` on a blocker-bearing partial outcome [COMPLETED]
 
 - **Goal:** Make `orchestrate-cycle-postflight.sh` transition state.json to `partial` when a
   `partial` dispatch outcome carries a non-empty handoff `blockers[]`, so
   `orchestrate-triage-classify.sh`'s existing `partial + blockers, no continuation -> needs_human`
   row becomes reachable.
 - **Tasks:**
-  - [ ] Re-read `scripts/orchestrate-cycle-postflight.sh` around the status-transition case switch
-        (the `partial|failed|blocked)` arm, currently line ~792) before editing.
-  - [ ] Split a dedicated `partial)` arm out ahead of the existing arm; narrow the residual arm to
-        `failed|blocked)` with its body and stderr message left byte-identical.
-  - [ ] In the new `partial)` arm, compute the handoff blocker count from the in-scope `$handoff`
+  - [x] Re-read `scripts/orchestrate-cycle-postflight.sh` around the status-transition case switch
+        (the `partial|failed|blocked)` arm, currently line ~792) before editing. *(completed)*
+  - [x] Split a dedicated `partial)` arm out ahead of the existing arm; narrow the residual arm to
+        `failed|blocked)` with its body and stderr message left byte-identical. *(completed)*
+  - [x] In the new `partial)` arm, compute the handoff blocker count from the in-scope `$handoff`
         (`jq -r '(.blockers // []) | length'`, with the same non-numeric guard
-        `orchestrate-triage-classify.sh` uses: `case "$n" in ''|*[!0-9]*) n=0 ;; esac`).
-  - [ ] When the count is greater than zero and `is_live`, call
+        `orchestrate-triage-classify.sh` uses: `case "$n" in ''|*[!0-9]*) n=0 ;; esac`). *(completed)*
+  - [x] When the count is greater than zero and `is_live`, call
         `skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"`,
         mirroring the `needs_research)` arm's invocation shape at line ~809. Add the matching
-        `[dry-run] would ...` branch, as every sibling arm has.
-  - [ ] When the count is zero, keep today's behavior exactly: emit the existing
+        `[dry-run] would ...` branch, as every sibling arm has. *(deviation: altered — this call
+        was a no-op until a matching `partial)` arm was added to `skill_postflight_update` itself
+        in `scripts/skill-base.sh`, which had no case for status="partial" and silently skipped
+        the write; see Files to modify below)*
+  - [x] When the count is zero, keep today's behavior exactly: emit the existing
         "recognized exception outcome / no state.json transition performed" notice and write
-        nothing.
-  - [ ] Add a short cross-reference comment on the new arm pointing at
+        nothing. *(completed)*
+  - [x] Add a short cross-reference comment on the new arm pointing at
         `orchestrate-triage-classify.sh`'s `partial + blockers` table row, explaining that the
-        status write is what makes that row reachable.
-  - [ ] Add the reciprocal one-line comment on that table row in
+        status write is what makes that row reachable. *(completed)*
+  - [x] Add the reciprocal one-line comment on that table row in
         `scripts/orchestrate-triage-classify.sh` pointing back at this arm. Comment only — do not
-        alter the table's contents or any classifier logic.
+        alter the table's contents or any classifier logic. *(completed)*
 - **Timing:** 1 hour
 - **Depends on:** none
 - **Verification Tier:** full
@@ -164,11 +167,18 @@ Phases within the same wave can execute in parallel.
     arm out, add the gated status write and cross-reference comment
   - `agent-system/extensions/core/scripts/orchestrate-triage-classify.sh` - reciprocal
     cross-reference comment on the `partial + blockers` table row only
+  - `agent-system/extensions/core/scripts/skill-base.sh` - *(deviation: altered — not in the
+    original scope. `skill_postflight_update`'s own status case switch had no `partial)` arm, so
+    the Phase 1 call site above was a silent no-op without it. Added a `partial)` arm calling
+    `update-task-status.sh postflight <N> partial <session>`, mirroring the existing
+    `needs_research)` arm's shape.)*
 - **Verification:**
   - `bash -n` both edited scripts.
   - Existing `scripts/tests/test-orchestrate-cycle-postflight.sh` and
-    `scripts/tests/test-orchestrate-triage-classify.sh` still pass unchanged.
+    `scripts/tests/test-orchestrate-triage-classify.sh` still pass unchanged. *(confirmed: 87/87
+    and 57/57 pass, unchanged)*
   - The `failed|blocked)` arm's diff shows only the removal of `partial|` from its pattern.
+    *(confirmed by diff read-through)*
 
 ---
 

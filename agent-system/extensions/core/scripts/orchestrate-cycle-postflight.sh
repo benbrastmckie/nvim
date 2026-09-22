@@ -789,7 +789,28 @@ if [ "$have_outcome" = "true" ]; then
         fi
       fi
       ;;
-    partial|failed|blocked)
+    partial)
+      # Blocker-gated status write: a `partial` outcome carrying a non-empty handoff `blockers[]`
+      # (no continuation pointer) writes status="partial" to state.json, which is what makes
+      # orchestrate-triage-classify.sh's "partial + blockers, no continuation -> needs_human"
+      # table row reachable (see that script's table, currently ~line 79). An ordinary
+      # in-progress partial (empty blockers[]) writes nothing, preserving today's defer/immediate
+      # -retry behavior byte-for-byte.
+      partial_blocker_count=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | length' 2>/dev/null)
+      case "$partial_blocker_count" in ''|*[!0-9]*) partial_blocker_count=0 ;; esac
+      if [ "$partial_blocker_count" -gt 0 ]; then
+        if is_live; then
+          # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
+          # this call's stdout to the diagnostic stream structurally.
+          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+        else
+          echo "${notice_prefix} [dry-run] would transition task ${task_number} to partial (blocker-bearing) — no write performed." >&2
+        fi
+      else
+        echo "${notice_prefix} Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition performed; the task remains at its current in-flight status." >&2
+      fi
+      ;;
+    failed|blocked)
       echo "${notice_prefix} Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition performed; the task remains at its current in-flight status." >&2
       ;;
     needs_research)

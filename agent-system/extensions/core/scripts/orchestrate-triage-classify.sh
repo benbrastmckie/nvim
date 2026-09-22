@@ -77,6 +77,10 @@
 #   | planned, implementing                      | implement   | implement     |
 #   | partial + continuation                     | implement   | implement     |
 #   | partial + blockers, no continuation         | needs_human | needs_human   |
+#     ^-- reachable only because orchestrate-cycle-postflight.sh's `partial)` arm writes
+#     status="partial" to state.json when the handoff carries a non-empty blockers[]; without
+#     that write, status stays "implementing" and this row is dead code. See that arm's own
+#     cross-reference comment.
 #   | partial, neither                            | implement   | implement     |
 #   | blocked, discharged (all dependencies[] completed, no handoff blockers)   | previous_status-routed | previous_status-routed |
 #   | blocked, dependency outstanding or empty dependencies[]                    | skip        | needs_human   |

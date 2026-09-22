@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Write status: \"partial\" on a blocker-bearing partial outcome",
+  "started_at": "2026-09-22T00:00:00Z",
+  "last_updated": "2026-09-22T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-postflight.sh status-transition switch", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Split partial)/failed|blocked) arms and add gated status write", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add cross-reference comments in both scripts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]},
+    {"id": 4, "description": "Add missing partial) case arm to skill_postflight_update in skill-base.sh (deviation: required for the write to function)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "skill_postflight_update's own case switch (scripts/skill-base.sh) has no `partial)` arm; calling it with status=\"partial\" silently no-ops (falls into the `*)` default \"Non-success status\" skip). The write cannot function without adding a `partial)` arm there.",
+      "type": "altered",
+      "reason": "Discovered at implementation time via direct read of skill-base.sh; not listed in the plan's Phase 1 Files to modify, but required for deliverable point 1 to work at all.",
+      "annotation": "*(deviation: altered — widened scope to scripts/skill-base.sh, required for the status write to actually execute)*"
+    }
+  ]
+}

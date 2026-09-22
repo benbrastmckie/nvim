@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md",
-      "summary": "5-phase plan making a blocker-bearing partial handoff write state.json status=partial, activating the existing needs_human classifier row that stops futile implement redispatch."
-    }
-  ],
-  "phase_count": 5,
-  "estimated_hours": 4.25,
-  "dependency_waves": [[1, 3], [2, 5], [4]],
-  "next_steps": "Run /implement 242 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "In the /orchestrate engine, state.json's task `status` field is the sole input orchestrate-triage-classify.sh uses to select a routing row; a dispatch outcome that never writes `status` leaves every status-specific classifier row unreachable dead code, no matter how well-specified that row is. Before adding new routing logic to the classifier, verify that some postflight path actually writes the status value the new row keys on. Corollary for status-value choice: `status` is read by consumers well outside the classifier (orchestrate-batch-admit.sh's is_in_flight predicate, git-snapshot.sh's no-arg task inference), so 'these two values route identically in the classifier' is never sufficient grounds for widening a status write to cases that do not need it.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/242_orchestrate_partial_with_blocker_stops_redispatch/plans/01_partial-blocker-stops-redispatch.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "state.json", "status", "triage-classify", "postflight", "routing"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1790091707_e274be_242",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 6
+    "session_id": "sess_1790091707_e274be",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

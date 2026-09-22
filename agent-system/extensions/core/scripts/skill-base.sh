@@ -921,6 +921,19 @@ skill_postflight_update() {
         bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" "${_fsa_args[@]}" || _postflight_rc=$?
       fi
       ;;
+    partial)
+      if [[ "$_skip_write" == "true" ]]; then
+        :
+      else
+        # target_status is the literal "partial" token, NOT "$operation" -- mirrors the
+        # needs_research arm below (target_status is a fixed outcome token, independent of which
+        # phase dispatched). update-task-status.sh's map_status() resolves postflight:partial to
+        # STATE_STATUS="partial" (state-management.md's permissive transition model: any non-
+        # terminal status admits partial/blocked on timeout/error). Caller gates this arm on a
+        # non-empty handoff blockers[] -- see orchestrate-cycle-postflight.sh's `partial)` arm.
+        bash .claude/scripts/update-task-status.sh postflight "$task_number" partial "$session_id" "${phase_check_args[@]}" || _postflight_rc=$?
+      fi
+      ;;
     needs_research)
       if [[ "$_skip_write" == "true" ]]; then
         :
