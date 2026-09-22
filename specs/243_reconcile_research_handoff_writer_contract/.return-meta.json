@@ -1,34 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790091707_e274be_243",
-  "task_number": 243,
-  "dispatch_seq": 2,
-  "findings_count": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/243_reconcile_research_handoff_writer_contract/reports/01_reconcile-handoff-writer-contract.md",
-      "summary": "Determines, via the postflight consumer's own log line and the handoff-schema.md settled-decision table, that research agents must never write .orchestrator-handoff.json; identifies all 21 research-agent contract files (core + 15 extensions) that currently contradict this with an unconditional MUST-write instruction, and flags an adjacent out-of-scope instance in planner-agent.md/general-implementation-agent.md."
+      "type": "plan",
+      "path": "specs/243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md",
+      "summary": "4-phase plan replacing the unconditional handoff-write section in all 21 research-agent contract files with a single canonical prohibition, fixing 4 files' extra cross-references/bullets, correcting handoff-schema.md's misattributed citation, and closing with a repo-wide acceptance grep."
     }
   ],
   "memory_candidates": [
     {
-      "content": "orchestrate-cycle-postflight.sh's own log line at the absent-handoff recovery branch states the design assumption directly: base-mode research/plan/implement dispatches never write .orchestrator-handoff.json, and recovery relies entirely on .return-meta.json. When reconciling a docs-vs-agent-contract conflict about handoff-writer obligations, treat this executable log line (not just docs/architecture/handoff-schema.md) as the authoritative tie-breaker.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/reports/01_reconcile-handoff-writer-contract.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrator-handoff", "postflight", "handoff-schema", "research-agent", "settled-decision"]
-    },
-    {
-      "content": "A boilerplate contract section (e.g. the .orchestrator-handoff.json orchestrator-mode-dispatches section) that was copy-templated across many agent files can silently drift out of sync with a later architecture-doc decision, because fixing the doc does not fan the fix back out to every templated copy. When investigating a doc-vs-contract conflict in one agent file, grep for the same section heading across all sibling agent files (by filename pattern, e.g. *-research-agent.md) before assuming the conflict is isolated.",
+      "content": "When deleting a copy-templated contract section from many agent files, first grep the section for instructions that exist ONLY inside it. Observed case: the .orchestrator-handoff.json section in 20 extension research-agent contracts was the sole carrier of the 'echo dispatch_seq verbatim' instruction; deleting the section wholesale would have silently dropped that instruction from all 20 files (core's copy was safe only because it separately repeated it for .return-meta.json). Redirect such orphaned instructions in the replacement text rather than losing them with the section.",
       "category": "PATTERN",
-      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/reports/01_reconcile-handoff-writer-contract.md",
+      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md",
       "confidence": 0.85,
-      "suggested_keywords": ["template-drift", "agent-contracts", "sweep", "grep", "extension-agents"]
+      "suggested_keywords": ["template-deletion", "agent-contracts", "dispatch_seq", "orphaned-instruction", "bulk-edit", "sweep"]
     }
   ],
-  "next_steps": "Run /plan 243 to create implementation plan",
-  "orchestrator_mode_note": "This dispatch carried orchestrator_mode: true, but per this report's own finding, base-mode research agents must never write .orchestrator-handoff.json (confirmed by orchestrate-cycle-postflight.sh's own recovery log line and by docs/architecture/handoff-schema.md's settled-decision table). No .orchestrator-handoff.json was written for this dispatch, deliberately, consistent with the recommended fix -- not an oversight. Outcome recovery is via this .return-meta.json file."
+  "metadata": {
+    "session_id": "sess_1790091707_e274be_243",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 243,
+    "phase_count": 4,
+    "estimated_hours": 2.75,
+    "dependency_waves": 3
+  },
+  "next_steps": "Run /implement 243 to execute the plan",
+  "dispatch_seq": 7
 }
