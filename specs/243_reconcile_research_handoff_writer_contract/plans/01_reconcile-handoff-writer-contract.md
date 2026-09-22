@@ -292,7 +292,7 @@ command in Phase 2's Scope Hypothesis plus `grep -n "^##\+ \`\.orchestrator-hand
 
 ---
 
-### Phase 4: Correct the schema doc citation and prove consistency [IN PROGRESS]
+### Phase 4: Correct the schema doc citation and prove consistency [COMPLETED]
 
 **Goal**: Fix `handoff-schema.md`'s misattributed citation, confirm
 `orchestrate-build-dispatch.sh` genuinely needs no change, and run the repo-wide acceptance grep.

@@ -1,17 +1,18 @@
 {
-  "task_number": 243,
-  "session_id": "sess_1790091707_e274be_243",
-  "dispatch_seq": 7,
-  "phase": "plan",
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 4,
+  "status": "implemented",
+  "dispatch_seq": 16,
+  "phase": "implement",
+  "summary": "Reconciled the research-agent handoff-writer contract: all 21 research-agent contract files now carry the canonical 'research agents never write one' prohibition, and handoff-schema.md's misattributed citation is corrected.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/243_reconcile_research_handoff_writer_contract/plans/01_reconcile-handoff-writer-contract.md",
-      "summary": "4-phase plan reconciling the research-agent handoff-writer contract across 21 agent files plus handoff-schema.md."
+      "type": "summary",
+      "path": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
+      "summary": "Reconciled the research-agent handoff-writer contract across 21 agent files and handoff-schema.md."
     }
   ],
-  "next_steps": "Run /implement 243 to execute the plan"
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null
 }

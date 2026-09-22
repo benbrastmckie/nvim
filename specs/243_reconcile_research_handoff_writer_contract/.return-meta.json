@@ -1,10 +1,69 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
+      "summary": "Reconciled the research-agent handoff-writer contract across 21 agent files and handoff-schema.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced the unconditional 'write .orchestrator-handoff.json' section in all 21 research-agent contract files with a canonical 'research agents never write one' prohibition, fixed the three variant files' MUST DO/MUST NOT lists and stale cross-references, and corrected handoff-schema.md's misattributed citation. A repo-wide grep confirms one consistent statement across all files."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+    "agent-system/extensions/cslib/agents/pr-review-research-agent.md",
+    "agent-system/extensions/epidemiology/agents/epi-research-agent.md",
+    "agent-system/extensions/formal/agents/formal-research-agent.md",
+    "agent-system/extensions/formal/agents/logic-research-agent.md",
+    "agent-system/extensions/formal/agents/math-research-agent.md",
+    "agent-system/extensions/formal/agents/physics-research-agent.md",
+    "agent-system/extensions/founder/agents/deck-research-agent.md",
+    "agent-system/extensions/latex/agents/latex-research-agent.md",
+    "agent-system/extensions/nix/agents/nix-research-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-research-agent.md",
+    "agent-system/extensions/present/agents/slides-research-agent.md",
+    "agent-system/extensions/python/agents/python-research-agent.md",
+    "agent-system/extensions/rust/agents/rust-research-agent.md",
+    "agent-system/extensions/typst/agents/typst-research-agent.md",
+    "agent-system/extensions/web/agents/web-research-agent.md",
+    "agent-system/extensions/z3/agents/z3-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-research-agent.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When bulk-editing an identical, copy-templated section across many agent contract files, first verify byte-for-byte identity across the set (grep -c on a distinguishing string, then a full Read diff of at least one pair) before scripting the substitution. Use an exact-match Python string.replace with a pre-flight occurrence-count check (== 1) per file rather than sed/regex, so any file that has silently drifted from the template fails loudly instead of being mis-edited.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bulk-edit", "copy-templated", "exact-match-substitution", "agent-contracts", "verification"]
+    },
+    {
+      "content": "When removing a section that carries the only instance of an otherwise-needed instruction (e.g. a dispatch_seq echo scoped to 'the handoff's own field'), redirect the instruction's target rather than deleting it outright. Silently dropping instructions when replacing a boilerplate section can regress unrelated behavior that depended on that boilerplate as its sole carrier.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["redirect-not-delete", "boilerplate-section", "instruction-carrier", "regression-avoidance"]
+    },
+    {
+      "content": "For a template-copied instruction spread across N extension agent files, prove consistency with a repo-wide grep for both the removed old phrasing (expect zero hits) and the new canonical phrasing (expect N hits), rather than a three-file spot check. This is the reusable acceptance test that also catches future authors reintroducing the old template.",
+      "category": "PATTERN",
+      "source_artifact": "specs/243_reconcile_research_handoff_writer_contract/summaries/01_reconcile-handoff-writer-contract-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["acceptance-grep", "repo-wide-verification", "template-propagation", "consistency-check"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790091707_e274be",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
