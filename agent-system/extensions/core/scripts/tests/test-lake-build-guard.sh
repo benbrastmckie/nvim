@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # test-lake-build-guard.sh - Toolchain-free regression suite for lake-build-guard.sh.
 #
-# Covers 29 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
+# Covers 32 acceptance-mapped cases below (the original 13, 8 added for the truthful-success
 # fixes: subcommand validation, scope-keyed sharing, the REPLAY marker, and the --help wait
 # idiom, 1 for positive-direction memory-pressure detection, 2 for the killed-holder terminal-
-# record guarantee, and 5 for the `result` subcommand's verdict/orphan reporting), plus a
-# non-vacuousness (mutation) section spanning mutations A-I. Running the suite reports 40 [PASS]
-# lines: the 29 numbered cases (case 12 splits into 12a/12b and case 27 into 27a/27b, so 31
-# case-level passes) plus the 9 mutation checks. The script under test is invoked as a REAL
+# record guarantee, 5 for the `result` subcommand's verdict/orphan reporting, and 3 for the
+# --expect-pid/--expect-scope ownership assertions), plus a non-vacuousness (mutation) section
+# spanning mutations A-J. Running the suite reports 44 [PASS] lines: the 32 numbered cases (case
+# 12 splits into 12a/12b and case 27 into 27a/27b, so 34 case-level passes) plus the 10 mutation
+# checks. The script under test is invoked as a REAL
 # SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
 # process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
 # `systemd-run`), none of which are meaningfully testable by calling functions directly in-process
@@ -886,6 +887,57 @@ else
 fi
 
 # =====================================================================================
+# Case 30: --expect-pid mismatch refuses with exit 24 and prints no verdict lines on stdout
+# =====================================================================================
+CASE30_ROOT="$WORKDIR/case30"
+build_fixture "$CASE30_ROOT"
+run_guard "$CASE30_ROOT" build build > /dev/null 2>&1
+
+CASE30_RC=0
+CASE30_OUT="$(run_guard "$CASE30_ROOT" result --expect-pid 1 2>/dev/null)" || CASE30_RC=$?
+CASE30_ERR="$(run_guard "$CASE30_ROOT" result --expect-pid 1 2>&1 1>/dev/null)"
+
+if [ "$CASE30_RC" = "24" ] && [ -z "$CASE30_OUT" ] && printf '%s' "$CASE30_ERR" | grep -q 'not the expected pid 1'; then
+  pass "case 30: --expect-pid mismatch (an obviously-wrong pid) refuses with exit 24, a stderr explanation, and no verdict lines on stdout"
+else
+  fail "case 30: expected exit 24, empty stdout, and a mismatch message; rc=$CASE30_RC out=[$CASE30_OUT] err=[$CASE30_ERR]"
+fi
+
+# =====================================================================================
+# Case 31: --expect-scope mismatch (a differently-scoped lake argument vector) refuses with 24
+# =====================================================================================
+CASE31_ROOT="$WORKDIR/case31"
+build_fixture "$CASE31_ROOT"
+run_guard "$CASE31_ROOT" build build > /dev/null 2>&1
+
+CASE31_RC=0
+run_guard "$CASE31_ROOT" result --expect-scope -- build Foo.Bar > /dev/null 2>&1 || CASE31_RC=$?
+
+if [ "$CASE31_RC" = "24" ]; then
+  pass "case 31: --expect-scope -- build Foo.Bar against a record built with a plain 'build' refuses with exit 24 (differently-scoped, never reports a sibling's verdict)"
+else
+  fail "case 31: expected exit 24, got $CASE31_RC"
+fi
+
+# =====================================================================================
+# Case 32: a MATCHING --expect-scope (the same lake argument vector the record was built with)
+# reports the real verdict (0) rather than refusing -- confirms the assertion is not just an
+# always-refuse stub
+# =====================================================================================
+CASE32_ROOT="$WORKDIR/case32"
+build_fixture "$CASE32_ROOT"
+run_guard "$CASE32_ROOT" build build > /dev/null 2>&1
+
+CASE32_RC=0
+run_guard "$CASE32_ROOT" result --expect-scope -- build > /dev/null 2>&1 || CASE32_RC=$?
+
+if [ "$CASE32_RC" = "0" ]; then
+  pass "case 32: a matching --expect-scope -- build against a record built with 'build' reports the real verdict (exit 0), not a refusal"
+else
+  fail "case 32: expected exit 0, got $CASE32_RC"
+fi
+
+# =====================================================================================
 # Non-vacuousness (mutation) checks
 # =====================================================================================
 # Per context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes", and
@@ -1142,6 +1194,28 @@ if [ "$MUTANTI_RC" = "0" ]; then
   pass "mutation I: forcing cmd_result() to always report exit 0 turns case 29's real failing build (exit_status=5) into a false pass -- confirms case 29's terminal-nonzero assertion is load-bearing, not vacuous"
 else
   fail "mutation I: expected the neutered cmd_result() to report exit 0 unconditionally; got rc=$MUTANTI_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+fi
+
+# --- Mutation J (ownership assertion): neutralize cmd_result()'s --expect-scope comparison
+# (force the mismatch condition to always be false, same technique as mutation D's decide_sharing
+# neutralization) -> case 31's mismatch-refusal assertion must go RED (a differently-scoped
+# record is wrongly reported as a match instead of refused).
+MUTANT_NOEXPECTSCOPE="$MUTANT_DIR/no-expect-scope.sh"
+sed 's/\[ -z "\$scope_key" \] || \[ "\$scope_key" != "\$expected_scope_key" \]/false/' "$GUARD" > "$MUTANT_NOEXPECTSCOPE"
+chmod +x "$MUTANT_NOEXPECTSCOPE"
+
+MUTANTJ_ROOT="$WORKDIR/mutant_noexpectscope_fixture"
+build_fixture "$MUTANTJ_ROOT"
+PATH="$MUTANTJ_ROOT/bin:$PATH" "$MUTANT_NOEXPECTSCOPE" build --dir "$MUTANTJ_ROOT" build > /dev/null 2>&1
+
+MUTANTJ_RC=0
+PATH="$MUTANTJ_ROOT/bin:$PATH" "$MUTANT_NOEXPECTSCOPE" result --dir "$MUTANTJ_ROOT" --expect-scope -- build Foo.Bar \
+  > /dev/null 2>&1 || MUTANTJ_RC=$?
+
+if [ "$MUTANTJ_RC" = "0" ]; then
+  pass "mutation J: neutralizing cmd_result()'s --expect-scope comparison makes a differently-scoped vector (build Foo.Bar against a record built with 'build') wrongly report a match (exit 0) instead of refusing -- confirms case 31's mismatch-refusal assertion is load-bearing, not vacuous"
+else
+  fail "mutation J: expected the neutered comparison to always report a match (exit 0); got rc=$MUTANTJ_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not

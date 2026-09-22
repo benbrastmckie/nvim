@@ -1016,6 +1016,8 @@ main() {
   DEFER_ON_PRESSURE=false
   NO_SHARE=false
   VERBOSE=false
+  EXPECT_PID=""
+  EXPECT_SCOPE=false
   local -a lake_args=()
 
   # Build-only options rejected in result mode: result mode's only recognized options are
@@ -1053,6 +1055,16 @@ main() {
         NO_SHARE=true; shift ;;
       --verbose)
         VERBOSE=true; shift ;;
+      --expect-pid)
+        case "$2" in
+          ''|*[!0-9]*)
+            echo "lake-build-guard: --expect-pid requires a numeric PID, got: '${2:-}'" >&2
+            exit 77
+            ;;
+        esac
+        EXPECT_PID="$2"; shift 2 ;;
+      --expect-scope)
+        EXPECT_SCOPE=true; shift ;;
       --help|-h)
         print_help
         exit 0
@@ -1080,6 +1092,14 @@ main() {
   # project found" from a --dir that happens to be invalid too.
   if [ "$mode" = "build" ]; then
     validate_build_subcommand "${lake_args[@]+"${lake_args[@]}"}"
+  fi
+
+  # --expect-scope requires the caller's own lake argument vector (post `--`) to hash against --
+  # `--expect-scope` with nothing after `--` (or no `--` at all) cannot assert anything and is a
+  # usage error, not a silently-always-mismatching comparison.
+  if [ "$mode" = "result" ] && [ "$EXPECT_SCOPE" = "true" ] && [ "${#lake_args[@]}" -eq 0 ]; then
+    echo "lake-build-guard: --expect-scope requires a lake argument vector after -- to compare against (e.g. 'result --expect-scope -- build')" >&2
+    exit 77
   fi
 
   if ! ROOT="$(resolve_project_root "$dir")"; then

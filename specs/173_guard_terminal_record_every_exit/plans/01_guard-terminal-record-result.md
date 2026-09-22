@@ -220,21 +220,22 @@ add an env-driven exit override to the fixture only (inside the test file).
 
 ---
 
-### Phase 3: `--expect-pid` / `--expect-scope` ownership assertions [NOT STARTED]
+### Phase 3: `--expect-pid` / `--expect-scope` ownership assertions [COMPLETED]
 
 **Goal**: A caller can refuse a sibling's verdict under concurrency.
 
 **Tasks**:
-- [ ] Parse `--expect-pid PID` (validate numeric, else 77) and `--expect-scope` with the
+- [x] Parse `--expect-pid PID` (validate numeric, else 77) and `--expect-scope` with the
       post-`--` vector in `result` mode (`--expect-scope` without any vector is a 77 usage error).
-- [ ] In `cmd_result()`, before verdict mapping: compare recorded `holder_pid` / recorded
+      *(completed)*
+- [x] In `cmd_result()`, before verdict mapping: compare recorded `holder_pid` / recorded
       `scope_key` vs `compute_scope_key "${expect_args[@]}"`; on mismatch print
       `lake-build-guard: result: record belongs to holder pid X / scope Y, not the expected ...`
-      to stderr and exit 24; with no record, 23 still wins.
-- [ ] New cases 30-32: `--expect-pid` mismatch -> 24 (and no verdict lines on stdout);
+      to stderr and exit 24; with no record, 23 still wins. *(completed)*
+- [x] New cases 30-32: `--expect-pid` mismatch -> 24 (and no verdict lines on stdout);
       `--expect-scope -- build Foo` against a record built with `build` -> 24; matching
-      `--expect-scope -- build` against that record -> 0.
-- [ ] Mutation J: neutralize the scope comparison; case 31 must go RED.
+      `--expect-scope -- build` against that record -> 0. *(completed)*
+- [x] Mutation J: neutralize the scope comparison; case 31 must go RED. *(completed)*
 
 **Timing**: 1 hour
 

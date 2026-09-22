@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "--expect-pid / --expect-scope ownership assertions",
+  "started_at": "2026-09-22T01:20:00Z",
+  "last_updated": "2026-09-22T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Parse --expect-pid/--expect-scope", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 2, "description": "Wire ownership assertions into cmd_result()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lake-build-guard.sh"]},
+    {"id": 3, "description": "New cases 30-32", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]},
+    {"id": 4, "description": "Mutation J", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
