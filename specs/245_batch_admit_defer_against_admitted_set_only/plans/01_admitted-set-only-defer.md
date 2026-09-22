@@ -242,31 +242,36 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Bring the documented rule into sync with the implemented rule [NOT STARTED]
+### Phase 3: Bring the documented rule into sync with the implemented rule [COMPLETED]
 
 - **Goal:** Update the schema document and the script's own header prose so the stated
   deferral-direction rule matches the narrowed, admitted-set-only behavior, without a version bump.
 - **Tasks:**
-  - [ ] Re-read `agent-system/extensions/core/docs/architecture/batch-admit-schema.md` before
-        editing.
-  - [ ] Update the `in_batch` bullet under `## Deferral-Direction Rule and Caller Guidance`: a
+  - [x] Re-read `agent-system/extensions/core/docs/architecture/batch-admit-schema.md` before
+        editing. *(completed)*
+  - [x] Update the `in_batch` bullet under `## Deferral-Direction Rule and Caller Guidance`: a
         lower-numbered in-batch peer blocks the candidate **only when that peer is itself admitted
         this cycle**. Remove or qualify the now-inaccurate "a higher-numbered in-batch task is the
         one that defers instead" phrasing, which post-fix holds only when the lower-numbered task
-        actually admits.
-  - [ ] Update the Determinism prose to describe the greedy ascending-`project_number` walk over
+        actually admits. *(completed; also fixed two downstream stale claims found during the
+        grep pass: the `idle_overlap_advisory` field row's "every in_batch member blocks
+        unconditionally" reasoning, and the v4-to-v5 Version History entry's "in_batch collision
+        behavior is completely unaffected" claim, via a forward-pointing footnote that preserves
+        that entry's own historical scope)*
+  - [x] Update the Determinism prose to describe the greedy ascending-`project_number` walk over
         candidates, the running admitted set it threads, and the fact that decision order and
         emission order are two independent orderings (emission stays caller-argument order).
-  - [ ] Add a `## Version History` entry — "admitted-set-only in-batch narrowing (still v5, no
+        *(completed: added a "Two independent orderings" paragraph under Invocation Contract)*
+  - [x] Add a `## Version History` entry — "admitted-set-only in-batch narrowing (still v5, no
         version bump)" — modeled field-for-field on the existing "Self-modification tie-breaker and
         `--phase-map` — NOT a version bump" entry's structure and justification: no field added,
         removed, or repurposed; the change reassigns which of two pre-existing verdict shapes a
-        candidate lands in, on an internal criterion no consumer inspects.
-  - [ ] Apply the same narrowing to the corresponding in-file header comment block in
+        candidate lands in, on an internal criterion no consumer inspects. *(completed)*
+  - [x] Apply the same narrowing to the corresponding in-file header comment block in
         `orchestrate-batch-admit.sh` (the "Deferral-direction rule for file_scope_collision"
-        section) so the two documents cannot drift.
-  - [ ] Confirm no task-number references leak into either deliverable file (both live outside
-        `specs/**`).
+        section) so the two documents cannot drift. *(completed)*
+  - [x] Confirm no task-number references leak into either deliverable file (both live outside
+        `specs/**`). *(completed: grep found none)*
 - **Timing:** 0.5 hours
 - **Depends on:** 2
 - **Verification Tier:** prose

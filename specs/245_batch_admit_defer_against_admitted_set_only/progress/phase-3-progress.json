@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Bring the documented rule into sync with the implemented rule",
+  "started_at": "2026-09-22T18:00:00Z",
+  "last_updated": "2026-09-22T18:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Narrow the schema doc's in_batch deferral-direction bullet, add a Determinism/two-orderings note, add a no-bump Version History entry, and mirror the narrowed rule in the script's own header comment block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"
+      ],
+      "note": "Also fixed two downstream stale claims surfaced by the grep pass: the idle_overlap_advisory field row's reasoning, and the v4-to-v5 Version History entry's now-inaccurate 'in_batch collision behavior is completely unaffected' claim (fixed via a forward-pointing footnote, preserving that entry's own historical scope). grep for 'defers instead' confirmed both remaining occurrences already qualified or about a different rule. No task-number references leaked. Script diff confirmed comment-only (bash -n clean, both test suites green: 3/3 and 33/33)."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

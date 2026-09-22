@@ -260,10 +260,13 @@
 # Deferral-direction rule for file_scope_collision (this is the load-bearing semantic, read
 # carefully):
 #   - in_batch (the colliding task is itself one of this invocation's <task_number> arguments):
-#     the candidate defers ONLY against a task with a LOWER project_number. A higher-numbered
-#     in-batch task is the one that defers instead (it will see this candidate as its own
-#     lower-numbered collision when ITS verdict is computed). This preserves the pre-existing
-#     wave-split deferral direction bit-for-bit — nothing about in-batch behavior changes.
+#     the candidate defers ONLY against a task with a LOWER project_number that is ITSELF admitted
+#     this cycle (NARROWED, still v5, no version bump -- see docs/architecture/batch-admit-schema.md's
+#     Version History for the full record). A higher-numbered in-batch task defers instead only
+#     when the lower-numbered peer actually admits; when the lower-numbered peer itself defers (for
+#     any reason -- file_scope_collision, self_modifying, or session_active), it poses no
+#     concurrent-write hazard (it never dispatches this cycle) and no longer blocks a
+#     higher-numbered peer merely by sharing project_number ordering and file_scope overlap.
 #   - cross_batch (the colliding task is NOT one of this invocation's arguments): the candidate
 #     defers ONLY while the colliding task carries execution evidence — status in
 #     {researching, planning, implementing} (case-insensitive; NARROWED in v5, was

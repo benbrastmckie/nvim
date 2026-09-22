@@ -40,6 +40,17 @@ Positional arguments are the candidate task numbers — the caller's already-com
 exactly one compact JSON object per candidate argument, one per line, in input order. There is no
 other output mode.
 
+**Two independent orderings (do not conflate them)**: verdicts are DECIDED by folding candidates
+in ASCENDING `project_number` order — a greedy walk that threads a running admitted-set forward,
+so a candidate's own `in_batch` collision test can consult whether an already-folded,
+lower-numbered peer was itself decided `admit` (see the `in_batch` bullet under
+"Deferral-Direction Rule and Caller Guidance" below). Verdicts are EMITTED in the original
+caller-argument order — the positional order above — regardless of decision order; an invocation
+with arguments out of ascending order (e.g. `D C A B`) still decides `A` before `B` before `C`
+before `D` internally, but prints `D`'s verdict first. Identical input always produces an
+identical admitted set (the fold is a pure function of `specs/state.json` plus the candidate
+list), so determinism is preserved across both orderings independently.
+
 **`--invocation-count <N>`**: the number of candidates being CO-DISPATCHED IN THE SAME wave/cycle
 as the positional `<task_number>` arguments — not the whole invocation's total candidate count.
 Defaults to the number of positional `<task_number>` arguments when omitted (backward-compatible:
@@ -168,7 +179,7 @@ deferred, and the suppressed overlap is surfaced loudly rather than silently):
 | `session_id` | string | `defer_reason == "session_active"` only (NEW in v4) | The contending session's own `session_id`. |
 | `session_liveness_reason` | string | `defer_reason == "session_active"` only (NEW in v4) | One of `session_liveness()`'s six reasons (`task-lock.sh`) — always one of `pid-alive` / `dead-pid-within-grace` / `corrupt` / `undeterminable` here, since `dead-pid`/`stale-heartbeat` sessions are excluded by D4 before this verdict can fire. |
 | `reason` | string | defer only | Machine-templated human-readable summary. Never the sole carrier of any fact already available as a structured field above. |
-| `idle_overlap_advisory` | object | present on any post-scan verdict (`admit`, `session_active` defer, or `file_scope_collision` defer) when a suppressed idle cross-batch overlap exists; absent otherwise, and absent on all pre-scan branches (the three early-exit admits and both `self_modifying` branches) (NEW in v5) | Nested object surfacing a `cross_batch` overlap the collision scan found against a task carrying NO execution evidence (status not in `{researching, planning, implementing}`) and therefore did not block on. Nested keys: `colliding_task_number` (int), `colliding_task_status` (string, verbatim from `specs/state.json`), `overlapping_path` (string, first overlapping path), `collision_scope` (string, always `"cross_batch"` — an idle `in_batch` overlap cannot occur, since every `in_batch` member blocks unconditionally), and `reason` (string, machine-templated, names the `dependencies[]`-edge remedy). First-match, ascending `project_number` — same determinism convention as the collision scan itself. |
+| `idle_overlap_advisory` | object | present on any post-scan verdict (`admit`, `session_active` defer, or `file_scope_collision` defer) when a suppressed idle cross-batch overlap exists; absent otherwise, and absent on all pre-scan branches (the three early-exit admits and both `self_modifying` branches) (NEW in v5) | Nested object surfacing a `cross_batch` overlap the collision scan found against a task carrying NO execution evidence (status not in `{researching, planning, implementing}`) and therefore did not block on. Nested keys: `colliding_task_number` (int), `colliding_task_status` (string, verbatim from `specs/state.json`), `overlapping_path` (string, first overlapping path), `collision_scope` (string, always `"cross_batch"` — `idle_overlap_advisory` is derived only from the `cross_batch`-scoped entries surviving the comparison scan; an `in_batch` overlap either IS the blocking `$hit` or is excluded from the scan entirely per the admitted-set-only narrowing below, and is never separately classified as idle), and `reason` (string, machine-templated, names the `dependencies[]`-edge remedy). First-match, ascending `project_number` — same determinism convention as the collision scan itself. |
 
 ## Precedence: Self-Modification, Then Collision, Then Session-Registry
 
@@ -228,11 +239,16 @@ precedent for its own sake.
   step 4.5, covering both effort modes) may bypass acting on this verdict when
   `--allow-self-modifying` is active for the invocation — see "Why This Check Is Blocking, Not
   Advisory" below for the override's exact boundary.
-- **`defer_reason == "file_scope_collision"`, `collision_scope == "in_batch"`**: the colliding
-  task is itself one of this invocation's candidate arguments. This resolves by ordinary
-  same-run deferral — the candidate is deferred to the next wave/cycle, same as the
-  pre-existing invocation-scoped check already did. No special handling is required beyond what
-  callers already implement for a same-batch collision.
+- **`defer_reason == "file_scope_collision"`, `collision_scope == "in_batch"`** (NARROWED, still
+  v5, no version bump — see "Version History" below): the colliding task is itself one of this
+  invocation's candidate arguments, AND — as of this narrowing — that colliding task is ITSELF
+  decided `admit` this cycle. A lower-numbered in-batch peer that is itself deferring (for any
+  `defer_reason`) poses no concurrent-write hazard, since it never actually dispatches this
+  cycle, and no longer blocks a higher-numbered candidate merely by appearing earlier in the
+  invocation's argument list. This resolves by ordinary same-run deferral — the candidate is
+  deferred to the next wave/cycle, same as the pre-existing invocation-scoped check already did.
+  No special handling is required beyond what callers already implement for a same-batch
+  collision.
 
   **Second consumer (recorded, not a schema change)**: `collision_scope == "in_batch"` now has a
   SECOND consumer beyond `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's multi-cycle
@@ -548,9 +564,14 @@ collision against a provably idle task (no execution evidence) no longer defers:
 the suppressed overlap is surfaced via a NEW `idle_overlap_advisory` field (present on any
 post-scan verdict — the plain `admit`, the `session_active` defer, or the `file_scope_collision`
 defer — wherever an idle cross_batch overlap was found and suppressed; see the Field Definitions
-table above). `in_batch` collision behavior is completely unaffected — it stays blocking and
-bit-for-bit identical, since every `in_batch` candidate is, by construction, imminently dispatched
-regardless of the colliding task's status.
+table above). `in_batch` collision behavior is completely unaffected by THIS bump — it stays
+blocking and bit-for-bit identical, since every `in_batch` candidate is, by construction,
+imminently dispatched regardless of the colliding task's status. (This "imminently dispatched"
+premise was itself narrowed by a LATER, still-v5, no-version-bump change — an `in_batch` peer that
+is itself deferring is not imminently dispatched after all — see the "admitted-set-only in-batch
+narrowing" Version History entry below for the full account; that later change does not revise
+this entry's own v4-to-v5 scope, which remains accurate as stated for the narrowing this entry
+describes.)
 
 This was a VERSION BUMP, not an additive-field change, for a DIFFERENT class of reason than the
 v1-to-v2 or v3-to-v4 bumps (those were about a NEW defer flavor being mis-bucketed by a closed
@@ -603,3 +624,30 @@ consumer code needs to change to remain correct); the SKILL.md consumers additio
 `--phase-map` wiring and updated warning/diagnostic text as a separate, later change with its
 own declared file scope (see `context/patterns/batch-orchestration-guardrails.md`'s gate
 catalogue for the resulting classification of `self_modifying` as an ordering constraint).
+
+**Admitted-set-only in-batch narrowing — NOT a version bump (schema stays v5)**: converts the
+top-level candidate generator into a `reduce` that folds candidates in ASCENDING `project_number`
+order, threading a running admitted-set lookup that narrows the `in_batch` disjunct of the
+collision scan's overlap predicate. Before this change, an `in_batch` collision blocked a
+candidate against ANY lower-numbered peer that merely appeared in the invocation's argument list,
+regardless of that peer's own verdict — including a peer that was itself deferring (for
+`file_scope_collision`, `self_modifying`, or `session_active`) and therefore never actually
+dispatching this cycle. As of this narrowing, an `in_batch` collision blocks the candidate only
+when the lower-numbered peer is ITSELF decided `admit` this cycle; a deferring peer poses no
+concurrent-write hazard and no longer blocks a higher-numbered candidate merely by sharing
+project_number ordering and file_scope overlap. This is the SAME class of change as the
+self-modification tie-breaker entry immediately above, and deliberately does not bump `$schema`
+for the identical reason: it adds no new field and no new verdict shape. It reassigns which of
+the two ALREADY-EXISTING `file_scope_collision`-adjacent shapes (`admit`, or `defer` with
+`defer_reason: "file_scope_collision"` and `collision_scope: "in_batch"`) a given in-batch
+candidate lands in, using an internal criterion (a lower-numbered peer's own already-folded
+decision) that no consumer inspects — every consumer already branches on `decision` and
+`defer_reason`/`collision_scope` only, never on why a lower-numbered peer was or was not admitted.
+Decision computation order (ascending `project_number`) and NDJSON emission order (original
+caller-argument order) are two independent orderings, both preserved — see the "Two independent
+orderings" paragraph under "Invocation Contract" above. `cross_batch`, `session_active`,
+`idle_overlap_advisory`, and the self-modification branch (including the tie-breaker and
+`--phase-map` exemption above) are unaffected: only the `in_batch` disjunct of the collision
+predicate changed. Every in-repo consumer's status: unaffected (no consumer code needs to change
+to remain correct — this purely reduces the frequency of a `defer` verdict a consumer already
+knows how to handle, it never introduces a verdict shape a consumer has not seen before).
