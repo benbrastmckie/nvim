@@ -1,0 +1,19 @@
+{
+  "status": "researched",
+  "phase": "research",
+  "dispatch_seq": 5,
+  "summary": "Confirmed both defect clusters: /task create-mode calls manage-topics.sh set before the task exists in state.json (fix: move call to after the state write) and topic-assignment-pattern.md's picker breaks with zero topics / uses a wrong AskUserQuestion schema; confirmed all three task-type keyword false positives, including that the literature manifest's keyword_overrides is the only one whose key does not equal its own task_type.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md",
+      "summary": "Root-cause analysis and fix recommendations for /task create topic order/registration/zero-topics picker plus task-type keyword false positives (4a, 4d, literature manifest)."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 0,
+  "blockers": [],
+  "plan_markers_verified": null,
+  "continuation_path": null,
+  "next_action_hint": "Run /plan 210 to turn the report's recommendations into a phased implementation plan."
+}

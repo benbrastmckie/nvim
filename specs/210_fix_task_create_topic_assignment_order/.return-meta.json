@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790091707_e274be_210",
+  "task_number": 210,
+  "dispatch_seq": 5,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md",
+      "summary": "Root-cause analysis and fix recommendations for /task create topic order/registration/zero-topics picker plus task-type keyword false positives (4a, 4d, literature manifest)."
+    }
+  ],
+  "next_steps": "Run /plan 210 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "manage-topics.sh set TASK_NUM TOPIC already sets the task's topic field AND appends to active_topics in one idempotent state-write.sh call (see manage-topics.sh 'set' subcommand). When a caller needs both effects, don't teach a separate jq filter to touch active_topics inline -- just call manage-topics.sh set after the state write exists. Inline active_topics jq duplicates logic the script already owns and is exactly what topic-assignment-pattern.md was written to eliminate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manage-topics.sh", "active_topics", "state-write.sh", "topic assignment", "idempotent"]
+    },
+    {
+      "content": "AskUserQuestion's real schema is {question, header (1-3 words Title Case), multiSelect: boolean, options: [{label, description}]}. There is no 'type' field and no separate freeText question variant -- free-text input is obtained by making one option (e.g. 'New topic...') trigger a natural-language follow-up in the NEXT turn, not a second machine schema. A doc template using {\"type\": \"select\"} or {\"type\": \"freeText\"} is stale/wrong regardless of how long it's been copied around.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["AskUserQuestion", "schema", "interactive-selection", "options", "freeText"]
+    },
+    {
+      "content": "extension keyword_overrides manifest field: the top-level key under keyword_overrides MUST equal that extension's own task_type (cslib, email, latex, rust, typst all follow this). A manifest whose key doesn't match its task_type (or that has routing_exempt:true and thus no task_type/routing block of its own at all, like literature) is a routing bug -- when found, prefer REMOVING the override rather than remapping the key, if the extension has no real task_type to route to.",
+      "category": "PATTERN",
+      "source_artifact": "specs/210_fix_task_create_topic_assignment_order/reports/01_topic-order-and-keyword-routing.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["keyword_overrides", "manifest.json", "routing_exempt", "task_type", "extension-development"]
+    }
+  ]
+}
