@@ -1,6 +1,556 @@
 {
   "completed_projects": [
     {
+      "project_number": 248,
+      "project_name": "revise_typst_viewing_commands",
+      "status": "completed",
+      "task_type": "neovim",
+      "description": "Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication",
+      "topic": "neovim",
+      "created": "2026-09-21T21:54:04Z",
+      "last_updated": "2026-09-22T07:01:17Z",
+      "session_id": "sess_1790055369_87ec14",
+      "artifacts": [
+        {
+          "path": "specs/248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md",
+          "type": "report",
+          "summary": "Audit of the Typst <leader>l command group: duplicated/disagreeing main-file and root detection, deprecated pin API, pin-state drift bug, and two concrete preview-unreliability mechanisms, with consolidation and simplification recommendations."
+        },
+        {
+          "path": "specs/248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md",
+          "type": "plan",
+          "summary": "5-phase Typst viewing-commands revision plan."
+        },
+        {
+          "path": "lua/neotex/util/typst.lua",
+          "type": "implementation",
+          "summary": "Shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path, sync_pin, setup_autocmds"
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Unified Typst main-file/root detection into one content-aware shared module, removed the redundant watch command, made tinymist pinning project-wide and auto-synced across LSP restarts, and made the preview toggle authoritative against the plugin's own server registry. Verified against three real multi-file projects and a plenary spec.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 240,
+      "project_name": "restore_verify_deploy_green",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Restore verify-deploy.sh to green by fixing its two remaining check failures. Only edit agent-system/extensions/core/** (never .claude/). (1) GATE 20 SUB-CHECK B: the eager-load total (measured by the deployed .claude/scripts/measure-eager-context.sh --check) is 66026 B against eager_load.baseline_bytes 65950 B in agent-system/extensions/core/context/config/orchestrator-context-budget.json, 76 B over. The growth came from the one-line batch-selection pointer added to agent-system/extensions/core/merge-sources/claudemd.md's Multi-task syntax paragraph (plus any other eager-set growth since the last re-baseline). Preferred fix: trim at least 76 B, ideally leaving a few hundred bytes of headroom, from the eager set (assembled CLAUDE.md merge sources + core rules/*.md) by collapsing restatement into pointers, without removing operational content. Fallback only if a trim is not reasonable: raise baseline_bytes with a dated, justified note in the config. Do not silently absorb growth. (2) GATE 17 SCOPED-COMMIT BOUNDARY LINT: agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose reports one violation at agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh:152, where the string 'git commit -m \"true\"' is a classifier test fixture (a non-trivial command the no-op Bash hook must not count), not a real commit call site. Fix by rewording the fixture so it no longer matches the lint pattern while still testing the same classification (preferred), or by adding a narrowly-scoped, documented line-level exemption per the lint's own allowlist convention. Keep all 40 assertions of test-detect-noop-bash.sh passing. VERIFY: run bash .claude/scripts/deploy-headless.sh and confirm RESULT is landed (exit 0), with 0 failed checks in verify-deploy.sh. ORDERING: tasks 224, 227, 139 and 140 edit eager-loaded files (merge-sources/claudemd.md, rules/pr-prohibition.md, rules/source-store-deploy-boundary.md, rules/git-workflow.md) and depend on this task so the headroom it restores is measured first.",
+      "topic": "core-agent-system",
+      "created": "2026-09-19T03:16:57Z",
+      "last_updated": "2026-09-22T07:01:05Z",
+      "session_id": "sess_1790055369_87ec14",
+      "artifacts": [
+        {
+          "path": "specs/240_restore_verify_deploy_green/reports/01_restore-verify-deploy-green.md",
+          "type": "report",
+          "summary": "Root-cause and fix recommendation for GATE 17 (reword test fixture); finds GATE 20 already green and recommends against a speculative trim."
+        },
+        {
+          "path": "specs/240_restore_verify_deploy_green/plans/01_restore-verify-deploy-green.md",
+          "type": "plan",
+          "summary": "3-phase plan: fixture reword, eager-load re-measure and config correction, full deploy verification."
+        },
+        {
+          "path": "specs/240_restore_verify_deploy_green/summaries/01_restore-verify-deploy-green-summary.md",
+          "type": "summary",
+          "summary": "Reworded the GATE 17 noop-bash test fixture and corrected GATE 20's stale eager-load budget snapshot; deploy-headless.sh now confirms a fully clean deploy (RESULT=landed_verify_clean, 33 checks, 0 failures), and an independent verify-deploy.sh run in this dispatch confirms PASS -- 34 check(s), 0 failure(s), including the previously-failing Gate 5."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "All 3 plan phases were already completed and committed in a prior dispatch. This dispatch verified the deploy independently: an earlier dispatch's postflight was refused only by the completion-deploy gate (stale deploy); the deploy has since been regenerated and this dispatch's own fresh verify-deploy.sh run confirms PASS -- 34 check(s), 0 failure(s), including Gate 5 (the previously-failing manifest content-hash check attributed to a concurrent sibling task's now-committed edit), Gate 17 (scoped-commit boundary lint), and Gate 20 Sub-check B (eager-load budget). No further implementation work was needed; the summary and plan were updated to record the clean re-verification.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 239,
+      "project_name": "add_noop_bash_detection_hook",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Add an advisory PostToolUse hook that detects repeated no-op Bash calls",
+      "created": "2026-09-18T19:00:37Z",
+      "last_updated": "2026-09-19T01:48:51Z",
+      "dependencies": [
+        236
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/hooks/detect-noop-bash.sh",
+        "agent-system/extensions/core/merge-sources/settings-hooks.json",
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE (optional hardening). A new hooks/detect-noop-bash.sh PostToolUse hook on Bash that classifies trivial no-op commands (`:`, `true`, bare `date`/`date -u`, `echo <literal>` with no side effects, `sleep` fragments) and tracks consecutive occurrences per session (state under a session-scoped temp/runtime path, never under specs/). After a small threshold (about 3 in a row) it injects an additionalContext corrective message naming context/patterns/external-process-wait.md and the bounded-wait idiom. It must be advisory only (never block), fail open on any internal error, reset the counter on any non-trivial command, and avoid false positives on legitimate one-off echo/date use. Register it in merge-sources/settings-hooks.json and the manifest.json hooks list following validate-meta-write.sh's precedent. Add a test covering classification, threshold, and reset. shellcheck clean.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "effort": "2.5 hours",
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/239_add_noop_bash_detection_hook/reports/01_noop_bash_detection_hook.md",
+          "type": "report",
+          "summary": "Research report with precedent mapping, classification design, threshold/reset options, manifest/settings-hooks.json registration points, and territory risk note (task 238 shares scripts/tests/ directory scope)."
+        },
+        {
+          "path": "specs/239_add_noop_bash_detection_hook/plans/01_noop-bash-detection-hook.md",
+          "type": "plan",
+          "summary": "3-phase plan for detect-noop-bash.sh hook, test, and registration."
+        },
+        {
+          "path": "specs/239_add_noop_bash_detection_hook/summaries/01_noop-bash-detection-hook-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the detect-noop-bash.sh hook, its test suite, and manifest/settings wiring."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Added hooks/detect-noop-bash.sh, an advisory-only PostToolUse hook that detects streaks of 3+ consecutive trivial no-op Bash commands per session and surfaces the bounded-wait idiom from context/patterns/external-process-wait.md, with a 40-assertion fixture-driven test suite and full settings-hooks.json/manifest.json registration.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 238,
+      "project_name": "carry_wait_pointer_in_dispatch_files",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Carry an external-process wait-discipline pointer in every orchestrate dispatch file",
+      "created": "2026-09-18T19:00:37Z",
+      "last_updated": "2026-09-19T01:48:46Z",
+      "dependencies": [
+        236
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/"
+      ],
+      "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE. Make scripts/orchestrate-build-dispatch.sh emit a short, always-present pointer to context/patterns/external-process-wait.md in every dispatch file it composes -- base mode as well as --hard, for research, plan and implement phases -- so that a dispatched agent receives the wait discipline regardless of which agent contract it loads. Follow the script's existing single-owned-behavior conventions (see its header note on the territory.md pointer for base-mode dispatches, which is the closest precedent). Add or extend a test under scripts/tests/ asserting the pointer is present in base-mode and hard-mode dispatch output. Keep the injected text to a pointer plus one-line summary; do not inline the pattern. shellcheck clean per context/standards/shell-strict-mode.md.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "effort": "1.5 hours",
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/238_carry_wait_pointer_in_dispatch_files/reports/01_wait-discipline-dispatch-pointer.md",
+          "type": "report",
+          "summary": "Analysis of orchestrate-build-dispatch.sh's conditional-vs-unconditional block conventions, recommended placement/content for the new wait-discipline pointer, and test-suite additions."
+        },
+        {
+          "path": "specs/238_carry_wait_pointer_in_dispatch_files/plans/01_wait-pointer-dispatch-plan.md",
+          "type": "plan",
+          "summary": "2-phase plan: unconditional Wait Discipline pointer in orchestrate-build-dispatch.sh plus matrix test group."
+        },
+        {
+          "path": "specs/238_carry_wait_pointer_in_dispatch_files/summaries/01_wait-pointer-dispatch-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the wait-discipline dispatch pointer and its test coverage."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Added an unconditional '## Wait Discipline' pointer section (to context/patterns/external-process-wait.md) to every dispatch file orchestrate-build-dispatch.sh writes, across base/--hard mode and research/plan/implement phases, plus a header comment documenting it as a deliberate exception; added Group 14 test coverage (presence, single-occurrence guard, ordering) that passes 106/0 including all pre-existing exact-diff groups.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 237,
+      "project_name": "wire_wait_pattern_into_agent_contracts",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Wire the external-process wait pattern into the general implementation and research agent contracts",
+      "created": "2026-09-18T19:00:37Z",
+      "last_updated": "2026-09-19T01:48:40Z",
+      "dependencies": [
+        236
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/agents/general-implementation-agent.md",
+        "agent-system/extensions/core/agents/general-research-agent.md"
+      ],
+      "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE. Reference context/patterns/external-process-wait.md (defined by the dependency task) from agents/general-implementation-agent.md and agents/general-research-agent.md: add concise MUST / MUST NOT bullets (bounded blocking wait; no no-op filler calls or status-only turns; no run_in_background or Monitor for CI waits inside a subagent; independent local work before waiting; ~45 min cap then handoff + partial return) that POINT to the pattern file rather than restating its mechanics, and a load-on-demand context reference. Place them near the existing Context Exhaustion Monitoring stage where the anti-stop and handoff discipline already lives. Consider (and note in the research report) whether extension implementation agents need the same pointer; do not edit them here unless trivially in scope.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "effort": "1 hour",
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/237_wire_wait_pattern_into_agent_contracts/reports/01_wire_wait_pattern_pointer.md",
+          "type": "report",
+          "summary": "Documents exact MUST/MUST NOT pointer text and insertion points for referencing context/patterns/external-process-wait.md in both core agent contracts."
+        },
+        {
+          "path": "specs/237_wire_wait_pattern_into_agent_contracts/plans/01_wire-wait-pattern-pointer.md",
+          "type": "plan",
+          "summary": "3-phase plan wiring the external-process wait pattern pointer into both core agent contracts."
+        },
+        {
+          "path": "specs/237_wire_wait_pattern_into_agent_contracts/summaries/01_wire-wait-pattern-pointer-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for wiring the external-process wait pattern pointer into both core agent contracts."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Added an External Process Wait Discipline pointer block and on-demand Context References line to general-research-agent.md (between Stage 3.5 and Stage 3.6) and general-implementation-agent.md (inside Stage 4.5), citing external-process-wait.md's Rules 1, 2, 3, 5, and 6 by reference. Lints and task-reference checks pass.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 236,
+      "project_name": "define_external_process_wait_pattern",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Define a canonical \"waiting on external processes\" pattern for dispatched subagents",
+      "created": "2026-09-18T19:00:37Z",
+      "last_updated": "2026-09-19T00:34:01Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/external-process-wait.md",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/context/patterns/anti-stop-patterns.md"
+      ],
+      "description": "OBSERVED INCIDENT (motivating evidence). A general-implementation-agent dispatched under /orchestrate had to wait on a GitHub Actions run of about 25 minutes. (1) The harness blocked its foreground `sleep`. (2) It ran an unbounded `gh run watch`, which hit the 600s Bash timeout and was auto-moved to the background. (3) It armed a Monitor whose loop echoed status on every 20-90s poll, so every UNCHANGED poll woke the agent. (4) Because a subagent that ends its turn terminates, it filled the gaps with about 130 no-op Bash calls (`:`, `true`, `date -u`, `echo waiting`) plus status-only text turns, burning context until it had to be stopped manually.\n\nDELIVERABLE. A new core context pattern file, context/patterns/external-process-wait.md, stating the defect class once and canonically, and defining the sanctioned wait discipline for a subagent blocked on a long external process (GitHub Actions runs first; phrase it generally enough to cover other remote jobs). Mandatory rules:\n  (1) BOUNDED BLOCKING WAIT: `timeout 540 gh run watch ID --interval 60 --exit-status >/dev/null; gh run view ID --json status,conclusion`, issued with the Bash tool timeout set to 600000, and repeated ONLY while the reported status is in_progress/queued. Explain why 540 < 600 (the inner timeout must fire before the harness backgrounds the call).\n  (2) NO NO-OP FILLER: no `:`, `true`, `date`, `echo waiting`-style Bash calls and no status-only text turns to keep a turn alive.\n  (3) NO run_in_background AND NO Monitor for CI waits inside a subagent (a background completion or Monitor event wakes an agent that has nothing to do, and ending the turn terminates the subagent).\n  (4) Where Monitor IS legitimately used (e.g. by a top-level session), its loop must emit ONLY on a state change, never on every poll.\n  (5) DO INDEPENDENT LOCAL WORK FIRST: finish every task step that does not depend on the external result before entering the wait.\n  (6) TOTAL-WAIT CAP of about 45 minutes; on reaching it the agent writes a handoff containing a concrete continuation (run ID, the exact resume command, what remains) and returns status partial rather than continuing to wait.\nAlso add an index-entries.json entry so the pattern is discoverable to implementation and research agents, and a one-line pointer from anti-stop-patterns.md (do not restate the rules there; follow the single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md).\n\nRELATED TASK (cross-reference, NOT a dependency): task 172 (\"Define a canonical bounded-wait idiom for detached builds\", planned file context/patterns/bounded-build-waiter.md) covers the LOCAL detached-build case (writer-liveness via kill -0, one-waiter-per-log). This task covers REMOTE/external processes that have no local writer to probe. The two files should cross-reference each other by filename; whichever lands second adds the reciprocal pointer. Do not edit bounded-build-waiter.md's substance here.\n\nOUT OF SCOPE: agent contract edits, orchestrate-build-dispatch.sh, and any hook -- those are separate dependent tasks.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "effort": "1.5 hours",
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/236_define_external_process_wait_pattern/reports/01_external-process-wait-pattern.md",
+          "type": "report",
+          "summary": "Findings and recommendations for creating external-process-wait.md, its index entry, and the anti-stop-patterns.md pointer."
+        },
+        {
+          "path": "specs/236_define_external_process_wait_pattern/plans/01_external-process-wait-pattern.md",
+          "type": "plan",
+          "summary": "2-phase implementation plan for the external-process-wait pattern."
+        },
+        {
+          "path": "specs/236_define_external_process_wait_pattern/summaries/01_external-process-wait-pattern-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the external-process-wait pattern task."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Authored agent-system/extensions/core/context/patterns/external-process-wait.md (129 lines) stating the observed external-process-wait defect class once and defining the six mandatory wait rules (bounded blocking wait with 540<600 arithmetic, no no-op filler, no run_in_background/Monitor for CI waits in a subagent, state-change-only Monitor emission, independent local work first, 45-minute total-wait cap with handoff+partial), added a discoverable on-demand index-entries.json entry, and added a one-line anti-stop-patterns.md pointer without restating the rules.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 235,
+      "project_name": "rebaseline_or_reduce_eager_context_budget",
+      "status": "completed",
+      "task_type": "meta",
+      "description": "Re-baseline or reduce the eager-context budget: verify-deploy.sh Gate 20 sub-check B is red on every deploy because the live eager-load TOTAL (65198 B, measured 2026-09-18 via REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check) exceeds eager_load.baseline_bytes=64450 in agent-system/extensions/core/context/config/orchestrator-context-budget.json (measured_bytes 64394 on 2026-09-09, so +804 B of drift in nine days). Current channel breakdown: parent_chain 3815 B, predicted assembled .claude/CLAUDE.md 32862 B, eager rules 28521 B (8 rules files; git-workflow.md alone is 8828 B). Every deploy-headless.sh run now exits 3 (RESULT=landed_verify_red) even when the deploy itself landed cleanly, which trips the completion-deploy gate in orchestrate postflight and was independently flagged by three concurrent implementation dispatches on 2026-09-17/18 as pre-existing and unrelated to their own edits. WORK: (1) attribute the +804 B to specific merge-sources/**, rules/**, and CLAUDE.md commits since 2026-09-09 (git log -p on those paths, diffed against the per-channel numbers); (2) decide per the config note's own rule -- baseline_bytes is a deliberately recorded ceiling that must never be silently re-derived -- whether to trim the growth back under 64450 (preferred where the growth is restatement or prose that belongs in lazily-loaded context files) or to move the baseline with a reviewed justification recorded in the config note and measured_at/measured_bytes updated; (3) separately address the sub-check C per-file ceiling: commands/orchestrate.md is roughly 2x its configured ceiling_bytes and ORCHESTRATOR_BUDGET_GATE_MODE stays in warn mode until it is under ceiling -- either shrink the command file (its flag table and forced-phase prose duplicate merge-sources/claudemd.md and docs/architecture/orchestrate-state-machine.md) or record why the ceiling should move; (4) make deploy-headless.sh's exit status distinguish a landed-but-budget-red deploy from a failed deploy in a way the postflight completion-deploy gate does not misread as stale, OR confirm the gate already ignores exit 3 and document that. ACCEPTANCE: deploy-headless.sh exits 0 on an unchanged tree; verify-deploy.sh Gate 20 sub-checks B and C both pass; the baseline value in orchestrator-context-budget.json either is unchanged or carries a dated justification; scripts/tests/test-verify-deploy-context-budget.sh still passes; shellcheck clean per context/standards/shell-strict-mode.md for any shell file touched. EDIT TARGET: agent-system/extensions/core/** (source store), never .claude/**. DELIVERABLE RULE: no task numbers in deliverables outside specs/**",
+      "topic": "core-agent-system",
+      "created": "2026-09-18T04:32:06Z",
+      "last_updated": "2026-09-19T00:33:54Z",
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/235_rebaseline_or_reduce_eager_context_budget/reports/01_rebaseline-eager-context-budget.md",
+          "type": "report",
+          "summary": "Research findings: sub-check B now passes (65889 B measured vs 65950 B baseline); SKILL.md newly exceeds its 20000 B ceiling (21318 B) due to an unrelated concurrent commit; commands/orchestrate.md remains over ceiling and worse than recorded; deploy-headless.sh's exit-3 (landed_verify_red) semantics are already correctly consumed by command-gate-out.sh, no code change needed."
+        },
+        {
+          "path": "specs/235_rebaseline_or_reduce_eager_context_budget/plans/01_rebaseline-eager-context-budget.md",
+          "type": "plan",
+          "summary": "5-phase plan resolving Gate 20 per-file ceiling WARNs, refreshing budget config, and verifying acceptance gates."
+        },
+        {
+          "path": "specs/235_rebaseline_or_reduce_eager_context_budget/summaries/01_rebaseline-eager-context-budget-summary.md",
+          "type": "summary",
+          "summary": "Trimmed SKILL.md and moved commands/orchestrate.md's ceiling to resolve Gate 20 sub-check C; refreshed budget config; confirmed exit-3 semantics; closed Phase 5 with two reasoned, sibling/unrelated exclusions."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Resolved Gate 20 sub-check C by trimming skills/skill-orchestrate/SKILL.md under its 20000 B ceiling (21318 B -> 19535 B, no operational content lost) and moving commands/orchestrate.md's ceiling to 21000 B with a dated, reviewed justification; refreshed the budget config snapshots/derivations and verify-deploy.sh's stale gate-mode comment; confirmed WORK item (4)'s exit-3 pass-through contract needs no code change. Gate 20 sub-check B remains red, attributed and evidenced as sibling task 228's own landed growth this cycle, deliberately not absorbed per the plan's own Non-Goals.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 172,
+      "project_name": "bounded_build_waiter_idiom",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Define a canonical bounded-wait idiom for detached builds",
+      "description": "Close the taught-pattern gap that produced 22 unreapable poll loops during a multi-task /orchestrate run in ~/Projects/BimodalLogic. Investigation finding: the observed waiter shape `until grep -q \"^EXIT=\" <log>; do sleep ...; done` appears NOWHERE in this source store -- it is agent-improvised. Two forces create it: (a) the harness's own Bash guidance blocks foreground `sleep` and points agents at a Monitor until-loop to wait on a condition, and (b) extensions/lean/context/project/lean4/operations/long-builds.md mandates `Bash(run_in_background: true)` detachment for every `lake build` but offers no sanctioned way to BLOCK on a detached build -- its only stated discipline is 'wait for the harness completion notification', with four Passive progress checks explicitly labeled liveness-only. An agent that needs to block therefore invents an unbounded sentinel poll. The defect class: a poll loop whose exit condition is a sentinel written by a process that may die first has no bounded termination. In the observed run the agent-side wrapper was of the form `cmd > b2b.log 2>&1; echo \"EXIT=$?\" >> b2b.log`; when the guarded build was cancelled/superseded by lock contention with a concurrent session, the `echo` never ran, so the sentinel became unwritable by construction. 22 loops watched the same b2b.log (2 more watched b9b.log), aged 24-55 minutes, at 0% CPU -- the cost is background-shell-slot exhaustion and operator confusion, not throughput. Deliverable: a new core context pattern file (suggested agent-system/extensions/core/context/patterns/bounded-build-waiter.md) stating the defect class once, canonically, and defining a safe waiter with three mandatory properties -- (1) a hard timeout so the waiter cannot outlive its writer, (2) a writer-liveness check (`kill -0 <pid>`) rather than sentinel-polling alone, so a dead writer terminates the wait immediately, and (3) one-waiter-per-log enforcement, so a superseded build's waiter is reaped before a replacement waiter is spawned. Wire the new anchor into long-builds.md with a one-line pointer under a new section covering the blocking case (do NOT restate the model there -- follow the existing single-statement-plus-pointer convention used by context/patterns/dispatch-report-not-termination.md). This task is foundational: it settles the waiter/writer contract that the guard-side, reaper-side, and agent-contract tasks all consume. Do not modify lake-build-guard.sh, claude-refresh.sh, or any agent file here -- those are separate dependent tasks.\n\n=== ADDITIONAL EVIDENCE (2026-09-17, ~/Projects/BimodalLogic) ===\nA SECOND, DISTINCT SYMPTOM OF THE SAME GAP: the agent does not spin an unbounded poll loop -- it\nENDS ITS TURN. In one multi-task /orchestrate batch, two lean-implementation-agent dispatches\nstopped mid-phase with the reported reasons \"waiting for lake build\" and \"Monitor is already\nwatching\", and both had to be manually resumed. Ending the turn ends the dispatch, so this costs\na full re-dispatch cycle rather than a background-shell slot.\n\nWHY THIS BELONGS HERE AND NOT WITH THE FAN-OUT/TERMINAL-STATUS WORK: the fan-out task in this\ntopic covers a dispatch that RETURNS while children run, and the marker/reality divergence that\nfollows. This is the blocking-wait case -- an agent with no sanctioned way to block on a detached\nbuild, choosing to stop instead of to poll. Both the improvised unbounded poll recorded above and\nthis turn-ending stop are the SAME missing affordance expressed two ways: long-builds.md mandates\ndetachment and offers no blocking idiom, so the agent picks one of the two bad options available\nto it. The bounded waiter defined by this task is the affordance that removes both. Note also the\n\"Monitor is already watching\" case specifically -- the one-waiter-per-log property this task\nalready requires must define what a SECOND would-be waiter does when a log is already watched\n(attach, or fail loudly), because \"stop and hand back\" is evidently the current default.\n\nCONTRACT HALF STAYS WITH THE DEPENDENT TASKS. The explicit MUST-NOT against ending a turn on a\nbackground wait, and any postflight detection of a stop without a handoff or .return-meta.json,\nbelong in the agent-contract and guard tasks that depend on this one -- consistent with this\ntask's existing instruction not to touch agent files. This task still owns only the canonical\npattern file and the long-builds.md pointer; it should now state the turn-ending case alongside\nthe unbounded-poll case so the dependents have one anchor to cite for both.\n\n=== ADDITIONAL EVIDENCE (2026-09-21, ~/Projects/Logos/Verification) ===\nA THIRD SHAPE OF THE SAME GAP, OUTSIDE LEAN: a general-implementation-agent under a multi-task\n/orchestrate run (a 9-phase gate-script refactor, task_type general) hung FIVE times on an\nagent-improvised name-based liveness poll. Each phase launched the gate and waited in ONE Bash call:\n\n  nohup timeout 3000 nix develop .#extraction --command bash framed_channel/check.sh > log 2>&1 &\n  disown; ...; until ! ps aux | grep -q \"[b]ash framed_channel/check.sh\"; do sleep 8; done\n\nThe `[b]` bracket trick only stops grep matching ITSELF. The waiting shell's own command line\nstill contains the literal text `bash framed_channel/check.sh` (it is the shell that launched the\ngate), so the poll matched its own shell forever. The gate finished (check.sh: PASS) and the agent\nsat idle ~13 minutes until the operator killed the waiter by hand; the same shape recurred in 4\nlater phases and was cleared each time by an operator-side watcher. The pure-waiter variant (a\nseparate Bash call that did not launch the command) did NOT self-match -- but the agent also ran\nTWO such waiters on one run, violating the one-waiter-per-log property.\n\nWHAT THIS ADDS TO THE DELIVERABLE:\n- A fourth mandatory property, or an explicit sharpening of (2): writer liveness MUST be tested by\n  captured PID (`pid=$!` then `kill -0 \"$pid\"`), NEVER by process-NAME matching (`ps | grep`,\n  `pgrep -f`). Name matching is self-referential whenever the searching shell's argv contains the\n  pattern -- the same bug class as the pgrep reaper self-kill recorded in the reaper task, now on\n  the waiter side. State it once here; the reaper task already consumes it.\n- Scope is NOT Lean-only. The pattern file must be framed generically (\"a detached local\n  command\"), and its pointer must reach general-implementation-agent too -- not only\n  lean4/operations/long-builds.md. The existing always-present dispatch-file wait pointer\n  (orchestrate-build-dispatch.sh -> context/patterns/external-process-wait.md) is the cheapest\n  carrier: that file already names bounded-build-waiter.md as its local-case sibling, but the\n  sibling file was never written, so the pointer currently dead-ends.\n- Minimal sanctioned idiom that would have prevented all five hangs:\n    cmd >log 2>&1 & pid=$!\n    timeout 3000 bash -c \"while kill -0 $pid 2>/dev/null; do sleep 10; done\"\n  (or simply run the command in the foreground under `timeout`, when it fits the Bash limit).\n- Operator-side observation: once dispatched implementers were told this idiom in their prompt,\n  the next two implementers in the same batch had zero hangs -- a one-paragraph instruction was\n  sufficient, supporting the low-complexity single-pattern-file approach.\n",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "effort": "2-3 hours",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+        "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md"
+      ],
+      "artifacts": [
+        {
+          "path": "specs/172_bounded_build_waiter_idiom/reports/01_bounded-build-waiter-idiom.md",
+          "type": "report",
+          "summary": "Research report defining the recommended structure and content for the new bounded-build-waiter.md pattern file and its long-builds.md pointer."
+        },
+        {
+          "path": "specs/172_bounded_build_waiter_idiom/plans/01_bounded-build-waiter-idiom.md",
+          "type": "plan",
+          "summary": "4-phase plan for the bounded-build-waiter pattern and its pointers."
+        },
+        {
+          "path": "specs/172_bounded_build_waiter_idiom/summaries/01_bounded-build-waiter-idiom-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the bounded-build-waiter idiom task"
+        }
+      ],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-21T23:53:08Z",
+      "session_id": "sess_1790030538_1b6143",
+      "next_artifact_number": 2,
+      "completion_summary": "Authored agent-system/extensions/core/context/patterns/bounded-build-waiter.md stating the unbounded-waiter defect class once (sentinel poll, turn-ending stop, process-name self-match) and defining a bounded, PID-liveness, one-waiter-per-log idiom for detached local commands; wired pointers into long-builds.md, core index-entries.json, and the always-present dispatch-file Wait Discipline block.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 173,
+      "project_name": "guard_terminal_record_every_exit",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Guarantee lake-build-guard.sh writes a terminal record on every exit path and exposes the build verdict through a result subcommand",
+      "description": "Make the guard-side analogue of the poll-loop leak impossible, so that any correctly-written waiter can always drain. Investigation finding: lake-build-guard.sh does NOT write the observed `EXIT=` sentinel at all -- that was agent-side. What it does write is a structured record at <root>/.lake/build-guard.result via two functions: write_inflight_record() emits `state=in_flight`, `holder_pid=$$`, `start_epoch=`, empty `exit_status=`, and `log_path=`; finalize_record() rewrites it as `state=complete` with the real `exit_status=`. The defect: finalize_record() is reached only on the normal return path out of run_as_holder(). There is no trap, so if the holder shell is killed, cancelled, or superseded (exactly the lock-contention scenario that triggered the observed leak), the record is left permanently at `state=in_flight` with a `holder_pid` that names a dead process. A waiter consuming that record has no terminal transition to observe -- the same unbounded-termination defect, one layer down. Fix directions to evaluate (not prescriptive): install an EXIT/INT/TERM trap in run_as_holder() that finalizes the record with a distinguishable terminal state (e.g. state=aborted with a reserved exit_status) so existing waiters drain rather than hang; confirm holder_pid is documented as the liveness handle that the bounded-waiter contract's `kill -0` check reads, since it is already written and is the natural handle; and make sure the waiter/sharing path in cmd_build treats an in_flight record whose holder_pid is dead as stale rather than as a live build to wait behind. Preserve the guard's existing documented contracts: the subcommand shape (status/preflight/build), the reserved 77 usage band, exit 75 on lock-wait timeout, the five-condition staleness policy on the sharing decision, and the `--timeout` semantics (a lock-WAIT budget, never a build-duration limit). Extend agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh with coverage for the killed-holder case: a holder killed mid-build must leave a terminal record, and a waiter must not block on a record whose holder_pid is dead. Land the fix in the nvim source store only.\n\n=== ABSORBED 2026-09-17 from former task 220 (machine-readable build verdict: result subcommand); that task is abandoned into this one. Its text follows verbatim; where it names \"the dependency task\" or \"the sibling task\", read this task's other sections. ===\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated from it).\n\nDEFECT (observed live in a two-task /orchestrate run against ~/Projects/BimodalLogic): an agent reported a Lean build as \"exit 0\" when it had in fact failed on a module error. The invocation was of the shape `bash lake-build-guard.sh build --timeout 1800 -- build 2>&1 | tail -60`, whose `$?` is `tail`'s exit code, not the guard's. The agent caught and retracted the claim itself, but the orchestrator had already relayed the false green to a sibling dispatch. The instrument could not report failure, so a broken build looked correct.\n\nWHY THIS IS NOT ALREADY FIXED BY THE SIBLING GUARD TASK: the dependency task (\"Guarantee lake-build-guard.sh writes a terminal record on every exit path\") makes the record TERMINAL so a waiter can always drain -- it is about waiter termination, not about a consumer reading a verdict. Verified against the current source store: `write_inflight_record()`/`finalize_record()` do already record `state=`, `exit_status=`, `holder_pid=`, `log_path=`, and `run_as_holder()` already captures build stdout/stderr to `<root>/.lake/build-guard.stdout` and `.build-guard.stderr`. NONE of those four paths is documented anywhere a consumer would find them: the header's non-goals list mentions only \"lock/result/log/capture files under the resolved project's own .lake/ directory\" without naming them, and `print_help()` names none of them. There is also no read path -- `main()` dispatches exactly `status|preflight|build`, and `status` reports in-flight state only, never a finished build's verdict. So the machine-readable verdict exists on disk today and is unreachable by contract, which is precisely what pushes a consumer back onto parsing a pipeline's text.\n\nWORK.\n(a) Add a `result` subcommand (`lake-build-guard.sh result [--dir DIR] [--verbose]`) that reads `<root>/.lake/build-guard.result` and reports the recorded `state`, `exit_status`, `holder_pid`, `start_epoch`/`end_epoch`, `scope_key`, and the absolute stdout/stderr/log capture paths. Design the exit-code band so the BUILD'S OWN VERDICT is carried by the guard's exit code and never has to be scraped out of text: distinguish at minimum no-record-present, non-terminal (`state=in_flight`, plus whatever terminal-abort state the dependency task introduces), terminal-with-zero, and terminal-with-nonzero. Follow the existing house style for a detect-only mode (see `cmd_status()`: 0 / 10, report on stdout) rather than inventing a new one, and do NOT collide with the reserved 75-79 guard band.\n(b) Add an assertion facility so a caller can prove the record describes ITS OWN build rather than a concurrent sibling's. The record is per-project and overwritten by each holder, so a bare read is ambiguous under exactly the concurrency this guard exists to serialize. Evaluate `--expect-pid PID` and `--expect-scope` (matching the caller's own normalized lake argument vector via the existing `compute_scope_key()`); refuse loudly on mismatch rather than reporting a sibling's verdict.\n(c) Emit one terminal, stably-prefixed status line on the holder path (house style: the existing `lake-build-guard:` stderr prefix, e.g. `lake-build-guard: STATUS: exit_status=N`), so that even a consumer that ignores (a) and pipes the invocation still sees an unambiguous status token inside its own captured text. This is the belt-and-braces half of the structural fix; it must not appear on the REPLAY path in a way that breaks the existing byte-equality assertions on replayed stdout/stderr (suite cases 1/3).\n(d) Document all of it: name `.lake/build-guard.result`, `.lake/build-guard.stdout`, `.lake/build-guard.stderr`, and the log path explicitly in both `print_help()` and the file header, add a `result` row to the USAGE block and the EXIT CODES block, and state in one place that a consumer MUST read the verdict via `result` or an un-piped `$?` and never from a pipeline's last stage.\n(e) Extend agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh in its existing numbered-case style: `result` against no record, against an in_flight record, against a terminal-zero record, against a terminal-nonzero record; `--expect-pid`/`--expect-scope` mismatch refusal; the STATUS line present on a fresh build and absent-or-harmless on a replay; and a help-text assertion for the newly documented capture paths in the style of the suite's existing case 21 (which greps `--help` for the `kill -0` and `pgrep` guidance). Add the suite's customary mutation-kill notes explaining which deletion breaks which case.\n\nPRESERVE (existing documented contracts, all verified present): the three-mode subcommand shape, the reserved 75-79 band with its stated meanings, the exit-code passthrough guarantee for a validated lake argument vector, the LAKE_SUBCOMMANDS allowlist behaviour including exit 77, the five-condition staleness policy in `decide_sharing()`, the `lake-build-guard: REPLAY:` marker contract, `--timeout` as a lock-WAIT budget only, and the rule that `cmd_status()` never scans the process table.\n\nMUST NOT. Edit .claude/** (deploy artifact). Change the staleness policy or the sharing decision. Add a second concurrency mechanism. Parse `lake`'s own output format inside the guard (explicitly rejected upstream: the job-count line is a property of lake's text, not of anything the guard records). Touch any file outside this task's file_scope -- the consumer-side contract corrections are a separate dependent task.\n\nACCEPTANCE. `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` passes; shellcheck clean; `--help` names all four capture paths and the `result` mode; a caller can obtain a finished build's pass/fail from the guard's own exit code with no text parsing and no pipeline in the invocation.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "topic": "core-agent-system",
+      "priority": "high",
+      "effort": "3-4 hours",
+      "dependencies": [
+        172
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/lake-build-guard.sh",
+        "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
+      ],
+      "artifacts": [
+        {
+          "path": "specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md",
+          "type": "report",
+          "summary": "Findings and recommendations for the trap-based terminal record fix and the absorbed result-subcommand/--expect-pid/--expect-scope/STATUS-line feature."
+        },
+        {
+          "path": "specs/173_guard_terminal_record_every_exit/plans/01_guard-terminal-record-result.md",
+          "type": "plan",
+          "summary": "5-phase plan for terminal record trap and result subcommand."
+        },
+        {
+          "path": "specs/173_guard_terminal_record_every_exit/summaries/01_guard-terminal-record-result-summary.md",
+          "type": "summary",
+          "summary": "Trap-driven terminal record, result subcommand with expect-pid/expect-scope assertions, STATUS line, and full documentation; 47/47 suite passing."
+        }
+      ],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-22T00:49:01Z",
+      "session_id": "sess_1790030538_1b6143",
+      "next_artifact_number": 2,
+      "completion_summary": "Made lake-build-guard.sh's on-disk build record terminal on every trappable exit path (including a discovered pre-existing bug where any failing build skipped finalize_record entirely) and added a result subcommand exposing the build verdict through the guard's own exit code, with --expect-pid/--expect-scope ownership assertions and a belt-and-braces STATUS stderr line; test suite grew from 29 to 47 passing checks, shellcheck clean, no task-number references.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 174,
+      "project_name": "refresh_orphan_waiter_reaper",
+      "status": "completed",
+      "task_type": "meta",
+      "title": "Add a self-excluding orphaned-build-waiter reaper pass to /refresh",
+      "description": "Give the system a way to clean up waiters that already leaked, correct by construction against the self-match bug observed while cleaning up manually. Second observed defect, same bug class as the primary one: an ad-hoc cleanup command of the form `pgrep -f 'until grep' | ... kill` matched ITS OWN command line -- the command string contained the very pattern it was searching for -- and killed its own shell (exit 144). This happened twice. Any reaper for this must exclude itself and its own process group, or it kills the reaper. Investigation finding: agent-system/extensions/core/scripts/claude-refresh.sh already solves exactly this, and the fix should reuse its architecture rather than invent a new one. It takes a single atomic `ps -eo` snapshot per invocation (take_snapshot()) with every exclusion evaluated against that frozen snapshot, and it already implements what its own header calls zero-query self-exclusion -- `if [ \"$pid\" = \"$$\" ] || [ \"$ppid\" = \"$$\" ]; then` skip -- applied in both the Claude-process pass and the Lean-LSP pass. That idiom is known at parse time, needs no second query, and is race-free; it is the correct-by-construction answer to the pgrep self-match bug. Scope: add a new pass that identifies orphaned build-waiter poll loops (matching the process signature settled by the bounded-waiter contract) whose watched log has a dead or absent writer, reusing the existing snapshot and the existing self-exclusion, and extend the exclusion to the reaper's own process group as well as its pid/ppid. Decide and document the pass's gate class explicitly -- the existing passes are split between interactive-confirm (rows 1-2), report-only-always (rows 3-4), and age-threshold-only (rows 5-8); an age-threshold-only gate matching the stale-lock passes is the closest existing precedent, since these waiters are 0% CPU and provably unreapable rather than merely idle. Then update the pass inventory in BOTH places that must agree row-for-row on gate and destructiveness: agent-system/extensions/core/commands/refresh.md ('What It Cleans' table plus a new owning subsection) and agent-system/extensions/core/skills/skill-refresh/SKILL.md (its Pass Inventory table). State whether the new pass is reached by the hourly claude-refresh.timer cadence -- only the four passes internal to claude-refresh.sh currently are.",
+      "topic": "core-agent-system",
+      "priority": "medium",
+      "effort": "3-4 hours",
+      "dependencies": [
+        172
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
+        "agent-system/extensions/core/commands/refresh.md",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
+      ],
+      "artifacts": [
+        {
+          "path": "specs/174_refresh_orphan_waiter_reaper/reports/01_orphan_waiter_reaper.md",
+          "type": "report",
+          "summary": "Design recommendations for the new reaper pass: two candidacy families, dead-writer semantics, pgid self-exclusion options, age-threshold-only gate decision, hourly-cadence reachability."
+        },
+        {
+          "path": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md",
+          "type": "plan",
+          "summary": "4-phase plan (5h): self-excluding build-waiter reaper pass in claude-refresh.sh (own pgid-bearing snapshot, two signature families, age-threshold-only gate), tests with mutation checks, both inventory tables + systemd ruling."
+        },
+        {
+          "path": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: build-waiter reaper pass, test coverage, docs, and systemd ruling, all 4 phases complete."
+        }
+      ],
+      "created": "2026-09-07T23:37:35Z",
+      "last_updated": "2026-09-22T07:01:11Z",
+      "session_id": "sess_1790055369_87ec14",
+      "next_artifact_number": 2,
+      "completion_summary": "Added a fifth, age-threshold-only pass to claude-refresh.sh that reaps orphaned build-waiter poll loops (canonical and legacy self-match shapes), widening self-exclusion to pid/ppid/pgid/ancestor-chain from one frozen snapshot with fail-closed behavior. Full regression coverage (112 assertions, 2 mutation checks) and both pass-inventory docs plus the systemd unit's ruling comment were updated to match.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 221,
+      "project_name": "lean_build_verdict_evidence_contracts",
+      "title": "Correct the lean implementation-agent contracts: build-verdict method, waiter teardown, no-revert snapshot",
+      "task_type": "meta",
+      "status": "completed",
+      "topic": "core-agent-system",
+      "dependencies": [
+        172,
+        173,
+        194
+      ],
+      "effort": "3 hours",
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+        "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md",
+        "agent-system/extensions/lean/rules/lean4.md"
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).\n\nDEFECT CLASS (both halves observed live in one two-task /orchestrate run against ~/Projects/BimodalLogic): an agent verified its work with an instrument that could not report failure, so correct work looked broken and broken work looked correct. Neither half is a Lean defect.\n\nHALF 1 -- a process-liveness test that can never return empty. `pgrep -f 'lake-build-guard.sh'` matches the polling shell's OWN argv, because the pattern appears in the command line of the shell running the wait. Consequences: two implementation dispatches idled roughly 56 minutes on a build that had already finished green, because the watcher never terminated; a subagent independently cited non-zero \"guard: N\" process counts as evidence the build was still alive, when every one of those counts was matching the orchestrator's own watcher loops rather than any real guard; and the orchestrator propagated the broken test to a subagent as recommended practice before the subagent caught it. One broken instrument corrupted two agents' evidence.\n\nHALF 2 -- see the dependency task on the guard for the pipe-masked exit code; this task lands the CONSUMER-side half of that fix.\n\nWHAT IS ALREADY COVERED ELSEWHERE, AND WHAT IS LEFT (verified against the current source store, do not re-do the covered part): the guard's own header and `print_help()` ALREADY carry the `pgrep -f` self-match prohibition and the `while kill -0 \"$holder_pid\"` idiom, and the suite's case 21 already asserts that help text. The bounded-waiter dependency task owns the blocking-wait contract (hard timeout, writer-liveness check, one-waiter-per-log) and the teardown dependency task owns tearing a waiter down. What NO existing task covers is the VERIFICATION-EVIDENCE question: how an agent decides that a finished build passed, and why a process count is never an answer to it. The lean extension's contracts currently leave that vacuum open in four specific, checked places.\n\nWORK.\n(a) agent-system/extensions/lean/context/project/lean4/operations/long-builds.md -- add a \"Reading the build's verdict\" section stating the evidence hierarchy that actually held up in the observed run, strongest last: (1) the guard's own exit code, captured un-piped, or the guard's new `result` mode from the dependency task; (2) the explicit `Build completed successfully (N jobs)` line in the guard's captured output file TOGETHER WITH `grep -c 'error:'` returning 0 over both the captured stdout and the captured stderr; (3) an `.olean`-newer-than-source check per touched module, which proves the module's PRESENCE in the build rather than the mere absence of a complaint and is therefore the strongest of the three. State the prohibition explicitly and once: never pipe the guard invocation into `tail`/`head`/`grep` and then read `$?` -- that is the pipe's exit code, not the guard's; redirect to a log file and capture `GUARD_EXIT=$?` instead. Keep to this file's established single-statement-plus-pointer convention and point at the guard's own documented capture paths rather than restating them.\n(b) Same file, \"Passive progress checks\" -- close the PID vacuum that invites the broken test. The four existing checks all take a `<PID>` the section never tells the reader how to obtain, which is exactly the gap an improvised `pgrep -f` fills. Name the source: `holder_pid` from the guard's record, or `status --verbose`. Add the prohibition that any `pgrep -f` pattern naming the guard, the watcher, or the wrapper script self-matches the polling shell's own argv and can never return empty while the watcher lives; where a real-worker match is genuinely needed, use a non-self-matching pattern (the bracket trick, e.g. `pgrep -f '[b]in/lake build'`, or matching `[c]heck-module-invariants`). Strengthen the existing \"liveness caveat\" with the sharper statement the run demonstrated: a process count is never evidence of a build's OUTCOME, and a count that cannot go to zero is not evidence of anything at all.\n(c) agent-system/extensions/lean/rules/lean4.md -- the \"Build Commands\" section's canonical invocation shape carries no exit-code discipline. Add the un-piped capture form and a pointer to (a). Do not restate the contract.\n(d) agent-system/extensions/lean/agents/lean-implementation-agent.md (step 4 of the verification block) and agent-system/extensions/lean/agents/lean-implementation-hard-agent.md (phase-completion step D and verification step 4) -- all three sites today say `Record: build_passed (true/false)` while specifying no method for determining it. That unspecified predicate is where the false green entered. Replace each with the determination method from (a), pointing at the anchor rather than duplicating the hierarchy.\n\nNOTE ON A NON-DEFECT (checked, do not \"fix\"): agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md uses `build_output=$(... 2>&1)` followed by `build_exit_code=$?`, which correctly captures the guard's own exit code -- command substitution is not a pipeline. Leave it alone.\n\nMUST NOT. Edit .claude/** (deploy artifact). Edit lake-build-guard.sh or its test suite (the dependency task owns those). Restate the bounded-waiter contract or the teardown rule in these files -- point at their anchors. Duplicate the evidence hierarchy into more than one file.\n\nACCEPTANCE. No file in the lean extension recommends, or leaves room for, a `pgrep -f` pattern that names the thing doing the polling; every site that records a build verdict names how that verdict is obtained; a reader of the passive-progress section can get a PID without inventing a process scan; redeploy and confirm the deployed tree matches.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\n\n=== ABSORBED 2026-09-17 from former task 175 (enforce waiter teardown in the lean agent contracts); that task is abandoned into this one. Its text follows verbatim; where it names \"the dependency task\" or \"the sibling task\", read this task's other sections. ===\nWire the already-written teardown rule into the specific contracts whose agents actually spawn build waiters, so the leak is prevented at its source rather than only cleaned up afterward. Investigation finding: the governing rule already exists and was violated. agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md carries a normative section titled 'Tear Down Watchers/Monitors Before Reporting' stating that every agent which arms a watcher/monitor process during its own dispatch MUST tear it down before reporting a terminal result. The 22 leaked waiters are a direct violation of that existing rule -- so this is an enforcement-and-wiring problem, not a missing-prose problem. That file's own 'Where This Is Referenced' section lists exactly three fix sites today (skill-orchestrate's Stage 5 staleness-gate comment block, context/contracts/territory.md's Territory Declaration Template, and context/standards/orchestrator-runtime-files.md), none of which covers a build waiter armed by a dispatched implementation agent. Scope: (1) extend the teardown rule to name the supersession case explicitly -- a waiter must be torn down not only before REPORTING but before its watched build is cancelled or superseded, which is the transition that actually orphaned the observed loops -- and add the new fix sites to its 'Where This Is Referenced' list; (2) add the corresponding one-line pointer obligations to the agent contracts that dispatch guarded builds, i.e. the lean implementation agents (agent-system/extensions/lean/agents/lean-implementation-agent.md and lean-implementation-hard-agent.md), pointing at the bounded-waiter anchor and the teardown rule rather than restating either. Follow the established single-statement-plus-pointer convention: the model lives in one file, fix sites point at it. Do not duplicate the waiter contract text into the agent files.\n\n=== ABSORBED 2026-09-17 from former task 198 (mandate git-snapshot --no-revert in the lean agent contracts); that task is abandoned into this one. Its text follows verbatim; where it names \"the dependency task\" or \"the sibling task\", read this task's other sections. ===\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**).\n\nDEFECT. The lean implementation agent contracts say NOTHING about git-snapshot.sh. Verified by grep against the source store: `orchestrator_mode`, `git-snapshot` and `no-revert` each appear ZERO times in agent-system/extensions/lean/agents/lean-implementation-agent.md. A lean implementation dispatch that reaches for a pre-work backup therefore finds no guidance at all and lands on the script's DEFAULT mode, which reverts the working tree repo-globally.\n\nOBSERVED LIVE (2026-09-09, ~/Projects/BimodalLogic, tasks 574 and 575 dispatched concurrently as lean-implementation-agent into ONE shared working tree). The 575 dispatch ran `git-snapshot.sh 575` in default mode while the 574 dispatch was concurrently editing the same tree. Default mode runs `git stash push -u` repo-globally with NO pathspec, so it stashed away the SIBLING dispatch's uncommitted work: 574's `.return-meta.json`, `.claude-extensions.json`, and 7 lines of `specs/events.jsonl`. The 575 dispatch noticed the over-capture and restored from `stash@{0}` (kept, not dropped), so nothing was ultimately lost -- but detection and repair depended ENTIRELY on the agent happening to notice. A less attentive dispatch proceeds on a silently reverted tree with no error at any layer.\n\nTHIS IS A CALLING-CONVENTION GAP, NOT A SCRIPT BUG. git-snapshot.sh already documents the hazard loudly in its own header (\"WARNING: default and --branch modes REVERT the working tree\"; \"Despite the name, this script is NOT read-only in its default or --branch modes\") and already implements the correct alternative: `--no-revert`, which builds a durable stash object via `git stash create` + `git stash store` WITHOUT touching the working tree, described in the header as the mode for \"when you want a durable backup and intend to KEEP WORKING\". agent-system/extensions/core/agents/general-implementation-agent.md ALREADY calls it correctly with `--no-revert` and explains why. The lean agents were simply never given the same bullet.\n\nCORROBORATION THAT THIS RECURS. `git stash list` in ~/Projects/BimodalLogic currently holds 44 entries, 32 of them named `git-snapshot-*`, accumulated across many sessions. This is not a one-off.\n\nSCOPE -- DELIBERATELY SMALL, SHIPS ON ITS OWN. Add to both lean implementation agent contracts an explicit instruction that `git-snapshot.sh` MUST be invoked with `--no-revert` whenever the dispatch is running under `orchestrator_mode` (i.e. whenever a concurrent sibling dispatch may share the working tree), and SHOULD be preferred generally when the agent intends to keep working after the snapshot. State the reason in one line -- default mode reverts the tree repo-globally and will capture a sibling's in-flight edits -- so the bullet teaches the hazard rather than only the incantation. Mirror the wording already used in core/agents/general-implementation-agent.md rather than inventing a second phrasing.\n\nRELATIONSHIP TO OTHER FILED WORK -- READ BEFORE STARTING.\n  - Task 191 (\"Stop plan-mandated git-snapshot from reverting task-unrelated uncommitted work\") owns the SCRIPT-LEVEL remedy in core/scripts/git-snapshot.sh plus core/rules/git-workflow.md and the plan-format/planner emission path. This task deliberately does NOT touch any of those files. A contract bullet is the cheap interim mitigation that can land immediately; it is explicitly NOT a substitute for the runtime guard, because a bullet can be forgotten. Both are wanted.\n  - Task 191's currently-recorded design direction keys the proposed refusal on \"tracked paths OUTSIDE the task's declared file_scope\". Note for that task, and record it in this task's summary: that predicate does not cleanly cover the concurrent-sibling case observed here, where a sibling's edits may fall INSIDE an overlapping declared scope. A live-concurrent-dispatch predicate is a distinct condition from an out-of-file_scope predicate. Surface this; do not implement it here.\n\nMUST NOT. Do not edit core/scripts/git-snapshot.sh, core/rules/git-workflow.md, or the plan format -- those belong to task 191 and would collide. Do not weaken or remove `--no-revert`. Do not `git stash drop`/`clear` any existing entry.\n\nACCEPTANCE. Both lean implementation agent contracts instruct `--no-revert` under orchestrator_mode, with the one-line rationale. The wording matches the existing core agent contract. The lean extension is redeployed and the regenerated `.claude/**` copies carry the bullet (see the deploy-propagation task -- a source-store fix that never reaches the consuming repo changes nothing for a running agent).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\n\nSCOPE CEILING -- KNOW WHAT THIS DOES NOT FIX. The concurrent-dispatch root cause produces three distinct failure modes: working-tree revert (this one), cross-task commit bleed via whole-path staging on a shared file, and .lake build contention. The isolation-posture task enumerates all three with verified evidence and decides the structural remedy. This contract bullet addresses ONLY the working-tree revert mode, and only by convention rather than by construction. Do not let it close out the other two, and do not let its landing be read as evidence that the shared-tree posture is safe.",
+      "artifacts": [
+        {
+          "path": "specs/221_lean_build_verdict_evidence_contracts/reports/01_build_verdict_evidence_contracts.md",
+          "type": "report",
+          "summary": "Research report identifying all edit sites and recommended pointer-based fixes for the build-verdict evidence hierarchy, waiter-teardown wiring, and git-snapshot --no-revert mandate."
+        },
+        {
+          "path": "specs/221_lean_build_verdict_evidence_contracts/plans/01_build-verdict-evidence-contracts.md",
+          "type": "plan",
+          "summary": "Implementation plan for build-verdict evidence, waiter teardown wiring, and --no-revert snapshot contracts."
+        },
+        {
+          "path": "specs/221_lean_build_verdict_evidence_contracts/summaries/01_build-verdict-evidence-contracts-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the build-verdict evidence, waiter-teardown wiring, and --no-revert snapshot contracts."
+        }
+      ],
+      "created": "2026-09-16T06:18:20Z",
+      "last_updated": "2026-09-22T01:11:56Z",
+      "priority": "high",
+      "session_id": "sess_1790030538_1b6143",
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the build-verdict evidence vacuum in the lean extension: added a single canonical evidence hierarchy (guard exit code / result, success-line plus zero error count, .olean-newer-than-source) to long-builds.md, banned self-matching pgrep -f patterns, pointed every build_passed determination site in both lean agents at the hierarchy, wired the dispatch-report-not-termination.md teardown rule's supersession case to the lean agents, and added a --no-revert-under-orchestrator_mode bullet to both lean agents.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 228,
+      "project_name": "establish_batch_orchestration_as_default",
+      "status": "completed",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Establish batch orchestration as the documented default, with batch-selection criteria and an explicit conflict rule",
+      "created": "2026-09-17T20:27:14Z",
+      "last_updated": "2026-09-19T00:33:47Z",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/merge-sources/claudemd.md",
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).\n\nGAP. `/orchestrate N[,N-N]` already performs dependency-aware wave dispatch, uniformly for a batch of one task or many. Nothing anywhere presents batching related tasks as the NORMAL way to work. The single-task invocation reads as the default and the multi-task form as a power feature; the posture should be the reverse.\n\nOBSERVED. A grep for batch-selection guidance (\"which tasks to batch\", \"choose\", \"batch together\", \"group related\") across context/patterns/multi-task-operations.md, context/patterns/batch-orchestration-guardrails.md and commands/orchestrate.md returns ZERO hits. multi-task-operations.md's own Overview frames the feature as an extension to commands that \"traditionally accept a single task number\", and its design principles lead with \"Single-task input falls through to existing flow unchanged (zero overhead for common case)\" -- naming single-task as the common case in the defining document. commands/orchestrate.md:24 already states the mechanism is uniform (\"the loop uses dependency-aware wave dispatch, uniformly for a batch of one task or many\"), so the capability is not in question; only its framing is.\n\nDECIDE THE CANONICAL HOME -- DO NOT PRE-COMMIT. This system's established convention is ONE canonical statement with pointers elsewhere. Candidates, none preferred here: a new context/patterns/batch-selection.md; a new section in context/patterns/multi-task-operations.md (mechanism-heavy, currently 667 lines of parsing/dispatch specification, which may be the wrong register for selection guidance); or context/patterns/batch-orchestration-guardrails.md (which by its own \"Related Documents\" section states principles only and delegates every mechanism, so selection PRINCIPLES arguably belong there). Whichever is chosen, merge-sources/claudemd.md and commands/orchestrate.md carry pointers, never second copies.\n\nTHE SUBSTANTIVE CONTENT -- WHAT THE GUIDANCE MUST ACTUALLY SAY. Three candidate selection criteria are on the table and they DO NOT ALWAYS AGREE; the guidance is worthless unless it rules on the conflicts:\n  - TOPIC COHESION: tasks sharing a `topic` share context, so one agent's research warms the next.\n  - SHARED FILE TERRITORY: tasks touching the same files must be batched together so the graph can serialize them, rather than being run in separate sessions where nothing sees the collision.\n  - GRAPH SHAPE: a batch whose members form a connected dependency component drains cleanly; a batch of mutually independent tasks maximizes wave-1 width and therefore concurrency.\nThe conflicts are real and must each be answered explicitly. Topic cohesion pulls toward grouping tasks that may have no ordering relation at all. Shared file territory pulls toward grouping tasks that serialize completely, producing a batch of width 1 that gains nothing from batching except collision visibility -- which is nonetheless a real gain and must be weighed, not dismissed. Graph shape pulls toward width, which is exactly what shared file territory pulls against. State which criterion dominates when two disagree, and say so as a rule a reader can apply, not as a list of considerations.\n\nCARRY THE COLLISION-VISIBILITY ARGUMENT EXPLICITLY. The strongest argument for batch-as-default is not throughput. It is that the admission gates (orchestrate-batch-admit.sh, the runtime wave-split check, the lock protocol) can only compare tasks they can see together. Two related tasks run in two separate sessions are mutually invisible to every in-batch check. Batching is therefore the mechanism by which collisions become checkable at all, and that is why it should be the default rather than an optimization.\n\nOUT OF SCOPE. The shared-tree versus isolated-worktree decision, which is owned elsewhere and must not be re-decided here. Telling concurrent agents about each other via dispatch briefs, also owned elsewhere. file_scope declaration granularity, backfill, and absent-scope admission posture, all owned by the file-scope-lifecycle topic -- this task may CITE shared file territory as a human selection criterion but must not specify or depend on any machine derivation of it, and should note that the territory criterion is currently a human judgment precisely because declaration granularity is under revision. No change to any admission predicate, wave computation, or dispatch behaviour: this task is framing and guidance only.\n\nACCEPTANCE. Exactly one file states the batch-as-default posture and the selection criteria, including an explicit rule for each pairwise conflict among the three criteria. merge-sources/claudemd.md and commands/orchestrate.md point at it and do not restate it. multi-task-operations.md's Overview no longer names single-task as \"the common case\" in a way that contradicts the new posture. A reader with five open tasks in one topic can follow the guidance to a specific batch without further interpretation. No script, predicate or dispatch path is modified.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n",
+      "session_id": "sess_1789772261_c29003",
+      "artifacts": [
+        {
+          "path": "specs/228_establish_batch_orchestration_as_default/reports/01_batch-selection-criteria.md",
+          "type": "report",
+          "summary": "Recommends batch-orchestration-guardrails.md as the canonical home for batch-selection guidance, with a fully drafted section (dominance rule: territory > topic > graph shape) and three pointer-site edits."
+        },
+        {
+          "path": "specs/228_establish_batch_orchestration_as_default/plans/01_batch-default-selection-guidance.md",
+          "type": "plan",
+          "summary": "3-phase documentation-only plan; canonical home is batch-orchestration-guardrails.md."
+        },
+        {
+          "path": "specs/228_establish_batch_orchestration_as_default/summaries/01_batch-default-selection-guidance-summary.md",
+          "type": "summary",
+          "summary": "3-phase documentation-only implementation: canonical batch-selection section, pointer edits, and cross-file verification with index-entries.json line_count deferred to avoid colliding with a concurrent sibling's declared scope."
+        }
+      ],
+      "next_artifact_number": 2,
+      "completion_summary": "Added the canonical 'Batching Is the Default: Selection Criteria and Conflict Resolution' section to batch-orchestration-guardrails.md (posture, collision-visibility argument, three selection criteria, dominance rule with a definite winner for each pairwise conflict, MAX_TASKS=8 cap rule, and a deterministic worked example), pointed orchestrate.md/claudemd.md/multi-task-operations.md at it, and removed the contradicting 'common case' framing from multi-task-operations.md's Overview.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 246,
+      "project_name": "snapshot_locale_independent_identifier_comparison",
+      "title": "Make lean-challenge-snapshot.sh identifier comparison locale-independent (false mismatch under en_US.UTF-8)",
+      "task_type": "meta",
+      "status": "completed",
+      "topic": "neovim",
+      "dependencies": [],
+      "effort": "2 hours",
+      "file_scope": [
+        "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
+      ],
+      "priority": "high",
+      "artifacts": [
+        {
+          "path": "specs/246_snapshot_locale_independent_identifier_comparison/reports/01_locale-independent-identifier-comparison.md",
+          "type": "report",
+          "summary": "Confirms the sort/comm collation-split defect via live reproduction and lays out the fix, test-fixture, and deploy recommendations for the planner."
+        },
+        {
+          "path": "specs/246_snapshot_locale_independent_identifier_comparison/plans/01_locale-independent-identifier-comparison.md",
+          "type": "plan",
+          "summary": "3-phase plan for locale-independent identifier comparison fix plus redeploy."
+        },
+        {
+          "path": "specs/246_snapshot_locale_independent_identifier_comparison/summaries/01_locale-independent-identifier-comparison-summary.md",
+          "type": "summary",
+          "summary": "Pinned LC_ALL=C on the goals-side sort -u and both comm calls in lean-challenge-snapshot.sh to fix a false identifier-set mismatch under dictionary-collation locales; added a RED/GREEN mixed-case suite case (R5) with a hand-verified mutation kill; redeployed to the one consuming repo (~/Projects/BimodalLogic) that loads the lean extension."
+        }
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).\n\nDEFECT. `lean-challenge-snapshot.sh --dry-run` reports a false identifier mismatch, exits 71, and lists the SAME names on both the \"only in goals\" and \"only in declared\" sides, because its two identifier lists are sorted in two different collations and then compared with `comm`, which requires both inputs sorted identically.\n\nVERIFIED SITES (line numbers confirmed against the current source store, 2026-09-21; re-derive rather than trust them if the file has moved since):\n  - line 347 -- the Goals identifier list is built with a shell pipeline ending in `sort -u`, i.e. the AMBIENT locale's collation. Under en_US.UTF-8 that is case-insensitive-ish dictionary order.\n  - line 434 -- the declared-identifier list is written from Python `sorted(set(declared_names))`, i.e. strict code-point order, which is what `LC_ALL=C` would give the shell side.\n  - lines 447-448 -- `comm -23 \"$goals_file\" \"$declared_file\"` and `comm -13 ...` compare the two. With mixed-case identifiers the two orderings diverge and `comm` reports spurious set differences in both directions.\n\nOBSERVED LIVE, TWICE, in one seven-task /orchestrate run against ~/Projects/BimodalLogic (2026-09-21), each time worked around by hand rather than fixed:\n  - One planner took the reported mismatch at face value and RENAMED three challenge identifiers to dodge it (hnOpenMirror, hnStabMirror, hnStab_refuted_sinkFrame). The renames were unnecessary; the identifiers were never actually mismatched. A broken instrument silently rewrote the artifact it was supposed to be checking.\n  - A second planner, with 50 identifiers of which twelve were falsely reported as mismatched, correctly diagnosed the collation split and confirmed by direct experiment that `LC_ALL=C` in front of the SAME invocation makes it exit 0 with all 50 names intact.\n\nWHY THIS IS THE DANGEROUS DIRECTION OF FAILURE. The check fails LOUD here (exit 71), which is survivable. But the same collation split can also silently PASS -- two genuinely different sets can compare equal under `comm` when both sides are mis-sorted -- so the fix is not merely a nuisance fix.\n\nWORK.\n(a) Make both sides use ONE collation. Prefer pinning the shell side to byte order so it matches Python's `sorted()`: set `LC_ALL=C` (or at minimum `LC_COLLATE=C`) scoped to the sort/`comm` pipeline rather than exporting it process-wide, so no other behaviour of the script (message text, number formatting, any regex class) changes as a side effect. Alternatively sort BOTH sides in the same tool. State in a short comment at the `comm` site WHY the collation is pinned, so a future edit cannot quietly unpin it.\n(b) AUDIT THE OTHER SITES in the same script for the same hazard before concluding: line 602 writes another `sorted(names)` list from Python, and line 145 uses `sort -V` for plan-file selection (version sort -- different concern, check but probably fine). Any other `sort`/`comm`/`uniq`/`join` site that feeds a cross-tool comparison is in scope; a `sort` whose output is only ever read by a human is not.\n(c) ADD A SUITE CASE to agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh: a fixture whose challenge identifiers are deliberately MIXED-CASE (the real-world trigger -- e.g. hnOpenMirror alongside hn_stab, names that order differently in dictionary vs code-point collation), run under an explicitly set UTF-8 locale, asserting exit 0 and an empty mismatch list. Follow the suite's existing case conventions. Include the customary mutation-kill note: state which mutation of the fix the new case actually kills (reverting the collation pin must turn the new case RED -- verify this by hand, do not assert it untested).\n\nMUST NOT. Change what the script considers an identifier, or loosen the mismatch check itself -- the check is correct, only its input ordering is wrong. Export LC_ALL process-wide if a narrower scope suffices. Touch lake-build-guard.sh or any file outside this script and its test suite.\n\nACCEPTANCE. `--dry-run` produces byte-identical results under `LC_ALL=en_US.UTF-8` and `LC_ALL=C` for a mixed-case identifier set; the new suite case is red against the unfixed script and green against the fixed one; every cross-tool sort/compare site in the script is either collation-pinned or documented as not needing it; the lean extension is redeployed and the regenerated .claude/** copy in a consuming repo carries the fix (a source-store fix that never reaches the consuming repo changes nothing for a running agent).\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "created": "2026-09-21T21:51:17Z",
+      "last_updated": "2026-09-21T22:24:55Z",
+      "session_id": "sess_1790028477_1288e3",
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed the locale-dependent false identifier-mismatch defect in lean-challenge-snapshot.sh by pinning LC_ALL=C on the goals-side sort and both comm comparison calls, added a mixed-case RED/GREEN regression case (R5) with a verified mutation kill, audited all cross-tool sort/compare sites, and redeployed the fix into the ~/Projects/BimodalLogic consuming repo (verified byte-identical, 14/14 suite passing there).",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
+      "project_number": 247,
+      "project_name": "taught_lean_verification_snippets_that_noop",
+      "title": "Fix two taught lean-extension snippets that silently no-op: the guard invocation missing its lake subcommand, and the hardcoded Theories/ source root",
+      "task_type": "meta",
+      "status": "completed",
+      "topic": "lean-extension",
+      "dependencies": [
+        221
+      ],
+      "effort": "3 hours",
+      "file_scope": [
+        "agent-system/extensions/lean/rules/lean4.md",
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+        "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+        "agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md",
+        "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+        "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+        "agent-system/extensions/lean/context/contracts/anti-analysis.md",
+        "agent-system/extensions/lean/context/contracts/context-hygiene.md",
+        "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
+        "agent-system/extensions/lean/context/project/lean4/operations/long-builds.md",
+        "agent-system/extensions/lean/scripts/lean-sorry-census.sh"
+      ],
+      "priority": "high",
+      "artifacts": [
+        {
+          "path": "specs/247_taught_lean_verification_snippets_that_noop/reports/01_taught-lean-snippets-noop.md",
+          "type": "report",
+          "summary": "Re-verified defect sites for both halves with current line numbers, mechanical confirmation of the silent-pass bug, and resolver design grounding."
+        },
+        {
+          "path": "specs/247_taught_lean_verification_snippets_that_noop/plans/01_taught-lean-snippets-noop.md",
+          "type": "plan",
+          "summary": "5-phase plan for both taught-snippet defect halves with decisions D1-D7 recorded."
+        },
+        {
+          "path": "specs/247_taught_lean_verification_snippets_that_noop/summaries/01_taught-lean-snippets-noop-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering both defect halves, all 7 decisions (D1-D7), and all 5 acceptance criteria with recorded command output."
+        }
+      ],
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).\n\nDEFECT CLASS. Two independent taught snippets in the lean extension instruct agents to run a command that does not do what the surrounding prose says it does, and whose failure to do it is invisible. Both were hit repeatedly, by several different dispatched agents, in one seven-task /orchestrate run against ~/Projects/BimodalLogic (2026-09-21), and both were worked around by hand every single time rather than fixed. They are filed together because they share an edit target (lean-implementation-hard-agent.md) and would collide if split.\n\n=== HALF 1 -- the taught guard invocation omits the lake subcommand and exits 77 without building ===\n\n`lake-build-guard.sh`'s LAKE_SUBCOMMANDS allowlist requires the lake SUBCOMMAND immediately after `--`. The working shape is `-- build Module.Name`. Several taught sites instead put the module name directly after `--`, so the guard exits 77 (\"build mode requires a lake subcommand\") before any build launches.\n\nVERIFIED SITES (confirmed against the current source store, 2026-09-21; re-derive by grep rather than trusting these line numbers):\n  - agent-system/extensions/lean/rules/lean4.md line 48 -- `... build --timeout 1800 -- Module.Name`. BROKEN. (Line 51's `-- build` on the very next line is already correct, which is exactly what makes the broken one so easy to copy without noticing.)\n  - agent-system/extensions/lean/agents/lean-implementation-hard-agent.md line 237 -- `... build --timeout 1800 -- ModuleName 2>&1`. BROKEN. (Line 392 in the same file is already correct.)\n  - agent-system/extensions/lean/skills/skill-lake-repair/SKILL.md line 79 -- `build_output=$(... build --timeout 1800 -- \"$module\" 2>&1)`. BROKEN, and NOT in the original defect report -- found by grep during task creation. Line 81 immediately below it is already correct. Confirm and fix.\n  - agent-system/extensions/lean/rules/lean4.md line 71 and agent-system/extensions/lean/context/project/lean4/operations/long-builds.md line 75 both teach the PLACEHOLDER form `-- <lake args>`. Judge these: a reader who expands `<lake args>` to a bare module name reproduces the defect. Either make the placeholder self-documenting (`-- <lake subcommand> [args]`, or show `-- build Module.Name` concretely) or leave with a one-line note -- decide and record the decision, do not silently skip them.\n\nWHAT IS ALREADY DONE, DO NOT RE-DO IT. An archived task already corrected the FULL-BUILD variant of this bug -- the EMPTY argument vector (`-- 2>&1`, `--` with nothing after it) at five sites across four files. That work is complete and its sites now read `-- build`. This task covers the DIFFERENT, still-live variant: a MODULE NAME after `--` with no subcommand. Grep the whole lean extension (rules, agents, skills, context, and any plan template a planner copies from) for `lake-build-guard.sh` and check every `--` argument vector; fix each one whose first post-`--` token is not a lake subcommand.\n\nOBSERVED CONSEQUENCES. Three separate dispatches hit this in the one run. Planners copied the broken shape verbatim into their plans, so implementers then had to correct the plan mid-run -- the defect propagated through an artifact and cost time at two lifecycle stages, not one. Worst instance: piped through `tail`, the exit-77 no-op read as exit 0 and was caught only because a human read the output text.\n\nBOUNDARY WITH OTHER OPEN WORK -- READ BEFORE STARTING. That pipe-masked-exit-code failure mode and the whole build-verdict evidence hierarchy are owned by the dependency task (#221, consumer-side) and by #173 (guard-side: the `result` subcommand, the STATUS line, the terminal record). Do NOT restate the exit-code-capture contract here -- point at its anchor. Do NOT change the LAKE_SUBCOMMANDS allowlist or exit 77 itself; #173's PRESERVE list explicitly keeps that behaviour. The dependency on #221 exists because it edits lean4.md, lean-implementation-agent.md, lean-implementation-hard-agent.md and long-builds.md, which this task also edits: they must serialize, not collide. Re-derive the line numbers above AFTER #221 has landed.\n\nOPTIONAL, IF CHEAP. Consider making the guard's own exit-77 message name the expected shape (`-- build Module.Name`) rather than only stating that a subcommand is required -- but that file (agent-system/extensions/core/scripts/lake-build-guard.sh, NOT in the lean extension; verify the path) belongs to #173. If the message change is wanted, surface it to #173 rather than editing the guard here.\n\n=== HALF 2 -- final-verification snippets hardcode a `Theories/` source root that does not exist in consuming repos ===\n\nThe prescribed sorry/vacuous-definition/axiom scans name a literal `Theories/` directory. In ~/Projects/BimodalLogic the library root is `FormalSystem/` with tests under `Tests/`; in cslib it is `Cslib/`. Where `Theories/` does not exist, the greps scan NOTHING and return a clean result BY CONSTRUCTION. This is a verification instrument that cannot report failure -- the same defect class as the first half, and strictly more dangerous, because it fails silently in the PASSING direction.\n\nVERIFIED SITES (2026-09-21). Executable snippet uses, all in scope:\n  - agents/lean-implementation-agent.md lines 270, 276, 282, 310-311, 313, 321, 389, 400\n  - agents/lean-implementation-hard-agent.md lines 306, 369, 380, 386, 454, 465\n  - skills/skill-lean-implementation/SKILL.md line 304 (`-- \"Theories/\"`)\n  - skills/skill-lean-implementation-hard/SKILL.md line 447 (`-- \"Theories/\"`)\n  - scripts/lean-sorry-census.sh line 26 (usage text: `lean-sorry-census.sh Theories/ --cross-check`)\n  - context/project/lean4/domain/challenge-snapshot.md line 20 (describes the compliance check as a grep over `Theories/`)\nProse/illustrative uses -- JUDGE EACH, they may be fine as generic examples rather than instructions:\n  - context/contracts/context-hygiene.md lines 34, 69 (\"whole-file read of a `Theories/`/`Cslib/` file\")\n  - context/contracts/anti-analysis.md line 57 (an example phase-scope string)\n  - agents/lean-research-hard-agent.md line 135, agents/lean-implementation-hard-agent.md line 117 (same read-budget phrasing)\nEXPLICITLY OUT OF SCOPE: uses under agent-system/extensions/lean/scripts/tests/ are test FIXTURES. They are legitimate and must be left alone. Distinguish fixture uses from taught-snippet uses before editing anything.\n\nOBSERVED CONSEQUENCES. Every implementer in the run noticed the wrong root and re-pointed the snippets by hand. That is the good case. The bad case -- a less attentive dispatch -- reports zero sorries over an empty scan and records a clean final verification that verified nothing.\n\nWORK FOR HALF 2.\n(a) RESOLVE the source roots from the CONSUMING repo instead of hardcoding a literal. Preferred source of truth: the repo's `lakefile.toml`/`lakefile.lean` `lean_lib` entries (their `srcDir`, and `roots`/`globs` where present) -- this is derived, always correct, and needs no per-repo configuration. Acceptable fallback if lakefile parsing proves fragile: ONE documented config value in a single named place. Do NOT introduce a second, competing convention, and do NOT have each snippet re-derive the roots its own way.\n(b) ROUTE EVERY SNIPPET THROUGH ONE HELPER. The snippets should call a single resolver rather than each embedding its own path logic -- the whole point is that there is exactly one place that can be wrong. Decide during planning whether that helper is a new script, a function inside lean-sorry-census.sh, or a documented `$LEAN_SRC_ROOTS`-style variable the snippets consume; record the decision and the reason.\n(c) MAKE AN EMPTY OR MISSING SCAN ROOT A LOUD FAILURE, NOT A CLEAN PASS. This is the load-bearing acceptance criterion and must hold independently of (a) and (b): a scan whose root does not exist, or which examines zero `.lean` files, MUST exit non-zero with a message naming the root it tried. \"Zero sorries found\" and \"nothing was scanned\" must never be indistinguishable outputs.\n(d) Update lean-sorry-census.sh's usage text and challenge-snapshot.md's description to match whatever (a)/(b) decide.\n\n=== SHARED ===\n\nMUST NOT. Edit .claude/** (deploy artifact). Edit agent-system/extensions/core/scripts/lake-build-guard.sh or its test suite (#173 owns it). Restate the build-verdict evidence hierarchy or the un-piped exit-code capture contract (#221 owns it) -- point at its anchor. Change LAKE_SUBCOMMANDS or exit 77. Touch test fixtures under scripts/tests/ that legitimately use `Theories/`.\n\nACCEPTANCE.\n  1. No file in the lean extension teaches a `lake-build-guard.sh` invocation whose post-`--` vector would exit 77 -- demonstrated by grepping every guard invocation in the extension and checking each one's first post-`--` token against the allowlist, not by spot-check.\n  2. No taught verification snippet names a literal source root; each resolves it from the consuming repo through the single helper.\n  3. A scan over a nonexistent or empty root exits non-zero with a message naming the root -- demonstrated by actually running it against a repo with no such directory, not asserted.\n  4. The same taught snippets, run unmodified in ~/Projects/BimodalLogic (library root FormalSystem/, tests under Tests/), scan the real sources and would report a real sorry if one existed -- verify by planting one temporarily.\n  5. The lean extension is redeployed and the regenerated .claude/** copies in a consuming repo carry both halves. A source-store fix that never reaches the consuming repo changes nothing for a running agent.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
+      "created": "2026-09-21T21:51:17Z",
+      "last_updated": "2026-09-22T05:34:41Z",
+      "session_id": "sess_1790030538_1b6143",
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed two independent taught-snippet defects in the lean extension: guard invocations missing a lake subcommand (exit 77 no-op) and a hardcoded Theories/ scan root that silently scans nothing in consuming repos. Added lean-src-roots.sh (lakefile.toml-derived, loud-failure resolver), made lean-sorry-census.sh fail loudly on missing/empty targets, routed all taught final-verification and commit-staging snippets through the resolver, verified end-to-end in ~/Projects/BimodalLogic (planted and detected a real sorry), and redeployed into that consuming repo.",
+      "archived_at": "2026-09-22T14:44:35Z"
+    },
+    {
       "project_number": 226,
       "project_name": "fix_scoped_commit_dropping_staged_deletions",
       "status": "completed",
@@ -6352,6 +6902,118 @@
       "project_name": "register_ambient_binding_defect_class",
       "status": "orphan_archived",
       "archived": "2026-09-07T19:16:31Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 195,
+      "project_name": "replace_handoff_writer_allowlist_predicate",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:09Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": [
+        "reports/",
+        "plans/",
+        "summaries/"
+      ]
+    },
+    {
+      "project_number": 198,
+      "project_name": "lean_agents_mandate_no_revert_snapshot",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:09Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": [
+        "reports/",
+        "plans/",
+        "summaries/"
+      ]
+    },
+    {
+      "project_number": 214,
+      "project_name": "stop_forced_phase_fallthrough_dispatch",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:09Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 216,
+      "project_name": "per_run_cycle_bound_artifact_admission",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:09Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 218,
+      "project_name": "refresh_lean_cpu_delta_idle_cost_gate",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 219,
+      "project_name": "refresh_idle_lean_tree_notify_prompt",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 220,
+      "project_name": "guard_machine_readable_build_status",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 225,
+      "project_name": "please_command_rule_and_docs",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 229,
+      "project_name": "carry_reason_on_dependency_edges",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 230,
+      "project_name": "decide_disposition_for_terminal_dependency_edges",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 231,
+      "project_name": "post_creation_burst_dependency_analysis_pass",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 232,
+      "project_name": "surface_dependency_graph_health_metrics",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
+      "source": "orphan_recovery",
+      "detected_artifacts": []
+    },
+    {
+      "project_number": 233,
+      "project_name": "file_scope_derived_dependency_edge_inference",
+      "status": "orphan_archived",
+      "archived": "2026-09-22T14:45:10Z",
       "source": "orphan_recovery",
       "detected_artifacts": []
     }
