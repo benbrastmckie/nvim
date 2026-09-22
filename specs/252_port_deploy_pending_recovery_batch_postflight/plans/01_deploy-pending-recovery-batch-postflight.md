@@ -223,7 +223,7 @@ branch above — the entire phase shape turns on it, and line numbers may have m
 
 ---
 
-### Phase 2: Stop Discarding `skill_postflight_update`'s Return Code in the `implemented)` Arm [NOT STARTED]
+### Phase 2: Stop Discarding `skill_postflight_update`'s Return Code in the `implemented)` Arm [COMPLETED]
 
 **Goal**: Make a refused completion honest at the postflight layer. Today `implemented_gate_passed`
 is set `true` by the separate phase-accounting gate *before* the status write is even attempted,
@@ -232,26 +232,28 @@ for a task that is still `implementing`. No new deploy trigger is added here —
 and correct bookkeeping only.
 
 **Tasks**:
-- [ ] In the `implemented)` case arm (~lines 759-789), capture the return code:
-      `skill_postflight_update ... || postflight_rc=$?`, initialized to 0.
-- [ ] On `postflight_rc -eq 6`, set a distinct flag (e.g. `deploy_pending_refusal=true`) and emit a
+- [x] In the `implemented)` case arm (~lines 759-789), capture the return code:
+      `skill_postflight_update ... || postflight_rc=$?`, initialized to 0. *(completed)*
+- [x] On `postflight_rc -eq 6`, set a distinct flag (e.g. `deploy_pending_refusal=true`) and emit a
       clearly-prefixed stderr notice naming the task, the refusal, and the fact that convergence is
       deferred to the next cycle's Inter-Cycle Redeploy Checkpoint. The notice is the operator-
-      facing half of the deferred-convergence posture.
-- [ ] Route the flag into the `verdict` computation (~line 963) so a deploy-pending refusal yields
+      facing half of the deferred-convergence posture. *(completed: "DEPLOY-PENDING: task N's
+      postflight completion write was refused..." notice)*
+- [x] Route the flag into the `verdict` computation (~line 963) so a deploy-pending refusal yields
       `defer` rather than `ok`. Reuse the existing `defer` vocabulary — "in-flight, retry the same
-      phase next cycle" is exactly correct here. Do not invent a new verdict value.
-- [ ] Route the flag into the commit-message selection (~lines 1101-1109) so the refused case no
+      phase next cycle" is exactly correct here. Do not invent a new verdict value. *(completed)*
+- [x] Route the flag into the commit-message selection (~lines 1101-1109) so the refused case no
       longer claims `complete implementation`; reuse the existing
-      `orchestration paused (cycle N)` message.
-- [ ] Leave `skill_gate_completion_claim`'s own semantics untouched — it answers a different
-      question (phase accounting) and must keep answering it independently.
-- [ ] Preserve the single-retry posture by **not** adding a retry here at all: there is no
+      `orchestration paused (cycle N)` message. *(completed)*
+- [x] Leave `skill_gate_completion_claim`'s own semantics untouched — it answers a different
+      question (phase accounting) and must keep answering it independently. *(completed: untouched)*
+- [x] Preserve the single-retry posture by **not** adding a retry here at all: there is no
       redeploy at this site, so there is nothing to re-attempt. Record that in an in-line comment
-      pointing at `command-gate-out.sh:211` for the contrast.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-postflight.sh` with cases asserting
+      pointing at `command-gate-out.sh:211` for the contrast. *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-cycle-postflight.sh` with cases asserting
       `verdict=defer` and the paused commit message on a refused implemented postflight, and
       asserting the unrefused path still yields `verdict=ok` with the completion message.
+      *(completed: candidates #710 (refused) and #711 (unrefused contrast))*
 
 **Timing**: 2 hours
 

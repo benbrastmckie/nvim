@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Stop Discarding skill_postflight_update's Return Code in the implemented) Arm",
+  "started_at": "2026-09-22T23:56:00Z",
+  "last_updated": "2026-09-23T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture postflight_rc in the implemented) arm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Set deploy_pending_refusal flag and emit stderr notice on rc==6", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Route flag into verdict computation (defer vocabulary reused)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Route flag into commit-message selection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Leave skill_gate_completion_claim semantics untouched", "status": "done", "files_touched": []},
+    {"id": 6, "description": "No-retry posture comment referencing command-gate-out.sh:211", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 7, "description": "Extend test suite with refused (verdict=defer, paused commit) and unrefused (verdict=ok, completion commit) cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "phase_notes": "Confirmed by grep: implemented_gate_passed has exactly two consumers (verdict at ~993, commit-message at ~1141 after edits) -- no fourth consumer exists. Both now also check the new deploy_pending_refusal flag, initialized false near implemented_gate_passed's own declaration and set true only when skill_postflight_update returns 6. No retry added at this site -- comment explicitly contrasts with command-gate-out.sh:211's single-retry-after-redeploy posture, which does not apply here since no redeploy trigger exists at this call site. Full test-orchestrate-cycle-postflight.sh suite: 110 passed, 0 failed (6 new cases: candidate #710 refused -> verdict=defer + paused commit + DEPLOY-PENDING stderr notice; candidate #711 unrefused contrast -> verdict=ok + complete-implementation commit + no notice). test-postflight-deploy-gate.sh: 19 passed, 0 failed, unaffected (as expected -- this phase touches orchestrate-cycle-postflight.sh only, not update-task-status.sh)."
+}

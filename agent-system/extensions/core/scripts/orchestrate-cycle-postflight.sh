@@ -689,6 +689,12 @@ fi
 offschema_dispatch_status=false
 implemented_gate_passed="null"
 inferred_phase=""
+# deploy_pending_refusal: distinct from implemented_gate_passed (phase accounting -- "is the plan
+# actually done"). This flag answers a different question -- "did the status WRITE itself get
+# refused by the completion-deploy gate (update-task-status.sh's exit 6)". A phase-accounting
+# pass with a refused write must not read as verdict=ok / "complete implementation": the task is
+# still, in fact, sitting at "implementing" in state.json. See the postflight_rc capture below.
+deploy_pending_refusal="false"
 
 if [ "$force_invoked" = "true" ]; then
   clamp_mode="monotonic-max"
@@ -766,7 +772,27 @@ if [ "$have_outcome" = "true" ]; then
         if is_live; then
           # No per-call-site >&2 on either call below: the entry-point exec 3>&1 1>&2 redirect
           # above already routes their stdout to the diagnostic stream structurally.
-          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode"
+          #
+          # Capture skill_postflight_update's own return code (it already returns
+          # update-task-status.sh's rc verbatim — see that function's header comment in
+          # skill-base.sh) rather than discarding it. postflight_rc==6 means the postflight
+          # completion-deploy gate refused this transition: state.json was NOT updated to
+          # "completed", so verdict/commit-message below must not claim it was.
+          #
+          # NO RETRY HERE, DELIBERATELY: unlike command-gate-out.sh:211 (the single-task
+          # completion path, which triggers an automated redeploy and retries the status write
+          # exactly once after it), this per-cycle batch postflight adds NO redeploy trigger of
+          # its own -- see the Concurrency Posture recorded at WORK (j) below and in
+          # context/patterns/batch-orchestration-guardrails.md's completion-deploy-gate
+          # subsection. Convergence is deferred to the Inter-Cycle Redeploy Checkpoint in
+          # orchestrate-cycle-plan.sh, which runs at the one point in the batch loop with no
+          # dispatch in flight. There is therefore nothing to retry at this call site.
+          postflight_rc=0
+          skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "warn" "$TASK_DIR" "$clamp_mode" || postflight_rc=$?
+          if [ "$postflight_rc" -eq 6 ]; then
+            deploy_pending_refusal=true
+            echo "${notice_prefix} DEPLOY-PENDING: task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; convergence is deferred to the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) -- no manual action needed." >&2
+          fi
           skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
             "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
         else
@@ -960,7 +986,15 @@ elif [ "$have_outcome" = "true" ]; then
       ;;
     planned) verdict="ok" ;;
     implemented)
-      if [ "$implemented_gate_passed" = "true" ]; then verdict="ok"; else verdict="defer"; fi
+      # A deploy-pending refusal (postflight_rc==6, see WORK (f) above) overrides an otherwise-
+      # passing phase-accounting gate: the status write itself did not land, so this is exactly
+      # the "in-flight, retry the same phase next cycle" case "defer" already means everywhere
+      # else in this script -- reusing that vocabulary rather than inventing a new verdict value.
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ]; then
+        verdict="ok"
+      else
+        verdict="defer"
+      fi
       ;;
     partial) verdict="defer" ;;
     failed)  verdict="failed" ;;
@@ -1102,7 +1136,9 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
     researched) commit_message="task ${task_number}: complete research" ;;
     planned)    commit_message="task ${task_number}: create implementation plan" ;;
     implemented)
-      if [ "$implemented_gate_passed" = "true" ]; then
+      # Mirrors the verdict computation above: a deploy-pending refusal must not produce a
+      # "complete implementation" commit message for a task that is still, in fact, implementing.
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ]; then
         commit_message="task ${task_number}: complete implementation"
       else
         commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})"

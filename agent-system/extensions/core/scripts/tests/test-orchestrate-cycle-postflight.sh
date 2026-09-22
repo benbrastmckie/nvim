@@ -1620,6 +1620,90 @@ else
   fail "characterization: WORK (j) accumulation block's anchor comment not found in $ANCHOR_SRC -- regression-anchor self-check cannot run"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Phase 2: a deploy-pending refusal (postflight_rc==6) makes the outcome HONEST -- verdict=defer
+# and the paused commit message, not verdict=ok / "complete implementation" -- even though the
+# phase-accounting gate (skill_gate_completion_claim) itself passed.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Phase 2: a deploy-pending-refused implemented postflight yields verdict=defer and the paused commit message"
+setup_sandbox
+dp2_candidate_num=710
+mkdir -p "$WORKDIR/specs/${dp2_candidate_num}_candidate"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${dp2_candidate_num}, "project_name": "candidate", "task_type": "meta", "status": "implementing", "description": "candidate #${dp2_candidate_num} -- deploy-pending verdict/commit-message honesty", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+build_deploy_stale_fixture
+cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_710.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"710": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
+EOF
+cat > "$WORKDIR/specs/${dp2_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["agent-system/extensions/core/scripts/foo.sh"]}
+EOF
+before_head_710=$(cd "$WORKDIR" && git rev-parse HEAD)
+run_sut "specs/${dp2_candidate_num}_candidate" --session sess_710 --phase implement --task-type meta \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$dp2_candidate_num"
+after_head_710=$(cd "$WORKDIR" && git rev-parse HEAD)
+after_subject_710=$(cd "$WORKDIR" && git log -1 --format=%s)
+
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "phase 2: verdict=defer on a deploy-pending-refused implemented postflight"
+else
+  fail "phase 2: expected verdict=defer, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -q "DEPLOY-PENDING: task ${dp2_candidate_num}"; then
+  pass "phase 2: the operator-facing deferred-convergence notice is printed on stderr"
+else
+  fail "phase 2: expected a DEPLOY-PENDING notice on stderr, got: $LAST_STDERR"
+fi
+if [ "$before_head_710" != "$after_head_710" ] && [ "$after_subject_710" = "task ${dp2_candidate_num}: orchestration paused (cycle 0)" ]; then
+  pass "phase 2: the commit message is the paused message, not 'complete implementation'"
+else
+  fail "phase 2: expected commit subject 'task ${dp2_candidate_num}: orchestration paused (cycle 0)', got: '$after_subject_710' (head moved: $([ "$before_head_710" != "$after_head_710" ] && echo yes || echo no))"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Phase 2 (contrast case): the UNREFUSED implemented path still yields verdict=ok and the
+# ordinary completion commit message -- the honesty fix must not touch the non-refused path.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Phase 2 (contrast): an unrefused implemented postflight still yields verdict=ok and the completion commit message"
+setup_sandbox
+ur_candidate_num=711
+mkdir -p "$WORKDIR/specs/${ur_candidate_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${ur_candidate_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${ur_candidate_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${ur_candidate_num} -- unrefused contrast case", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${ur_candidate_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${ur_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${ur_candidate_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/${ur_candidate_num}_candidate/summaries/01_x-summary.md"]}
+EOF
+run_sut "specs/${ur_candidate_num}_candidate" --session sess_711 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file "specs/${ur_candidate_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$ur_candidate_num"
+after_subject_711=$(cd "$WORKDIR" && git log -1 --format=%s)
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "phase 2 (contrast): verdict=ok on an unrefused implemented postflight"
+else
+  fail "phase 2 (contrast): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if [ "$after_subject_711" = "task ${ur_candidate_num}: complete implementation" ]; then
+  pass "phase 2 (contrast): the commit message is still 'complete implementation' when unrefused"
+else
+  fail "phase 2 (contrast): expected commit subject 'task ${ur_candidate_num}: complete implementation', got: '$after_subject_711'"
+fi
+if echo "$LAST_STDERR" | grep -q "DEPLOY-PENDING:"; then
+  fail "phase 2 (contrast): unexpected DEPLOY-PENDING notice on an unrefused path"
+else
+  pass "phase 2 (contrast): no DEPLOY-PENDING notice on the unrefused path"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
