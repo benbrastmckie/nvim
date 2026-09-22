@@ -1,5 +1,5 @@
 ---
-next_project_number: 249
+next_project_number: 250
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,245 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,245,249 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,170,224 | 22,51,129,162,163,245 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136 | 139,166 | core-agent-system |
 
@@ -37,6 +37,7 @@ next_project_number: 249
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 245 [IMPLEMENTING] — orchestrate-batch-admit.sh: compute in-batch filescope...
+249 [NOT STARTED] — Restore the eager-context budget: trim the source-store rule...
 
 ### Extensions
 
@@ -71,6 +72,40 @@ next_project_number: 249
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 249. Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+EVIDENCE. Measured 2026-09-22. `bash .claude/scripts/verify-deploy.sh --skip-slow` FAILS with eager-load total 67,003 B against the recorded baseline_bytes 65,950 B in context/config/orchestrator-context-budget.json (+1,053 B over). The same breach is the sole red suite in `run-all.sh` (91 passed, 1 failed, 92 total): tests/test-verify-deploy-context-budget.sh fails two internal cases, "baseline fixture is not clean (rc=1, gate20 finding lines=1)" and "could not compute a safe eager-load pad amount (current_eager='67003', baseline_bytes='65950')". Both are deterministic consequences of the breach, not flakes. These are ONE defect with two symptoms, not two.
+
+ATTRIBUTION IS EXACT. The eager total was 65,257 B on 2026-09-21 (per the CORRECTED note in orchestrator-context-budget.json). Byte-level diff of every eager contributor since that date:
+  core/rules/source-store-deploy-boundary.md   2,746 -> 4,443 B  (+1,697)
+  core/merge-sources/claudemd.md             19,435 -> 19,484 B  (+49)
+  total                                                  +1,746 B, i.e. 65,257 -> 67,003
+The +1,697 B is a completed task's rewrite of the source-store rule, which grew an EAGERLY LOADED rule file by 62%. That task completed without the budget gate being run, so the breach landed silently.
+
+PREFERRED REMEDY: TRIM, DO NOT RE-BASELINE. rules/source-store-deploy-boundary.md now inlines a 5-step source_dir resolution procedure, an "If the source store is unreachable" branch, a Before/After example, an Exceptions list, and a two-layer Enforcement narrative with a Known-limitation paragraph. Only the path pattern, the principle, and the one-line resolution instruction ("read source_dir from <project-root>/.claude-extensions.json and edit under it") need to be eager -- roughly 1,200 B of the 4,443. Move the procedure detail, the example, and the Enforcement narrative into a lazily loaded context/standards/ file and point at it from the rule. This is the SAME rule->narrative split the codebase already uses twice: rules/git-workflow.md -> context/standards/git-workflow-narrative.md, and rules/state-management.md -> context/reference/state-management-schema.md. Follow those as the model.
+
+AIM FOR HEADROOM, NOT PAR. Two queued tasks add further eager bytes on top of an already-breached budget: 139 edits rules/git-workflow.md (8,828 B, the largest eager rule) and 224 edits both rules/pr-prohibition.md (2,574 B) and merge-sources/claudemd.md (predicted-assembled into CLAUDE.md, hence eager). Trimming back to exactly the baseline just moves the wall a few hundred bytes before those two hit it again. Target a margin that absorbs them.
+
+RE-BASELINING IS THE FALLBACK, AND IS GATED. baseline_bytes "must never be silently re-derived from a fresh measurement -- only a deliberate, reviewed change should move it" (its own note field). If research concludes the expanded rule content genuinely must be eager, then re-baselining is permitted ONLY with: (a) a written justification of why each retained paragraph must load on every session; (b) the bump recorded in the note field in the same commit, in the style of the existing 64450->65950 entry; (c) an explicit statement of the remaining headroom against 139 and 224.
+
+ACCEPTANCE.
+ 1. `bash .claude/scripts/measure-eager-context.sh --check` reports TOTAL at or under baseline_bytes.
+ 2. `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` passes all 13 cases.
+ 3. `bash .claude/scripts/verify-deploy.sh --skip-slow` gate 20 passes (note: gates for deployed-script drift and provides.scripts registration are task 245's, not this task's -- do not "fix" those here).
+ 4. `run-all.sh` green; read the summary line and the exit code, and DO NOT pipe it through tail/head (that masks both).
+ 5. No behavioral change to the source-store rule itself: the same prohibition, the same exceptions, the same correct edit target. This is a relocation of prose, not a weakening of a rule.
+ 6. The lazily loaded destination file is reachable from the rule by a plain backticked path reference, never an @-import (eager-loading it again would defeat the change).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
+
+---
 
 ### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
 - **Status**: [IMPLEMENTING]
@@ -1692,6 +1727,9 @@ Additionally .return-meta-meta.json, .return-meta-meta-sess_{sid}.json, and .met
 (3) Automatic invocation (root cause). The reaper is correct and works -- it cleared 41 of 41 files on first run -- but its ONLY trigger is a manual /refresh, so litter grows unbounded between refreshes. Wire reap into /todo, which is run far more often and is already the repo's housekeeping command. Call both scripts/reap-session-runtime-files.sh and task-lock.sh session-reap (stale .sessions/ registry entries accumulate identically -- 9 dead-pid entries were swept in nvim alone). Suggested hook point: a new stage between skill-todo's stage 10 ArchiveTasks and stage 15 GitCommit, so reaped paths land in the same commit; alternatively fold the reporting half into stage 3 DetectOrphans. Must stay non-blocking and honor the existing ORCHESTRATOR_SESSION_REAP_MIN threshold (default 240min) so in-flight batch runs are never reaped; echo the reaper's own output verbatim the way skill-refresh already does. Keep /refresh's invocation working unchanged.
 
 Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsite -- so the fix belongs in the core extension source store, not any single repo's deploy.
+
+=== EVIDENCE REFRESHED 2026-09-22 (post-/todo measurement) ===
+The stranded-file count in THIS repo alone is now 48 (.orchestrator-multi-state-*.json and .return-meta-multi-*.json at the specs/ root), up from 25 measured on 2026-09-08 -- nearly doubled in two weeks, with the oldest surviving entries still present. No reaper ran in between, which is precisely the point: part (3) above is the load-bearing half of this task. Relocation (part 1) and glob widening (part 2) both leave the growth rate untouched; only wiring the reaper into /todo changes it. Treat part (3) as the acceptance-critical deliverable, not as the third of three equals.
 
 ---
 
