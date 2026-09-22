@@ -1,5 +1,5 @@
 ---
-next_project_number: 252
+next_project_number: 253
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 252
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,252 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -41,6 +41,7 @@ next_project_number: 252
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
+252 [NOT STARTED] — Port the deploy-pending (exit 6) recovery into the batch...
 
 ### Extensions
 
@@ -75,6 +76,69 @@ next_project_number: 252
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 252. Port deploy pending recovery batch postflight
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Port the deploy-pending (exit 6) recovery into the batch postflight, and fix cycle_modified_files accumulation on a refused postflight
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+MOTIVATION -- A CLOSED LOOP THAT PREVENTS ANY SOURCE-STORE-EDITING TASK FROM COMPLETING UNDER THE BATCH ENGINE. Observed live on 2026-09-22 during an /orchestrate run over two tasks. The second task finished all 4 phases, committed cleanly, and still could not reach `completed` without manual operator intervention.
+
+CONFIRMED MECHANISM (all four facts verified by direct inspection, not inferred):
+
+  1. `update-task-status.sh` (its "PHASE 0.5" check-only backstop) refuses postflight with EXIT 6 when a task's `modified_files` overlap `agent-system/extensions/**` and the deployed `.claude/` tree is stale. Observed verbatim: "[deploy-check] refusing postflight implement ...: extension 'core' is stale relative to its source store".
+
+  2. The sanctioned auto-recovery for exit 6 EXISTS, but only in `scripts/command-gate-out.sh` (around lines 153-175): it snapshots verify-deploy findings via `deploy_findings_snapshot`, runs the sanctioned single-task redeploy trigger, and retries the status write once. Its own comment names it as "one of the two sanctioned automated deploy-trigger sites" per `context/patterns/regeneration-is-manual-only.md`'s carve-out.
+
+  3. `scripts/orchestrate-cycle-postflight.sh` -- the postflight the CURRENT four-move batch loop actually runs -- has NO exit-6 handler at all. `grep -n 'command-gate-out' orchestrate-cycle-postflight.sh` returns exactly ONE hit, at line 1136, and it is a COMMENT ("releasing it once at the outer command-gate-out.sh boundary this per-cycle script does not"). The recovery was never ported when the single-task engine was retired.
+
+  4. SECOND, INDEPENDENT MISS ON THE SAME LOOP. The refusal aborts before `orchestrate-cycle-postflight.sh`'s `cycle_modified_files` accumulation block (around lines 1169-1176). Verified after the live run: `cycle_modified_files` was `[]` in the multi-state file even though the task modified three files under `agent-system/extensions/core/**`. Because `orchestrate-cycle-plan.sh`'s inter-cycle redeploy checkpoint (around lines 700-810) CONSUMES the prior cycle's `cycle_modified_files`, an empty array means the checkpoint can never fire either. So the fallback that would otherwise have caught this is silently disarmed by the very refusal it exists to recover from.
+
+THE RESULTING CYCLE: postflight refused -> modified_files never accumulated -> inter-cycle redeploy checkpoint never fires -> next cycle re-dispatches `implement` against an already-4/4-complete plan -> same refusal. Cycle 4 of the live run did exactly this: it prepared a fresh implement dispatch for a task whose plan was fully closed. Without operator intervention this churns until MAX_CYCLES.
+
+BLAST RADIUS. This repository IS the agent system, so `modified_files` overlapping `agent-system/extensions/**` is the COMMON case for `meta` task types, not an edge case. Every such task currently requires a manual deploy plus a manual `reconcile-task-status.sh` replay to reach `completed`.
+
+=== PART 1 (primary): PORT THE EXIT-6 RECOVERY ===
+
+Port `command-gate-out.sh`'s exit-6 branch into `orchestrate-cycle-postflight.sh`. Requirements:
+  - Reuse `deploy_findings_snapshot` from `scripts/lib/deploy-baseline-lib.sh` -- do NOT reimplement the baseline-relative (a)/(b)/(c) failure contract. The gate-out call site and the Inter-Cycle Redeploy Checkpoint already share that library specifically so the two cannot drift; a third copy would reintroduce exactly that drift.
+  - Preserve the single-retry posture: `command-gate-out.sh:211` deliberately does NOT re-attempt after a successful redeploy still leaves the task refused ("this is a real signal, not re-attempted again"). Keep that.
+  - CONCURRENCY IS THE REAL DESIGN QUESTION, AND IT IS NOT A DETAIL. `command-gate-out.sh`'s own comment justifies its automated deploy trigger on the grounds that it is "a point with NO concurrency -- the true single-task /implement completion path". The batch postflight is NOT such a point: sibling tasks in the same wave may be mid-flight. Decide and DOCUMENT the posture explicitly -- serialize the redeploy behind a lock, defer it to the inter-cycle checkpoint boundary where no dispatch is in flight, or another defensible option. Do not port the trigger without resolving this; an unserialized redeploy under a live batch is a worse defect than the one being fixed. If the resolution is "defer to the checkpoint", then Part 2 alone may be the correct whole fix -- that is an acceptable outcome, but it must be an argued conclusion, not a silent omission.
+  - Update `context/patterns/regeneration-is-manual-only.md`'s carve-out if the count of sanctioned automated deploy-trigger sites changes (it currently says "two").
+
+=== PART 2: FIX cycle_modified_files ACCUMULATION ON A REFUSED POSTFLIGHT ===
+
+`cycle_modified_files` must accumulate from `.return-meta.json` even when the status write was refused. It is the input to the inter-cycle redeploy checkpoint, and a refusal is precisely when that fallback matters most. Note the existing comment at that block explains it accumulates there (rather than being re-read later) because the scoped commit may already have removed `.return-meta.json` -- so the fix must preserve that ordering constraint, not just hoist the read.
+
+This part is independently valuable and lower-risk than Part 1: it re-arms the existing checkpoint without introducing any new deploy-trigger site. Size it as its own phase and commit it green on its own.
+
+=== PART 3 (small): DOCUMENT THE REPLAY PATH AFTER AN UNWIND ===
+
+`scripts/orchestrate-unwind-dispatch.sh` is documented in skills/skill-orchestrate/SKILL.md as "the sanctioned hand-recovery path" for a prepared-but-never-issued dispatch row. What is NOT documented is what to run afterwards. Observed live: re-running `orchestrate-cycle-postflight.sh` directly after an unwind opens a FRESH dispatch window that the existing handoff predates, producing:
+  - "ERROR: STALE HANDOFF -- mtime <t1>, older than this dispatch window (<t2>)"
+  - a false `verdict: failed` on work that was in fact complete,
+  - a spurious `HANDOFF_STALE_OR_ABSENT` row in `detected_defects` attributed to skill-orchestrate/SKILL.md,
+  - and a misleading "orchestration dispatch off-schema" commit.
+
+`reconcile-task-status.sh` was the correct replay path and resolved it cleanly. Document that in SKILL.md's "Unwinding an Unconsumed Dispatch" pointer and in `docs/architecture/orchestrate-state-machine.md`. Consider whether `orchestrate-unwind-dispatch.sh` should print the follow-up instruction itself on success. This is documentation plus at most a printed hint -- do not grow it into a behavioral change to the handoff-identity gate, which is working as designed.
+
+=== ACCEPTANCE ===
+  1. A task whose `modified_files` overlap `agent-system/extensions/**` reaches `completed` through the four-move loop with NO manual deploy and NO manual reconcile -- demonstrated end to end, not asserted.
+  2. `cycle_modified_files` is non-empty after a postflight refused by the completion-deploy gate, and the inter-cycle redeploy checkpoint demonstrably fires on the following cycle.
+  3. The concurrency posture from Part 1 is documented in the script and in `context/patterns/batch-orchestration-guardrails.md`.
+  4. `scripts/tests/test-postflight-deploy-gate.sh` and `scripts/tests/test-orchestrate-cycle-postflight.sh` cover the refusal-then-recovery path; both green. Extend them rather than writing a parallel suite.
+  5. No test is weakened or deleted to make the change pass.
+
+=== SCOPE DISCIPLINE ===
+  - Do NOT edit `orchestrate-cycle-plan.sh` beyond what the checkpoint re-arming strictly requires -- its decomposition is another open task's declared scope, and editing it here reintroduces the undeclared-overlap deferral the batch engine exists to prevent.
+  - Do NOT weaken the completion-deploy gate itself. The gate is correct; the missing piece is the recovery, not the check.
+
+---
 
 ### 251. Context-corpus reachability probe (filename, directory, index.json), then act on dead and overlapping files
 - **Status**: [NOT STARTED]
@@ -352,6 +416,26 @@ ACCEPTANCE ADDITIONS FOR THIS EXAMPLE.
      breached and pass when it is not. Demonstrate both directions explicitly.
   e. run-all.sh's exit code still propagates failure (it correctly exits 1 today; a parallel
      rewrite must not lose that through a pipeline or a subshell).
+
+=== EVIDENCE ADDENDUM (2026-09-22, measured live) ===
+
+RUN-ALL.SH WALL-CLOCK, MEASURED: ~40 minutes for a single full `run-all.sh --quiet` over the
+source-store copy, with concurrent agent activity on the machine. Observed during an
+/orchestrate implement dispatch, where the dispatched agent backgrounded the run and then
+stopped and resumed THREE times waiting on it (cumulative agent durations 384s / 1077s / 2287s
+across the stop/resume rounds) before the suite exited.
+
+WHY THIS MATTERS BEYOND COST. The runtime is not merely expensive, it is behaviour-changing:
+  - It pushed the dispatched agent into a repeated stop/park/resume cycle, which is a
+    reliability problem for autonomous orchestration, not just a slow gate.
+  - The load the long run generates is itself implicated in ambient-state test failures --
+    `test-lake-build-guard.sh` failed inside this run and then passed 47/47 in isolation
+    immediately afterwards (recorded in the shell-test-isolation task's own evidence addendum).
+    So run-all.sh's runtime and its concurrency are jointly producing false reds.
+
+SUGGESTED MEASUREMENT FOR PHASE 1'S PROBE: capture per-suite wall-clock in the inventory probe
+output, not just line/byte/caller counts. The ranking for "what to speed up" needs per-suite
+timing, and that data is currently collected nowhere.
 
 ---
 
@@ -1218,6 +1302,31 @@ The three whole-directory file_scope entries (core/scripts/tests/, lean/scripts/
 
 === DEPENDENCY ADDED 2026-09-22 (new suites enter the triage set) ===
 Two newly created tasks each add a standing repo-health probe WITH ITS OWN TEST SUITE (test-script-inventory.sh and test-context-reachability.sh). This task's acceptance criterion is that EVERY suite has a recorded triage verdict, so the audit must run after those suites exist or it certifies a set it no longer covers. Dependency edges recorded accordingly; the survey count above ("72 files match test*.sh") is the 2026-09-22 figure and MUST be re-derived at research time rather than trusted -- the corpus grows.
+
+=== EVIDENCE ADDENDUM (2026-09-22, observed live) ===
+
+INSTANCE A IS NOT CLOSED BY THE EXISTING FIX -- the defect class is still live post-878043472.
+
+During an /orchestrate implement dispatch, a full `run-all.sh` over the SOURCE STORE copy
+reported `test-lake-build-guard.sh` FAILING. An isolated re-run of the same suite immediately
+afterwards, on the same machine and same commit, reported `Passed: 47  Failed: 0`.
+
+This is the SAME discriminating shape already recorded for Instance B
+(`test-four-tier-conflict.sh` case 6): fails inside a loaded full-suite run, passes in
+isolation. It confirms that the env-seam redirection in 878043472 (LAKE_BUILD_GUARD_PSI_PATH /
+LAKE_BUILD_GUARD_MEMINFO_PATH to fixture files) did NOT make the suite fully load-independent --
+some assertion in it still reads ambient state, or is timing-sensitive, on an axis the fixture
+redirection does not cover.
+
+IMPLICATION FOR THIS TASK'S SCOPE: the "ALREADY FIXED -- DO NOT REDO" note above should be read
+as "the memory axis was isolated", NOT as "this suite is now load-independent". The audit must
+re-examine this suite rather than treating it purely as the exemplar to generalize from.
+Determining WHICH case fails under load is the first concrete step -- the full-suite run does
+not name it, so the failing case must be captured by re-running under induced load with
+per-case output retained.
+
+Contemporaneous context that plausibly supplied the load: the same run-all.sh invocation took
+~40 minutes of wall clock with concurrent agent activity on the machine.
 
 ---
 
