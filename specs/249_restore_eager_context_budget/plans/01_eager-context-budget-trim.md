@@ -1,7 +1,7 @@
 # Implementation Plan: Task #249
 
 - **Task**: 249 - Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md
@@ -233,28 +233,54 @@ enumerate files, add the entry there too.
 
 ---
 
-### Phase 4: Full gate run and acceptance confirmation [NOT STARTED]
+### Phase 4: Full gate run and acceptance confirmation [COMPLETED]
 
 **Goal**: Prove all four acceptance criteria hold, reading summary lines and exit codes directly
 rather than through a pager.
 
 **Tasks**:
-- [ ] Run `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check` and read the
+- [x] Run `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check` and read the
       `TOTAL:` line. Compare its value against `eager_load.baseline_bytes` (65,950 B) in
       `agent-system/extensions/core/context/config/orchestrator-context-budget.json`. Do not
       rely on this script's exit code for the budget verdict — it exits 0 on volatile-file
-      cleanliness alone, confirmed at plan time.
-- [ ] Confirm the `at_import` subtotal is still `0` — a nonzero value would mean the pointer was
-      written as an `@`-import and the content is eager again.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
+      cleanliness alone, confirmed at plan time. *(completed: TOTAL 64,148 B <= baseline 65,950 B;
+      1,802 B headroom)*
+- [x] Confirm the `at_import` subtotal is still `0` — a nonzero value would mean the pointer was
+      written as an `@`-import and the content is eager again. *(completed: SUBTOTAL at_import 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
       and confirm all cases pass, specifically the two previously-failing ones ("baseline fixture
-      is not clean" and "could not compute a safe eager-load pad amount").
-- [ ] Run `bash .claude/scripts/verify-deploy.sh --skip-slow` and confirm gate 20 passes. Leave
+      is not clean" and "could not compute a safe eager-load pad amount"). *(completed with a
+      documented exception: 14 passed, 1 failed. The "could not compute a safe eager-load pad
+      amount" case now passes. All gate20-specific cases (1,2,3,4,5) pass, and gate20 finding
+      lines dropped from 1 to 0, proving the budget regression itself is fixed. The sole remaining
+      failure, "baseline fixture is not clean (rc=1, gate20 finding lines=0)", is caused by gate 5
+      (manifest-driven content-hash equality) failing on the fixture's symlinked `.claude/` --
+      the deploy tree has not been regenerated to reflect this task's source-store trim. This is
+      the identical deploy-tree-drift class the Verification Tier 4 note below already scopes out;
+      redeploying is outside this agent's authority per
+      `context/patterns/regeneration-is-manual-only.md` (no sanctioned automated redeploy call
+      site applies to this non-critical-path change under `/orchestrate`))*
+- [x] Run `bash .claude/scripts/verify-deploy.sh --skip-slow` and confirm gate 20 passes. Leave
       the deployed-script-drift and `provides.scripts` gates alone — they belong to another task.
-- [ ] Run `run-all.sh` without piping through `tail`/`head`; read both the summary line and the
-      exit code.
-- [ ] Do a final read-through of the trimmed rule plus the companion together, confirming the
-      prohibition, exceptions, and correct edit target are unchanged in substance.
+      *(completed: gate 20 passes cleanly, all 4 sub-checks green -- "eager-load total (64148 B)
+      within baseline (65950 B)". 2 of 33 checks fail overall (doc-lint, manifest-driven
+      verify.lua content-hash equality) -- both deploy-tree-drift class, left alone per this
+      task's explicit scope)*
+- [x] Run `run-all.sh` without piping through `tail`/`head`; read both the summary line and the
+      exit code. *(completed: ran
+      `agent-system/extensions/core/scripts/tests/run-all.sh --quiet` (the source-store copy,
+      matching the dispatch's 92-total baseline) with output redirected to a file and `$?`
+      captured explicitly -- never through a live pipe to `tail`. Result: `[run-all] 90 passed, 2
+      failed, 0 skipped, 92 total`, real exit code 1. The 2 failures: (a) the budget suite's
+      gate5-drift case described above, (b) `test-lake-build-guard.sh` -- an unrelated,
+      pre-existing Lean/Lake build-guard test failure with no connection to
+      `rules/source-store-deploy-boundary.md`, the new companion file, or `index-entries.json`)*
+- [x] Do a final read-through of the trimmed rule plus the companion together, confirming the
+      prohibition, exceptions, and correct edit target are unchanged in substance. *(completed:
+      `head -c 1180` byte-diff confirmed identical; the relocated payload was extracted via
+      `tail -c +1181` (never retyped) and confirmed 3,263 B; every heading from the original's
+      relocation range is present in the companion; the prohibition, Exceptions, and Enforcement
+      narrative read as substantively unchanged)*
 
 **Timing**: 0.5 hours
 
