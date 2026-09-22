@@ -42,7 +42,7 @@ next_project_number: 249
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation... (see above)
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-245 [RESEARCHING] — orchestrate-batch-admit.sh: compute in-batch filescope...
+245 [RESEARCHED] — orchestrate-batch-admit.sh: compute in-batch filescope...
 
 ### Extensions
 
@@ -79,10 +79,11 @@ next_project_number: 249
 ## Tasks
 
 ### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

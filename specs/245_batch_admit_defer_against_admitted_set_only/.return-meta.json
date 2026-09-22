@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790091707_e274be_245",
+  "dispatch_seq": 3,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md",
+      "summary": "Locates the in_batch deferral defect in orchestrate-batch-admit.sh's jq collision scan (compares against raw batch membership instead of the set actually admitted this cycle), proposes a reduce-based greedy ascending-order fix that preserves input-order NDJSON output, argues no $schema version bump is needed (same class of change as the documented self-modification tie-breaker precedent), and specifies a regression test scenario (A admitted, C defers on A, D overlaps only C and should now admit) plus placement options."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 245 to create implementation plan"
+}
