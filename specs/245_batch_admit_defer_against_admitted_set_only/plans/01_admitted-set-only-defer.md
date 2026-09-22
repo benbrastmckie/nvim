@@ -1,7 +1,7 @@
 # Implementation Plan: Batch admit defers against the admitted set only
 
 - **Task**: 245 - Batch admit: defer against admitted set only
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md`
@@ -110,42 +110,46 @@ phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Regression suite with a confirmed red baseline [NOT STARTED]
+### Phase 1: Regression suite with a confirmed red baseline [COMPLETED]
 
 - **Goal:** Add a dedicated test suite that reproduces the observed A/C/D chain and *fails on the
   unmodified script*, establishing the red baseline the fix must turn green.
 - **Tasks:**
-  - [ ] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh`,
+  - [x] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh`,
         modeled on `scripts/test-conflict-predicate.sh`'s harness: `set -uo pipefail`, colored
         `pass`/`fail`/`info` helpers, `PASSED`/`FAILED` counters, `mktemp -d` temp root,
-        `trap cleanup EXIT`, and a required-files preflight loop.
-  - [ ] Build the isolated temp root satisfying `deploy-root-guard.sh`'s "two levels under root"
+        `trap cleanup EXIT`, and a required-files preflight loop. *(completed)*
+  - [x] Build the isolated temp root satisfying `deploy-root-guard.sh`'s "two levels under root"
         check: copy `orchestrate-batch-admit.sh`, `deploy-root-guard.sh`,
         `lib/file-scope-overlap.sh`, `lib/common.sh`, `lib/task-lookup-lib.sh`, and `task-lock.sh`
         byte-for-byte into `$TMPROOT/.claude/scripts/` (and `lib/`); `chmod +x` the invoked
         scripts. Note that the suite lives under `scripts/tests/`, so the copy source is
         `$SCRIPT_DIR/..`, not `$SCRIPT_DIR` — adjust every path from the flat-suite precedent.
-  - [ ] Write a fixture `$TMPROOT/specs/state.json` with four non-terminal, non-self-modifying
+        *(completed)*
+  - [x] Write a fixture `$TMPROOT/specs/state.json` with four non-terminal, non-self-modifying
         `active_projects` entries A < B < C < D, no `dependencies[]` edges, and `file_scope` such
         that: A and C share one path; C and D share a *different* path; D overlaps neither A nor
-        B; B is scope-disjoint from all three.
-  - [ ] Case 1 (the reported chain): invoke
+        B; B is scope-disjoint from all three. *(completed: A=101 B=102 C=103 D=104)*
+  - [x] Case 1 (the reported chain): invoke
         `orchestrate-batch-admit.sh --invocation-count 4 A B C D` and assert from the NDJSON —
         A `decision == "admit"`; C `decision == "defer"` with
         `defer_reason == "file_scope_collision"`, `collision_scope == "in_batch"`,
-        `colliding_task_number == A`; D `decision == "admit"`.
-  - [ ] Case 2 (output-ordering contract, distinct assertion): invoke with positional arguments
+        `colliding_task_number == A`; D `decision == "admit"`. *(completed)*
+  - [x] Case 2 (output-ordering contract, distinct assertion): invoke with positional arguments
         in non-ascending order `D C A B` and assert the emitted `task_number` sequence is exactly
-        `D, C, A, B`.
-  - [ ] Case 3 (symmetry across defer reasons, optional but recommended): a self-modifying
+        `D, C, A, B`. *(completed)*
+  - [x] Case 3 (symmetry across defer reasons, optional but recommended): a self-modifying
         variant — A is the designated self-modifying admit, B a co-dispatched self-modifying
         candidate that defers on the tie-breaker, C overlaps only B's ordinary `file_scope`;
-        assert C admits despite B being lower-numbered and in-batch.
-  - [ ] `chmod +x` the new suite (`run-all.sh` reports a lost exec bit as a loud `[SKIP]`, so a
-        missing bit would produce a false green).
-  - [ ] Run the suite against the **unmodified** script and record the failure: Case 1's D
+        assert C admits despite B being lower-numbered and in-batch. *(completed)*
+  - [x] `chmod +x` the new suite (`run-all.sh` reports a lost exec bit as a loud `[SKIP]`, so a
+        missing bit would produce a false green). *(completed)*
+  - [x] Run the suite against the **unmodified** script and record the failure: Case 1's D
         assertion must FAIL (D currently defers on C). Cases 2 and 3 should pass or fail as
         observed; capture the actual output verbatim for the phase's completion record.
+        *(completed: Case 1 FAILED — D deferred on C (colliding_task_number 103); Case 2 PASSED;
+        Case 3 FAILED — C_sm deferred on B_sm (colliding_task_number 206). Suite exited 1, 1
+        passed / 2 failed — the expected red baseline.)*
 - **Timing:** 1 hour
 - **Depends on:** none
 - **Verification Tier:** local

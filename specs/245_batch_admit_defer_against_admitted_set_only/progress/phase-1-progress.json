@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Regression suite with a confirmed red baseline",
+  "started_at": "2026-09-22T17:47:22Z",
+  "last_updated": "2026-09-22T17:47:22Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-orchestrate-batch-admit.sh modeled on test-conflict-predicate.sh's harness, build the isolated temp root, write the A<B<C<D fixture, encode Cases 1-3, chmod +x, and run against the unmodified script to record the red baseline",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"
+      ],
+      "note": "Red baseline confirmed: Case 1 FAILED (D deferred on C, colliding_task_number 103), Case 2 PASSED, Case 3 FAILED (C_sm deferred on B_sm, colliding_task_number 206). Suite exited 1, 1 passed / 2 failed."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

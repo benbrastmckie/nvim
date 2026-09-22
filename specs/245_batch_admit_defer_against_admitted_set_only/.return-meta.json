@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md",
-      "summary": "Four-phase plan converting orchestrate-batch-admit.sh's in_batch collision predicate to a reduce-based greedy ascending walk that defers only against already-admitted peers, with a red-baseline-first regression suite, schema-doc sync, and a full gate run."
-    }
-  ],
-  "memory_candidates": [],
-  "phase_count": 4,
-  "estimated_hours": 3.5,
-  "dependency_waves": [[1], [2], [3], [4]],
-  "next_steps": "Run /implement 245 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790091707_e274be_245",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1790091707_e274be",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 8
+  "dispatch_seq": 18
 }
