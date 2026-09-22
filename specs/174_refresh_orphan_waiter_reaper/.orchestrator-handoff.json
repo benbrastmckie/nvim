@@ -1,17 +1,19 @@
 {
-  "status": "planned",
-  "summary": "4-phase plan (5h): self-excluding build-waiter reaper pass in claude-refresh.sh (own pgid-bearing snapshot, two signature families, age-threshold-only gate), tests with mutation checks, both inventory tables + systemd ruling.",
+  "status": "implemented",
+  "summary": "Implemented the self-excluding orphaned build-waiter reaper pass in claude-refresh.sh across all 4 plan phases: the pass itself (widened pid/ppid/pgid/ancestor-chain self-exclusion, two signature families, age-threshold-only gate, fail-closed), full regression coverage (112 assertions, 2 mutation checks proving the pgid/ancestor exclusions load-bearing), both pass-inventory docs, and the systemd unit's re-derived ruling comment.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/174_refresh_orphan_waiter_reaper/plans/01_orphan-waiter-reaper-pass.md",
-      "summary": "4-phase plan (5h): self-excluding build-waiter reaper pass in claude-refresh.sh (own pgid-bearing snapshot, two signature families, age-threshold-only gate), tests with mutation checks, both inventory tables + systemd ruling."
+      "type": "summary",
+      "path": "specs/174_refresh_orphan_waiter_reaper/summaries/01_orphan-waiter-reaper-pass-summary.md",
+      "summary": "Implementation summary: build-waiter reaper pass, test coverage, docs, and systemd ruling, all 4 phases complete."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "dispatch_seq": 5,
-  "phase": "plan",
-  "next_action_hint": "Run /implement 174 (Phase 1: run_build_waiter_pass in claude-refresh.sh)"
+  "dispatch_seq": 8,
+  "phase": "implement",
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete -- all 4 phases COMPLETED, final gate passed. No further action needed."
 }
