@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/249_restore_eager_context_budget/plans/01_eager-context-budget-trim.md",
-      "summary": "4-phase plan to split the eagerly-loaded source-store rule into a trimmed eager core plus a lazily loaded context/standards narrative companion, restoring the eager-context budget with ~1,780 B of headroom instead of re-baselining."
-    }
-  ],
-  "next_steps": "Run /implement 249 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 1.5,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 21,
   "metadata": {
-    "session_id": "sess_1790104446_f9923b_249",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 20
+    "session_id": "sess_1790104446_f9923b",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

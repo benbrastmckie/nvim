@@ -1,7 +1,7 @@
 # Implementation Plan: Task #249
 
 - **Task**: 249 - Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md
@@ -99,25 +99,28 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Create the lazy narrative companion [NOT STARTED]
+### Phase 1: Create the lazy narrative companion [COMPLETED]
 
 **Goal**: Stand up
 `agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md`
 carrying every relocated section verbatim, so no content is ever in flight without a home.
 
 **Tasks**:
-- [ ] Extract lines from `## Correct Edit Target` to end of file from
+- [x] Extract lines from `## Correct Edit Target` to end of file from
       `agent-system/extensions/core/rules/source-store-deploy-boundary.md` by byte/line range
-      (do not retype): this is the 3,263 B relocation payload measured at plan time.
-- [ ] Write the companion file with an opening companion-note paragraph naming what the eager
+      (do not retype): this is the 3,263 B relocation payload measured at plan time. *(completed:
+      extracted via `tail -c +1181`, confirmed 3,263 B exactly)*
+- [x] Write the companion file with an opening companion-note paragraph naming what the eager
       core keeps versus what this file elaborates, mirroring `git-workflow-narrative.md`'s
       opening-paragraph shape and explicitly back-referencing
-      `rules/source-store-deploy-boundary.md`.
-- [ ] Append the extracted payload, re-heading `## Correct Edit Target` to
+      `rules/source-store-deploy-boundary.md`. *(completed)*
+- [x] Append the extracted payload, re-heading `## Correct Edit Target` to
       `## Correct Edit Target — Full Resolution Procedure` and promoting the Before/After block
       under its own `## Worked Example` heading. Leave `### If the source store is unreachable`,
       `## Exceptions`, and `## Enforcement` (including the Known-limitation paragraph) untouched.
-- [ ] Confirm the companion contains no `@`-import syntax anywhere.
+      *(completed)*
+- [x] Confirm the companion contains no `@`-import syntax anywhere. *(completed: `grep -c '@'`
+      shows 0 matches)*
 
 **Timing**: 0.4 hours
 
